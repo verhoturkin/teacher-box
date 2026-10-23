@@ -36,17 +36,6 @@ export interface CompactBar {
   readonly menuLabel: string;
 }
 
-/** Gives the top app bar of a phone to the page while it lives and `bar` returns one: call it in the constructor. */
-export function compactBar(bar: () => CompactBar | null): void {
-  const state = inject(RailState);
-  effect(() => {
-    state.compactBar.set(bar());
-  });
-  inject(DestroyRef).onDestroy(() => {
-    state.compactBar.set(null);
-  });
-}
-
 /** Hides the bottom navigation bar of a phone while the page lives and `hidden` is true: call it in the constructor. */
 export function hideBottomBar(hidden: () => boolean): void {
   const state = inject(RailState);

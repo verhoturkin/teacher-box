@@ -8,7 +8,6 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { injectMobile } from '@core/layout/mobile';
 import { Card } from 'primeng/card';
 import { MyBoardLinks } from '@features/boards/parts';
 import { LessonActions } from '../ui/lesson-actions';
@@ -60,7 +59,7 @@ import { T } from '../i18n/texts';
               [joinUrl]="lesson.joinUrl"
               [requests]="lesson.pendingRequests.length === 0 && time()?.phase !== 'live'"
               [group]="lesson.groupId !== null"
-              [stacked]="mobile()"
+              [stacked]="true"
               [hero]="true"
               rescheduleIcon="tb-i tb-i-calendar_month"
               (ask)="ask(lesson, $event)"
@@ -92,7 +91,7 @@ import { T } from '../i18n/texts';
     /* as the teacher's card: the tile, the text, the buttons at the end */
     .tb-lesson-event {
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-columns: auto minmax(0, 1fr);
       align-items: center;
       gap: var(--tb-space-4);
     }
@@ -107,10 +106,10 @@ import { T } from '../i18n/texts';
     }
 
     .tb-lesson-event__actions {
-      display: flex;
-      flex-wrap: wrap;
+      grid-column: 1 / -1;
+      display: grid;
+      justify-content: stretch;
       align-items: center;
-      justify-content: flex-end;
       gap: var(--tb-space-2);
     }
 
@@ -128,12 +127,6 @@ import { T } from '../i18n/texts';
         gap: var(--tb-space-3);
       }
 
-      .tb-lesson-event__actions {
-        grid-column: 1 / -1;
-        display: grid;
-        justify-content: stretch;
-      }
-
       tb-lesson-time-tile {
         min-width: 6.5rem;
         padding-inline: var(--tb-space-2);
@@ -144,7 +137,6 @@ import { T } from '../i18n/texts';
 export class NextLessonWidget implements OnInit {
   protected readonly t = T.next;
   private readonly snackbar = inject(Snackbar);
-  protected readonly mobile = injectMobile();
   private readonly api = inject(ScheduleApi);
 
   readonly summary = input.required<MyScheduleSummary>();

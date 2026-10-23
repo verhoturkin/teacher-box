@@ -294,7 +294,7 @@ component that shows one adds it to `PRIME`).
   strip starts where the rail ends (`--tb-rail-width` 96 / 280 px on the shell), the body is pulled up under it and
   the content pushed back down by the strip's height (*ours*). **Brand** —
   the portal logo (`tb-portal-logo round`) and name, plain text, not a link or button (**M3**: a logo in the
-  rail must not look like an action); expanded rail: 28 px logo + name in Title Medium, wrapping, in line with
+  rail must not look like an action); expanded rail: 28 px logo + name in Title Large emphasized (0.31.0; our branding decision), wrapping, in line with
   the item icons (*ours*); collapsed rail: the 40 px logo alone, the name `tb-sr-only` (*ours*). **Bottom
   group** (`tb-side-nav__footer`, pushed down by `margin-top: auto`): the area's settings (`footerLinks`:
   teacher `/teacher/settings`; the student and the admin have none — «Настройки» is the admin's fifth destination) and «Справка»
@@ -410,6 +410,21 @@ Administrator settings (0.27.0): an optional `[tbPaneHeader]` projects headings 
 the pane scroll area. Fields and category lists scroll independently on desktop; compact keeps page scrolling.
 This persistent-header placement is our product decision.
 
+### Compact cabinet refinements (0.31.0)
+
+From M3: compact page margins are 16 dp; shape uses the existing M3 corner scale; panes and components
+adapt to available space, with primary actions preceding secondary actions.
+
+Portal decisions: both home briefings are hidden on compact; teacher today's lessons and weekly figures
+remain in the feed. The compact roster omits its total. Homework search is always rendered and row tags
+stack vertically. Teacher schedule screens use the same wrapping filter chips as the student; week/month
+recreate the calendar to apply its initial view. Student calendar lessons open a bottom sheet only on compact,
+and a modal side sheet otherwise. Student upcoming lesson actions keep Join above the connected request pair.
+Compact schedule support sections are individually contained with large (16 dp) corners and normal margins.
+The notification drawer has extra-large (28 dp) top corners, an 8 px top inset and 16 dp content margins;
+its read-all action is in the header and unread titles replace dots. These compositions and inset choices
+are ours, not additional M3 measurements.
+
 ## 5. Page anatomy
 
 - **Header** `tb-page-header` (`@shared/ui`): «Назад» icon button on nested pages (tooltip = destination,
@@ -456,7 +471,7 @@ This persistent-header placement is our product decision.
   («Начать урок», while it runs «Войти в урок»; on a narrow card under the tile, full width — `tb-join-wide`, a split
   button too) — since 0.17.1 the one M3E medium button of the portal (56 px, `tb-button-m` / `tb-split--m` via
   `tb-join-lesson-button [medium]`, the student's `tb-lesson-actions [hero]`); the request buttons stay 40 px. The student's request
-  buttons are at the end of the event (under it, across the width, on a narrow card) and are hidden while the lesson
+  buttons are under the event across its width, with Join above the connected request pair (0.31.0) and are hidden while the lesson
   runs (0.15.1: the student's card is laid out as the teacher's — no visible title, «Занятие» or the group, the
   topic and «Занятий на неделе» next to the tile). No «Расписание» link: the schedule is in the
   navigation. When the lesson ends the widget asks the home page to reload the summary. The teacher's card has no
@@ -467,8 +482,8 @@ This persistent-header placement is our product decision.
   of three stacks with a fixed order that is also the reading order: lead (hero + `today-lessons.ts` «Занятия сегодня»),
   queue (`todo-queue.ts` «Нужно сделать»), figures (`billing` month card + `week-figures.ts` «Неделя»). Columns by
   window size: extra-large 3 (1.25 : 1 : 0.8), large 2 (the figures go under the queue, the lead spans both rows),
-  otherwise 1; the empty stack is hidden. On compact the lessons list and week figures are not shown (hero, queue,
-  month only) and «Создать» is the FAB.
+  otherwise 1; the empty stack is hidden. On compact all sections remain in the same order (0.31.0),
+  the briefing is hidden and «Создать» is the FAB.
   - 0.24.1: the sections have no cards (above). «Нужно сделать» carries an error badge with the count (M3 large
     badge); a row is a 40 px tonal icon circle (lesson, review, request; a debt — error container), what is to do
     in the first line and «who · detail» under it, the action a tonal button. The month block is titled with the
@@ -594,15 +609,16 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   standard side sheet, the third pane of the frame (≤ 400 dp, surface container low, 28 dp corners and 24 dp
   margins like `tb-pane kind="sheet"` — *ours*); it takes the focus when it opens, «×» or Esc closes it and gives
   the focus back, and it stays open across pages. Below it is the modal `tb-side-sheet tb-side-sheet--narrow`
-  (400 dp; the whole screen on compact), closed by a notification that leads to another page. Content: the
+  (400 dp; on compact full width with rounded top corners, see §4), closed by a notification that leads to another page. Content: the
   teacher's M3 primary tabs «Входящие N» (badge ≤ 4 characters, **M3**) and «Отправленные»; the student has the
   inbox only. Primary tabs `tb-tabs` (**M3**, every tab bar, 0.24.1): no container, 48 dp, Title Small, the label primary when
   active, a 3 dp primary indicator with 3 dp rounded top corners as wide as the label (the `::after` of `tb-tab-label`,
   the span every tab wraps its label in), one 1 dp outline-variant divider under the whole bar; the tabs share the
   bar's width equally with the label centred (M3 fixed tabs). Anatomy, top to bottom: the header (headline «Уведомления»,
-  «×» at the trailing end), the tabs, the tab's content — «Входящие»: the unread list (a dot for the unread, the title
-  opens the notification, a tick, no «Открыть» button; «Прочитать все» is an icon button `done_all` at the end of the
-  first row; the docked pane is `surface` like the other panes and starts below the top strip), «Показать ещё») and the folded «Прочитанные» below it (§9); «Отправленные»: a line of
+  «×» at the trailing end), the tabs, the tab's content — «Входящие»: the unread list (no dots since 0.31.0; unread titles emphasized), a tick on desktop,
+  «Показать ещё»; «Прочитать все» is the icon button `done_all` in the header immediately before close.
+  The folded «Прочитанные» follows the unread list (§9). The docked pane is `surface` like the other panes
+  and starts below the top strip. «Отправленные»: a line of
   explanation with «Написать ученикам» (secondary, opens the same new-message dialog as «Создать › Сообщение»,
   §4) and the sent messages (title, text, time · recipients). The bell's badge (`p-overlaybadge`, danger) is the
   unread count, hidden at zero. `?notifications=inbox|sent` opens the sheet on any page and is dropped
@@ -768,7 +784,7 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
     button; picked files not sent yet are the same cards). The teacher opens a bound textbook by its title. «Открыть доску» — `pi-arrow-up-right`, «На доску» — `pi-tb-board`.
 - Homework of the teacher (0.25.0, spec §9; `features/homework/teacher/`) — three panes of one route
   (`/teacher/homework[/tasks/:taskId | /:assignmentId]`): the **list** in the fixed pane (the connected group
-  «На проверку · Активные · Готовые» with counts, the filter button of the header opens one search; tonal rows, no
+  «На проверку · Активные · Готовые» with counts, search is always visible above the list (0.31.0); tonal rows, no
   cards: a work — avatar, student, «задание · сдано …», the «Просрочено» tag; «Ждут сдачи» under them), the **work or
   the assignment** in the flexible pane (blocks on the pane's surface under uppercase labels; the chosen row is
   `tb-list__item--current`), and from **extra-large** the **review side sheet** as the third pane (`review-sheet.ts`,
@@ -799,11 +815,11 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   «Авансы заканчиваются» (≤ 2 lessons left — ours; 5 rows), «По неделям» (bars, the week of today lighter) and the
   link «Все в Учениках». The balances list and the default price are not on the page any more (Students ›
   «Должники»; Settings › «Оплаты»).
-  - **Compact:** the page gives the phone's top app bar its own title and actions (`compactBar()` of
-    `core/layout/rail-state.ts`): «☰ Октябрь ‹ ⋮» with the next month and the report under «⋮»; the figures scroll
-    sideways as tiles, the chips stand in one row, journal rows are avatar + two lines + the amount (the student
-    goes under the title); the supporting pane and the student filter are hidden; the extended FAB «Оплата»
-    (`tb-page-fab`) records a payment.
+  - **Compact (0.31.0):** the page itself shows the month, both arrows and an absolute route to
+    «Отчёт за месяц», with no overflow menu. Teacher and student figures use the same two-column
+    tonal grid without horizontal scrolling, and filter chips wrap. Journal supporting text wraps
+    inside the row. The supporting pane and student filter stay hidden; the extended FAB records payments.
+    The report month picker appends its overlay to body so pane clipping cannot hide it. These are portal decisions.
 - Billing of a student (0.9.3) — the history on the Payments tab of the card (`tb-ledger-list`: calendar / wallet
   icon; operation + status tag; «date · topic or comment»; trail — the amount and «×» for the teacher; 20 rows,
   then «Показать ещё»).
@@ -874,8 +890,7 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
     lesson materials (one board card and one textbook card, hidden when there are none). No FAB.
   - Homework (`my-homework-page.ts` + `my-task-page.ts`, spec §9): a list-detail like the teacher's, one route
     for `/cabinet/homework` and `/cabinet/homework/:taskId` (the list stays). Fixed list pane: the connected group
-    «Сдать · На проверке · Готовые» with counts (the first non-empty one is chosen), the filter button of the
-    header opens the search, `tb-list` rows (icon, title link, «до …» — red when overdue, status tag), the
+    «Сдать · На проверке · Готовые» with counts (the first non-empty one is chosen), search is always visible above the list (0.31.0), `tb-list` rows (icon, title link, «до …» — red when overdue, status tag), the
     current row in secondary-container; beside the detail only the list scrolls. Detail pane: the task with the
     teacher's feedback and the answer form; on one pane «back» in its header leads to the list.
 - Boards of the teacher (0.9.3) — a `tb-list` like the students: kind icon; title link + «вид · кому ·

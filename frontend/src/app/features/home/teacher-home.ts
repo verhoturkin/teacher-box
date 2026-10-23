@@ -40,8 +40,7 @@ function dayTitle(date: Date): string {
 
 /**
  * Teacher's «Сегодня» (spec §6): the feed in three columns (extra-large), two (large) or one — the hero and
- * the lessons of today, the «Нужно сделать» queue, the month and the week figures. On a phone: hero, queue,
- * month.
+ * the lessons of today, the «Нужно сделать» queue, the month and the week figures. On a phone the same sections follow one another.
  */
 @Component({
   selector: 'tb-teacher-home',
@@ -64,7 +63,7 @@ function dayTitle(date: Date): string {
       <tb-pane [label]="t.title">
         <tb-page-header tbPaneHeader [title]="today()">
           <tb-help-button help topic="teacher/first-steps" />
-          @if (summaryLine(); as line) {
+          @if (!mobile() && summaryLine(); as line) {
             <span meta class="tb-muted">{{ line }}</span>
           }
         </tb-page-header>
@@ -81,7 +80,7 @@ function dayTitle(date: Date): string {
             @if (schedule()?.next; as next) {
               <tb-upcoming-lesson-widget [lesson]="next" (over)="loadSchedule()" />
             }
-            @if (!compact() && schedule(); as schedule) {
+            @if (schedule(); as schedule) {
               @if (schedule.today.length > 0) {
                 <tb-today-lessons [all]="schedule.today" [next]="schedule.next" />
               }
@@ -101,7 +100,7 @@ function dayTitle(date: Date): string {
             @if (billing(); as billing) {
               <tb-finance-widget [summary]="billing" />
             }
-            @if (!compact() && weekFigures(); as week) {
+            @if (weekFigures(); as week) {
               <tb-week-figures [figures]="week" />
             }
           </div>
@@ -154,7 +153,6 @@ export class TeacherHome implements OnInit {
   protected readonly today = signal(dayTitle(new Date()));
   protected readonly mobile = injectMobile();
   private readonly size = injectWindowSize();
-  protected readonly compact = computed(() => this.size() === 'compact');
   /** Columns of the feed (spec §6): 3 on extra-large, 2 on large, else 1. */
   protected readonly columns = computed(() => {
     switch (this.size()) {

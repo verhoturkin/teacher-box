@@ -10,6 +10,8 @@ export const STUDENT_ARTICLES: Readonly<Record<StudentTopic, HelpArticleText>> =
 Pane headings stay above scrolling content, while search and help text fill the available width.
 Focus rings appear during keyboard use, not automatically when opening a dialog with the pointer.
 
+On a phone, the home page starts with the next lesson card; the briefing above it is hidden.
+
 ## First sign-in
 
 The teacher sends an invitation link. Open it, choose a login and a password — and you are in your cabinet. After that, sign in on the sign-in page with this login and password.
@@ -36,6 +38,8 @@ Your photo at the top right → «My account»: the photo is in the top card, th
     title: 'Schedule and moving',
     summary: 'Your lessons, cancelling and moving',
     body: `
+Clicking a calendar lesson opens a side panel on a computer and a bottom panel on a phone. Upcoming lesson actions place Join lesson first, followed by Move and Cancel together. On a phone, upcoming lessons and calendar subscription use separate rounded sections.
+
 «Schedule» shows a week or month calendar. On a computer, the mini calendar, upcoming lessons and «My requests» sit beside it. On a phone it opens with an agenda: a week strip and lessons of the selected day, with switches to week or month.
 
 ## Cancel or move a lesson
@@ -91,7 +95,7 @@ The links to the lesson and the boards are in the bot too: «Join lesson» and �
     body: `
 ## See the homework
 
-«Homework» — the list on the left and the chosen task on the right (on a phone the list and the task open one after another; the «back» arrow leads from the task to the list). Above the list are three buttons with numbers: «To hand in» (still to do, or returned by the teacher), «In review» (you handed it in and wait for the teacher) and «Done» (accepted). The one with something to do opens first. The funnel button in the header turns on a search by the title. A row: the title, the deadline and the status; overdue ones are marked red. The number on the «Homework» icon in the menu is how many tasks wait for you to hand in. A reminder comes before the deadline.
+«Homework» — the list on the left and the chosen task on the right (on a phone the list and the task open one after another; the «back» arrow leads from the task to the list). Above the list are three buttons with numbers: «To hand in» (still to do, or returned by the teacher), «In review» (you handed it in and wait for the teacher) and «Done» (accepted). The one with something to do opens first. Search by title is always visible above the list. Status and overdue tags are stacked vertically. A row: the title, the deadline and the status; overdue ones are marked red. The number on the «Homework» icon in the menu is how many tasks wait for you to hand in. A reminder comes before the deadline.
 
 On the home page the tasks to hand in are in the «To hand in» block (the nearest deadline first; a returned one has «Fix»), and the latest reviewed ones are in «Reviewed recently».
 
@@ -125,6 +129,8 @@ Click the title to open the textbook in a new tab (a Word file is downloaded), a
     title: 'Payments',
     summary: 'Balance, lesson price and history',
     body: `
+On a phone, balance, charges, payments and lesson price form a grid without sideways scrolling. History filters wrap to the next line.
+
 «Payments» shows figures at the top and history below. History filters show all operations, only payments or only charges. The figures show:
 
 - **Balance** — prepaid (you paid in advance) or debt;

@@ -37,12 +37,14 @@ import { T } from '../i18n/texts';
           >
         </p-tablist>
         <p-tabpanels>
-          <p-tabpanel value="inbox"><tb-inbox-panel /></p-tabpanel>
+          <p-tabpanel value="inbox"
+            ><tb-inbox-panel [inSheet]="true" [headerActive]="state.tab() === 'inbox'"
+          /></p-tabpanel>
           <p-tabpanel value="sent"><tb-broadcasts-panel /></p-tabpanel>
         </p-tabpanels>
       </p-tabs>
     } @else {
-      <tb-inbox-panel />
+      <tb-inbox-panel [inSheet]="true" />
     }
   `,
 })

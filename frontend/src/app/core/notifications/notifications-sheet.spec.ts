@@ -162,6 +162,9 @@ describe('NotificationsSheet', () => {
       const sheet = requireElement(document.body, '.p-drawer.tb-side-sheet', HTMLElement);
       expect(sheet.classList).toContain('tb-side-sheet--narrow');
       expect(sheet.getAttribute('aria-modal')).toBe('true');
+      expect(sheet.getAttribute('aria-labelledby')).toBe(
+        sheet.querySelector('.p-drawer-title')?.id,
+      );
       expect(sheet.querySelector('.p-drawer-title')?.textContent).toContain('Уведомления');
       expect(sheet.querySelector('tb-test-sheet-content')).not.toBeNull();
       expect(document.body.querySelector('.p-drawer-mask')).not.toBeNull();

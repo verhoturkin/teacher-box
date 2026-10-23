@@ -16,14 +16,12 @@ import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Tag } from 'primeng/tag';
-import { Tooltip } from 'primeng/tooltip';
 import { injectMobile, injectWindowSize } from '@core/layout/mobile';
 import { collapseRail, hideBottomBar } from '@core/layout/rail-state';
 import { openOnCreate } from '@core/routing/create-param';
 import { HelpButton } from '@features/help/parts';
 import { TeacherColors } from '@features/identity/parts';
 import { Avatar } from '@shared/ui/avatar';
-import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
@@ -47,7 +45,7 @@ type Filter = 'review' | 'active' | 'done';
 
 /**
  * Teacher: homework as the list pane of a list-detail (redesign spec §9): the connected group
- * «На проверку · Активные · Готовые» with the counts, one search under the filter button of the header, the
+ * «На проверку · Активные · Готовые» with the counts, a persistent search above the list, the
  * rows on the pane's surface. «На проверку» lists the works handed in (then «Ждут сдачи»: the assignments
  * somebody still has to hand in), «Активные» the assignments in progress (then «Не выдано»: the drafts),
  * «Готовые» those with every work accepted. A row opens the work or the assignment; «⋮» of an assignment —
@@ -61,7 +59,6 @@ type Filter = 'review' | 'active' | 'done';
     AssignmentPage,
     Avatar,
     Button,
-    ButtonAttributes,
     EmptyState,
     HelpButton,
     LoadStateView,
@@ -75,7 +72,6 @@ type Filter = 'review' | 'active' | 'done';
     SegmentGroup,
     Tag,
     TaskReviewPage,
-    Tooltip,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -85,16 +81,6 @@ type Filter = 'review' | 'active' | 'done';
           <div tbPaneHeader>
             <tb-page-header [title]="t.title">
               <tb-help-button help topic="teacher/homework" />
-              <p-button
-                icon="tb-i tb-i-filter_list"
-                [text]="true"
-                [rounded]="true"
-                severity="secondary"
-                [pTooltip]="searchOpen() ? t.hideSearch : t.showSearch"
-                [ariaLabel]="searchOpen() ? t.hideSearch : t.showSearch"
-                [tbAttributes]="{ 'aria-pressed': searchOpen() ? 'true' : 'false' }"
-                (onClick)="toggleSearch()"
-              />
               <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
               @if (mobile()) {
                 <p-button
@@ -108,9 +94,7 @@ type Filter = 'review' | 'active' | 'done';
 
             <div class="tb-hw__filters">
               <tb-segment-group [label]="t.filters" [segments]="segments()" [(value)]="filter" />
-              @if (searchOpen()) {
-                <tb-search-field [formControl]="search" [label]="t.search" />
-              }
+              <tb-search-field [formControl]="search" [label]="t.search" />
             </div>
           </div>
           <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
@@ -303,6 +287,11 @@ type Filter = 'review' | 'active' | 'done';
     </ng-template>
   `,
   styles: `
+    .tb-list__trail {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
     /* from expanded the pane does not scroll as a whole: its list does (our decision, as the students' list) */
     .tb-hw__filters {
       display: flex;
@@ -375,7 +364,6 @@ export class AssignmentsPage implements OnInit {
   protected readonly state = new LoadState();
   /** The moment the lists were read: a due date before it is overdue. */
   private readonly now = signal(Date.now());
-  protected readonly searchOpen = signal(false);
   protected readonly search = new FormControl('', { nonNullable: true });
   private readonly query = toSignal(this.search.valueChanges, { initialValue: '' });
   protected readonly searching = computed(() => this.query().trim() !== '');
@@ -471,13 +459,6 @@ export class AssignmentsPage implements OnInit {
 
   protected openCreate(): void {
     void this.router.navigate(['/teacher/homework/new']);
-  }
-
-  protected toggleSearch(): void {
-    if (this.searchOpen()) {
-      this.search.setValue('');
-    }
-    this.searchOpen.update((open) => !open);
   }
 
   /** A work was reviewed or an assignment changed: reads the lists again without the loading state. */

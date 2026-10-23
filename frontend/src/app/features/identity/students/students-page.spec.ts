@@ -680,6 +680,7 @@ describe('StudentsPage', () => {
         await load([MARIA]);
 
         expect(panes()).toEqual(['Список учеников']);
+        expect(host.querySelector('tb-page-header [meta]') !== null).toBe(width >= 600);
         // one pane: the window scrolls, not the list
         expect(host.querySelector('tb-pane')?.classList).not.toContain('tb-roster__pane');
       });

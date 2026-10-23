@@ -22,11 +22,11 @@ On the «Today» page the «Getting started» list sits at the end of the «To d
 
 ## The «Today» page
 
-This is the teacher's home page. At the top — how many lessons, works to review and requests there are today. On a wide screen the cards go in three columns, on a medium one in two, on a phone one under another.
+This is the teacher's home page. On a computer the briefing shows today’s lessons, work to review and requests; on a phone the feed starts with the next lesson. On a wide screen the cards go in three columns, on a medium one in two, on a phone one under another.
 
 - **«Create»** — the button at the top of the sections panel on a computer and a tablet: «Lesson», «Homework», «Payment», «Student», «Board», «Message». An item opens the form in its section, and «Message» opens the new message window right over the page; the item of the section you are in comes first. On a phone this page keeps the same items behind the «+» button at the bottom right, other sections have their own button.
 - **Next lesson** — the first card of the home page. A tile on the left: the day, the start time and the length; an hour before the start — «in 25 min», during the lesson — «Now» and how much is left. Next to it — with whom and the topic, the boards of the student or the group and the «Start lesson» button («Join lesson» while it runs) — the largest button of the portal. When the lesson ends, the card shows the next one by itself.
-- **Lessons today** — a list under the next-lesson card: the time, with whom and the status; the nearest lesson is highlighted. There is no list on a phone.
+- **Lessons today** — a list under the next-lesson card: the time, with whom and the status; the nearest lesson is highlighted. The list and weekly figures are also available in the phone feed.
 - **To do** — unmarked lessons («Held» or «Missed» right in the row), students' requests, work to review and debts. A row opens the section or does the action; if one group has more than five items, the rest are counted («3 more»). On a phone a row is one line with an arrow: a tap does the action, and for an unmarked lesson it opens a window with two buttons.
 - **Finance** — income of the month and students' debts.
 - **Week** — lessons held, absences, homework given and handed in on time for the current week (Monday to Sunday).
@@ -85,7 +85,7 @@ The student opens the link, chooses a login and a password and gets to their cab
 
 Students and groups are in one list. A student's row shows the photo (if the student uploaded one, otherwise the initials), the name, the nearest lesson and the prepaid amount; on the right — the debt in red and the tag «Invited» or «Turned off». Hover over an invited student's tag to see until when the link is valid. A group's row shows its students and the nearest lesson.
 
-Above the list are the search by name and the filters: **All**, **Groups**, **In debt**, **No messenger** (students who connected no messenger) and **Turned off** (students without access and archived groups). «In debt» and «No messenger» show a number.
+On a phone the total above the roster is hidden, and the portal name is larger in the navigation menu. Above the list are the search by name and the filters: **All**, **Groups**, **In debt**, **No messenger** (students who connected no messenger) and **Turned off** (students without access and archived groups). «In debt» and «No messenger» show a number.
 
 Click a row — the card of the student or the group opens on the right (on a phone the card replaces the list, the «back» arrow returns to it).
 
@@ -164,7 +164,7 @@ Archive a group you no longer teach: its future lessons are cancelled, the histo
 
 **Default topic.** If a student or a group has a default topic (on the «Profile» tab of the student or the group), it is filled in for a new lesson as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
 
-**How the section is laid out.** On a computer the calendar (week or month) is the main area; on the right are a mini-month for jumping between days, «Students’ requests» and «Time off». On a phone the section opens as the «Agenda»: a strip of the week's days and the list of the chosen day's lessons; «Week», «Month» and «Time off» are in the «⋮» menu.
+**How the section is laid out.** On a computer the calendar (week or month) is the main area; on the right are a mini-month for jumping between days, «Students’ requests» and «Time off». On a phone the section opens as the «Agenda»: a strip of the week's days and the list of the chosen day's lessons; «Agenda», «Week», «Month» and «Time off» are available as chips above the calendar.
 
 A lesson can be dragged in the calendar to another time. It takes the new place with two buttons on its card: ✓ «Move» saves the move, ✕ «Undo the move» puts the lesson back. If the time is busy, the portal asks again.
 
@@ -348,7 +348,7 @@ On the homework's page, in «Textbooks», click «Bind a textbook», choose a te
 
 ## Review work
 
-«Homework» is a list on the left and the opened item on the right. A switch at the top of the list: **To review** (handed-in work, and under it «Waiting for hand-in» — who has not handed in yet), **Active** (given homework where not everything is accepted; below it «Not given» — drafts) and **Done** (everything accepted). The filter button opens a search by the homework title or a student's name. A work in the list shows the student, the homework and when it was handed in; the «Overdue» tag means it was handed in after the due date.
+«Homework» is a list on the left and the opened item on the right. A switch at the top of the list: **To review** (handed-in work, and under it «Waiting for hand-in» — who has not handed in yet), **Active** (given homework where not everything is accepted; below it «Not given» — drafts) and **Done** (everything accepted). Search by the homework title or a student's name is always visible above the list. Status tags are stacked vertically. A work in the list shows the student, the homework and when it was handed in; the «Overdue» tag means it was handed in after the due date.
 
 Press a work and it opens on the right: the task (it collapses), the student's answer and the picture files. «Open on the board» leads to the homework's board. On a wide screen the review is a separate panel at the right:
 
@@ -436,7 +436,7 @@ The page shows one month; the ‹ › arrows next to the title switch months.
 - **By students** (on the right on a wide screen): «Debtors» with the «Remind» button — it sends the student a reminder, «Prepaid running out» — whose prepayment covers 2 lessons or fewer, and «By weeks» — what came in each week. «All in Students» opens the students list.
 - **Monthly report** — the button in the header.
 
-On a phone the top shows the month with an arrow to the previous one and the «⋮» menu (next month and the report), the figures scroll sideways and the «Payment» button at the bottom records a payment. Each student's balance is in «Students» and on the «Payments» tab of their card.
+On a phone the month, both arrows and «Monthly report» are directly above the figures; the figures form a grid without sideways scrolling and the «Payment» button at the bottom records a payment. Each student's balance is in «Students» and on the «Payments» tab of their card.
 
 ## Record a payment
 
@@ -467,6 +467,8 @@ Payments and lessons can be recorded through the bot too ([What the bot can do](
     title: 'Notifications and bots',
     summary: 'The bell, messengers and messages to students',
     body: `
+Mark all read is in the header beside Close. Notifications have no dots; unread titles use a heavier weight. On a phone, the panel has rounded top corners and the list uses the same side margins as main screens.
+
 Notifications are always under the bell at the top of the page. To get them in a messenger, connect a bot.
 
 ## The bell

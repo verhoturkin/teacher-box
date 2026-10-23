@@ -63,6 +63,7 @@ import { PAYMENTS_TAB } from '../card-link';
           <div class="tb-toolbar">
             <p-datepicker
               [formControl]="month"
+              appendTo="body"
               view="month"
               dateFormat="mm.yy"
               [showIcon]="true"

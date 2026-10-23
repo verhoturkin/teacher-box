@@ -132,7 +132,9 @@ describe('StudentHome', () => {
   it('is one column on a phone and hides the materials when there are none', async () => {
     render(390);
     backend.expectOne('/api/me/channels').flush([channel()]);
-    backend.expectOne('/api/me/schedule/summary').flush(myScheduleSummary());
+    backend
+      .expectOne('/api/me/schedule/summary')
+      .flush(myScheduleSummary({ next: scheduledLesson() }));
     backend.expectOne('/api/me/homework/summary').flush(myHomeworkSummary());
     backend.expectOne('/api/me/billing/summary').flush(myBillingSummary({ balance: 0 }));
     fixture.detectChanges();
@@ -144,6 +146,7 @@ describe('StudentHome', () => {
 
     const host = hostElement(fixture);
     expect(host.querySelector('.tb-feed--2')).toBeNull();
+    expect(host.querySelector('tb-page-header [meta]')).toBeNull();
     expect(host.querySelector<HTMLElement>('.tb-feed__materials')?.hidden).toBe(true);
     expect(readableText(host)).toContain('Открытых заданий нет');
   });

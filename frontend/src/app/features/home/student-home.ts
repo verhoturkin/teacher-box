@@ -56,7 +56,7 @@ const MATERIALS = 1;
       <tb-pane [label]="t.title">
         <tb-page-header tbPaneHeader [title]="greeting()">
           <tb-help-button help topic="cabinet/lesson" />
-          @if (summaryLine(); as line) {
+          @if (size() !== 'compact' && summaryLine(); as line) {
             <span meta class="tb-muted">{{ line }}</span>
           }
         </tb-page-header>
@@ -143,7 +143,7 @@ export class StudentHome implements OnInit {
   private readonly homeworkApi = inject(HomeworkApi);
   private readonly billingApi = inject(BillingApi);
   private readonly auth = inject(AuthService);
-  private readonly size = injectWindowSize();
+  protected readonly size = injectWindowSize();
 
   protected readonly schedule = signal<MyScheduleSummary | null>(null);
   protected readonly homework = signal<MyHomeworkSummary | null>(null);

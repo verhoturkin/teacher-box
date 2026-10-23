@@ -164,15 +164,12 @@ describe('AssignmentsPage', () => {
     expect(rows(host)[0]).toContain('Принято');
   });
 
-  it('searches the title or a student under the filter button', async () => {
+  it('always shows search and filters by title or student', async () => {
     const { host, fixture } = await render(
       [assignmentSummary(), assignmentSummary({ id: 'a-2', title: 'Корни', students: ['Вера'] })],
       [],
     );
-    expect(host.querySelector('input[type="search"]')).toBeNull();
-
-    buttonByText(host, 'Поиск').click();
-    await fixture.whenStable();
+    expect(host.querySelector('button[aria-label="Поиск"]')).toBeNull();
     const field = requireElement(host, 'input[type="search"]', HTMLInputElement);
     field.value = 'вера';
     field.dispatchEvent(new Event('input'));
@@ -185,9 +182,10 @@ describe('AssignmentsPage', () => {
     await fixture.whenStable();
     expect(readableText(host)).toContain('Ничего не найдено');
 
-    buttonByText(host, 'Скрыть поиск').click();
+    field.value = '';
+    field.dispatchEvent(new Event('input'));
     await fixture.whenStable();
-    expect(host.querySelector('input[type="search"]')).toBeNull();
+    expect(host.querySelector('input[type="search"]')).not.toBeNull();
     expect(rows(host)).toHaveLength(2);
   });
 
@@ -207,8 +205,6 @@ describe('AssignmentsPage', () => {
 
   it('finds nothing among the works either', async () => {
     const { host, fixture } = await render([], [reviewQueueItem()]);
-    buttonByText(host, 'Поиск').click();
-    await fixture.whenStable();
     const field = requireElement(host, 'input[type="search"]', HTMLInputElement);
     field.value = 'нет такого';
     field.dispatchEvent(new Event('input'));

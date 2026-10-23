@@ -10,7 +10,7 @@ import { T } from '../i18n/texts';
   imports: [Tag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <span class="tb-inline">
+    <span class="tb-task-tags">
       <p-tag [value]="labels[status()]" [severity]="severities[status()]" />
       @if (overdue()) {
         <p-tag [value]="t.overdue" severity="danger" />
@@ -19,6 +19,14 @@ import { T } from '../i18n/texts';
         <span class="tb-strong">{{ t.grade(grade) }}</span>
       }
     </span>
+  `,
+  styles: `
+    .tb-task-tags {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--tb-space-1);
+    }
   `,
 })
 export class TaskStatusTag {

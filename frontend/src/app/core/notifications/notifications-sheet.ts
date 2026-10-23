@@ -1,4 +1,4 @@
-import { NgComponentOutlet } from '@angular/common';
+import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -37,7 +37,7 @@ function pathOf(url: string): string {
  */
 @Component({
   selector: 'tb-notifications-sheet',
-  imports: [ButtonDirective, ButtonIcon, Drawer, ModalDrawer, NgComponentOutlet],
+  imports: [ButtonDirective, ButtonIcon, Drawer, ModalDrawer, NgComponentOutlet, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (docked()) {
@@ -54,6 +54,7 @@ function pathOf(url: string): string {
             <h2 id="tb-notifications-sheet-title" class="tb-notifications-pane__title">
               {{ t.notifications }}
             </h2>
+            <ng-container *ngTemplateOutlet="state.headerAction()" />
             <button
               pButton
               type="button"
@@ -77,10 +78,13 @@ function pathOf(url: string): string {
         position="right"
         appendTo="body"
         [blockScroll]="true"
-        [header]="t.notifications"
         [ariaCloseLabel]="close"
-        styleClass="tb-side-sheet tb-side-sheet--narrow"
+        styleClass="tb-side-sheet tb-side-sheet--narrow tb-notifications-modal"
       >
+        <ng-template #header>
+          <span class="p-drawer-title tb-notifications-modal__title">{{ t.notifications }}</span>
+          <ng-container *ngTemplateOutlet="state.headerAction()" />
+        </ng-template>
         <ng-container *ngComponentOutlet="content()" />
       </p-drawer>
     }

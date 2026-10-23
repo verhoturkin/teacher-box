@@ -71,7 +71,7 @@ import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
-/** A phone's screens: the agenda by default, the others from «⋮» of the top bar (spec §7). */
+/** A phone's screens: the agenda by default, selected by chips above the calendar (spec §7). */
 type PhoneScreen = 'agenda' | 'week' | 'month' | 'offTime';
 
 const SCREENS: readonly PhoneScreen[] = ['agenda', 'week', 'month', 'offTime'];
@@ -81,13 +81,6 @@ const SCREEN_TITLES: Record<PhoneScreen, () => string> = {
   week: () => T.page.screenWeek,
   month: () => T.page.screenMonth,
   offTime: () => T.page.offTime,
-};
-
-const SCREEN_ICONS: Record<PhoneScreen, string> = {
-  agenda: 'tb-i tb-i-view_agenda',
-  week: 'tb-i tb-i-calendar_view_week',
-  month: 'tb-i tb-i-calendar_month',
-  offTime: 'tb-i tb-i-dark_mode',
 };
 
 /** A selection shorter than this is a click on a slot: the lesson gets the default duration. */
@@ -139,15 +132,6 @@ const ALL_DAY_START_HOUR = 10;
           <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
           @if (mobile()) {
             <p-button
-              icon="tb-i tb-i-more_vert"
-              [text]="true"
-              [rounded]="true"
-              severity="secondary"
-              [ariaLabel]="t.screens"
-              [tbAttributes]="{ 'aria-haspopup': 'menu' }"
-              (onClick)="screenMenu().toggle($event)"
-            />
-            <p-button
               class="tb-page-fab"
               [label]="t.lesson"
               icon="tb-i tb-i-add"
@@ -155,6 +139,15 @@ const ALL_DAY_START_HOUR = 10;
             />
           }
         </tb-page-header>
+        @if (mobile()) {
+          <tb-filter-chips
+            class="tb-schedule-screens"
+            [label]="t.screens"
+            [chips]="screenItems()"
+            [value]="screen()"
+            (valueChange)="openScreen($event)"
+          />
+        }
         @if (calendarScreen()) {
           <div class="tb-schedule-toolbar">
             @if (zoneChip(); as chip) {
@@ -202,21 +195,23 @@ const ALL_DAY_START_HOUR = 10;
               (markAttendance)="markAttendance($event)"
             />
           } @else if (calendarScreen()) {
-            <tb-schedule-calendar
-              [lessons]="shownLessons()"
-              [busy]="busy()"
-              [offTime]="offTimePeriods()"
-              [unmarked]="unmarked()"
-              [loaded]="calendarState.ready()"
-              [editable]="true"
-              [focusDate]="focusDate()"
-              [initialDate]="calendarStart()"
-              [phoneView]="phoneView()"
-              (rangeChange)="onRange($event)"
-              (lessonClick)="openLesson($event)"
-              (slotSelect)="onSlot($event)"
-              (lessonMove)="onMove($event)"
-            />
+            @for (view of [screen()]; track view) {
+              <tb-schedule-calendar
+                [lessons]="shownLessons()"
+                [busy]="busy()"
+                [offTime]="offTimePeriods()"
+                [unmarked]="unmarked()"
+                [loaded]="calendarState.ready()"
+                [editable]="true"
+                [focusDate]="focusDate()"
+                [initialDate]="calendarStart()"
+                [phoneView]="phoneView()"
+                (rangeChange)="onRange($event)"
+                (lessonClick)="openLesson($event)"
+                (slotSelect)="onSlot($event)"
+                (lessonMove)="onMove($event)"
+              />
+            }
           }
         </div>
       </tb-pane>
@@ -338,7 +333,6 @@ const ALL_DAY_START_HOUR = 10;
     </tb-panes>
 
     <!-- «⋮» of a row of recurring lessons or days off: one popup menu serves every row -->
-    <p-menu #screens [model]="screenItems()" [popup]="true" appendTo="body" />
     <p-menu
       #menu
       [model]="menuItems()"
@@ -383,6 +377,10 @@ const ALL_DAY_START_HOUR = 10;
     <p-confirmdialog />
   `,
   styles: `
+    .tb-schedule-screens {
+      margin-block-end: var(--tb-space-4);
+    }
+
     /* the supporting pane: M3 side-sheet surface (spec §7) */
     :host ::ng-deep .tb-schedule-side {
       background: var(--p-md-surface-container-low);
@@ -508,7 +506,7 @@ export class SchedulePage implements OnInit {
   protected readonly answerVisible = signal(false);
   protected readonly answering = signal<ChangeRequest | null>(null);
 
-  /** A phone's screens («⋮» of the top bar, spec §7): the agenda is the first; each of the others is its own screen. */
+  /** A phone's screens (chips above the calendar): the agenda is the first; each of the others is its own screen. */
   protected readonly screen = signal<PhoneScreen>('agenda');
   protected readonly agendaDay = signal(toIsoDate(new Date()));
   /** The day the week or month screen opens on: a snapshot, the calendar goes its own way after. */
@@ -534,20 +532,12 @@ export class SchedulePage implements OnInit {
     const screen = this.screen();
     return !this.mobile() || screen === 'agenda' ? T.page.title : SCREEN_TITLES[screen]();
   });
-  protected readonly screenItems = computed<MenuItem[]>(() =>
-    SCREENS.map((screen) => ({
-      label: SCREEN_TITLES[screen](),
-      icon: SCREEN_ICONS[screen],
-      disabled: screen === this.screen(),
-      command: () => {
-        this.openScreen(screen);
-      },
-    })),
+  protected readonly screenItems = computed<FilterChip<PhoneScreen>[]>(() =>
+    SCREENS.map((screen) => ({ value: screen, label: SCREEN_TITLES[screen]() })),
   );
   protected readonly isMarking = (id: string): boolean => this.marks.is(id);
 
   private readonly menu = viewChild.required<Menu>('menu');
-  protected readonly screenMenu = viewChild.required<Menu>('screens');
   /** The recurring lessons or the day off whose «⋮» menu is open: one popup menu serves every row. */
   protected readonly menuFor = signal<string | null>(null);
   protected readonly menuItems = signal<MenuItem[]>([]);

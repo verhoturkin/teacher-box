@@ -191,7 +191,7 @@ export function nextMonday(date: Date): Date {
                       } @else {
                         <div class="tb-list__trail">
                           <tb-lesson-actions
-                            [inRow]="true"
+                            [stacked]="true"
                             [joinUrl]="joinUrl(lesson)"
                             [requests]="canAsk(lesson)"
                             [group]="lesson.groupId !== null"
@@ -280,7 +280,7 @@ export function nextMonday(date: Date): Date {
               </div>
             </li>
           </ng-template>
-          <tb-calendar-feed-panel />
+          <tb-calendar-feed-panel class="tb-my-schedule-feed" />
         </div>
       </tb-pane>
     </tb-panes>
@@ -291,8 +291,8 @@ export function nextMonday(date: Date): Date {
       [ariaCloseLabel]="c.close"
       [visible]="sheetLesson() !== null"
       (visibleChange)="$event || closeSheet()"
-      position="bottom"
-      styleClass="tb-sheet"
+      [position]="mobile() ? 'bottom' : 'right'"
+      [styleClass]="mobile() ? 'tb-sheet' : 'tb-side-sheet tb-side-sheet--narrow'"
       [header]="sheetTitle()"
     >
       @if (sheetLesson(); as lesson) {
@@ -330,8 +330,38 @@ export function nextMonday(date: Date): Date {
     />
   `,
   styles: `
+    :host ::ng-deep .tb-my-schedule-feed .p-card-body {
+      padding: 0;
+    }
+
+    @media (width < 37.5em) {
+      :host ::ng-deep .tb-my-schedule-side {
+        background: transparent;
+      }
+
+      .tb-my-schedule-section,
+      .tb-my-schedule-feed {
+        display: block;
+        padding: var(--tb-space-4);
+        border-radius: var(--tb-shape-lg);
+        background: var(--p-md-surface-container-low);
+      }
+    }
+
+    .tb-schedule-list > li:has(> .tb-list__trail:not(.tb-list__trail--icons) tb-lesson-actions) {
+      grid-template-areas: 'lead text text' 'trail trail trail';
+    }
+
+    .tb-schedule-list > li > .tb-list__trail:not(.tb-list__trail--icons) {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
     :host ::ng-deep .tb-my-schedule-side {
-      background: var(--p-md-surface-container-low);
+      @media (width >= 37.5em) {
+        background: var(--p-md-surface-container-low);
+      }
       --tb-list-item: var(--p-md-surface-container-lowest);
     }
 
@@ -409,7 +439,7 @@ export class MySchedulePage implements OnInit {
   );
 
   protected readonly mobile = injectMobile();
-  /** The lesson whose bottom sheet is open (a phone). */
+  /** The lesson whose adaptive detail sheet is open. */
   protected readonly sheetLesson = signal<ScheduledLesson | null>(null);
   protected readonly sheetTitle = computed(() => {
     const lesson = this.sheetLesson();

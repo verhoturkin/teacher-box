@@ -9,7 +9,7 @@ import { NotificationItem } from '../data-access/notifications.models';
 import { T } from '../i18n/texts';
 
 /**
- * Notifications as a list: a dot for the unread, the title (it opens the notification), text and time and
+ * Notifications as a list: emphasized unread titles; the title (it opens the notification), text and time and
  * «Отметить прочитанным» (on a phone a swipe sideways instead of the tick).
  */
 @Component({
@@ -17,7 +17,7 @@ import { T } from '../i18n/texts';
   imports: [DatePipe, Button, Swipe, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ul class="tb-list tb-notifications" [attr.aria-label]="label()">
+    <ul class="tb-list tb-list--no-lead tb-notifications" [attr.aria-label]="label()">
       @for (item of items(); track item.id) {
         <li
           class="tb-notification"
@@ -25,7 +25,6 @@ import { T } from '../i18n/texts';
           [tbSwipe]="mobile() && !item.read"
           (tbSwiped)="markRead.emit(item)"
         >
-          <span class="tb-notification__dot" aria-hidden="true"></span>
           <div class="tb-list__text">
             @if (item.link !== null) {
               <button
@@ -73,19 +72,6 @@ import { T } from '../i18n/texts';
 
     .tb-notification--unread .tb-notification__title {
       font-weight: 500;
-    }
-
-    /* the sketch: a dot for an unread one (primary), the title opens the notification, no «Открыть» button */
-    .tb-notification__dot {
-      align-self: center;
-      width: 0.5rem;
-      height: 0.5rem;
-      border-radius: var(--tb-shape-full);
-      background: transparent;
-    }
-
-    .tb-notification--unread .tb-notification__dot {
-      background: var(--p-md-primary);
     }
 
     .tb-notification__open {

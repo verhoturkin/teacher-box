@@ -45,7 +45,6 @@ test('materials search matches list searches and shares a row with chips and sor
   page,
 }) => {
   await page.goto('/teacher/homework');
-  await page.getByRole('button', { name: 'Поиск', exact: true }).click();
   const reference = await page
     .locator('tb-pane tb-search-field')
     .evaluate((element) => element.getBoundingClientRect().width);

@@ -1,14 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import {
-  bodyText,
-  buttonByText,
-  hostElement,
-  menuItemByText,
-  readableText,
-  requireElement,
-} from '@testing/dom';
+import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
 import {
   changeRequest,
@@ -98,9 +91,7 @@ describe('SchedulePage on a phone', () => {
   }
 
   async function pickScreen(item: string): Promise<void> {
-    buttonByText(hostElement(fixture), 'Разделы расписания').click();
-    await fixture.whenStable();
-    menuItemByText(item).click();
+    buttonByText(hostElement(fixture), item).click();
     await settle();
   }
 
@@ -113,7 +104,7 @@ describe('SchedulePage on a phone', () => {
     expect(readableText(host)).toContain('Иван Петров');
     expect(host.querySelector('.tb-calendar-title')).toBeNull();
     // the top bar: the screens and the main action, the same button as the FAB (ADR-0018)
-    expect(host.querySelectorAll('.tb-page-header .tb-actions button')).toHaveLength(2);
+    expect(host.querySelectorAll('.tb-page-header .tb-actions button')).toHaveLength(1);
 
     requireElement(host, '.tb-page-fab button', HTMLButtonElement).click();
     await fixture.whenStable();
@@ -187,7 +178,7 @@ describe('SchedulePage on a phone', () => {
     expect(host.querySelector('.tb-agenda__jump')).toBeNull();
   });
 
-  it('opens the week and the month from «⋮», each its own screen', async () => {
+  it('switches calendar instance between week and month using chips', async () => {
     const host = await render();
 
     await pickScreen('Неделя');
@@ -205,6 +196,9 @@ describe('SchedulePage on a phone', () => {
         .injector.get(ScheduleCalendar)
         .phoneView(),
     ).toBe('dayGridMonth');
+    expect(
+      fixture.debugElement.query(By.directive(ScheduleCalendar)).injector.get(ScheduleCalendar),
+    ).not.toBe(week);
 
     await pickScreen('Повестка');
     expect(fixture.debugElement.query(By.directive(ScheduleAgenda))).not.toBeNull();
