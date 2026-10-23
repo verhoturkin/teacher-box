@@ -155,7 +155,7 @@ Archive a group you no longer teach: its future lessons are cancelled, the histo
   },
   schedule: {
     title: 'Schedule and requests',
-    summary: 'Lessons, recurring lessons, time off, marks and students’ requests',
+    summary: 'Lessons and repetition, time off, marks and students’ requests',
     body: `
 ## Plan a lesson
 

@@ -162,7 +162,8 @@ class ChannelsIntegrationTests {
                 .hasStatusOk()
                 .bodyJson().extractingPath("$.enabled").isEqualTo(true);
         notifications.notify(student, NotificationKind.MESSAGE, "После паузы", null, null);
-        assertThat(deliveries.findByRecipient(student)).hasSize(2).last()
+        assertThat(deliveries.findByRecipient(student)).hasSize(2)
+                .filteredOn(delivery -> delivery.text().startsWith("После паузы")).singleElement()
                 .satisfies(d -> assertThat(d.status()).isEqualTo(DeliveryStatus.PENDING));
 
         assertThat(mvc.delete().uri("/api/me/channels/TELEGRAM").with(TestUsers.student(student)))

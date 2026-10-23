@@ -261,7 +261,9 @@ test('all five repeat choices, conversion, occurrence move, following edit and s
   await page.getByLabel('Логин', { exact: true }).fill(login);
   await page.getByLabel('Пароль', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Войти', exact: true }).click();
+  await expect(page).not.toHaveURL(/\/login/);
   await page.goto('/cabinet/schedule');
+  await page.getByRole('tab', { name: 'Вид: Месяц', exact: true }).click();
   await expect(page.locator('tb-schedule-calendar')).toContainText(name);
 });
 

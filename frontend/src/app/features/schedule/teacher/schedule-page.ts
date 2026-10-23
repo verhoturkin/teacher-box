@@ -665,6 +665,9 @@ export class SchedulePage implements OnInit {
         topic: lesson.topic,
         meetingUrl: lesson.meetingUrl,
         allowOverlap,
+        scope: 'ONLY',
+        version: lesson.version,
+        repeatVersion: lesson.repeatVersion,
       })
       .subscribe({
         next: () => {

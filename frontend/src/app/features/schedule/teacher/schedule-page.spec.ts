@@ -380,6 +380,9 @@ describe('SchedulePage', () => {
       topic: null,
       meetingUrl: null,
       allowOverlap: false,
+      scope: 'ONLY',
+      version: 0,
+      repeatVersion: null,
     });
     request.flush(scheduledLesson());
     await flushReload();

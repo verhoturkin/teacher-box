@@ -155,7 +155,7 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
   },
   schedule: {
     title: 'Расписание и запросы',
-    summary: 'Занятия, регулярные уроки, нерабочее время, отметки и запросы учеников',
+    summary: 'Занятия и повторы, нерабочее время, отметки и запросы учеников',
     body: `
 ## Запланировать занятие
 
