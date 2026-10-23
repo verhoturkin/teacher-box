@@ -2,6 +2,15 @@ import { countOf } from '@shared/text/plural';
 
 /** Texts of `identity`: sign-in, invitations, the account, students and groups (ADR-0035). */
 export const ru = {
+  memberPicker: {
+    students: 'Ученики',
+    groups: 'Группы',
+    student: 'Ученик',
+    group: 'Группа',
+    placeholder: 'Выберите учеников и группы',
+    search: 'Поиск учеников и групп',
+    unavailable: 'Недоступно',
+  },
   login: {
     title: (portal: string) => `Вход в ${portal}`,
     expired: 'Сессия истекла. Войдите снова',

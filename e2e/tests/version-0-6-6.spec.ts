@@ -109,44 +109,11 @@ test('the frame: room between the sections, no name of the area, Expressive shap
   expect(await style(page, 'main tb-pane', 'border-radius')).toBe('28px');
 });
 
-test('a weekly schedule ends with a red stop sign, not a bin (DA-066)', async ({
-  page,
-  request,
-}) => {
-  const token = await teacherToken(request);
-  const headers = { Authorization: `Bearer ${token}` };
-  const created = await request.post('/api/teacher/students', {
-    headers,
-    data: { displayName: 'Ученик серии 0.6.6', email: null, phone: null, note: null },
-  });
-  expect(created.ok()).toBe(true);
-  const { student } = (await created.json()) as { student: { id: string } };
-  const series = await request.post('/api/teacher/schedule/series', {
-    headers,
-    data: {
-      studentId: student.id,
-      groupId: null,
-      weekdays: ['WEDNESDAY'],
-      startTime: '18:00',
-      durationMinutes: 60,
-      intervalWeeks: 1,
-      startsOn: new Date().toISOString().slice(0, 10),
-      endsOn: null,
-      topic: null,
-      meetingUrl: null,
-      // lessons of other specs may stand at this hour on the day of the run
-      allowOverlap: true,
-    },
-  });
-  expect(series.ok()).toBe(true);
-
+test('repetition is configured from the same lesson form (0.29.0)', async ({ page }) => {
   await signIn(page);
   await page.goto('/teacher/schedule');
-  // 0.15.3: the actions of recurring lessons are in «⋮»
-  await page.getByRole('button', { name: 'Действия: Ученик серии 0.6.6' }).first().click();
-  const end = page.getByRole('menuitem', { name: 'Завершить…' });
-  await expect(end).toBeVisible();
-  await expect(end.locator('xpath=ancestor-or-self::li')).toHaveClass(/tb-menu-item--danger/);
-  await expect(end.locator('.tb-i-stop_circle')).toHaveCount(1);
-  await expect(end.locator('.tb-i-delete')).toHaveCount(0);
+  await create(page, 'Занятие');
+  const dialog = page.getByRole('dialog', { name: 'Новое занятие', exact: true });
+  await expect(dialog.getByLabel('Повтор', { exact: true })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Регулярные', exact: true })).toHaveCount(0);
 });

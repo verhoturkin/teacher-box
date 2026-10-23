@@ -92,7 +92,7 @@ component that shows one adds it to `PRIME`).
 | New lesson | `calendar_add_on` | `pi-calendar-plus` |
 | Lesson request waiting | `event_upcoming` | `pi-calendar-clock` |
 | Time, deadline soon | `schedule` | `pi-clock` |
-| Series of lessons, retry, return for rework, re-invite | `replay` | `pi-replay` |
+| Lesson repetition, retry, return for rework, re-invite | `replay` | `pi-replay` |
 | Off time | `dark_mode` | `pi-moon` (schedule) |
 | Homework, assignment | `assignment` | `pi-pen-to-square` |
 | Review | `rate_review` | `pi-check-square` |
@@ -156,7 +156,7 @@ component that shows one adds it to `PRIME`).
 | Delete | `delete` | `pi-trash` |
 | Close, remove, unbind | `close` | `pi-times` |
 | Cancel a lesson | `cancel` | `pi-times-circle` |
-| End a series | `stop_circle` | `pi-stop-circle` |
+| Stop following repeats | `stop_circle` | `pi-stop-circle` |
 | Undo, withdraw | `undo` | `pi-undo` |
 | Save | `save` | `pi-save` |
 | Done, chosen | `check` | `pi-check` |
@@ -487,13 +487,13 @@ This persistent-header placement is our product decision.
   pane (`FullCalendar`: week / month, toolbar with filter chips by owner and the time-zone chip «Часовой пояс
   портала»), the supporting pane beside it holds the mini-month (`ui/mini-month.ts`, M3 date picker, docked: weeks from
   Monday, a dot under a day with lessons, the shown day filled; *our decision:* no input — a click on a day only moves
-  the calendar), «Запросы учеников» and the tabs «Регулярные» / «Нерабочее время» (button «Регулярное занятие»).
+  the calendar), «Запросы учеников» and «Нерабочее время». The unified lesson form offers Repeat: Once / every 1–4 weeks, optional end date, and Only this / This and following. Bulk actions disclose affected and protected existing occurrences before submission; completed, charged and individually changed lessons are preserved.
   Lesson states in the grid (`styles.scss`): planned — filled, held / missed — tonal, cancelled — struck through;
   **unmarked** past lesson — a 2 px solid `error` outline (`tb-lesson--unmarked`); **requested change** — a 2 px dashed
   `outline` (`tb-lesson--request`, 3:1 to the card; it was `warning` before); off time — hatched. A lesson is
   marked from its dialog; the «Отметьте прошедшие занятия» card stays on a phone only.
   - Compact (240.3, `ui/schedule-agenda.ts`): the screens «Повестка» / «Неделя» / «Месяц» (a connected button group; the
-    «⋮» menu also leads to «Регулярные» and «Нерабочее время», each a screen of its own with a back arrow); the agenda is a
+    «⋮» menu also leads to «Нерабочее время», a screen of its own with a back arrow); the agenda is a
     week strip (seven days, ‹ ›, today and the chosen day marked) over the day's list; a row is one line (time, who,
     status tag), unmarked lessons sit in a group under the row with «Проведено» / «Пропуск», a jump chip «Не отмечено
     занятий: N» leads to them.
@@ -504,15 +504,22 @@ This persistent-header placement is our product decision.
   there is text; Esc clears) each centred in a round end (4 + 48 + 4), the text from 56 px; the browser's own clear
   button is hidden. The search takes the full available width of its pane or card; «×» never resizes it
   (0.28.0, our layout decision). Filters and sorting controls wrap below it.
-- **Editor page** (assignment editor, 0.14.0): a long form gets its own route instead of a dialog. The save action
-  («Выдать» / «Сохранить») is the header's main action, filled in the portal colour (since 0.14.1, not green); a
-  second way to save («Выдать и поместить на доску») is tonal before it. Content cards take the full width; the
-  AI assistant is a bar inside the text field, between its header and the text (0.14.4): request, «Промты» menu
-  (search, save, library), «Опереться на» popover, generate; the draft comes between the bar and the text. Hidden in
-  «Просмотр». Markdown is one field
-  with a «Текст / Просмотр» switch at every width — never a second, side-by-side field. Students and groups are two
-  multiselects side by side (a settings grid of `minmax(16rem, 1fr)` columns), so a group never gets squeezed. Leaving
-  with unsaved changes asks (`canLeaveGuard`, danger confirmation).
+- **Assignment editor (0.29.0, variant 1)**: a main flexible pane for title, recipients/deadline,
+  Markdown Text/Preview, textbooks/files and videos. A supporting sheet on the right holds the AI request,
+  prompt library/search/save, source selection, generation/error/retry and draft Remove/Insert/Replace.
+  From M3: supporting-pane canonical layout and adaptation at the shared breakpoints. Portal decisions:
+  the supporting sheet uses the existing pane width, appears beside the editor from expanded, and opens
+  as a modal right drawer at compact/medium widths. A close action returns focus to the opener. Main
+  content precedes AI in DOM/reading order. There is one Markdown Text/Preview field at every width.
+  The header keeps Assign/Save (filled) and Assign/Save and place on board (tonal). The AI never changes
+  authored text without Insert/Replace. Its editor-scoped state survives closing/adapting the pane.
+  The unsaved guard and save-materials-before-notifying sequence remain in the editor.
+  Control inventory: title; explicit student/group selections; due date (automatic next lesson, manual
+  override/clear); Markdown Text/Preview and hint; textbooks (bind/pages/change/remove/open); new files
+  (pick/remove); videos (URL/title, YouTube captions and language, transcript file/text, student visibility,
+  add/remove); issue/save and issue/save-and-place-on-board; existing issued materials managed on the
+  assignment page; AI request, prompt search/library/save/manage, sources from textbooks/files/video
+  transcripts, generate/loading/error/retry, draft Remove/Insert/Replace; leave-with-changes confirmation.
 
 ## 6. States and feedback
 
@@ -644,7 +651,9 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
 - **Scrollbars** (0.24.1, *ours* — M3 publishes none): a pane is a clipped, rounded shell (`overflow: clip`) with the
   scrolling area `tb-pane__scroll` inside it, so the scrollbar never sticks out past a corner; the bar is thin, its
   track keeps 16 px from the corners and the thumb is a rounded outline-variant bar (dialogs and sheets the same,
-  Firefox gets `scrollbar-width: thin`).
+  Firefox gets `scrollbar-width: thin`). Global search results (`.tb-search__panel`) use this same
+  styling in docked and full-screen views (0.29.0); the full-screen results can shrink inside the fixed
+  viewport and scroll below the search bar. Scrollbar geometry remains a portal decision.
 
 - **Persistent pane headings** (0.28.0, ours): title, search and filters use `[tbPaneHeader]`; the common
   `.tb-pane__scroll` owns the scrollbar. The header keeps a fixed 16 px bottom gap (our decision),
@@ -800,11 +809,17 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   button stays on the right, so the name keeps its width.
 - **Materials** (245.2–245.3, spec §10.1): the teacher's «Материалы» (`/teacher/materials?tab=boards|textbooks`,
   `features/materials`) is one flexible pane on the pane surface — no card around the content: the title, the
-  connected button group `tb-segment-group` «Доски N · Учебники N» (on compact under the title), `tb-search-field`,
-  `tb-filter-chips` («Все · На портале · Внешние · Ученик или группа»; for textbooks «Все · Учебники · Рабочие
-  тетради · Другое · Ученик или группа»), the sort menu «Сначала изменённые / По названию / Сначала новые», then the
-  feed `tb-material-grid` (`styles.scss`: 2 columns on compact, 3 from medium, 4 on large, 6 on extra-large; 12 px
-  between cards on a phone, 16 px wider). A card is `tb-material-card` (`@shared/ui`): corner 20 (`--tb-shape-lg-plus`),
+  connected button group `tb-segment-group` «Доски N · Учебники N» (on compact under the title), full-width
+  `tb-search-field`, then a separate row of `tb-filter-chips` («Все · На портале · Внешние · Ученик или группа»;
+  for textbooks «Все · Учебники · Рабочие тетради · Другое · Ученик или группа») and the sort menu
+  «Сначала изменённые / По названию / Сначала новые» (0.29.0, our layout decision), then the
+  feed `tb-material-grid` (`styles.scss`: 2 shrinkable columns on compact, auto-fill from medium with
+  192–240 px tracks that can shrink to the available pane width; 12 px between cards on a phone, 16 px wider).
+  **Portal sizing decision (0.29.0, not prescribed by M3):** cards cap at 240 px (15 rem), including sparse
+  and single-card lists; auto-fill retains empty tracks. Previously a 1440 px viewport gave a 306 × 259 px
+  card; the new maximum is 240 × 218 px (about 22% narrower and 16% shorter). Preview aspect stays 8:5,
+  caption typography and action targets keep their sizes; compact cards still shrink to fit two columns.
+  A card is `tb-material-card` (`@shared/ui`): corner 20 (`--tb-shape-lg-plus`),
   `surface container low`, the preview on top (a board's PNG exported by the editor on save, a textbook's cover — the first page of a PDF, an image itself, none for a Word file (245.1): `tb-blob-image` fetches it with the
   HTTP client as a blob; the icon of the kind while there is none), a tonal tile with the icon and the tag of the
   service («Холст», «Miro») for an external board, the title (`title medium`) and «кому · дата» under the preview,
@@ -867,8 +882,8 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   the kind; the student's «Мои доски» the same (a card without boards is hidden). A tap anywhere on a row opens
   the board: the title is a `tb-list__link` whose `::before` covers the row (`tb-list__item--link` for the hover,
   the focus ring on the row), the «⋮» stays above it.
-- Recurring lessons and days off of the teacher's schedule (0.15.3) — trail «⋮» only («Изменить», «Завершить…» /
-  «Удалить…» red; one popup `p-menu` for both cards).
+- Days off of the teacher's schedule — trail «⋮» only («Изменить», «Удалить…» red).
+  Lesson repetition is edited in the lesson dialog (0.29.0).
 - Backups (0.9.1) — a `tb-list`: database icon; the date + «kind · size»; trail — «⋮» only («Восстановить…»,
   «Скачать», «Удалить…» red), so a row is one line on a phone.
 - **Name — value pairs and key figures** — `tb-stats` / `tb-stat` (tiles one under another: name left, number
@@ -897,7 +912,25 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
 - `.tb-field` with the `label` **first** (or a `tb-copy-row` / `tb-inline` row with the field first): the
   label sits on the outline (Body Small), primary on focus, error on error. A field with its own header
   (`tb-field__header`) keeps the label above. Every field has a visible label (filters too).
+- Label cutouts inherit `--tb-field-surface` from the painted surface (0.29.0, portal implementation):
+  body, panes (including sheet/compact variants), cards, dialogs and drawers declare their actual fill.
+  Transparent cards inherit the enclosing surface instead of declaring a card tone. This keeps profile,
+  account and group forms correct in both themes; a new custom form surface must declare this property
+  alongside its background. `--tb-card` remains a card colour, not an assumption about every form.
 - Required fields: `*` after the label + `aria-required` (`tb-field--required`); optional ones unmarked.
+- Combined member field (0.29.0): `identity/parts` exports `tb-member-picker`, a grouped
+  PrimeNG MultiSelect with one search, Students/Groups sections, removable typed chips and clearing.
+  From M3: checkboxes for multiple related choices and input chips for selected entities. Portal decisions:
+  grouping both entity types in one dropdown, prefixing chip labels with the type and accepting an optional
+  selection limit. Callers wrap it in `.tb-field` with a label targeting its required `inputId` and use a
+  reactive form control; `tbFieldErrors` supplies the standard required/error semantics. Optional option
+  details distinguish namesakes. Unavailable options cannot be newly selected; prefilled unavailable or
+  missing IDs stay visible (missing names fall back to IDs) and removable. The field stores explicit
+  `{ kind, id }` choices; each caller owns grant semantics or group-to-student snapshot resolution. Homework and broadcast
+  use `memberRecipients` to deduplicate snapshots against available students, keeping explicit choices
+  independent from groups. An empty group selection never turns into a broadcast to everyone.
+- Boards and textbooks use this combined field for material grants, retaining typed student/group IDs
+  and dynamic group access. The rail Create Board action retains the current Materials member filter.
 - Errors: `<form tbFieldErrors>` (`shared/ui/field-errors.ts`) shows text under the field (Body Small, error;
   replaces the hint), sets `aria-invalid` / `aria-describedby`, maps server error codes (e.g. `login.taken`)
   to their field; submit with errors shows all and focuses the first.

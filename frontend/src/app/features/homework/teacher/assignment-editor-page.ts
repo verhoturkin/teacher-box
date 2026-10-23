@@ -1,4 +1,8 @@
 import { DatePipe } from '@angular/common';
+import { injectWindowSize } from '@core/layout/mobile';
+import { Pane, Panes, PaneHeader } from '@shared/ui/panes';
+import { ModalDrawer } from '@shared/ui/modal-drawer';
+import { Drawer } from 'primeng/drawer';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -22,17 +26,28 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 import { DatePicker } from 'primeng/datepicker';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
-import { MultiSelect } from 'primeng/multiselect';
 import { SelectButton } from 'primeng/selectbutton';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
 import { CanLeave } from '@core/routing/can-leave.guard';
 import { pageDetail } from '@core/routing/page-detail';
 import { Snackbar } from '@core/snackbar/snackbar';
-import { AiApi, AppliedDraft, HomeworkAiPanel, SourceOption } from '@features/ai/parts';
+import {
+  AiApi,
+  AppliedDraft,
+  HomeworkAiPanel,
+  HomeworkAiState,
+  SourceOption,
+} from '@features/ai/parts';
 import { Placed, ToBoardDialog } from '@features/boards/parts';
 import { HelpButton } from '@features/help/parts';
-import { ChipColors, GroupPicker, IdentityApi } from '@features/identity/parts';
+import {
+  MemberPicker,
+  MemberSelection,
+  StudentGroup,
+  memberRecipients,
+  IdentityApi,
+} from '@features/identity/parts';
 import { ScheduleApi, ScheduledLesson } from '@features/schedule/parts';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { dangerConfirmation } from '@shared/ui/confirmation';
@@ -73,17 +88,20 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
   selector: 'tb-assignment-editor-page',
   imports: [
     ReactiveFormsModule,
+    Pane,
+    Panes,
+    PaneHeader,
+    Drawer,
+    ModalDrawer,
     Button,
     Card,
     ConfirmDialog,
     DatePicker,
     InputText,
     Message,
-    MultiSelect,
-    ChipColors,
+    MemberPicker,
     SelectButton,
     Textarea,
-    GroupPicker,
     HomeworkAiPanel,
     ToBoardDialog,
     HelpButton,
@@ -96,149 +114,180 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     BindTextbookDialog,
     VideoSection,
   ],
-  providers: [ConfirmationService],
+  providers: [ConfirmationService, HomeworkAiState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (ready()) {
-      <tb-page-header [title]="heading()" [back]="backLink()" [backLabel]="backLabel()">
-        <tb-help-button help topic="teacher/homework" />
-        <p-button
-          severity="secondary"
-          [label]="isNew() ? t.assignToBoard : t.saveToBoard"
-          icon="tb-i tb-i-co_present"
-          [disabled]="isNew() && chosenStudents().length === 0"
-          [loading]="pending() && toBoard()"
-          (onClick)="save(true)"
-        />
-        <p-button
-          [label]="isNew() ? t.assign : t.save"
-          [icon]="isNew() ? 'tb-i tb-i-send' : 'tb-i tb-i-check'"
-          [loading]="pending() && !toBoard()"
-          (onClick)="save()"
-        />
-      </tb-page-header>
-
-      <form tbFieldErrors class="tb-editor tb-form" [formGroup]="form" (ngSubmit)="save()">
-        <p-card>
-          <div class="tb-form">
-            <div class="tb-field tb-field--required">
-              <label for="editor-title">{{ t.title }}</label>
-              <input pInputText id="editor-title" formControlName="title" autocomplete="off" />
-            </div>
-
-            <div class="tb-field">
-              <div class="tb-field__header">
-                <label for="editor-text">{{ t.text }}</label>
-                <p-selectbutton
-                  [options]="modes"
-                  [formControl]="mode"
-                  optionLabel="label"
-                  optionValue="value"
-                  [allowEmpty]="false"
-                  [ariaLabel]="t.editorMode"
-                />
-              </div>
+      <tb-panes>
+        <tb-pane [label]="heading()">
+          <ng-template tbPaneHeader>
+            <tb-page-header [title]="heading()" [back]="backLink()" [backLabel]="backLabel()">
+              <tb-help-button help topic="teacher/homework" />
               @if (aiEnabled()) {
-                <tb-homework-ai-panel
-                  [hidden]="modeValue() === 'preview'"
-                  [title]="titleValue()"
-                  [hasText]="textValue().trim() !== ''"
-                  [sources]="sourceOptions()"
-                  (applied)="applyDraft($event)"
+                <p-button
+                  [label]="t.aiTitle"
+                  icon="tb-i tb-i-auto_awesome"
+                  severity="secondary"
+                  [ariaExpanded]="single() ? modalAiOpen() : aiOpen()"
+                  (onClick)="toggleAi()"
                 />
               }
-              @if (modeValue() === 'preview') {
-                <div class="tb-preview">
-                  <tb-markdown [text]="textValue()" />
+              <p-button
+                severity="secondary"
+                [label]="isNew() ? t.assignToBoard : t.saveToBoard"
+                icon="tb-i tb-i-co_present"
+                [disabled]="isNew() && chosenStudents().length === 0"
+                [loading]="pending() && toBoard()"
+                (onClick)="save(true)"
+              />
+              <p-button
+                [label]="isNew() ? t.assign : t.save"
+                [icon]="isNew() ? 'tb-i tb-i-send' : 'tb-i tb-i-check'"
+                [loading]="pending() && !toBoard()"
+                (onClick)="save()"
+              />
+            </tb-page-header>
+          </ng-template>
+          <form tbFieldErrors class="tb-editor tb-form" [formGroup]="form" (ngSubmit)="save()">
+            <p-card>
+              <div class="tb-form">
+                <div class="tb-field tb-field--required">
+                  <label for="editor-title">{{ t.title }}</label>
+                  <input pInputText id="editor-title" formControlName="title" autocomplete="off" />
                 </div>
-              } @else {
-                <textarea
-                  pTextarea
-                  id="editor-text"
-                  class="tb-editor__text"
-                  formControlName="description"
-                  rows="14"
-                ></textarea>
+
+                <div class="tb-editor__settings">
+                  @if (isNew()) {
+                    <div class="tb-field">
+                      <label for="editor-students">{{ t.members }}</label>
+                      <tb-member-picker
+                        inputId="editor-students"
+                        formControlName="members"
+                        [students]="studentOptions()"
+                        [groups]="groups()"
+                      />
+                    </div>
+                  }
+                  <div class="tb-field">
+                    <label for="editor-due">{{ t.due }}</label>
+                    <p-datepicker
+                      inputId="editor-due"
+                      formControlName="dueAt"
+                      [showTime]="true"
+                      hourFormat="24"
+                      dateFormat="dd.mm.yy"
+                      [showIcon]="true"
+                      [showOnFocus]="false"
+                      [showClear]="true"
+                      appendTo="body"
+                      [fluid]="true"
+                    />
+                    @if (dueHint(); as hint) {
+                      <small class="tb-hint">{{ hint }}</small>
+                    }
+                  </div>
+                </div>
+
+                <div class="tb-field">
+                  <div class="tb-field__header">
+                    <label for="editor-text">{{ t.text }}</label>
+                    <p-selectbutton
+                      [options]="modes"
+                      [formControl]="mode"
+                      optionLabel="label"
+                      optionValue="value"
+                      [allowEmpty]="false"
+                      [ariaLabel]="t.editorMode"
+                    />
+                  </div>
+                  @if (modeValue() === 'preview') {
+                    <div class="tb-preview">
+                      <tb-markdown [text]="textValue()" />
+                    </div>
+                  } @else {
+                    <textarea
+                      pTextarea
+                      id="editor-text"
+                      class="tb-editor__text"
+                      formControlName="description"
+                      rows="14"
+                    ></textarea>
+                  }
+                  <small class="tb-hint">{{ t.markdownHint }}</small>
+                </div>
+              </div>
+            </p-card>
+
+            <p-card>
+              @if (isNew()) {
+                <h3 class="tb-subtitle">{{ t.textbooks }}</h3>
+                <tb-textbook-list
+                  [textbooks]="textbooks()"
+                  [editable]="true"
+                  (opened)="materials.textbook($event)"
+                  (edit)="editTextbook($event)"
+                  (remove)="removeTextbook($event)"
+                />
+                <p-button
+                  [label]="t.bindTextbook"
+                  icon="tb-i tb-i-menu_book"
+                  severity="secondary"
+                  (onClick)="bindTextbook()"
+                />
+                <h3 class="tb-subtitle">{{ t.files }}</h3>
+                <tb-file-picker [(files)]="newFiles" [label]="t.addFiles" />
               }
-              <small class="tb-hint">{{ t.markdownHint }}</small>
-            </div>
-          </div>
-        </p-card>
-
-        <p-card [header]="tv.title">
-          <tb-video-section [videos]="videos()" (videosChange)="changeVideos($event)" />
-        </p-card>
-
-        <p-card>
-          <div class="tb-editor__settings">
-            @if (isNew()) {
-              <div class="tb-field">
-                <label for="editor-students">{{ t.students }}</label>
-                <p-multiselect
-                  inputId="editor-students"
-                  formControlName="studentIds"
-                  [options]="students()"
-                  optionLabel="displayName"
-                  optionValue="id"
-                  [placeholder]="t.studentsPlaceholder"
-                  [filter]="true"
-                  [filterPlaceHolder]="t.search"
-                  [ariaFilterLabel]="t.search"
-                  display="chip"
-                  tbChipColors="student"
-                  appendTo="body"
-                  [fluid]="true"
+              @if (error(); as message) {
+                <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
+              }
+            </p-card>
+            <p-card [header]="tv.title">
+              <tb-video-section [videos]="videos()" (videosChange)="changeVideos($event)" />
+            </p-card>
+          </form>
+        </tb-pane>
+        @if (aiEnabled() && !single() && aiOpen()) {
+          <tb-pane kind="sheet" [label]="t.aiTitle">
+            <ng-template tbPaneHeader>
+              <div class="tb-editor__ai-head">
+                <h2 class="tb-subtitle">{{ t.aiTitle }}</h2>
+                <p-button
+                  [ariaLabel]="t.closeAi"
+                  icon="tb-i tb-i-close"
+                  [text]="true"
+                  severity="secondary"
+                  (onClick)="aiOpen.set(false)"
                 />
               </div>
-              <tb-group-picker
-                inputId="editor-group"
-                (picked)="addStudents($event)"
-                (dropped)="removeStudents($event)"
-              />
-            }
-            <div class="tb-field">
-              <label for="editor-due">{{ t.due }}</label>
-              <p-datepicker
-                inputId="editor-due"
-                formControlName="dueAt"
-                [showTime]="true"
-                hourFormat="24"
-                dateFormat="dd.mm.yy"
-                [showIcon]="true"
-                [showOnFocus]="false"
-                [showClear]="true"
-                appendTo="body"
-                [fluid]="true"
-              />
-              @if (dueHint(); as hint) {
-                <small class="tb-hint">{{ hint }}</small>
-              }
-            </div>
-          </div>
-
-          @if (isNew()) {
-            <h3 class="tb-subtitle">{{ t.textbooks }}</h3>
-            <tb-textbook-list
-              [textbooks]="textbooks()"
-              [editable]="true"
-              (opened)="materials.textbook($event)"
-              (edit)="editTextbook($event)"
-              (remove)="removeTextbook($event)"
+            </ng-template>
+            <tb-homework-ai-panel
+              [title]="titleValue()"
+              [hasText]="textValue().trim() !== ''"
+              [sources]="sourceOptions()"
+              (applied)="applyDraft($event)"
             />
-            <p-button
-              [label]="t.bindTextbook"
-              icon="tb-i tb-i-menu_book"
-              severity="secondary"
-              (onClick)="bindTextbook()"
-            />
-            <h3 class="tb-subtitle">{{ t.files }}</h3>
-            <tb-file-picker [(files)]="newFiles" [label]="t.addFiles" />
-          }
-          @if (error(); as message) {
-            <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-          }
-        </p-card>
-      </form>
+          </tb-pane>
+        }
+      </tb-panes>
+      @if (aiEnabled() && single()) {
+        <p-drawer
+          tbModalDrawer
+          [(visible)]="modalAiOpen"
+          [header]="t.aiTitle"
+          [ariaCloseLabel]="t.closeAi"
+          position="right"
+          [blockScroll]="true"
+          styleClass="tb-editor-ai-drawer"
+          [style]="{ width: 'min(100vw, 25rem)' }"
+        >
+          <tb-homework-ai-panel
+            [title]="titleValue()"
+            [hasText]="textValue().trim() !== ''"
+            [sources]="sourceOptions()"
+            (applied)="applyDraft($event)"
+          />
+        </p-drawer>
+      }
 
       @if (placing(); as saved) {
         <tb-to-board-dialog
@@ -265,6 +314,13 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     }
   `,
   styles: `
+    .tb-editor__ai-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--tb-space-2);
+    }
+
     .tb-editor {
       min-width: 0;
     }
@@ -272,7 +328,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     .tb-editor__settings {
       display: grid;
       gap: var(--tb-space-4);
-      grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
     }
 
     .tb-editor__text {
@@ -282,6 +338,15 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
 })
 export class AssignmentEditorPage implements OnInit, CanLeave {
   protected readonly t = T.editor;
+  private readonly size = injectWindowSize();
+  protected readonly single = computed(() => this.size() === 'compact' || this.size() === 'medium');
+  protected readonly aiOpen = signal(true);
+  protected readonly modalAiOpen = signal(false);
+
+  protected toggleAi(): void {
+    if (this.single()) this.modalAiOpen.update((open) => !open);
+    else this.aiOpen.update((open) => !open);
+  }
   protected readonly tv = T.videos;
   private readonly api = inject(HomeworkApi);
   private readonly ai = inject(AiApi);
@@ -317,6 +382,7 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     }),
     dueAt: new FormControl<Date | null>(null),
     studentIds: new FormControl<string[]>([], { nonNullable: true }),
+    members: new FormControl<MemberSelection[]>([], { nonNullable: true }),
   });
 
   protected readonly modeValue = toSignal(this.mode.valueChanges, {
@@ -341,6 +407,13 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   protected readonly backLabel = computed(() => this.assignment()?.title ?? T.editor.back);
 
   protected readonly students = signal<StudentOption[]>([]);
+  protected readonly groups = signal<StudentGroup[]>([]);
+  protected readonly studentOptions = computed(() =>
+    this.students().map((student) => ({ id: student.id, name: student.displayName })),
+  );
+  private readonly chosenMembers = toSignal(this.form.controls.members.valueChanges, {
+    initialValue: [],
+  });
   /** Lessons ahead, for the due date of a new assignment. */
   private readonly lessons = signal<readonly ScheduledLesson[] | null>(null);
   /** The next lesson the due date was set to; `null` when the teacher chose the date. */
@@ -441,6 +514,16 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   constructor() {
     pageDetail(() => this.assignment()?.title);
     effect(() => {
+      const ids = memberRecipients(
+        this.chosenMembers(),
+        this.groups(),
+        this.students().map((student) => student.id),
+      );
+      untracked(() => {
+        this.form.controls.studentIds.setValue(ids);
+      });
+    });
+    effect(() => {
       const students = this.chosenStudents();
       const lessons = this.lessons();
       if (lessons !== null && this.isNew()) {
@@ -461,6 +544,9 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   ngOnInit(): void {
     if (this.isNew()) {
       this.loadStudents();
+      this.identity.listGroups().subscribe((groups) => {
+        this.groups.set(groups.filter((group) => group.archivedAt === null));
+      });
       const today = new Date();
       const until = new Date(
         today.getFullYear(),
@@ -518,22 +604,6 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     }
     this.dueLesson.set(lesson);
     this.form.controls.dueAt.setValue(lesson);
-  }
-
-  /** Adds the students of a chosen group who can get the assignment. */
-  addStudents(ids: readonly string[]): void {
-    const control = this.form.controls.studentIds;
-    const known = new Set(this.students().map((student) => student.id));
-    control.setValue([...new Set([...control.value, ...ids.filter((id) => known.has(id))])]);
-    control.markAsDirty();
-  }
-
-  /** Takes off the students of a group taken off. */
-  removeStudents(ids: readonly string[]): void {
-    const control = this.form.controls.studentIds;
-    const gone = new Set(ids);
-    control.setValue(control.value.filter((id) => !gone.has(id)));
-    control.markAsDirty();
   }
 
   /**

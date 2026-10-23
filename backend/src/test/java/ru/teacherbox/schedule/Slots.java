@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * hours after (or before) the previous one, so lessons of different tests never overlap, even when a
  * test moves the clock by an odd amount. Future slots start two days ahead of the clock.
  *
- * <p>Series tests plan weekly lessons two weeks ahead and further, for the whole horizon, at fixed
+ * <p>RepeatRule tests plan weekly lessons two weeks ahead and further, for the whole horizon, at fixed
  * hours in Moscow (see {@link #SERIES_HOURS}). Future slots march on by two hours with every call of
  * every test, so they reach those days, and a check of the teacher's time (a new lesson, a moved one)
  * would find a slot busy, depending on the hour the build runs. A future slot therefore takes its two

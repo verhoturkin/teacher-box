@@ -10,7 +10,6 @@ import { aGroup } from '@testing/identity-fixtures';
 import {
   at,
   changeRequest,
-  lessonSeries,
   onceOffTime,
   scheduleSettings,
   scheduledLesson,
@@ -66,7 +65,6 @@ describe('SchedulePage', () => {
     backend.expectOne('/api/teacher/schedule/off-times').flush(offTimes);
     backend.expectOne('/api/teacher/schedule/requests').flush([changeRequest({ late: true })]);
     backend.expectOne('/api/teacher/schedule/unmarked').flush(unmarked);
-    backend.expectOne('/api/teacher/schedule/series').flush([lessonSeries()]);
   }
 
   async function render(
@@ -119,7 +117,7 @@ describe('SchedulePage', () => {
     return { lesson: scheduledLesson(), startsAt: new Date(2026, 9, 2, 17), revert };
   }
 
-  it('shows requests and regular series; unmarked lessons are outlined in the grid, not in a card', async () => {
+  it('shows requests and time off; unmarked lessons are outlined in the grid, not in a card', async () => {
     const text = await render(scheduleSettings(), [
       scheduledLesson({ id: 'l-9', studentName: 'Мария' }),
     ]);
@@ -134,8 +132,8 @@ describe('SchedulePage', () => {
         .injector.get(ScheduleCalendar)
         .unmarked(),
     ).toHaveLength(1);
-    expect(text).toContain('Регулярные');
-    expect(text).toContain('Вт, Чт в 18:00');
+    expect(text).not.toContain('Регулярные');
+    expect(text).toContain('Нерабочее время');
     expect(text).not.toContain('часовому поясу этого устройства');
   });
 
@@ -148,7 +146,6 @@ describe('SchedulePage', () => {
     backend.expectOne('/api/teacher/schedule/off-times').flush(null, failure);
     backend.expectOne('/api/teacher/schedule/unmarked').flush([]);
     backend.expectOne('/api/teacher/schedule/requests').flush(null, failure);
-    backend.expectOne('/api/teacher/schedule/series').flush(null, failure);
     backend
       .expectOne('/api/teacher/schedule/google')
       .flush({ status: 'NOT_CONNECTED', busyEnabled: false });
@@ -159,9 +156,7 @@ describe('SchedulePage', () => {
     const text = readableText(hostElement(fixture));
     expect(text).toContain('Не удалось загрузить запросы и прошедшие занятия');
     expect(text).toContain('Не удалось загрузить занятия');
-    expect(text).toContain('Не удалось загрузить регулярные занятия');
     expect(text).toContain('Не удалось загрузить нерабочее время');
-    expect(text).not.toContain('Нет регулярных занятий');
     const calendar = fixture.debugElement
       .query(By.directive(ScheduleCalendar))
       .injector.get(ScheduleCalendar);
@@ -175,11 +170,9 @@ describe('SchedulePage', () => {
     backend.expectOne('/api/teacher/schedule/requests').flush([]);
     backend.expectOne('/api/teacher/schedule/unmarked').flush([]);
     lessonsRequest().flush([]);
-    backend.expectOne('/api/teacher/schedule/series').flush([]);
     backend.expectOne('/api/teacher/schedule/off-times').flush([]);
     await fixture.whenStable();
 
-    expect(readableText(hostElement(fixture))).toContain('Нет регулярных занятий');
     expect(calendar.loaded()).toBe(true);
   });
 
@@ -313,17 +306,12 @@ describe('SchedulePage', () => {
     }
   });
 
-  it('has no zone chip while the device is in the portal zone, and switches the tabs', async () => {
+  it('has no zone chip in the portal zone and offers time off directly', async () => {
     await render();
     const host = hostElement(fixture);
 
     expect(host.querySelector('.tb-assist-chip')).toBeNull();
-    const tab = Array.from(host.querySelectorAll<HTMLElement>('p-tab')).find((item) =>
-      item.textContent.includes('Нерабочее время'),
-    );
-    tab?.click();
-    await fixture.whenStable();
-    expect(tab?.getAttribute('aria-selected')).toBe('true');
+    expect(host.querySelector('p-tabs')).toBeNull();
     buttonByText(host, 'Добавить нерабочее время').click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Нерабочее время');
@@ -392,6 +380,9 @@ describe('SchedulePage', () => {
       topic: null,
       meetingUrl: null,
       allowOverlap: false,
+      scope: 'ONLY',
+      version: 0,
+      repeatVersion: null,
     });
     request.flush(scheduledLesson());
     await flushReload();
@@ -462,30 +453,5 @@ describe('SchedulePage', () => {
     await fixture.whenStable();
 
     expect(bodyText()).toContain('Запрос ученика');
-  });
-
-  it('plans, changes and stops regular lessons', async () => {
-    await render();
-    buttonByText(hostElement(fixture), 'Добавить регулярные занятия').click();
-    await fixture.whenStable();
-    expect(bodyText()).toContain('Дни недели');
-
-    await act('Иван Петров', 'Изменить');
-    expect(bodyText()).toContain('Изменить регулярные занятия');
-
-    page.onSeriesSaved({ series: lessonSeries(), lessons: 12 });
-    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'Расписание сохранено, занятий: 12' }),
-    );
-    await flushReload();
-
-    await act('Иван Петров', 'Завершить…');
-    buttonByText(document.body, 'Завершить').click();
-    const stop = backend.expectOne('/api/teacher/schedule/series/sr-1/stop');
-    expect(stop.request.body).toEqual({
-      from: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) as unknown,
-    });
-    stop.flush(null);
-    await flushReload();
   });
 });

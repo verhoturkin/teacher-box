@@ -194,12 +194,11 @@ test('a group lesson is charged at the price of the group', async ({ page, reque
     durationMinutes: 60,
     allowOverlap: true,
   });
-  await api(request, teacher, 'POST', '/api/teacher/schedule/series', {
+  await api(request, teacher, 'POST', '/api/teacher/schedule/lessons', {
     groupId,
-    weekdays: ['MONDAY', 'THURSDAY'],
-    startTime: '19:00',
+    startsAt: moscow(1, 19),
     durationMinutes: 90,
-    startsOn: moscow(1, 12).slice(0, 10),
+    repeatWeeks: 1,
     allowOverlap: true,
   });
 
@@ -208,8 +207,8 @@ test('a group lesson is charged at the price of the group', async ({ page, reque
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Расписание' })
     .click();
-  // 0.24.0: the recurring lessons are the first tab of the side pane
-  await expect(page.locator('.tb-schedule-side')).toContainText(GROUP);
+  // Repetition is configured on a lesson; the calendar shows group occurrences.
+  await expect(page.locator('tb-schedule-calendar')).toContainText(GROUP);
   // the attendance opens at once, not through the details of the lesson (ADR-0026)
   // 0.24.0: the past lesson is outlined in the calendar, the attendance is marked from its dialog
   await page.locator('.tb-lesson--unmarked', { hasText: GROUP }).click();
@@ -272,7 +271,7 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
   await dialog.getByText('Внешняя доска', { exact: true }).click();
   await page.locator('#board-title').fill('Алгебра');
   await page.locator('#board-url').fill('https://app.holst.so/board/e2e');
-  await page.locator('p-multiselect:has(#board-students)').click();
+  await page.locator('tb-member-picker:has(#board-members) p-multiselect').click();
   await page.getByRole('option', { name: ANNA }).click();
   await page.keyboard.press('Escape');
   await dialog.getByRole('button', { name: 'Создать' }).click();

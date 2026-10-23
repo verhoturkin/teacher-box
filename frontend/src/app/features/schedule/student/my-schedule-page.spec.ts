@@ -36,6 +36,9 @@ describe('MySchedulePage', () => {
   let phone: BehaviorSubject<BreakpointState>;
 
   beforeEach(() => {
+    // Keep future(1) on the agenda's selected day, including runs after 23:00.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 22, 12));
     phone = new BehaviorSubject<BreakpointState>({ matches: false, breakpoints: {} });
     TestBed.configureTestingModule({
       imports: [MySchedulePage],
@@ -56,6 +59,7 @@ describe('MySchedulePage', () => {
     }
     backend.verify();
     fixture.destroy();
+    vi.useRealTimers();
   });
 
   function busyRequests(): TestRequest[] {

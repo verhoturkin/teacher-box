@@ -94,7 +94,7 @@ describe('LessonDetailsDialog', () => {
 
     buttonByText(document.body, 'Проведено').click();
     const request = backend.expectOne('/api/teacher/schedule/lessons/l-1/outcome');
-    expect(request.request.body).toEqual({ outcome: 'CONDUCTED' });
+    expect(request.request.body).toMatchObject({ outcome: 'CONDUCTED' });
     request.flush(scheduledLesson({ status: 'CONDUCTED' }));
 
     expect(changed.map((lesson) => lesson.status)).toEqual(['CONDUCTED']);
@@ -133,7 +133,11 @@ describe('LessonDetailsDialog', () => {
     buttonByText(document.body, 'Отменить занятие').click();
 
     const request = backend.expectOne('/api/teacher/schedule/lessons/l-1/cancel');
-    expect(request.request.body).toEqual({ reason: 'Заболел', byStudent: true, charge: true });
+    expect(request.request.body).toMatchObject({
+      reason: 'Заболел',
+      byStudent: true,
+      charge: true,
+    });
     request.flush(scheduledLesson({ status: 'MISSED' }));
     expect(changed).toHaveLength(1);
   });
@@ -148,7 +152,7 @@ describe('LessonDetailsDialog', () => {
     buttonByText(document.body, 'Отменить занятие').click();
 
     const request = backend.expectOne('/api/teacher/schedule/lessons/l-1/cancel');
-    expect(request.request.body).toEqual({ reason: null, byStudent: false, charge: false });
+    expect(request.request.body).toMatchObject({ reason: null, byStudent: false, charge: false });
     request.flush(null, { status: 422, statusText: 'Unprocessable' });
     expect(changed).toHaveLength(0);
   });
@@ -165,10 +169,38 @@ describe('LessonDetailsDialog', () => {
 
     await choose('Удалить…');
     buttonByText(document.body, 'Удалить занятие').click();
-    backend.expectOne({ method: 'DELETE', url: '/api/teacher/schedule/lessons/l-1' }).flush(null);
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/schedule/lessons/l-1?version=0' })
+      .flush(null);
     await fixture.whenStable();
 
     expect(deleted).toEqual(['l-1']);
+    expect(fixture.componentInstance.visible()).toBe(false);
+  });
+
+  it('previews following deletion and sends both concurrency versions', async () => {
+    await open(
+      scheduledLesson({ seriesId: 'rule-1', repeatWeeks: 2, version: 3, repeatVersion: 5 }),
+    );
+    await choose('Удалить…');
+    fixture.debugElement
+      .query(By.css('p-select'))
+      .triggerEventHandler('ngModelChange', 'FOLLOWING');
+    await fixture.whenStable();
+    fixture.componentInstance.deleteLesson();
+    backend.expectNone((request) => request.method === 'DELETE');
+    backend.expectOne('/api/teacher/schedule/lessons/l-1/following').flush({
+      repeatVersion: 5,
+      affected: ['l-1', 'l-2'],
+      protectedLessons: ['l-3'],
+    });
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Существующих занятий для изменения: 2');
+    buttonByText(document.body, 'Удалить занятие').click();
+    backend
+      .expectOne('/api/teacher/schedule/lessons/l-1?scope=FOLLOWING&version=3&repeatVersion=5')
+      .flush(null);
+    await fixture.whenStable();
     expect(fixture.componentInstance.visible()).toBe(false);
   });
 
@@ -178,7 +210,7 @@ describe('LessonDetailsDialog', () => {
     expect(bodyText()).not.toContain('Ученику придёт уведомление');
     buttonByText(document.body, 'Удалить занятие').click();
     backend
-      .expectOne('/api/teacher/schedule/lessons/l-1')
+      .expectOne('/api/teacher/schedule/lessons/l-1?version=0')
       .flush({ code: 'schedule.lesson-charged' }, { status: 422, statusText: 'Unprocessable' });
     await fixture.whenStable();
     expect(fixture.componentInstance.visible()).toBe(true);
@@ -215,14 +247,14 @@ describe('LessonDetailsDialog', () => {
 
     buttonByText(document.body, 'Всё равно восстановить').click();
     const again = backend.expectOne('/api/teacher/schedule/lessons/l-1/restore');
-    expect(again.request.body).toEqual({ allowOverlap: true });
+    expect(again.request.body).toMatchObject({ allowOverlap: true });
     again.flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
     expect(bodyText()).toContain('Не удалось восстановить занятие');
 
     buttonByText(document.body, 'Восстановить').click();
     const restored = backend.expectOne('/api/teacher/schedule/lessons/l-1/restore');
-    expect(restored.request.body).toEqual({ allowOverlap: false });
+    expect(restored.request.body).toMatchObject({ allowOverlap: false });
     restored.flush(scheduledLesson());
     await fixture.whenStable();
     expect(changed).toHaveLength(1);

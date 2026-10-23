@@ -10,6 +10,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { DatePicker } from 'primeng/datepicker';
@@ -21,7 +22,8 @@ import { Select } from 'primeng/select';
 import { describeError } from '@core/http/error-messages';
 import { problemCode } from '@core/http/problem-detail';
 import { ScheduleApi } from '../data-access/schedule-api';
-import { ScheduledLesson } from '../data-access/schedule.models';
+import { FollowingLessons, RepeatScope, ScheduledLesson } from '../data-access/schedule.models';
+import { toIsoDate } from '@shared/dates/iso-date';
 import { optionalText } from '../schedule-labels';
 import {
   LessonGroup,
@@ -130,6 +132,58 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
           </div>
         </div>
         <div class="tb-field">
+          <label id="schedule-lesson-repeat-label" for="schedule-lesson-repeat">{{
+            t.repeat
+          }}</label>
+          <p-select
+            inputId="schedule-lesson-repeat"
+            ariaLabelledBy="schedule-lesson-repeat-label"
+            formControlName="repeatWeeks"
+            [options]="repeats"
+            optionLabel="label"
+            optionValue="value"
+            appendTo="body"
+            [fluid]="true"
+          />
+        </div>
+        @if (repeatWeeks() > 0) {
+          <div class="tb-field">
+            <label for="schedule-lesson-repeat-until">{{ t.repeatUntil }}</label>
+            <p-datepicker
+              inputId="schedule-lesson-repeat-until"
+              formControlName="repeatUntil"
+              dateFormat="dd.mm.yy"
+              [showIcon]="true"
+              [showOnFocus]="false"
+              [showClear]="true"
+              appendTo="body"
+              [fluid]="true"
+            />
+          </div>
+        }
+        @if (lesson()?.seriesId) {
+          <div class="tb-field">
+            <label id="schedule-lesson-scope-label" for="schedule-lesson-scope">{{
+              t.scope
+            }}</label>
+            <p-select
+              inputId="schedule-lesson-scope"
+              ariaLabelledBy="schedule-lesson-scope-label"
+              formControlName="scope"
+              [options]="scopes"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              [fluid]="true"
+            />
+          </div>
+          @if (preview(); as affected) {
+            <p-message severity="info">{{
+              t.affected(affected.affected.length, affected.protectedLessons.length)
+            }}</p-message>
+          }
+        }
+        <div class="tb-field">
           <label for="schedule-lesson-topic">{{ t.topic }}</label>
           <input pInputText id="schedule-lesson-topic" formControlName="topic" autocomplete="off" />
         </div>
@@ -193,7 +247,19 @@ export class LessonDialog {
   protected readonly error = signal<string | null>(null);
   protected readonly overlap = signal(false);
 
+  protected readonly repeats = [0, 1, 2, 3, 4].map((value) => ({
+    value,
+    label: T.lessonDialog.repeatChoice(value),
+  }));
+  protected readonly scopes = [
+    { value: 'ONLY', label: T.lessonDialog.onlyThis },
+    { value: 'FOLLOWING', label: T.lessonDialog.thisFollowing },
+  ];
+  protected readonly preview = signal<FollowingLessons | null>(null);
   readonly form = new FormGroup({
+    repeatWeeks: new FormControl(0, { nonNullable: true }),
+    repeatUntil: new FormControl<Date | null>(null),
+    scope: new FormControl<RepeatScope>('ONLY', { nonNullable: true }),
     owner: new FormControl<OwnerValue | null>(null, [Validators.required]),
     startsAt: new FormControl<Date | null>(null, [Validators.required]),
     durationMinutes: new FormControl<number | null>(60, [
@@ -208,7 +274,37 @@ export class LessonDialog {
     }),
   });
 
+  protected readonly repeatWeeks = toSignal(this.form.controls.repeatWeeks.valueChanges, {
+    initialValue: 0,
+  });
+
   constructor() {
+    this.form.controls.repeatWeeks.valueChanges.pipe(takeUntilDestroyed()).subscribe((weeks) => {
+      const lesson = this.lesson();
+      if (lesson?.seriesId && weeks !== lesson.repeatWeeks)
+        this.form.controls.scope.setValue('FOLLOWING');
+    });
+    this.form.controls.scope.valueChanges.pipe(takeUntilDestroyed()).subscribe((scope) => {
+      this.preview.set(null);
+      const lesson = this.lesson();
+      if (scope === 'FOLLOWING' && lesson?.seriesId) {
+        this.api.following(lesson.id).subscribe({
+          next: (preview) => {
+            if (this.form.controls.scope.value === 'FOLLOWING' && this.lesson()?.id === lesson.id)
+              this.preview.set(preview);
+          },
+          error: (error: unknown) => {
+            this.error.set(describeError(error, T.lessonDialog.previewFailed));
+          },
+        });
+      }
+    });
+    this.form.controls.repeatUntil.valueChanges.pipe(takeUntilDestroyed()).subscribe((until) => {
+      const lesson = this.lesson();
+      if (lesson?.seriesId && (until ? toIsoDate(until) : null) !== (lesson.repeatUntil ?? null)) {
+        this.form.controls.scope.setValue('FOLLOWING');
+      }
+    });
     followDefaultTopic(
       this.form.controls.owner,
       this.form.controls.topic,
@@ -233,7 +329,8 @@ export class LessonDialog {
       !revealErrors(this.form) ||
       this.pending() ||
       value.owner === null ||
-      value.startsAt === null
+      value.startsAt === null ||
+      (value.scope === 'FOLLOWING' && !!this.lesson()?.seriesId && this.preview() === null)
     ) {
       return;
     }
@@ -246,6 +343,12 @@ export class LessonDialog {
       topic: optionalText(value.topic),
       meetingUrl: optionalText(value.meetingUrl),
       allowOverlap,
+      repeatWeeks: value.repeatWeeks,
+      repeatUntil:
+        value.repeatWeeks > 0 && value.repeatUntil !== null ? toIsoDate(value.repeatUntil) : null,
+      scope: value.scope,
+      version: this.lesson()?.version,
+      repeatVersion: this.preview()?.repeatVersion ?? this.lesson()?.repeatVersion,
     };
     const lesson = this.lesson();
     const request =
@@ -294,6 +397,9 @@ export class LessonDialog {
           ? defaultTopic(preset, { students: this.students(), groups: this.groups() })
           : (lesson.topic ?? ''),
       meetingUrl: lesson?.meetingUrl ?? '',
+      repeatWeeks: lesson?.repeatWeeks ?? 0,
+      repeatUntil: lesson?.repeatUntil ? new Date(lesson.repeatUntil + 'T00:00:00') : null,
+      scope: 'ONLY',
     });
     if (lesson === null && preset === null) {
       this.form.controls.owner.enable();

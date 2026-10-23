@@ -48,6 +48,8 @@ The teacher gets the request and answers — the answer comes as a notification,
 
 If you cancel late, the teacher may charge the lesson as missed.
 
+Repeating lessons appear as individual occurrences. Your move or cancellation request concerns only the selected lesson.
+
 ## Group lessons
 
 If you cannot come to a group lesson, click «I won’t come». If you said so in advance, the teacher knows at once that you will not be there, and the lesson is not charged.
@@ -74,6 +76,8 @@ If the teacher has set a link to another video service (e.g. Telemost), the butt
 ## Boards
 
 The boards the teacher opened to you or your group are in «Materials», the «Boards» tab: cards with the board's picture, the filters «All», «In the portal», «External» and a search by title. Tap a card to open the board. The boards of the next lesson are buttons right in its card on the home page: tap one to open it.
+
+On both «Boards» and «Textbooks», search fills the pane width and filters are below it. Cards keep a compact size even when the list contains a single material.
 
 - **An Excalidraw board** opens right in the portal, full screen. Draw together with the teacher: the board saves itself, the teacher's strokes appear at once, and you see the teacher's cursor with the name. The board's menu (☰) has, at the bottom, the theme, the grid and what the mouse wheel does: «Zoom» or «Scroll (touchpad)». At the top you see whether it is saved («Saved», «Saving…», «Offline — will retry»). The board's pictures appear as they load — you can draw without waiting for them. To go back — «← Back» (where you opened the board from) or «← Boards» if the board was opened by a link; the same is in the board's menu (☰). Save the shapes you need to your library: right click → «Add to library»; open it with the «Library» button at the top right.
 - **An external board** (e.g. Holst) opens in a new tab.
@@ -171,6 +175,8 @@ Send the bot /stop or disconnect the messenger in «My account» (your photo at 
     title: 'Phone, theme and language',
     summary: 'How to use the cabinet from a phone, turn on the dark theme and choose the language',
     body: `
+Field labels sit on the outline and stay visible even for empty fields in light and dark themes. An error turns the label red.
+
 ## From a phone
 
 The cabinet works in the phone's browser, nothing needs installing. If you want an icon of its own — in Chrome on Android: the browser menu (⋮) → «Add to Home screen» → «Install»: the cabinet opens in its own window, and the bars at the top and the bottom of the screen take the portal's colour.

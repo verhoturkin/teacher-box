@@ -16,19 +16,17 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.schedule.api.CancelledBy;
-import ru.teacherbox.schedule.api.SeriesScheduled;
-import ru.teacherbox.schedule.api.SeriesStopped;
+import ru.teacherbox.schedule.api.LessonRepeatScheduled;
+import ru.teacherbox.schedule.api.LessonRepeatStopped;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
-import ru.teacherbox.schedule.application.ScheduleViews.SeriesPlanned;
-import ru.teacherbox.schedule.application.ScheduleViews.SeriesView;
 import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.LessonStatus;
 import ru.teacherbox.schedule.domain.Participant;
-import ru.teacherbox.schedule.domain.Series;
+import ru.teacherbox.schedule.domain.RepeatRule;
 import ru.teacherbox.schedule.persistence.ChangeRequestRepository;
 import ru.teacherbox.schedule.persistence.LessonRepository;
-import ru.teacherbox.schedule.persistence.SeriesRepository;
+import ru.teacherbox.schedule.persistence.RepeatRuleRepository;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.ConflictException;
@@ -64,19 +62,8 @@ public class ScheduleService {
     public record CancelLesson(@Nullable String reason, boolean byStudent, boolean charge) {
     }
 
-    /**
-     * Regular lessons with a student or with a group (exactly one of the two).
-     *
-     * @param startTime local time in the instance time zone
-     * @param startsOn  first day of the series (for a change: the day the change applies from)
-     */
-    public record PlanSeries(@Nullable UUID studentId, @Nullable UUID groupId, Set<DayOfWeek> weekdays,
-            LocalTime startTime, @Nullable Integer durationMinutes, int intervalWeeks, LocalDate startsOn,
-            @Nullable LocalDate endsOn, @Nullable String topic, @Nullable String meetingUrl, boolean allowOverlap) {
-    }
-
     private final LessonRepository lessons;
-    private final SeriesRepository series;
+    private final RepeatRuleRepository series;
     private final ChangeRequestRepository requests;
     private final ScheduleDirectory directory;
     private final ScheduleQueries queries;
@@ -86,7 +73,7 @@ public class ScheduleService {
     private final ZoneId zone;
     private final Clock clock;
 
-    public ScheduleService(LessonRepository lessons, SeriesRepository series, ChangeRequestRepository requests,
+    public ScheduleService(LessonRepository lessons, RepeatRuleRepository series, ChangeRequestRepository requests,
             ScheduleDirectory directory, ScheduleQueries queries, LessonEvents lessonEvents,
             ApplicationEventPublisher events, ScheduleProperties properties, InstanceTimeZone timeZone, Clock clock) {
         this.lessons = lessons;
@@ -103,6 +90,10 @@ public class ScheduleService {
 
     @Transactional
     public LessonView plan(PlanLesson command) {
+        return plan(command, true);
+    }
+
+    LessonView plan(PlanLesson command, boolean notify) {
         int duration = command.durationMinutes() == null ? properties.defaultDuration() : command.durationMinutes();
         Instant now = clock.instant();
         UUID groupId = owner(command.studentId(), command.groupId());
@@ -118,7 +109,7 @@ public class ScheduleService {
         }
         requireFree(lesson.startsAt(), lesson.endsAt(), null, command.allowOverlap());
         lessons.insert(lesson);
-        lessonEvents.scheduled(lesson, now);
+        if (notify) lessonEvents.scheduled(lesson, now);
         return queries.lesson(lesson.id());
     }
 
@@ -226,72 +217,18 @@ public class ScheduleService {
         return queries.lesson(lesson.id());
     }
 
-    @Transactional
-    public SeriesPlanned planSeries(PlanSeries command) {
-        Instant now = clock.instant();
-        UUID groupId = owner(command.studentId(), command.groupId());
-        List<UUID> students;
-        if (groupId != null) {
-            students = requireMembers(groupId);
-        } else {
-            students = List.of(directory.currentStudent(required(command.studentId())).id());
-        }
-        int duration = command.durationMinutes() == null ? properties.defaultDuration() : command.durationMinutes();
-        Series created = Series.create(Ids.newId(), groupId == null ? students.getFirst() : null, groupId,
-                command.weekdays(), command.startTime(), duration, command.intervalWeeks(), command.startsOn(),
-                command.endsOn(), command.topic(), command.meetingUrl(), now);
-        LocalDate today = LocalDate.ofInstant(now, zone);
-        LocalDate from = created.startsOn().isBefore(today) ? today : created.startsOn();
-        LocalDate until = today.plusDays(properties.horizonDays());
-        if (!command.allowOverlap()) {
-            for (LocalDate date : created.datesBetween(from, until)) {
-                Instant start = created.startOn(date, zone);
-                requireFree(start, start.plusSeconds(60L * created.durationMinutes()), null, false);
-            }
-        }
-        series.insert(created);
-        int generated = generate(created, from, until, now);
-        series.update(created);
-        events.publishEvent(new SeriesScheduled(created.id(), groupId, students, created.weekdays(),
-                created.startTime(), created.durationMinutes(), created.intervalWeeks(), created.startsOn(),
-                created.endsOn(), now));
-        return new SeriesPlanned(SeriesView.of(created, directory.namesOfSeries(List.of(created))), generated);
-    }
-
-    /**
-     * Changes a series from {@code command.startsOn()} on: the old series ends the day before and a
-     * new one with the new settings continues. Lessons before that day and lessons moved
-     * individually stay.
-     */
-    @Transactional
-    public SeriesPlanned changeSeries(UUID seriesId, PlanSeries command) {
-        Series current = findSeries(seriesId);
-        if (!current.sameOwner(command.studentId(), command.groupId())) {
-            throw new BusinessRuleException("schedule.series-student-fixed",
-                    "A series belongs to one student or group");
-        }
-        stop(current, command.startsOn(), true);
-        return planSeries(command);
-    }
-
-    /** Ends a series before {@code from}; its planned lessons from that day on are removed. */
-    @Transactional
-    public void stopSeries(UUID seriesId, LocalDate from) {
-        stop(findSeries(seriesId), from, false);
-    }
-
     /**
      * Creates the lessons of every active series up to the horizon (runs nightly).
      *
      * @return number of created lessons
      */
     @Transactional
-    public int extendSeries() {
+    public int generateOccurrences() {
         Instant now = clock.instant();
         LocalDate today = LocalDate.ofInstant(now, zone);
         LocalDate until = today.plusDays(properties.horizonDays());
         int created = 0;
-        for (Series active : series.findActive(today)) {
+        for (RepeatRule active : series.findActive(today)) {
             if (!active.generatedUntil().isBefore(until) || !active.continuesAfter(active.generatedUntil())) {
                 continue;
             }
@@ -325,7 +262,7 @@ public class ScheduleService {
     public void stopGroup(UUID groupId) {
         Instant now = clock.instant();
         LocalDate tomorrow = LocalDate.ofInstant(now, zone).plusDays(1);
-        for (Series active : series.findActive(tomorrow)) {
+        for (RepeatRule active : series.findActive(tomorrow)) {
             if (groupId.equals(active.groupId())) {
                 stop(active, tomorrow, false);
             }
@@ -346,7 +283,7 @@ public class ScheduleService {
         return queries.lesson(lesson.id());
     }
 
-    private void stop(Series stopped, LocalDate from, boolean replaced) {
+    private void stop(RepeatRule stopped, LocalDate from, boolean replaced) {
         Instant now = clock.instant();
         if (stopped.endBefore(from, now)) {
             series.update(stopped);
@@ -354,10 +291,10 @@ public class ScheduleService {
         lessons.deleteUntouchedOfSeries(stopped.id(), from);
         UUID studentId = stopped.studentId();
         List<UUID> students = studentId != null ? List.of(studentId) : directory.membersOf(required(stopped.groupId()));
-        events.publishEvent(new SeriesStopped(stopped.id(), stopped.groupId(), students, from, replaced, now));
+        events.publishEvent(new LessonRepeatStopped(null, stopped.groupId(), students, from, replaced, now));
     }
 
-    private int generate(Series source, LocalDate from, LocalDate until, Instant now) {
+    int generate(RepeatRule source, LocalDate from, LocalDate until, Instant now) {
         UUID groupId = source.groupId();
         List<UUID> members = groupId == null ? List.of() : directory.membersOf(groupId);
         int created = 0;
@@ -377,7 +314,7 @@ public class ScheduleService {
         return created;
     }
 
-    private void requireFree(Instant from, Instant to, @Nullable UUID except, boolean allowOverlap) {
+    void requireFree(Instant from, Instant to, @Nullable UUID except, boolean allowOverlap) {
         if (allowOverlap) {
             return;
         }
@@ -388,7 +325,7 @@ public class ScheduleService {
     }
 
     /** Requests about a lesson the teacher changed directly are no longer relevant. */
-    private void outdatePendingRequests(UUID lessonId, Instant now) {
+    void outdatePendingRequests(UUID lessonId, Instant now) {
         requests.findPendingForLesson(lessonId).forEach(request -> {
             request.outdate(now);
             requests.update(request);
@@ -427,8 +364,5 @@ public class ScheduleService {
                 .orElseThrow(() -> new NotFoundException("schedule.lesson-not-found", "Lesson not found"));
     }
 
-    private Series findSeries(UUID seriesId) {
-        return series.findById(seriesId)
-                .orElseThrow(() -> new NotFoundException("schedule.series-not-found", "Series not found"));
-    }
+
 }

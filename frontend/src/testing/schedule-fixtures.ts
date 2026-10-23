@@ -1,7 +1,6 @@
 import {
   CalendarFeed,
   ChangeRequest,
-  LessonSeries,
   MyScheduleSummary,
   OffTime,
   ScheduleSettings,
@@ -26,6 +25,11 @@ export function scheduledLesson(overrides: Partial<ScheduledLesson> = {}): Sched
       { studentId: 's-1', studentName: 'Иван Петров', studentAvatar: null, attendance: 'EXPECTED' },
     ],
     seriesId: null,
+    version: 0,
+    repeatWeeks: 0,
+    repeatUntil: null,
+    repeatVersion: null,
+    occurrenceDate: null,
     startsAt: at(2026, 10, 1, 18),
     endsAt: at(2026, 10, 1, 19),
     durationMinutes: 60,
@@ -76,25 +80,6 @@ export function changeRequest(overrides: Partial<ChangeRequest> = {}): ChangeReq
     answer: null,
     createdAt: at(2026, 9, 28, 12),
     resolvedAt: null,
-    ...overrides,
-  };
-}
-
-export function lessonSeries(overrides: Partial<LessonSeries> = {}): LessonSeries {
-  return {
-    id: 'sr-1',
-    studentId: 's-1',
-    studentName: 'Иван Петров',
-    groupId: null,
-    groupName: null,
-    weekdays: ['TUESDAY', 'THURSDAY'],
-    startTime: '18:00:00',
-    durationMinutes: 60,
-    intervalWeeks: 1,
-    startsOn: '2026-10-01',
-    endsOn: null,
-    topic: null,
-    meetingUrl: null,
     ...overrides,
   };
 }

@@ -87,6 +87,7 @@ test('the queue marks a lesson in place', async ({ page }) => {
 test('the calendar outline disappears after the lesson is marked', async ({ page, request }) => {
   await signIn(page);
   await page.goto('/teacher/schedule');
+  await page.getByRole('tab', { name: 'Вид: Месяц', exact: true }).click();
   const lesson = page.locator('.tb-lesson', { hasText: OUTLINED }).first();
   await expect(lesson).toBeVisible();
   await expect(lesson).toHaveClass(/tb-lesson--unmarked/);
@@ -102,6 +103,7 @@ test('the calendar outline disappears after the lesson is marked', async ({ page
   expect(marked.ok()).toBe(true);
 
   await page.reload();
+  await page.getByRole('tab', { name: 'Вид: Месяц', exact: true }).click();
   await expect(page.locator('.tb-lesson', { hasText: OUTLINED }).first()).toBeVisible();
   await expect(page.locator('.tb-lesson--unmarked', { hasText: OUTLINED })).toHaveCount(0);
 });

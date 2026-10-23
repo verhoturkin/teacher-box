@@ -57,7 +57,13 @@ describe('TextbookDialog', () => {
     expect(dialog.form.controls.title.value).toBe('Spotlight 5');
     expect(bodyText()).toContain('Spotlight 5.pdf');
     expect(document.body.querySelector('#textbook-pages')).toBeNull();
-    dialog.form.patchValue({ course: ' Английский ', studentIds: ['s-1'] });
+    dialog.form.patchValue({
+      course: ' Английский ',
+      members: [
+        { kind: 'STUDENT', id: 's-1' },
+        { kind: 'GROUP', id: 'g-1' },
+      ],
+    });
 
     dialog.save();
     const create = backend.expectOne({ method: 'POST', url: '/api/teacher/textbooks' });
@@ -65,6 +71,8 @@ describe('TextbookDialog', () => {
     expect(form.get('title')).toBe('Spotlight 5');
     expect(form.get('course')).toBe('Английский');
     expect(form.has('pageCount')).toBe(false);
+    expect(form.getAll('studentIds')).toEqual(['s-1']);
+    expect(form.getAll('groupIds')).toEqual(['g-1']);
     create.flush(aTextbook());
     expect(saved).toEqual([aTextbook()]);
     expect(dialog.visible()).toBe(false);

@@ -25,14 +25,29 @@ describe('BroadcastDialog', () => {
     await fixture.whenStable();
   });
 
-  it('adds the students of a group and takes them off with it', () => {
-    fixture.componentInstance.addStudents(['s-1', 'unknown']);
-    fixture.componentInstance.addStudents(['s-1']);
+  it('keeps an explicit student when their group is removed', () => {
+    fixture.componentInstance.form.patchValue({
+      members: [
+        { kind: 'STUDENT', id: 's-1' },
+        { kind: 'GROUP', id: 'g-1' },
+      ],
+      title: 'Перенос',
+    });
+    fixture.componentInstance.form.controls.members.setValue([{ kind: 'STUDENT', id: 's-1' }]);
+    fixture.componentInstance.send();
+    const request = backend.expectOne('/api/teacher/notifications/broadcast');
+    expect(request.request.body).toMatchObject({ studentIds: ['s-1'] });
+    request.flush({ recipients: 1 });
+  });
 
-    expect(fixture.componentInstance.form.controls.studentIds.value).toEqual(['s-1']);
-
-    fixture.componentInstance.removeStudents(['s-1']);
-    expect(fixture.componentInstance.form.controls.studentIds.value).toEqual([]);
+  it('does not send to everyone when a selected group has no available recipients', () => {
+    fixture.componentInstance.form.patchValue({
+      members: [{ kind: 'GROUP', id: 'missing' }],
+      title: 'Перенос',
+    });
+    fixture.componentInstance.send();
+    backend.expectNone('/api/teacher/notifications/broadcast');
+    expect(fixture.componentInstance.visible()).toBe(true);
   });
 
   afterEach(() => {
@@ -44,7 +59,7 @@ describe('BroadcastDialog', () => {
     const sent: number[] = [];
     fixture.componentInstance.sent.subscribe((value) => sent.push(value));
     fixture.componentInstance.form.patchValue({
-      studentIds: ['s-1'],
+      members: [{ kind: 'STUDENT', id: 's-1' }],
       title: ' Перенос ',
       body: ' В четверг ',
     });

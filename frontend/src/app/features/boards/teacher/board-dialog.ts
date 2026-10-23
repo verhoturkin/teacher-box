@@ -20,8 +20,7 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
-import { MultiSelect } from 'primeng/multiselect';
-import { ChipColors } from '@features/identity/parts';
+import { MemberPicker, MemberSelection } from '@features/identity/parts';
 import { SelectButton } from 'primeng/selectbutton';
 import { describeError } from '@core/http/error-messages';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
@@ -58,8 +57,7 @@ export interface BoardDefaults {
     Dialog,
     InputText,
     Message,
-    MultiSelect,
-    ChipColors,
+    MemberPicker,
     SelectButton,
     FieldErrors,
     SubmitFor,
@@ -114,39 +112,12 @@ export interface BoardDefaults {
           </div>
         }
         <div class="tb-field">
-          <label for="board-students">{{ t.students }}</label>
-          <p-multiselect
-            inputId="board-students"
-            formControlName="studentIds"
-            [options]="studentOptions()"
-            optionLabel="name"
-            optionValue="id"
-            [placeholder]="t.studentsPlaceholder"
-            [filter]="true"
-            [filterPlaceHolder]="t.search"
-            [ariaFilterLabel]="t.search"
-            display="chip"
-            tbChipColors="student"
-            appendTo="body"
-            [fluid]="true"
-          />
-        </div>
-        <div class="tb-field">
-          <label for="board-groups">{{ t.groups }}</label>
-          <p-multiselect
-            inputId="board-groups"
-            formControlName="groupIds"
-            [options]="groupOptions()"
-            optionLabel="name"
-            optionValue="id"
-            [placeholder]="t.groupsPlaceholder"
-            [filter]="true"
-            [filterPlaceHolder]="t.search"
-            [ariaFilterLabel]="t.search"
-            display="chip"
-            tbChipColors="group"
-            appendTo="body"
-            [fluid]="true"
+          <label for="board-members">{{ t.members }}</label>
+          <tb-member-picker
+            inputId="board-members"
+            formControlName="members"
+            [students]="studentOptions()"
+            [groups]="groupOptions()"
           />
         </div>
         @if (error(); as message) {
@@ -198,8 +169,7 @@ export class BoardDialog {
       '',
       [Validators.required, Validators.maxLength(1000), Validators.pattern(BOARD_LINK_PATTERN)],
     ],
-    studentIds: [[] as string[]],
-    groupIds: [[] as string[]],
+    members: [[] as MemberSelection[]],
   });
 
   private readonly chosenKind = toSignal(this.form.controls.kind.valueChanges, {
@@ -224,8 +194,12 @@ export class BoardDialog {
           kind: board?.kind ?? 'EXCALIDRAW',
           title: board?.title ?? '',
           url: board?.url ?? '',
-          studentIds: board ? this.memberIds(board, 'STUDENT') : [...defaults.studentIds],
-          groupIds: board ? this.memberIds(board, 'GROUP') : [...defaults.groupIds],
+          members: board
+            ? board.members.map((member) => ({ kind: member.type, id: member.id }))
+            : [
+                ...defaults.studentIds.map((id) => ({ kind: 'STUDENT' as const, id })),
+                ...defaults.groupIds.map((id) => ({ kind: 'GROUP' as const, id })),
+              ],
         });
       }
     });
@@ -245,8 +219,12 @@ export class BoardDialog {
     const input: BoardInput = {
       title: value.title.trim(),
       url: this.kind() === 'LINK' ? value.url.trim() : null,
-      studentIds: value.studentIds,
-      groupIds: value.groupIds,
+      studentIds: value.members
+        .filter((member) => member.kind === 'STUDENT')
+        .map((member) => member.id),
+      groupIds: value.members
+        .filter((member) => member.kind === 'GROUP')
+        .map((member) => member.id),
     };
     const board = this.board();
     this.pending.set(true);
@@ -264,10 +242,6 @@ export class BoardDialog {
         },
       },
     );
-  }
-
-  private memberIds(board: Board, type: 'STUDENT' | 'GROUP'): string[] {
-    return board.members.filter((member) => member.type === type).map((member) => member.id);
   }
 
   private withMembers(options: readonly MemberOption[], type: 'STUDENT' | 'GROUP'): MemberOption[] {

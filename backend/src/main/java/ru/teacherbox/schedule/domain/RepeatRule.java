@@ -24,7 +24,7 @@ import ru.teacherbox.shared.error.BusinessRuleException;
  * created ahead up to {@link #generatedUntil()}; a series is never edited in place — it ends and a
  * new one continues from the date of the change.
  */
-public final class Series {
+public final class RepeatRule {
 
     public static final int MAX_INTERVAL_WEEKS = 4;
 
@@ -36,6 +36,7 @@ public final class Series {
     private final int durationMinutes;
     private final int intervalWeeks;
     private final LocalDate startsOn;
+    private @Nullable LocalDate originDate;
     private @Nullable LocalDate endsOn;
     private final @Nullable String topic;
     private final @Nullable String meetingUrl;
@@ -44,7 +45,7 @@ public final class Series {
     private Instant updatedAt;
     private long version;
 
-    private Series(UUID id, @Nullable UUID studentId, @Nullable UUID groupId, Set<DayOfWeek> weekdays,
+    private RepeatRule(UUID id, @Nullable UUID studentId, @Nullable UUID groupId, Set<DayOfWeek> weekdays,
             LocalTime startTime, int durationMinutes, int intervalWeeks, LocalDate startsOn, @Nullable LocalDate endsOn,
             @Nullable String topic, @Nullable String meetingUrl, LocalDate generatedUntil, Instant createdAt,
             Instant updatedAt, long version) {
@@ -72,7 +73,7 @@ public final class Series {
      * @param studentId the student of a series of lessons with one student
      * @param groupId   the group of a series of group lessons (exactly one of the two is given)
      */
-    public static Series create(UUID id, @Nullable UUID studentId, @Nullable UUID groupId,
+    public static RepeatRule create(UUID id, @Nullable UUID studentId, @Nullable UUID groupId,
             Collection<DayOfWeek> weekdays, LocalTime startTime,
             int durationMinutes, int intervalWeeks, LocalDate startsOn, @Nullable LocalDate endsOn,
             @Nullable String topic, @Nullable String meetingUrl, Instant now) {
@@ -86,17 +87,17 @@ public final class Series {
         if (endsOn != null && endsOn.isBefore(startsOn)) {
             throw new BusinessRuleException("schedule.series-dates-invalid", "The series ends before it starts");
         }
-        return new Series(id, studentId, groupId, EnumSet.copyOf(weekdays), startTime.withSecond(0).withNano(0),
+        return new RepeatRule(id, studentId, groupId, EnumSet.copyOf(weekdays), startTime.withSecond(0).withNano(0),
                 Texts.duration(durationMinutes), intervalWeeks, startsOn, endsOn, Texts.optional(topic),
                 Texts.meetingUrl(meetingUrl), startsOn.minusDays(1), now, now, 0);
     }
 
-    public static Series restore(UUID id, @Nullable UUID studentId, @Nullable UUID groupId,
+    public static RepeatRule restore(UUID id, @Nullable UUID studentId, @Nullable UUID groupId,
             Set<DayOfWeek> weekdays, LocalTime startTime,
             int durationMinutes, int intervalWeeks, LocalDate startsOn, @Nullable LocalDate endsOn,
             @Nullable String topic, @Nullable String meetingUrl, LocalDate generatedUntil, Instant createdAt,
             Instant updatedAt, long version) {
-        return new Series(id, studentId, groupId, weekdays, startTime, durationMinutes, intervalWeeks, startsOn, endsOn,
+        return new RepeatRule(id, studentId, groupId, weekdays, startTime, durationMinutes, intervalWeeks, startsOn, endsOn,
                 topic, meetingUrl, generatedUntil, createdAt, updatedAt, version);
     }
 
@@ -109,7 +110,7 @@ public final class Series {
         for (LocalDate date = first; !date.isAfter(last); date = date.plusDays(1)) {
             if (weekdays.contains(date.getDayOfWeek())
                     && ChronoUnit.WEEKS.between(firstWeek, weekStart(date)) % intervalWeeks == 0) {
-                dates.add(date);
+                dates.add(logicalDate(date));
             }
         }
         return dates;
@@ -117,7 +118,7 @@ public final class Series {
 
     /** Start of the lesson on {@code date}: the local time in {@code zone} (moved forward in a DST gap). */
     public Instant startOn(LocalDate date, ZoneId zone) {
-        return ZonedDateTime.of(date, startTime, zone).toInstant();
+        return ZonedDateTime.of(actualDate(date), startTime, zone).toInstant();
     }
 
     /**
@@ -146,6 +147,33 @@ public final class Series {
     /** Whether lessons after {@code date} may still exist or be created. */
     public boolean continuesAfter(LocalDate date) {
         return endsOn == null || endsOn.isAfter(date);
+    }
+
+    /** The original occurrence sequence remains stable when its actual time is moved. */
+    public RepeatRule continueFrom(LocalDate originalDate) {
+        this.originDate = originalDate;
+        return this;
+    }
+
+    public LocalDate originDate() {
+        return originDate == null ? firstActualDate() : originDate;
+    }
+
+    public LocalDate actualDate(LocalDate occurrenceDate) {
+        return firstActualDate().plusDays(ChronoUnit.DAYS.between(originDate(), occurrenceDate));
+    }
+
+    private LocalDate logicalDate(LocalDate actualDate) {
+        return originDate().plusDays(ChronoUnit.DAYS.between(firstActualDate(), actualDate));
+    }
+
+    private LocalDate firstActualDate() {
+        LocalDate date = startsOn;
+        while (!weekdays.contains(date.getDayOfWeek())
+                || ChronoUnit.WEEKS.between(weekStart(startsOn), weekStart(date)) % intervalWeeks != 0) {
+            date = date.plusDays(1);
+        }
+        return date;
     }
 
     private static LocalDate weekStart(LocalDate date) {

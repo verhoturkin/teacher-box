@@ -109,17 +109,11 @@ test.beforeAll(async ({ request }) => {
     durationMinutes: 60,
     allowOverlap: true,
   });
-  await api(request, teacher, '/api/teacher/schedule/series', {
+  await api(request, teacher, '/api/teacher/schedule/lessons', {
     studentId,
-    groupId: null,
-    weekdays: ['SUNDAY'],
-    startTime: '08:00',
+    startsAt: new Date(Date.now() + 30 * 86_400_000).toISOString(),
     durationMinutes: 60,
-    intervalWeeks: 1,
-    startsOn: new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10),
-    endsOn: null,
-    topic: null,
-    meetingUrl: null,
+    repeatWeeks: 1,
     allowOverlap: true,
   });
   // a new task: an unread notification of the student
@@ -186,15 +180,13 @@ test('the teacher’s home has no «Сегодня»', async ({ page }) => {
   await expect(page.locator('tb-today-lessons-widget')).toHaveCount(0);
 });
 
-test('a past lesson is outlined, recurring lessons have a «⋮» menu', async ({ page }) => {
+test('a past lesson is outlined and repeats use the lesson form', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   // 0.24.0: a past lesson is outlined in the calendar (the queue of Today shows only the first rows)
   await page.goto('/teacher/schedule');
+  await page.getByRole('tab', { name: 'Вид: Месяц', exact: true }).click();
   await expect(page.locator('.tb-lesson--unmarked', { hasText: STUDENT })).toBeVisible();
-  await page.getByRole('button', { name: `Действия: ${STUDENT}` }).click();
-  await expect(page.getByRole('menuitem', { name: 'Изменить' })).toBeVisible();
-  await expect(page.getByRole('menuitem', { name: 'Завершить…' })).toBeVisible();
-  await page.keyboard.press('Escape');
+  await expect(page.getByRole('tab', { name: 'Регулярные', exact: true })).toHaveCount(0);
 });
 
 test('on a phone a past lesson has its buttons under the row of the agenda', async ({ page }) => {

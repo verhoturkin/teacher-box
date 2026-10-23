@@ -71,8 +71,8 @@ import { T } from './i18n/texts';
             />
           }
 
+          <tb-search-field [formControl]="search" [label]="t.searchMine" />
           <div class="tb-my-materials__bar">
-            <tb-search-field [formControl]="search" [label]="t.searchMine" />
             <tb-filter-chips
               [label]="t.filters"
               [chips]="chips()"
@@ -103,10 +103,8 @@ import { T } from './i18n/texts';
       margin-block-end: var(--tb-space-3);
     }
 
-    /* a phone: the search is on its own row, the chips wrap under it */
     @media (width < 37.5em) {
       .tb-my-materials__bar {
-        display: grid;
         gap: var(--tb-space-2);
       }
     }

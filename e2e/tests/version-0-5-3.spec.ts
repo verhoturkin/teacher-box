@@ -12,6 +12,7 @@ const ADMIN_PASSWORD = process.env['E2E_ADMIN_PASSWORD'] ?? 'e2e-admin-pass';
 const BASE_URL = process.env['E2E_BASE_URL'] ?? 'http://localhost:8091';
 const RUN = Date.now().toString(36);
 const STUDENT = `Вера ${RUN}`;
+const OFF_TIME = `Врач ${RUN}`;
 const STUDENT_LOGIN = `vera-${RUN}`;
 const STUDENT_PASSWORD = 'e2e-student-pass-153';
 
@@ -94,7 +95,6 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
   await planLesson(page, 8, 10, 'Дальняя');
 
   // 0.24.0: off time is a tab of the schedule's side pane
-  await page.getByRole('tab', { name: 'Нерабочее время' }).click();
   await page.getByRole('button', { name: 'Добавить нерабочее время' }).click();
   const dialog = page.getByRole('dialog', { name: 'Нерабочее время' });
   await expect(dialog.getByRole('button', { name: 'Один раз' })).toHaveAttribute(
@@ -105,10 +105,10 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
   await page.locator('#off-time-starts-at').pressSequentially(dateTime(9, 9));
   await page.locator('#off-time-ends-at').clear();
   await page.locator('#off-time-ends-at').pressSequentially(dateTime(9, 18));
-  await page.locator('#off-time-note').fill('Врач');
+  await page.locator('#off-time-note').fill(OFF_TIME);
   await dialog.getByRole('button', { name: 'Сохранить' }).click();
   await expect(dialog).toBeHidden();
-  const offTime = page.locator('.tb-schedule-side').filter({ hasText: 'Врач' });
+  const offTime = page.locator('.tb-schedule-side li').filter({ hasText: OFF_TIME });
   await expect(offTime).toBeVisible();
 
   const student = await studentPage(browser);
@@ -126,14 +126,10 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
   await expect(student.getByText('Врач')).toHaveCount(0);
 
   // 0.15.3: the actions of a day off are in «⋮»
-  await page
-    .locator('.tb-schedule-side')
-    .getByRole('button', { name: /^Действия: / })
-    .first()
-    .click();
+  await offTime.getByRole('button', { name: /^Действия: / }).click();
   await page.getByRole('menuitem', { name: 'Удалить…' }).click();
   await page.getByRole('alertdialog').getByRole('button', { name: 'Удалить' }).click();
-  await expect(page.getByText('Отметьте обед, выходные или отпуск')).toBeVisible();
+  await expect(offTime).toHaveCount(0);
 
   await student.locator('#request-start').clear();
   await student.locator('#request-start').pressSequentially(dateTime(9, 12, 5));

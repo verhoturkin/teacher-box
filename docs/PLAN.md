@@ -17,21 +17,10 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## v0.28.0 — CI follow-up
-
-### Stage 256 — E2E selectors after persistent pane headings
-
-- [x] 256.1 **F** Update `e2e/tests/version-0-21-0.spec.ts` and `version-0-9-1.spec.ts` to find help and
-  backup headings/actions in the pane header. Cover a nonzero unread count in `version-0-28-0.spec.ts`;
-  find the bell independently of its dynamic accessible name. Run the affected E2E files, commit and push.
-
 ## Backlog
 
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the monthly report,
 homework and board lists by name) and the options of student / group selects.
-
-Shell after 0.21.0: on the boards page filtered by a student (`?student=`) the rail «Создать › Доска» drops the
-filter, so the new board's dialog no longer prefills that student (the header «Новая доска» did on desktop).
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
 - Shared `tb-steps` and `tb-copy-field` components.

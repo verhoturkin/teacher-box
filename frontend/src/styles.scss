@@ -311,6 +311,7 @@ html {
 
 /* The page is the surface container; cards lie on it (ADR-0017) */
 body {
+  --tb-field-surface: var(--p-md-surface-container);
   background: var(--p-md-surface-container);
   color: var(--p-md-on-surface);
   letter-spacing: var(--tb-tracking-body-l);
@@ -320,6 +321,7 @@ body {
    tone and the pane is not a card on a darker background (ours: the bottom bar keeps the container tone) */
 @media (width < 37.5em) {
   body:has(tb-panes) {
+    --tb-field-surface: var(--p-md-surface);
     background: var(--p-md-surface);
   }
 
@@ -410,6 +412,7 @@ body {
 .tb-pane__scroll,
 .tb-notifications-pane,
 .tb-roster__scroll,
+.tb-search__panel,
 .p-dialog-content,
 .p-drawer-content {
   &::-webkit-scrollbar {
@@ -436,6 +439,7 @@ body {
   .tb-pane__scroll,
   .tb-notifications-pane,
   .tb-roster__scroll,
+  .tb-search__panel,
   .p-dialog-content,
   .p-drawer-content {
     scrollbar-color: var(--p-md-outline-variant) transparent;
@@ -452,6 +456,7 @@ body {
 tb-pane .p-card:not(.tb-hero),
 .tb-notifications-pane .p-card,
 .tb-side-sheet .p-card {
+  --tb-field-surface: inherit;
   background: transparent;
   border-radius: 0;
   color: inherit;
@@ -513,6 +518,7 @@ small,
   --tb-list-item: var(--p-md-surface-container-high);
 
   body {
+    --tb-field-surface: var(--p-md-surface);
     background: var(--p-md-surface);
   }
 }
@@ -638,6 +644,7 @@ textarea.p-textarea {
  * standard spring.
  */
 .p-drawer {
+  --tb-field-surface: var(--p-drawer-background);
   --tb-motion-x: 0;
   --tb-motion-y: 0;
 
@@ -838,6 +845,11 @@ textarea.p-textarea {
 }
 
 /* A field: the label above it (Label Large), the hint under it (Body Small) */
+/* Outlined-label cutouts follow the owner of the painted surface, including transparent cards. */
+.p-card {
+  --tb-field-surface: var(--p-card-background);
+}
+
 .tb-field {
   display: flex;
   flex-direction: column;
@@ -900,7 +912,7 @@ textarea.p-textarea {
     max-width: calc(100% - 2rem);
     overflow: hidden;
     padding: 0 var(--tb-space-1);
-    background: var(--tb-card);
+    background: var(--tb-field-surface);
     color: var(--p-md-on-surface-variant);
     font: var(--tb-type-body-s);
     text-overflow: ellipsis;
@@ -1914,6 +1926,7 @@ a.p-menu-item-link:hover {
 
 /* The main card of a page (the nearest lesson): the primary container (M3 filled card) */
 .p-card.tb-hero {
+  --tb-field-surface: var(--p-md-primary-container);
   background: var(--p-md-primary-container);
   color: var(--p-md-on-primary-container);
 
@@ -2704,6 +2717,7 @@ full-calendar :has(> .tb-lesson--moving) {
  * from it in both themes (the highest stays unused, as M3 asks of the surface of a dialog).
  */
 .p-dialog {
+  --tb-field-surface: var(--p-dialog-background);
   --tb-card: var(--p-md-surface-container-high);
   --tb-list-item: var(--p-md-surface-container-lowest);
 }
@@ -3089,6 +3103,7 @@ full-calendar :has(> .tb-lesson--moving) {
  * takes the whole screen.
  */
 .p-drawer.tb-side-sheet {
+  --tb-field-surface: var(--p-md-surface-container-low);
   top: var(--tb-space-4);
   right: var(--tb-space-4);
   bottom: var(--tb-space-4);
@@ -3244,6 +3259,7 @@ full-calendar :has(> .tb-lesson--moving) {
  * rail (ours, M3: 220–360 dp). The header holds the menu button that closes it, in line with the items.
  */
 .p-drawer.tb-modal-rail {
+  --tb-field-surface: var(--p-md-surface-container);
   width: min(280px, calc(100vw - var(--tb-space-16)));
   height: 100%;
   border: none;
@@ -3959,27 +3975,20 @@ full-calendar :has(> .tb-lesson--moving) {
 }
 
 /*
- * The feed of material cards (Materials, redesign spec §10.1): 2 columns on compact, 3 from medium, 4 on
- * large, 6 on extra-large — the spec's counts by breakpoint; 12 px between the cards of a phone, 16 px wider.
+ * Material cards: two shrinkable columns on compact, as many bounded columns as fit from medium.
+ * Ours: 240 px maximum width (about 20% below the former 306 px at a 1440 px viewport), including
+ * single-card lists; 12 px between cards on a phone, 16 px wider. Auto-fill keeps empty tracks.
  */
 .tb-material-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 15rem));
   gap: var(--tb-space-3);
   margin: 0;
   padding: 0;
   list-style: none;
 
   @media (width >= 37.5em) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 15rem));
     gap: var(--tb-space-4);
-  }
-
-  @media (width >= 75em) {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  @media (width >= 100em) {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }

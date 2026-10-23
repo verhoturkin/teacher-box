@@ -90,6 +90,7 @@ export const ru = {
     titlePlaceholder: 'Например, Алгебра',
     url: 'Ссылка на доску',
     urlHint: 'Откройте к доске доступ по ссылке, например в Холсте.',
+    members: 'Ученики и группы',
     students: 'Ученики',
     studentsPlaceholder: 'Кому открыта доска',
     groups: 'Группы',

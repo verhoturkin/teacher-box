@@ -7,6 +7,10 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
 
 ## Rules
 
+- **Lesson repetition (0.29.0):** `LessonRepeatScheduled` and `LessonRepeatStopped` aggregate notices;
+  nightly occurrence generation sends none. Legacy `SeriesScheduled`/`SeriesStopped` listeners remain only
+  to replay durable publications from an older release. Billing still consumes individual lesson outcomes.
+
 - Listens to domain events of other modules (producers don't know it) and turns each into an **inbox** record
   plus an outbox **delivery** per connected and enabled channel of the recipient. Texts — templates in
   the module, in the recipient's language (0.11.1, ADR-0036: `UserDirectory.language`; dictionaries
@@ -76,3 +80,7 @@ opened, each part with its own «Показать ещё»; a notification marke
 `new-message-dialog.ts` is the frame's dialog of a new message through `NEW_MESSAGE_DIALOG`, opened by «Создать ›
 Сообщение» on any page and by «Написать ученикам», 235.3; bot wizard), `student/` (`connect-messenger-card.ts` on the student's home → «Мой аккаунт»; the «connect» reminder
 `remindToConnect` links there too), `notification-labels.ts`; the bell in the top bar (`core/notifications`) opens the sheet.
+
+Broadcast recipients use the shared typed member picker. Explicit students and active groups resolve to a
+deduplicated snapshot, preserving explicit students when groups are removed. Empty selection means all;
+a nonempty selection resolving to no available students is rejected rather than broadcast to everyone.

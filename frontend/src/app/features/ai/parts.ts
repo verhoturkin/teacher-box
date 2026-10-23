@@ -4,6 +4,6 @@
  */
 export { AiApi } from './data-access/ai-api';
 export { AiSettingsPanel } from './ai-settings-panel';
-export { HomeworkAiPanel } from './homework-ai-panel';
+export { HomeworkAiPanel, HomeworkAiState } from './homework-ai-panel';
 export type { AppliedDraft } from './homework-ai-panel';
 export type { SourceOption } from './data-access/ai.models';

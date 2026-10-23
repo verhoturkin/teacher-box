@@ -53,6 +53,7 @@ export const ru = {
     coursePlaceholder: 'Например, Английский, 5 класс',
     pageCount: 'Число страниц',
     pageCountHint: 'У PDF портал считает страницы сам, у Word — укажите.',
+    members: 'Ученики и группы',
     students: 'Ученики',
     studentsPlaceholder: 'Кому открыт учебник',
     groups: 'Группы',

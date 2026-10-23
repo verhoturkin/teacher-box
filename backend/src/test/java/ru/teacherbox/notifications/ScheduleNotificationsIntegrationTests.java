@@ -34,8 +34,8 @@ import ru.teacherbox.schedule.api.LessonRestored;
 import ru.teacherbox.schedule.api.LessonScheduled;
 import ru.teacherbox.schedule.api.LessonStartingSoon;
 import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
-import ru.teacherbox.schedule.api.SeriesScheduled;
-import ru.teacherbox.schedule.api.SeriesStopped;
+import ru.teacherbox.schedule.api.LessonRepeatScheduled;
+import ru.teacherbox.schedule.api.LessonRepeatStopped;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
 
@@ -82,14 +82,14 @@ class ScheduleNotificationsIntegrationTests {
         assertThat(single.link()).isEqualTo("/cabinet/schedule");
 
         UUID regular = directory.addStudent("Регулярный");
-        InboxNotification series = latest(scenario, regular, new SeriesScheduled(UUID.randomUUID(), null, List.of(regular),
+        InboxNotification series = latest(scenario, regular, new LessonRepeatScheduled(UUID.randomUUID(), null, List.of(regular),
                 List.of(DayOfWeek.TUESDAY, DayOfWeek.THURSDAY), LocalTime.of(18, 0), 60, 2,
                 LocalDate.of(2026, 10, 1), LocalDate.of(2026, 12, 31), Instant.now()));
-        assertThat(series.title()).isEqualTo("Регулярные занятия по вторникам и четвергам в 18:00");
+        assertThat(series.title()).isEqualTo("Занятия с повтором по вторникам и четвергам в 18:00");
         assertThat(series.body()).isEqualTo("С 01.10.2026 по 31.12.2026, раз в 2 недели.");
 
         UUID weekly = directory.addStudent("Каждую неделю");
-        assertThat(latest(scenario, weekly, new SeriesScheduled(UUID.randomUUID(), null, List.of(weekly), List.of(DayOfWeek.MONDAY),
+        assertThat(latest(scenario, weekly, new LessonRepeatScheduled(UUID.randomUUID(), null, List.of(weekly), List.of(DayOfWeek.MONDAY),
                 LocalTime.of(9, 0), 60, 1, LocalDate.of(2026, 10, 5), null, Instant.now())).body())
                 .isEqualTo("С 05.10.2026.");
     }
@@ -97,14 +97,30 @@ class ScheduleNotificationsIntegrationTests {
     @Test
     void stoppedSeriesAreAnnouncedUnlessReplaced(Scenario scenario) {
         UUID student = directory.addStudent("Каникулы");
-        scenario.publish(new SeriesStopped(UUID.randomUUID(), null, List.of(student), LocalDate.of(2026, 10, 5), true,
-                Instant.now())).andWaitForEventOfType(SeriesStopped.class).toArrive();
+        scenario.publish(new LessonRepeatStopped(UUID.randomUUID(), null, List.of(student), LocalDate.of(2026, 10, 5), true,
+                Instant.now())).andWaitForEventOfType(LessonRepeatStopped.class).toArrive();
         assertThat(inbox.findPage(student, 0, 10)).isEmpty();
 
-        InboxNotification stopped = latest(scenario, student, new SeriesStopped(UUID.randomUUID(), null, List.of(student),
+        InboxNotification stopped = latest(scenario, student, new LessonRepeatStopped(UUID.randomUUID(), null, List.of(student),
                 LocalDate.of(2026, 10, 5), false, Instant.now()));
         assertThat(stopped.kind()).isEqualTo(NotificationKind.SCHEDULE_LESSON_CANCELLED);
         assertThat(stopped.body()).isEqualTo("Занятия по расписанию с 05.10.2026 отменены.");
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    void replaysRepeatNotificationsQueuedBeforeTheUpgrade(Scenario scenario) {
+        UUID student = directory.addStudent("Обновление");
+        InboxNotification planned = latest(scenario, student,
+                new ru.teacherbox.schedule.api.SeriesScheduled(UUID.randomUUID(), null, List.of(student),
+                        List.of(DayOfWeek.MONDAY), LocalTime.of(18, 0), 60, 4,
+                        LocalDate.of(2026, 10, 5), null, Instant.now()));
+        assertThat(planned.body()).contains("раз в 4 недели");
+        UUID stoppedStudent = directory.addStudent("Завершение после обновления");
+        InboxNotification stopped = latest(scenario, stoppedStudent,
+                new ru.teacherbox.schedule.api.SeriesStopped(UUID.randomUUID(), null, List.of(stoppedStudent),
+                        LocalDate.of(2026, 11, 1), false, Instant.now()));
+        assertThat(stopped.body()).contains("01.11.2026");
     }
 
     @Test
@@ -243,10 +259,10 @@ class ScheduleNotificationsIntegrationTests {
 
         UUID regular = directory.addStudent("Regular");
         directory.setLanguage(regular, Language.EN);
-        InboxNotification series = latest(scenario, regular, new SeriesScheduled(UUID.randomUUID(), null,
+        InboxNotification series = latest(scenario, regular, new LessonRepeatScheduled(UUID.randomUUID(), null,
                 List.of(regular), List.of(DayOfWeek.TUESDAY, DayOfWeek.THURSDAY), LocalTime.of(18, 0), 60, 2,
                 LocalDate.of(2026, 10, 1), LocalDate.of(2026, 12, 31), Instant.now()));
-        assertThat(series.title()).isEqualTo("Regular lessons on Tuesdays and Thursdays at 18:00");
+        assertThat(series.title()).isEqualTo("Repeating lessons on Tuesdays and Thursdays at 18:00");
         assertThat(series.body()).isEqualTo("From 01.10.2026 to 31.12.2026, every 2 weeks.");
 
         UUID reminded = directory.addStudent("Reminded");

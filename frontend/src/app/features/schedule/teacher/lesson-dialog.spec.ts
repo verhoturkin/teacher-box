@@ -43,6 +43,53 @@ describe('LessonDialog', () => {
     return fixture.componentInstance;
   }
 
+  it.each([0, 1, 2, 3, 4])(
+    'saves repeat interval %i from the unified lesson form',
+    async (weeks) => {
+      const dialog = await open(null, { start: new Date(2026, 9, 1, 18), durationMinutes: 60 });
+      dialog.form.patchValue({ owner: 'student:s-1', repeatWeeks: weeks });
+      await fixture.whenStable();
+      expect(document.body.querySelector('#schedule-lesson-repeat')).not.toBeNull();
+      expect(document.body.querySelector('#schedule-lesson-repeat-until') !== null).toBe(weeks > 0);
+      dialog.save();
+      const request = backend.expectOne({ method: 'POST', url: '/api/teacher/schedule/lessons' });
+      expect(request.request.body).toMatchObject({
+        repeatWeeks: weeks,
+        scope: 'ONLY',
+        repeatUntil: null,
+      });
+      request.flush(scheduledLesson({ repeatWeeks: weeks }));
+    },
+  );
+
+  it('waits for the affected set before changing following occurrences', async () => {
+    const lesson = scheduledLesson({
+      seriesId: 'rule-1',
+      repeatWeeks: 3,
+      version: 2,
+      repeatVersion: 4,
+    });
+    const dialog = await open(lesson);
+    dialog.form.controls.repeatWeeks.setValue(4);
+    await fixture.whenStable();
+    dialog.save();
+    backend.expectNone({ method: 'PUT', url: '/api/teacher/schedule/lessons/l-1' });
+    backend
+      .expectOne('/api/teacher/schedule/lessons/l-1/following')
+      .flush({ repeatVersion: 4, affected: ['l-1', 'l-2'], protectedLessons: ['l-3'] });
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Существующих занятий для изменения: 2');
+    dialog.save();
+    const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/lessons/l-1' });
+    expect(request.request.body).toMatchObject({
+      repeatWeeks: 4,
+      scope: 'FOLLOWING',
+      version: 2,
+      repeatVersion: 4,
+    });
+    request.flush(scheduledLesson({ repeatWeeks: 4 }));
+  });
+
   it('plans a lesson in the selected slot', async () => {
     const start = new Date(2026, 9, 1, 18, 0);
     const dialog = await open(null, { start, durationMinutes: 90 });
@@ -60,7 +107,7 @@ describe('LessonDialog', () => {
     buttonByText(document.body, 'Сохранить').click();
 
     const request = backend.expectOne({ method: 'POST', url: '/api/teacher/schedule/lessons' });
-    expect(request.request.body).toEqual({
+    expect(request.request.body).toMatchObject({
       studentId: 's-2',
       groupId: null,
       startsAt: start.toISOString(),
@@ -88,7 +135,7 @@ describe('LessonDialog', () => {
 
     buttonByText(document.body, 'Всё равно сохранить').click();
     const retry = backend.expectOne('/api/teacher/schedule/lessons');
-    expect(retry.request.body).toEqual(
+    expect(retry.request.body).toMatchObject(
       expect.objectContaining({
         studentId: null,
         groupId: 'g-1',
@@ -205,7 +252,7 @@ describe('LessonDialog', () => {
     dialog.save();
 
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/lessons/l-1' });
-    expect(request.request.body).toEqual({
+    expect(request.request.body).toMatchObject({
       startsAt: lesson.startsAt,
       durationMinutes: 30,
       topic: 'Степени',

@@ -36,12 +36,19 @@ groups. Depends on: `shared`, `identity::api`. Schema `boards`. ADR: [0028](../a
 - Preview (245.1): the editor of the teacher exports the drawing as a PNG (`exportToBlob`, longer side 800 px, on the
   board's background) and puts it with `PUT /api/teacher/boards/{id}/preview` (raw body, `image/png` checked by magic
   bytes, ≤ 5 MB — `boards.file-type-not-allowed`, `boards.file-too-large`; an external board — 409 `boards.no-scene`).
+  `DELETE /api/teacher/boards/{id}/preview` clears an emptied board (teacher only, idempotent).
   One file per board in the `boards` namespace (`board_previews`: key, size, `updated_at`), the old one is deleted on
   replace and with the board. `GET /api/boards/{id}/preview` goes through `requireAccess` (the teacher, a member
   student; anyone else 404; no preview yet — 404 `boards.preview-not-found`), `private, max-age=60`, `nosniff`. The board
   DTOs carry `previewUpdatedAt` (null until the first preview) — the feed asks for the picture when it is set and uses
-  it as the cache key. A student's editor sends none: a student's changes show in the preview the next time the
+  it as the HTTP query cache key (`?v=`), not only as an image component revision. A student's editor sends none: a student's changes show in the preview the next time the
   teacher saves or opens the board.
+- Ordinary in-app exit waits for the scene and serialized preview export/upload, repeating when edits arrive
+  during a request. Live edits, background-only changes and newly loaded images invalidate the preview.
+  Empty scenes clear the old image. Missing images and failed preview uploads keep the previous image and
+  retry on a later flush/save; a preview failure does not block leaving a successfully saved scene.
+  Closing or killing the browser cannot guarantee asynchronous completion: background previews and the
+  visibility flush reduce the gap. Returning to Materials reloads metadata; preview revisions bypass HTTP cache.
 - Copies: `DAILY` by `BoardBackupJob` (`TEACHERBOX_BOARDS_BACKUP_CRON`, default `0 0 3 * * *`, instance time zone)
   for every scene whose version is above its last daily copy; the newest `TEACHERBOX_BOARDS_BACKUP_KEEP` (7) daily
   copies stay. `MANUAL` — the teacher's, ≤ 20 per board. Restore saves the current scene as a `MANUAL` copy first,
@@ -63,7 +70,7 @@ Excalidraw library of each user, `user_id` → items JSON, up to 2 000 000 chara
 | Endpoint | Who |
 |---|---|
 | `GET /api/teacher/boards?studentId=|groupId=` (`studentId` may repeat: the boards of any of the students, with their groups'), `POST`, `PUT /{id}` (with `version`), `DELETE /{id}` | teacher |
-| `PUT /api/teacher/boards/{id}/preview` (PNG body) | teacher |
+| `PUT /api/teacher/boards/{id}/preview` (PNG body), `DELETE` (clear) | teacher |
 | `GET|POST /api/teacher/boards/{id}/backups`, `POST …/{backupId}/restore`, `DELETE …/{backupId}` | teacher |
 | `GET /api/boards/{id}`, `GET /api/boards/{id}/preview`, `PUT|GET /api/boards/{id}/scene`, `PUT|GET /api/boards/{id}/files/{fileId}`, `POST /api/boards/{id}/live` | teacher, member student |
 | WebSocket `/api/public/boards/live?ticket=` | holder of a ticket |
@@ -74,6 +81,10 @@ Bot action «Мои доски» (`MyBoardsChatAction`): an Excalidraw board →
 (skipped without a portal address), an external board → its URL.
 
 ## Frontend
+
+The material dialog uses the shared `identity/parts` member picker: one searchable field with typed
+student/group chips. It persists individual and group grants separately; group membership stays dynamic.
+Existing members absent from current options remain visible and removable.
 
 `features/boards/` (pages in `index.ts`, widgets in `parts.ts`):
 

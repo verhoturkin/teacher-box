@@ -56,6 +56,12 @@ class FakeServer implements BoardServer {
 /** The teacher's server: it takes the preview picture. */
 class PreviewServer extends FakeServer {
   readonly previews: Blob[] = [];
+  cleared = 0;
+
+  clearPreview(): Observable<void> {
+    this.cleared++;
+    return of(undefined);
+  }
   previewAnswer: () => Observable<void> = () => of(undefined);
 
   preview(png: Blob): Observable<void> {
@@ -482,10 +488,61 @@ describe('BoardSync', () => {
       sync.stop();
     });
 
+    it('waits for an in-flight upload and exports edits made while it ran', async () => {
+      const upload = new Subject<void>();
+      previews.previewAnswer = () => upload;
+      const { sync, state, access } = start();
+      await vi.advanceTimersByTimeAsync(PREVIEW_DELAY_MS);
+      expect(previews.previews).toHaveLength(1);
+      state.elements = [anElement('a', 2)];
+      sync.changed(state.elements, access.getAppState());
+      let left = false;
+      const flush = sync.flush().then((saved) => {
+        left = saved;
+      });
+      await Promise.resolve();
+      expect(left).toBe(false);
+      previews.previewAnswer = () => of(undefined);
+      upload.next(undefined);
+      upload.complete();
+      await flush;
+      expect(left).toBe(true);
+      expect(previews.previews).toHaveLength(2);
+      expect(server.saved.at(-1)?.elements).toEqual([anElement('a', 2)]);
+      sync.stop();
+    });
+
+    it('exports live edits and background-only changes on exit', async () => {
+      const exported = vi.spyOn(island.modules, 'exportPreview');
+      const { sync, state, access } = start();
+      await sync.flush();
+      sync.received([anElement('remote', 1)]);
+      await sync.flush();
+      expect(exported.mock.calls.at(-1)?.[0].map((element) => element.id)).toContain('remote');
+      state.appState = { ...state.appState, viewBackgroundColor: '#000000' };
+      sync.changed(state.elements, access.getAppState());
+      await sync.flush();
+      expect(exported.mock.calls.at(-1)?.[1].viewBackgroundColor).toBe('#000000');
+      expect(previews.previews).toHaveLength(3);
+      sync.stop();
+    });
+
+    it('clears the obsolete picture when the drawing is emptied', async () => {
+      const { sync, state, access } = start();
+      await sync.flush();
+      state.elements = [anElement('a', 2, { isDeleted: true })];
+      sync.changed(state.elements, access.getAppState());
+      await sync.flush();
+      expect(previews.cleared).toBe(1);
+      expect(previews.previews).toHaveLength(1);
+      sync.stop();
+    });
+
     it('does not draw an empty board, a board whose images are missing, or after stopping', async () => {
       const image = anElement('img', 1, { type: 'image', fileId: 'f1' });
       const empty = start([]);
       await vi.advanceTimersByTimeAsync(PREVIEW_DELAY_MS);
+      server.fileAnswer = () => throwError(() => new Error('missing'));
       const missing = start([image]);
       await vi.advanceTimersByTimeAsync(PREVIEW_DELAY_MS);
       const stopped = start();

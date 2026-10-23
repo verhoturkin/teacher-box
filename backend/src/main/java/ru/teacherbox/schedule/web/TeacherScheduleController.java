@@ -29,11 +29,12 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.schedule.application.ChangeRequestService;
 import ru.teacherbox.schedule.application.ScheduleQueries;
 import ru.teacherbox.schedule.application.ScheduleService;
+import ru.teacherbox.schedule.application.LessonRepetitionService;
+import ru.teacherbox.schedule.application.LessonRepetitionService.Options;
+import ru.teacherbox.schedule.application.LessonRepetitionService.Scope;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSummary;
-import ru.teacherbox.schedule.application.ScheduleViews.SeriesPlanned;
-import ru.teacherbox.schedule.application.ScheduleViews.SeriesView;
 import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.LessonStatus;
 
@@ -50,7 +51,12 @@ class TeacherScheduleController {
             @Min(1) @Max(600) @Nullable Integer durationMinutes,
             @Size(max = 500) @Nullable String topic,
             @Size(max = 1000) @Nullable String meetingUrl,
-            @Nullable Boolean allowOverlap) {
+            @Nullable Boolean allowOverlap,
+            @Min(0) @Max(4) @Nullable Integer repeatWeeks,
+            @Nullable LocalDate repeatUntil,
+            @Nullable Scope scope,
+            @Nullable Long version,
+            @Nullable Long repeatVersion) {
     }
 
     record EditRequest(
@@ -58,11 +64,16 @@ class TeacherScheduleController {
             @NotNull @Min(1) @Max(600) Integer durationMinutes,
             @Size(max = 500) @Nullable String topic,
             @Size(max = 1000) @Nullable String meetingUrl,
-            @Nullable Boolean allowOverlap) {
+            @Nullable Boolean allowOverlap,
+            @Min(0) @Max(4) @Nullable Integer repeatWeeks,
+            @Nullable LocalDate repeatUntil,
+            @Nullable Scope scope,
+            @Nullable Long version,
+            @Nullable Long repeatVersion) {
     }
 
     record CancelRequest(@Size(max = 500) @Nullable String reason, @Nullable Boolean byStudent,
-            @Nullable Boolean charge) {
+            @Nullable Boolean charge, @Nullable Scope scope, @Nullable Long version, @Nullable Long repeatVersion) {
     }
 
     record RestoreRequest(@Nullable Boolean allowOverlap) {
@@ -75,33 +86,6 @@ class TeacherScheduleController {
     record AttendanceRequest(@NotEmpty Map<@NotNull UUID, @NotNull Attendance> marks) {
     }
 
-    /**
-     * Regular lessons with a student or with a group: exactly one of {@code studentId} and {@code groupId}.
-     *
-     * @param startsOn first day; for a change — the day the new settings apply from
-     */
-    record SeriesRequest(
-            @Nullable UUID studentId,
-            @Nullable UUID groupId,
-            @NotEmpty Set<DayOfWeek> weekdays,
-            @NotNull LocalTime startTime,
-            @Min(1) @Max(600) @Nullable Integer durationMinutes,
-            @Min(1) @Max(4) @Nullable Integer intervalWeeks,
-            @NotNull LocalDate startsOn,
-            @Nullable LocalDate endsOn,
-            @Size(max = 500) @Nullable String topic,
-            @Size(max = 1000) @Nullable String meetingUrl,
-            @Nullable Boolean allowOverlap) {
-
-        ScheduleService.PlanSeries command() {
-            return new ScheduleService.PlanSeries(studentId, groupId, weekdays, startTime, durationMinutes,
-                    intervalWeeks == null ? 1 : intervalWeeks, startsOn, endsOn, topic, meetingUrl, yes(allowOverlap));
-        }
-    }
-
-    record StopRequest(@NotNull LocalDate from) {
-    }
-
     record ApproveRequest(@Nullable Instant startsAt, @Nullable Boolean charge,
             @Size(max = 500) @Nullable String answer, @Nullable Boolean allowBusy) {
     }
@@ -110,11 +94,13 @@ class TeacherScheduleController {
     }
 
     private final ScheduleService schedule;
+    private final LessonRepetitionService repetition;
     private final ChangeRequestService requests;
     private final ScheduleQueries queries;
 
-    TeacherScheduleController(ScheduleService schedule, ChangeRequestService requests, ScheduleQueries queries) {
+    TeacherScheduleController(ScheduleService schedule, ChangeRequestService requests, ScheduleQueries queries, LessonRepetitionService repetition) {
         this.schedule = schedule;
+        this.repetition = repetition;
         this.requests = requests;
         this.queries = queries;
     }
@@ -138,26 +124,40 @@ class TeacherScheduleController {
     @PostMapping("/lessons")
     @ResponseStatus(HttpStatus.CREATED)
     LessonView plan(@Valid @RequestBody LessonRequest request) {
-        return schedule.plan(new ScheduleService.PlanLesson(request.studentId(), request.groupId(), request.startsAt(),
-                request.durationMinutes(), request.topic(), request.meetingUrl(), yes(request.allowOverlap())));
+        return repetition.plan(new ScheduleService.PlanLesson(request.studentId(), request.groupId(), request.startsAt(),
+                request.durationMinutes(), request.topic(), request.meetingUrl(), yes(request.allowOverlap())),
+                new Options(request.repeatWeeks(), request.repeatUntil(), scope(request.scope()), request.version(), request.repeatVersion()));
     }
 
     @PutMapping("/lessons/{lessonId}")
     LessonView edit(@PathVariable UUID lessonId, @Valid @RequestBody EditRequest request) {
-        return schedule.edit(lessonId, new ScheduleService.EditLesson(request.startsAt(), request.durationMinutes(),
-                request.topic(), request.meetingUrl(), yes(request.allowOverlap())));
+        return repetition.edit(lessonId, new ScheduleService.EditLesson(request.startsAt(), request.durationMinutes(),
+                request.topic(), request.meetingUrl(), yes(request.allowOverlap())),
+                new Options(request.repeatWeeks(), request.repeatUntil(), scope(request.scope()), request.version(), request.repeatVersion()));
     }
 
     @PostMapping("/lessons/{lessonId}/cancel")
     LessonView cancel(@PathVariable UUID lessonId, @Valid @RequestBody CancelRequest request) {
-        return schedule.cancel(lessonId,
-                new ScheduleService.CancelLesson(request.reason(), yes(request.byStudent()), yes(request.charge())));
+        return repetition.cancel(lessonId,
+                new ScheduleService.CancelLesson(request.reason(), yes(request.byStudent()), yes(request.charge())),
+                scope(request.scope()), request.version(), request.repeatVersion());
     }
 
     @DeleteMapping("/lessons/{lessonId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    void delete(@PathVariable UUID lessonId) {
-        schedule.delete(lessonId);
+    void delete(@PathVariable UUID lessonId, @RequestParam(defaultValue = "ONLY") Scope scope,
+            @RequestParam(required = false) @Nullable Long version,
+            @RequestParam(required = false) @Nullable Long repeatVersion) {
+        repetition.delete(lessonId, scope, version, repeatVersion);
+    }
+
+    @GetMapping("/lessons/{lessonId}/following")
+    LessonRepetitionService.FollowingView following(@PathVariable UUID lessonId) {
+        return repetition.preview(lessonId);
+    }
+
+    private static Scope scope(@Nullable Scope value) {
+        return value == null ? Scope.ONLY : value;
     }
 
     @PostMapping("/lessons/{lessonId}/restore")
@@ -189,28 +189,6 @@ class TeacherScheduleController {
     @GetMapping("/unmarked")
     List<LessonView> unmarked() {
         return queries.unmarked();
-    }
-
-    @GetMapping("/series")
-    List<SeriesView> series() {
-        return queries.activeSeries();
-    }
-
-    @PostMapping("/series")
-    @ResponseStatus(HttpStatus.CREATED)
-    SeriesPlanned planSeries(@Valid @RequestBody SeriesRequest request) {
-        return schedule.planSeries(request.command());
-    }
-
-    @PutMapping("/series/{seriesId}")
-    SeriesPlanned changeSeries(@PathVariable UUID seriesId, @Valid @RequestBody SeriesRequest request) {
-        return schedule.changeSeries(seriesId, request.command());
-    }
-
-    @PostMapping("/series/{seriesId}/stop")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    void stopSeries(@PathVariable UUID seriesId, @Valid @RequestBody StopRequest request) {
-        schedule.stopSeries(seriesId, request.from());
     }
 
     /** Unanswered requests of the students. */

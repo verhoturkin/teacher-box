@@ -15,7 +15,7 @@ After the first sign-in the portal opens the [initial setup](/teacher/help/setup
 
 1. **Add students.** «Create» → «Student» (on a phone — «Students» → «Add student»). The portal shows an invitation link — send it to the student in a messenger or by email. With the link the student chooses a login and a password.
 2. **Check the lesson price.** «Students» → the student → the «Profile» tab of their card → «Lesson price». Debts and prepayments are counted from it.
-3. **Plan lessons.** «Create» → «Lesson» for a one-off lesson, «Recurring lessons» if you meet every week at the same time.
+3. **Plan lessons.** «Create» → «Lesson» → «Repeat»: once or every 1–4 weeks.
 4. **Connect a messenger.** «Settings» → «Messengers» → «Connect». The wizard helps to create a bot, and reminders and students' requests reach you in Telegram, VK or MAX.
 
 On the «Today» page the «Getting started» list sits at the end of the «To do» card — only the steps not done yet stay in it, and the bar shows how many are done.
@@ -155,16 +155,16 @@ Archive a group you no longer teach: its future lessons are cancelled, the histo
   },
   schedule: {
     title: 'Schedule and requests',
-    summary: 'Lessons, recurring lessons, time off, marks and students’ requests',
+    summary: 'Lessons and repetition, time off, marks and students’ requests',
     body: `
 ## Plan a lesson
 
-- **One-off:** «Create» → «Lesson» (on a phone — «Schedule» → «Lesson»). Choose a student or a group, the day, the time and the duration. You can add a topic and a separate meeting link.
-- **Recurring:** «Recurring lessons» → choose the days of the week and the time. The portal creates the lessons a few weeks ahead by itself.
+«Create» → «Lesson» (on a phone — «Schedule» → «Lesson»). Choose a student or group, date, time and duration; optionally add a topic and meeting link.
+«Repeat» offers Once, Every week, Every 2 weeks, Every 3 weeks and Every 4 weeks for new and existing lessons. The date determines the weekday; the repeat end date is optional. Lessons are generated 84 days ahead and extended daily.
 
-**Default topic.** If a student or a group has a default topic (on the «Profile» tab of the student or the group), it is filled in for a new lesson or series as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
+**Default topic.** If a student or a group has a default topic (on the «Profile» tab of the student or the group), it is filled in for a new lesson as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
 
-**How the section is laid out.** On a computer the calendar (week or month) is the main area; on the right are a mini-month for jumping between days, «Students’ requests» and the «Recurring» and «Time off» tabs. On a phone the section opens as the «Agenda»: a strip of the week's days and the list of the chosen day's lessons; «Week», «Month», «Recurring» and «Time off» are in the «⋮» menu.
+**How the section is laid out.** On a computer the calendar (week or month) is the main area; on the right are a mini-month for jumping between days, «Students’ requests» and «Time off». On a phone the section opens as the «Agenda»: a strip of the week's days and the list of the chosen day's lessons; «Week», «Month» and «Time off» are in the «⋮» menu.
 
 A lesson can be dragged in the calendar to another time. It takes the new place with two buttons on its card: ✓ «Move» saves the move, ✕ «Undo the move» puts the lesson back. If the time is busy, the portal asks again.
 
@@ -177,7 +177,7 @@ Mark the time you do not work: «Schedule» → «Time off».
 - **Once** — from when to when, e.g. a holiday from Monday to Friday or a visit to the doctor.
 - **Every week** — days of the week and hours, e.g. lunch from 13:00 to 14:00 or a day off on Saturday (00:00–00:00 is the whole day). You can set from which date and until which it applies.
 
-Time off is hatched in the calendar, and listed in the «Time off» tab, where it can be edited or deleted: «⋮» in the row → «Edit» or «Delete…». Only you see the label (e.g. «Lunch»).
+Time off is hatched in the calendar, and listed in the «Time off» section, where it can be edited or deleted: «⋮» in the row → «Edit» or «Delete…». Only you see the label (e.g. «Lunch»).
 
 Students see this time as «Busy» and cannot ask to move a lesson to it. You can still put a lesson in your time off — the portal does not stop you.
 
@@ -193,6 +193,8 @@ A past lesson without a mark is outlined in red in the calendar; open it and mar
 
 - **Cancel** — the lesson stays in the schedule crossed out, the student gets a notification. A cancelled lesson can be **restored**: open it and click «Restore» — it is back in the schedule and the student gets a notification. If the time is already taken by another lesson, the portal asks.
 - **Delete** — the lesson disappears from the schedule, calendars and reports as if it never existed. Only a planned or cancelled lesson can be deleted; remove the mark of a held or missed one first. If the lesson was planned and has not passed yet, the student gets a cancellation notification.
+
+When editing, cancelling or deleting a repeating lesson choose «Only this lesson» or «This and following». The portal first shows affected existing lessons and protected exceptions. The boundary uses the original occurrence date, even after a move. Completed, charged, cancelled and individually changed occurrences remain; deleted occurrences do not regenerate.
 
 ## Students' requests
 
@@ -264,14 +266,18 @@ One lesson can have another link — in the lesson window.
     body: `
 Boards are a tab of the «Materials» section (next to the «Textbooks» tab, [Textbooks](/teacher/help/textbooks)): all boards in one place, as cards with the board's picture. The search above the cards finds a board by its title or a student's name (a group's name). A board is of one of two kinds:
 
+Search fills the pane width; filters and sorting are below it. The «Textbooks» tab uses the same layout. Cards keep a compact size even when the list contains a single material.
+
 - **Excalidraw board** — the portal's own board: you draw together with students right here, and the board saves itself.
 - **External board** — a board in another service (e.g. [Holst](https://app.holst.so)): the portal keeps only the title and the link and opens it in a new tab.
+
+Returning to Materials waits for the drawing and its card preview. Emptying a board clears its previous picture. Failed uploads or missing images may temporarily leave the previous preview. Closing the browser or tab cannot guarantee that background requests finish.
 
 ## Create a board
 
 1. «Create» → «Board» (on a phone — «Materials» → «New board»).
 2. Choose the kind and enter the title. For an external board paste the link and open the board by link in its service.
-3. Choose students and groups — as many as you like. All students of a group see its board; a student who left the group no longer sees it.
+3. Search and select recipients in the combined «Students and groups» field — as many as you like. Selected students and groups have separate chips; remove a chip to deselect it. All students of a group see its board; a student who left the group no longer sees it.
 
 The lesson card and the «Next lesson» card have links to the boards of its student or group.
 
@@ -319,7 +325,7 @@ Pages of a textbook can be put on a board too — from the «Textbooks» tab or 
 
 1. «Create» → «Homework» (on a phone — «Homework» → «New homework») — the homework editor opens.
 2. Write the title and the text. The text can have **bold**, lists and links — the «Text / Preview» switch shows what the student sees.
-3. Choose students and groups — several groups can be ticked, their students join the list (untick a group and they leave it). The due date becomes the start of their next lesson by itself — you can change it.
+3. Search and select recipients in the combined «Students and groups» field. Students in several groups receive homework once. Removing a group preserves students also selected individually. The due date becomes the start of their next lesson by itself — you can change it.
 4. Bind textbooks and add files right here — they show as cards; click a name to open the textbook or the file (PDF files and pictures open in a new tab).
 5. Need a video — in «Video» click «Add a video» and paste a link (up to 5 videos). YouTube, Rutube and VK Video play right in the homework, other links open in a new tab. Below is «Transcript»: «Take captions from YouTube» fills it with the video's captions (if it has any; when there are several — in different languages, by the author and automatic — the portal asks which to take), «Load subtitles» — from an .srt or .vtt file, or paste the text yourself. The AI assistant relies on the transcript; the student sees it only with «Show the transcript to the student» on.
 6. Click «Assign». Students are notified once the homework has all its materials, and reminded before the deadline.
@@ -368,7 +374,7 @@ Textbooks are a tab of the «Materials» section (next to the «Boards» tab, [B
 2. «Choose file». The title is taken from the file name — correct it.
 3. Choose the kind — «Textbook», «Workbook» or «Other» — and the course (e.g. «English, grade 5»): the portal suggests the courses of other textbooks.
 4. The portal counts the pages of a PDF itself; a picture is one page. For a Word file enter the number of pages yourself (optional).
-5. Choose the students and groups the textbook is open to. All students of a group see its textbook.
+5. Search and select who can access the textbook in the combined «Students and groups» field. Remove individual chips or clear the whole selection. All students of a group see its textbook.
 
 ## List
 
@@ -388,6 +394,8 @@ A student sees the textbooks open to them in their «Materials» section and can
     summary: 'Drafts of homework and reviews',
     body: `
 The AI assistant saves time, but you always decide: it only suggests a draft.
+
+The homework editor keeps authoring in the main pane and the AI assistant on the right. On a narrow screen open «AI assistant» to use its modal panel. Closing or resizing preserves the request, sources and draft. Text/Preview switches one Markdown field; drafts change it only through Insert/Replace.
 
 ## What it can do
 
@@ -611,7 +619,7 @@ Lists in blocks (students, payments and payment history, boards, lessons, notifi
 
 The blocks of each section go one under another, in one column, on a computer the same as on a phone: on top what needs an action, below — the calendar, lists and settings. The home page has «Needs attention» and «Finance»; the notifications are under the bell in the header. Sections take the full width of the window. The exceptions are the help and «Settings»: on a wide screen the list (of articles or setting groups) is on the left and the chosen one on the right, each scrolling on its own; on a phone the list comes first, the chosen one opens in its place and the back arrow returns to the list. On a tablet the help works as on a phone, and «Settings» split the screen in half.
 
-Input fields have their label on the outline, as in Material 3; in focus the outline and the label take the portal's colour, on an error — red. Search is a «pill» line with a magnifier.
+Input fields have their label on the outline, as in Material 3; the label stays visible for empty fields in light and dark themes; in focus the outline and the label take the portal's colour, on an error — red. Search is a «pill» line with a magnifier.
 
 ## Button colours
 
@@ -718,7 +726,7 @@ Open the lesson and click «Remove the mark» — the charge is undone.
 Check that the payment is recorded for the right student with the right amount: «Payments» → the student's name → «History» on the «Payments» tab.
 
 **How to move all recurring lessons to another time?**
-«Schedule» → the «Recurring» tab → «⋮» next to the recurring lessons → «Edit». Future lessons move, past ones stay. «⋮» → «End…» ends the recurring lessons: lessons from today on are removed from the schedule.
+Open a lesson → «Edit» → «This and following», then change its date and time. To stop repeating choose «Once»: the selected lesson stays and untouched later occurrences disappear. Completed, charged and individually changed lessons remain.
 
 **Where to download all the data?**
 «Settings» → «Data» → «Backups» → «Back up now» → download the file.

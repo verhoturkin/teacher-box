@@ -58,6 +58,10 @@ Uploads up to 100 MB: Spring multipart limits and nginx `client_max_body_size` f
 
 ## Frontend
 
+The material dialog uses the shared `identity/parts` member picker: one searchable field with typed
+student/group chips. It persists individual and group grants separately; group membership stays dynamic.
+Existing members absent from current options remain visible and removable.
+
 `features/textbooks/` (pages in `index.ts`, types in `parts.ts`), labels in `textbooks-labels.ts`:
 
 - `teacher/textbooks-feed.ts` — the textbooks tab of «Материалы» (`features/materials`, `/teacher/materials?tab=textbooks`, 245.2; `/teacher/textbooks` redirects; cards with covers, `TextbooksFeed` in `parts.ts`; the rest of this item is the behaviour of the former page): one row per textbook

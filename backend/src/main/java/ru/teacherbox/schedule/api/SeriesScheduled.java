@@ -15,7 +15,10 @@ import org.jspecify.annotations.Nullable;
  * @param studentIds    students of the series (the members of the group when it was planned)
  * @param startTime     local time in the instance time zone
  * @param intervalWeeks 1 = every week, 2 = every other week, ...
+ *
+ * Compatibility for durable publications queued before 0.29.0.
  */
+@Deprecated
 public record SeriesScheduled(
         UUID seriesId,
         @Nullable UUID groupId,

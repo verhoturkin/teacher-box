@@ -1,3 +1,4 @@
+import { create } from './create';
 import { type APIRequestContext, type Locator, type Page, expect, test } from '@playwright/test';
 
 /**
@@ -27,7 +28,7 @@ async function token(request: APIRequestContext): Promise<Record<string, string>
   return { Authorization: `Bearer ${accessToken}` };
 }
 
-/** A student with a long name and two weekly series of lessons: two rows with the same buttons. */
+/** A student with a long name and two repeating lessons. */
 async function prepare(request: APIRequestContext): Promise<void> {
   const headers = await token(request);
   const created = await request.post('/api/teacher/students', {
@@ -36,23 +37,18 @@ async function prepare(request: APIRequestContext): Promise<void> {
   });
   expect(created.ok()).toBe(true);
   const { student } = (await created.json()) as { student: { id: string } };
-  const startsOn = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
-  for (const [weekdays, startTime] of [
-    [['MONDAY'], '07:00'],
-    [['TUESDAY', 'WEDNESDAY', 'FRIDAY', 'SATURDAY'], '07:30'],
-  ] as const) {
-    const series = await request.post('/api/teacher/schedule/series', {
+  for (const offset of [1, 2]) {
+    const lesson = await request.post('/api/teacher/schedule/lessons', {
       headers,
       data: {
         studentId: student.id,
-        weekdays,
-        startTime,
+        startsAt: new Date(Date.now() + offset * 86_400_000).toISOString(),
         durationMinutes: 30,
-        startsOn,
+        repeatWeeks: 1,
         allowOverlap: true,
       },
     });
-    expect(series.ok()).toBe(true);
+    expect(lesson.ok()).toBe(true);
   }
 }
 
@@ -82,9 +78,7 @@ async function expectOneColumn(page: Page): Promise<void> {
   }
 }
 
-test('the schedule keeps requests and recurring lessons in a pane beside the calendar', async ({
-  page,
-}) => {
+test('the schedule keeps requests and time off in a pane beside the calendar', async ({ page }) => {
   await signIn(page);
   await page.goto('/teacher/schedule');
 
@@ -98,29 +92,20 @@ test('the schedule keeps requests and recurring lessons in a pane beside the cal
   );
 });
 
-test('the buttons of the rows of a list stand on one line', async ({ page, request }) => {
+test('the lesson form keeps its fields within the pane', async ({ page, request }) => {
   await prepare(request);
   await signIn(page);
   await page.goto('/teacher/schedule');
-
-  const rows = page
-    .locator('.tb-schedule-side')
-    .locator('ul.tb-list > li')
-    .filter({ hasText: LONG_NAME });
-  await expect(rows).toHaveCount(2);
-  const edits = await rows.evaluateAll((items) =>
-    items.map((item) =>
-      Math.round(
-        item.querySelector('.tb-list__trail .p-button')?.getBoundingClientRect().left ?? -1,
-      ),
-    ),
-  );
-  expect(edits[0]).toBeGreaterThan(0);
-  expect(edits[1]).toBe(edits[0]);
-  const texts = await rows.evaluateAll((items) =>
-    items.map((item) => Math.round(item.querySelector('.tb-list__text')?.clientWidth ?? -1)),
-  );
-  expect(texts[1]).toBe(texts[0]);
+  await create(page, 'Занятие');
+  const dialog = page.getByRole('dialog', { name: 'Новое занятие', exact: true });
+  const bounds = await dialog.boundingBox();
+  for (const field of ['Повтор', 'Тема']) {
+    const box = await dialog.getByLabel(field, { exact: true }).boundingBox();
+    expect(box?.x).toBeGreaterThanOrEqual(bounds?.x ?? 0);
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(
+      (bounds?.x ?? 0) + (bounds?.width ?? 0),
+    );
+  }
 });
 
 test('the actions of the page header are at one height on every page', async ({

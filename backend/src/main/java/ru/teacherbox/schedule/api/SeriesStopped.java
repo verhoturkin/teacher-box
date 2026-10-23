@@ -12,7 +12,10 @@ import org.jspecify.annotations.Nullable;
  * @param groupId    the group of a group series, {@code null} for a series with one student
  * @param studentIds students of the series (the current members of the group)
  * @param replaced   {@code true} if the series continues with new settings ({@link SeriesScheduled} follows)
+ *
+ * Compatibility for durable publications queued before 0.29.0.
  */
+@Deprecated
 public record SeriesStopped(UUID seriesId, @Nullable UUID groupId, List<UUID> studentIds, LocalDate from,
         boolean replaced, Instant occurredAt) {
 

@@ -190,6 +190,7 @@ export const ru = {
     subject: 'Тема',
     text: 'Текст',
     send: 'Отправить',
+    noRecipients: 'В выбранных группах нет доступных получателей.',
     failed: 'Не удалось отправить сообщение',
   },
   studentChannels: {

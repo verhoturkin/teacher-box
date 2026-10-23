@@ -25,7 +25,9 @@ import ru.teacherbox.schedule.api.LessonScheduled;
 import ru.teacherbox.schedule.api.LessonStartingSoon;
 import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
 import ru.teacherbox.schedule.api.SeriesScheduled;
+import ru.teacherbox.schedule.api.LessonRepeatScheduled;
 import ru.teacherbox.schedule.api.SeriesStopped;
+import ru.teacherbox.schedule.api.LessonRepeatStopped;
 import ru.teacherbox.shared.chat.ChatSubject;
 import ru.teacherbox.shared.i18n.Language;
 
@@ -67,7 +69,7 @@ class ScheduleNotifications {
     }
 
     @ApplicationModuleListener
-    void on(SeriesScheduled event) {
+    void on(LessonRepeatScheduled event) {
         notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_PLANNED, (t, language) -> new Message(
                 t.series(texts.weekly(event.weekdays(), event.startTime(), language)),
                 group(event.groupId()).map(name -> t.group(name) + " ").orElse("")
@@ -77,7 +79,7 @@ class ScheduleNotifications {
     }
 
     @ApplicationModuleListener
-    void on(SeriesStopped event) {
+    void on(LessonRepeatStopped event) {
         if (event.replaced()) {
             return;
         }
@@ -85,6 +87,18 @@ class ScheduleNotifications {
                 t.seriesStopped(),
                 group(event.groupId()).map(name -> t.group(name) + " ").orElse("")
                         + t.seriesStoppedFrom(texts.date(event.from()))));
+    }
+
+    /** Replay durable publications written by a previous release. */
+    @ApplicationModuleListener
+    void on(SeriesScheduled event) {
+        on(new LessonRepeatScheduled(null, event.groupId(), event.studentIds(), event.weekdays(), event.startTime(),
+                event.durationMinutes(), event.intervalWeeks(), event.startsOn(), event.endsOn(), event.occurredAt()));
+    }
+
+    @ApplicationModuleListener
+    void on(SeriesStopped event) {
+        on(new LessonRepeatStopped(null, event.groupId(), event.studentIds(), event.from(), event.replaced(), event.occurredAt()));
     }
 
     @ApplicationModuleListener

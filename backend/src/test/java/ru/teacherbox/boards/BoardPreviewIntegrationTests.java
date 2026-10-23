@@ -7,6 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,6 +102,39 @@ class BoardPreviewIntegrationTests {
         assertThat(putPreview(teacher(), link, "image/png", PNG)).hasStatus(HttpStatus.CONFLICT)
                 .bodyJson().extractingPath("$.code").isEqualTo("boards.no-scene");
         assertThat(putPreview(teacher(), UUID.randomUUID().toString(), "image/png", PNG))
+                .hasStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void replacingAtTheSameClockInstantChangesTheCacheKey() throws UnsupportedEncodingException {
+        String id = board("{\"kind\":\"EXCALIDRAW\",\"title\":\"П\"}");
+        assertThat(putPreview(teacher(), id, "image/png", PNG)).hasStatus(HttpStatus.NO_CONTENT);
+        List<String> before = JsonPath.read(mvc.get().uri("/api/teacher/boards").with(teacher()).exchange()
+                .getResponse().getContentAsString(), "$[?(@.id == '" + id + "')].previewUpdatedAt");
+        assertThat(putPreview(teacher(), id, "image/png", PNG)).hasStatus(HttpStatus.NO_CONTENT);
+        List<String> after = JsonPath.read(mvc.get().uri("/api/teacher/boards").with(teacher()).exchange()
+                .getResponse().getContentAsString(), "$[?(@.id == '" + id + "')].previewUpdatedAt");
+        assertThat(after).isNotEqualTo(before);
+    }
+
+    @Test
+    void clearingAnEmptyBoardsPreviewIsTeacherOnlyAndIdempotent() throws UnsupportedEncodingException {
+        UUID student = directory.addStudent("Анна");
+        String id = board("{\"kind\":\"EXCALIDRAW\",\"title\":\"П\"}");
+        assertThat(putPreview(teacher(), id, "image/png", PNG)).hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(mvc.delete().uri("/api/teacher/boards/" + id + "/preview").with(TestUsers.student(student)))
+                .hasStatus(HttpStatus.FORBIDDEN);
+        for (int attempt = 0; attempt < 2; attempt++) {
+            assertThat(mvc.delete().uri("/api/teacher/boards/" + id + "/preview").with(teacher()))
+                    .hasStatus(HttpStatus.NO_CONTENT);
+        }
+        assertThat(mvc.get().uri("/api/boards/" + id + "/preview").with(teacher())).hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(mvc.get().uri("/api/teacher/boards").with(teacher())).hasStatusOk().bodyJson()
+                .extractingPath("$[?(@.id == '" + id + "')].previewUpdatedAt").asArray().allMatch(Objects::isNull);
+        String link = board("{\"kind\":\"LINK\",\"title\":\"Л\",\"url\":\"https://miro.com/b\"}");
+        assertThat(mvc.delete().uri("/api/teacher/boards/" + link + "/preview").with(teacher()))
+                .hasStatus(HttpStatus.CONFLICT);
+        assertThat(mvc.delete().uri("/api/teacher/boards/" + UUID.randomUUID() + "/preview").with(teacher()))
                 .hasStatus(HttpStatus.NOT_FOUND);
     }
 

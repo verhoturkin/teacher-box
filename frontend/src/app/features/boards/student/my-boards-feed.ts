@@ -93,7 +93,8 @@ export class MyBoardsFeed implements OnInit {
   });
 
   /** The preview of a board (a stable function for `tb-blob-image`). */
-  protected readonly loadPreview = (id: string): Observable<Blob> => this.api.preview(id);
+  protected readonly loadPreview = (id: string): Observable<Blob> =>
+    this.api.preview(id, this.boards().find((board) => board.id === id)?.previewUpdatedAt);
 
   ngOnInit(): void {
     this.load();

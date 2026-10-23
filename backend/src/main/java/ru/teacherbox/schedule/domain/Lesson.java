@@ -30,8 +30,9 @@ public final class Lesson {
     private final UUID id;
     private final @Nullable UUID groupId;
     private final List<Participant> participants;
-    private final @Nullable UUID seriesId;
-    private final @Nullable LocalDate seriesDate;
+    private @Nullable UUID seriesId;
+    private @Nullable LocalDate seriesDate;
+    private boolean individuallyChanged;
     private Instant startsAt;
     private int durationMinutes;
     private @Nullable String topic;
@@ -120,6 +121,7 @@ public final class Lesson {
     public boolean edit(Instant newStartsAt, int newDurationMinutes, @Nullable String newTopic,
             @Nullable String newMeetingUrl, Instant now) {
         requireScheduled();
+        individuallyChanged = true;
         int duration = Texts.duration(newDurationMinutes);
         boolean moved = !newStartsAt.equals(startsAt) || duration != durationMinutes;
         if (!newStartsAt.equals(startsAt) && originalStartsAt == null) {
@@ -146,6 +148,7 @@ public final class Lesson {
         status = LessonStatus.CANCELLED;
         cancelledBy = Objects.requireNonNull(by);
         cancelReason = Texts.optional(reason);
+        individuallyChanged = true;
         updatedAt = now;
         return revoked;
     }
@@ -169,6 +172,7 @@ public final class Lesson {
         status = LessonStatus.SCHEDULED;
         cancelledBy = null;
         cancelReason = null;
+        individuallyChanged = true;
         updatedAt = now;
     }
 
@@ -180,6 +184,7 @@ public final class Lesson {
         status = LessonStatus.MISSED;
         cancelledBy = Objects.requireNonNull(by);
         cancelReason = Texts.optional(reason);
+        individuallyChanged = true;
         updatedAt = now;
     }
 
@@ -200,6 +205,7 @@ public final class Lesson {
         participants.set(index, newCompletionId == null
                 ? new Participant(studentId, Attendance.EXCUSED, null)
                 : new Participant(studentId, Attendance.MISSED, newCompletionId));
+        individuallyChanged = true;
         updatedAt = now;
     }
 
@@ -260,6 +266,7 @@ public final class Lesson {
             cancelledBy = null;
             cancelReason = null;
         }
+        individuallyChanged = true;
         updatedAt = now;
         return List.copyOf(changes);
     }
@@ -279,6 +286,7 @@ public final class Lesson {
         status = LessonStatus.SCHEDULED;
         cancelledBy = null;
         cancelReason = null;
+        individuallyChanged = true;
         updatedAt = now;
         return revoked;
     }
@@ -343,6 +351,20 @@ public final class Lesson {
         if (isGroup()) {
             throw new BusinessRuleException("schedule.lesson-group", "The lesson is a group lesson");
         }
+    }
+
+    public void repeatWith(@Nullable UUID ruleId, LocalDate originalDate) {
+        seriesId = ruleId;
+        if (seriesDate == null) seriesDate = originalDate;
+    }
+
+    public boolean individuallyChanged() {
+        return individuallyChanged;
+    }
+
+    public Lesson restoreException(boolean changed) {
+        individuallyChanged = changed;
+        return this;
     }
 
     public UUID id() {

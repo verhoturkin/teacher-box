@@ -63,7 +63,7 @@ test('the move buttons lie in the middle of a dragged lesson card', async ({ pag
   await signIn(page);
   await page.goto('/teacher/schedule');
   const card = page.locator('.tb-lesson', { hasText: STUDENT });
-  await card.scrollIntoViewIfNeeded();
+  await card.evaluate((element) => element.scrollIntoView({ block: 'center' }));
   const box = await card.boundingBox();
   expect(box).not.toBeNull();
   if (box === null) {

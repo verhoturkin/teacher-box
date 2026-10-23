@@ -43,6 +43,10 @@ public class PreviewRepository {
                 .list().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
+    public void delete(UUID boardId) {
+        jdbc.sql("delete from boards.board_previews where board_id = :id").param("id", boardId).update();
+    }
+
     /** Puts the preview in place of the board's previous one. */
     public void save(UUID boardId, Preview preview) {
         jdbc.sql("delete from boards.board_previews where board_id = :id").param("id", boardId).update();
