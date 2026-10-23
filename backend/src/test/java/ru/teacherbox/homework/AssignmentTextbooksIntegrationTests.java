@@ -99,6 +99,7 @@ class AssignmentTextbooksIntegrationTests {
         MvcTestResult pages = mvc.get().uri("/api/me/homework/tasks/" + taskId + "/textbooks/" + spotlight)
                 .with(TestUsers.student(student)).exchange();
         assertThat(pages).hasStatusOk().hasContentType(MediaType.APPLICATION_PDF)
+                .hasHeader("Cache-Control", "no-store")
                 .hasHeader("X-Content-Type-Options", "nosniff").hasBodyTextEqualTo("Spotlight pages 2-3");
         assertThat(pages.getResponse().getHeader("Content-Disposition")).startsWith("attachment");
         assertThat(mvc.get().uri("/api/me/homework/tasks/" + taskId + "/textbooks/" + scan)

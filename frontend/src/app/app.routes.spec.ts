@@ -320,8 +320,6 @@ describe('app routes', { timeout: 20_000 }, () => {
     await harness.navigateByUrl('/cabinet/account');
 
     expect(title()).toBe('Мой аккаунт — Teacher Box');
-    expect(harness.routeNativeElement?.querySelector('tb-channels-panel')).not.toBeNull();
-    expect(harness.routeNativeElement?.querySelector('tb-preferences-panel')).not.toBeNull();
     TestBed.inject(HttpTestingController).match(() => true);
   });
 

@@ -2,8 +2,8 @@ import { request } from '@playwright/test';
 
 /**
  * The existing scenarios start on the teacher's home page, so the first setup (ADR-0014) is marked
- * as done before them and the lesson price is set; the wizard itself is covered by the version 0.3
- * scenario after a full reset.
+ * as done before them and the lesson price is set; the wizard itself is covered by
+ * operations/reset-and-restore.spec.ts after a full reset.
  */
 export default async function globalSetup(): Promise<void> {
   const api = await request.newContext({

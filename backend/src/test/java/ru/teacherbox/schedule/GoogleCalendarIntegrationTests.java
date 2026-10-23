@@ -24,12 +24,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.modulith.test.AssertablePublishedEvents;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.teacherbox.schedule.api.GoogleCalendarDisconnected;
 import ru.teacherbox.shared.reset.DataReset;
@@ -37,25 +34,18 @@ import ru.teacherbox.schedule.google.GoogleApi;
 import ru.teacherbox.schedule.google.GoogleAuthException;
 import ru.teacherbox.schedule.google.GoogleCalendarService;
 import ru.teacherbox.schedule.google.GoogleException;
-import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
 
 /** Connecting the teacher's Google Calendar and syncing lessons into it (Google itself is mocked). */
 @ScheduleIntegrationTest
-class GoogleCalendarIntegrationTests {
+class GoogleCalendarIntegrationTests extends ScheduleHttpTestSupport {
 
     private static final String ORIGIN = "https://school.example.com";
     private static final String CALENDAR = "tb@group.calendar.google.com";
 
     @MockitoBean
     GoogleApi google;
-
-    @Autowired
-    MockMvcTester mvc;
-
-    @Autowired
-    FakeUserDirectory directory;
 
     @Autowired
     MutableClock clock;
@@ -364,19 +354,4 @@ class GoogleCalendarIntegrationTests {
                 .exchange();
     }
 
-    private RequestPostProcessor teacher() {
-        return TestUsers.teacher(directory.teacherId());
-    }
-
-    private MvcTestResult get(String uri) {
-        return mvc.get().uri(uri).with(teacher()).exchange();
-    }
-
-    private MvcTestResult post(String uri, String body) {
-        return mvc.post().uri(uri).with(teacher()).contentType(MediaType.APPLICATION_JSON).content(body).exchange();
-    }
-
-    private MvcTestResult put(String uri, String body) {
-        return mvc.put().uri(uri).with(teacher()).contentType(MediaType.APPLICATION_JSON).content(body).exchange();
-    }
 }
