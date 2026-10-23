@@ -18,24 +18,27 @@ export default defineConfig({
   expect: { timeout: 10_000 },
   reporter: process.env['CI'] === undefined ? 'list' : [['list'], ['html', { open: 'never' }]],
   use: {
+    ...devices['Desktop Chrome'],
+    ...(channel === undefined ? {} : { channel }),
     baseURL: process.env['E2E_BASE_URL'] ?? 'http://localhost:8091',
     locale: 'ru-RU',
     timezoneId: 'Europe/Moscow',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
+    permissions: ['camera', 'microphone'],
+    launchOptions: {
+      args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'],
+    },
   },
   projects: [
     {
       name: 'chromium',
-      // built-in calls (0.8.0): a fake camera and microphone, allowed without a prompt
-      use: {
-        ...devices['Desktop Chrome'],
-        ...(channel === undefined ? {} : { channel }),
-        permissions: ['camera', 'microphone'],
-        launchOptions: {
-          args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'],
-        },
-      },
+      testIgnore: '**/operations/**',
+    },
+    {
+      name: 'operations',
+      testMatch: '**/operations/**/*.spec.ts',
+      dependencies: ['chromium'],
     },
   ],
 });

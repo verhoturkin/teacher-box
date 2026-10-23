@@ -17,8 +17,10 @@ Do it as the last stage of the release section in `docs/PLAN.md`, in one commit
      (`git diff vPREV -- docs/wiki` shows what changed). CI publishes it with the tag (step 7).
    - README only if the basics or its links change (it stays slim and links the wiki); `docs/operations.md` if
      operations changed.
-2. **E2E** — add `e2e/tests/version-X-Y-Z.spec.ts` (dashes) covering the release's scenarios; reuse helpers
-   from existing specs. Compile check: `./scripts/verify.sh e2e`; full run `./scripts/e2e.sh` (needs Docker).
+2. **E2E** — extend the relevant functional suites under `e2e/tests/` (see `e2e/README.md`), reusing
+   `tests/support` helpers. Keep cross-module journeys intact and reset/restore/restart in `operations/`;
+   do not create version-specific specs. Compile check: `./scripts/verify.sh e2e`;
+   full run `./scripts/e2e.sh` (needs Docker).
 3. **CHANGELOG.md** (Russian, Keep a Changelog): new `## [X.Y.Z] — YYYY-MM-DD` at the top with «Добавлено» /
    «Изменено» / «Исправлено». Read only the top entry for the format — not the whole file. SemVer: data or
    settings incompatibility → MAJOR, features → MINOR, fixes → PATCH.

@@ -161,6 +161,11 @@ Material 3 Expressive guidelines (m3.material.io).
 
 ## 7. Testing
 
+E2E regressions belong in functional suites under `e2e/tests/` (see `e2e/README.md`), never in
+`version-X-Y-Z.spec.ts` files. Keep cross-module journeys intact; reuse `tests/support` for setup.
+Reset, restore and restart scenarios run in the final `operations` project. A release adds scenarios
+to the relevant suite instead of adding a version-specific spec.
+
 All code is tested; the build fails below the gates. Test kinds — in the nested AGENTS.md files.
 
 | Part | Tool | Gate |

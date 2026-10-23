@@ -22,9 +22,9 @@ unless the task needs history.
 Reduce duplicated implementation and test setup while preserving behaviour, module boundaries and
 coverage gates. Organize browser regressions by functionality instead of release history.
 
-### 265. Refactoring (B, F, E2E)
+### 265. Refactoring (B, F)
 
-- [ ] 265.1 Replace `e2e/tests/version-*.spec.ts` organization with functional suites, shared sign-in/data
+- [x] 265.1 Replace `e2e/tests/version-*.spec.ts` organization with functional suites, shared sign-in/data
   helpers and an explicit scenario map; preserve scenario coverage and isolate destructive operations.
 - [x] 265.2 Deduplicate file HTTP responses in `homework/web/FileResponses.java` and
   `textbooks/web/TextbookResponses.java`, and schedule integration-test HTTP helpers. Keep the short
@@ -32,7 +32,7 @@ coverage gates. Organize browser regressions by functionality instead of release
   adds more policy plumbing than it removes.
 - [x] 265.3 Share review form/request logic between `homework/teacher/task-review-page.ts` and
   `review-sheet.ts`; preserve their AI insertion behaviour and trim duplicate account assertions in `app.routes.spec.ts`.
-- [ ] 265.4 Verify backend, frontend, E2E types and browser scenarios; document remaining test cleanup
+- [x] 265.4 Verify backend, frontend, E2E types and browser scenarios; document remaining test cleanup
   candidates without removing distinct security, persistence or integration guarantees.
 
 ## Backlog
