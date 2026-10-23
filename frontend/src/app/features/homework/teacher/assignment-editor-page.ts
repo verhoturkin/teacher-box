@@ -247,7 +247,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
           </form>
         </tb-pane>
         @if (aiEnabled() && !single() && aiOpen()) {
-          <tb-pane kind="sheet" [label]="t.aiTitle">
+          <tb-pane class="tb-editor__ai" [label]="t.aiTitle">
             <ng-template tbPaneHeader>
               <div class="tb-editor__ai-head">
                 <h2 class="tb-subtitle">{{ t.aiTitle }}</h2>
@@ -314,6 +314,11 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     }
   `,
   styles: `
+    .tb-editor__ai {
+      background: var(--p-md-surface-container-low);
+      --tb-field-surface: var(--p-md-surface-container-low);
+    }
+
     .tb-editor__ai-head {
       display: flex;
       align-items: center;
@@ -327,6 +332,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
 
     .tb-editor__settings {
       display: grid;
+      align-items: start;
       gap: var(--tb-space-4);
       grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
     }

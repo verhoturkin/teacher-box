@@ -503,12 +503,13 @@ This persistent-header placement is our product decision.
   a filled pill without an outline (in focus too — the focus state layer), the magnifier and «×» «Очистить поиск» (while
   there is text; Esc clears) each centred in a round end (4 + 48 + 4), the text from 56 px; the browser's own clear
   button is hidden. The search takes the full available width of its pane or card; «×» never resizes it
-  (0.28.0, our layout decision). Filters and sorting controls wrap below it.
+  (0.28.0, our layout decision). Materials is an exception (0.30.0, ours): search, filter chips and sorting
+  share a wrapping toolbar; the desktop search matches a large fixed-pane list search (364 px).
 - **Assignment editor (0.29.0, variant 1)**: a main flexible pane for title, recipients/deadline,
   Markdown Text/Preview, textbooks/files and videos. A supporting sheet on the right holds the AI request,
   prompt library/search/save, source selection, generation/error/retry and draft Remove/Insert/Replace.
   From M3: supporting-pane canonical layout and adaptation at the shared breakpoints. Portal decisions:
-  the supporting sheet uses the existing pane width, appears beside the editor from expanded, and opens
+  the AI pane shares the available width equally with the editor (0.30.0), appears beside it from expanded, and opens
   as a modal right drawer at compact/medium widths. A close action returns focus to the opener. Main
   content precedes AI in DOM/reading order. There is one Markdown Text/Preview field at every width.
   The header keeps Assign/Save (filled) and Assign/Save and place on board (tonal). The AI never changes
@@ -790,7 +791,8 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   **Figures** — `tb-ops-figures`, four tonal tiles on the pane's surface: «Поступило», «Начислено за занятия»,
   «Долг» (error container, `--debt`), «Авансы»; a note under each («11 оплат», «1 ученик»). **«Операции»** — the
   title on the surface, the connected button group `tb-filter-chips` «Все · Оплаты · Занятия · Пропуски» and the
-  «Ученик» select (`p-select`); the journal is a `tb-list` of tonal rows (first/last radius 16, middle 4, no card):
+  «Ученик» select (`p-select`, overlay appended to `body` so the pane does not clip it); the journal is a
+  `tb-list` of tonal rows (first/last radius 16, middle 4, no card):
   kind icon, student avatar, «Занятие · Анна Смирнова» + «date, time · status», the amount in the trail (`+` payment
   in `tb-positive`, `−` charge, `0 ₽` absence without a charge). The student's name links to the Payments tab of the
   card (`PAYMENTS_TAB`). **Supporting pane** — «Должники» (the debt in `tb-negative`, the tonal «Напомнить»),
@@ -809,10 +811,11 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   button stays on the right, so the name keeps its width.
 - **Materials** (245.2–245.3, spec §10.1): the teacher's «Материалы» (`/teacher/materials?tab=boards|textbooks`,
   `features/materials`) is one flexible pane on the pane surface — no card around the content: the title, the
-  connected button group `tb-segment-group` «Доски N · Учебники N» (on compact under the title), full-width
-  `tb-search-field`, then a separate row of `tb-filter-chips` («Все · На портале · Внешние · Ученик или группа»;
+  connected button group `tb-segment-group` «Доски N · Учебники N» (on compact under the title),
+  `tb-search-field` in the same wrapping toolbar as `tb-filter-chips` («Все · На портале · Внешние · Ученик или группа»;
   for textbooks «Все · Учебники · Рабочие тетради · Другое · Ученик или группа») and the sort menu
-  «Сначала изменённые / По названию / Сначала новые» (0.29.0, our layout decision), then the
+  «Сначала изменённые / По названию / Сначала новые» (0.30.0, our layout decision; search 364 px on desktop,
+  full width on compact), then the
   feed `tb-material-grid` (`styles.scss`: 2 shrinkable columns on compact, auto-fill from medium with
   192–240 px tracks that can shrink to the available pane width; 12 px between cards on a phone, 16 px wider).
   **Portal sizing decision (0.29.0, not prescribed by M3):** cards cap at 240 px (15 rem), including sparse
@@ -923,7 +926,8 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   From M3: checkboxes for multiple related choices and input chips for selected entities. Portal decisions:
   grouping both entity types in one dropdown, prefixing chip labels with the type and accepting an optional
   selection limit. Callers wrap it in `.tb-field` with a label targeting its required `inputId` and use a
-  reactive form control; `tbFieldErrors` supplies the standard required/error semantics. Optional option
+  reactive form control; its label uses the same outlined cutout as native controls so adjacent dates align.
+  `tbFieldErrors` supplies the standard required/error semantics. Optional option
   details distinguish namesakes. Unavailable options cannot be newly selected; prefilled unavailable or
   missing IDs stay visible (missing names fall back to IDs) and removable. The field stores explicit
   `{ kind, id }` choices; each caller owns grant semantics or group-to-student snapshot resolution. Homework and broadcast
