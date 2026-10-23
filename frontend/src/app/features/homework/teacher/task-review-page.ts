@@ -4,7 +4,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   LOCALE_ID,
-  computed,
   inject,
   effect,
   input,
@@ -12,14 +11,12 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
-import { AiApi } from '@features/ai/parts';
 import { ToBoardDialog } from '@features/boards/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
@@ -37,6 +34,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { pageDetail } from '@core/routing/page-detail';
 import { T } from '../i18n/texts';
 import { MaterialOpener } from './material-opener';
+import { ReviewForm } from './review-form';
 
 /** Teacher: review of one student's work. */
 @Component({
@@ -297,7 +295,7 @@ export class TaskReviewPage {
   private readonly api = inject(HomeworkApi);
   private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
-  private readonly ai = inject(AiApi);
+  private readonly reviewForm = new ReviewForm();
   private readonly dates = new DatePipe(inject(LOCALE_ID));
   protected readonly materials = inject(MaterialOpener);
 
@@ -339,29 +337,14 @@ export class TaskReviewPage {
       });
     });
   }
-  protected readonly pending = signal(false);
-  protected readonly aiEnabled = toSignal(this.ai.enabled$, { initialValue: false });
-  protected readonly drafting = signal(false);
+  protected readonly pending = this.reviewForm.pending;
+  protected readonly aiEnabled = this.reviewForm.aiEnabled;
+  protected readonly drafting = this.reviewForm.drafting;
   protected readonly suggestion = signal<ReviewDecision | null>(null);
-  readonly form = new FormGroup({
-    grade: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(20)] }),
-    comment: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(5000)] }),
-  });
-
+  readonly form = this.reviewForm.form;
   protected readonly boardVisible = signal(false);
-  protected readonly commentValue = toSignal(this.form.controls.comment.valueChanges, {
-    initialValue: '',
-  });
-  private readonly gradeValue = toSignal(this.form.controls.grade.valueChanges, {
-    initialValue: '',
-  });
-  /** The review for a board: the grade and the comment. */
-  protected readonly reviewText = computed(() => {
-    const grade = this.gradeValue().trim();
-    return grade === ''
-      ? this.commentValue()
-      : `${T.review.gradeLine(grade)}\n\n${this.commentValue()}`;
-  });
+  protected readonly commentValue = this.reviewForm.commentValue;
+  protected readonly reviewText = this.reviewForm.reviewText;
 
   protected readonly state = new LoadState();
 
@@ -379,56 +362,22 @@ export class TaskReviewPage {
     if (task === null || !revealErrors(this.form) || this.pending()) {
       return;
     }
-    const { grade, comment } = this.form.getRawValue();
-    this.pending.set(true);
-    this.api
-      .review(
-        task.taskId,
-        decision,
-        grade.trim() === '' ? null : grade.trim(),
-        comment.trim() === '' ? null : comment,
-      )
-      .subscribe({
-        next: (reviewed) => {
-          this.pending.set(false);
-          this.show(reviewed);
-          this.changed.emit();
-          this.snackbar.success(decision === 'ACCEPT' ? T.review.accepted : T.review.returned);
-        },
-        error: () => {
-          this.pending.set(false);
-        },
-      });
+    this.reviewForm.submit(task, decision, (reviewed) => {
+      this.show(reviewed);
+      this.changed.emit();
+      this.snackbar.success(decision === 'ACCEPT' ? T.review.accepted : T.review.returned);
+    });
   }
 
-  /** Text of the latest submission that has one (only text is sent to the AI, files are not). */
   protected latestAnswer(task: TaskDetails): string | null {
-    const answer = task.submissions.find((submission) => (submission.text ?? '').trim() !== '');
-    return answer?.text ?? null;
+    return this.reviewForm.latestAnswer(task);
   }
 
   protected draftReview(task: TaskDetails): void {
-    const answer = this.latestAnswer(task);
-    if (answer === null || this.drafting()) {
-      return;
-    }
-    this.drafting.set(true);
-    this.ai
-      .reviewDraft({
-        title: task.assignment.title,
-        description: task.assignment.description,
-        answer,
-      })
-      .subscribe({
-        next: (draft) => {
-          this.drafting.set(false);
-          this.form.patchValue({ grade: draft.grade ?? '', comment: draft.comment });
-          this.suggestion.set(draft.accept ? 'ACCEPT' : 'RETURN');
-        },
-        error: () => {
-          this.drafting.set(false);
-        },
-      });
+    this.reviewForm.draft(task, (draft) => {
+      this.form.patchValue({ grade: draft.grade ?? '', comment: draft.comment });
+      this.suggestion.set(draft.decision);
+    });
   }
 
   protected download(file: Attachment): void {
@@ -451,6 +400,6 @@ export class TaskReviewPage {
     this.task.set(task);
     this.loaded.emit(task);
     this.suggestion.set(null);
-    this.form.reset({ grade: task.grade ?? '', comment: task.teacherComment ?? '' });
+    this.reviewForm.reset(task);
   }
 }

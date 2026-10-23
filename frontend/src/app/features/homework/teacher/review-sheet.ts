@@ -11,28 +11,20 @@ import {
   untracked,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { Button, ButtonDirective, ButtonIcon } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
 import { InputText } from 'primeng/inputtext';
 import { Textarea } from 'primeng/textarea';
 import { Snackbar } from '@core/snackbar/snackbar';
-import { AiApi } from '@features/ai/parts';
 import { ToBoardDialog } from '@features/boards/parts';
 import { SHARED_T } from '@shared/i18n/texts';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { ModalDrawer } from '@shared/ui/modal-drawer';
-import { HomeworkApi } from '../data-access/homework-api';
 import { ReviewDecision, TaskDetails } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
 
-/** What the AI brought for the work: shown in its own block until the teacher takes it. */
-interface Draft {
-  readonly comment: string;
-  readonly grade: string | null;
-  readonly decision: ReviewDecision;
-}
+import { ReviewForm, ReviewSuggestion } from './review-form';
 
 /** The next work of the queue: its student and where it is. */
 export interface NextWork {
@@ -493,8 +485,7 @@ export interface NextWork {
 export class ReviewSheet {
   protected readonly t = T.review;
   protected readonly c = SHARED_T.common;
-  private readonly api = inject(HomeworkApi);
-  private readonly ai = inject(AiApi);
+  private readonly reviewForm = new ReviewForm();
   private readonly snackbar = inject(Snackbar);
 
   /** The work under review (the detail pane shows it). */
@@ -514,38 +505,19 @@ export class ReviewSheet {
   /** The comment sheet of the phone is open. */
   protected readonly commentOpen = signal(false);
 
-  protected readonly pending = signal(false);
-  protected readonly drafting = signal(false);
-  protected readonly draft = signal<Draft | null>(null);
+  protected readonly pending = this.reviewForm.pending;
+  protected readonly drafting = this.reviewForm.drafting;
+  protected readonly draft = signal<ReviewSuggestion | null>(null);
   protected readonly boardVisible = signal(false);
-  private readonly aiEnabled = toSignal(this.ai.enabled$, { initialValue: false });
-  /** Text of the latest submission that has one (only text is sent to the AI, files are not). */
-  private readonly answer = computed(
-    () =>
-      this.task().submissions.find((submission) => (submission.text ?? '').trim() !== '')?.text ??
-      null,
-  );
   protected readonly aiAvailable = computed(
-    () => this.aiEnabled() && this.task().status === 'SUBMITTED' && this.answer() !== null,
+    () =>
+      this.reviewForm.aiEnabled() &&
+      this.task().status === 'SUBMITTED' &&
+      this.reviewForm.latestAnswer(this.task()) !== null,
   );
-
-  protected readonly form = new FormGroup({
-    grade: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(20)] }),
-    comment: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(5000)] }),
-  });
-  protected readonly commentValue = toSignal(this.form.controls.comment.valueChanges, {
-    initialValue: '',
-  });
-  private readonly gradeValue = toSignal(this.form.controls.grade.valueChanges, {
-    initialValue: '',
-  });
-  /** The review for a board: the grade and the comment. */
-  protected readonly reviewText = computed(() => {
-    const grade = this.gradeValue().trim();
-    return grade === ''
-      ? this.commentValue()
-      : `${T.review.gradeLine(grade)}\n\n${this.commentValue()}`;
-  });
+  protected readonly form = this.reviewForm.form;
+  protected readonly commentValue = this.reviewForm.commentValue;
+  protected readonly reviewText = this.reviewForm.reviewText;
 
   constructor() {
     // another work: the form starts again
@@ -553,7 +525,7 @@ export class ReviewSheet {
       const task = this.task();
       untracked(() => {
         this.draft.set(null);
-        this.form.reset({ grade: task.grade ?? '', comment: task.teacherComment ?? '' });
+        this.reviewForm.reset(task);
       });
     });
   }
@@ -568,36 +540,14 @@ export class ReviewSheet {
   }
 
   protected askAi(): void {
-    const answer = this.answer();
-    if (answer === null || this.drafting()) {
-      return;
-    }
-    const task = this.task();
-    this.drafting.set(true);
-    this.ai
-      .reviewDraft({
-        title: task.assignment.title,
-        description: task.assignment.description,
-        answer,
-      })
-      .subscribe({
-        next: (draft) => {
-          this.drafting.set(false);
-          this.draft.set({
-            comment: draft.comment,
-            grade: draft.grade,
-            decision: draft.accept ? 'ACCEPT' : 'RETURN',
-          });
-          this.commentOpen.set(this.compact());
-        },
-        error: () => {
-          this.drafting.set(false);
-        },
-      });
+    this.reviewForm.draft(this.task(), (draft) => {
+      this.draft.set(draft);
+      this.commentOpen.set(this.compact());
+    });
   }
 
   /** «Вставить»: the draft's comment (and grade) replace what is in the form. */
-  protected insert(draft: Draft): void {
+  protected insert(draft: ReviewSuggestion): void {
     this.form.patchValue({ comment: draft.comment, grade: draft.grade ?? '' });
   }
 
@@ -616,27 +566,9 @@ export class ReviewSheet {
       this.commentOpen.set(this.compact());
       return;
     }
-    if (this.pending()) {
-      return;
-    }
-    const { grade, comment } = this.form.getRawValue();
-    this.pending.set(true);
-    this.api
-      .review(
-        task.taskId,
-        decision,
-        grade.trim() === '' ? null : grade.trim(),
-        comment.trim() === '' ? null : comment,
-      )
-      .subscribe({
-        next: (reviewed) => {
-          this.pending.set(false);
-          this.snackbar.success(decision === 'ACCEPT' ? T.review.accepted : T.review.returned);
-          this.reviewed.emit(reviewed);
-        },
-        error: () => {
-          this.pending.set(false);
-        },
-      });
+    this.reviewForm.submit(task, decision, (reviewed) => {
+      this.snackbar.success(decision === 'ACCEPT' ? T.review.accepted : T.review.returned);
+      this.reviewed.emit(reviewed);
+    });
   }
 }

@@ -30,7 +30,7 @@ coverage gates. Organize browser regressions by functionality instead of release
   `textbooks/web/TextbookResponses.java`, and schedule integration-test HTTP helpers. Keep the short
   image-storage flows in `boards/application/{SceneService,PreviewService}.java` local: a generic helper
   adds more policy plumbing than it removes.
-- [ ] 265.3 Share review form/request logic between `homework/teacher/task-review-page.ts` and
+- [x] 265.3 Share review form/request logic between `homework/teacher/task-review-page.ts` and
   `review-sheet.ts`; preserve their AI insertion behaviour and trim duplicate account assertions in `app.routes.spec.ts`.
 - [ ] 265.4 Verify backend, frontend, E2E types and browser scenarios; document remaining test cleanup
   candidates without removing distinct security, persistence or integration guarantees.
