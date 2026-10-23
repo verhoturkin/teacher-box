@@ -206,6 +206,7 @@ const NUMBER = new Intl.NumberFormat(locale());
                   [showClear]="true"
                   [ariaLabel]="t.studentFilter"
                   styleClass="tb-ops__student"
+                  appendTo="body"
                 />
               </div>
             </div>

@@ -31,7 +31,7 @@ test.beforeEach(async ({ page }) => {
   await expect(page).not.toHaveURL(/\/login/);
 });
 
-test('material creation uses one member field and a full-width search', async ({ page }) => {
+test('material creation uses one member field and a bounded toolbar search', async ({ page }) => {
   await page.goto('/teacher/materials');
   const search = page.locator('tb-search-field').last();
   await expect(search).toBeVisible();
@@ -39,7 +39,7 @@ test('material creation uses one member field and a full-width search', async ({
     actual: field.getBoundingClientRect().width,
     parent: field.parentElement?.getBoundingClientRect().width ?? 0,
   }));
-  expect(width.actual).toBeGreaterThan(width.parent * 0.9);
+  expect(width.actual).toBeCloseTo(364, 0);
   await create(page, 'Доска');
   const dialog = page.getByRole('dialog', { name: 'Новая доска', exact: true });
   await expect(dialog.locator('tb-member-picker')).toHaveCount(1);
@@ -64,7 +64,7 @@ test('AI stays beside one Markdown field and preserves state through compact ada
   );
   await page.route('**/api/teacher/ai/prompts', (route) => route.fulfill({ json: [] }));
   await page.goto('/teacher/homework/new');
-  const supporting = page.locator('tb-pane[kind="sheet"]');
+  const supporting = page.locator('tb-pane.tb-editor__ai');
   await expect(supporting.locator('tb-homework-ai-panel')).toBeVisible();
   const prompt = supporting.locator('#ai-prompt');
   await prompt.fill('Составь три задачи');

@@ -71,8 +71,8 @@ import { T } from './i18n/texts';
             />
           }
 
-          <tb-search-field [formControl]="search" [label]="t.searchMine" />
           <div class="tb-my-materials__bar">
+            <tb-search-field [formControl]="search" [label]="t.searchMine" />
             <tb-filter-chips
               [label]="t.filters"
               [chips]="chips()"
@@ -96,7 +96,11 @@ import { T } from './i18n/texts';
       flex-wrap: wrap;
       align-items: center;
       gap: var(--tb-space-3);
-      margin-block: var(--tb-space-4);
+      margin-block-end: var(--tb-space-4);
+    }
+
+    .tb-my-materials__bar > tb-search-field {
+      flex: 0 1 22.75rem;
     }
 
     .tb-my-materials__tabs {
@@ -104,6 +108,10 @@ import { T } from './i18n/texts';
     }
 
     @media (width < 37.5em) {
+      .tb-my-materials__bar > tb-search-field {
+        flex-basis: 100%;
+      }
+
       .tb-my-materials__bar {
         gap: var(--tb-space-2);
       }
