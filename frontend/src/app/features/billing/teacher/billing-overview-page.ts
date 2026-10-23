@@ -115,7 +115,7 @@ const NUMBER = new Intl.NumberFormat(locale());
     <tb-panes>
       <tb-pane [label]="t.title">
         <div tbPaneHeader>
-          <tb-page-header [title]="monthTitle()">
+          <tb-page-header class="tb-billing-header" [title]="monthTitle()">
             <tb-help-button help topic="teacher/billing" />
             <div class="tb-ops-month-actions">
               @if (mobile()) {
@@ -556,6 +556,19 @@ const NUMBER = new Intl.NumberFormat(locale());
 
     /* Compact keeps all figures and filters visible; journal supporting text wraps inside the tile. */
     @media (width < 37.5em) {
+      .tb-ops-month-actions {
+        inline-size: 100%;
+        min-inline-size: 0;
+
+        > span {
+          flex: 1;
+        }
+
+        > a {
+          flex: 1 1 100%;
+        }
+      }
+
       .tb-ops-figures {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         margin-block-end: var(--tb-space-4);

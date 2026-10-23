@@ -419,9 +419,11 @@ Portal decisions: both home briefings are hidden on compact; teacher today's les
 remain in the feed. The compact roster omits its total. Homework search is always rendered and row tags
 stack vertically. Teacher schedule screens use the same wrapping filter chips as the student; week/month
 recreate the calendar to apply its initial view. Student calendar lessons open a bottom sheet only on compact,
-and a modal side sheet otherwise. Student upcoming lesson actions keep Join above the connected request pair.
+and a centered `tb-dialog` on medium and wider screens, matching the teacher. Student upcoming lesson
+actions keep Join above the connected request pair.
 Compact schedule support sections are individually contained with large (16 dp) corners and normal margins.
-The notification drawer has extra-large (28 dp) top corners, an 8 px top inset and 16 dp content margins;
+The notification drawer has extra-large (28 dp) top corners, an 8 px top inset and 16 dp content margins,
+with no shadow on compact;
 its read-all action is in the header and unread titles replace dots. These compositions and inset choices
 are ours, not additional M3 measurements.
 
@@ -609,7 +611,8 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   standard side sheet, the third pane of the frame (≤ 400 dp, surface container low, 28 dp corners and 24 dp
   margins like `tb-pane kind="sheet"` — *ours*); it takes the focus when it opens, «×» or Esc closes it and gives
   the focus back, and it stays open across pages. Below it is the modal `tb-side-sheet tb-side-sheet--narrow`
-  (400 dp; on compact full width with rounded top corners, see §4), closed by a notification that leads to another page. Content: the
+  (400 dp; on compact full width with rounded top corners and no shadow — our decision, see §4),
+  closed by a notification that leads to another page. Content: the
   teacher's M3 primary tabs «Входящие N» (badge ≤ 4 characters, **M3**) and «Отправленные»; the student has the
   inbox only. Primary tabs `tb-tabs` (**M3**, every tab bar, 0.24.1): no container, 48 dp, Title Small, the label primary when
   active, a 3 dp primary indicator with 3 dp rounded top corners as wide as the label (the `::after` of `tb-tab-label`,
@@ -816,10 +819,12 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   link «Все в Учениках». The balances list and the default price are not on the page any more (Students ›
   «Должники»; Settings › «Оплаты»).
   - **Compact (0.31.0):** the page itself shows the month, both arrows and an absolute route to
-    «Отчёт за месяц», with no overflow menu. Teacher and student figures use the same two-column
+    «Отчёт за месяц», with no overflow menu; month controls and the report link wrap within the pane.
+    Teacher and student figures use the same two-column
     tonal grid without horizontal scrolling, and filter chips wrap. Journal supporting text wraps
     inside the row. The supporting pane and student filter stay hidden; the extended FAB records payments.
-    The report month picker appends its overlay to body so pane clipping cannot hide it. These are portal decisions.
+    The report month picker fits the available width and appends its overlay to body so pane clipping cannot
+    hide it. Figure amounts wrap inside their tiles. These are portal decisions.
 - Billing of a student (0.9.3) — the history on the Payments tab of the card (`tb-ledger-list`: calendar / wallet
   icon; operation + status tag; «date · topic or comment»; trail — the amount and «×» for the teacher; 20 rows,
   then «Показать ещё»).

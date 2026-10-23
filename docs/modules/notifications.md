@@ -71,7 +71,8 @@ failed deliveries for the student card, deactivated included, unknown → 404 (2
 
 ## Frontend
 
-`features/notifications/` has no page (235.2): `sheet/notifications-sheet-content.ts` (the bell's side sheet, 235.1:
+`features/notifications/` has no page (235.2): `sheet/notifications-sheet-content.ts` (the bell's sheet,
+shadowless on compact, 235.1:
 the teacher's tabs «Входящие» / «Отправленные», the student's inbox; `/teacher/notifications` leads to
 `/teacher?notifications=inbox`, the old `?open=` / `?tab=` messenger addresses to `/teacher/settings/messengers`;
 `/cabinet/notifications` to `/cabinet?notifications=inbox`), `teacher/messengers-settings-panel.ts`
