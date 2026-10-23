@@ -14,9 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.modulith.test.AssertablePublishedEvents;
-import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.schedule.api.CancelledBy;
 import ru.teacherbox.schedule.api.LessonCompleted;
@@ -26,21 +24,14 @@ import ru.teacherbox.schedule.api.LessonRescheduled;
 import ru.teacherbox.schedule.api.LessonRestored;
 import ru.teacherbox.schedule.api.LessonScheduled;
 import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
-import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
 
 /** Single lessons through the teacher API: planning, moving, cancelling and marking outcomes. */
 @ScheduleIntegrationTest
-class LessonsIntegrationTests {
+class LessonsIntegrationTests extends ScheduleHttpTestSupport {
 
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
-
-    @Autowired
-    MockMvcTester mvc;
-
-    @Autowired
-    FakeUserDirectory directory;
 
     @Autowired
     MutableClock clock;
@@ -302,22 +293,6 @@ class LessonsIntegrationTests {
         return """
                 {"studentId":"%s","startsAt":"%s","durationMinutes":%d,"allowOverlap":%s}
                 """.formatted(student, start, minutes, allowOverlap);
-    }
-
-    private RequestPostProcessor teacher() {
-        return TestUsers.teacher(directory.teacherId());
-    }
-
-    private MvcTestResult post(String uri, String body) {
-        return mvc.post().uri(uri).with(teacher()).contentType(MediaType.APPLICATION_JSON).content(body).exchange();
-    }
-
-    private MvcTestResult put(String uri, String body) {
-        return mvc.put().uri(uri).with(teacher()).contentType(MediaType.APPLICATION_JSON).content(body).exchange();
-    }
-
-    private MvcTestResult delete(String uri) {
-        return mvc.delete().uri(uri).with(teacher()).exchange();
     }
 
     static String id(MvcTestResult result) throws UnsupportedEncodingException {

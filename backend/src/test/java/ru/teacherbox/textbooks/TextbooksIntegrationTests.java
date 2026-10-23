@@ -89,6 +89,7 @@ class TextbooksIntegrationTests {
         MvcTestResult download = mvc.get().uri("/api/me/textbooks/" + id + "/file").with(TestUsers.student(anna))
                 .exchange();
         assertThat(download).hasStatusOk().hasHeader("X-Content-Type-Options", "nosniff")
+                .hasHeader("Cache-Control", "no-store")
                 .hasContentType("application/pdf");
         assertThat(download.getResponse().getHeader("Content-Disposition")).startsWith("attachment");
         UUID stranger = directory.addStudent("Чужой");

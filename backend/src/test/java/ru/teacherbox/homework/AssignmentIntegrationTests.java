@@ -167,6 +167,8 @@ class AssignmentIntegrationTests {
                 .with(teacher()).exchange();
         assertThat(download).hasStatusOk()
                 .hasContentType(MediaType.APPLICATION_PDF)
+                .hasHeader("Cache-Control", "no-store")
+                .hasHeader("Content-Length", "13")
                 .hasHeader("X-Content-Type-Options", "nosniff");
         assertThat(download.getResponse().getHeader(HttpHeaders.CONTENT_DISPOSITION))
                 .startsWith("attachment;").contains("UTF-8''");

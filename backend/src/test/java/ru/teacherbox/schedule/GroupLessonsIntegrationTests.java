@@ -18,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.modulith.test.AssertablePublishedEvents;
 import org.springframework.modulith.test.Scenario;
-import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import ru.teacherbox.identity.api.GroupArchived;
@@ -40,21 +39,14 @@ import ru.teacherbox.schedule.domain.LessonStatus;
 import ru.teacherbox.schedule.persistence.LessonRepository;
 import ru.teacherbox.testing.FakeMeetingRooms;
 import ru.teacherbox.testing.FakeStudentGroups;
-import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
 
 /** Lessons with a group of students (ADR-0011). */
 @ScheduleIntegrationTest
-class GroupLessonsIntegrationTests {
+class GroupLessonsIntegrationTests extends ScheduleHttpTestSupport {
 
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
-
-    @Autowired
-    MockMvcTester mvc;
-
-    @Autowired
-    FakeUserDirectory directory;
 
     @Autowired
     FakeStudentGroups groups;
@@ -447,19 +439,4 @@ class GroupLessonsIntegrationTests {
                 .exchange();
     }
 
-    private RequestPostProcessor teacher() {
-        return TestUsers.teacher(directory.teacherId());
-    }
-
-    private MvcTestResult post(String uri, String json) {
-        return mvc.post().uri(uri).with(teacher()).contentType(MediaType.APPLICATION_JSON).content(json).exchange();
-    }
-
-    private MvcTestResult put(String uri, String json) {
-        return mvc.put().uri(uri).with(teacher()).contentType(MediaType.APPLICATION_JSON).content(json).exchange();
-    }
-
-    private MvcTestResult delete(String uri) {
-        return mvc.delete().uri(uri).with(teacher()).exchange();
-    }
 }
