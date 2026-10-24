@@ -10,6 +10,7 @@ import { forkJoin } from 'rxjs';
 import { NgTemplateOutlet } from '@angular/common';
 import { Button } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
+import { Dialog } from 'primeng/dialog';
 import { Tag } from 'primeng/tag';
 import { injectMobile } from '@core/layout/mobile';
 import { HelpButton } from '@features/help/parts';
@@ -77,6 +78,7 @@ export function nextMonday(date: Date): Date {
     ScheduleAgenda,
     FilterChips,
     Drawer,
+    Dialog,
     Tag,
     CalendarFeedPanel,
     ChangeRequestDialog,
@@ -285,16 +287,33 @@ export function nextMonday(date: Date): Date {
       </tb-pane>
     </tb-panes>
 
-    <p-drawer
-      tbModalDrawer
-      [blockScroll]="true"
-      [ariaCloseLabel]="c.close"
-      [visible]="sheetLesson() !== null"
-      (visibleChange)="$event || closeSheet()"
-      [position]="mobile() ? 'bottom' : 'right'"
-      [styleClass]="mobile() ? 'tb-sheet' : 'tb-side-sheet tb-side-sheet--narrow'"
-      [header]="sheetTitle()"
-    >
+    @if (mobile()) {
+      <p-drawer
+        tbModalDrawer
+        [blockScroll]="true"
+        [ariaCloseLabel]="c.close"
+        [visible]="sheetLesson() !== null"
+        (visibleChange)="$event || closeSheet()"
+        position="bottom"
+        styleClass="tb-sheet"
+        [header]="sheetTitle()"
+      >
+        <ng-container *ngTemplateOutlet="lessonDetails" />
+      </p-drawer>
+    } @else {
+      <p-dialog
+        [visible]="sheetLesson() !== null"
+        (visibleChange)="$event || closeSheet()"
+        [modal]="true"
+        [draggable]="false"
+        [closeAriaLabel]="c.close"
+        styleClass="tb-dialog"
+        [header]="sheetTitle()"
+      >
+        <ng-container *ngTemplateOutlet="lessonDetails" />
+      </p-dialog>
+    }
+    <ng-template #lessonDetails>
       @if (sheetLesson(); as lesson) {
         <div class="tb-list__text">
           <tb-lesson-summary [lesson]="lesson" />
@@ -318,7 +337,7 @@ export function nextMonday(date: Date): Date {
           />
         }
       }
-    </p-drawer>
+    </ng-template>
 
     <tb-change-request-dialog
       [(visible)]="requestVisible"
@@ -439,7 +458,7 @@ export class MySchedulePage implements OnInit {
   );
 
   protected readonly mobile = injectMobile();
-  /** The lesson whose adaptive detail sheet is open. */
+  /** The lesson whose detail dialog (bottom sheet on compact) is open. */
   protected readonly sheetLesson = signal<ScheduledLesson | null>(null);
   protected readonly sheetTitle = computed(() => {
     const lesson = this.sheetLesson();

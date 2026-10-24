@@ -147,6 +147,11 @@ test('compact payment figures and filters fit both cabinets; teacher report open
   for (const width of [320, 390, 599]) {
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/teacher/billing');
+    await fits(page.locator('.tb-ops-month-actions'));
+    const reportLink = page.getByRole('link', { name: 'Отчёт за месяц', exact: true });
+    await expect(reportLink).toBeInViewport();
+    const reportBox = await reportLink.boundingBox();
+    expect(reportBox!.x + reportBox!.width).toBeLessThanOrEqual(width);
     await fits(page.locator('.tb-ops-figures'));
     await fits(page.locator('.tb-ops__filters tb-filter-chips'));
     await fits(page.locator('.tb-ops__list > li').first());
@@ -159,6 +164,11 @@ test('compact payment figures and filters fit both cabinets; teacher report open
     new RegExp(`/teacher/billing/report[?]month=${href?.split('month=')[1] ?? ''}`),
   );
   await expect(page.locator('tb-monthly-report-page')).toBeVisible();
+  for (const width of [320, 390, 599]) {
+    await page.setViewportSize({ width, height: 844 });
+    await fits(page.locator('tb-monthly-report-page .tb-toolbar'));
+    await fits(page.locator('tb-monthly-report-page .tb-figures'));
+  }
   await page.locator('#report-month').click();
   await expect(page.locator('.p-datepicker-panel')).toBeVisible();
   await student(page);
@@ -243,6 +253,7 @@ test('notification header keeps read-all beside close and uses compact corners a
   expect(left!.x).toBeLessThan(right!.x);
   expect(Math.abs(left!.y - right!.y)).toBeLessThanOrEqual(4);
   await expect(sheet.locator('.tb-notification__dot')).toHaveCount(0);
+  await expect(sheet).toHaveCSS('box-shadow', 'none');
   await expect
     .poll(() =>
       sheet
@@ -267,9 +278,16 @@ test('student calendar details adapt and upcoming sections stay contained on com
     .getByText('Тема занятия', { exact: true })
     .first()
     .click();
-  await expect(page.locator('.p-drawer.tb-side-sheet')).toBeVisible();
+  const dialog = page.locator('.p-dialog.tb-dialog');
+  await expect(dialog).toBeVisible();
+  await expect
+    .poll(async () => {
+      const box = await dialog.boundingBox();
+      return Math.abs(box!.x + box!.width / 2 - 720);
+    })
+    .toBeLessThanOrEqual(1);
   await expect(page.locator('.p-drawer.tb-sheet')).toHaveCount(0);
-  await page.locator('.p-drawer-close-button').click();
+  await dialog.getByRole('button', { name: 'Закрыть', exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator('.tb-my-schedule-section').first()).toHaveCSS('border-radius', '16px');
   const day = new Intl.DateTimeFormat('ru-RU', {

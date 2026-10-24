@@ -436,7 +436,7 @@ The page shows one month; the ‹ › arrows next to the title switch months.
 - **By students** (on the right on a wide screen): «Debtors» with the «Remind» button — it sends the student a reminder, «Prepaid running out» — whose prepayment covers 2 lessons or fewer, and «By weeks» — what came in each week. «All in Students» opens the students list.
 - **Monthly report** — the button in the header.
 
-On a phone the month, both arrows and «Monthly report» are directly above the figures; the figures form a grid without sideways scrolling and the «Payment» button at the bottom records a payment. Each student's balance is in «Students» and on the «Payments» tab of their card.
+On a phone the month, both arrows and «Monthly report» are directly above the figures; the report button wraps below the month and arrows to fit the screen. The report month picker and amounts also adapt to the phone width. The figures form a grid without sideways scrolling and the «Payment» button at the bottom records a payment. Each student's balance is in «Students» and on the «Payments» tab of their card.
 
 ## Record a payment
 
@@ -473,7 +473,7 @@ Notifications are always under the bell at the top of the page. To get them in a
 
 ## The bell
 
-The bell opens the notifications at the side, on a phone — full screen; its number is how many are unread. There is no separate «Notifications» section. At the top there are two tabs:
+The bell opens the notifications at the side, on a phone — full screen without a shadow; its number is how many are unread. There is no separate «Notifications» section. At the top there are two tabs:
 
 - **Inbox** (with the number of unread ones) — new notifications are at the top. Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom — that part is folded, click it to open. On a phone there is no tick: mark a notification read with a swipe — slide it left or right.
 - **Sent** — your messages to students: the text, when it was sent and how many recipients; «Write to students» starts a new one.

@@ -55,3 +55,6 @@ or cancelled — amount 0, `voided`). A voided payment stays in the list with `v
 optional receipt), `student/` (own payments: a surface pane with balance, charged, paid and lesson-price figures; history filter chips for all operations, payments and charges), `ledger/` (the receipt opens from its payment row; the teacher
 attaches, replaces and removes it from the «📎» menu), `home/` (finance widgets), `settings/default-price-card.ts`
 (the settings category «Оплаты», `/teacher/settings/payments`), `billing-labels.ts`.
+
+On compact screens the teacher's month controls and «Отчёт за месяц» link wrap within the pane.
+The report's month picker fits the available width; figure amounts wrap inside their tiles.

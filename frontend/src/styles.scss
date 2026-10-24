@@ -2847,7 +2847,10 @@ full-calendar :has(> .tb-lesson--moving) {
 
     /* an icon-only action («Новая группа») does not stand alone on a row of its own: it takes the end of the line
        of the header's details (ours) */
-    &:not(:has(.tb-page-header__back)):has([meta], > .tb-actions .p-button-icon-only) {
+    &:not(.tb-billing-header):not(:has(.tb-page-header__back)):has(
+        [meta],
+        > .tb-actions .p-button-icon-only
+      ) {
       flex-wrap: nowrap;
       align-items: center;
 
@@ -2856,7 +2859,8 @@ full-calendar :has(> .tb-lesson--moving) {
       }
     }
 
-    > .tb-actions:has(.p-button-icon-only):not(
+    &:not(.tb-billing-header)
+      > .tb-actions:has(.p-button-icon-only):not(
         :has(p-button:not(.tb-page-fab) .p-button:not(.p-button-icon-only))
       ) {
       width: auto;
@@ -2868,6 +2872,13 @@ full-calendar :has(> .tb-lesson--moving) {
         width: 2.5rem;
       }
     }
+  }
+
+  /* Billing nests month navigation and report in one action group; allow the report to wrap. */
+  .tb-page-header.tb-billing-header > .tb-actions {
+    flex: 1;
+    min-inline-size: 0;
+    width: 100%;
   }
 
   .tb-stats {
@@ -3154,6 +3165,7 @@ full-calendar :has(> .tb-lesson--moving) {
   @media (width < 37.5em) {
     top: var(--tb-space-2);
     border-radius: var(--tb-shape-xl) var(--tb-shape-xl) 0 0;
+    box-shadow: none;
     overflow: hidden;
 
     .p-drawer-header {

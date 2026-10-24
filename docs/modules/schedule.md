@@ -77,7 +77,9 @@ discloses affected/protected existing lesson IDs and the rule version before a b
 ## Frontend
 
 `features/schedule/`: `teacher/` (calendar — FullCalendar, unified lesson/repeat dialog, off-time, requests),
-`student/` (week/month calendar and a supporting pane with mini-month, upcoming lessons and requests; compact agenda with week/day navigation and week/month switches, lesson bottom sheet), `ui/` (lesson actions), `home/` widgets,
+`student/` (week/month calendar and a supporting pane with mini-month, upcoming lessons and requests; compact
+agenda with week/day navigation and week/month switches, lesson bottom sheet on compact and centered
+`tb-dialog` on medium and wider screens, matching the teacher), `ui/` (lesson actions), `home/` widgets,
 `schedule-labels.ts`. The teacher's time zone, `teacher/google-calendar-panel.ts` and `ui/calendar-feed-panel.ts` sit in
 the settings category «Расписание и календарь» (`/teacher/settings/calendar`, 0.22.0), not on the schedule page. A new lesson gets the default topic of the chosen student or group
 (`teacher/lesson-owner.ts` `followDefaultTopic`, 0.13.0) unless the teacher typed a topic. Dragging a lesson in the teacher's calendar (`ui/schedule-calendar.ts`) does not save it: the lesson

@@ -63,6 +63,7 @@ import { PAYMENTS_TAB } from '../card-link';
           <div class="tb-toolbar">
             <p-datepicker
               [formControl]="month"
+              [fluid]="true"
               appendTo="body"
               view="month"
               dateFormat="mm.yy"
@@ -247,6 +248,12 @@ import { PAYMENTS_TAB } from '../card-link';
   styles: `
     .tb-report-sections {
       margin-block-start: var(--tb-space-6);
+    }
+
+    @media (width < 37.5em) {
+      .tb-figure__value {
+        overflow-wrap: anywhere;
+      }
     }
   `,
 })

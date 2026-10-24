@@ -107,7 +107,7 @@ describe('MySchedulePage', () => {
     expect(hostElement(fixture).querySelectorAll('.tb-schedule-list > li').length).toBe(2);
   });
 
-  it('opens calendar lesson details in a side sheet on desktop', async () => {
+  it('opens calendar lesson details in a centered dialog on desktop', async () => {
     const lesson = scheduledLesson({ ...future(24), topic: 'Desktop details' });
     await render([lesson]);
     const calendar = fixture.debugElement
@@ -117,7 +117,7 @@ describe('MySchedulePage', () => {
     await fixture.whenStable();
     expect(document.body.querySelector('.p-drawer.tb-sheet')).toBeNull();
     expect(
-      readableText(requireElement(document.body, '.p-drawer.tb-side-sheet', HTMLElement)),
+      readableText(requireElement(document.body, '.p-dialog.tb-dialog', HTMLElement)),
     ).toContain('Desktop details');
     fixture.componentInstance.closeSheet();
     await fixture.whenStable();
