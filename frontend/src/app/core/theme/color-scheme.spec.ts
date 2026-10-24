@@ -12,18 +12,15 @@ const CASES: [string, Shades][] = [
 ];
 
 describe('color scheme', () => {
-  it('keeps text readable for every scheme, contrast and base colour', () => {
-    for (const scheme of SCHEMES) {
-      for (const level of CONTRASTS) {
-        for (const base of BASE_COLORS) {
-          const shades = base.value === 'indigo' ? auraPalette('indigo') : ownShades(base.value);
-          const colors = colorScheme(shades, { scheme, contrast: level });
-          for (const roles of [colors.light, colors.dark]) {
-            expect(
-              lowestContrast(roles),
-              `${base.value}/${scheme}/${level}`,
-            ).toBeGreaterThanOrEqual(4.5);
-          }
+  it.each(SCHEMES)('keeps text readable for %s with every contrast and base colour', (scheme) => {
+    for (const level of CONTRASTS) {
+      for (const base of BASE_COLORS) {
+        const shades = base.value === 'indigo' ? auraPalette('indigo') : ownShades(base.value);
+        const colors = colorScheme(shades, { scheme, contrast: level });
+        for (const roles of [colors.light, colors.dark]) {
+          expect(lowestContrast(roles), `${base.value}/${scheme}/${level}`).toBeGreaterThanOrEqual(
+            4.5,
+          );
         }
       }
     }
