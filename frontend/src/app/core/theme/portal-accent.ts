@@ -10,6 +10,7 @@ import {
 } from './color-scheme';
 import { CORE_T } from '@core/i18n/texts';
 import { schemeTokens } from './teacher-box-preset';
+import { Appearance, DEFAULT_APPEARANCE } from './appearance';
 
 /**
  * Colors of the portal (ADR-0015, ADR-0023): PrimeNG palettes or the teacher's own color `#rrggbb`
@@ -63,8 +64,11 @@ export function accentShades(accent: string): Shades {
 }
 
 /** The scheme of a color of the portal (ADR-0023). */
-export function accentScheme(accent: string): ColorScheme {
-  return colorScheme(accentShades(accent));
+export function accentScheme(
+  accent: string,
+  appearance: Appearance = DEFAULT_APPEARANCE,
+): ColorScheme {
+  return colorScheme(accentShades(accent), appearance);
 }
 
 /** A swatch of a color of the portal: the color itself and its readable mark (the check). */
@@ -88,8 +92,11 @@ export function accentSwatch(accent: string): AccentSwatch {
  *
  * @return the scheme now in use
  */
-export function applyAccent(accent: string): ColorScheme {
-  const scheme = accentScheme(accent);
+export function applyAccent(
+  accent: string,
+  appearance: Appearance = DEFAULT_APPEARANCE,
+): ColorScheme {
+  const scheme = accentScheme(accent, appearance);
   // the palette first: it also sets up the theme with its options if there is none yet (tests)
   updatePrimaryPalette(scheme.primary);
   updatePreset({ semantic: schemeTokens(scheme) });
@@ -107,9 +114,12 @@ export interface AccentAdvice {
   readonly likeError: boolean;
 }
 
-export function accentAdvice(accent: string): AccentAdvice {
+export function accentAdvice(
+  accent: string,
+  appearance: Appearance = DEFAULT_APPEARANCE,
+): AccentAdvice {
   const shades = accentShades(accent);
-  const scheme = colorScheme(shades);
+  const scheme = colorScheme(shades, appearance);
   const alike = (role: 'error'): boolean =>
     difference(scheme.light.primary, scheme.light[role]) < ALIKE ||
     difference(scheme.dark.primary, scheme.dark[role]) < ALIKE;

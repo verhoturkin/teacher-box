@@ -56,6 +56,8 @@ describe('PortalSettingsCard', () => {
       name: 'Английский с Марией',
       address: 'https://school.example.com',
       accent: 'indigo',
+      scheme: 'fidelity',
+      contrast: 'standard',
     });
     request.flush(
       portalSettings({ name: 'Английский с Марией', address: 'https://school.example.com' }),
@@ -82,8 +84,8 @@ describe('PortalSettingsCard', () => {
     buttonByText(host, 'Сохранить').click();
 
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/portal' });
-    expect(request.request.body).toEqual(expect.objectContaining({ accent: 'emerald' }));
-    request.flush(portalSettings({ accent: 'emerald' }));
+    expect(request.request.body).toEqual(expect.objectContaining({ accent: '#009b77' }));
+    request.flush(portalSettings({ accent: '#009b77' }));
   });
 
   it('picks an own color and says when it is made darker to stay readable', async () => {
@@ -139,6 +141,40 @@ describe('PortalSettingsCard', () => {
       ),
     ).toBe('true');
     expect(requireElement(host, '#portal-own-color', HTMLInputElement).value).toBe('#b91c1c');
+  });
+
+  it('retains a selected legacy palette while offering the new base set', async () => {
+    const host = await render(portalSettings({ accent: 'emerald' }));
+    expect(
+      requireElement(host, 'button[aria-label="Текущий цвет"]', HTMLButtonElement).getAttribute(
+        'aria-checked',
+      ),
+    ).toBe('true');
+    buttonByText(host, 'Сохранить').click();
+    const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/portal' });
+    expect(request.request.body).toEqual(expect.objectContaining({ accent: 'emerald' }));
+    request.flush(portalSettings({ accent: 'emerald' }));
+  });
+
+  it('previews and saves scheme and named contrast without applying unsaved colours', async () => {
+    const host = await render();
+    const portal = TestBed.inject(Portal);
+    const original = portal.scheme();
+    requireElement(host, '#portal-scheme-monochrome', HTMLInputElement).click();
+    requireElement(host, '#portal-contrast-maximum', HTMLInputElement).click();
+    await fixture.whenStable();
+    expect(portal.scheme()).toBe(original);
+    buttonByText(host, 'Светлая тема').click();
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Тёмная тема');
+    buttonByText(host, 'Сохранить').click();
+    const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/portal' });
+    expect(request.request.body).toEqual(
+      expect.objectContaining({ scheme: 'monochrome', contrast: 'maximum' }),
+    );
+    request.flush(portalSettings({ scheme: 'monochrome', contrast: 'maximum' }));
+    await fixture.whenStable();
+    expect(portal.scheme()).not.toBe(original);
   });
 
   it('uploads and removes the logo', async () => {

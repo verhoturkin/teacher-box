@@ -2,6 +2,7 @@ import { Hct, SchemeFidelity, argbFromHex, hexFromArgb } from '@material/materia
 import { contrast } from './color';
 import { Shades, auraPalette, colorScheme, lowestContrast, textPairs } from './color-scheme';
 import { ownShades } from './portal-accent';
+import { BASE_COLORS, CONTRASTS, SCHEMES } from './appearance';
 
 const NAMED = ['indigo', 'blue', 'teal', 'emerald', 'violet', 'pink'];
 const OWN = ['#0f766e', '#2e7d32', '#fbc02d', '#1565c0', '#e53935', '#ff9800', '#fde68a'];
@@ -11,6 +12,22 @@ const CASES: [string, Shades][] = [
 ];
 
 describe('color scheme', () => {
+  it('keeps text readable for every scheme, contrast and base colour', () => {
+    for (const scheme of SCHEMES) {
+      for (const level of CONTRASTS) {
+        for (const base of BASE_COLORS) {
+          const shades = base.value === 'indigo' ? auraPalette('indigo') : ownShades(base.value);
+          const colors = colorScheme(shades, { scheme, contrast: level });
+          for (const roles of [colors.light, colors.dark]) {
+            expect(
+              lowestContrast(roles),
+              `${base.value}/${scheme}/${level}`,
+            ).toBeGreaterThanOrEqual(4.5);
+          }
+        }
+      }
+    }
+  });
   it.each(CASES)('keeps every text of %s readable in both themes', (_name, shades) => {
     const scheme = colorScheme(shades);
 

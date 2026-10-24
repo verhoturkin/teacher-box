@@ -18,7 +18,8 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   (module migrations run on one connection outside the pool, open until shutdown: H2 compiles `check (x in (…))`
   against the session that altered the table, and a pooled session is closed by the pool sooner or later).
 - `storage/` — `FileStorage` implementation (`/data/files/<module>/`).
-- `portal/` — `shared.portal.Portal` implementation: name, address (`TEACHERBOX_PUBLIC_URL` wins), colour, logo
+- `portal/` — `shared.portal.Portal` implementation: name, address (`TEACHERBOX_PUBLIC_URL` wins), source colour,
+  M3 scheme, named contrast, logo
   (`/api/public/portal`, `/api/public/portal/logo`, `/api/public/portal/manifest.webmanifest` — the web app manifest:
   the portal's name, its logo before the default icons `/icons/icon-{192,512,maskable-512}.png`, `theme_color` /
   `background_color` from `?theme=&background=` (`#rrggbb`, else the default `#efecf8`), `id` and `start_url` `/`), first-run setup flag (`/api/teacher/portal/setup`).
@@ -60,9 +61,19 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
 
 ## Data
 
-`portal_settings` (one row). Backups and settings file live in the data directory, not in the DB.
+`portal_settings` (one row). Platform migration V2 adds the appearance preferences with `fidelity` / `standard`
+defaults, preserving existing branding. Scheme IDs: `fidelity`, `tonal-spot`, `vibrant`, `expressive`, `neutral`,
+`monochrome`, `content`, `rainbow`, `fruit-salad`. Contrast IDs: `reduced`, `standard`, `increased`, `maximum`.
+The teacher's portal update validates both; public portal settings expose them. Omitted preferences in legacy
+update requests retain their saved values. Logo changes, administrator updates and setup completion also
+preserve them. They are included in backups; full reset restores the defaults.
+Backups and settings file live in the data directory, not in the DB.
 
 ## Frontend
 
 `features/admin/` (logs, status, events, integrations, backups, settings, diagnostics — `/admin/**`),
 `features/settings/` (teacher settings: portal card, setup wizard, backups with the Google Drive panel `backups/drive-panel.ts` and `DriveStore`, reset), `core/portal`.
+The Portal card has identity and preview above a nine-scheme gallery, base-colour swatches, an inline custom
+colour picker with HEX input and named contrast choices. Changes are previewed locally and applied to the
+portal on explicit save. Theme generation lives in `core/theme/`; scheme, contrast and colour each trigger
+reapplication. MCU contrast values are −1 / 0 / 0.5 / 1 for the four stored IDs; the UI shows names only.

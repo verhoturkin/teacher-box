@@ -52,6 +52,30 @@ class PortalIntegrationTest {
     }
 
     @Test
+    void persistsAppearanceAndPreservesItDuringOtherChanges() {
+        assertThat(put("/api/teacher/portal", """
+                {"scheme":"tonal-spot","contrast":"increased"}
+                """, TestUsers.teacher(TEACHER))).hasStatusOk();
+        assertThat(mvc.get().uri("/api/public/portal")).bodyJson().extractingPath("$.scheme")
+                .isEqualTo("tonal-spot");
+        assertThat(settings.load().contrast()).isEqualTo("increased");
+        assertThat(put("/api/teacher/portal", "{\"name\":\"School\"}", TestUsers.teacher(TEACHER)))
+                .hasStatusOk().bodyJson().extractingPath("$.contrast").isEqualTo("increased");
+        assertThat(upload(PNG, TestUsers.teacher(TEACHER))).hasStatusOk()
+                .bodyJson().extractingPath("$.scheme").isEqualTo("tonal-spot");
+        assertThat(put("/api/teacher/portal", "{\"scheme\":\"wrong\"}", TestUsers.teacher(TEACHER)))
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
+        assertThat(put("/api/teacher/portal", "{\"contrast\":\"wrong\"}", TestUsers.teacher(TEACHER)))
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
+        assertThat(put("/api/teacher/portal", "{\"scheme\":\"monochrome\"}",
+                TestUsers.student(UUID.randomUUID()))).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(put("/api/teacher/portal", "{\"scheme\":\"monochrome\"}", TestUsers.admin(ADMIN)))
+                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(put("/api/teacher/portal", "{\"scheme\":\"fidelity\",\"contrast\":\"standard\"}",
+                TestUsers.teacher(TEACHER))).hasStatusOk();
+    }
+
+    @Test
     void theTeacherChoosesTheColorOfThePortal() {
         assertThat(mvc.get().uri("/api/public/portal")).bodyJson().extractingPath("$.accent").isEqualTo("indigo");
 

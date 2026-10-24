@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import { PortalSettings } from '@core/portal/portal';
 import { NotificationsStatus, ResetResult } from './settings.models';
+import { Appearance } from '@core/theme/appearance';
 
 /** Instance settings of the teacher: the portal and the integration status. */
 @Injectable({ providedIn: 'root' })
@@ -16,8 +17,18 @@ export class SettingsApi {
 
   /** Empty values mean the default name and no address. */
   /** @param accent `undefined`: the color stays */
-  changePortal(name: string, address: string, accent?: string): Observable<PortalSettings> {
-    return this.http.put<PortalSettings>('/api/teacher/portal', { name, address, accent });
+  changePortal(
+    name: string,
+    address: string,
+    accent?: string,
+    appearance?: Appearance,
+  ): Observable<PortalSettings> {
+    return this.http.put<PortalSettings>('/api/teacher/portal', {
+      name,
+      address,
+      accent,
+      ...appearance,
+    });
   }
 
   /** PNG, JPEG, WebP or SVG up to 1 MB. */

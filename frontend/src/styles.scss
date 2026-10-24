@@ -217,8 +217,8 @@
 
   /* Cards, dialogs, dropdowns (§2 Surfaces) — the preset's content background as a role */
   --tb-card: var(--p-md-surface-container-lowest);
-  /* Rows of lists in cards (ADR-0020): a tile a tone lighter than the card */
-  --tb-list-item: var(--p-md-surface-container-low);
+  /* Portal decision: one stronger tonal step against a surface pane, without changing text contrast. */
+  --tb-list-item: var(--p-md-surface-container);
   /* M3 list: the group CornerLarge, the items CornerExtraSmall; a container nests it smaller (201.1) */
   --tb-list-outer: var(--tb-shape-lg);
   --tb-list-inner: var(--tb-shape-xs);

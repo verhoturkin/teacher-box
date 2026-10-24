@@ -26,7 +26,8 @@ public class PortalDataReset implements DataReset {
         jdbc.sql("""
                 update platform.portal_settings
                 set name = null, address = null, accent = null, logo_key = null, logo_type = null,
-                    setup_completed_at = null, updated_at = null, version = version + 1
+                    setup_completed_at = null, updated_at = null, version = version + 1,
+                    scheme = 'fidelity', contrast = 'standard'
                 where id = 1
                 """).update();
     }

@@ -17,7 +17,7 @@ public class PortalSettingsRepository {
 
     public PortalSettings load() {
         return jdbc.sql("""
-                select name, address, accent, logo_key, logo_type, setup_completed_at, updated_at, version
+                select name, address, accent, logo_key, logo_type, setup_completed_at, updated_at, version, scheme, contrast
                 from platform.portal_settings where id = 1
                 """)
                 .query(PortalSettingsRepository::map)
@@ -34,7 +34,7 @@ public class PortalSettingsRepository {
                 update platform.portal_settings
                 set name = :name, address = :address, accent = :accent, logo_key = :logoKey,
                     logo_type = :logoType, setup_completed_at = :setupCompletedAt, updated_at = :updatedAt,
-                    version = version + 1
+                    version = version + 1, scheme = :scheme, contrast = :contrast
                 where id = 1 and version = :version
                 """)
                 .param("name", settings.name())
@@ -45,12 +45,15 @@ public class PortalSettingsRepository {
                 .param("setupCompletedAt", settings.setupCompletedAt())
                 .param("updatedAt", settings.updatedAt())
                 .param("version", settings.version())
+                .param("scheme", settings.scheme())
+                .param("contrast", settings.contrast())
                 .update();
         if (updated != 1) {
             throw new OptimisticLockingFailureException("Portal settings were modified");
         }
         return new PortalSettings(settings.name(), settings.address(), settings.accent(), logo,
-                settings.setupCompletedAt(), settings.updatedAt(), settings.version() + 1);
+                settings.setupCompletedAt(), settings.updatedAt(), settings.version() + 1,
+                settings.scheme(), settings.contrast());
     }
 
     private static PortalSettings map(ResultSet rs, int row) throws SQLException {
@@ -61,6 +64,6 @@ public class PortalSettingsRepository {
                 accent == null ? null : PortalAccent.parse(accent).orElse(null),
                 logoKey == null || logoType == null ? null : new PortalSettings.Logo(logoKey, logoType),
                 rs.getObject("setup_completed_at", Instant.class), rs.getObject("updated_at", Instant.class),
-                rs.getLong("version"));
+                rs.getLong("version"), rs.getString("scheme"), rs.getString("contrast"));
     }
 }

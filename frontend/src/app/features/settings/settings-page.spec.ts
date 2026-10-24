@@ -159,7 +159,7 @@ describe('SettingsPage', () => {
 
     const list = readableText(requireElement(host, 'nav', HTMLElement));
     expect(list).toContain('Мой аккаунт Имя, фото, пароль');
-    expect(list).toContain('Портал Название, логотип, цвет');
+    expect(list).toContain('Портал Название и оформление');
     expect(list).toContain('Расписание и календарь Пояс, Google, подписка');
     expect(list).toContain('Звонки Телемост, ссылки');
     expect(list).toContain('Мессенджеры Боты, что присылать 2');

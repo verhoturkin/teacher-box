@@ -37,13 +37,15 @@ import ru.teacherbox.shared.security.CurrentUser;
 class PortalController {
 
     /** What every page needs: the name and the logo for the header, the color, the address for links. */
-    record PublicPortal(String name, @Nullable String address, String accent, @Nullable String logo) {
+    record PublicPortal(String name, @Nullable String address, String accent, @Nullable String logo,
+            String scheme, String contrast) {
     }
 
     /** @param accent {@code null}: the color stays */
     record ChangeRequest(@Nullable @Size(max = PortalSettings.MAX_NAME_LENGTH) String name,
             @Nullable @Size(max = PortalAddress.MAX_LENGTH) String address,
-            @Nullable @Size(max = 20) String accent) {
+            @Nullable @Size(max = 20) String accent, @Nullable @Size(max = 20) String scheme,
+            @Nullable @Size(max = 20) String contrast) {
     }
 
     record ChangeAddressRequest(@Nullable @Size(max = PortalAddress.MAX_LENGTH) String address) {
@@ -58,7 +60,7 @@ class PortalController {
     @GetMapping("/api/public/portal")
     PublicPortal publicView() {
         View view = portal.view();
-        return new PublicPortal(view.name(), view.address(), view.accent(), view.logo());
+        return new PublicPortal(view.name(), view.address(), view.accent(), view.logo(), view.scheme(), view.contrast());
     }
 
     /** The default colors of the manifest: the top bar of the light theme in the default color (indigo). */
@@ -138,7 +140,7 @@ class PortalController {
 
     @PutMapping("/api/teacher/portal")
     View change(@Valid @RequestBody ChangeRequest request) {
-        return portal.change(request.name(), request.address(), request.accent());
+        return portal.change(request.name(), request.address(), request.accent(), request.scheme(), request.contrast());
     }
 
     /** The teacher finished or skipped the first setup. */
