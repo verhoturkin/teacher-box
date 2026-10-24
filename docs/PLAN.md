@@ -17,16 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## Next release
-
-Restore the visible background of content panes in the dark theme.
-
-### 277. Dark pane surfaces (F)
-
-- [x] **277.1** — In `shared/ui/panes.ts`, distinguish dark content panes from the window with
-  surface-container-low, including field label backgrounds; preserve transparent compact panes.
-  Cover desktop/tablet separation and compact transparency in `e2e/tests/layout/adaptive-navigation.spec.ts`.
-
 ## Backlog
 
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the monthly report,
