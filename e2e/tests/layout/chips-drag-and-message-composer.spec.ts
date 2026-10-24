@@ -38,6 +38,25 @@ test.beforeAll(async ({ request }) => {
     },
   });
   expect(lesson.ok()).toBe(true);
+  const neighbour = await request.post('/api/teacher/students', {
+    headers,
+    data: { displayName: `Соседнее занятие ${RUN}`, email: null, phone: null, note: null },
+  });
+  expect(neighbour.ok()).toBe(true);
+  const other = (await neighbour.json()) as { student: { id: string } };
+  // Narrow the moved card at noon so its cancellation control extends into the next day column.
+  for (const minute of [0, 10]) {
+    const overlap = await request.post('/api/teacher/schedule/lessons', {
+      headers,
+      data: {
+        studentId: other.student.id,
+        startsAt: new Date(new Date(todayThereAt(12)).getTime() + minute * 60_000).toISOString(),
+        durationMinutes: 60,
+        allowOverlap: true,
+      },
+    });
+    expect(overlap.ok()).toBe(true);
+  }
 });
 
 test('the top bar has no divider below it on a phone', async ({ page }) => {
@@ -88,6 +107,7 @@ test('the move buttons lie in the middle of a dragged lesson card', async ({ pag
   expect(offset?.x ?? 99).toBeLessThanOrEqual(2);
   expect(offset?.y ?? 99).toBeLessThanOrEqual(2);
 
+  await page.screenshot({ path: 'test-results/calendar-move-controls.png' });
   await moving.getByRole('button', { name: 'Отменить перенос' }).click();
   await expect(page.locator('.tb-lesson--moving')).toHaveCount(0);
 });

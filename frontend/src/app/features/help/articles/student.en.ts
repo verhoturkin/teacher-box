@@ -38,7 +38,7 @@ Your photo at the top right → «My account»: the photo is in the top card, th
     title: 'Schedule and moving',
     summary: 'Your lessons, cancelling and moving',
     body: `
-Clicking a calendar lesson opens a centered dialog on a computer, as in the teacher cabinet, and a bottom panel on a phone. Upcoming lesson actions place Join lesson first, followed by Move and Cancel together. On a phone, upcoming lessons and calendar subscription use separate rounded sections.
+Clicking a calendar lesson opens a centered dialog on a computer, as in the teacher cabinet, and a bottom panel on a phone. Spacing separates the lesson details and actions, with room below the buttons. Upcoming lesson actions place Join lesson first, followed by Move and Cancel together. On a phone, upcoming lessons and calendar subscription use separate rounded sections.
 
 «Schedule» shows a week or month calendar. On a computer, the mini calendar, upcoming lessons and «My requests» sit beside it. On a phone it opens with an agenda: a week strip and lessons of the selected day, with switches to week or month.
 
@@ -148,7 +148,7 @@ If something does not add up — write to the teacher.
     body: `
 ## Notifications in the cabinet
 
-The bell in the header opens the notifications at the side (on a phone — full screen without a shadow); its number is how many are unread, new ones are at the top. There is no separate «Notifications» section. Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom — that part is folded, click it to open. On a phone there is no tick: mark a notification read with a swipe — slide it left or right.
+The bell in the header opens the notifications at the side (on a phone — full screen without a shadow or background dimming); its number is how many are unread, new ones are at the top. There is no separate «Notifications» section. Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom — that part is folded, click it to open. On a phone there is no tick: mark a notification read with a swipe — slide it left or right.
 
 ## Connect
 

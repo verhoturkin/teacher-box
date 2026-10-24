@@ -307,7 +307,7 @@ export function nextMonday(date: Date): Date {
         [modal]="true"
         [draggable]="false"
         [closeAriaLabel]="c.close"
-        styleClass="tb-dialog"
+        styleClass="tb-dialog tb-student-lesson-dialog"
         [header]="sheetTitle()"
       >
         <ng-container *ngTemplateOutlet="lessonDetails" />
@@ -315,27 +315,29 @@ export function nextMonday(date: Date): Date {
     }
     <ng-template #lessonDetails>
       @if (sheetLesson(); as lesson) {
-        <div class="tb-list__text">
-          <tb-lesson-summary [lesson]="lesson" />
-        </div>
-        <tb-lesson-actions
-          [stacked]="true"
-          [joinUrl]="joinUrl(lesson)"
-          [requests]="canAsk(lesson)"
-          [group]="lesson.groupId !== null"
-          rescheduleIcon="tb-i tb-i-calendar_month"
-          (ask)="closeSheet(); ask(lesson, $event)"
-        />
-        @if (lesson.pendingRequests[0]; as request) {
-          <p-button
-            severity="secondary"
-            [label]="t.withdrawRequest"
-            icon="tb-i tb-i-undo"
-            [fluid]="true"
-            [loading]="actions.is('withdraw-' + request.id)"
-            (onClick)="withdraw(request)"
+        <div class="tb-student-lesson-details">
+          <div class="tb-list__text">
+            <tb-lesson-summary [lesson]="lesson" />
+          </div>
+          <tb-lesson-actions
+            [stacked]="true"
+            [joinUrl]="joinUrl(lesson)"
+            [requests]="canAsk(lesson)"
+            [group]="lesson.groupId !== null"
+            rescheduleIcon="tb-i tb-i-calendar_month"
+            (ask)="closeSheet(); ask(lesson, $event)"
           />
-        }
+          @if (lesson.pendingRequests[0]; as request) {
+            <p-button
+              severity="secondary"
+              [label]="t.withdrawRequest"
+              icon="tb-i tb-i-undo"
+              [fluid]="true"
+              [loading]="actions.is('withdraw-' + request.id)"
+              (onClick)="withdraw(request)"
+            />
+          }
+        </div>
       }
     </ng-template>
 
@@ -349,6 +351,16 @@ export function nextMonday(date: Date): Date {
     />
   `,
   styles: `
+    .tb-student-lesson-details {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-4);
+    }
+
+    :host ::ng-deep .tb-student-lesson-dialog .p-dialog-content {
+      padding-bottom: var(--tb-space-6);
+    }
+
     :host ::ng-deep .tb-my-schedule-feed .p-card-body {
       padding: 0;
     }

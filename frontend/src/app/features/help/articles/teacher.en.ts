@@ -170,6 +170,8 @@ A lesson can be dragged in the calendar to another time. It takes the new place 
 
 In the month view, click a day to plan a lesson on it: it starts at 10:00 and lasts the default duration — change them in the form.
 
+Move confirmation and cancellation buttons remain accessible when overlapping lessons narrow the card.
+
 ## Time off
 
 Mark the time you do not work: «Schedule» → «Time off».
@@ -473,7 +475,7 @@ Notifications are always under the bell at the top of the page. To get them in a
 
 ## The bell
 
-The bell opens the notifications at the side, on a phone — full screen without a shadow; its number is how many are unread. There is no separate «Notifications» section. At the top there are two tabs:
+The bell opens the notifications at the side, on a phone — full screen without a shadow or background dimming; its number is how many are unread. There is no separate «Notifications» section. At the top there are two tabs:
 
 - **Inbox** (with the number of unread ones) — new notifications are at the top. Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom — that part is folded, click it to open. On a phone there is no tick: mark a notification read with a swipe — slide it left or right.
 - **Sent** — your messages to students: the text, when it was sent and how many recipients; «Write to students» starts a new one.

@@ -2206,6 +2206,12 @@ full-calendar :has(> .tb-lesson--moving) {
   z-index: 5 !important;
 }
 
+/* Controls can extend beyond a narrow day column; raise its stacking context above adjacent days too. */
+full-calendar [role='gridcell']:has(.tb-lesson--moving) {
+  position: relative;
+  z-index: 5;
+}
+
 .tb-lesson-move {
   position: absolute;
   inset: 0;
@@ -3143,6 +3149,13 @@ full-calendar :has(> .tb-lesson--moving) {
     inset: 0;
     width: 100vw;
     border-radius: 0;
+  }
+}
+
+/* Notifications: a transparent compact scrim is a portal decision; the modal dismissal stays active. */
+@media (width < 37.5em) {
+  :root {
+    --tb-notifications-scrim: transparent;
   }
 }
 

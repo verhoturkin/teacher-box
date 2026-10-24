@@ -223,7 +223,7 @@ component that shows one adds it to `PRIME`).
   surface-container-lowest veil, a standard button group of M3E extra small icon buttons (32 dp, 20 dp icon, 18 dp
   apart, pressed 8 dp corners): ✓ «Перенести» filled and wide (40 dp), ✕ «Отменить перенос» tonal (32 dp); on a card
   narrower than 6 rem (lessons side by side) both are 32 dp and 4 px apart, and the dragged card lies above its
-  neighbours; the move is saved only on ✓.
+  neighbours, including adjacent day columns when the controls extend beyond a narrow card; the move is saved only on ✓.
 - **Colours of students and groups (0.20.0, `core/theme/label-colors.ts`):** M3 static colours (formerly custom
   colours) — ten reference colours (Tailwind 500, red 600; hues about 30° apart), each giving the four roles
   `label-<c>`, `on-label-<c>`, `label-<c>-container`, `on-label-<c>-container` of both themes (`--p-md-*`) from its
@@ -601,6 +601,10 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   (`tbAttributes`).
 
 ## 8. Dialogs, sheets, menus
+
+0.31.2 portal decisions: student lesson details keep a 16 px gap between summary and actions, and
+a 24 px bottom inset in the desktop dialog. Compact notifications use a transparent scrim; modal focus,
+scroll locking and dismissal remain unchanged. Other modal surfaces retain the M3 scrim.
 
 - **Modal side sheet** `tb-side-sheet` (the help, 0.15.0): a right drawer 1 rem from the window edges, 42 rem wide,
   large corners, surface container low, scrim 32 %; the header is «←» (only when there is a way back), the headline
