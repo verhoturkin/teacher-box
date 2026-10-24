@@ -19,18 +19,6 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
-## Next release
-
-### Stage 282 — Correct student filled fields (F)
-
-- [x] 282.1 Isolate student filled fields from outlined styles and follow M3 label, geometry,
-      indicator and error states (`shared/ui/filled-field.scss`, `styles.scss`). Expose
-      `.tb-field--filled` globally for reuse across features, starting with the student forms. Keep
-      the existing neutral disable-access action and the destruction-only red policy. Verify both
-      themes, empty/focused/populated/error fields, textarea and read-only login in functional E2E.
-- [x] 282.2 Record and enforce Markdown prose wrapping in `AGENTS.md`; check changed Markdown files
-      and fix long plan items in `archive/plans/v0.33.0.md`.
-
 ## Backlog
 
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the
