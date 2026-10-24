@@ -123,7 +123,7 @@ test('the actions of the page header are at one height on every page', async ({
   await expect(page.locator('.tb-page-header > .tb-actions p-button').first()).toBeVisible();
 });
 
-test('students are list rows with the status on the right, «⋮» in the card, words are whole', async ({
+test('students are list rows with the status on the right, access in Profile, words are whole', async ({
   page,
 }) => {
   await signIn(page);
@@ -144,7 +144,9 @@ test('students are list rows with the status on the right, «⋮» in the card, 
     (cardBox?.x ?? 0) + (cardBox?.width ?? 0),
   );
   await card.locator('.tb-list__title').click();
-  await expect(page.getByRole('button', { name: `Действия: ${LONG_NAME}` })).toBeVisible();
+  await expect(page.getByRole('button', { name: `Действия: ${LONG_NAME}` })).toHaveCount(0);
+  await page.getByRole('tab', { name: 'Профиль' }).click();
+  await expect(page.getByRole('button', { name: 'Отключить доступ' })).toBeVisible();
   // the long name is not broken in the middle of a word: each line ends at a space or the hyphen
   expect(
     await card.locator('.tb-list__title').evaluate((title) => {

@@ -35,39 +35,60 @@ import { T } from '../i18n/texts';
   imports: [Card, ConfirmDialog, MoneyPipe, BalanceAmount, LedgerList, LoadStateView],
   providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: `
+    :host {
+      display: block;
+      container-type: inline-size;
+    }
+    .tb-student-figures {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--tb-space-3);
+      margin: 0 0 var(--tb-space-6);
+      > div {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        min-width: 0;
+        padding: var(--tb-space-4);
+        border-radius: var(--tb-shape-lg);
+        background: var(--tb-list-item);
+      }
+      dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+      }
+    }
+    @container (width < 40rem) {
+      .tb-student-figures {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  `,
   template: `
     @if (!state.ready()) {
       <tb-load-state [state]="state" [what]="t.what" (retry)="reload()" />
     } @else if (ledger(); as ledger) {
-      <div class="tb-stats">
-        <p-card>
-          <div class="tb-stat">
-            <span class="tb-muted">{{ t.balance }}</span>
-            <span class="tb-stat__value"
-              ><tb-balance-amount [balance]="ledger.balance" [currency]="ledger.currency"
-            /></span>
-          </div>
-        </p-card>
-        <p-card>
-          <div class="tb-stat">
-            <span class="tb-muted">{{ t.charged }}</span>
-            <span class="tb-stat__value">{{ ledger.charged | money: ledger.currency }}</span>
-          </div>
-        </p-card>
-        <p-card>
-          <div class="tb-stat">
-            <span class="tb-muted">{{ t.paid }}</span>
-            <span class="tb-stat__value">{{ ledger.paid | money: ledger.currency }}</span>
-          </div>
-        </p-card>
-        <p-card>
-          <!-- changed on the Профиль tab (redesign spec §8: one home per function) -->
-          <div class="tb-stat">
-            <span class="tb-muted">{{ t.lessonPrice }}</span>
-            <span class="tb-stat__value">{{ ledger.lessonPrice | money: ledger.currency }}</span>
-          </div>
-        </p-card>
-      </div>
+      <dl class="tb-student-figures">
+        <div>
+          <dt class="tb-figure__label">{{ t.balance }}</dt>
+          <dd class="tb-figure__value">
+            <tb-balance-amount [balance]="ledger.balance" [currency]="ledger.currency" />
+          </dd>
+        </div>
+        <div>
+          <dt class="tb-figure__label">{{ t.charged }}</dt>
+          <dd class="tb-figure__value">{{ ledger.charged | money: ledger.currency }}</dd>
+        </div>
+        <div>
+          <dt class="tb-figure__label">{{ t.paid }}</dt>
+          <dd class="tb-figure__value">{{ ledger.paid | money: ledger.currency }}</dd>
+        </div>
+        <div>
+          <dt class="tb-figure__label">{{ t.lessonPrice }}</dt>
+          <dd class="tb-figure__value">{{ ledger.lessonPrice | money: ledger.currency }}</dd>
+        </div>
+      </dl>
 
       <p-card [header]="t.history">
         <tb-ledger-list

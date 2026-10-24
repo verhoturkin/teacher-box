@@ -41,7 +41,7 @@ import { Student } from '../data-access/identity.models';
 
 /**
  * The card of a student (redesign spec §8): the header — the 72 px avatar, the name, «с сентября 2025», the
- * tags of the status, the messenger and the balance, the actions «Написать», «Оплата», «Занятие» and «⋮» — and
+ * tags of the status, the messenger and the balance, the actions «Написать», «Оплата», «Занятие» — and
  * the tabs named by `?tab=`. Обзор puts together the parts of the other features: the next lessons, the open
  * homework, the balance, the messengers and the video meeting; Занятия, Задания and Оплаты are the full lists of
  * those features — all the lessons, every task, the ledger; Профиль changes the student's data in place.
@@ -85,8 +85,7 @@ import { Student } from '../data-access/identity.models';
         [single]="single()"
         [actionsLabel]="actionsLabel()"
         [busy]="busy()"
-        [menuOpen]="menuOpen()"
-        (more)="more.emit($event)"
+        [showMore]="false"
       >
         <tb-avatar
           avatar
@@ -170,6 +169,8 @@ import { Student } from '../data-access/identity.models';
               [busy]="busy()"
               (saved)="saved.emit($event)"
               (invite)="invite.emit()"
+              (deactivate)="deactivate.emit()"
+              (reactivate)="reactivate.emit()"
             />
           }
         </p-tabpanel>
@@ -241,19 +242,18 @@ export class StudentCard {
   /** Names of the messengers the student connected; `null` — not known. */
   readonly channels = input<readonly string[] | null>(null);
   readonly tab = input<CardTab>(DEFAULT_TAB);
-  /** One pane (compact, medium): the page header carries the name and «⋮». */
+  /** One pane (compact, medium): the page header carries the name. */
   readonly single = input(false);
-  /** An action of «⋮» is running. */
+  /** An access action in Profile is running. */
   readonly busy = input(false);
-  readonly menuOpen = input(false);
-  /** «⋮»: the page opens its menu. */
-  readonly more = output<Event>();
   /** A payment or a lesson changed what the list knows of the student. */
   readonly changed = output();
   /** Профиль saved the student's data. */
   readonly saved = output<Student>();
-  /** Профиль asks for a new invitation link (as «⋮» does). */
+  /** Profile asks for a new invitation link. */
   readonly invite = output();
+  readonly deactivate = output();
+  readonly reactivate = output();
 
   protected readonly writeVisible = signal(false);
   protected readonly paymentVisible = signal(false);

@@ -84,12 +84,42 @@ describe('TodoQueue', () => {
     const links = Array.from(host.querySelectorAll('a'), (a) => a.getAttribute('href'));
     expect(links).toEqual([
       '/teacher/schedule',
-      '/teacher/schedule',
       '/teacher/homework/review',
       '/teacher/students/s-9?tab=payments',
     ]);
     expect(content).not.toContain('Срочных дел нет');
   });
+
+  it.each([false, true])(
+    'opens and saves group attendance from Today (phone: %s)',
+    async (phone) => {
+      await render(done, { lessons: [groupLesson()] }, [], phone);
+      const marked = vi.fn();
+      fixture.componentInstance.marked.subscribe(marked);
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
+      const host = hostElement(fixture);
+      if (phone) {
+        host.querySelector<HTMLButtonElement>('.tb-list__stretched button')?.click();
+      } else {
+        buttonByText(host, 'Отметить').click();
+      }
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(navigate).not.toHaveBeenCalled();
+      const dialog = document.body.querySelector<HTMLElement>('[role="dialog"]');
+      expect(dialog).not.toBeNull();
+      expect(readableText(dialog ?? host)).toContain('Иван');
+      buttonByText(dialog ?? host, 'Сохранить').click();
+      const request = backend.expectOne('/api/teacher/schedule/lessons/gl-1/attendance');
+      expect(request.request.body).toEqual({ marks: { 's-1': 'ATTENDED', 's-2': 'EXCUSED' } });
+      request.flush(groupLesson({ status: 'CONDUCTED' }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(marked).toHaveBeenCalledOnce();
+      expect(text()).toContain('Срочных дел нет');
+    },
+  );
 
   it('marks a lesson in place and tells the page', async () => {
     await render(done, { lessons: [scheduledLesson({ id: 'l-7' })] });

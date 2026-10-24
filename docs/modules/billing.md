@@ -51,7 +51,10 @@ or cancelled — amount 0, `voided`). A voided payment stays in the list with `v
 
 ## Frontend
 
-`features/billing/`: `teacher/` (payments page, `student-payments-tab.ts` — the Payments tab of the student card since 0.23.0, its price lives in `student-price-card.ts` on the Profile tab; monthly report; the payment dialog takes an
+`features/billing/`: `teacher/` (payments page, `student-payments-tab.ts` — the Payments tab of the student card since 0.23.0:
+four tonal summary tiles for balance, all-time charged, all-time paid and lesson price, in one row on wide
+screens and wrapping on compact screens, matching the teacher's payments overview; price editing lives in
+`student-price-card.ts` on the Profile tab; monthly report; the payment dialog takes an
 optional receipt), `student/` (own payments: a surface pane with balance, charged, paid and lesson-price figures; history filter chips for all operations, payments and charges), `ledger/` (the receipt opens from its payment row; the teacher
 attaches, replaces and removes it from the «📎» menu), `home/` (finance widgets), `settings/default-price-card.ts`
 (the settings category «Оплаты», `/teacher/settings/payments`), `billing-labels.ts`.

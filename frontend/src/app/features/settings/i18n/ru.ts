@@ -35,6 +35,8 @@ export const ru = {
     dataSummary: 'Копии, Google Диск, сброс',
   },
   portal: {
+    identityTitle: 'Название и логотип',
+    appearanceTitle: 'Оформление',
     currentColor: 'Текущий цвет',
     scheme: 'Цветовая схема',
     contrast: 'Контраст',

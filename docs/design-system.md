@@ -222,7 +222,7 @@ component that shows one adds it to `PRIME`).
 
 - `p-message` — role container, no border or shadow, Body Medium. `p-badge` — error by default, `warn`,
   calm counter `secondary`; a badge on an icon (the bell) has no outline and sits inside the 40 px button: its start at the icon's middle, 4 px from the top (M3). Calendar events: conducted —
-  success-container, missed — warning-container, cancelled — surface-container-highest + on-surface-variant +
+  success-container, missed — error-container + on-error-container (the debt and overdue-work accent), cancelled — surface-container-highest + on-surface-variant +
   strikethrough; student request — 2 px warning outline; busy / off-time — outline / outline-variant; a dropped
   lesson waiting for confirmation — 2 px primary outline and, in the middle of its card over an 88 %
   surface-container-lowest veil, a standard button group of M3E extra small icon buttons (32 dp, 20 dp icon, 18 dp
@@ -626,7 +626,8 @@ scroll locking and dismissal remain unchanged. Other modal surfaces retain the M
   (400 dp; on compact full width with rounded top corners and no shadow — our decision, see §4),
   closed by a notification that leads to another page. Content: the
   teacher's M3 primary tabs «Входящие N» (badge ≤ 4 characters, **M3**) and «Отправленные»; the student has the
-  inbox only. Primary tabs `tb-tabs` (**M3**, every tab bar, 0.24.1): no container, 48 dp, Title Small, the label primary when
+  inbox only. The header and tab bar stay fixed at every width; only the active tab's content scrolls inside
+  the sheet (our layout decision). Primary tabs `tb-tabs` (**M3**, every tab bar, 0.24.1): no container, 48 dp, Title Small, the label primary when
   active, a 3 dp primary indicator with 3 dp rounded top corners as wide as the label (the `::after` of `tb-tab-label`,
   the span every tab wraps its label in), one 1 dp outline-variant divider under the whole bar; the tabs share the
   bar's width equally with the label centred (M3 fixed tabs). Anatomy, top to bottom: the header (headline «Уведомления»,
@@ -670,7 +671,8 @@ scroll locking and dismissal remain unchanged. Other modal surfaces retain the M
   «Закрыть» (no swipe). Example: upcoming lesson row on the phone = icon, time and details, chevron
   (`tb-list__stretched` button); sheet holds «Подключиться» and «Перенести | Отменить» group.
   0.15.3: the teacher's «Отметьте прошедшие занятия» the same way — on a computer the row has labelled text
-  buttons «Проведено» and «Пропуск» (neutral since 0.17.0), a group «Отметить»; on the phone the row (avatar, name,
+  buttons «Проведено» and «Пропуск» (neutral since 0.17.0), a group «Отметить» (opens the calendar's
+  attendance dialog directly on the home page); on the phone the row (avatar, name,
   time, chevron) opens a sheet with them full width.
 - **Menus and dropdowns:** 16 px container, 4 px padding, elevation 2; items are tiles with 2 px gap — 4 px
   corners, 12 px on the outer side of the first and the last item and on the selected one; *our decision, not M3:*
@@ -735,17 +737,18 @@ scroll locking and dismissal remain unchanged. Other modal surfaces retain the M
     balances from the billing overview, messengers from notifications, lessons from schedule — a failed read
     only drops its part); trail — one status: the debt in `error` (Title Medium; read out «Долг N»), or else the tag
     «Приглашён» / «Отключён» / «В архиве» (none for an active student; the trail column is shared by the
-    subgrid, one status keeps the text column wide in the 360/412 pane); no «⋮» in the row (237.2): the
-    actions (one popup `p-menu`, `aria-haspopup` + `aria-expanded`) are a «⋮» in the card's header. The row of the open card (from expanded) is `tb-list__item--current`:
+    subgrid, one status keeps the text column wide in the 360/412 pane); no «⋮» in the row (237.2):
+    the student card's access actions live on Profile beside password change; groups retain their header
+    «⋮» menu. The row of the open card (from expanded) is `tb-list__item--current`:
     secondary-container, title weight 500 (M3 selected list item), also over a student's colour. With
     nothing open beside the list — «Выберите ученика или группу».
   - Student's card (237.3, `identity/students/student-card.ts`) — header: the 72 px avatar in the student's
     colour (label container, *ours*), the name (h2, Headline Small; on one pane the page header carries it and
-    «⋮»), «с сентября 2025» (Body Medium, on-surface-variant), tags — the status (not for an active student),
+    no overflow menu), «с сентября 2025» (Body Medium, on-surface-variant), tags — the status (not for an active student),
     the messengers or «Без мессенджера» (warn), «Аванс N» (success) / «Долг N» (danger); actions — tonal
     «Написать» (`tb-broadcast-dialog [to]`, one recipient, no picker) and «Оплата» (`tb-payment-dialog` with the
     student), filled «Занятие» (`tb-lesson-dialog [studentId]`: «with whom» fixed, the default topic and the
-    length from the schedule settings), «⋮»; a deactivated student keeps only «Оплата». On compact the three
+    length from the schedule settings); a deactivated student keeps only «Оплата». On compact the three
     are tonal, equal width across the card. Tabs `tb-tabs` named by `?tab=` (`card-tabs.ts`;
     Обзор, the default, is left out of the address). Обзор — cards one under another, each a part of its
     feature: «Ближайшие занятия» (3 of 60 days, «Ещё запланировано: N»), «Задания» (open ones, works to review
@@ -758,7 +761,8 @@ scroll locking and dismissal remain unchanged. Other modal surfaces retain the M
     ранее» reads the year before; a past lesson's tag is its status, a group lesson the student attended or
     missed — the student's own attendance; cancelled rows are inactive); «Все задания» of `tb-student-tasks-tab`
     (open ones as on Обзор, then the accepted ones, the latest reviewed first, with the grade; 20 + «Показать
-    ещё»); `tb-student-payments-tab` — the figures (balance, totals, lesson price — read-only since 237.5) and
+    ещё»); `tb-student-payments-tab` — four tonal metric tiles (balance, all-time charged, all-time paid,
+    lesson price — read-only since 237.5), one horizontal row on wide screens and wrapping on compact, and
     the ledger card «История» (`tb-ledger-list`). The old page `/teacher/billing/students/:id` redirects to
     `/teacher/students/:id?tab=payments`; billing links to a student open that tab.
     Профиль (237.5, `tb-student-profile-tab`) — the student's data changed in place, cards one under another:
@@ -768,10 +772,9 @@ scroll locking and dismissal remain unchanged. Other modal surfaces retain the M
     «Цена занятия» (`tb-student-price-card` of billing — the one place a student's price is changed, the same
     field + tonal «Сохранить»), «Видеовстреча» (`tb-room-panel`, a card since 237.6, every action saved at once) and «Вход в
     кабинет» (the read-only login, until when the issued link works, tonal «Новое приглашение» / «Сбросить
-    пароль» — the same action as in «⋮»). *Our decision (M3 publishes no in-place edit pattern):* fields stay
+    пароль», with disable/reactivate access beside password change). *Our decision (M3 publishes no in-place edit pattern):* fields stay
     editable instead of a read view with a pencil, as the account's sections. The dialog «Новый ученик» asks only
-    the name and the contacts; after it the card opens on Профиль with the invitation link over it. «⋮» has no
-    «Изменить» any more.
+    the name and the contacts; after it the card opens on Профиль with the invitation link over it.
     The header is one part for both cards (`tb-card-head`, `card-head.ts`: the avatar and the actions projected).
   - Group's card (237.6, `identity/groups/group-card.ts`) — the same header: a 72 px tile with the group icon in
     the group's colour (secondary container without one, *ours*), «3 участника · с сентября 2025», the tag «В
@@ -941,9 +944,18 @@ scroll locking and dismissal remain unchanged. Other modal surfaces retain the M
   between buttons, inner corners 8 dp (pressed 4 dp), outer corners round; the chosen one `primary` and fully round,
   the others `secondary container`. *Ours:* the group takes the whole width, the buttons share it by their content.
 
+
+Student home lesson material tiles (0.33.0, portal decision) use columns matching the material card
+width (12–15 rem, capped by the available width) with the standard 12 px gap, rather than stretching
+tracks around fixed-width cards. Compact layouts wrap without horizontal overflow.
+
 ## 10. Fields
 
 - M3 outlined text field, 56 px: outline; hover on-surface; focus 2 px primary; error — error colour.
+- Filled-field trial (0.33.0): only the student creation dialog and the teacher's student Profile text
+  fields use M3 filled text fields: 56 px height, label inside at the top start, 4 px top corners and a
+  bottom indicator (1 px, 2 px primary on focus). This limited rollout is our product decision; the
+  outlined field remains the default elsewhere.
 - `.tb-field` with the `label` **first** (or a `tb-copy-row` / `tb-inline` row with the field first): the
   label sits on the outline (Body Small), primary on focus, error on error. A field with its own header
   (`tb-field__header`) keeps the label above. Every field has a visible label (filters too).
@@ -1008,9 +1020,13 @@ scroll locking and dismissal remain unchanged. Other modal surfaces retain the M
 ## 12. Portal branding
 
 - Portal appearance — source colour, scheme and named contrast, stored in `platform` settings and applied at
-  start. The Portal settings use the gallery layout: name, logo and local preview at the top, nine scheme
-  choices with colour samples, base colours and custom colour, then contrast. The draft preview follows the
-  current selection; an explicit save applies it to the portal. This composition is our decision.
+  start. Portal settings have three separate tonal cards: Identity (name and logo), Appearance (base and
+  custom colour, nine scheme choices with colour samples, contrast), and Preview. From a container width
+  of 48 em, Identity and Appearance stack in the left column and Preview spans both rows on the right;
+  narrower containers stack the three cards. Colour-scheme help opens `teacher/appearance`. The draft preview follows the
+  current selection; an explicit save applies it to the portal. Identity and Appearance use the standard
+  `--tb-list-item` surface, including field-label cutouts, rather than surface-container-highest.
+  This composition and surface choice are our decision.
 - Base colours (`core/theme/appearance.ts`) — original indigo and screen approximations inspired by Pantone
   Colours of the Year: Classic Blue (2020), Very Peri (2022), Emerald (2013), Viva Magenta (2023), Peach Fuzz
   (2024), Mocha Mousse (2025), Illuminating (2021), Cloud Dancer (2026). These are portal screen colours, not

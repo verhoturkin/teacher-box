@@ -34,6 +34,45 @@ function bell(page: Page) {
   return page.locator('tb-notification-bell').getByRole('button');
 }
 
+for (const viewport of [WIDE, PHONE]) {
+  test(`notifications scroll inside the tab at ${String(viewport.width)}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await signIn(page, 'teacher', TEACHER_PASSWORD);
+    await page.route('**/api/me/notifications?*', async (route) => {
+      const items = Array.from({ length: 20 }, (_, index) => ({
+        id: `scroll-${String(index)}`,
+        kind: 'HOMEWORK_ASSIGNED',
+        title: `Уведомление ${String(index + 1)}`,
+        body: 'Достаточно длинный текст уведомления для проверки прокрутки внутри вкладки.',
+        link: null,
+        read: false,
+        createdAt: '2026-10-24T10:00:00Z',
+      }));
+      await route.fulfill({ json: { items, total: items.length, unread: items.length } });
+    });
+    await page.goto('/teacher/students');
+    await bell(page).click();
+    const container =
+      viewport.width === WIDE.width
+        ? page.locator('#tb-notifications-sheet')
+        : page.getByRole('dialog', { name: 'Уведомления' });
+    const tab = container.getByRole('tab', { name: /^Входящие/ });
+    const title = container.getByText('Уведомления', { exact: true });
+    const scroll = container.locator('.tb-notifications-scroll');
+    await expect(container.getByText('Уведомление 20', { exact: true })).toBeAttached();
+    const beforeTab = await tab.boundingBox();
+    const beforeTitle = await title.boundingBox();
+    await scroll.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
+    await expect.poll(() => scroll.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+    // The opening spring moves the sheet horizontally; scrolling must keep its vertical anchors.
+    expect((await tab.boundingBox())?.y).toBe(beforeTab?.y);
+    expect((await title.boundingBox())?.y).toBe(beforeTitle?.y);
+    await expect(container.getByText('Уведомление 20', { exact: true })).toBeInViewport();
+  });
+}
+
 test('the settings list the eight categories beside the chosen one at 1920, one at a time at 390', async ({
   page,
 }) => {

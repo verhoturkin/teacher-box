@@ -69,6 +69,8 @@ The same can be done through the bot in a messenger ([Bot](/cabinet/help/bot)).
     title: 'Lesson and board',
     summary: 'How to join a call and open a board',
     body: `
+On the home page, lesson material cards sit together with consistent gaps even on wide screens; on phones they wrap without horizontal scrolling.
+
 ## Join a lesson
 
 Before the lesson click «Join lesson» — the next lesson is shown first on the home page, and the button is in the schedule too. The tile on the left of the card shows the day and the start time, an hour before the lesson — «in 25 min», and during the lesson — «Now» and how much is left (a running lesson can no longer be moved or cancelled).
@@ -146,6 +148,8 @@ If something does not add up — write to the teacher.
     title: 'Bot in a messenger',
     summary: 'Notifications and actions in Telegram, VK or MAX',
     body: `
+The notification heading stays visible on computers and phones; only the list inside the panel scrolls.
+
 ## Notifications in the cabinet
 
 The bell in the header opens the notifications at the side (on a phone — full screen without a shadow or background dimming); its number is how many are unread, new ones are at the top. There is no separate «Notifications» section. Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom — that part is folded, click it to open. On a phone there is no tick: mark a notification read with a swipe — slide it left or right.

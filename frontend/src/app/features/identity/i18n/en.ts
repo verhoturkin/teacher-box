@@ -196,7 +196,7 @@ export const en: Translation<typeof ru> = {
     access: 'Cabinet sign-in',
     invited: (date: string) => `The invitation link works until ${date}.`,
     resetting: (date: string) => `The new password link works until ${date}.`,
-    deactivated: 'Access is off. Turn it back on in the “Actions” menu.',
+    deactivated: 'Access is off. You can restore it using the button below.',
   },
   students: {
     title: 'Students',

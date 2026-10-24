@@ -410,7 +410,7 @@ body {
 }
 
 .tb-pane__scroll,
-.tb-notifications-pane,
+.tb-notifications-scroll,
 .tb-roster__scroll,
 .tb-search__panel,
 .p-dialog-content,
@@ -437,7 +437,7 @@ body {
 
 @supports not selector(::-webkit-scrollbar) {
   .tb-pane__scroll,
-  .tb-notifications-pane,
+  .tb-notifications-scroll,
   .tb-roster__scroll,
   .tb-search__panel,
   .p-dialog-content,
@@ -2139,15 +2139,15 @@ a.p-menu-item-link:hover {
   --fc-classic-event-contrast: var(--p-md-on-tertiary-container);
 }
 
-/* The containers of the roles (ADR-0023): conducted — success, missed — warning */
+/* The containers of the roles (ADR-0023): conducted — success, missed — error */
 .tb-lesson--conducted {
   --fc-classic-event: var(--p-md-success-container);
   --fc-classic-event-contrast: var(--p-md-on-success-container);
 }
 
 .tb-lesson--missed {
-  --fc-classic-event: var(--p-md-warning-container);
-  --fc-classic-event-contrast: var(--p-md-on-warning-container);
+  --fc-classic-event: var(--p-md-error-container);
+  --fc-classic-event-contrast: var(--p-md-on-error-container);
 }
 
 .tb-lesson--cancelled {
@@ -3161,6 +3161,13 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
 
 /* Notifications: compact margins and top sheet corners are portal decisions using M3 shape tokens. */
 .p-drawer.tb-notifications-modal {
+  .p-drawer-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
   .p-card > .p-card-body {
     padding: 0;
   }

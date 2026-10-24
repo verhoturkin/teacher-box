@@ -73,6 +73,8 @@ Focus rings appear during keyboard use, not automatically when opening a dialog 
     title: 'Students and invitations',
     summary: 'How to add a student, give access and turn it off',
     body: `
+The create-student dialog and Profile tab use filled text fields: the label stays inside at the top, and the bottom indicator shows focus or an error. Payments shows balance, lifetime charges, lifetime payments and lesson price in four cards in a row, wrapping on narrow screens. Password reset and access controls sit together in Profile; the student header has no more menu.
+
 ## Add a student
 
 1. Click «Create» → «Student» (on a phone — «Students» → «Add student»).
@@ -101,7 +103,7 @@ The student's groups are rows of the same list ([Groups](/teacher/help/groups)),
 
 ## Links and access
 
-The «⋮» button in the student's card (right of the buttons, on a phone at the top next to the name) opens the menu:
+Open the student card → Profile → Cabinet access. The following buttons sit together:
 
 - **New invitation** (if the student has not signed in yet) or **Reset password** (if they forgot it) — a new link for the student.
 - **Turn off access** — the student can no longer sign in. The history of lessons, payments and homework stays.
@@ -157,6 +159,8 @@ Archive a group you no longer teach: its future lessons are cancelled, the histo
     title: 'Schedule and requests',
     summary: 'Lessons and repetition, time off, marks and students’ requests',
     body: `
+On the home page, Mark for a group lesson opens attendance directly, just as in the schedule. Missed calendar lessons use the same accent as debts and overdue homework.
+
 ## Plan a lesson
 
 «Create» → «Lesson» (on a phone — «Schedule» → «Lesson»). Choose a student or group, date, time and duration; optionally add a topic and meeting link.
@@ -469,6 +473,8 @@ Payments and lessons can be recorded through the bot too ([What the bot can do](
     title: 'Notifications and bots',
     summary: 'The bell, messengers and messages to students',
     body: `
+The notification heading and tabs stay visible on computers and phones; only the selected tab content scrolls.
+
 Mark all read is in the header beside Close. Notifications have no dots; unread titles use a heavier weight. On a phone, the panel has rounded top corners and the list uses the same side margins as main screens.
 
 Notifications are always under the bell at the top of the page. To get them in a messenger, connect a bot.
@@ -584,6 +590,8 @@ The portal address is set during the initial setup; later the portal administrat
     summary:
       'Portal colour and logo, dark theme, language, sections on a computer, tablet and phone',
     body: `
+Portal settings have three cards: Name and logo, Appearance and Preview. On wide screens Preview sits to the right of the two settings cards; on narrow screens it follows them. Help beside Colour scheme opens this article.
+
 ## Colour and logo
 
 «Settings» → «Portal»:
@@ -648,7 +656,7 @@ Before deleting, the portal asks again: the red button in the window does the ac
 ## From a phone
 
 - The main action of a section is a big labelled button at the bottom right: «Add student», «Lesson», «New homework», «Payment».
-- Lists (students, payments, homework) are shown as cards, the action buttons at the bottom of a card. Students and groups are a list: the name on the left, the debt or the status on the right; tap a row to open the card with the «⋮» menu.
+- Lists (students, payments, homework) are shown as cards, the action buttons at the bottom of a card. Students and groups are a list: the name on the left, the debt or the status on the right; tap a row to open the card; student access controls are in Profile.
 - On nested pages (homework, a student's work, the report) the «←» arrow left of the title goes back to the list.
 - The schedule is a list by days by default.
 - Forms with several fields open full screen, with «Save» and «Cancel» at the bottom; short windows (password, link) are in the middle of the screen. The bottom of the screen has «Home», «Schedule», «Homework», «Students» and «Payments», the other sections are under ☰.
@@ -718,7 +726,7 @@ Check the portal address: «Settings» → «Portal». The address must open fro
 Restore a backup: «Settings» → «Data» → «Backups» ([more](/teacher/help/backups)).
 
 **A student cannot sign in.**
-Check that their access is not turned off. Issue a password reset link: «Students» → the student → «⋮» in the card → «Reset password».
+Check that their access is not turned off. Issue a password reset link: «Students» → the student → «Profile» → «Reset password».
 
 **The invitation link is out of date.**
 Issue a new one in the same place — the old one stops working.

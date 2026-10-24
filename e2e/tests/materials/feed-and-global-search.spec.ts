@@ -117,6 +117,28 @@ test('the student has a bar of five destinations and a home with materials', asy
   await page.setViewportSize(WIDE);
   await page.goto('/cabinet');
   await expect(page.getByRole('link', { name: BOARD }).first()).toBeVisible();
+  const materials = page.locator('.tb-feed__materials');
+  const board = materials.locator('tb-my-boards-feed tb-material-card');
+  const textbook = materials.locator('tb-my-textbooks-feed tb-material-card');
+  await expect(textbook).toBeVisible();
+  const boardBox = await board.boundingBox();
+  const textbookBox = await textbook.boundingBox();
+  expect(boardBox && textbookBox).toBeTruthy();
+  if (boardBox && textbookBox) {
+    expect(Math.abs(textbookBox.y - boardBox.y)).toBeLessThan(1);
+    expect(textbookBox.x - boardBox.x - boardBox.width).toBeGreaterThanOrEqual(8);
+    expect(textbookBox.x - boardBox.x - boardBox.width).toBeLessThanOrEqual(16);
+  }
+  await page.setViewportSize(PHONE);
+  await expect(materials).toBeVisible();
+  const phoneBoard = await board.boundingBox();
+  const phoneTextbook = await textbook.boundingBox();
+  expect(phoneBoard && phoneTextbook).toBeTruthy();
+  if (phoneBoard && phoneTextbook) {
+    expect(Math.abs(phoneTextbook.x - phoneBoard.x)).toBeLessThan(1);
+    expect(phoneTextbook.y).toBeGreaterThan(phoneBoard.y + phoneBoard.height);
+    expect(phoneTextbook.x + phoneTextbook.width).toBeLessThanOrEqual(PHONE.width);
+  }
   await page.goto('/cabinet/materials');
   await page.getByRole('button', { name: /^Учебники/ }).click();
   await expect(page.getByRole('button', { name: `Открыть ${TEXTBOOK}` })).toBeVisible();

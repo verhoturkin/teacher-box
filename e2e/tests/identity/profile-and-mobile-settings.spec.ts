@@ -115,3 +115,38 @@ test('the teacher settings on a phone: backups menu and a full-screen reset dial
   await dialog.getByRole('button', { name: 'Отмена' }).click();
   await expect(dialog).toBeHidden();
 });
+
+test('student access is disabled beside password reset and restored from Profile', async ({
+  page,
+}) => {
+  await signIn(page, 'teacher', TEACHER_PASSWORD);
+  await page.goto('/teacher/students');
+  const row = page
+    .getByRole('list', { name: 'Ученики' })
+    .getByRole('listitem')
+    .filter({ hasText: STUDENT });
+  await row.getByRole('link', { name: STUDENT, exact: true }).click();
+  await page.getByRole('tab', { name: 'Профиль' }).click();
+  const reset = page.getByRole('button', { name: 'Сбросить пароль', exact: true });
+  const disable = page.getByRole('button', { name: 'Отключить доступ…', exact: true });
+  await expect(reset).toBeVisible();
+  await expect(disable).toBeVisible();
+  const resetBox = await reset.boundingBox();
+  const disableBox = await disable.boundingBox();
+  expect(disableBox?.y).toBe(resetBox?.y);
+  await disable.click();
+  await page
+    .getByRole('alertdialog', { name: 'Отключить доступ?' })
+    .getByRole('button', { name: 'Отключить', exact: true })
+    .click();
+  await expect(row).toHaveCount(0);
+  await page.getByRole('button', { name: /^Отключённые/ }).click();
+  await row.getByRole('link', { name: STUDENT, exact: true }).click();
+  await page.getByRole('tab', { name: 'Профиль' }).click();
+  await expect(
+    page.getByText('Доступ отключён. Вы можете вернуть его кнопкой ниже.', { exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Вернуть доступ', exact: true }).click();
+  await page.getByRole('button', { name: /^Все/ }).click();
+  await expect(row).toBeVisible();
+});

@@ -77,6 +77,9 @@ discloses affected/protected existing lesson IDs and the rule version before a b
 ## Frontend
 
 Move confirmation controls remain clickable across adjacent day columns when overlapping lessons narrow the card.
+Missed calendar lessons use `error-container` / `on-error-container`, matching debt and overdue-work accents;
+status tags outside the calendar retain their warning styling. The teacher home's group attendance action
+opens the same attendance dialog as the calendar directly on the home page.
 
 `features/schedule/`: `teacher/` (calendar — FullCalendar, unified lesson/repeat dialog, off-time, requests),
 `student/` (week/month calendar and a supporting pane with mini-month, upcoming lessons and requests; compact
