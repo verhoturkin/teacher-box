@@ -580,9 +580,9 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
 | Delete or unbind in a row: bin / «×» icon, labelled «Удалить» with a bin | text red | `[text]="true" severity="danger"` |
 | Confirm an irreversible action (in a dialog) | filled red | `severity="danger"` |
 
-- **Red means destruction only.** «Пропуск», «Вернуть на доработку», «Отменить занятие…», «Отозвать запрос»,
-  «Вернуть как в .env» are neutral tonal or text: the status they produce (a tag, a message) shows the meaning.
-  Filled red stays for the confirmation step only.
+- **Red means destruction only.** «Пропуск», «Вернуть на доработку», «Отменить занятие…»,
+  «Отозвать запрос», «Вернуть как в .env» are neutral tonal or text: the status they produce
+  (a tag, a message) shows the meaning. Filled red stays for the confirmation step only.
 - **Page:** at most one filled button outside dialogs — the FAB; without a FAB, the single filled button is the
   page's main decision («Принять», «Сохранить и перезапустить», «Далее», «Войти»), always primary.
   Everything else tonal; «Подключиться» is tonal in rows, filled only in the home hero and the bottom sheet.
@@ -952,10 +952,33 @@ tracks around fixed-width cards. Compact layouts wrap without horizontal overflo
 ## 10. Fields
 
 - M3 outlined text field, 56 px: outline; hover on-surface; focus 2 px primary; error — error colour.
-- Filled-field trial (0.33.0): only the student creation dialog and the teacher's student Profile text
-  fields use M3 filled text fields: 56 px height, label inside at the top start, 4 px top corners and a
-  bottom indicator (1 px, 2 px primary on focus). This limited rollout is our product decision; the
-  outlined field remains the default elsewhere.
+- Shared filled fields (`shared/ui/filled-field.scss`), imported globally by `styles.scss`, use
+  `.tb-field.tb-field--filled` with a label followed by a PrimeNG native input or textarea. Student
+  creation dialog and teacher's student Profile are the first consumers; other features opt into the
+  same class without component-specific CSS.
+  From [M3 guidelines](https://m3.material.io/components/text-fields/guidelines)
+  and specs: 56 px height, 4 px top corners, square bottom corners and 16 px horizontal padding.
+  Empty labels use Body Large at 16 px from the top; focused or populated labels use Body Small at
+  8 px from the top, including textareas. The separate bottom indicator is 1 px on-surface and 2 px
+  primary on focus, with no layout shift. Error labels, indicators, caret and icons use error;
+  supporting text starts 4 px below the control. Filled fields are excluded from outlined label
+  cutouts and keep their own geometry.
+  Disabled roles use M3's 4% container and 38% foreground opacities.
+  Our implementation masks the label strip above scrolling textarea content to keep it legible.
+  This technique, shared opt-in styling and the initial rollout scope are our product decisions;
+  outlined fields remain the default elsewhere. To reuse the variant:
+
+  ```html
+  <div class="tb-field tb-field--filled">
+    <label for="field-id">Label from the dictionary</label>
+    <input pInputText id="field-id" formControlName="field" placeholder=" " />
+    <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
+    <small class="tb-hint">Optional supporting text</small>
+  </div>
+  ```
+
+  Use `pTextarea` and the same blank placeholder for text areas. Keep `tbFieldErrors` on the form;
+  it supplies validation and ARIA state, replaces hints with error text, and reveals the error icon.
 - `.tb-field` with the `label` **first** (or a `tb-copy-row` / `tb-inline` row with the field first): the
   label sits on the outline (Body Small), primary on focus, error on error. A field with its own header
   (`tb-field__header`) keeps the label above. Every field has a visible label (filters too).

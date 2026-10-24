@@ -3,6 +3,7 @@
 @use 'sass:string';
 @use './app/core/theme/icons';
 @use './app/core/theme/prime-icons';
+@use './app/shared/ui/filled-field';
 
 /*
  * Icons (ADR-0046): Material Symbols Rounded, `<i class="tb-i tb-i-<name>" aria-hidden="true">` or
@@ -879,7 +880,7 @@ textarea.p-textarea {
  * value is wrong. The field is 56 px high (the theme). Fields with a header of their own
  * (`tb-field__header`: the label and a button) keep the label above.
  */
-.tb-field:is(
+.tb-field:where(:not(.tb-field--filled)):is(
     :has(
         > label:first-child
           + :is(

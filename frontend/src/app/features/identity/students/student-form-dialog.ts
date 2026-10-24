@@ -40,7 +40,6 @@ import { SHARED_T } from '@shared/i18n/texts';
     SegmentGroup,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styleUrl: './student-filled-fields.scss',
   template: `
     <p-dialog
       [header]="t.newStudent"
@@ -65,6 +64,7 @@ import { SHARED_T } from '@shared/i18n/texts';
             autocomplete="off"
             placeholder=" "
           />
+          <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
         </div>
         <div class="tb-field tb-field--filled">
           <label for="email">{{ t.email }}</label>
@@ -76,10 +76,12 @@ import { SHARED_T } from '@shared/i18n/texts';
             autocomplete="off"
             placeholder=" "
           />
+          <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
         </div>
         <div class="tb-field tb-field--filled">
           <label for="phone">{{ t.phone }}</label>
           <input pInputText id="phone" formControlName="phone" autocomplete="off" placeholder=" " />
+          <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
         </div>
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
