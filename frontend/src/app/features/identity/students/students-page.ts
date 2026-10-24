@@ -222,20 +222,22 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
           <!-- «⋮» of the open card: in the page header on one pane, in the card's own header beside the list -->
           <ng-template #actions>
             @if (selected(); as row) {
-              <p-button
-                icon="tb-i tb-i-more_vert"
-                [text]="true"
-                [rounded]="true"
-                severity="secondary"
-                [pTooltip]="t.actions(row.name)"
-                [ariaLabel]="t.actions(row.name)"
-                [loading]="busy.is(row.id)"
-                [tbAttributes]="{
-                  'aria-haspopup': 'menu',
-                  'aria-expanded': menuFor() === row ? 'true' : 'false',
-                }"
-                (onClick)="openMenu(row, $event)"
-              />
+              @if (row.kind === 'group') {
+                <p-button
+                  icon="tb-i tb-i-more_vert"
+                  [text]="true"
+                  [rounded]="true"
+                  severity="secondary"
+                  [pTooltip]="t.actions(row.name)"
+                  [ariaLabel]="t.actions(row.name)"
+                  [loading]="busy.is(row.id)"
+                  [tbAttributes]="{
+                    'aria-haspopup': 'menu',
+                    'aria-expanded': menuFor() === row ? 'true' : 'false',
+                  }"
+                  (onClick)="openMenu(row, $event)"
+                />
+              }
             }
           </ng-template>
           @if (layout.single()) {
@@ -257,11 +259,11 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
                 [tab]="cardTab()"
                 [single]="layout.single()"
                 [busy]="busy.is(row.id)"
-                [menuOpen]="menuFor() === row"
-                (more)="openMenu(row, $event)"
                 (changed)="loadExtras()"
                 (saved)="onUpdated($event)"
                 (invite)="reissueInvite(row.student)"
+                (deactivate)="confirmDeactivate(row.student)"
+                (reactivate)="reactivate(row.student)"
               />
             } @else {
               <tb-group-card
@@ -442,7 +444,7 @@ export class StudentsPage implements OnInit {
     if (row === null) {
       return [];
     }
-    return row.kind === 'student' ? this.studentActions(row.student) : this.groupActions(row.group);
+    return row.kind === 'group' ? this.groupActions(row.group) : [];
   });
 
   protected readonly formVisible = signal(false);
@@ -640,7 +642,7 @@ export class StudentsPage implements OnInit {
     });
   }
 
-  private confirmDeactivate(student: Student): void {
+  protected confirmDeactivate(student: Student): void {
     this.confirmation.confirm(
       dangerConfirmation({
         header: this.t.deactivateHeader,
@@ -656,7 +658,7 @@ export class StudentsPage implements OnInit {
     );
   }
 
-  private reactivate(student: Student): void {
+  protected reactivate(student: Student): void {
     this.busy.guard(student.id, this.api.reactivate(student.id)).subscribe((saved) => {
       this.replaceStudent(saved);
     });
@@ -682,38 +684,6 @@ export class StudentsPage implements OnInit {
     this.busy.guard(group.id, this.api.restoreGroup(group.id)).subscribe((saved) => {
       this.replaceGroup(saved);
     });
-  }
-
-  private studentActions(student: Student): MenuItem[] {
-    const items: MenuItem[] = [];
-    if (student.status === 'DEACTIVATED') {
-      items.push({
-        label: this.t.reactivate,
-        icon: 'tb-i tb-i-replay',
-        command: () => {
-          this.reactivate(student);
-        },
-      });
-    } else {
-      items.push(
-        {
-          label: student.status === 'ACTIVE' ? this.t.resetPassword : this.t.newInvite,
-          icon: 'tb-i tb-i-link',
-          command: () => {
-            this.reissueInvite(student);
-          },
-        },
-        {
-          label: this.t.deactivateItem,
-          icon: 'tb-i tb-i-block',
-          styleClass: 'tb-menu-item--danger',
-          command: () => {
-            this.confirmDeactivate(student);
-          },
-        },
-      );
-    }
-    return items;
   }
 
   private groupActions(group: StudentGroup): MenuItem[] {

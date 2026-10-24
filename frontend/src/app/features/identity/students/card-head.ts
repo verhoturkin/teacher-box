@@ -38,7 +38,7 @@ export interface HeaderTag {
       </div>
       <div class="tb-card-head__actions">
         <ng-content />
-        @if (!single()) {
+        @if (!single() && showMore()) {
           <p-button
             class="tb-card-head__more"
             icon="tb-i tb-i-more_vert"
@@ -130,6 +130,7 @@ export class CardHead {
   /** An action of «⋮» is running. */
   readonly busy = input(false);
   readonly menuOpen = input(false);
+  readonly showMore = input(true);
   /** «⋮»: the page opens its menu. */
   readonly more = output<Event>();
 }

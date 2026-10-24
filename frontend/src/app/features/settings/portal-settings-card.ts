@@ -10,7 +10,6 @@ import {
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
-import { Card } from 'primeng/card';
 import { ColorPicker } from 'primeng/colorpicker';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
@@ -55,7 +54,6 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     Tooltip,
     ReactiveFormsModule,
     Button,
-    Card,
     ColorPicker,
     HelpButton,
     InputText,
@@ -66,243 +64,260 @@ const MAX_LOGO_SIZE = 1024 * 1024;
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card id="portal">
-      @if (settings(); as settings) {
-        <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
-          <div class="tb-portal-header">
-            <div class="tb-portal-identity">
-              <div class="tb-field">
-                <label for="portal-name">{{ t.name }}</label>
-                <input
-                  pInputText
-                  id="portal-name"
-                  formControlName="name"
-                  [placeholder]="defaultName"
-                  [maxlength]="maxNameLength"
-                  autocomplete="off"
-                />
-                <small class="tb-hint">{{ t.nameHint }}</small>
-              </div>
-              <div class="tb-field">
-                <span>{{ t.logo }}</span>
-                <input
-                  #logoFile
-                  type="file"
-                  class="tb-sr-only"
-                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                  [attr.aria-label]="t.logoFile"
-                  (change)="uploadLogo(logoFile)"
-                />
-                <div class="tb-logo-row">
-                  <tb-portal-logo size="2.5rem" round />
-                  <p-button
-                    [label]="t.upload"
-                    [ariaLabel]="t.uploadLogo"
-                    icon="tb-i tb-i-upload"
-                    severity="secondary"
-                    [loading]="uploading()"
-                    (onClick)="logoFile.click()"
-                  />
-                  @if (settings.logo !== null) {
-                    <p-button
-                      icon="tb-i tb-i-delete"
-                      severity="danger"
-                      [text]="true"
-                      [rounded]="true"
-                      [pTooltip]="t.removeLogo"
-                      [ariaLabel]="t.removeLogo"
-                      [loading]="busy.is('logo')"
-                      (onClick)="removeLogo()"
-                    />
-                  }
-                </div>
-                <small class="tb-hint">{{ t.logoHint }}</small>
-              </div>
-            </div>
-            <aside
-              class="tb-portal-preview"
-              [style.background]="previewRoles().surfaceContainer"
-              [style.color]="previewRoles().onSurface"
-              [attr.aria-label]="t.preview"
-            >
-              <div class="tb-preview-header">
-                <h3>{{ t.preview }}</h3>
-                <p-button
-                  type="button"
-                  [label]="darkPreview() ? t.darkTheme : t.lightTheme"
-                  severity="secondary"
-                  (onClick)="darkPreview.set(!darkPreview())"
-                />
-              </div>
-              <strong>{{ draftName() || defaultName }}</strong>
-              <div
-                class="tb-preview-hero"
-                [style.background]="previewRoles().primaryContainer"
-                [style.color]="previewRoles().onPrimaryContainer"
-              >
-                <small>{{ t.previewLesson }}</small>
-                <h3>{{ t.previewStudent }}</h3>
-                <span
-                  class="tb-preview-action"
-                  [style.background]="previewRoles().primary"
-                  [style.color]="previewRoles().onPrimary"
-                  >{{ t.previewAction }}</span
-                >
-              </div>
-              <div
-                class="tb-preview-tonal"
-                [style.background]="previewRoles().surfaceContainerHigh"
-              >
-                {{ t.previewQueue }}
-              </div>
-              <small>{{ t.previewHint }}</small>
-            </aside>
-          </div>
-          <section class="tb-portal-section">
+    @if (settings(); as settings) {
+      <form tbFieldErrors id="portal" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+        <div class="tb-portal-grid">
+          <section
+            class="tb-portal-card tb-portal-identity"
+            aria-labelledby="portal-identity-title"
+          >
+            <h3 id="portal-identity-title">{{ t.identityTitle }}</h3>
             <div class="tb-field">
-              <span id="portal-accent">{{ t.color }}</span>
-              <div class="tb-accents" role="radiogroup" aria-labelledby="portal-accent">
-                @for (accent of accents(); track accent.value) {
+              <label for="portal-name">{{ t.name }}</label>
+              <input
+                pInputText
+                id="portal-name"
+                formControlName="name"
+                [placeholder]="defaultName"
+                [maxlength]="maxNameLength"
+                autocomplete="off"
+              />
+              <small class="tb-hint">{{ t.nameHint }}</small>
+            </div>
+            <div class="tb-field">
+              <span>{{ t.logo }}</span>
+              <input
+                #logoFile
+                type="file"
+                class="tb-sr-only"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                [attr.aria-label]="t.logoFile"
+                (change)="uploadLogo(logoFile)"
+              />
+              <div class="tb-logo-row">
+                <tb-portal-logo size="2.5rem" round />
+                <p-button
+                  [label]="t.upload"
+                  [ariaLabel]="t.uploadLogo"
+                  icon="tb-i tb-i-upload"
+                  severity="secondary"
+                  [loading]="uploading()"
+                  (onClick)="logoFile.click()"
+                />
+                @if (settings.logo !== null) {
+                  <p-button
+                    icon="tb-i tb-i-delete"
+                    severity="danger"
+                    [text]="true"
+                    [rounded]="true"
+                    [pTooltip]="t.removeLogo"
+                    [ariaLabel]="t.removeLogo"
+                    [loading]="busy.is('logo')"
+                    (onClick)="removeLogo()"
+                  />
+                }
+              </div>
+              <small class="tb-hint">{{ t.logoHint }}</small>
+            </div>
+          </section>
+          <section
+            class="tb-portal-card tb-portal-appearance"
+            aria-labelledby="portal-appearance-title"
+          >
+            <h3 id="portal-appearance-title">{{ t.appearanceTitle }}</h3>
+            <section class="tb-portal-section">
+              <div class="tb-field">
+                <span id="portal-accent">{{ t.color }}</span>
+                <div class="tb-accents" role="radiogroup" aria-labelledby="portal-accent">
+                  @for (accent of accents(); track accent.value) {
+                    <button
+                      type="button"
+                      role="radio"
+                      class="tb-accent"
+                      [attr.aria-checked]="!own() && form.controls.accent.value === accent.value"
+                      [attr.aria-label]="accent.label"
+                      [title]="accent.label"
+                      [style.background]="accent.swatch.background"
+                      [style.color]="accent.swatch.color"
+                      (click)="chooseAccent(accent.value)"
+                    >
+                      @if (!own() && form.controls.accent.value === accent.value) {
+                        <i class="tb-i tb-i-check" aria-hidden="true"></i>
+                      }
+                    </button>
+                  }
                   <button
                     type="button"
                     role="radio"
-                    class="tb-accent"
-                    [attr.aria-checked]="!own() && form.controls.accent.value === accent.value"
-                    [attr.aria-label]="accent.label"
-                    [title]="accent.label"
-                    [style.background]="accent.swatch.background"
-                    [style.color]="accent.swatch.color"
-                    (click)="chooseAccent(accent.value)"
+                    class="tb-accent tb-accent--own"
+                    [attr.aria-checked]="own()"
+                    [attr.aria-label]="t.ownColor"
+                    [title]="t.ownColor"
+                    [style.background]="own() ? ownSwatch().background : null"
+                    [style.color]="own() ? ownSwatch().color : null"
+                    (click)="chooseOwn()"
                   >
-                    @if (!own() && form.controls.accent.value === accent.value) {
-                      <i class="tb-i tb-i-check" aria-hidden="true"></i>
-                    }
+                    <i
+                      [class]="own() ? 'tb-i tb-i-check' : 'tb-i tb-i-palette'"
+                      aria-hidden="true"
+                    ></i>
                   </button>
-                }
-                <button
-                  type="button"
-                  role="radio"
-                  class="tb-accent tb-accent--own"
-                  [attr.aria-checked]="own()"
-                  [attr.aria-label]="t.ownColor"
-                  [title]="t.ownColor"
-                  [style.background]="own() ? ownSwatch().background : null"
-                  [style.color]="own() ? ownSwatch().color : null"
-                  (click)="chooseOwn()"
-                >
-                  <i
-                    [class]="own() ? 'tb-i tb-i-check' : 'tb-i tb-i-palette'"
-                    aria-hidden="true"
-                  ></i>
-                </button>
-              </div>
-              @if (own()) {
-                <div class="tb-own-color">
-                  <p-colorpicker [formControl]="ownColor" appendTo="body" />
-                  <div class="tb-field tb-grow">
-                    <label for="portal-own-color">{{ t.ownColorField }}</label>
-                    <input
-                      pInputText
-                      id="portal-own-color"
-                      [formControl]="ownColor"
-                      maxlength="7"
-                      placeholder="#0f766e"
-                    />
-                  </div>
-                  <!-- the buttons as they will be: the tones of the roles, not the shades (ADR-0023) -->
-                  <span
-                    class="tb-own-color__sample"
-                    [style.background]="scheme().light.primary"
-                    [style.color]="scheme().light.onPrimary"
-                    >{{ t.lightTheme }}</span
-                  >
-                  <span
-                    class="tb-own-color__sample"
-                    [style.background]="scheme().dark.primary"
-                    [style.color]="scheme().dark.onPrimary"
-                    >{{ t.darkTheme }}</span
-                  >
                 </div>
-                @if (poorContrast(); as advice) {
-                  <p-message severity="warn" styleClass="tb-form-message">{{ advice }}</p-message>
+                @if (own()) {
+                  <div class="tb-own-color">
+                    <p-colorpicker [formControl]="ownColor" appendTo="body" />
+                    <div class="tb-field tb-grow">
+                      <label for="portal-own-color">{{ t.ownColorField }}</label>
+                      <input
+                        pInputText
+                        id="portal-own-color"
+                        [formControl]="ownColor"
+                        maxlength="7"
+                        placeholder="#0f766e"
+                      />
+                    </div>
+                    <!-- the buttons as they will be: the tones of the roles, not the shades (ADR-0023) -->
+                    <span
+                      class="tb-own-color__sample"
+                      [style.background]="scheme().light.primary"
+                      [style.color]="scheme().light.onPrimary"
+                      >{{ t.lightTheme }}</span
+                    >
+                    <span
+                      class="tb-own-color__sample"
+                      [style.background]="scheme().dark.primary"
+                      [style.color]="scheme().dark.onPrimary"
+                      >{{ t.darkTheme }}</span
+                    >
+                  </div>
+                  @if (poorContrast(); as advice) {
+                    <p-message severity="warn" styleClass="tb-form-message">{{ advice }}</p-message>
+                  }
+                  @if (advice().adjusted) {
+                    <small class="tb-hint">{{ t.adjusted }}</small>
+                  }
                 }
-                @if (advice().adjusted) {
-                  <small class="tb-hint">{{ t.adjusted }}</small>
+                @if (advice().likeError) {
+                  <p-message severity="warn" styleClass="tb-form-message">{{
+                    t.likeError
+                  }}</p-message>
                 }
-              }
-              @if (advice().likeError) {
-                <p-message severity="warn" styleClass="tb-form-message">{{
-                  t.likeError
-                }}</p-message>
-              }
-              <small class="tb-hint">{{ t.colorHint }}</small>
-            </div>
-          </section>
-          <section class="tb-portal-section" [attr.aria-label]="t.scheme">
-            <h3>{{ t.scheme }} <tb-help-button topic="teacher/setup" /></h3>
-            <div class="tb-scheme-grid" role="radiogroup" [attr.aria-label]="t.scheme">
-              @for (option of schemeOptions(); track option.value) {
-                <label
-                  class="tb-scheme-option"
-                  [for]="'portal-scheme-' + option.value"
-                  [class.tb-scheme-selected]="schemeType() === option.value"
-                >
-                  <span class="tb-scheme-colors" aria-hidden="true">
-                    <span [style.background]="option.roles.primary"></span>
-                    <span [style.background]="option.roles.secondaryContainer"></span>
-                    <span [style.background]="option.roles.tertiaryContainer"></span>
-                  </span>
-                  <span class="tb-scheme-label"
-                    ><p-radiobutton
-                      formControlName="scheme"
-                      [value]="option.value"
-                      [inputId]="'portal-scheme-' + option.value"
-                    />{{ option.label }}</span
+                <small class="tb-hint">{{ t.colorHint }}</small>
+              </div>
+            </section>
+            <section class="tb-portal-section" [attr.aria-label]="t.scheme">
+              <h3>{{ t.scheme }} <tb-help-button topic="teacher/appearance" /></h3>
+              <div class="tb-scheme-grid" role="radiogroup" [attr.aria-label]="t.scheme">
+                @for (option of schemeOptions(); track option.value) {
+                  <label
+                    class="tb-scheme-option"
+                    [for]="'portal-scheme-' + option.value"
+                    [class.tb-scheme-selected]="schemeType() === option.value"
                   >
-                </label>
-              }
-            </div>
+                    <span class="tb-scheme-colors" aria-hidden="true">
+                      <span [style.background]="option.roles.primary"></span>
+                      <span [style.background]="option.roles.secondaryContainer"></span>
+                      <span [style.background]="option.roles.tertiaryContainer"></span>
+                    </span>
+                    <span class="tb-scheme-label"
+                      ><p-radiobutton
+                        formControlName="scheme"
+                        [value]="option.value"
+                        [inputId]="'portal-scheme-' + option.value"
+                      />{{ option.label }}</span
+                    >
+                  </label>
+                }
+              </div>
+            </section>
+            <section class="tb-portal-section" [attr.aria-label]="t.contrast">
+              <h3>{{ t.contrast }}</h3>
+              <div class="tb-contrast-options" role="radiogroup" [attr.aria-label]="t.contrast">
+                @for (option of contrasts; track option.value) {
+                  <label [for]="'portal-contrast-' + option.value"
+                    ><p-radiobutton
+                      formControlName="contrast"
+                      [value]="option.value"
+                      [inputId]="'portal-contrast-' + option.value"
+                    />{{ option.label }}</label
+                  >
+                }
+              </div>
+              <small class="tb-hint">{{ t.contrastHint }}</small>
+            </section>
           </section>
-          <section class="tb-portal-section" [attr.aria-label]="t.contrast">
-            <h3>{{ t.contrast }}</h3>
-            <div class="tb-contrast-options" role="radiogroup" [attr.aria-label]="t.contrast">
-              @for (option of contrasts; track option.value) {
-                <label [for]="'portal-contrast-' + option.value"
-                  ><p-radiobutton
-                    formControlName="contrast"
-                    [value]="option.value"
-                    [inputId]="'portal-contrast-' + option.value"
-                  />{{ option.label }}</label
-                >
-              }
+          <aside
+            class="tb-portal-card tb-portal-preview"
+            [style.background]="previewRoles().surfaceContainer"
+            [style.color]="previewRoles().onSurface"
+            [attr.aria-label]="t.preview"
+          >
+            <div class="tb-preview-header">
+              <h3>{{ t.preview }}</h3>
+              <p-button
+                type="button"
+                [label]="darkPreview() ? t.darkTheme : t.lightTheme"
+                severity="secondary"
+                (onClick)="darkPreview.set(!darkPreview())"
+              />
             </div>
-            <small class="tb-hint">{{ t.contrastHint }}</small>
-          </section>
-          <div class="tb-form-actions">
-            <p-button
-              type="button"
-              [label]="c.cancel"
-              severity="secondary"
-              [text]="true"
-              (onClick)="cancel()"
-            />
-            <p-button type="submit" [label]="c.save" severity="secondary" [loading]="pending()" />
-          </div>
-        </form>
-      }
-    </p-card>
+            <strong>{{ draftName() || defaultName }}</strong>
+            <div
+              class="tb-preview-hero"
+              [style.background]="previewRoles().primaryContainer"
+              [style.color]="previewRoles().onPrimaryContainer"
+            >
+              <small>{{ t.previewLesson }}</small>
+              <h3>{{ t.previewStudent }}</h3>
+              <span
+                class="tb-preview-action"
+                [style.background]="previewRoles().primary"
+                [style.color]="previewRoles().onPrimary"
+                >{{ t.previewAction }}</span
+              >
+            </div>
+            <div class="tb-preview-tonal" [style.background]="previewRoles().surfaceContainerHigh">
+              {{ t.previewQueue }}
+            </div>
+            <small>{{ t.previewHint }}</small>
+          </aside>
+        </div>
+        <div class="tb-form-actions">
+          <p-button
+            type="button"
+            [label]="c.cancel"
+            severity="secondary"
+            [text]="true"
+            (onClick)="cancel()"
+          />
+          <p-button type="submit" [label]="c.save" severity="secondary" [loading]="pending()" />
+        </div>
+      </form>
+    }
   `,
   styles: `
     :host {
       display: block;
       container-type: inline-size;
     }
-    .tb-portal-header {
+    .tb-portal-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
       gap: var(--tb-space-6);
     }
-    .tb-portal-identity {
+    .tb-portal-card {
+      --tb-field-surface: var(--tb-list-item);
+      min-width: 0;
+      padding: var(--tb-space-5);
+      background: var(--tb-field-surface);
+      border-radius: var(--tb-shape-lg-plus);
+    }
+    .tb-portal-card > h3 {
+      margin: 0;
+    }
+    .tb-portal-identity,
+    .tb-portal-appearance {
       display: grid;
       gap: var(--tb-space-6);
       align-content: start;
@@ -385,8 +400,21 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     .tb-contrast-options input {
       accent-color: var(--p-md-primary);
     }
+    @container (width >= 48em) {
+      .tb-portal-grid {
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      }
+      .tb-portal-identity,
+      .tb-portal-appearance {
+        grid-column: 1;
+      }
+      .tb-portal-preview {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+      }
+    }
     @container (width < 37.5em) {
-      .tb-portal-header {
+      .tb-portal-grid {
         grid-template-columns: minmax(0, 1fr);
       }
       .tb-scheme-grid {

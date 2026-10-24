@@ -36,7 +36,7 @@ import { T } from '../i18n/texts';
             ><span class="tb-tab-label">{{ t.sent }}</span></p-tab
           >
         </p-tablist>
-        <p-tabpanels>
+        <p-tabpanels class="tb-notifications-scroll">
           <p-tabpanel value="inbox"
             ><tb-inbox-panel [inSheet]="true" [headerActive]="state.tab() === 'inbox'"
           /></p-tabpanel>
@@ -44,7 +44,36 @@ import { T } from '../i18n/texts';
         </p-tabpanels>
       </p-tabs>
     } @else {
-      <tb-inbox-panel [inSheet]="true" />
+      <tb-inbox-panel class="tb-notifications-scroll" [inSheet]="true" />
+    }
+  `,
+  styles: `
+    /* Portal decision: the sheet heading and tabs stay visible; only tab content scrolls. */
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    p-tabs {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    p-tablist {
+      flex: none;
+    }
+
+    .tb-notifications-scroll {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
     }
   `,
 })

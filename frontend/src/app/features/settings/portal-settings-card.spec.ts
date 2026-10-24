@@ -70,6 +70,20 @@ describe('PortalSettingsCard', () => {
     expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
   });
 
+  it('groups identity, appearance and preview into three cards with appearance help', async () => {
+    const host = await render();
+    expect(host.querySelectorAll('.tb-portal-grid > .tb-portal-card')).toHaveLength(3);
+    expect(readableText(requireElement(host, '.tb-portal-identity', HTMLElement))).toContain(
+      'Название и логотип',
+    );
+    const appearance = requireElement(host, '.tb-portal-appearance', HTMLElement);
+    expect(readableText(appearance)).toContain('Оформление');
+    expect(appearance.querySelector('#portal-scheme-fidelity')).not.toBeNull();
+    expect(host.querySelector('.tb-portal-preview')).not.toBeNull();
+    expect(host.querySelector('tb-help-button[topic="teacher/appearance"]')).not.toBeNull();
+    expect(host.querySelector('tb-help-button[topic="teacher/setup"]')).toBeNull();
+  });
+
   it('saves the chosen color, a green one without a warning: buttons are not green', async () => {
     const host = await render();
 

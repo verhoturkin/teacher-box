@@ -119,12 +119,13 @@ test.describe('on a phone', () => {
     inviteLink = await link.inputValue();
     await page.keyboard.press('Escape');
 
-    // 0.23.0: the new student's card opens on Профиль, in place of the list on a phone, «⋮» in its header
+    // The new student opens on Profile; access actions stay in that tab on a phone.
     await expect(page.getByRole('tab', { name: 'Профиль' })).toHaveAttribute(
       'aria-selected',
       'true',
     );
-    await expect(page.getByRole('button', { name: `Действия: ${STUDENT}` })).toBeVisible();
+    await expect(page.getByRole('button', { name: `Действия: ${STUDENT}` })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Отключить доступ' })).toBeVisible();
     await expectNoSideScroll(page);
 
     // 0.7.3: a student is a row of the list — the name and the status on the right

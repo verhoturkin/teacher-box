@@ -26,7 +26,7 @@ async function signIn(page: Page, width = 1280): Promise<void> {
 test('portal gallery previews appearance locally and persists named preferences', async ({
   page,
 }) => {
-  await signIn(page, 1600);
+  await signIn(page, 1920);
   const headers = await bearer(page.request);
   const previous = (await (await page.request.get('/api/teacher/portal', { headers })).json()) as {
     name: string;
@@ -37,6 +37,30 @@ test('portal gallery previews appearance locally and persists named preferences'
   };
   try {
     await page.goto('/teacher/settings/portal');
+    const cards = page.locator('.tb-portal-grid > .tb-portal-card');
+    await expect(cards).toHaveCount(3);
+    const identity = page.locator('.tb-portal-identity');
+    const appearance = page.locator('.tb-portal-appearance');
+    const preview = page.locator('.tb-portal-preview');
+    const [identityBox, appearanceBox, previewBox] = await Promise.all([
+      identity.boundingBox(),
+      appearance.boundingBox(),
+      preview.boundingBox(),
+    ]);
+    expect(
+      identityBox &&
+        appearanceBox &&
+        previewBox &&
+        Math.abs(identityBox.x - appearanceBox.x) < 1 &&
+        previewBox.x > identityBox.x &&
+        appearanceBox.y > identityBox.y,
+    ).toBeTruthy();
+    await page.screenshot({ path: test.info().outputPath('portal-three-cards.png') });
+    await appearance.getByRole('button', { name: /Справка/ }).click();
+    await expect(
+      page.getByRole('dialog').getByText('Оформление и телефон', { exact: true }),
+    ).toBeVisible();
+    await page.getByRole('dialog').getByRole('button', { name: 'Закрыть', exact: true }).click();
     const gallery = page.getByRole('radiogroup', { name: 'Цветовая схема', exact: true });
     await expect(gallery.getByRole('radio')).toHaveCount(9);
     await gallery.getByRole('radio', { name: 'Монохромная', exact: true }).check();
@@ -58,12 +82,25 @@ test('portal gallery previews appearance locally and persists named preferences'
     await page.locator('#portal .p-colorpicker-preview').click();
     await expect(page.locator('.p-colorpicker-panel')).toBeVisible();
     await expect(page.locator('.p-anchored-overlay-enter-active')).toHaveCount(0);
-    await page.screenshot({ path: test.info().outputPath('portal-color-picker.png') });
     await page.getByRole('heading', { name: 'Цветовая схема' }).click();
     await expect(page.locator('.p-colorpicker-panel')).not.toBeVisible();
     await page.locator('#portal-own-color').fill('#0f766e');
     await page.getByRole('button', { name: 'Отмена', exact: true }).click();
     await expect(page.getByRole('radio', { name: 'Монохромная', exact: true })).toBeChecked();
+    await page.setViewportSize({ width: 390, height: 844 });
+    const [compactIdentity, compactAppearance, compactPreview] = await Promise.all([
+      identity.boundingBox(),
+      appearance.boundingBox(),
+      preview.boundingBox(),
+    ]);
+    expect(
+      compactIdentity &&
+        compactAppearance &&
+        compactPreview &&
+        compactAppearance.y > compactIdentity.y &&
+        compactPreview.y > compactAppearance.y &&
+        compactPreview.x + compactPreview.width <= 390,
+    ).toBeTruthy();
   } finally {
     const response = await page.request.put('/api/teacher/portal', { headers, data: previous });
     expect(response.ok()).toBe(true);

@@ -102,17 +102,18 @@ function inputOf(value: ProfileValue): StudentProfileInput {
     <div class="tb-student-profile">
       <p-card [header]="t.details">
         <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
-          <div class="tb-field tb-field--required">
+          <div class="tb-field tb-field--required tb-field--filled">
             <label for="profile-name">{{ f.name }}</label>
             <input
               pInputText
               id="profile-name"
               formControlName="displayName"
               autocomplete="off"
+              placeholder=" "
               aria-required="true"
             />
           </div>
-          <div class="tb-field">
+          <div class="tb-field tb-field--filled">
             <label for="profile-email">{{ f.email }}</label>
             <input
               pInputText
@@ -120,24 +121,37 @@ function inputOf(value: ProfileValue): StudentProfileInput {
               type="email"
               formControlName="email"
               autocomplete="off"
+              placeholder=" "
             />
           </div>
-          <div class="tb-field">
+          <div class="tb-field tb-field--filled">
             <label for="profile-phone">{{ f.phone }}</label>
-            <input pInputText id="profile-phone" formControlName="phone" autocomplete="off" />
+            <input
+              pInputText
+              id="profile-phone"
+              formControlName="phone"
+              autocomplete="off"
+              placeholder=" "
+            />
           </div>
-          <div class="tb-field">
+          <div class="tb-field tb-field--filled">
             <label for="profile-note">{{ f.note }}</label>
-            <textarea pTextarea id="profile-note" formControlName="note" rows="3"></textarea>
+            <textarea
+              pTextarea
+              id="profile-note"
+              formControlName="note"
+              rows="3"
+              placeholder=" "
+            ></textarea>
           </div>
-          <div class="tb-field">
+          <div class="tb-field tb-field--filled">
             <label for="profile-topic">{{ f.defaultTopic }}</label>
             <input
               pInputText
               id="profile-topic"
               formControlName="defaultTopic"
               autocomplete="off"
-              [placeholder]="f.defaultTopicPlaceholder"
+              placeholder=" "
               aria-describedby="profile-topic-hint"
             />
             <small id="profile-topic-hint" class="tb-hint">{{ f.defaultTopicHint }}</small>
@@ -173,12 +187,13 @@ function inputOf(value: ProfileValue): StudentProfileInput {
 
       <p-card [header]="t.access">
         <div class="tb-form">
-          <div class="tb-field">
+          <div class="tb-field tb-field--filled">
             <label for="profile-login">{{ f.login }}</label>
             <input
               pInputText
               id="profile-login"
               readonly
+              placeholder=" "
               [value]="row.login ?? f.noLogin"
               aria-describedby="profile-login-hint"
             />
@@ -196,12 +211,30 @@ function inputOf(value: ProfileValue): StudentProfileInput {
                 [loading]="busy()"
                 (onClick)="invite.emit()"
               />
+              <p-button
+                [label]="s.deactivateItem"
+                icon="tb-i tb-i-block"
+                severity="secondary"
+                [disabled]="busy()"
+                (onClick)="deactivate.emit()"
+              />
+            </div>
+          } @else {
+            <div class="tb-form-actions">
+              <p-button
+                [label]="s.reactivate"
+                icon="tb-i tb-i-replay"
+                severity="secondary"
+                [loading]="busy()"
+                (onClick)="reactivate.emit()"
+              />
             </div>
           }
         </div>
       </p-card>
     </div>
   `,
+  styleUrl: './student-filled-fields.scss',
   styles: `
     .tb-student-profile {
       display: flex;
@@ -223,12 +256,14 @@ export class StudentProfileTab {
   private readonly date = inject(DatePipe);
 
   readonly student = input.required<Student>();
-  /** The invitation link is being issued (the page does it, as from «⋮»). */
+  /** The page is issuing the invitation link. */
   readonly busy = input(false);
   /** The profile was saved: the page puts the student in its list. */
   readonly saved = output<Student>();
   /** «Новое приглашение» / «Сбросить пароль»: the page issues the link and shows it. */
   readonly invite = output();
+  readonly deactivate = output();
+  readonly reactivate = output();
 
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);

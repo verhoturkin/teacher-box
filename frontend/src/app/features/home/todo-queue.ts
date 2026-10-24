@@ -19,6 +19,7 @@ import { HomeworkApi } from '@features/homework/parts';
 import type { ReviewQueueItem } from '@features/homework/parts';
 import {
   ScheduleApi,
+  AttendanceDialog,
   formatLessonStart,
   lessonWith,
   requestKindLabel,
@@ -69,6 +70,7 @@ interface Row {
   readonly query?: Readonly<Record<string, string>>;
   /** A lesson with one student: «Проведено | Пропуск» in place. */
   readonly lessonId?: string;
+  readonly groupLesson?: ScheduledLesson;
 }
 
 /**
@@ -80,6 +82,7 @@ interface Row {
   selector: 'tb-todo-queue',
   imports: [
     Button,
+    AttendanceDialog,
     ButtonDirective,
     Card,
     Drawer,
@@ -145,6 +148,8 @@ interface Row {
                       [loading]="busy.is(lessonId + 'MISSED')"
                       (onClick)="mark(lessonId, 'MISSED')"
                     />
+                  } @else if (row.groupLesson) {
+                    <p-button [label]="t.mark" severity="secondary" (onClick)="open(row)" />
                   } @else {
                     <a
                       pButton
@@ -220,6 +225,11 @@ interface Row {
         </div>
       }
     </p-drawer>
+    <tb-attendance-dialog
+      [(visible)]="attendanceVisible"
+      [lesson]="attendanceLesson()"
+      (saved)="attendanceSaved($event)"
+    />
   `,
   styles: `
     /* the bottom sheet of a lesson to mark: its buttons one under another, across the width */
@@ -329,6 +339,8 @@ export class TodoQueue implements OnInit {
   readonly marked = output();
 
   protected readonly loaded = signal(false);
+  protected readonly attendanceVisible = signal(false);
+  protected readonly attendanceLesson = signal<ScheduledLesson | null>(null);
   private readonly lessons = signal<readonly ScheduledLesson[]>([]);
   private readonly requests = signal<readonly ChangeRequest[]>([]);
   private readonly reviews = signal<readonly ReviewQueueItem[]>([]);
@@ -342,7 +354,7 @@ export class TodoQueue implements OnInit {
       detail: `${lessonWith(lesson)} · ${formatLessonStart(lesson.startsAt)}`,
       icon: 'tb-i-fact_check',
       link: '/teacher/schedule',
-      ...(lesson.groupId === null ? { lessonId: lesson.id } : {}),
+      ...(lesson.groupId === null ? { lessonId: lesson.id } : { groupLesson: lesson }),
     })),
     this.requests().map((request) => ({
       key: `request-${request.id}`,
@@ -448,11 +460,20 @@ export class TodoQueue implements OnInit {
 
   /** A phone: a row with two actions opens the sheet, any other goes to its page. */
   protected open(row: Row): void {
-    if (row.lessonId === undefined) {
+    if (row.groupLesson !== undefined) {
+      this.attendanceLesson.set(row.groupLesson);
+      this.attendanceVisible.set(true);
+    } else if (row.lessonId === undefined) {
       void this.router.navigate([row.link], { queryParams: row.query });
     } else {
       this.sheet.set(row);
     }
+  }
+
+  protected attendanceSaved(lesson: ScheduledLesson): void {
+    this.attendanceLesson.set(null);
+    this.lessons.update((lessons) => lessons.filter((item) => item.id !== lesson.id));
+    this.marked.emit();
   }
 
   protected markFromSheet(row: Row, outcome: 'CONDUCTED' | 'MISSED'): void {

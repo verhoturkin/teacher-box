@@ -40,6 +40,7 @@ import { SHARED_T } from '@shared/i18n/texts';
     SegmentGroup,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrl: './student-filled-fields.scss',
   template: `
     <p-dialog
       [header]="t.newStudent"
@@ -55,17 +56,30 @@ import { SHARED_T } from '@shared/i18n/texts';
           [value]="'student'"
           (valueChange)="choose($event)"
         />
-        <div class="tb-field">
+        <div class="tb-field tb-field--filled">
           <label for="displayName">{{ t.name }}</label>
-          <input pInputText id="displayName" formControlName="displayName" autocomplete="off" />
+          <input
+            pInputText
+            id="displayName"
+            formControlName="displayName"
+            autocomplete="off"
+            placeholder=" "
+          />
         </div>
-        <div class="tb-field">
+        <div class="tb-field tb-field--filled">
           <label for="email">{{ t.email }}</label>
-          <input pInputText id="email" type="email" formControlName="email" autocomplete="off" />
+          <input
+            pInputText
+            id="email"
+            type="email"
+            formControlName="email"
+            autocomplete="off"
+            placeholder=" "
+          />
         </div>
-        <div class="tb-field">
+        <div class="tb-field tb-field--filled">
           <label for="phone">{{ t.phone }}</label>
-          <input pInputText id="phone" formControlName="phone" autocomplete="off" />
+          <input pInputText id="phone" formControlName="phone" autocomplete="off" placeholder=" " />
         </div>
         @if (error(); as message) {
           <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>

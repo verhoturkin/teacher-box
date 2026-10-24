@@ -37,6 +37,8 @@ export const en: Translation<typeof ru> = {
     dataSummary: 'Backups, Google Drive, reset',
   },
   portal: {
+    identityTitle: 'Name and logo',
+    appearanceTitle: 'Appearance',
     currentColor: 'Current colour',
     scheme: 'Colour scheme',
     contrast: 'Contrast',

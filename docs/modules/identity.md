@@ -82,7 +82,9 @@ All · Groups · Debtors · No messenger · Disabled (`roster.ts`; balances from
 notifications list read), routes `/teacher/students/:id` and `/teacher/groups/:id`; `student-card.ts` — header
 (`card-head.ts`, shared with the group) and tabs named by `?tab=` (`card-tabs.ts`): Overview, Lessons, Homework, Payments,
 Profile — each tab is a part of its feature (`@features/<name>/parts`), the Profile tab (`student-profile-tab.ts`) edits the
-profile in place; `student-form-dialog.ts` only creates (name + contact) and opens the card; invite link),
+profile in place, with disable/reactivate access beside password change; the student's header has no overflow
+menu. `student-form-dialog.ts` only creates (name + contact) and opens the card; its text fields and the
+Profile tab's text fields trial M3 filled styling (other forms retain outlined fields); invite link),
 `groups/` (`group-card.ts` — Overview, Lessons, Homework, Members, Profile; `group-form-dialog.ts` only creates;
 `group-picker.ts` — `tb-group-picker`, a multiselect of groups next to a students multiselect: a chosen
 group emits its current students (`picked`), a group taken off emits those in no other chosen group (`dropped`), the

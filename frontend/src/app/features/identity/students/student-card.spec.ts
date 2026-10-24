@@ -95,7 +95,7 @@ describe('StudentCard', () => {
     const since = formatDate('2025-09-01T10:00:00Z', 'MMMM yyyy', 'en-US');
     expect(header()).toContain(`Мария с ${since} Приглашён Telegram, ВКонтакте Аванс 1 500 ₽`);
     expect(header()).toContain('Написать Оплата Занятие');
-    expect(buttonByText(host, 'Действия: Мария').getAttribute('aria-haspopup')).toBe('menu');
+    expect(host.querySelector('[aria-label="Действия: Мария"]')).toBeNull();
   });
 
   it('tags a debt and a missing messenger; a deactivated student gets only «Оплата»', async () => {
@@ -122,16 +122,6 @@ describe('StudentCard', () => {
     await render(row(), {}, true);
 
     expect(buttonByText(host, 'Занятие').classList).toContain('p-button-secondary');
-  });
-
-  it('asks the page to open «⋮»', async () => {
-    await render(row());
-    const opened: Event[] = [];
-    fixture.componentInstance.more.subscribe((event) => opened.push(event));
-
-    buttonByText(host, 'Действия: Мария').click();
-
-    expect(opened).toHaveLength(1);
   });
 
   it('shows Обзор by default and keeps other tabs in the address', async () => {

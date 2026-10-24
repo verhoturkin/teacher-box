@@ -198,6 +198,23 @@ describe('StudentProfileTab', () => {
     expect(invite).toHaveBeenCalledTimes(1);
   });
 
+  it('offers disabling access beside password reset, and restoring access for disabled students', async () => {
+    await render();
+    const deactivate = vi.fn();
+    const reactivate = vi.fn();
+    fixture.componentInstance.deactivate.subscribe(deactivate);
+    fixture.componentInstance.reactivate.subscribe(reactivate);
+    const reset = buttonByText(host, 'Сбросить пароль');
+    const disable = buttonByText(host, 'Отключить доступ');
+    expect(disable.closest('.tb-form-actions')).toBe(reset.closest('.tb-form-actions'));
+    disable.click();
+    expect(deactivate).toHaveBeenCalledTimes(1);
+    fixture.componentRef.setInput('student', { ...MARIA, status: 'DEACTIVATED' });
+    await fixture.whenStable();
+    buttonByText(host, 'Вернуть доступ').click();
+    expect(reactivate).toHaveBeenCalledTimes(1);
+  });
+
   it('tells until when the invitation of an invited student works', async () => {
     await render(
       aStudent({

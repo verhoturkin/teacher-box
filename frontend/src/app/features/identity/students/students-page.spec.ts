@@ -176,14 +176,20 @@ describe('StudentsPage', () => {
     await fixture.whenStable();
   }
 
-  /** The «⋮» menu in the card of a row, then one of its items. */
+  /** Student actions live in Profile; groups retain their card menu. */
   async function act(name: string, item: string): Promise<void> {
-    if (!host.querySelector(`[aria-label="Действия: ${name}"]`)) {
-      await openCard(name);
+    await openCard(name);
+    if (host.querySelector('tb-student-card')) {
+      fixture.componentRef.setInput('tab', 'profile');
+      await fixture.whenStable();
+      flushRoom();
+      await fixture.whenStable();
+      buttonByText(host, item).click();
+    } else {
+      buttonByText(host, `Действия: ${name}`).click();
+      await fixture.whenStable();
+      menuItemByText(item).click();
     }
-    buttonByText(host, `Действия: ${name}`).click();
-    await fixture.whenStable();
-    menuItemByText(item).click();
     await fixture.whenStable();
   }
 
@@ -414,24 +420,17 @@ describe('StudentsPage', () => {
       expect(tag.injector.get(Tooltip).content).toBe('Приглашение до 01.10.2026');
     });
 
-    it('keeps the rows without «⋮»: the actions are in the card', async () => {
+    it('keeps student actions in Profile and removes the card menu', async () => {
       await load([MARIA], [OGE]);
       expect(host.querySelector('ul.tb-list button')).toBeNull();
-
       await openCard('Мария');
-      const button = buttonByText(host, 'Действия: Мария');
-      expect(button.getAttribute('aria-haspopup')).toBe('menu');
-      expect(button.closest('tb-pane:last-child .tb-pane__header header')).not.toBeNull();
-    });
-
-    it('has no «Изменить» in the menu: the profile is changed on Профиль', async () => {
-      await load([MARIA]);
-      await openCard('Мария');
-      buttonByText(host, 'Действия: Мария').click();
+      expect(host.querySelector('[aria-label="Действия: Мария"]')).toBeNull();
+      fixture.componentRef.setInput('tab', 'profile');
       await fixture.whenStable();
-
-      expect(() => menuItemByText('Изменить')).toThrow();
-      expect(menuItemByText('Сбросить пароль')).toBeTruthy();
+      flushRoom();
+      await fixture.whenStable();
+      expect(buttonByText(host, 'Сбросить пароль')).toBeTruthy();
+      expect(buttonByText(host, 'Отключить доступ')).toBeTruthy();
     });
 
     it('saves the profile in place and puts the student in the list', async () => {
@@ -481,11 +480,7 @@ describe('StudentsPage', () => {
       await fixture.whenStable();
       expect(bodyText()).toContain('задаст новый пароль');
 
-      await openCard('Борис');
-      buttonByText(host, 'Действия: Борис').click();
-      await fixture.whenStable();
-      expect(() => menuItemByText('Сбросить пароль')).toThrow();
-      menuItemByText('Новое приглашение').click();
+      await act('Борис', 'Новое приглашение');
       backend.expectOne('/api/teacher/students/b/invite').flush({
         token: 'new-token',
         purpose: 'ACTIVATION',
@@ -694,7 +689,7 @@ describe('StudentsPage', () => {
         expect(back.getAttribute('href')).toBe('/teacher/students');
         expect(back.getAttribute('aria-label')).toBe('Все ученики');
         expect(host.querySelector('h1')?.textContent).toBe('Мария');
-        expect(host.querySelector('tb-page-header [aria-label="Действия: Мария"]')).not.toBeNull();
+        expect(host.querySelector('tb-page-header [aria-label="Действия: Мария"]')).toBeNull();
         // the page header names the student: the card shows no second name
         expect(host.querySelector('tb-pane:last-child .tb-pane__header h2')).toBeNull();
       });

@@ -116,7 +116,8 @@ const MATERIALS = 1;
 
     .tb-feed__materials {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      /* Portal decision: match material cards' capped width and wrap when two no longer fit. */
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 15rem));
       gap: var(--tb-space-3);
     }
 
