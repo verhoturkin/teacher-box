@@ -76,6 +76,8 @@ discloses affected/protected existing lesson IDs and the rule version before a b
 
 ## Frontend
 
+Move confirmation controls remain clickable across adjacent day columns when overlapping lessons narrow the card.
+
 `features/schedule/`: `teacher/` (calendar — FullCalendar, unified lesson/repeat dialog, off-time, requests),
 `student/` (week/month calendar and a supporting pane with mini-month, upcoming lessons and requests; compact
 agenda with week/day navigation and week/month switches, lesson bottom sheet on compact (16 px between details and actions) and centered

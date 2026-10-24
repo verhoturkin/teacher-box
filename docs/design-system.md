@@ -223,7 +223,7 @@ component that shows one adds it to `PRIME`).
   surface-container-lowest veil, a standard button group of M3E extra small icon buttons (32 dp, 20 dp icon, 18 dp
   apart, pressed 8 dp corners): ✓ «Перенести» filled and wide (40 dp), ✕ «Отменить перенос» tonal (32 dp); on a card
   narrower than 6 rem (lessons side by side) both are 32 dp and 4 px apart, and the dragged card lies above its
-  neighbours; the move is saved only on ✓.
+  neighbours, including adjacent day columns when the controls extend beyond a narrow card; the move is saved only on ✓.
 - **Colours of students and groups (0.20.0, `core/theme/label-colors.ts`):** M3 static colours (formerly custom
   colours) — ten reference colours (Tailwind 500, red 600; hues about 30° apart), each giving the four roles
   `label-<c>`, `on-label-<c>`, `label-<c>-container`, `on-label-<c>-container` of both themes (`--p-md-*`) from its

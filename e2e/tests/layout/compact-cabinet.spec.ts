@@ -245,14 +245,22 @@ test('notification header keeps read-all beside close and uses compact corners a
   await expect(page.locator('.p-drawer-mask')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
   await expect(sheet).toHaveCSS('border-top-left-radius', '28px');
   const readAll = sheet.getByRole('button', { name: 'Прочитать все', exact: true });
-  const close = sheet.locator('.p-drawer-close-button');
-  await expect(
-    sheet.locator('.p-drawer-header').getByRole('button', { name: 'Прочитать все' }),
-  ).toBeVisible();
-  const left = await readAll.boundingBox();
-  const right = await close.boundingBox();
-  expect(left!.x).toBeLessThan(right!.x);
-  expect(Math.abs(left!.y - right!.y)).toBeLessThanOrEqual(4);
+  await expect(readAll).toBeVisible();
+  await expect
+    .poll(() =>
+      sheet.locator('.p-drawer-header').evaluate((header) => {
+        const buttons = header.querySelectorAll('button');
+        const read = buttons[0]?.getBoundingClientRect();
+        const close = buttons[1]?.getBoundingClientRect();
+        return (
+          read !== undefined &&
+          close !== undefined &&
+          read.right <= close.left &&
+          Math.abs(read.y - close.y) <= 4
+        );
+      }),
+    )
+    .toBe(true);
   await expect(sheet.locator('.tb-notification__dot')).toHaveCount(0);
   await expect(sheet).toHaveCSS('box-shadow', 'none');
   await expect

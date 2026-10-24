@@ -170,6 +170,8 @@ A lesson can be dragged in the calendar to another time. It takes the new place 
 
 In the month view, click a day to plan a lesson on it: it starts at 10:00 and lasts the default duration — change them in the form.
 
+Move confirmation and cancellation buttons remain accessible when overlapping lessons narrow the card.
+
 ## Time off
 
 Mark the time you do not work: «Schedule» → «Time off».
