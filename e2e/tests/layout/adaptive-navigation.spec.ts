@@ -61,6 +61,42 @@ test('on a computer the sections are in the drawer and the current one is marked
   await expectNoSideScroll(page);
 });
 
+test('dark content panes remain distinct from the window outside compact layouts', async ({
+  page,
+}, testInfo) => {
+  await signIn(page);
+  await page.getByRole('button', { name: 'Меню пользователя' }).click();
+  await page.getByRole('menuitemradio', { name: 'Тёмная тема' }).click();
+  await expect(page.locator('html')).toHaveClass(/tb-dark/);
+
+  const pane = page.locator('main tb-pane').first();
+  for (const width of [600, 900, 1600]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await expect(pane).toBeVisible();
+    await expect
+      .poll(() =>
+        pane.evaluate((element) => {
+          const style = getComputedStyle(element);
+          return style.backgroundColor !== getComputedStyle(document.body).backgroundColor;
+        }),
+      )
+      .toBe(true);
+    const field = await pane.evaluate((element) => {
+      const probe = document.createElement('div');
+      probe.style.background = 'var(--tb-field-surface)';
+      element.append(probe);
+      const result = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return result;
+    });
+    await expect(pane).toHaveCSS('background-color', field);
+  }
+  await page.screenshot({ path: testInfo.outputPath('dark-home.png'), fullPage: true });
+
+  await page.setViewportSize(PHONE);
+  await expect(pane).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+});
+
 test('on a tablet the sections are in the rail', async ({ browser }) => {
   const context = await browser.newContext({ baseURL: BASE_URL, viewport: TABLET });
   const page = await context.newPage();

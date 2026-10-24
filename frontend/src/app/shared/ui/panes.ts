@@ -119,7 +119,7 @@ export class Panes {
 }
 
 /**
- * One pane of {@link Panes}: a `surface` sheet (a side sheet — `surface container low`) that scrolls on
+ * One pane of {@link Panes}: a `surface` sheet (`surface container low` in dark, also for a side sheet) that scrolls on
  * its own from expanded. With `label` it is a landmark region of that name. A pane that appears later
  * enters on `--tb-spring-default-spatial` and leaves on it beside other panes (no stagger).
  */
@@ -186,6 +186,8 @@ export class Panes {
       overscroll-behavior: contain;
     }
 
+    /* Portal decision: dark panes need a raised tone above the window's surface. */
+    :host-context(.tb-dark),
     :host(.tb-pane--sheet) {
       background: var(--p-md-surface-container-low);
       --tb-field-surface: var(--p-md-surface-container-low);
@@ -207,6 +209,7 @@ export class Panes {
       /* the sketches: on a phone the page lies right on the window (no big card on the background): the pane has
          neither its own surface nor corners; the window takes the surface tone (styles.scss) */
       :host,
+      :host-context(.tb-dark),
       :host(.tb-pane--sheet) {
         border-radius: 0;
         background: transparent;

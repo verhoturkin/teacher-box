@@ -328,7 +328,8 @@ component that shows one adds it to `PRIME`).
   student (ledger, prefilled).
 - **Panes** (`shared/ui/panes.ts`, 230.2; **M3** canonical layouts): `tb-panes` holds `tb-pane`s of kind
   `fixed` (360 dp on expanded, 412 dp from large — **M3**), `flexible` (the rest, at least one per page) or
-  `sheet` (standard side sheet, ≤ 400 dp, surface-container-low — **M3**). A pane is a `surface` sheet with
+  `sheet` (standard side sheet, ≤ 400 dp, surface-container-low — **M3**). A pane is a `surface` sheet
+  (dark: surface-container-low, including field label backgrounds, to separate it from the surface window — *ours*) with
   28 dp corners on the surface-container window (*ours*), 24 dp inner padding (16 on compact, *ours*); 24 dp
   spacer between panes, 24 dp margin at the trailing edge and the bottom, 16 dp at the sides on compact
   (**M3**). From expanded the panes stand side by side and each scrolls on its own; on compact and medium they
