@@ -17,47 +17,6 @@ unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to Backlog. This file
   keeps only unreleased work and the Backlog.
 
-## v0.32.0
-
-Let the teacher choose the portal's M3 colour scheme and contrast through named options.
-Redesign Settings → Portal around identity, appearance and an interactive preview; preserve existing branding on upgrade.
-Selected design: the scheme gallery with name/logo and a local preview, a standard set of source colours
-inspired by Pantone selections, and an M3-styled popup custom colour picker with HEX input.
-Increase baseline tonal-block separation by one surface-role step in the light theme.
-
-### 273. Persist portal appearance preferences (B)
-
-- [x] **273.1** Extend `platform/portal/PortalSettings`, `PortalService`, `PortalSettingsRepository` and
-  `web/PortalController` with validated colour-scheme and named contrast preferences; add a platform Flyway
-  migration with Fidelity / standard defaults. Cover teacher writes, public reads, student/admin rejection,
-  legacy requests, backup/restore and reset behaviour in the portal tests.
-
-### 274. Generate and apply selectable M3 schemes (F)
-
-- [x] **274.1** Extend `core/portal/portal.ts`, `core/theme/color-scheme.ts`, `portal-accent.ts` and their
-  callers to generate all nine MCU variants and four named contrast levels. Reapply the theme when only
-  scheme or contrast changes; retain the portal's readability guarantees and semantic custom colours in
-  both themes. Test presets/custom accents, effective spec fallback, contrast adjustment, startup and updates.
-
-### 275. Redesign Settings → Portal (F)
-
-- [x] **275.1** Implement the selected layout in `features/settings/portal-settings-card.ts`: portal name,
-  logo, preset/custom source colour, scheme, contrast and a local preview. Show contrast as Lower, Standard,
-  Higher and Maximum (localized labels only; no numeric levels). Preserve existing branding defaults and
-  explicit save behaviour; make dirty preview/reset behaviour clear and support compact screens and keyboard use.
-  Update `features/settings/i18n/{ru,en}.ts`, category summary and component tests.
-- [x] **275.2** Update `docs/design-system.md`, `docs/modules/platform.md`, the relevant `docs/wiki/` page and
-  teacher help articles in both languages; add the appearance regression to the existing functional E2E suite.
-  Document actual MCU spec support and the portal's own readability adjustments separately.
-
-- [x] **275.3** Restore the popup custom colour picker in `portal-settings-card.ts`, keep HEX input and local
-  preview, and verify popup opening/outside-click dismissal in the settings functional E2E suite.
-
-### 276. Release 0.32.0
-
-- [ ] **276.1** Follow the release skill: run affected-part checks and functional E2E, update the Russian
-  CHANGELOG and version files to 0.32.0, archive this plan and update `docs/archive/plans/README.md`.
-
 ## Backlog
 
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the monthly report,

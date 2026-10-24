@@ -82,7 +82,17 @@ test('the check on every portal colour swatch is readable', async ({ page }) => 
         };
       });
   });
-  expect(ratios).toHaveLength(6);
+  expect(ratios.map(({ name }) => name).filter((name) => name !== 'Текущий цвет')).toEqual([
+    'Индиго',
+    'Классический синий',
+    'Барвинковый',
+    'Изумрудный',
+    'Малиновый',
+    'Персиковый',
+    'Мокко',
+    'Золотистый',
+    'Облачный',
+  ]);
   for (const { name, ratio } of ratios) {
     expect(ratio, name ?? '').toBeGreaterThanOrEqual(4.5);
   }
