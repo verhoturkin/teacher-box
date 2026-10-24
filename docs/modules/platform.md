@@ -73,7 +73,7 @@ Backups and settings file live in the data directory, not in the DB.
 
 `features/admin/` (logs, status, events, integrations, backups, settings, diagnostics — `/admin/**`),
 `features/settings/` (teacher settings: portal card, setup wizard, backups with the Google Drive panel `backups/drive-panel.ts` and `DriveStore`, reset), `core/portal`.
-The Portal card has identity and preview above a nine-scheme gallery, base-colour swatches, an inline custom
+The Portal card has identity and preview above a nine-scheme gallery, base-colour swatches, a popup custom
 colour picker with HEX input and named contrast choices. Changes are previewed locally and applied to the
 portal on explicit save. Theme generation lives in `core/theme/`; scheme, contrast and colour each trigger
 reapplication. MCU contrast values are −1 / 0 / 0.5 / 1 for the four stored IDs; the UI shows names only.

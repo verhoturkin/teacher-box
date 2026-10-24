@@ -22,7 +22,7 @@ unless the task needs history.
 Let the teacher choose the portal's M3 colour scheme and contrast through named options.
 Redesign Settings → Portal around identity, appearance and an interactive preview; preserve existing branding on upgrade.
 Selected design: the scheme gallery with name/logo and a local preview, a standard set of source colours
-inspired by Pantone selections, and an inline M3-styled custom colour picker with HEX input.
+inspired by Pantone selections, and an M3-styled popup custom colour picker with HEX input.
 Increase baseline tonal-block separation by one surface-role step in the light theme.
 
 ### 273. Persist portal appearance preferences (B)
@@ -49,6 +49,9 @@ Increase baseline tonal-block separation by one surface-role step in the light t
 - [x] **275.2** Update `docs/design-system.md`, `docs/modules/platform.md`, the relevant `docs/wiki/` page and
   teacher help articles in both languages; add the appearance regression to the existing functional E2E suite.
   Document actual MCU spec support and the portal's own readability adjustments separately.
+
+- [x] **275.3** Restore the popup custom colour picker in `portal-settings-card.ts`, keep HEX input and local
+  preview, and verify popup opening/outside-click dismissal in the settings functional E2E suite.
 
 ### 276. Release 0.32.0
 

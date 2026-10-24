@@ -54,7 +54,13 @@ test('portal gallery previews appearance locally and persists named preferences'
     await expect(gallery.getByRole('radio', { name: 'Монохромная', exact: true })).toBeChecked();
     await expect(page.getByRole('radio', { name: 'Повышенный', exact: true })).toBeChecked();
     await page.getByRole('radio', { name: 'Свой цвет', exact: true }).click();
-    await expect(page.locator('.tb-color-picker .p-colorpicker-panel')).toBeVisible();
+    await expect(page.locator('.p-colorpicker-panel')).not.toBeVisible();
+    await page.locator('#portal .p-colorpicker-preview').click();
+    await expect(page.locator('.p-colorpicker-panel')).toBeVisible();
+    await expect(page.locator('.p-anchored-overlay-enter-active')).toHaveCount(0);
+    await page.screenshot({ path: test.info().outputPath('portal-color-picker.png') });
+    await page.getByRole('heading', { name: 'Цветовая схема' }).click();
+    await expect(page.locator('.p-colorpicker-panel')).not.toBeVisible();
     await page.locator('#portal-own-color').fill('#0f766e');
     await page.getByRole('button', { name: 'Отмена', exact: true }).click();
     await expect(page.getByRole('radio', { name: 'Монохромная', exact: true })).toBeChecked();

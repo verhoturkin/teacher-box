@@ -1016,8 +1016,8 @@ scroll locking and dismissal remain unchanged. Other modal surfaces retain the M
   exact Pantone reproductions or a popularity ranking. References: Pantone's
   [2022 selection](https://www.pantone.com/color-of-the-year-2022) and
   [2026 selection](https://www.pantone.com/na/en-us/color-of-the-year/2026).
-- Custom colour — retain the PrimeNG picker inline, within an M3 surface wrapper, alongside a labelled HEX
-  input. The wrapper and layout are our component composition; MCU generates the resulting scheme.
+- Custom colour — the PrimeNG picker opens as a popup from its colour swatch, appended to the document body
+  so pane scrolling does not clip it. A labelled HEX input stays beside the swatch; MCU generates the scheme.
 - Logo — PNG, JPEG, WebP or SVG ≤ 1 MB, stored in `platform` storage (backed up, removed by full reset),
   served without login at `/api/public/portal/logo`; SVG with `Content-Security-Policy: sandbox`. In the rail (the modal
   one under ☰ too) and its preview in settings it is cut to a circle (`object-fit: cover`); on the sign-in page it keeps its shape.

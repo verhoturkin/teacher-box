@@ -198,9 +198,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
               </div>
               @if (own()) {
                 <div class="tb-own-color">
-                  <div class="tb-color-picker">
-                    <p-colorpicker [formControl]="ownColor" [inline]="true" />
-                  </div>
+                  <p-colorpicker [formControl]="ownColor" appendTo="body" />
                   <div class="tb-field tb-grow">
                     <label for="portal-own-color">{{ t.ownColorField }}</label>
                     <input
@@ -386,11 +384,6 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     }
     .tb-contrast-options input {
       accent-color: var(--p-md-primary);
-    }
-    .tb-color-picker {
-      padding: var(--tb-space-4);
-      background: var(--p-md-surface-container-high);
-      border-radius: var(--tb-shape-lg);
     }
     @container (width < 37.5em) {
       .tb-portal-header {
