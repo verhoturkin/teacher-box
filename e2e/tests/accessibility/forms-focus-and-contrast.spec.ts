@@ -131,13 +131,26 @@ test('every portal color keeps buttons, links and red text readable in both them
     name: string;
     address: string | null;
     accent: string;
+    scheme: string;
+    contrast: string;
   };
   await signIn(page, 'teacher', TEACHER_PASSWORD, 1280);
   try {
-    for (const accent of ['indigo', 'blue', 'teal', 'emerald', 'violet', 'pink', '#fbc02d']) {
+    const cases = [
+      ...['indigo', 'blue', 'teal', 'emerald', 'violet', 'pink', '#fbc02d'].map((accent) => ({
+        accent,
+        scheme: 'fidelity',
+        contrast: 'standard',
+      })),
+      { accent: '#a47864', scheme: 'tonal-spot', contrast: 'standard' },
+      { accent: '#6667ab', scheme: 'monochrome', contrast: 'maximum' },
+      { accent: '#ffbe98', scheme: 'vibrant', contrast: 'increased' },
+      { accent: '#009b77', scheme: 'expressive', contrast: 'reduced' },
+    ];
+    for (const { accent, scheme, contrast: level } of cases) {
       const saved = await request.put('/api/teacher/portal', {
         headers,
-        data: { name: portal.name, address: portal.address ?? '', accent },
+        data: { name: portal.name, address: portal.address ?? '', accent, scheme, contrast: level },
       });
       expect(saved.ok()).toBe(true);
       for (const dark of [false, true]) {
@@ -178,7 +191,13 @@ test('every portal color keeps buttons, links and red text readable in both them
   } finally {
     await request.put('/api/teacher/portal', {
       headers,
-      data: { name: portal.name, address: portal.address ?? '', accent: portal.accent },
+      data: {
+        name: portal.name,
+        address: portal.address ?? '',
+        accent: portal.accent,
+        scheme: portal.scheme,
+        contrast: portal.contrast,
+      },
     });
     await page.evaluate(() => {
       localStorage.removeItem('tb.theme');

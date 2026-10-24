@@ -7,6 +7,13 @@ import { DEFAULT_PORTAL_NAME, Portal } from './portal';
 import { portalInfo } from '@testing/portal-fixtures';
 
 describe('Portal', () => {
+  it('recomputes the theme when only scheme or contrast changes', () => {
+    portal.set(portalInfo({ scheme: 'tonal-spot', contrast: 'standard' }));
+    const monochrome = portal.scheme();
+    portal.set(portalInfo({ scheme: 'tonal-spot', contrast: 'maximum' }));
+    expect(portal.scheme()).not.toBe(monochrome);
+    expect(portal.scheme().light.primary).not.toBe(monochrome.light.primary);
+  });
   let portal: Portal;
   let backend: HttpTestingController;
 

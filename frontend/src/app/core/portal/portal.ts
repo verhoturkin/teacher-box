@@ -6,11 +6,15 @@ import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import { ColorScheme } from '@core/theme/color-scheme';
 import { DEFAULT_ACCENT, applyAccent } from '@core/theme/portal-accent';
 import { DEFAULT_SCHEME } from '@core/theme/teacher-box-preset';
+import { ContrastLevel, DEFAULT_APPEARANCE, SchemeType } from '@core/theme/appearance';
 
 export const DEFAULT_PORTAL_NAME = 'Teacher Box';
 
 /** What every page knows about the portal (`/api/public/portal`). */
 export interface PortalInfo {
+  /** Optional for compatibility with an older server during an update. */
+  readonly scheme?: SchemeType;
+  readonly contrast?: ContrastLevel;
   readonly name: string;
   /** The address links are built from; `null` until it is set. */
   readonly address: string | null;
@@ -96,9 +100,23 @@ export class Portal {
   /** After the teacher or the administrator has changed them. */
   set(info: PortalInfo): void {
     const before = this.info();
-    this.info.set({ name: info.name, address: info.address, accent: info.accent, logo: info.logo });
-    if (info.accent !== before.accent) {
-      this.scheme.set(applyAccent(info.accent));
+    const appearance = {
+      scheme: info.scheme ?? DEFAULT_APPEARANCE.scheme,
+      contrast: info.contrast ?? DEFAULT_APPEARANCE.contrast,
+    };
+    this.info.set({
+      name: info.name,
+      address: info.address,
+      accent: info.accent,
+      logo: info.logo,
+      ...appearance,
+    });
+    if (
+      info.accent !== before.accent ||
+      appearance.scheme !== (before.scheme ?? DEFAULT_APPEARANCE.scheme) ||
+      appearance.contrast !== (before.contrast ?? DEFAULT_APPEARANCE.contrast)
+    ) {
+      this.scheme.set(applyAccent(info.accent, appearance));
     }
     if (info.logo !== before.logo) {
       this.showIcon(info.logo);

@@ -4,12 +4,12 @@ import {
   CustomColorGroup,
   DynamicScheme,
   Hct,
-  SchemeFidelity,
   argbFromHex,
   customColor,
   hexFromArgb,
 } from '@material/material-color-utilities';
 import { contrast, isHex, readable, toOklch } from './color';
+import { Appearance, CONTRAST_LEVELS, DEFAULT_APPEARANCE, SCHEME_TYPES } from './appearance';
 
 /** Shades 50–950 of a palette as `#rrggbb`. */
 export type Shades = Readonly<Record<string, string>>;
@@ -188,6 +188,10 @@ function readableRoles(roles: Roles, dark: boolean): Roles {
     onPrimaryContainer: on(roles.onPrimaryContainer, roles.primaryContainer),
     onSecondaryContainer: on(roles.onSecondaryContainer, roles.secondaryContainer),
     onTertiaryContainer: on(roles.onTertiaryContainer, roles.tertiaryContainer),
+    onErrorContainer: on(roles.onErrorContainer, roles.errorContainer),
+    onSuccessContainer: on(roles.onSuccessContainer, roles.successContainer),
+    onWarningContainer: on(roles.onWarningContainer, roles.warningContainer),
+    onSurface: readable(roles.onSurface, grounds, direction),
     secondary: readable(roles.secondary, grounds, direction),
     tertiary: readable(roles.tertiary, grounds, direction),
     error: filled(roles.error, roles.onError),
@@ -203,11 +207,15 @@ function readableRoles(roles: Roles, dark: boolean): Roles {
  * dynamic scheme computed by `@material/material-color-utilities`; the shades stay PrimeNG's primary
  * palette. Green and amber of Aura are the custom colors success and warning.
  */
-export function colorScheme(primary: Shades): ColorScheme {
+export function colorScheme(
+  primary: Shades,
+  appearance: Appearance = DEFAULT_APPEARANCE,
+): ColorScheme {
   const seed = argbFromHex(shade(primary, '500'));
   const source = Hct.fromInt(seed);
-  const light = new SchemeFidelity(source, false, 0, '2025');
-  const dark = new SchemeFidelity(source, true, 0, '2025');
+  const Factory = SCHEME_TYPES[appearance.scheme];
+  const light = new Factory(source, false, CONTRAST_LEVELS[appearance.contrast], '2025');
+  const dark = new Factory(source, true, CONTRAST_LEVELS[appearance.contrast], '2025');
   const custom = (palette: string, name: string): CustomColorGroup =>
     customColor(seed, {
       value: argbFromHex(shade(auraPalette(palette), '500')),

@@ -23,6 +23,53 @@ async function signIn(page: Page, width = 1280): Promise<void> {
   await startSession(page, 'teacher', TEACHER_PASSWORD);
 }
 
+test('portal gallery previews appearance locally and persists named preferences', async ({
+  page,
+}) => {
+  await signIn(page, 1600);
+  const headers = await bearer(page.request);
+  const previous = (await (await page.request.get('/api/teacher/portal', { headers })).json()) as {
+    name: string;
+    address: string | null;
+    accent: string;
+    scheme: string;
+    contrast: string;
+  };
+  try {
+    await page.goto('/teacher/settings/portal');
+    const gallery = page.getByRole('radiogroup', { name: 'Цветовая схема', exact: true });
+    await expect(gallery.getByRole('radio')).toHaveCount(9);
+    await gallery.getByRole('radio', { name: 'Монохромная', exact: true }).check();
+    await page
+      .getByRole('radiogroup', { name: 'Контраст', exact: true })
+      .getByRole('radio', { name: 'Повышенный', exact: true })
+      .check();
+    const unsaved = (await (await page.request.get('/api/teacher/portal', { headers })).json()) as {
+      scheme: string;
+    };
+    expect(unsaved.scheme).toBe(previous.scheme);
+    await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
+    await expect(page.getByText('Настройки портала сохранены')).toBeVisible();
+    await page.reload();
+    await expect(gallery.getByRole('radio', { name: 'Монохромная', exact: true })).toBeChecked();
+    await expect(page.getByRole('radio', { name: 'Повышенный', exact: true })).toBeChecked();
+    await page.getByRole('radio', { name: 'Свой цвет', exact: true }).click();
+    await expect(page.locator('.p-colorpicker-panel')).not.toBeVisible();
+    await page.locator('#portal .p-colorpicker-preview').click();
+    await expect(page.locator('.p-colorpicker-panel')).toBeVisible();
+    await expect(page.locator('.p-anchored-overlay-enter-active')).toHaveCount(0);
+    await page.screenshot({ path: test.info().outputPath('portal-color-picker.png') });
+    await page.getByRole('heading', { name: 'Цветовая схема' }).click();
+    await expect(page.locator('.p-colorpicker-panel')).not.toBeVisible();
+    await page.locator('#portal-own-color').fill('#0f766e');
+    await page.getByRole('button', { name: 'Отмена', exact: true }).click();
+    await expect(page.getByRole('radio', { name: 'Монохромная', exact: true })).toBeChecked();
+  } finally {
+    const response = await page.request.put('/api/teacher/portal', { headers, data: previous });
+    expect(response.ok()).toBe(true);
+  }
+});
+
 test.beforeAll(async ({ request }) => {
   const created = await request.post('/api/teacher/students', {
     headers: await bearer(request),

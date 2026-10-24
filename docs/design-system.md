@@ -185,14 +185,19 @@ component that shows one adds it to `PRIME`).
   `--p-highlight-*`), hex colours in styles outside `core/theme/` and `boards/`, `size="small"` and outlined buttons.
 - **Scheme from the portal colour** (seed, ADR-0034): a preset palette or custom `#rrggbb` → shades 50–950
   (PrimeNG's primary palette: `updatePrimaryPalette`, `palette()`); shade 500 is the seed of the M3 dynamic scheme
-  of `@material/material-color-utilities` — **Fidelity**, spec 2025 (M3 Expressive): primary and the primary
-  container keep the chosen colour. All M3 roles of both themes (primary, secondary, tertiary, error, surfaces,
+  of `@material/material-color-utilities` — selectable **Fidelity** (default), Tonal Spot, Vibrant, Expressive,
+  Neutral, Monochrome, Content, Rainbow or Fruit Salad. MCU uses spec 2025 for Neutral, Tonal Spot, Vibrant and
+  Expressive; the other variants fall back to spec 2021. Choosing M3 Expressive component patterns does not
+  require the Expressive colour variant. All M3 roles of both themes (primary, secondary, tertiary, error, surfaces,
   outlines, inverse) and the neutral palette (tones 99…10 as shades 0–950) come from it (`color-scheme.ts`) and are
-  pushed via `updatePreset`. No `oklch(from …)` in CSS. Recomputed on load and when the portal colour is saved.
+  pushed via `updatePreset`. No `oklch(from …)` in CSS. Recomputed on load and when the portal colour, scheme or
+  contrast is saved. Named contrast choices Reduced / Standard / Increased / Maximum map to MCU −1 / 0 / 0.5 / 1;
+  Standard is the default. Numeric levels are implementation details, never UI labels.
 - **Contrast is guaranteed by tone** (ADR-0023 kept): primary, error, success, warning ≥ 4.5:1 against their on-
   colour, page, card and list tiles; secondary, tertiary, on-surface-variant ≥ 4.5:1 on every surface; every
-  on-*-container ≥ 4.5:1 on its container; inverse-primary on inverse-surface. A role short of it is moved along its
-  hue (`readable`). The hero card (primary container — the portal colour itself) carries only on-primary-container:
+  on-*-container ≥ 4.5:1 on its container; inverse-primary on inverse-surface. This portal readability floor also
+  applies at Reduced contrast, after MCU generation. A role short of it is moved along its
+  hue (`readable`). The hero card (the selected scheme's primary container) carries only on-primary-container:
   its links and text buttons take that colour (links underlined). All preset palettes and sample own colours are
   tested in both themes. The custom-colour check reports darkening and warns when primary is close (OKLab ΔE×100 <
   12) to error (since 0.17.0 not to success: no button is green, ADR-0045).
@@ -243,7 +248,9 @@ component that shows one adds it to `PRIME`).
   outlined empty circle).
 - **Surfaces:** page — surface-container (light) / surface (dark); cards, menus, dropdowns —
   surface-container-lowest (light) / surface-container (dark); in component styles `--tb-card`; list tile `--tb-list-item` —
-  surface-container-low / surface-container-high. **Dialogs** (M3, ADR-0044, 0.16.2) — surface-container-high in both
+  surface-container / surface-container-high. The light list baseline uses surface-container rather than low
+  for clearer separation from the light card. Cards inside panes remain transparent and inherit the pane's
+  field surface. These surface assignments are portal decisions. **Dialogs** (M3, ADR-0044, 0.16.2) — surface-container-high in both
   themes: inside `.p-dialog` `--tb-card` is the dialog's colour (the notch of a field's label) and list tiles are
   surface-container-lowest, so they stand apart in both themes (`color-scheme.spec.ts`); surface-container-highest is
   not used beside a dialog, as M3 asks. The top bar keeps its tone when the page scrolls (no raise on scroll). Scrim 32 % in both
@@ -999,9 +1006,18 @@ scroll locking and dismissal remain unchanged. Other modal surfaces retain the M
 
 ## 12. Portal branding
 
-- Portal colour — preset palette or custom `#rrggbb`, stored in `platform` settings, applied at start.
-  Its swatch in settings is the light primary container with an on-primary-container check (`accentSwatch`):
-  white is short of 3:1 on teal and emerald.
+- Portal appearance — source colour, scheme and named contrast, stored in `platform` settings and applied at
+  start. The Portal settings use the gallery layout: name, logo and local preview at the top, nine scheme
+  choices with colour samples, base colours and custom colour, then contrast. The draft preview follows the
+  current selection; an explicit save applies it to the portal. This composition is our decision.
+- Base colours (`core/theme/appearance.ts`) — original indigo and screen approximations inspired by Pantone
+  Colours of the Year: Classic Blue (2020), Very Peri (2022), Emerald (2013), Viva Magenta (2023), Peach Fuzz
+  (2024), Mocha Mousse (2025), Illuminating (2021), Cloud Dancer (2026). These are portal screen colours, not
+  exact Pantone reproductions or a popularity ranking. References: Pantone's
+  [2022 selection](https://www.pantone.com/color-of-the-year-2022) and
+  [2026 selection](https://www.pantone.com/na/en-us/color-of-the-year/2026).
+- Custom colour — the PrimeNG picker opens as a popup from its colour swatch, appended to the document body
+  so pane scrolling does not clip it. A labelled HEX input stays beside the swatch; MCU generates the scheme.
 - Logo — PNG, JPEG, WebP or SVG ≤ 1 MB, stored in `platform` storage (backed up, removed by full reset),
   served without login at `/api/public/portal/logo`; SVG with `Content-Security-Policy: sandbox`. In the rail (the modal
   one under ☰ too) and its preview in settings it is cut to a circle (`object-fit: cover`); on the sign-in page it keeps its shape.

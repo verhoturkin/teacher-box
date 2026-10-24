@@ -13,7 +13,13 @@ import org.jspecify.annotations.Nullable;
  * @param setupCompletedAt when the teacher finished or skipped the first setup
  */
 public record PortalSettings(@Nullable String name, @Nullable String address, @Nullable PortalAccent accent,
-        @Nullable Logo logo, @Nullable Instant setupCompletedAt, @Nullable Instant updatedAt, long version) {
+        @Nullable Logo logo, @Nullable Instant setupCompletedAt, @Nullable Instant updatedAt, long version,
+        String scheme, String contrast) {
+
+    public PortalSettings(@Nullable String name, @Nullable String address, @Nullable PortalAccent accent,
+            @Nullable Logo logo, @Nullable Instant setupCompletedAt, @Nullable Instant updatedAt, long version) {
+        this(name, address, accent, logo, setupCompletedAt, updatedAt, version, "fidelity", "standard");
+    }
 
     public static final int MAX_NAME_LENGTH = 60;
 
@@ -25,18 +31,23 @@ public record PortalSettings(@Nullable String name, @Nullable String address, @N
     }
 
     PortalSettings withNameAndAddress(@Nullable String newName, @Nullable String newAddress, Instant now) {
-        return new PortalSettings(newName, newAddress, accent, logo, setupCompletedAt, now, version);
+        return new PortalSettings(newName, newAddress, accent, logo, setupCompletedAt, now, version, scheme, contrast);
     }
 
     PortalSettings withAccent(@Nullable PortalAccent newAccent, Instant now) {
-        return new PortalSettings(name, address, newAccent, logo, setupCompletedAt, now, version);
+        return new PortalSettings(name, address, newAccent, logo, setupCompletedAt, now, version, scheme, contrast);
     }
 
     PortalSettings withLogo(@Nullable Logo newLogo, Instant now) {
-        return new PortalSettings(name, address, accent, newLogo, setupCompletedAt, now, version);
+        return new PortalSettings(name, address, accent, newLogo, setupCompletedAt, now, version, scheme, contrast);
     }
 
     PortalSettings setupCompleted(Instant now) {
-        return new PortalSettings(name, address, accent, logo, now, now, version);
+        return new PortalSettings(name, address, accent, logo, now, now, version, scheme, contrast);
+    }
+
+    PortalSettings withAppearance(String newScheme, String newContrast) {
+        return new PortalSettings(name, address, accent, logo, setupCompletedAt, updatedAt, version,
+                newScheme, newContrast);
     }
 }

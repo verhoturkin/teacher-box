@@ -589,6 +589,9 @@ The portal address is set during the initial setup; later the portal administrat
 «Settings» → «Portal»:
 
 - **Colour** — choose one of the ready colours or «Own colour»: a palette or a code like #0f766e. The colour sets the buttons, links, highlights and a light tint of the background — in the light and the dark theme. Under the palette you see how the buttons look in both themes. The portal picks the tones of the text itself so that buttons and links stay readable in any colour; if the colour is too light or dark, the portal warns that it will be changed noticeably. A red portal colour also gets a warning: red buttons delete, and the main action would look like them. Click «Save».
+- **Colour scheme** — nine gallery options, from Original to Monochrome. Choose a base colour or open Own colour: click the swatch beside the HEX field to open the popup picker. Base colours are screen approximations inspired by Pantone selections.
+- **Contrast** — Lower, Standard, Higher or Maximum, without numeric values. Text stays readable even at Lower contrast. In the light theme, tonal blocks stand out more clearly from the background.
+- **Preview** — shows the selected appearance in the light or dark theme before saving. Save applies it to the teacher and students; Cancel restores saved values. Logo uploads and removal apply immediately.
 - **Logo** — «Upload»: a PNG, JPEG, WebP or SVG picture up to 1 MB. The logo appears at the top of the sections panel (in a circle), on the sign-in page and on the browser tab. The bin next to it brings back the default icon.
 
 The portal's name is there too — it is shown next to the logo at the top of the sections panel.

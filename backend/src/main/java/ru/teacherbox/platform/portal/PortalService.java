@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.util.HexFormat;
 import java.util.Optional;
+import java.util.Set;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.Resource;
 import ru.teacherbox.shared.error.BusinessRuleException;
@@ -33,7 +34,7 @@ public class PortalService implements Portal {
      * @param logo                   address of the logo (changes with every new logo); {@code null}: none
      */
     public record View(String name, @Nullable String address, boolean addressFromEnvironment,
-            boolean setupCompleted, String accent, @Nullable String logo) {
+            boolean setupCompleted, String accent, @Nullable String logo, String scheme, String contrast) {
     }
 
     /** The logo file to send. */
@@ -74,13 +75,25 @@ public class PortalService implements Portal {
      * @param accent  {@code null}: the color stays
      */
     public synchronized View change(@Nullable String name, @Nullable String address, @Nullable String accent) {
+        return change(name, address, accent, null, null);
+    }
+
+    public synchronized View change(@Nullable String name, @Nullable String address, @Nullable String accent,
+            @Nullable String scheme, @Nullable String contrast) {
         PortalSettings current = repository.load();
         PortalSettings changed = current.withNameAndAddress(blankToNull(name), normalize(address), clock.instant());
         if (accent != null) {
             changed = changed.withAccent(PortalAccent.parse(accent).orElseThrow(() -> new BusinessRuleException(
                     "portal.accent-invalid", "Unknown color of the portal")), clock.instant());
         }
-        return view(repository.save(changed));
+        String selectedScheme = scheme == null ? current.scheme() : scheme;
+        String selectedContrast = contrast == null ? current.contrast() : contrast;
+        if (!Set.of("fidelity", "tonal-spot", "vibrant", "expressive", "neutral", "monochrome", "content", "rainbow",
+                "fruit-salad").contains(selectedScheme)
+                || !Set.of("reduced", "standard", "increased", "maximum").contains(selectedContrast)) {
+            throw new BusinessRuleException("portal.appearance-invalid", "Unknown portal appearance");
+        }
+        return view(repository.save(changed.withAppearance(selectedScheme, selectedContrast)));
     }
 
     public synchronized View changeAddress(@Nullable String address) {
@@ -143,7 +156,8 @@ public class PortalService implements Portal {
         return new View(settings.name() == null ? DEFAULT_NAME : settings.name(),
                 fromEnvironment != null ? fromEnvironment : settings.address(), fromEnvironment != null,
                 settings.setupCompletedAt() != null, accent.value(),
-                logo == null ? null : LOGO_PATH + "?v=" + HexFormat.of().toHexDigits(logo.key().hashCode()));
+                logo == null ? null : LOGO_PATH + "?v=" + HexFormat.of().toHexDigits(logo.key().hashCode()),
+                settings.scheme(), settings.contrast());
     }
 
     private static @Nullable String normalize(@Nullable String address) {
