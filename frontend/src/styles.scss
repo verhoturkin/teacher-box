@@ -3146,6 +3146,13 @@ full-calendar :has(> .tb-lesson--moving) {
   }
 }
 
+/* Notifications: a transparent compact scrim is a portal decision; the modal dismissal stays active. */
+@media (width < 37.5em) {
+  :root {
+    --tb-notifications-scrim: transparent;
+  }
+}
+
 /* Notifications: compact margins and top sheet corners are portal decisions using M3 shape tokens. */
 .p-drawer.tb-notifications-modal {
   .p-card > .p-card-body {

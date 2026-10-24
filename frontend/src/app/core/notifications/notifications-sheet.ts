@@ -78,6 +78,9 @@ function pathOf(url: string): string {
         position="right"
         appendTo="body"
         [blockScroll]="true"
+        [maskStyle]="{
+          '--px-mask-background': 'var(--tb-notifications-scrim, var(--p-mask-background))',
+        }"
         [ariaCloseLabel]="close"
         styleClass="tb-side-sheet tb-side-sheet--narrow tb-notifications-modal"
       >

@@ -602,6 +602,10 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
 
 ## 8. Dialogs, sheets, menus
 
+0.31.2 portal decisions: student lesson details keep a 16 px gap between summary and actions, and
+a 24 px bottom inset in the desktop dialog. Compact notifications use a transparent scrim; modal focus,
+scroll locking and dismissal remain unchanged. Other modal surfaces retain the M3 scrim.
+
 - **Modal side sheet** `tb-side-sheet` (the help, 0.15.0): a right drawer 1 rem from the window edges, 42 rem wide,
   large corners, surface container low, scrim 32 %; the header is «←» (only when there is a way back), the headline
   (Title Large) and «×». A link of a help article to another one opens it in the sheet («←» returns); other links

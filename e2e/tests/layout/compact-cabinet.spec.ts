@@ -242,6 +242,7 @@ test('notification header keeps read-all beside close and uses compact corners a
   await student(page);
   await page.getByRole('button', { name: /Уведомления/ }).click();
   const sheet = page.locator('.tb-notifications-modal');
+  await expect(page.locator('.p-drawer-mask')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
   await expect(sheet).toHaveCSS('border-top-left-radius', '28px');
   const readAll = sheet.getByRole('button', { name: 'Прочитать все', exact: true });
   const close = sheet.locator('.p-drawer-close-button');
@@ -261,6 +262,12 @@ test('notification header keeps read-all beside close and uses compact corners a
         .evaluate((element) => Math.round(element.getBoundingClientRect().left)),
     )
     .toBe(16);
+  await page.locator('.p-drawer-mask').click({ position: { x: 195, y: 2 } });
+  await expect(sheet).toBeHidden();
+  await expect(page.locator('.p-drawer-mask')).toHaveCount(0);
+  await page.setViewportSize({ width: 1024, height: 900 });
+  await page.getByRole('button', { name: /Уведомления/ }).click();
+  await expect(page.locator('.p-drawer-mask')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0.32)');
 });
 
 test('student calendar details adapt and upcoming sections stay contained on compact', async ({
@@ -280,6 +287,8 @@ test('student calendar details adapt and upcoming sections stay contained on com
     .click();
   const dialog = page.locator('.p-dialog.tb-dialog');
   await expect(dialog).toBeVisible();
+  await expect(dialog.locator('.p-dialog-content')).toHaveCSS('padding-bottom', '24px');
+  await expect(dialog.locator('.tb-student-lesson-details')).toHaveCSS('gap', '16px');
   await expect
     .poll(async () => {
       const box = await dialog.boundingBox();
@@ -299,6 +308,7 @@ test('student calendar details adapt and upcoming sections stay contained on com
   await page.getByRole('button', { name: day, exact: true }).click();
   await page.locator('.tb-agenda__row').first().click();
   await expect(page.locator('.p-drawer.tb-sheet')).toBeVisible();
+  await expect(page.locator('.tb-sheet .tb-student-lesson-details')).toHaveCSS('gap', '16px');
   await page.locator('.p-drawer.tb-sheet').evaluate(async (element) => {
     await Promise.all(
       element
