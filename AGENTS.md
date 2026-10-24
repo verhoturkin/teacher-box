@@ -132,6 +132,9 @@ printed tail first, then grep `.verify-logs/<step>.log` — don't read whole log
 ## 6. Conventions
 
 ### 6.1 General
+- Wrap Markdown prose and list items at 100 columns, including continuation indentation. Check added
+  and edited prose lines in every changed `.md` file before committing. Tables, fenced code and
+  unbreakable URLs may exceed this limit. Do not leave long paragraphs or plan items on one line.
 - English: code, identifiers, comments, commit messages, `AGENTS.md`/`CLAUDE.md` files, `docs/PLAN.md`,
   `docs/design-system.md`, `docs/modules/`, skills. Russian: README, `docs/operations.md`, `docs/glossary.md`,
   ADRs, CHANGELOG, help articles, the wiki and all UI texts.

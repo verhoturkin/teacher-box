@@ -73,7 +73,7 @@ Focus rings appear during keyboard use, not automatically when opening a dialog 
     title: 'Students and invitations',
     summary: 'How to add a student, give access and turn it off',
     body: `
-The create-student dialog and Profile tab use filled text fields: the label stays inside at the top, and the bottom indicator shows focus or an error. Payments shows balance, lifetime charges, lifetime payments and lesson price in four cards in a row, wrapping on narrow screens. Password reset and access controls sit together in Profile; the student header has no more menu.
+The create-student dialog and Profile tab use filled text fields: the empty label sits inside and moves up in a smaller size on focus or input; the bottom indicator shows focus, and errors use red with an icon. Payments shows balance, lifetime charges, lifetime payments and lesson price in four cards in a row, wrapping on narrow screens. Password reset and access controls sit together in Profile; the student header has no more menu.
 
 ## Add a student
 

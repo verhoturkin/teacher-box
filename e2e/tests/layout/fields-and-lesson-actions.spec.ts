@@ -1,6 +1,7 @@
 import { startSession, bearer as teacherHeaders } from '../support/session';
-import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
+import { type APIRequestContext, type Locator, type Page, expect, test } from '@playwright/test';
 import { laterThisWeek } from '../support/this-week';
+import { create } from '../support/create';
 
 /**
  * Version 0.6.10: Material 3 Expressive (ADR-0022) — fields 56 px with the label on the outline,
@@ -100,6 +101,161 @@ test('a field is 56 px high with its label on the outline, primary in focus', as
   });
   expect(await color()).toBe(primary);
 });
+
+async function filledMetrics(input: Locator) {
+  return input.evaluate((element) => {
+    const field = element.closest('.tb-field');
+    const label = field?.querySelector('label');
+    if (!field || !label) throw new Error('Missing filled field or label');
+    const box = element.getBoundingClientRect();
+    const caption = label.getBoundingClientRect();
+    const style = getComputedStyle(element);
+    const labelStyle = getComputedStyle(label);
+    const indicator = getComputedStyle(field, '::after');
+    const probe = document.createElement('span');
+    document.body.append(probe);
+    const role = (name: string): string => {
+      probe.style.color = `var(--p-md-${name})`;
+      return getComputedStyle(probe).color;
+    };
+    const primary = role('primary');
+    const error = role('error');
+    const onSurface = role('on-surface');
+    probe.remove();
+    return {
+      height: box.height,
+      labelY: caption.y - box.y,
+      labelX: caption.x - box.x,
+      labelSize: labelStyle.fontSize,
+      labelColor: labelStyle.color,
+      labelFill: labelStyle.backgroundColor,
+      labelTransform: labelStyle.transform,
+      topBorder: style.borderTopWidth,
+      sideBorder: style.borderLeftWidth,
+      bottomRadius: style.borderBottomLeftRadius,
+      indicatorHeight: indicator.height,
+      indicatorColor: indicator.backgroundColor,
+      maskHeight: getComputedStyle(field, '::before').height,
+      maskFill: getComputedStyle(field, '::before').backgroundColor,
+      fill: style.backgroundColor,
+      primary,
+      error,
+      onSurface,
+    };
+  });
+}
+
+for (const theme of ['Светлая тема', 'Тёмная тема']) {
+  for (const width of [1280, 390]) {
+    test(`filled student fields follow M3 in ${theme} at ${String(width)}`, async ({
+      page,
+      request,
+    }) => {
+      await signIn(page, 'teacher', TEACHER_PASSWORD, width);
+      await page.goto('/teacher/students');
+      await page.locator('.tb-shell__user-button').click();
+      await page.getByRole('menuitemradio', { name: theme, exact: true }).click();
+      if (width < 600)
+        await page.getByRole('button', { name: 'Добавить ученика', exact: true }).click();
+      else await create(page, 'Ученик');
+      const dialog = page.getByRole('dialog', { name: 'Новый ученик' });
+      const email = dialog.locator('#email');
+      await dialog.getByText('Новый ученик', { exact: true }).click();
+      await expect.poll(async () => (await filledMetrics(email)).height).toBe(56);
+      let metrics = await filledMetrics(email);
+      expect(metrics).toMatchObject({
+        labelY: 16,
+        labelX: 16,
+        labelSize: '16px',
+        labelFill: 'rgba(0, 0, 0, 0)',
+        labelTransform: 'none',
+        topBorder: '0px',
+        sideBorder: '0px',
+        bottomRadius: '0px',
+        indicatorHeight: '1px',
+        indicatorColor: metrics.onSurface,
+      });
+      await email.focus();
+      await expect.poll(async () => (await filledMetrics(email)).labelY).toBe(8);
+      metrics = await filledMetrics(email);
+      await expect
+        .poll(() => filledMetrics(email))
+        .toMatchObject({
+          labelSize: '12px',
+          labelColor: metrics.primary,
+          indicatorHeight: '2px',
+          indicatorColor: metrics.primary,
+        });
+      await email.fill('invalid');
+      await email.press('Tab');
+      await expect(email).toHaveAttribute('aria-invalid', 'true');
+      metrics = await filledMetrics(email);
+      await expect
+        .poll(() => filledMetrics(email))
+        .toMatchObject({
+          labelY: 8,
+          labelColor: metrics.error,
+          indicatorHeight: '1px',
+          indicatorColor: metrics.error,
+        });
+      await expect(email.locator('..').locator('.tb-filled-error-icon')).toBeVisible();
+      await email.fill('student@example.com');
+      await email.press('Tab');
+      await expect(email).not.toHaveAttribute('aria-invalid', 'true');
+      await expect.poll(async () => (await filledMetrics(email)).labelY).toBe(8);
+      await dialog.getByRole('button', { name: 'Отмена', exact: true }).click();
+
+      const name = `Filled ${String(width)} ${theme} ${RUN}`;
+      const response = await request.post('/api/teacher/students', {
+        headers: await teacherHeaders(request),
+        data: { displayName: name, email: null, phone: null, note: null },
+      });
+      expect(response.ok()).toBe(true);
+      await page.reload();
+      await page.getByRole('link', { name, exact: true }).click();
+      await page.getByRole('tab', { name: 'Профиль', exact: true }).click();
+      const profileName = page.locator('#profile-name');
+      await expect.poll(async () => (await filledMetrics(profileName)).height).toBe(56);
+      expect(await filledMetrics(profileName)).toMatchObject({ labelY: 8, labelSize: '12px' });
+      const note = page.locator('#profile-note');
+      expect(await filledMetrics(note)).toMatchObject({ labelY: 16, labelSize: '16px' });
+      await note.focus();
+      await expect.poll(async () => (await filledMetrics(note)).labelY).toBe(8);
+      await note.fill('Заметка');
+      await note.press('Tab');
+      expect(await filledMetrics(note)).toMatchObject({ labelY: 8, labelSize: '12px' });
+      await note.fill(
+        Array.from({ length: 12 }, (_, line) => `Заметка ${String(line)}`).join('\n'),
+      );
+      await note.press('Control+End');
+      await expect.poll(() => note.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+      const noteMetrics = await filledMetrics(note);
+      expect(noteMetrics).toMatchObject({
+        labelY: 8,
+        maskHeight: '24px',
+        maskFill: noteMetrics.fill,
+      });
+      expect(await filledMetrics(page.locator('#profile-login'))).toMatchObject({
+        height: 56,
+        labelY: 8,
+        labelSize: '12px',
+      });
+      if (theme === 'Светлая тема' && width === 1280) {
+        await note.fill('Заметка об ученике');
+        await profileName.focus();
+        await expect(profileName).toBeFocused();
+        const nameMetrics = await filledMetrics(profileName);
+        await expect
+          .poll(async () => (await filledMetrics(profileName)).indicatorColor)
+          .toBe(nameMetrics.primary);
+        await expect
+          .poll(async () => (await filledMetrics(note)).indicatorColor)
+          .toBe(nameMetrics.onSurface);
+        await page.screenshot({ path: test.info().outputPath('student-filled-fields.png') });
+      }
+    });
+  }
+}
 
 test('the search is a filled pill and a menu is an Expressive menu', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD, 1280);

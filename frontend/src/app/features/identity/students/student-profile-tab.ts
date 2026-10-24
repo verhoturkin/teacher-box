@@ -112,6 +112,7 @@ function inputOf(value: ProfileValue): StudentProfileInput {
               placeholder=" "
               aria-required="true"
             />
+            <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
           </div>
           <div class="tb-field tb-field--filled">
             <label for="profile-email">{{ f.email }}</label>
@@ -123,6 +124,7 @@ function inputOf(value: ProfileValue): StudentProfileInput {
               autocomplete="off"
               placeholder=" "
             />
+            <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
           </div>
           <div class="tb-field tb-field--filled">
             <label for="profile-phone">{{ f.phone }}</label>
@@ -133,6 +135,7 @@ function inputOf(value: ProfileValue): StudentProfileInput {
               autocomplete="off"
               placeholder=" "
             />
+            <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
           </div>
           <div class="tb-field tb-field--filled">
             <label for="profile-note">{{ f.note }}</label>
@@ -143,6 +146,7 @@ function inputOf(value: ProfileValue): StudentProfileInput {
               rows="3"
               placeholder=" "
             ></textarea>
+            <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
           </div>
           <div class="tb-field tb-field--filled">
             <label for="profile-topic">{{ f.defaultTopic }}</label>
@@ -154,6 +158,7 @@ function inputOf(value: ProfileValue): StudentProfileInput {
               placeholder=" "
               aria-describedby="profile-topic-hint"
             />
+            <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
             <small id="profile-topic-hint" class="tb-hint">{{ f.defaultTopicHint }}</small>
           </div>
           <tb-label-color-field inputId="profile-color" [control]="form.controls.color" />
@@ -197,6 +202,7 @@ function inputOf(value: ProfileValue): StudentProfileInput {
               [value]="row.login ?? f.noLogin"
               aria-describedby="profile-login-hint"
             />
+            <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
             <small id="profile-login-hint" class="tb-hint">{{ f.loginHint }}</small>
           </div>
           @if (accessLine(); as line) {
@@ -234,7 +240,6 @@ function inputOf(value: ProfileValue): StudentProfileInput {
       </p-card>
     </div>
   `,
-  styleUrl: './student-filled-fields.scss',
   styles: `
     .tb-student-profile {
       display: flex;
