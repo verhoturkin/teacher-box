@@ -13,9 +13,7 @@ import {
   untracked,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { ConfirmationService } from 'primeng/api';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
-import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Placed, ToBoardDialog } from '@features/boards/parts';
 import { BoardTextbook, TextbookToBoardDialog } from '@features/textbooks/parts';
 import { FileSaver } from '@shared/files/file-saver';
@@ -39,7 +37,7 @@ import { TaskStatusTag } from '../ui/task-status-tag';
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
 import { HelpButton } from '@features/help/parts';
-import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Confirm } from '@shared/ui/confirm';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { Snackbar } from '@core/snackbar/snackbar';
@@ -61,7 +59,6 @@ import { T } from '../i18n/texts';
     ButtonDirective,
     ButtonIcon,
     ButtonLabel,
-    ConfirmDialog,
     MarkdownView,
     AttachmentList,
     AssignMoreDialog,
@@ -75,7 +72,6 @@ import { T } from '../i18n/texts';
     HelpButton,
     LoadStateView,
   ],
-  providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (details(); as assignment) {
@@ -254,7 +250,6 @@ import { T } from '../i18n/texts';
       /></ng-template>
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
     }
-    <p-confirmdialog />
   `,
   styles: `
     /* a label over a block on the pane's surface (M3 label medium, as «Ждут сдачи» in the list) */
@@ -286,7 +281,7 @@ export class AssignmentPage {
   protected readonly r = T.remove;
   private readonly api = inject(HomeworkApi);
   private readonly router = inject(Router);
-  private readonly confirmation = inject(ConfirmationService);
+  private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
   protected readonly materials = inject(MaterialOpener);
@@ -387,44 +382,42 @@ export class AssignmentPage {
     });
   }
 
-  protected confirmRemove(file: Attachment): void {
+  protected async confirmRemove(file: Attachment): Promise<void> {
     const assignment = this.details();
     if (assignment === null) {
       return;
     }
-    this.confirmation.confirm(
-      dangerConfirmation({
+    if (
+      await this.confirm.danger({
         header: T.page.deleteHeader,
         message: T.page.deleteMessage(file.filename),
         acceptLabel: T.page.delete,
-        accept: () => {
-          this.api.removeMaterial(assignment.id, file.id).subscribe(() => {
-            this.details.set({
-              ...assignment,
-              attachments: assignment.attachments.filter((candidate) => candidate.id !== file.id),
-            });
-          });
-        },
-      }),
-    );
+      })
+    ) {
+      this.api.removeMaterial(assignment.id, file.id).subscribe(() => {
+        this.details.set({
+          ...assignment,
+          attachments: assignment.attachments.filter((candidate) => candidate.id !== file.id),
+        });
+      });
+    }
   }
 
   /** Deletes the assignment with the answers and the files, then back to the list. */
-  protected confirmDelete(assignment: AssignmentDetails): void {
-    this.confirmation.confirm(
-      dangerConfirmation({
+  protected async confirmDelete(assignment: AssignmentDetails): Promise<void> {
+    if (
+      await this.confirm.danger({
         header: T.remove.header,
         message: T.remove.message(assignment.title),
         acceptLabel: T.remove.confirm,
-        accept: () => {
-          this.api.deleteAssignment(assignment.id).subscribe(() => {
-            this.snackbar.success(T.remove.deleted(assignment.title));
-            this.changed.emit();
-            void this.router.navigate(['/teacher/homework']);
-          });
-        },
-      }),
-    );
+      })
+    ) {
+      this.api.deleteAssignment(assignment.id).subscribe(() => {
+        this.snackbar.success(T.remove.deleted(assignment.title));
+        this.changed.emit();
+        void this.router.navigate(['/teacher/homework']);
+      });
+    }
   }
 
   protected openBind(textbook: BoundTextbook | null): void {

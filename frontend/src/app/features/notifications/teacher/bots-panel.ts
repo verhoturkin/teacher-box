@@ -1,23 +1,20 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, output, signal } from '@angular/core';
-import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { ChannelSetup, ChannelType } from '../data-access/notifications.models';
 import { CHANNEL_ICONS, CHANNEL_NAMES, CONNECTION_TAGS } from '../notification-labels';
 import { BotWizardDialog } from './bot-wizard-dialog';
-import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Confirm } from '@shared/ui/confirm';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { T } from '../i18n/texts';
 
 /** Teacher: messenger bots of the instance — connect with a wizard, check, remove. */
 @Component({
   selector: 'tb-bots-panel',
-  imports: [Button, Card, ConfirmDialog, Tag, BotWizardDialog, Tooltip],
-  providers: [ConfirmationService],
+  imports: [Button, Card, Tag, BotWizardDialog, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="t.title">
@@ -92,7 +89,6 @@ import { T } from '../i18n/texts';
       [setup]="wizardSetup()"
       (changed)="onChanged($event)"
     />
-    <p-confirmdialog appendTo="body" />
   `,
   styles: `
     .tb-bots {
@@ -107,7 +103,7 @@ import { T } from '../i18n/texts';
 export class BotsPanel implements OnInit {
   protected readonly t = T.bots;
   private readonly api = inject(NotificationsApi);
-  private readonly confirmation = inject(ConfirmationService);
+  private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
 
   /** A bot was connected, replaced or removed. */
@@ -144,21 +140,20 @@ export class BotsPanel implements OnInit {
     this.changed.emit();
   }
 
-  confirmRemove(channel: ChannelType): void {
-    this.confirmation.confirm(
-      dangerConfirmation({
+  async confirmRemove(channel: ChannelType): Promise<void> {
+    if (
+      await this.confirm.danger({
         header: T.bots.removeHeader,
         message: T.bots.removeMessage(CHANNEL_NAMES[channel]),
         acceptLabel: T.bots.removeAccept,
-        accept: () => {
-          this.api.removeBot(channel).subscribe(() => {
-            this.snackbar.info(T.bots.removed(CHANNEL_NAMES[channel]));
-            this.reload();
-            this.changed.emit();
-          });
-        },
-      }),
-    );
+      })
+    ) {
+      this.api.removeBot(channel).subscribe(() => {
+        this.snackbar.info(T.bots.removed(CHANNEL_NAMES[channel]));
+        this.reload();
+        this.changed.emit();
+      });
+    }
   }
 
   /** Reloads the bots (e.g. after the teacher connected or disconnected their own account). */

@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { DeferBlockBehavior, DeferBlockState, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { Toast } from 'primeng/toast';
 import { By } from '@angular/platform-browser';
 import { Snackbar } from '@core/snackbar/snackbar';
@@ -12,7 +12,7 @@ describe('App', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter([]), MessageService, provideHttpClient()],
+      providers: [provideRouter([]), MessageService, ConfirmationService, provideHttpClient()],
       deferBlockBehavior: DeferBlockBehavior.Manual,
     });
     // the call host is a deferred block (ADR-0030)
@@ -36,6 +36,7 @@ describe('App', () => {
     const element = hostElement(fixture);
 
     expect(element.querySelector('p-toast')).not.toBeNull();
+    expect(element.querySelector('p-confirmdialog')).not.toBeNull();
     expect(element.querySelector('router-outlet')).not.toBeNull();
   });
 

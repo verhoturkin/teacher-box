@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Toast, ToastCloseEvent } from 'primeng/toast';
 import { FocusReturn } from '@core/a11y/focus-return';
 import { KeyboardFocus } from '@core/a11y/keyboard-focus';
@@ -12,7 +13,7 @@ const SNACKBAR_PT = { message: { role: 'status', 'aria-live': 'polite' } };
 
 @Component({
   selector: 'tb-root',
-  imports: [RouterOutlet, Toast, CallHost],
+  imports: [RouterOutlet, Toast, ConfirmDialog, CallHost],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- The M3 snackbar (ADR-0024): the text and «Закрыть», it does not take the focus -->
@@ -36,6 +37,8 @@ const SNACKBAR_PT = { message: { role: 'status', 'aria-live': 'polite' } };
       </ng-template>
     </p-toast>
     <router-outlet />
+    <!-- The one host of every confirmation (ADR-0050): ask through the Confirm service -->
+    <p-confirmdialog appendTo="body" />
     <!-- The built-in call (ADR-0030) lives above the routes, so it goes on while the user works; its code
          and the media library stay out of the first load -->
     @defer (on idle) {

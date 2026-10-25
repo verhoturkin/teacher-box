@@ -7,10 +7,8 @@ import {
   signal,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { Tag } from 'primeng/tag';
@@ -18,7 +16,7 @@ import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { SHARED_T } from '@shared/i18n/texts';
-import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Confirm } from '@shared/ui/confirm';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
 import { AiApi } from './data-access/ai-api';
@@ -38,7 +36,6 @@ const MAX_TEXT = 10_000;
     ReactiveFormsModule,
     Button,
     Card,
-    ConfirmDialog,
     Dialog,
     Message,
     Tag,
@@ -46,7 +43,6 @@ const MAX_TEXT = 10_000;
     FieldErrors,
     SubmitFor,
   ],
-  providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card id="system-prompts" [header]="t.title">
@@ -132,7 +128,6 @@ const MAX_TEXT = 10_000;
         />
       </ng-template>
     </p-dialog>
-    <p-confirmdialog />
   `,
   styles: `
     .tb-list__title {
@@ -154,7 +149,7 @@ export class SystemPromptsCard implements OnInit {
   protected readonly c = SHARED_T.common;
   protected readonly t = T.systemPrompts;
   private readonly api = inject(AiApi);
-  private readonly confirmation = inject(ConfirmationService);
+  private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
 
   protected readonly prompts = signal<readonly SystemPrompt[]>([]);
@@ -211,21 +206,20 @@ export class SystemPromptsCard implements OnInit {
     });
   }
 
-  protected confirmReset(): void {
+  protected async confirmReset(): Promise<void> {
     const prompt = this.editing();
     if (prompt === null) {
       return;
     }
-    this.confirmation.confirm(
-      dangerConfirmation({
+    if (
+      await this.confirm.danger({
         header: T.systemPrompts.resetHeader,
         message: T.systemPrompts.resetMessage,
         acceptLabel: T.systemPrompts.resetAccept,
-        accept: () => {
-          this.reset(prompt);
-        },
-      }),
-    );
+      })
+    ) {
+      this.reset(prompt);
+    }
   }
 
   private reset(prompt: SystemPrompt): void {

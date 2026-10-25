@@ -83,6 +83,7 @@ describe('PromptLibraryCard', () => {
     });
 
     host.querySelector<HTMLButtonElement>('button[aria-label="Удалить промт «Перевод»"]')?.click();
+    await fixture.whenStable();
     backend.expectOne({ method: 'DELETE', url: '/api/teacher/ai/prompts/p-2' }).flush(null);
     await fixture.whenStable();
 

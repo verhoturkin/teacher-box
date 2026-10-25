@@ -706,10 +706,10 @@ scroll locking and dismissal remain unchanged. Other modal surfaces retain the M
   dialog scrolls to it); in an `alert` — under the text; a failed action in a `sheet` — an error
   snackbar with «Повторить», not a block in the card.
 - **Confirmations:** `Confirm` (`@shared/ui/confirm`) over the one `<p-confirmdialog>` in `app.ts`:
-  `confirm.danger({ headline, message, action })` — filled red action; `confirm.safe(…)` — filled
-  primary (since 0.17.0, not green); both return `Promise<boolean>` and get the neutral «Отмена»,
-  which cannot be overridden. Features declare no `ConfirmationService` and no host. Inside a
-  dialog use `<tb-dialog-confirm-step>`.
+  `confirm.danger({ header, message, acceptLabel, icon? })` — filled red action; `confirm.safe(…)` —
+  filled primary (since 0.17.0, not green); both return `Promise<boolean>` and get the neutral
+  «Отмена», which cannot be overridden. It is the only way: features declare no
+  `ConfirmationService` and no host. Inside a dialog use `<tb-dialog-confirm-step>`.
 - **Single choice** (0.19.1, the caption language; also the target of a board, the series scope):
   a `tb-list` with `p-radiobutton` in the lead and a `label` covering the tile (the whole tile
   selects, hover state layer); the checked tile — secondary-container / on-secondary-container

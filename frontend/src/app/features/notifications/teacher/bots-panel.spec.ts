@@ -106,6 +106,7 @@ describe('BotsPanel', () => {
     buttonByText(hostElement(fixture), 'Отключить бота Telegram').click();
     const options = confirm.mock.calls[0]?.[0];
     options?.accept?.();
+    await fixture.whenStable();
     backend
       .expectOne({ method: 'DELETE', url: '/api/teacher/notifications/channels/TELEGRAM' })
       .flush(null);

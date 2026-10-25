@@ -112,6 +112,7 @@ describe('SystemPromptsCard', () => {
     button(host, 'Изменить системный промт «Черновик проверки»').click();
     await fixture.whenStable();
     buttonByText(document.body, 'Вернуть стандартный').click();
+    await fixture.whenStable();
     backend
       .expectOne({ method: 'DELETE', url: '/api/teacher/ai/system-prompts/REVIEW_DRAFT' })
       .flush({ ...review, text: review.defaultText, custom: false, updatedAt: null, version: 0 });
@@ -133,6 +134,7 @@ describe('SystemPromptsCard', () => {
     card.edit(review);
     await fixture.whenStable();
     buttonByText(document.body, 'Вернуть стандартный').click();
+    await fixture.whenStable();
     backend
       .expectOne({ method: 'DELETE', url: '/api/teacher/ai/system-prompts/REVIEW_DRAFT' })
       .flush(null, { status: 500, statusText: 'Error' });

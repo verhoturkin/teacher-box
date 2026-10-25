@@ -57,7 +57,7 @@ Decisions taken with the teacher (2026-10-25/26), binding for every stage:
 
 ### Stage 285 — Shared dialog UI (F)
 
-- [ ] **285.1** `Confirm` service (`shared/ui/confirm.ts`): `danger()` / `safe()` → `Promise<boolean>`,
+- [x] **285.1** `Confirm` service (`shared/ui/confirm.ts`): `danger()` / `safe()` → `Promise<boolean>`,
   built on the existing `dangerConfirmation` / `safeConfirmation`; one `ConfirmationService` in
   `app.config.ts` and one `<p-confirmdialog>` in `app.ts`; remove the 9 local providers and the 12
   hosts (`students-page`, `student-payments-tab`, `schedule-page`, `assignment-page`,

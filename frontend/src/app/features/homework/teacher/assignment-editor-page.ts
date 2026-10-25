@@ -19,10 +19,8 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Observable, catchError, concat, defer, last, map, of, switchMap, toArray } from 'rxjs';
-import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { ConfirmDialog } from 'primeng/confirmdialog';
 import { DatePicker } from 'primeng/datepicker';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
@@ -50,7 +48,7 @@ import {
 } from '@features/identity/parts';
 import { ScheduleApi, ScheduledLesson } from '@features/schedule/parts';
 import { toIsoDate } from '@shared/dates/iso-date';
-import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Confirm } from '@shared/ui/confirm';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
@@ -95,7 +93,6 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     ModalDrawer,
     Button,
     Card,
-    ConfirmDialog,
     DatePicker,
     InputText,
     Message,
@@ -114,7 +111,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     BindTextbookDialog,
     VideoSection,
   ],
-  providers: [ConfirmationService, HomeworkAiState],
+  providers: [HomeworkAiState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (ready()) {
@@ -307,7 +304,6 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
         [bound]="binding()"
         (picked)="pickTextbook($event)"
       />
-      <p-confirmdialog />
     } @else {
       <tb-page-header [title]="t.editAssignment" back="/teacher/homework" [backLabel]="t.back" />
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
@@ -360,7 +356,7 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   private readonly schedule = inject(ScheduleApi);
   private readonly router = inject(Router);
   private readonly snackbar = inject(Snackbar);
-  private readonly confirmation = inject(ConfirmationService);
+  private readonly confirm = inject(Confirm);
   protected readonly materials = inject(MaterialOpener);
   private readonly dates = new DatePipe(inject(LOCALE_ID));
 
@@ -781,20 +777,10 @@ ${draft.description}`,
     if (this.saved || !dirty) {
       return true;
     }
-    return new Promise((resolve) => {
-      this.confirmation.confirm(
-        dangerConfirmation({
-          header: T.editor.leaveHeader,
-          message: T.editor.leaveMessage,
-          acceptLabel: T.editor.leave,
-          accept: () => {
-            resolve(true);
-          },
-          reject: () => {
-            resolve(false);
-          },
-        }),
-      );
+    return this.confirm.danger({
+      header: T.editor.leaveHeader,
+      message: T.editor.leaveMessage,
+      acceptLabel: T.editor.leave,
     });
   }
 }

@@ -1,9 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
@@ -11,7 +9,7 @@ import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { SHARED_T } from '@shared/i18n/texts';
-import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Confirm } from '@shared/ui/confirm';
 import { EmptyState } from '@shared/ui/empty-state';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SubmitFor } from '@shared/ui/submit-for';
@@ -26,7 +24,6 @@ import { T } from './i18n/texts';
     ReactiveFormsModule,
     Button,
     Card,
-    ConfirmDialog,
     Dialog,
     InputText,
     Message,
@@ -35,7 +32,6 @@ import { T } from './i18n/texts';
     FieldErrors,
     SubmitFor,
   ],
-  providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card id="prompt-library" [header]="t.title">
@@ -109,7 +105,6 @@ import { T } from './i18n/texts';
         <p-button [label]="t.save" [loading]="pending()" type="submit" tbSubmitFor="prompt-form" />
       </ng-template>
     </p-dialog>
-    <p-confirmdialog />
   `,
   styles: `
     .tb-prompt-text {
@@ -125,7 +120,7 @@ export class PromptLibraryCard implements OnInit {
   protected readonly c = SHARED_T.common;
   protected readonly t = T.library;
   private readonly api = inject(AiApi);
-  private readonly confirmation = inject(ConfirmationService);
+  private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
 
   protected readonly prompts = signal<readonly SavedPrompt[]>([]);
@@ -190,21 +185,18 @@ export class PromptLibraryCard implements OnInit {
       });
   }
 
-  protected confirmDelete(prompt: SavedPrompt): void {
-    this.confirmation.confirm(
-      dangerConfirmation({
+  protected async confirmDelete(prompt: SavedPrompt): Promise<void> {
+    if (
+      await this.confirm.danger({
         header: T.library.deleteHeader,
         message: T.library.deleteMessage(prompt.title),
         acceptLabel: T.library.deleteAccept,
-        accept: () => {
-          this.api.deletePrompt(prompt.id).subscribe(() => {
-            this.prompts.update((prompts) =>
-              prompts.filter((candidate) => candidate.id !== prompt.id),
-            );
-            this.snackbar.success(T.library.deleted);
-          });
-        },
-      }),
-    );
+      })
+    ) {
+      this.api.deletePrompt(prompt.id).subscribe(() => {
+        this.prompts.update((prompts) => prompts.filter((candidate) => candidate.id !== prompt.id));
+        this.snackbar.success(T.library.deleted);
+      });
+    }
   }
 }

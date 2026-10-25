@@ -7,10 +7,9 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { ConfirmationService, MenuItem } from 'primeng/api';
+import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
@@ -60,7 +59,7 @@ import { Pane, Panes } from '@shared/ui/panes';
 import { MiniMonth } from '../ui/mini-month';
 import { ScheduleAgenda, weekDays, weekStart } from '../ui/schedule-agenda';
 import { PageHeader } from '@shared/ui/page-header';
-import { dangerConfirmation, safeConfirmation } from '@shared/ui/confirmation';
+import { Confirm } from '@shared/ui/confirm';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { forkJoin } from 'rxjs';
@@ -103,7 +102,6 @@ const ALL_DAY_START_HOUR = 10;
     HelpButton,
     Button,
     Card,
-    ConfirmDialog,
     Menu,
     Tag,
     Panes,
@@ -122,7 +120,6 @@ const ALL_DAY_START_HOUR = 10;
     EmptyState,
     LoadStateView,
   ],
-  providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-panes>
@@ -374,7 +371,6 @@ const ALL_DAY_START_HOUR = 10;
       [request]="answering()"
       (answered)="done(t.answered)"
     />
-    <p-confirmdialog />
   `,
   styles: `
     .tb-schedule-screens {
@@ -441,7 +437,7 @@ export class SchedulePage implements OnInit {
   protected readonly marks = new Busy();
   private readonly api = inject(ScheduleApi);
   private readonly identity = inject(IdentityApi);
-  private readonly confirmation = inject(ConfirmationService);
+  private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
 
   protected readonly mobile = injectMobile();
@@ -665,7 +661,7 @@ export class SchedulePage implements OnInit {
         },
         error: (error: unknown) => {
           if (problemCode(error) === 'schedule.overlap') {
-            this.confirmOverlap(move);
+            void this.confirmOverlap(move);
           } else {
             move.revert();
             this.snackbar.error(describeError(error, T.page.moveFailed));
@@ -721,7 +717,7 @@ export class SchedulePage implements OnInit {
         icon: 'tb-i tb-i-delete',
         styleClass: 'tb-menu-item--danger',
         command: () => {
-          this.deleteOffTime(offTime);
+          void this.deleteOffTime(offTime);
         },
       },
     ];
@@ -748,20 +744,19 @@ export class SchedulePage implements OnInit {
     this.loadOffTimePeriods();
   }
 
-  deleteOffTime(offTime: OffTime): void {
-    this.confirmation.confirm(
-      dangerConfirmation({
+  async deleteOffTime(offTime: OffTime): Promise<void> {
+    if (
+      await this.confirm.danger({
         header: T.page.deleteOffTimeHeader,
         message: T.page.deleteOffTimeMessage(this.offTimeText(offTime)),
         acceptLabel: T.page.delete,
-        accept: () => {
-          this.api.deleteOffTime(offTime.id).subscribe(() => {
-            this.loadOffTimes();
-            this.loadOffTimePeriods();
-          });
-        },
-      }),
-    );
+      })
+    ) {
+      this.api.deleteOffTime(offTime.id).subscribe(() => {
+        this.loadOffTimes();
+        this.loadOffTimePeriods();
+      });
+    }
   }
 
   protected offTimeText(offTime: OffTime): string {
@@ -776,20 +771,18 @@ export class SchedulePage implements OnInit {
     return formatLessonTime(lesson.startsAt, lesson.endsAt);
   }
 
-  private confirmOverlap(move: LessonMove): void {
-    this.confirmation.confirm(
-      safeConfirmation({
+  private async confirmOverlap(move: LessonMove): Promise<void> {
+    if (
+      await this.confirm.safe({
         header: T.page.busyHeader,
         message: T.page.busyMessage,
         acceptLabel: T.page.move,
-        accept: () => {
-          this.onMove(move, true);
-        },
-        reject: () => {
-          move.revert();
-        },
-      }),
-    );
+      })
+    ) {
+      this.onMove(move, true);
+    } else {
+      move.revert();
+    }
   }
 
   protected loadLessons(): void {
