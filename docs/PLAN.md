@@ -50,7 +50,7 @@ Decisions taken with the teacher (2026-10-25/26), binding for every stage:
 
 ### Stage 284 — Dialog model decision (docs)
 
-- [ ] **284.1** ADR-0050 «Единая модель диалогов» (Russian; row in `docs/adr/README.md`; ADR-0015,
+- [x] **284.1** ADR-0050 «Единая модель диалогов» (Russian; row in `docs/adr/README.md`; ADR-0015,
   0024, 0026 marked as amended where they conflict); rewrite `docs/design-system.md` §8 (dialogs,
   sheets), §7 (button groups), §10 (fields: filled everywhere); move `docs/dialogs-audit.md` to
   `docs/archive/audit/dialogs-2026-10.md`.

@@ -596,9 +596,17 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
 - **Steady widths:** a button whose label changes («Отменить» / «Не приду») uses `tb-button-steady`.
 - Every action that sends a request shows `[loading]` while it runs (`shared/ui/busy.ts`); the submit button is
   never disabled for invalid fields — only while the request runs.
-- **Connected button group** `tb-button-group` (also `p-selectbutton` and the calendar views `tb-fc-segments`):
-  2 px gap, inner corners 8 px, outer full; unselected tonal, selected primary and fully round; no outline.
-  Pressed, the outer corners square to 8 px as any button and the inner ones narrow to 4 px.
+- **Connected button group** `tb-button-group--connected` (also `p-selectbutton` and the calendar
+  views `tb-fc-segments`) — **toggles only** (choosing a value, view or sort; M3: never a connected
+  group when no button can be toggled): 2 px gap (**M3** `ConnectedButtonGroupSmall`), inner corners
+  8 px, outer full; unselected tonal, selected primary and fully round; no outline. Pressed, the
+  outer corners square to 8 px as any button and the inner ones narrow to 4 px. Examples: «Итог»
+  of a lesson, a member's attendance, the calendar views.
+- **Standard button group** `tb-button-group` — actions side by side («Перенести», «Отменить»;
+  «Проведено», «Пропуск» in the agenda): an invisible container with separate tonal buttons, 12 px
+  gap (**M3**, Compose `ButtonGroupSmall.BetweenSpace`); a pressed button changes shape and width
+  and its neighbours adjust for the moment. A dialog footer keeps 8 px (the dialog's own padding
+  between buttons, §8). Never a primary button in a connected group: it reads as «already selected».
 - **Split button** `tb-split` (e.g. «Начать урок» | «Открыть в браузере»): 2 px gap, inner corners 4 px (8 px
   while pressed — the size is ours, the outer corners stay round), trailing part 48 px with a 22 px chevron (M3E
   small); while its menu is open the trailing part is round and the chevron turns 180° on
@@ -646,34 +654,90 @@ scroll locking and dismissal remain unchanged. Other modal surfaces retain the M
   (`/cabinet/account`: account, then «Мессенджеры», then the preferences, one `tb-stack`); the «connect»
   card on the student's home and the «connect» reminder lead there. The teacher's are in Settings ›
   «Мессенджеры» (§4).
-- **Width by class**, never inline: `tb-dialog` 32 rem, `tb-dialog--wide` 40 rem, confirmations ≤ 35 rem;
-  never closer than 1 rem to the screen edge.
-- **Phone:** full screen only for dialogs with ≥ 2 fields or long content (e.g. the full reset: password and
-  the word); one field or none — `tb-dialog--short`, centred.
-- **Form dialog:** `<form [id]>` in the body, submit in the footer with `type="submit" [attr.form]`
-  (`tbSubmitFor`) so Enter submits; order «Отмена», then the action.
-- **At most one red button per dialog** — the confirmation of the dangerous action. Other dangerous actions go
-  to the «⋮» menu in the dialog header (`tb-menu-item--danger`) or a confirmation step inside.
-- **Single choice in a dialog** (0.19.1, the caption language): a `tb-list` with `p-radiobutton` in the lead and a
-  `label` covering the tile (the whole tile selects, hover state layer); the checked tile — secondary-container /
-  on-secondary-container (*our decision: M3 publishes no role for a selected list tile; as our selected menu items*);
-  the default option is checked, so the action is never disabled; `tb-dialog--short`. A note the choice needs (e.g. «will
-  be replaced») goes above the list instead of a second dialog.
-- Initial focus on the dialog title (`[focusOnShow]="false"`, `tabindex="-1"`), not on a button. A dialog
-  never opens another dialog on top.
-- **Confirmations** only via `dangerConfirmation` / `safeConfirmation` (`@shared/ui/confirmation`): danger —
-  filled red action; safe — filled primary (since 0.17.0, not green); both get neutral «Отмена»; the reject label/props cannot be overridden.
-- **Lesson dialog:** footer — the main action for the lesson state («Проведено | Пропуск» group,
-  «Восстановить», «Отметить посещаемость»); «Изменить» — pencil in the header; «Отменить занятие…»,
-  «Удалить…», «Снять отметку» — «⋮» menu; «Начать урок» — tonal.
-- **Bottom sheet** (phone row actions that don't fit): `p-drawer` bottom, `styleClass="tb-sheet"`,
-  `tbModalDrawer`; handle, 28 px top corners, height by content, full-width buttons. Closes by Esc, scrim and
-  «Закрыть» (no swipe). Example: upcoming lesson row on the phone = icon, time and details, chevron
-  (`tb-list__stretched` button); sheet holds «Подключиться» and «Перенести | Отменить» group.
-  0.15.3: the teacher's «Отметьте прошедшие занятия» the same way — on a computer the row has labelled text
-  buttons «Проведено» and «Пропуск» (neutral since 0.17.0), a group «Отметить» (opens the calendar's
-  attendance dialog directly on the home page); on the phone the row (avatar, name,
-  time, chevron) opens a sheet with them full width.
+- **One dialog model** (ADR-0050). The author picks the **kind** by content; the window width only
+  changes the container. Content and markup are the same at every width. Everything goes through
+  `<tb-dialog>` (`shared/ui/dialog`); no feature sets `p-dialog` attributes, widths or phone rules
+  itself.
+
+  | Kind | For | Compact (< 600 dp) | Medium and wider |
+  |---|---|---|---|
+  | `alert` | confirmations, one decision, ≤ 1 field (password, link, language) | basic dialog | basic dialog |
+  | `form` | ≥ 2 fields, wizards, pickers | full-screen dialog | basic dialog |
+  | `sheet` | an object and its actions (lesson, code, backups) | modal bottom sheet | basic dialog |
+
+- **Basic dialog** (**M3**): 280–560 dp wide, 28 dp corners, 24 dp padding on every side, 16 dp
+  headline → body, 24 dp body → actions, 8 dp between buttons, surface container high (ADR-0044),
+  scrim; buttons at the trailing edge, the confirming one closest to it; with scrolling content the
+  headline and the buttons stay pinned. *Our decision:* width is a parameter, `normal` 32 rem or
+  `wide` 40 rem (= 560 dp, the M3 maximum), `alert` ≤ 35 rem; never inline, never closer than 1 rem
+  to the screen edge (M3: 56 dp for a custom position). `tb-dialog--short` and the phone rule
+  `.p-dialog:not(…)` no longer exist.
+- **Full-screen dialog** (`form` on **compact only**, **M3**): 0 dp corners, 56 dp header, 24 dp
+  side padding, 8 dp between elements; «✕» first and the only navigation, then the headline, and
+  the confirming text button at the end of the header with a clear verb («Создать», «Отправить»,
+  not «Готово»), never disabled for invalid fields (§7). Field errors are inline. Closing a dirty
+  form opens a basic dialog on top (below).
+- **Bottom sheet** (`sheet` on **compact only**): modal `p-drawer` bottom, `tb-sheet`, the
+  `tbModalDrawer` behaviour moved into `tb-dialog`; handle with a 48 dp target, 28 dp top corners,
+  surface container low (**M3**), height by content up to 50 % of the screen and then scrolling
+  (**M3**). *Our decision:* compact only (M3 allows medium too); no swipe — it closes by Esc and
+  scrim, an action inside closes it, there is no «✕». Example: the upcoming lesson row on a phone is
+  icon, time and details with a chevron (`tb-list__stretched` button) that opens the sheet; the
+  teacher's «Отметьте прошедшие занятия» row the same way (on a computer the row has the text
+  buttons «Проведено» and «Пропуск»).
+- **Footer:** at most **two** actions — dismiss («Отмена», neutral text, §7) and confirm, the
+  confirm one last. A dialog that only informs has one: «Закрыть». Extra and dangerous actions
+  («Сбросить», «Удалить…», «Снять отметку») go to the «⋮» menu in the header
+  (`tb-menu-item--danger`, `aria-haspopup` / `aria-expanded`); at most **one red button** in a
+  footer — the confirmation of a dangerous action. Form dialog: `<form [id]>` in the body, submit
+  with `type="submit" [attr.form]` (`tbSubmitFor`) so Enter submits; `dialogSubmit()` owns pending,
+  error and reset on open.
+- **Closing** (*our decision*): from medium `alert` and `form` have no «✕» — the exit is «Отмена»
+  and Esc; `sheet` keeps «✕». The scrim closes `alert` and `sheet` and never a `form` (it protects
+  typed data); stages that must not be interrupted (restart) set `[closable]="false"`.
+- **Dirty form:** closing a `form` with changes asks «Отменить изменения?» (Esc = «Отмена»). On
+  compact it is a real basic dialog over the full-screen one (the only case of a dialog over a
+  dialog, **M3**); on medium and wider, and inside `alert` and `sheet`, it is the inline
+  `<tb-dialog-confirm-step>` — text and its own two buttons instead of the footer.
+- **Initial focus** (*our decision*): `form` — the first field (**M3**); `alert` and `sheet` — the
+  headline (`tabindex="-1"`), so Enter never confirms a dangerous action. Focus returns to the
+  opener on close.
+- **Errors:** a server error of a `form` stands above the form (visible without scrolling; the
+  dialog scrolls to it); in an `alert` — under the text; a failed action in a `sheet` — an error
+  snackbar with «Повторить», not a block in the card.
+- **Confirmations:** `Confirm` (`@shared/ui/confirm`) over the one `<p-confirmdialog>` in `app.ts`:
+  `confirm.danger({ headline, message, action })` — filled red action; `confirm.safe(…)` — filled
+  primary (since 0.17.0, not green); both return `Promise<boolean>` and get the neutral «Отмена»,
+  which cannot be overridden. Features declare no `ConfirmationService` and no host. Inside a
+  dialog use `<tb-dialog-confirm-step>`.
+- **Single choice** (0.19.1, the caption language; also the target of a board, the series scope):
+  a `tb-list` with `p-radiobutton` in the lead and a `label` covering the tile (the whole tile
+  selects, hover state layer); the checked tile — secondary-container / on-secondary-container
+  (*our decision: M3 publishes no role for a selected list tile; as our selected menu items*); the
+  default option is checked, so the action is never disabled. A note the choice needs goes above the
+  list. A choice of two with one verdict («Одобрить | Отклонить») is a single-select connected group
+  (§7) and one submit button.
+- **Lesson card** (`sheet`; one shared content component in `schedule/ui` for teacher and student):
+  - header: the headline is who (student or group name); trailing ✎ (planned lessons only) and «⋮»;
+    under it one status label if the lesson is not planned;
+  - body: one segmented `tb-list`, a fact per row with an icon — `schedule` date · time (second
+    line «перенесено с …»), `topic`, `videocam` room with a tonal «Подключиться», `dashboard` board
+    chips, `event_busy` cancel reason; for a past one-student lesson the row `fact_check` «Итог»
+    holds the toggle «Проведено | Пропуск» — **M3** connected group, single-select, selection
+    optional (nothing is selected until marked; a press saves at once with `[loading]`, a press on
+    the selected one clears the mark; an error is a snackbar and the choice returns);
+    *our decision:*
+    the width of a list row, icons `check` and `person_remove`;
+  - a group lesson adds the subtitle «Участники» (Title Medium) and a `tb-list` of avatar, name and
+    attendance label; a student's request is a tertiary-container list row (**M3**: tertiary for
+    small items needing attention) with «Ответить»;
+  - footer, one state — one action: not started or one student past — none (Esc, scrim, «✕» from
+    medium); group past — «Отметить посещаемость»; cancelled — «Восстановить»;
+  - «⋮»: «Отменить занятие…» opens its own `form` (reason, «по инициативе ученика», «списать
+    оплату», for a series the radio list «Только это / Это и следующие» with the count);
+    «Удалить…» is `confirm.danger` with the same scope list; «Снять отметку» only for groups; an
+    overlap on restore is `confirm.safe`. The student sees the same facts and their own actions
+    («Подключиться», «Перенести | Отменить»), without ✎, «⋮» and marks.
 - **Menus and dropdowns:** 16 px container, 4 px padding, elevation 2; items are tiles with 2 px gap — 4 px
   corners, 12 px on the outer side of the first and the last item and on the selected one; *our decision, not M3:*
   items next to a separator get the outer 12 px too, so each group between dividers reads as one segment, as our
@@ -951,25 +1015,29 @@ tracks around fixed-width cards. Compact layouts wrap without horizontal overflo
 
 ## 10. Fields
 
-- M3 outlined text field, 56 px: outline; hover on-surface; focus 2 px primary; error — error colour.
-- Shared filled fields (`shared/ui/filled-field.scss`), imported globally by `styles.scss`, use
-  `.tb-field.tb-field--filled` with a label followed by a PrimeNG native input or textarea. Student
-  creation dialog and teacher's student Profile are the first consumers; other features opt into the
-  same class without component-specific CSS.
+- **M3 filled text field, 56 px, is the default for every field** in forms, dialogs, settings and
+  profiles (`.tb-field`, `shared/ui/filled-field.scss`, imported globally by `styles.scss`), also on
+  the composite PrimeNG controls (select, multiselect, datepicker, inputnumber, password,
+  autocomplete) and textareas. The only exception is the search bar (a separate M3 component,
+  below).
+  Variants are never mixed in one area (**M3**), so no feature picks the variant itself.
+  Markup: a `label` followed by a PrimeNG native input or textarea.
   From [M3 guidelines](https://m3.material.io/components/text-fields/guidelines)
   and specs: 56 px height, 4 px top corners, square bottom corners and 16 px horizontal padding.
   Empty labels use Body Large at 16 px from the top; focused or populated labels use Body Small at
   8 px from the top, including textareas. The separate bottom indicator is 1 px on-surface and 2 px
   primary on focus, with no layout shift. Error labels, indicators, caret and icons use error;
-  supporting text starts 4 px below the control. Filled fields are excluded from outlined label
-  cutouts and keep their own geometry.
+  supporting text starts 4 px below the control.
   Disabled roles use M3's 4% container and 38% foreground opacities.
   Our implementation masks the label strip above scrolling textarea content to keep it legible.
-  This technique, shared opt-in styling and the initial rollout scope are our product decisions;
-  outlined fields remain the default elsewhere. To reuse the variant:
+  This technique and the rollout are our product decisions. Contrast: the field container
+  (surface container highest) sits on a dialog of surface container high, adjacent tones, so the
+  field is told apart mainly by its bottom line; check it on a dialog, a card and a page in both
+  themes. *Our decision if it falls short:* keep the M3 roles and the 1 px on-surface line, invent
+  nothing beyond them. Markup:
 
   ```html
-  <div class="tb-field tb-field--filled">
+  <div class="tb-field">
     <label for="field-id">Label from the dictionary</label>
     <input pInputText id="field-id" formControlName="field" placeholder=" " />
     <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
@@ -979,21 +1047,17 @@ tracks around fixed-width cards. Compact layouts wrap without horizontal overflo
 
   Use `pTextarea` and the same blank placeholder for text areas. Keep `tbFieldErrors` on the form;
   it supplies validation and ARIA state, replaces hints with error text, and reveals the error icon.
-- `.tb-field` with the `label` **first** (or a `tb-copy-row` / `tb-inline` row with the field first): the
-  label sits on the outline (Body Small), primary on focus, error on error. A field with its own header
-  (`tb-field__header`) keeps the label above. Every field has a visible label (filters too).
-- Label cutouts inherit `--tb-field-surface` from the painted surface (0.29.0, portal implementation):
-  body, panes (including sheet/compact variants), cards, dialogs and drawers declare their actual fill.
-  Transparent cards inherit the enclosing surface instead of declaring a card tone. This keeps profile,
-  account and group forms correct in both themes; a new custom form surface must declare this property
-  alongside its background. `--tb-card` remains a card colour, not an assumption about every form.
+- The label is first in `.tb-field` (or a `tb-copy-row` / `tb-inline` row with the field first) and
+  sits inside the container (above). A field with its own header (`tb-field__header`) keeps the
+  label above. Every field has a visible label (filters too). Label cutouts of the outlined variant
+  are gone (ADR-0050); `--tb-field-surface` is no longer needed for fields.
 - Required fields: `*` after the label + `aria-required` (`tb-field--required`); optional ones unmarked.
 - Combined member field (0.29.0): `identity/parts` exports `tb-member-picker`, a grouped
   PrimeNG MultiSelect with one search, Students/Groups sections, removable typed chips and clearing.
   From M3: checkboxes for multiple related choices and input chips for selected entities. Portal decisions:
   grouping both entity types in one dropdown, prefixing chip labels with the type and accepting an optional
   selection limit. Callers wrap it in `.tb-field` with a label targeting its required `inputId` and use a
-  reactive form control; its label uses the same outlined cutout as native controls so adjacent dates align.
+  reactive form control; its label sits inside the filled container like native controls.
   `tbFieldErrors` supplies the standard required/error semantics. Optional option
   details distinguish namesakes. Unavailable options cannot be newly selected; prefilled unavailable or
   missing IDs stay visible (missing names fall back to IDs) and removable. The field stores explicit
@@ -1048,7 +1112,7 @@ tracks around fixed-width cards. Compact layouts wrap without horizontal overflo
   of 48 em, Identity and Appearance stack in the left column and Preview spans both rows on the right;
   narrower containers stack the three cards. Colour-scheme help opens `teacher/appearance`. The draft preview follows the
   current selection; an explicit save applies it to the portal. Identity and Appearance use the standard
-  `--tb-list-item` surface, including field-label cutouts, rather than surface-container-highest.
+  `--tb-list-item` surface rather than surface-container-highest.
   This composition and surface choice are our decision.
 - Base colours (`core/theme/appearance.ts`) — original indigo and screen approximations inspired by Pantone
   Colours of the Year: Classic Blue (2020), Very Peri (2022), Emerald (2013), Viva Magenta (2023), Peach Fuzz
