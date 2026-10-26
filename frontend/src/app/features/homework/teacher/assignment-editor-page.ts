@@ -14,11 +14,24 @@ import {
   input,
   signal,
   untracked,
+  viewChild,
+  ElementRef,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Observable, catchError, concat, defer, last, map, of, switchMap, toArray } from 'rxjs';
+import {
+  Observable,
+  catchError,
+  concat,
+  defer,
+  last,
+  map,
+  of,
+  switchMap,
+  tap,
+  toArray,
+} from 'rxjs';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { DatePicker } from 'primeng/datepicker';
@@ -198,7 +211,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                     />
                   </div>
                   @if (modeValue() === 'preview') {
-                    <div class="tb-preview">
+                    <div class="tb-preview" [style.min-height.px]="editorHeight()">
                       <tb-markdown [text]="textValue()" />
                     </div>
                   } @else {
@@ -206,6 +219,8 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                       pTextarea
                       id="editor-text"
                       class="tb-editor__text"
+                      #editor
+                      [style.height.px]="editorHeight()"
                       formControlName="description"
                       rows="14"
                     ></textarea>
@@ -386,9 +401,22 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     members: new FormControl<MemberSelection[]>([], { nonNullable: true }),
   });
 
-  protected readonly modeValue = toSignal(this.mode.valueChanges, {
-    initialValue: this.mode.value,
-  });
+  /** The height of the text field, kept while the preview is shown so switching never moves the page. */
+  protected readonly editorHeight = signal<number | null>(null);
+  private readonly editor = viewChild<ElementRef<HTMLTextAreaElement>>('editor');
+  protected readonly modeValue = toSignal(
+    this.mode.valueChanges.pipe(
+      tap(() => {
+        const field = this.editor();
+        if (field) {
+          this.editorHeight.set(field.nativeElement.offsetHeight);
+        }
+      }),
+    ),
+    {
+      initialValue: this.mode.value,
+    },
+  );
   protected readonly titleValue = toSignal(this.form.controls.title.valueChanges, {
     initialValue: '',
   });
