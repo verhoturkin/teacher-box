@@ -85,7 +85,8 @@ event in `tb-hero`.
 ## Schedule (teacher)
 
 `features/schedule/teacher/schedule-page.ts`: the calendar is the main pane (FullCalendar, week /
-month; toolbar with owner filter chips and the time-zone chip «Часовой пояс портала»); the
+month; toolbar with owner filter chips in one row — those that do not fit are in the «Ещё N»
+menu — and the time-zone chip «Часовой пояс портала»); the
 supporting pane holds the mini-month (`ui/mini-month.ts`, **M3** docked date picker: weeks from
 Monday, a dot under a day with lessons, the shown day filled; *ours:* no input, a click only moves
 the calendar), «Запросы учеников» and «Нерабочее время» (rows with «⋮»: «Изменить», «Удалить…»).

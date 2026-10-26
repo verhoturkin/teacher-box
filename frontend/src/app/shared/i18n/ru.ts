@@ -27,6 +27,7 @@ export const ru = {
     no: 'Нет',
     loading: 'Загрузка…',
     actions: 'Действия',
+    moreCount: (count: number) => `Ещё ${String(count)}`,
     student: 'Ученик',
     group: 'Группа',
     date: 'Дата',

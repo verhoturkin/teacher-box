@@ -32,7 +32,12 @@ Goal: the schedule calendar looks like Google Calendar in M3 roles (stage 292).
   flex-column container, `scrollTime` on the current hour); week, day and month; the phone list
   keeps the content height (ADR-0015). Entry points: `schedule/ui/schedule-calendar.ts`,
   `schedule/teacher/schedule-page.ts`, `tb-cal-*` in `styles.scss`, `docs/screens.md`.
-- [ ] 292.3 F: the rest — toolbar (outlined «Сегодня», icon-button arrows, larger period title),
+- [x] 292.3 F: filter chips of the teacher's schedule in one row — the chips that do not fit go to
+  a «Ещё N» menu (`ResizeObserver`, the selected chip always stays in the row, «Все» first);
+  opt-in input of `shared/ui/filter-chips.ts`, other pages keep wrapping; the phone's screen chips
+  are unchanged. Entry points: `shared/ui/filter-chips.ts`, `schedule/teacher/schedule-page.ts`,
+  `docs/design-system.md`, `docs/screens.md`.
+- [ ] 292.4 F: the rest — toolbar (outlined «Сегодня», icon-button arrows, larger period title),
   list view, phone layout check.
 
 ## Backlog

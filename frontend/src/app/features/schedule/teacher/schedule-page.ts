@@ -156,7 +156,13 @@ const ALL_DAY_START_HOUR = 10;
             }
             <!-- a phone (the sketches): the owner filter is hidden, the calendar shows everyone -->
             @if (!mobile()) {
-              <tb-filter-chips [label]="t.filters" [chips]="ownerChips()" [(value)]="ownerFilter" />
+              <tb-filter-chips
+                class="tb-schedule-owners"
+                [label]="t.filters"
+                [chips]="ownerChips()"
+                [(value)]="ownerFilter"
+                [oneRow]="true"
+              />
             }
           </div>
         }
@@ -409,6 +415,12 @@ const ALL_DAY_START_HOUR = 10;
       align-items: center;
       gap: var(--tb-space-2) var(--tb-space-4);
       margin-block-end: var(--tb-space-4);
+    }
+
+    /* the owner chips take the rest of the row (a row of their own when it is narrow) and never grow wider */
+    .tb-schedule-owners {
+      flex: 1 1 16rem;
+      min-inline-size: 0;
     }
 
     /* M3 assist chip: 32 dp, 8 dp corners, 1 dp outline (our decision: not a button, it only informs) */
