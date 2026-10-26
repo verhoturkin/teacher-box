@@ -1,12 +1,17 @@
 import {
+  afterNextRender,
+  afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   effect,
+  ElementRef,
   inject,
   input,
   linkedSignal,
   output,
+  signal,
   viewChild,
 } from '@angular/core';
 import {
@@ -54,6 +59,9 @@ export interface LessonMove {
 
 const C = T.calendar;
 
+/** The lowest week of the month (px): the day number and two lessons; the pane scrolls below it. */
+const MONTH_WEEK_MIN = 96;
+
 /** FullCalendar's texts and week of each language of the interface (ADR-0035). */
 const CALENDAR_LOCALES: Readonly<Record<Language, typeof ruLocale>> = {
   ru: ruLocale,
@@ -86,7 +94,13 @@ export type CalendarView = 'timeGridWeek' | 'dayGridMonth' | 'listWeek' | 'timeG
   selector: 'tb-schedule-calendar',
   imports: [FullCalendarModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<full-calendar #calendar [options]="options()" />`,
+  template: `<div
+    #fill
+    class="tb-cal-fill"
+    [class.tb-cal-fill--stretched]="slotHeight() !== undefined"
+  >
+    <full-calendar #calendar [options]="options()" />
+  </div>`,
 })
 export class ScheduleCalendar {
   readonly lessons = input.required<readonly ScheduledLesson[]>();
@@ -116,6 +130,11 @@ export class ScheduleCalendar {
    * views, which the page’s screen chips replace. Without it a phone shows the list with the footer.
    */
   readonly phoneView = input<CalendarView | null>(null);
+  /**
+   * The grid grows to the free height of the page (the scrolling pane it lies in): the rows of the week and the
+   * day, the weeks of the month are stretched; never below the height they have by their content.
+   */
+  readonly fillHeight = input(false);
 
   readonly rangeChange = output<CalendarRange>();
   readonly lessonClick = output<ScheduledLesson>();
@@ -123,7 +142,14 @@ export class ScheduleCalendar {
   readonly lessonMove = output<LessonMove>();
 
   private readonly calendar = viewChild(FullCalendarComponent);
+  private readonly fill = viewChild<ElementRef<HTMLElement>>('fill');
   private readonly mobile = injectMobile();
+  /**
+   * The height of a half hour of the week and the day when it is stretched (`slotMinHeight`: FullCalendar
+   * places the lessons and the off time by the pixels it measures, so the rows are its own to size).
+   */
+  protected readonly slotHeight = signal<number | undefined>(undefined);
+  private naturalSlot = 0;
   private readonly colors = inject(TeacherColors);
 
   /** The dropped lesson waiting for confirmation; new lessons (a reload after saving) drop it. */
@@ -133,13 +159,96 @@ export class ScheduleCalendar {
   });
 
   constructor() {
+    const destroyRef = inject(DestroyRef);
     effect(() => {
       const date = this.focusDate();
       if (date !== null) {
         this.calendar()?.getApi().gotoDate(date);
       }
     });
+    // the lessons and the view change what the rows hold: stretched again after each render
+    afterRenderEffect(() => {
+      this.lessons();
+      this.fillHeight();
+      this.mobile();
+      this.stretch();
+    });
+    afterNextRender(() => {
+      const fill = this.fill()?.nativeElement;
+      const scroller = fill?.closest<HTMLElement>('.tb-pane__scroll') ?? null;
+      if (fill === undefined || scroller === null) {
+        return;
+      }
+      // in the next frame: the rows the stretch changes are not laid out inside the observer's own delivery
+      const observer = new ResizeObserver(() => {
+        requestAnimationFrame(() => {
+          this.stretch();
+        });
+      });
+      // the pane, and every block of it (the toolbar above the calendar moves the calendar's top)
+      observer.observe(scroller);
+      for (const block of Array.from(scroller.children)) {
+        observer.observe(block);
+      }
+      destroyRef.onDestroy(() => {
+        observer.disconnect();
+      });
+    });
   }
+
+  /**
+   * Sets `slotMinHeight` (a half hour of the week and the day) and `--tb-cal-row` (a week of the month) to the
+   * share of the free height, which the grid takes (the week's `min-height` is in styles.scss): the free height is what the
+   * scrolling pane shows below the calendar's top; what is not rows (the header) is the view minus the rows.
+   */
+  private stretch(): void {
+    const fill = this.fill()?.nativeElement;
+    if (fill === undefined) {
+      return;
+    }
+    const view = fill.querySelector<HTMLElement>('.tb-cal-view');
+    const scroller = fill.closest<HTMLElement>('.tb-pane__scroll');
+    const free = this.fillHeight() && !this.mobile() ? freeHeight(fill, scroller) : 0;
+    if (view === null || free <= 0) {
+      this.slotHeight.set(undefined);
+      this.setRow(fill, null);
+      return;
+    }
+    const lanes = Array.from(view.querySelectorAll<HTMLElement>('.tb-cal-slot-lane'));
+    if (lanes.length > 0) {
+      // the height the rows have by themselves, measured while FullCalendar is free to choose it
+      if (this.slotHeight() === undefined) {
+        this.naturalSlot = lanes[0]?.getBoundingClientRect().height ?? 0;
+      }
+      const height = share(fill, lanes, free, this.naturalSlot);
+      this.slotHeight.set(height > this.naturalSlot + 0.5 ? height : undefined);
+      return;
+    }
+    // a week of the month: the first cell of each row of seven stands for its row
+    const cells = Array.from(view.querySelectorAll<HTMLElement>('.tb-cal-cell'));
+    const rows = cells.filter((_, index) => index % 7 === 0);
+    if (rows.length > 0) {
+      this.setRow(fill, share(fill, rows, free, MONTH_WEEK_MIN));
+    }
+  }
+
+  /** Sets (px) or removes the height of a week of the month (`--tb-cal-row`, styles.scss). */
+  private setRow(fill: HTMLElement, height: number | null): void {
+    if (height === null) {
+      fill.style.removeProperty('--tb-cal-row');
+    } else {
+      fill.style.setProperty('--tb-cal-row', `${String(height)}px`);
+    }
+  }
+
+  // overlapping periods are one: two background events over each other would paint (hatch) twice
+  private readonly busyPeriods = computed(() => mergePeriods(this.busy(), (first) => first));
+  private readonly offTimePeriods = computed(() =>
+    mergePeriods(this.offTime(), (first, second) => ({
+      ...first,
+      note: joinNotes(first.note, second.note),
+    })),
+  );
 
   private readonly unmarkedIds = computed(
     () => new Set(this.unmarked().map((lesson) => lesson.id)),
@@ -186,6 +295,7 @@ export class ScheduleCalendar {
       slotHeaderInnerClass: 'tb-cal-slot-label',
       slotLaneClass: 'tb-cal-slot-lane',
       dayHeaderClass: 'tb-cal-day-header',
+      dayCellClass: 'tb-cal-cell',
       dayHeaderInnerClass: (info) => (info.isToday ? 'tb-cal-day tb-cal-day--today' : 'tb-cal-day'),
       dayCellTopInnerClass: (info) =>
         info.isToday ? 'tb-cal-date tb-cal-date--today' : 'tb-cal-date',
@@ -193,6 +303,9 @@ export class ScheduleCalendar {
       rowEventClass: 'tb-cal-pill',
       moreLinkClass: 'tb-cal-more',
       views: {
+        // the weeks of the month are as high as their lessons (not as the width says: the default aspect
+        // ratio makes a wide month taller than the screen); `fillHeight` stretches them
+        dayGrid: { aspectRatio: 10 },
         timeGrid: {
           dayHeaderContent: (info) => dayHeaderNodes(info.date, info.text),
           nowIndicatorLineClass: 'tb-cal-now-line',
@@ -213,6 +326,7 @@ export class ScheduleCalendar {
       noEventsText: this.loaded() ? C.noLessons : C.loading,
       // styled as the compact empty state of the widgets (styles.scss, ADR-0018)
       noEventsClass: 'tb-calendar-empty',
+      ...(this.slotHeight() === undefined ? {} : { slotMinHeight: this.slotHeight() }),
       firstDay: 1,
       nowIndicator: true,
       allDaySlot: false,
@@ -226,8 +340,8 @@ export class ScheduleCalendar {
       eventContent: (info: EventDisplayInfo) => this.content(info),
       events: [
         ...this.lessons().map((lesson) => this.toEvent(lesson, editable)),
-        ...this.busy().map((busy, index) => this.toBusy(busy, index)),
-        ...this.offTime().map((period, index) => toOffTime(period, index)),
+        ...this.busyPeriods().map((busy, index) => this.toBusy(busy, index)),
+        ...this.offTimePeriods().map((period, index) => toOffTime(period, index)),
       ],
       datesSet: (info: DatesSetInfo) => {
         this.rangeChange.emit({
@@ -367,6 +481,57 @@ function dayHeaderNodes(date: Date, text: string): { domNodes: Node[] } {
   const node = textNode('tb-cal-day__weekday', weekday);
   node.title = text;
   return { domNodes: [node, textNode('tb-cal-day__number', String(date.getDate()))] };
+}
+
+/** The height of the scrolling pane below the top of `element` (the page's, when it is not in a pane), px. */
+function freeHeight(element: HTMLElement, scroller: HTMLElement | null): number {
+  if (scroller === null || getComputedStyle(scroller).overflowY === 'visible') {
+    return window.innerHeight - element.getBoundingClientRect().top;
+  }
+  const top = element.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+  const padding = Number.parseFloat(getComputedStyle(scroller).paddingBottom) || 0;
+  return scroller.clientHeight - top - padding;
+}
+
+/**
+ * What each row gets of the `free` height once the rest of the block `fill` (not the rows) is left. Fractions of
+ * a pixel stay: whole pixels would leave up to a pixel per row under the grid, and the grid must end at the
+ * pane's padding as the month does.
+ */
+function share(fill: HTMLElement, rows: readonly HTMLElement[], free: number, least = 0): number {
+  const rowsHeight = rows.reduce((sum, row) => sum + row.getBoundingClientRect().height, 0);
+  const height = (free - (fill.getBoundingClientRect().height - rowsHeight)) / rows.length;
+  return Math.max(least, Math.floor(height * 100) / 100);
+}
+
+const NOTE_SEPARATOR = ' · ';
+
+/** The captions of two off-time periods as one, each caption once (a joined one is taken apart again). */
+function joinNotes(first: string | null, second: string | null): string | null {
+  const notes = [first, second].flatMap((note) => note?.split(NOTE_SEPARATOR) ?? []);
+  return [...new Set(notes)].join(NOTE_SEPARATOR) || null;
+}
+
+/**
+ * The periods with the overlapping and touching ones joined (`join` makes one of two, its `end` is the later):
+ * the off time of two overlapping rules is one hatched block with the captions of both.
+ */
+export function mergePeriods<T extends { readonly start: string; readonly end: string }>(
+  periods: readonly T[],
+  join: (first: T, second: T) => T,
+): T[] {
+  const merged: T[] = [];
+  const sorted = [...periods].sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
+  for (const period of sorted) {
+    const last = merged.at(-1);
+    if (last !== undefined && Date.parse(period.start) <= Date.parse(last.end)) {
+      const end = Date.parse(period.end) > Date.parse(last.end) ? period.end : last.end;
+      merged[merged.length - 1] = { ...join(last, period), end };
+    } else {
+      merged.push(period);
+    }
+  }
+  return merged;
 }
 
 function textNode(className: string, text: string): HTMLElement {

@@ -93,6 +93,9 @@ the calendar), «Запросы учеников» and «Нерабочее вр
 
 - **Calendar grid in the manner of Google Calendar** (*ours*, M3 has no calendar grid; classes are
   set through the `*Class` options of `ui/schedule-calendar.ts`, styles `tb-cal-*` in `styles.scss`):
+  the grid fills the free height of the pane (`fillHeight` of `ui/schedule-calendar.ts`: the half-hour
+  rows of the week and the weeks of the month are stretched, never below their height by content —
+  on a low screen the pane scrolls as before; a phone is unchanged),
   the grid (not the toolbar) in a card with 16 dp corners and an outline-variant frame
   (`viewClass`), pale grid lines (outline-variant at 55 %), a time column without a border and with label-small
   hours, a header of the weekday over a large day number (today's in `primary`, no circle: the days
@@ -104,7 +107,8 @@ the calendar), «Запросы учеников» and «Нерабочее вр
   of a coloured student keeps its status container plus a 4 px stripe of the colour at its start;
   **unmarked** past lesson — a 2 px solid error outline (`tb-lesson--unmarked`); **requested
   change** — a 2 px dashed outline (`tb-lesson--request`); busy / off time — outline /
-  outline-variant, hatched.
+  outline-variant, hatched; overlapping or touching periods are one block (one hatching, the captions
+  of both).
 - **Drag to move:** the dropped lesson waits with a 2 px primary outline and, over an 88 %
   surface-container-lowest veil, a standard group of **M3E** extra-small icon buttons (32 dp, 20 dp
   icon, 18 dp apart, 8 dp pressed corners): ✓ «Перенести» filled and wide (40 dp), ✕ «Отменить

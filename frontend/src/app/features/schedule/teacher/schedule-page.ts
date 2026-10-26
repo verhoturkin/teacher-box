@@ -206,6 +206,7 @@ const ALL_DAY_START_HOUR = 10;
                 [unmarked]="unmarked()"
                 [loaded]="calendarState.ready()"
                 [editable]="true"
+                [fillHeight]="true"
                 [focusDate]="focusDate()"
                 [initialDate]="calendarStart()"
                 [phoneView]="phoneView()"

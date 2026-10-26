@@ -2596,6 +2596,12 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
   border-radius: var(--tb-shape-lg);
 }
 
+/* The free height of the page (`ScheduleCalendar.fillHeight`): the rows are never lower than their content */
+/* (the week and the day get theirs from the `slotMinHeight` option: FullCalendar places the lessons by it) */
+.tb-cal-cell.tb-cal-cell {
+  min-height: var(--tb-cal-row, 0) !important;
+}
+
 .tb-cal-slot-header.tb-cal-slot-header {
   border-color: transparent;
 }

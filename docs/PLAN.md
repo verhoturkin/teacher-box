@@ -27,11 +27,12 @@ Goal: the schedule calendar looks like Google Calendar in M3 roles (stage 292).
 
 - [x] 292.1 F: grid, day header, lesson cards and month cells — `*Class` options in
   `schedule/ui/schedule-calendar.ts`, `tb-cal-*` in `styles.scss`, `docs/screens.md`.
-- [ ] 292.2 F: calendar height follows the screen — the minimum is the current (content) height,
-  above it the grid fills the free height of the page (`expandRows`, `height: '100%'` in a
-  flex-column container, `scrollTime` on the current hour); week, day and month; the phone list
-  keeps the content height (ADR-0015). Entry points: `schedule/ui/schedule-calendar.ts`,
-  `schedule/teacher/schedule-page.ts`, `tb-cal-*` in `styles.scss`, `docs/screens.md`.
+- [x] 292.2 F: calendar height follows the screen — the minimum is the current (content) height,
+  above it the grid fills the free height of the pane; week, day and month; the phone list keeps
+  the content height (ADR-0015). Entry points: `schedule/ui/schedule-calendar.ts` (`fillHeight`),
+  `schedule/teacher/schedule-page.ts`, `tb-cal-*` in `styles.scss`, `docs/screens.md`. _Done with
+  `min-height` of the rows from the free height of the pane instead of `expandRows` (the grid never
+  scrolls inside); `scrollTime` is not needed, the whole day 07:00–23:00 is shown._
 - [x] 292.3 F: filter chips of the teacher's schedule in one row — the chips that do not fit go to
   a «Ещё N» menu (`ResizeObserver`, the selected chip always stays in the row, «Все» first);
   opt-in input of `shared/ui/filter-chips.ts`, other pages keep wrapping; the phone's screen chips
