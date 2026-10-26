@@ -12,10 +12,30 @@ From the repository root (Git Bash on Windows):
 ./scripts/e2e.sh                            # all scenarios on a disposable instance
 ./scripts/e2e.sh tests/materials             # one functional area
 ./scripts/e2e.sh --project=operations --no-deps # only reset/restore/restart
+./scripts/e2e.sh --project=chromium --shard=2/3 # one slice of the suites (what a CI job runs)
+E2E_SHARDS=3 ./scripts/e2e.sh               # 3 slices + operations, 4 instances in parallel
 ```
 
 Use `E2E_BROWSER_CHANNEL=chrome` for installed Chrome. New tests can change the scenario count.
 The CI workflow runs the full browser suite; `verify.sh e2e` only checks types.
+
+## Shards and instances
+
+The tests share one instance's data and global settings and keep serial chains, so each run keeps
+`workers: 1`; speed comes from several instances, never from more workers. Every instance is its own
+compose project with its own database. Project and ports are variables (`E2E_PROJECT`, `E2E_PORT`,
+`E2E_TELEGRAM_PORT`, `E2E_LIVEKIT_TCP_PORT`, `E2E_LIVEKIT_UDP_PORT`); `E2E_SHARDS=N` builds the
+images once, shifts the ports per instance and writes logs and artifacts to `e2e/test-results/`.
+`E2E_NO_BUILD=1` starts images that are already built.
+
+- `--shard` splits files (serial chains stay whole) but must go with `--project=chromium`:
+  Playwright runs a dependency project in full in every shard, so a plain `--shard` would repeat all
+  of chromium in each shard and split only `operations`.
+- `operations` therefore runs on an instance of its own (`--project=operations --no-deps`), so its
+  reset data touches nothing else. CI does the same: the `e2e` job is a matrix of three chromium
+  shards plus operations, all starting at once; each uploads a blob report and `e2e-report` merges
+  them into one HTML report (artifact `playwright-report`).
+- Do not rely on the order of files between shards; a new file lands in any shard.
 
 ## Boundaries and setup
 
