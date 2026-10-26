@@ -103,7 +103,11 @@ async function showYesterday(page: Page): Promise<void> {
   await page.waitForLoadState('networkidle');
   const unmarked = page.locator('.tb-lesson--unmarked', { hasText: GROUP });
   if ((await unmarked.count()) === 0) {
-    await page.locator('tb-schedule-calendar').getByRole('button', { name: 'Назад' }).first().click();
+    await page
+      .locator('tb-schedule-calendar')
+      .getByRole('button', { name: 'Назад' })
+      .first()
+      .click();
   }
 }
 

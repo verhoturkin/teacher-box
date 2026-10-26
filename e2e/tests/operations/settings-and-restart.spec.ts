@@ -182,7 +182,9 @@ test('a student cannot ask to move a lesson into the teacher’s busy time', asy
   const dialog = student.getByRole('dialog', { name: 'Перенести занятие' });
   await student.locator('#request-start').pressSequentially(dateTime(6, 12, 30));
   await expect(dialog).toContainText('В это время учитель занят');
-  await expect(dialog.getByRole('button', { name: 'Отправить учителю' })).toBeDisabled();
+  // the button is never disabled: sending says what is wrong and keeps the dialog
+  await dialog.getByRole('button', { name: 'Отправить учителю' }).click();
+  await expect(dialog).toContainText('В это время учитель занят');
 
   await student.locator('#request-start').clear();
   await student.locator('#request-start').pressSequentially(dateTime(6, 15));
@@ -226,7 +228,7 @@ test('the administrator changes a setting and the portal restarts to apply it', 
   const keep = page.locator('#setting-TEACHERBOX_BACKUP_KEEP_DAYS');
   await keep.fill('9');
   await page.getByRole('button', { name: 'Сохранить и перезапустить' }).click();
-  const dialog = page.getByRole('dialog', { name: 'Сохранить настройки' });
+  const dialog = page.getByRole('alertdialog', { name: 'Сохранить настройки' });
   await dialog.locator('#settings-password').fill(ADMIN_PASSWORD);
   await dialog.getByRole('button', { name: 'Сохранить', exact: true }).click();
   await expect(dialog).toContainText('Портал перезапускается');
