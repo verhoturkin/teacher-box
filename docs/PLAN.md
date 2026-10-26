@@ -21,25 +21,7 @@ don't read them unless the task needs history.
 
 ## Next release
 
-Goal: the schedule calendar looks like Google Calendar in M3 roles (stage 292).
-
-### Stage 292 — Calendar in the manner of Google Calendar (F)
-
-- [x] 292.1 F: grid, day header, lesson cards and month cells — `*Class` options in
-  `schedule/ui/schedule-calendar.ts`, `tb-cal-*` in `styles.scss`, `docs/screens.md`.
-- [x] 292.2 F: calendar height follows the screen — the minimum is the current (content) height,
-  above it the grid fills the free height of the pane; week, day and month; the phone list keeps
-  the content height (ADR-0015). Entry points: `schedule/ui/schedule-calendar.ts` (`fillHeight`),
-  `schedule/teacher/schedule-page.ts`, `tb-cal-*` in `styles.scss`, `docs/screens.md`. _Done with
-  `min-height` of the rows from the free height of the pane instead of `expandRows` (the grid never
-  scrolls inside); `scrollTime` is not needed, the whole day 07:00–23:00 is shown._
-- [x] 292.3 F: filter chips of the teacher's schedule in one row — the chips that do not fit go to
-  a «Ещё N» menu (`ResizeObserver`, the selected chip always stays in the row, «Все» first);
-  opt-in input of `shared/ui/filter-chips.ts`, other pages keep wrapping; the phone's screen chips
-  are unchanged. Entry points: `shared/ui/filter-chips.ts`, `schedule/teacher/schedule-page.ts`,
-  `docs/design-system.md`, `docs/screens.md`.
-- [x] 292.4 F: the rest — toolbar (outlined «Сегодня», icon-button arrows, larger period title),
-  phone layout check. _The list view keeps its look (no change needed)._
+Nothing planned yet.
 
 ## Backlog
 

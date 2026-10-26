@@ -86,6 +86,15 @@ async function openMonth(page: Page): Promise<void> {
   await page.getByRole('tab', { name: 'Вид: Месяц', exact: true }).click();
 }
 
+test('the calendar marks today in the week and in the month', async ({ page }) => {
+  await page.setViewportSize(WIDE);
+  await startSession(page, 'teacher', TEACHER_PASSWORD);
+  await page.goto('/teacher/schedule');
+  await expect(page.locator('.tb-cal-day--today')).toHaveCount(1);
+  await page.getByRole('tab', { name: 'Вид: Месяц', exact: true }).click();
+  await expect(page.locator('.tb-cal-date--today')).toHaveCount(1);
+});
+
 test('«Итог» marks, changes and clears the outcome of a lesson', async ({ page, request }) => {
   const headers = await bearer(request);
   const id = await student(request, headers, MARKED);

@@ -168,7 +168,7 @@ On the home page, Mark for a group lesson opens attendance directly, just as in 
 
 **Default topic.** If a student or a group has a default topic (on the «Profile» tab of the student or the group), it is filled in for a new lesson as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
 
-**How the section is laid out.** On a computer the calendar (week or month) is the main area; on the right are a mini-month for jumping between days, «Students’ requests» and «Time off». On a phone the section opens as the «Agenda»: a strip of the week's days and the list of the chosen day's lessons; «Agenda», «Week», «Month» and «Time off» are available as chips above the calendar.
+**How the section is laid out.** On a computer the calendar (week or month) is the main area; on the right are a mini-month for jumping between days, «Students’ requests» and «Time off». The calendar adapts to the window height: on a big screen the rows of the week and the weeks of the month stretch, on a low one they stay as before and the section scrolls. Today is marked by colour. The filter by students and groups above the calendar stays in one row: what does not fit is collected in the «N more» menu (the chosen student always stays in the row). Overlapping time off is shown as one hatched block. On a phone the section opens as the «Agenda»: a strip of the week's days and the list of the chosen day's lessons; «Agenda», «Week», «Month» and «Time off» are available as chips above the calendar.
 
 A lesson can be dragged in the calendar to another time. It takes the new place with two buttons on its card: ✓ «Move» saves the move, ✕ «Undo the move» puts the lesson back. If the time is busy, the portal asks again.
 
