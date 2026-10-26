@@ -2748,12 +2748,150 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
 }
 
 /*
+ * `<tb-dialog>` (ADR-0050, shared/ui/dialog): the basic dialog is 28 dp corners, 24 dp padding, 16 dp
+ * headline -> body, 24 dp body -> actions, 8 dp between buttons (the preset has the paddings); the width
+ * is a parameter (`normal` 32 rem, `wide` 40 rem, an alert 32 rem at most 35); the compact `form` is the
+ * M3 full-screen dialog: 0 corners, a 56 dp header with the close button first and the confirm last.
+ */
+.p-dialog.tb-d {
+  width: min(32rem, calc(100vw - 2rem));
+  border-radius: var(--tb-shape-xl);
+
+  &.tb-d--wide {
+    width: min(40rem, calc(100vw - 2rem));
+  }
+
+  .p-dialog-header {
+    align-items: center;
+  }
+
+  .tb-d__head {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--tb-space-2);
+    min-width: 0;
+  }
+
+  .tb-d__headline {
+    flex: 1;
+    min-width: 0;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .tb-d__actions {
+    display: inline-flex;
+    gap: var(--tb-space-1);
+  }
+
+  .tb-d__error {
+    width: 100%;
+    margin-block: 0 var(--tb-space-4);
+  }
+
+  &.tb-d--alert .tb-d__error {
+    margin-block: var(--tb-space-4) 0;
+  }
+
+  /* the question inside the footer (a dirty form, a confirmed action) takes the place of the buttons */
+  .p-dialog-footer:has(.tb-d__step) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  &.tb-d--full {
+    width: 100vw !important;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border-radius: 0;
+
+    .p-dialog-header {
+      min-height: 3.5rem;
+      padding: 0 var(--tb-space-4) 0 var(--tb-space-1);
+    }
+
+    .tb-d__headline {
+      overflow: hidden;
+      font: var(--tb-type-title-l);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .p-dialog-content {
+      flex: 1;
+      padding-bottom: calc(var(--tb-space-6) + env(safe-area-inset-bottom));
+    }
+
+    .tb-field > *,
+    .p-select,
+    .p-datepicker,
+    .p-inputnumber,
+    .p-multiselect,
+    .p-autocomplete {
+      width: 100%;
+    }
+  }
+}
+
+.p-drawer.tb-d--sheet .tb-d {
+  &__head {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--tb-space-2);
+  }
+
+  &__headline {
+    flex: 1;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &__error {
+    width: 100%;
+    margin-block: 0 var(--tb-space-4);
+  }
+}
+
+.tb-d__step {
+  display: block;
+}
+
+.tb-d__step-message {
+  margin: 0 0 var(--tb-space-6);
+}
+
+.tb-d__step-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--tb-space-2);
+}
+
+.tb-d__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--tb-space-2);
+  padding-top: var(--tb-space-4);
+
+  &:not(:has(button, a)) {
+    display: none;
+  }
+}
+
+/*
  * Dialogs with a form on a phone take the whole screen (ADR-0015, ADR-0026): the content scrolls,
  * the buttons stay at the bottom, fields are full width. Confirmations and short dialogs (one field
  * or none: a password, a link) stay ordinary windows in the middle of the screen.
  */
 @media (width < 37.5em) {
-  .p-dialog:not(.p-confirmdialog, .tb-dialog--short) {
+  .p-dialog:not(.p-confirmdialog, .tb-dialog--short, .tb-d) {
     width: 100vw !important;
     max-width: 100vw;
     height: 100dvh;

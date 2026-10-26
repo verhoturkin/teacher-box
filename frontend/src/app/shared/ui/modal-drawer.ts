@@ -3,6 +3,7 @@ import { DestroyRef, Directive, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { unblockBodyScroll } from 'primeng/dom';
 import { Drawer } from 'primeng/drawer';
+import { FocusReturn } from './dialog/focus-return';
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -21,7 +22,7 @@ export class ModalDrawer {
   private readonly drawer = inject(Drawer);
   private readonly document = inject(DOCUMENT);
   private readonly titleId = `tb-drawer-title-${String(nextId++)}`;
-  private opener: HTMLElement | null = null;
+  private readonly focusReturn = new FocusReturn(this.document);
   /** The shade of the open drawer (PrimeNG puts it into the body). */
   private shade: HTMLElement | null = null;
 
@@ -54,14 +55,7 @@ export class ModalDrawer {
     if (container === null || container === undefined) {
       return;
     }
-    const active = this.document.activeElement;
-    if (
-      active instanceof HTMLElement &&
-      active !== this.document.body &&
-      !container.contains(active)
-    ) {
-      this.opener = active;
-    }
+    this.focusReturn.remember(container);
     this.shade = this.drawer.mask ?? null;
     container.setAttribute('role', 'dialog');
     container.setAttribute('aria-modal', 'true');
@@ -78,15 +72,6 @@ export class ModalDrawer {
 
   /** The focus goes back to what opened the drawer, unless it already moved on (a dialog). */
   private closed(): void {
-    const opener = this.opener;
-    this.opener = null;
-    setTimeout(() => {
-      const active = this.document.activeElement;
-      const lost =
-        active === null || active === this.document.body || this.drawer.container?.contains(active);
-      if (opener?.isConnected === true && lost === true) {
-        opener.focus();
-      }
-    });
+    this.focusReturn.restore(this.drawer.container);
   }
 }

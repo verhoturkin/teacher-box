@@ -3,18 +3,17 @@ import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   computed,
+  effect,
   inject,
   input,
   model,
   signal,
-  viewChild,
+  untracked,
 } from '@angular/core';
-import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { Portal } from '@core/portal/portal';
+import { TbDialog } from '@shared/ui/dialog/dialog';
 import { IssuedInvite } from '../data-access/identity.models';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
@@ -22,20 +21,17 @@ import { SHARED_T } from '@shared/i18n/texts';
 /** Shows an invitation link for the teacher to send to a student. */
 @Component({
   selector: 'tb-invite-link-dialog',
-  imports: [DatePipe, Button, Dialog, InputText],
+  imports: [DatePipe, TbDialog, InputText],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
+    <tb-dialog
+      kind="alert"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog tb-dialog--short"
-      [draggable]="false"
-      [focusOnShow]="false"
-      (onShow)="onShow()"
+      [headline]="heading()"
+      [cancelLabel]="c.close"
+      [confirmLabel]="invite() ? (copied() ? t.copied : t.copy) : null"
+      (confirm)="copy()"
     >
-      <ng-template #header let-labelledBy="ariaLabelledBy">
-        <span #title class="p-dialog-title" tabindex="-1" [id]="labelledBy">{{ heading() }}</span>
-      </ng-template>
       @if (invite(); as invite) {
         <p>
           {{ invite.purpose === 'ACTIVATION' ? t.activation : t.reset }}
@@ -46,22 +42,7 @@ import { SHARED_T } from '@shared/i18n/texts';
           <input pInputText id="invite-link" readonly [value]="link()" />
         </div>
       }
-      <ng-template #footer>
-        <p-button
-          [label]="c.close"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        @if (invite()) {
-          <p-button
-            [icon]="copied() ? 'tb-i tb-i-check' : 'tb-i tb-i-content_copy'"
-            [label]="copied() ? t.copied : t.copy"
-            (onClick)="copy()"
-          />
-        }
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
 })
 export class InviteLinkDialog {
@@ -75,17 +56,21 @@ export class InviteLinkDialog {
   readonly studentName = input('');
 
   protected readonly copied = signal(false);
-  private readonly title = viewChild<ElementRef<HTMLElement>>('title');
   protected readonly heading = computed(() => T.inviteLink.heading(this.studentName()));
   protected readonly link = computed(() => {
     const invite = this.invite();
     return invite === null ? '' : this.portal.link(`/invite/${invite.token}`);
   });
 
-  /** A new link is not copied yet; the focus starts on the title, not on a button (ADR-0026). */
-  protected onShow(): void {
-    this.copied.set(false);
-    this.title()?.nativeElement.focus();
+  constructor() {
+    // a new link is not copied yet
+    effect(() => {
+      if (this.visible()) {
+        untracked(() => {
+          this.copied.set(false);
+        });
+      }
+    });
   }
 
   protected copy(): void {

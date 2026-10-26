@@ -53,7 +53,9 @@ test('creation offers student or group with normal spacing and keyboard-only foc
   const dialog = page.getByRole('dialog', { name: 'Новый ученик', exact: true });
   const student = dialog.getByRole('button', { name: 'Ученик', exact: true });
   const group = dialog.getByRole('button', { name: 'Группа', exact: true });
-  await expect(student).toBeFocused();
+  // ADR-0050: a form starts on its first text field, not on the kind switch
+  await expect(dialog.getByLabel('Имя и фамилия')).toBeFocused();
+  await student.focus();
   await expect(student).toHaveCSS('outline-style', 'none');
   const gap = await dialog.evaluate((element) => {
     const choice = element.querySelector('tb-segment-group');

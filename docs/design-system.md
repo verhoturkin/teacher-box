@@ -665,6 +665,17 @@ scroll locking and dismissal remain unchanged. Other modal surfaces retain the M
   | `form` | ≥ 2 fields, wizards, pickers | full-screen dialog | basic dialog |
   | `sheet` | an object and its actions (lesson, code, backups) | modal bottom sheet | basic dialog |
 
+- **`<tb-dialog>` API** (`shared/ui/dialog`, 285.2): `kind` (required) picks the kind — `alert` for
+  one decision or ≤ 1 field, `form` for ≥ 2 fields, `sheet` for an object with its actions;
+  `width` `normal | wide`; `[(visible)]`, `headline`, `confirmLabel` / `confirmSeverity`,
+  `cancelLabel` (default «Отмена», `null` = none), `pending`, `error`, `dirty`, `closable`;
+  `formId` ties the confirm button to the `<form id>` in the content (Enter submits), without it `(confirm)`
+  fires. Slots: `<ng-template tbDialogHeaderActions>` (✎, ⋮), `<ng-template tbDialogFooter>` (a
+  custom footer, rare). `dialogSubmit({ visible, form, failed, request, done })` returns
+  `pending`, `error`, `dirty` and `run()`: reset on open, `revealErrors`, one request at a time,
+  close on success. `<tb-dialog-confirm-step>` is the inline question. *Our decisions:* an `alert` is
+  32 rem wide (never over the 35 rem of a confirmation); the dirty-form question on compact is
+  `Confirm.danger` over the full-screen form, the discard button is red.
 - **Basic dialog** (**M3**): 280–560 dp wide, 28 dp corners, 24 dp padding on every side, 16 dp
   headline → body, 24 dp body → actions, 8 dp between buttons, surface container high (ADR-0044),
   scrim; buttons at the trailing edge, the confirming one closest to it; with scrolling content the

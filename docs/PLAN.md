@@ -63,7 +63,7 @@ Decisions taken with the teacher (2026-10-25/26), binding for every stage:
   hosts (`students-page`, `student-payments-tab`, `schedule-page`, `assignment-page`,
   `assignment-editor-page`, `video-section`, `boards-feed`, `board-page`, `textbooks-feed`,
   `bots-panel`, `backups-card`, `prompt-library-card`, `system-prompts-card`).
-- [ ] **285.2** `shared/ui/dialog/`: `<tb-dialog>` (kinds `alert | form | sheet`, `width`
+- [x] **285.2** `shared/ui/dialog/`: `<tb-dialog>` (kinds `alert | form | sheet`, `width`
   `normal | wide`, `[(visible)]`, `headline`, header-actions slot, footer from inputs, focus and
   focus return taken over from `ModalDrawer`, dirty-form discard, `[closable]`), `dialogSubmit()`
   (pending, error, reset on open, request, done), `<tb-dialog-confirm-step>`; unit tests; pilot:

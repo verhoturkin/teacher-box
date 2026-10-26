@@ -36,6 +36,11 @@ export const en: Translation<typeof ru> = {
     lessons: (count: number) => countOf(count, 'lesson', 'lessons', 'lessons'),
     students: (count: number) => countOf(count, 'student', 'students', 'students'),
   },
+  dialog: {
+    discardTitle: 'Discard changes?',
+    discardText: 'The data you entered will not be saved.',
+    discard: 'Discard',
+  },
   fields: {
     required: 'Fill in the field',
     email: 'Invalid email address',

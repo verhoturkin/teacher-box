@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { aGroup, aStudent } from '@testing/identity-fixtures';
-import { bodyText } from '@testing/dom';
+import { bodyText, buttonByText } from '@testing/dom';
 import { StudentGroup } from '../data-access/identity.models';
 import { GroupFormDialog } from './group-form-dialog';
 import { testProviders } from '@testing/setup';
@@ -45,7 +45,7 @@ describe('GroupFormDialog', () => {
     expect(document.body.querySelector('#group-topic')).toBeNull();
     dialog.form.patchValue({ name: ' ОГЭ ', memberIds: ['a'] });
 
-    dialog.save();
+    buttonByText(document.body, 'Создать').click();
     const create = backend.expectOne({ method: 'POST', url: '/api/teacher/groups' });
     expect(create.request.body).toEqual({
       name: 'ОГЭ',
@@ -67,7 +67,7 @@ describe('GroupFormDialog', () => {
 
   it('needs a name', async () => {
     const dialog = await open();
-    dialog.save();
+    buttonByText(document.body, 'Создать').click();
     backend.expectNone('/api/teacher/groups');
     expect(dialog.form.controls.name.touched).toBe(true);
   });
@@ -84,7 +84,7 @@ describe('GroupFormDialog', () => {
   it('shows why the group was not created and stays open', async () => {
     const dialog = await open();
     dialog.form.patchValue({ name: 'ОГЭ' });
-    dialog.save();
+    buttonByText(document.body, 'Создать').click();
     backend
       .expectOne('/api/teacher/groups')
       .flush({ status: 500 }, { status: 500, statusText: 'Error' });
