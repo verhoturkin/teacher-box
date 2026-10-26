@@ -1,17 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { Tag } from 'primeng/tag';
 import { ScheduledLesson } from '../data-access/schedule.models';
-import { STATUS_LABELS, lessonWith, requestKindLabel } from '../schedule-labels';
+import { STATUS_LABELS, excusedFrom, lessonWith, requestKindLabel } from '../schedule-labels';
 import { T } from '../i18n/texts';
-
-/** Whether the student said they would not come to this group lesson. */
-export function excusedFrom(lesson: ScheduledLesson): boolean {
-  return lesson.participants.some((participant) => participant.attendance === 'EXCUSED');
-}
 
 /**
  * The lines of a student's lesson under its time: the group, the topic, the status and a request
- * waiting for the teacher — in the row of «Ближайшие занятия» and in its bottom sheet on a phone.
+ * waiting for the teacher — in the row of «Ближайшие занятия».
  */
 @Component({
   selector: 'tb-lesson-summary',

@@ -134,19 +134,22 @@ test('the teacher cancels, restores and deletes a lesson', async ({ page }) => {
   // Today is always in the week shown; 07:00 is the first hour of the calendar.
   await planLesson(page, STUDENT, 0, 7, 'Лишнее');
   const event = page.getByText(`${STUDENT} · Лишнее`);
-  const card = page.getByRole('dialog', { name: 'Занятие' });
+  const card = page.getByRole('dialog', { name: STUDENT });
 
   await event.click();
   await card.getByRole('button', { name: 'Другие действия' }).click();
   await page.getByRole('menuitem', { name: 'Отменить занятие…' }).click();
-  await card.getByRole('button', { name: 'Отменить занятие' }).click();
+  // the card closes first: cancelling is a dialog of its own
   await expect(card).toBeHidden();
+  const cancel = page.getByRole('dialog', { name: 'Отменить занятие' });
+  await cancel.getByRole('button', { name: 'Отменить занятие' }).click();
+  await expect(cancel).toBeHidden();
 
   await event.click();
   await expect(card).toContainText('Отменено');
   await card.getByRole('button', { name: 'Восстановить' }).click();
   // lessons of other specs may stand at 07:00 on the day of the run: the portal asks first
-  const anyway = card.getByRole('button', { name: 'Всё равно восстановить' });
+  const anyway = page.getByRole('alertdialog').getByRole('button', { name: 'Восстановить' });
   await expect(async () => {
     if (await anyway.isVisible()) {
       await anyway.click();
@@ -155,10 +158,10 @@ test('the teacher cancels, restores and deletes a lesson', async ({ page }) => {
   }).toPass();
 
   await event.click();
-  await expect(card).toContainText('Запланировано');
+  await expect(card).not.toContainText('Отменено');
   await card.getByRole('button', { name: 'Другие действия' }).click();
   await page.getByRole('menuitem', { name: 'Удалить…' }).click();
-  await card.getByRole('button', { name: 'Удалить занятие' }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Удалить' }).click();
   await expect(card).toBeHidden();
   await expect(event).toHaveCount(0);
 });

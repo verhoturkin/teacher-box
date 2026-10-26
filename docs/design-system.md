@@ -731,12 +731,12 @@ scroll locking and dismissal remain unchanged. Other modal surfaces retain the M
   (§7) and one submit button.
 - **Lesson card** (`sheet`; one shared content component in `schedule/ui` for teacher and student):
   - header: the headline is who (student or group name); trailing ✎ (planned lessons only) and «⋮»;
-    under it one status label if the lesson is not planned;
+    one status label (at the top of the body) if the lesson is not planned;
   - body: one segmented `tb-list`, a fact per row with an icon — `schedule` date · time (second
-    line «перенесено с …»), `topic`, `videocam` room with a tonal «Подключиться», `dashboard` board
+    line «перенесено с …»), `topic`, `videocam` room with a tonal «Начать урок» (the student: «Войти в урок»), `dashboard` board
     chips, `event_busy` cancel reason; for a past one-student lesson the row `fact_check` «Итог»
     holds the toggle «Проведено | Пропуск» — **M3** connected group, single-select, selection
-    optional (nothing is selected until marked; a press saves at once with `[loading]`, a press on
+    optional (nothing is selected until marked; a press saves at once, the toggle is disabled while it saves, a press on
     the selected one clears the mark; an error is a snackbar and the choice returns);
     *our decision:*
     the width of a list row, icons `check` and `person_remove`;
@@ -747,9 +747,10 @@ scroll locking and dismissal remain unchanged. Other modal surfaces retain the M
     medium); group past — «Отметить посещаемость»; cancelled — «Восстановить»;
   - «⋮»: «Отменить занятие…» opens its own `form` (reason, «по инициативе ученика», «списать
     оплату», for a series the radio list «Только это / Это и следующие» with the count);
-    «Удалить…» is `confirm.danger` with the same scope list; «Снять отметку» only for groups; an
-    overlap on restore is `confirm.safe`. The student sees the same facts and their own actions
-    («Подключиться», «Перенести | Отменить»), without ✎, «⋮» and marks.
+    «Удалить…» is `confirm.danger` for a single lesson and, for a series, an `alert` dialog with the
+    same scope list and count (`Confirm` holds a text only); the card closes before either opens;
+    «Снять отметку» only for groups; an overlap on restore is `confirm.safe`. The student sees the same facts and their own actions
+    («Войти в урок», «Перенести | Отменить»), without ✎, «⋮» and marks.
 - **Menus and dropdowns:** 16 px container, 4 px padding, elevation 2; items are tiles with 2 px gap — 4 px
   corners, 12 px on the outer side of the first and the last item and on the selected one; *our decision, not M3:*
   items next to a separator get the outer 12 px too, so each group between dividers reads as one segment, as our

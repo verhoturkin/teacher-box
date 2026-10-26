@@ -9,8 +9,6 @@ import {
 import { forkJoin } from 'rxjs';
 import { NgTemplateOutlet } from '@angular/common';
 import { Button } from 'primeng/button';
-import { Drawer } from 'primeng/drawer';
-import { Dialog } from 'primeng/dialog';
 import { Tag } from 'primeng/tag';
 import { injectMobile } from '@core/layout/mobile';
 import { HelpButton } from '@features/help/parts';
@@ -25,22 +23,25 @@ import {
 } from '../data-access/schedule.models';
 import {
   REQUEST_STATUS_LABELS,
+  excusedFrom,
   formatLessonStart,
   formatLessonTime,
+  lessonWith,
   requestKindLabel,
   widen,
 } from '../schedule-labels';
 import { CalendarFeedPanel } from '../ui/calendar-feed-panel';
 import { LessonActions } from '../ui/lesson-actions';
+import { LessonCard } from '../ui/lesson-card';
 import { CalendarRange, CalendarView, ScheduleCalendar } from '../ui/schedule-calendar';
 import { MiniMonth } from '../ui/mini-month';
 import { ScheduleAgenda, weekStart, weekDays } from '../ui/schedule-agenda';
 import { Pane, Panes } from '@shared/ui/panes';
 import { FilterChip, FilterChips } from '@shared/ui/filter-chips';
 import { ChangeRequestDialog } from './change-request-dialog';
-import { LessonSummary, excusedFrom } from './lesson-summary';
+import { LessonSummary } from './lesson-summary';
 import { EmptyState } from '@shared/ui/empty-state';
-import { ModalDrawer } from '@shared/ui/modal-drawer';
+import { TbDialog } from '@shared/ui/dialog/dialog';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
@@ -49,7 +50,6 @@ import { Busy } from '@shared/ui/busy';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { RowType } from '@shared/ui/row-type.directive';
 import { T } from '../i18n/texts';
-import { SHARED_T } from '@shared/i18n/texts';
 
 /** The day after the end of the week of `date` (Monday; the week starts on Monday). */
 export function nextMonday(date: Date): Date {
@@ -77,14 +77,13 @@ export function nextMonday(date: Date): Date {
     MiniMonth,
     ScheduleAgenda,
     FilterChips,
-    Drawer,
-    Dialog,
     Tag,
     CalendarFeedPanel,
     ChangeRequestDialog,
     LessonActions,
     ScheduleCalendar,
-    ModalDrawer,
+    TbDialog,
+    LessonCard,
     LoadStateView,
     PageHeader,
   ],
@@ -287,41 +286,18 @@ export function nextMonday(date: Date): Date {
       </tb-pane>
     </tb-panes>
 
-    @if (mobile()) {
-      <p-drawer
-        tbModalDrawer
-        [blockScroll]="true"
-        [ariaCloseLabel]="c.close"
-        [visible]="sheetLesson() !== null"
-        (visibleChange)="$event || closeSheet()"
-        position="bottom"
-        styleClass="tb-sheet"
-        [header]="sheetTitle()"
-      >
-        <ng-container *ngTemplateOutlet="lessonDetails" />
-      </p-drawer>
-    } @else {
-      <p-dialog
-        [visible]="sheetLesson() !== null"
-        (visibleChange)="$event || closeSheet()"
-        [modal]="true"
-        [draggable]="false"
-        [closeAriaLabel]="c.close"
-        styleClass="tb-dialog tb-student-lesson-dialog"
-        [header]="sheetTitle()"
-      >
-        <ng-container *ngTemplateOutlet="lessonDetails" />
-      </p-dialog>
-    }
-    <ng-template #lessonDetails>
+    <tb-dialog
+      kind="sheet"
+      [visible]="sheetLesson() !== null"
+      (visibleChange)="$event || closeSheet()"
+      [headline]="sheetTitle()"
+      [cancelLabel]="null"
+    >
       @if (sheetLesson(); as lesson) {
-        <div class="tb-student-lesson-details">
-          <div class="tb-list__text">
-            <tb-lesson-summary [lesson]="lesson" />
-          </div>
+        <div class="tb-student-lesson">
+          <tb-lesson-card role="student" [lesson]="lesson" />
           <tb-lesson-actions
             [stacked]="true"
-            [joinUrl]="joinUrl(lesson)"
             [requests]="canAsk(lesson)"
             [group]="lesson.groupId !== null"
             rescheduleIcon="tb-i tb-i-calendar_month"
@@ -339,7 +315,7 @@ export function nextMonday(date: Date): Date {
           }
         </div>
       }
-    </ng-template>
+    </tb-dialog>
 
     <tb-change-request-dialog
       [(visible)]="requestVisible"
@@ -351,14 +327,10 @@ export function nextMonday(date: Date): Date {
     />
   `,
   styles: `
-    .tb-student-lesson-details {
+    .tb-student-lesson {
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-4);
-    }
-
-    :host ::ng-deep .tb-student-lesson-dialog .p-dialog-content {
-      padding-bottom: var(--tb-space-6);
     }
 
     :host ::ng-deep .tb-my-schedule-feed .p-card-body {
@@ -427,7 +399,6 @@ export function nextMonday(date: Date): Date {
   `,
 })
 export class MySchedulePage implements OnInit {
-  protected readonly c = SHARED_T.common;
   protected readonly t = T.mine;
   protected readonly page = T.page;
   protected readonly screen = signal('agenda');
@@ -474,7 +445,10 @@ export class MySchedulePage implements OnInit {
   protected readonly sheetLesson = signal<ScheduledLesson | null>(null);
   protected readonly sheetTitle = computed(() => {
     const lesson = this.sheetLesson();
-    return lesson === null ? '' : this.time(lesson);
+    if (lesson === null) {
+      return '';
+    }
+    return lesson.groupId === null ? T.details.title : lessonWith(lesson);
   });
 
   protected readonly requestVisible = signal(false);

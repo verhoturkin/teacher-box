@@ -293,17 +293,16 @@ test('student calendar details adapt and upcoming sections stay contained on com
     .getByText('Тема занятия', { exact: true })
     .first()
     .click();
-  const dialog = page.locator('.p-dialog.tb-dialog');
+  const dialog = page.locator('.p-dialog.tb-d');
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator('.p-dialog-content')).toHaveCSS('padding-bottom', '24px');
-  await expect(dialog.locator('.tb-student-lesson-details')).toHaveCSS('gap', '16px');
+  await expect(dialog.locator('.tb-student-lesson')).toHaveCSS('gap', '16px');
   await expect
     .poll(async () => {
       const box = await dialog.boundingBox();
       return Math.abs(box!.x + box!.width / 2 - 720);
     })
     .toBeLessThanOrEqual(1);
-  await expect(page.locator('.p-drawer.tb-sheet')).toHaveCount(0);
+  await expect(page.locator('.p-drawer.tb-d--sheet')).toHaveCount(0);
   await dialog.getByRole('button', { name: 'Закрыть', exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator('.tb-my-schedule-section').first()).toHaveCSS('border-radius', '16px');
@@ -315,9 +314,9 @@ test('student calendar details adapt and upcoming sections stay contained on com
   }).format(new Date(lesson().startsAt));
   await page.getByRole('button', { name: day, exact: true }).click();
   await page.locator('.tb-agenda__row').first().click();
-  await expect(page.locator('.p-drawer.tb-sheet')).toBeVisible();
-  await expect(page.locator('.tb-sheet .tb-student-lesson-details')).toHaveCSS('gap', '16px');
-  await page.locator('.p-drawer.tb-sheet').evaluate(async (element) => {
+  await expect(page.locator('.p-drawer.tb-d--sheet')).toBeVisible();
+  await expect(page.locator('.tb-d--sheet .tb-student-lesson')).toHaveCSS('gap', '16px');
+  await page.locator('.p-drawer.tb-d--sheet').evaluate(async (element) => {
     await Promise.all(
       element
         .getAnimations({ subtree: true })

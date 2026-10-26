@@ -4401,3 +4401,12 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
     gap: var(--tb-space-4);
   }
 }
+
+/* A dialog or sheet without footer buttons (the card of a lesson to come) keeps space under its content */
+.p-dialog.tb-d--bare .p-dialog-content {
+  padding-bottom: var(--tb-space-6);
+}
+
+.p-drawer.tb-d--bare .tb-d__content {
+  padding-bottom: calc(var(--tb-space-4) + env(safe-area-inset-bottom));
+}

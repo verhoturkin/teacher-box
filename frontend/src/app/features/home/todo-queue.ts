@@ -12,7 +12,6 @@ import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Button, ButtonDirective } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { Drawer } from 'primeng/drawer';
 import { ProgressBar } from 'primeng/progressbar';
 import type { Debtor } from '@features/billing/parts';
 import { HomeworkApi } from '@features/homework/parts';
@@ -26,12 +25,11 @@ import {
 } from '@features/schedule/parts';
 import type { ChangeRequest, ScheduledLesson } from '@features/schedule/parts';
 import { injectMobile } from '@core/layout/mobile';
-import { SHARED_T } from '@shared/i18n/texts';
 import { formatMoney } from '@shared/money/money';
 import { hideHint, isHintHidden } from '@shared/storage/device-settings';
 import { Busy } from '@shared/ui/busy';
 import { EmptyState } from '@shared/ui/empty-state';
-import { ModalDrawer } from '@shared/ui/modal-drawer';
+import { DialogFooter, TbDialog } from '@shared/ui/dialog/dialog';
 import { ProgressLabel } from '@shared/ui/progress-label.directive';
 import { T } from './i18n/texts';
 
@@ -85,9 +83,9 @@ interface Row {
     AttendanceDialog,
     ButtonDirective,
     Card,
-    Drawer,
     EmptyState,
-    ModalDrawer,
+    TbDialog,
+    DialogFooter,
     ProgressBar,
     ProgressLabel,
     RouterLink,
@@ -198,33 +196,32 @@ interface Row {
       }
     </p-card>
 
-    <p-drawer
-      tbModalDrawer
-      [blockScroll]="true"
-      [ariaCloseLabel]="c.close"
+    <tb-dialog
+      kind="sheet"
       [visible]="sheet() !== null"
       (visibleChange)="$event || sheet.set(null)"
-      position="bottom"
-      styleClass="tb-sheet"
-      [header]="sheet()?.title ?? ''"
+      [headline]="sheet()?.title ?? ''"
+      [cancelLabel]="null"
     >
       @if (sheet(); as row) {
         <p class="tb-muted">{{ row.detail }}</p>
-        <div class="tb-queue__sheet-actions">
-          <p-button
-            [label]="t.held"
-            [loading]="busy.is(row.lessonId + 'CONDUCTED')"
-            (onClick)="markFromSheet(row, 'CONDUCTED')"
-          />
+      }
+      <ng-template tbDialogFooter>
+        @if (sheet(); as row) {
           <p-button
             [label]="t.missed"
             severity="secondary"
             [loading]="busy.is(row.lessonId + 'MISSED')"
             (onClick)="markFromSheet(row, 'MISSED')"
           />
-        </div>
-      }
-    </p-drawer>
+          <p-button
+            [label]="t.held"
+            [loading]="busy.is(row.lessonId + 'CONDUCTED')"
+            (onClick)="markFromSheet(row, 'CONDUCTED')"
+          />
+        }
+      </ng-template>
+    </tb-dialog>
     <tb-attendance-dialog
       [(visible)]="attendanceVisible"
       [lesson]="attendanceLesson()"
@@ -232,13 +229,6 @@ interface Row {
     />
   `,
   styles: `
-    /* the bottom sheet of a lesson to mark: its buttons one under another, across the width */
-    .tb-queue__sheet-actions {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-2);
-    }
-
     /* M3 large badge: error, Label Small, 16 dp high; ours: it stands after the title of the section */
     .tb-queue__count {
       display: inline-flex;
@@ -327,7 +317,6 @@ export class TodoQueue implements OnInit {
   private readonly homeworkApi = inject(HomeworkApi);
   private readonly router = inject(Router);
   protected readonly busy = new Busy();
-  protected readonly c = SHARED_T.common;
   protected readonly mobile = injectMobile();
   /** The lesson row whose «Проведено | Пропуск» sheet is open (phone). */
   protected readonly sheet = signal<Row | null>(null);

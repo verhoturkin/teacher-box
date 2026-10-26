@@ -187,7 +187,7 @@ let nextId = 0;
         [closeOnEscape]="false"
         [dismissible]="false"
         [showCloseIcon]="false"
-        styleClass="tb-sheet tb-d tb-d--sheet"
+        [styleClass]="drawerClass()"
         (onShow)="opened()"
         (onHide)="hidden()"
       >
@@ -290,10 +290,19 @@ export class TbDialog {
       (this.mode() === 'full' || (this.kind() === 'sheet' && this.mode() === 'basic')),
   );
 
+  /** Nothing to press in the footer: the content gets the space the footer would give. */
+  private readonly bare = computed(
+    () => this.confirmLabel() === null && this.cancelLabel() === null && !this.customFooter(),
+  );
+
   protected readonly dialogClass = computed(() => {
     const width = this.mode() === 'full' ? 'tb-d--full' : `tb-d--${this.width()}`;
-    return `tb-d tb-d--${this.kind()} ${width}`;
+    return `tb-d tb-d--${this.kind()} ${width}${this.bare() ? ' tb-d--bare' : ''}`;
   });
+
+  protected readonly drawerClass = computed(
+    () => `tb-sheet tb-d tb-d--sheet${this.bare() ? ' tb-d--bare' : ''}`,
+  );
 
   constructor() {
     let wasVisible = false;

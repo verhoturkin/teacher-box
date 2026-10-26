@@ -243,7 +243,7 @@ test('the bottom sheet of a lesson is a modal dialog with the focus inside', asy
     .first()
     .click();
 
-  const sheet = page.locator('.p-drawer.tb-sheet');
+  const sheet = page.locator('.p-drawer.tb-d--sheet');
   await expect(sheet).toHaveAttribute('role', 'dialog');
   await expect(sheet).toHaveAttribute('aria-modal', 'true');
   expect(await sheet.evaluate((element) => element.contains(document.activeElement))).toBe(true);

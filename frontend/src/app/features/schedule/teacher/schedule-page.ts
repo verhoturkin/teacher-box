@@ -353,6 +353,7 @@ const ALL_DAY_START_HOUR = 10;
       (changed)="done(t.updated)"
       (deleted)="done(t.deleted)"
       (edit)="editLesson($event)"
+      (answerOpened)="answer($event)"
     />
     <tb-attendance-dialog
       [(visible)]="attendanceVisible"

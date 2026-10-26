@@ -84,11 +84,21 @@ opens the same attendance dialog as the calendar directly on the home page.
 `features/schedule/`: `teacher/` (calendar — FullCalendar, unified lesson/repeat dialog, off-time, requests),
 `student/` (week/month calendar and a supporting pane with mini-month, upcoming lessons and requests; compact
 agenda with week/day navigation and week/month switches, lesson bottom sheet on compact (16 px between details and actions) and centered
-`tb-dialog` on medium and wider screens, matching the teacher), `ui/` (lesson actions), `home/` widgets,
+`tb-dialog` on medium and wider screens, matching the teacher), `ui/` (lesson actions, `lesson-card.ts`), `home/` widgets,
 `schedule-labels.ts`. The teacher's time zone, `teacher/google-calendar-panel.ts` and `ui/calendar-feed-panel.ts` sit in
 the settings category «Расписание и календарь» (`/teacher/settings/calendar`, 0.22.0), not on the schedule page. A new lesson gets the default topic of the chosen student or group
 (`teacher/lesson-owner.ts` `followDefaultTopic`, 0.13.0) unless the teacher typed a topic. Dragging a lesson in the teacher's calendar (`ui/schedule-calendar.ts`) does not save it: the lesson
 waits at the new time with «Перенести» / «Отменить перенос» on its card; only «Перенести» sends the edit.
+
+Lesson card (0.34.0, ADR-0050): the teacher's `teacher/lesson-details-dialog.ts` and the student's sheet in
+`student/my-schedule-page.ts` share the content `ui/lesson-card.ts` inside `<tb-dialog kind="sheet">`. A past
+lesson with one student has the row «Итог» — a connected single-select toggle «Проведено | Пропуск»: a press
+saves at once (`PUT`/`DELETE …/outcome`), a press on the chosen one removes the mark, a failure puts the toggle
+back. A past group lesson has «Отметить посещаемость» in the footer and «Снять отметку» in «⋮»; a cancelled one
+«Восстановить» (an overlap asks `Confirm.safe`). «Отменить занятие…» (`teacher/lesson-cancel-dialog.ts`) and
+«Удалить…» of a series lesson (`teacher/lesson-delete-dialog.ts`) are dialogs of their own with the scope list
+«Только это / Это и следующие» (`teacher/lesson-scope.ts`: the count comes from `…/following`, a send waits for
+it); a single lesson is deleted by `Confirm.danger`. The card closes before any of them opens.
 
 ## Unified repetition contract (ADR-0049)
 

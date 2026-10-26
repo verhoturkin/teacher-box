@@ -362,7 +362,7 @@ describe('SchedulePage', () => {
 
     page.openLesson(scheduledLesson({ topic: 'Логарифмы' }));
     await fixture.whenStable();
-    expect(bodyText()).toContain('Тема: Логарифмы');
+    expect(bodyText()).toContain('Логарифмы');
 
     page.editLesson(scheduledLesson());
     await fixture.whenStable();

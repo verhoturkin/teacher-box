@@ -93,7 +93,7 @@ Decisions taken with the teacher (2026-10-25/26), binding for every stage:
 - [x] **288.1** Button groups: `tb-button-group--connected` (toggles: `p-selectbutton`,
   `tb-fc-segments`) and standard `tb-button-group` (actions, 12 dp gap):
   `schedule/ui/lesson-actions.ts`, `schedule/ui/schedule-agenda.ts`.
-- [ ] **288.2** Lesson card: shared content component in `schedule/ui/` for teacher and student;
+- [x] **288.2** Lesson card: shared content component in `schedule/ui/` for teacher and student;
   `schedule/teacher/lesson-details-dialog.ts` → `<tb-dialog kind="sheet">`, «Итог» toggle, cancel
   lesson as its own `form` dialog, delete and restore-overlap via `Confirm`; student
   `schedule/student/my-schedule-page.ts` and `home/todo-queue.ts` sheets on `tb-dialog`.

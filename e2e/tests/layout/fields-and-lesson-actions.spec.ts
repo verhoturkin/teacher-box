@@ -330,7 +330,7 @@ test('on a phone an upcoming lesson opens its actions in the bottom sheet', asyn
   await expect(row.getByRole('link', { name: /Войти в урок/ })).toHaveCount(0);
 
   await row.click();
-  const sheet = page.locator('.p-drawer.tb-sheet');
+  const sheet = page.locator('.p-drawer.tb-d--sheet');
   await expect(sheet).toBeVisible();
   await expect(sheet.getByRole('link', { name: /Войти в урок/ })).toHaveAttribute('href', MEETING);
   const halves = await sheet.locator('.tb-button-group .p-button').evaluateAll((buttons) =>

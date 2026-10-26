@@ -189,9 +189,9 @@ Students see this time as «Busy» and cannot ask to move a lesson to it. You ca
 
 ## After the lesson
 
-Click the lesson and choose «Held» or «Missed». For a group — «Mark attendance». The portal charges the lesson by the mark.
+Click the lesson and choose «Held» or «Missed» in the «Outcome» row — the mark is saved at once. For a group — «Mark attendance». The portal charges the lesson by the mark.
 
-If you made a mistake — «Remove the mark», the charge is undone.
+If you made a mistake — press the chosen option in «Outcome» again (for a group — «Remove the mark» in the «⋮» menu), the charge is undone.
 
 A past lesson without a mark is outlined in red in the calendar; open it and mark the result. Their number is also on the home page, in «To do». On a phone such lessons sit in the agenda under the row — each has the «Held» and «Missed» buttons, a group — «Mark»; the «Lessons not marked» link above the list leads to them.
 
@@ -735,7 +735,7 @@ Issue a new one in the same place — the old one stops working.
 Check «Settings» → «Messengers»: the bot must be connected. The student must connect the messenger in their cabinet themselves. Undelivered messages are there too, in the «Failed deliveries» card (the number next to «Messengers» in the settings list).
 
 **A lesson was marked by mistake.**
-Open the lesson and click «Remove the mark» — the charge is undone.
+Open the lesson and press the chosen option in «Outcome» again (for a group — «Remove the mark» in the «⋮» menu) — the charge is undone.
 
 **The student paid, but the debt stayed.**
 Check that the payment is recorded for the right student with the right amount: «Payments» → the student's name → «History» on the «Payments» tab.

@@ -1,20 +1,38 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { bodyText, buttonByText, menuItemByText, requireElement, typeInto } from '@testing/dom';
-import { aBoard } from '@testing/boards-fixtures';
+import { ConfirmationService } from 'primeng/api';
+import { Snackbar } from '@core/snackbar/snackbar';
+import { bodyText, buttonByText, menuItemByText } from '@testing/dom';
 import { at, changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
-import type { Board } from '@features/boards/parts';
-import { ScheduledLesson } from '../data-access/schedule.models';
-import { AttendanceDialog } from './attendance-dialog';
-import { LessonDetailsDialog } from './lesson-details-dialog';
 import { testProviders } from '@testing/setup';
+import { ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
+import { AttendanceDialog } from './attendance-dialog';
+import { LessonCancelDialog } from './lesson-cancel-dialog';
+import { LessonDeleteDialog } from './lesson-delete-dialog';
+import { LessonDetailsDialog } from './lesson-details-dialog';
+
+const FUTURE = new Date(2026, 8, 30, 12);
+const PAST = new Date(2026, 9, 2);
+
+/** The option of the «Итог» toggle with this text. */
+function toggle(text: string): HTMLElement {
+  const option = Array.from(document.body.querySelectorAll<HTMLElement>('p-togglebutton')).find(
+    (candidate) => candidate.textContent.includes(text),
+  );
+  if (option === undefined) {
+    throw new Error(`Toggle "${text}" not found`);
+  }
+  return option;
+}
 
 describe('LessonDetailsDialog', () => {
   let fixture: ComponentFixture<LessonDetailsDialog>;
   let backend: HttpTestingController;
   let changed: ScheduledLesson[];
   let edited: ScheduledLesson[];
+  let deleted: string[];
+  let answered: ChangeRequest[];
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -25,8 +43,12 @@ describe('LessonDetailsDialog', () => {
     fixture = TestBed.createComponent(LessonDetailsDialog);
     changed = [];
     edited = [];
+    deleted = [];
+    answered = [];
     fixture.componentInstance.changed.subscribe((lesson) => changed.push(lesson));
     fixture.componentInstance.edit.subscribe((lesson) => edited.push(lesson));
+    fixture.componentInstance.deleted.subscribe((id) => deleted.push(id));
+    fixture.componentInstance.answerOpened.subscribe((request) => answered.push(request));
   });
 
   afterEach(() => {
@@ -34,11 +56,7 @@ describe('LessonDetailsDialog', () => {
     fixture.destroy();
   });
 
-  async function open(
-    lesson: ScheduledLesson,
-    now = new Date(2026, 8, 30, 12),
-    boards: Board[] = [],
-  ): Promise<void> {
+  async function open(lesson: ScheduledLesson, now = FUTURE): Promise<void> {
     fixture.componentRef.setInput('visible', false);
     fixture.componentRef.setInput('lesson', lesson);
     fixture.componentRef.setInput('now', now);
@@ -46,7 +64,7 @@ describe('LessonDetailsDialog', () => {
     fixture.componentRef.setInput('visible', true);
     await fixture.whenStable();
     for (const request of backend.match((request) => request.url === '/api/teacher/boards')) {
-      request.flush(boards);
+      request.flush([]);
     }
     await fixture.whenStable();
   }
@@ -59,25 +77,43 @@ describe('LessonDetailsDialog', () => {
     await fixture.whenStable();
   }
 
-  it('shows the lesson and the student’s request', async () => {
-    await open(
-      scheduledLesson({
-        topic: 'Дроби',
-        joinUrl: 'https://zoom.us/j/1',
-        originalStartsAt: at(2026, 9, 30, 17),
-        pendingRequests: [changeRequest({ comment: 'Можно позже?' })],
-      }),
+  function pressed(): string[] {
+    return Array.from(document.body.querySelectorAll('.p-togglebutton-checked')).map((button) =>
+      button.textContent.trim(),
     );
+  }
 
+  /** The next confirmation the dialog asks for (the host of confirmations lives in `App`). */
+  function expectConfirmation() {
+    const confirm = vi.spyOn(TestBed.inject(ConfirmationService), 'confirm');
+    return () => {
+      const confirmation = confirm.mock.calls.at(-1)?.[0];
+      if (confirmation === undefined) {
+        throw new Error('no confirmation was asked');
+      }
+      return confirmation;
+    };
+  }
+
+  it('names who the lesson is with and lists its facts', async () => {
+    await open(scheduledLesson({ topic: 'Дроби', joinUrl: 'https://zoom.us/j/1' }));
+
+    const title = document.body.querySelector('.p-dialog-title');
+    expect(title?.textContent).toContain('Иван Петров');
     const text = bodyText();
-    expect(text).toContain('Иван Петров');
-    expect(text).toContain('Запланировано');
-    expect(text).toContain('Тема: Дроби');
+    expect(text).toContain('Дроби');
     expect(text).toContain('Начать урок');
-    expect(text).toContain('Перенесено с');
-    expect(text).toContain('Запрос ученика: Перенос');
-    expect(text).toContain('«Можно позже?»');
-    expect(text).not.toContain('Проведено');
+    expect(text).not.toContain('Запланировано');
+    expect(text).not.toContain('Итог');
+  });
+
+  it('has no footer for a lesson to come or a past one with one student', async () => {
+    await open(scheduledLesson());
+    expect(document.body.querySelector('.p-dialog-footer button')).toBeNull();
+
+    await open(scheduledLesson(), PAST);
+    expect(document.body.querySelector('.p-dialog-footer button')).toBeNull();
+    expect(bodyText()).toContain('Итог');
   });
 
   it('hands a planned lesson over for editing', async () => {
@@ -89,132 +125,194 @@ describe('LessonDetailsDialog', () => {
     expect(fixture.componentInstance.visible()).toBe(false);
   });
 
-  it('marks the outcome of a started lesson', async () => {
-    await open(scheduledLesson(), new Date(2026, 9, 1, 18, 30));
+  it('offers no editing of a lesson that was not planned', async () => {
+    await open(scheduledLesson({ status: 'CANCELLED' }), PAST);
 
-    buttonByText(document.body, 'Проведено').click();
+    expect(() => buttonByText(document.body, 'Изменить занятие')).toThrow();
+  });
+
+  it('closes and opens the answer to a request of the student', async () => {
+    const request = changeRequest({ comment: 'Можно позже?' });
+    await open(scheduledLesson({ pendingRequests: [request] }));
+
+    buttonByText(document.body, 'Ответить').click();
+
+    expect(answered).toEqual([request]);
+    expect(fixture.componentInstance.visible()).toBe(false);
+  });
+
+  it('marks the outcome of a past lesson by the toggle and shows the saved one', async () => {
+    await open(scheduledLesson(), PAST);
+
+    toggle('Проведено').click();
     const request = backend.expectOne('/api/teacher/schedule/lessons/l-1/outcome');
     expect(request.request.body).toMatchObject({ outcome: 'CONDUCTED' });
     request.flush(scheduledLesson({ status: 'CONDUCTED' }));
+    await fixture.whenStable();
 
     expect(changed.map((lesson) => lesson.status)).toEqual(['CONDUCTED']);
+    expect(fixture.componentInstance.visible()).toBe(true);
+    expect(pressed()).toEqual(['Проведено']);
+    expect(bodyText()).toContain('Проведено');
   });
 
-  it('corrects and withdraws a marked outcome', async () => {
-    await open(scheduledLesson({ status: 'CONDUCTED', cancelReason: 'x' }), new Date(2026, 9, 2));
-    expect(bodyText()).toContain('Проведено');
+  it('switches the outcome and takes it off by pressing the chosen one again', async () => {
+    await open(scheduledLesson({ status: 'CONDUCTED' }), PAST);
 
-    buttonByText(document.body, 'Пропуск').click();
+    toggle('Пропуск').click();
     backend
       .expectOne('/api/teacher/schedule/lessons/l-1/outcome')
       .flush(scheduledLesson({ status: 'MISSED' }));
-
-    await open(scheduledLesson({ status: 'MISSED' }), new Date(2026, 9, 2));
-    await choose('Снять отметку');
+    await fixture.whenStable();
+    toggle('Пропуск').click();
     backend
       .expectOne({ method: 'DELETE', url: '/api/teacher/schedule/lessons/l-1/outcome' })
       .flush(scheduledLesson());
+    await fixture.whenStable();
 
     expect(changed.map((lesson) => lesson.status)).toEqual(['MISSED', 'SCHEDULED']);
+    expect(pressed()).toEqual([]);
   });
 
-  it('cancels on the student’s behalf and charges it', async () => {
-    await open(scheduledLesson());
-    await choose('Отменить занятие…');
-    typeInto(
-      requireElement(document.body, '#lesson-cancel-reason', HTMLTextAreaElement),
-      '  Заболел ',
-    );
-    requireElement(document.body, '#lesson-cancel-by-student', HTMLInputElement).click();
+  it('puts the toggle back when the outcome did not save', async () => {
+    await open(scheduledLesson({ status: 'MISSED' }), PAST);
+
+    toggle('Проведено').click();
     await fixture.whenStable();
-    requireElement(document.body, '#lesson-cancel-charge', HTMLInputElement).click();
+    expect(pressed()).toEqual(['Проведено']);
+    backend
+      .expectOne('/api/teacher/schedule/lessons/l-1/outcome')
+      .flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
 
-    buttonByText(document.body, 'Отменить занятие').click();
-
-    const request = backend.expectOne('/api/teacher/schedule/lessons/l-1/cancel');
-    expect(request.request.body).toMatchObject({
-      reason: 'Заболел',
-      byStudent: true,
-      charge: true,
-    });
-    request.flush(scheduledLesson({ status: 'MISSED' }));
-    expect(changed).toHaveLength(1);
-  });
-
-  it('cancels by the teacher and can go back', async () => {
-    await open(scheduledLesson());
-    await choose('Отменить занятие…');
-    buttonByText(document.body, 'Отмена').click();
-    await fixture.whenStable();
-    await choose('Отменить занятие…');
-
-    buttonByText(document.body, 'Отменить занятие').click();
-
-    const request = backend.expectOne('/api/teacher/schedule/lessons/l-1/cancel');
-    expect(request.request.body).toMatchObject({ reason: null, byStudent: false, charge: false });
-    request.flush(null, { status: 422, statusText: 'Unprocessable' });
+    expect(pressed()).toEqual(['Пропуск']);
     expect(changed).toHaveLength(0);
   });
 
-  it('deletes a lesson that was not held after a confirmation', async () => {
-    const deleted: string[] = [];
-    fixture.componentInstance.deleted.subscribe((id) => deleted.push(id));
-    await open(scheduledLesson());
-    await choose('Удалить…');
-    expect(bodyText()).toContain('Ученику придёт уведомление, что занятие отменено');
-    buttonByText(document.body, 'Отмена').click();
+  it('puts the toggle back when the lesson is gone before it is saved', async () => {
+    await open(scheduledLesson(), PAST);
+    fixture.componentRef.setInput('lesson', null);
     await fixture.whenStable();
-    expect(bodyText()).not.toContain('Ученику придёт уведомление');
+
+    fixture.componentInstance.mark({ outcome: 'MISSED', revert: () => undefined });
+
+    backend.expectNone((request) => request.url.endsWith('/outcome'));
+  });
+
+  it('withdraws the mark of a group lesson from the menu', async () => {
+    await open(groupLesson({ status: 'CONDUCTED' }), PAST);
+
+    await choose('Снять отметку');
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/schedule/lessons/gl-1/outcome' })
+      .flush(groupLesson());
+    await fixture.whenStable();
+
+    expect(changed.map((lesson) => lesson.status)).toEqual(['SCHEDULED']);
+  });
+
+  it('has no «Снять отметку» for a lesson with one student: the toggle does it', async () => {
+    await open(scheduledLesson(), PAST);
+
+    buttonByText(document.body, 'Другие действия').click();
+    await fixture.whenStable();
+
+    expect(() => menuItemByText('Снять отметку')).toThrow();
+    expect(menuItemByText('Удалить…')).toBeTruthy();
+  });
+
+  it('opens the attendance of a past group lesson in place of the card', async () => {
+    await open(groupLesson(), PAST);
+    expect(bodyText()).toContain('Участники');
+    expect(bodyText()).not.toContain('Итог');
+
+    buttonByText(document.body, 'Отметить посещаемость').click();
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.visible()).toBe(false);
+    expect(bodyText()).toContain('Кто был на занятии');
+    fixture.debugElement
+      .query(By.directive(AttendanceDialog))
+      .injector.get(AttendanceDialog)
+      .saved.emit(groupLesson({ status: 'CONDUCTED' }));
+    expect(changed.map((lesson) => lesson.status)).toEqual(['CONDUCTED']);
+  });
+
+  it('has no footer for a group lesson that has not started', async () => {
+    await open(groupLesson());
+
+    expect(() => buttonByText(document.body, 'Отметить посещаемость')).toThrow();
+  });
+
+  it('hands cancelling over to its own dialog once the card is closed', async () => {
+    await open(scheduledLesson());
+
+    await choose('Отменить занятие…');
+
+    expect(fixture.componentInstance.visible()).toBe(false);
+    const cancel = fixture.debugElement
+      .query(By.directive(LessonCancelDialog))
+      .injector.get(LessonCancelDialog);
+    expect(cancel.visible()).toBe(true);
+    cancel.cancelled.emit(scheduledLesson({ status: 'CANCELLED' }));
+    expect(changed.map((lesson) => lesson.status)).toEqual(['CANCELLED']);
+  });
+
+  it('offers cancelling only for a planned lesson', async () => {
+    await open(scheduledLesson({ status: 'CANCELLED' }), PAST);
+
+    buttonByText(document.body, 'Другие действия').click();
+    await fixture.whenStable();
+
+    expect(() => menuItemByText('Отменить занятие')).toThrow();
+  });
+
+  it('deletes a single lesson after a confirmation', async () => {
+    const asked = expectConfirmation();
+    await open(scheduledLesson());
 
     await choose('Удалить…');
-    buttonByText(document.body, 'Удалить занятие').click();
+
+    expect(fixture.componentInstance.visible()).toBe(false);
+    expect(asked().message).toContain('Ученику придёт уведомление, что занятие отменено');
+    asked().accept?.();
+    await fixture.whenStable();
     backend
       .expectOne({ method: 'DELETE', url: '/api/teacher/schedule/lessons/l-1?version=0' })
       .flush(null);
     await fixture.whenStable();
 
     expect(deleted).toEqual(['l-1']);
-    expect(fixture.componentInstance.visible()).toBe(false);
   });
 
-  it('previews following deletion and sends both concurrency versions', async () => {
-    await open(
-      scheduledLesson({ seriesId: 'rule-1', repeatWeeks: 2, version: 3, repeatVersion: 5 }),
-    );
+  it('does not delete when the confirmation is declined', async () => {
+    const asked = expectConfirmation();
+    await open(scheduledLesson({ status: 'CANCELLED' }), PAST);
+
     await choose('Удалить…');
-    fixture.debugElement
-      .query(By.css('p-select'))
-      .triggerEventHandler('ngModelChange', 'FOLLOWING');
+    expect(asked().message).not.toContain('Ученику придёт уведомление');
+    asked().reject?.();
     await fixture.whenStable();
-    fixture.componentInstance.deleteLesson();
+
     backend.expectNone((request) => request.method === 'DELETE');
-    backend.expectOne('/api/teacher/schedule/lessons/l-1/following').flush({
-      repeatVersion: 5,
-      affected: ['l-1', 'l-2'],
-      protectedLessons: ['l-3'],
-    });
-    await fixture.whenStable();
-    expect(bodyText()).toContain('Существующих занятий для изменения: 2');
-    buttonByText(document.body, 'Удалить занятие').click();
-    backend
-      .expectOne('/api/teacher/schedule/lessons/l-1?scope=FOLLOWING&version=3&repeatVersion=5')
-      .flush(null);
-    await fixture.whenStable();
-    expect(fixture.componentInstance.visible()).toBe(false);
+    expect(deleted).toEqual([]);
   });
 
-  it('keeps the lesson when deleting fails and offers no deleting of a charged one', async () => {
-    await open(scheduledLesson({ status: 'CANCELLED' }), new Date(2026, 9, 2));
-    await choose('Удалить…');
-    expect(bodyText()).not.toContain('Ученику придёт уведомление');
-    buttonByText(document.body, 'Удалить занятие').click();
-    backend
-      .expectOne('/api/teacher/schedule/lessons/l-1?version=0')
-      .flush({ code: 'schedule.lesson-charged' }, { status: 422, statusText: 'Unprocessable' });
-    await fixture.whenStable();
-    expect(fixture.componentInstance.visible()).toBe(true);
+  it('asks which lessons of a series to delete in a dialog of its own', async () => {
+    await open(scheduledLesson({ seriesId: 'rule-1', repeatWeeks: 2 }));
 
+    await choose('Удалить…');
+
+    expect(fixture.componentInstance.visible()).toBe(false);
+    const dialog = fixture.debugElement
+      .query(By.directive(LessonDeleteDialog))
+      .injector.get(LessonDeleteDialog);
+    expect(dialog.visible()).toBe(true);
+    dialog.deleted.emit('l-1');
+    expect(deleted).toEqual(['l-1']);
+  });
+
+  it('offers no deleting of a lesson that was charged', async () => {
     await open(
       scheduledLesson({
         status: 'MISSED',
@@ -227,127 +325,93 @@ describe('LessonDetailsDialog', () => {
           },
         ],
       }),
+      PAST,
     );
-    buttonByText(document.body, 'Другие действия').click();
-    await fixture.whenStable();
-    expect(() => menuItemByText('Удалить')).toThrow();
-    fixture.componentRef.setInput('lesson', null);
-    fixture.componentInstance.deleteLesson();
-    fixture.componentInstance.restore();
+
+    expect(() => buttonByText(document.body, 'Другие действия')).toThrow();
   });
 
-  it('restores a cancelled lesson, also over another one', async () => {
-    await open(scheduledLesson({ status: 'CANCELLED', cancelReason: 'Болезнь' }));
+  it('keeps the dangerous actions in the menu: the footer holds the one of the state only', async () => {
+    await open(scheduledLesson());
+
+    buttonByText(document.body, 'Другие действия').click();
+    await fixture.whenStable();
+
+    expect(menuItemByText('Удалить…').closest('li')?.className).toContain('tb-menu-item--danger');
+    expect(document.body.querySelectorAll('.p-dialog-footer .p-button-danger')).toHaveLength(0);
+  });
+
+  it('restores a cancelled lesson', async () => {
+    await open(scheduledLesson({ status: 'CANCELLED', cancelReason: 'Болезнь' }), PAST);
+    expect(bodyText()).toContain('Причина отмены: Болезнь');
+
+    buttonByText(document.body, 'Восстановить').click();
+    const request = backend.expectOne('/api/teacher/schedule/lessons/l-1/restore');
+    expect(request.request.body).toMatchObject({ allowOverlap: false });
+    request.flush(scheduledLesson());
+    await fixture.whenStable();
+
+    expect(changed).toHaveLength(1);
+    expect(fixture.componentInstance.visible()).toBe(false);
+  });
+
+  it('asks before restoring a lesson over another one, and restores on a yes', async () => {
+    const asked = expectConfirmation();
+    await open(scheduledLesson({ status: 'CANCELLED' }), PAST);
+
     buttonByText(document.body, 'Восстановить').click();
     backend
       .expectOne('/api/teacher/schedule/lessons/l-1/restore')
       .flush({ status: 409, code: 'schedule.overlap' }, { status: 409, statusText: 'Conflict' });
     await fixture.whenStable();
-    expect(bodyText()).toContain('В это время уже есть другое занятие');
 
-    buttonByText(document.body, 'Всё равно восстановить').click();
+    expect(asked().message).toContain('Всё равно восстановить?');
+    asked().accept?.();
+    await fixture.whenStable();
     const again = backend.expectOne('/api/teacher/schedule/lessons/l-1/restore');
     expect(again.request.body).toMatchObject({ allowOverlap: true });
-    again.flush(null, { status: 500, statusText: 'Error' });
-    await fixture.whenStable();
-    expect(bodyText()).toContain('Не удалось восстановить занятие');
+    again.flush(scheduledLesson());
+    expect(changed).toHaveLength(1);
+  });
+
+  it('leaves the lesson cancelled when the overlap is not accepted', async () => {
+    const asked = expectConfirmation();
+    await open(scheduledLesson({ status: 'CANCELLED' }), PAST);
 
     buttonByText(document.body, 'Восстановить').click();
-    const restored = backend.expectOne('/api/teacher/schedule/lessons/l-1/restore');
-    expect(restored.request.body).toMatchObject({ allowOverlap: false });
-    restored.flush(scheduledLesson());
+    backend
+      .expectOne('/api/teacher/schedule/lessons/l-1/restore')
+      .flush({ status: 409, code: 'schedule.overlap' }, { status: 409, statusText: 'Conflict' });
     await fixture.whenStable();
-    expect(changed).toHaveLength(1);
-    expect(fixture.componentInstance.visible()).toBe(false);
-  });
-
-  it('keeps the footer free of red and the dangerous actions in the menu', async () => {
-    await open(scheduledLesson(), new Date(2026, 9, 1, 18, 30));
-
-    const footer = requireElement(document.body, '.p-dialog-footer', HTMLElement);
-    expect(footer.querySelectorAll('.p-button-danger')).toHaveLength(0);
-    expect(footer.querySelectorAll('.p-button-success')).toHaveLength(0);
-    expect(footer.textContent).not.toContain('Удалить');
-    expect(footer.textContent).not.toContain('Отменить');
-    buttonByText(document.body, 'Другие действия').click();
+    asked().reject?.();
     await fixture.whenStable();
-    expect(menuItemByText('Удалить…').closest('li')?.className).toContain('tb-menu-item--danger');
+
+    backend.expectNone('/api/teacher/schedule/lessons/l-1/restore');
+    expect(changed).toHaveLength(0);
+    expect(fixture.componentInstance.visible()).toBe(true);
   });
 
-  it('takes its width from a class, not from a style of the place (ADR-0026)', async () => {
-    await open(scheduledLesson());
+  it('tells in a snackbar when a lesson could not be restored', async () => {
+    const snackbar = vi.spyOn(TestBed.inject(Snackbar), 'error');
+    await open(scheduledLesson({ status: 'CANCELLED' }), PAST);
 
-    const dialog = requireElement(document.body, '.p-dialog', HTMLElement);
-    expect(dialog.classList).toContain('tb-dialog');
-    expect(dialog.style.width).toBe('');
+    buttonByText(document.body, 'Восстановить').click();
+    backend
+      .expectOne('/api/teacher/schedule/lessons/l-1/restore')
+      .flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    expect(snackbar).toHaveBeenCalledWith(expect.stringContaining('Не удалось'));
+    expect(changed).toHaveLength(0);
+    expect(fixture.componentInstance.visible()).toBe(true);
   });
 
-  it('puts the focus on the title, not on a button', async () => {
-    await open(scheduledLesson({ joinUrl: 'https://zoom.us/j/1' }));
-
-    const title = requireElement(document.body, '.p-dialog-title', HTMLElement);
-    expect(title.getAttribute('tabindex')).toBe('-1');
-    fixture.componentInstance.focusTitle();
-    expect(document.activeElement).toBe(title);
-  });
-
-  it('shows a cancelled lesson without actions', async () => {
-    await open(
-      scheduledLesson({ status: 'CANCELLED', cancelReason: 'Болезнь' }),
-      new Date(2026, 9, 2),
-    );
-
-    expect(bodyText()).toContain('Причина отмены: Болезнь');
-    expect(() => buttonByText(document.body, 'Проведено')).toThrow();
-    fixture.componentInstance.editLesson();
-    fixture.componentRef.setInput('lesson', null);
-    fixture.componentInstance.mark('CONDUCTED');
-    fixture.componentInstance.editLesson();
-    expect(edited).toHaveLength(1);
-  });
-
-  it('shows the students of a group lesson and opens their attendance', async () => {
-    await open(
-      groupLesson({
-        startsAt: at(2026, 9, 29, 18),
-        endsAt: at(2026, 9, 29, 19, 30),
-        pendingRequests: [
-          changeRequest({ kind: 'CANCEL', groupId: 'g-1', studentName: 'Мария', comment: 'Болею' }),
-        ],
-      }),
-    );
+  it('shows the students of a group lesson with the name of the group', async () => {
+    await open(groupLesson({ startsAt: at(2026, 9, 29, 18), endsAt: at(2026, 9, 29, 19, 30) }));
 
     const text = bodyText();
-    expect(text).toContain('Группа «ОГЭ»');
+    expect(document.body.querySelector('.p-dialog-title')?.textContent).toContain('Группа «ОГЭ»');
     expect(text).toContain('Мария');
     expect(text).toContain('Предупредил');
-    expect(text).toContain('Мария: Не придёт');
-    expect(() => buttonByText(document.body, 'Проведено')).toThrow();
-
-    buttonByText(document.body, 'Отметить посещаемость').click();
-    await fixture.whenStable();
-    expect(bodyText()).toContain('Кто был на занятии');
-    fixture.debugElement
-      .query(By.directive(AttendanceDialog))
-      .injector.get(AttendanceDialog)
-      .saved.emit(groupLesson({ status: 'CONDUCTED' }));
-    expect(changed.map((lesson) => lesson.status)).toEqual(['CONDUCTED']);
-    expect(fixture.componentInstance.visible()).toBe(false);
-  });
-
-  it('cancels a group lesson only on behalf of the teacher', async () => {
-    await open(groupLesson());
-
-    await choose('Отменить занятие…');
-
-    expect(document.body.querySelector('#lesson-cancel-by-student')).toBeNull();
-  });
-
-  it('links the boards of the lesson', async () => {
-    await open(groupLesson(), new Date(2026, 8, 30, 12), [
-      aBoard({ title: 'Доска группы', members: [{ type: 'GROUP', id: 'g-1', name: 'ОГЭ' }] }),
-    ]);
-
-    expect(bodyText()).toContain('Доска группы');
   });
 });
