@@ -34,7 +34,7 @@ test('the teacher colours a student and a group', async ({ page }) => {
   await page.getByLabel('Имя и фамилия').fill(student);
   await page.getByRole('button', { name: 'Сохранить' }).click();
   // the invitation link opens after saving
-  const invite = page.getByRole('dialog', { name: `Ссылка для ученика: ${student}` });
+  const invite = page.getByRole('alertdialog', { name: `Ссылка для ученика: ${student}` });
   await invite.getByRole('button', { name: 'Закрыть', exact: true }).last().click();
   await expect(invite).toBeHidden();
   // 0.23.0: the colour is on the Профиль tab of the card, which opens after creating

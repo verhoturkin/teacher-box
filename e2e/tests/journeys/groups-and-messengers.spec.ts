@@ -98,6 +98,15 @@ function moscow(daysFromToday: number, hours: number): string {
   return new Date(`${day}T${String(hours).padStart(2, '0')}:00:00+03:00`).toISOString();
 }
 
+/** Yesterday is in the last week on a Monday: the calendar then goes one week back. */
+async function showYesterday(page: Page): Promise<void> {
+  await page.waitForLoadState('networkidle');
+  const unmarked = page.locator('.tb-lesson--unmarked', { hasText: GROUP });
+  if ((await unmarked.count()) === 0) {
+    await page.locator('tb-schedule-calendar').getByRole('button', { name: 'Назад' }).first().click();
+  }
+}
+
 /** An instant of a lesson the student sees in «Ближайшие занятия» (this week, Monday first). */
 function thisWeek(hours: number): string {
   const lesson = laterThisWeek(hours);
@@ -209,6 +218,7 @@ test('a group lesson is charged at the price of the group', async ({ page, reque
   await expect(page.locator('tb-schedule-calendar')).toContainText(GROUP);
   // the attendance opens at once, not through the details of the lesson (ADR-0026)
   // 0.24.0: the past lesson is outlined in the calendar, the attendance is marked from its dialog
+  await showYesterday(page);
   await page.locator('.tb-lesson--unmarked', { hasText: GROUP }).click();
   await page.getByRole('button', { name: 'Отметить посещаемость' }).click();
   const attendance = page.getByRole('dialog', { name: 'Кто был на занятии' });

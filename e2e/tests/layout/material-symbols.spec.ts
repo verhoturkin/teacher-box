@@ -63,7 +63,8 @@ test('no primeicons are left and PrimeNG icons show our symbols', async ({ page 
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
 
-  const close = dialog.locator('svg[data-p-icon="times"]').first();
+  // the dialog's own «✕» is a symbol of the portal (ADR-0050); the PrimeNG icon here is the select's chevron
+  const close = dialog.locator('svg[data-p-icon="chevron-down"]').first();
   expect(await close.evaluate((node) => getComputedStyle(node).maskImage)).toContain('svg+xml');
   // the dialog scales in: measured once it has settled
   await expect.poll(async () => Math.round((await close.boundingBox())?.width ?? 0)).toBe(24);

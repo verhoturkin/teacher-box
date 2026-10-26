@@ -45,7 +45,7 @@ test('the teacher picks the language of YouTube captions', async ({ page }) => {
   await page.getByLabel('Ссылка на видео').fill('https://youtu.be/dQw4w9WgXcQ');
   await page.getByRole('button', { name: 'Взять субтитры с YouTube' }).click();
 
-  const dialog = page.getByRole('dialog', { name: 'Субтитры на каком языке взять?' });
+  const dialog = page.getByRole('alertdialog', { name: 'Субтитры на каком языке взять?' });
   const tracks = dialog.getByRole('radio');
   await expect(tracks).toHaveCount(2);
   await expect(tracks.first()).toBeChecked();

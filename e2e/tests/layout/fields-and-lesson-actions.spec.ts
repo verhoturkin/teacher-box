@@ -206,7 +206,15 @@ for (const theme of ['Светлая тема', 'Тёмная тема']) {
       await email.press('Tab');
       await expect(email).not.toHaveAttribute('aria-invalid', 'true');
       await expect.poll(async () => (await filledMetrics(email)).labelY).toBe(8);
-      await dialog.getByRole('button', { name: 'Отмена', exact: true }).click();
+      // ADR-0050: «✕» closes a full-screen form on a phone, «Отмена» a dialog; the typed data asks to discard
+      await dialog
+        .getByRole('button', { name: width < 600 ? 'Закрыть' : 'Отмена', exact: true })
+        .click();
+      await page
+        .getByRole('alertdialog')
+        .getByRole('button', { name: 'Не сохранять' })
+        .click({ timeout: 2_000 })
+        .catch(() => undefined);
 
       const name = `Filled ${String(width)} ${theme} ${RUN}`;
       const response = await request.post('/api/teacher/students', {
