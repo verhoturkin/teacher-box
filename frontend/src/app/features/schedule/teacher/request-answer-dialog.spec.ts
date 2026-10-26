@@ -1,10 +1,22 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ConfirmationService } from 'primeng/api';
 import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
 import { changeRequest, scheduledLesson } from '@testing/schedule-fixtures';
 import { ChangeRequest } from '../data-access/schedule.models';
 import { RequestAnswerDialog } from './request-answer-dialog';
 import { testProviders } from '@testing/setup';
+
+/** The option of the «Согласовать | Отклонить» toggle with this text. */
+function toggle(text: string): HTMLElement {
+  const option = Array.from(document.body.querySelectorAll<HTMLElement>('p-togglebutton')).find(
+    (candidate) => candidate.textContent.includes(text),
+  );
+  if (option === undefined) {
+    throw new Error(`Toggle "${text}" not found`);
+  }
+  return option;
+}
 
 describe('RequestAnswerDialog', () => {
   let fixture: ComponentFixture<RequestAnswerDialog>;
@@ -58,16 +70,20 @@ describe('RequestAnswerDialog', () => {
 
   it('moves into busy time only when the teacher confirms', async () => {
     const request = changeRequest();
+    const confirm = vi.spyOn(TestBed.inject(ConfirmationService), 'confirm');
     await open(request);
     buttonByText(document.body, 'Согласовать').click();
     backend
       .expectOne('/api/teacher/schedule/requests/r-1/approve')
       .flush({ status: 409, code: 'schedule.slot-busy' }, { status: 409, statusText: 'Conflict' });
     await fixture.whenStable();
-    expect(bodyText()).toContain('В это время у вас другое занятие');
+    const asked = confirm.mock.calls.at(-1)?.[0];
+    expect(asked?.message).toContain('В это время у вас другое занятие');
+    expect(asked?.acceptLabel).toBe('Всё равно перенести');
     expect(answered).toHaveLength(0);
 
-    buttonByText(document.body, 'Всё равно перенести').click();
+    asked?.accept?.();
+    await fixture.whenStable();
     const forced = backend.expectOne('/api/teacher/schedule/requests/r-1/approve');
     expect(forced.request.body).toEqual(expect.objectContaining({ allowBusy: true }));
     forced.flush(scheduledLesson());
@@ -92,7 +108,12 @@ describe('RequestAnswerDialog', () => {
   });
 
   it('declines with a comment', async () => {
-    await open(changeRequest({ kind: 'CANCEL', proposedStartsAt: null }));
+    await open(changeRequest({ kind: 'CANCEL', proposedStartsAt: null, late: true }));
+    expect(bodyText()).toContain('Засчитать как пропуск');
+    toggle('Отклонить').click();
+    await fixture.whenStable();
+    expect(bodyText()).not.toContain('Засчитать как пропуск');
+    expect(buttonByText(document.body, 'Отклонить').classList).toContain('p-button-danger');
 
     buttonByText(document.body, 'Отклонить').click();
 
@@ -104,6 +125,20 @@ describe('RequestAnswerDialog', () => {
     expect(bodyText()).toContain('Не удалось ответить на запрос');
     fixture.componentRef.setInput('request', null);
     fixture.componentInstance.approve();
+  });
+
+  it('shows the new time only for an approval of a move', async () => {
+    await open(changeRequest());
+    expect(bodyText()).toContain('Новое время');
+    expect(buttonByText(document.body, 'Согласовать').classList).not.toContain('p-button-danger');
+
+    toggle('Отклонить').click();
+    await fixture.whenStable();
+    expect(bodyText()).not.toContain('Новое время');
+
+    toggle('Согласовать').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Новое время');
   });
 
   it('explains requests about group lessons', async () => {

@@ -137,7 +137,9 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
   const request = student.getByRole('dialog', { name: 'Перенести занятие' });
   await student.locator('#request-start').pressSequentially(dateTime(freeDay, 12));
   await expect(request).toContainText('В это время учитель занят');
-  await expect(request.getByRole('button', { name: 'Отправить учителю' })).toBeDisabled();
+  // the button stays enabled (ADR-0050); a busy time is not sent
+  await request.getByRole('button', { name: 'Отправить учителю' }).click();
+  await expect(request).toContainText('В это время учитель занят');
   await expect(student.getByText('Врач')).toHaveCount(0);
 
   // 0.15.3: the actions of a day off are in «⋮»

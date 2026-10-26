@@ -97,6 +97,7 @@ export const en: Translation<typeof ru> = {
     groupAbsence: (group: string) =>
       `The lesson of the group «${group}» goes on without you. Tell the teacher in advance — then the teacher knows at once and the absence is not charged.`,
     time: 'Convenient time',
+    pickTime: 'Choose a time',
     busy: 'The teacher is busy at this time — choose another time.',
     late: 'The lesson is soon: the teacher may charge it as missed.',
     comment: 'Comment to the teacher',
@@ -153,6 +154,7 @@ export const en: Translation<typeof ru> = {
     student: 'student',
     hint: '«Came» and «Missed» are charged at the lesson price, «Excused» is not.',
     failed: 'Could not save the marks',
+    nobody: 'Mark at least one student as «Came» or «Missed». Otherwise cancel the lesson.',
   },
   lessonDialog: {
     repeat: 'Repeat',
@@ -246,6 +248,7 @@ export const en: Translation<typeof ru> = {
     charge: 'Charge as missed (paid)',
     busy: 'You have another lesson or an event in the calendar at this time.',
     moveAnyway: 'Move anyway',
+    busyTitle: 'Time is taken',
     comment: 'Comment to the student',
     decline: 'Decline',
     approve: 'Approve',

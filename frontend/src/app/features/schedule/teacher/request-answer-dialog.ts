@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   input,
@@ -9,11 +10,9 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Button } from 'primeng/button';
 import { Checkbox } from 'primeng/checkbox';
 import { DatePicker } from 'primeng/datepicker';
-import { Dialog } from 'primeng/dialog';
-import { Message } from 'primeng/message';
+import { SelectButton } from 'primeng/selectbutton';
 import { Textarea } from 'primeng/textarea';
 import { Observable } from 'rxjs';
 import { describeError } from '@core/http/error-messages';
@@ -23,6 +22,8 @@ import { ChangeRequest } from '../data-access/schedule.models';
 import { formatLessonStart, optionalText } from '../schedule-labels';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
+import { Confirm } from '@shared/ui/confirm';
+import { TbDialog } from '@shared/ui/dialog/dialog';
 
 /**
  * The teacher answers a student's request: a move is approved for the proposed (or another) time,
@@ -30,18 +31,21 @@ import { SHARED_T } from '@shared/i18n/texts';
  */
 @Component({
   selector: 'tb-request-answer-dialog',
-  imports: [FormsModule, Button, Checkbox, DatePicker, Dialog, Message, Textarea],
+  imports: [FormsModule, Checkbox, DatePicker, SelectButton, TbDialog, Textarea],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="t.title"
+    <tb-dialog
+      kind="form"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog"
-      [draggable]="false"
+      [headline]="t.title"
+      [confirmLabel]="approving() ? t.approve : t.decline"
+      [confirmSeverity]="approving() ? 'primary' : 'danger'"
+      formId="request-answer-form"
+      [pending]="pending()"
+      [error]="error()"
     >
       @if (request(); as request) {
-        <div class="tb-form">
+        <form id="request-answer-form" class="tb-form" (ngSubmit)="answerRequest()">
           <p>
             @if (request.groupId !== null && request.kind === 'CANCEL') {
               <strong>{{ request.studentName ?? c.student }}</strong>
@@ -61,12 +65,23 @@ import { SHARED_T } from '@shared/i18n/texts';
           @if (request.comment !== null) {
             <p class="tb-muted">«{{ request.comment }}»</p>
           }
-          @if (request.kind === 'RESCHEDULE') {
+          <p-selectbutton
+            [options]="choices"
+            optionLabel="label"
+            optionValue="value"
+            [allowEmpty]="false"
+            [ngModel]="choice()"
+            (ngModelChange)="choice.set($event)"
+            [ngModelOptions]="{ standalone: true }"
+            [ariaLabel]="t.title"
+          />
+          @if (approving() && request.kind === 'RESCHEDULE') {
             <div class="tb-field">
               <label for="answer-start">{{ t.newTime }}</label>
               <p-datepicker
                 inputId="answer-start"
                 [(ngModel)]="startsAt"
+                [ngModelOptions]="{ standalone: true }"
                 dateFormat="dd.mm.yy"
                 [showTime]="true"
                 hourFormat="24"
@@ -77,23 +92,19 @@ import { SHARED_T } from '@shared/i18n/texts';
                 [fluid]="true"
               />
             </div>
-          } @else {
+          } @else if (approving() && request.kind === 'CANCEL') {
             @if (request.late) {
               <p class="tb-hint">{{ t.late }}</p>
             }
             <label class="tb-switch" for="answer-charge">
-              <p-checkbox [(ngModel)]="charge" [binary]="true" inputId="answer-charge" />
+              <p-checkbox
+                [(ngModel)]="charge"
+                [ngModelOptions]="{ standalone: true }"
+                [binary]="true"
+                inputId="answer-charge"
+              />
               <span>{{ t.charge }}</span>
             </label>
-          }
-          @if (busy()) {
-            <p-message severity="warn" styleClass="tb-form-message">
-              {{ t.busy }}
-              <p-button [label]="t.moveAnyway" [text]="true" (onClick)="approve(true)" />
-            </p-message>
-          }
-          @if (error(); as message) {
-            <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
           }
           <div class="tb-field">
             <label for="answer-comment">{{ t.comment }}</label>
@@ -102,39 +113,36 @@ import { SHARED_T } from '@shared/i18n/texts';
               id="answer-comment"
               rows="2"
               [(ngModel)]="answer"
+              [ngModelOptions]="{ standalone: true }"
               maxlength="500"
             ></textarea>
           </div>
-        </div>
+        </form>
       }
-      <ng-template #footer>
-        <p-button
-          [label]="t.decline"
-          severity="danger"
-          [text]="true"
-          [loading]="pending()"
-          (onClick)="decline()"
-        />
-        <p-button [label]="t.approve" [loading]="pending()" (onClick)="approve()" />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
 })
 export class RequestAnswerDialog {
   protected readonly c = SHARED_T.common;
   protected readonly t = T.answer;
   private readonly api = inject(ScheduleApi);
+  private readonly confirm = inject(Confirm);
 
   readonly visible = model(false);
   readonly request = input<ChangeRequest | null>(null);
   readonly answered = output<ChangeRequest>();
 
   protected readonly pending = signal(false);
+  /** Approve or decline: one confirm button follows the choice. */
+  protected readonly choice = signal<'APPROVE' | 'DECLINE'>('APPROVE');
+  protected readonly approving = computed(() => this.choice() === 'APPROVE');
+  protected readonly choices = [
+    { label: T.answer.approve, value: 'APPROVE' },
+    { label: T.answer.decline, value: 'DECLINE' },
+  ];
   protected readonly startsAt = signal<Date | null>(null);
   protected readonly charge = signal(false);
   protected readonly answer = signal('');
-  /** The teacher is busy at the new time of the move. */
-  protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
 
   constructor() {
@@ -146,7 +154,7 @@ export class RequestAnswerDialog {
         );
         this.charge.set(request.late);
         this.answer.set('');
-        this.busy.set(false);
+        this.choice.set('APPROVE');
         this.error.set(null);
       }
     });
@@ -168,6 +176,14 @@ export class RequestAnswerDialog {
     );
   }
 
+  protected answerRequest(): void {
+    if (this.approving()) {
+      this.approve();
+    } else {
+      this.decline();
+    }
+  }
+
   decline(): void {
     this.run((request) => this.api.decline(request.id, optionalText(this.answer())));
   }
@@ -178,7 +194,6 @@ export class RequestAnswerDialog {
       return;
     }
     this.pending.set(true);
-    this.busy.set(false);
     this.error.set(null);
     action(request).subscribe({
       next: () => {
@@ -189,11 +204,23 @@ export class RequestAnswerDialog {
       error: (error: unknown) => {
         this.pending.set(false);
         if (problemCode(error) === 'schedule.slot-busy') {
-          this.busy.set(true);
+          void this.moveAnyway();
         } else {
           this.error.set(describeError(error, T.answer.failed));
         }
       },
     });
+  }
+
+  /** The teacher is busy at the new time of the move: ask whether to move anyway. */
+  private async moveAnyway(): Promise<void> {
+    const sure = await this.confirm.safe({
+      header: this.t.busyTitle,
+      message: this.t.busy,
+      acceptLabel: this.t.moveAnyway,
+    });
+    if (sure) {
+      this.approve(true);
+    }
   }
 }

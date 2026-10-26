@@ -25,7 +25,9 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
   (attended, missed — paid, excused — not paid). Each mark publishes `LessonCompleted` with a `completionId`;
   correcting it publishes `LessonCompletionRevoked`. Lesson statuses: scheduled, conducted, missed, cancelled;
   a not-held lesson can be deleted or restored.
-- **Student requests:** move (with proposed time) or cancel; the teacher approves or declines. Cancelling later
+- **Student requests:** move (with proposed time) or cancel; the teacher approves or declines in one dialog:
+  a connected toggle «Согласовать | Отклонить» (default approve) and one confirm button that follows it (primary / red); the new time of a move and
+  «Засчитать как пропуск» show only for an approval, a busy time asks «Всё равно перенести». Cancelling later
   than `TEACHERBOX_SCHEDULE_LATE_CANCELLATION` (24 h) is marked late — the teacher decides if it counts as missed.
   In a group lesson an early «Не приду» is accepted at once (excused); a move moves it for everyone. A teacher
   edit of a lesson with an open request makes it `OUTDATED`.

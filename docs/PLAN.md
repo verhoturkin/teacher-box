@@ -97,7 +97,7 @@ Decisions taken with the teacher (2026-10-25/26), binding for every stage:
   `schedule/teacher/lesson-details-dialog.ts` → `<tb-dialog kind="sheet">`, «Итог» toggle, cancel
   lesson as its own `form` dialog, delete and restore-overlap via `Confirm`; student
   `schedule/student/my-schedule-page.ts` and `home/todo-queue.ts` sheets on `tb-dialog`.
-- [ ] **288.3** The other schedule dialogs: `lesson-dialog`, `off-time-dialog`,
+- [x] **288.3** The other schedule dialogs: `lesson-dialog`, `off-time-dialog`,
   `request-answer-dialog` (toggle + one action), `change-request-dialog`, `attendance-dialog`;
   delete the old `.p-dialog:not(.p-confirmdialog, .tb-dialog--short)` phone rules and
   `tb-dialog--short` from `styles.scss`.

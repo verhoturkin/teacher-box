@@ -213,7 +213,8 @@ test('the student moves a lesson when the teacher agrees', async ({ page, browse
 
   await page.reload();
   await page.getByRole('button', { name: `Ответить: ${STUDENT_NAME}` }).click();
-  await page.getByRole('button', { name: 'Согласовать' }).click();
+  // the dialog's footer button follows the «Согласовать | Отклонить» toggle
+  await page.getByRole('dialog').getByRole('button', { name: 'Согласовать' }).last().click();
   await expect(page.getByRole('button', { name: `Ответить: ${STUDENT_NAME}` })).toBeHidden();
 
   await student.reload();

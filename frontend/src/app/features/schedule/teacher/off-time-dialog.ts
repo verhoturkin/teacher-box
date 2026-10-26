@@ -3,30 +3,25 @@ import {
   Component,
   DestroyRef,
   computed,
-  effect,
   inject,
   input,
   model,
   output,
   signal,
-  untracked,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Button } from 'primeng/button';
 import { DatePicker } from 'primeng/datepicker';
-import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
 import { SelectButton } from 'primeng/selectbutton';
-import { describeError } from '@core/http/error-messages';
 import { fromIsoDate, toIsoDate } from '@shared/dates/iso-date';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { OffTime, OffTimeKind, OffTimeRequest, Weekday } from '../data-access/schedule.models';
 import { WEEKDAYS, browserTimeZone, optionalText } from '../schedule-labels';
 import { fromTime, toTime } from './lesson-time';
-import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
-import { SubmitFor } from '@shared/ui/submit-for';
+import { TbDialog } from '@shared/ui/dialog/dialog';
+import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
+import { FieldErrors } from '@shared/ui/field-errors';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
@@ -45,25 +40,18 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
  */
 @Component({
   selector: 'tb-off-time-dialog',
-  imports: [
-    ReactiveFormsModule,
-    Button,
-    DatePicker,
-    Dialog,
-    InputText,
-    Message,
-    SelectButton,
-    FieldErrors,
-    SubmitFor,
-  ],
+  imports: [ReactiveFormsModule, DatePicker, TbDialog, InputText, SelectButton, FieldErrors],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="offTime() === null ? t.newTitle : t.editTitle"
+    <tb-dialog
+      kind="form"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog"
-      [draggable]="false"
+      [headline]="offTime() === null ? t.newTitle : t.editTitle"
+      [confirmLabel]="c.save"
+      formId="off-time-form"
+      [pending]="submit.pending()"
+      [error]="submit.error()"
+      [dirty]="submit.dirty()"
     >
       <form tbFieldErrors id="off-time-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <p class="tb-hint">{{ t.hint }}</p>
@@ -193,25 +181,8 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
             autocomplete="off"
           />
         </div>
-        @if (error(); as message) {
-          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-        }
       </form>
-      <ng-template #footer>
-        <p-button
-          [label]="c.cancel"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        <p-button
-          [label]="c.save"
-          [loading]="pending()"
-          type="submit"
-          tbSubmitFor="off-time-form"
-        />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
 })
 export class OffTimeDialog {
@@ -233,8 +204,6 @@ export class OffTimeDialog {
     return zone === null || zone === browserTimeZone() ? null : zone;
   });
   protected readonly weekly = signal(false);
-  protected readonly pending = signal(false);
-  protected readonly error = signal<string | null>(null);
 
   readonly form = new FormGroup({
     kind: new FormControl<OffTimeKind>('ONCE', { nonNullable: true }),
@@ -257,58 +226,45 @@ export class OffTimeDialog {
       .subscribe((kind) => {
         this.applyKind(kind);
       });
-    // Opening or another off time resets the form.
-    effect(() => {
-      this.offTime();
-      if (this.visible()) {
-        untracked(() => {
-          this.reset();
-        });
-      }
-    });
   }
 
-  save(): void {
-    if (!revealErrors(this.form) || this.pending()) {
-      return;
-    }
-    const value = this.form.getRawValue();
-    const weekly = value.kind === 'WEEKLY';
-    const request: OffTimeRequest = {
-      kind: value.kind,
-      startsAt: weekly ? null : isoInstant(value.startsAt),
-      endsAt: weekly ? null : isoInstant(value.endsAt),
-      weekdays: weekly
-        ? WEEKDAYS.map((day) => day.value).filter((day) => value.weekdays.includes(day))
-        : [],
-      startTime: weekly && value.startTime !== null ? toTime(value.startTime) : null,
-      endTime: weekly && value.endTime !== null ? toTime(value.endTime) : null,
-      startsOn: weekly && value.startsOn !== null ? toIsoDate(value.startsOn) : null,
-      endsOn: weekly && value.endsOn !== null ? toIsoDate(value.endsOn) : null,
-      note: optionalText(value.note),
-    };
-    this.pending.set(true);
-    this.error.set(null);
-    const offTime = this.offTime();
-    const call =
-      offTime === null
+  protected readonly submit = dialogSubmit({
+    visible: this.visible,
+    form: this.form,
+    reset: () => {
+      this.reset();
+    },
+    failed: T.offTime.failed,
+    request: (value) => {
+      const weekly = value.kind === 'WEEKLY';
+      const request: OffTimeRequest = {
+        kind: value.kind,
+        startsAt: weekly ? null : isoInstant(value.startsAt),
+        endsAt: weekly ? null : isoInstant(value.endsAt),
+        weekdays: weekly
+          ? WEEKDAYS.map((day) => day.value).filter((day) => value.weekdays.includes(day))
+          : [],
+        startTime: weekly && value.startTime !== null ? toTime(value.startTime) : null,
+        endTime: weekly && value.endTime !== null ? toTime(value.endTime) : null,
+        startsOn: weekly && value.startsOn !== null ? toIsoDate(value.startsOn) : null,
+        endsOn: weekly && value.endsOn !== null ? toIsoDate(value.endsOn) : null,
+        note: optionalText(value.note),
+      };
+      const offTime = this.offTime();
+      return offTime === null
         ? this.api.createOffTime(request)
         : this.api.changeOffTime(offTime.id, request);
-    call.subscribe({
-      next: (saved) => {
-        this.pending.set(false);
-        this.visible.set(false);
-        this.saved.emit(saved);
-      },
-      error: (error: unknown) => {
-        this.pending.set(false);
-        this.error.set(describeError(error, T.offTime.failed));
-      },
-    });
+    },
+    done: (saved) => {
+      this.saved.emit(saved);
+    },
+  });
+
+  save(): void {
+    this.submit.run();
   }
 
   private reset(): void {
-    this.error.set(null);
     const offTime = this.offTime();
     const start = nextHour();
     const startsAt = offTime?.startsAt ?? null;

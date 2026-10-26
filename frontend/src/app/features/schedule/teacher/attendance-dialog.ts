@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   input,
   model,
@@ -10,16 +9,16 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { SelectButton } from 'primeng/selectbutton';
-import { describeError } from '@core/http/error-messages';
+import { EMPTY } from 'rxjs';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { AttendanceMark, ScheduledLesson } from '../data-access/schedule.models';
 import { formatLessonTime, lessonWith } from '../schedule-labels';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
+import { TbDialog } from '@shared/ui/dialog/dialog';
+import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 
 interface MarkOption {
   readonly label: string;
@@ -39,54 +38,45 @@ export const MARK_OPTIONS: readonly MarkOption[] = [
  */
 @Component({
   selector: 'tb-attendance-dialog',
-  imports: [FormsModule, Button, Dialog, Message, SelectButton],
+  imports: [FormsModule, Message, SelectButton, TbDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="t.title"
+    <tb-dialog
+      kind="form"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog"
-      [draggable]="false"
+      [headline]="t.title"
+      [confirmLabel]="c.save"
+      formId="attendance-form"
+      [pending]="submit.pending()"
+      [error]="submit.error()"
     >
       @if (lesson(); as lesson) {
-        <p class="tb-muted">{{ with(lesson) }}, {{ time() }}</p>
-        <ul class="tb-attendance">
-          @for (participant of lesson.participants; track participant.studentId) {
-            <li>
-              <span>{{ participant.studentName ?? c.student }}</span>
-              <p-selectbutton
-                [options]="options"
-                optionLabel="label"
-                optionValue="value"
-                [allowEmpty]="false"
-                [ngModel]="marks()[participant.studentId]"
-                (ngModelChange)="set(participant.studentId, $event)"
-                [ariaLabel]="t.of(participant.studentName ?? t.student)"
-              />
-            </li>
+        <form id="attendance-form" (ngSubmit)="save()">
+          <p class="tb-muted">{{ with(lesson) }}, {{ time() }}</p>
+          <ul class="tb-attendance">
+            @for (participant of lesson.participants; track participant.studentId) {
+              <li>
+                <span>{{ participant.studentName ?? c.student }}</span>
+                <p-selectbutton
+                  [options]="options"
+                  optionLabel="label"
+                  optionValue="value"
+                  [allowEmpty]="false"
+                  [ngModel]="marks()[participant.studentId]"
+                  [ngModelOptions]="{ standalone: true }"
+                  (ngModelChange)="set(participant.studentId, $event)"
+                  [ariaLabel]="t.of(participant.studentName ?? t.student)"
+                />
+              </li>
+            }
+          </ul>
+          <small class="tb-hint">{{ t.hint }}</small>
+          @if (!anybody()) {
+            <p-message severity="warn" styleClass="tb-form-message">{{ t.nobody }}</p-message>
           }
-        </ul>
-        <small class="tb-hint">{{ t.hint }}</small>
-        @if (error(); as message) {
-          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-        }
+        </form>
       }
-      <ng-template #footer>
-        <p-button
-          [label]="c.cancel"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        <p-button
-          [label]="c.save"
-          [loading]="pending()"
-          [disabled]="!anybody()"
-          (onClick)="save()"
-        />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
   styles: `
     .tb-attendance {
@@ -119,8 +109,6 @@ export class AttendanceDialog {
   protected readonly options = [...MARK_OPTIONS];
   protected readonly with = lessonWith;
   readonly marks = signal<Readonly<Record<string, AttendanceMark>>>({});
-  protected readonly pending = signal(false);
-  protected readonly error = signal<string | null>(null);
   protected readonly time = computed(() => {
     const lesson = this.lesson();
     return lesson === null ? '' : formatLessonTime(lesson.startsAt, lesson.endsAt);
@@ -130,45 +118,37 @@ export class AttendanceDialog {
     Object.values(this.marks()).some((mark) => mark !== 'EXCUSED'),
   );
 
-  constructor() {
+  protected readonly submit = dialogSubmit({
+    visible: this.visible,
     // Everybody «attended» unless marked otherwise before.
-    effect(() => {
+    reset: () => {
       const lesson = this.lesson();
-      if (this.visible() && lesson !== null) {
-        this.error.set(null);
-        this.marks.set(
-          Object.fromEntries(
-            lesson.participants.map((participant) => [
-              participant.studentId,
-              participant.attendance === 'EXPECTED' ? 'ATTENDED' : participant.attendance,
-            ]),
-          ),
-        );
-      }
-    });
-  }
+      this.marks.set(
+        Object.fromEntries(
+          (lesson?.participants ?? []).map((participant) => [
+            participant.studentId,
+            participant.attendance === 'EXPECTED' ? 'ATTENDED' : participant.attendance,
+          ]),
+        ),
+      );
+    },
+    failed: T.attendanceDialog.failed,
+    request: () => {
+      const lesson = this.lesson();
+      return lesson === null ? EMPTY : this.api.markAttendance(lesson.id, this.marks());
+    },
+    done: (saved) => {
+      this.saved.emit(saved);
+    },
+  });
 
   set(studentId: string, mark: AttendanceMark): void {
     this.marks.update((marks) => ({ ...marks, [studentId]: mark }));
   }
 
   save(): void {
-    const lesson = this.lesson();
-    if (lesson === null || this.pending() || !this.anybody()) {
-      return;
+    if (this.anybody()) {
+      this.submit.run();
     }
-    this.pending.set(true);
-    this.error.set(null);
-    this.api.markAttendance(lesson.id, this.marks()).subscribe({
-      next: (saved) => {
-        this.pending.set(false);
-        this.visible.set(false);
-        this.saved.emit(saved);
-      },
-      error: (error: unknown) => {
-        this.pending.set(false);
-        this.error.set(describeError(error, T.attendanceDialog.failed));
-      },
-    });
   }
 }

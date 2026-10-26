@@ -39,7 +39,10 @@ describe('ChangeRequestDialog', () => {
   it('proposes another time', async () => {
     await open('RESCHEDULE', new Date(2026, 8, 20));
     expect(bodyText()).toContain('Перенести занятие');
-    expect(buttonByText(document.body, 'Отправить учителю').disabled).toBe(true);
+    buttonByText(document.body, 'Отправить учителю').click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Выберите время');
+    backend.expectNone('/api/me/schedule/lessons/l-1/requests');
     const proposed = new Date(2026, 9, 2, 17);
     fixture.componentInstance.proposed.set(proposed);
     typeInto(
@@ -72,7 +75,9 @@ describe('ChangeRequestDialog', () => {
     check.flush([{ start: busy.toISOString(), end: new Date(2026, 9, 2, 18).toISOString() }]);
     await fixture.whenStable();
     expect(bodyText()).toContain('В это время учитель занят');
-    expect(buttonByText(document.body, 'Отправить учителю').disabled).toBe(true);
+    buttonByText(document.body, 'Отправить учителю').click();
+    await fixture.whenStable();
+    backend.expectNone('/api/me/schedule/lessons/l-1/requests');
 
     const stale = new Date(2026, 9, 3, 10);
     dialog.choose(stale);
@@ -83,7 +88,7 @@ describe('ChangeRequestDialog', () => {
     backend.expectOne((request) => request.url === '/api/me/schedule/busy').flush([]);
     await fixture.whenStable();
     expect(bodyText()).not.toContain('В это время учитель занят');
-    expect(buttonByText(document.body, 'Отправить учителю').disabled).toBe(false);
+    expect(bodyText()).not.toContain('Выберите время');
 
     dialog.choose(null);
     expect(dialog.proposed()).toBeNull();
@@ -101,6 +106,16 @@ describe('ChangeRequestDialog', () => {
 
     expect(bodyText()).toContain('В это время учитель занят — выберите другое время');
     expect(sent).toHaveLength(0);
+  });
+
+  it('submits with Enter in the form', async () => {
+    await open('CANCEL', new Date(2026, 8, 20));
+
+    requireElement(document.body, '#change-request-form', HTMLFormElement).dispatchEvent(
+      new Event('submit', { cancelable: true }),
+    );
+
+    backend.expectOne('/api/me/schedule/lessons/l-1/requests');
   });
 
   it('warns about a late cancellation', async () => {
