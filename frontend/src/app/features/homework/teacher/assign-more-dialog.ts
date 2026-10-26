@@ -10,8 +10,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
+import { Observable } from 'rxjs';
 import { quietContext } from '@core/http/api-error.interceptor';
 import {
   MemberPicker,
@@ -20,26 +19,28 @@ import {
   memberRecipients,
   IdentityApi,
 } from '@features/identity/parts';
-import { Busy } from '@shared/ui/busy';
-import { SubmitFor } from '@shared/ui/submit-for';
+import { TbDialog } from '@shared/ui/dialog/dialog';
+import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
-import { SHARED_T } from '@shared/i18n/texts';
 import { StudentOption } from './assignment-editor-page';
 
 /** «Выдать ещё ученикам»: one typed student/group selection; students who have the assignment are not offered. */
 @Component({
   selector: 'tb-assign-more-dialog',
-  imports: [ReactiveFormsModule, Button, Dialog, MemberPicker, SubmitFor],
+  imports: [ReactiveFormsModule, TbDialog, MemberPicker],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="t.assignMore"
+    <tb-dialog
+      kind="form"
+      width="wide"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog tb-dialog--wide"
-      [draggable]="false"
+      [headline]="t.assignMore"
+      [confirmLabel]="t.assign"
+      formId="assign-more-form"
+      [pending]="submit.pending()"
+      [error]="submit.error()"
     >
       <form id="assign-more-form" class="tb-assign" [formGroup]="form" (ngSubmit)="assign()">
         <div class="tb-field">
@@ -52,21 +53,7 @@ import { StudentOption } from './assignment-editor-page';
           />
         </div>
       </form>
-      <ng-template #footer>
-        <p-button
-          [label]="c.cancel"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        <p-button
-          [label]="t.assign"
-          [loading]="busy.is('assign')"
-          type="submit"
-          tbSubmitFor="assign-more-form"
-        />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
   styles: `
     .tb-assign {
@@ -78,9 +65,7 @@ import { StudentOption } from './assignment-editor-page';
   `,
 })
 export class AssignMoreDialog {
-  protected readonly c = SHARED_T.common;
   protected readonly t = T.page;
-  protected readonly busy = new Busy();
   private readonly api = inject(HomeworkApi);
   private readonly identity = inject(IdentityApi);
 
@@ -125,20 +110,30 @@ export class AssignMoreDialog {
   }
 
   assign(): void {
-    const studentIds = memberRecipients(
+    if (this.recipients().length === 0) {
+      this.visible.set(false);
+      return;
+    }
+    this.submit.run();
+  }
+
+  private recipients(): string[] {
+    return memberRecipients(
       this.chosen(),
       this.groups(),
       this.unassigned().map((student) => student.id),
     );
-    if (studentIds.length === 0) {
-      this.visible.set(false);
-      return;
-    }
-    this.busy
-      .guard('assign', this.api.assignStudents(this.assignmentId(), studentIds))
-      .subscribe((updated) => {
-        this.visible.set(false);
-        this.saved.emit(updated);
-      });
   }
+
+  protected readonly submit = dialogSubmit({
+    visible: this.visible,
+    // `open()` fills the form; the dialog must not clear it again.
+    reset: () => undefined,
+    failed: T.page.assignFailed,
+    request: (): Observable<AssignmentDetails> =>
+      this.api.assignStudents(this.assignmentId(), this.recipients()),
+    done: (updated) => {
+      this.saved.emit(updated);
+    },
+  });
 }

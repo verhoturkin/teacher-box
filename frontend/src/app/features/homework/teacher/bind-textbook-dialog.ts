@@ -2,30 +2,26 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   input,
   model,
   output,
   signal,
-  untracked,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
 import { quietContext } from '@core/http/api-error.interceptor';
-import { describeError } from '@core/http/error-messages';
 import { Textbook, TextbooksApi, parsePages } from '@features/textbooks/parts';
+import { TbDialog } from '@shared/ui/dialog/dialog';
+import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
-import { SubmitFor } from '@shared/ui/submit-for';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, BoundTextbook } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
+import { Observable } from 'rxjs';
 
 /** Most pages bound at once, as the backend's `PageRanges` allows. */
 const MAX_BOUND_PAGES = 500;
@@ -40,26 +36,21 @@ export const PAGES_PATTERN = /^\s*\d+(\s*[-–—]\s*\d+)?(\s*[,;\s]\s*\d+(\s*[-
  */
 @Component({
   selector: 'tb-bind-textbook-dialog',
-  imports: [
-    ReactiveFormsModule,
-    Button,
-    Dialog,
-    InputText,
-    Message,
-    Select,
-    FieldErrors,
-    SubmitFor,
-  ],
+  imports: [ReactiveFormsModule, InputText, Select, FieldErrors, TbDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="bound() === null ? t.newTitle : t.pagesTitle"
+    <tb-dialog
+      kind="form"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog"
-      [draggable]="false"
+      [headline]="bound() === null ? t.newTitle : t.pagesTitle"
+      [confirmLabel]="empty() ? null : bound() === null ? t.bind : c.save"
+      [cancelLabel]="empty() ? c.close : c.cancel"
+      formId="bind-textbook-form"
+      [pending]="submit.pending()"
+      [error]="localError() ?? submit.error()"
+      [dirty]="submit.dirty()"
     >
-      @if (loaded() && choices().length === 0 && bound() === null) {
+      @if (empty()) {
         <p class="tb-muted">{{ t.noTextbooks }}</p>
       } @else {
         <form
@@ -101,27 +92,9 @@ export const PAGES_PATTERN = /^\s*\d+(\s*[-–—]\s*\d+)?(\s*[,;\s]\s*\d+(\s*[-
               <small class="tb-hint">{{ pagesHint() }}</small>
             </div>
           }
-          @if (error(); as message) {
-            <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-          }
         </form>
       }
-      <ng-template #footer>
-        <p-button
-          [label]="c.cancel"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        <p-button
-          [label]="bound() === null ? t.bind : c.save"
-          [loading]="pending()"
-          [disabled]="loaded() && choices().length === 0 && bound() === null"
-          type="submit"
-          tbSubmitFor="bind-textbook-form"
-        />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
 })
 export class BindTextbookDialog {
@@ -142,8 +115,8 @@ export class BindTextbookDialog {
 
   protected readonly textbooks = signal<Textbook[]>([]);
   protected readonly loaded = signal(false);
-  protected readonly pending = signal(false);
-  protected readonly error = signal<string | null>(null);
+  /** The failure of the local check of a new assignment's choice. */
+  protected readonly localError = signal<string | null>(null);
 
   readonly textbook = new FormControl<string | null>(null, [Validators.required]);
   readonly pages = new FormControl('', {
@@ -152,6 +125,11 @@ export class BindTextbookDialog {
   });
   readonly form = new FormGroup({ textbook: this.textbook, pages: this.pages });
   private readonly chosenId = toSignal(this.textbook.valueChanges, { initialValue: null });
+
+  /** Every textbook is bound already. */
+  protected readonly empty = computed(
+    () => this.loaded() && this.choices().length === 0 && this.bound() === null,
+  );
 
   /** Textbooks not bound yet. */
   protected readonly choices = computed(() => {
@@ -172,55 +150,49 @@ export class BindTextbookDialog {
     return chosen?.format === 'DOCUMENT' ? T.bind.wordHint(whole) : T.bind.pagesHint(whole);
   });
 
-  constructor() {
-    effect(() => {
-      if (!this.visible()) {
-        return;
-      }
+  protected readonly submit = dialogSubmit({
+    visible: this.visible,
+    form: this.form,
+    failed: T.bind.failed,
+    // The form writes into PrimeNG's select, whose signals must not become the effect's.
+    reset: () => {
       const bound = this.bound();
-      // The form writes into PrimeNG's select, whose signals must not become this effect's.
-      untracked(() => {
-        this.error.set(null);
-        this.textbook.reset(bound?.textbookId ?? null);
-        this.pages.reset(bound?.pages ?? '');
-        if (bound === null) {
-          this.loaded.set(false);
-          this.textbooksApi.list(quietContext()).subscribe((textbooks) => {
-            this.textbooks.set(textbooks);
-            this.loaded.set(true);
-          });
-        }
-      });
-    });
-  }
+      this.localError.set(null);
+      this.textbook.reset(bound?.textbookId ?? null);
+      this.pages.reset(bound?.pages ?? '');
+      if (bound === null) {
+        this.loaded.set(false);
+        this.textbooksApi.list(quietContext()).subscribe((textbooks) => {
+          this.textbooks.set(textbooks);
+          this.loaded.set(true);
+        });
+      }
+    },
+    request: (): Observable<AssignmentDetails> => {
+      const assignmentId = this.assignmentId() ?? '';
+      const pages = this.paged() ? this.pages.value.trim() : '';
+      return this.homework.bindTextbook(
+        assignmentId,
+        this.textbook.value ?? '',
+        pages === '' ? null : pages,
+      );
+    },
+    done: (assignment) => {
+      this.saved.emit(assignment);
+    },
+  });
 
   save(): void {
-    if (!revealErrors(this.form) || this.pending()) {
-      return;
-    }
     const textbookId = this.textbook.value;
-    if (textbookId === null) {
+    if (this.assignmentId() === null) {
+      this.localError.set(null);
+      if (!revealErrors(this.form) || textbookId === null) {
+        return;
+      }
+      this.pick(textbookId, this.paged() ? this.pages.value.trim() : '');
       return;
     }
-    const pages = this.paged() ? this.pages.value.trim() : '';
-    const assignmentId = this.assignmentId();
-    if (assignmentId === null) {
-      this.pick(textbookId, pages);
-      return;
-    }
-    this.pending.set(true);
-    this.error.set(null);
-    this.homework.bindTextbook(assignmentId, textbookId, pages === '' ? null : pages).subscribe({
-      next: (assignment) => {
-        this.pending.set(false);
-        this.visible.set(false);
-        this.saved.emit(assignment);
-      },
-      error: (error: unknown) => {
-        this.pending.set(false);
-        this.error.set(describeError(error, T.bind.failed));
-      },
-    });
+    this.submit.run();
   }
 
   /** A new assignment: the textbook and its normalized pages, checked here as the backend would. */
@@ -245,7 +217,7 @@ export class BindTextbookDialog {
     }
     const parsed = pages === '' ? null : parsePages(pages, base.pageCount, MAX_BOUND_PAGES);
     if (pages !== '' && parsed === null) {
-      this.error.set(T.bind.beyond);
+      this.localError.set(T.bind.beyond);
       return;
     }
     this.visible.set(false);

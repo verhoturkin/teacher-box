@@ -10,12 +10,8 @@ import {
   signal,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
-import { describeError } from '@core/http/error-messages';
 import {
   MemberPicker,
   MemberSelection,
@@ -24,10 +20,10 @@ import {
   IdentityApi,
 } from '@features/identity/parts';
 import { NotificationsApi } from '../data-access/notifications-api';
-import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
-import { SubmitFor } from '@shared/ui/submit-for';
+import { FieldErrors } from '@shared/ui/field-errors';
+import { TbDialog } from '@shared/ui/dialog/dialog';
+import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { T } from '../i18n/texts';
-import { SHARED_T } from '@shared/i18n/texts';
 
 /** A student the teacher can write to. */
 export interface Recipient {
@@ -44,25 +40,19 @@ export interface RecipientGroup {
 /** The teacher writes a message to chosen students or to everybody. */
 @Component({
   selector: 'tb-broadcast-dialog',
-  imports: [
-    ReactiveFormsModule,
-    Button,
-    Dialog,
-    MemberPicker,
-    InputText,
-    Message,
-    Textarea,
-    FieldErrors,
-    SubmitFor,
-  ],
+  imports: [ReactiveFormsModule, MemberPicker, InputText, Textarea, FieldErrors, TbDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="t.title"
+    <tb-dialog
+      kind="form"
+      width="wide"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog tb-dialog--wide"
-      [draggable]="false"
+      [headline]="t.title"
+      [confirmLabel]="t.send"
+      formId="broadcast-form"
+      [pending]="submit.pending()"
+      [error]="localError() ?? submit.error()"
+      [dirty]="submit.dirty()"
     >
       <form
         tbFieldErrors
@@ -111,30 +101,11 @@ export interface RecipientGroup {
           <label for="broadcast-body">{{ t.text }}</label>
           <textarea pTextarea id="broadcast-body" formControlName="body" rows="6"></textarea>
         </div>
-        @if (error(); as message) {
-          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-        }
       </form>
-      <ng-template #footer>
-        <p-button
-          [label]="c.cancel"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        <p-button
-          [label]="t.send"
-          icon="tb-i tb-i-send"
-          [loading]="pending()"
-          type="submit"
-          tbSubmitFor="broadcast-form"
-        />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
 })
 export class BroadcastDialog {
-  protected readonly c = SHARED_T.common;
   protected readonly t = T.broadcast;
   private readonly api = inject(NotificationsApi);
 
@@ -152,8 +123,8 @@ export class BroadcastDialog {
   /** Emits the number of recipients. */
   readonly sent = output<number>();
 
-  protected readonly pending = signal(false);
-  protected readonly error = signal<string | null>(null);
+  /** Chosen groups without members: the check that the server does not do. */
+  protected readonly localError = signal<string | null>(null);
 
   readonly form = new FormGroup({
     members: new FormControl<MemberSelection[]>([], { nonNullable: true }),
@@ -167,8 +138,7 @@ export class BroadcastDialog {
   constructor() {
     effect(() => {
       if (this.visible()) {
-        this.error.set(null);
-        this.form.reset();
+        this.localError.set(null);
         if (this.to() === null && this.toGroup() === null) {
           this.identity.listGroups().subscribe((groups) => {
             this.groups.set(groups.filter((group) => group.archivedAt === null));
@@ -193,39 +163,40 @@ export class BroadcastDialog {
   }
 
   send(): void {
-    if (!revealErrors(this.form) || this.pending()) {
+    this.localError.set(null);
+    if (this.recipients().length === 0 && this.hasChosen()) {
+      this.localError.set(T.broadcast.noRecipients);
       return;
     }
-    const value = this.form.getRawValue();
-    const studentIds = this.recipientIds(
+    this.submit.run();
+  }
+
+  private hasChosen(): boolean {
+    return this.form.getRawValue().members.length > 0 || this.toGroup() !== null;
+  }
+
+  private recipients(): string[] {
+    return this.recipientIds(
       memberRecipients(
-        value.members,
+        this.form.getRawValue().members,
         this.groups(),
         this.students().map((student) => student.id),
       ),
     );
-    if (studentIds.length === 0 && (value.members.length > 0 || this.toGroup() !== null)) {
-      this.error.set(T.broadcast.noRecipients);
-      return;
-    }
-    this.pending.set(true);
-    this.error.set(null);
-    this.api
-      .broadcast({
+  }
+
+  protected readonly submit = dialogSubmit({
+    visible: this.visible,
+    form: this.form,
+    failed: T.broadcast.failed,
+    request: (value) =>
+      this.api.broadcast({
         title: value.title.trim(),
         body: value.body.trim() === '' ? null : value.body.trim(),
-        studentIds,
-      })
-      .subscribe({
-        next: (recipients) => {
-          this.pending.set(false);
-          this.visible.set(false);
-          this.sent.emit(recipients);
-        },
-        error: (error: unknown) => {
-          this.pending.set(false);
-          this.error.set(describeError(error, T.broadcast.failed));
-        },
-      });
-  }
+        studentIds: this.recipients(),
+      }),
+    done: (recipients) => {
+      this.sent.emit(recipients);
+    },
+  });
 }

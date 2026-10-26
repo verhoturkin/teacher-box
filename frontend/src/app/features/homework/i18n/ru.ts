@@ -249,6 +249,7 @@ export const ru = {
     action: (action: string, name: string) => `${action}: ${name}`,
     notAssigned: 'Задание ещё никому не выдано',
     assignMore: 'Выдать ещё ученикам',
+    assignFailed: 'Не удалось выдать задание',
     add: 'Добавить',
     notSubmitted: 'Не сдано',
     submittedAt: (date: string) => `Сдано ${date}`,

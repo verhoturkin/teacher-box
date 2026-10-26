@@ -14,7 +14,6 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
 import { InputNumber } from 'primeng/inputnumber';
 import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
@@ -30,6 +29,8 @@ import { CHANNEL_NAMES } from '../notification-labels';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { T } from '../i18n/texts';
+import { SHARED_T } from '@shared/i18n/texts';
+import { TbDialog } from '@shared/ui/dialog/dialog';
 
 /** Wizard steps: create a bot, check its token, connect the teacher's account, send a test message. */
 export type WizardStep = 1 | 2 | 3 | 4;
@@ -59,7 +60,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
     HelpButton,
     ReactiveFormsModule,
     Button,
-    Dialog,
+    TbDialog,
     InputNumber,
     LinkCodeView,
     Message,
@@ -69,13 +70,12 @@ function describeMessengerError(error: unknown, fallback: string): string {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="t.title(name())"
+    <tb-dialog
+      kind="form"
+      width="wide"
       [(visible)]="visible"
-      [modal]="true"
-      appendTo="body"
-      styleClass="tb-dialog tb-dialog--wide"
-      [draggable]="false"
+      [headline]="t.title(name())"
+      [cancelLabel]="c.close"
     >
       <tb-help-button topic="teacher/notifications" [label]="t.more" />
       <ol class="tb-wizard">
@@ -298,7 +298,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
           }
         </li>
       </ol>
-    </p-dialog>
+    </tb-dialog>
   `,
   styles: `
     .tb-wizard {
@@ -382,6 +382,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
   `,
 })
 export class BotWizardDialog {
+  protected readonly c = SHARED_T.common;
   protected readonly t = T.wizard;
   private readonly api = inject(NotificationsApi);
   private watch: Subscription | null = null;

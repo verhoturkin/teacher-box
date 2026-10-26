@@ -84,7 +84,7 @@ Decisions taken with the teacher (2026-10-25/26), binding for every stage:
   `payment-dialog`, `board-dialog`, `board-backups-dialog`, `to-board-dialog` (3 modes → radio
   list + one action), `textbook-dialog`, `prompt-library-card`, `system-prompts-card` («Сбросить» →
   «⋮»), `reset-card`, `restore-dialog`, `admin/settings/settings-page`, `channels-panel`.
-- [ ] **287.2** homework, notifications, meetings: `assign-more-dialog`, `bind-textbook-dialog`,
+- [x] **287.2** homework, notifications, meetings: `assign-more-dialog`, `bind-textbook-dialog`,
   `caption-language-dialog`, `broadcast-dialog`, `bot-wizard-dialog`, `call-prejoin`,
   `call-stats-dialog`; `review-sheet` and the editor's AI drawer stay side/bottom sheets.
 

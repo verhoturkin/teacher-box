@@ -1,20 +1,16 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   computed,
   input,
   linkedSignal,
   model,
   output,
-  viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
 import { RadioButton } from 'primeng/radiobutton';
 import { locale } from '@core/i18n/language';
-import { SHARED_T } from '@shared/i18n/texts';
+import { TbDialog } from '@shared/ui/dialog/dialog';
 import { CaptionTrack, CaptionTracks } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
 
@@ -35,20 +31,16 @@ export function languageName(code: string): string {
  */
 @Component({
   selector: 'tb-caption-language-dialog',
-  imports: [FormsModule, Button, Dialog, RadioButton],
+  imports: [FormsModule, RadioButton, TbDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
+    <tb-dialog
+      kind="alert"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog tb-dialog--short"
-      [draggable]="false"
-      [focusOnShow]="false"
-      (onShow)="focusTitle()"
+      [headline]="t.header"
+      [confirmLabel]="replacing() ? t.replace : t.take"
+      (confirm)="take()"
     >
-      <ng-template #header let-labelledBy="ariaLabelledBy">
-        <span #title class="p-dialog-title" tabindex="-1" [id]="labelledBy">{{ t.header }}</span>
-      </ng-template>
       @if (tracks()) {
         @if (replacing()) {
           <p class="tb-muted tb-caption-language__note">{{ t.replacing }}</p>
@@ -77,16 +69,7 @@ export function languageName(code: string): string {
           }
         </ul>
       }
-      <ng-template #footer>
-        <p-button
-          [label]="c.cancel"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        <p-button [label]="replacing() ? t.replace : t.take" (onClick)="take()" />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
   styles: `
     .tb-caption-language__note {
@@ -133,7 +116,6 @@ export function languageName(code: string): string {
   `,
 })
 export class CaptionLanguageDialog {
-  protected readonly c = SHARED_T.common;
   protected readonly t = T.captionLanguage;
 
   readonly visible = model(false);
@@ -159,11 +141,6 @@ export class CaptionLanguageDialog {
   });
   /** The index in `ordered`; back to the suggested track when new tracks come. */
   protected readonly selected = linkedSignal({ source: this.tracks, computation: () => 0 });
-  protected readonly title = viewChild<ElementRef<HTMLElement>>('title');
-
-  protected focusTitle(): void {
-    this.title()?.nativeElement.focus();
-  }
 
   protected name(track: CaptionTrack): string {
     const name = languageName(track.language);
