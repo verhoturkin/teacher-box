@@ -2341,6 +2341,58 @@ a.p-menu-item-link:hover {
   margin-inline-start: var(--tb-space-1);
 }
 
+/* The arrows are standard icon buttons (40 dp, no container), «Сегодня» is the outlined button (M3) */
+.tb-fc-button--icon.tb-fc-button--icon {
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  color: var(--p-md-on-surface-variant);
+
+  &:hover:not(:disabled) {
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface-variant) var(--tb-state-hover),
+      transparent
+    );
+  }
+
+  &:active:not(:disabled) {
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface-variant) var(--tb-state-pressed),
+      transparent
+    );
+  }
+}
+
+.tb-fc-button--outlined.tb-fc-button--outlined {
+  border-color: var(--p-md-outline);
+  background: transparent;
+  color: var(--p-md-primary);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--p-md-primary) var(--tb-state-hover), transparent);
+  }
+
+  &:active:not(:disabled) {
+    background: color-mix(in srgb, var(--p-md-primary) var(--tb-state-pressed), transparent);
+  }
+
+  &:disabled {
+    border-color: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-disabled), transparent);
+    background: transparent;
+  }
+}
+
+.tb-fc-button--icon.tb-fc-button--icon:disabled {
+  background: transparent;
+}
+
+/* The period of the week and the month, larger than the buttons around it (ours: headline small) */
+.tb-cal-title {
+  font: var(--tb-type-headline-s);
+}
+
 /* The connected group: 2 px apart, small inner corners, round outer ones, the selected one round */
 .tb-fc-segments.tb-fc-segments {
   display: inline-flex;

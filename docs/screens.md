@@ -96,6 +96,9 @@ the calendar), «Запросы учеников» and «Нерабочее вр
   the grid fills the free height of the pane (`fillHeight` of `ui/schedule-calendar.ts`: the half-hour
   rows of the week and the weeks of the month are stretched, never below their height by content —
   on a low screen the pane scrolls as before; a phone is unchanged),
+  the toolbar: «Сегодня» is the M3 outlined button, the arrows are standard icon buttons (40 dp, no
+  container), the period is Headline Small (a phone keeps Title Medium), the views stay a connected
+  button group,
   the grid (not the toolbar) in a card with 16 dp corners and an outline-variant frame
   (`viewClass`), pale grid lines (outline-variant at 55 %), a time column without a border and with label-small
   hours, a header of the weekday over a large day number (today's in `primary`, no circle: the days

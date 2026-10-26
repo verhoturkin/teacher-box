@@ -282,12 +282,12 @@ export class ScheduleCalendar {
               center: 'title',
               end: 'timeGridWeek,dayGridMonth,listWeek',
             },
+            toolbarTitleClass: 'tb-cal-title',
             // Explicitly: after a rotation from the phone the footer would otherwise stay
             footerToolbar: false,
           }),
       // M3 buttons and segmented buttons (styles.scss)
-      buttonClass: (button: ButtonInfo) =>
-        button.buttonGroup?.hasSelection === true ? 'tb-fc-segment' : 'tb-fc-button',
+      buttonClass: (button: ButtonInfo) => buttonClass(button),
       buttonGroupClass: (group: ButtonGroupInfo) => (group.hasSelection ? 'tb-fc-segments' : ''),
       // the grid, the day header, the cards and the month cells (styles.scss, «Calendar»)
       viewClass: 'tb-cal-view',
@@ -502,6 +502,17 @@ function share(fill: HTMLElement, rows: readonly HTMLElement[], free: number, le
   const rowsHeight = rows.reduce((sum, row) => sum + row.getBoundingClientRect().height, 0);
   const height = (free - (fill.getBoundingClientRect().height - rowsHeight)) / rows.length;
   return Math.max(least, Math.floor(height * 100) / 100);
+}
+
+/** M3 buttons of the toolbar: the views are segments, the arrows icon buttons, «Сегодня» outlined, the rest tonal. */
+function buttonClass(button: ButtonInfo): string {
+  if (button.buttonGroup?.hasSelection === true) {
+    return 'tb-fc-segment';
+  }
+  if (button.isIconOnly) {
+    return 'tb-fc-button tb-fc-button--icon';
+  }
+  return button.name === 'today' ? 'tb-fc-button tb-fc-button--outlined' : 'tb-fc-button';
 }
 
 const NOTE_SEPARATOR = ' · ';

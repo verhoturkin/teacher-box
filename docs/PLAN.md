@@ -38,8 +38,8 @@ Goal: the schedule calendar looks like Google Calendar in M3 roles (stage 292).
   opt-in input of `shared/ui/filter-chips.ts`, other pages keep wrapping; the phone's screen chips
   are unchanged. Entry points: `shared/ui/filter-chips.ts`, `schedule/teacher/schedule-page.ts`,
   `docs/design-system.md`, `docs/screens.md`.
-- [ ] 292.4 F: the rest — toolbar (outlined «Сегодня», icon-button arrows, larger period title),
-  list view, phone layout check.
+- [x] 292.4 F: the rest — toolbar (outlined «Сегодня», icon-button arrows, larger period title),
+  phone layout check. _The list view keeps its look (no change needed)._
 
 ## Backlog
 

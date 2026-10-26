@@ -95,6 +95,9 @@ describe('ScheduleCalendar', () => {
       (button) => button.textContent.trim() === 'Сегодня',
     );
     expect(today).toHaveLength(1);
+    expect(today[0]?.classList.contains('tb-fc-button--outlined')).toBe(true);
+    const arrows = Array.from(host.querySelectorAll('.tb-fc-button--icon'));
+    expect(arrows.map((arrow) => arrow.getAttribute('aria-label'))).toEqual(['Назад', 'Вперёд']);
   });
 
   it('writes the weekday over a big day number and marks today', async () => {
