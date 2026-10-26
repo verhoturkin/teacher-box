@@ -72,7 +72,8 @@ describe('BoardBackupsDialog', () => {
     restore().click();
     await fixture.whenStable();
     button(
-      (found) => found.closest('.p-message') !== null && found.textContent.includes('Восстановить'),
+      (found) =>
+        found.closest('.tb-d__step') !== null && found.textContent.includes('Восстановить'),
     ).click();
     backend
       .expectOne({ method: 'POST', url: `${URL}/backup-1/restore` })

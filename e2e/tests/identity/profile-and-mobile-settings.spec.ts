@@ -112,7 +112,7 @@ test('the teacher settings on a phone: backups menu and a full-screen reset dial
   await expect(dialog).toBeVisible();
   // full screen once the opening animation is over
   await expect.poll(async () => Math.round((await dialog.boundingBox())?.width ?? 0)).toBe(375);
-  await dialog.getByRole('button', { name: 'Отмена' }).click();
+  await dialog.getByRole('button', { name: 'Закрыть' }).click();
   await expect(dialog).toBeHidden();
 });
 

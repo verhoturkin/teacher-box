@@ -239,7 +239,7 @@ test('the teacher makes a copy, changes the board and restores it', async ({ pag
     .last()
     .click();
   await expect(copies).toContainText('Текущий рисунок сохранится копией');
-  await copies.locator('.p-message').getByRole('button', { name: 'Восстановить' }).click();
+  await copies.locator('.tb-d__step').getByRole('button', { name: 'Восстановить' }).click();
   await expect(copies.getByText('Копия учителя')).toHaveCount(2);
 
   await expect

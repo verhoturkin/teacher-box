@@ -83,13 +83,15 @@ describe('ResetCard', () => {
 
   it('does nothing without the word and shows a wrong password', async () => {
     await fill('wrong', 'удалить');
-    expect(submitButton().disabled).toBe(true);
-    fixture.componentInstance.reset();
+    submitButton().click();
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Неверный формат');
+    backend.expectNone('/api/teacher/reset');
 
     typeInto(requireElement(document.body, '#reset-word', HTMLInputElement), ' СБРОСИТЬ ');
     await fixture.whenStable();
-    fixture.componentInstance.reset();
-    fixture.componentInstance.reset();
+    submitButton().click();
+    submitButton().click();
     backend
       .expectOne('/api/teacher/reset')
       .flush(

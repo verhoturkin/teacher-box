@@ -6,25 +6,36 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
+import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { Dialog } from 'primeng/dialog';
-import { Message } from 'primeng/message';
+import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
 import { Textarea } from 'primeng/textarea';
-import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
-import { SHARED_T } from '@shared/i18n/texts';
 import { Confirm } from '@shared/ui/confirm';
-import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
-import { SubmitFor } from '@shared/ui/submit-for';
+import { DialogHeaderActions, TbDialog } from '@shared/ui/dialog/dialog';
+import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
+import { FieldErrors } from '@shared/ui/field-errors';
 import { AiApi } from './data-access/ai-api';
 import { SystemPrompt } from './data-access/ai.models';
 import { T } from './i18n/texts';
 
 /** The longest system prompt, as on the backend (`SystemPrompts.MAX_TEXT`). */
 const MAX_TEXT = 10_000;
+
+/** Whitespace only is as empty as nothing (the text is trimmed on save). */
+function notBlank(control: AbstractControl<string>): ValidationErrors | null {
+  return control.value.trim() === '' ? { required: true } : null;
+}
 
 /**
  * System prompts of the assistant on the AI page (ADR-0043): the rules of the homework and review
@@ -36,12 +47,12 @@ const MAX_TEXT = 10_000;
     ReactiveFormsModule,
     Button,
     Card,
-    Dialog,
-    Message,
+    DialogHeaderActions,
+    Menu,
+    TbDialog,
     Tag,
     Textarea,
     FieldErrors,
-    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -74,20 +85,38 @@ const MAX_TEXT = 10_000;
       </ul>
     </p-card>
 
-    <p-dialog
-      [header]="header()"
-      [visible]="editing() !== null"
-      (visibleChange)="$event || editing.set(null)"
-      [modal]="true"
-      styleClass="tb-dialog tb-dialog--wide"
-      [draggable]="false"
+    <tb-dialog
+      kind="form"
+      width="wide"
+      [(visible)]="visible"
+      [headline]="header()"
+      [confirmLabel]="t.save"
+      formId="system-prompt-form"
+      [pending]="submit.pending()"
+      [error]="submit.error()"
+      [dirty]="submit.dirty()"
     >
+      @if (editing()?.custom) {
+        <ng-template tbDialogHeaderActions>
+          <p-button
+            icon="tb-i tb-i-more_vert"
+            severity="secondary"
+            [text]="true"
+            [rounded]="true"
+            [ariaLabel]="t.more"
+            aria-haspopup="menu"
+            [loading]="resetting()"
+            (onClick)="menu.toggle($event)"
+          />
+          <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
+        </ng-template>
+      }
       <form
         tbFieldErrors
         id="system-prompt-form"
         class="tb-form"
         [formGroup]="form"
-        (ngSubmit)="save()"
+        (ngSubmit)="submit.run()"
       >
         <div class="tb-field tb-field--required">
           <label for="system-prompt-text">{{ t.text }}</label>
@@ -100,34 +129,8 @@ const MAX_TEXT = 10_000;
           ></textarea>
           <small class="tb-hint">{{ t.textHint }}</small>
         </div>
-        @if (error(); as message) {
-          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-        }
       </form>
-      <ng-template #footer>
-        @if (editing()?.custom) {
-          <p-button
-            [label]="t.reset"
-            severity="secondary"
-            [text]="true"
-            [loading]="resetting()"
-            (onClick)="confirmReset()"
-          />
-        }
-        <p-button
-          [label]="c.cancel"
-          severity="secondary"
-          [text]="true"
-          (onClick)="editing.set(null)"
-        />
-        <p-button
-          [label]="t.save"
-          [loading]="pending()"
-          type="submit"
-          tbSubmitFor="system-prompt-form"
-        />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
   styles: `
     .tb-list__title {
@@ -146,7 +149,6 @@ const MAX_TEXT = 10_000;
   `,
 })
 export class SystemPromptsCard implements OnInit {
-  protected readonly c = SHARED_T.common;
   protected readonly t = T.systemPrompts;
   private readonly api = inject(AiApi);
   private readonly confirm = inject(Confirm);
@@ -158,13 +160,23 @@ export class SystemPromptsCard implements OnInit {
     const prompt = this.editing();
     return prompt === null ? '' : T.systemPrompts.features[prompt.feature];
   });
-  protected readonly pending = signal(false);
+  readonly visible = signal(false);
   protected readonly resetting = signal(false);
-  protected readonly error = signal<string | null>(null);
+  /** «Сбросить» destroys the teacher's text: red, behind a confirmation. */
+  protected readonly menuItems: MenuItem[] = [
+    {
+      label: T.systemPrompts.reset,
+      icon: 'tb-i tb-i-history',
+      styleClass: 'tb-menu-item--danger',
+      command: () => {
+        void this.confirmReset();
+      },
+    },
+  ];
   readonly form = new FormGroup({
     text: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(MAX_TEXT)],
+      validators: [notBlank, Validators.maxLength(MAX_TEXT)],
     }),
   });
 
@@ -175,36 +187,30 @@ export class SystemPromptsCard implements OnInit {
   }
 
   edit(prompt: SystemPrompt): void {
-    this.error.set(null);
-    this.form.reset({ text: prompt.text });
     this.editing.set(prompt);
+    this.visible.set(true);
   }
 
-  save(): void {
-    const prompt = this.editing();
-    if (prompt === null || !revealErrors(this.form) || this.pending()) {
-      return;
-    }
-    const text = this.form.controls.text.value.trim();
-    if (text === '') {
-      this.form.markAllAsTouched();
-      return;
-    }
-    this.pending.set(true);
-    this.error.set(null);
-    this.api.updateSystemPrompt(prompt.feature, text, prompt.version).subscribe({
-      next: (saved) => {
-        this.pending.set(false);
-        this.editing.set(null);
-        this.replace(saved);
-        this.snackbar.success(T.systemPrompts.saved);
-      },
-      error: (error: unknown) => {
-        this.pending.set(false);
-        this.error.set(describeError(error, T.systemPrompts.failed));
-      },
-    });
-  }
+  protected readonly submit = dialogSubmit({
+    visible: this.visible,
+    form: this.form,
+    failed: T.systemPrompts.failed,
+    reset: () => {
+      this.form.reset({ text: this.editing()?.text ?? '' });
+    },
+    request: (value) => {
+      const prompt = this.editing();
+      return this.api.updateSystemPrompt(
+        prompt?.feature ?? 'HOMEWORK_DRAFT',
+        value.text.trim(),
+        prompt?.version ?? 0,
+      );
+    },
+    done: (saved) => {
+      this.replace(saved);
+      this.snackbar.success(T.systemPrompts.saved);
+    },
+  });
 
   protected async confirmReset(): Promise<void> {
     const prompt = this.editing();
@@ -227,7 +233,7 @@ export class SystemPromptsCard implements OnInit {
     this.api.resetSystemPrompt(prompt.feature).subscribe({
       next: (standard) => {
         this.resetting.set(false);
-        this.editing.set(null);
+        this.visible.set(false);
         this.replace(standard);
         this.snackbar.success(T.systemPrompts.resetDone);
       },

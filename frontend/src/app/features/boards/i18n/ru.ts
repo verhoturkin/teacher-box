@@ -140,6 +140,8 @@ export const ru = {
     imageCopied: 'Картинка в буфере обмена. На доске нажмите Ctrl+V.',
     textCopied: 'Текст в буфере обмена. На доске нажмите Ctrl+V.',
     openBoard: (title: string) => `Открыть доску «${title}»`,
+    transfer: 'Перенести',
+    how: 'Как перенести',
     asImage: 'Картинкой',
     asText: 'Текстом',
     noStudentBoards: 'У учеников задания досок нет',

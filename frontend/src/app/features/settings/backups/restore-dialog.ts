@@ -3,14 +3,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  computed,
   inject,
   input,
   model,
   signal,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
 import { AuthService } from '@core/auth/auth.service';
@@ -18,9 +17,9 @@ import { describeError } from '@core/http/error-messages';
 import { RESTART_POLL_MS, RESTART_WAIT_MS } from '@shared/restart/restart-wait';
 import { BackupInfo, RestoreStatus } from '../data-access/settings.models';
 import { BackupsApi, BackupsArea } from './backups-api';
+import { TbDialog } from '@shared/ui/dialog/dialog';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
-import { SubmitFor } from '@shared/ui/submit-for';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
@@ -35,24 +34,27 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
   imports: [
     ReactiveFormsModule,
     DatePipe,
-    Button,
-    Dialog,
+    TbDialog,
     Message,
     Password,
     PasswordToggle,
     FieldErrors,
-    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="t.title"
+    <tb-dialog
+      kind="alert"
       [(visible)]="visible"
-      [modal]="true"
+      [headline]="t.title"
       [closable]="stage() !== 'restarting'"
-      styleClass="tb-dialog tb-dialog--short"
-      [draggable]="false"
-      (onHide)="reset()"
+      [confirmLabel]="confirmLabel()"
+      [confirmSeverity]="stage() === 'confirm' ? 'danger' : 'primary'"
+      [cancelLabel]="cancelLabel()"
+      [formId]="stage() === 'confirm' ? 'restore-form' : undefined"
+      [pending]="pending()"
+      [error]="error()"
+      (confirm)="signInAgain()"
+      (closed)="reset()"
     >
       @if (backup(); as backup) {
         @switch (stage()) {
@@ -84,9 +86,6 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
                   <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
                 </p-password>
               </div>
-              @if (error(); as message) {
-                <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-              }
             </form>
           }
           @case ('restarting') {
@@ -121,33 +120,10 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
           }
         }
       }
-      <ng-template #footer>
-        @switch (stage()) {
-          @case ('confirm') {
-            <p-button
-              [label]="c.cancel"
-              severity="secondary"
-              [text]="true"
-              (onClick)="visible.set(false)"
-            />
-            <p-button
-              type="submit"
-              tbSubmitFor="restore-form"
-              [label]="t.restore"
-              severity="danger"
-              [loading]="pending()"
-            />
-          }
-          @case ('done') {
-            <p-button [label]="t.signInAgain" icon="tb-i tb-i-login" (onClick)="signInAgain()" />
-          }
-        }
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
 })
 export class RestoreDialog {
-  protected readonly c = SHARED_T.common;
   protected readonly t = T.restore;
   private readonly api = inject(BackupsApi);
   private readonly auth = inject(AuthService);
@@ -161,6 +137,29 @@ export class RestoreDialog {
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly failure = signal<string | null>(null);
+  /** The question has «Отмена · Восстановить»; the results have one button, the restart none. */
+  protected readonly confirmLabel = computed(() => {
+    switch (this.stage()) {
+      case 'confirm':
+        return T.restore.restore;
+      case 'done':
+        return T.restore.signInAgain;
+      default:
+        return null;
+    }
+  });
+  protected readonly cancelLabel = computed(() => {
+    switch (this.stage()) {
+      case 'confirm':
+        return SHARED_T.common.cancel;
+      case 'manual':
+      case 'failed':
+      case 'silent':
+        return SHARED_T.common.close;
+      default:
+        return null;
+    }
+  });
 
   readonly form = new FormGroup({
     password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),

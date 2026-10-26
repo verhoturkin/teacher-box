@@ -80,7 +80,7 @@ Decisions taken with the teacher (2026-10-25/26), binding for every stage:
 
 ### Stage 287 — Dialogs on the shared UI (F)
 
-- [ ] **287.1** identity, billing, boards, textbooks, ai, settings, admin, notifications channels:
+- [x] **287.1** identity, billing, boards, textbooks, ai, settings, admin, notifications channels:
   `payment-dialog`, `board-dialog`, `board-backups-dialog`, `to-board-dialog` (3 modes → radio
   list + one action), `textbook-dialog`, `prompt-library-card`, `system-prompts-card` («Сбросить» →
   «⋮»), `reset-card`, `restore-dialog`, `admin/settings/settings-page`, `channels-panel`.

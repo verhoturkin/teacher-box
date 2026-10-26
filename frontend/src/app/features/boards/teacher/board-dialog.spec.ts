@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { aBoard, aLinkBoard } from '@testing/boards-fixtures';
-import { bodyText } from '@testing/dom';
+import { bodyText, buttonByText } from '@testing/dom';
 import { testProviders } from '@testing/setup';
 import { Board } from '../data-access/boards.models';
 import { BoardDialog } from './board-dialog';
@@ -47,7 +47,7 @@ describe('BoardDialog', () => {
       ],
     });
 
-    dialog.save();
+    buttonByText(document.body, 'Создать').click();
     const create = backend.expectOne({ method: 'POST', url: '/api/teacher/boards' });
     expect(create.request.body).toEqual({
       kind: 'EXCALIDRAW',
@@ -69,10 +69,10 @@ describe('BoardDialog', () => {
     expect(bodyText()).toContain('портал хранит только её название и ссылку');
     expect(document.body.querySelector('#board-url')).not.toBeNull();
 
-    dialog.save();
+    buttonByText(document.body, 'Создать').click();
     backend.expectNone('/api/teacher/boards');
     dialog.form.patchValue({ url: ' https://app.holst.so/board/1 ' });
-    dialog.save();
+    buttonByText(document.body, 'Создать').click();
     const create = backend.expectOne({ method: 'POST', url: '/api/teacher/boards' });
     expect(create.request.body).toMatchObject({
       kind: 'LINK',
@@ -110,7 +110,7 @@ describe('BoardDialog', () => {
       ],
     });
 
-    dialog.save();
+    buttonByText(document.body, 'Сохранить').click();
     const change = backend.expectOne({ method: 'PUT', url: '/api/teacher/boards/board-2' });
     expect(change.request.body).toEqual({
       title: 'Холст',
@@ -127,8 +127,8 @@ describe('BoardDialog', () => {
   it('saves once while the request runs', async () => {
     const dialog = await open();
     dialog.form.patchValue({ title: 'Алгебра' });
-    dialog.save();
-    dialog.save();
+    buttonByText(document.body, 'Создать').click();
+    buttonByText(document.body, 'Создать').click();
 
     backend.expectOne('/api/teacher/boards').flush(aBoard());
     expect(saved).toHaveLength(1);

@@ -11,7 +11,6 @@ import {
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
@@ -30,7 +29,7 @@ import {
 import { TimeZoneOption, timeZoneOptions } from './time-zones';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
-import { SubmitFor } from '@shared/ui/submit-for';
+import { TbDialog } from '@shared/ui/dialog/dialog';
 import { PageHeader } from '@shared/ui/page-header';
 import { PaneNav, PaneNavItem } from '@shared/ui/pane-nav';
 import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
@@ -132,12 +131,11 @@ function toGroup(settings: readonly AdminSetting[]): Group {
     Panes,
     Pane,
     PaneNav,
-    Dialog,
+    TbDialog,
     HelpButton,
     InputText,
     Message,
     Select,
-    SubmitFor,
     Tag,
     PageHeader,
     LoadStateView,
@@ -310,13 +308,17 @@ function toGroup(settings: readonly AdminSetting[]): Group {
       }
     </ng-template>
 
-    <p-dialog
-      [header]="t.confirmTitle"
+    <tb-dialog
+      kind="alert"
       [(visible)]="confirmVisible"
-      [modal]="true"
+      [headline]="t.confirmTitle"
       [closable]="stage() !== 'restarting'"
-      styleClass="tb-dialog tb-dialog--short"
-      [draggable]="false"
+      [confirmLabel]="stage() === 'confirm' ? c.save : stage() === 'restarting' ? null : t.finish"
+      [cancelLabel]="stage() === 'confirm' ? c.cancel : null"
+      [formId]="stage() === 'confirm' ? 'settings-confirm' : undefined"
+      [pending]="pending()"
+      [error]="error()"
+      (confirm)="confirmVisible.set(false)"
     >
       @switch (stage()) {
         @case ('confirm') {
@@ -333,9 +335,6 @@ function toGroup(settings: readonly AdminSetting[]): Group {
                 [(ngModel)]="password"
               />
             </div>
-            @if (error(); as message) {
-              <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-            }
           </form>
         }
         @case ('restarting') {
@@ -351,26 +350,7 @@ function toGroup(settings: readonly AdminSetting[]): Group {
           <p>{{ t.silent }}</p>
         }
       }
-      <ng-template #footer>
-        @if (stage() === 'confirm') {
-          <p-button
-            [label]="c.cancel"
-            severity="secondary"
-            [text]="true"
-            (onClick)="confirmVisible.set(false)"
-          />
-          <p-button
-            [label]="c.save"
-            [loading]="pending()"
-            [disabled]="password().trim() === ''"
-            type="submit"
-            tbSubmitFor="settings-confirm"
-          />
-        } @else if (stage() !== 'restarting') {
-          <p-button [label]="t.finish" (onClick)="confirmVisible.set(false)" />
-        }
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
   styles: `
     /* One setting under another (ADR-0021): the fields first, then what cannot be changed here */
@@ -541,7 +521,11 @@ export class SettingsPage implements OnInit {
   }
 
   save(): void {
-    if (this.pending() || this.password().trim() === '') {
+    if (this.pending()) {
+      return;
+    }
+    if (this.password().trim() === '') {
+      this.error.set(SHARED_T.fields.required);
       return;
     }
     this.pending.set(true);

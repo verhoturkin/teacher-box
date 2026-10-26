@@ -2,7 +2,7 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { systemPrompt } from '@testing/ai-fixtures';
-import { bodyText, buttonByText, hostElement, readableText } from '@testing/dom';
+import { bodyText, buttonByText, hostElement, menuItemByText, readableText } from '@testing/dom';
 import { testProviders } from '@testing/setup';
 import { SystemPromptsCard } from './system-prompts-card';
 
@@ -59,9 +59,9 @@ describe('SystemPromptsCard', () => {
     button(host, 'Изменить системный промт «Черновик задания»').click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Формат ответа портал задаёт сам');
-    expect(bodyText()).not.toContain('Вернуть стандартный');
+    expect(() => buttonByText(document.body, 'Другие действия')).toThrow();
     card.form.controls.text.setValue('  ');
-    card.save();
+    buttonByText(document.body, 'Сохранить').click();
     backend.expectNone('/api/teacher/ai/system-prompts/HOMEWORK_DRAFT');
 
     card.form.controls.text.setValue('  Пиши кратко ');
@@ -81,7 +81,7 @@ describe('SystemPromptsCard', () => {
     );
     await fixture.whenStable();
 
-    expect(card.editing()).toBeNull();
+    expect(card.visible()).toBe(false);
     expect(readableText(host)).toContain('Черновик задания Изменён Пиши кратко');
     expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
   });
@@ -90,15 +90,16 @@ describe('SystemPromptsCard', () => {
     const { card } = await render();
 
     card.edit(review);
-    card.save();
+    await fixture.whenStable();
+    buttonByText(document.body, 'Сохранить').click();
     backend
       .expectOne({ method: 'PUT', url: '/api/teacher/ai/system-prompts/REVIEW_DRAFT' })
       .flush({ status: 409, code: 'conflict' }, { status: 409, statusText: 'Conflict' });
     await fixture.whenStable();
 
-    expect(card.editing()).not.toBeNull();
+    expect(card.visible()).toBe(true);
     buttonByText(document.body, 'Отмена').click();
-    expect(card.editing()).toBeNull();
+    expect(card.visible()).toBe(false);
   });
 
   it('restores the standard prompt after a confirmation', async () => {
@@ -111,14 +112,16 @@ describe('SystemPromptsCard', () => {
 
     button(host, 'Изменить системный промт «Черновик проверки»').click();
     await fixture.whenStable();
-    buttonByText(document.body, 'Вернуть стандартный').click();
+    buttonByText(document.body, 'Другие действия').click();
+    await fixture.whenStable();
+    menuItemByText('Вернуть стандартный').click();
     await fixture.whenStable();
     backend
       .expectOne({ method: 'DELETE', url: '/api/teacher/ai/system-prompts/REVIEW_DRAFT' })
       .flush({ ...review, text: review.defaultText, custom: false, updatedAt: null, version: 0 });
     await fixture.whenStable();
 
-    expect(card.editing()).toBeNull();
+    expect(card.visible()).toBe(false);
     expect(readableText(host)).not.toContain('Изменён');
     expect(readableText(host)).toContain('Ты помогаешь репетитору проверять домашние работы.');
   });
@@ -133,13 +136,15 @@ describe('SystemPromptsCard', () => {
 
     card.edit(review);
     await fixture.whenStable();
-    buttonByText(document.body, 'Вернуть стандартный').click();
+    buttonByText(document.body, 'Другие действия').click();
+    await fixture.whenStable();
+    menuItemByText('Вернуть стандартный').click();
     await fixture.whenStable();
     backend
       .expectOne({ method: 'DELETE', url: '/api/teacher/ai/system-prompts/REVIEW_DRAFT' })
       .flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
 
-    expect(card.editing()).not.toBeNull();
+    expect(card.visible()).toBe(true);
   });
 });

@@ -80,7 +80,7 @@ describe('PaymentDialog', () => {
     expect(bodyText()).toContain('чек.pdf');
     expect(bodyText()).not.toContain('Чек — до 10 МБ');
     dialog.form.patchValue({ amount: 1000 });
-    dialog.save();
+    buttonByText(document.body, 'Сохранить').click();
 
     backend.expectOne('/api/teacher/billing/payments').flush(payment());
     const attach = backend.expectOne('/api/teacher/billing/payments/p-1/receipt');
@@ -104,7 +104,7 @@ describe('PaymentDialog', () => {
     expect(dialog.receipt()).toBeNull();
     dialog.receipt.set(new File(['x'], 'x.txt'));
     dialog.form.patchValue({ amount: 1000 });
-    dialog.save();
+    buttonByText(document.body, 'Сохранить').click();
 
     backend.expectOne('/api/teacher/billing/payments').flush(payment());
     backend
@@ -141,14 +141,14 @@ describe('PaymentDialog', () => {
   });
 
   it('requires an amount', () => {
-    fixture.componentInstance.save();
+    buttonByText(document.body, 'Сохранить').click();
 
     backend.expectNone('/api/teacher/billing/payments');
   });
 
   it('shows errors', async () => {
     fixture.componentInstance.form.patchValue({ amount: 10 });
-    fixture.componentInstance.save();
+    buttonByText(document.body, 'Сохранить').click();
 
     const request = backend.expectOne('/api/teacher/billing/payments');
     expect(request.request.body).toEqual(expect.objectContaining({ comment: null }));
