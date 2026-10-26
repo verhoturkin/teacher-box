@@ -90,6 +90,13 @@ supporting pane holds the mini-month (`ui/mini-month.ts`, **M3** docked date pic
 Monday, a dot under a day with lessons, the shown day filled; *ours:* no input, a click only moves
 the calendar), «Запросы учеников» and «Нерабочее время» (rows with «⋮»: «Изменить», «Удалить…»).
 
+- **Calendar grid in the manner of Google Calendar** (*ours*, M3 has no calendar grid; classes are
+  set through the `*Class` options of `ui/schedule-calendar.ts`, styles `tb-cal-*` in `styles.scss`):
+  the grid (not the toolbar) in a card with 16 dp corners and an outline-variant frame
+  (`viewClass`), pale grid lines (outline-variant at 55 %), a time column without a border and with label-small
+  hours, a header of the weekday over a large day number (today's in `primary`, no circle: the days
+  are not buttons), lessons as 8 dp cards with a 1 px gap of the card colour, a month with `primary`
+  bold number of today, pills and a `primary` «ещё N» link, an `error` now line with a dot.
 - **Lesson states in the grid** (`styles.scss`): planned — filled (the student's label container on
   the teacher's calendar), held — success-container, missed — error-container, cancelled —
   surface-container-highest, on-surface-variant, struck through; a held / missed / cancelled lesson

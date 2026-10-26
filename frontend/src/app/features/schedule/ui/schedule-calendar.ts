@@ -180,6 +180,25 @@ export class ScheduleCalendar {
       buttonClass: (button: ButtonInfo) =>
         button.buttonGroup?.hasSelection === true ? 'tb-fc-segment' : 'tb-fc-button',
       buttonGroupClass: (group: ButtonGroupInfo) => (group.hasSelection ? 'tb-fc-segments' : ''),
+      // the grid, the day header, the cards and the month cells (styles.scss, «Calendar»)
+      viewClass: 'tb-cal-view',
+      slotHeaderClass: 'tb-cal-slot-header',
+      slotHeaderInnerClass: 'tb-cal-slot-label',
+      slotLaneClass: 'tb-cal-slot-lane',
+      dayHeaderClass: 'tb-cal-day-header',
+      dayHeaderInnerClass: (info) => (info.isToday ? 'tb-cal-day tb-cal-day--today' : 'tb-cal-day'),
+      dayCellTopInnerClass: (info) =>
+        info.isToday ? 'tb-cal-date tb-cal-date--today' : 'tb-cal-date',
+      blockEventClass: 'tb-cal-card',
+      rowEventClass: 'tb-cal-pill',
+      moreLinkClass: 'tb-cal-more',
+      views: {
+        timeGrid: {
+          dayHeaderContent: (info) => dayHeaderNodes(info.date, info.text),
+          nowIndicatorLineClass: 'tb-cal-now-line',
+          nowIndicatorHeaderClass: 'tb-cal-now-dot',
+        },
+      },
       listText: C.list,
       // hints for screen readers in the language of the interface (ADR-0024, ADR-0035)
       eventsHint: C.events,
@@ -339,6 +358,15 @@ export class ScheduleCalendar {
     }
     return request + (lesson.topic ?? C.lesson);
   }
+}
+
+/** The week and day header as in Google Calendar: the weekday over a large day number. */
+function dayHeaderNodes(date: Date, text: string): { domNodes: Node[] } {
+  const weekday = new Intl.DateTimeFormat(language(), { weekday: 'short' }).format(date);
+  // the day view's text already is the full date: keep it as the accessible name
+  const node = textNode('tb-cal-day__weekday', weekday);
+  node.title = text;
+  return { domNodes: [node, textNode('tb-cal-day__number', String(date.getDate()))] };
 }
 
 function textNode(className: string, text: string): HTMLElement {

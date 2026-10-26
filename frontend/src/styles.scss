@@ -2279,7 +2279,8 @@ a.p-menu-item-link:hover {
   --fc-classic-foreground: var(--p-md-on-surface);
   --fc-classic-faint-foreground: var(--p-md-on-surface-variant);
   --fc-classic-muted-foreground: var(--p-md-on-surface-variant);
-  --fc-classic-border: var(--p-md-outline-variant);
+  /* Thin pale lines as in Google Calendar: outline-variant at half strength (our decision, not in M3) */
+  --fc-classic-border: color-mix(in srgb, var(--p-md-outline-variant) 55%, transparent);
   --fc-classic-strong-border: var(--p-md-outline);
 }
 
@@ -2579,6 +2580,105 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
     transparent 0 6px,
     color-mix(in srgb, var(--p-md-outline) 35%, transparent) 6px 8px
   );
+}
+
+/*
+ * Calendar in the manner of Google Calendar (our decision; M3 has no calendar grid): the time column has no
+ * border and small `on-surface-variant` labels; the day header is the weekday (label medium) over a large day
+ * number, today's in `primary` (no circle: the days are not buttons); lessons are cards with 8 dp corners and
+ * a 1 px gap of the card colour between neighbours; in the month today's number is `primary` and bold, the
+ * events are pills and «ещё N» is a `primary` text link.
+ */
+/* The grid (not the toolbar) lies in a card with 16 dp corners; its own square frame is clipped away */
+.tb-cal-view.tb-cal-view {
+  overflow: hidden;
+  border: 1px solid var(--p-md-outline-variant);
+  border-radius: var(--tb-shape-lg);
+}
+
+.tb-cal-slot-header.tb-cal-slot-header {
+  border-color: transparent;
+}
+
+.tb-cal-slot-label.tb-cal-slot-label {
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-label-s);
+}
+
+.tb-cal-day-header.tb-cal-day-header {
+  padding-block: var(--tb-space-2);
+  border-color: transparent;
+}
+
+.tb-cal-day.tb-cal-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--tb-space-1);
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-label-m);
+  text-decoration: none;
+}
+
+.tb-cal-day__number {
+  color: var(--p-md-on-surface);
+  font: 400 1.5rem/2rem var(--tb-font);
+}
+
+/* The days are not interactive, so today is marked by colour and weight, not by a button-like circle */
+.tb-cal-day--today.tb-cal-day--today {
+  color: var(--p-md-primary);
+
+  .tb-cal-day__number {
+    color: var(--p-md-primary);
+    font-weight: 500;
+  }
+}
+
+/* A day number of the month grid */
+.tb-cal-date.tb-cal-date {
+  display: inline-block;
+  margin: var(--tb-space-1) var(--tb-space-2);
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-label-m);
+  text-decoration: none;
+}
+
+.tb-cal-date--today.tb-cal-date--today {
+  color: var(--p-md-primary);
+  font-weight: 700;
+}
+
+/* The «now» line is an `error` line with a dot at the start of the time column, as in Google Calendar */
+.tb-cal-now-line.tb-cal-now-line {
+  border-color: var(--p-md-error);
+}
+
+.tb-cal-now-dot.tb-cal-now-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-inline-start: -0.375rem;
+  border: 0;
+  border-radius: var(--tb-shape-full);
+  background: var(--p-md-error);
+}
+
+/* Lessons: cards of 8 dp with the gap of the card colour (the week, the day) and pills (the month) */
+.tb-cal-card.tb-cal-card {
+  border: 1px solid var(--tb-card);
+  border-radius: var(--tb-shape-sm);
+  font: var(--tb-type-label-m);
+}
+
+.tb-cal-pill.tb-cal-pill {
+  border-radius: var(--tb-shape-sm);
+  margin-block: 1px;
+  font: var(--tb-type-label-m);
+}
+
+.tb-cal-more.tb-cal-more {
+  color: var(--p-md-primary);
+  font: var(--tb-type-label-m);
 }
 
 @mixin row-cards {

@@ -21,7 +21,19 @@ don't read them unless the task needs history.
 
 ## Next release
 
-Nothing planned yet.
+Goal: the schedule calendar looks like Google Calendar in M3 roles (stage 292).
+
+### Stage 292 — Calendar in the manner of Google Calendar (F)
+
+- [x] 292.1 F: grid, day header, lesson cards and month cells — `*Class` options in
+  `schedule/ui/schedule-calendar.ts`, `tb-cal-*` in `styles.scss`, `docs/screens.md`.
+- [ ] 292.2 F: calendar height follows the screen — the minimum is the current (content) height,
+  above it the grid fills the free height of the page (`expandRows`, `height: '100%'` in a
+  flex-column container, `scrollTime` on the current hour); week, day and month; the phone list
+  keeps the content height (ADR-0015). Entry points: `schedule/ui/schedule-calendar.ts`,
+  `schedule/teacher/schedule-page.ts`, `tb-cal-*` in `styles.scss`, `docs/screens.md`.
+- [ ] 292.3 F: the rest — toolbar (outlined «Сегодня», icon-button arrows, larger period title),
+  list view, phone layout check.
 
 ## Backlog
 

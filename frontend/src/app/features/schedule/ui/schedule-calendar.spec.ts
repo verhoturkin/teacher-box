@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { hostElement, readableText, requireElement } from '@testing/dom';
 import { TeacherColors } from '@features/identity/parts';
+import { toIsoDate } from '@shared/dates/iso-date';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { CalendarRange, LessonMove, ScheduleCalendar, lessonClasses } from './schedule-calendar';
 
@@ -88,6 +89,30 @@ describe('ScheduleCalendar', () => {
       (button) => button.textContent.trim() === 'Сегодня',
     );
     expect(today).toHaveLength(1);
+  });
+
+  it('writes the weekday over a big day number and marks today', async () => {
+    fixture.componentRef.setInput('initialView', 'timeGridWeek');
+    fixture.componentRef.setInput('initialDate', toIsoDate(new Date()));
+    await render([]);
+    const host = hostElement(fixture);
+
+    const days = Array.from(host.querySelectorAll('.tb-cal-day'));
+    expect(days).toHaveLength(7);
+    expect(days.every((day) => day.querySelector('.tb-cal-day__weekday') !== null)).toBe(true);
+    const today = host.querySelectorAll('.tb-cal-day--today');
+    expect(today).toHaveLength(1);
+    expect(today[0]?.querySelector('.tb-cal-day__number')?.textContent).toBe(
+      String(new Date().getDate()),
+    );
+  });
+
+  it('marks today’s number in the month', async () => {
+    fixture.componentRef.setInput('initialView', 'dayGridMonth');
+    fixture.componentRef.setInput('initialDate', toIsoDate(new Date()));
+    await render([]);
+
+    expect(hostElement(fixture).querySelectorAll('.tb-cal-date--today')).toHaveLength(1);
   });
 
   it('shows the student the topics', async () => {
