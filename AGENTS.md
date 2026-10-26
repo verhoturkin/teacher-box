@@ -33,7 +33,7 @@ ready images in GHCR ([ADR-0032](docs/adr/0032-ready-images-and-installer.md)).
 |---|---|
 | Any | this file, [`docs/PLAN.md`](docs/PLAN.md) |
 | Backend code | `backend/AGENTS.md` (auto-loaded there) + the module's `docs/modules/<m>.md` |
-| Frontend code | `frontend/AGENTS.md` + the relevant section of [`docs/design-system.md`](docs/design-system.md) |
+| Frontend code | `frontend/AGENTS.md` + the relevant section of [`docs/design-system.md`](docs/design-system.md) (rules) and [`docs/screens.md`](docs/screens.md) (the screen you change) |
 | UI texts | [`docs/glossary.md`](docs/glossary.md) (Russian wording) |
 | History of the 2026-10 redesign (stages 229–249, finished) | [`docs/archive/redesign-2026-10/README.md`](docs/archive/redesign-2026-10/README.md) — only when history is needed |
 | Why a decision was made | [`docs/adr/README.md`](docs/adr/README.md) → the specific ADR |
@@ -46,7 +46,7 @@ ready images in GHCR ([ADR-0032](docs/adr/0032-ready-images-and-installer.md)).
 ## 3. Repository layout
 
 ```
-docs/          PLAN.md, design-system.md, glossary.md, operations.md, modules/, adr/, archive/, wiki/ (user guides)
+docs/          PLAN.md, design-system.md, screens.md, glossary.md, operations.md, modules/, adr/, archive/, wiki/ (user guides)
 backend/       Spring Boot app — src/main/java/ru/teacherbox/{shared,platform,<modules>}
 frontend/      Angular app — src/app/{core,shared,features/<module>}
 docker/        Dockerfile (targets backend, frontend), nginx
@@ -136,8 +136,8 @@ printed tail first, then grep `.verify-logs/<step>.log` — don't read whole log
   and edited prose lines in every changed `.md` file before committing. Tables, fenced code and
   unbreakable URLs may exceed this limit. Do not leave long paragraphs or plan items on one line.
 - English: code, identifiers, comments, commit messages, `AGENTS.md`/`CLAUDE.md` files, `docs/PLAN.md`,
-  `docs/design-system.md`, `docs/modules/`, skills. Russian: README, `docs/operations.md`, `docs/glossary.md`,
-  ADRs, CHANGELOG, help articles, the wiki and all UI texts.
+  `docs/design-system.md`, `docs/screens.md`, `docs/modules/`, skills. Russian: README,
+  `docs/operations.md`, `docs/glossary.md`, ADRs, CHANGELOG, help articles, the wiki and all UI texts.
 - **User docs are the GitHub wiki, kept in `docs/wiki/`** (Russian): install, update, backups, messengers,
   schedule, calls, boards, AI, proxy, FAQ. A change users see or must act on (install, the `teacherbox` command,
   settings, integrations, backups, operations) edits its `docs/wiki/<Page>.md` in the same branch and commit as
@@ -197,7 +197,8 @@ Tests are written with (or before) the code. Never lower gates or lint rules to 
 - [ ] New env vars in `.env.example`, `SettingsCatalog`, wiki user docs.
 - [ ] User-visible change → `docs/wiki/` pages updated (§6.1), help articles in every language.
 - [ ] Interface change → made with the `m3-expressive` skill (§6.3).
-- [ ] Architecture change → ADR; changed behaviour → `docs/modules/<m>.md` / `docs/design-system.md` updated.
+- [ ] Architecture change → ADR; changed behaviour → `docs/modules/<m>.md` /
+  `docs/design-system.md` / `docs/screens.md` updated.
 - [ ] Checkbox in `docs/PLAN.md` ticked.
 
 ## 10. Workflow
@@ -215,8 +216,8 @@ Tests are written with (or before) the code. Never lower gates or lint rules to 
    daemon is up). Commit only when green; fix causes, never `--no-verify`.
 5. Tick the substep in `docs/PLAN.md` in the same commit; release — skill `.claude/skills/release/SKILL.md`.
 6. Keep docs current in the same commit: `docs/modules/<m>.md` for module behaviour, `docs/design-system.md`
-   for UI rules, ADR index for new ADRs; user docs — `docs/wiki/` (§6.1), published to the GitHub wiki by CI on
-   the release tag.
+   for UI rules, `docs/screens.md` for screen composition, ADR index for new ADRs; user docs —
+   `docs/wiki/` (§6.1), published to the GitHub wiki by CI on the release tag.
 
 ## 11. Context economy
 

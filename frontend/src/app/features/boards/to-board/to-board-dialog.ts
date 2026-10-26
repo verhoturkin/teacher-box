@@ -144,7 +144,7 @@ export interface Placed {
       min-width: 0;
     }
 
-    /* Single choice (design-system §8): the label covers the tile, the radio stays above for its focus ring. */
+    /* Single choice (design-system §11): the label covers the tile, the radio stays above for its focus ring. */
     .tb-to-board__mode {
       position: relative;
       cursor: pointer;

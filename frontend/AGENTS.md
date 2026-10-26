@@ -47,7 +47,7 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
 - **React island** ([ADR-0028](../docs/adr/0028-excalidraw-boards.md)): React and Excalidraw are imported only in
   `features/boards/editor/` (ESLint): `excalidraw-island.ts`, loaded lazily by `excalidraw-loader.ts`; tests
   use `@testing/excalidraw-fake`.
-- Icons — Material Symbols Rounded classes `tb-i tb-i-<name>` (design-system §1 «Icons», ADR-0046): after adding or
+- Icons — Material Symbols Rounded classes `tb-i tb-i-<name>` (design-system §4 «Icons», ADR-0046): after adding or
   removing an icon run `npm run icons` and commit `core/theme/{icons,prime-icons}.scss` and `symbols.woff2`.
 - Section data — `LoadState` + `tb-load-state`, load requests via `quietContext()`; confirmations —
   `dangerConfirmation` / `safeConfirmation`; request actions — `[loading]` (`shared/ui/busy.ts`).

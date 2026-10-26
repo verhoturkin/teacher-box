@@ -101,6 +101,10 @@ Decisions taken with the teacher (2026-10-25/26), binding for every stage:
   `request-answer-dialog` (toggle + one action), `change-request-dialog`, `attendance-dialog`;
   delete the old `.p-dialog:not(.p-confirmdialog, .tb-dialog--short)` phone rules and
   `tb-dialog--short` from `styles.scss`.
+- [x] **288.4** Design system restructured (docs): `docs/design-system.md` keeps only the rules,
+  in four parts (foundations, frame and pages, components, across the portal; 1210 → about 700
+  lines, one M3 / *ours* mark, no version tags, duplicates merged); screen compositions move to the
+  new `docs/screens.md`; section references in ADRs, AGENTS.md and code updated.
 
 ### Stage 289 — Release 0.34.0
 
@@ -111,6 +115,8 @@ Decisions taken with the teacher (2026-10-25/26), binding for every stage:
 
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the
 monthly report, homework and board lists by name) and the options of student / group selects.
+
+`shared/ui/fold-card.ts` (`tb-fold-card`) is used by no page since 247.2: remove it or find it a use.
 
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
 
