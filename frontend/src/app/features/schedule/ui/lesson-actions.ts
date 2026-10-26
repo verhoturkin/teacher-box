@@ -34,14 +34,12 @@ import { T } from '../i18n/texts';
           [label]="t.reschedule"
           [icon]="rescheduleIcon()"
           severity="secondary"
-          [text]="inRow()"
           (onClick)="ask.emit('RESCHEDULE')"
         />
         <p-button
           [class.tb-button-steady]="!stacked()"
           [label]="cancelLabel()"
           severity="secondary"
-          [text]="!stacked()"
           (onClick)="ask.emit('CANCEL')"
         />
       </div>

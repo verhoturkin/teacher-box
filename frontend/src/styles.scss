@@ -3351,13 +3351,23 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
 }
 
 /*
- * An M3 Expressive connected button group (ADR-0022): the buttons 2 px apart, the inner corners small,
- * the outer ones round; pressed, a button squares as usual.
+ * M3 button groups (ADR-0022, ADR-0050). Standard (actions): an invisible container hugging the buttons,
+ * 12 dp apart (`ButtonGroupSmall.BetweenSpace`); each keeps its own full shape and colours, and a
+ * pressed one morphs by the common button rule (12 dp corners). The neighbours do not change width
+ * (our decision: the shape morph only).
  */
 .tb-button-group {
   display: inline-flex;
   flex-wrap: nowrap;
   align-items: center;
+  gap: var(--tb-space-3);
+}
+
+/*
+ * Connected (toggles only: the buttons 2 dp apart, the inner corners small, the outer ones round;
+ * pressed, a button squares as usual).
+ */
+.tb-button-group--connected {
   gap: 2px;
 
   > p-button:not(:last-child) .p-button {
@@ -3384,7 +3394,7 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
 
 /*
  * The student's buttons of a lesson (tb-lesson-actions). In a row the requests stand next to each
- * other; stacked (a phone) the meeting takes the whole width and the requests are a connected button
+ * other; stacked (a phone) the meeting takes the whole width and the requests are a standard button
  * group under it, two halves of the width.
  */
 .tb-lesson-actions--stacked {

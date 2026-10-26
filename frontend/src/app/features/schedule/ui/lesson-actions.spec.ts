@@ -53,7 +53,8 @@ describe('LessonActions', () => {
     expect(requireElement(row, 'a.p-button', HTMLAnchorElement).className).toContain(
       'p-button-secondary',
     );
-    expect(buttonByText(row, 'Перенести').className).toContain('p-button-text');
+    expect(buttonByText(row, 'Перенести').className).toContain('p-button-secondary');
+    expect(buttonByText(row, 'Перенести').className).not.toContain('p-button-text');
   });
 
   it('says «Не приду» for a group lesson and hides the requests when they are not allowed', async () => {
@@ -65,12 +66,13 @@ describe('LessonActions', () => {
     expect(readableText(host)).not.toContain('Перенести');
   });
 
-  it('stacks the meeting over a connected group of the requests', async () => {
+  it('stacks the meeting over a standard group of the requests', async () => {
     const host = await render({ joinUrl: 'https://telemost.yandex.ru/j/1', stacked: true });
 
     expect(host.classList).toContain('tb-lesson-actions--stacked');
     expect(host.style.display).toBe('flex');
     const group = requireElement(host, '.tb-button-group[role="group"]', HTMLElement);
+    expect(group.classList).not.toContain('tb-button-group--connected');
     expect(group.querySelectorAll('p-button')).toHaveLength(2);
     expect(group.querySelectorAll('p-button')[1]?.textContent).toContain('Отменить');
     expect(group.querySelector('.p-button-danger')).toBeNull();

@@ -300,7 +300,11 @@ import { SHARED_T } from '@shared/i18n/texts';
               (onClick)="markAttendance()"
             />
           } @else if (started()) {
-            <span class="tb-button-group" role="group" [attr.aria-label]="t.outcome">
+            <span
+              class="tb-button-group tb-button-group--connected"
+              role="group"
+              [attr.aria-label]="t.outcome"
+            >
               @if (lesson.status !== 'MISSED') {
                 <p-button
                   [label]="t.missed"

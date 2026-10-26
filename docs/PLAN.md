@@ -90,7 +90,7 @@ Decisions taken with the teacher (2026-10-25/26), binding for every stage:
 
 ### Stage 288 — Schedule: lesson card and button groups (F)
 
-- [ ] **288.1** Button groups: `tb-button-group--connected` (toggles: `p-selectbutton`,
+- [x] **288.1** Button groups: `tb-button-group--connected` (toggles: `p-selectbutton`,
   `tb-fc-segments`) and standard `tb-button-group` (actions, 12 dp gap):
   `schedule/ui/lesson-actions.ts`, `schedule/ui/schedule-agenda.ts`.
 - [ ] **288.2** Lesson card: shared content component in `schedule/ui/` for teacher and student;

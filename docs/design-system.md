@@ -604,8 +604,9 @@ Label Large, 16 px side padding, 20 px icon (M3E small button); icon buttons 24 
   of a lesson, a member's attendance, the calendar views.
 - **Standard button group** `tb-button-group` — actions side by side («Перенести», «Отменить»;
   «Проведено», «Пропуск» in the agenda): an invisible container with separate tonal buttons, 12 px
-  gap (**M3**, Compose `ButtonGroupSmall.BetweenSpace`); a pressed button changes shape and width
-  and its neighbours adjust for the moment. A dialog footer keeps 8 px (the dialog's own padding
+  gap (**M3**, Compose `ButtonGroupSmall.BetweenSpace`); a pressed button morphs its shape (the
+  common 12 px pressed corners); the M3 width change of the neighbours is not done (our decision).
+  Used in `schedule/ui/lesson-actions.ts` (both tonal) and the agenda marks (both tonal, with icons). A dialog footer keeps 8 px (the dialog's own padding
   between buttons, §8). Never a primary button in a connected group: it reads as «already selected».
 - **Split button** `tb-split` (e.g. «Начать урок» | «Открыть в браузере»): 2 px gap, inner corners 4 px (8 px
   while pressed — the size is ours, the outer corners stay round), trailing part 48 px with a 22 px chevron (M3E
