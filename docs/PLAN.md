@@ -19,6 +19,13 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
+## Next release
+
+### Stage 290 — Faster CI (D)
+
+- [x] 290.1 **D** E2E in CI on three fresh instances: `.github/workflows/ci.yml` (`e2e` matrix, merge
+  job, no `needs`, GHA image cache), `scripts/e2e.sh` (`E2E_SHARDS`, per-shard ports), `e2e/README.md`.
+
 ## Backlog
 
 Feature proposals with detailed plans (lesson notes, progress report, packages, invoices, parents,

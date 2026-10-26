@@ -26,9 +26,27 @@ services:
       LIVEKIT_KEYS: "e2e: e2e-livekit-secret-0123456789abcdef"
       LIVEKIT_RTC_USE_EXTERNAL_IP: "false"
       NODE_IP: 127.0.0.1
+      # Media ports equal inside and outside the container (ICE advertises them), so that parallel
+      # instances (E2E_SHARDS, scripts/e2e.sh) each take their own pair.
+      LIVEKIT_CONFIG: |
+        port: 7880
+        log_level: info
+        rtc:
+          udp_port: ${E2E_LIVEKIT_UDP_PORT:-7882}
+          tcp_port: ${E2E_LIVEKIT_TCP_PORT:-7881}
+        turn:
+          enabled: true
+          udp_port: 3478
+          relay_range_start: 30000
+          relay_range_end: 30049
+        room:
+          auto_create: true
+          empty_timeout: 300
+          departure_timeout: 20
+          max_participants: 20
     ports: !override
-      - "7881:7881/tcp"
-      - "7882:7882/udp"
+      - "${E2E_LIVEKIT_TCP_PORT:-7881}:${E2E_LIVEKIT_TCP_PORT:-7881}/tcp"
+      - "${E2E_LIVEKIT_UDP_PORT:-7882}:${E2E_LIVEKIT_UDP_PORT:-7882}/udp"
 
   telegram:
     image: node:22-alpine
