@@ -1,4 +1,4 @@
-import { startSession } from '../support/session';
+import { bearer, startSession } from '../support/session';
 import { type Browser, type Page, expect, test } from '@playwright/test';
 import { create } from '../support/create';
 import { laterThisWeek, saveLesson } from '../support/this-week';
@@ -169,6 +169,7 @@ test('the teacher cancels, restores and deletes a lesson', async ({ page }) => {
 test('a student cannot ask to move a lesson into the teacher’s busy time', async ({
   page,
   browser,
+  request: api,
 }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   // The student's list of upcoming lessons shows this week only.
@@ -186,8 +187,27 @@ test('a student cannot ask to move a lesson into the teacher’s busy time', asy
   await dialog.getByRole('button', { name: 'Отправить учителю' }).click();
   await expect(dialog).toContainText('В это время учитель занят');
 
+  // an otherwise free hour of that day: other suites leave their own lessons and weekly off time around
+  const response = await api.get('/api/me/schedule/busy', {
+    headers: await bearer(api, STUDENT_LOGIN, STUDENT_PASSWORD),
+    params: {
+      from: new Date(Date.now() + 4 * 86_400_000).toISOString(),
+      to: new Date(Date.now() + 9 * 86_400_000).toISOString(),
+    },
+  });
+  expect(response.ok()).toBe(true);
+  const busy = (await response.json()) as { start: string; end: string }[];
+  const day = dateTime(6, 0).slice(0, 10).split('.').reverse().join('-');
+  const freeHour = Array.from({ length: 10 }, (_, index) => index + 13).find((hour) => {
+    const start = Date.parse(`${day}T${String(hour).padStart(2, '0')}:00:00+03:00`);
+    return busy.every(
+      (time) => Date.parse(time.end) <= start || Date.parse(time.start) >= start + 3_600_000,
+    );
+  });
+  if (freeHour === undefined) throw new Error('No free hour for the busy-time scenario');
+
   await student.locator('#request-start').clear();
-  await student.locator('#request-start').pressSequentially(dateTime(6, 15));
+  await student.locator('#request-start').pressSequentially(dateTime(6, freeHour));
   await expect(dialog).not.toContainText('В это время учитель занят');
   await dialog.getByRole('button', { name: 'Отправить учителю' }).click();
   await expect(student.getByText('ждёт ответа учителя')).toBeVisible();
