@@ -1,23 +1,30 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ConfirmationService } from 'primeng/api';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { ConfirmDialog } from 'primeng/confirmdialog';
-import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
-import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
-import { SHARED_T } from '@shared/i18n/texts';
-import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Confirm } from '@shared/ui/confirm';
 import { EmptyState } from '@shared/ui/empty-state';
-import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
-import { SubmitFor } from '@shared/ui/submit-for';
+import { TbDialog } from '@shared/ui/dialog/dialog';
+import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
+import { FieldErrors } from '@shared/ui/field-errors';
 import { AiApi } from './data-access/ai-api';
 import { SavedPrompt } from './data-access/ai.models';
 import { T } from './i18n/texts';
+
+/** Whitespace only is as empty as nothing (the texts are trimmed on save). */
+function notBlank(control: AbstractControl<string>): ValidationErrors | null {
+  return control.value.trim() === '' ? { required: true } : null;
+}
 
 /** The teacher's prompt library on the AI page: what is saved, renaming, rewording and deleting. */
 @Component({
@@ -26,16 +33,12 @@ import { T } from './i18n/texts';
     ReactiveFormsModule,
     Button,
     Card,
-    ConfirmDialog,
-    Dialog,
+    TbDialog,
     InputText,
-    Message,
     Textarea,
     EmptyState,
     FieldErrors,
-    SubmitFor,
   ],
-  providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card id="prompt-library" [header]="t.title">
@@ -78,15 +81,23 @@ import { T } from './i18n/texts';
       }
     </p-card>
 
-    <p-dialog
-      [header]="t.editTitle"
-      [visible]="editing() !== null"
-      (visibleChange)="$event || editing.set(null)"
-      [modal]="true"
-      styleClass="tb-dialog"
-      [draggable]="false"
+    <tb-dialog
+      kind="form"
+      [(visible)]="visible"
+      [headline]="t.editTitle"
+      [confirmLabel]="t.save"
+      formId="prompt-form"
+      [pending]="submit.pending()"
+      [error]="submit.error()"
+      [dirty]="submit.dirty()"
     >
-      <form tbFieldErrors id="prompt-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form
+        tbFieldErrors
+        id="prompt-form"
+        class="tb-form"
+        [formGroup]="form"
+        (ngSubmit)="submit.run()"
+      >
         <div class="tb-field tb-field--required">
           <label for="prompt-title">{{ t.name }}</label>
           <input pInputText id="prompt-title" formControlName="title" autocomplete="off" />
@@ -95,21 +106,8 @@ import { T } from './i18n/texts';
           <label for="prompt-text">{{ t.text }}</label>
           <textarea pTextarea id="prompt-text" formControlName="text" rows="6"></textarea>
         </div>
-        @if (error(); as message) {
-          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-        }
       </form>
-      <ng-template #footer>
-        <p-button
-          [label]="c.cancel"
-          severity="secondary"
-          [text]="true"
-          (onClick)="editing.set(null)"
-        />
-        <p-button [label]="t.save" [loading]="pending()" type="submit" tbSubmitFor="prompt-form" />
-      </ng-template>
-    </p-dialog>
-    <p-confirmdialog />
+    </tb-dialog>
   `,
   styles: `
     .tb-prompt-text {
@@ -122,24 +120,22 @@ import { T } from './i18n/texts';
   `,
 })
 export class PromptLibraryCard implements OnInit {
-  protected readonly c = SHARED_T.common;
   protected readonly t = T.library;
   private readonly api = inject(AiApi);
-  private readonly confirmation = inject(ConfirmationService);
+  private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
 
   protected readonly prompts = signal<readonly SavedPrompt[]>([]);
   readonly editing = signal<SavedPrompt | null>(null);
-  protected readonly pending = signal(false);
-  protected readonly error = signal<string | null>(null);
+  readonly visible = signal(false);
   readonly form = new FormGroup({
     title: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(100)],
+      validators: [notBlank, Validators.maxLength(100)],
     }),
     text: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(4_000)],
+      validators: [notBlank, Validators.maxLength(4_000)],
     }),
   });
 
@@ -150,61 +146,47 @@ export class PromptLibraryCard implements OnInit {
   }
 
   edit(prompt: SavedPrompt): void {
-    this.error.set(null);
-    this.form.reset({ title: prompt.title, text: prompt.text });
     this.editing.set(prompt);
+    this.visible.set(true);
   }
 
-  save(): void {
-    const prompt = this.editing();
-    if (prompt === null || !revealErrors(this.form) || this.pending()) {
-      return;
-    }
-    const value = this.form.getRawValue();
-    if (value.title.trim() === '' || value.text.trim() === '') {
-      this.form.markAllAsTouched();
-      return;
-    }
-    this.pending.set(true);
-    this.error.set(null);
-    this.api
-      .updatePrompt(
-        prompt.id,
+  protected readonly submit = dialogSubmit({
+    visible: this.visible,
+    form: this.form,
+    failed: T.library.failed,
+    reset: () => {
+      const prompt = this.editing();
+      this.form.reset({ title: prompt?.title ?? '', text: prompt?.text ?? '' });
+    },
+    request: (value) => {
+      const prompt = this.editing();
+      return this.api.updatePrompt(
+        prompt?.id ?? '',
         { title: value.title.trim(), text: value.text.trim() },
-        prompt.version,
-      )
-      .subscribe({
-        next: (saved) => {
-          this.pending.set(false);
-          this.editing.set(null);
-          this.prompts.update((prompts) =>
-            prompts
-              .map((candidate) => (candidate.id === saved.id ? saved : candidate))
-              .sort((a, b) => a.title.localeCompare(b.title)),
-          );
-        },
-        error: (error: unknown) => {
-          this.pending.set(false);
-          this.error.set(describeError(error, T.library.failed));
-        },
-      });
-  }
+        prompt?.version ?? 0,
+      );
+    },
+    done: (saved) => {
+      this.prompts.update((prompts) =>
+        prompts
+          .map((candidate) => (candidate.id === saved.id ? saved : candidate))
+          .sort((a, b) => a.title.localeCompare(b.title)),
+      );
+    },
+  });
 
-  protected confirmDelete(prompt: SavedPrompt): void {
-    this.confirmation.confirm(
-      dangerConfirmation({
+  protected async confirmDelete(prompt: SavedPrompt): Promise<void> {
+    if (
+      await this.confirm.danger({
         header: T.library.deleteHeader,
         message: T.library.deleteMessage(prompt.title),
         acceptLabel: T.library.deleteAccept,
-        accept: () => {
-          this.api.deletePrompt(prompt.id).subscribe(() => {
-            this.prompts.update((prompts) =>
-              prompts.filter((candidate) => candidate.id !== prompt.id),
-            );
-            this.snackbar.success(T.library.deleted);
-          });
-        },
-      }),
-    );
+      })
+    ) {
+      this.api.deletePrompt(prompt.id).subscribe(() => {
+        this.prompts.update((prompts) => prompts.filter((candidate) => candidate.id !== prompt.id));
+        this.snackbar.success(T.library.deleted);
+      });
+    }
   }
 }

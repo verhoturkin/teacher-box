@@ -13,9 +13,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Observable, catchError, forkJoin, of } from 'rxjs';
-import { ConfirmationService, MenuItem } from 'primeng/api';
+import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
-import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
@@ -34,7 +33,7 @@ import { formatMoney } from '@shared/money/money';
 import { Avatar } from '@shared/ui/avatar';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { Busy } from '@shared/ui/busy';
-import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Confirm } from '@shared/ui/confirm';
 import { EmptyState } from '@shared/ui/empty-state';
 import { FilterChip, FilterChips } from '@shared/ui/filter-chips';
 import { LoadState } from '@shared/ui/load-state';
@@ -106,7 +105,6 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
     ReactiveFormsModule,
     RouterLink,
     Button,
-    ConfirmDialog,
     Menu,
     Tag,
     Tooltip,
@@ -121,7 +119,7 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
     Panes,
     Pane,
   ],
-  providers: [ConfirmationService, DatePipe],
+  providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-panes>
@@ -315,7 +313,6 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
       [students]="students()"
       (created)="onGroupCreated($event)"
     />
-    <p-confirmdialog />
   `,
   styles: `
     /* from expanded the pane does not scroll as a whole: its list does (our decision) */
@@ -343,7 +340,7 @@ export class StudentsPage implements OnInit {
   private readonly notifications = inject(NotificationsApi);
   private readonly schedule = inject(ScheduleApi);
   private readonly colors = inject(TeacherColors);
-  private readonly confirmation = inject(ConfirmationService);
+  private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
   private readonly date = inject(DatePipe);
   private readonly router = inject(Router);
@@ -642,20 +639,19 @@ export class StudentsPage implements OnInit {
     });
   }
 
-  protected confirmDeactivate(student: Student): void {
-    this.confirmation.confirm(
-      dangerConfirmation({
+  protected async confirmDeactivate(student: Student): Promise<void> {
+    if (
+      await this.confirm.danger({
         header: this.t.deactivateHeader,
         message: this.t.deactivateMessage(student.displayName),
         icon: 'tb-i tb-i-warning',
         acceptLabel: this.t.deactivate,
-        accept: () => {
-          this.api.deactivate(student.id).subscribe((saved) => {
-            this.replaceStudent(saved);
-          });
-        },
-      }),
-    );
+      })
+    ) {
+      this.api.deactivate(student.id).subscribe((saved) => {
+        this.replaceStudent(saved);
+      });
+    }
   }
 
   protected reactivate(student: Student): void {
@@ -664,20 +660,19 @@ export class StudentsPage implements OnInit {
     });
   }
 
-  private confirmArchive(group: StudentGroup): void {
-    this.confirmation.confirm(
-      dangerConfirmation({
+  private async confirmArchive(group: StudentGroup): Promise<void> {
+    if (
+      await this.confirm.danger({
         header: this.tg.archiveHeader,
         message: this.tg.archiveMessage(group.name),
         icon: 'tb-i tb-i-warning',
         acceptLabel: this.tg.archive,
-        accept: () => {
-          this.api.archiveGroup(group.id).subscribe((saved) => {
-            this.replaceGroup(saved);
-          });
-        },
-      }),
-    );
+      })
+    ) {
+      this.api.archiveGroup(group.id).subscribe((saved) => {
+        this.replaceGroup(saved);
+      });
+    }
   }
 
   private restore(group: StudentGroup): void {
@@ -694,7 +689,7 @@ export class StudentsPage implements OnInit {
             icon: 'tb-i tb-i-inbox',
             styleClass: 'tb-menu-item--danger',
             command: () => {
-              this.confirmArchive(group);
+              void this.confirmArchive(group);
             },
           }
         : {

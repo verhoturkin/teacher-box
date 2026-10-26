@@ -258,7 +258,7 @@ describe('BillingOverviewPage', () => {
       .injector.get(PaymentDialog);
 
     dialog.form.patchValue({ studentId: 's-2', amount: 100 });
-    dialog.save();
+    buttonByText(document.body, 'Сохранить').click();
     backend.expectOne('/api/teacher/billing/payments').flush(payment());
     await fixture.whenStable();
 

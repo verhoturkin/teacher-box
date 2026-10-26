@@ -243,7 +243,7 @@ test('the bottom sheet of a lesson is a modal dialog with the focus inside', asy
     .first()
     .click();
 
-  const sheet = page.locator('.p-drawer.tb-sheet');
+  const sheet = page.locator('.p-drawer.tb-d--sheet');
   await expect(sheet).toHaveAttribute('role', 'dialog');
   await expect(sheet).toHaveAttribute('aria-modal', 'true');
   expect(await sheet.evaluate((element) => element.contains(document.activeElement))).toBe(true);
@@ -264,7 +264,9 @@ test('a form shows what is wrong at the field instead of a disabled button', asy
   await expect(dialog.getByText('Заполните поле')).toBeVisible();
   await expect(page.locator('#displayName')).toBeFocused();
   await expect(page.locator('#displayName')).toHaveAttribute('aria-invalid', 'true');
-  await expect(dialog.getByRole('button', { name: 'Закрыть' })).toBeVisible();
+  // ADR-0050: a form has no «✕» from medium width, the footer has «Отмена»
+  await expect(dialog.getByRole('button', { name: 'Закрыть' })).toHaveCount(0);
+  await expect(dialog.getByRole('button', { name: 'Отмена' })).toBeVisible();
 });
 
 test('axe finds nothing critical or serious on the main screens', async ({ page }) => {

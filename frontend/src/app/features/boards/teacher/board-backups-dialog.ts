@@ -12,10 +12,10 @@ import {
 } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
-import { Message } from 'primeng/message';
 import { Tooltip } from 'primeng/tooltip';
 import { describeError } from '@core/http/error-messages';
+import { TbDialog } from '@shared/ui/dialog/dialog';
+import { DialogConfirmStep } from '@shared/ui/dialog/dialog-confirm-step';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
@@ -23,7 +23,6 @@ import { BoardsApi } from '../data-access/boards-api';
 import { BoardBackup } from '../data-access/boards.models';
 import { BOARD_BACKUP_KIND_LABELS } from '../boards-labels';
 import { T } from '../i18n/texts';
-import { SHARED_T } from '@shared/i18n/texts';
 
 /** What the teacher is about to do with a copy: asked inside the dialog, never in a second one. */
 interface PendingAction {
@@ -37,15 +36,16 @@ interface PendingAction {
  */
 @Component({
   selector: 'tb-board-backups-dialog',
-  imports: [DatePipe, Button, Dialog, Message, Tooltip, EmptyState, LoadStateView],
+  imports: [DatePipe, Button, TbDialog, DialogConfirmStep, Tooltip, EmptyState, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="t.title(title())"
+    <tb-dialog
+      kind="sheet"
+      width="wide"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog tb-dialog--wide"
-      [draggable]="false"
+      [headline]="t.title(title())"
+      [cancelLabel]="null"
+      [error]="error()"
     >
       <div class="tb-form">
         <p class="tb-muted">{{ t.about }}</p>
@@ -59,35 +59,17 @@ interface PendingAction {
           />
         </div>
         @if (confirming(); as action) {
-          <p-message
-            [severity]="action.kind === 'delete' ? 'error' : 'warn'"
-            styleClass="tb-form-message"
-          >
-            <span>
-              @if (action.kind === 'restore') {
-                {{ t.restoreQuestion((action.backup.createdAt | date: 'dd.MM.yyyy HH:mm') ?? '') }}
-              } @else {
-                {{ t.deleteQuestion((action.backup.createdAt | date: 'dd.MM.yyyy HH:mm') ?? '') }}
-              }
-            </span>
-            <span class="tb-inline">
-              <p-button
-                [label]="c.cancel"
-                severity="secondary"
-                [text]="true"
-                (onClick)="confirming.set(null)"
-              />
-              <p-button
-                [label]="action.kind === 'restore' ? t.restore : t.delete"
-                [severity]="action.kind === 'restore' ? 'primary' : 'danger'"
-                [loading]="busy() === action.kind"
-                (onClick)="confirm(action)"
-              />
-            </span>
-          </p-message>
-        }
-        @if (error(); as message) {
-          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
+          <tb-dialog-confirm-step
+            [message]="
+              (action.kind === 'restore' ? t.restoreQuestion : t.deleteQuestion)(
+                (action.backup.createdAt | date: 'dd.MM.yyyy HH:mm') ?? ''
+              )
+            "
+            [confirmLabel]="action.kind === 'restore' ? t.restore : t.delete"
+            [severity]="action.kind === 'restore' ? 'primary' : 'danger'"
+            (confirmed)="confirm(action)"
+            (cancelled)="confirming.set(null)"
+          />
         }
         <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
           @if (backups().length > 0) {
@@ -139,15 +121,7 @@ interface PendingAction {
           }
         </tb-load-state>
       </div>
-      <ng-template #footer>
-        <p-button
-          [label]="c.close"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
   styles: `
     /* the column's gap spaces the text, the button and the list */
@@ -157,7 +131,6 @@ interface PendingAction {
   `,
 })
 export class BoardBackupsDialog {
-  protected readonly c = SHARED_T.common;
   protected readonly t = T.backups;
   private readonly api = inject(BoardsApi);
 

@@ -8,7 +8,7 @@ import { DriveStore } from './drive-store';
 import { BackupsArea } from './backups-api';
 import { BackupsCard } from './backups-card';
 import { RESTART_POLL_MS } from '@shared/restart/restart-wait';
-import { testProviders } from '@testing/setup';
+import { testProviders, ConfirmHost } from '@testing/setup';
 
 const SCHEDULED: BackupInfo = {
   name: 'teacherbox-20260925-033000-000.zip',
@@ -61,6 +61,7 @@ describe('BackupsCard', () => {
       saved.push(name);
     });
     vi.spyOn(TestBed.inject(MessageService), 'add');
+    TestBed.createComponent(ConfirmHost).detectChanges();
     fixture = TestBed.createComponent(BackupsCard);
     fixture.componentRef.setInput('area', area);
     fixture.detectChanges();
@@ -130,6 +131,7 @@ describe('BackupsCard', () => {
     await fixture.whenStable();
     expect(bodyText()).toContain('Удалить копию?');
     confirm.mock.calls[0]?.[0].accept?.();
+    await fixture.whenStable();
     backend
       .expectOne({ method: 'DELETE', url: `/api/teacher/backups/${SCHEDULED.name}` })
       .flush(null);

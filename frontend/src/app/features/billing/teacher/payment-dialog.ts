@@ -2,32 +2,28 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   input,
   model,
   output,
   signal,
-  untracked,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable, catchError, of, switchMap } from 'rxjs';
 import { Button } from 'primeng/button';
 import { DatePicker } from 'primeng/datepicker';
-import { Dialog } from 'primeng/dialog';
 import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
-import { describeError } from '@core/http/error-messages';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { toMinorUnits } from '@shared/money/money';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { BillingApi } from '../data-access/billing-api';
 import { RECEIPT_ACCEPT, RECEIPT_MAX_SIZE } from '../receipts';
 import { BillingStudent, Payment } from '../data-access/billing.models';
-import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
-import { SubmitFor } from '@shared/ui/submit-for';
+import { TbDialog } from '@shared/ui/dialog/dialog';
+import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
+import { FieldErrors } from '@shared/ui/field-errors';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 import { locale } from '@core/i18n/language';
@@ -39,24 +35,31 @@ import { locale } from '@core/i18n/language';
     ReactiveFormsModule,
     Button,
     DatePicker,
-    Dialog,
+    TbDialog,
     InputNumber,
     InputText,
-    Message,
     Select,
     FieldErrors,
-    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="t.title"
+    <tb-dialog
+      kind="form"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog"
-      [draggable]="false"
+      [headline]="t.title"
+      [confirmLabel]="c.save"
+      formId="payment-form"
+      [pending]="submit.pending()"
+      [error]="submit.error()"
+      [dirty]="submit.dirty()"
     >
-      <form tbFieldErrors id="payment-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form
+        tbFieldErrors
+        id="payment-form"
+        class="tb-form"
+        [formGroup]="form"
+        (ngSubmit)="submit.run()"
+      >
         <div class="tb-field">
           <label for="payment-student">{{ t.student }}</label>
           <p-select
@@ -136,20 +139,8 @@ import { locale } from '@core/i18n/language';
             <small class="tb-field__error" role="alert">{{ message }}</small>
           }
         </div>
-        @if (error(); as message) {
-          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-        }
       </form>
-      <ng-template #footer>
-        <p-button
-          [label]="c.cancel"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        <p-button [label]="c.save" [loading]="pending()" type="submit" tbSubmitFor="payment-form" />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
   styles: `
     .tb-receipt-file {
@@ -185,8 +176,6 @@ export class PaymentDialog {
   protected readonly studentOptions = computed(() =>
     this.students().map((student) => ({ label: student.displayName, value: student.studentId })),
   );
-  protected readonly pending = signal(false);
-  protected readonly error = signal<string | null>(null);
 
   readonly form = new FormGroup({
     studentId: new FormControl<string | null>(null, [Validators.required]),
@@ -197,22 +186,6 @@ export class PaymentDialog {
     }),
     comment: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(500)] }),
   });
-
-  constructor() {
-    // Opening resets the form. Untracked: the student list reads its own signals while the value is
-    // written, and choosing a student would reset the form again.
-    effect(() => {
-      const studentId = this.studentId();
-      if (this.visible()) {
-        untracked(() => {
-          this.error.set(null);
-          this.receipt.set(null);
-          this.receiptError.set(null);
-          this.form.reset({ studentId, amount: null, paidOn: new Date(), comment: '' });
-        });
-      }
-    });
-  }
 
   protected onPicked(element: HTMLInputElement): void {
     const file = element.files?.[0] ?? null;
@@ -242,36 +215,32 @@ export class PaymentDialog {
     );
   }
 
-  save(): void {
-    const value = this.form.getRawValue();
-    if (
-      !revealErrors(this.form) ||
-      this.pending() ||
-      value.studentId === null ||
-      value.amount === null
-    ) {
-      return;
-    }
-    this.pending.set(true);
-    this.error.set(null);
-    this.api
-      .recordPayment({
-        studentId: value.studentId,
-        amount: toMinorUnits(value.amount, this.currency()),
-        paidOn: toIsoDate(value.paidOn),
-        comment: value.comment.trim() === '' ? null : value.comment.trim(),
-      })
-      .pipe(switchMap((payment) => this.withReceipt(payment)))
-      .subscribe({
-        next: (payment) => {
-          this.pending.set(false);
-          this.visible.set(false);
-          this.saved.emit(payment);
-        },
-        error: (error: unknown) => {
-          this.pending.set(false);
-          this.error.set(describeError(error, T.paymentDialog.failed));
-        },
+  protected readonly submit = dialogSubmit({
+    visible: this.visible,
+    form: this.form,
+    failed: T.paymentDialog.failed,
+    // Untracked by the effect: choosing a student must not reset the form again.
+    reset: () => {
+      this.receipt.set(null);
+      this.receiptError.set(null);
+      this.form.reset({
+        studentId: this.studentId(),
+        amount: null,
+        paidOn: new Date(),
+        comment: '',
       });
-  }
+    },
+    request: (value) =>
+      this.api
+        .recordPayment({
+          studentId: value.studentId ?? '',
+          amount: toMinorUnits(value.amount ?? 0, this.currency()),
+          paidOn: toIsoDate(value.paidOn),
+          comment: value.comment.trim() === '' ? null : value.comment.trim(),
+        })
+        .pipe(switchMap((payment) => this.withReceipt(payment))),
+    done: (payment) => {
+      this.saved.emit(payment);
+    },
+  });
 }

@@ -11,11 +11,10 @@ import {
   viewChild,
 } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ConfirmationService, MenuItem } from 'primeng/api';
-import { ConfirmDialog } from 'primeng/confirmdialog';
+import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
 import { quietContext } from '@core/http/api-error.interceptor';
-import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Confirm } from '@shared/ui/confirm';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
@@ -52,16 +51,8 @@ function found(boards: readonly Board[], text: string): readonly Board[] {
  */
 @Component({
   selector: 'tb-boards-feed',
-  imports: [
-    MaterialCard,
-    ConfirmDialog,
-    Menu,
-    EmptyState,
-    LoadStateView,
-    BoardDialog,
-    BoardBackupsDialog,
-  ],
-  providers: [ConfirmationService, DatePipe],
+  imports: [MaterialCard, Menu, EmptyState, LoadStateView, BoardDialog, BoardBackupsDialog],
+  providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
@@ -119,14 +110,13 @@ function found(boards: readonly Board[], text: string): readonly Board[] {
       [title]="backupsOf()?.title ?? ''"
       (restored)="load()"
     />
-    <p-confirmdialog />
   `,
 })
 export class BoardsFeed {
   protected readonly t = T.list;
   protected readonly k = T.cards;
   private readonly api = inject(BoardsApi);
-  private readonly confirmation = inject(ConfirmationService);
+  private readonly confirm = inject(Confirm);
   private readonly date = inject(DatePipe);
 
   /** The search text of the page. */
@@ -230,22 +220,21 @@ export class BoardsFeed {
     this.backupsVisible.set(true);
   }
 
-  protected confirmRemove(board: Board): void {
-    this.confirmation.confirm(
-      dangerConfirmation({
+  protected async confirmRemove(board: Board): Promise<void> {
+    if (
+      await this.confirm.danger({
         header: T.list.deleteHeader,
         message:
           board.kind === 'EXCALIDRAW'
             ? T.list.deleteExcalidraw(board.title)
             : T.list.deleteLink(board.title),
         acceptLabel: T.list.delete,
-        accept: () => {
-          this.api.remove(board.id).subscribe(() => {
-            this.load();
-          });
-        },
-      }),
-    );
+      })
+    ) {
+      this.api.remove(board.id).subscribe(() => {
+        this.load();
+      });
+    }
   }
 
   private actionsOf(board: Board): MenuItem[] {
@@ -272,7 +261,7 @@ export class BoardsFeed {
         icon: 'tb-i tb-i-delete',
         styleClass: 'tb-menu-item--danger',
         command: () => {
-          this.confirmRemove(board);
+          void this.confirmRemove(board);
         },
       },
     );

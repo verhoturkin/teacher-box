@@ -1,4 +1,4 @@
-import { startSession } from '../support/session';
+import { bearer, startSession } from '../support/session';
 import { type Browser, type Page, expect, test } from '@playwright/test';
 import { create } from '../support/create';
 import { laterThisWeek, saveLesson } from '../support/this-week';
@@ -134,19 +134,22 @@ test('the teacher cancels, restores and deletes a lesson', async ({ page }) => {
   // Today is always in the week shown; 07:00 is the first hour of the calendar.
   await planLesson(page, STUDENT, 0, 7, 'Лишнее');
   const event = page.getByText(`${STUDENT} · Лишнее`);
-  const card = page.getByRole('dialog', { name: 'Занятие' });
+  const card = page.getByRole('dialog', { name: STUDENT });
 
   await event.click();
   await card.getByRole('button', { name: 'Другие действия' }).click();
   await page.getByRole('menuitem', { name: 'Отменить занятие…' }).click();
-  await card.getByRole('button', { name: 'Отменить занятие' }).click();
+  // the card closes first: cancelling is a dialog of its own
   await expect(card).toBeHidden();
+  const cancel = page.getByRole('dialog', { name: 'Отменить занятие' });
+  await cancel.getByRole('button', { name: 'Отменить занятие' }).click();
+  await expect(cancel).toBeHidden();
 
   await event.click();
   await expect(card).toContainText('Отменено');
   await card.getByRole('button', { name: 'Восстановить' }).click();
   // lessons of other specs may stand at 07:00 on the day of the run: the portal asks first
-  const anyway = card.getByRole('button', { name: 'Всё равно восстановить' });
+  const anyway = page.getByRole('alertdialog').getByRole('button', { name: 'Восстановить' });
   await expect(async () => {
     if (await anyway.isVisible()) {
       await anyway.click();
@@ -155,10 +158,10 @@ test('the teacher cancels, restores and deletes a lesson', async ({ page }) => {
   }).toPass();
 
   await event.click();
-  await expect(card).toContainText('Запланировано');
+  await expect(card).not.toContainText('Отменено');
   await card.getByRole('button', { name: 'Другие действия' }).click();
   await page.getByRole('menuitem', { name: 'Удалить…' }).click();
-  await card.getByRole('button', { name: 'Удалить занятие' }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Удалить' }).click();
   await expect(card).toBeHidden();
   await expect(event).toHaveCount(0);
 });
@@ -166,6 +169,7 @@ test('the teacher cancels, restores and deletes a lesson', async ({ page }) => {
 test('a student cannot ask to move a lesson into the teacher’s busy time', async ({
   page,
   browser,
+  request: api,
 }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   // The student's list of upcoming lessons shows this week only.
@@ -179,10 +183,31 @@ test('a student cannot ask to move a lesson into the teacher’s busy time', asy
   const dialog = student.getByRole('dialog', { name: 'Перенести занятие' });
   await student.locator('#request-start').pressSequentially(dateTime(6, 12, 30));
   await expect(dialog).toContainText('В это время учитель занят');
-  await expect(dialog.getByRole('button', { name: 'Отправить учителю' })).toBeDisabled();
+  // the button is never disabled: sending says what is wrong and keeps the dialog
+  await dialog.getByRole('button', { name: 'Отправить учителю' }).click();
+  await expect(dialog).toContainText('В это время учитель занят');
+
+  // an otherwise free hour of that day: other suites leave their own lessons and weekly off time around
+  const response = await api.get('/api/me/schedule/busy', {
+    headers: await bearer(api, STUDENT_LOGIN, STUDENT_PASSWORD),
+    params: {
+      from: new Date(Date.now() + 4 * 86_400_000).toISOString(),
+      to: new Date(Date.now() + 9 * 86_400_000).toISOString(),
+    },
+  });
+  expect(response.ok()).toBe(true);
+  const busy = (await response.json()) as { start: string; end: string }[];
+  const day = dateTime(6, 0).slice(0, 10).split('.').reverse().join('-');
+  const freeHour = Array.from({ length: 10 }, (_, index) => index + 13).find((hour) => {
+    const start = Date.parse(`${day}T${String(hour).padStart(2, '0')}:00:00+03:00`);
+    return busy.every(
+      (time) => Date.parse(time.end) <= start || Date.parse(time.start) >= start + 3_600_000,
+    );
+  });
+  if (freeHour === undefined) throw new Error('No free hour for the busy-time scenario');
 
   await student.locator('#request-start').clear();
-  await student.locator('#request-start').pressSequentially(dateTime(6, 15));
+  await student.locator('#request-start').pressSequentially(dateTime(6, freeHour));
   await expect(dialog).not.toContainText('В это время учитель занят');
   await dialog.getByRole('button', { name: 'Отправить учителю' }).click();
   await expect(student.getByText('ждёт ответа учителя')).toBeVisible();
@@ -223,7 +248,7 @@ test('the administrator changes a setting and the portal restarts to apply it', 
   const keep = page.locator('#setting-TEACHERBOX_BACKUP_KEEP_DAYS');
   await keep.fill('9');
   await page.getByRole('button', { name: 'Сохранить и перезапустить' }).click();
-  const dialog = page.getByRole('dialog', { name: 'Сохранить настройки' });
+  const dialog = page.getByRole('alertdialog', { name: 'Сохранить настройки' });
   await dialog.locator('#settings-password').fill(ADMIN_PASSWORD);
   await dialog.getByRole('button', { name: 'Сохранить', exact: true }).click();
   await expect(dialog).toContainText('Портал перезапускается');

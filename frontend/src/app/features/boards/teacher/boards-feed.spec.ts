@@ -183,6 +183,7 @@ describe('BoardsFeed', () => {
     const confirmation = confirm.mock.calls[0]?.[0];
     expect(confirmation?.message).toContain('вместе с рисунком');
     confirmation?.accept?.();
+    await fixture.whenStable();
     backend.expectOne({ method: 'DELETE', url: '/api/teacher/boards/board-1' }).flush(null);
     backend.expectOne('/api/teacher/boards').flush([]);
     await fixture.whenStable();

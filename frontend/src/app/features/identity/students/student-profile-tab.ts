@@ -102,7 +102,7 @@ function inputOf(value: ProfileValue): StudentProfileInput {
     <div class="tb-student-profile">
       <p-card [header]="t.details">
         <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
-          <div class="tb-field tb-field--required tb-field--filled">
+          <div class="tb-field tb-field--required">
             <label for="profile-name">{{ f.name }}</label>
             <input
               pInputText
@@ -112,9 +112,8 @@ function inputOf(value: ProfileValue): StudentProfileInput {
               placeholder=" "
               aria-required="true"
             />
-            <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
           </div>
-          <div class="tb-field tb-field--filled">
+          <div class="tb-field">
             <label for="profile-email">{{ f.email }}</label>
             <input
               pInputText
@@ -124,9 +123,8 @@ function inputOf(value: ProfileValue): StudentProfileInput {
               autocomplete="off"
               placeholder=" "
             />
-            <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
           </div>
-          <div class="tb-field tb-field--filled">
+          <div class="tb-field">
             <label for="profile-phone">{{ f.phone }}</label>
             <input
               pInputText
@@ -135,9 +133,8 @@ function inputOf(value: ProfileValue): StudentProfileInput {
               autocomplete="off"
               placeholder=" "
             />
-            <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
           </div>
-          <div class="tb-field tb-field--filled">
+          <div class="tb-field">
             <label for="profile-note">{{ f.note }}</label>
             <textarea
               pTextarea
@@ -146,9 +143,8 @@ function inputOf(value: ProfileValue): StudentProfileInput {
               rows="3"
               placeholder=" "
             ></textarea>
-            <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
           </div>
-          <div class="tb-field tb-field--filled">
+          <div class="tb-field">
             <label for="profile-topic">{{ f.defaultTopic }}</label>
             <input
               pInputText
@@ -158,7 +154,6 @@ function inputOf(value: ProfileValue): StudentProfileInput {
               placeholder=" "
               aria-describedby="profile-topic-hint"
             />
-            <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
             <small id="profile-topic-hint" class="tb-hint">{{ f.defaultTopicHint }}</small>
           </div>
           <tb-label-color-field inputId="profile-color" [control]="form.controls.color" />
@@ -192,7 +187,7 @@ function inputOf(value: ProfileValue): StudentProfileInput {
 
       <p-card [header]="t.access">
         <div class="tb-form">
-          <div class="tb-field tb-field--filled">
+          <div class="tb-field">
             <label for="profile-login">{{ f.login }}</label>
             <input
               pInputText
@@ -202,7 +197,6 @@ function inputOf(value: ProfileValue): StudentProfileInput {
               [value]="row.login ?? f.noLogin"
               aria-describedby="profile-login-hint"
             />
-            <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
             <small id="profile-login-hint" class="tb-hint">{{ f.loginHint }}</small>
           </div>
           @if (accessLine(); as line) {

@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { aBoard, aLinkBoard } from '@testing/boards-fixtures';
-import { bodyText } from '@testing/dom';
+import { bodyText, buttonByText } from '@testing/dom';
 import { testProviders } from '@testing/setup';
 import { BoardClipboard } from './board-clipboard';
 import { BoardInsert } from './board-insert';
@@ -64,6 +64,58 @@ describe('ToBoardDialog', () => {
     expect(open).toHaveBeenCalledWith('/teacher/boards/board-1', '_blank', 'noopener');
     expect(bodyText()).toContain('материал уже на ней');
     expect(bodyText()).toContain('Открыть доску «Физика»');
+  });
+
+  it('moves the material the way chosen in the list with one action', async () => {
+    const dialog = await show();
+    backend.expectOne('/api/teacher/boards').flush([aBoard({ title: 'Физика' })]);
+    await fixture.whenStable();
+    const put = vi.spyOn(insert, 'put');
+    expect(document.body.querySelector('#to-board-mode-text')).toHaveProperty('checked', true);
+
+    document.body.querySelector<HTMLInputElement>('#to-board-mode-image')?.click();
+    await fixture.whenStable();
+    buttonByText(document.body, 'Перенести').click();
+    await fixture.whenStable();
+
+    expect(put).toHaveBeenCalledWith('board-1', expect.objectContaining({ mode: 'image' }));
+    expect(dialog.visible()).toBe(true);
+    expect(bodyText()).toContain('материал уже на ней');
+  });
+
+  it('does not offer the picture for an external board without the rich clipboard', async () => {
+    const dialog = await show(false);
+    backend.expectOne('/api/teacher/boards').flush([aLinkBoard()]);
+    await fixture.whenStable();
+    const copyText = vi.spyOn(clipboard, 'copyText').mockResolvedValue();
+
+    expect(document.body.querySelector('#to-board-mode-image')).toHaveProperty('disabled', true);
+    buttonByText(document.body, 'Перенести').click();
+    await fixture.whenStable();
+
+    expect(copyText).toHaveBeenCalled();
+    expect(dialog.visible()).toBe(true);
+  });
+
+  it('moves the pages with the same action', async () => {
+    vi.spyOn(clipboard, 'canWriteRich').mockReturnValue(true);
+    fixture = TestBed.createComponent(ToBoardDialog);
+    const material = {
+      title: 'Spotlight',
+      mode: 'pages' as const,
+      pictures: ['/api/teacher/textbooks/tb-1/pages/2'],
+    };
+    fixture.componentRef.setInput('pages', material);
+    fixture.componentInstance.visible.set(true);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/boards').flush([aBoard()]);
+    await fixture.whenStable();
+    const put = vi.spyOn(insert, 'put');
+
+    expect(document.body.querySelector('[role="radiogroup"]')).toBeNull();
+    buttonByText(document.body, 'Перенести').click();
+
+    expect(put).toHaveBeenCalledWith('board-1', material);
   });
 
   it('puts a written assignment in a dated frame with its pictures', async () => {

@@ -161,3 +161,8 @@ export function requestKindLabel(request: Pick<ChangeRequest, 'groupId' | 'kind'
     ? T.wontCome
     : KIND_LABELS[request.kind];
 }
+
+/** Whether the student said they would not come to this group lesson. */
+export function excusedFrom(lesson: ScheduledLesson): boolean {
+  return lesson.participants.some((participant) => participant.attendance === 'EXCUSED');
+}

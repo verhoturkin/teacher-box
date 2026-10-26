@@ -12,10 +12,9 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { ConfirmationService, MenuItem } from 'primeng/api';
+import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Menu } from 'primeng/menu';
 import { Tooltip } from 'primeng/tooltip';
 import { FileSaver } from '@shared/files/file-saver';
@@ -30,7 +29,7 @@ import { RestoreDialog } from './restore-dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
-import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Confirm } from '@shared/ui/confirm';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
 import { T } from '../i18n/texts';
@@ -49,7 +48,6 @@ const KINDS: Readonly<Record<BackupKind, string>> = T.backups.kinds;
     DatePipe,
     Button,
     Card,
-    ConfirmDialog,
     HelpButton,
     Menu,
     ButtonAttributes,
@@ -57,7 +55,6 @@ const KINDS: Readonly<Record<BackupKind, string>> = T.backups.kinds;
     Tooltip,
     LoadStateView,
   ],
-  providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card id="backups">
@@ -130,7 +127,6 @@ const KINDS: Readonly<Record<BackupKind, string>> = T.backups.kinds;
       (onHide)="menuFor.set(null)"
     />
     <tb-restore-dialog [(visible)]="restoring" [backup]="selected()" [area]="area()" />
-    <p-confirmdialog />
   `,
 })
 export class BackupsCard implements OnInit {
@@ -138,7 +134,7 @@ export class BackupsCard implements OnInit {
   protected readonly busy = new Busy();
   private readonly api = inject(BackupsApi);
   private readonly fileSaver = inject(FileSaver);
-  private readonly confirmation = inject(ConfirmationService);
+  private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
   private readonly drive = inject(DriveStore);
   private readonly menu = viewChild.required<Menu>('menu');
@@ -232,19 +228,18 @@ export class BackupsCard implements OnInit {
     });
   }
 
-  confirmDelete(backup: BackupInfo): void {
-    this.confirmation.confirm(
-      dangerConfirmation({
+  async confirmDelete(backup: BackupInfo): Promise<void> {
+    if (
+      await this.confirm.danger({
         header: T.backups.deleteHeader,
         message: T.backups.deleteMessage(backup.name),
         acceptLabel: T.backups.delete,
-        accept: () => {
-          this.api.delete(backup.name).subscribe(() => {
-            this.reload();
-          });
-        },
-      }),
-    );
+      })
+    ) {
+      this.api.delete(backup.name).subscribe(() => {
+        this.reload();
+      });
+    }
   }
 
   private actionsOf(backup: BackupInfo): MenuItem[] {
@@ -281,7 +276,7 @@ export class BackupsCard implements OnInit {
         icon: 'tb-i tb-i-delete',
         styleClass: 'tb-menu-item--danger',
         command: () => {
-          this.confirmDelete(backup);
+          void this.confirmDelete(backup);
         },
       });
     }

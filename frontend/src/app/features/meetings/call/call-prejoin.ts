@@ -12,17 +12,16 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
 import { AuthService } from '@core/auth/auth.service';
+import { TbDialog } from '@shared/ui/dialog/dialog';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { InitialsPipe } from '@shared/ui/initials';
 import { CallDevices, DeviceList, mediaErrorText } from './call-devices';
 import { CallMedia } from './call-engine';
 import { CallSession, CallTarget } from './call-session';
 import { T } from '../i18n/texts';
-import { SHARED_T } from '@shared/i18n/texts';
 
 interface DeviceOption {
   readonly label: string;
@@ -35,20 +34,18 @@ interface DeviceOption {
  */
 @Component({
   selector: 'tb-call-prejoin',
-  imports: [FormsModule, Button, Dialog, Message, Select, ButtonAttributes, InitialsPipe],
+  imports: [FormsModule, Button, TbDialog, Message, Select, ButtonAttributes, InitialsPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="t.title(target().title)"
+    <tb-dialog
+      kind="form"
       [visible]="true"
-      [modal]="true"
-      [draggable]="false"
-      [closeOnEscape]="true"
-      [focusOnShow]="false"
-      styleClass="tb-dialog tb-call-prejoin"
       (visibleChange)="cancel()"
+      [headline]="t.title(target().title)"
+      [confirmLabel]="supported ? t.join : null"
+      (confirm)="join()"
     >
-      <div class="tb-form">
+      <div class="tb-form tb-call-prejoin">
         <div class="tb-call-prejoin__preview">
           @if (media().camera && stream()) {
             <video
@@ -126,20 +123,10 @@ interface DeviceOption {
           <p class="tb-muted">{{ t.switching(current) }}</p>
         }
       </div>
-      <ng-template #footer>
-        <p-button [label]="c.cancel" severity="secondary" [text]="true" (onClick)="cancel()" />
-        <p-button
-          [label]="t.join"
-          icon="tb-i tb-i-videocam"
-          [disabled]="!supported"
-          (onClick)="join()"
-        />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
 })
 export class CallPrejoin {
-  protected readonly c = SHARED_T.common;
   protected readonly t = T.prejoin;
   private readonly session = inject(CallSession);
   private readonly devices = inject(CallDevices);

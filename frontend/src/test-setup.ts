@@ -58,6 +58,15 @@ for (const name of ['createObjectURL', 'revokeObjectURL'] as const) {
   }
 }
 
+/** jsdom does not scroll: dialogs bring an error into view, lists keep the active option in view. */
+if (typeof Element.prototype.scrollIntoView !== 'function') {
+  Object.defineProperty(Element.prototype, 'scrollIntoView', {
+    writable: true,
+    configurable: true,
+    value: (): void => undefined,
+  });
+}
+
 // Under a parallel run with coverage (the pre-commit hook on a busy machine) the first test of a
 // spec file can take several seconds: it compiles its components. 5 s by default is too tight.
 vi.setConfig({ testTimeout: 20_000 });

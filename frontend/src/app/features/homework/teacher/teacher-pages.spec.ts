@@ -304,6 +304,7 @@ describe('AssignmentPage', () => {
 
     buttonByText(host, 'Удалить…').click();
     expect(confirm.mock.calls[0]?.[0].message).toContain('Задание «Дроби» будет удалено');
+    await fixture.whenStable();
     backend
       .expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/a-1' })
       .flush(null);
@@ -413,6 +414,7 @@ describe('AssignmentPage', () => {
     expect(readableText(host)).toContain('схема.png');
 
     buttonByText(host, 'Удалить файл условие.pdf').click();
+    await fixture.whenStable();
     backend
       .expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/a-1/attachments/f-1' })
       .flush(null);

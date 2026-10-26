@@ -142,6 +142,8 @@ export const en: Translation<typeof ru> = {
     imageCopied: 'The picture is in the clipboard. Press Ctrl+V on the board.',
     textCopied: 'The text is in the clipboard. Press Ctrl+V on the board.',
     openBoard: (title: string) => `Open the board «${title}»`,
+    transfer: 'Move',
+    how: 'How to move it',
     asImage: 'As a picture',
     asText: 'As text',
     noStudentBoards: 'The students of the homework have no boards',

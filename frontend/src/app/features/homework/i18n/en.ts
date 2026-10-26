@@ -251,6 +251,7 @@ export const en: Translation<typeof ru> = {
     action: (action: string, name: string) => `${action}: ${name}`,
     notAssigned: 'The homework is not given to anyone yet',
     assignMore: 'Give to more students',
+    assignFailed: 'Could not give the assignment',
     add: 'Add',
     notSubmitted: 'Not handed in',
     submittedAt: (date: string) => `Handed in ${date}`,

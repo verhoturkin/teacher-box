@@ -24,6 +24,8 @@ don't read them unless the task needs history.
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the
 monthly report, homework and board lists by name) and the options of student / group selects.
 
+`shared/ui/fold-card.ts` (`tb-fold-card`) is used by no page since 247.2: remove it or find it a use.
+
 Carried over from 0.6.13 (design audit 2026-09-29, `archive/audit/`):
 
 - Shared `tb-steps` and `tb-copy-field` components.

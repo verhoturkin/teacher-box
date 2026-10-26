@@ -7,7 +7,6 @@ import {
   input,
   model,
   output,
-  signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
@@ -16,15 +15,12 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
 import { MemberPicker, MemberSelection } from '@features/identity/parts';
 import { SelectButton } from 'primeng/selectbutton';
-import { describeError } from '@core/http/error-messages';
-import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
-import { SubmitFor } from '@shared/ui/submit-for';
+import { TbDialog } from '@shared/ui/dialog/dialog';
+import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
+import { FieldErrors } from '@shared/ui/field-errors';
 import { BoardsApi } from '../data-access/boards-api';
 import { Board, BoardInput, BoardKind } from '../data-access/boards.models';
 import { BOARD_KIND_LABELS } from '../boards-labels';
@@ -51,27 +47,26 @@ export interface BoardDefaults {
  */
 @Component({
   selector: 'tb-board-dialog',
-  imports: [
-    ReactiveFormsModule,
-    Button,
-    Dialog,
-    InputText,
-    Message,
-    MemberPicker,
-    SelectButton,
-    FieldErrors,
-    SubmitFor,
-  ],
+  imports: [ReactiveFormsModule, TbDialog, InputText, MemberPicker, SelectButton, FieldErrors],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="board() === null ? t.newBoard : t.editBoard"
+    <tb-dialog
+      kind="form"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog"
-      [draggable]="false"
+      [headline]="board() === null ? t.newBoard : t.editBoard"
+      [confirmLabel]="board() === null ? c.create : c.save"
+      formId="board-form"
+      [pending]="submit.pending()"
+      [error]="submit.error()"
+      [dirty]="submit.dirty()"
     >
-      <form tbFieldErrors id="board-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form
+        tbFieldErrors
+        id="board-form"
+        class="tb-form"
+        [formGroup]="form"
+        (ngSubmit)="submit.run()"
+      >
         @if (board() === null) {
           <div class="tb-field tb-field__header">
             <span id="board-kind-label">{{ t.kind }}</span>
@@ -120,25 +115,8 @@ export interface BoardDefaults {
             [groups]="groupOptions()"
           />
         </div>
-        @if (error(); as message) {
-          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-        }
       </form>
-      <ng-template #footer>
-        <p-button
-          [label]="c.cancel"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        <p-button
-          [label]="board() === null ? c.create : c.save"
-          [loading]="pending()"
-          type="submit"
-          tbSubmitFor="board-form"
-        />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
 })
 export class BoardDialog {
@@ -159,8 +137,6 @@ export class BoardDialog {
     value,
     label: BOARD_KIND_LABELS[value],
   }));
-  protected readonly pending = signal(false);
-  protected readonly error = signal<string | null>(null);
 
   readonly form = inject(NonNullableFormBuilder).group({
     kind: new FormControl<BoardKind>('EXCALIDRAW', { nonNullable: true }),
@@ -186,24 +162,6 @@ export class BoardDialog {
 
   constructor() {
     effect(() => {
-      if (this.visible()) {
-        const board = this.board();
-        const defaults = this.defaults();
-        this.error.set(null);
-        this.form.reset({
-          kind: board?.kind ?? 'EXCALIDRAW',
-          title: board?.title ?? '',
-          url: board?.url ?? '',
-          members: board
-            ? board.members.map((member) => ({ kind: member.type, id: member.id }))
-            : [
-                ...defaults.studentIds.map((id) => ({ kind: 'STUDENT' as const, id })),
-                ...defaults.groupIds.map((id) => ({ kind: 'GROUP' as const, id })),
-              ],
-        });
-      }
-    });
-    effect(() => {
       // The link is checked only for an external board.
       const url = this.form.controls.url;
       if (this.kind() === 'LINK') url.enable();
@@ -211,38 +169,43 @@ export class BoardDialog {
     });
   }
 
-  save(): void {
-    if (!revealErrors(this.form) || this.pending()) {
-      return;
-    }
-    const value = this.form.getRawValue();
-    const input: BoardInput = {
-      title: value.title.trim(),
-      url: this.kind() === 'LINK' ? value.url.trim() : null,
-      studentIds: value.members
-        .filter((member) => member.kind === 'STUDENT')
-        .map((member) => member.id),
-      groupIds: value.members
-        .filter((member) => member.kind === 'GROUP')
-        .map((member) => member.id),
-    };
-    const board = this.board();
-    this.pending.set(true);
-    this.error.set(null);
-    (board === null ? this.api.create(value.kind, input) : this.api.change(board, input)).subscribe(
-      {
-        next: (saved) => {
-          this.pending.set(false);
-          this.visible.set(false);
-          this.saved.emit(saved);
-        },
-        error: (error: unknown) => {
-          this.pending.set(false);
-          this.error.set(describeError(error, T.dialog.failed));
-        },
-      },
-    );
-  }
+  protected readonly submit = dialogSubmit({
+    visible: this.visible,
+    form: this.form,
+    failed: T.dialog.failed,
+    reset: () => {
+      const board = this.board();
+      const defaults = this.defaults();
+      this.form.reset({
+        kind: board?.kind ?? 'EXCALIDRAW',
+        title: board?.title ?? '',
+        url: board?.url ?? '',
+        members: board
+          ? board.members.map((member) => ({ kind: member.type, id: member.id }))
+          : [
+              ...defaults.studentIds.map((id) => ({ kind: 'STUDENT' as const, id })),
+              ...defaults.groupIds.map((id) => ({ kind: 'GROUP' as const, id })),
+            ],
+      });
+    },
+    request: (value) => {
+      const input: BoardInput = {
+        title: value.title.trim(),
+        url: this.kind() === 'LINK' ? value.url.trim() : null,
+        studentIds: value.members
+          .filter((member) => member.kind === 'STUDENT')
+          .map((member) => member.id),
+        groupIds: value.members
+          .filter((member) => member.kind === 'GROUP')
+          .map((member) => member.id),
+      };
+      const board = this.board();
+      return board === null ? this.api.create(value.kind, input) : this.api.change(board, input);
+    },
+    done: (saved) => {
+      this.saved.emit(saved);
+    },
+  });
 
   private withMembers(options: readonly MemberOption[], type: 'STUDENT' | 'GROUP'): MemberOption[] {
     const missing = (this.board()?.members ?? [])

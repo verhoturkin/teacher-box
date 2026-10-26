@@ -170,6 +170,8 @@ describe('CallPrejoin', () => {
 
     expect(previews).toEqual([]);
     expect(bodyText()).toContain('Этот браузер не умеет видеозвонки');
-    expect(buttonByText(document.body, 'Войти').disabled).toBe(true);
+    expect(
+      Array.from(document.body.querySelectorAll('button')).map((b) => b.textContent),
+    ).not.toContain('Войти');
   });
 });

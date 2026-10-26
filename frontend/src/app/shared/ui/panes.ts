@@ -161,7 +161,6 @@ export class Panes {
       overflow: clip;
       border-radius: var(--tb-shape-xl);
       background: var(--p-md-surface);
-      --tb-field-surface: var(--p-md-surface);
       /* a list lies right on the pane's surface: its group keeps the M3 list container corner, large (16 px) —
          the first and the last rows round their outer corners by it, the rows between by 4 px */
       --tb-list-outer: var(--tb-shape-lg);
@@ -190,7 +189,6 @@ export class Panes {
     :host-context(.tb-dark),
     :host(.tb-pane--sheet) {
       background: var(--p-md-surface-container-low);
-      --tb-field-surface: var(--p-md-surface-container-low);
     }
 
     :host-context(.tb-panes--single) .tb-pane__scroll {
@@ -213,7 +211,6 @@ export class Panes {
       :host(.tb-pane--sheet) {
         border-radius: 0;
         background: transparent;
-        --tb-field-surface: var(--p-md-surface);
       }
     }
 

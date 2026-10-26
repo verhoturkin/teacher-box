@@ -12,11 +12,11 @@ import {
 } from '@angular/core';
 import { of } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
+import { RadioButton } from 'primeng/radiobutton';
 import { Select } from 'primeng/select';
 import { quietContext } from '@core/http/api-error.interceptor';
+import { TbDialog } from '@shared/ui/dialog/dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 import { BoardsApi } from '../data-access/boards-api';
 import { Board } from '../data-access/boards.models';
@@ -42,15 +42,17 @@ export interface Placed {
  */
 @Component({
   selector: 'tb-to-board-dialog',
-  imports: [EmptyState, FormsModule, Button, Dialog, Message, Select],
+  imports: [EmptyState, FormsModule, TbDialog, Message, RadioButton, Select],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="t.title"
+    <tb-dialog
+      kind="form"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog"
-      [draggable]="false"
+      [headline]="t.title"
+      [confirmLabel]="canPlace() ? t.transfer : null"
+      [cancelLabel]="done() || !canPlace() ? c.close : c.cancel"
+      [pending]="copying()"
+      (confirm)="transfer()"
     >
       @if (loaded() && sorted().length === 0) {
         <tb-empty-state
@@ -91,6 +93,30 @@ export interface Placed {
             </ng-template>
           </p-select>
         </div>
+        @if (pages() === null) {
+          <ul class="tb-list" role="radiogroup" [attr.aria-label]="t.how">
+            @for (option of modes; track option.mode) {
+              <li
+                class="tb-to-board__mode"
+                [class.tb-to-board__mode--checked]="option.mode === mode()"
+                [class.tb-to-board__mode--disabled]="blocked(option.mode)"
+              >
+                <p-radiobutton
+                  class="tb-to-board__radio"
+                  name="to-board-mode"
+                  [inputId]="'to-board-mode-' + option.mode"
+                  [value]="option.mode"
+                  [ngModel]="mode()"
+                  (ngModelChange)="chosenMode.set($event)"
+                  [disabled]="blocked(option.mode)"
+                />
+                <label class="tb-list__text" [for]="'to-board-mode-' + option.mode">
+                  <span class="tb-list__title">{{ option.label }}</span>
+                </label>
+              </li>
+            }
+          </ul>
+        }
       }
       @if (done(); as placed) {
         <p-message severity="success" styleClass="tb-form-message">
@@ -109,45 +135,55 @@ export interface Placed {
       @if (error(); as message) {
         <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
       }
-      <ng-template #footer>
-        <p-button
-          [label]="c.close"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        @if (pages(); as material) {
-          <p-button
-            [label]="t.title"
-            icon="tb-i tb-i-co_present"
-            [disabled]="chosenBoard() === null || material.pictures.length === 0"
-            (onClick)="placePages(material)"
-          />
-        } @else {
-          <p-button
-            [label]="t.asImage"
-            icon="tb-i tb-i-image"
-            severity="secondary"
-            [disabled]="chosenBoard() === null || (needsClipboard() && !richClipboard)"
-            [loading]="copying()"
-            (onClick)="place('image')"
-          />
-          <p-button
-            [label]="t.asText"
-            icon="tb-i tb-i-content_copy"
-            [disabled]="chosenBoard() === null"
-            [loading]="copying()"
-            (onClick)="place('text')"
-          />
-        }
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
   styles: `
     .tb-to-board__option {
       display: flex;
       flex-direction: column;
       min-width: 0;
+    }
+
+    /* Single choice (design-system §11): the label covers the tile, the radio stays above for its focus ring. */
+    .tb-to-board__mode {
+      position: relative;
+      cursor: pointer;
+
+      &:hover {
+        background: color-mix(
+          in srgb,
+          var(--p-md-on-surface) var(--tb-state-hover),
+          var(--tb-list-item)
+        );
+      }
+
+      label {
+        cursor: pointer;
+
+        &::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+        }
+      }
+
+      .tb-to-board__radio {
+        grid-area: lead;
+        position: relative;
+        z-index: 1;
+      }
+    }
+
+    .tb-to-board__mode--checked,
+    .tb-to-board__mode--checked:hover {
+      background: var(--p-md-secondary-container);
+      color: var(--p-md-on-secondary-container);
+    }
+
+    .tb-to-board__mode--disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
     }
   `,
 })
@@ -192,6 +228,15 @@ export class ToBoardDialog {
   protected readonly done = signal<Placed | null>(null);
   protected readonly error = signal<string | null>(null);
   readonly chosen = signal<string | null>(null);
+  protected readonly modes: readonly { mode: InsertMode; label: string }[] = [
+    { mode: 'text', label: T.toBoard.asText },
+    { mode: 'image', label: T.toBoard.asImage },
+  ];
+  protected readonly chosenMode = signal<InsertMode>('text');
+  /** The chosen way, or the text when the picture is not possible for this board. */
+  protected readonly mode = computed(() =>
+    this.blocked(this.chosenMode()) ? 'text' : this.chosenMode(),
+  );
   /** The boards to choose from: pages go only on Excalidraw boards. */
   protected readonly sorted = computed(() => {
     const pages = this.pages() !== null;
@@ -216,6 +261,27 @@ export class ToBoardDialog {
     }
     return this.frame() === null ? T.toBoard.centreHint : T.toBoard.assignmentHint;
   });
+
+  /** A picture goes to an external board through the rich clipboard only. */
+  protected blocked(mode: InsertMode): boolean {
+    return mode === 'image' && this.needsClipboard() && !this.richClipboard;
+  }
+
+  /** There is a board to put the material on (pages also need their pictures). */
+  protected readonly canPlace = computed(() => {
+    if (this.chosenBoard() === null) return false;
+    const material = this.pages();
+    return material === null || material.pictures.length > 0;
+  });
+
+  protected transfer(): void {
+    const material = this.pages();
+    if (material !== null) {
+      this.placePages(material);
+    } else {
+      void this.place(this.mode());
+    }
+  }
 
   constructor() {
     effect(() => {

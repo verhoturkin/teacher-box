@@ -193,6 +193,10 @@ describe('NotificationsSheet', () => {
 
   describe('docked (extra-large)', () => {
     beforeEach(async () => {
+      // a shade of an earlier test may still be leaving: it is not this pane's
+      document.body.querySelectorAll('.p-drawer-mask').forEach((mask) => {
+        mask.remove();
+      });
       await render(true);
     });
 

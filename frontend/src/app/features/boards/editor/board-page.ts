@@ -15,14 +15,12 @@ import { Location } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import type { ExcalidrawInitialDataState } from '@excalidraw/excalidraw/types';
 import { firstValueFrom } from 'rxjs';
-import { ConfirmationService } from 'primeng/api';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
-import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Message } from 'primeng/message';
 import { CanLeave } from '@core/routing/can-leave.guard';
 import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
 import { readDeviceSetting, writeDeviceSetting } from '@shared/storage/device-settings';
-import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Confirm } from '@shared/ui/confirm';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { SHARED_T } from '@shared/i18n/texts';
@@ -72,13 +70,11 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
     ButtonDirective,
     ButtonIcon,
     ButtonLabel,
-    ConfirmDialog,
     Message,
     LoadStateView,
     BoardCanvas,
     BoardBackupsDialog,
   ],
-  providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-board-page">
@@ -142,7 +138,6 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
         (restored)="restored()"
       />
     }
-    <p-confirmdialog />
   `,
   styles: `
     :host {
@@ -220,7 +215,7 @@ export class BoardPage implements OnInit, CanLeave {
     (this.router.currentNavigation() ?? this.router.lastSuccessfulNavigation())
       ?.previousNavigation != null;
   private readonly themeMode = inject(ThemeMode);
-  private readonly confirmation = inject(ConfirmationService);
+  private readonly confirm = inject(Confirm);
   private readonly clipboard = inject(BoardClipboard);
   private readonly insert = inject(BoardInsert);
   private readonly document = inject(DOCUMENT);
@@ -397,20 +392,10 @@ export class BoardPage implements OnInit, CanLeave {
   async canLeave(): Promise<boolean> {
     const sync = this.sync();
     if (sync === null || (await sync.flush())) return true;
-    return new Promise((resolve) => {
-      this.confirmation.confirm(
-        dangerConfirmation({
-          header: T.editor.leaveHeader,
-          message: T.editor.leaveMessage,
-          acceptLabel: T.editor.leave,
-          accept: () => {
-            resolve(true);
-          },
-          reject: () => {
-            resolve(false);
-          },
-        }),
-      );
+    return this.confirm.danger({
+      header: T.editor.leaveHeader,
+      message: T.editor.leaveMessage,
+      acceptLabel: T.editor.leave,
     });
   }
 

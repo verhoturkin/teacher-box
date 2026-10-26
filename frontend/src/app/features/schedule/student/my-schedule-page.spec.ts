@@ -115,10 +115,10 @@ describe('MySchedulePage', () => {
       .injector.get(ScheduleCalendar);
     calendar.lessonClick.emit(lesson);
     await fixture.whenStable();
-    expect(document.body.querySelector('.p-drawer.tb-sheet')).toBeNull();
-    expect(
-      readableText(requireElement(document.body, '.p-dialog.tb-dialog', HTMLElement)),
-    ).toContain('Desktop details');
+    expect(document.body.querySelector('.p-drawer.tb-d--sheet')).toBeNull();
+    expect(readableText(requireElement(document.body, '.p-dialog.tb-d', HTMLElement))).toContain(
+      'Desktop details',
+    );
     fixture.componentInstance.closeSheet();
     await fixture.whenStable();
   });
@@ -172,7 +172,7 @@ describe('MySchedulePage', () => {
     row.click();
     await fixture.whenStable();
     expect(
-      readableText(requireElement(document.body, '.p-drawer.tb-sheet', HTMLElement)),
+      readableText(requireElement(document.body, '.p-drawer.tb-d--sheet', HTMLElement)),
     ).toContain('Перенести');
     fixture.componentInstance.closeSheet();
 
@@ -345,8 +345,11 @@ describe('MySchedulePage', () => {
 
     rows[0]?.click();
     await fixture.whenStable();
-    const sheet = requireElement(document.body, '.p-drawer.tb-sheet', HTMLElement);
+    const sheet = requireElement(document.body, '.p-drawer.tb-d--sheet', HTMLElement);
     expect(readableText(sheet)).toContain('Войти в урок');
+    expect(readableText(sheet)).not.toContain('Итог');
+    expect(sheet.querySelector('tb-board-links')).toBeNull();
+    expect(sheet.querySelector('.p-drawer-title')?.textContent).toContain('Занятие');
     expect(sheet.querySelector('a[href="https://zoom.us/j/1"]')).not.toBeNull();
     buttonByText(sheet, 'Перенести').click();
     await fixture.whenStable();
@@ -356,7 +359,7 @@ describe('MySchedulePage', () => {
     rows[1]?.click();
     await fixture.whenStable();
     buttonByText(
-      requireElement(document.body, '.p-drawer.tb-sheet', HTMLElement),
+      requireElement(document.body, '.p-drawer.tb-d--sheet', HTMLElement),
       'Отозвать запрос',
     ).click();
     backend.expectOne({ method: 'DELETE', url: '/api/me/schedule/requests/r-1' }).flush(null);

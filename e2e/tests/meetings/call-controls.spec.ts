@@ -86,7 +86,7 @@ test('the call window: movable own camera, settings menu and details', async ({ 
 
   await window.getByRole('button', { name: 'Настройки звонка' }).click();
   await teacher.getByRole('menuitem', { name: 'Сведения о связи' }).click();
-  const details = teacher.getByRole('dialog', { name: 'Сведения о связи' });
+  const details = teacher.getByRole('alertdialog', { name: 'Сведения о связи' });
   await expect(details).toContainText('Качество связи');
   await expect(details).toContainText(STUDENT);
   await expect(details).toContainText('Протокол', { timeout: 10_000 });

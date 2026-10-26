@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   input,
   model,
@@ -15,17 +14,16 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { throwError } from 'rxjs';
 import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
 import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
 import { MemberPicker, MemberSelection } from '@features/identity/parts';
 import { SelectButton } from 'primeng/selectbutton';
-import { describeError } from '@core/http/error-messages';
 import { formatFileSize } from '@shared/files/file-size';
+import { TbDialog } from '@shared/ui/dialog/dialog';
+import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
-import { SubmitFor } from '@shared/ui/submit-for';
 import { TextbooksApi } from '../data-access/textbooks-api';
 import { Textbook, TextbookInput, TextbookKind } from '../data-access/textbooks.models';
 import {
@@ -52,23 +50,24 @@ export interface MemberOption {
   imports: [
     ReactiveFormsModule,
     Button,
-    Dialog,
+    TbDialog,
     InputNumber,
     InputText,
-    Message,
     MemberPicker,
     SelectButton,
     FieldErrors,
-    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="textbook() === null ? t.newTextbook : t.editTextbook"
+    <tb-dialog
+      kind="form"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog"
-      [draggable]="false"
+      [headline]="textbook() === null ? t.newTextbook : t.editTextbook"
+      [confirmLabel]="textbook() === null ? t.add : c.save"
+      formId="textbook-form"
+      [pending]="submit.pending()"
+      [error]="submit.error()"
+      [dirty]="submit.dirty() || file() !== null"
     >
       <form tbFieldErrors id="textbook-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         @if (textbook() === null) {
@@ -160,25 +159,8 @@ export interface MemberOption {
             [groups]="groupOptions()"
           />
         </div>
-        @if (error(); as message) {
-          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-        }
       </form>
-      <ng-template #footer>
-        <p-button
-          [label]="c.cancel"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        <p-button
-          [label]="textbook() === null ? t.add : c.save"
-          [loading]="pending()"
-          type="submit"
-          tbSubmitFor="textbook-form"
-        />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
   styles: `
     .tb-textbook-file {
@@ -214,8 +196,6 @@ export class TextbookDialog {
     value,
     label: TEXTBOOK_KIND_LABELS[value],
   }));
-  protected readonly pending = signal(false);
-  protected readonly error = signal<string | null>(null);
   readonly file = signal<File | null>(null);
   protected readonly fileError = signal<string | null>(null);
 
@@ -238,27 +218,6 @@ export class TextbookDialog {
   readonly studentOptions = computed(() => this.withMembers(this.students(), 'STUDENT'));
   readonly groupOptions = computed(() => this.withMembers(this.groups(), 'GROUP'));
 
-  constructor() {
-    effect(() => {
-      if (this.visible()) {
-        const textbook = this.textbook();
-        this.error.set(null);
-        this.fileError.set(null);
-        this.file.set(null);
-        this.form.reset({
-          kind: textbook?.kind ?? 'TEXTBOOK',
-          title: textbook?.title ?? '',
-          course: textbook?.course ?? '',
-          pageCount: textbook?.format === 'DOCUMENT' ? textbook.pageCount : null,
-          members: (textbook?.members ?? []).map((member) => ({
-            kind: member.type,
-            id: member.id,
-          })),
-        });
-      }
-    });
-  }
-
   protected onPicked(element: HTMLInputElement): void {
     const file = element.files?.[0] ?? null;
     element.value = '';
@@ -276,49 +235,62 @@ export class TextbookDialog {
     return formatFileSize(bytes);
   }
 
-  save(): void {
-    const textbook = this.textbook();
-    const file = this.file();
-    if (textbook === null && file === null) {
+  /** The file is checked here (a new textbook needs one); the rest by the form. */
+  protected save(): void {
+    if (this.textbook() === null && this.file() === null) {
       this.fileError.set(T.dialog.chooseFileError);
     }
-    if (!revealErrors(this.form) || this.pending() || this.fileError() !== null) {
-      return;
+    if (this.fileError() === null) {
+      this.submit.run();
+    } else {
+      revealErrors(this.form);
     }
-    const value = this.form.getRawValue();
-    const input: TextbookInput = {
-      kind: value.kind,
-      title: value.title.trim(),
-      course: value.course.trim() === '' ? null : value.course.trim(),
-      pageCount: this.document() ? value.pageCount : null,
-      studentIds: value.members
-        .filter((member) => member.kind === 'STUDENT')
-        .map((member) => member.id),
-      groupIds: value.members
-        .filter((member) => member.kind === 'GROUP')
-        .map((member) => member.id),
-    };
-    let request = textbook === null ? null : this.api.change(textbook, input);
-    if (request === null && file !== null) {
-      request = this.api.create(input, file);
-    }
-    if (request === null) {
-      return;
-    }
-    this.pending.set(true);
-    this.error.set(null);
-    request.subscribe({
-      next: (saved) => {
-        this.pending.set(false);
-        this.visible.set(false);
-        this.saved.emit(saved);
-      },
-      error: (error: unknown) => {
-        this.pending.set(false);
-        this.error.set(describeError(error, T.dialog.failed));
-      },
-    });
   }
+
+  protected readonly submit = dialogSubmit({
+    visible: this.visible,
+    form: this.form,
+    failed: T.dialog.failed,
+    reset: () => {
+      const textbook = this.textbook();
+      this.fileError.set(null);
+      this.file.set(null);
+      this.form.reset({
+        kind: textbook?.kind ?? 'TEXTBOOK',
+        title: textbook?.title ?? '',
+        course: textbook?.course ?? '',
+        pageCount: textbook?.format === 'DOCUMENT' ? textbook.pageCount : null,
+        members: (textbook?.members ?? []).map((member) => ({
+          kind: member.type,
+          id: member.id,
+        })),
+      });
+    },
+    request: (value) => {
+      const textbook = this.textbook();
+      const input: TextbookInput = {
+        kind: value.kind,
+        title: value.title.trim(),
+        course: value.course.trim() === '' ? null : value.course.trim(),
+        pageCount: this.document() ? value.pageCount : null,
+        studentIds: value.members
+          .filter((member) => member.kind === 'STUDENT')
+          .map((member) => member.id),
+        groupIds: value.members
+          .filter((member) => member.kind === 'GROUP')
+          .map((member) => member.id),
+      };
+      const file = this.file();
+      if (textbook !== null) {
+        return this.api.change(textbook, input);
+      }
+      // save() has checked the file
+      return file === null ? throwError(() => new Error('no file')) : this.api.create(input, file);
+    },
+    done: (saved) => {
+      this.saved.emit(saved);
+    },
+  });
 
   private withMembers(options: readonly MemberOption[], type: 'STUDENT' | 'GROUP'): MemberOption[] {
     const missing = (this.textbook()?.members ?? [])

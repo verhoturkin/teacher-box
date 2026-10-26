@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { aTextbook, aWorkbook } from '@testing/textbooks-fixtures';
-import { bodyText, requireElement } from '@testing/dom';
+import { bodyText, buttonByText, requireElement } from '@testing/dom';
 import { formData } from '@testing/form-data';
 import { testProviders } from '@testing/setup';
 import { Textbook } from '../data-access/textbooks.models';
@@ -48,7 +48,7 @@ describe('TextbookDialog', () => {
     expect(bodyText()).toContain('Новый учебник');
     expect(document.body.querySelector('option[value="Английский"]')).not.toBeNull();
 
-    dialog.save();
+    buttonByText(document.body, 'Добавить').click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Выберите файл.');
     backend.expectNone('/api/teacher/textbooks');
@@ -65,7 +65,7 @@ describe('TextbookDialog', () => {
       ],
     });
 
-    dialog.save();
+    buttonByText(document.body, 'Добавить').click();
     const create = backend.expectOne({ method: 'POST', url: '/api/teacher/textbooks' });
     const form = formData(create.request.body);
     expect(form.get('title')).toBe('Spotlight 5');
@@ -87,12 +87,12 @@ describe('TextbookDialog', () => {
     expect(dialog.form.controls.title.value).toBe('Своё название');
     expect(bodyText()).toContain('Файл больше 100 МБ');
     expect(document.body.querySelector('#textbook-pages')).not.toBeNull();
-    dialog.save();
+    buttonByText(document.body, 'Добавить').click();
     backend.expectNone('/api/teacher/textbooks');
 
     await pick(new File(['PK'], 'Тетрадь.docx'));
     dialog.form.patchValue({ pageCount: 48 });
-    dialog.save();
+    buttonByText(document.body, 'Добавить').click();
     const create = backend.expectOne({ method: 'POST', url: '/api/teacher/textbooks' });
     expect(formData(create.request.body).get('pageCount')).toBe('48');
     create.flush(null, { status: 422, statusText: 'Unprocessable' });
@@ -118,7 +118,7 @@ describe('TextbookDialog', () => {
     expect(dialog.form.controls.pageCount.value).toBe(48);
     dialog.form.patchValue({ course: '  ', pageCount: 50 });
 
-    dialog.save();
+    buttonByText(document.body, 'Сохранить').click();
     const change = backend.expectOne({ method: 'PUT', url: '/api/teacher/textbooks/tb-2' });
     expect(change.request.body).toEqual({
       kind: 'WORKBOOK',
@@ -136,7 +136,7 @@ describe('TextbookDialog', () => {
   it('does not send the pages of a PDF', async () => {
     const dialog = await open(aTextbook());
     expect(dialog.form.controls.pageCount.value).toBeNull();
-    dialog.save();
+    buttonByText(document.body, 'Сохранить').click();
     const change = backend.expectOne({ method: 'PUT', url: '/api/teacher/textbooks/tb-1' });
     expect(change.request.body).toMatchObject({ pageCount: null, groupIds: ['g-1'] });
     change.flush(aTextbook());

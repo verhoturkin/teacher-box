@@ -81,15 +81,15 @@ test('dark content panes remain distinct from the window outside compact layouts
         }),
       )
       .toBe(true);
-    const field = await pane.evaluate((element) => {
+    const expected = await pane.evaluate((element) => {
       const probe = document.createElement('div');
-      probe.style.background = 'var(--tb-field-surface)';
+      probe.style.background = 'var(--p-md-surface-container-low)';
       element.append(probe);
       const result = getComputedStyle(probe).backgroundColor;
       probe.remove();
       return result;
     });
-    await expect(pane).toHaveCSS('background-color', field);
+    await expect(pane).toHaveCSS('background-color', expected);
   }
   await page.screenshot({ path: testInfo.outputPath('dark-home.png'), fullPage: true });
 

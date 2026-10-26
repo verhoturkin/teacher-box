@@ -22,7 +22,7 @@ test('the colour of a student highlights their avatar while the row stays neutra
   await create(page, 'Ученик');
   await page.getByLabel('Имя и фамилия').fill(student);
   await page.getByRole('button', { name: 'Сохранить' }).click();
-  const invite = page.getByRole('dialog', { name: `Ссылка для ученика: ${student}` });
+  const invite = page.getByRole('alertdialog', { name: `Ссылка для ученика: ${student}` });
   await invite.getByRole('button', { name: 'Закрыть', exact: true }).last().click();
   await expect(invite).toBeHidden();
   // 0.23.0: the colour is chosen on the Профиль tab of the card, which opens after creating

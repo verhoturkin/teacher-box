@@ -129,7 +129,7 @@ describe('SchedulePage on a phone', () => {
 
     requireElement(host, '.tb-agenda__row', HTMLButtonElement).click();
     await fixture.whenStable();
-    expect(bodyText()).toContain('Запланировано');
+    expect(bodyText()).toContain('Итог');
   });
 
   it('marks a past lesson from the group under its row', async () => {

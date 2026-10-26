@@ -111,7 +111,7 @@ test('the administrator restores the backup and the data comes back', async ({ p
     .click();
   await page.getByRole('button', { name: backupRow, exact: true }).click();
   await page.getByRole('menuitem', { name: 'Восстановить…' }).click();
-  const dialog = page.getByRole('dialog', { name: 'Восстановление из копии' });
+  const dialog = page.getByRole('alertdialog', { name: 'Восстановление из копии' });
   await dialog.locator('#restore-password').fill(ADMIN_PASSWORD);
   await dialog.getByRole('button', { name: 'Восстановить' }).click();
   await expect(dialog).toContainText('Портал перезапускается');

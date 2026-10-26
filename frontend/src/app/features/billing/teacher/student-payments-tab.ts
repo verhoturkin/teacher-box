@@ -8,9 +8,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { ConfirmationService } from 'primeng/api';
 import { Card } from 'primeng/card';
-import { ConfirmDialog } from 'primeng/confirmdialog';
 import { formatMoney } from '@shared/money/money';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { BillingApi } from '../data-access/billing-api';
@@ -21,7 +19,7 @@ import { RECEIPT_MAX_SIZE } from '../receipts';
 import { describeError } from '@core/http/error-messages';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
-import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Confirm } from '@shared/ui/confirm';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { T } from '../i18n/texts';
 
@@ -32,8 +30,7 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-student-payments-tab',
-  imports: [Card, ConfirmDialog, MoneyPipe, BalanceAmount, LedgerList, LoadStateView],
-  providers: [ConfirmationService],
+  imports: [Card, MoneyPipe, BalanceAmount, LedgerList, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
     :host {
@@ -102,13 +99,12 @@ import { T } from '../i18n/texts';
         />
       </p-card>
     }
-    <p-confirmdialog />
   `,
 })
 export class StudentPaymentsTab {
   protected readonly t = T.studentLedger;
   private readonly api = inject(BillingApi);
-  private readonly confirmation = inject(ConfirmationService);
+  private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
   /** The id of the payment whose receipt is being saved. */
   protected readonly receiptBusy = signal<string | null>(null);
@@ -141,22 +137,21 @@ export class StudentPaymentsTab {
       });
   }
 
-  protected confirmCancel(lesson: Lesson): void {
+  protected async confirmCancel(lesson: Lesson): Promise<void> {
     const ledger = this.ledger();
-    this.confirmation.confirm(
-      dangerConfirmation({
+    if (
+      await this.confirm.danger({
         header: T.studentLedger.cancelHeader,
         message: T.studentLedger.cancelMessage(
           ledger === null ? '' : formatMoney(lesson.price, ledger.currency),
         ),
         acceptLabel: T.studentLedger.cancelAccept,
-        accept: () => {
-          this.api.cancelLesson(lesson.id, null).subscribe(() => {
-            this.corrected();
-          });
-        },
-      }),
-    );
+      })
+    ) {
+      this.api.cancelLesson(lesson.id, null).subscribe(() => {
+        this.corrected();
+      });
+    }
   }
 
   protected attachReceipt(payment: Payment, file: File): void {
@@ -178,38 +173,36 @@ export class StudentPaymentsTab {
     });
   }
 
-  protected confirmRemoveReceipt(payment: Payment): void {
-    this.confirmation.confirm(
-      dangerConfirmation({
+  protected async confirmRemoveReceipt(payment: Payment): Promise<void> {
+    if (
+      await this.confirm.danger({
         header: T.studentLedger.removeReceiptHeader,
         message: T.studentLedger.removeReceiptMessage,
         acceptLabel: T.studentLedger.removeReceiptAccept,
-        accept: () => {
-          this.api.removeReceipt(payment.id).subscribe(() => {
-            this.snackbar.success(T.studentLedger.receiptRemoved);
-            this.reload();
-          });
-        },
-      }),
-    );
+      })
+    ) {
+      this.api.removeReceipt(payment.id).subscribe(() => {
+        this.snackbar.success(T.studentLedger.receiptRemoved);
+        this.reload();
+      });
+    }
   }
 
-  protected confirmVoid(payment: Payment): void {
+  protected async confirmVoid(payment: Payment): Promise<void> {
     const ledger = this.ledger();
-    this.confirmation.confirm(
-      dangerConfirmation({
+    if (
+      await this.confirm.danger({
         header: T.studentLedger.voidHeader,
         message: T.studentLedger.voidMessage(
           ledger === null ? '' : formatMoney(payment.amount, ledger.currency),
         ),
         acceptLabel: T.studentLedger.voidAccept,
-        accept: () => {
-          this.api.voidPayment(payment.id, null).subscribe(() => {
-            this.corrected();
-          });
-        },
-      }),
-    );
+      })
+    ) {
+      this.api.voidPayment(payment.id, null).subscribe(() => {
+        this.corrected();
+      });
+    }
   }
 
   /** A charge cancelled or a payment voided: the balance changed. */

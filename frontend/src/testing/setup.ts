@@ -1,10 +1,11 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { EnvironmentProviders, Provider } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EnvironmentProviders, Provider } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
+import { ConfirmDialog } from 'primeng/confirmdialog';
 import { of } from 'rxjs';
 
 type TestProvider = Provider | EnvironmentProviders;
@@ -28,6 +29,7 @@ export function testProvidersWithRouter(
     router,
     providePrimeNG(),
     MessageService,
+    ConfirmationService,
     ...extra,
   ];
 }
@@ -84,3 +86,12 @@ export function screenWidth(width: number): Provider {
     },
   };
 }
+
+/** The host of every confirmation (it lives in `App`): create it in a test that clicks the dialog itself. */
+@Component({
+  selector: 'tb-test-confirm-host',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [ConfirmDialog],
+  template: '<p-confirmdialog appendTo="body" />',
+})
+export class ConfirmHost {}

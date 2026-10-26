@@ -1,24 +1,12 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  inject,
-  model,
-  output,
-  signal,
-  untracked,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, model, output } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
-import { SegmentGroup, Segment } from '@shared/ui/segment-group';
 import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
-import { describeError } from '@core/http/error-messages';
+import { SegmentGroup, Segment } from '@shared/ui/segment-group';
+import { TbDialog } from '@shared/ui/dialog/dialog';
+import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
+import { FieldErrors } from '@shared/ui/field-errors';
 import { IdentityApi } from '../data-access/identity-api';
 import { CreatedStudent } from '../data-access/identity.models';
-import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
-import { SubmitFor } from '@shared/ui/submit-for';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
@@ -29,33 +17,33 @@ import { SHARED_T } from '@shared/i18n/texts';
  */
 @Component({
   selector: 'tb-student-form-dialog',
-  imports: [
-    ReactiveFormsModule,
-    Button,
-    Dialog,
-    InputText,
-    Message,
-    FieldErrors,
-    SubmitFor,
-    SegmentGroup,
-  ],
+  imports: [ReactiveFormsModule, TbDialog, InputText, FieldErrors, SegmentGroup],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="t.newStudent"
+    <tb-dialog
+      kind="form"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog"
-      [draggable]="false"
+      [headline]="t.newStudent"
+      [confirmLabel]="c.save"
+      formId="student-form"
+      [pending]="submit.pending()"
+      [error]="submit.error()"
+      [dirty]="submit.dirty()"
     >
-      <form tbFieldErrors id="student-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form
+        tbFieldErrors
+        id="student-form"
+        class="tb-form"
+        [formGroup]="form"
+        (ngSubmit)="submit.run()"
+      >
         <tb-segment-group
           [label]="t.createKind"
           [segments]="kinds"
           [value]="'student'"
           (valueChange)="choose($event)"
         />
-        <div class="tb-field tb-field--filled">
+        <div class="tb-field">
           <label for="displayName">{{ t.name }}</label>
           <input
             pInputText
@@ -64,9 +52,8 @@ import { SHARED_T } from '@shared/i18n/texts';
             autocomplete="off"
             placeholder=" "
           />
-          <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
         </div>
-        <div class="tb-field tb-field--filled">
+        <div class="tb-field">
           <label for="email">{{ t.email }}</label>
           <input
             pInputText
@@ -76,27 +63,13 @@ import { SHARED_T } from '@shared/i18n/texts';
             autocomplete="off"
             placeholder=" "
           />
-          <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
         </div>
-        <div class="tb-field tb-field--filled">
+        <div class="tb-field">
           <label for="phone">{{ t.phone }}</label>
           <input pInputText id="phone" formControlName="phone" autocomplete="off" placeholder=" " />
-          <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
         </div>
-        @if (error(); as message) {
-          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-        }
       </form>
-      <ng-template #footer>
-        <p-button
-          [label]="c.cancel"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        <p-button [label]="c.save" [loading]="pending()" type="submit" tbSubmitFor="student-form" />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
 })
 export class StudentFormDialog {
@@ -118,53 +91,27 @@ export class StudentFormDialog {
     }
   }
 
-  protected readonly pending = signal(false);
-  protected readonly error = signal<string | null>(null);
-
   protected readonly form = inject(NonNullableFormBuilder).group({
     displayName: ['', [Validators.required, Validators.maxLength(100)]],
     email: ['', [Validators.email, Validators.maxLength(254)]],
     phone: ['', [Validators.maxLength(32)]],
   });
 
-  constructor() {
-    // an empty form whenever the dialog opens
-    effect(() => {
-      if (this.visible()) {
-        untracked(() => {
-          this.error.set(null);
-          this.form.reset();
-        });
-      }
-    });
-  }
-
-  protected save(): void {
-    if (!revealErrors(this.form) || this.pending()) {
-      return;
-    }
-    const value = this.form.getRawValue();
-    this.pending.set(true);
-    this.error.set(null);
-    this.api
-      .createStudent({
+  protected readonly submit = dialogSubmit({
+    visible: this.visible,
+    form: this.form,
+    failed: T.studentForm.failed,
+    request: (value) =>
+      this.api.createStudent({
         displayName: value.displayName,
         email: value.email === '' ? null : value.email,
         phone: value.phone === '' ? null : value.phone,
         note: null,
         defaultTopic: null,
         color: null,
-      })
-      .subscribe({
-        next: (created) => {
-          this.pending.set(false);
-          this.visible.set(false);
-          this.created.emit(created);
-        },
-        error: (error: unknown) => {
-          this.pending.set(false);
-          this.error.set(describeError(error, T.studentForm.failed));
-        },
-      });
-  }
+      }),
+    done: (created) => {
+      this.created.emit(created);
+    },
+  });
 }

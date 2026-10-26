@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   input,
   model,
@@ -10,17 +9,17 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Button } from 'primeng/button';
 import { DatePicker } from 'primeng/datepicker';
-import { Dialog } from 'primeng/dialog';
 import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
-import { describeError } from '@core/http/error-messages';
+import { EMPTY } from 'rxjs';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { ChangeKind, ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
 import { formatLessonTime, optionalText } from '../schedule-labels';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
+import { TbDialog } from '@shared/ui/dialog/dialog';
+import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 
 /**
  * A student asks to move a lesson to another time or to cancel it; the teacher answers. A late
@@ -28,18 +27,21 @@ import { SHARED_T } from '@shared/i18n/texts';
  */
 @Component({
   selector: 'tb-change-request-dialog',
-  imports: [FormsModule, Button, DatePicker, Dialog, Message, Textarea],
+  imports: [FormsModule, DatePicker, Message, TbDialog, Textarea],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="title()"
+    <tb-dialog
+      kind="form"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog"
-      [draggable]="false"
+      [headline]="title()"
+      [confirmLabel]="sendLabel()"
+      [confirmSeverity]="cancelsOwnLesson() ? 'danger' : 'primary'"
+      formId="change-request-form"
+      [pending]="submit.pending()"
+      [error]="submit.error()"
     >
       @if (lesson(); as lesson) {
-        <div class="tb-form">
+        <form id="change-request-form" class="tb-form" (ngSubmit)="send()">
           <p>{{ t.lesson(time()) }}</p>
           @if (lesson.groupId !== null) {
             <p class="tb-muted">
@@ -57,6 +59,7 @@ import { SHARED_T } from '@shared/i18n/texts';
                 inputId="request-start"
                 [ngModel]="proposed()"
                 (ngModelChange)="choose($event)"
+                [ngModelOptions]="{ standalone: true }"
                 dateFormat="dd.mm.yy"
                 [showTime]="true"
                 hourFormat="24"
@@ -70,6 +73,8 @@ import { SHARED_T } from '@shared/i18n/texts';
             </div>
             @if (busyAt()) {
               <p-message severity="warn" styleClass="tb-form-message">{{ t.busy }}</p-message>
+            } @else if (missing()) {
+              <small class="tb-field__error" role="alert">{{ t.pickTime }}</small>
             }
           } @else if (late()) {
             <p-message severity="warn" styleClass="tb-form-message">{{ t.late }}</p-message>
@@ -81,30 +86,13 @@ import { SHARED_T } from '@shared/i18n/texts';
               id="request-comment"
               rows="2"
               [(ngModel)]="comment"
+              [ngModelOptions]="{ standalone: true }"
               maxlength="500"
             ></textarea>
           </div>
-          @if (error(); as message) {
-            <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-          }
-        </div>
+        </form>
       }
-      <ng-template #footer>
-        <p-button
-          [label]="c.cancel"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        <p-button
-          [severity]="cancelsOwnLesson() ? 'danger' : 'primary'"
-          [label]="sendLabel()"
-          [loading]="pending()"
-          [disabled]="kind() === 'RESCHEDULE' && (proposed() === null || busyAt())"
-          (onClick)="send()"
-        />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
 })
 export class ChangeRequestDialog {
@@ -123,8 +111,8 @@ export class ChangeRequestDialog {
   /** The time the student proposes (bound to the date picker). */
   readonly proposed = signal<Date | null>(null);
   protected readonly comment = signal('');
-  protected readonly pending = signal(false);
-  protected readonly error = signal<string | null>(null);
+  /** «Send» was pressed without a time. */
+  protected readonly missing = signal(false);
   /** The teacher is busy at the chosen time. */
   protected readonly busyAt = signal(false);
   /** «I will not come» to a group lesson. */
@@ -158,20 +146,36 @@ export class ChangeRequestDialog {
     );
   });
 
-  constructor() {
-    effect(() => {
-      if (this.visible()) {
-        this.proposed.set(null);
-        this.busyAt.set(false);
-        this.comment.set('');
-        this.error.set(null);
+  protected readonly submit = dialogSubmit({
+    visible: this.visible,
+    reset: () => {
+      this.proposed.set(null);
+      this.busyAt.set(false);
+      this.missing.set(false);
+      this.comment.set('');
+    },
+    failed: T.changeRequest.failed,
+    request: () => {
+      const lesson = this.lesson();
+      if (lesson === null) {
+        return EMPTY;
       }
-    });
-  }
+      return this.api.requestChange(lesson.id, {
+        kind: this.kind(),
+        proposedStartsAt:
+          this.kind() === 'RESCHEDULE' ? (this.proposed()?.toISOString() ?? null) : null,
+        comment: optionalText(this.comment()),
+      });
+    },
+    done: (request) => {
+      this.sent.emit(request);
+    },
+  });
 
   /** A new time is chosen: the teacher's busy time for it is checked at once. */
   choose(proposed: Date | null): void {
     this.proposed.set(proposed);
+    this.missing.set(false);
     this.busyAt.set(false);
     const lesson = this.lesson();
     if (proposed === null || lesson === null) {
@@ -188,29 +192,12 @@ export class ChangeRequestDialog {
   }
 
   send(): void {
-    const lesson = this.lesson();
-    const proposed = this.proposed();
-    if (lesson === null || this.pending() || (this.kind() === 'RESCHEDULE' && proposed === null)) {
+    if (this.kind() === 'RESCHEDULE' && this.proposed() === null) {
+      this.missing.set(true);
       return;
     }
-    this.pending.set(true);
-    this.error.set(null);
-    this.api
-      .requestChange(lesson.id, {
-        kind: this.kind(),
-        proposedStartsAt: this.kind() === 'RESCHEDULE' ? (proposed?.toISOString() ?? null) : null,
-        comment: optionalText(this.comment()),
-      })
-      .subscribe({
-        next: (request) => {
-          this.pending.set(false);
-          this.visible.set(false);
-          this.sent.emit(request);
-        },
-        error: (error: unknown) => {
-          this.pending.set(false);
-          this.error.set(describeError(error, T.changeRequest.failed));
-        },
-      });
+    if (this.lesson() !== null && !this.busyAt()) {
+      this.submit.run();
+    }
   }
 }

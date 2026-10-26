@@ -21,6 +21,13 @@ class Host {
 }
 
 describe('ModalDrawer', () => {
+  beforeEach(() => {
+    // a shade of an earlier test may still be leaving: it is not this drawer's
+    document.body.querySelectorAll('.p-drawer-mask').forEach((mask) => {
+      mask.remove();
+    });
+  });
+
   it('is a named modal dialog, takes the focus to its first action and gives it back', async () => {
     TestBed.configureTestingModule({ providers: testProviders() });
     const fixture = TestBed.createComponent(Host);

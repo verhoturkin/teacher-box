@@ -146,7 +146,7 @@ test.describe('on a phone', () => {
     const dialog = page.getByRole('dialog', { name: 'Новое занятие' });
     await expect(dialog).toBeVisible();
     await expect.poll(async () => (await dialog.boundingBox())?.height).toBe(PHONE.height);
-    await dialog.getByRole('button', { name: 'Отмена' }).click();
+    await dialog.getByRole('button', { name: 'Закрыть' }).click();
   });
 
   test('the student uses the cabinet from a phone', async ({ browser }) => {

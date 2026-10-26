@@ -13,7 +13,6 @@ import {
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { Dialog } from 'primeng/dialog';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import { Subscription, interval, switchMap } from 'rxjs';
@@ -23,6 +22,7 @@ import { CHANNEL_ICONS, CHANNEL_NAMES } from '../notification-labels';
 import { LinkCodeView } from './link-code-view';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
+import { TbDialog } from '@shared/ui/dialog/dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
@@ -39,7 +39,7 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
     FormsModule,
     Button,
     Card,
-    Dialog,
+    TbDialog,
     LinkCodeView,
     ToggleSwitch,
     Tooltip,
@@ -115,22 +115,17 @@ export const LINK_POLL_INTERVAL_MS = 3_000;
       }
     </p-card>
 
-    <p-dialog
-      [header]="linkTitle()"
+    <tb-dialog
+      kind="sheet"
+      [headline]="linkTitle()"
       [visible]="linkCode() !== null"
       (visibleChange)="onLinkVisibleChange($event)"
-      [modal]="true"
-      appendTo="body"
-      styleClass="tb-dialog tb-dialog--short"
-      [draggable]="false"
+      [cancelLabel]="c.close"
     >
       @if (linkCode(); as code) {
         <tb-link-code-view [code]="code" />
       }
-      <ng-template #footer>
-        <p-button [label]="c.close" severity="secondary" [text]="true" (onClick)="closeLink()" />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
   styles: `
     .tb-channels {

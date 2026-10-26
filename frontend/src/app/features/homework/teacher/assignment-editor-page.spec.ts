@@ -308,9 +308,6 @@ describe('AssignmentEditorPage', () => {
       attachments: [attachment()],
     });
     const { page, host } = await edit(details);
-    const confirmation = TestBed.inject(ConfirmationService, null, { optional: true });
-    expect(confirmation).toBeNull();
-
     expect(readableText(host)).toContain('Изменить задание');
     expect(readableText(host)).toContain('Сохранить и поместить на доску');
     expect(page.form.controls.title.value).toBe('Дроби');

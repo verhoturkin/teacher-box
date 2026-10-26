@@ -145,8 +145,10 @@ Existing members absent from current options remain visible and removable.
     in both themes; the canvas background stays the board's.
   `board-page.ts` «Назад» returns in the history when the board was opened from another page of the portal
   (`Router.currentNavigation().previousNavigation`); opened by a link from outside, it leads to the list of boards.
-- `to-board/` — «На доску» (assignment dialog and page, task review, textbooks): the board is chosen in a select with
-  a search by title; `[students]` — from an assignment only the boards of its students (their own and their groups',
+- `to-board/` — «На доску» (assignment dialog and page, task review, textbooks): a `form` `tb-dialog` (ADR-0050);
+  the board is chosen in a select with a search by title and the way (0.34.0) in a single-choice list «Текстом» (default) /
+  «Картинкой» with ONE action «Перенести» (pages of a textbook have no list, only the action; the result stays in the
+  dialog); `[students]` — from an assignment only the boards of its students (their own and their groups',
   one `GET …?studentId=` request; none — «У учеников задания досок нет»), `null` (textbooks) — every board; an Excalidraw board opens in a new tab with
   the material inserted at the view centre (`BoardInsert` hands it over in `localStorage` for 2 min,
   `editor/material-insert.ts` adds a text or a picture element); an external board gets it via the clipboard

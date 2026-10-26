@@ -35,7 +35,7 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
   0.14.6): the teacher rewrites the system prompt of a feature (`HOMEWORK_DRAFT`, `REVIEW_DRAFT`; 1–10000 characters,
   `ai.system-prompt-invalid`); a feature without a row uses its resource (`homework-draft.system.v4`,
   `review-draft.system.v1`). The teacher's text goes to the model as is (no placeholders). Optimistic locking — the
-  default prompt has version 0; `DELETE` returns to the default; in the full reset. The user prompts (`*.user.*`,
+  default prompt has version 0; in the UI (0.34.0) «Вернуть стандартный» is in the «⋮» of the edit dialog's header; `DELETE` returns to the default; in the full reset. The user prompts (`*.user.*`,
   with `<request>` / `<answer>`) stay resources.
 - Homework draft (`POST homework-draft` `{prompt ≤ 4000, title?, sources?}`, prompts `homework-draft.*.v3`): always
   `{title, description}` — a Markdown text with numbered tasks; no kinds and no HTML pages since 0.14.1

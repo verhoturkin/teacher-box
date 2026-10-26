@@ -137,6 +137,7 @@ export interface AgendaMark {
                   <p-button
                     [label]="t.conductedLabel"
                     icon="tb-i tb-i-check"
+                    severity="secondary"
                     [ariaLabel]="t.conducted(lesson.studentName ?? t.student)"
                     [loading]="marking()(lesson.id)"
                     (onClick)="mark.emit({ lesson, outcome: 'CONDUCTED' })"

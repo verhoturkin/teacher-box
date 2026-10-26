@@ -60,6 +60,7 @@ describe('StudentPaymentsTab', () => {
     const changed = vi.fn();
     fixture.componentInstance.changed.subscribe(changed);
     requireElement(host, 'button[aria-label^="Снять начисление за "]', HTMLButtonElement).click();
+    await fixture.whenStable();
 
     const request = backend.expectOne('/api/teacher/billing/lessons/l-1/cancel');
     expect(request.request.body).toEqual({ reason: null });
@@ -79,6 +80,7 @@ describe('StudentPaymentsTab', () => {
       'button[aria-label^="Аннулировать оплату от "]',
       HTMLButtonElement,
     ).click();
+    await fixture.whenStable();
 
     backend
       .expectOne('/api/teacher/billing/payments/p-1/void')
@@ -118,6 +120,7 @@ describe('StudentPaymentsTab', () => {
     expect(list.receiptBusy()).toBeNull();
 
     list.removeReceipt.emit(payment());
+    await fixture.whenStable();
     backend
       .expectOne({ method: 'DELETE', url: '/api/teacher/billing/payments/p-1/receipt' })
       .flush(payment());

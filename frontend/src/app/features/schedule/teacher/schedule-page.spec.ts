@@ -20,7 +20,7 @@ import { LessonMove, ScheduleCalendar } from '../ui/schedule-calendar';
 import { LessonDialog } from './lesson-dialog';
 import { OffTimeDialog } from './off-time-dialog';
 import { SchedulePage } from './schedule-page';
-import { testProviders } from '@testing/setup';
+import { testProviders, ConfirmHost } from '@testing/setup';
 
 describe('SchedulePage', () => {
   let fixture: ComponentFixture<SchedulePage>;
@@ -37,6 +37,7 @@ describe('SchedulePage', () => {
     });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');
+    TestBed.createComponent(ConfirmHost).detectChanges();
     fixture = TestBed.createComponent(SchedulePage);
     page = fixture.componentInstance;
   });
@@ -361,7 +362,7 @@ describe('SchedulePage', () => {
 
     page.openLesson(scheduledLesson({ topic: 'Логарифмы' }));
     await fixture.whenStable();
-    expect(bodyText()).toContain('Тема: Логарифмы');
+    expect(bodyText()).toContain('Логарифмы');
 
     page.editLesson(scheduledLesson());
     await fixture.whenStable();
@@ -399,6 +400,7 @@ describe('SchedulePage', () => {
     await fixture.whenStable();
     expect(bodyText()).toContain('В это время уже есть другое занятие');
     buttonByText(document.body, 'Перенести').click();
+    await fixture.whenStable();
 
     const retry = backend.expectOne('/api/teacher/schedule/lessons/l-1');
     expect(retry.request.body).toEqual(expect.objectContaining({ allowOverlap: true }));
@@ -417,6 +419,7 @@ describe('SchedulePage', () => {
       .flush({ status: 409, code: 'schedule.overlap' }, { status: 409, statusText: 'Conflict' });
     await fixture.whenStable();
     buttonByText(document.body, 'Отмена').click();
+    await fixture.whenStable();
     expect(revert).toHaveBeenCalledTimes(1);
 
     page.onMove(move(revert));

@@ -189,22 +189,22 @@ Students see this time as «Busy» and cannot ask to move a lesson to it. You ca
 
 ## After the lesson
 
-Click the lesson and choose «Held» or «Missed». For a group — «Mark attendance». The portal charges the lesson by the mark.
+Click the lesson — a dialog opens on a computer, a bottom sheet on a phone — and choose «Held» or «Missed» in the «Outcome» row; the mark is saved at once. For a group — «Mark attendance». The portal charges the lesson by the mark.
 
-If you made a mistake — «Remove the mark», the charge is undone.
+If you made a mistake — press the chosen option in «Outcome» again: the mark is cleared and the charge is undone; or choose the other option to replace the mark. For a group — «Remove the mark» in the «⋮» menu.
 
 A past lesson without a mark is outlined in red in the calendar; open it and mark the result. Their number is also on the home page, in «To do». On a phone such lessons sit in the agenda under the row — each has the «Held» and «Missed» buttons, a group — «Mark»; the «Lessons not marked» link above the list leads to them.
 
 ## Cancel, delete, restore
 
-- **Cancel** — the lesson stays in the schedule crossed out, the student gets a notification. A cancelled lesson can be **restored**: open it and click «Restore» — it is back in the schedule and the student gets a notification. If the time is already taken by another lesson, the portal asks.
+- **Cancel** — «⋮» in the lesson window → «Cancel lesson…» opens a separate window: the reason, «at the student’s initiative», «charge the lesson»; for a lesson of a series choose «Only this lesson» or «This and following» — the portal shows how many lessons it touches. The lesson stays in the schedule crossed out, the student gets a notification. A cancelled lesson can be **restored**: open it and click «Restore» — it is back in the schedule and the student gets a notification. If the time is already taken by another lesson, the portal asks.
 - **Delete** — the lesson disappears from the schedule, calendars and reports as if it never existed. Only a planned or cancelled lesson can be deleted; remove the mark of a held or missed one first. If the lesson was planned and has not passed yet, the student gets a cancellation notification.
 
 When editing, cancelling or deleting a repeating lesson choose «Only this lesson» or «This and following». The portal first shows affected existing lessons and protected exceptions. The boundary uses the original occurrence date, even after a move. Completed, charged, cancelled and individually changed occurrences remain; deleted occurrences do not regenerate.
 
 ## Students' requests
 
-A student can ask to cancel or move a lesson — in the cabinet or through the bot. The request appears in «Students’ requests», comes as a notification, and in a messenger — with «Accept» and «Decline» buttons right away. On the site click «Answer» — then «Approve» or «Decline» in the window.
+A student can ask to cancel or move a lesson — in the cabinet or through the bot. The request appears in «Students’ requests», comes as a notification, and in a messenger — with «Accept» and «Decline» buttons right away. On the site click «Answer» — then switch «Approve | Decline» in the window and press the button below it.
 
 - **Approve a move** — the lesson moves to the proposed time (or set your own). If you have another lesson, time off or Google Calendar events at that time, the portal warns — you can move it anyway.
 - **Approve a late cancellation** — decide whether to charge it as missed (then the lesson is paid).
@@ -634,12 +634,12 @@ Lists in blocks (students, payments and payment history, boards, lessons, notifi
 
 The blocks of each section go one under another, in one column, on a computer the same as on a phone: on top what needs an action, below — the calendar, lists and settings. The home page has «Needs attention» and «Finance»; the notifications are under the bell in the header. Sections take the full width of the window. The exceptions are the help and «Settings»: on a wide screen the list (of articles or setting groups) is on the left and the chosen one on the right, each scrolling on its own; on a phone the list comes first, the chosen one opens in its place and the back arrow returns to the list. On a tablet the help works as on a phone, and «Settings» split the screen in half.
 
-Input fields have their label on the outline, as in Material 3; the label stays visible for empty fields in light and dark themes; in focus the outline and the label take the portal's colour, on an error — red. Search is a «pill» line with a magnifier.
+Input fields are filled, as in Material 3: the label sits inside the field and moves up when you type; in focus the line and the label take the portal’s colour, on an error — red. Search is a «pill» line with a magnifier.
 
 ## Button colours
 
-- **The portal colour** — the main action of a section or a window: «Create», «Save», «Accept», «Held». There is one such button on a screen.
-- **Calm tonal and text buttons** — the other actions, «Missed», «Return for rework» and «Cancel lesson…» included: the status of the lesson or the homework shows what happened. «Cancel» in a window just closes it.
+- **The portal colour** — the main action of a section or a window: «Create», «Save», «Accept». There is one such button on a screen.
+- **Calm tonal and text buttons** — the other actions, «Return for rework» included: the status of the lesson or the homework shows what happened. «Cancel» in a window just closes it. The choices «Held | Missed» and «Approve | Decline» are toggles of joined buttons: the chosen one is filled.
 - **Red** — deleting only: the bin or «×» in a list row, «Delete…» in a menu and the button that confirms deleting in a window.
 - Green and yellow are colours of statuses («Held», «Accepted», «To review»), not of buttons.
 
@@ -647,7 +647,7 @@ Before deleting, the portal asks again: the red button in the window does the ac
 
 ## Forms, loading and keyboard
 
-- The «Save» button of a form can always be pressed. If a field is filled in wrong, the portal says so in red under the field and puts the cursor in the first such field. Required fields are marked with a star.
+- The «Save» button of a form can always be pressed. If a field is filled in wrong, the portal says so in red under the field and puts the cursor in the first such field. Required fields are marked with a star. If you close a form with unsaved changes, the portal asks «Discard changes?»: «Discard» drops them, «Cancel» returns to the form.
 - If a block did not load, it says «Could not load…» and has a «Retry» button — an empty list is shown only when there really is no data.
 - The portal's messages appear at the bottom of the screen for 5 seconds, errors for 8; a message can be closed with the cross.
 - The portal can be used from the keyboard: Tab moves between buttons and fields, the focused element has a visible outline. Windows and bottom panels keep the focus inside, Esc closes them and returns the focus to where they were opened from.
@@ -659,7 +659,7 @@ Before deleting, the portal asks again: the red button in the window does the ac
 - Lists (students, payments, homework) are shown as cards, the action buttons at the bottom of a card. Students and groups are a list: the name on the left, the debt or the status on the right; tap a row to open the card; student access controls are in Profile.
 - On nested pages (homework, a student's work, the report) the «←» arrow left of the title goes back to the list.
 - The schedule is a list by days by default.
-- Forms with several fields open full screen, with «Save» and «Cancel» at the bottom; short windows (password, link) are in the middle of the screen. The bottom of the screen has «Home», «Schedule», «Homework», «Students» and «Payments», the other sections are under ☰.
+- Forms with several fields open full screen: «✕» on the left, the title in the middle, the action («Save», «Create») on the right — always at the top. A lesson, a student and other cards open as a bottom sheet, confirmations («Delete?») as a window in the middle. The bottom of the screen has «Home», «Schedule», «Homework», «Students» and «Payments», the other sections are under ☰.
 - The portal's messages («Saved», errors) appear at the bottom of the screen.
 `,
   },
@@ -735,7 +735,7 @@ Issue a new one in the same place — the old one stops working.
 Check «Settings» → «Messengers»: the bot must be connected. The student must connect the messenger in their cabinet themselves. Undelivered messages are there too, in the «Failed deliveries» card (the number next to «Messengers» in the settings list).
 
 **A lesson was marked by mistake.**
-Open the lesson and click «Remove the mark» — the charge is undone.
+Open the lesson and press the chosen option in «Outcome» again (for a group — «Remove the mark» in the «⋮» menu) — the charge is undone.
 
 **The student paid, but the debt stayed.**
 Check that the payment is recorded for the right student with the right amount: «Payments» → the student's name → «History» on the «Payments» tab.

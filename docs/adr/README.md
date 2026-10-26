@@ -5,7 +5,7 @@ rewritten afterwards. Current rules live in the specs; read an ADR only to learn
 
 - Architecture and conventions — [`AGENTS.md`](../../AGENTS.md), [`backend/AGENTS.md`](../../backend/AGENTS.md),
   [`frontend/AGENTS.md`](../../frontend/AGENTS.md).
-- UI — [`docs/design-system.md`](../design-system.md) (consolidates ADR-0015, 0017–0027, 0044–0046).
+- UI — [`docs/design-system.md`](../design-system.md) (consolidates ADR-0015, 0017–0027, 0044–0046, 0050).
 - Modules — [`docs/modules/`](../modules).
 
 A new ADR: next number, `NNNN-short-name.md`, sections «Контекст», «Решение», «Последствия», header with
@@ -28,7 +28,7 @@ commit.
 | [0012](0012-meetings-and-boards.md) | Telemost rooms; Холст boards | boards part superseded by 0028, Telemost part by 0030 | [meetings](../modules/meetings.md), [boards](../modules/boards.md) |
 | [0013](0013-bot-dialogs.md) | Messenger bot dialogs (`ChatAction` SPI) | active | [notifications](../modules/notifications.md) |
 | [0014](0014-portal-settings-reset-and-restore.md) | Portal name/URL, first-run setup, restore, full reset | active | [platform](../modules/platform.md) |
-| [0015](0015-design-system-and-mobile.md) | Tokens, themes, portal colour, mobile, logo | partly superseded | design-system |
+| [0015](0015-design-system-and-mobile.md) | Tokens, themes, portal colour, mobile, logo | partly superseded; phone full-screen dialogs amended by 0050 | design-system |
 | [0016](0016-admin-settings.md) | Admin settings UI (`SettingsCatalog`) | active | [platform](../modules/platform.md) |
 | [0017](0017-material-design-3.md) | Material Design 3 on PrimeNG | partly superseded by 0019, 0023, 0027 | design-system |
 | [0018](0018-component-rules.md) | One look per component type | refined by 0019–0026 | design-system |
@@ -37,9 +37,9 @@ commit.
 | [0021](0021-single-column.md) | One column; steady buttons; word wrapping | active, refined by 0048 (one column inside a pane from expanded) | design-system |
 | [0022](0022-expressive-fields-menus-sheets.md) | Fields, menus, split button, bottom sheet | active | design-system |
 | [0023](0023-status-colors-and-contrast.md) | Status colours, warning role, contrast | colour computation superseded by 0034 | design-system |
-| [0024](0024-accessibility.md) | Accessibility | active | design-system |
+| [0024](0024-accessibility.md) | Accessibility | active; initial focus of dialogs amended by 0050 | design-system |
 | [0025](0025-page-states.md) | Page states: loading, error, empty, feedback | active | design-system |
-| [0026](0026-decision-buttons-and-dialogs.md) | Decision buttons and dialogs | partly superseded by 0045 (green decision and safe confirmation) | design-system |
+| [0026](0026-decision-buttons-and-dialogs.md) | Decision buttons and dialogs | partly superseded by 0045 (green decision and safe confirmation); widths, phone, lesson dialog and focus amended by 0050 | design-system |
 | [0027](0027-bottom-navigation.md) | Bottom bar: four sections and «Ещё» | active, refined by 0048 («Ещё» → ☰) | design-system |
 | [0028](0028-excalidraw-boards.md) | Excalidraw boards: kinds, members, scenes, backups, React island | active (real time — 0029) | [boards](../modules/boards.md) |
 | [0029](0029-live-boards.md) | Live boards: WebSocket with a one-time ticket, relayed cursors and elements | active | [boards](../modules/boards.md) |
@@ -63,3 +63,4 @@ commit.
 | [0047](0047-video-links-and-transcripts.md) | Video in homework by link only (YouTube, Rutube, VK Video players; other links open in a tab), up to 5 per assignment with a `[m:ss]` transcript; YouTube captions fetched by the server (InnerTube), .srt / .vtt by the browser; the AI reads transcripts as `text/plain` sources | active | [homework](../modules/homework.md), [ai](../modules/ai.md) |
 | [0048](0048-panes-and-task-navigation.md) | Panes and task navigation: M3 breakpoints 600 / 840 / 1200 / 1600, panes from expanded (fixed 360 / 412 + flexible + side sheet), one column inside a pane; sections are tasks (Сегодня · Расписание · Ученики · Задания · Материалы · Оплаты), one home per function, one «Создать» at the top of the rail; phone — five destinations and ☰ instead of «Ещё» | active | design-system, [redesign](../archive/redesign-2026-10/README.md) |
 | [0049](0049-lesson-owned-repetition.md) | Lesson-owned repetition, immutable occurrence boundaries, protected exceptions and phase-preserving migration | active | [schedule](../modules/schedule.md) |
+| [0050](0050-one-dialog-model.md) | One dialog model: kinds `alert` / `form` / `sheet` chosen by content (basic dialog, full-screen on compact, bottom sheet), `<tb-dialog>`, `dialogSubmit()`, `Confirm`, filled fields everywhere, connected button groups only for toggles | active | design-system |

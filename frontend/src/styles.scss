@@ -1,9 +1,9 @@
 @use '@fontsource-variable/google-sans/wght.css';
+@use 'sass:list';
 @use 'sass:map';
 @use 'sass:string';
 @use './app/core/theme/icons';
 @use './app/core/theme/prime-icons';
-@use './app/shared/ui/filled-field';
 
 /*
  * Icons (ADR-0046): Material Symbols Rounded, `<i class="tb-i tb-i-<name>" aria-hidden="true">` or
@@ -312,7 +312,6 @@ html {
 
 /* The page is the surface container; cards lie on it (ADR-0017) */
 body {
-  --tb-field-surface: var(--p-md-surface-container);
   background: var(--p-md-surface-container);
   color: var(--p-md-on-surface);
   letter-spacing: var(--tb-tracking-body-l);
@@ -322,7 +321,6 @@ body {
    tone and the pane is not a card on a darker background (ours: the bottom bar keeps the container tone) */
 @media (width < 37.5em) {
   body:has(tb-panes) {
-    --tb-field-surface: var(--p-md-surface);
     background: var(--p-md-surface);
   }
 
@@ -457,7 +455,6 @@ body {
 tb-pane .p-card:not(.tb-hero),
 .tb-notifications-pane .p-card,
 .tb-side-sheet .p-card {
-  --tb-field-surface: inherit;
   background: transparent;
   border-radius: 0;
   color: inherit;
@@ -519,7 +516,6 @@ small,
   --tb-list-item: var(--p-md-surface-container-high);
 
   body {
-    --tb-field-surface: var(--p-md-surface);
     background: var(--p-md-surface);
   }
 }
@@ -645,7 +641,6 @@ textarea.p-textarea {
  * standard spring.
  */
 .p-drawer {
-  --tb-field-surface: var(--p-drawer-background);
   --tb-motion-x: 0;
   --tb-motion-y: 0;
 
@@ -846,11 +841,6 @@ textarea.p-textarea {
 }
 
 /* A field: the label above it (Label Large), the hint under it (Body Small) */
-/* Outlined-label cutouts follow the owner of the painted surface, including transparent cards. */
-.p-card {
-  --tb-field-surface: var(--p-card-background);
-}
-
 .tb-field {
   display: flex;
   flex-direction: column;
@@ -875,59 +865,268 @@ textarea.p-textarea {
 }
 
 /*
- * M3 outlined text field (ADR-0022): the label sits on the outline at its top left (Body Small, on
- * the background of the card or the dialog), primary while the field has the focus, red when the
- * value is wrong. The field is 56 px high (the theme). Fields with a header of their own
- * (`tb-field__header`: the label and a button) keep the label above.
+ * M3 filled text field (ADR-0022, ADR-0050): the only field style of the portal. Every control of a
+ * `.tb-field` — `input`, `textarea`, `p-select`, `p-multiselect`, `p-datepicker`, `p-inputnumber`,
+ * `p-password`, `p-autocomplete` — is a surface container highest with the top corners of 4 dp, 56 dp
+ * high; the label lies inside (Body Large while the field is empty and unfocused, Body Small 8 dp
+ * from the top otherwise), the 1 dp active indicator at the bottom (2 dp in primary in focus) is an
+ * inset shadow, so nothing shifts. The supporting text is 4 dp below. A control in a `tb-copy-row` /
+ * `tb-inline` row with its buttons works the same way. Geometry and roles:
+ * m3.material.io/components/text-fields/specs. Our decisions (not in M3): the indicator is
+ * on-surface (on-surface-variant is too weak on a dialog), a composite control has no error icon
+ * (its arrow is the trailing icon), a field with a header of its own (`tb-field__header`) keeps the
+ * label above it.
  */
-.tb-field:where(:not(.tb-field--filled)):is(
-    :has(
-        > label:first-child
-          + :is(
-            input,
-            textarea,
-            p-select,
-            p-multiselect,
-            tb-member-picker,
-            p-datepicker,
-            p-inputnumber,
-            p-password,
-            p-autocomplete,
-            p-iconfield
-          )
-      ),
-    /* :has() does not nest: a row with the field first is its own selector */
-    :has(
-        > label:first-child
-          + :is(.tb-copy-row, .tb-inline)
-          > :first-child:is(input, p-select, p-inputnumber, p-datepicker, p-password)
-      )
-  ) {
+$field-native: 'input.p-inputtext', 'textarea.p-textarea';
+$field-hosts:
+  'p-select.p-select', 'p-multiselect.p-multiselect', 'p-datepicker.p-datepicker',
+  'p-inputnumber.p-inputnumber', 'p-password.p-password', 'p-autocomplete.p-autocomplete';
+$field-controls: list.join($field-native, $field-hosts, comma);
+$field-prime:
+  inputtext, textarea, select, multiselect, datepicker, inputnumber, password, autocomplete;
+$field-state-active: ':is(:focus-within, :has(.p-focus, .p-inputwrapper-focus))';
+$field-state-filled: ':is(.p-filled, .p-inputwrapper-filled, .p-select-label:not(.p-placeholder, .p-select-label-empty), .p-multiselect-label:not(.p-placeholder, .p-multiselect-label-empty))';
+$field-state-off: ':is(:disabled, .p-disabled)';
+$field-state-wrong: ":is([aria-invalid='true'], .p-invalid)";
+
+/* the controls of a field, alone or in a row with buttons, relative to the field (for :has) */
+@function field-rel($tail: '', $list: $field-controls) {
+  $out: ();
+  @each $head in ('> ', '> :is(.tb-copy-row, .tb-inline) > ', '> tb-member-picker > ') {
+    @each $control in $list {
+      $out: list.append($out, '#{$head}#{$control}#{$tail}', comma);
+    }
+  }
+  @return $out;
+}
+
+@function field-abs($tail: '', $list: $field-controls) {
+  $out: ();
+  @each $selector in field-rel($tail, $list) {
+    $out: list.append($out, '.tb-field #{$selector}', comma);
+  }
+  @return $out;
+}
+
+$field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-member-picker)), :has(> label:first-child + :is(.tb-copy-row, .tb-inline) > :first-child:is(input, p-select, p-inputnumber, p-datepicker, p-password)))';
+
+#{$field} {
+  --tb-filled-background: var(--p-md-surface-container-highest);
+  --tb-filled-indicator: var(--p-md-on-surface);
+  --tb-filled-indicator-width: 1px;
+  --tb-filled-shadow: inset 0 calc(-1 * var(--tb-filled-indicator-width)) 0
+    var(--tb-filled-indicator);
+  display: grid;
+  grid-template-areas: 'control' 'support';
+  row-gap: 0;
   position: relative;
-  margin-top: var(--tb-space-2);
+
+  /* PrimeNG paints its own border and fill: the field paints them (the roles are the same) */
+  @each $component in $field-prime {
+    --p-#{$component}-background: var(--tb-filled-background);
+    --p-#{$component}-filled-background: var(--tb-filled-background);
+    --p-#{$component}-filled-hover-background: var(--tb-filled-background);
+    --p-#{$component}-filled-focus-background: var(--tb-filled-background);
+    --p-#{$component}-disabled-background: var(--tb-filled-background);
+    --p-#{$component}-border-color: transparent;
+    --p-#{$component}-hover-border-color: transparent;
+    --p-#{$component}-focus-border-color: transparent;
+    --p-#{$component}-invalid-border-color: transparent;
+    --p-#{$component}-shadow: var(--tb-filled-shadow);
+    --p-#{$component}-focus-ring-color: transparent;
+    --p-#{$component}-focus-ring-shadow: var(--tb-filled-shadow);
+    --p-#{$component}-disabled-color: color-mix(in srgb, var(--p-md-on-surface) 38%, transparent);
+  }
+  /* the date picker of the preset draws one outline around the input and its button */
+  --p-form-field-border-color: transparent;
+  --p-form-field-hover-border-color: transparent;
+  --p-form-field-focus-border-color: transparent;
 
   > label:first-child {
-    position: absolute;
-    top: 0;
-    left: var(--tb-space-3);
-    z-index: 1;
+    grid-area: control;
+    align-self: start;
+    justify-self: start;
+    position: relative;
+    z-index: 2;
+    box-sizing: border-box;
     max-width: calc(100% - 2rem);
     overflow: hidden;
-    padding: 0 var(--tb-space-1);
-    background: var(--tb-field-surface);
+    margin: var(--tb-space-2) var(--tb-space-4) 0;
+    padding: 0;
+    background: transparent;
     color: var(--p-md-on-surface-variant);
     font: var(--tb-type-body-s);
     text-overflow: ellipsis;
     white-space: nowrap;
-    transform: translateY(-50%);
+    pointer-events: none;
+    transition:
+      margin-top var(--tb-spring-fast-effects),
+      font-size var(--tb-spring-fast-effects),
+      line-height var(--tb-spring-fast-effects),
+      color var(--tb-spring-fast-effects);
   }
 
-  &:focus-within > label:first-child {
+  /* the label of a textarea has the container fill behind it, so scrolled text never runs under it */
+  &:has(> textarea) > label:first-child {
+    overflow: visible;
+    width: calc(100% - 2rem);
+
+    &::before {
+      content: '';
+      position: absolute;
+      z-index: -1;
+      inset: calc(-1 * var(--tb-space-2)) calc(-1 * var(--tb-space-4)) 0;
+      border-radius: var(--tb-shape-xs) var(--tb-shape-xs) 0 0;
+      background: var(--tb-filled-background);
+    }
+  }
+
+  > :is(.tb-copy-row, .tb-inline, tb-member-picker) {
+    grid-area: control;
+  }
+
+  > :is(.tb-hint, small, .tb-field__error) {
+    grid-area: support;
+    margin-top: var(--tb-space-1);
+    padding-inline: var(--tb-space-4);
+  }
+}
+
+/* the native controls: the surface is the element, the label lies in its 24 dp top padding */
+#{field-abs('', $field-native)} {
+  grid-area: control;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 3.5rem;
+  padding: 1.5rem var(--tb-space-4) var(--tb-space-2);
+  border: 0;
+  border-radius: var(--tb-shape-xs) var(--tb-shape-xs) 0 0;
+  outline: none;
+  background: var(--tb-filled-background);
+  box-shadow: var(--tb-filled-shadow);
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-body-l);
+  caret-color: var(--p-md-primary);
+  transition: box-shadow var(--tb-spring-fast-effects);
+}
+
+#{field-abs('', 'input.p-inputtext')} {
+  height: 3.5rem;
+}
+
+/* the composite controls: the host is the surface, its text parts keep the label's 24 dp */
+#{field-abs('', $field-hosts)} {
+  grid-area: control;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 3.5rem;
+  border: 0;
+  border-radius: var(--tb-shape-xs) var(--tb-shape-xs) 0 0;
+  outline: none;
+  background: var(--tb-filled-background);
+  box-shadow: var(--tb-filled-shadow);
+  color: var(--p-md-on-surface);
+  transition: box-shadow var(--tb-spring-fast-effects);
+}
+
+#{field-abs(' :is(.p-select-label, .p-multiselect-label)', $field-hosts)} {
+  padding: 1.5rem var(--tb-space-4) var(--tb-space-2);
+  font: var(--tb-type-body-l);
+}
+
+#{field-abs(' input', $field-hosts)} {
+  min-width: 0;
+  min-height: 3.5rem;
+  padding: 1.5rem var(--tb-space-4) var(--tb-space-2);
+  border: 0;
+  border-radius: var(--tb-shape-xs) var(--tb-shape-xs) 0 0;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-body-l);
+}
+
+#{field-abs(' :is(.p-select-dropdown, .p-multiselect-dropdown, .p-datepicker-dropdown, .p-autocomplete-dropdown)', $field-hosts)} {
+  border: 0;
+  background: transparent;
+  color: var(--p-md-on-surface-variant);
+}
+
+/* hover: the state layer over the container */
+#{$field}:has(#{field-rel(':hover:not(:disabled, .p-disabled)')}):not(#{$field-state-active}) {
+  --tb-filled-background: color-mix(
+    in srgb,
+    var(--p-md-on-surface) var(--tb-state-hover),
+    var(--p-md-surface-container-highest)
+  );
+}
+
+/* the label lies in the field while it is empty and unfocused, the placeholder waits for the focus */
+#{$field}:not(#{$field-state-active}):not(:has(#{$field-state-filled})) {
+  > label:first-child {
+    margin-top: var(--tb-space-4);
+    font: var(--tb-type-body-l);
+  }
+  &:has(> textarea) > label:first-child::before {
+    background: transparent;
+  }
+  ::placeholder,
+  .p-placeholder {
+    color: transparent;
+  }
+}
+
+/* focus: primary, the indicator is 2 dp */
+#{$field}#{$field-state-active} {
+  --tb-filled-indicator: var(--p-md-primary);
+  --tb-filled-indicator-width: 2px;
+  > label:first-child {
     color: var(--p-md-primary);
   }
+}
 
-  &:has(.ng-invalid.ng-touched, .ng-invalid.ng-dirty, .p-invalid) > label:first-child {
+/* error: the roles of error, the icon at the end of a native control */
+#{$field}:has(#{$field-state-wrong}) {
+  --tb-filled-indicator: var(--p-md-error);
+  > label:first-child {
     color: var(--p-md-error);
+  }
+  > :is(input, textarea) {
+    caret-color: var(--p-md-error);
+  }
+}
+
+#{$field}:has(> :is(input.p-inputtext, textarea.p-textarea)#{$field-state-wrong}) {
+  > :is(input, textarea) {
+    padding-inline-end: calc(1.5rem + var(--tb-space-3) + var(--tb-space-4));
+  }
+  &::before {
+    @include glyph('tb-i-error');
+    @include icon-font;
+    grid-area: control;
+    align-self: start;
+    justify-self: end;
+    z-index: 2;
+    margin: var(--tb-space-4) var(--tb-space-3) 0 0;
+    color: var(--p-md-error);
+    pointer-events: none;
+  }
+}
+
+/* disabled: the container 4 %, the content and the indicator 38 % */
+#{$field}:has(#{field-rel($field-state-off)}) {
+  --tb-filled-background: color-mix(in srgb, var(--p-md-on-surface) 4%, transparent);
+  --tb-filled-indicator: color-mix(in srgb, var(--p-md-on-surface) 38%, transparent);
+  --tb-filled-indicator-width: 1px;
+  > label:first-child {
+    color: color-mix(in srgb, var(--p-md-on-surface) 38%, transparent);
+  }
+  #{field-rel($field-state-off)} {
+    opacity: 1;
+    color: color-mix(in srgb, var(--p-md-on-surface) 38%, transparent);
   }
 }
 
@@ -1463,6 +1662,7 @@ p-button.tb-list__stretched .p-button {
 .tb-label-option {
   display: inline-flex;
   align-items: center;
+  vertical-align: top;
   gap: 0.75rem;
 }
 
@@ -1928,7 +2128,6 @@ a.p-menu-item-link:hover {
 
 /* The main card of a page (the nearest lesson): the primary container (M3 filled card) */
 .p-card.tb-hero {
-  --tb-field-surface: var(--p-md-primary-container);
   background: var(--p-md-primary-container);
   color: var(--p-md-on-primary-container);
 
@@ -2725,35 +2924,71 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
  * from it in both themes (the highest stays unused, as M3 asks of the surface of a dialog).
  */
 .p-dialog {
-  --tb-field-surface: var(--p-dialog-background);
   --tb-card: var(--p-md-surface-container-high);
   --tb-list-item: var(--p-md-surface-container-lowest);
 }
 
-/*
- * The width of a dialog is a class, not a style of the place (ADR-0026): `tb-dialog` 32 rem,
- * `tb-dialog--wide` 40 rem; a confirmation is up to 35 rem. A dialog is never nearer than 1 rem to
- * the edge of the screen.
- */
-.p-dialog.tb-dialog {
-  width: min(32rem, calc(100vw - 2rem));
-}
-
-.p-dialog.tb-dialog.tb-dialog--wide {
-  width: min(40rem, calc(100vw - 2rem));
-}
-
+/* A confirmation is up to 35 rem wide and never nearer than 1 rem to the edge of the screen. */
 .p-dialog.p-confirmdialog {
   width: min(35rem, calc(100vw - 2rem));
 }
 
 /*
- * Dialogs with a form on a phone take the whole screen (ADR-0015, ADR-0026): the content scrolls,
- * the buttons stay at the bottom, fields are full width. Confirmations and short dialogs (one field
- * or none: a password, a link) stay ordinary windows in the middle of the screen.
+ * `<tb-dialog>` (ADR-0050, shared/ui/dialog): the basic dialog is 28 dp corners, 24 dp padding, 16 dp
+ * headline -> body, 24 dp body -> actions, 8 dp between buttons (the preset has the paddings); the width
+ * is a parameter (`normal` 32 rem, `wide` 40 rem, an alert 32 rem at most 35); the compact `form` is the
+ * M3 full-screen dialog: 0 corners, a 56 dp header with the close button first and the confirm last.
  */
-@media (width < 37.5em) {
-  .p-dialog:not(.p-confirmdialog, .tb-dialog--short) {
+.p-dialog.tb-d {
+  width: min(32rem, calc(100vw - 2rem));
+  border-radius: var(--tb-shape-xl);
+
+  &.tb-d--wide {
+    width: min(40rem, calc(100vw - 2rem));
+  }
+
+  .p-dialog-header {
+    align-items: center;
+  }
+
+  .tb-d__head {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--tb-space-2);
+    min-width: 0;
+  }
+
+  .tb-d__headline {
+    flex: 1;
+    min-width: 0;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .tb-d__actions {
+    display: inline-flex;
+    gap: var(--tb-space-1);
+  }
+
+  .tb-d__error {
+    width: 100%;
+    margin-block: 0 var(--tb-space-4);
+  }
+
+  &.tb-d--alert .tb-d__error {
+    margin-block: var(--tb-space-4) 0;
+  }
+
+  /* the question inside the footer (a dirty form, a confirmed action) takes the place of the buttons */
+  .p-dialog-footer:has(.tb-d__step) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  &.tb-d--full {
     width: 100vw !important;
     max-width: 100vw;
     height: 100dvh;
@@ -2761,23 +2996,21 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
     margin: 0;
     border-radius: 0;
 
-    .p-dialog-content {
-      flex: 1;
+    .p-dialog-header {
+      min-height: 3.5rem;
+      padding: 0 var(--tb-space-4) 0 var(--tb-space-1);
     }
 
-    .p-dialog-footer {
-      padding-bottom: calc(var(--tb-space-4) + env(safe-area-inset-bottom));
-      border-top: 1px solid var(--p-md-outline-variant);
-      padding-top: var(--tb-space-4);
+    .tb-d__headline {
+      overflow: hidden;
+      font: var(--tb-type-title-l);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
-      > p-button,
-      > .p-button {
-        flex: 1;
-      }
-
-      p-button .p-button {
-        width: 100%;
-      }
+    .p-dialog-content {
+      flex: 1;
+      padding-bottom: calc(var(--tb-space-6) + env(safe-area-inset-bottom));
     }
 
     .tb-field > *,
@@ -2789,13 +3022,52 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
       width: 100%;
     }
   }
+}
 
-  .p-dialog.tb-dialog--short {
-    .tb-field > *,
-    .p-password,
-    .p-inputtext {
-      width: 100%;
+.p-drawer.tb-d--sheet .tb-d {
+  &__head {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--tb-space-2);
+  }
+
+  &__headline {
+    flex: 1;
+
+    &:focus {
+      outline: none;
     }
+  }
+
+  &__error {
+    width: 100%;
+    margin-block: 0 var(--tb-space-4);
+  }
+}
+
+.tb-d__step {
+  display: block;
+}
+
+.tb-d__step-message {
+  margin: 0 0 var(--tb-space-6);
+}
+
+.tb-d__step-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--tb-space-2);
+}
+
+.tb-d__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--tb-space-2);
+  padding-top: var(--tb-space-4);
+
+  &:not(:has(button, a)) {
+    display: none;
   }
 }
 
@@ -3015,13 +3287,23 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
 }
 
 /*
- * An M3 Expressive connected button group (ADR-0022): the buttons 2 px apart, the inner corners small,
- * the outer ones round; pressed, a button squares as usual.
+ * M3 button groups (ADR-0022, ADR-0050). Standard (actions): an invisible container hugging the buttons,
+ * 12 dp apart (`ButtonGroupSmall.BetweenSpace`); each keeps its own full shape and colours, and a
+ * pressed one morphs by the common button rule (12 dp corners). The neighbours do not change width
+ * (our decision: the shape morph only).
  */
 .tb-button-group {
   display: inline-flex;
   flex-wrap: nowrap;
   align-items: center;
+  gap: var(--tb-space-3);
+}
+
+/*
+ * Connected (toggles only: the buttons 2 dp apart, the inner corners small, the outer ones round;
+ * pressed, a button squares as usual).
+ */
+.tb-button-group--connected {
   gap: 2px;
 
   > p-button:not(:last-child) .p-button {
@@ -3048,7 +3330,7 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
 
 /*
  * The student's buttons of a lesson (tb-lesson-actions). In a row the requests stand next to each
- * other; stacked (a phone) the meeting takes the whole width and the requests are a connected button
+ * other; stacked (a phone) the meeting takes the whole width and the requests are a standard button
  * group under it, two halves of the width.
  */
 .tb-lesson-actions--stacked {
@@ -3122,7 +3404,6 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
  * takes the whole screen.
  */
 .p-drawer.tb-side-sheet {
-  --tb-field-surface: var(--p-md-surface-container-low);
   top: var(--tb-space-4);
   right: var(--tb-space-4);
   bottom: var(--tb-space-4);
@@ -3324,7 +3605,6 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
  * rail (ours, M3: 220–360 dp). The header holds the menu button that closes it, in line with the items.
  */
 .p-drawer.tb-modal-rail {
-  --tb-field-surface: var(--p-md-surface-container);
   width: min(280px, calc(100vw - var(--tb-space-16)));
   height: 100%;
   border: none;
@@ -3523,7 +3803,7 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
 }
 
 /*
- * Built-in calls (ADR-0030, design system §13): the full window over the portal, the mini window and the
+ * Built-in calls (ADR-0030, docs/screens.md «Call window»): the full window over the portal, the mini window and the
  * M3 Expressive toolbar. Colours follow the portal theme (light / dark / system).
  */
 :root.tb-call-expanded body {
@@ -4056,4 +4336,13 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 15rem));
     gap: var(--tb-space-4);
   }
+}
+
+/* A dialog or sheet without footer buttons (the card of a lesson to come) keeps space under its content */
+.p-dialog.tb-d--bare .p-dialog-content {
+  padding-bottom: var(--tb-space-6);
+}
+
+.p-drawer.tb-d--bare .tb-d__content {
+  padding-bottom: calc(var(--tb-space-4) + env(safe-area-inset-bottom));
 }

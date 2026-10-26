@@ -9,15 +9,14 @@ import {
   viewChild,
 } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ConfirmationService, MenuItem } from 'primeng/api';
-import { ConfirmDialog } from 'primeng/confirmdialog';
+import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { FileOpener } from '@shared/files/file-opener';
 import { FileSaver } from '@shared/files/file-saver';
-import { dangerConfirmation } from '@shared/ui/confirmation';
+import { Confirm } from '@shared/ui/confirm';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
@@ -47,16 +46,7 @@ export type TextbooksFilter = 'all' | TextbookKind;
  */
 @Component({
   selector: 'tb-textbooks-feed',
-  imports: [
-    MaterialCard,
-    ConfirmDialog,
-    Menu,
-    EmptyState,
-    LoadStateView,
-    TextbookDialog,
-    TextbookToBoardDialog,
-  ],
-  providers: [ConfirmationService],
+  imports: [MaterialCard, Menu, EmptyState, LoadStateView, TextbookDialog, TextbookToBoardDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
@@ -113,13 +103,12 @@ export type TextbooksFilter = 'all' | TextbookKind;
       [courses]="courses()"
       (saved)="load()"
     />
-    <p-confirmdialog />
   `,
 })
 export class TextbooksFeed {
   protected readonly t = T.list;
   private readonly api = inject(TextbooksApi);
-  private readonly confirmation = inject(ConfirmationService);
+  private readonly confirm = inject(Confirm);
   private readonly fileSaver = inject(FileSaver);
   private readonly fileOpener = inject(FileOpener);
   private readonly snackbar = inject(Snackbar);
@@ -263,19 +252,18 @@ export class TextbooksFeed {
     });
   }
 
-  protected confirmRemove(textbook: Textbook): void {
-    this.confirmation.confirm(
-      dangerConfirmation({
+  protected async confirmRemove(textbook: Textbook): Promise<void> {
+    if (
+      await this.confirm.danger({
         header: T.list.deleteHeader,
         message: T.list.deleteMessage(textbook.title),
         acceptLabel: T.list.delete,
-        accept: () => {
-          this.api.remove(textbook.id).subscribe(() => {
-            this.load();
-          });
-        },
-      }),
-    );
+      })
+    ) {
+      this.api.remove(textbook.id).subscribe(() => {
+        this.load();
+      });
+    }
   }
 
   protected openBoard(textbook: Textbook): void {
@@ -322,7 +310,7 @@ export class TextbooksFeed {
         icon: 'tb-i tb-i-delete',
         styleClass: 'tb-menu-item--danger',
         command: () => {
-          this.confirmRemove(textbook);
+          void this.confirmRemove(textbook);
         },
       },
     ];

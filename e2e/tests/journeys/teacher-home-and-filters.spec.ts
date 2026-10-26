@@ -88,7 +88,8 @@ test('on a phone «Создать» of the home page is a FAB menu', async ({ pa
   const message = page.getByRole('dialog', { name: 'Сообщение ученикам' });
   await expect(message).toBeVisible();
   await expect(page).toHaveURL(/\/teacher$/);
-  await message.getByRole('button', { name: 'Отмена' }).click();
+  // ADR-0050: a full-screen form on a phone closes with «✕» in its header
+  await message.getByRole('button', { name: 'Закрыть' }).click();
   await expect(message).toBeHidden();
 
   await fab.click();

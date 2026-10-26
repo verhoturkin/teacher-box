@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { aTextbook, aWorkbook } from '@testing/textbooks-fixtures';
 import { Textbook } from '../data-access/textbooks.models';
 import { bodyText, buttonByText, hostElement, menuItemByText } from '@testing/dom';
-import { testProviders } from '@testing/setup';
+import { testProviders, ConfirmHost } from '@testing/setup';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { FileOpener } from '@shared/files/file-opener';
 import { FileSaver } from '@shared/files/file-saver';
@@ -28,6 +28,7 @@ describe('TextbooksFeed', () => {
     vi.spyOn(TestBed.inject(FileSaver), 'save').mockImplementation((_blob, name) => {
       saved.push(name);
     });
+    TestBed.createComponent(ConfirmHost).detectChanges();
     fixture = TestBed.createComponent(TextbooksFeed);
     fixture.componentRef.setInput('students', [{ id: 's-1', name: 'Мария' }]);
     fixture.componentRef.setInput('groups', [{ id: 'g-1', name: 'ОГЭ' }]);
@@ -122,6 +123,7 @@ describe('TextbooksFeed', () => {
     await fixture.whenStable();
     expect(bodyText()).toContain('удалится вместе с файлом и пропадёт из заданий');
     buttonByText(document.body, 'Удалить').click();
+    await fixture.whenStable();
     backend.expectOne({ method: 'DELETE', url: '/api/teacher/textbooks/tb-1' }).flush(null);
     backend.expectOne('/api/teacher/textbooks').flush([aWorkbook({ hasCover: false })]);
     await fixture.whenStable();

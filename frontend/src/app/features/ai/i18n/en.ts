@@ -74,6 +74,7 @@ export const en: Translation<typeof ru> = {
     failed: 'Could not save the prompt',
   },
   systemPrompts: {
+    more: 'More actions',
     title: 'System prompts',
     hint: 'The rules the AI follows in its drafts: tone, language, layout. You can rewrite them your way.',
     features: {

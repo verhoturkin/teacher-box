@@ -49,7 +49,7 @@ describe('PromptLibraryCard', () => {
     await fixture.whenStable();
     expect(bodyText()).toContain('Промт');
     card.form.patchValue({ title: ' ' });
-    card.save();
+    buttonByText(document.body, 'Сохранить').click();
     backend.expectNone('/api/teacher/ai/prompts/p-2');
 
     card.form.patchValue({ title: 'Аудирование' });
@@ -60,18 +60,19 @@ describe('PromptLibraryCard', () => {
       savedPrompt({ id: 'p-2', title: 'Аудирование', text: 'Переведи текст', version: 1 }),
     );
     await fixture.whenStable();
-    expect(card.editing()).toBeNull();
+    expect(card.visible()).toBe(false);
     expect(readableText(host)).toContain('Аудирование Переведи текст');
 
     card.edit(savedPrompt());
-    card.save();
+    await fixture.whenStable();
+    buttonByText(document.body, 'Сохранить').click();
     backend
       .expectOne({ method: 'PUT', url: '/api/teacher/ai/prompts/p-1' })
       .flush({ status: 409, code: 'conflict' }, { status: 409, statusText: 'Conflict' });
     await fixture.whenStable();
-    expect(card.editing()).not.toBeNull();
+    expect(card.visible()).toBe(true);
     buttonByText(document.body, 'Отмена').click();
-    expect(card.editing()).toBeNull();
+    expect(card.visible()).toBe(false);
   });
 
   it('deletes a prompt after a confirmation', async () => {
@@ -83,6 +84,7 @@ describe('PromptLibraryCard', () => {
     });
 
     host.querySelector<HTMLButtonElement>('button[aria-label="Удалить промт «Перевод»"]')?.click();
+    await fixture.whenStable();
     backend.expectOne({ method: 'DELETE', url: '/api/teacher/ai/prompts/p-2' }).flush(null);
     await fixture.whenStable();
 

@@ -16,7 +16,7 @@ import {
   withComponentInputBinding,
   withInMemoryScrolling,
 } from '@angular/router';
-import { MessageService, Translation } from 'primeng/api';
+import { ConfirmationService, MessageService, Translation } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { routes } from './app.routes';
 import { searchSources } from './search-sources';
@@ -57,6 +57,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withInterceptors([apiErrorInterceptor, languageInterceptor, authInterceptor]),
     ),
+    ConfirmationService,
     provideAppInitializer(() => inject(AuthService).restore()),
     provideAppInitializer(() => inject(Portal).load()),
     provideAppInitializer(() => {

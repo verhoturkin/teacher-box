@@ -7,8 +7,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
+import { TbDialog } from '@shared/ui/dialog/dialog';
 import { CallStats } from './call-engine';
 import { CallSession } from './call-session';
 import { statsSections } from './call-stats';
@@ -25,35 +24,31 @@ export const STATS_INTERVAL = 2000;
  */
 @Component({
   selector: 'tb-call-stats-dialog',
-  imports: [Button, Dialog],
+  imports: [TbDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="t.title"
+    <tb-dialog
+      kind="alert"
       [visible]="true"
-      [modal]="true"
-      [draggable]="false"
-      [closeOnEscape]="true"
-      appendTo="body"
-      styleClass="tb-dialog tb-call-stats"
       (visibleChange)="closed.emit()"
+      [headline]="t.title"
+      [cancelLabel]="c.close"
     >
-      @for (section of sections(); track section.title) {
-        <h3 class="tb-call-stats__title">{{ section.title }}</h3>
-        <dl class="tb-call-stats__list">
-          @for (row of section.rows; track $index) {
-            <dt>{{ row.label }}</dt>
-            <dd>{{ row.value }}</dd>
-          }
-        </dl>
-      }
-      @if (sections().length < 2) {
-        <p class="tb-muted" role="status">{{ t.later }}</p>
-      }
-      <ng-template #footer>
-        <p-button [label]="c.close" severity="secondary" [text]="true" (onClick)="closed.emit()" />
-      </ng-template>
-    </p-dialog>
+      <div class="tb-call-stats">
+        @for (section of sections(); track section.title) {
+          <h3 class="tb-call-stats__title">{{ section.title }}</h3>
+          <dl class="tb-call-stats__list">
+            @for (row of section.rows; track $index) {
+              <dt>{{ row.label }}</dt>
+              <dd>{{ row.value }}</dd>
+            }
+          </dl>
+        }
+        @if (sections().length < 2) {
+          <p class="tb-muted" role="status">{{ t.later }}</p>
+        }
+      </div>
+    </tb-dialog>
   `,
 })
 export class CallStatsDialog {

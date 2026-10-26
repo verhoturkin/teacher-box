@@ -57,7 +57,7 @@ describe('AttendanceDialog', () => {
 
     dialog.save();
     backend.expectNone('/api/teacher/schedule/lessons/gl-1/attendance');
-    expect(buttonByText(document.body, 'Сохранить').disabled).toBe(true);
+    expect(bodyText()).toContain('Отметьте хотя бы одного ученика');
   });
 
   it('shows why the marks were not saved', async () => {

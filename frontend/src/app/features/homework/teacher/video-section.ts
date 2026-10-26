@@ -1,13 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject, model, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Textarea } from 'primeng/textarea';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { describeError } from '@core/http/error-messages';
 import { Busy } from '@shared/ui/busy';
-import { safeConfirmation } from '@shared/ui/confirmation';
+import { Confirm } from '@shared/ui/confirm';
 import { HomeworkApi } from '../data-access/homework-api';
 import { CaptionTrack, CaptionTracks, Video, VideoInput } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
@@ -250,7 +249,7 @@ export class VideoSection {
   protected readonly t = T.videos;
   protected readonly max = MAX_VIDEOS;
   private readonly api = inject(HomeworkApi);
-  private readonly confirmation = inject(ConfirmationService);
+  private readonly confirm = inject(Confirm);
   protected readonly busy = new Busy();
 
   /** The videos of the assignment; every change is a new list. */
@@ -308,7 +307,7 @@ export class VideoSection {
       next: (found) => {
         const [only, ...others] = found.tracks;
         if (only !== undefined && others.length === 0) {
-          this.replacing(draft, () => {
+          void this.replacing(draft, () => {
             this.take(draft.key, only);
           });
         } else {
@@ -373,7 +372,7 @@ export class VideoSection {
     if (file === undefined) {
       return;
     }
-    this.replacing(draft, () => {
+    void this.replacing(draft, () => {
       void file.text().then((text) => {
         this.change(draft.key, { transcript: subtitlesToTranscript(text).slice(0, 100_000) });
         this.note(draft.key, { severity: 'info', text: this.t.loaded(file.name) });
@@ -389,19 +388,20 @@ export class VideoSection {
     );
   }
 
-  private replacing(draft: VideoDraft, replace: () => void): void {
+  private async replacing(draft: VideoDraft, replace: () => void): Promise<void> {
     if (!this.written(draft.key)) {
       replace();
       return;
     }
-    this.confirmation.confirm(
-      safeConfirmation({
+    if (
+      await this.confirm.safe({
         header: this.t.replaceHeader,
         message: this.t.replaceMessage,
         acceptLabel: this.t.replace,
-        accept: replace,
-      }),
-    );
+      })
+    ) {
+      replace();
+    }
   }
 
   private note(key: number, note: TranscriptNote | null): void {

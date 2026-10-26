@@ -2,27 +2,21 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   input,
   model,
   output,
-  signal,
 } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Button } from 'primeng/button';
-import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
 import { MultiSelect } from 'primeng/multiselect';
-import { describeError } from '@core/http/error-messages';
+import { TbDialog } from '@shared/ui/dialog/dialog';
+import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
+import { FieldErrors } from '@shared/ui/field-errors';
 import { ChipColors } from '../colors/chip-colors';
 import { IdentityApi } from '../data-access/identity-api';
 import { Student, StudentGroup } from '../data-access/identity.models';
-import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
-import { SubmitFor } from '@shared/ui/submit-for';
 import { T } from '../i18n/texts';
-import { SHARED_T } from '@shared/i18n/texts';
 
 /**
  * Creates a group: its name and the students in it. The rest — the price, the default topic, the colour, the
@@ -30,27 +24,26 @@ import { SHARED_T } from '@shared/i18n/texts';
  */
 @Component({
   selector: 'tb-group-form-dialog',
-  imports: [
-    ReactiveFormsModule,
-    Button,
-    Dialog,
-    InputText,
-    Message,
-    MultiSelect,
-    FieldErrors,
-    SubmitFor,
-    ChipColors,
-  ],
+  imports: [ReactiveFormsModule, TbDialog, InputText, MultiSelect, FieldErrors, ChipColors],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="t.newGroup"
+    <tb-dialog
+      kind="form"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog"
-      [draggable]="false"
+      [headline]="t.newGroup"
+      [confirmLabel]="t.create"
+      formId="group-form"
+      [pending]="submit.pending()"
+      [error]="submit.error()"
+      [dirty]="submit.dirty()"
     >
-      <form tbFieldErrors id="group-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+      <form
+        tbFieldErrors
+        id="group-form"
+        class="tb-form"
+        [formGroup]="form"
+        (ngSubmit)="submit.run()"
+      >
         <div class="tb-field">
           <label for="group-name">{{ t.name }}</label>
           <input
@@ -79,24 +72,11 @@ import { SHARED_T } from '@shared/i18n/texts';
             [fluid]="true"
           />
         </div>
-        @if (error(); as message) {
-          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-        }
       </form>
-      <ng-template #footer>
-        <p-button
-          [label]="c.cancel"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        <p-button [label]="t.create" [loading]="pending()" type="submit" tbSubmitFor="group-form" />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
 })
 export class GroupFormDialog {
-  protected readonly c = SHARED_T.common;
   protected readonly t = T.groupForm;
   private readonly api = inject(IdentityApi);
 
@@ -105,8 +85,6 @@ export class GroupFormDialog {
   readonly students = input<readonly Student[]>([]);
   readonly created = output<StudentGroup>();
 
-  protected readonly pending = signal(false);
-  protected readonly error = signal<string | null>(null);
   readonly memberOptions = computed(() =>
     this.students().filter((student) => student.status !== 'DEACTIVATED'),
   );
@@ -116,39 +94,19 @@ export class GroupFormDialog {
     memberIds: [[] as string[]],
   });
 
-  constructor() {
-    effect(() => {
-      if (this.visible()) {
-        this.error.set(null);
-        this.form.reset({ name: '', memberIds: [] });
-      }
-    });
-  }
-
-  save(): void {
-    if (!revealErrors(this.form) || this.pending()) {
-      return;
-    }
-    const value = this.form.getRawValue();
-    this.pending.set(true);
-    this.error.set(null);
-    this.api
-      .createGroup({
+  protected readonly submit = dialogSubmit({
+    visible: this.visible,
+    form: this.form,
+    failed: T.groupForm.failed,
+    request: (value) =>
+      this.api.createGroup({
         name: value.name.trim(),
         memberIds: value.memberIds,
         defaultTopic: null,
         color: null,
-      })
-      .subscribe({
-        next: (group) => {
-          this.pending.set(false);
-          this.visible.set(false);
-          this.created.emit(group);
-        },
-        error: (error: unknown) => {
-          this.pending.set(false);
-          this.error.set(describeError(error, T.groupForm.failed));
-        },
-      });
-  }
+      }),
+    done: (group) => {
+      this.created.emit(group);
+    },
+  });
 }

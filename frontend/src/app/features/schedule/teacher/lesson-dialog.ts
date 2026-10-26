@@ -12,9 +12,9 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { map } from 'rxjs';
 import { Button } from 'primeng/button';
 import { DatePicker } from 'primeng/datepicker';
-import { Dialog } from 'primeng/dialog';
 import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
@@ -35,7 +35,7 @@ import {
   ownerValue,
 } from './lesson-owner';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
-import { SubmitFor } from '@shared/ui/submit-for';
+import { TbDialog } from '@shared/ui/dialog/dialog';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
@@ -65,22 +65,24 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
     ReactiveFormsModule,
     Button,
     DatePicker,
-    Dialog,
+    TbDialog,
     InputNumber,
     InputText,
     Message,
     Select,
     FieldErrors,
-    SubmitFor,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-dialog
-      [header]="lesson() === null ? t.newLesson : t.editLesson"
+    <tb-dialog
+      kind="form"
       [(visible)]="visible"
-      [modal]="true"
-      styleClass="tb-dialog"
-      [draggable]="false"
+      [headline]="lesson() === null ? t.newLesson : t.editLesson"
+      [confirmLabel]="c.save"
+      formId="lesson-form"
+      [pending]="pending()"
+      [error]="error()"
+      [dirty]="dirty()"
     >
       <form tbFieldErrors id="lesson-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
@@ -206,20 +208,8 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
             <p-button [label]="t.saveAnyway" [text]="true" (onClick)="save(true)" />
           </p-message>
         }
-        @if (error(); as message) {
-          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-        }
       </form>
-      <ng-template #footer>
-        <p-button
-          [label]="c.cancel"
-          severity="secondary"
-          [text]="true"
-          (onClick)="visible.set(false)"
-        />
-        <p-button [label]="c.save" [loading]="pending()" type="submit" tbSubmitFor="lesson-form" />
-      </ng-template>
-    </p-dialog>
+    </tb-dialog>
   `,
 })
 export class LessonDialog {
@@ -274,6 +264,9 @@ export class LessonDialog {
     }),
   });
 
+  protected readonly dirty = toSignal(this.form.valueChanges.pipe(map(() => this.form.dirty)), {
+    initialValue: false,
+  });
   protected readonly repeatWeeks = toSignal(this.form.controls.repeatWeeks.valueChanges, {
     initialValue: 0,
   });

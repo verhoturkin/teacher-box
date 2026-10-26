@@ -39,6 +39,11 @@ export const ru = {
     lessons: (count: number) => countOf(count, 'занятие', 'занятия', 'занятий'),
     students: (count: number) => countOf(count, 'ученик', 'ученика', 'учеников'),
   },
+  dialog: {
+    discardTitle: 'Отменить изменения?',
+    discardText: 'Введённые данные не сохранятся.',
+    discard: 'Не сохранять',
+  },
   fields: {
     required: 'Заполните поле',
     email: 'Неверный адрес e-mail',
