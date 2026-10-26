@@ -38,7 +38,7 @@ Your photo at the top right → «My account»: the photo is in the top card, th
     title: 'Schedule and moving',
     summary: 'Your lessons, cancelling and moving',
     body: `
-Clicking a calendar lesson opens a centered dialog on a computer, as in the teacher cabinet, and a bottom panel on a phone. Spacing separates the lesson details and actions, with room below the buttons. Upcoming lesson actions place Join lesson first, followed by Move and Cancel together. On a phone, upcoming lessons and calendar subscription use separate rounded sections.
+Clicking a calendar lesson opens a centered window on a computer and a bottom sheet on a phone. It shows who teaches, the time, the topic, boards and the room; «Join lesson» is in the room row, «Move» and «Cancel» sit beside it. On a phone, upcoming lessons and calendar subscription use separate rounded sections.
 
 «Schedule» shows a week or month calendar. On a computer, the mini calendar, upcoming lessons and «My requests» sit beside it. On a phone it opens with an agenda: a week strip and lessons of the selected day, with switches to week or month.
 
@@ -185,7 +185,7 @@ Send the bot /stop or disconnect the messenger in «My account» (your photo at 
     title: 'Phone, theme and language',
     summary: 'How to use the cabinet from a phone, turn on the dark theme and choose the language',
     body: `
-Field labels sit on the outline and stay visible even for empty fields in light and dark themes. An error turns the label red.
+Input fields are filled: the label sits inside the field and moves up when you type, and stays visible in light and dark themes. An error turns the label red.
 
 ## From a phone
 
@@ -195,7 +195,7 @@ The cabinet works in the phone's browser, nothing needs installing. If you want 
 - The main button of a screen is in the portal colour («Send for review», «Save»), the others are calm. A red button only confirms in a window what cannot be undone, such as «Ask to cancel». «Cancel» in a window just closes it and changes nothing.
 - On a wide screen the home page has two columns: on the left the lesson, «To hand in» and «Reviewed recently», on the right «Paid» (N lessons) (how many lessons the balance covers at the lesson price) and the lesson's materials; on a narrow screen everything is one column in the same order.
 - The next lesson and the «Join lesson» button come first on the home page: the tile with the day and the time on the left, the buttons under it across the width. «Join lesson» is the largest button of the portal.
-- Lists are shown as cards, forms open full screen.
+- Lists are shown as cards. Forms open full screen with the action («Send») at the top right; if you close a form with unsaved changes, the portal asks «Discard changes?».
 - If a field of a form is filled in wrong, the portal says so under the field; if a block did not load, it offers «Retry».
 - The cabinet can be used from the keyboard: Tab moves between buttons and fields, Esc closes windows and panels.
 
