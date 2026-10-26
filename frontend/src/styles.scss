@@ -413,13 +413,19 @@ body {
 .tb-roster__scroll,
 .tb-search__panel,
 .p-dialog-content,
-.p-drawer-content {
+.p-drawer-content,
+textarea.p-textarea {
   &::-webkit-scrollbar {
     width: 0.75rem;
   }
 
   &::-webkit-scrollbar-track {
     margin-block: var(--tb-space-4);
+    background: transparent;
+  }
+
+  /* the corner (and a textarea's resize handle) shows the surface, not the browser's white */
+  &::-webkit-scrollbar-corner {
     background: transparent;
   }
 
@@ -434,13 +440,26 @@ body {
   }
 }
 
+/* the resize handle of a textarea: two diagonal strokes in outline, on the surface of the field */
+textarea.p-textarea::-webkit-resizer {
+  background: linear-gradient(
+    135deg,
+    transparent 0 55%,
+    var(--p-md-outline) 55% 65%,
+    transparent 65% 77%,
+    var(--p-md-outline) 77% 87%,
+    transparent 87%
+  );
+}
+
 @supports not selector(::-webkit-scrollbar) {
   .tb-pane__scroll,
   .tb-notifications-scroll,
   .tb-roster__scroll,
   .tb-search__panel,
   .p-dialog-content,
-  .p-drawer-content {
+  .p-drawer-content,
+  textarea.p-textarea {
     scrollbar-color: var(--p-md-outline-variant) transparent;
     scrollbar-width: thin;
   }
@@ -1013,6 +1032,37 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
 
 #{field-abs('', 'input.p-inputtext')} {
   height: 3.5rem;
+}
+
+/* a field with a header of its own keeps its label above: the control is a plain filled surface */
+.tb-field:has(> .tb-field__header + :is(#{$field-native})) {
+  --tb-filled-background: var(--p-md-surface-container-highest);
+  --tb-filled-indicator: var(--p-md-on-surface);
+  --tb-filled-indicator-width: 1px;
+  --tb-filled-shadow: inset 0 calc(-1 * var(--tb-filled-indicator-width)) 0
+    var(--tb-filled-indicator);
+  &:focus-within {
+    --tb-filled-indicator: var(--p-md-primary);
+    --tb-filled-indicator-width: 2px;
+  }
+  /* PrimeNG's own border, fill and focus ring give way to the field's */
+  @each $component in (inputtext, textarea) {
+    --p-#{$component}-background: var(--tb-filled-background);
+    --p-#{$component}-filled-background: var(--tb-filled-background);
+    --p-#{$component}-filled-hover-background: var(--tb-filled-background);
+    --p-#{$component}-filled-focus-background: var(--tb-filled-background);
+    --p-#{$component}-disabled-background: var(--tb-filled-background);
+    --p-#{$component}-border-color: transparent;
+    --p-#{$component}-hover-border-color: transparent;
+    --p-#{$component}-focus-border-color: transparent;
+    --p-#{$component}-invalid-border-color: transparent;
+    --p-#{$component}-shadow: var(--tb-filled-shadow);
+    --p-#{$component}-focus-ring-color: transparent;
+    --p-#{$component}-focus-ring-shadow: var(--tb-filled-shadow);
+  }
+  > :is(input, textarea) {
+    padding-top: var(--tb-space-4);
+  }
 }
 
 /* the composite controls: the host is the surface, its text parts keep the label's 24 dp */
