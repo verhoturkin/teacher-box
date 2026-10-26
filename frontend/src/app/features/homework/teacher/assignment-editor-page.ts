@@ -312,7 +312,6 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
   styles: `
     .tb-editor__ai {
       background: var(--p-md-surface-container-low);
-      --tb-field-surface: var(--p-md-surface-container-low);
     }
 
     .tb-editor__ai-head {

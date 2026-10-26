@@ -115,7 +115,6 @@ function pathOf(url: string): string {
       overscroll-behavior: contain;
       border-radius: var(--tb-shape-xl);
       background: var(--p-md-surface);
-      --tb-field-surface: var(--p-md-surface);
       color: var(--p-md-on-surface);
       outline: none;
       animation:

@@ -264,26 +264,12 @@ test('all five repeat choices, conversion, occurrence move, following edit and s
   await expect(page.locator('tb-schedule-calendar')).toContainText(name);
 });
 
-test('profile labels use their containing surface and long search results scroll with the keyboard', async ({
-  page,
-  request,
-}) => {
+test('long search results scroll with the keyboard', async ({ page, request }) => {
   const prefix = `Поиск029${Date.now()}`;
   const students = [];
   for (let index = 0; index < 8; index++)
     students.push(await addStudent(request, `${prefix} ${index}`));
-  await page.goto(`/teacher/students/${students[0]?.student.id}?tab=profile`);
-  await page.getByRole('tab', { name: 'Профиль', exact: true }).click();
-  const label = page.locator('tb-student-profile-tab .tb-field > label').first();
-  await expect(label).toBeVisible();
-  for (const colorScheme of ['light', 'dark'] as const) {
-    await page.emulateMedia({ colorScheme });
-    expect(
-      await label.evaluate((element) =>
-        getComputedStyle(element).getPropertyValue('--tb-field-surface').trim(),
-      ),
-    ).not.toBe('');
-  }
+  await page.goto(`/teacher/students/${students[0]?.student.id}`);
   await page.setViewportSize({ width: 1440, height: 320 });
   const search = page.locator('tb-global-search input').first();
   await search.fill(prefix);

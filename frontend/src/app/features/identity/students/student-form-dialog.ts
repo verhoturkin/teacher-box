@@ -43,7 +43,7 @@ import { SHARED_T } from '@shared/i18n/texts';
           [value]="'student'"
           (valueChange)="choose($event)"
         />
-        <div class="tb-field tb-field--filled">
+        <div class="tb-field">
           <label for="displayName">{{ t.name }}</label>
           <input
             pInputText
@@ -52,9 +52,8 @@ import { SHARED_T } from '@shared/i18n/texts';
             autocomplete="off"
             placeholder=" "
           />
-          <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
         </div>
-        <div class="tb-field tb-field--filled">
+        <div class="tb-field">
           <label for="email">{{ t.email }}</label>
           <input
             pInputText
@@ -64,12 +63,10 @@ import { SHARED_T } from '@shared/i18n/texts';
             autocomplete="off"
             placeholder=" "
           />
-          <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
         </div>
-        <div class="tb-field tb-field--filled">
+        <div class="tb-field">
           <label for="phone">{{ t.phone }}</label>
           <input pInputText id="phone" formControlName="phone" autocomplete="off" placeholder=" " />
-          <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
         </div>
       </form>
     </tb-dialog>

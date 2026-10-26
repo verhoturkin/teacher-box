@@ -72,7 +72,7 @@ Decisions taken with the teacher (2026-10-25/26), binding for every stage:
 
 ### Stage 286 — Filled fields everywhere (F)
 
-- [ ] **286.1** `.tb-field` is the M3 filled field by default (`shared/ui/filled-field.scss` →
+- [x] **286.1** `.tb-field` is the M3 filled field by default (`shared/ui/filled-field.scss` →
   global), extended to `p-select`, `p-multiselect`, `p-datepicker`, `p-inputnumber`,
   `p-password`, `p-autocomplete`, textarea; PrimeNG `inputVariant` if PrimeNG 21 has it; remove
   `tb-field--filled` and the outlined label cutouts; contrast check on dialog, card and page in

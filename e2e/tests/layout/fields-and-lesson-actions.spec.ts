@@ -74,7 +74,7 @@ async function studentWithLesson(
   return { login, password };
 }
 
-test('a field is 56 px high with its label on the outline, primary in focus', async ({ page }) => {
+test('a field is 56 px high with its label inside, primary in focus', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD, 1280);
   await page.goto('/teacher/account');
 
@@ -83,9 +83,8 @@ test('a field is 56 px high with its label on the outline, primary in focus', as
   const field = await input.boundingBox();
   const caption = await label.boundingBox();
   expect(Math.round(field?.height ?? 0)).toBe(56);
-  // the middle of the label is on the top line of the outline
-  const middle = (caption?.y ?? 0) + (caption?.height ?? 0) / 2;
-  expect(Math.abs(middle - (field?.y ?? 0))).toBeLessThanOrEqual(1);
+  // the filled name keeps its small label 8 dp from the top of the field
+  expect(Math.round((caption?.y ?? 0) - (field?.y ?? 0))).toBe(8);
 
   const color = (): Promise<string> => label.evaluate((element) => getComputedStyle(element).color);
   const before = await color();
@@ -99,7 +98,8 @@ test('a field is 56 px high with its label on the outline, primary in focus', as
     probe.remove();
     return value;
   });
-  expect(await color()).toBe(primary);
+  // the colour follows the focus through a short transition
+  await expect.poll(color).toBe(primary);
 });
 
 async function filledMetrics(input: Locator) {
@@ -111,7 +111,8 @@ async function filledMetrics(input: Locator) {
     const caption = label.getBoundingClientRect();
     const style = getComputedStyle(element);
     const labelStyle = getComputedStyle(label);
-    const indicator = getComputedStyle(field, '::after');
+    // the active indicator is the inset shadow of the control: its width and its colour
+    const shadow = style.boxShadow.match(/^(.+?\)) 0px -?(\d+(?:\.\d+)?)px/);
     const probe = document.createElement('span');
     document.body.append(probe);
     const role = (name: string): string => {
@@ -133,10 +134,12 @@ async function filledMetrics(input: Locator) {
       topBorder: style.borderTopWidth,
       sideBorder: style.borderLeftWidth,
       bottomRadius: style.borderBottomLeftRadius,
-      indicatorHeight: indicator.height,
-      indicatorColor: indicator.backgroundColor,
-      maskHeight: getComputedStyle(field, '::before').height,
-      maskFill: getComputedStyle(field, '::before').backgroundColor,
+      indicatorHeight: `${shadow?.[2] ?? '0'}px`,
+      indicatorColor: shadow?.[1] ?? '',
+      errorIcon: getComputedStyle(field, '::before').content,
+      // the small label of a textarea hides the text that scrolls under it
+      maskHeight: getComputedStyle(label, '::before').height,
+      maskFill: getComputedStyle(label, '::before').backgroundColor,
       fill: style.backgroundColor,
       primary,
       error,
@@ -198,7 +201,7 @@ for (const theme of ['Светлая тема', 'Тёмная тема']) {
           indicatorHeight: '1px',
           indicatorColor: metrics.error,
         });
-      await expect(email.locator('..').locator('.tb-filled-error-icon')).toBeVisible();
+      expect((await filledMetrics(email)).errorIcon).not.toBe('none');
       await email.fill('student@example.com');
       await email.press('Tab');
       await expect(email).not.toHaveAttribute('aria-invalid', 'true');

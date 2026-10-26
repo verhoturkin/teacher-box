@@ -251,10 +251,10 @@ component that shows one adds it to `PRIME`).
   surface-container / surface-container-high. The light list baseline uses surface-container rather than low
   for clearer separation from the light card. Cards inside panes remain transparent and inherit the pane's
   field surface. These surface assignments are portal decisions. **Dialogs** (M3, ADR-0044, 0.16.2) — surface-container-high in both
-  themes: inside `.p-dialog` `--tb-card` is the dialog's colour (the notch of a field's label) and list tiles are
+  themes: inside `.p-dialog` `--tb-card` is the dialog's colour and list tiles are
   surface-container-lowest, so they stand apart in both themes (`color-scheme.spec.ts`); surface-container-highest is
-  not used beside a dialog, as M3 asks. The top bar keeps its tone when the page scrolls (no raise on scroll). Scrim 32 % in both
-  themes.
+  used only by the fields in it, as M3 filled text fields do. The top bar keeps its tone when the
+  page scrolls (no raise on scroll). Scrim 32 % in both themes.
 - **Themes:** «Светлая», «Тёмная», «Как в системе», stored on the device; switched by a class on `<html>`.
 - Text contrast ≥ 4.5:1, outlines and focus rings ≥ 3:1.
 
@@ -1026,42 +1026,54 @@ tracks around fixed-width cards. Compact layouts wrap without horizontal overflo
 
 ## 10. Fields
 
-- **M3 filled text field, 56 px, is the default for every field** in forms, dialogs, settings and
-  profiles (`.tb-field`, `shared/ui/filled-field.scss`, imported globally by `styles.scss`), also on
-  the composite PrimeNG controls (select, multiselect, datepicker, inputnumber, password,
-  autocomplete) and textareas. The only exception is the search bar (a separate M3 component,
-  below).
-  Variants are never mixed in one area (**M3**), so no feature picks the variant itself.
-  Markup: a `label` followed by a PrimeNG native input or textarea.
-  From [M3 guidelines](https://m3.material.io/components/text-fields/guidelines)
-  and specs: 56 px height, 4 px top corners, square bottom corners and 16 px horizontal padding.
-  Empty labels use Body Large at 16 px from the top; focused or populated labels use Body Small at
-  8 px from the top, including textareas. The separate bottom indicator is 1 px on-surface and 2 px
-  primary on focus, with no layout shift. Error labels, indicators, caret and icons use error;
-  supporting text starts 4 px below the control.
-  Disabled roles use M3's 4% container and 38% foreground opacities.
-  Our implementation masks the label strip above scrolling textarea content to keep it legible.
-  This technique and the rollout are our product decisions. Contrast: the field container
-  (surface container highest) sits on a dialog of surface container high, adjacent tones, so the
-  field is told apart mainly by its bottom line; check it on a dialog, a card and a page in both
-  themes. *Our decision if it falls short:* keep the M3 roles and the 1 px on-surface line, invent
-  nothing beyond them. Markup:
+- **M3 filled text field, 56 px, is the only field style** (ADR-0050): every control of a
+  `.tb-field` in forms, dialogs, settings and profiles — native `input` and `textarea`
+  (`pInputText`, `pTextarea`), `p-select`, `p-multiselect`, `p-datepicker`, `p-inputnumber`,
+  `p-password`, `p-autocomplete` and the combined member field (`tb-member-picker`). The rules are the global
+  `.tb-field` block of `styles.scss`; no feature picks the variant itself (**M3**: variants are
+  never mixed in one area), and there is no outlined variant any more. Not `.tb-field`, so
+  unchanged: the search bar (below), `p-selectbutton`, chips, checkboxes and the toolbar controls
+  outside forms (the month picker of the monthly report, filters in a table header).
+  Markup: a `label` first, then the control (or a `tb-copy-row` / `tb-inline` row whose first
+  child is the control), then the optional supporting text:
 
   ```html
   <div class="tb-field">
     <label for="field-id">Label from the dictionary</label>
-    <input pInputText id="field-id" formControlName="field" placeholder=" " />
-    <i class="tb-i tb-i-error tb-filled-error-icon" aria-hidden="true"></i>
+    <input pInputText id="field-id" formControlName="field" />
     <small class="tb-hint">Optional supporting text</small>
   </div>
   ```
 
-  Use `pTextarea` and the same blank placeholder for text areas. Keep `tbFieldErrors` on the form;
-  it supplies validation and ARIA state, replaces hints with error text, and reveals the error icon.
+  From [M3 guidelines](https://m3.material.io/components/text-fields/guidelines) and specs: 56 px
+  height, container surface-container-highest, 4 px top corners and square bottom corners, 16 px
+  horizontal padding. The empty, unfocused field shows its label in Body Large 16 px from the top;
+  focused or populated, it is Body Small 8 px from the top (textareas too). The active indicator is
+  1 px, 2 px primary on focus, drawn as an inset shadow of the control so nothing shifts. Error:
+  label, indicator and caret in error, supporting text in error 4 px below the control; disabled:
+  container 4 % and content, label and indicator 38 % on-surface. Hover is the 8 % state layer.
+  *Our decisions (not in M3):*
+  - the indicator is on-surface (M3 says on-surface-variant, too weak on a dialog);
+  - the placeholder shows only while the label is small (focus), never over the resting label;
+  - "populated" is read from the PrimeNG state classes (`p-filled`, `p-inputwrapper-filled`, a
+    select label that is not `p-placeholder`), so a field needs no `placeholder=" "`;
+  - a native control shows the error icon (24 px, end of the field) when `aria-invalid` or
+    `p-invalid` is set; a composite control keeps its arrow as the trailing icon and shows the error
+    by colour and text only;
+  - the label of a textarea gets the container fill, so scrolled text never runs under it;
+  - the PrimeNG form tokens of these controls (border, shadow, fill) are overridden on `.tb-field`
+    with the field's own variables; PrimeNG's global `inputVariant: 'filled'` is not used, it would
+    also turn the search and toolbar controls filled;
+  - contrast: the container sits on a dialog (high), a card (lowest / container) or a pane (surface
+    / container low); the fill differs only by 1.05–1.4:1, so the field is told apart by the
+    indicator (on-surface, 11–17:1 against the surface in both themes). Nothing beyond the M3 roles
+    was needed.
+  Keep `tbFieldErrors` on the form; it supplies validation and ARIA state and replaces hints with
+  error text.
 - The label is first in `.tb-field` (or a `tb-copy-row` / `tb-inline` row with the field first) and
-  sits inside the container (above). A field with its own header (`tb-field__header`) keeps the
-  label above. Every field has a visible label (filters too). Label cutouts of the outlined variant
-  are gone (ADR-0050); `--tb-field-surface` is no longer needed for fields.
+  sits inside the container. A field with its own header (`tb-field__header`) keeps the label
+  above. Every field has a visible label (filters too). Label cutouts of the former outlined variant
+  and `--tb-field-surface` for them are gone.
 - Required fields: `*` after the label + `aria-required` (`tb-field--required`); optional ones unmarked.
 - Combined member field (0.29.0): `identity/parts` exports `tb-member-picker`, a grouped
   PrimeNG MultiSelect with one search, Students/Groups sections, removable typed chips and clearing.
