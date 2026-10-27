@@ -68,6 +68,7 @@ export const ru = {
     previousMonth: 'Предыдущий месяц',
     nextMonth: 'Следующий месяц',
     moreActions: 'Ещё',
+    downloadCsv: 'Скачать CSV',
     income: 'Поступило',
     charged: 'Начислено за занятия',
     debt: 'Долг',

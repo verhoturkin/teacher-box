@@ -127,6 +127,18 @@ export class BillingApi {
     });
   }
 
+  /** The journal of a month as a CSV file, narrowed like {@link operations}. @param month `yyyy-MM` */
+  operationsCsv(month: string, kind?: OperationKind, studentId?: string): Observable<Blob> {
+    let params = new HttpParams().set('month', month);
+    if (kind !== undefined) {
+      params = params.set('kind', kind);
+    }
+    if (studentId !== undefined) {
+      params = params.set('studentId', studentId);
+    }
+    return this.http.get('/api/teacher/billing/operations.csv', { params, responseType: 'blob' });
+  }
+
   mySummary(): Observable<MyBillingSummary> {
     return this.http.get<MyBillingSummary>('/api/me/billing/summary', { context: quietContext() });
   }

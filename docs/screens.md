@@ -260,7 +260,8 @@ pane «По ученикам».
 
 - **Header:** the month with ‹ › and tonal «Отчёт за месяц» (`monthly-report-page.ts`, nested route:
   one flexible pane, persistent title, back and month picker, tonal figures, labelled report
-  tables).
+  tables); next to it «⋮» (`p-menu` popup) with «Скачать CSV» — the journal of the month with the
+  current chip and student (`operations.csv`, saved by `FileSaver`).
 - **Figures** `tb-ops-figures`: four tonal tiles — «Поступило», «Начислено за занятия», «Долг»
   (error container), «Авансы», each with a note («11 оплат»).
 - **«Операции»:** the filter group «Все · Оплаты · Занятия · Пропуски» and the «Ученик» select; the

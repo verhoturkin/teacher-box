@@ -13,6 +13,8 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EMPTY, Subject, catchError, forkJoin, switchMap } from 'rxjs';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { MenuItem } from 'primeng/api';
+import { Menu } from 'primeng/menu';
 import { Select } from 'primeng/select';
 import { Tooltip } from 'primeng/tooltip';
 import { quietContext } from '@core/http/api-error.interceptor';
@@ -24,6 +26,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { HelpButton } from '@features/help/parts';
 import { TeacherColors } from '@features/identity/parts';
 import { BroadcastDialog } from '@features/notifications/parts';
+import { FileSaver } from '@shared/files/file-saver';
 import { monthLabel, toIsoDate, toIsoMonth } from '@shared/dates/iso-date';
 import { formatMoney, toMajorUnits } from '@shared/money/money';
 import { MoneyPipe } from '@shared/money/money.pipe';
@@ -111,6 +114,7 @@ const NUMBER = new Intl.NumberFormat(locale());
     FilterChips,
     HelpButton,
     LoadStateView,
+    Menu,
     MoneyPipe,
     PageHeader,
     Pane,
@@ -161,6 +165,16 @@ const NUMBER = new Intl.NumberFormat(locale());
                 <i pButtonIcon aria-hidden="true" class="tb-i tb-i-download"></i>
                 <span pButtonLabel>{{ t.report }}</span>
               </a>
+              <p-button
+                icon="tb-i tb-i-more_vert"
+                [text]="true"
+                [rounded]="true"
+                severity="secondary"
+                [ariaLabel]="t.moreActions"
+                aria-haspopup="menu"
+                (onClick)="actions.toggle($event)"
+              />
+              <p-menu #actions [model]="menuItems" [popup]="true" appendTo="body" />
             </div>
             <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
             @if (mobile()) {
@@ -638,6 +652,7 @@ export class BillingOverviewPage implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly fileSaver = inject(FileSaver);
   /** The filters of the journal come from the address (`?month=&kind=&student=`) and go back to it. */
   private readonly fromUrl = this.route.snapshot.queryParamMap;
 
@@ -654,6 +669,17 @@ export class BillingOverviewPage implements OnInit {
   readonly studentControl = new FormControl<string | null>(this.fromUrl.get('student'));
   private readonly chosenStudent = signal<string | null>(this.fromUrl.get('student'));
   private readonly narrow = new Subject<void>();
+
+  /** «⋮»: the journal as CSV with the current month, chip and student. */
+  protected readonly menuItems: MenuItem[] = [
+    {
+      label: T.overview.downloadCsv,
+      icon: 'tb-i tb-i-download',
+      command: () => {
+        this.downloadCsv();
+      },
+    },
+  ];
 
   protected readonly paymentVisible = signal(false);
   protected readonly remindVisible = signal(false);
@@ -782,6 +808,21 @@ export class BillingOverviewPage implements OnInit {
       month: this.isCurrentMonth() ? null : this.month(),
     });
     this.loadMonth();
+  }
+
+  protected downloadCsv(): void {
+    const month = this.month();
+    const filter = this.filter();
+    this.api
+      .operationsCsv(
+        month,
+        filter === 'all' ? undefined : KINDS[filter],
+        this.chosenStudent() ?? undefined,
+      )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((csv) => {
+        this.fileSaver.save(csv, `operations-${month}.csv`);
+      });
   }
 
   protected openPayment(): void {
