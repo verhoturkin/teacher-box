@@ -9,6 +9,8 @@ export const ru = {
     HOMEWORK_HINT: 'выдача, сдача и проверка работ',
     BILLING: 'Оплаты',
     BILLING_HINT: 'проведённые занятия и оплаты',
+    LESSON_SUMMARY: 'Итоги урока',
+    LESSON_SUMMARY_HINT: 'что прошли на занятии и что дальше',
     ACCOUNT: 'Ученики и календарь',
     ACCOUNT_HINT: 'ученик принял приглашение, Google Календарь требует переподключения',
   },

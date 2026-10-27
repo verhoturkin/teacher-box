@@ -195,6 +195,10 @@ If you made a mistake — press the chosen option in «Outcome» again: the mark
 
 A past lesson without a mark is outlined in red in the calendar; open it and mark the result. Their number is also on the home page, in «To do». On a phone such lessons sit in the agenda under the row — each has the «Held» and «Missed» buttons, a group — «Mark»; the «Lessons not marked» link above the list leads to them.
 
+## Lesson summary
+
+A lesson that has started has a «Summary» row (except a cancelled one and an individual «Missed» one). Press it to open «Lesson summary»: «What we covered» (the student sees it; «Text / Preview» as in homework), «What next» and «Note to self» — only you see it (a group has one per student). «What next» is copied into the topic of the next lesson if that is empty. «Save» only saves; «Save and send» also sends the students a «Lesson summary» notification. With the AI assistant on, «Draft» writes «What we covered» from the topic, the tasks and your words — it is a draft, edit it. Held lessons with summaries are listed in «History» on the «Lessons» tab of a student and a group. In the bot: after «Held» press «Record summary» and send the text.
+
 ## Cancel, delete, restore
 
 - **Cancel** — «⋮» in the lesson window → «Cancel lesson…» opens a separate window: the reason, «at the student’s initiative», «charge the lesson»; for a lesson of a series choose «Only this lesson» or «This and following» — the portal shows how many lessons it touches. The lesson stays in the schedule crossed out, the student gets a notification. A cancelled lesson can be **restored**: open it and click «Restore» — it is back in the schedule and the student gets a notification. If the time is already taken by another lesson, the portal asks.

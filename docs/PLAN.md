@@ -127,7 +127,7 @@ Design:
 
 ### Stage 310 — Docs and release 0.37.0
 
-- [ ] 310.1 docs + E2E: `docs/modules/schedule.md` (rules, data, REST),
+- [x] 310.1 docs + E2E: `docs/modules/schedule.md` (rules, data, REST),
   `docs/modules/notifications.md` (topic), `docs/modules/ai.md` (feature), `docs/screens.md` (lesson card, history), `docs/wiki/`
   (Schedule, AI, messengers — Russian), help articles «Расписание» in every language; E2E in
   `e2e/tests/schedule/`: the teacher writes and shares a summary, the student sees it in the inbox

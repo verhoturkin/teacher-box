@@ -57,6 +57,16 @@ describe('PreferencesPanel', () => {
     expect(buttonByText(hostElement(fixture), 'Сохранить').disabled).toBe(true);
   });
 
+  it('offers the lesson summary topic to a student', async () => {
+    await render(preferences());
+    expect(readableText(hostElement(fixture))).toContain('Итоги урока');
+  });
+
+  it('does not offer the lesson summary topic to the teacher', async () => {
+    await render(preferences(), true);
+    expect(readableText(hostElement(fixture))).not.toContain('Итоги урока');
+  });
+
   it('mutes a topic and sets quiet hours', async () => {
     await render(preferences(), true);
     expect(readableText(hostElement(fixture))).toContain('Ученики и календарь');
