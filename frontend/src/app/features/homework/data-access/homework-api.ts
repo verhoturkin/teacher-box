@@ -1,11 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay } from 'rxjs';
 import {
   AssignmentDetails,
   AssignmentInput,
   AssignmentSummary,
   Attachment,
+  HomeworkLimits,
   HomeworkSummary,
   MyHomeworkSummary,
   MyTask,
@@ -25,6 +26,7 @@ const ME = '/api/me/homework';
 @Injectable({ providedIn: 'root' })
 export class HomeworkApi {
   private readonly http = inject(HttpClient);
+  private limitsRequest: Observable<HomeworkLimits> | undefined;
 
   // --- teacher ---
 
@@ -186,6 +188,14 @@ export class HomeworkApi {
     return this.http.get<HomeworkSummary>('/api/teacher/homework/summary', {
       context: quietContext(),
     });
+  }
+
+  /** Asked once: the limits change only with the server settings. */
+  limits(): Observable<HomeworkLimits> {
+    this.limitsRequest ??= this.http
+      .get<HomeworkLimits>(`${ME}/limits`, { context: quietContext() })
+      .pipe(shareReplay({ bufferSize: 1, refCount: false }));
+    return this.limitsRequest;
   }
 
   mySummary(): Observable<MyHomeworkSummary> {

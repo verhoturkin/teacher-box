@@ -73,7 +73,7 @@ file of the assignment's materials — name, type, size, content; another assign
 zone, for the Today page, 239.1),
 `GET students/{studentId}/tasks` — the student's tasks as the student's list shows them, for the student card
 (237.1); an unknown student has none);
-`/api/me/homework/**` (tasks, submissions, attachments, `tasks/{taskId}/textbooks/{textbookId}`, summary).
+`/api/me/homework/**` (tasks, submissions, attachments, `tasks/{taskId}/textbooks/{textbookId}`, summary, `limits`).
 
 ## Frontend
 

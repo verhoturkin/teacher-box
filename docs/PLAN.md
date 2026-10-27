@@ -70,6 +70,11 @@ file check before upload, journal filters in the URL. No ADR. Decisions of the t
   `file.type-unsupported`); limits from the module settings endpoints (add if missing). Used by
   `homework/ui/file-picker.ts`, receipts in `billing/teacher/payment-dialog.ts`, textbooks upload,
   avatar. Backend checks stay.
+  *The size limit of homework files comes from `GET /api/me/homework/limits`
+  (`TEACHERBOX_HOMEWORK_MAX_FILE_SIZE`), read when the first file is picked; unknown — the size is
+  left to the server. Receipts (10 MB), textbooks (100 MB) and avatars are fixed constants of the
+  backend, not settings, so the frontend repeats them; the avatar has no size check (the photo is
+  scaled down in the browser).*
 
 ### Stage 301 — Filters in the URL (F)
 

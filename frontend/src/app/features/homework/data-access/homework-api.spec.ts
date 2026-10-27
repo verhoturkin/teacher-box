@@ -96,6 +96,17 @@ describe('HomeworkApi', () => {
     expect(backend.expectOne('/api/me/homework/attachments/f-1').request.responseType).toBe('blob');
   });
 
+  it('asks for the upload limits once', () => {
+    let limits: unknown;
+    api.limits().subscribe();
+    api.limits().subscribe((value) => (limits = value));
+
+    backend.expectOne('/api/me/homework/limits').flush({ maxFileSize: 1024, maxFilesPerUpload: 2 });
+    expect(limits).toEqual({ maxFileSize: 1024, maxFilesPerUpload: 2 });
+    api.limits().subscribe();
+    backend.expectNone('/api/me/homework/limits');
+  });
+
   it('loads the summaries of the home pages', () => {
     api.summary().subscribe();
     api.mySummary().subscribe();

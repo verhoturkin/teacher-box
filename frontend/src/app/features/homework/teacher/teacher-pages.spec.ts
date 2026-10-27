@@ -456,6 +456,9 @@ describe('AssignmentPage', () => {
       configurable: true,
     });
     picker.dispatchEvent(new Event('change'));
+    backend
+      .expectOne('/api/me/homework/limits')
+      .flush({ maxFileSize: 1024 * 1024, maxFilesPerUpload: 10 });
     await settleFiles();
     await fixture.whenStable();
     buttonByText(host, 'Загрузить').click();
