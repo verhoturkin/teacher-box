@@ -40,6 +40,8 @@ import ru.teacherbox.shared.error.NotFoundException;
 @Service
 public class AssignmentService {
 
+    private static final String COPY_SUFFIX = " (копия)";
+
     private final AssignmentRepository assignments;
     private final TaskRepository tasks;
     private final SubmissionRepository submissions;
@@ -100,6 +102,22 @@ public class AssignmentService {
             videos.replace(assignment.id(), videoInputs);
         }
         return details(assignment);
+    }
+
+    /**
+     * A draft «title (копия)»: the text, files (new copies in the storage), textbooks with pages and videos with
+     * transcripts; no students, no deadline, no board.
+     */
+    @Transactional
+    public AssignmentDetails copy(UUID assignmentId) {
+        Assignment source = load(assignmentId);
+        Instant now = clock.instant();
+        Assignment copy = source.copy(Ids.newId(), COPY_SUFFIX, now);
+        assignments.insert(copy);
+        attachments.copyAll(AttachmentOwner.ASSIGNMENT, source.id(), copy.id(), now);
+        textbooks.copy(source.id(), copy.id());
+        videos.copy(source.id(), copy.id());
+        return details(copy);
     }
 
     /** Gives the assignment to more students; students who already have it are skipped. */

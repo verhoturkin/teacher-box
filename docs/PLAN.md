@@ -49,7 +49,7 @@ file check before upload, journal filters in the URL. No ADR. Decisions of the t
 
 ### Stage 298 — Copy of an assignment (B, F)
 
-- [ ] 298.1 B: `AssignmentService.copy(assignmentId)` and
+- [x] 298.1 B: `AssignmentService.copy(assignmentId)` and
   `POST /api/teacher/homework/assignments/{id}/copy` — a new draft «<title> (копия)» with the text,
   files (new keys in `FileStorage` namespace `homework`), textbooks and pages, videos with
   transcripts; no students, no due date, no board. Tests: service (deleting the original keeps the

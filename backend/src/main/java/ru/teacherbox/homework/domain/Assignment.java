@@ -46,6 +46,14 @@ public final class Assignment {
         return new Assignment(id, title, description, dueAt, boardId, createdAt, updatedAt, version);
     }
 
+    /** A draft made from this assignment: the same text, no deadline and no board. */
+    public Assignment copy(UUID newId, String suffix, Instant now) {
+        String copyTitle = title.length() + suffix.length() > MAX_TITLE
+                ? title.substring(0, MAX_TITLE - suffix.length()).stripTrailing() + suffix
+                : title + suffix;
+        return new Assignment(newId, copyTitle, description, null, null, now, now, 0);
+    }
+
     public void update(String newTitle, @Nullable String newDescription, @Nullable Instant newDueAt, Instant now) {
         title = validTitle(newTitle);
         description = validDescription(newDescription);

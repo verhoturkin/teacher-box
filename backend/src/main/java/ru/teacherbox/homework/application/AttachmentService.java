@@ -62,6 +62,15 @@ public class AttachmentService {
         return stored;
     }
 
+    /** New files with their own storage keys, so that deleting the source keeps the copies. */
+    void copyAll(AttachmentOwner ownerType, UUID fromOwnerId, UUID toOwnerId, Instant now) {
+        for (Attachment source : of(ownerType, fromOwnerId)) {
+            StoredFile content = copyContent(source);
+            attachments.insert(new Attachment(Ids.newId(), ownerType, toOwnerId, content.key(), source.filename(),
+                    source.contentType(), content.size(), content.sha256(), now));
+        }
+    }
+
     Attachment load(UUID attachmentId) {
         return attachments.findById(attachmentId)
                 .orElseThrow(() -> new NotFoundException("file.not-found", "File not found"));
@@ -87,6 +96,14 @@ public class AttachmentService {
 
     List<Attachment> of(AttachmentOwner ownerType, List<UUID> ownerIds) {
         return attachments.findByOwners(ownerType, ownerIds);
+    }
+
+    private StoredFile copyContent(Attachment source) {
+        try (InputStream input = storage.load(NAMESPACE, source.fileKey()).getInputStream()) {
+            return storage.store(NAMESPACE, input);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Cannot read file " + source.id(), e);
+        }
     }
 
     private StoredFile storeContent(UploadedFile file) {

@@ -1,6 +1,7 @@
 package ru.teacherbox.homework.application;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -42,6 +43,14 @@ class TextbookBindings {
         String normalized = pages == null || pages.isBlank() ? null
                 : PageRanges.parse(pages).within(textbook.pageCount()).text();
         bound.save(new BoundTextbook(assignmentId, textbookId, normalized, clock.instant()));
+    }
+
+    /** Binds the same textbooks with the same pages to another assignment. */
+    void copy(UUID fromAssignmentId, UUID toAssignmentId) {
+        Instant now = clock.instant();
+        for (BoundTextbook source : bound.findByAssignment(fromAssignmentId)) {
+            bound.save(new BoundTextbook(toAssignmentId, source.textbookId(), source.pages(), now));
+        }
     }
 
     void unbind(UUID assignmentId, UUID textbookId) {
