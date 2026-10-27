@@ -16,7 +16,7 @@ How to use:
 
 | # | Feature | Modules | Size | ADR | Depends on |
 |---|---|---|---|---|---|
-| 01 | [Lesson notes and summary](01-lesson-notes.md) | schedule, ai, notifications | M | no | — |
+| 01 | Lesson notes and summary — moved to [`PLAN.md`](../PLAN.md) v0.37.0 (stages 304–310) | schedule, ai, notifications | M | no | — |
 | 02 | [Student progress report](02-progress-report.md) | schedule, homework, billing, frontend | L | yes | 01 (soft) |
 | 03 | [Lesson packages](03-lesson-packages.md) | billing, notifications | L | yes | — |
 | 04 | [Invoices with a payment QR](04-invoices.md) | billing, notifications | M | yes | 03 (soft) |

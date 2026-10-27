@@ -5,11 +5,126 @@ don't read them unless the task needs history.
 
 ## How to use
 
-- A release is a `## vX.Y.Z` section (or `## Backlog
+- A release is a `## vX.Y.Z` section (or `## Next release` until the number is known): goals (2–5
+  lines), new/changed ADRs, then stages.
+- Stages are numbered globally, continuing from the archive. Substeps: `85.1`, `85.2`, … Tags: **B**
+  backend, **F** frontend, **D** docker/infra.
+- A substep names its entry points — files, classes, endpoints, routes
+  (`schedule/teacher/lesson-details-dialog.ts`, `ScheduleService.cancel`) — so the work starts there
+  instead of a repository search.
+- Each substep ends with a green `./scripts/verify.sh` and a commit that also ticks its `[x]`.
+- Partly done? Tick it and note in italics what was dropped and where it went (Backlog or next
+  release).
+- **Archiving** (skill `release`): in the release commit move the whole section to
+  `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
+  Backlog. This file keeps only unreleased work and the Backlog.
 
-Feature proposals with detailed plans (lesson notes, progress report, packages, invoices, parents,
-quizzes, web push, self-booking, calls, spaced repetition) —
-[`roadmap/`](roadmap/README.md); move one here as a release when the teacher picks it.
+## v0.37.0
+
+Goal: lesson notes and summary (roadmap 01). After a lesson the teacher writes «Что прошли» (seen by
+the participants), «Что дальше» (plan, prefilled into the next lesson's topic) and a private
+«Заметка для себя» per student; the student gets «Итоги урока» and both sides see a history feed of
+held lessons. No ADR (new data inside `schedule`, no new module dependency). Decisions of the
+teacher (2026-10-27): three fields; one shared summary per lesson + an optional private note per
+participant in a group; notification «Итоги урока» (inbox + messenger) with its own preference
+topic, on by default; the bot offers «Записать итоги» after «Проведено»; an AI draft of the summary.
+
+Design:
+
+- Data (`schedule`, migration `V3__lesson_notes.sql`): `lessons.summary` `varchar(4000)` (Markdown,
+  visible to participants), `lessons.next_plan` `varchar(1000)`, `lessons.summary_updated_at`;
+  table `lesson_notes (lesson_id, student_id, note varchar(4000), updated_at)`, PK
+  `(lesson_id, student_id)`, private to the teacher.
+- Summary and notes are editable for any lesson that is not `CANCELLED`, before the outcome too.
+  Last write wins with `updated_at` returned (one author); edits never bump the lesson `version`
+  used to lock time edits. Series edits (`LessonRepetitionService`) never touch them; deleting a
+  lesson deletes its notes.
+- «Что дальше» prefill (our decision): saving a non-empty `nextPlan` copies it into the topic of
+  the next planned lesson of the same participants (same student, or same group) if that topic is
+  empty; a filled topic is never overwritten.
+- The calendar list endpoints, ICS and Google Calendar never carry summaries or notes — only the
+  lesson details and the history endpoints.
+- Event `LessonSummaryShared(lessonId, studentIds, teacherId)` in `schedule::api`, published only
+  by the explicit «Отправить ученику» action, never by autosave.
+- AI: `ai` does not depend on `schedule`; the frontend sends the texts.
+
+### Stage 304 — Summary and notes (B)
+
+- [ ] 304.1 B: migration `V3__lesson_notes.sql`, `domain/Lesson` fields, `LessonNote` record,
+  repository methods in `schedule/persistence/`; `ScheduleService.updateSummary(lessonId, summary,
+  nextPlan)` (with the «Что дальше» prefill above) and `ScheduleService.updateNote(lessonId,
+  studentId, note)`; errors `schedule.summary-too-long`, `schedule.lesson-cancelled`,
+  `schedule.not-a-participant`. REST: `PUT /api/teacher/schedule/lessons/{id}/summary`,
+  `PUT …/{id}/notes/{studentId}`. `ScheduleViews`: the teacher lesson details get `summary`,
+  `nextPlan`, `notes[]`; the student lesson view (`/api/me/schedule/lessons/…`) gets `summary`
+  only. `ScheduleDataReset` covers `lesson_notes` (`ResetIntegrationTest`). Tests: controller roles
+  (student 403 on teacher endpoints; another student never sees a summary of a lesson they are not
+  in — 404); service — cancelled lesson, deleted lesson takes its notes, prefill only into an empty
+  topic; the student view never carries `notes`; calendar list carries no summary.
+- [ ] 304.2 B: `GET /api/teacher/schedule/students/{studentId}/history?before&limit` — held lessons
+  of a student (group lessons included), newest first: date, topic, outcome, summary, nextPlan, own
+  note; `GET /api/teacher/schedule/groups/{groupId}/history` — the same without private notes;
+  `GET /api/me/schedule/history` for the student — summary only. Paging by the `before` instant.
+  Tests: roles, paging, a student sees only own lessons.
+
+### Stage 305 — Notification «Итоги урока» (B)
+
+- [ ] 305.1 B: `POST /api/teacher/schedule/lessons/{id}/summary/share` (empty summary →
+  `schedule.summary-empty`) publishes `LessonSummaryShared`; `notifications`:
+  `ScheduleNotifications` turns it into an inbox record «Итоги урока dd.MM» with a link to the
+  lesson and a messenger «Открыть» button; topic `LESSON_SUMMARY` in `NotificationTopic` (default
+  on), texts ru/en, the preference on the student's «Мой аккаунт» (backend list of topics; the
+  frontend picks it up if the list is data-driven, else in 307.1). Tests: event → inbox + delivery,
+  preference off → inbox only, `ModularityTests`.
+
+### Stage 306 — AI draft of the summary (B)
+
+- [ ] 306.1 B: `AiFeature.LESSON_SUMMARY`, prompts `lesson-summary.system.v1` / `.user.v1`, editable
+  system prompt in `SystemPrompts` (as ADR-0043), `POST /api/teacher/ai/lesson-summary {topic,
+  words, assignmentTitles[]}` → `{summary}`. Tests: controller roles, prompt rendering, disabled AI →
+  the usual error.
+
+### Stage 307 — «Итоги» in the lesson card (F, `m3-expressive`)
+
+- [ ] 307.1 F: `schedule/teacher/lesson-details-dialog.ts` — section «Итоги»: «Что прошли»
+  (Markdown, `Текст / Просмотр` like the homework editor), «Что дальше», private «Заметка для себя»
+  per participant (for a group a `tb-list` with an expand per student); autosave on blur with a
+  saved indicator; «Отправить ученику» (disabled for an empty summary, snackbar after). Hidden for a
+  cancelled lesson. Unit tests.
+- [ ] 307.2 F: AI draft button in the «Что прошли» field — a small inline draft from the topic, the
+  assignments given at the lesson and the teacher's short words (`HomeworkAiState` as the model),
+  shown only when the AI feature is on. Unit tests.
+
+### Stage 308 — History feeds (F, `m3-expressive`)
+
+- [ ] 308.1 F: student card «Занятия» tab (`schedule/teacher/student-lessons-tab.ts`) — feed
+  «История» of held lessons with summary, «Что дальше» and note, «Показать ещё»; the group card the
+  same without private notes. Unit tests.
+- [ ] 308.2 F: student side — the lesson sheet (`schedule/student/lesson-summary.ts`) shows «Что
+  прошли»; a «История занятий» list on the student's schedule page; the inbox link opens the lesson.
+  Unit tests.
+
+### Stage 309 — «Записать итоги» in the bot (B)
+
+- [ ] 309.1 B: `schedule/chat/MarkLessonsChatAction` — after «Проведено» offer «Записать итоги» /
+  «Пропустить»; the next text message becomes the summary (`ScheduleService.updateSummary`), then
+  «Отправить ученику» / «Готово». Rights as REST, audit via `AuditLog.bot`. Tests: dialog paths,
+  too-long text, a non-teacher chat.
+
+### Stage 310 — Docs and release 0.37.0
+
+- [ ] 310.1 docs + E2E: `docs/modules/schedule.md` (rules, data, REST),
+  `docs/modules/notifications.md` (topic), `docs/modules/ai.md` (feature), `docs/screens.md` (lesson card, history), `docs/wiki/`
+  (Schedule, AI, messengers — Russian), help articles «Расписание» in every language; E2E in
+  `e2e/tests/schedule/`: the teacher writes and shares a summary, the student sees it in the inbox
+  and the history, another student does not.
+- [ ] 310.2 Release 0.37.0 (skill `release`).
+
+## Backlog
+
+Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes, web
+push, self-booking, calls, spaced repetition) — [`roadmap/`](roadmap/README.md); move one here as a
+release when the teacher picks it.
 
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the
 monthly report, homework and board lists by name) and the options of student / group selects.
