@@ -129,7 +129,7 @@ test('a group has its own card with the members', async ({ page }) => {
   await page.goto('/teacher/students');
   // 0.36.1: the row counts the members instead of naming them and keeps at most two lines of text
   const row = roster(page).locator('> li', { hasText: GROUP });
-  await expect(row.locator('.tb-list__supporting')).toHaveText(/^1 участник · /);
+  await expect(row.locator('.tb-list__supporting')).toHaveText(/^1\sучастник · /); // countOf joins with a no-break space
   await expect(row).not.toContainText(MEMBER);
   await expect(row.locator('.tb-list__title')).toHaveCSS('-webkit-line-clamp', '2');
   await roster(page).getByRole('link', { name: GROUP, exact: true }).click();
