@@ -19,20 +19,6 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
-## Next release
-
-Goal: fixes of 0.37.0 found by the teacher in the running app.
-
-### Stage 311 — Fixes of 0.37.0 (F)
-
-- [x] 311.1 A fresh summary shows in the teacher's lesson card. The card loads the lesson details
-  (`ScheduleApi.lesson`, `GET /api/teacher/schedule/lessons/{id}`) when it opens, and a reloaded
-  list lesson without a summary does not wipe them (`schedule/teacher/lesson-details-dialog.ts`);
-  unit tests and `e2e/tests/schedule/lesson-summary.spec.ts`.
-- [x] 311.2 Gap after the avatar of the students list and the icon of the lesson card row «Итог»:
-  `column-gap` on rows with their own columns (`styles.scss` `.tb-list--own-trail`,
-  `schedule/ui/lesson-card.ts`); checked in the browser on desktop and phone width.
-
 ## Backlog
 
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes, web
