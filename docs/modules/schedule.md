@@ -83,6 +83,12 @@ Bot actions (`schedule/chat`): schedule, mark lessons, answer requests (teacher)
 `PUT lessons/{id}/summary` (`summary`, `nextPlan`; blank clears) and `PUT lessons/{id}/notes/{studentId}` (`note`)
 return the lesson details: `GET lessons/{id}` of the teacher has `summary`, `nextPlan`, `summaryUpdatedAt`, `notes[]`;
 `GET /api/me/schedule/lessons/{id}` has `summary` only (a lesson the student is not in is 404); lists have none.
+History feeds of held lessons (`CONDUCTED`/`MISSED`, group lessons included, newest first, paged by the
+`before` instant = start of the last item, `limit` 1–100, default 20):
+`GET /api/teacher/schedule/students/{id}/history`
+(date, topic, status, attendance, `summary`, `nextPlan`, the student's own private `note`),
+`GET /api/teacher/schedule/groups/{id}/history` (same without private notes and attendance) and
+`GET /api/me/schedule/history` (own lessons only, `summary` only — no plan, no note).
 Lesson POST/PUT accept `repeatWeeks` (0–4), `repeatUntil`; PUT/cancel/DELETE accept `scope` (`ONLY`/`FOLLOWING`)
 and optional optimistic `version`/`repeatVersion`. The UI supplies versions. `GET lessons/{id}/following`
 discloses affected/protected existing lesson IDs and the rule version before a bulk action. Standalone

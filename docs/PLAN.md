@@ -61,7 +61,7 @@ Design:
   (student 403 on teacher endpoints; another student never sees a summary of a lesson they are not
   in — 404); service — cancelled lesson, deleted lesson takes its notes, prefill only into an empty
   topic; the student view never carries `notes`; calendar list carries no summary.
-- [ ] 304.2 B: `GET /api/teacher/schedule/students/{studentId}/history?before&limit` — held lessons
+- [x] 304.2 B: `GET /api/teacher/schedule/students/{studentId}/history?before&limit` — held lessons
   of a student (group lessons included), newest first: date, topic, outcome, summary, nextPlan, own
   note; `GET /api/teacher/schedule/groups/{groupId}/history` — the same without private notes;
   `GET /api/me/schedule/history` for the student — summary only. Paging by the `before` instant.

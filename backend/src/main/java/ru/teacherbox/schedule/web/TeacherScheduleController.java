@@ -32,6 +32,7 @@ import ru.teacherbox.schedule.application.ScheduleService;
 import ru.teacherbox.schedule.application.LessonRepetitionService;
 import ru.teacherbox.schedule.application.LessonRepetitionService.Options;
 import ru.teacherbox.schedule.application.LessonRepetitionService.Scope;
+import ru.teacherbox.schedule.application.ScheduleViews.HistoryEntry;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSummary;
@@ -168,6 +169,21 @@ class TeacherScheduleController {
     LessonView note(@PathVariable UUID lessonId, @PathVariable UUID studentId,
             @Valid @RequestBody NoteRequest request) {
         return schedule.updateNote(lessonId, studentId, request.note());
+    }
+
+    /** Held lessons of a student, newest first; the next page — {@code before} = start of the last one. */
+    @GetMapping("/students/{studentId}/history")
+    List<HistoryEntry> studentHistory(@PathVariable UUID studentId,
+            @RequestParam(required = false) @Nullable Instant before,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {
+        return queries.studentHistory(studentId, before, limit);
+    }
+
+    @GetMapping("/groups/{groupId}/history")
+    List<HistoryEntry> groupHistory(@PathVariable UUID groupId,
+            @RequestParam(required = false) @Nullable Instant before,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {
+        return queries.groupHistory(groupId, before, limit);
     }
 
     @GetMapping("/lessons/{lessonId}/following")

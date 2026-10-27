@@ -127,6 +127,19 @@ public final class ScheduleViews {
         }
     }
 
+    /**
+     * One held lesson in a history feed.
+     *
+     * @param attendance the student's attendance; {@code null} in a group feed
+     * @param nextPlan   the teacher's feeds only
+     * @param note       the teacher's private note about the student; the student feed never has it
+     */
+    public record HistoryEntry(UUID lessonId, Instant startsAt, @Nullable String topic, LessonStatus status,
+            @Nullable UUID groupId, @Nullable String groupName, @Nullable Attendance attendance,
+            @Nullable String summary, @Nullable String nextPlan, @Nullable Instant summaryUpdatedAt,
+            @Nullable String note) {
+    }
+
     /** The teacher's private note about a student's part in a lesson. */
     public record NoteView(UUID studentId, String note, Instant updatedAt) {
     }

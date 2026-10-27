@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +34,7 @@ public class LessonRepository {
             from schedule.lessons
             """;
     private static final String ORDER = " order by starts_at, id";
+    private static final String HELD_ORDER = " order by starts_at desc, id desc";
     /** Lessons the student takes part in, whatever the attendance. */
     private static final String OF_STUDENT =
             " id in (select lesson_id from schedule.lesson_participants where student_id = :studentId)";
@@ -317,6 +319,36 @@ public class LessonRepository {
                 """)
                 .param("lessonId", lessonId).param("studentId", studentId).param("note", note).param("now", now)
                 .update();
+    }
+
+    /** Held lessons (outcome marked) of the student, group lessons included, that start before {@code before}, newest first. */
+    public List<Lesson> findHeldOfStudent(UUID studentId, Instant before, int limit) {
+        return load(jdbc.sql(SELECT + " where status in ('CONDUCTED', 'MISSED') and starts_at < :before and"
+                + OF_STUDENT + HELD_ORDER + " limit :limit")
+                .param("studentId", studentId).param("before", before).param("limit", limit)
+                .query(LessonRepository::map).list());
+    }
+
+    /** Held lessons of the group that start before {@code before}, newest first. */
+    public List<Lesson> findHeldOfGroup(UUID groupId, Instant before, int limit) {
+        return load(jdbc.sql(SELECT + " where status in ('CONDUCTED', 'MISSED') and starts_at < :before"
+                + " and group_id = :groupId" + HELD_ORDER + " limit :limit")
+                .param("groupId", groupId).param("before", before).param("limit", limit)
+                .query(LessonRepository::map).list());
+    }
+
+    /** The teacher's private notes about the student in the given lessons, by lesson. */
+    public Map<UUID, LessonNote> findNotes(UUID studentId, Collection<UUID> lessonIds) {
+        if (lessonIds.isEmpty()) {
+            return Map.of();
+        }
+        return jdbc.sql("select lesson_id, student_id, note, updated_at from schedule.lesson_notes"
+                        + " where student_id = :studentId and lesson_id in (:ids)")
+                .param("studentId", studentId).param("ids", lessonIds)
+                .query((rs, rowNum) -> new LessonNote(rs.getObject("lesson_id", UUID.class),
+                        rs.getObject("student_id", UUID.class), rs.getString("note"),
+                        rs.getObject("updated_at", Instant.class)))
+                .list().stream().collect(Collectors.toMap(LessonNote::lessonId, note -> note));
     }
 
     /** Remembers the reminders sent for a lesson (one row per advance time in minutes). */
