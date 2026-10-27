@@ -49,6 +49,12 @@ current one) — one flat list of the month, newest first, built from billing's 
 cross-module reads). `kind`: `PAYMENT` (amount +), `LESSON` (conducted, amount −charge), `ABSENCE` (missed — charged,
 or cancelled — amount 0, `voided`). A voided payment stays in the list with `voided: true` and amount 0.
 
+`GET /api/teacher/billing/operations.csv` (same parameters and access, 0.36.0) — the same filtered journal as a
+download `operations-<yyyy-MM>.csv`: UTF-8 with a BOM, `;` separator, CRLF, columns date (instance time zone),
+student, kind, amount in currency units with a decimal comma, comment, voided. Fields holding `;`, quotes or line
+breaks are quoted; texts starting with `= + - @` get a leading `'` against spreadsheet formulas. Student names are
+included (the teacher's own data); no income-for-period or year range.
+
 ## Frontend
 
 `features/billing/`: `teacher/` (payments page, `student-payments-tab.ts` — the Payments tab of the student card since 0.23.0:

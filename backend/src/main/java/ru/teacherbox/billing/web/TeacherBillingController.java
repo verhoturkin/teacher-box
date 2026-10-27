@@ -11,7 +11,11 @@ import java.time.YearMonth;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -103,6 +107,20 @@ class TeacherBillingController {
             @RequestParam(required = false) @Nullable OperationKind kind,
             @RequestParam(required = false) @Nullable UUID studentId) {
         return queries.operations(month == null ? queries.currentMonth() : month, kind, studentId);
+    }
+
+    /** The same journal as a CSV download (for the teacher's spreadsheet). */
+    @GetMapping("/operations.csv")
+    ResponseEntity<byte[]> operationsCsv(@RequestParam(required = false) @Nullable YearMonth month,
+            @RequestParam(required = false) @Nullable OperationKind kind,
+            @RequestParam(required = false) @Nullable UUID studentId) {
+        Operations journal = queries.operations(month == null ? queries.currentMonth() : month, kind, studentId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("text/csv;charset=UTF-8"))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment().filename("operations-" + journal.month() + ".csv").build()
+                                .toString())
+                .body(OperationsCsv.of(journal));
     }
 
     @GetMapping("/students/{studentId}")

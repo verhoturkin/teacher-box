@@ -39,7 +39,7 @@ file check before upload, journal filters in the URL. No ADR. Decisions of the t
 
 ### Stage 297 — CSV of the operations journal (B, F)
 
-- [ ] 297.1 B: `GET /api/teacher/billing/operations.csv?month&kind&studentId` — UTF-8 with BOM,
+- [x] 297.1 B: `GET /api/teacher/billing/operations.csv?month&kind&studentId` — UTF-8 with BOM,
   `;` separator; columns: date (instance time zone), student, kind, amount in currency units with
   a comma, comment, voided. Entry points: `billing/web/TeacherBillingController`,
   `BillingQueryService` (journal query). Tests: controller (student 403, admin 403, content type,

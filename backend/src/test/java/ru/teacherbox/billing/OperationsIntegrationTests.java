@@ -1,6 +1,7 @@
 package ru.teacherbox.billing;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static ru.teacherbox.testing.TestUsers.admin;
 import static ru.teacherbox.testing.TestUsers.student;
 import static ru.teacherbox.testing.TestUsers.teacher;
 
@@ -22,6 +23,7 @@ class OperationsIntegrationTests {
 
     private static final String MONTH = "2031-03";
     private static final String OPERATIONS = "/api/teacher/billing/operations";
+    private static final String OPERATIONS_CSV = "/api/teacher/billing/operations.csv";
 
     @Autowired
     MockMvcTester mvc;
@@ -109,6 +111,55 @@ class OperationsIntegrationTests {
                     assertThat(json).extractingPath("$.operations[0].voided").isEqualTo(true);
                     assertThat(json).extractingPath("$.operations[0].amount").isEqualTo(0);
                 });
+    }
+
+    @Test
+    void theCsvIsForTheTeacherOnly() {
+        UUID me = directory.addStudent("Любопытный Csv");
+
+        assertThat(mvc.get().uri(OPERATIONS_CSV).param("month", MONTH).with(student(me)))
+                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.get().uri(OPERATIONS_CSV).param("month", MONTH).with(admin(UUID.randomUUID())))
+                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.get().uri(OPERATIONS_CSV).param("month", MONTH)).hasStatus(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void theCsvHoldsTheFilteredJournalWithBomSemicolonsAndEscaping() throws Exception {
+        UUID kira = directory.addStudent("Кира; \"Csv\"");
+        UUID lena = directory.addStudent("Лена Csv");
+        lesson(kira, "2031-03-05", LessonStatus.CONDUCTED);
+        billing.recordPayment(new RecordPayment(kira, 123_450, LocalDate.parse("2031-03-10"), "аванс; \"март\""));
+        UUID voided = payment(kira, "2031-03-11", 50_000);
+        billing.voidPayment(voided, null);
+        payment(lena, "2031-03-06", 1_000);
+
+        var result = mvc.get().uri(OPERATIONS_CSV).param("month", MONTH).param("studentId", kira.toString())
+                .with(teacher(directory.teacherId())).exchange();
+
+        assertThat(result).hasStatusOk().hasContentTypeCompatibleWith("text/csv");
+        assertThat(result.getResponse().getHeader("Content-Disposition"))
+                .contains("attachment").contains("operations-2031-03.csv");
+        byte[] body = result.getResponse().getContentAsByteArray();
+        assertThat(body).startsWith(0xEF, 0xBB, 0xBF);
+        String text = new String(body, 3, body.length - 3, java.nio.charset.StandardCharsets.UTF_8);
+        assertThat(text.lines().toList()).containsExactly(
+                "Дата;Студент;Тип;Сумма;Комментарий;Отменено",
+                "2031-03-11;\"Кира; \"\"Csv\"\"\";Оплата;0,00;;да",
+                "2031-03-10;\"Кира; \"\"Csv\"\"\";Оплата;1234,50;\"аванс; \"\"март\"\"\";нет",
+                "2031-03-05;\"Кира; \"\"Csv\"\"\";Урок;-1500,00;;нет");
+    }
+
+    @Test
+    void theCsvNeutralisesSpreadsheetFormulasInTexts() throws Exception {
+        UUID mila = directory.addStudent("Мила Формула");
+        billing.recordPayment(new RecordPayment(mila, 1_000, LocalDate.parse("2031-03-08"), "=SUM(A1)"));
+
+        var result = mvc.get().uri(OPERATIONS_CSV).param("month", MONTH).param("studentId", mila.toString())
+                .with(teacher(directory.teacherId())).exchange();
+
+        assertThat(result.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8))
+                .contains(";'=SUM(A1);нет");
     }
 
     @Test
