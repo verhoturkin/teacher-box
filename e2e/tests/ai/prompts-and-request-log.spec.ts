@@ -25,7 +25,11 @@ test('the teacher rewrites a system prompt and restores the standard one', async
   const listed = await request.get('/api/teacher/ai/system-prompts', { headers });
   expect(listed.ok()).toBe(true);
   const prompts = (await listed.json()) as SystemPrompt[];
-  expect(prompts.map((prompt) => prompt.feature)).toEqual(['HOMEWORK_DRAFT', 'REVIEW_DRAFT']);
+  expect(prompts.map((prompt) => prompt.feature)).toEqual([
+    'HOMEWORK_DRAFT',
+    'REVIEW_DRAFT',
+    'LESSON_SUMMARY',
+  ]);
   const review = prompts[1];
   if (review === undefined) {
     throw new Error('the review prompt is expected');
