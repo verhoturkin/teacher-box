@@ -162,6 +162,32 @@ public class ScheduleService {
         return queries.lesson(lesson.id());
     }
 
+    /**
+     * Writes the summary and the plan of a lesson (blank clears). A non-empty plan goes into the topic of
+     * the next planned lesson of the same participants if that topic is empty; a filled one stays.
+     */
+    @Transactional
+    public LessonView updateSummary(UUID lessonId, @Nullable String summary, @Nullable String nextPlan) {
+        Lesson lesson = find(lessonId);
+        lesson.writeSummary(summary, nextPlan, clock.instant());
+        lessons.updateSummary(lesson);
+        String plan = lesson.nextPlan();
+        if (plan != null) {
+            String topic = plan.length() > Lesson.MAX_TOPIC ? plan.substring(0, Lesson.MAX_TOPIC) : plan;
+            lessons.findNextPlanned(lesson).ifPresent(next -> lessons.fillEmptyTopic(next.id(), topic));
+        }
+        return queries.lesson(lessonId);
+    }
+
+    /** Writes the teacher's private note about a participant (blank deletes it). */
+    @Transactional
+    public LessonView updateNote(UUID lessonId, UUID studentId, @Nullable String note) {
+        Lesson lesson = find(lessonId);
+        lesson.requireNoteFor(studentId);
+        lessons.saveNote(lessonId, studentId, Lesson.note(note), clock.instant());
+        return queries.lesson(lessonId);
+    }
+
     /** Deletes a lesson that was not held: a planned or cancelled one nobody is charged for. */
     @Transactional
     public void delete(UUID lessonId) {

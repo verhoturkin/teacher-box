@@ -58,8 +58,17 @@ Repeat events aggregate notifications; generation itself does not notify per occ
 
 ## Data
 
-`repeat_rules`, `repeat_exceptions`, `lessons`, `lesson_participants`, `change_requests`, `reminders_sent`, `feeds`, `off_times`,
-`google_connection`, `google_events`, `google_oauth_states`.
+`repeat_rules`, `repeat_exceptions`, `lessons`, `lesson_participants`, `change_requests`, `lesson_notes`, `reminders_sent`, `feeds`,
+`off_times`, `google_connection`, `google_events`, `google_oauth_states`.
+
+Lesson summary (0.37.0): `lessons.summary` (4000, Markdown, shown to the participants), `next_plan` (1000) and
+`summary_updated_at`; `lesson_notes (lesson_id, student_id, note, updated_at)` — the teacher's private note per
+student, never shown to students. They are saved by their own `UPDATE` without the lesson `version`, so they never
+conflict with time edits; last write wins. Allowed for any lesson except `CANCELLED` (errors
+`schedule.lesson-cancelled`, `schedule.summary-too-long`, `schedule.not-a-participant`). Series edits do not touch
+them; deleting a lesson deletes its notes. Saving a non-empty `next_plan` copies it (cut to 500 characters, our
+decision) into the topic of the next planned lesson of the same student (or the same group) if that topic is empty;
+a filled topic is never overwritten. Calendar lists, ICS and Google carry none of these fields.
 
 ## REST and bot
 
@@ -71,6 +80,9 @@ student card (237.1); both at once → `schedule.filter-invalid`, an unknown id 
 `/api/me/schedule/**` (lessons, requests, busy, feed, settings, summary), public ICS feed and Google callback.
 Bot actions (`schedule/chat`): schedule, mark lessons, answer requests (teacher); lesson change, my requests
 (student).
+`PUT lessons/{id}/summary` (`summary`, `nextPlan`; blank clears) and `PUT lessons/{id}/notes/{studentId}` (`note`)
+return the lesson details: `GET lessons/{id}` of the teacher has `summary`, `nextPlan`, `summaryUpdatedAt`, `notes[]`;
+`GET /api/me/schedule/lessons/{id}` has `summary` only (a lesson the student is not in is 404); lists have none.
 Lesson POST/PUT accept `repeatWeeks` (0–4), `repeatUntil`; PUT/cancel/DELETE accept `scope` (`ONLY`/`FOLLOWING`)
 and optional optimistic `version`/`repeatVersion`. The UI supplies versions. `GET lessons/{id}/following`
 discloses affected/protected existing lesson IDs and the rule version before a bulk action. Standalone

@@ -101,7 +101,8 @@ public class ScheduleQueries {
     }
 
     public LessonView lesson(UUID lessonId) {
-        return views(List.of(lessons.findById(lessonId).orElseThrow(ScheduleQueries::lessonNotFound))).getFirst();
+        Lesson lesson = lessons.findById(lessonId).orElseThrow(ScheduleQueries::lessonNotFound);
+        return views(List.of(lesson)).getFirst().withSummary(lesson, lessons.findNotes(lessonId));
     }
 
     /** A lesson of the student; a lesson the student does not take part in is reported as not found. */
@@ -109,7 +110,7 @@ public class ScheduleQueries {
         Lesson lesson = lessons.findById(lessonId)
                 .filter(found -> found.hasParticipant(studentId))
                 .orElseThrow(ScheduleQueries::lessonNotFound);
-        return views(List.of(lesson)).getFirst().forStudent(studentId);
+        return views(List.of(lesson)).getFirst().forStudent(studentId).withStudentSummary(lesson);
     }
 
     /** Lessons that have ended but have no outcome yet, oldest first. */

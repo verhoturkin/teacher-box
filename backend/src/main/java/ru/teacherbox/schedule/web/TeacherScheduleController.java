@@ -36,6 +36,7 @@ import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSummary;
 import ru.teacherbox.schedule.domain.Attendance;
+import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.LessonStatus;
 
 /** The teacher's schedule: lessons, regular series, outcomes and students' requests. */
@@ -70,6 +71,13 @@ class TeacherScheduleController {
             @Nullable Scope scope,
             @Nullable Long version,
             @Nullable Long repeatVersion) {
+    }
+
+    record SummaryRequest(@Size(max = Lesson.MAX_SUMMARY) @Nullable String summary,
+            @Size(max = Lesson.MAX_NEXT_PLAN) @Nullable String nextPlan) {
+    }
+
+    record NoteRequest(@Size(max = Lesson.MAX_SUMMARY) @Nullable String note) {
     }
 
     record CancelRequest(@Size(max = 500) @Nullable String reason, @Nullable Boolean byStudent,
@@ -149,6 +157,17 @@ class TeacherScheduleController {
             @RequestParam(required = false) @Nullable Long version,
             @RequestParam(required = false) @Nullable Long repeatVersion) {
         repetition.delete(lessonId, scope, version, repeatVersion);
+    }
+
+    @PutMapping("/lessons/{lessonId}/summary")
+    LessonView summary(@PathVariable UUID lessonId, @Valid @RequestBody SummaryRequest request) {
+        return schedule.updateSummary(lessonId, request.summary(), request.nextPlan());
+    }
+
+    @PutMapping("/lessons/{lessonId}/notes/{studentId}")
+    LessonView note(@PathVariable UUID lessonId, @PathVariable UUID studentId,
+            @Valid @RequestBody NoteRequest request) {
+        return schedule.updateNote(lessonId, studentId, request.note());
     }
 
     @GetMapping("/lessons/{lessonId}/following")

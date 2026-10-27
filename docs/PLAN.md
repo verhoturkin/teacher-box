@@ -50,7 +50,7 @@ Design:
 
 ### Stage 304 — Summary and notes (B)
 
-- [ ] 304.1 B: migration `V3__lesson_notes.sql`, `domain/Lesson` fields, `LessonNote` record,
+- [x] 304.1 B: migration `V3__lesson_notes.sql`, `domain/Lesson` fields, `LessonNote` record,
   repository methods in `schedule/persistence/`; `ScheduleService.updateSummary(lessonId, summary,
   nextPlan)` (with the «Что дальше» prefill above) and `ScheduleService.updateNote(lessonId,
   studentId, note)`; errors `schedule.summary-too-long`, `schedule.lesson-cancelled`,
