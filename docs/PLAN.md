@@ -5,21 +5,7 @@ don't read them unless the task needs history.
 
 ## How to use
 
-- A release is a `## vX.Y.Z` section (or `## Next release` until the number is known): goals (2–5
-  lines), new/changed ADRs, then stages.
-- Stages are numbered globally, continuing from the archive. Substeps: `85.1`, `85.2`, … Tags: **B**
-  backend, **F** frontend, **D** docker/infra.
-- A substep names its entry points — files, classes, endpoints, routes
-  (`schedule/teacher/lesson-details-dialog.ts`, `ScheduleService.cancel`) — so the work starts there
-  instead of a repository search.
-- Each substep ends with a green `./scripts/verify.sh` and a commit that also ticks its `[x]`.
-- Partly done? Tick it and note in italics what was dropped and where it went (Backlog or next
-  release).
-- **Archiving** (skill `release`): in the release commit move the whole section to
-  `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
-  Backlog. This file keeps only unreleased work and the Backlog.
-
-## Backlog
+- A release is a `## vX.Y.Z` section (or `## Backlog
 
 Feature proposals with detailed plans (lesson notes, progress report, packages, invoices, parents,
 quizzes, web push, self-booking, calls, spaced repetition) —

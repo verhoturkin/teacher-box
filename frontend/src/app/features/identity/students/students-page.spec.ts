@@ -257,7 +257,8 @@ describe('StudentsPage', () => {
         /^[-−]3\s000\s₽$/,
       );
       expect(group).toContain('ОГЭ 9 класс');
-      expect(group).toContain('Мария, Борис · нет занятий');
+      expect(group).toContain('2 участника · нет занятий');
+      expect(group).not.toContain('Мария');
       expect(host.querySelectorAll('ul.tb-list .tb-list__lead .tb-i-group')).toHaveLength(1);
       expect(host.textContent).toMatch(/2\sученика · 1\sгруппа/);
       // the contacts, the login and the note are in the card, not in the row
@@ -356,7 +357,7 @@ describe('StudentsPage', () => {
       await fixture.whenStable();
 
       expect(rows()[0]).toBe('М Мария');
-      expect(rows()[1]).toBe('ОГЭ 9 класс Мария, Борис');
+      expect(rows()[1]).toBe('ОГЭ 9 класс 2 участника');
       expect(readableText(chip('Должники'))).toBe('Должники');
     });
 
@@ -584,7 +585,7 @@ describe('StudentsPage', () => {
         .flush({ ...OGE, members: [OGE.members[0]], version: 1 });
       await fixture.whenStable();
 
-      expect(rows().find((row) => row.includes('ОГЭ'))).toContain('Мария · нет занятий');
+      expect(rows().find((row) => row.includes('ОГЭ'))).toContain('1 участник · нет занятий');
     });
 
     it('archives after confirmation and restores under «Отключённые»', async () => {

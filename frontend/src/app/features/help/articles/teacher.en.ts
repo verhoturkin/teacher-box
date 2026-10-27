@@ -85,7 +85,7 @@ The student opens the link, chooses a login and a password and gets to their cab
 
 ## List of students and groups
 
-Students and groups are in one list. A student's row shows the photo (if the student uploaded one, otherwise the initials), the name, the nearest lesson and the prepaid amount; on the right — the debt in red and the tag «Invited» or «Turned off». Hover over an invited student's tag to see until when the link is valid. A group's row shows its students and the nearest lesson.
+Students and groups are in one list. A student's row shows the photo (if the student uploaded one, otherwise the initials), the name, the nearest lesson and the prepaid amount; on the right — the debt in red and the tag «Invited» or «Turned off». Hover over an invited student's tag to see until when the link is valid. A group's row shows the number of members and the nearest lesson. A long name or line is cut after its second line — the card on the right shows it in full.
 
 On a phone the total above the roster is hidden, and the portal name is larger in the navigation menu. Above the list are the search by name and the filters: **All**, **Groups**, **In debt**, **No messenger** (students who connected no messenger) and **Turned off** (students without access and archived groups). «In debt» and «No messenger» show a number.
 
@@ -130,7 +130,7 @@ A group is students who study together. A group has its own lesson price: it is 
 
 ## Groups in the list
 
-Groups are rows of the students' list with a group icon: the name, the students and the nearest lesson; the «Groups» filter keeps only them. Archived groups are under the «Turned off» filter, marked «Archived».
+Groups are rows of the students' list with a group icon: the name, the number of members and the nearest lesson; the «Groups» filter keeps only them. Archived groups are under the «Turned off» filter, marked «Archived».
 
 ## The group's card
 
@@ -338,7 +338,7 @@ Pages of a textbook can be put on a board too — from the «Textbooks» tab or 
 
 «Assign and put on a board» gives the homework out first, then offers a board of its students: the text, pictures and textbook pages go on it in a frame. The portal remembers the board — the students get «Go to the board» in the homework. «To a board» on the homework's page does the same.
 
-«Edit» on the homework's page opens the same editor — the title, the text, the videos and the due date; the textbooks and files of saved homework change on its page. Leaving the editor without saving asks first. To give the same homework again, press «⋮» in the list row or on the homework's page → «Make a copy»: a draft «… (copy)» appears with the text, files, textbooks and videos but without students and a due date, and its editor opens. The search of the list is kept in the page address too. Homework is one list with a switch «To review / Active / Done» and a search by the title or a student's name. A row: the title, who has it and the due date, a badge of the progress («To review», «Accepted»…), the actions under «⋮»; a click opens the homework to the right of the list.
+«Edit» on the homework's page opens the same editor — the title, the text, the videos and the due date; the textbooks and files of saved homework change on its page. Leaving the editor without saving asks first. To give the same homework again, press «⋮» in the list row or on the homework's page → «Make a copy»: a draft «… (copy)» appears with the text, files, textbooks and videos but without students and a due date, and its editor opens. The search of the list is kept in the page address too. Homework is one list with a switch «To review / Active / Done» and a search by the title or a student's name. A row: the title, who has it (one or two names; with more students the first one and «and N more») and the due date (the year only when it is not the current one), a badge of the progress («To review», «Accepted»…), the actions under «⋮»; a click opens the homework to the right of the list.
 
 ## The homework's page
 

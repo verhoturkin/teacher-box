@@ -128,7 +128,7 @@ describe('AssignmentsPage', () => {
   it('lists the active assignments and, under them, the drafts', async () => {
     const { host, fixture } = await render(
       [
-        assignmentSummary({ id: 'a-1', title: 'Дроби' }),
+        assignmentSummary({ id: 'a-1', title: 'Дроби', dueAt: '2020-09-10T15:00:00Z' }),
         assignmentSummary({
           id: 'a-2',
           title: 'Без срока',
@@ -146,7 +146,15 @@ describe('AssignmentsPage', () => {
           submitted: 0,
         }),
         assignmentSummary({ id: 'a-4', title: 'Готово', totalTasks: 2, submitted: 0, accepted: 2 }),
-        assignmentSummary({ id: 'a-5', title: 'Свежее', totalTasks: 1, submitted: 0 }),
+        assignmentSummary({
+          id: 'a-5',
+          title: 'Свежее',
+          // mid-year of the run: the row leaves the current year out
+          dueAt: `${String(new Date().getFullYear())}-06-15T10:00:00Z`,
+          students: ['Анна', 'Борис', 'Вера'],
+          totalTasks: 1,
+          submitted: 0,
+        }),
       ],
       [],
     );
@@ -155,11 +163,11 @@ describe('AssignmentsPage', () => {
     expect(readableText(host)).toContain('Активные 4');
     expect(readableText(host)).toContain('Готовые 1');
     const list = rows(host);
-    expect(list[0]).toContain('Дроби Анна, Борис · до 10.09.2026');
+    expect(list[0]).toContain('Дроби Анна, Борис · до 10.09.2020');
     expect(list[0]).toContain('На проверке: 1');
-    expect(list[1]).toContain('А, Б, В и ещё 2 · без срока');
+    expect(list[1]).toContain('А и ещё 4 · без срока');
     expect(list[1]).toContain('Принято 2 из 5');
-    expect(list[2]).toContain('Свежее');
+    expect(list[2]).toMatch(/Свежее Анна и ещё 2 · до 15\.06 \d\d:\d\d /);
     expect(list[2]).toContain('Выдано');
     expect(readableText(host)).toContain('Не выдано');
     expect(list[3]).toContain('Ещё никому не выдано');
