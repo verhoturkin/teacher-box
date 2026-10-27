@@ -120,7 +120,7 @@ Design:
 
 ### Stage 309 — «Записать итоги» in the bot (B)
 
-- [ ] 309.1 B: `schedule/chat/MarkLessonsChatAction` — after «Проведено» offer «Записать итоги» /
+- [x] 309.1 B: `schedule/chat/MarkLessonsChatAction` — after «Проведено» offer «Записать итоги» /
   «Пропустить»; the next text message becomes the summary (`ScheduleService.updateSummary`), then
   «Отправить ученику» / «Готово». Rights as REST, audit via `AuditLog.bot`. Tests: dialog paths,
   too-long text, a non-teacher chat.

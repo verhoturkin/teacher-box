@@ -96,9 +96,9 @@ class TeacherChatIntegrationTests {
         assertThat(confirm.reply().text()).startsWith("Отметить занятие ").endsWith(" как проведённое?");
         assertThat(done(today.next(teacher(), confirm.state(), new ChatInput.Choice(ChatKit.NO))).reply().text())
                 .isEqualTo("Хорошо, не отмечаю.");
-        ChatStep.Done marked = done(today.next(teacher(), confirm.state(), new ChatInput.Choice(ChatKit.YES)));
-        assertThat(marked.reply().text()).isEqualTo("Отмечено: проведено.");
-        assertThat(marked.audit()).isEqualTo("lesson-marked " + lesson + " CONDUCTED");
+        ChatStep.Ask marked = ask(today.next(teacher(), confirm.state(), new ChatInput.Choice(ChatKit.YES)));
+        assertThat(marked.reply().text()).isEqualTo("Отмечено: проведено. Записать итоги занятия?");
+        assertThat(labels(marked)).containsExactly("Записать итоги", "Пропустить");
         assertThat(queries.lesson(lesson).status()).isEqualTo(LessonStatus.CONDUCTED);
 
         assertThat(done(today.next(teacher(), confirm.state(), new ChatInput.Choice(ChatKit.YES))).reply().text())
@@ -111,6 +111,105 @@ class TeacherChatIntegrationTests {
                 .startsWith("Это занятие уже отмечено или ещё не началось.");
         assertThat(today.next(teacher(), ChatState.EMPTY, new ChatInput.Text("?")).reply().text())
                 .startsWith("Занятия сегодня:");
+    }
+
+    @Test
+    void writesAndSharesTheSummaryAfterConducted() {
+        UUID maria = directory.addStudent("Мария Итоги");
+        UUID lesson = plan(maria, null, Slots.past(clock), null);
+        ChatAction unmarked = action(actions, "schedule.unmarked");
+        ChatStep.Ask offer = markConducted(unmarked, lesson);
+
+        assertThat(ask(unmarked.next(teacher(), offer.state(), new ChatInput.Text("что?"))).reply().text())
+                .isEqualTo("Записать итоги занятия?");
+        ChatStep.Ask write = ask(unmarked.next(teacher(), offer.state(), new ChatInput.Choice("write")));
+        assertThat(write.reply().text()).contains("не больше 4000 символов");
+        assertThat(ask(unmarked.next(teacher(), write.state(), new ChatInput.Choice("x"))).reply().text())
+                .contains("не больше 4000 символов");
+        assertThat(ask(unmarked.next(teacher(), write.state(), new ChatInput.Text("а".repeat(4001)))).reply()
+                .text()).isEqualTo("Слишком длинно: не больше 4000 символов.");
+        assertThat(queries.lesson(lesson).summary()).isNull();
+
+        ChatStep.Ask saved = ask(unmarked.next(teacher(), write.state(), new ChatInput.Text("Прошли дроби")));
+        assertThat(saved.reply().text()).isEqualTo("Итоги сохранены. Отправить ученику?");
+        assertThat(labels(saved)).containsExactly("Отправить ученику", "Готово");
+        assertThat(queries.lesson(lesson).summary()).isEqualTo("Прошли дроби");
+        assertThat(ask(unmarked.next(teacher(), saved.state(), new ChatInput.Text("?"))).reply().text())
+                .isEqualTo("Итоги сохранены. Отправить ученику?");
+
+        ChatStep.Done sent = done(unmarked.next(teacher(), saved.state(), new ChatInput.Choice("send")));
+        assertThat(sent.reply().text()).isEqualTo("Итоги отправлены.");
+        assertThat(sent.audit()).isEqualTo("lesson-summary-shared " + lesson);
+    }
+
+    @Test
+    void keepsTheSummaryWithoutSendingOrSkipsIt() {
+        UUID maria = directory.addStudent("Мария Готово");
+        UUID lesson = plan(maria, null, Slots.past(clock), null);
+        ChatAction unmarked = action(actions, "schedule.unmarked");
+        ChatStep.Ask offer = markConducted(unmarked, lesson);
+        ChatStep.Ask write = ask(unmarked.next(teacher(), offer.state(), new ChatInput.Choice("write")));
+        ChatStep.Ask saved = ask(unmarked.next(teacher(), write.state(), new ChatInput.Text("Повторили")));
+        ChatStep.Done kept = done(unmarked.next(teacher(), saved.state(), new ChatInput.Choice("ready")));
+        assertThat(kept.reply().text()).isEqualTo("Итоги сохранены, ученикам они не отправлены.");
+        assertThat(kept.audit()).isEqualTo("lesson-summary-written " + lesson);
+
+        UUID other = plan(maria, null, Slots.past(clock).minus(Duration.ofDays(1)), null);
+        ChatStep.Ask offerOther = markConducted(unmarked, other);
+        ChatStep.Done skipped = done(unmarked.next(teacher(), offerOther.state(), new ChatInput.Choice("skip")));
+        assertThat(skipped.reply().text()).isEqualTo("Хорошо. Итоги можно записать позже на портале.");
+        assertThat(skipped.audit()).isNull();
+        assertThat(queries.lesson(other).summary()).isNull();
+    }
+
+    @Test
+    void offersTheSummaryAfterAGroupAttendanceAndNotAfterAMiss() {
+        UUID anna = directory.addStudent("Анна Итоги");
+        UUID group = groups.addGroup("Итоги", anna);
+        UUID lesson = plan(null, group, Slots.past(clock), null);
+        ChatAction unmarked = action(actions, "schedule.unmarked");
+        ChatStep.Ask who = ask(unmarked.next(teacher(), ChatState.EMPTY.withStep("lesson"),
+                new ChatInput.Choice("lesson:" + lesson)));
+        ChatStep.Ask confirm = ask(unmarked.next(teacher(), who.state(), new ChatInput.Choice("ready")));
+        ChatStep.Ask offer = ask(unmarked.next(teacher(), confirm.state(), new ChatInput.Choice(ChatKit.YES)));
+        ChatStep.Ask write = ask(unmarked.next(teacher(), offer.state(), new ChatInput.Choice("write")));
+        ChatStep.Ask saved = ask(unmarked.next(teacher(), write.state(), new ChatInput.Text("Группа повторила")));
+        assertThat(saved.reply().text()).isEqualTo("Итоги сохранены. Отправить ученикам?");
+        assertThat(labels(saved)).containsExactly("Отправить ученикам", "Готово");
+
+        UUID boris = directory.addStudent("Борис Пропуск");
+        UUID missed = plan(boris, null, Slots.past(clock).minus(Duration.ofDays(2)), null);
+        ChatStep.Ask how = ask(unmarked.next(teacher(), ChatState.EMPTY.withStep("lesson"),
+                new ChatInput.Choice("lesson:" + missed)));
+        ChatStep.Ask confirmMiss = ask(unmarked.next(teacher(), how.state(), new ChatInput.Choice("MISSED")));
+        ChatStep.Done miss = done(unmarked.next(teacher(), confirmMiss.state(), new ChatInput.Choice(ChatKit.YES)));
+        assertThat(miss.reply().text()).isEqualTo("Отмечено: пропуск.");
+    }
+
+    @Test
+    void theSummaryDialogKeepsThePlanAndSurvivesAChangedLesson() {
+        UUID maria = directory.addStudent("Мария План");
+        UUID lesson = plan(maria, null, Slots.past(clock), null);
+        schedule.updateSummary(lesson, null, "Задачи на дроби");
+        ChatAction unmarked = action(actions, "schedule.unmarked");
+        ChatStep.Ask offer = markConducted(unmarked, lesson);
+        ChatStep.Ask write = ask(unmarked.next(teacher(), offer.state(), new ChatInput.Choice("write")));
+        ask(unmarked.next(teacher(), write.state(), new ChatInput.Text("Итог")));
+        assertThat(queries.lesson(lesson).nextPlan()).isEqualTo("Задачи на дроби");
+
+        ChatState broken = ChatState.of("lesson", "bad").withStep("summary");
+        assertThat(done(unmarked.next(teacher(), broken, new ChatInput.Text("Итог"))).reply().text())
+                .isEqualTo("Не получилось записать итоги: занятие изменилось.");
+        ChatState brokenShare = ChatState.of("lesson", "bad").withStep("share");
+        assertThat(done(unmarked.next(teacher(), brokenShare, new ChatInput.Choice("send"))).reply().text())
+                .isEqualTo("Не получилось записать итоги: занятие изменилось.");
+    }
+
+    private ChatStep.Ask markConducted(ChatAction unmarked, UUID lesson) {
+        ChatStep.Ask how = ask(unmarked.next(teacher(), ChatState.EMPTY.withStep("lesson"),
+                new ChatInput.Choice("lesson:" + lesson)));
+        ChatStep.Ask confirm = ask(unmarked.next(teacher(), how.state(), new ChatInput.Choice("CONDUCTED")));
+        return ask(unmarked.next(teacher(), confirm.state(), new ChatInput.Choice(ChatKit.YES)));
     }
 
     @Test
@@ -138,8 +237,8 @@ class TeacherChatIntegrationTests {
         ChatStep.Ask confirm = ask(unmarked.next(teacher(), off.state(), new ChatInput.Choice(value(off, "Готово"))));
         assertThat(confirm.reply().text())
                 .isEqualTo("Отметить посещаемость: были — Анна Группа, Борис Группа; не было — Вера Группа?");
-        ChatStep.Done marked = done(unmarked.next(teacher(), confirm.state(), new ChatInput.Choice(ChatKit.YES)));
-        assertThat(marked.reply().text()).isEqualTo("Посещаемость отмечена.");
+        ChatStep.Ask marked = ask(unmarked.next(teacher(), confirm.state(), new ChatInput.Choice(ChatKit.YES)));
+        assertThat(marked.reply().text()).isEqualTo("Посещаемость отмечена. Записать итоги занятия?");
         LessonView view = queries.lesson(lesson);
         assertThat(view.status()).isEqualTo(LessonStatus.CONDUCTED);
         assertThat(view.participants()).extracting(ParticipantView::attendance)

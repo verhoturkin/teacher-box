@@ -15,6 +15,7 @@ import ru.teacherbox.schedule.application.ScheduleService;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.schedule.application.ScheduleViews.ParticipantView;
 import ru.teacherbox.schedule.domain.Attendance;
+import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.LessonStatus;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatButton;
@@ -25,18 +26,22 @@ import ru.teacherbox.shared.chat.ChatReply;
 import ru.teacherbox.shared.chat.ChatState;
 import ru.teacherbox.shared.chat.ChatStep;
 import ru.teacherbox.shared.chat.ChatUser;
+import ru.teacherbox.shared.diagnostics.AuditLog;
 import ru.teacherbox.shared.error.DomainException;
 import ru.teacherbox.shared.i18n.Language;
 
 /**
  * The teacher marks lessons: a lesson → «Проведено» or «Пропуск» (for a group — who came) →
- * confirmation.
+ * confirmation; after «Проведено» the summary of the lesson may be written and sent.
  */
 abstract class MarkLessonsChatAction implements ChatAction {
 
     static final String LESSON = "lesson:";
     static final String TOGGLE = "toggle:";
     static final String READY = "ready";
+    static final String WRITE = "write";
+    static final String SKIP = "skip";
+    static final String SEND = "send";
     /** Participants that fit on the buttons together with «Готово» and «Отмена». */
     static final int MAX_PARTICIPANTS = ChatKit.MAX_BUTTONS - 2;
 
@@ -82,7 +87,10 @@ abstract class MarkLessonsChatAction implements ChatAction {
             case "lesson" -> choose(language, input);
             case "outcome" -> outcome(language, state, input);
             case "attendance" -> attendance(language, state, input);
-            case "confirm" -> confirm(language, state, input);
+            case "confirm" -> confirm(user, state, input);
+            case "offer" -> offer(language, state, input);
+            case "summary" -> summary(language, state, input);
+            case "share" -> share(language, state, input);
             default -> start(user);
         };
     }
@@ -198,7 +206,8 @@ abstract class MarkLessonsChatAction implements ChatAction {
                 outcome.get().equals("CONDUCTED")), state.with("outcome", outcome.get()).withStep("confirm"), language);
     }
 
-    private ChatStep confirm(Language language, ChatState state, ChatInput input) {
+    private ChatStep confirm(ChatUser user, ChatState state, ChatInput input) {
+        Language language = user.language();
         ScheduleChatTexts t = ScheduleChatTexts.of(language);
         if (!ChatKit.confirmed(input)) {
             return ChatStep.done(t.notMarking());
@@ -218,17 +227,86 @@ abstract class MarkLessonsChatAction implements ChatAction {
                             : present.contains(participant.studentId().toString()) ? Attendance.ATTENDED
                                     : Attendance.MISSED);
                 }
-                schedule.markAttendance(lesson.get().id(), marks);
-                return ChatStep.changed(ChatReply.of(t.attendanceMarked()),
-                        "attendance-marked " + lesson.get().id());
+                LessonView marked = schedule.markAttendance(lesson.get().id(), marks);
+                return afterMarking(user, marked, t.attendanceMarked(), "attendance-marked " + marked.id());
             }
             LessonStatus status = LessonStatus.valueOf(outcome);
-            schedule.setOutcome(lesson.get().id(), status);
-            return ChatStep.changed(ChatReply.of(t.marked(status)),
-                    "lesson-marked " + lesson.get().id() + " " + status);
+            LessonView marked = schedule.setOutcome(lesson.get().id(), status);
+            return afterMarking(user, marked, t.marked(status), "lesson-marked " + marked.id() + " " + status);
         } catch (DomainException | IllegalArgumentException e) {
             return ChatStep.done(t.markFailed());
         }
+    }
+
+    /** Ends the dialog, or after a conducted lesson offers its summary (the marking is audited here). */
+    private ChatStep afterMarking(ChatUser user, LessonView marked, String text, String audit) {
+        if (marked.status() != LessonStatus.CONDUCTED) {
+            return ChatStep.changed(ChatReply.of(text), audit);
+        }
+        AuditLog.bot(user.id(), "chat", id() + " " + audit);
+        ScheduleChatTexts t = ScheduleChatTexts.of(user.language());
+        return ChatStep.ask(ChatReply.of(t.offerSummary(text)).row(summaryButtons(t)),
+                ChatState.of("lesson", marked.id().toString()).withStep("offer"));
+    }
+
+    private ChatStep offer(Language language, ChatState state, ChatInput input) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
+        if (input instanceof ChatInput.Choice(String value) && value.equals(SKIP)) {
+            return ChatStep.done(t.summarySkipped());
+        }
+        if (input instanceof ChatInput.Choice(String value) && value.equals(WRITE)) {
+            return ChatStep.ask(ChatReply.of(t.askSummary(Lesson.MAX_SUMMARY)), state.withStep("summary"));
+        }
+        return ChatStep.ask(ChatReply.of(t.offerSummary("").strip()).row(summaryButtons(t)), state);
+    }
+
+    private ChatStep summary(Language language, ChatState state, ChatInput input) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
+        Optional<String> text = ChatKit.text(input);
+        if (text.isEmpty()) {
+            return ChatStep.ask(ChatReply.of(t.askSummary(Lesson.MAX_SUMMARY)), state);
+        }
+        if (text.get().length() > Lesson.MAX_SUMMARY) {
+            return ChatStep.ask(ChatReply.of(t.tooLong(Lesson.MAX_SUMMARY)), state);
+        }
+        try {
+            UUID lessonId = state.id("lesson").orElseThrow();
+            // the plan «what next» is written on the portal: keep what is there
+            String nextPlan = lessons.lesson(lessonId).map(LessonView::nextPlan).orElse(null);
+            boolean group = schedule.updateSummary(lessonId, text.get(), nextPlan).groupId() != null;
+            return ChatStep.ask(ChatReply.of(t.summarySaved(group)).row(shareButtons(t, group)),
+                    state.with("group", Boolean.toString(group)).withStep("share"));
+        } catch (RuntimeException e) {
+            return ChatStep.done(t.summaryFailed());
+        }
+    }
+
+    private ChatStep share(Language language, ChatState state, ChatInput input) {
+        ScheduleChatTexts t = ScheduleChatTexts.of(language);
+        boolean group = state.get("group").map(Boolean::parseBoolean).orElse(false);
+        String lesson = state.get("lesson").orElse("");
+        if (input instanceof ChatInput.Choice(String value) && value.equals(READY)) {
+            return ChatStep.changed(ChatReply.of(t.summaryKept()), "lesson-summary-written " + lesson);
+        }
+        if (!(input instanceof ChatInput.Choice(String value) && value.equals(SEND))) {
+            return ChatStep.ask(ChatReply.of(t.summarySaved(group)).row(shareButtons(t, group)), state);
+        }
+        try {
+            schedule.shareSummary(UUID.fromString(lesson));
+            return ChatStep.changed(ChatReply.of(t.summarySent()), "lesson-summary-shared " + lesson);
+        } catch (RuntimeException e) {
+            return ChatStep.done(t.summaryFailed());
+        }
+    }
+
+    private static ChatButton[] summaryButtons(ScheduleChatTexts t) {
+        return new ChatButton[] {ChatButton.choice(ChatIcons.with(ChatIcons.UNMARKED, t.writeSummary()), WRITE),
+                ChatButton.choice(ChatIcons.with(ChatIcons.SKIP, t.skipSummary()), SKIP)};
+    }
+
+    private static ChatButton[] shareButtons(ScheduleChatTexts t, boolean group) {
+        return new ChatButton[] {ChatButton.choice(ChatIcons.with(ChatIcons.YES, t.sendSummary(group)), SEND),
+                ChatButton.choice(ChatIcons.with(ChatIcons.DONE, t.done()), READY)};
     }
 
     private static ChatButton[] outcomeButtons(ScheduleChatTexts t) {

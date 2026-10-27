@@ -81,6 +81,11 @@ student card (237.1); both at once → `schedule.filter-invalid`, an unknown id 
 `/api/me/schedule/**` (lessons, requests, busy, feed, settings, summary), public ICS feed and Google callback.
 Bot actions (`schedule/chat`): schedule, mark lessons, answer requests (teacher); lesson change, my requests
 (student).
+After «Проведено» (or an attendance mark that leaves the lesson conducted) the mark-lessons dialog offers
+«Записать итоги» / «Пропустить»: the next text message (≤ 4000 characters) is saved with `updateSummary` (the
+portal's «Что дальше» is kept), then «Отправить ученику(ам)» (`shareSummary`) / «Готово». The marking is
+audited at once through `AuditLog.bot`, the final step by the dialog (`lesson-summary-shared` /
+`lesson-summary-written`); a changed or refused lesson ends with a short «не получилось» answer.
 `PUT lessons/{id}/summary` (`summary`, `nextPlan`; blank clears) and `PUT lessons/{id}/notes/{studentId}` (`note`)
 return the lesson details: `GET lessons/{id}` of the teacher has `summary`, `nextPlan`, `summaryUpdatedAt`, `notes[]`;
 `GET /api/me/schedule/lessons/{id}` has `summary` only (a lesson the student is not in is 404); lists have none.

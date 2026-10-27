@@ -62,6 +62,20 @@ enum ScheduleChatTexts {
         @Override String attendanceMarked() { return "Посещаемость отмечена."; }
         @Override String marked(LessonStatus status) { return "Отмечено: " + status(status) + "."; }
         @Override String markFailed() { return "Не получилось отметить: занятие изменилось. Откройте список ещё раз."; }
+        @Override String offerSummary(String marked) { return marked + " Записать итоги занятия?"; }
+        @Override String writeSummary() { return "Записать итоги"; }
+        @Override String skipSummary() { return "Пропустить"; }
+        @Override String summarySkipped() { return "Хорошо. Итоги можно записать позже на портале."; }
+        @Override String askSummary(int max) {
+            return "Напишите одним сообщением, что прошли на занятии (не больше " + max + " символов).";
+        }
+        @Override String summarySaved(boolean group) {
+            return "Итоги сохранены. Отправить " + (group ? "ученикам" : "ученику") + "?";
+        }
+        @Override String sendSummary(boolean group) { return group ? "Отправить ученикам" : "Отправить ученику"; }
+        @Override String summaryKept() { return "Итоги сохранены, ученикам они не отправлены."; }
+        @Override String summarySent() { return "Итоги отправлены."; }
+        @Override String summaryFailed() { return "Не получилось записать итоги: занятие изменилось."; }
 
         @Override String nothingToChange(boolean cancel) {
             return "Нет занятий, которые можно " + (cancel ? "отменить" : "перенести")
@@ -233,6 +247,20 @@ enum ScheduleChatTexts {
         @Override String attendanceMarked() { return "Attendance marked."; }
         @Override String marked(LessonStatus status) { return "Marked: " + status(status) + "."; }
         @Override String markFailed() { return "Couldn't mark it: the lesson has changed. Open the list again."; }
+        @Override String offerSummary(String marked) { return marked + " Write the lesson summary?"; }
+        @Override String writeSummary() { return "Write summary"; }
+        @Override String skipSummary() { return "Skip"; }
+        @Override String summarySkipped() { return "Okay. You can write the summary later on the portal."; }
+        @Override String askSummary(int max) {
+            return "Write in one message what you covered in the lesson (at most " + max + " characters).";
+        }
+        @Override String summarySaved(boolean group) {
+            return "Summary saved. Send it to the " + (group ? "students" : "student") + "?";
+        }
+        @Override String sendSummary(boolean group) { return group ? "Send to students" : "Send to student"; }
+        @Override String summaryKept() { return "Summary saved, not sent to the students."; }
+        @Override String summarySent() { return "Summary sent."; }
+        @Override String summaryFailed() { return "Couldn't write the summary: the lesson has changed."; }
 
         @Override String nothingToChange(boolean cancel) {
             return "There are no lessons you can " + (cancel ? "cancel" : "move")
@@ -439,6 +467,26 @@ enum ScheduleChatTexts {
     abstract String marked(LessonStatus status);
 
     abstract String markFailed();
+
+    abstract String offerSummary(String marked);
+
+    abstract String writeSummary();
+
+    abstract String skipSummary();
+
+    abstract String summarySkipped();
+
+    abstract String askSummary(int max);
+
+    abstract String summarySaved(boolean group);
+
+    abstract String sendSummary(boolean group);
+
+    abstract String summaryKept();
+
+    abstract String summarySent();
+
+    abstract String summaryFailed();
 
     // a student's request to cancel or move a lesson
 
