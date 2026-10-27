@@ -85,18 +85,33 @@ event in `tb-hero`.
 ## Schedule (teacher)
 
 `features/schedule/teacher/schedule-page.ts`: the calendar is the main pane (FullCalendar, week /
-month; toolbar with owner filter chips and the time-zone chip «Часовой пояс портала»); the
+month; toolbar with owner filter chips in one row — those that do not fit are in the «Ещё N»
+menu — and the time-zone chip «Часовой пояс портала»); the
 supporting pane holds the mini-month (`ui/mini-month.ts`, **M3** docked date picker: weeks from
 Monday, a dot under a day with lessons, the shown day filled; *ours:* no input, a click only moves
 the calendar), «Запросы учеников» and «Нерабочее время» (rows with «⋮»: «Изменить», «Удалить…»).
 
+- **Calendar grid in the manner of Google Calendar** (*ours*, M3 has no calendar grid; classes are
+  set through the `*Class` options of `ui/schedule-calendar.ts`, styles `tb-cal-*` in `styles.scss`):
+  the grid fills the free height of the pane (`fillHeight` of `ui/schedule-calendar.ts`: the half-hour
+  rows of the week and the weeks of the month are stretched, never below their height by content —
+  on a low screen the pane scrolls as before; a phone is unchanged),
+  the toolbar: «Сегодня» is the M3 outlined button, the arrows are standard icon buttons (40 dp, no
+  container), the period is Headline Small (a phone keeps Title Medium), the views stay a connected
+  button group,
+  the grid (not the toolbar) in a card with 16 dp corners and an outline-variant frame
+  (`viewClass`), pale grid lines (outline-variant at 55 %), a time column without a border and with label-small
+  hours, a header of the weekday over a large day number (today's in `primary`, no circle: the days
+  are not buttons), lessons as 8 dp cards with a 1 px gap of the card colour, a month with `primary`
+  bold number of today, pills and a `primary` «ещё N» link, an `error` now line with a dot.
 - **Lesson states in the grid** (`styles.scss`): planned — filled (the student's label container on
   the teacher's calendar), held — success-container, missed — error-container, cancelled —
   surface-container-highest, on-surface-variant, struck through; a held / missed / cancelled lesson
   of a coloured student keeps its status container plus a 4 px stripe of the colour at its start;
   **unmarked** past lesson — a 2 px solid error outline (`tb-lesson--unmarked`); **requested
   change** — a 2 px dashed outline (`tb-lesson--request`); busy / off time — outline /
-  outline-variant, hatched.
+  outline-variant, hatched; overlapping or touching periods are one block (one hatching, the captions
+  of both).
 - **Drag to move:** the dropped lesson waits with a 2 px primary outline and, over an 88 %
   surface-container-lowest veil, a standard group of **M3E** extra-small icon buttons (32 dp, 20 dp
   icon, 18 dp apart, 8 dp pressed corners): ✓ «Перенести» filled and wide (40 dp), ✕ «Отменить
@@ -305,7 +320,8 @@ of sections (from expanded `/teacher/settings` shows «Мой аккаунт»).
   Display Small balance ÷ price, the balance, a 4 dp bar full at 8 lessons — *ours*; a debt or no
   price — the balance alone) and the lesson materials (one board and one textbook card in 12–15 rem
   columns, hidden when none). No FAB.
-- **Schedule:** week / month calendar and a supporting pane (mini-month, upcoming lessons,
+- **Schedule:** week / month calendar, as the teacher's filling the free height of the pane
+  (`fillHeight`, see «Schedule (teacher)»), and a supporting pane (mini-month, upcoming lessons,
   requests); compact starts with the day agenda. Upcoming rows on a phone: icon, time and details, a
   chevron that opens the lesson card; «Войти в урок» above the request pair.
 - **Homework** (`my-homework-page.ts` + `my-task-page.ts`): list-detail of one route; the list pane

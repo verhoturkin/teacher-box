@@ -2,8 +2,15 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { hostElement, readableText, requireElement } from '@testing/dom';
 import { TeacherColors } from '@features/identity/parts';
+import { toIsoDate } from '@shared/dates/iso-date';
 import { ScheduledLesson } from '../data-access/schedule.models';
-import { CalendarRange, LessonMove, ScheduleCalendar, lessonClasses } from './schedule-calendar';
+import {
+  CalendarRange,
+  LessonMove,
+  ScheduleCalendar,
+  lessonClasses,
+  mergePeriods,
+} from './schedule-calendar';
 
 describe('ScheduleCalendar', () => {
   let fixture: ComponentFixture<ScheduleCalendar>;
@@ -88,6 +95,59 @@ describe('ScheduleCalendar', () => {
       (button) => button.textContent.trim() === 'Сегодня',
     );
     expect(today).toHaveLength(1);
+    expect(today[0]?.classList.contains('tb-fc-button--outlined')).toBe(true);
+    const arrows = Array.from(host.querySelectorAll('.tb-fc-button--icon'));
+    expect(arrows.map((arrow) => arrow.getAttribute('aria-label'))).toEqual(['Назад', 'Вперёд']);
+  });
+
+  it('writes the weekday over a big day number and marks today', async () => {
+    fixture.componentRef.setInput('initialView', 'timeGridWeek');
+    fixture.componentRef.setInput('initialDate', toIsoDate(new Date()));
+    await render([]);
+    const host = hostElement(fixture);
+
+    const days = Array.from(host.querySelectorAll('.tb-cal-day'));
+    expect(days).toHaveLength(7);
+    expect(days.every((day) => day.querySelector('.tb-cal-day__weekday') !== null)).toBe(true);
+    const today = host.querySelectorAll('.tb-cal-day--today');
+    expect(today).toHaveLength(1);
+    expect(today[0]?.querySelector('.tb-cal-day__number')?.textContent).toBe(
+      String(new Date().getDate()),
+    );
+  });
+
+  it('stretches the rows of the week to the free height only when asked to', async () => {
+    fixture.componentRef.setInput('initialView', 'timeGridWeek');
+    fixture.componentRef.setInput('initialDate', toIsoDate(new Date()));
+    await render([]);
+    const fill = requireElement(hostElement(fixture), '.tb-cal-fill', HTMLElement);
+    expect(fill.classList.contains('tb-cal-fill--stretched')).toBe(false);
+
+    fixture.componentRef.setInput('fillHeight', true);
+    await fixture.whenStable();
+
+    // FullCalendar sizes the rows (and places the lessons by them), not a style of ours
+    expect(fill.classList.contains('tb-cal-fill--stretched')).toBe(true);
+    expect(fill.style.getPropertyValue('--tb-cal-row')).toBe('');
+  });
+
+  it('stretches the weeks of the month to the free height', async () => {
+    fixture.componentRef.setInput('initialView', 'dayGridMonth');
+    fixture.componentRef.setInput('initialDate', toIsoDate(new Date()));
+    fixture.componentRef.setInput('fillHeight', true);
+    await render([]);
+    const fill = requireElement(hostElement(fixture), '.tb-cal-fill', HTMLElement);
+
+    expect(fill.style.getPropertyValue('--tb-cal-row')).toMatch(/^\d+px$/);
+    expect(fill.classList.contains('tb-cal-fill--stretched')).toBe(false);
+  });
+
+  it('marks today’s number in the month', async () => {
+    fixture.componentRef.setInput('initialView', 'dayGridMonth');
+    fixture.componentRef.setInput('initialDate', toIsoDate(new Date()));
+    await render([]);
+
+    expect(hostElement(fixture).querySelectorAll('.tb-cal-date--today')).toHaveLength(1);
   });
 
   it('shows the student the topics', async () => {
@@ -134,6 +194,36 @@ describe('ScheduleCalendar', () => {
       event.textContent.trim(),
     );
     expect(offTime).toEqual(['Нерабочее время', 'Обед']);
+  });
+
+  it('hatches overlapping off time once, with both captions', async () => {
+    fixture.componentRef.setInput('initialView', 'timeGridWeek');
+    fixture.componentRef.setInput('offTime', [
+      {
+        offTimeId: 'o-1',
+        start: '2026-10-01T09:00:00Z',
+        end: '2026-10-01T11:00:00Z',
+        note: 'Обед',
+      },
+      {
+        offTimeId: 'o-2',
+        start: '2026-10-01T10:00:00Z',
+        end: '2026-10-01T12:00:00Z',
+        note: 'Дорога',
+      },
+      {
+        offTimeId: 'o-3',
+        start: '2026-10-01T10:30:00Z',
+        end: '2026-10-01T11:30:00Z',
+        note: 'Обед',
+      },
+    ]);
+
+    await render([]);
+    const offTime = Array.from(hostElement(fixture).querySelectorAll('.tb-off-time')).map((event) =>
+      event.textContent.trim(),
+    );
+    expect(offTime).toEqual(['Обед · Дорога']);
   });
 
   it('opens a clicked lesson', async () => {
@@ -230,6 +320,27 @@ describe('ScheduleCalendar unmarked lessons', () => {
     await fixture.whenStable();
 
     expect(hostElement(fixture).querySelectorAll('.tb-lesson--unmarked')).toHaveLength(1);
+  });
+});
+
+describe('mergePeriods', () => {
+  const at = (from: number, to: number) => ({
+    start: `2026-10-01T${String(from).padStart(2, '0')}:00:00Z`,
+    end: `2026-10-01T${String(to).padStart(2, '0')}:00:00Z`,
+  });
+  const first = (a: { start: string; end: string }) => a;
+
+  it('joins overlapping and touching periods, whatever the order', () => {
+    expect(mergePeriods([at(12, 13), at(9, 11), at(10, 12), at(15, 16)], first)).toEqual([
+      at(9, 13),
+      at(15, 16),
+    ]);
+  });
+
+  it('keeps the end of the longer one and leaves separate ones alone', () => {
+    expect(mergePeriods([at(9, 14), at(10, 11)], first)).toEqual([at(9, 14)]);
+    expect(mergePeriods([at(9, 10), at(11, 12)], first)).toEqual([at(9, 10), at(11, 12)]);
+    expect(mergePeriods([], first)).toEqual([]);
   });
 });
 

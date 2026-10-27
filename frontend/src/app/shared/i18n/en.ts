@@ -24,6 +24,7 @@ export const en: Translation<typeof ru> = {
     no: 'No',
     loading: 'Loading…',
     actions: 'Actions',
+    moreCount: (count: number) => `${String(count)} more`,
     student: 'Student',
     group: 'Group',
     date: 'Date',

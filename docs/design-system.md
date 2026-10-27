@@ -535,7 +535,10 @@ inputs), `size="small"`, `success`, `warn`, `info`, `help`, `contrast`.
   `aria-pressed`; **M3** 32 dp, 8 dp corners, Label Large; unselected 1 dp outline-variant,
   on-surface-variant; selected secondary-container without outline, a leading 18 dp check. *Ours:*
   the set wraps, 8 dp gaps, a 48 dp target, a count after the label (Label Large emphasized) when
-  not zero.
+  not zero. A long set (`[oneRow]="true"`, the students of the schedule): one row, the chips that
+  do not fit are measured (`ResizeObserver`) and go to a «Ещё N» chip (trailing drop-down arrow,
+  at least 88 dp wide) that opens a menu of them; the first chip and the chosen one always stay in
+  the row, so the filter in force is never hidden.
 - **Material card** `tb-material-card` (`@shared/ui`): corner 20, surface-container-low, a preview
   on top (8:5; fetched as a blob by `tb-blob-image`, the kind icon while there is none; an external
   board shows a tonal tile with the service tag), the title (Title Medium) and «кому · дата» under

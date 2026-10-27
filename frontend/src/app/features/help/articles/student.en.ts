@@ -40,7 +40,7 @@ Your photo at the top right → «My account»: the photo is in the top card, th
     body: `
 Clicking a calendar lesson opens a centered window on a computer and a bottom sheet on a phone. It shows who teaches, the time, the topic, boards and the room; «Join lesson» is in the room row, «Move» and «Cancel» sit beside it. On a phone, upcoming lessons and calendar subscription use separate rounded sections.
 
-«Schedule» shows a week or month calendar. On a computer, the mini calendar, upcoming lessons and «My requests» sit beside it. On a phone it opens with an agenda: a week strip and lessons of the selected day, with switches to week or month.
+«Schedule» shows a week or month calendar; today is marked by colour. On a computer, the mini calendar, upcoming lessons and «My requests» sit beside it. On a phone it opens with an agenda: a week strip and lessons of the selected day, with switches to week or month.
 
 ## Cancel or move a lesson
 

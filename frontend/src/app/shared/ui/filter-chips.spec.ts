@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { hostElement, readableText } from '@testing/dom';
-import { FilterChip, FilterChips } from './filter-chips';
+import { testProviders } from '@testing/setup';
+import { FilterChip, FilterChips, fitChips } from './filter-chips';
 
 type Kind = 'all' | 'debtors' | 'off';
 
@@ -18,6 +19,86 @@ class Host {
   ];
   readonly value = signal<Kind>('all');
 }
+
+@Component({
+  imports: [FilterChips],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `<tb-filter-chips label="Фильтр" [chips]="chips" [(value)]="value" [oneRow]="true" />`,
+})
+class OneRowHost {
+  readonly chips: FilterChip<string>[] = [
+    { value: 'all', label: 'Все' },
+    { value: 'a', label: 'Анна', count: 2 },
+    { value: 'b', label: 'Борис' },
+    { value: 'c', label: 'Вера' },
+  ];
+  readonly value = signal('all');
+}
+
+describe('fitChips', () => {
+  const widths = [60, 80, 80, 80];
+
+  it('keeps everything in the row when it fits or is not laid out', () => {
+    expect(fitChips(widths, new Set([0]), 0, 90, 8)).toBeNull();
+    expect(fitChips(widths, new Set([0]), 340, 90, 8)).toBeNull();
+  });
+
+  it('keeps the first chips that fit next to the «Ещё» button', () => {
+    expect([...(fitChips(widths, new Set([0]), 250, 90, 8) ?? [])]).toEqual([0, 1]);
+  });
+
+  it('always keeps the required chips, even a late chosen one', () => {
+    expect([...(fitChips(widths, new Set([0, 3]), 250, 90, 8) ?? [])]).toEqual([0, 3]);
+  });
+});
+
+describe('FilterChips in one row', () => {
+  let fixture: ComponentFixture<OneRowHost>;
+  let host: HTMLElement;
+
+  // jsdom has no layout: every chip is 80 px wide, the row 200 px
+  beforeEach(async () => {
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(80);
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(200);
+    TestBed.configureTestingModule({ providers: testProviders() });
+    fixture = TestBed.createComponent(OneRowHost);
+    host = hostElement(fixture);
+    await fixture.whenStable();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function row(): string[] {
+    return Array.from(host.querySelectorAll<HTMLElement>('.tb-filter-chip'))
+      .filter((chip) => !chip.classList.contains('tb-filter-chip--overflow'))
+      .map((chip) => readableText(chip));
+  }
+
+  it('moves the chips that do not fit to «Ещё N»', () => {
+    expect(row()).toEqual(['Все', 'Ещё 3']);
+  });
+
+  it('keeps the chosen chip in the row', async () => {
+    fixture.componentInstance.value.set('c');
+    await fixture.whenStable();
+
+    expect(row()).toEqual(['Все', 'Вера', 'Ещё 2']);
+  });
+
+  it('chooses a chip of the menu', async () => {
+    host.querySelector<HTMLButtonElement>('.tb-filter-chip--more')?.click();
+    await fixture.whenStable();
+    const items = Array.from(document.body.querySelectorAll<HTMLElement>('[role="menuitem"]'));
+
+    expect(items.map((item) => readableText(item))).toEqual(['Анна 2', 'Борис', 'Вера']);
+    items[1]?.querySelector<HTMLElement>('a, .p-menu-item-link')?.click();
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.value()).toBe('b');
+  });
+});
 
 describe('FilterChips', () => {
   let fixture: ComponentFixture<Host>;
