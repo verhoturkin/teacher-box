@@ -212,10 +212,33 @@ describe('AssignmentsPage', () => {
     expect(readableText(host)).toContain('Ничего не найдено');
   });
 
-  it('opens assignments through their title and keeps actions in the detail card', async () => {
+  it('opens assignments through their title; the row «⋮» only offers a copy', async () => {
     const { host } = await render([assignmentSummary()], []);
     expect(host.querySelector('a[href="/teacher/homework/a-1"]')).not.toBeNull();
-    expect(host.querySelector('.tb-list p-button')).toBeNull();
+    expect(host.querySelectorAll('.tb-list p-button')).toHaveLength(1);
+  });
+
+  it('makes a copy from the row «⋮» and opens its editor', async () => {
+    const { host, fixture, backend, navigate } = await render([assignmentSummary()], []);
+
+    requireElement(host, '.tb-list p-button button', HTMLButtonElement).click();
+    await fixture.whenStable();
+    requireElement(document.body, '.p-menu a.p-menu-item-link', HTMLAnchorElement).click();
+    await fixture.whenStable();
+    expect(readableText(document.body)).not.toContain('Удалить');
+    backend
+      .expectOne({ method: 'POST', url: `${ASSIGNMENTS}/a-1/copy` })
+      .flush(assignmentDetails({ id: 'a-2', title: 'Дроби (копия)' }));
+    await fixture.whenStable();
+    backend.expectOne(ASSIGNMENTS).flush([assignmentSummary()]);
+    backend.expectOne(QUEUE).flush([]);
+    await fixture.whenStable();
+
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-2', 'edit']);
+    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Создана копия «Дроби (копия)»' }),
+    );
+    fixture.destroy();
   });
 
   it('shows a failed load with «Повторить», then the empty state', async () => {
@@ -291,6 +314,26 @@ describe('AssignmentPage', () => {
     expect(link?.textContent).toContain('Открыть доску');
     expect(link?.querySelector('.tb-i-arrow_outward')).not.toBeNull();
     expect(buttonByText(host, 'На доску').querySelector('.tb-i-co_present')).not.toBeNull();
+  });
+
+  it('makes a copy from the header «⋮» and opens its editor', async () => {
+    const { fixture, host, backend } = await render();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const changed = vi.fn();
+    fixture.componentInstance.changed.subscribe(changed);
+
+    buttonByText(host, 'Действия').click();
+    await fixture.whenStable();
+    requireElement(document.body, '.p-menu a.p-menu-item-link', HTMLAnchorElement).click();
+    await fixture.whenStable();
+    backend
+      .expectOne({ method: 'POST', url: `${ASSIGNMENTS}/a-1/copy` })
+      .flush(assignmentDetails({ id: 'a-2', title: 'Дроби (копия)' }));
+    await fixture.whenStable();
+
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-2', 'edit']);
+    expect(changed).toHaveBeenCalled();
+    fixture.destroy();
   });
 
   it('deletes the assignment after a confirmation and goes back to the list', async () => {

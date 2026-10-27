@@ -212,6 +212,11 @@ export const ru = {
     reviewSheet: 'Проверка работы',
     pickHint: 'Здесь откроется работа ученика или задание со списком учеников',
   },
+  menu: { actions: 'Действия' },
+  copy: {
+    action: 'Создать копию',
+    copied: (title: string) => `Создана копия «${title}»`,
+  },
   remove: {
     action: 'Удалить…',
     header: 'Удалить задание?',

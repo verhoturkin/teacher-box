@@ -9,19 +9,25 @@ import {
   input,
   linkedSignal,
   signal,
+  viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
+import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
 import { injectMobile, injectWindowSize } from '@core/layout/mobile';
 import { collapseRail, hideBottomBar } from '@core/layout/rail-state';
+import { Snackbar } from '@core/snackbar/snackbar';
 import { openOnCreate } from '@core/routing/create-param';
 import { HelpButton } from '@features/help/parts';
 import { TeacherColors } from '@features/identity/parts';
 import { Avatar } from '@shared/ui/avatar';
+import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
@@ -71,6 +77,9 @@ type Filter = 'review' | 'active' | 'done';
     SearchField,
     SegmentGroup,
     Tag,
+    Tooltip,
+    ButtonAttributes,
+    Menu,
     TaskReviewPage,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -252,7 +261,7 @@ type Filter = 'review' | 'active' | 'done';
               >
               <span class="tb-list__supporting">{{ details(assignment) }}</span>
             </div>
-            <div class="tb-list__trail tb-list__trail--icons">
+            <div class="tb-list__trail tb-list__trail--icons tb-hw__row-end">
               @if (filter() === 'review') {
                 @if (isOverdue(assignment)) {
                   <p-tag [value]="t.late" severity="danger" />
@@ -264,11 +273,32 @@ type Filter = 'review' | 'active' | 'done';
               } @else if (progress(assignment); as badge) {
                 <p-tag [value]="badge.label" [severity]="badge.severity" />
               }
+              <p-button
+                icon="tb-i tb-i-more_vert"
+                [text]="true"
+                [rounded]="true"
+                severity="secondary"
+                [pTooltip]="t.actions(assignment.title)"
+                [ariaLabel]="t.actions(assignment.title)"
+                [tbAttributes]="{
+                  'aria-haspopup': 'menu',
+                  'aria-expanded': menuFor()?.id === assignment.id ? 'true' : 'false',
+                }"
+                (onClick)="openMenu(assignment, $event)"
+              />
             </div>
           </li>
         }
       </ul>
     </ng-template>
+
+    <p-menu
+      #menu
+      [model]="menuItems()"
+      [popup]="true"
+      appendTo="body"
+      (onHide)="menuFor.set(null)"
+    />
 
     <ng-template #empty let-done="done">
       @if (assignments().length === 0) {
@@ -290,6 +320,12 @@ type Filter = 'review' | 'active' | 'done';
     .tb-list__trail {
       flex-direction: column;
       align-items: flex-start;
+    }
+
+    /* the badge and «⋮» side by side (the review rows keep the column) */
+    .tb-hw__row-end {
+      flex-direction: row;
+      align-items: center;
     }
 
     /* from expanded the pane does not scroll as a whole: its list does (our decision, as the students' list) */
@@ -323,6 +359,25 @@ export class AssignmentsPage implements OnInit {
   );
   private readonly api = inject(HomeworkApi);
   private readonly router = inject(Router);
+  private readonly snackbar = inject(Snackbar);
+  private readonly menu = viewChild.required<Menu>('menu');
+
+  /** The row whose «⋮» menu is open: one popup menu serves every row. */
+  protected readonly menuFor = signal<AssignmentSummary | null>(null);
+  protected readonly menuItems = computed<MenuItem[]>(() => {
+    const assignment = this.menuFor();
+    return assignment === null
+      ? []
+      : [
+          {
+            label: T.copy.action,
+            icon: 'tb-i tb-i-content_copy',
+            command: () => {
+              this.copy(assignment);
+            },
+          },
+        ];
+  });
   private readonly dates = new DatePipe(inject(LOCALE_ID));
 
   private readonly size = injectWindowSize();
@@ -455,6 +510,20 @@ export class AssignmentsPage implements OnInit {
     } else if (this.place() > 0) {
       this.closeReview();
     }
+  }
+
+  protected openMenu(assignment: AssignmentSummary, event: Event): void {
+    this.menuFor.set(assignment);
+    this.menu().toggle(event);
+  }
+
+  /** A draft copy: the list reads itself again and the editor of the copy opens. */
+  private copy(assignment: AssignmentSummary): void {
+    this.api.copyAssignment(assignment.id).subscribe((copy) => {
+      this.snackbar.success(T.copy.copied(copy.title));
+      this.refresh();
+      void this.router.navigate(['/teacher/homework', copy.id, 'edit']);
+    });
   }
 
   protected openCreate(): void {

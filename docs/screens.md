@@ -220,8 +220,9 @@ Three panes of one route (`/teacher/homework[/tasks/:taskId | /:assignmentId]`,
   «Просрочено» tag; «Ждут сдачи» under them; an assignment row: icon (a board icon when on a board),
   title link + «кому · до dd.MM.yyyy HH:mm» (three names, then «и ещё N»), the progress tag
   (`assignmentProgress`: «Не выдано» secondary, «На проверке: N» warn, «Принято» success, «Выдано» /
-  «Принято N из M» primary) and «⋮» («Открыть», «Изменить», «Проверить работы», «Открыть доску»,
-  «Удалить…»).
+  «Принято N из M» primary) and «⋮» («Создать копию» — a draft «<title> (копия)» with the text,
+  files, textbooks and videos, whose editor opens; 0.36.0). The header of the open assignment has the
+  same «⋮» after «Изменить» and «Удалить…».
 - **Detail** (flexible pane): the work or the assignment, blocks on the pane under uppercase labels;
   the students of an assignment (avatar, name link, «Сдано … / Не сдано», status; «Добавить» opens
   «Выдать ещё ученикам»); files as rows (type icon, name button that downloads or opens a PDF / a

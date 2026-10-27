@@ -45,6 +45,11 @@ export class HomeworkApi {
     return this.http.post<AssignmentDetails>(`${TEACHER}/assignments`, input);
   }
 
+  /** A draft copy with the text, files, textbooks and videos; no students, deadline or board. */
+  copyAssignment(id: string): Observable<AssignmentDetails> {
+    return this.http.post<AssignmentDetails>(`${TEACHER}/assignments/${id}/copy`, {});
+  }
+
   updateAssignment(
     id: string,
     input: AssignmentInput,

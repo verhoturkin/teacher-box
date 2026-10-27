@@ -54,7 +54,7 @@ file check before upload, journal filters in the URL. No ADR. Decisions of the t
   files (new keys in `FileStorage` namespace `homework`), textbooks and pages, videos with
   transcripts; no students, no due date, no board. Tests: service (deleting the original keeps the
   copy's files), controller roles.
-- [ ] 298.2 F: «Создать копию» in the row «⋮» of `homework/teacher/assignments-page.ts` and the
+- [x] 298.2 F: «Создать копию» in the row «⋮» of `homework/teacher/assignments-page.ts` and the
   header «⋮» of `assignment-page.ts`, opening the editor of the copy.
 
 ### Stage 299 — Prompt on leaving unsaved settings (F)
