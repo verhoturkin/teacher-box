@@ -69,7 +69,7 @@ Design:
 
 ### Stage 305 — Notification «Итоги урока» (B)
 
-- [ ] 305.1 B: `POST /api/teacher/schedule/lessons/{id}/summary/share` (empty summary →
+- [x] 305.1 B: `POST /api/teacher/schedule/lessons/{id}/summary/share` (empty summary →
   `schedule.summary-empty`) publishes `LessonSummaryShared`; `notifications`:
   `ScheduleNotifications` turns it into an inbox record «Итоги урока dd.MM» with a link to the
   lesson and a messenger «Открыть» button; topic `LESSON_SUMMARY` in `NotificationTopic` (default

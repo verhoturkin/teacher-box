@@ -165,6 +165,12 @@ class TeacherScheduleController {
         return schedule.updateSummary(lessonId, request.summary(), request.nextPlan());
     }
 
+    @PostMapping("/lessons/{lessonId}/summary/share")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void shareSummary(@PathVariable UUID lessonId) {
+        schedule.shareSummary(lessonId);
+    }
+
     @PutMapping("/lessons/{lessonId}/notes/{studentId}")
     LessonView note(@PathVariable UUID lessonId, @PathVariable UUID studentId,
             @Valid @RequestBody NoteRequest request) {

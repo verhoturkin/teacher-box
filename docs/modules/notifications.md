@@ -16,6 +16,10 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
   the module, in the recipient's language (0.11.1, ADR-0036: `UserDirectory.language`; dictionaries
   `ScheduleMessages`, `NotificationMessages`, formats `NotificationTexts`); a stored notification keeps the language
   it was written in. Preferences per topic (`Preferences`, `NotificationTopic`).
+- **Lesson summary** (0.37.0): `LessonSummaryShared` → inbox record «Итоги урока dd.MM» (kind and topic
+  `LESSON_SUMMARY`, on by default, mutable in messengers) for every participant, link
+  `/cabinet/schedule?lesson=<id>` (messenger button «Открыть»). The text carries no summary — it stays in
+  the lesson card.
 - **Links in messengers are buttons** (0.14.2): the text is the title and the body; the portal page of a notification
   goes as «Открыть» (`Portal.link`), a video room as «Подключиться» (`JoinLink`: the room link, lesson reminders —
   their messenger text has no address, the inbox keeps it), then the buttons of the bot's actions; `/help` has a

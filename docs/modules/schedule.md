@@ -51,7 +51,7 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
 
 Events: `LessonScheduled`, `LessonRepeatScheduled`, `LessonRepeatStopped`, `LessonRescheduled`, `ScheduledLessonCancelled`,
 `LessonRestored`, `LessonDeleted`, `LessonStartingSoon`, `LessonChangeRequested`, `LessonChangeResolved`,
-`LessonCompleted`, `LessonCompletionRevoked`, `GoogleCalendarDisconnected`; enums `CancelledBy`, `ChangeKind`.
+`LessonCompleted`, `LessonCompletionRevoked`, `LessonSummaryShared`, `GoogleCalendarDisconnected`; enums `CancelledBy`, `ChangeKind`.
 Lesson events carry `groupId` and participants. Consumers: `billing` (completion), `notifications` (all).
 Repeat events aggregate notifications; generation itself does not notify per occurrence. Deprecated
 `SeriesScheduled`/`SeriesStopped` records and listeners only drain durable publications from older versions.
@@ -89,6 +89,8 @@ History feeds of held lessons (`CONDUCTED`/`MISSED`, group lessons included, new
 (date, topic, status, attendance, `summary`, `nextPlan`, the student's own private `note`),
 `GET /api/teacher/schedule/groups/{id}/history` (same without private notes and attendance) and
 `GET /api/me/schedule/history` (own lessons only, `summary` only — no plan, no note).
+`POST lessons/{id}/summary/share` (204) publishes `LessonSummaryShared(lessonId, studentIds, teacherId, startsAt,
+occurredAt)` — only this explicit action, never the autosave; an empty summary is `schedule.summary-empty` (422).
 Lesson POST/PUT accept `repeatWeeks` (0–4), `repeatUntil`; PUT/cancel/DELETE accept `scope` (`ONLY`/`FOLLOWING`)
 and optional optimistic `version`/`repeatVersion`. The UI supplies versions. `GET lessons/{id}/following`
 discloses affected/protected existing lesson IDs and the rule version before a bulk action. Standalone

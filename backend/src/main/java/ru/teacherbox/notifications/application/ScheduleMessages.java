@@ -54,6 +54,8 @@ enum ScheduleMessages {
         @Override String meetingLink(String url) { return "Ссылка на урок: " + url; }
         @Override String soonForStudent(String when) { return "Скоро занятие: " + when; }
         @Override String soonForTeacher(String with, String when) { return "Скоро урок: " + with + ", " + when; }
+        @Override String lessonSummary(String date) { return "Итоги урока " + date; }
+        @Override String lessonSummaryBody() { return "Учитель написал, что вы прошли на уроке."; }
         @Override String calendarDisconnected() { return "Google Календарь отключён"; }
         @Override String calendarDisconnectedBody() {
             return "Google больше не принимает доступ портала, занятия не попадают в календарь. "
@@ -103,6 +105,8 @@ enum ScheduleMessages {
         @Override String meetingLink(String url) { return "Lesson link: " + url; }
         @Override String soonForStudent(String when) { return "Lesson soon: " + when; }
         @Override String soonForTeacher(String with, String when) { return "Lesson soon: " + with + ", " + when; }
+        @Override String lessonSummary(String date) { return "Lesson summary " + date; }
+        @Override String lessonSummaryBody() { return "Your teacher wrote down what you covered in the lesson."; }
         @Override String calendarDisconnected() { return "Google Calendar disconnected"; }
         @Override String calendarDisconnectedBody() {
             return "Google no longer accepts the portal's access, lessons don't get into the calendar. "
@@ -199,6 +203,10 @@ enum ScheduleMessages {
     abstract String soonForStudent(String when);
 
     abstract String soonForTeacher(String with, String when);
+
+    abstract String lessonSummary(String date);
+
+    abstract String lessonSummaryBody();
 
     abstract String calendarDisconnected();
 

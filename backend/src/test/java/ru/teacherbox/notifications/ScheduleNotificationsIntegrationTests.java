@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,8 @@ import org.springframework.modulith.test.Scenario;
 import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.notifications.domain.InboxNotification;
 import ru.teacherbox.notifications.domain.NotificationKind;
+import ru.teacherbox.notifications.domain.NotificationTopic;
+import ru.teacherbox.notifications.domain.Preferences;
 import ru.teacherbox.notifications.persistence.InboxRepository;
 import ru.teacherbox.notifications.application.DeliveryDispatcher;
 import ru.teacherbox.notifications.domain.ChannelLink;
@@ -31,6 +34,7 @@ import ru.teacherbox.schedule.api.LessonChangeResolved;
 import ru.teacherbox.schedule.api.LessonDeleted;
 import ru.teacherbox.schedule.api.LessonRescheduled;
 import ru.teacherbox.schedule.api.LessonRestored;
+import ru.teacherbox.schedule.api.LessonSummaryShared;
 import ru.teacherbox.schedule.api.LessonScheduled;
 import ru.teacherbox.schedule.api.LessonStartingSoon;
 import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
@@ -351,6 +355,25 @@ class ScheduleNotificationsIntegrationTests {
                     assertThat(list.getFirst().kind()).isEqualTo(NotificationKind.SCHEDULE_CALENDAR);
                     assertThat(list.getFirst().link()).isEqualTo("/teacher/settings?open=calendar");
                 });
+    }
+
+    @Test
+    void aSharedSummaryReachesTheParticipantsAndRespectsTheMutedTopic(Scenario scenario) {
+        UUID anna = directory.addStudent("Анна");
+        UUID boris = directory.addStudent("Борис");
+        UUID lesson = UUID.randomUUID();
+        InboxNotification shared = latest(scenario, anna,
+                new LessonSummaryShared(lesson, List.of(anna), directory.teacherId(), START, Instant.now()));
+        assertThat(shared.kind()).isEqualTo(NotificationKind.LESSON_SUMMARY);
+        assertThat(shared.title()).isEqualTo("Итоги урока 01.10");
+        assertThat(shared.link()).isEqualTo("/cabinet/schedule?lesson=" + lesson);
+        assertThat(shared.body()).doesNotContain("Past");
+
+        assertThat(NotificationTopic.of(NotificationKind.LESSON_SUMMARY)).isEqualTo(NotificationTopic.LESSON_SUMMARY);
+        assertThat(Preferences.DEFAULT.sendsToMessengers(NotificationKind.LESSON_SUMMARY)).isTrue();
+        assertThat(new Preferences(Set.of(NotificationTopic.LESSON_SUMMARY), null, null)
+                .sendsToMessengers(NotificationKind.LESSON_SUMMARY)).isFalse();
+        assertThat(inbox.findPage(boris, 0, 10)).isEmpty();
     }
 
     private InboxNotification latest(Scenario scenario, UUID recipient, Object event) {

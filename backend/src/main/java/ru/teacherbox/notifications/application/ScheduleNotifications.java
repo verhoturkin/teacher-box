@@ -23,6 +23,7 @@ import ru.teacherbox.schedule.api.LessonRescheduled;
 import ru.teacherbox.schedule.api.LessonRestored;
 import ru.teacherbox.schedule.api.LessonScheduled;
 import ru.teacherbox.schedule.api.LessonStartingSoon;
+import ru.teacherbox.schedule.api.LessonSummaryShared;
 import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
 import ru.teacherbox.schedule.api.SeriesScheduled;
 import ru.teacherbox.schedule.api.LessonRepeatScheduled;
@@ -243,6 +244,16 @@ class ScheduleNotifications {
                     t.soonForTeacher(with, texts.lessonTime(event.startsAt(), language)),
                     event.meetingUrl() == null ? in : in + " " + t.meetingLink(event.meetingUrl()), TEACHER_LINK, null,
                     event.meetingUrl() == null ? null : new JoinLink(event.meetingUrl(), in));
+        }
+    }
+
+    /** The text stays in the lesson card; the message only points to it. */
+    @ApplicationModuleListener
+    void on(LessonSummaryShared event) {
+        for (UUID studentId : event.studentIds()) {
+            ScheduleMessages t = ScheduleMessages.of(users.language(studentId));
+            notifications.notify(studentId, NotificationKind.LESSON_SUMMARY, t.lessonSummary(texts.dayMonth(event.startsAt())),
+                    t.lessonSummaryBody(), STUDENT_LINK + "?lesson=" + event.lessonId());
         }
     }
 

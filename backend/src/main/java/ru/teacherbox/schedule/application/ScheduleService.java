@@ -179,6 +179,16 @@ public class ScheduleService {
         return queries.lesson(lessonId);
     }
 
+    /** Sends the written summary to the participants; an empty summary is not sent. */
+    @Transactional
+    public void shareSummary(UUID lessonId) {
+        Lesson lesson = find(lessonId);
+        if (lesson.summary() == null) {
+            throw new BusinessRuleException("schedule.summary-empty", "Write the summary before sending it");
+        }
+        lessonEvents.summaryShared(lesson, directory.teacherId(), clock.instant());
+    }
+
     /** Writes the teacher's private note about a participant (blank deletes it). */
     @Transactional
     public LessonView updateNote(UUID lessonId, UUID studentId, @Nullable String note) {

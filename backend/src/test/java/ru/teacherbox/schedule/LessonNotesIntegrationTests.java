@@ -10,11 +10,14 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.modulith.test.AssertablePublishedEvents;
+import ru.teacherbox.schedule.api.LessonSummaryShared;
 import ru.teacherbox.schedule.persistence.LessonRepository;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.MutableClock;
@@ -113,6 +116,33 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
                     .hasStatus(HttpStatus.UNAUTHORIZED);
         }
         assertThat(mvc.get().uri("/api/me/schedule/lessons/" + lesson).with(TestUsers.student(stranger)))
+                .hasStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void sharingPublishesTheEventOnlyForAWrittenSummary(AssertablePublishedEvents events)
+            throws UnsupportedEncodingException {
+        UUID anna = directory.addStudent("Анна");
+        String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.past(clock), 60, true)));
+
+        assertThat(post(LESSONS + lesson + "/summary/share", ""))
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
+        put(LESSONS + lesson + "/summary", "{\"summary\":\"   \"}");
+        assertThat(post(LESSONS + lesson + "/summary/share", ""))
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
+        assertThat(events.ofType(LessonSummaryShared.class)).isEmpty();
+
+        put(LESSONS + lesson + "/summary", "{\"summary\":\"Итоги\"}");
+        assertThat(events.ofType(LessonSummaryShared.class)).isEmpty();
+        assertThat(post(LESSONS + lesson + "/summary/share", ""))
+                .hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(events).contains(LessonSummaryShared.class)
+                .matching(LessonSummaryShared::lessonId, UUID.fromString(lesson))
+                .matching(LessonSummaryShared::studentIds, List.of(anna));
+
+        assertThat(mvc.post().uri(LESSONS + lesson + "/summary/share").with(TestUsers.student(anna)))
+                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(post(LESSONS + UUID.randomUUID() + "/summary/share", ""))
                 .hasStatus(HttpStatus.NOT_FOUND);
     }
 
