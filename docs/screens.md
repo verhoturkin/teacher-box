@@ -166,7 +166,7 @@ One content component in `schedule/ui` for teacher and student in a `tb-dialog k
   lines, the hint that it goes to the next lesson's empty topic; «Заметка для себя» — private, one
   field for a one-student lesson, for a group a `tb-list` with an avatar and a name per student
   whose row folds the field open. Nothing saves by itself: the footer has «Отмена», «Сохранить» and
-  «Сохранить и отправить» (group: «…участникам»; disabled until «Что прошли» is filled); the
+  «Сохранить и отправить» (disabled until «Что прошли» is filled); the
   snackbar «Итоги сохранены» / «Итоги отправлены» follows. *Ours:* the layout and the texts; the
   toggle, the lists and the dialog are the shared ones.
 - **Student:** the same facts and their own actions («Войти в урок», «Перенести | Отменить» as a

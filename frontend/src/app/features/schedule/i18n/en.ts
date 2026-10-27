@@ -199,7 +199,6 @@ export const en: Translation<typeof ru> = {
     notes: 'Notes to self',
     save: 'Save',
     saveAndSend: 'Save and send',
-    saveAndSendGroup: 'Save and send to the participants',
     failed: 'Could not save the summary',
     saved: 'Summary saved',
     sent: 'Summary sent',

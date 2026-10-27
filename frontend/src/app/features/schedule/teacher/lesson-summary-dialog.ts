@@ -182,7 +182,7 @@ type SummaryMode = 'edit' | 'preview';
           (onClick)="save(false)"
         />
         <p-button
-          [label]="lesson()?.groupId === null ? t.saveAndSend : t.saveAndSendGroup"
+          [label]="t.saveAndSend"
           [disabled]="summary().trim() === '' || (submit.pending() && !sending())"
           [loading]="submit.pending() && sending()"
           (onClick)="save(true)"

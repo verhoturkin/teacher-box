@@ -129,12 +129,6 @@ describe('LessonSummaryDialog', () => {
     backend.expectNone(SUMMARY);
   });
 
-  it('calls the send button of a group «участникам»', async () => {
-    await open(groupLesson());
-
-    expect(bodyText()).toContain('Сохранить и отправить участникам');
-  });
-
   it('tells a failed save and stays open', async () => {
     await open(scheduledLesson());
     await type('#lesson-summary-text', 'Текст');
