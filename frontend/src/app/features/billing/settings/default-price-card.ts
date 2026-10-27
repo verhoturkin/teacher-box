@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { guardUnsaved } from '@core/routing/unsaved-changes';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -99,6 +100,10 @@ export class DefaultPriceCard implements OnInit {
   readonly form = new FormGroup({
     price: new FormControl<number | null>(null, [Validators.required, Validators.min(0)]),
   });
+
+  constructor() {
+    guardUnsaved(() => this.editing() && this.form.dirty);
+  }
 
   ngOnInit(): void {
     this.load();

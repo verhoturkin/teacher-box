@@ -589,6 +589,10 @@ changes the container; content and markup are the same at every width. Every dia
   compact a basic dialog over the full-screen one (the only dialog over a dialog, **M3**; the
   discard button red, *ours*); from medium and inside `alert` / `sheet` the inline
   `<tb-dialog-confirm-step>` — its text and two buttons replace the footer.
+- **Inline form not saved** (settings cards, *ours*): a card with a form calls
+  `guardUnsaved(() => dirty)` (`core/routing/unsaved-changes.ts`); the page (`SettingsPage.canLeave`
+  + `canLeaveGuard`) asks the shared `Confirm` «Отменить изменения?» on a route or category change,
+  the browser's `beforeunload` prompt stops a reload.
 - **Initial focus** (*ours*): `form` — the first field (**M3**); `alert` and `sheet` — the headline
   (`tabindex="-1"`), so Enter never confirms a dangerous action. Focus returns to the opener.
 - **Errors:** a server error of a `form` stands above the form (the dialog scrolls to it); in an

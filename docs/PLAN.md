@@ -59,7 +59,7 @@ file check before upload, journal filters in the URL. No ADR. Decisions of the t
 
 ### Stage 299 — Prompt on leaving unsaved settings (F)
 
-- [ ] 299.1 F: settings cards with a form (`features/settings/**`, portal cards, AI system prompts,
+- [x] 299.1 F: settings cards with a form (`features/settings/**`, portal cards, AI system prompts,
   bot settings) use `core/routing/can-leave.guard.ts` with the shared `Confirm`
   (`shared/ui/confirm.ts`) — «Отменить изменения?» on route change, `beforeunload` on reload.
 

@@ -21,6 +21,7 @@ import { IdentityApi } from '../data-access/identity-api';
 import { Account } from '../data-access/identity.models';
 import { Role } from '@core/auth/auth.models';
 import { ChangePasswordForm } from './change-password-form';
+import { guardUnsaved } from '@core/routing/unsaved-changes';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
@@ -245,6 +246,18 @@ export class AccountPanel implements OnInit {
   readonly ownNameForm = new FormGroup({
     name: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(100)] }),
   });
+
+  constructor() {
+    guardUnsaved(() => {
+      const account = this.account();
+      if (account === null) {
+        return false;
+      }
+      return this.isTeacher()
+        ? this.nameForm.controls.name.value.trim() !== account.displayName
+        : this.isStudent() && !this.ownNameUnchanged(account);
+    });
+  }
 
   ngOnInit(): void {
     this.api.account().subscribe((account) => {

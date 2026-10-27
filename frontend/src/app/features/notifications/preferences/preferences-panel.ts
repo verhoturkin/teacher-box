@@ -18,6 +18,7 @@ import { describeError } from '@core/http/error-messages';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { NotificationPreferences, NotificationTopic } from '../data-access/notifications.models';
 import { MUTABLE_TOPICS } from '../notification-labels';
+import { guardUnsaved } from '@core/routing/unsaved-changes';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
@@ -181,6 +182,10 @@ export class PreferencesPanel implements OnInit {
     quietFrom: new FormControl(DEFAULT_QUIET_FROM, { nonNullable: true }),
     quietTo: new FormControl(DEFAULT_QUIET_TO, { nonNullable: true }),
   });
+
+  constructor() {
+    guardUnsaved(() => this.form.dirty);
+  }
 
   ngOnInit(): void {
     this.api.preferences().subscribe((preferences) => {

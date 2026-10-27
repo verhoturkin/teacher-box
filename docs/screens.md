@@ -299,7 +299,8 @@ the `tb-material-grid` of `tb-material-card`s (§10).
 `medium="two"`: the categories as a list of tonal two-line rows (40 px tonal icon circle, name,
 «what it holds»; the chosen one secondary-container with an emphasized name and the icon circle on
 the surface; group outer corners 16 px) in the fixed pane, the chosen category beside it as a stack
-of sections (from expanded `/teacher/settings` shows «Мой аккаунт»).
+of sections (from expanded `/teacher/settings` shows «Мой аккаунт»). A form changed and not saved
+asks «Отменить изменения?» before another category or page opens (design-system «Dialogs»).
 
 - Categories: «Мой аккаунт» (`account`), «Портал» (`portal`), «Расписание и календарь» (`calendar`:
   time zone, Google Calendar, calendar feed), «Звонки» (`calls`), «Мессенджеры» (`messengers`:
