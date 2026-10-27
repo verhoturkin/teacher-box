@@ -46,6 +46,22 @@ public final class AiViews {
     }
 
     /**
+     * What the teacher knows about a lesson; the frontend sends the texts.
+     *
+     * @param assignmentTitles titles of the assignments given at the lesson
+     */
+    public record LessonSummaryBrief(@Nullable String topic, @Nullable String words, List<String> assignmentTitles) {
+
+        public LessonSummaryBrief {
+            assignmentTitles = List.copyOf(assignmentTitles);
+        }
+    }
+
+    /** A draft of the lesson summary in Markdown. */
+    public record LessonSummaryDraft(String summary) {
+    }
+
+    /**
      * Whether AI features can be used right now.
      *
      * @param monthlyTokenLimit {@code 0} means no limit

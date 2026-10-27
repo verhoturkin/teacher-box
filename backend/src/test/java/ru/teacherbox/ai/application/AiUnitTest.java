@@ -33,6 +33,10 @@ class AiUnitTest {
                 new HomeworkBrief("Дроби", null, java.util.List.of())))
                 .isInstanceOfSatisfying(BusinessRuleException.class,
                         e -> assertThat(e.code()).isEqualTo("ai.disabled"));
+        assertThatThrownBy(() -> assistant.lessonSummary(
+                new AiViews.LessonSummaryBrief("Дроби", "слова", java.util.List.of())))
+                .isInstanceOfSatisfying(BusinessRuleException.class,
+                        e -> assertThat(e.code()).isEqualTo("ai.disabled"));
         verifyNoInteractions(usage);
     }
 
@@ -65,6 +69,10 @@ class AiUnitTest {
 
         assertThat(prompt).startsWith("Название, которое уже написал учитель: —").contains("Дроби $1");
         assertThat(prompts.render("review-draft.system.v1", Map.of())).contains("<answer>");
+        assertThat(prompts.render("lesson-summary.system.v1", Map.of())).contains("<words>");
+        assertThat(prompts.render("lesson-summary.user.v1",
+                Map.of("topic", "Дроби", "assignments", "— Задача 1", "words", "решали примеры")))
+                .contains("Дроби", "— Задача 1", "<words>\nрешали примеры\n</words>");
         assertThatThrownBy(() -> prompts.render("homework-draft.user.v3", Map.of("sources", "x")))
                 .hasMessageContaining("{{title}}");
         assertThatThrownBy(() -> prompts.render("missing.v1", Map.of()))

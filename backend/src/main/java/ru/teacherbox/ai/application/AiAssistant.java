@@ -10,6 +10,8 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import ru.teacherbox.ai.application.AiViews.HomeworkBrief;
 import ru.teacherbox.ai.application.AiViews.HomeworkDraft;
+import ru.teacherbox.ai.application.AiViews.LessonSummaryBrief;
+import ru.teacherbox.ai.application.AiViews.LessonSummaryDraft;
 import ru.teacherbox.ai.application.AiViews.ReviewBrief;
 import ru.teacherbox.ai.application.AiViews.ReviewDraft;
 import ru.teacherbox.ai.domain.AiFeature;
@@ -27,6 +29,7 @@ public class AiAssistant {
 
     static final String HOMEWORK_PROMPT = "homework-draft.user.v3";
     static final String REVIEW_PROMPT = "review-draft.user.v1";
+    static final String LESSON_SUMMARY_PROMPT = "lesson-summary.user.v1";
     static final int MAX_TITLE = 200;
 
     static final Map<String, Object> HOMEWORK_SCHEMA = object(
@@ -36,6 +39,12 @@ public class AiAssistant {
             "comment", property("string", "Черновик отзыва для ученика"),
             "grade", property("string", "Оценка «2»–«5» или пустая строка"),
             "accept", property("boolean", "true — принять работу, false — вернуть на доработку"));
+
+    static final Map<String, Object> LESSON_SUMMARY_SCHEMA = object(
+            "summary", property("string", "Итоги урока в Markdown: что прошли"));
+
+    private record LessonSummaryAnswer(@Nullable String summary) {
+    }
 
     private record HomeworkAnswer(@Nullable String title, @Nullable String description) {
     }
@@ -99,6 +108,22 @@ public class AiAssistant {
             }
             String grade = answer.grade() == null || answer.grade().isBlank() ? null : answer.grade().strip();
             return new ReviewDraft(comment, grade, answer.accept());
+        });
+    }
+
+    /** A draft of «Что прошли» from the topic, the assignments and the teacher's short words. */
+    public LessonSummaryDraft lessonSummary(LessonSummaryBrief brief) {
+        Map<String, String> values = Map.of(
+                "topic", orDash(brief.topic()),
+                "assignments", brief.assignmentTitles().isEmpty() ? "—"
+                        : brief.assignmentTitles().stream().map(title -> "— " + title.strip())
+                                .collect(Collectors.joining("\n")),
+                "words", orDash(brief.words()));
+        LlmRequest request = new LlmRequest(systemPrompts.text(AiFeature.LESSON_SUMMARY),
+                prompts.render(LESSON_SUMMARY_PROMPT, values), "lesson_summary", LESSON_SUMMARY_SCHEMA);
+        return call(AiFeature.LESSON_SUMMARY, request, LessonSummaryAnswer.class, answer -> {
+            String summary = answer.summary() == null ? "" : answer.summary().strip();
+            return summary.isEmpty() ? null : new LessonSummaryDraft(summary);
         });
     }
 

@@ -79,7 +79,7 @@ Design:
 
 ### Stage 306 — AI draft of the summary (B)
 
-- [ ] 306.1 B: `AiFeature.LESSON_SUMMARY`, prompts `lesson-summary.system.v1` / `.user.v1`, editable
+- [x] 306.1 B: `AiFeature.LESSON_SUMMARY`, prompts `lesson-summary.system.v1` / `.user.v1`, editable
   system prompt in `SystemPrompts` (as ADR-0043), `POST /api/teacher/ai/lesson-summary {topic,
   words, assignmentTitles[]}` → `{summary}`. Tests: controller roles, prompt rendering, disabled AI →
   the usual error.
