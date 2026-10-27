@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ConfirmationService } from 'primeng/api';
 import { Snackbar } from '@core/snackbar/snackbar';
-import { bodyText, buttonByText, menuItemByText } from '@testing/dom';
+import { bodyText, buttonByText, menuItemByText, requireElement, typeInto } from '@testing/dom';
 import { at, changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { testProviders } from '@testing/setup';
 import { ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
@@ -78,9 +78,9 @@ describe('LessonDetailsDialog', () => {
   }
 
   function pressed(): string[] {
-    return Array.from(document.body.querySelectorAll('.p-togglebutton-checked')).map((button) =>
-      button.textContent.trim(),
-    );
+    return Array.from(
+      document.body.querySelectorAll('.p-togglebutton-checked:not(tb-lesson-summary *)'),
+    ).map((button) => button.textContent.trim());
   }
 
   /** The next confirmation the dialog asks for (the host of confirmations lives in `App`). */
@@ -104,7 +104,7 @@ describe('LessonDetailsDialog', () => {
     expect(text).toContain('Дроби');
     expect(text).toContain('Начать урок');
     expect(text).not.toContain('Запланировано');
-    expect(text).not.toContain('Итог');
+    expect(text).not.toContain('Проведено');
   });
 
   it('has no footer for a lesson to come or a past one with one student', async () => {
@@ -245,7 +245,7 @@ describe('LessonDetailsDialog', () => {
   it('opens the attendance of a past group lesson in place of the card', async () => {
     await open(groupLesson(), PAST);
     expect(bodyText()).toContain('Участники');
-    expect(bodyText()).not.toContain('Итог');
+    expect(bodyText()).not.toContain('Проведено');
 
     buttonByText(document.body, 'Отметить посещаемость').click();
     await fixture.whenStable();
@@ -434,5 +434,26 @@ describe('LessonDetailsDialog', () => {
     expect(document.body.querySelector('.p-dialog-title')?.textContent).toContain('Группа «ОГЭ»');
     expect(text).toContain('Мария');
     expect(text).toContain('Предупредил');
+  });
+
+  it('shows «Итоги» of a lesson, but not of a cancelled one', async () => {
+    await open(scheduledLesson());
+    expect(bodyText()).toContain('Что прошли');
+
+    await open(scheduledLesson({ status: 'CANCELLED', cancelledBy: 'TEACHER' }));
+    expect(bodyText()).not.toContain('Что прошли');
+  });
+
+  it('keeps the lesson a summary save returned and tells the page', async () => {
+    await open(scheduledLesson());
+    const area = requireElement(document.body, 'textarea[id^="summary-"]', HTMLTextAreaElement);
+    typeInto(area, 'Итоги');
+    area.dispatchEvent(new Event('blur'));
+    await fixture.whenStable();
+    const updated = scheduledLesson({ summary: 'Итоги' });
+    backend.expectOne('/api/teacher/schedule/lessons/l-1/summary').flush(updated);
+    await fixture.whenStable();
+
+    expect(changed).toEqual([updated]);
   });
 });

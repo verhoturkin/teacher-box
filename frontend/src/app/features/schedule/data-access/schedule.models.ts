@@ -83,6 +83,20 @@ export interface ScheduledLesson {
   readonly originalStartsAt: string | null;
   /** Unanswered requests of the participants (a student sees only their own). */
   readonly pendingRequests: readonly ChangeRequest[];
+  /** «Что прошли», Markdown; filled in the details of one lesson. */
+  readonly summary?: string | null;
+  /** «Что дальше»; the teacher's details only. */
+  readonly nextPlan?: string | null;
+  readonly summaryUpdatedAt?: string | null;
+  /** The teacher's private notes per student; the teacher's details only. */
+  readonly notes?: readonly LessonNote[];
+}
+
+/** Mirrors `NoteView` of the backend: the teacher's private note about a student's part in a lesson. */
+export interface LessonNote {
+  readonly studentId: string;
+  readonly note: string;
+  readonly updatedAt: string;
 }
 
 /** Mirrors `ScheduleSettings` of the backend. */

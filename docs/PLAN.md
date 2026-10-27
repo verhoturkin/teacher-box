@@ -86,7 +86,7 @@ Design:
 
 ### Stage 307 — «Итоги» in the lesson card (F, `m3-expressive`)
 
-- [ ] 307.1 F: `schedule/teacher/lesson-details-dialog.ts` — section «Итоги»: «Что прошли»
+- [x] 307.1 F: `schedule/teacher/lesson-details-dialog.ts` — section «Итоги»: «Что прошли»
   (Markdown, `Текст / Просмотр` like the homework editor), «Что дальше», private «Заметка для себя»
   per participant (for a group a `tb-list` with an expand per student); autosave on blur with a
   saved indicator; «Отправить ученику» (disabled for an empty summary, snackbar after). Hidden for a

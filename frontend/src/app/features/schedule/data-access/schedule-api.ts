@@ -126,6 +126,39 @@ export class ScheduleApi {
     return this.http.delete<ScheduledLesson>(`/api/teacher/schedule/lessons/${lessonId}/outcome`);
   }
 
+  /** Saves «Что прошли» and «Что дальше» (an empty text clears the field). */
+  updateSummary(
+    lessonId: string,
+    summary: string | null,
+    nextPlan: string | null,
+  ): Observable<ScheduledLesson> {
+    return this.http.put<ScheduledLesson>(
+      `/api/teacher/schedule/lessons/${lessonId}/summary`,
+      { summary, nextPlan },
+      QUIET,
+    );
+  }
+
+  /** Sends the summary to the participants as «Итоги урока». */
+  shareSummary(lessonId: string): Observable<void> {
+    return this.http
+      .post(`/api/teacher/schedule/lessons/${lessonId}/summary/share`, null)
+      .pipe(map(() => undefined));
+  }
+
+  /** Saves the teacher's private note about a student (an empty text removes it). */
+  updateNote(
+    lessonId: string,
+    studentId: string,
+    note: string | null,
+  ): Observable<ScheduledLesson> {
+    return this.http.put<ScheduledLesson>(
+      `/api/teacher/schedule/lessons/${lessonId}/notes/${studentId}`,
+      { note },
+      QUIET,
+    );
+  }
+
   /** Lessons that have ended without a marked outcome. */
   unmarked(): Observable<ScheduledLesson[]> {
     return this.http.get<ScheduledLesson[]>('/api/teacher/schedule/unmarked', QUIET);

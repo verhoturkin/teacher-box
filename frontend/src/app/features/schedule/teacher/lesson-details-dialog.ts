@@ -28,10 +28,11 @@ import { LessonCard, OutcomeChange } from '../ui/lesson-card';
 import { AttendanceDialog } from './attendance-dialog';
 import { LessonCancelDialog } from './lesson-cancel-dialog';
 import { LessonDeleteDialog } from './lesson-delete-dialog';
+import { LessonSummary } from './lesson-summary';
 
 /**
  * A lesson with the teacher's actions (ADR-0050): a `sheet` whose headline is who the lesson is with,
- * whose body is the shared `<tb-lesson-card>` («Итог» of a past lesson with one student is a toggle
+ * whose body is the shared `<tb-lesson-card>` and, but for a cancelled lesson, the «Итоги» (`<tb-lesson-summary>`) («Итог» of a past lesson with one student is a toggle
  * there), whose header has ✎ and the menu «⋮» (cancel, unmark a group lesson, delete) and whose
  * footer has the one action of the state: «Отметить посещаемость» of a past group lesson,
  * «Восстановить» of a cancelled one. Cancelling and deleting a series lesson are dialogs of their own
@@ -49,6 +50,7 @@ import { LessonDeleteDialog } from './lesson-delete-dialog';
     AttendanceDialog,
     LessonCancelDialog,
     LessonDeleteDialog,
+    LessonSummary,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -98,6 +100,9 @@ import { LessonDeleteDialog } from './lesson-delete-dialog';
           (outcomeChange)="mark($event)"
           (answer)="answerRequest($event)"
         />
+        @if (item.status !== 'CANCELLED') {
+          <tb-lesson-summary [lesson]="item" (changed)="onSummarySaved($event)" />
+        }
       }
     </tb-dialog>
 
@@ -235,6 +240,12 @@ export class LessonDetailsDialog {
       this.visible.set(false);
       this.attendanceVisible.set(true);
     }
+  }
+
+  /** A save of the summary or a note: the card keeps the lesson it returned; the page needs no reload. */
+  protected onSummarySaved(lesson: ScheduledLesson): void {
+    this.shown.set(lesson);
+    this.changed.emit(lesson);
   }
 
   protected onChanged(lesson: ScheduledLesson): void {

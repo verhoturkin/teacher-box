@@ -153,6 +153,16 @@ One content component in `schedule/ui` for teacher and student in a `tb-dialog k
   оплату», for a series the single choice «Только это / Это и следующие» with the count);
   «Удалить…» — `confirm.danger` for one lesson, for a series an `alert` with the same scope list
   and count; the card closes before either opens. «Снять отметку» only for group lessons.
+- **«Итоги»** (teacher, `schedule/teacher/lesson-summary.ts`, under the facts; not for a cancelled
+  lesson): subtitle Title Medium and three fields, all of them save when they lose focus, the line
+  under the section says «Сохраняется… / Сохранено / Не удалось сохранить итоги» (`aria-live`).
+  «Что прошли» — Markdown with the `Текст / Просмотр` toggle of the homework editor (visible to the
+  students); «Что дальше» — two lines, goes to the next lesson's empty topic; «Заметка для себя» —
+  private, one field for a one-student lesson, for a group a `tb-list` with an avatar and a name
+  per student whose row folds the field open (the note's first line is the supporting text).
+  Footer of the section: tonal «Отправить ученику» (group: «…участникам»), disabled until the
+  saved summary is not empty; the snackbar «Итоги отправлены» follows. *Ours:* the layout and the
+  texts; the toggle and the lists are the shared ones.
 - **Student:** the same facts and their own actions («Войти в урок», «Перенести | Отменить» as a
   standard group), without ✎, «⋮» and marks.
 
