@@ -3,7 +3,14 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { aTextbook, aWorkbook } from '@testing/textbooks-fixtures';
 import { Textbook } from '../data-access/textbooks.models';
-import { bodyText, buttonByText, hostElement, menuItemByText } from '@testing/dom';
+import {
+  aFile,
+  bodyText,
+  buttonByText,
+  hostElement,
+  menuItemByText,
+  settleFiles,
+} from '@testing/dom';
 import { testProviders, ConfirmHost } from '@testing/setup';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { FileOpener } from '@shared/files/file-opener';
@@ -160,10 +167,11 @@ describe('TextbooksFeed', () => {
     expect(click).toHaveBeenCalled();
 
     Object.defineProperty(input, 'files', {
-      value: [new File(['x'], 'скан.png')],
+      value: [aFile('скан.png')],
       configurable: true,
     });
     input.dispatchEvent(new Event('change'));
+    await settleFiles();
     const replace = backend.expectOne({ method: 'PUT', url: '/api/teacher/textbooks/tb-1/file' });
     replace.flush(aTextbook({ format: 'IMAGE' }));
     backend.expectOne('/api/teacher/textbooks').flush([aTextbook({ hasCover: false })]);
@@ -173,6 +181,7 @@ describe('TextbooksFeed', () => {
     await openMenu('Spotlight 5');
     menuItemByText('Заменить файл').click();
     input.dispatchEvent(new Event('change'));
+    await settleFiles();
     backend
       .expectOne({ method: 'PUT', url: '/api/teacher/textbooks/tb-1/file' })
       .flush(null, { status: 500, statusText: 'Error' });
@@ -194,8 +203,8 @@ describe('TextbooksFeed', () => {
     Object.defineProperty(huge, 'size', { value: 101 * 1024 * 1024 });
     Object.defineProperty(input, 'files', { value: [huge], configurable: true });
     input.dispatchEvent(new Event('change'));
-    await fixture.whenStable();
-    expect(error).toHaveBeenCalledWith('Файл больше 100 МБ — портал его не примет.');
+    await settleFiles();
+    expect(error).toHaveBeenCalledWith('«big.pdf» больше 100 МБ');
     backend.expectNone('/api/teacher/textbooks/tb-1/file');
   });
 

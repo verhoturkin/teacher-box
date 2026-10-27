@@ -65,7 +65,7 @@ file check before upload, journal filters in the URL. No ADR. Decisions of the t
 
 ### Stage 300 — File check before upload (F)
 
-- [ ] 300.1 F: `shared/files/` `checkFiles(files, policy)` — size limit and type by extension and,
+- [x] 300.1 F: `shared/files/` `checkFiles(files, policy)` — size limit and type by extension and,
   for images and PDF, by the first bytes; texts as the backend (`file.too-large`,
   `file.type-unsupported`); limits from the module settings endpoints (add if missing). Used by
   `homework/ui/file-picker.ts`, receipts in `billing/teacher/payment-dialog.ts`, textbooks upload,

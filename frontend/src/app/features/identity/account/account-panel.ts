@@ -14,6 +14,7 @@ import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Tooltip } from 'primeng/tooltip';
 import { AuthService } from '@core/auth/auth.service';
+import { checkFiles } from '@shared/files/check-files';
 import { SquarePhoto } from '@shared/files/square-photo';
 import { Avatar } from '@shared/ui/avatar';
 import { Busy } from '@shared/ui/busy';
@@ -27,6 +28,9 @@ import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
 const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
+
+/** Pictures the browser can cut into a square; the size is not limited — the result is scaled down. */
+const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
 
 /**
  * Own account of the teacher, a student or the administrator: profile data and password change. The
@@ -300,10 +304,15 @@ export class AccountPanel implements OnInit {
   }
 
   /** The chosen picture is cut to a square and scaled down here, then sent. */
-  uploadPhoto(input: HTMLInputElement): void {
+  async uploadPhoto(input: HTMLInputElement): Promise<void> {
     const file = input.files?.item(0) ?? null;
     input.value = '';
     if (file === null) {
+      return;
+    }
+    const { rejected } = await checkFiles([file], AVATAR_POLICY);
+    if (rejected[0] !== undefined) {
+      this.snackbar.error(rejected[0].message);
       return;
     }
     this.busy

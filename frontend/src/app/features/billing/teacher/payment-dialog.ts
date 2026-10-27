@@ -19,7 +19,8 @@ import { toIsoDate } from '@shared/dates/iso-date';
 import { toMinorUnits } from '@shared/money/money';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { BillingApi } from '../data-access/billing-api';
-import { RECEIPT_ACCEPT, RECEIPT_MAX_SIZE } from '../receipts';
+import { checkFiles } from '@shared/files/check-files';
+import { RECEIPT_ACCEPT, RECEIPT_POLICY } from '../receipts';
 import { BillingStudent, Payment } from '../data-access/billing.models';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
@@ -187,18 +188,17 @@ export class PaymentDialog {
     comment: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(500)] }),
   });
 
-  protected onPicked(element: HTMLInputElement): void {
+  protected async onPicked(element: HTMLInputElement): Promise<void> {
     const file = element.files?.[0] ?? null;
     element.value = '';
     if (file === null) {
       return;
     }
-    if (file.size > RECEIPT_MAX_SIZE) {
-      this.receiptError.set(T.paymentDialog.receiptTooLarge);
-      return;
+    const { accepted, rejected } = await checkFiles([file], RECEIPT_POLICY);
+    this.receiptError.set(rejected[0]?.message ?? null);
+    if (accepted[0] !== undefined) {
+      this.receipt.set(accepted[0]);
     }
-    this.receiptError.set(null);
-    this.receipt.set(file);
   }
 
   /** The recorded payment with its receipt; a receipt that fails leaves the payment recorded. */

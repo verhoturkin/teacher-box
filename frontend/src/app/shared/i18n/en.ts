@@ -73,4 +73,8 @@ export const en: Translation<typeof ru> = {
     bytes: 'B',
     units: ['KB', 'MB', 'GB'],
   },
+  fileCheck: {
+    tooLarge: (name: string, max: string) => `“${name}” is larger than ${max}`,
+    unsupported: (name: string) => `“${name}”: this file type is not allowed`,
+  },
 };

@@ -1,8 +1,17 @@
+import { MessageService } from 'primeng/api';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { providePrimeNG } from 'primeng/config';
 import { attachment, submission } from '@testing/homework-fixtures';
-import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
+import { Snackbar } from '@core/snackbar/snackbar';
+import {
+  aFile,
+  buttonByText,
+  hostElement,
+  readableText,
+  requireElement,
+  settleFiles,
+} from '@testing/dom';
 import { FileOpener } from '@shared/files/file-opener';
 import { Attachment } from '../data-access/homework.models';
 import { AttachmentList } from './attachment-list';
@@ -73,7 +82,10 @@ class PickerHost {
 
 describe('FilePicker', () => {
   it('shows picked files as cards; a PDF or a picture opens by its name', async () => {
-    TestBed.configureTestingModule({ imports: [PickerHost], providers: [providePrimeNG()] });
+    TestBed.configureTestingModule({
+      imports: [PickerHost],
+      providers: [providePrimeNG(), MessageService],
+    });
     const opened: string[] = [];
     vi.spyOn(TestBed.inject(FileOpener), 'open').mockImplementation((content, _showable, name) => {
       content.subscribe((blob) => opened.push(name(blob)));
@@ -94,7 +106,11 @@ describe('FilePicker', () => {
   });
 
   it('collects selected files and lets remove them', async () => {
-    TestBed.configureTestingModule({ imports: [PickerHost], providers: [providePrimeNG()] });
+    TestBed.configureTestingModule({
+      imports: [PickerHost],
+      providers: [providePrimeNG(), MessageService],
+    });
+    const error = vi.spyOn(TestBed.inject(Snackbar), 'error');
     const fixture = TestBed.createComponent(PickerHost);
     await fixture.whenStable();
     const host = hostElement(fixture);
@@ -105,10 +121,12 @@ describe('FilePicker', () => {
     buttonByText(host, 'Прикрепить файлы').click();
     expect(clicks).toHaveBeenCalled();
 
-    const files = [new File(['a'], 'a.txt'), new File(['bb'], 'b.png')];
+    const files = [new File(['a'], 'a.txt'), aFile('b.png'), new File(['x'], 'virus.exe')];
     Object.defineProperty(input, 'files', { value: files, configurable: true });
     input.dispatchEvent(new Event('change'));
+    await settleFiles();
     await fixture.whenStable();
+    expect(error).toHaveBeenCalledWith('«virus.exe»: такой тип файла загружать нельзя');
 
     expect(fixture.componentInstance.files().map((file) => file.name)).toEqual(['a.txt', 'b.png']);
     expect(readableText(host)).toContain('a.txt 1 Б');

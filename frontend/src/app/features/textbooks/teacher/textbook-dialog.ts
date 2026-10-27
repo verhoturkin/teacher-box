@@ -20,6 +20,7 @@ import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
 import { MemberPicker, MemberSelection } from '@features/identity/parts';
 import { SelectButton } from 'primeng/selectbutton';
+import { checkFiles } from '@shared/files/check-files';
 import { formatFileSize } from '@shared/files/file-size';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
@@ -29,7 +30,7 @@ import { Textbook, TextbookInput, TextbookKind } from '../data-access/textbooks.
 import {
   TEXTBOOK_FILES,
   TEXTBOOK_KIND_LABELS,
-  TEXTBOOK_MAX_SIZE,
+  TEXTBOOK_POLICY,
   isDocumentFile,
 } from '../textbooks-labels';
 import { T } from '../i18n/texts';
@@ -218,14 +219,15 @@ export class TextbookDialog {
   readonly studentOptions = computed(() => this.withMembers(this.students(), 'STUDENT'));
   readonly groupOptions = computed(() => this.withMembers(this.groups(), 'GROUP'));
 
-  protected onPicked(element: HTMLInputElement): void {
+  protected async onPicked(element: HTMLInputElement): Promise<void> {
     const file = element.files?.[0] ?? null;
     element.value = '';
     if (file === null) {
       return;
     }
+    const { rejected } = await checkFiles([file], TEXTBOOK_POLICY);
     this.file.set(file);
-    this.fileError.set(file.size > TEXTBOOK_MAX_SIZE ? T.dialog.tooLarge : null);
+    this.fileError.set(rejected[0]?.message ?? null);
     if (this.form.controls.title.value.trim() === '') {
       this.form.controls.title.setValue(file.name.replace(/\.[^.]+$/, ''));
     }

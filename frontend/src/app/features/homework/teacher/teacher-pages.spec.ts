@@ -15,7 +15,15 @@ import {
   taskDetails,
 } from '@testing/homework-fixtures';
 import { aiStatus } from '@testing/ai-fixtures';
-import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
+import {
+  aFile,
+  bodyText,
+  buttonByText,
+  hostElement,
+  readableText,
+  requireElement,
+  settleFiles,
+} from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
 import { aBoard } from '@testing/boards-fixtures';
 import { AssignMoreDialog } from './assign-more-dialog';
@@ -444,10 +452,11 @@ describe('AssignmentPage', () => {
       throw new Error('file input missing');
     }
     Object.defineProperty(picker, 'files', {
-      value: [new File(['x'], 'схема.png')],
+      value: [aFile('схема.png')],
       configurable: true,
     });
     picker.dispatchEvent(new Event('change'));
+    await settleFiles();
     await fixture.whenStable();
     buttonByText(host, 'Загрузить').click();
     backend

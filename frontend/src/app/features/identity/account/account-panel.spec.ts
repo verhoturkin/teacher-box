@@ -3,7 +3,14 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '@core/auth/auth.service';
 import { authResponse } from '@testing/auth';
-import { buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
+import {
+  aFile,
+  buttonByText,
+  hostElement,
+  requireElement,
+  settleFiles,
+  typeInto,
+} from '@testing/dom';
 import { Account } from '../data-access/identity.models';
 import { AccountPanel } from './account-panel';
 import { SquarePhoto } from '@shared/files/square-photo';
@@ -177,8 +184,9 @@ describe('AccountPanel', () => {
     choose(input, null);
     expect(prepare).not.toHaveBeenCalled();
 
-    const file = new File(['photo'], 'photo.heic');
+    const file = aFile('photo.jpg');
     choose(input, file);
+    await settleFiles();
     await fixture.whenStable();
     expect(prepare).toHaveBeenCalledWith(file);
     const upload = backend.expectOne({ method: 'PUT', url: '/api/me/avatar' });
@@ -210,13 +218,26 @@ describe('AccountPanel', () => {
     const input = requireElement(host, 'input[type=file]', HTMLInputElement);
 
     choose(input, new File(['text'], 'notes.txt'));
+    await settleFiles();
+    expect(messages.add).toHaveBeenCalledWith(
+      expect.objectContaining({
+        severity: 'error',
+        detail: '«notes.txt»: такой тип файла загружать нельзя',
+      }),
+    );
+    expect(prepare).not.toHaveBeenCalled();
+
+    vi.mocked(messages.add).mockClear();
+    choose(input, aFile('broken.jpg'));
+    await settleFiles();
     await fixture.whenStable();
     expect(messages.add).toHaveBeenCalledWith(
       expect.objectContaining({ severity: 'error', detail: PICTURE_ERROR }),
     );
 
     vi.mocked(messages.add).mockClear();
-    choose(input, new File(['photo'], 'photo.jpg'));
+    choose(input, aFile('photo.jpg'));
+    await settleFiles();
     await fixture.whenStable();
     backend
       .expectOne({ method: 'PUT', url: '/api/me/avatar' })
