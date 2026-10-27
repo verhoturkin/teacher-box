@@ -29,7 +29,7 @@ Goal: fixes of 0.37.0 found by the teacher in the running app.
   (`ScheduleApi.lesson`, `GET /api/teacher/schedule/lessons/{id}`) when it opens, and a reloaded
   list lesson without a summary does not wipe them (`schedule/teacher/lesson-details-dialog.ts`);
   unit tests and `e2e/tests/schedule/lesson-summary.spec.ts`.
-- [ ] 311.2 Gap after the avatar of the students list and the icon of the lesson card row «Итог»:
+- [x] 311.2 Gap after the avatar of the students list and the icon of the lesson card row «Итог»:
   `column-gap` on rows with their own columns (`styles.scss` `.tb-list--own-trail`,
   `schedule/ui/lesson-card.ts`); checked in the browser on desktop and phone width.
 

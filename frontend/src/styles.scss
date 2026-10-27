@@ -1419,6 +1419,8 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
  */
 .tb-list.tb-list--own-trail > li {
   grid-template-columns: auto minmax(0, 1fr) auto;
+  /* the list's own gap reaches a row only through a subgrid */
+  column-gap: var(--tb-space-4);
 
   &:not(:has(> .tb-list__trail)) {
     grid-template-areas: 'lead text text';
