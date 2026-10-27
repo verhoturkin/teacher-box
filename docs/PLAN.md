@@ -19,80 +19,10 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
-## v0.36.0
-
-Goal: quick wins from [`roadmap/11-quick-wins.md`](roadmap/11-quick-wins.md) — undo of a lesson
-mark, CSV of the operations journal, copy of an assignment, prompt on leaving unsaved settings,
-file check before upload, journal filters in the URL. No ADR. Decisions of the teacher
-(2026-10-27): one release; snackbar 6 s instead of a confirmation; CSV of the journal only (no
-«Доход за период», no year range); the copy as in the roadmap.
-
-### Stage 296 — «Отменить» after a lesson mark (F)
-
-- [x] 296.1 F: after «Пропуск» / «Проведено» from the lesson card, Today («Нужно сделать») or the
-  attendance dialog — no confirmation, a snackbar «Отмечено: пропуск · Отменить» for 6 s;
-  «Отменить» calls the existing correction endpoint with the previous state (backend publishes
-  `LessonCompletionRevoked`) and refreshes the list. Entry points: `schedule/ui/` lesson actions,
-  `schedule/teacher/attendance-dialog.ts`, the Today widget in `schedule/home/`, the shared
-  toast/snackbar in `shared/ui`. Tests: unit (undo restores the outcome, refresh); E2E in
-  `e2e/tests/schedule/` — mark missed, undo, balance unchanged.
-
-### Stage 297 — CSV of the operations journal (B, F)
-
-- [x] 297.1 B: `GET /api/teacher/billing/operations.csv?month&kind&studentId` — UTF-8 with BOM,
-  `;` separator; columns: date (instance time zone), student, kind, amount in currency units with
-  a comma, comment, voided. Entry points: `billing/web/TeacherBillingController`,
-  `BillingQueryService` (journal query). Tests: controller (student 403, admin 403, content type,
-  BOM, escaping of `;` and quotes).
-- [x] 297.2 F: «⋮ › Скачать CSV» in the payments page header (`billing-overview-page.ts`) with the
-  current filters; unit test of the download.
-
-### Stage 298 — Copy of an assignment (B, F)
-
-- [x] 298.1 B: `AssignmentService.copy(assignmentId)` and
-  `POST /api/teacher/homework/assignments/{id}/copy` — a new draft «<title> (копия)» with the text,
-  files (new keys in `FileStorage` namespace `homework`), textbooks and pages, videos with
-  transcripts; no students, no due date, no board. Tests: service (deleting the original keeps the
-  copy's files), controller roles.
-- [x] 298.2 F: «Создать копию» in the row «⋮» of `homework/teacher/assignments-page.ts` and the
-  header «⋮» of `assignment-page.ts`, opening the editor of the copy.
-
-### Stage 299 — Prompt on leaving unsaved settings (F)
-
-- [x] 299.1 F: settings cards with a form (`features/settings/**`, portal cards, AI system prompts,
-  bot settings) use `core/routing/can-leave.guard.ts` with the shared `Confirm`
-  (`shared/ui/confirm.ts`) — «Отменить изменения?» on route change, `beforeunload` on reload.
-
-### Stage 300 — File check before upload (F)
-
-- [x] 300.1 F: `shared/files/` `checkFiles(files, policy)` — size limit and type by extension and,
-  for images and PDF, by the first bytes; texts as the backend (`file.too-large`,
-  `file.type-unsupported`); limits from the module settings endpoints (add if missing). Used by
-  `homework/ui/file-picker.ts`, receipts in `billing/teacher/payment-dialog.ts`, textbooks upload,
-  avatar. Backend checks stay.
-  *The size limit of homework files comes from `GET /api/me/homework/limits`
-  (`TEACHERBOX_HOMEWORK_MAX_FILE_SIZE`), read when the first file is picked; unknown — the size is
-  left to the server. Receipts (10 MB), textbooks (100 MB) and avatars are fixed constants of the
-  backend, not settings, so the frontend repeats them; the avatar has no size check (the photo is
-  scaled down in the browser).*
-
-### Stage 301 — Filters in the URL (F)
-
-- [x] 301.1 F: query params for the journal filters of `billing-overview-page.ts`
-  (`?month=&kind=&student=`), the search of `assignments-page.ts` and the chips of the students
-  `roster.ts`; «Назад» and reload keep them. Tests: router-based unit tests.
-
-### Stage 302 — Release 0.36.0
-
-- [ ] 302.1 Help articles (teacher, student; every language) and the wiki pages touched, E2E
-  scenarios in the functional suites, `CHANGELOG.md` and application versions 0.36.0, archive
-  stages 296–302, shorten `roadmap/11-quick-wins.md`, run local verification, publish the
-  annotated `v0.36.0` tag.
-
 ## Backlog
 
 Feature proposals with detailed plans (lesson notes, progress report, packages, invoices, parents,
-quizzes, web push, self-booking, calls, spaced repetition, quick wins) —
+quizzes, web push, self-booking, calls, spaced repetition) —
 [`roadmap/`](roadmap/README.md); move one here as a release when the teacher picks it.
 
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the
