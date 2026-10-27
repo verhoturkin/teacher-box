@@ -99,6 +99,10 @@ Design:
 - [x] 307.2 F: AI draft button in the «Что прошли» field of the dialog «Итоги урока» — a small inline draft from the topic, the
   assignments given at the lesson and the teacher's short words (`HomeworkAiState` as the model),
   shown only when the AI feature is on. Unit tests.
+- [x] 307.3 F: the date and time of the lesson card stay on one line (wrap only on a narrow phone):
+  the rows of `schedule/ui/lesson-card.ts` share the columns of the list (subgrid), so the wide
+  «Итог» toggle squeezed the text column of every row; its row now keeps its own
+  columns (CSS only, checked in the browser).
 
 ### Stage 308 — History feeds (F, `m3-expressive`)
 

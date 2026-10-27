@@ -215,6 +215,25 @@ interface OutcomeOption {
       color: var(--p-md-on-tertiary-container);
     }
 
+    /*
+     * The rows share the columns of the list (subgrid), so the wide toggle «Проведено / Пропуск» would
+     * squeeze the text of every row, the date too. Its row keeps its own columns: the lead keeps its
+     * width (2.5rem; none on a phone), the toggle takes only its own room.
+     */
+    @container (width > 26rem) {
+      .tb-list > li:has(> .tb-list__trail p-selectbutton) {
+        grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+      }
+    }
+
+    @media (width < 37.5em) {
+      @container (width > 26rem) {
+        .tb-list > li:has(> .tb-list__trail p-selectbutton) {
+          grid-template-columns: minmax(0, 1fr) auto;
+        }
+      }
+    }
+
     /* a narrow card: the toggle goes under the text, as the buttons of a row do (styles.scss) */
     @container (max-width: 26rem) {
       .tb-list > li:has(> .tb-list__trail p-selectbutton) {
