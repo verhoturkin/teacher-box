@@ -344,7 +344,6 @@ export const en: Translation<typeof ru> = {
     saved: 'Lesson saved',
     updated: 'Lesson updated',
     deleted: 'Lesson deleted',
-    attendanceSaved: 'Attendance saved',
     answered: 'Answer sent',
     calendarPane: 'Calendar',
     sidePane: 'Requests and time off',
@@ -364,7 +363,8 @@ export const en: Translation<typeof ru> = {
     noLessonsDay: 'No lessons on this day',
     unmarkedJump: (count: number) => `Lessons not marked: ${String(count)}`,
     moveFailed: 'Could not move the lesson',
-    marked: 'Lesson marked',
+    markedMissed: 'Marked: missed',
+    markedConducted: 'Marked: conducted',
     seriesSaved: (count: number) => `Schedule saved, lessons: ${String(count)}`,
     stopHeader: 'End the recurring lessons?',
     stopMessage: (weekly: string) =>

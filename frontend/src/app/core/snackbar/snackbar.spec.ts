@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { MessageService, ToastMessageOptions } from 'primeng/api';
-import { SNACKBAR_ERROR_LIFE, SNACKBAR_LIFE, Snackbar } from './snackbar';
+import { SNACKBAR_ERROR_LIFE, SNACKBAR_LIFE, SNACKBAR_UNDO_LIFE, Snackbar } from './snackbar';
 
 describe('Snackbar', () => {
   let snackbar: Snackbar;
@@ -63,5 +63,19 @@ describe('Snackbar', () => {
     snackbar.info('Готово');
 
     expect(shown).toHaveLength(1);
+  });
+
+  it('offers to take an action back for 6 s, the message carries the action', () => {
+    const undo = vi.fn();
+    snackbar.undoable('Отмечено: пропуск', undo);
+
+    expect(shown).toHaveLength(1);
+    expect(shown[0]).toMatchObject({
+      severity: 'success',
+      detail: 'Отмечено: пропуск',
+      life: SNACKBAR_UNDO_LIFE,
+    });
+    expect(SNACKBAR_UNDO_LIFE).toBe(6000);
+    expect(shown[0]?.data).toEqual({ undo });
   });
 });

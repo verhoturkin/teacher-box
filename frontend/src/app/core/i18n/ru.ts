@@ -71,6 +71,7 @@ export const ru = {
     message: 'Сообщение',
   },
   close: 'Закрыть',
+  undo: 'Отменить',
   notFound: {
     title: 'Страница не найдена',
     empty: 'Такой страницы нет',

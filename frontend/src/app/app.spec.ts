@@ -64,4 +64,21 @@ describe('App', () => {
 
     expect(closed).toHaveBeenCalledWith({ severity: 'success', detail: 'Сохранено' });
   });
+
+  it('runs «Отменить» of an undoable snackbar and closes it', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const undo = vi.fn();
+    TestBed.inject(Snackbar).undoable('Отмечено: пропуск', undo);
+    await fixture.whenStable();
+
+    const action = document.body.querySelector<HTMLButtonElement>('.tb-snackbar__action');
+    expect(action?.textContent.trim()).toBe('Отменить');
+    action?.click();
+    await fixture.whenStable();
+
+    expect(undo).toHaveBeenCalledOnce();
+    expect(document.body.querySelector('.tb-snackbar__action')).toBeNull();
+    fixture.destroy();
+  });
 });

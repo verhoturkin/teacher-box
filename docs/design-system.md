@@ -633,6 +633,8 @@ changes the container; content and markup are the same at every width. Every dia
 - **Snackbar** (`core/snackbar`): bottom centre, inverse-surface, above the bottom bar and FAB on a
   phone; never takes focus; success / info `role="status"`, error `role="alert"`; 5 s, error 8 s,
   paused on hover / focus; «Закрыть» 40×40; an identical message is not repeated while visible.
+  A result that can be taken back (`Snackbar.undoable`, e.g. «Отмечено: пропуск») has a text button
+  «Отменить» before «Закрыть» (*ours:* `inverse-primary`, `label large`) and stays 6 s.
   Actions toast their result only if it is not visible in place.
 
 ## Part D — Across the portal

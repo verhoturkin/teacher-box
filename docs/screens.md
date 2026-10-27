@@ -139,7 +139,9 @@ One content component in `schedule/ui` for teacher and student in a `tb-dialog k
 - **«Итог»** (`fact_check`, a past one-student lesson, teacher): the toggle «Проведено | Пропуск» —
   **M3** connected group, single-select, selection optional: nothing selected until marked; a press
   saves at once (the toggle is disabled while saving); a press on the selected one clears the mark;
-  an error is a snackbar and the choice returns. *Ours:* the width of a list row, icons `check` and
+  an error is a snackbar and the choice returns; a mark is told by the snackbar
+  «Отмечено: пропуск · Отменить» (6 s, no confirmation) — «Отменить» puts the previous state back.
+  *Ours:* the width of a list row, icons `check` and
   `person_remove`.
 - **Group lesson:** the subtitle «Участники» (Title Medium) and a `tb-list` of avatar, name and
   attendance tag. A student's request is a tertiary-container row (**M3**: tertiary for small items

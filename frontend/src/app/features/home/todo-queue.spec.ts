@@ -1,4 +1,5 @@
 import { Router } from '@angular/router';
+import { Snackbar } from '@core/snackbar/snackbar';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
@@ -135,6 +136,32 @@ describe('TodoQueue', () => {
 
     expect(marked).toHaveBeenCalledOnce();
     expect(text()).toContain('Срочных дел нет');
+  });
+
+  it('offers to take the mark back and puts the lesson into the queue again', async () => {
+    await render(done, { lessons: [scheduledLesson({ id: 'l-7' })] });
+    const undoable = vi.spyOn(TestBed.inject(Snackbar), 'undoable');
+    const marked = vi.fn();
+    fixture.componentInstance.marked.subscribe(marked);
+
+    buttonByText(hostElement(fixture), 'Пропуск').click();
+    backend
+      .expectOne('/api/teacher/schedule/lessons/l-7/outcome')
+      .flush(scheduledLesson({ id: 'l-7', status: 'MISSED' }));
+    expect(undoable).toHaveBeenCalledWith('Отмечено: пропуск', expect.any(Function));
+
+    undoable.mock.calls[0]?.[1]();
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/schedule/lessons/l-7/outcome' })
+      .flush(scheduledLesson({ id: 'l-7' }));
+    backend.expectOne('/api/teacher/schedule/unmarked').flush([scheduledLesson({ id: 'l-7' })]);
+    backend.expectOne('/api/teacher/schedule/requests').flush([]);
+    backend.expectOne('/api/teacher/homework/review-queue').flush([]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(marked).toHaveBeenCalledTimes(2);
+    expect(text()).toContain('Пропуск');
   });
 
   it('counts what does not fit', async () => {

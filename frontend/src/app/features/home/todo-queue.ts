@@ -17,6 +17,7 @@ import type { Debtor } from '@features/billing/parts';
 import { HomeworkApi } from '@features/homework/parts';
 import type { ReviewQueueItem } from '@features/homework/parts';
 import {
+  LessonMarkUndo,
   ScheduleApi,
   AttendanceDialog,
   formatLessonStart,
@@ -226,6 +227,7 @@ interface Row {
       [(visible)]="attendanceVisible"
       [lesson]="attendanceLesson()"
       (saved)="attendanceSaved($event)"
+      (restored)="reload()"
     />
   `,
   styles: `
@@ -314,6 +316,7 @@ interface Row {
 export class TodoQueue implements OnInit {
   protected readonly t = T.queue;
   private readonly scheduleApi = inject(ScheduleApi);
+  private readonly markUndo = inject(LessonMarkUndo);
   private readonly homeworkApi = inject(HomeworkApi);
   private readonly router = inject(Router);
   protected readonly busy = new Busy();
@@ -421,6 +424,11 @@ export class TodoQueue implements OnInit {
   });
 
   ngOnInit(): void {
+    this.reload();
+  }
+
+  /** The sources are read again: after «Отменить» a lesson is back in the queue. */
+  protected reload(): void {
     forkJoin({
       lessons: this.scheduleApi.unmarked(),
       requests: this.scheduleApi.pendingRequests(),
@@ -473,9 +481,16 @@ export class TodoQueue implements OnInit {
   }
 
   protected mark(lessonId: string, outcome: 'CONDUCTED' | 'MISSED'): void {
+    const before = this.lessons().find((lesson) => lesson.id === lessonId);
     this.busy
       .guard(lessonId + outcome, this.scheduleApi.setOutcome(lessonId, outcome))
-      .subscribe(() => {
+      .subscribe((updated) => {
+        if (before !== undefined) {
+          this.markUndo.offer(before, updated, () => {
+            this.reload();
+            this.marked.emit();
+          });
+        }
         this.sheet.set(null);
         this.lessons.update((lessons) => lessons.filter((lesson) => lesson.id !== lessonId));
         this.marked.emit();

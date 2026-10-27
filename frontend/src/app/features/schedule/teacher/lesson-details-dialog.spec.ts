@@ -156,6 +156,27 @@ describe('LessonDetailsDialog', () => {
     expect(bodyText()).toContain('Проведено');
   });
 
+  it('offers to take the toggle back and shows the lesson as it was', async () => {
+    const undoable = vi.spyOn(TestBed.inject(Snackbar), 'undoable');
+    await open(scheduledLesson(), PAST);
+
+    toggle('Пропуск').click();
+    backend
+      .expectOne('/api/teacher/schedule/lessons/l-1/outcome')
+      .flush(scheduledLesson({ status: 'MISSED' }));
+    expect(undoable).toHaveBeenCalledWith('Отмечено: пропуск', expect.any(Function));
+
+    undoable.mock.calls[0]?.[1]();
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/schedule/lessons/l-1/outcome' })
+      .flush(scheduledLesson());
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(changed.map((lesson) => lesson.status)).toEqual(['MISSED', 'SCHEDULED']);
+    expect(pressed()).toEqual([]);
+  });
+
   it('switches the outcome and takes it off by pressing the chosen one again', async () => {
     await open(scheduledLesson({ status: 'CONDUCTED' }), PAST);
 

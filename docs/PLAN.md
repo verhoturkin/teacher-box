@@ -29,7 +29,7 @@ file check before upload, journal filters in the URL. No ADR. Decisions of the t
 
 ### Stage 296 — «Отменить» after a lesson mark (F)
 
-- [ ] 296.1 F: after «Пропуск» / «Проведено» from the lesson card, Today («Нужно сделать») or the
+- [x] 296.1 F: after «Пропуск» / «Проведено» from the lesson card, Today («Нужно сделать») or the
   attendance dialog — no confirmation, a snackbar «Отмечено: пропуск · Отменить» for 6 s;
   «Отменить» calls the existing correction endpoint with the previous state (backend publishes
   `LessonCompletionRevoked`) and refreshes the list. Entry points: `schedule/ui/` lesson actions,

@@ -1,5 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Snackbar } from '@core/snackbar/snackbar';
 import { bodyText, buttonByText } from '@testing/dom';
 import { groupLesson } from '@testing/schedule-fixtures';
 import { ScheduledLesson } from '../data-access/schedule.models';
@@ -48,6 +49,25 @@ describe('AttendanceDialog', () => {
 
     expect(saved.map((lesson) => lesson.status)).toEqual(['MISSED']);
     expect(dialog.visible()).toBe(false);
+  });
+
+  it('offers to take the attendance back and tells when it is back', () => {
+    const undoable = vi.spyOn(TestBed.inject(Snackbar), 'undoable');
+    const restored: ScheduledLesson[] = [];
+    fixture.componentInstance.restored.subscribe((lesson) => restored.push(lesson));
+
+    fixture.componentInstance.save();
+    backend
+      .expectOne('/api/teacher/schedule/lessons/gl-1/attendance')
+      .flush(groupLesson({ status: 'CONDUCTED' }));
+    expect(undoable).toHaveBeenCalledWith('Отмечено: проведено', expect.any(Function));
+
+    undoable.mock.calls[0]?.[1]();
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/schedule/lessons/gl-1/outcome' })
+      .flush(groupLesson());
+
+    expect(restored.map((lesson) => lesson.status)).toEqual(['SCHEDULED']);
   });
 
   it('asks to cancel instead when nobody came', async () => {
