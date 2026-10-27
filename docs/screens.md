@@ -320,7 +320,8 @@ of sections (from expanded `/teacher/settings` shows «Мой аккаунт»).
   Display Small balance ÷ price, the balance, a 4 dp bar full at 8 lessons — *ours*; a debt or no
   price — the balance alone) and the lesson materials (one board and one textbook card in 12–15 rem
   columns, hidden when none). No FAB.
-- **Schedule:** week / month calendar and a supporting pane (mini-month, upcoming lessons,
+- **Schedule:** week / month calendar, as the teacher's filling the free height of the pane
+  (`fillHeight`, see «Schedule (teacher)»), and a supporting pane (mini-month, upcoming lessons,
   requests); compact starts with the day agenda. Upcoming rows on a phone: icon, time and details, a
   chevron that opens the lesson card; «Войти в урок» above the request pair.
 - **Homework** (`my-homework-page.ts` + `my-task-page.ts`): list-detail of one route; the list pane

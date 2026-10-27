@@ -135,6 +135,7 @@ export function nextMonday(date: Date): Date {
               [busy]="busy()"
               [busyTitle]="t.busy"
               [showStudent]="false"
+              [fillHeight]="true"
               [focusDate]="focusDate()"
               [initialDate]="currentDay()"
               [phoneView]="phoneView()"

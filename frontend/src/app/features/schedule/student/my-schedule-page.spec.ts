@@ -155,6 +155,8 @@ describe('MySchedulePage', () => {
       .query(By.directive(ScheduleCalendar))
       .injector.get(ScheduleCalendar);
     expect(calendar.focusDate()).toBe(day.getAttribute('data-date'));
+    // as the teacher's: the grid fills the free height of the pane
+    expect(calendar.fillHeight()).toBe(true);
     for (const request of lessonRequests()) request.flush([]);
     for (const request of busyRequests()) request.flush([]);
   });
