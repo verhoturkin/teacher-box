@@ -127,6 +127,11 @@ test('the old address of a student’s payments opens the Оплаты tab', asy
 test('a group has its own card with the members', async ({ page }) => {
   await signIn(page);
   await page.goto('/teacher/students');
+  // 0.36.1: the row counts the members instead of naming them and keeps at most two lines of text
+  const row = roster(page).locator('> li', { hasText: GROUP });
+  await expect(row.locator('.tb-list__supporting')).toHaveText(/^1 участник\b/);
+  await expect(row).not.toContainText(MEMBER);
+  await expect(row.locator('.tb-list__title')).toHaveCSS('-webkit-line-clamp', '2');
   await roster(page).getByRole('link', { name: GROUP, exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/teacher/groups/${groupId}`));
   await expect(page.locator('.tb-card-head__name')).toHaveText(GROUP);
