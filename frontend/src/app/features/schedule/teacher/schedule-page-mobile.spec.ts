@@ -22,8 +22,10 @@ function today(hours: number): string {
   return date.toISOString();
 }
 
+// From midnight: the lesson has always begun (its card offers «Итог»), whatever the hour and the time
+// zone of the run — CI starts before 08:00 local time
 function lessonToday(overrides: Partial<ScheduledLesson> = {}): ScheduledLesson {
-  return scheduledLesson({ startsAt: today(8), endsAt: today(9), ...overrides });
+  return scheduledLesson({ startsAt: today(0), endsAt: today(1), ...overrides });
 }
 
 describe('SchedulePage on a phone', () => {
@@ -147,7 +149,7 @@ describe('SchedulePage on a phone', () => {
   });
 
   it('marks the attendance of a group lesson', async () => {
-    unmarked = [groupLesson({ startsAt: today(8), endsAt: today(9) })];
+    unmarked = [groupLesson({ startsAt: today(0), endsAt: today(1) })];
     lessons = unmarked;
     const host = await render();
 
