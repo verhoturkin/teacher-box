@@ -111,7 +111,7 @@ Design:
 
 ### Stage 308 — History feeds (F, `m3-expressive`)
 
-- [ ] 308.1 F: student card «Занятия» tab (`schedule/teacher/student-lessons-tab.ts`) — feed
+- [x] 308.1 F: student card «Занятия» tab (`schedule/teacher/student-lessons-tab.ts`) — feed
   «История» of held lessons with summary, «Что дальше» and note, «Показать ещё»; the group card the
   same without private notes. Unit tests.
 - [ ] 308.2 F: student side — the lesson sheet (`schedule/student/lesson-summary.ts`) shows «Что

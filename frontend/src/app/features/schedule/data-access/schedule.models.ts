@@ -261,3 +261,20 @@ export interface MyScheduleSummary {
   readonly weekLessons: number;
   readonly pendingRequests: number;
 }
+
+/** Mirrors `HistoryEntry` of the backend: a held lesson of the history feed. */
+export interface HistoryEntry {
+  readonly lessonId: string;
+  readonly startsAt: string;
+  readonly topic: string | null;
+  readonly status: ScheduleLessonStatus;
+  readonly groupId: string | null;
+  readonly groupName: string | null;
+  /** The student's own attendance in a group lesson (a student feed). */
+  readonly attendance: Attendance | null;
+  readonly summary: string | null;
+  readonly nextPlan: string | null;
+  readonly summaryUpdatedAt: string | null;
+  /** The teacher's private note about the student; absent in a group feed. */
+  readonly note: string | null;
+}

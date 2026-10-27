@@ -141,12 +141,15 @@ export const en: Translation<typeof ru> = {
   lessonsTab: {
     what: 'lessons',
     upcoming: 'Upcoming',
-    past: 'Past',
     noUpcoming: 'No lessons planned',
-    noPast: 'No past lessons',
-    earlier: 'Show earlier',
     noTopic: 'No topic',
     recurring: 'recurring',
+    history: 'History',
+    noHistory: 'No held lessons yet',
+    showMore: 'Show more',
+    covered: 'Covered',
+    next: 'Next',
+    note: 'Private note',
   },
   attendanceDialog: {
     title: 'Who came to the lesson',

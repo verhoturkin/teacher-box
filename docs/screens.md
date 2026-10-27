@@ -217,8 +217,10 @@ active on both, `NavItem.alsoActive`).
 - **Student tabs** (`card-tabs.ts`, `?tab=`): «Обзор» — «Ближайшие занятия» (3 of 60 days, «Ещё
   запланировано: N»), «Задания» (open ones, works to review first; 5 + «Ещё открытых: N»), «Баланс»
   (figure, price, last 3 operations), «Связь» (`tb-student-channels`, `tb-room-link`); «Занятия» —
-  «Предстоящие» and «Прошедшие» (half a year each way, «Показать ранее»; a group lesson shows the
-  student's own attendance; cancelled rows inactive); «Задания» — all, open first, then accepted
+  «Предстоящие» (180 days ahead, cancelled rows inactive) and the feed «История» of held lessons
+  (`GET …/history`, 20 per page, «Показать ещё»): date, topic, the outcome tag (a group lesson shows
+  the student's own attendance), «Что прошли» (Markdown), «Что дальше» and «Заметка для себя» when
+  filled; «Задания» — all, open first, then accepted
   with the grade (20 + «Показать ещё»); «Оплаты» — four tonal tiles (balance, charged, paid, price)
   and the ledger «История» (`tb-ledger-list`); «Профиль» — «Данные ученика» (name *, e-mail, phone,
   note, default topic, colour; tonal «Сохранить», enabled when something differs, and «Отмена» shown
@@ -227,7 +229,8 @@ active on both, `NavItem.alsoActive`).
   «Сбросить пароль», disable / reactivate access). *Ours* (**M3** has no in-place edit pattern):
   fields stay editable instead of a read view with a pencil. A payment or lesson from the header
   re-reads the balance and the lessons.
-- **Group tabs** (`GROUP_TABS`): «Обзор» (lessons, «Связь»), «Занятия», «Задания» (every member's,
+- **Group tabs** (`GROUP_TABS`): «Обзор» (lessons, «Связь»), «Занятия» (the same feed without
+  private notes), «Задания» (every member's,
   name first), «Участники» (members with links, status, «Убрать из группы: имя» saved at once; a
   multiselect of other students and tonal «Добавить»), «Профиль» (name *, default topic, colour;
   «Цена занятия»; «Видеовстреча», not for an archived group).

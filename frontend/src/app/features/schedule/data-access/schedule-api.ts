@@ -12,6 +12,7 @@ import {
   ChangeRequestBody,
   EditLessonRequest,
   GoogleCalendarStatus,
+  HistoryEntry,
   LessonOutcome,
   MyScheduleSummary,
   OffTime,
@@ -53,6 +54,19 @@ export class ScheduleApi {
           : params.set('groupId', of.groupId);
     }
     return this.http.get<ScheduledLesson[]>('/api/teacher/schedule/lessons', { ...QUIET, params });
+  }
+
+  /** Held lessons of a student or a group, newest first; `before` — the start of the last one shown. */
+  history(of: LessonsOf, before: string | null, limit: number): Observable<HistoryEntry[]> {
+    let params = new HttpParams().set('limit', limit);
+    if (before !== null) {
+      params = params.set('before', before);
+    }
+    const path = 'studentId' in of ? `students/${of.studentId}` : `groups/${of.groupId}`;
+    return this.http.get<HistoryEntry[]>(`/api/teacher/schedule/${path}/history`, {
+      ...QUIET,
+      params,
+    });
   }
 
   plan(request: PlanLessonRequest): Observable<ScheduledLesson> {

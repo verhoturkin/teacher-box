@@ -19,7 +19,8 @@ import { GroupMembersTab } from './group-members-tab';
 import { GroupProfileTab } from './group-profile-tab';
 
 /** What the tabs read: answered by their own specs. */
-const TAB_READS = /schedule\/lessons|homework\/students\/|billing\/groups|meetings\/(rooms|calls)/;
+const TAB_READS =
+  /schedule\/(lessons|groups\/[^/]+\/history)|homework\/students\/|billing\/groups|meetings\/(rooms|calls)/;
 
 const OGE = aGroup({
   id: 'g',

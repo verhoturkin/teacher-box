@@ -138,12 +138,15 @@ export const ru = {
   lessonsTab: {
     what: 'занятия',
     upcoming: 'Предстоящие',
-    past: 'Прошедшие',
     noUpcoming: 'Занятий не запланировано',
-    noPast: 'Прошедших занятий нет',
-    earlier: 'Показать ранее',
     noTopic: 'Тема не задана',
     recurring: 'регулярное',
+    history: 'История',
+    noHistory: 'Проведённых занятий пока нет',
+    showMore: 'Показать ещё',
+    covered: 'Что прошли',
+    next: 'Что дальше',
+    note: 'Заметка для себя',
   },
   attendanceDialog: {
     title: 'Кто был на занятии',

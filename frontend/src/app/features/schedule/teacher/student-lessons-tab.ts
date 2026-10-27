@@ -8,6 +8,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tag } from 'primeng/tag';
@@ -15,38 +16,34 @@ import { toIsoDate } from '@shared/dates/iso-date';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { MarkdownView } from '@shared/ui/markdown-view';
 import { LessonsOf, ScheduleApi } from '../data-access/schedule-api';
-import { ScheduledLesson } from '../data-access/schedule.models';
+import { HistoryEntry, ScheduledLesson } from '../data-access/schedule.models';
 import {
   ATTENDANCE_LABELS,
   STATUS_LABELS,
   TagSeverity,
+  formatLessonStart,
   formatLessonTime,
   lessonWith,
 } from '../schedule-labels';
 import { T } from '../i18n/texts';
 
-/** How far ahead and back the first read looks (the backend allows 400 days at most). */
+/** How far ahead the lessons are read (the backend allows 400 days at most). */
 const AHEAD_DAYS = 180;
-const BACK_DAYS = 180;
-/** How far «Показать ранее» goes back each time. */
-const EARLIER_DAYS = 360;
+/** A page of the history feed. */
+const PAGE = 20;
 const DAY_MS = 86_400_000;
 
-/** A row of the tab: the lesson with the tag of its outcome. */
-interface LessonRow {
-  readonly lesson: ScheduledLesson;
-  readonly tag: { readonly label: string; readonly severity: TagSeverity } | null;
+interface Tone {
+  readonly label: string;
+  readonly severity: TagSeverity;
 }
 
-/** A card of the tab: the lessons ahead or the past ones. */
-interface LessonSection {
-  readonly title: string;
-  readonly empty: string;
-  readonly icon: string;
-  readonly rows: readonly LessonRow[];
-  /** The past: it can read further back. */
-  readonly past: boolean;
+/** A row of the lessons ahead: the lesson with the tag of its status. */
+interface LessonRow {
+  readonly lesson: ScheduledLesson;
+  readonly tag: Tone | null;
 }
 
 function daysFrom(date: Date, days: number): Date {
@@ -55,54 +52,96 @@ function daysFrom(date: Date, days: number): Date {
 
 /**
  * The Занятия tab of a student's or a group's card (redesign spec §8): the lessons ahead, the nearest first,
- * and the past ones, the latest first, with their outcome — for a student in a group lesson, the student's
- * own attendance. «Показать ранее» reads the year before.
+ * and the «История» feed of held lessons, the latest first, with their summary, plan and (a student's card)
+ * the teacher's private note. «Показать ещё» reads the next page.
  */
 @Component({
   selector: 'tb-student-lessons-tab',
-  imports: [Button, Card, EmptyState, LoadStateView, Tag],
+  imports: [Button, Card, EmptyState, LoadStateView, MarkdownView, Tag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
       <div class="tb-student-lessons-tab">
-        @for (section of sections(); track section.title) {
-          <p-card [header]="section.title">
-            @if (section.rows.length === 0) {
-              <tb-empty-state [compact]="true" [icon]="section.icon" [title]="section.empty" />
-            } @else {
-              <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="section.title">
-                @for (row of section.rows; track row.lesson.id) {
-                  <li [class.tb-inactive]="row.lesson.status === 'CANCELLED'">
-                    <span class="tb-list__lead" aria-hidden="true"
-                      ><i
-                        class="tb-i"
-                        [class.tb-i-group]="row.lesson.groupId !== null"
-                        [class.tb-i-event]="row.lesson.groupId === null"
-                      ></i
-                    ></span>
-                    <div class="tb-list__text">
-                      <span class="tb-list__title">{{ time(row.lesson) }}</span>
-                      <span class="tb-list__supporting">{{ details(row.lesson) }}</span>
+        <p-card [header]="t.upcoming">
+          @if (upcoming().length === 0) {
+            <tb-empty-state [compact]="true" icon="tb-i-event" [title]="t.noUpcoming" />
+          } @else {
+            <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.upcoming">
+              @for (row of upcoming(); track row.lesson.id) {
+                <li [class.tb-inactive]="row.lesson.status === 'CANCELLED'">
+                  <span class="tb-list__lead" aria-hidden="true"
+                    ><i
+                      class="tb-i"
+                      [class.tb-i-group]="row.lesson.groupId !== null"
+                      [class.tb-i-event]="row.lesson.groupId === null"
+                    ></i
+                  ></span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{ time(row.lesson) }}</span>
+                    <span class="tb-list__supporting">{{ details(row.lesson) }}</span>
+                  </div>
+                  @if (row.tag !== null) {
+                    <div class="tb-list__trail">
+                      <p-tag [value]="row.tag.label" [severity]="row.tag.severity" />
                     </div>
-                    @if (row.tag !== null) {
-                      <div class="tb-list__trail">
-                        <p-tag [value]="row.tag.label" [severity]="row.tag.severity" />
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </p-card>
+        <p-card [header]="t.history">
+          @if (history().length === 0) {
+            <tb-empty-state [compact]="true" icon="tb-i-history" [title]="t.noHistory" />
+          } @else {
+            <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.history">
+              @for (entry of history(); track entry.lessonId) {
+                <li>
+                  <span class="tb-list__lead" aria-hidden="true"
+                    ><i
+                      class="tb-i"
+                      [class.tb-i-group]="entry.groupId !== null"
+                      [class.tb-i-event]="entry.groupId === null"
+                    ></i
+                  ></span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{ start(entry) }}</span>
+                    <span class="tb-list__supporting">{{ entryDetails(entry) }}</span>
+                    @if (entry.summary) {
+                      <div class="tb-history__part">
+                        <span class="tb-history__label">{{ t.covered }}</span>
+                        <tb-markdown [text]="entry.summary" />
                       </div>
                     }
-                  </li>
-                }
-              </ul>
-            }
-            @if (section.past) {
-              <p-button
-                [label]="t.earlier"
-                [text]="true"
-                [loading]="loadingEarlier()"
-                (onClick)="earlier()"
-              />
-            }
-          </p-card>
-        }
+                    @if (entry.nextPlan) {
+                      <p class="tb-history__part">
+                        <span class="tb-history__label">{{ t.next }}</span>
+                        {{ entry.nextPlan }}
+                      </p>
+                    }
+                    @if (entry.note) {
+                      <p class="tb-history__part">
+                        <span class="tb-history__label">{{ t.note }}</span>
+                        {{ entry.note }}
+                      </p>
+                    }
+                  </div>
+                  <div class="tb-list__trail">
+                    <p-tag [value]="entryTag(entry).label" [severity]="entryTag(entry).severity" />
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+          @if (more()) {
+            <p-button
+              [label]="t.showMore"
+              [text]="true"
+              [loading]="loadingMore()"
+              (onClick)="loadMore()"
+            />
+          }
+        </p-card>
       </div>
     </tb-load-state>
   `,
@@ -111,6 +150,16 @@ function daysFrom(date: Date, days: number): Date {
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-4);
+    }
+    .tb-history__part {
+      margin: var(--tb-space-2) 0 0;
+      overflow-wrap: anywhere;
+      white-space: pre-line;
+    }
+    .tb-history__label {
+      display: block;
+      font: var(--tb-type-label-m);
+      color: var(--p-md-on-surface-variant);
     }
   `,
 })
@@ -124,12 +173,13 @@ export class StudentLessonsTab {
   readonly revision = input(0);
 
   protected readonly state = new LoadState();
-  protected readonly loadingEarlier = signal(false);
+  protected readonly loadingMore = signal(false);
+  /** A full page came back, so there may be more. */
+  protected readonly more = signal(false);
   private readonly lessons = signal<readonly ScheduledLesson[]>([]);
-  /** The first day read so far. */
-  private from = new Date();
+  protected readonly history = signal<readonly HistoryEntry[]>([]);
 
-  private readonly upcoming = computed<LessonRow[]>(() => {
+  protected readonly upcoming = computed<LessonRow[]>(() => {
     const now = Date.now();
     return this.lessons()
       .filter((lesson) => new Date(lesson.endsAt).getTime() > now)
@@ -139,30 +189,6 @@ export class StudentLessonsTab {
         tag: lesson.status === 'SCHEDULED' ? null : STATUS_LABELS[lesson.status],
       }));
   });
-  private readonly past = computed<LessonRow[]>(() => {
-    const now = Date.now();
-    return this.lessons()
-      .filter((lesson) => new Date(lesson.endsAt).getTime() <= now)
-      .sort((a, b) => b.startsAt.localeCompare(a.startsAt))
-      .map((lesson) => ({ lesson, tag: this.outcome(lesson) }));
-  });
-
-  protected readonly sections = computed<LessonSection[]>(() => [
-    {
-      title: this.t.upcoming,
-      empty: this.t.noUpcoming,
-      icon: 'tb-i-event',
-      rows: this.upcoming(),
-      past: false,
-    },
-    {
-      title: this.t.past,
-      empty: this.t.noPast,
-      icon: 'tb-i-history',
-      rows: this.past(),
-      past: true,
-    },
-  ]);
 
   constructor() {
     effect(() => {
@@ -176,38 +202,44 @@ export class StudentLessonsTab {
 
   protected load(): void {
     const today = new Date();
-    this.from = daysFrom(today, -BACK_DAYS);
-    this.api
-      .lessons(toIsoDate(this.from), toIsoDate(daysFrom(today, AHEAD_DAYS)), this.of())
+    forkJoin({
+      lessons: this.api.lessons(
+        toIsoDate(today),
+        toIsoDate(daysFrom(today, AHEAD_DAYS)),
+        this.of(),
+      ),
+      history: this.api.history(this.of(), null, PAGE),
+    })
       .pipe(this.state.track())
-      .subscribe((lessons) => {
+      .subscribe(({ lessons, history }) => {
         this.lessons.set(lessons);
+        this.history.set(history);
+        this.more.set(history.length === PAGE);
       });
   }
 
-  /** The year before what is shown; the lessons already shown stay. */
-  protected earlier(): void {
-    const to = daysFrom(this.from, -1);
-    const from = daysFrom(this.from, -EARLIER_DAYS);
-    this.loadingEarlier.set(true);
-    this.api.lessons(toIsoDate(from), toIsoDate(to), this.of()).subscribe({
-      next: (lessons) => {
-        this.loadingEarlier.set(false);
-        this.from = from;
-        const known = new Set(this.lessons().map((lesson) => lesson.id));
-        this.lessons.update((shown) => [
-          ...shown,
-          ...lessons.filter((lesson) => !known.has(lesson.id)),
-        ]);
+  /** The next page; what is shown stays. */
+  protected loadMore(): void {
+    const last = this.history().at(-1);
+    this.loadingMore.set(true);
+    this.api.history(this.of(), last?.startsAt ?? null, PAGE).subscribe({
+      next: (page) => {
+        this.loadingMore.set(false);
+        this.history.update((shown) => [...shown, ...page]);
+        this.more.set(page.length === PAGE);
       },
       error: () => {
-        this.loadingEarlier.set(false);
+        this.loadingMore.set(false);
       },
     });
   }
 
   protected time(lesson: ScheduledLesson): string {
     return formatLessonTime(lesson.startsAt, lesson.endsAt);
+  }
+
+  protected start(entry: HistoryEntry): string {
+    return formatLessonStart(entry.startsAt);
   }
 
   /** «Группа «ОГЭ» · Теорема Виета · регулярное». */
@@ -221,18 +253,23 @@ export class StudentLessonsTab {
       .join(' · ');
   }
 
-  /**
-   * A past lesson: its status; a group lesson that took place — the student's own attendance; an unmarked
-   * one — «Запланировано», so the teacher sees it waits for the outcome.
-   */
-  private outcome(lesson: ScheduledLesson): LessonRow['tag'] {
-    const of = this.of();
-    if (lesson.groupId !== null && lesson.status === 'CONDUCTED' && 'studentId' in of) {
-      const own = lesson.participants.find((participant) => participant.studentId === of.studentId);
-      if (own !== undefined && own.attendance !== 'EXPECTED') {
-        return ATTENDANCE_LABELS[own.attendance];
-      }
+  /** «Группа «ОГЭ» · Теорема Виета»; the group is not named in its own feed. */
+  protected entryDetails(entry: HistoryEntry): string {
+    return [
+      entry.groupId === null || 'groupId' in this.of()
+        ? null
+        : lessonWith({ groupId: entry.groupId, groupName: entry.groupName, studentName: null }),
+      entry.topic ?? this.t.noTopic,
+    ]
+      .filter((part) => part !== null)
+      .join(' · ');
+  }
+
+  /** A student in a group lesson that took place: the student's own attendance; else the status. */
+  protected entryTag(entry: HistoryEntry): Tone {
+    if (entry.groupId !== null && entry.attendance !== null && entry.attendance !== 'EXPECTED') {
+      return ATTENDANCE_LABELS[entry.attendance];
     }
-    return STATUS_LABELS[lesson.status];
+    return STATUS_LABELS[entry.status];
   }
 }
