@@ -173,8 +173,9 @@ active on both, `NavItem.alsoActive`).
   мессенджера N · Отключённые» («Отключённые» — students without access and archived groups; the chip is kept in the
   address as `?filter=`). From
   expanded the header, search and chips stay and only the list scrolls. Students by name, then
-  groups (group icon in the lead). A row: avatar / icon; the name links to the card; supporting
-  «nearest lesson · аванс N» (a group: members · nearest lesson; «нет занятий» without lessons in 4
+  groups (group icon in the lead). A row (`tb-list--clamp`): avatar / icon; the name links to the
+  card; supporting «nearest lesson · аванс N» (a group: «N участников» — the count, not the names,
+  «Пока никого» without members — · nearest lesson; «нет занятий» without lessons in 4
   weeks; balances from billing, messengers from notifications, lessons from schedule — a failed read
   drops only its part); trail — one status: the debt in error (Title Medium, read «Долг N») or the
   tag «Приглашён» / «Отключён» / «В архиве»; no «⋮» in the row. The open card's row is current.
@@ -217,10 +218,11 @@ Three panes of one route (`/teacher/homework[/tasks/:taskId | /:assignmentId]`,
 `features/homework/teacher/`):
 
 - **List** (fixed pane): the connected group «На проверку · Активные · Готовые» with counts, the
-  search always above the list (kept in the address as `?q=`); tonal rows — a work: avatar,
-  student, «задание · сдано …», the
+  search always above the list (kept in the address as `?q=`); tonal rows (`tb-list--clamp`) — a
+  work: avatar, student, «задание · сдано …», the
   «Просрочено» tag; «Ждут сдачи» under them; an assignment row: icon (a board icon when on a board),
-  title link + «кому · до dd.MM.yyyy HH:mm» (three names, then «и ещё N»), the progress tag
+  title link + «кому · до dd.MM HH:mm» (the year only when it is not the current one; two names,
+  from three — the first one and «и ещё N»), the progress tag
   (`assignmentProgress`: «Не выдано» secondary, «На проверке: N» warn, «Принято» success, «Выдано» /
   «Принято N из M» primary) and «⋮» («Создать копию» — a draft «<title> (копия)» with the text,
   files, textbooks and videos, whose editor opens; 0.36.0). The header of the open assignment has the

@@ -158,7 +158,7 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
           </div>
           <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
             @if (visibleRows().length > 0) {
-              <ul class="tb-list" [attr.aria-label]="t.title">
+              <ul class="tb-list tb-list--clamp" [attr.aria-label]="t.title">
                 @for (row of visibleRows(); track row.kind + row.id) {
                   <li [class.tb-list__item--current]="isCurrent(row)">
                     @if (row.kind === 'student') {
@@ -540,7 +540,7 @@ export class StudentsPage implements OnInit {
     return color === null ? null : labelKey(color);
   }
 
-  /** «вт 17:00 · аванс 1 500 ₽»; a group — «Вера, Глеб · пн 16:00». */
+  /** «вт 17:00 · аванс 1 500 ₽»; a group — «2 участника · пн 16:00». */
   protected supporting(row: RosterRow): string {
     return (row.kind === 'student' ? this.studentLine(row) : this.groupLine(row)).join(' · ');
   }
@@ -557,12 +557,9 @@ export class StudentsPage implements OnInit {
   }
 
   private groupLine(row: GroupRow): string[] {
-    const members = row.group.members;
-    const parts = [
-      members.length === 0
-        ? this.tg.nobody
-        : members.map((member) => member.displayName).join(', '),
-    ];
+    // the count, not the names: a big group keeps one row high (the names are on «Участники»)
+    const count = row.group.members.length;
+    const parts = [count === 0 ? this.tg.nobody : T.groupCard.members(count)];
     const next = isOff(row) ? null : this.nextLine(row.next);
     return next === null ? parts : [...parts, next];
   }

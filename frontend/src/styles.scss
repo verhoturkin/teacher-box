@@ -1761,6 +1761,20 @@ p-button.tb-list__stretched .p-button {
   overflow-wrap: break-word;
 }
 
+/*
+ * A list pane whose rows keep a bounded height (`tb-list--clamp`: students, homework). M3: label and
+ * supporting text can wrap or be truncated, supporting text one to three lines. Ours: at most two lines
+ * each, cut with an ellipsis; the full text is in the detail beside the list. The title link's `::before`
+ * belongs to the row, so `overflow: hidden` does not cut the tap area.
+ */
+.tb-list--clamp :is(.tb-list__title, .tb-list__supporting) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
 .tb-list__trail {
   display: flex;
   grid-area: trail;

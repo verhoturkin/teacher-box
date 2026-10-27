@@ -19,6 +19,35 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
+## Next release
+
+Goal: compact rows in the list panes of «Ученики» and «Задания» — a long title, a list of names
+or a big group no longer makes one row a third of the list. No ADR. Decisions of the teacher
+(2026-10-27): clamp the lines and shorten the supporting text; a group row shows the member count
+instead of the names; the group's name in assignment rows is a separate stage.
+
+### Stage 303 — Compact rows in the list panes (F)
+
+- [x] 303.1 F: `tb-list--clamp` — the title at most 2 lines, the supporting text at most 2 lines,
+  cut with an ellipsis (**M3** list item: one to three lines, longer text truncated); used by the
+  list panes of `identity/students/students-page.ts` and
+  `homework/teacher/assignments-page.ts` (all their lists). The style next to `.tb-list__title`
+  in `styles.scss`; `docs/design-system.md` §10, `docs/screens.md`.
+- [x] 303.2 F: shorter supporting text. Assignment rows (`assignments-page.ts` `details`): one or
+  two names, from three — the first one and «и ещё N»; the due date `dd.MM HH:mm` in the current
+  year, `dd.MM.yyyy HH:mm` otherwise. A group row (`students-page.ts` `groupLine`): «N участников ·
+  <nearest lesson>» (the group card's `groupCard.members`), «Пока никого» without members. Tests
+  in the pages' specs; no help article describes the rows.
+
+### Stage 304 — The group's name in assignment rows (B, F)
+
+- [ ] 304.1 B: `AssignmentSummary` gets the groups the assignment was given to whole (a group
+  whose current members are all among its students, or the group chosen in the picker if the
+  assignment keeps it — check `homework` persistence first; names via `identity::api`). Entry
+  points: `homework/api` summary DTO, the assignment list query, `docs/modules/homework.md`.
+- [ ] 304.2 F: an assignment row shows «Группа 7Б» (and «и ещё N» for other students) instead of
+  member names. `homework/data-access/homework.models.ts`, `assignments-page.ts` `details`.
+
 ## Backlog
 
 Feature proposals with detailed plans (lesson notes, progress report, packages, invoices, parents,

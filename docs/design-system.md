@@ -512,7 +512,9 @@ inputs), `size="small"`, `success`, `warn`, `info`, `help`, `contrast`.
     icon only decorates takes `tb-list--no-phone-lead` (on a phone the icon goes); lists of people
     keep avatars; `tb-list--no-lead` has no icon at all.
   - `tb-list__text` — `tb-list__title` (Body Large) + `tb-list__supporting` (Body Medium,
-    on-surface-variant).
+    on-surface-variant). The list panes of «Ученики» and «Задания» take `tb-list--clamp`: at most
+    two lines of each, cut with an ellipsis (**M3**: label and supporting text can be truncated,
+    supporting text one to three lines; *ours*: two lines, the full text in the detail beside).
   - `tb-list__trail` — an amount (Title Medium, `tb-list__trail--amount`), a status or ≤ 3 actions;
     `tb-list__trail--icons` keeps a status and icon buttons on the right on a phone.
   - On a phone (list < 26 rem) row buttons go under the text, full tile width; an amount goes under

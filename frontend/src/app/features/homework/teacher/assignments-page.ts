@@ -44,8 +44,8 @@ import { AssignmentSummary, ReviewQueueItem, TaskDetails } from '../data-access/
 import { assignmentProgress, isDone } from '../homework-labels';
 import { T } from '../i18n/texts';
 
-/** Names shown in a row before «и ещё N». */
-const SHOWN_STUDENTS = 3;
+/** Names a row shows in full; more of them — the first one and «и ещё N» (one row keeps its height). */
+const SHOWN_STUDENTS = 2;
 
 /** What the list shows: works to review, assignments in progress (with the drafts) or finished ones. */
 type Filter = 'review' | 'active' | 'done';
@@ -111,7 +111,7 @@ type Filter = 'review' | 'active' | 'done';
             @switch (filter()) {
               @case ('review') {
                 @if (works().length > 0) {
-                  <ul class="tb-list" [attr.aria-label]="t.toReview">
+                  <ul class="tb-list tb-list--clamp" [attr.aria-label]="t.toReview">
                     @for (work of works(); track work.taskId) {
                       <li [class.tb-list__item--current]="taskId() === work.taskId">
                         <tb-avatar
@@ -243,7 +243,7 @@ type Filter = 'review' | 'active' | 'done';
     }
 
     <ng-template #assignmentRows let-rows="rows" let-label="label">
-      <ul class="tb-list" [attr.aria-label]="label">
+      <ul class="tb-list tb-list--clamp" [attr.aria-label]="label">
         @for (assignment of rows; track assignment.id) {
           <li [class.tb-list__item--current]="assignmentId() === assignment.id">
             <span class="tb-list__lead" aria-hidden="true"
@@ -582,19 +582,24 @@ export class AssignmentsPage implements OnInit {
     );
   }
 
-  /** «Анна, Борис и ещё 2 · до 12.10.2026 18:00». */
+  /** «Анна и ещё 3 · до 12.10 18:00»; the year only when it is not the current one. */
   protected details(assignment: AssignmentSummary): string {
     const names = assignment.students;
     const who =
       names.length === 0
         ? this.t.nobody
-        : names.length > SHOWN_STUDENTS + 1
-          ? this.t.andMore(names.slice(0, SHOWN_STUDENTS).join(', '), names.length - SHOWN_STUDENTS)
+        : names.length > SHOWN_STUDENTS
+          ? this.t.andMore(names[0] ?? '', names.length - 1)
           : names.join(', ');
-    const due =
-      assignment.dueAt === null
-        ? T.noDueDate
-        : this.t.until(this.dates.transform(assignment.dueAt, 'dd.MM.yyyy HH:mm') ?? '');
-    return `${who} · ${due}`;
+    return `${who} · ${this.dueOf(assignment.dueAt)}`;
+  }
+
+  private dueOf(dueAt: string | null): string {
+    if (dueAt === null) {
+      return T.noDueDate;
+    }
+    const year = (moment: string | number): string | null => this.dates.transform(moment, 'yyyy');
+    const format = year(dueAt) === year(this.now()) ? 'dd.MM HH:mm' : 'dd.MM.yyyy HH:mm';
+    return this.t.until(this.dates.transform(dueAt, format) ?? '');
   }
 }
