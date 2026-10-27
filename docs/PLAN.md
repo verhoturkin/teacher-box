@@ -44,7 +44,7 @@ file check before upload, journal filters in the URL. No ADR. Decisions of the t
   a comma, comment, voided. Entry points: `billing/web/TeacherBillingController`,
   `BillingQueryService` (journal query). Tests: controller (student 403, admin 403, content type,
   BOM, escaping of `;` and quotes).
-- [ ] 297.2 F: «⋮ › Скачать CSV» in the payments page header (`billing-overview-page.ts`) with the
+- [x] 297.2 F: «⋮ › Скачать CSV» in the payments page header (`billing-overview-page.ts`) with the
   current filters; unit test of the download.
 
 ### Stage 298 — Copy of an assignment (B, F)
