@@ -151,7 +151,7 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
         UUID anna = directory.addStudent("Анна");
         Instant start = Slots.past(clock);
         String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, start, 60, true)));
-        put(LESSONS + lesson + "/summary", "{\"summary\":\"Итоги дня\",\"nextPlan\":\"План\"}");
+        put(LESSONS + lesson + "/summary", "{\"summary\":\"Итоги дня\",\"nextPlan\":\"Повторить Past Perfect\"}");
         put(LESSONS + lesson + "/notes/" + anna, "{\"note\":\"Личное\"}");
         LocalDate day = start.atZone(ZoneId.of("Europe/Moscow")).toLocalDate();
 
@@ -160,9 +160,9 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
         String studentList = mvc.get().uri("/api/me/schedule/lessons?from={f}&to={t}", day, day.plusDays(2))
                 .with(TestUsers.student(anna)).exchange().getResponse().getContentAsString();
 
-        assertThat(teacherList).contains(lesson).doesNotContain("Итоги дня").doesNotContain("План")
+        assertThat(teacherList).contains(lesson).doesNotContain("Итоги дня").doesNotContain("Повторить Past Perfect")
                 .doesNotContain("Личное");
-        assertThat(studentList).contains(lesson).doesNotContain("Итоги дня").doesNotContain("План")
+        assertThat(studentList).contains(lesson).doesNotContain("Итоги дня").doesNotContain("Повторить Past Perfect")
                 .doesNotContain("Личное");
     }
 
