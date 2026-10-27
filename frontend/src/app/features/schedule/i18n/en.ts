@@ -129,6 +129,11 @@ export const en: Translation<typeof ru> = {
     withdrawRequest: 'Withdraw request',
     sent: 'The teacher will get your request',
     withdrawn: 'Request withdrawn',
+    history: 'Lesson history',
+    noHistory: 'No lessons held yet',
+    covered: 'What we covered',
+    showMore: 'Show more',
+    whatHistory: 'lesson history',
   },
   studentLessons: {
     title: 'Next lessons',

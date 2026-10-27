@@ -359,6 +359,11 @@ asks «Отменить изменения?» before another category or page op
   (`fillHeight`, see «Schedule (teacher)»), and a supporting pane (mini-month, upcoming lessons,
   requests); compact starts with the day agenda. Upcoming rows on a phone: icon, time and details, a
   chevron that opens the lesson card; «Войти в урок» above the request pair.
+  **«История занятий»** — the last section of the supporting pane, before the calendar feed: a
+  `tb-list` of held lessons, newest first (icon, date, group · topic, and «Что прошли» — the shared
+  summary as Markdown, when there is one; no plan or private note), «Показать ещё» for the next 20.
+  The lesson card of a lesson that has started shows the same «Что прошли» under its facts; the
+  notification «Итоги урока» links to `/cabinet/schedule?lesson=<id>` and opens that card.
 - **Homework** (`my-homework-page.ts` + `my-task-page.ts`): list-detail of one route; the list pane
   — the connected group «Сдать · На проверке · Готовые» with counts (the first non-empty chosen),
   the search, rows (icon, title link, «до …» red when overdue, status tag); the detail — the task

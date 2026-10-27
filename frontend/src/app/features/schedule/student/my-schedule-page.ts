@@ -6,6 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { NgTemplateOutlet } from '@angular/common';
 import { Button } from 'primeng/button';
@@ -18,6 +19,7 @@ import {
   BusyTime,
   ChangeKind,
   ChangeRequest,
+  HistoryEntry,
   ScheduleSettings,
   ScheduledLesson,
 } from '../data-access/schedule.models';
@@ -44,12 +46,16 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { MarkdownView } from '@shared/ui/markdown-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { RowType } from '@shared/ui/row-type.directive';
 import { T } from '../i18n/texts';
+
+/** A page of the history list. */
+const HISTORY_PAGE = 20;
 
 /** The day after the end of the week of `date` (Monday; the week starts on Monday). */
 export function nextMonday(date: Date): Date {
@@ -85,6 +91,7 @@ export function nextMonday(date: Date): Date {
     TbDialog,
     LessonCard,
     LoadStateView,
+    MarkdownView,
     PageHeader,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -282,6 +289,46 @@ export function nextMonday(date: Date): Date {
               </div>
             </li>
           </ng-template>
+          <section class="tb-my-schedule-section">
+            <h2>{{ t.history }}</h2>
+            <tb-load-state [state]="historyState" [what]="t.whatHistory" (retry)="loadHistory()">
+              @if (history().length === 0) {
+                <tb-empty-state icon="tb-i-history" [title]="t.noHistory" />
+              } @else {
+                <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.history">
+                  @for (entry of history(); track entry.lessonId) {
+                    <li>
+                      <span class="tb-list__lead" aria-hidden="true">
+                        <i
+                          class="tb-i"
+                          [class.tb-i-group]="entry.groupId !== null"
+                          [class.tb-i-event]="entry.groupId === null"
+                        ></i>
+                      </span>
+                      <div class="tb-list__text">
+                        <span class="tb-list__title">{{ start(entry.startsAt) }}</span>
+                        <span class="tb-list__supporting">{{ entryDetails(entry) }}</span>
+                        @if (entry.summary) {
+                          <div class="tb-history__part">
+                            <span class="tb-history__label">{{ t.covered }}</span>
+                            <tb-markdown [text]="entry.summary" />
+                          </div>
+                        }
+                      </div>
+                    </li>
+                  }
+                </ul>
+                @if (moreHistory()) {
+                  <p-button
+                    [label]="t.showMore"
+                    [text]="true"
+                    [loading]="loadingMore()"
+                    (onClick)="loadMoreHistory()"
+                  />
+                }
+              }
+            </tb-load-state>
+          </section>
           <tb-calendar-feed-panel class="tb-my-schedule-feed" />
         </div>
       </tb-pane>
@@ -297,6 +344,12 @@ export function nextMonday(date: Date): Date {
       @if (sheetLesson(); as lesson) {
         <div class="tb-student-lesson">
           <tb-lesson-card role="student" [lesson]="lesson" />
+          @if (sheetSummary(); as summary) {
+            <section class="tb-history__part">
+              <span class="tb-history__label">{{ t.covered }}</span>
+              <tb-markdown [text]="summary" />
+            </section>
+          }
           <tb-lesson-actions
             [stacked]="true"
             [requests]="canAsk(lesson)"
@@ -383,6 +436,17 @@ export function nextMonday(date: Date): Date {
       margin-block-end: var(--tb-space-4);
     }
 
+    .tb-history__part {
+      margin: var(--tb-space-2) 0 0;
+      overflow-wrap: anywhere;
+    }
+
+    .tb-history__label {
+      display: block;
+      font: var(--tb-type-label-m);
+      color: var(--p-md-on-surface-variant);
+    }
+
     .tb-my-schedule-section h2 {
       margin: 0 0 var(--tb-space-3);
       font: var(--tb-type-title-m-emphasized);
@@ -419,6 +483,7 @@ export class MySchedulePage implements OnInit {
   protected readonly actions = new Busy();
   private readonly api = inject(ScheduleApi);
   private readonly snackbar = inject(Snackbar);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly kind = requestKindLabel;
   protected readonly requestStatuses = REQUEST_STATUS_LABELS;
@@ -452,6 +517,14 @@ export class MySchedulePage implements OnInit {
     return lesson.groupId === null ? T.details.title : lessonWith(lesson);
   });
 
+  /** «Что прошли» of the lesson in the sheet, read with its details. */
+  protected readonly sheetSummary = signal<string | null>(null);
+  protected readonly history = signal<readonly HistoryEntry[]>([]);
+  /** A full page came back, so there may be more. */
+  protected readonly moreHistory = signal(false);
+  protected readonly loadingMore = signal(false);
+  protected readonly historyState = new LoadState();
+
   protected readonly requestVisible = signal(false);
   protected readonly requestLesson = signal<ScheduledLesson | null>(null);
   protected readonly requestKind = signal<ChangeKind>('RESCHEDULE');
@@ -464,6 +537,8 @@ export class MySchedulePage implements OnInit {
   ngOnInit(): void {
     if (this.mobile()) this.selectDay(this.currentDay());
     this.reload();
+    this.loadHistory();
+    this.openLinked();
   }
 
   onRange(range: CalendarRange): void {
@@ -499,10 +574,75 @@ export class MySchedulePage implements OnInit {
 
   openSheet(lesson: ScheduledLesson): void {
     this.sheetLesson.set(lesson);
+    this.sheetSummary.set(lesson.summary ?? null);
+    if (lesson.status !== 'CANCELLED' && new Date(lesson.startsAt) <= new Date()) {
+      this.api.myLesson(lesson.id).subscribe({
+        next: (details) => {
+          if (this.sheetLesson()?.id === details.id) {
+            this.sheetSummary.set(details.summary ?? null);
+          }
+        },
+        error: () => undefined,
+      });
+    }
   }
 
   closeSheet(): void {
     this.sheetLesson.set(null);
+    this.sheetSummary.set(null);
+  }
+
+  /** The link of the notification «Итоги урока» (`?lesson=<id>`) opens that lesson. */
+  private openLinked(): void {
+    const id = this.route.snapshot.queryParamMap.get('lesson');
+    if (id === null) {
+      return;
+    }
+    this.api.myLesson(id).subscribe({
+      next: (lesson) => {
+        this.sheetLesson.set(lesson);
+        this.sheetSummary.set(lesson.summary ?? null);
+      },
+      error: () => undefined,
+    });
+  }
+
+  protected loadHistory(): void {
+    this.api
+      .myHistory(null, HISTORY_PAGE)
+      .pipe(this.historyState.track())
+      .subscribe((page) => {
+        this.history.set(page);
+        this.moreHistory.set(page.length === HISTORY_PAGE);
+      });
+  }
+
+  /** The next page; what is shown stays. */
+  protected loadMoreHistory(): void {
+    const last = this.history().at(-1);
+    this.loadingMore.set(true);
+    this.api.myHistory(last?.startsAt ?? null, HISTORY_PAGE).subscribe({
+      next: (page) => {
+        this.loadingMore.set(false);
+        this.history.update((shown) => [...shown, ...page]);
+        this.moreHistory.set(page.length === HISTORY_PAGE);
+      },
+      error: () => {
+        this.loadingMore.set(false);
+      },
+    });
+  }
+
+  /** «Группа «ОГЭ» · Теорема Виета». */
+  protected entryDetails(entry: HistoryEntry): string {
+    return [
+      entry.groupId === null
+        ? null
+        : lessonWith({ groupId: entry.groupId, groupName: entry.groupName, studentName: null }),
+      entry.topic ?? T.lessonsTab.noTopic,
+    ]
+      .filter((part) => part !== null)
+      .join(' · ');
   }
 
   /** A lesson with a meeting shows the camera, a group lesson the people. */

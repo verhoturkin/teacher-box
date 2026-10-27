@@ -126,6 +126,11 @@ export const ru = {
     withdrawRequest: 'Отозвать запрос',
     sent: 'Учитель получит ваш запрос',
     withdrawn: 'Запрос отозван',
+    history: 'История занятий',
+    noHistory: 'Проведённых занятий пока нет',
+    covered: 'Что прошли',
+    showMore: 'Показать ещё',
+    whatHistory: 'история занятий',
   },
   studentLessons: {
     title: 'Ближайшие занятия',

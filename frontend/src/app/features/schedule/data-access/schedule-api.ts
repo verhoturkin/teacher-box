@@ -205,6 +205,20 @@ export class ScheduleApi {
     });
   }
 
+  /** One lesson of the student with its shared summary. */
+  myLesson(lessonId: string): Observable<ScheduledLesson> {
+    return this.http.get<ScheduledLesson>(`/api/me/schedule/lessons/${lessonId}`, QUIET);
+  }
+
+  /** Held lessons of the student with the shared summaries, newest first. */
+  myHistory(before: string | null, limit: number): Observable<HistoryEntry[]> {
+    let params = new HttpParams().set('limit', limit);
+    if (before !== null) {
+      params = params.set('before', before);
+    }
+    return this.http.get<HistoryEntry[]>('/api/me/schedule/history', { ...QUIET, params });
+  }
+
   requestChange(lessonId: string, body: ChangeRequestBody): Observable<ChangeRequest> {
     return this.http.post<ChangeRequest>(
       `/api/me/schedule/lessons/${lessonId}/requests`,

@@ -2,6 +2,7 @@ import { BreakpointObserver, BreakpointState } from '@angular/cdk/layout';
 import { HttpTestingController, TestRequest } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { BehaviorSubject } from 'rxjs';
 import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
@@ -13,7 +14,12 @@ import {
   scheduledLesson,
 } from '@testing/schedule-fixtures';
 import { ScheduleApi } from '../data-access/schedule-api';
-import { BusyTime, ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
+import {
+  BusyTime,
+  ChangeRequest,
+  HistoryEntry,
+  ScheduledLesson,
+} from '../data-access/schedule.models';
 import { ScheduleCalendar } from '../ui/schedule-calendar';
 import { ScheduleAgenda } from '../ui/schedule-agenda';
 import { MySchedulePage, nextMonday } from './my-schedule-page';
@@ -53,7 +59,10 @@ describe('MySchedulePage', () => {
   });
 
   afterEach(() => {
-    // The teacher's busy time comes with every load of the calendar.
+    // The teacher's busy time comes with every load of the calendar; the history with the page.
+    for (const request of backend.match((r) => r.url === '/api/me/schedule/history')) {
+      request.flush([]);
+    }
     for (const request of busyRequests()) {
       request.flush([]);
     }
@@ -74,8 +83,10 @@ describe('MySchedulePage', () => {
     lessons: ScheduledLesson[],
     requests: ChangeRequest[] = [],
     busy: BusyTime[] = [],
+    history: HistoryEntry[] = [],
   ): Promise<string> {
     fixture.detectChanges();
+    backend.expectOne((r) => r.url === '/api/me/schedule/history').flush(history);
     backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
     backend.expectOne('/api/me/schedule/requests').flush(requests);
     backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
@@ -406,10 +417,195 @@ describe('MySchedulePage', () => {
     buttonByText(hostElement(fixture), 'Решённые: 1').click();
     await fixture.whenStable();
     expect(readableText(hostElement(fixture))).toContain('Не придёт');
-    expect(readableText(hostElement(fixture))).toContain('группа «ОГЭ»');
+    expect(readableText(hostElement(fixture))).toContain('Группа «ОГЭ»');
     buttonByText(hostElement(fixture), 'Не приду').click();
     await fixture.whenStable();
     expect(bodyText()).toContain('Не приду на занятие');
+  });
+});
+
+describe('MySchedulePage lesson summaries', () => {
+  let fixture: ComponentFixture<MySchedulePage>;
+  let backend: HttpTestingController;
+
+  const held = (overrides: Partial<HistoryEntry> = {}): HistoryEntry => ({
+    lessonId: 'h-1',
+    startsAt: new Date(Date.now() - 86_400_000).toISOString(),
+    topic: 'Дроби',
+    status: 'CONDUCTED',
+    groupId: null,
+    groupName: null,
+    attendance: null,
+    summary: null,
+    nextPlan: null,
+    summaryUpdatedAt: null,
+    note: null,
+    ...overrides,
+  });
+
+  const past = (hours: number): { startsAt: string; endsAt: string } => {
+    const start = new Date(Date.now() - hours * 3_600_000);
+    return {
+      startsAt: start.toISOString(),
+      endsAt: new Date(start.getTime() + 3_600_000).toISOString(),
+    };
+  };
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [MySchedulePage],
+      providers: testProviders({
+        provide: BreakpointObserver,
+        useValue: { observe: () => new BehaviorSubject({ matches: false, breakpoints: {} }) },
+      }),
+    });
+    backend = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(MySchedulePage);
+  });
+
+  afterEach(() => {
+    for (const request of backend.match((r) => r.url === '/api/me/schedule/lessons')) {
+      request.flush([]);
+    }
+    for (const request of backend.match((r) => r.url === '/api/me/schedule/busy')) {
+      request.flush([]);
+    }
+    backend.verify();
+    fixture.destroy();
+  });
+
+  async function start(history: HistoryEntry[], lessons: ScheduledLesson[] = []): Promise<void> {
+    fixture.detectChanges();
+    backend.expectOne((r) => r.url === '/api/me/schedule/history').flush(history);
+    backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
+    backend.expectOne('/api/me/schedule/requests').flush([]);
+    backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
+    await fixture.whenStable();
+    for (const request of backend.match((r) => r.url === '/api/me/schedule/lessons')) {
+      request.flush(lessons);
+    }
+    for (const request of backend.match((r) => r.url === '/api/me/schedule/busy')) {
+      request.flush([]);
+    }
+    await fixture.whenStable();
+  }
+
+  function historyRows(): number {
+    return hostElement(fixture).querySelectorAll('ul[aria-label="История занятий"] > li').length;
+  }
+
+  it('lists the held lessons with the summary and shows the next page', async () => {
+    const page = Array.from({ length: 20 }, (_, i) =>
+      held({ lessonId: `h-${String(i)}`, summary: i === 0 ? 'Прошли **дроби**' : null }),
+    );
+    await start(page);
+
+    expect(readableText(hostElement(fixture))).toContain('Что прошли');
+    expect(hostElement(fixture).querySelector('tb-markdown strong')?.textContent).toBe('дроби');
+    expect(historyRows()).toBe(20);
+
+    buttonByText(hostElement(fixture), 'Показать ещё').click();
+    const more = backend.expectOne((r) => r.url === '/api/me/schedule/history');
+    expect(more.request.params.get('before')).toBe(page[19]?.startsAt);
+    more.flush([held({ lessonId: 'h-last', topic: 'Степени', groupId: 'g-1', groupName: 'ОГЭ' })]);
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain('Степени');
+    expect(readableText(hostElement(fixture))).toContain('Группа «ОГЭ»');
+    expect(readableText(hostElement(fixture))).not.toContain('Показать ещё');
+  });
+
+  it('says when no lesson has been held', async () => {
+    await start([]);
+
+    expect(readableText(hostElement(fixture))).toContain('Проведённых занятий пока нет');
+  });
+
+  it('shows «Что прошли» in the sheet of a lesson that has started', async () => {
+    const lesson = scheduledLesson({ id: 'l-p', ...past(2), status: 'CONDUCTED', topic: 'Дроби' });
+    await start([], [lesson]);
+
+    fixture.componentInstance.openSheet(lesson);
+    backend
+      .expectOne('/api/me/schedule/lessons/l-p')
+      .flush({ ...lesson, summary: 'Повторили дроби' });
+    await fixture.whenStable();
+
+    expect(bodyText()).toContain('Повторили дроби');
+    fixture.componentInstance.closeSheet();
+    await fixture.whenStable();
+    expect(bodyText()).not.toContain('Повторили дроби');
+  });
+
+  it('reads no summary for a lesson ahead or a cancelled one', async () => {
+    const ahead = scheduledLesson({
+      id: 'l-f',
+      startsAt: new Date(Date.now() + 3_600_000).toISOString(),
+    });
+    const cancelled = scheduledLesson({ id: 'l-c', ...past(3), status: 'CANCELLED' });
+    await start([]);
+
+    fixture.componentInstance.openSheet(ahead);
+    fixture.componentInstance.openSheet(cancelled);
+    await fixture.whenStable();
+
+    backend.expectNone((r) => r.url.startsWith('/api/me/schedule/lessons/'));
+  });
+
+  it('survives a failed read of the summary', async () => {
+    const lesson = scheduledLesson({ id: 'l-p', ...past(2), status: 'CONDUCTED' });
+    await start([]);
+
+    fixture.componentInstance.openSheet(lesson);
+    backend
+      .expectOne('/api/me/schedule/lessons/l-p')
+      .flush(null, { status: 404, statusText: 'Not Found' });
+    await fixture.whenStable();
+
+    expect(bodyText()).not.toContain('Что прошли');
+  });
+
+  it('opens the lesson of the notification link', async () => {
+    await TestBed.inject(Router).navigateByUrl('/?lesson=l-9');
+    fixture.detectChanges();
+    const lesson = scheduledLesson({ id: 'l-9', ...past(5), status: 'CONDUCTED' });
+    backend.expectOne((r) => r.url === '/api/me/schedule/history').flush([]);
+    backend
+      .expectOne('/api/me/schedule/lessons/l-9')
+      .flush({ ...lesson, summary: 'Итоги по ссылке' });
+    backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
+    backend.expectOne('/api/me/schedule/requests').flush([]);
+    backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
+    await fixture.whenStable();
+
+    expect(bodyText()).toContain('Итоги по ссылке');
+  });
+
+  it('ignores a link to a lesson that cannot be read', async () => {
+    await TestBed.inject(Router).navigateByUrl('/?lesson=gone');
+    fixture.detectChanges();
+    backend.expectOne((r) => r.url === '/api/me/schedule/history').flush([]);
+    backend
+      .expectOne('/api/me/schedule/lessons/gone')
+      .flush(null, { status: 404, statusText: 'Not Found' });
+    backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
+    backend.expectOne('/api/me/schedule/requests').flush([]);
+    backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
+    await fixture.whenStable();
+
+    expect(bodyText()).not.toContain('Что прошли');
+  });
+
+  it('keeps the shown history when the next page fails', async () => {
+    await start(Array.from({ length: 20 }, (_, i) => held({ lessonId: `h-${String(i)}` })));
+
+    buttonByText(hostElement(fixture), 'Показать ещё').click();
+    backend
+      .expectOne((r) => r.url === '/api/me/schedule/history')
+      .flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    expect(historyRows()).toBe(20);
   });
 });
 
