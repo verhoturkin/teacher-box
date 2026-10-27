@@ -11,9 +11,9 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
@@ -24,6 +24,7 @@ import { injectMobile, injectWindowSize } from '@core/layout/mobile';
 import { collapseRail, hideBottomBar } from '@core/layout/rail-state';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { openOnCreate } from '@core/routing/create-param';
+import { writeQuery } from '@core/routing/query-state';
 import { HelpButton } from '@features/help/parts';
 import { TeacherColors } from '@features/identity/parts';
 import { Avatar } from '@shared/ui/avatar';
@@ -359,6 +360,7 @@ export class AssignmentsPage implements OnInit {
   );
   private readonly api = inject(HomeworkApi);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly snackbar = inject(Snackbar);
   private readonly menu = viewChild.required<Menu>('menu');
 
@@ -419,8 +421,13 @@ export class AssignmentsPage implements OnInit {
   protected readonly state = new LoadState();
   /** The moment the lists were read: a due date before it is overdue. */
   private readonly now = signal(Date.now());
-  protected readonly search = new FormControl('', { nonNullable: true });
-  private readonly query = toSignal(this.search.valueChanges, { initialValue: '' });
+  /** The search is kept in the address (`?q=`): «Назад» from an assignment and a reload bring it back. */
+  protected readonly search = new FormControl(this.route.snapshot.queryParamMap.get('q') ?? '', {
+    nonNullable: true,
+  });
+  private readonly query = toSignal(this.search.valueChanges, {
+    initialValue: this.search.value,
+  });
   protected readonly searching = computed(() => this.query().trim() !== '');
   /** The chosen filter; until one is chosen «На проверку» while there is work to review, else «Активные». */
   protected readonly filter = linkedSignal<Filter>(() =>
@@ -478,6 +485,9 @@ export class AssignmentsPage implements OnInit {
   constructor() {
     collapseRail(() => this.sheetOpen());
     hideBottomBar(() => this.phoneReview());
+    this.search.valueChanges.pipe(takeUntilDestroyed()).subscribe((text) => {
+      writeQuery(this.router, this.route, { q: text.trim() });
+    });
     // the editor is a route of its own: it takes the place of the list in the history
     openOnCreate(
       'assignment',

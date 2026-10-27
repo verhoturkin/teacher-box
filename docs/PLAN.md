@@ -78,7 +78,7 @@ file check before upload, journal filters in the URL. No ADR. Decisions of the t
 
 ### Stage 301 — Filters in the URL (F)
 
-- [ ] 301.1 F: query params for the journal filters of `billing-overview-page.ts`
+- [x] 301.1 F: query params for the journal filters of `billing-overview-page.ts`
   (`?month=&kind=&student=`), the search of `assignments-page.ts` and the chips of the students
   `roster.ts`; «Назад» and reload keep them. Tests: router-based unit tests.
 

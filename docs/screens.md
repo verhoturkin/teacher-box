@@ -170,7 +170,8 @@ active on both, `NavItem.alsoActive`).
 
 - **List** — one `tb-list` in the fixed pane: header «Ученики» + «N учеников · M групп» (current
   ones; the total hidden on compact), the search, filter chips «Все · Группы · Должники N · Без
-  мессенджера N · Отключённые» («Отключённые» — students without access and archived groups). From
+  мессенджера N · Отключённые» («Отключённые» — students without access and archived groups; the chip is kept in the
+  address as `?filter=`). From
   expanded the header, search and chips stay and only the list scrolls. Students by name, then
   groups (group icon in the lead). A row: avatar / icon; the name links to the card; supporting
   «nearest lesson · аванс N» (a group: members · nearest lesson; «нет занятий» without lessons in 4
@@ -216,7 +217,8 @@ Three panes of one route (`/teacher/homework[/tasks/:taskId | /:assignmentId]`,
 `features/homework/teacher/`):
 
 - **List** (fixed pane): the connected group «На проверку · Активные · Готовые» with counts, the
-  search always above the list; tonal rows — a work: avatar, student, «задание · сдано …», the
+  search always above the list (kept in the address as `?q=`); tonal rows — a work: avatar,
+  student, «задание · сдано …», the
   «Просрочено» tag; «Ждут сдачи» under them; an assignment row: icon (a board icon when on a board),
   title link + «кому · до dd.MM.yyyy HH:mm» (three names, then «и ещё N»), the progress tag
   (`assignmentProgress`: «Не выдано» secondary, «На проверке: N» warn, «Принято» success, «Выдано» /
@@ -264,7 +266,9 @@ pane «По ученикам».
 - **«Операции»:** the filter group «Все · Оплаты · Занятия · Пропуски» and the «Ученик» select; the
   journal is a `tb-list` — kind icon, student avatar, «Занятие · Анна Смирнова» + «date, time ·
   status», the amount (`+` payment `tb-positive`, `−` charge, `0 ₽` absence without charge); the
-  name links to the card's «Оплаты». The month, figures and filters stay above the scroll.
+  name links to the card's «Оплаты». The month, figures and filters stay above the scroll. The
+  month, the kind and the student are kept in the address (`?month=&kind=&student=`, written with
+  `replaceUrl`): «Назад» from a card and a reload bring the same journal back.
 - **Supporting pane:** «Должники» (debt in `tb-negative`, tonal «Напомнить»), «Авансы
   заканчиваются» (≤ 2 lessons left, *ours*; 5 rows), «По неделям» (bars, today's week lighter),
   «Все в Учениках».

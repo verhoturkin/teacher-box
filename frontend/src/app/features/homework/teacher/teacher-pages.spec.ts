@@ -197,6 +197,46 @@ describe('AssignmentsPage', () => {
     expect(rows(host)).toHaveLength(2);
   });
 
+  it('keeps the search in the address and restores it on arrival', async () => {
+    const { host, fixture, navigate } = await render(
+      [assignmentSummary(), assignmentSummary({ id: 'a-2', title: 'Корни', students: ['Вера'] })],
+      [],
+    );
+    const field = requireElement(host, 'input[type="search"]', HTMLInputElement);
+    field.value = ' вера ';
+    field.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(navigate).toHaveBeenLastCalledWith(
+      [],
+      expect.objectContaining({
+        queryParams: { q: 'вера' },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      }),
+    );
+    fixture.destroy();
+  });
+
+  it('starts with the search of the address', async () => {
+    const { backend } = configure();
+    await TestBed.inject(Router).navigateByUrl('/?q=%D0%B2%D0%B5%D1%80%D0%B0');
+    const fixture = TestBed.createComponent(AssignmentsPage);
+    await fixture.whenStable();
+    backend
+      .expectOne(ASSIGNMENTS)
+      .flush([
+        assignmentSummary(),
+        assignmentSummary({ id: 'a-2', title: 'Корни', students: ['Вера'] }),
+      ]);
+    backend.expectOne(QUEUE).flush([]);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+    expect(requireElement(host, 'input[type="search"]', HTMLInputElement).value).toBe('вера');
+    expect(rows(host)).toHaveLength(1);
+    expect(rows(host)[0]).toContain('Корни');
+    fixture.destroy();
+  });
+
   it('says what is empty in each filter', async () => {
     const { host, fixture } = await render(
       [assignmentSummary({ totalTasks: 2, submitted: 0, accepted: 2 })],

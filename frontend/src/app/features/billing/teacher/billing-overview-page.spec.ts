@@ -331,3 +331,115 @@ describe('BillingOverviewPage on a phone', () => {
     ).toContain('month=' + previous);
   });
 });
+
+describe('BillingOverviewPage filters in the address', () => {
+  let backend: HttpTestingController;
+  let router: Router;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [BillingOverviewPage], providers: testProviders() });
+    backend = TestBed.inject(HttpTestingController);
+    router = TestBed.inject(Router);
+  });
+
+  afterEach(() => {
+    backend.verify();
+  });
+
+  it('writes the kind, the student and the month to the address', async () => {
+    const fixture = TestBed.createComponent(BillingOverviewPage);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/billing/overview').flush(overview([IVAN, MARIA]));
+    backend.expectOne(matching('/api/teacher/billing/summary')).flush(billingSummary());
+    backend.expectOne(matching('/api/teacher/billing/operations')).flush(operations([], MONTH));
+    await fixture.whenStable();
+
+    buttonByText(hostElement(fixture), 'Оплаты').click();
+    backend
+      .expectOne(matching('/api/teacher/billing/operations', { kind: 'PAYMENT' }))
+      .flush(operations([], MONTH));
+    await fixture.whenStable();
+    expect(router.url).toBe('/?kind=payments');
+
+    fixture.componentInstance.studentControl.setValue('s-2');
+    backend
+      .expectOne(matching('/api/teacher/billing/operations', { studentId: 's-2' }))
+      .flush(operations([], MONTH));
+    await fixture.whenStable();
+    expect(router.url).toBe('/?kind=payments&student=s-2');
+
+    buttonByText(hostElement(fixture), 'Предыдущий месяц').click();
+    const [year, month] = MONTH.split('-').map(Number);
+    const previous = toIsoMonth(new Date(year ?? 0, (month ?? 1) - 2, 1));
+    backend.expectOne(matching('/api/teacher/billing/summary')).flush(billingSummary());
+    backend
+      .expectOne(matching('/api/teacher/billing/operations', { month: previous }))
+      .flush(operations([], previous));
+    await fixture.whenStable();
+    backend
+      .expectOne(
+        matching('/api/teacher/billing/operations', {
+          month: previous,
+          kind: 'PAYMENT',
+          studentId: 's-2',
+        }),
+      )
+      .flush(operations([], previous));
+    await fixture.whenStable();
+    expect(router.url).toBe(`/?kind=payments&student=s-2&month=${previous}`);
+
+    buttonByText(hostElement(fixture), 'Все').click();
+    backend
+      .expectOne(matching('/api/teacher/billing/operations', { month: previous, studentId: 's-2' }))
+      .flush(operations([], previous));
+    await fixture.whenStable();
+    expect(router.url).toBe(`/?student=s-2&month=${previous}`);
+    fixture.destroy();
+  });
+
+  it('restores the month, the kind and the student after a reload or «Назад»', async () => {
+    await router.navigateByUrl('/?month=2026-08&kind=payments&student=s-2');
+    const fixture = TestBed.createComponent(BillingOverviewPage);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/billing/overview').flush(overview([IVAN, MARIA]));
+    backend
+      .expectOne(matching('/api/teacher/billing/summary', { month: '2026-08' }))
+      .flush(billingSummary({ month: '2026-08' }));
+    backend
+      .expectOne(matching('/api/teacher/billing/operations', { month: '2026-08' }))
+      .flush(operations([LESSON, PAID], '2026-08'));
+    await fixture.whenStable();
+    backend
+      .expectOne(
+        matching('/api/teacher/billing/operations', {
+          month: '2026-08',
+          kind: 'PAYMENT',
+          studentId: 's-2',
+        }),
+      )
+      .flush(operations([PAID], '2026-08'));
+    await fixture.whenStable();
+
+    const host = hostElement(fixture);
+    expect(buttonByText(host, 'Оплаты').getAttribute('aria-pressed')).toBe('true');
+    expect(fixture.componentInstance.studentControl.value).toBe('s-2');
+    expect(host.querySelectorAll('.tb-ops__list > li')).toHaveLength(1);
+    fixture.destroy();
+  });
+
+  it('ignores a month and a kind that make no sense', async () => {
+    await router.navigateByUrl('/?month=soon&kind=other');
+    const fixture = TestBed.createComponent(BillingOverviewPage);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/billing/overview').flush(overview([]));
+    backend
+      .expectOne(matching('/api/teacher/billing/summary', { month: MONTH }))
+      .flush(billingSummary());
+    backend
+      .expectOne(matching('/api/teacher/billing/operations', { month: MONTH }))
+      .flush(operations([], MONTH));
+    await fixture.whenStable();
+    expect(buttonByText(hostElement(fixture), 'Все').getAttribute('aria-pressed')).toBe('true');
+    fixture.destroy();
+  });
+});

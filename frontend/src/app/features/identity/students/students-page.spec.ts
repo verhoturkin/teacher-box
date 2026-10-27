@@ -92,6 +92,18 @@ describe('StudentsPage', () => {
     await fixture.whenStable();
   }
 
+  it('opens on the chip of the address', async () => {
+    TestBed.configureTestingModule({ imports: [StudentsPage], providers: testProviders() });
+    await TestBed.inject(Router).navigateByUrl('/?filter=groups');
+    backend = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(StudentsPage);
+    host = hostElement(fixture);
+    await fixture.whenStable();
+    await load([MARIA], [OGE]);
+    expect(chip('Группы').getAttribute('aria-pressed')).toBe('true');
+    expect(rows().map((row) => row.split(' ')[0])).toEqual(['ОГЭ']);
+  });
+
   afterEach(() => {
     fixture.destroy();
     // the reads of the card's Обзор: its own spec answers them
@@ -274,6 +286,16 @@ describe('StudentsPage', () => {
         '/teacher/students/m',
         '/teacher/groups/g',
       ]);
+    });
+
+    it('keeps the chip in the address', async () => {
+      await load([MARIA], [OGE]);
+      const router = TestBed.inject(Router);
+
+      await choose('Группы');
+      expect(router.url).toBe('/?filter=groups');
+      await choose('Все');
+      expect(router.url).toBe('/');
     });
 
     it('filters by the chips', async () => {
