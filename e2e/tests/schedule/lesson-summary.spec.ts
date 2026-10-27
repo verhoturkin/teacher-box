@@ -81,6 +81,14 @@ test('the teacher shares a summary: the student gets it in the inbox and the his
   await dialog.getByRole('button', { name: 'Сохранить и отправить' }).click();
   await expect(page.getByText('Итоги отправлены')).toBeVisible();
 
+  // the card is back with the row filled, no reload; opened again from the calendar it still is
+  await expect(card.getByText(COVERED)).toBeVisible();
+  await expect(card.getByText('Добавить итоги')).toHaveCount(0);
+  await page.reload();
+  await page.getByRole('tab', { name: 'Вид: Месяц', exact: true }).click();
+  await page.locator('.tb-lesson', { hasText: NAME }).first().click();
+  await expect(page.getByRole('dialog', { name: NAME }).getByText(COVERED)).toBeVisible();
+
   // the student: the inbox record and the history, without the private note
   const mine = await bearer(request, `sum-${RUN}`, STUDENT_PASSWORD);
   await expect

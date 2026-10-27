@@ -2,8 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
+  untracked,
   linkedSignal,
   model,
   output,
@@ -29,6 +31,17 @@ import { AttendanceDialog } from './attendance-dialog';
 import { LessonCancelDialog } from './lesson-cancel-dialog';
 import { LessonDeleteDialog } from './lesson-delete-dialog';
 import { LessonSummaryDialog } from './lesson-summary-dialog';
+
+/** The lesson of a list with the details of the same lesson. */
+function withDetails(lesson: ScheduledLesson, details: ScheduledLesson): ScheduledLesson {
+  return {
+    ...lesson,
+    summary: details.summary,
+    nextPlan: details.nextPlan,
+    summaryUpdatedAt: details.summaryUpdatedAt,
+    notes: details.notes,
+  };
+}
 
 /**
  * A lesson with the teacher's actions (ADR-0050): a `sheet` whose headline is who the lesson is with,
@@ -176,13 +189,47 @@ export class LessonDetailsDialog {
   /** The teacher answers a request of the student: the card has closed, the answer opens. */
   readonly answerOpened = output<ChangeRequest>();
 
+  /** A reloaded list gives the same lesson again: only another lesson needs its details. */
+  private readonly lessonId = computed(() => this.lesson()?.id ?? null);
+
   protected readonly attendanceVisible = signal(false);
   protected readonly cancelVisible = signal(false);
   protected readonly deleteVisible = signal(false);
   protected readonly summaryVisible = signal(false);
 
-  /** The lesson as the card shows it: what the page gave, then what the last action returned. */
-  protected readonly shown = linkedSignal(() => this.lesson());
+  /** The details of the lesson (summary, plan, private notes) as the server last gave them or the teacher saved. */
+  private readonly details = signal<ScheduledLesson | null>(null);
+
+  /**
+   * The lesson as the card shows it: what the page gave, then what the last action returned. The
+   * lists carry no summary, so a reloaded list lesson keeps the details already loaded for it.
+   */
+  protected readonly shown = linkedSignal<ScheduledLesson | null, ScheduledLesson | null>({
+    source: () => this.lesson(),
+    computation: (next) => {
+      const known = untracked(this.details);
+      return next !== null && known?.id === next.id ? withDetails(next, known) : next;
+    },
+  });
+
+  /** The card is open: the lesson comes with its summary, the plan and the notes. */
+  constructor() {
+    effect((onCleanup) => {
+      const id = this.lessonId();
+      if (!this.visible() || id === null) {
+        return;
+      }
+      const request = this.api.lesson(id).subscribe((loaded) => {
+        this.details.set(loaded);
+        this.shown.update((current) =>
+          current?.id === loaded.id ? withDetails(current, loaded) : current,
+        );
+      });
+      onCleanup(() => {
+        request.unsubscribe();
+      });
+    });
+  }
 
   protected readonly headline = computed(() => {
     const lesson = this.shown();
@@ -310,6 +357,7 @@ export class LessonDetailsDialog {
 
   /** A save of the summary or a note: the card keeps the lesson it returned; the page needs no reload. */
   protected onSummarySaved(lesson: ScheduledLesson): void {
+    this.details.set(lesson);
     this.shown.set(lesson);
     this.changed.emit(lesson);
   }

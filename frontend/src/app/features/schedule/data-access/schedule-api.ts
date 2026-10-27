@@ -73,6 +73,11 @@ export class ScheduleApi {
     return this.http.post<ScheduledLesson>('/api/teacher/schedule/lessons', request, QUIET);
   }
 
+  /** One lesson with its details: the summary, the plan and the private notes (lists carry none). */
+  lesson(lessonId: string): Observable<ScheduledLesson> {
+    return this.http.get<ScheduledLesson>(`/api/teacher/schedule/lessons/${lessonId}`, QUIET);
+  }
+
   edit(lessonId: string, request: EditLessonRequest): Observable<ScheduledLesson> {
     return this.http.put<ScheduledLesson>(
       `/api/teacher/schedule/lessons/${lessonId}`,

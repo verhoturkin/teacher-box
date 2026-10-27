@@ -223,6 +223,7 @@ interface OutcomeOption {
     @container (width > 26rem) {
       .tb-list > li:has(> .tb-list__trail p-selectbutton) {
         grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+        column-gap: var(--tb-space-4);
       }
     }
 

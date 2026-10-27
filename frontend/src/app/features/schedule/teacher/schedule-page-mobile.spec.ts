@@ -50,6 +50,12 @@ describe('SchedulePage on a phone', () => {
     for (const request of backend.match((request) => request.url === '/api/teacher/boards')) {
       request.flush([]);
     }
+    // the details of the opened lesson (covered by the card's own tests)
+    for (const request of backend.match((request) =>
+      /^\/api\/teacher\/schedule\/lessons\/[^/]+$/.test(request.url),
+    )) {
+      request.flush({});
+    }
     backend.verify();
     fixture.destroy();
   });
