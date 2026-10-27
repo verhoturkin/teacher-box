@@ -103,6 +103,11 @@ Design:
   the rows of `schedule/ui/lesson-card.ts` share the columns of the list (subgrid), so the wide
   «Итог» toggle squeezed the text column of every row; its row now keeps its own
   columns (CSS only, checked in the browser).
+- [x] 307.4 F: students list — the trailing column (debt, status, «Архив») is as wide as its own
+  row's content and absent when empty, the text takes its place: modifier `tb-list--own-trail`
+  (`styles.scss`: own columns per row, no subgrid; a row without `tb-list__trail` spans the text
+  over it) on the list of `identity/students/students-page.ts` (`hasTrail`). Other lists keep the
+  shared column. Unit tests.
 
 ### Stage 308 — History feeds (F, `m3-expressive`)
 

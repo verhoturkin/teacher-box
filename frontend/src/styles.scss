@@ -1413,6 +1413,19 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
 }
 
 /*
+ * A list whose rows differ much in their trailing content (`tb-list--own-trail`, the students: a debt,
+ * a status tag or nothing): every row has its own columns, so the right column is as wide as the
+ * content of its own row, and a row without `tb-list__trail` gives the whole width to the text.
+ */
+.tb-list.tb-list--own-trail > li {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+
+  &:not(:has(> .tb-list__trail)) {
+    grid-template-areas: 'lead text text';
+  }
+}
+
+/*
  * Nested corners (M3 optical roundness, ADR-0044): a list, a table of tiles or key figures inside a card or
  * a dialog round their outer corners by the container's corner less the room around them, never below
  * the 4 px of the tiles: a card 20 − 20 and a dialog 28 − 24 leave 4 px, a phone card 20 − 12 leaves 8 px

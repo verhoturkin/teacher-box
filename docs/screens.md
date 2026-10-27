@@ -198,7 +198,8 @@ active on both, `NavItem.alsoActive`).
   «Пока никого» without members — · nearest lesson; «нет занятий» without lessons in 4
   weeks; balances from billing, messengers from notifications, lessons from schedule — a failed read
   drops only its part); trail — one status: the debt in error (Title Medium, read «Долг N») or the
-  tag «Приглашён» / «Отключён» / «В архиве»; no «⋮» in the row. The open card's row is current.
+  tag «Приглашён» / «Отключён» / «В архиве», as wide as its own row and absent when empty
+  (`tb-list--own-trail`); no «⋮» in the row. The open card's row is current.
   Nothing open — «Выберите ученика или группу».
 - **Creation:** «Новый ученик» (`form`) starts with the connected choice «Ученик · Группа» (the
   group choice opens the group form) and asks only the name and contacts; after it the card opens on

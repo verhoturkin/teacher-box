@@ -158,7 +158,7 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
           </div>
           <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
             @if (visibleRows().length > 0) {
-              <ul class="tb-list tb-list--clamp" [attr.aria-label]="t.title">
+              <ul class="tb-list tb-list--clamp tb-list--own-trail" [attr.aria-label]="t.title">
                 @for (row of visibleRows(); track row.kind + row.id) {
                   <li [class.tb-list__item--current]="isCurrent(row)">
                     @if (row.kind === 'student') {
@@ -186,25 +186,27 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
                         <span class="tb-list__supporting">{{ line }}</span>
                       }
                     </div>
-                    <div class="tb-list__trail tb-list__trail--icons">
-                      @if (row.kind === 'student') {
-                        @if (debtOf(row); as debt) {
-                          <span class="tb-roster__debt"
-                            ><span aria-hidden="true">{{ debt.shown }}</span
-                            ><span class="tb-sr-only">{{ debt.spoken }}</span></span
-                          >
-                        } @else if (row.student.status !== 'ACTIVE') {
-                          <!-- one status on the right (spec §8): the debt, or else the tag -->
-                          <p-tag
-                            [value]="statusLabels[row.student.status]"
-                            [severity]="statusSeverities[row.student.status]"
-                            [pTooltip]="inviteHint(row.student)"
-                          />
+                    @if (hasTrail(row)) {
+                      <div class="tb-list__trail tb-list__trail--icons">
+                        @if (row.kind === 'student') {
+                          @if (debtOf(row); as debt) {
+                            <span class="tb-roster__debt"
+                              ><span aria-hidden="true">{{ debt.shown }}</span
+                              ><span class="tb-sr-only">{{ debt.spoken }}</span></span
+                            >
+                          } @else {
+                            <!-- one status on the right (spec §8): the debt, or else the tag -->
+                            <p-tag
+                              [value]="statusLabels[row.student.status]"
+                              [severity]="statusSeverities[row.student.status]"
+                              [pTooltip]="inviteHint(row.student)"
+                            />
+                          }
+                        } @else {
+                          <p-tag [value]="tg.archived" severity="secondary" />
                         }
-                      } @else if (row.group.archivedAt) {
-                        <p-tag [value]="tg.archived" severity="secondary" />
-                      }
-                    </div>
+                      </div>
+                    }
                   </li>
                 }
               </ul>
@@ -577,6 +579,14 @@ export class StudentsPage implements OnInit {
       return null;
     }
     return { shown: this.money(row.balance), spoken: this.t.debt(this.money(-row.balance)) };
+  }
+
+  /** The right column is shown only for a debt, a status other than active or an archived group. */
+  protected hasTrail(row: RosterRow): boolean {
+    if (row.kind === 'group') {
+      return !!row.group.archivedAt;
+    }
+    return this.debtOf(row) !== null || row.student.status !== 'ACTIVE';
   }
 
   private money(amount: number): string {
