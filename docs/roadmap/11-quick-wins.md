@@ -1,6 +1,6 @@
 # 11. Quick wins
 
-Status: proposal. Size: S each — one substep, one session, one commit. No ADR. Most of them are the
+Status: planned as release 0.36.0 (`docs/PLAN.md`, stages 296–302). Size: S each — one substep, one session, one commit. No ADR. Most of them are the
 audit proposals in the Backlog of `docs/PLAN.md` that wait for the teacher's decision; each item
 below names what the teacher has to confirm.
 
