@@ -202,6 +202,16 @@ export const en: Translation<typeof ru> = {
     failed: 'Could not save the summary',
     saved: 'Summary saved',
     sent: 'Summary sent',
+    draft: 'Draft',
+    draftTitle: 'Draft with AI',
+    draftRun: 'Draft',
+    draftAgain: 'Again',
+    draftWords: 'In your own words',
+    draftPlaceholder:
+      'What do you want to note? For example: covered Past Simple, mistakes in irregular verbs.',
+    draftNeedsInput: 'Set the lesson topic or write a few words about it.',
+    draftFailed: 'Could not draft the summary',
+    drafted: 'The draft is added to «What we covered»',
   },
   details: {
     title: 'Lesson',

@@ -467,6 +467,8 @@ describe('LessonDetailsDialog', () => {
     buttonByText(document.body, 'Добавить').click();
     await fixture.whenStable();
     expect(fixture.componentInstance.visible()).toBe(false);
+    backend.expectOne('/api/teacher/ai/status').flush({ enabled: false });
+    await fixture.whenStable();
     typeInto(
       requireElement(document.body, '#lesson-summary-text', HTMLTextAreaElement),
       'Итоги дня',

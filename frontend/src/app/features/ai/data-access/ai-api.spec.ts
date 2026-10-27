@@ -74,6 +74,7 @@ describe('AiApi', () => {
     api.updatePrompt('p-1', input, 2).subscribe();
     api.deletePrompt('p-1').subscribe();
     api.reviewDraft({ title: 'Дроби', description: null, answer: '2/5' }).subscribe();
+    api.lessonSummary({ topic: 'Past Simple', words: null, assignmentTitles: [] }).subscribe();
     api.usage().subscribe();
     api.usage('2026-08').subscribe();
     api.requests('2026-08', 10).subscribe();
@@ -84,6 +85,11 @@ describe('AiApi', () => {
     backend.expectOne('/api/teacher/ai/status');
     const draft = backend.expectOne('/api/teacher/ai/homework-draft');
     expect(draft.request.body).toEqual(brief);
+    expect(backend.expectOne('/api/teacher/ai/lesson-summary').request.body).toEqual({
+      topic: 'Past Simple',
+      words: null,
+      assignmentTitles: [],
+    });
     backend.expectOne({ method: 'GET', url: '/api/teacher/ai/prompts' });
     expect(
       backend.expectOne({ method: 'POST', url: '/api/teacher/ai/prompts' }).request.body,

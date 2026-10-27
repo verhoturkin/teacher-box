@@ -9,12 +9,16 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { EMPTY, Observable, concat, last, of, switchMap } from 'rxjs';
+import { EMPTY, Observable, catchError, concat, filter, last, of, switchMap, take } from 'rxjs';
 import { Button } from 'primeng/button';
 import { SelectButton } from 'primeng/selectbutton';
 import { Textarea } from 'primeng/textarea';
+import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { AiApi } from '@features/ai/parts';
+import { AssignmentSummary, HomeworkApi } from '@features/homework/parts';
 import { SHARED_T } from '@shared/i18n/texts';
 import { Avatar } from '@shared/ui/avatar';
 import { DialogFooter, TbDialog } from '@shared/ui/dialog/dialog';
@@ -61,7 +65,18 @@ type SummaryMode = 'edit' | 'preview';
           <div class="tb-field">
             <div class="tb-field__header">
               <label for="lesson-summary-text">{{ t.covered }}</label>
-              <!-- 307.2: the button of the AI draft goes here, before the toggle -->
+              @if (aiEnabled()) {
+                <p-button
+                  class="tb-lesson-summary__draft-toggle"
+                  [label]="t.draft"
+                  icon="tb-i tb-i-auto_awesome"
+                  severity="secondary"
+                  [text]="true"
+                  [attr.aria-expanded]="draftOpen()"
+                  aria-controls="lesson-summary-draft"
+                  (onClick)="toggleDraft()"
+                />
+              }
               <p-selectbutton
                 [options]="modes"
                 [ngModel]="mode()"
@@ -72,6 +87,34 @@ type SummaryMode = 'edit' | 'preview';
                 [ariaLabel]="t.mode"
               />
             </div>
+            @if (aiEnabled() && draftOpen()) {
+              <div class="tb-lesson-summary__draft" id="lesson-summary-draft">
+                <label for="lesson-summary-words">{{ t.draftWords }}</label>
+                <textarea
+                  pTextarea
+                  id="lesson-summary-words"
+                  rows="2"
+                  maxlength="2000"
+                  [placeholder]="t.draftPlaceholder"
+                  [ngModel]="words()"
+                  (ngModelChange)="words.set($event)"
+                ></textarea>
+                @if (error(); as message) {
+                  <small class="tb-error" role="alert">{{ message }}</small>
+                } @else if (!hasInput(item)) {
+                  <small class="tb-hint">{{ t.draftNeedsInput }}</small>
+                }
+                <div class="tb-actions">
+                  <p-button
+                    [label]="drafted() ? t.draftAgain : t.draftRun"
+                    [icon]="drafted() ? 'tb-i tb-i-refresh' : 'tb-i tb-i-auto_awesome'"
+                    [disabled]="!hasInput(item)"
+                    [loading]="drafting()"
+                    (onClick)="draft(item)"
+                  />
+                </div>
+              </div>
+            }
             @if (mode() === 'preview') {
               <div class="tb-preview tb-lesson-summary__preview">
                 <tb-markdown [text]="summary()" />
@@ -197,6 +240,14 @@ type SummaryMode = 'edit' | 'preview';
       resize: vertical;
     }
 
+    .tb-lesson-summary__draft {
+      display: grid;
+      gap: var(--tb-space-2);
+      padding: var(--tb-space-3);
+      border-radius: var(--tb-shape-lg);
+      background: var(--p-md-surface-container-high);
+    }
+
     .tb-lesson-summary__preview {
       min-height: 8rem;
     }
@@ -228,6 +279,8 @@ export class LessonSummaryDialog {
   protected readonly c = SHARED_T.common;
   private readonly api = inject(ScheduleApi);
   private readonly snackbar = inject(Snackbar);
+  private readonly ai = inject(AiApi);
+  private readonly homework = inject(HomeworkApi);
 
   readonly visible = model(false);
   readonly lesson = input<ScheduledLesson | null>(null);
@@ -241,6 +294,23 @@ export class LessonSummaryDialog {
   protected readonly mode = signal<SummaryMode>('edit');
   protected readonly opened = signal<string | null>(null);
   protected readonly sending = signal(false);
+
+  // the AI draft: a few words of the teacher, the topic and the assignments given that day
+  // read when the dialog first opens, so the cards that merely contain it ask nothing
+  protected readonly aiEnabled = toSignal(
+    toObservable(this.visible).pipe(
+      filter(Boolean),
+      take(1),
+      switchMap(() => this.ai.enabled$),
+    ),
+    { initialValue: false },
+  );
+  protected readonly draftOpen = signal(false);
+  protected readonly words = signal('');
+  protected readonly drafting = signal(false);
+  protected readonly drafted = signal(false);
+  protected readonly error = signal<string | null>(null);
+  private assignments: readonly AssignmentSummary[] | null = null;
 
   // the drafts are read again whenever the dialog opens
   protected readonly summary = linkedSignal(() => this.reset().summary);
@@ -270,6 +340,10 @@ export class LessonSummaryDialog {
     reset: () => {
       this.mode.set('edit');
       this.opened.set(null);
+      this.draftOpen.set(false);
+      this.words.set('');
+      this.drafted.set(false);
+      this.error.set(null);
     },
     failed: T.lessonSummary.failed,
     request: () => this.write(),
@@ -285,6 +359,74 @@ export class LessonSummaryDialog {
 
   protected setNote(studentId: string, value: string): void {
     this.notes.update((notes) => ({ ...notes, [studentId]: value }));
+  }
+
+  protected toggleDraft(): void {
+    this.draftOpen.update((open) => !open);
+  }
+
+  protected hasInput(lesson: ScheduledLesson): boolean {
+    return (lesson.topic ?? '').trim() !== '' || this.words().trim() !== '';
+  }
+
+  /** The draft goes into «Что прошли»: it fills an empty field and follows the text already there. */
+  protected draft(lesson: ScheduledLesson): void {
+    if (this.drafting() || !this.hasInput(lesson)) {
+      return;
+    }
+    this.drafting.set(true);
+    this.error.set(null);
+    this.givenAt(lesson)
+      .pipe(
+        switchMap((titles) =>
+          this.ai.lessonSummary({
+            topic: this.blankToNull(lesson.topic ?? ''),
+            words: this.blankToNull(this.words()),
+            assignmentTitles: titles,
+          }),
+        ),
+      )
+      .subscribe({
+        next: ({ summary }) => {
+          const current = this.summary().trim();
+          this.summary.set(current === '' ? summary : `${current}\n\n${summary}`);
+          this.mode.set('edit');
+          this.drafted.set(true);
+          this.drafting.set(false);
+        },
+        error: (failure: unknown) => {
+          this.error.set(describeError(failure, this.t.draftFailed));
+          this.drafting.set(false);
+        },
+      });
+  }
+
+  /**
+   * Assignments are not bound to lessons: those given the same day to a student of the lesson are
+   * taken as given at it. The list is read once; a failure just leaves the titles out.
+   */
+  private givenAt(lesson: ScheduledLesson): Observable<string[]> {
+    const names = new Set(lesson.participants.map((participant) => participant.studentName));
+    const day = new Date(lesson.startsAt).toDateString();
+    const titles = (all: readonly AssignmentSummary[]): string[] =>
+      all
+        .filter(
+          (assignment) =>
+            new Date(assignment.createdAt).toDateString() === day &&
+            assignment.students.some((student) => names.has(student)),
+        )
+        .map((assignment) => assignment.title)
+        .slice(0, 20);
+    if (this.assignments !== null) {
+      return of(titles(this.assignments));
+    }
+    return this.homework.assignments().pipe(
+      catchError(() => of([] as AssignmentSummary[])),
+      switchMap((all) => {
+        this.assignments = all;
+        return of(titles(all));
+      }),
+    );
   }
 
   protected toggle(studentId: string): void {

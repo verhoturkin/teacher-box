@@ -2,37 +2,57 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
-import { groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
+import { assignmentSummary } from '@testing/homework-fixtures';
+import { at, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { testProviders } from '@testing/setup';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { LessonSummaryDialog } from './lesson-summary-dialog';
 
+const STATUS = '/api/teacher/ai/status';
+const DRAFT = '/api/teacher/ai/lesson-summary';
+const ASSIGNMENTS = '/api/teacher/homework/assignments';
 const SUMMARY = '/api/teacher/schedule/lessons/l-1/summary';
 const NOTE_FIELD = 'textarea[aria-label^="Заметка для себя"]';
 
 describe('LessonSummaryDialog', () => {
   let fixture: ComponentFixture<LessonSummaryDialog>;
+  let created: boolean;
+  let ai: boolean;
   let backend: HttpTestingController;
   let saved: ScheduledLesson[];
   let success: ReturnType<typeof vi.spyOn>;
+
+  /** The component is created when a test opens it: the status of the AI feature is read at once. */
+  function create(): void {
+    fixture = TestBed.createComponent(LessonSummaryDialog);
+    created = true;
+    saved = [];
+    fixture.componentInstance.saved.subscribe((lesson) => saved.push(lesson));
+  }
 
   beforeEach(() => {
     TestBed.configureTestingModule({ imports: [LessonSummaryDialog], providers: testProviders() });
     backend = TestBed.inject(HttpTestingController);
     success = vi.spyOn(TestBed.inject(Snackbar), 'success');
-    fixture = TestBed.createComponent(LessonSummaryDialog);
-    saved = [];
-    fixture.componentInstance.saved.subscribe((lesson) => saved.push(lesson));
+    ai = false;
+    created = false;
   });
 
   afterEach(() => {
     backend.verify();
-    fixture.destroy();
+    if (created) {
+      fixture.destroy();
+    }
   });
 
   async function open(lesson: ScheduledLesson): Promise<void> {
+    if (!created) {
+      create();
+    }
     fixture.componentRef.setInput('lesson', lesson);
     fixture.componentRef.setInput('visible', true);
+    await fixture.whenStable();
+    backend.expectOne(STATUS).flush({ enabled: ai });
     await fixture.whenStable();
   }
 
@@ -212,5 +232,107 @@ describe('LessonSummaryDialog', () => {
     row.click();
     await fixture.whenStable();
     expect(document.body.querySelector(NOTE_FIELD)).toBeNull();
+  });
+
+  describe('AI draft', () => {
+    const draftButton = (): HTMLButtonElement => buttonByText(document.body, 'Черновик');
+
+    it('is not offered while the AI feature is off', async () => {
+      await open(scheduledLesson());
+
+      expect(bodyText()).not.toContain('Черновик');
+    });
+
+    describe('with the AI feature on', () => {
+      beforeEach(() => {
+        ai = true;
+      });
+
+      it('drafts from the topic, the words and the assignments of the day', async () => {
+        await open(scheduledLesson({ topic: 'Past Simple' }));
+        draftButton().click();
+        await fixture.whenStable();
+        expect(buttonByText(document.body, 'Составить').disabled).toBe(false);
+        await type('#lesson-summary-words', 'ошибки в глаголах');
+
+        buttonByText(document.body, 'Составить').click();
+        await fixture.whenStable();
+        backend.expectOne(ASSIGNMENTS).flush([
+          assignmentSummary({
+            title: 'Глаголы',
+            createdAt: at(2026, 10, 1, 9),
+            students: ['Иван Петров'],
+          }),
+          assignmentSummary({
+            title: 'Чужое',
+            createdAt: at(2026, 10, 1, 9),
+            students: ['Другой'],
+          }),
+          assignmentSummary({
+            title: 'Вчера',
+            createdAt: at(2026, 9, 30, 9),
+            students: ['Иван Петров'],
+          }),
+        ]);
+        await fixture.whenStable();
+        const request = backend.expectOne(DRAFT);
+        expect(request.request.body).toEqual({
+          topic: 'Past Simple',
+          words: 'ошибки в глаголах',
+          assignmentTitles: ['Глаголы'],
+        });
+        request.flush({ summary: 'Разобрали **Past Simple**' });
+        await fixture.whenStable();
+
+        expect(field('#lesson-summary-text').value).toBe('Разобрали **Past Simple**');
+        expect(buttonByText(document.body, 'Ещё раз')).toBeTruthy();
+      });
+
+      it('goes after the text already written and reads the assignments once', async () => {
+        await open(scheduledLesson({ topic: 'Тема', summary: 'Было' }));
+        draftButton().click();
+        await fixture.whenStable();
+
+        for (const answer of ['Первый', 'Второй']) {
+          buttonByText(document.body, answer === 'Первый' ? 'Составить' : 'Ещё раз').click();
+          await fixture.whenStable();
+          if (answer === 'Первый') {
+            backend.expectOne(ASSIGNMENTS).flush([]);
+            await fixture.whenStable();
+          }
+          backend.expectOne(DRAFT).flush({ summary: answer });
+          await fixture.whenStable();
+        }
+
+        expect(field('#lesson-summary-text').value).toBe('Было\n\nПервый\n\nВторой');
+      });
+
+      it('asks for a topic or a few words first', async () => {
+        await open(scheduledLesson({ topic: null }));
+        draftButton().click();
+        await fixture.whenStable();
+
+        expect(bodyText()).toContain('Укажите тему урока');
+        expect(buttonByText(document.body, 'Составить').disabled).toBe(true);
+        await type('#lesson-summary-words', 'повторили времена');
+        expect(buttonByText(document.body, 'Составить').disabled).toBe(false);
+      });
+
+      it('tells a failed draft next to the field and leaves the text alone', async () => {
+        await open(scheduledLesson({ topic: 'Тема' }));
+        draftButton().click();
+        await fixture.whenStable();
+
+        buttonByText(document.body, 'Составить').click();
+        await fixture.whenStable();
+        backend.expectOne(ASSIGNMENTS).error(new ProgressEvent('offline'));
+        await fixture.whenStable();
+        backend.expectOne(DRAFT).flush({}, { status: 502, statusText: 'Bad Gateway' });
+        await fixture.whenStable();
+
+        expect(bodyText()).toContain('Не удалось составить черновик');
+        expect(field('#lesson-summary-text').value).toBe('');
+      });
+    });
   });
 });

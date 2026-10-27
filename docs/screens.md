@@ -162,7 +162,11 @@ One content component in `schedule/ui` for teacher and student in a `tb-dialog k
   (ADR-0026) and the card comes back with the row updated.
 - **«Итоги урока»** (`schedule/teacher/lesson-summary-dialog.ts`, `tb-dialog kind="form"`):
   «Что прошли» — Markdown with the `Текст / Просмотр` toggle of the homework editor (visible to the
-  students; the header of the field also holds the AI draft button of 307.2); «Что дальше» — two
+  students; when the AI feature is on, a text button «Черновик» in the field header opens a
+  small panel with «Коротко своими словами» and «Составить»: the draft comes from the topic, the
+  words and the titles of the assignments created that day for the lesson's students (assignments
+  are not bound to lessons — *ours*) and goes into the field, after the text already there);
+  «Что дальше» — two
   lines, the hint that it goes to the next lesson's empty topic; «Заметка для себя» — private, one
   field for a one-student lesson, for a group a `tb-list` with an avatar and a name per student
   whose row folds the field open. Nothing saves by itself: the footer has «Отмена», «Сохранить» and

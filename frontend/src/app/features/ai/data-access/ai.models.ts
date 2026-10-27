@@ -82,6 +82,18 @@ export interface ReviewBrief {
   readonly answer: string;
 }
 
+/** What the teacher knows about a lesson; at least one of `topic` and `words` is filled. */
+export interface LessonSummaryBrief {
+  readonly topic: string | null;
+  readonly words: string | null;
+  /** Titles of the assignments given at the lesson. */
+  readonly assignmentTitles: readonly string[];
+}
+
+export interface LessonSummaryDraft {
+  readonly summary: string;
+}
+
 export interface ReviewDraft {
   readonly comment: string;
   readonly grade: string | null;
