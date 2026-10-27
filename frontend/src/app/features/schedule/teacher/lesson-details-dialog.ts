@@ -54,6 +54,12 @@ import { LessonSummaryDialog } from './lesson-summary-dialog';
     LessonSummaryDialog,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: `
+    /* ours: the summary is an action of its own, set apart from the facts of the lesson */
+    .tb-lesson-details__summary {
+      margin-top: var(--tb-space-4);
+    }
+  `,
   template: `
     <tb-dialog
       kind="sheet"
@@ -111,13 +117,11 @@ import { LessonSummaryDialog } from './lesson-summary-dialog';
                 <span class="tb-list__title">{{ summaryT.title }}</span>
                 <span class="tb-list__supporting">{{ summaryLine() }}</span>
               </span>
-              <span class="tb-list__trail tb-list__trail--icons">
+              <span class="tb-list__trail">
                 <p-button
                   class="tb-list__stretched"
-                  icon="tb-i tb-i-chevron_right"
+                  [label]="summaryAction()"
                   severity="secondary"
-                  [text]="true"
-                  [rounded]="true"
                   [ariaLabel]="summaryT.dialog"
                   (onClick)="openSummary()"
                 />
@@ -198,6 +202,10 @@ export class LessonDetailsDialog {
       !(lesson.groupId === null && lesson.status === 'MISSED')
     );
   });
+  /** The button of the row: it is an action of its own, so it names the action. */
+  protected readonly summaryAction = computed(() =>
+    (this.shown()?.summary?.trim() ?? '') === '' ? this.summaryT.addAction : this.summaryT.edit,
+  );
   /** The first line of «Что прошли», or the invitation to write it. */
   protected readonly summaryLine = computed(() => {
     const text = this.shown()?.summary?.trim() ?? '';

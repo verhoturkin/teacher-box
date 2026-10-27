@@ -464,7 +464,7 @@ describe('LessonDetailsDialog', () => {
   it('opens the dialog in place of the card and brings the card back with the saved row', async () => {
     await open(scheduledLesson(), PAST);
 
-    buttonByText(document.body, 'Итоги урока').click();
+    buttonByText(document.body, 'Добавить').click();
     await fixture.whenStable();
     expect(fixture.componentInstance.visible()).toBe(false);
     typeInto(

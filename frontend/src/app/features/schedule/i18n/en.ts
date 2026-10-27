@@ -185,6 +185,8 @@ export const en: Translation<typeof ru> = {
   lessonSummary: {
     title: 'Summary',
     add: 'Add a summary',
+    addAction: 'Add',
+    edit: 'Edit',
     dialog: 'Lesson summary',
     covered: 'What we covered',
     write: 'Text',

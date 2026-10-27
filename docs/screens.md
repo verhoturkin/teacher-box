@@ -156,8 +156,9 @@ One content component in `schedule/ui` for teacher and student in a `tb-dialog k
 - **«Итоги»** (teacher, `schedule/teacher/lesson-details-dialog.ts`): one more row of the card, under
   the facts, only for a lesson that has started and is not cancelled (an individual lesson marked
   «Пропуск» has none; a future lesson has none) — icon `rate_review`, title «Итоги», supporting text
-  the first line of «Что прошли» or «Добавить итоги», a trailing chevron button that covers the
-  row (`tb-list__stretched`). The row opens the dialog «Итоги урока» in place of the card
+  the first line of «Что прошли» or «Добавить итоги», a trailing tonal button «Добавить» / «Изменить»
+  that covers the row (`tb-list__stretched`); *ours:* the row stands 16 px apart from the list of
+  facts, so that it reads as an action of its own. The row opens the dialog «Итоги урока» in place of the card
   (ADR-0026) and the card comes back with the row updated.
 - **«Итоги урока»** (`schedule/teacher/lesson-summary-dialog.ts`, `tb-dialog kind="form"`):
   «Что прошли» — Markdown with the `Текст / Просмотр` toggle of the homework editor (visible to the

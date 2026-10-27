@@ -185,6 +185,8 @@ export const ru = {
   lessonSummary: {
     title: 'Итоги',
     add: 'Добавить итоги',
+    addAction: 'Добавить',
+    edit: 'Изменить',
     dialog: 'Итоги урока',
     covered: 'Что прошли',
     write: 'Текст',
