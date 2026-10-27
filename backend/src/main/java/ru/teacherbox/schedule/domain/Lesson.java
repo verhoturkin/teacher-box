@@ -382,15 +382,15 @@ public final class Lesson {
      * the summary is not part of the time edits the version protects.
      */
     public void writeSummary(@Nullable String newSummary, @Nullable String newNextPlan, Instant now) {
-        requireNotCancelled();
+        requireSummarizable(now);
         summary = bounded(newSummary, MAX_SUMMARY);
         nextPlan = bounded(newNextPlan, MAX_NEXT_PLAN);
         summaryUpdatedAt = now;
     }
 
     /** Checks that a private note about the student may be written. */
-    public void requireNoteFor(UUID studentId) {
-        requireNotCancelled();
+    public void requireNoteFor(UUID studentId, Instant now) {
+        requireSummarizable(now);
         if (!hasParticipant(studentId)) {
             throw new BusinessRuleException("schedule.not-a-participant", "The student is not in this lesson");
         }
@@ -401,9 +401,16 @@ public final class Lesson {
         return bounded(text, MAX_SUMMARY);
     }
 
-    private void requireNotCancelled() {
+    /** Only a lesson that has started and was not cancelled has a summary; a missed individual one has none. */
+    public void requireSummarizable(Instant now) {
         if (status == LessonStatus.CANCELLED) {
             throw new BusinessRuleException("schedule.lesson-cancelled", "A cancelled lesson has no summary");
+        }
+        if (startsAt.isAfter(now)) {
+            throw new BusinessRuleException("schedule.lesson-not-started", "The lesson has not started yet");
+        }
+        if (!isGroup() && status == LessonStatus.MISSED) {
+            throw new BusinessRuleException("schedule.lesson-missed", "A missed lesson has no summary");
         }
     }
 

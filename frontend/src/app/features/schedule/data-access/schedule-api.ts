@@ -142,7 +142,7 @@ export class ScheduleApi {
   /** Sends the summary to the participants as «Итоги урока». */
   shareSummary(lessonId: string): Observable<void> {
     return this.http
-      .post(`/api/teacher/schedule/lessons/${lessonId}/summary/share`, null)
+      .post(`/api/teacher/schedule/lessons/${lessonId}/summary/share`, null, QUIET)
       .pipe(map(() => undefined));
   }
 

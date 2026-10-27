@@ -35,8 +35,9 @@ Design:
   visible to participants), `lessons.next_plan` `varchar(1000)`, `lessons.summary_updated_at`;
   table `lesson_notes (lesson_id, student_id, note varchar(4000), updated_at)`, PK
   `(lesson_id, student_id)`, private to the teacher.
-- Summary and notes are editable for any lesson that is not `CANCELLED`, before the outcome too.
-  Last write wins with `updated_at` returned (one author); edits never bump the lesson `version`
+- Summary and notes are editable only for a lesson that has started (`startsAt <= now`) and is not
+  `CANCELLED`; a `MISSED` lesson with one student has none (a missed group lesson keeps them), the
+  share action follows the same rule. Last write wins with `updated_at` returned (one author); edits never bump the lesson `version`
   used to lock time edits. Series edits (`LessonRepetitionService`) never touch them; deleting a
   lesson deletes its notes.
 - «Что дальше» prefill (our decision): saving a non-empty `nextPlan` copies it into the topic of
@@ -45,7 +46,7 @@ Design:
 - The calendar list endpoints, ICS and Google Calendar never carry summaries or notes — only the
   lesson details and the history endpoints.
 - Event `LessonSummaryShared(lessonId, studentIds, teacherId)` in `schedule::api`, published only
-  by the explicit «Отправить ученику» action, never by autosave.
+  by the explicit «Сохранить и отправить» action, never by a plain save.
 - AI: `ai` does not depend on `schedule`; the frontend sends the texts.
 
 ### Stage 304 — Summary and notes (B)
@@ -86,12 +87,16 @@ Design:
 
 ### Stage 307 — «Итоги» in the lesson card (F, `m3-expressive`)
 
-- [x] 307.1 F: `schedule/teacher/lesson-details-dialog.ts` — section «Итоги»: «Что прошли»
-  (Markdown, `Текст / Просмотр` like the homework editor), «Что дальше», private «Заметка для себя»
-  per participant (for a group a `tb-list` with an expand per student); autosave on blur with a
-  saved indicator; «Отправить ученику» (disabled for an empty summary, snackbar after). Hidden for a
-  cancelled lesson. Unit tests.
-- [ ] 307.2 F: AI draft button in the «Что прошли» field — a small inline draft from the topic, the
+- [x] 307.1 F: `schedule/teacher/lesson-details-dialog.ts` — one `tb-list` row «Итоги» (the first
+  line of «Что прошли» or «Добавить итоги», chevron) for a started lesson that is not cancelled and
+  not an individual `MISSED` one; it opens the dialog «Итоги урока» (`lesson-summary-dialog.ts`,
+  `tb-dialog`): «Что прошли» (Markdown, `Текст / Просмотр` like the homework editor), «Что дальше»,
+  private «Заметка для себя» (a group: a `tb-list` with an expand per student). Explicit
+  «Отмена» / «Сохранить» / «Сохранить и отправить» (disabled for an empty summary), no autosave;
+  snackbars «Итоги сохранены» / «Итоги отправлены». Backend: the writes and the share reject a
+  lesson that has not started (`schedule.lesson-not-started`) and an individual `MISSED` one
+  (`schedule.lesson-missed`). Unit tests.
+- [ ] 307.2 F: AI draft button in the «Что прошли» field of the dialog «Итоги урока» — a small inline draft from the topic, the
   assignments given at the lesson and the teacher's short words (`HomeworkAiState` as the model),
   shown only when the AI feature is on. Unit tests.
 

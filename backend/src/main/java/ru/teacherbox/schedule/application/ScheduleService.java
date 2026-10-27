@@ -183,6 +183,7 @@ public class ScheduleService {
     @Transactional
     public void shareSummary(UUID lessonId) {
         Lesson lesson = find(lessonId);
+        lesson.requireSummarizable(clock.instant());
         if (lesson.summary() == null) {
             throw new BusinessRuleException("schedule.summary-empty", "Write the summary before sending it");
         }
@@ -193,7 +194,7 @@ public class ScheduleService {
     @Transactional
     public LessonView updateNote(UUID lessonId, UUID studentId, @Nullable String note) {
         Lesson lesson = find(lessonId);
-        lesson.requireNoteFor(studentId);
+        lesson.requireNoteFor(studentId, clock.instant());
         lessons.saveNote(lessonId, studentId, Lesson.note(note), clock.instant());
         return queries.lesson(lessonId);
     }

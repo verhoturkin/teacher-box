@@ -78,9 +78,9 @@ describe('LessonDetailsDialog', () => {
   }
 
   function pressed(): string[] {
-    return Array.from(
-      document.body.querySelectorAll('.p-togglebutton-checked:not(tb-lesson-summary *)'),
-    ).map((button) => button.textContent.trim());
+    return Array.from(document.body.querySelectorAll('.p-togglebutton-checked')).map((button) =>
+      button.textContent.trim(),
+    );
   }
 
   /** The next confirmation the dialog asks for (the host of confirmations lives in `App`). */
@@ -436,24 +436,53 @@ describe('LessonDetailsDialog', () => {
     expect(text).toContain('Предупредил');
   });
 
-  it('shows «Итоги» of a lesson, but not of a cancelled one', async () => {
-    await open(scheduledLesson());
-    expect(bodyText()).toContain('Что прошли');
+  it('shows the row «Итоги» only of a lesson that has started, not cancelled, not missed alone', async () => {
+    await open(scheduledLesson(), FUTURE);
+    expect(bodyText()).not.toContain('Добавить итоги');
 
-    await open(scheduledLesson({ status: 'CANCELLED', cancelledBy: 'TEACHER' }));
-    expect(bodyText()).not.toContain('Что прошли');
+    await open(scheduledLesson(), PAST);
+    expect(bodyText()).toContain('Добавить итоги');
+
+    await open(scheduledLesson({ status: 'CANCELLED', cancelledBy: 'TEACHER' }), PAST);
+    expect(bodyText()).not.toContain('Добавить итоги');
+
+    await open(scheduledLesson({ status: 'MISSED' }), PAST);
+    expect(bodyText()).not.toContain('Добавить итоги');
+
+    await open(groupLesson({ status: 'MISSED' }), PAST);
+    expect(bodyText()).toContain('Добавить итоги');
   });
 
-  it('keeps the lesson a summary save returned and tells the page', async () => {
-    await open(scheduledLesson());
-    const area = requireElement(document.body, 'textarea[id^="summary-"]', HTMLTextAreaElement);
-    typeInto(area, 'Итоги');
-    area.dispatchEvent(new Event('blur'));
+  it('shows the first line of «Что прошли» in the row', async () => {
+    await open(scheduledLesson({ summary: 'Past Simple\nи ещё' }), PAST);
+
+    expect(bodyText()).toContain('Past Simple');
+    expect(bodyText()).not.toContain('и ещё');
+    expect(bodyText()).not.toContain('Добавить итоги');
+  });
+
+  it('opens the dialog in place of the card and brings the card back with the saved row', async () => {
+    await open(scheduledLesson(), PAST);
+
+    buttonByText(document.body, 'Итоги урока').click();
     await fixture.whenStable();
-    const updated = scheduledLesson({ summary: 'Итоги' });
+    expect(fixture.componentInstance.visible()).toBe(false);
+    typeInto(
+      requireElement(document.body, '#lesson-summary-text', HTMLTextAreaElement),
+      'Итоги дня',
+    );
+    buttonByText(document.body, 'Сохранить').click();
+    await fixture.whenStable();
+    const updated = scheduledLesson({ summary: 'Итоги дня' });
     backend.expectOne('/api/teacher/schedule/lessons/l-1/summary').flush(updated);
+    await fixture.whenStable();
+    for (const request of backend.match((request) => request.url === '/api/teacher/boards')) {
+      request.flush([]);
+    }
     await fixture.whenStable();
 
     expect(changed).toEqual([updated]);
+    expect(fixture.componentInstance.visible()).toBe(true);
+    expect(bodyText()).toContain('Итоги дня');
   });
 });

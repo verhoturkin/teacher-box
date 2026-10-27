@@ -153,16 +153,21 @@ One content component in `schedule/ui` for teacher and student in a `tb-dialog k
   оплату», for a series the single choice «Только это / Это и следующие» with the count);
   «Удалить…» — `confirm.danger` for one lesson, for a series an `alert` with the same scope list
   and count; the card closes before either opens. «Снять отметку» only for group lessons.
-- **«Итоги»** (teacher, `schedule/teacher/lesson-summary.ts`, under the facts; not for a cancelled
-  lesson): subtitle Title Medium and three fields, all of them save when they lose focus, the line
-  under the section says «Сохраняется… / Сохранено / Не удалось сохранить итоги» (`aria-live`).
+- **«Итоги»** (teacher, `schedule/teacher/lesson-details-dialog.ts`): one more row of the card, under
+  the facts, only for a lesson that has started and is not cancelled (an individual lesson marked
+  «Пропуск» has none; a future lesson has none) — icon `rate_review`, title «Итоги», supporting text
+  the first line of «Что прошли» or «Добавить итоги», a trailing chevron button that covers the
+  row (`tb-list__stretched`). The row opens the dialog «Итоги урока» in place of the card
+  (ADR-0026) and the card comes back with the row updated.
+- **«Итоги урока»** (`schedule/teacher/lesson-summary-dialog.ts`, `tb-dialog kind="form"`):
   «Что прошли» — Markdown with the `Текст / Просмотр` toggle of the homework editor (visible to the
-  students); «Что дальше» — two lines, goes to the next lesson's empty topic; «Заметка для себя» —
-  private, one field for a one-student lesson, for a group a `tb-list` with an avatar and a name
-  per student whose row folds the field open (the note's first line is the supporting text).
-  Footer of the section: tonal «Отправить ученику» (group: «…участникам»), disabled until the
-  saved summary is not empty; the snackbar «Итоги отправлены» follows. *Ours:* the layout and the
-  texts; the toggle and the lists are the shared ones.
+  students; the header of the field also holds the AI draft button of 307.2); «Что дальше» — two
+  lines, the hint that it goes to the next lesson's empty topic; «Заметка для себя» — private, one
+  field for a one-student lesson, for a group a `tb-list` with an avatar and a name per student
+  whose row folds the field open. Nothing saves by itself: the footer has «Отмена», «Сохранить» and
+  «Сохранить и отправить» (group: «…участникам»; disabled until «Что прошли» is filled); the
+  snackbar «Итоги сохранены» / «Итоги отправлены» follows. *Ours:* the layout and the texts; the
+  toggle, the lists and the dialog are the shared ones.
 - **Student:** the same facts and their own actions («Войти в урок», «Перенести | Отменить» as a
   standard group), without ✎, «⋮» and marks.
 

@@ -65,7 +65,7 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
     @Test
     void blankTextClearsAndTheEditNeverBumpsTheLessonVersion() throws UnsupportedEncodingException {
         UUID anna = directory.addStudent("Анна");
-        String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.next(clock), 60, true)));
+        String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.past(clock), 60, true)));
         Object version = JsonPath.read(get(LESSONS + lesson).getResponse().getContentAsString(), "$.version");
 
         put(LESSONS + lesson + "/summary", "{\"summary\":\"Итоги\"}");
@@ -85,8 +85,8 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
     void invalidWritesAreRejected() throws UnsupportedEncodingException {
         UUID anna = directory.addStudent("Анна");
         UUID stranger = directory.addStudent("Чужой");
-        String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.next(clock), 60, true)));
-        String cancelled = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.next(clock), 60, true)));
+        String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.past(clock), 60, true)));
+        String cancelled = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.past(clock), 60, true)));
         post(LESSONS + cancelled + "/cancel", "{}");
 
         assertThat(put(LESSONS + lesson + "/summary", "{\"summary\":\"" + "я".repeat(4001) + "\"}"))
@@ -106,7 +106,7 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
     void onlyTheTeacherWritesAndOnlyParticipantsRead() throws UnsupportedEncodingException {
         UUID anna = directory.addStudent("Анна");
         UUID stranger = directory.addStudent("Чужой");
-        String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.next(clock), 60, true)));
+        String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.past(clock), 60, true)));
         put(LESSONS + lesson + "/summary", "{\"summary\":\"Секрет\"}");
 
         for (String uri : new String[] {"/summary", "/notes/" + anna}) {
@@ -149,7 +149,7 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
     @Test
     void theCalendarListsCarryNoSummaryOrNotes() throws UnsupportedEncodingException {
         UUID anna = directory.addStudent("Анна");
-        Instant start = Slots.next(clock);
+        Instant start = Slots.past(clock);
         String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, start, 60, true)));
         put(LESSONS + lesson + "/summary", "{\"summary\":\"Итоги дня\",\"nextPlan\":\"План\"}");
         put(LESSONS + lesson + "/notes/" + anna, "{\"note\":\"Личное\"}");
@@ -170,7 +170,7 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
     void theNextPlanFillsOnlyAnEmptyTopicOfTheNextLessonOfTheSameStudent() throws UnsupportedEncodingException {
         UUID anna = directory.addStudent("Анна");
         UUID boris = directory.addStudent("Борис");
-        Instant start = Slots.next(clock);
+        Instant start = Slots.past(clock);
         String first = id(post("/api/teacher/schedule/lessons", lesson(anna, start, 60, true)));
         String second = id(post("/api/teacher/schedule/lessons", lesson(anna, start.plus(Duration.ofDays(2)), 60, true)));
         String third = id(post("/api/teacher/schedule/lessons", lesson(anna, start.plus(Duration.ofDays(3)), 60, true)));
@@ -195,7 +195,7 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
             throws UnsupportedEncodingException {
         UUID anna = directory.addStudent("Анна");
         UUID group = groups.addGroup("ОГЭ", anna);
-        Instant start = Slots.next(clock);
+        Instant start = Slots.past(clock);
         String first = id(post("/api/teacher/schedule/lessons", groupLesson(group, start)));
         String single = id(post("/api/teacher/schedule/lessons", lesson(anna, start.plus(Duration.ofDays(1)), 60, true)));
         String second = id(post("/api/teacher/schedule/lessons", groupLesson(group, start.plus(Duration.ofDays(2)))));
@@ -207,9 +207,41 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
     }
 
     @Test
-    void deletingALessonDeletesItsNotes() throws UnsupportedEncodingException {
+    void aLessonThatHasNotStartedHasNoSummaryNoNoteAndCannotBeShared() throws UnsupportedEncodingException {
         UUID anna = directory.addStudent("Анна");
         String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.next(clock), 60, true)));
+
+        for (var result : List.of(put(LESSONS + lesson + "/summary", "{\"summary\":\"Рано\"}"),
+                put(LESSONS + lesson + "/notes/" + anna, "{\"note\":\"Рано\"}"),
+                post(LESSONS + lesson + "/summary/share", ""))) {
+            assertThat(result).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT).bodyText()
+                    .contains("schedule.lesson-not-started");
+        }
+    }
+
+    @Test
+    void aMissedIndividualLessonHasNoSummaryButAMissedGroupLessonKeepsIt() throws UnsupportedEncodingException {
+        UUID anna = directory.addStudent("Анна");
+        String missed = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.past(clock), 60, true)));
+        put(LESSONS + missed + "/outcome", "{\"outcome\":\"MISSED\"}");
+
+        for (var result : List.of(put(LESSONS + missed + "/summary", "{\"summary\":\"Нет\"}"),
+                put(LESSONS + missed + "/notes/" + anna, "{\"note\":\"Нет\"}"),
+                post(LESSONS + missed + "/summary/share", ""))) {
+            assertThat(result).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT).bodyText()
+                    .contains("schedule.lesson-missed");
+        }
+
+        UUID group = groups.addGroup("ОГЭ", anna);
+        String groupLesson = id(post("/api/teacher/schedule/lessons", groupLesson(group, Slots.past(clock))));
+        put(LESSONS + groupLesson + "/attendance", "{\"marks\":{\"" + anna + "\":\"MISSED\"}}");
+        assertThat(put(LESSONS + groupLesson + "/summary", "{\"summary\":\"Итоги\"}")).hasStatusOk();
+    }
+
+    @Test
+    void deletingALessonDeletesItsNotes() throws UnsupportedEncodingException {
+        UUID anna = directory.addStudent("Анна");
+        String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.past(clock), 60, true)));
         put(LESSONS + lesson + "/notes/" + anna, "{\"note\":\"Личное\"}");
         assertThat(lessons.findNotes(UUID.fromString(lesson))).hasSize(1);
 

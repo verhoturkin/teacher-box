@@ -64,8 +64,9 @@ Repeat events aggregate notifications; generation itself does not notify per occ
 Lesson summary (0.37.0): `lessons.summary` (4000, Markdown, shown to the participants), `next_plan` (1000) and
 `summary_updated_at`; `lesson_notes (lesson_id, student_id, note, updated_at)` — the teacher's private note per
 student, never shown to students. They are saved by their own `UPDATE` without the lesson `version`, so they never
-conflict with time edits; last write wins. Allowed for any lesson except `CANCELLED` (errors
-`schedule.lesson-cancelled`, `schedule.summary-too-long`, `schedule.not-a-participant`). Series edits do not touch
+conflict with time edits; last write wins. Allowed only for a lesson that has started and is not `CANCELLED`, and
+not for an individual `MISSED` one — the same for the share action (errors `schedule.lesson-cancelled`,
+`schedule.lesson-not-started`, `schedule.lesson-missed`, `schedule.summary-too-long`, `schedule.not-a-participant`). Series edits do not touch
 them; deleting a lesson deletes its notes. Saving a non-empty `next_plan` copies it (cut to 500 characters, our
 decision) into the topic of the next planned lesson of the same student (or the same group) if that topic is empty;
 a filled topic is never overwritten. Calendar lists, ICS and Google carry none of these fields.
@@ -90,7 +91,7 @@ History feeds of held lessons (`CONDUCTED`/`MISSED`, group lessons included, new
 `GET /api/teacher/schedule/groups/{id}/history` (same without private notes and attendance) and
 `GET /api/me/schedule/history` (own lessons only, `summary` only — no plan, no note).
 `POST lessons/{id}/summary/share` (204) publishes `LessonSummaryShared(lessonId, studentIds, teacherId, startsAt,
-occurredAt)` — only this explicit action, never the autosave; an empty summary is `schedule.summary-empty` (422).
+occurredAt)` — only this explicit action, never a plain save; an empty summary is `schedule.summary-empty` (422).
 Lesson POST/PUT accept `repeatWeeks` (0–4), `repeatUntil`; PUT/cancel/DELETE accept `scope` (`ONLY`/`FOLLOWING`)
 and optional optimistic `version`/`repeatVersion`. The UI supplies versions. `GET lessons/{id}/following`
 discloses affected/protected existing lesson IDs and the rule version before a bulk action. Standalone
