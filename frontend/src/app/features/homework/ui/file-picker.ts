@@ -1,14 +1,19 @@
 import { ChangeDetectionStrategy, Component, inject, input, model } from '@angular/core';
-import { of } from 'rxjs';
+import { catchError, firstValueFrom, of } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Tooltip } from 'primeng/tooltip';
+import { Snackbar } from '@core/snackbar/snackbar';
+import { checkFiles } from '@shared/files/check-files';
 import { FileOpener, isShowable } from '@shared/files/file-opener';
+import { HomeworkApi } from '../data-access/homework-api';
 import { fileIcon, formatFileSize } from '../homework-labels';
 import { T } from '../i18n/texts';
 
 /** Extensions accepted by the backend (FilePolicy). */
 export const ACCEPTED_FILES =
   '.pdf,.txt,.md,.rtf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.odp,.jpg,.jpeg,.png,.gif,.webp,.heic,.mp3,.m4a,.ogg,.wav,.zip';
+
+const ACCEPTED_EXTENSIONS = ACCEPTED_FILES.split(',').map((extension) => extension.slice(1));
 
 /**
  * Selects several files; the selection is kept in the `files` model until the form is sent. The picked files are a
@@ -80,16 +85,27 @@ export const ACCEPTED_FILES =
 export class FilePicker {
   protected readonly t = T.ui;
   private readonly opener = inject(FileOpener);
+  private readonly snackbar = inject(Snackbar);
+  private readonly api = inject(HomeworkApi);
   readonly files = model<File[]>([]);
   readonly label = input(T.ui.attachFiles);
 
   protected readonly accept = ACCEPTED_FILES;
 
-  protected onSelected(element: HTMLInputElement): void {
+  protected async onSelected(element: HTMLInputElement): Promise<void> {
     const selected = Array.from(element.files ?? []);
-    this.files.update((files) => [...files, ...selected]);
     // Allows picking the same file again after removing it.
     element.value = '';
+    // The size limit is the server's setting; while it is unknown the size is left to the server.
+    const limits = await firstValueFrom(this.api.limits().pipe(catchError(() => of(null))));
+    const { accepted, rejected } = await checkFiles(selected, {
+      extensions: ACCEPTED_EXTENSIONS,
+      maxSize: limits?.maxFileSize,
+    });
+    rejected.forEach((problem) => {
+      this.snackbar.error(problem.message);
+    });
+    this.files.update((files) => [...files, ...accepted]);
   }
 
   protected removeAt(index: number): void {

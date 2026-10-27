@@ -19,6 +19,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
 import { Confirm } from '@shared/ui/confirm';
 import { DialogHeaderActions, TbDialog } from '@shared/ui/dialog/dialog';
+import { LessonMarkUndo } from '../data-access/lesson-mark-undo';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
 import { lessonWith } from '../schedule-labels';
@@ -104,6 +105,7 @@ import { LessonDeleteDialog } from './lesson-delete-dialog';
       [(visible)]="attendanceVisible"
       [lesson]="shown()"
       (saved)="onChanged($event)"
+      (restored)="onChanged($event)"
     />
     <tb-lesson-cancel-dialog
       [(visible)]="cancelVisible"
@@ -122,6 +124,7 @@ export class LessonDetailsDialog {
   private readonly api = inject(ScheduleApi);
   private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
+  private readonly markUndo = inject(LessonMarkUndo);
   protected readonly busy = new Busy();
 
   readonly visible = model(false);
@@ -254,6 +257,12 @@ export class LessonDetailsDialog {
       next: (updated) => {
         this.shown.set(updated);
         this.changed.emit(updated);
+        if (change.outcome !== null) {
+          this.markUndo.offer(lesson, updated, (restored) => {
+            this.shown.set(restored);
+            this.changed.emit(restored);
+          });
+        }
       },
       error: () => {
         change.revert();

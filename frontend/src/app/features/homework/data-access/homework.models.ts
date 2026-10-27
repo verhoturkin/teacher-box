@@ -210,3 +210,10 @@ export interface MyHomeworkSummary {
   /** Open tasks, the nearest due date first. */
   readonly upcoming: MyTask[];
 }
+
+/** Mirrors `HomeworkLimitsController.Limits`: what the server takes in an upload. */
+export interface HomeworkLimits {
+  /** Bytes. */
+  readonly maxFileSize: number;
+  readonly maxFilesPerUpload: number;
+}

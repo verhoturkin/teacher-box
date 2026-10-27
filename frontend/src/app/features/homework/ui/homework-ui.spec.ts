@@ -1,8 +1,18 @@
+import { HttpTestingController } from '@angular/common/http/testing';
+import { testProviders } from '@testing/setup';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { providePrimeNG } from 'primeng/config';
 import { attachment, submission } from '@testing/homework-fixtures';
-import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
+import { Snackbar } from '@core/snackbar/snackbar';
+import {
+  aFile,
+  buttonByText,
+  hostElement,
+  readableText,
+  requireElement,
+  settleFiles,
+} from '@testing/dom';
 import { FileOpener } from '@shared/files/file-opener';
 import { Attachment } from '../data-access/homework.models';
 import { AttachmentList } from './attachment-list';
@@ -73,7 +83,10 @@ class PickerHost {
 
 describe('FilePicker', () => {
   it('shows picked files as cards; a PDF or a picture opens by its name', async () => {
-    TestBed.configureTestingModule({ imports: [PickerHost], providers: [providePrimeNG()] });
+    TestBed.configureTestingModule({
+      imports: [PickerHost],
+      providers: testProviders(),
+    });
     const opened: string[] = [];
     vi.spyOn(TestBed.inject(FileOpener), 'open').mockImplementation((content, _showable, name) => {
       content.subscribe((blob) => opened.push(name(blob)));
@@ -94,7 +107,11 @@ describe('FilePicker', () => {
   });
 
   it('collects selected files and lets remove them', async () => {
-    TestBed.configureTestingModule({ imports: [PickerHost], providers: [providePrimeNG()] });
+    TestBed.configureTestingModule({
+      imports: [PickerHost],
+      providers: testProviders(),
+    });
+    const error = vi.spyOn(TestBed.inject(Snackbar), 'error');
     const fixture = TestBed.createComponent(PickerHost);
     await fixture.whenStable();
     const host = hostElement(fixture);
@@ -105,10 +122,18 @@ describe('FilePicker', () => {
     buttonByText(host, 'Прикрепить файлы').click();
     expect(clicks).toHaveBeenCalled();
 
-    const files = [new File(['a'], 'a.txt'), new File(['bb'], 'b.png')];
+    const big = new File(['a'], 'big.pdf');
+    Object.defineProperty(big, 'size', { value: 2049 });
+    const files = [new File(['a'], 'a.txt'), aFile('b.png'), new File(['x'], 'virus.exe'), big];
     Object.defineProperty(input, 'files', { value: files, configurable: true });
     input.dispatchEvent(new Event('change'));
+    TestBed.inject(HttpTestingController)
+      .expectOne('/api/me/homework/limits')
+      .flush({ maxFileSize: 2048, maxFilesPerUpload: 10 });
+    await settleFiles();
     await fixture.whenStable();
+    expect(error).toHaveBeenCalledWith('«virus.exe»: такой тип файла загружать нельзя');
+    expect(error).toHaveBeenCalledWith('«big.pdf» больше 2 КБ');
 
     expect(fixture.componentInstance.files().map((file) => file.name)).toEqual(['a.txt', 'b.png']);
     expect(readableText(host)).toContain('a.txt 1 Б');
@@ -116,6 +141,24 @@ describe('FilePicker', () => {
     buttonByText(host, 'Убрать a.txt').click();
     await fixture.whenStable();
     expect(fixture.componentInstance.files().map((file) => file.name)).toEqual(['b.png']);
+  });
+
+  it('leaves the size to the server while the limits are unknown', async () => {
+    TestBed.configureTestingModule({ imports: [PickerHost], providers: testProviders() });
+    const fixture = TestBed.createComponent(PickerHost);
+    await fixture.whenStable();
+    const input = requireElement(hostElement(fixture), 'input[type="file"]', HTMLInputElement);
+    const big = aFile('big.png');
+    Object.defineProperty(big, 'size', { value: 500 * 1024 * 1024 });
+
+    Object.defineProperty(input, 'files', { value: [big], configurable: true });
+    input.dispatchEvent(new Event('change'));
+    TestBed.inject(HttpTestingController)
+      .expectOne('/api/me/homework/limits')
+      .flush(null, { status: 500, statusText: 'Error' });
+    await settleFiles();
+
+    expect(fixture.componentInstance.files()).toEqual([big]);
   });
 });
 

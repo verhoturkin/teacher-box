@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ledger, lesson, payment } from '@testing/billing-fixtures';
-import { hostElement, readableText, requireElement } from '@testing/dom';
+import { hostElement, readableText, requireElement, settleFiles } from '@testing/dom';
 import { LedgerList } from '../ledger/ledger-list';
 import { StudentPaymentsTab } from './student-payments-tab';
 import { testProviders } from '@testing/setup';
@@ -100,9 +100,11 @@ describe('StudentPaymentsTab', () => {
     const big = new File(['x'], 'big.pdf');
     Object.defineProperty(big, 'size', { value: 10 * 1024 * 1024 + 1 });
     list.attachReceipt.emit({ payment: payment(), file: big });
+    await settleFiles();
     backend.expectNone('/api/teacher/billing/payments/p-1/receipt');
 
     list.attachReceipt.emit({ payment: payment(), file: new File(['%PDF'], 'a.pdf') });
+    await settleFiles();
     await fixture.whenStable();
     expect(list.receiptBusy()).toBe('p-1');
     backend
@@ -112,7 +114,8 @@ describe('StudentPaymentsTab', () => {
     await fixture.whenStable();
     expect(list.receiptBusy()).toBeNull();
 
-    list.attachReceipt.emit({ payment: payment(), file: new File(['x'], 'a.txt') });
+    list.attachReceipt.emit({ payment: payment(), file: new File(['%PDF'], 'b.pdf') });
+    await settleFiles();
     backend
       .expectOne({ method: 'PUT', url: '/api/teacher/billing/payments/p-1/receipt' })
       .flush({ code: 'receipt.type-not-allowed' }, { status: 422, statusText: 'Unprocessable' });

@@ -16,6 +16,7 @@ import { Message } from 'primeng/message';
 import { RadioButton } from 'primeng/radiobutton';
 import { DEFAULT_PORTAL_NAME, Portal, PortalSettings } from '@core/portal/portal';
 import { MAX_PORTAL_NAME_LENGTH } from '@core/portal/portal-address';
+import { guardUnsaved } from '@core/routing/unsaved-changes';
 import { PortalLogo } from '@core/portal/portal-logo';
 import { Tooltip } from 'primeng/tooltip';
 import {
@@ -578,11 +579,13 @@ export class PortalSettingsCard implements OnInit {
   });
 
   constructor() {
+    guardUnsaved(() => this.form.dirty);
     this.ownColor.valueChanges.pipe(takeUntilDestroyed(inject(DestroyRef))).subscribe((color) => {
       if (this.own() && isOwnColor(color)) {
         // The palette and the text field share the control: the one not typed in follows.
         this.ownColor.setValue(color, { emitEvent: false });
         this.form.controls.accent.setValue(color.toLowerCase());
+        this.form.controls.accent.markAsDirty();
       }
     });
   }
@@ -592,6 +595,7 @@ export class PortalSettingsCard implements OnInit {
     this.customMode.set(true);
     const color = this.ownColor.value;
     this.form.controls.accent.setValue(isOwnColor(color) ? color.toLowerCase() : DEFAULT_OWN_COLOR);
+    this.form.controls.accent.markAsDirty();
   }
 
   ngOnInit(): void {
@@ -603,6 +607,7 @@ export class PortalSettingsCard implements OnInit {
   chooseAccent(value: string): void {
     this.customMode.set(false);
     this.form.controls.accent.setValue(value);
+    this.form.controls.accent.markAsDirty();
   }
 
   cancel(): void {

@@ -85,3 +85,21 @@ export function swipeAside(element: Element | null, distance = -200): void {
   element.dispatchEvent(pointer('pointermove', 300 + distance));
   element.dispatchEvent(pointer('pointerup', 300 + distance));
 }
+
+/** Lets the file checks of `checkFiles` (they read the first bytes of a file) finish. */
+export async function settleFiles(): Promise<void> {
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, 20);
+  });
+}
+
+/** A file of the given name whose first bytes are those of its type, so that it passes `checkFiles`. */
+export function aFile(name: string, content = ''): File {
+  const heads: Record<string, number[]> = {
+    pdf: [0x25, 0x50, 0x44, 0x46, 0x2d, 0x31],
+    png: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
+    jpg: [0xff, 0xd8, 0xff, 0xe0],
+  };
+  const extension = name.slice(name.lastIndexOf('.') + 1).toLowerCase();
+  return new File([new Uint8Array(heads[extension] ?? []), content], name);
+}

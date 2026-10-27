@@ -39,6 +39,16 @@ class AssignmentVideos {
         videos.replace(assignmentId, replaced);
     }
 
+    /** The same videos, with their transcripts, in another assignment. */
+    void copy(UUID fromAssignmentId, UUID toAssignmentId) {
+        List<AssignmentVideo> copies = new ArrayList<>();
+        for (AssignmentVideo video : videos.findByAssignment(fromAssignmentId)) {
+            copies.add(new AssignmentVideo(Ids.newId(), toAssignmentId, video.position(), video.link(),
+                    video.title(), video.transcript(), video.transcriptShown()));
+        }
+        videos.replace(toAssignmentId, copies);
+    }
+
     /** As the teacher sees them: with every transcript. */
     List<VideoView> of(UUID assignmentId) {
         return videos.findByAssignment(assignmentId).stream().map(video -> VideoView.of(video, true)).toList();

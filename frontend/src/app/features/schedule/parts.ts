@@ -3,6 +3,7 @@
  * Pages are loaded lazily through index.ts; keeping them apart keeps them out of other features' bundles.
  */
 export { ScheduleApi } from './data-access/schedule-api';
+export { LessonMarkUndo } from './data-access/lesson-mark-undo';
 export { STATUS_LABELS, formatLessonStart, lessonWith, requestKindLabel } from './schedule-labels';
 export type {
   ChangeRequest,

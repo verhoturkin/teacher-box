@@ -69,6 +69,7 @@ export const en: Translation<typeof ru> = {
     previousMonth: 'Previous month',
     nextMonth: 'Next month',
     moreActions: 'More',
+    downloadCsv: 'Download CSV',
     income: 'Received',
     charged: 'Charged for lessons',
     debt: 'Debt',

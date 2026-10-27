@@ -5,6 +5,14 @@ import { Student, StudentGroup } from '../data-access/identity.models';
 /** The chips over the list of students and groups (redesign spec §8). */
 export type RosterFilter = 'all' | 'groups' | 'debtors' | 'noMessenger' | 'deactivated';
 
+export const ROSTER_FILTERS: readonly RosterFilter[] = [
+  'all',
+  'groups',
+  'debtors',
+  'noMessenger',
+  'deactivated',
+];
+
 /** A student in the list with what the other features know of them; `null` — not known (not loaded). */
 export interface StudentRow {
   readonly kind: 'student';

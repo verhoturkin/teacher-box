@@ -46,6 +46,10 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
 - **Deleting** (0.14.2): `DELETE /api/teacher/homework/assignments/{id}` (`AssignmentService.delete`) removes the files of
   the assignment and of its answers (`FileStorage`), the answers, the tasks and the assignment; bound textbooks go by
   cascade. No event: notifications already sent stay in the inbox, their link leads to «not found».
+- **Copy** (0.36.0): `POST /api/teacher/homework/assignments/{id}/copy` (`AssignmentService.copy`, 201) — a new
+  draft «<title> (копия)» (the title is cut to 200 characters) with the text, the files (new `FileStorage` keys, so
+  deleting the original keeps the copy's files), the bound textbooks with pages and the videos with transcripts; no
+  students, no deadline, no board.
 - A student sees only own tasks and attachments (403/404 tests).
 
 ## Contract (`homework::api`)
@@ -62,14 +66,14 @@ file of the assignment's materials — name, type, size, content; another assign
 
 ## REST
 
-`/api/teacher/homework/**` (assignments — the list has the names of the students of each, `DELETE assignments/{id}`, students, attachments,
+`/api/teacher/homework/**` (assignments — the list has the names of the students of each, `DELETE assignments/{id}`, `POST assignments/{id}/copy`, students, attachments,
 `PUT assignments/{id}/board`, `POST assignments/{id}/textbooks` `{textbookId, pages}`,
 `DELETE assignments/{id}/textbooks/{textbookId}`, `POST videos/transcript`, tasks/{id}/review, review-queue, summary (besides the review counters it has `weekAssigned` — assignments given to current students and
 `weekOnTime` — works handed in not later than the due date, both in the current Monday–Sunday week of the instance time
 zone, for the Today page, 239.1),
 `GET students/{studentId}/tasks` — the student's tasks as the student's list shows them, for the student card
 (237.1); an unknown student has none);
-`/api/me/homework/**` (tasks, submissions, attachments, `tasks/{taskId}/textbooks/{textbookId}`, summary).
+`/api/me/homework/**` (tasks, submissions, attachments, `tasks/{taskId}/textbooks/{textbookId}`, summary, `limits`).
 
 ## Frontend
 

@@ -214,6 +214,11 @@ export const en: Translation<typeof ru> = {
     reviewSheet: 'Reviewing the work',
     pickHint: 'A student’s work or a homework with its students opens here',
   },
+  menu: { actions: 'Actions' },
+  copy: {
+    action: 'Make a copy',
+    copied: (title: string) => `A copy is made: «${title}»`,
+  },
   remove: {
     action: 'Delete…',
     header: 'Delete the homework?',

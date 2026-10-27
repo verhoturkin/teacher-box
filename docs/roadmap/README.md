@@ -26,11 +26,10 @@ How to use:
 | 08 | [Self-booking of free slots](08-self-booking.md) | schedule, notifications | L | yes | — |
 | 09 | [Calls: «ученик ждёт» and recording](09-calls-waiting-recording.md) | meetings, notifications, docker | L | yes | — |
 | 10 | [Spaced repetition](10-spaced-repetition.md) | new module `practice`, ai | XL | yes | 06 (soft) |
-| 11 | [Quick wins](11-quick-wins.md) | schedule, billing, homework | S each | no | — |
 
 Sizes: S — one session, M — 2–3 substeps, L — a release of its own, XL — two releases.
 
-Suggested order: 11 (any time, between releases) → 01 → 02 (phase 1) → 03 → 04 → 07 → 06 → 08 →
+Suggested order: 01 → 02 (phase 1) → 03 → 04 → 07 → 06 → 08 →
 05 → 02 (phase 2, parents) → 09 → 10. The first five close the gap between «schedule and money»
 and «how the student is doing»; 05 is the most invasive and should come after the data it exposes
 exists.

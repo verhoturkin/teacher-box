@@ -12,6 +12,7 @@ import { create } from '../support/create';
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
 const RUN = Date.now().toString(36);
 const MARKED = `Итог ${RUN}`;
+const UNDONE = `Отмена ${RUN}`;
 const SERIES = `Серия ${RUN}`;
 const ASKING = `Запрос ${RUN}`;
 const STUDENT_PASSWORD = 'e2e-student-pass-289';
@@ -122,6 +123,36 @@ test('«Итог» marks, changes and clears the outcome of a lesson', async ({ 
   await expect(held).toHaveAttribute('aria-pressed', 'false');
   // and the card has no footer buttons for it
   await expect(card.getByRole('button', { name: 'Снять отметку' })).toHaveCount(0);
+});
+
+test('a mark needs no confirmation: the snackbar «Отменить» takes it back', async ({
+  page,
+  request,
+}) => {
+  const headers = await bearer(request);
+  const id = await student(request, headers, UNDONE);
+  await lesson(request, headers, {
+    studentId: id,
+    startsAt: new Date(Date.now() - 2 * HOUR).toISOString(),
+  });
+  const balance = async (): Promise<number> => {
+    const response = await request.get(`/api/teacher/billing/students/${id}`, { headers });
+    return ((await response.json()) as { balance: number }).balance;
+  };
+  const before = await balance();
+  await openMonth(page);
+  await page.locator('.tb-lesson', { hasText: UNDONE }).first().click();
+  const card = page.getByRole('dialog', { name: UNDONE });
+  const missed = card.getByRole('button', { name: 'Пропуск' });
+
+  await missed.click();
+  await expect(missed).toHaveAttribute('aria-pressed', 'true');
+  // no confirmation dialog: the result is a snackbar with «Отменить»
+  await expect(page.locator('.tb-snackbar__text', { hasText: 'Отмечено: пропуск' })).toBeVisible();
+  await page.getByRole('button', { name: 'Отменить', exact: true }).click();
+
+  await expect(missed).toHaveAttribute('aria-pressed', 'false');
+  expect(await balance()).toBe(before);
 });
 
 test('a lesson of a series is cancelled in a dialog of its own, for this and the following', async ({

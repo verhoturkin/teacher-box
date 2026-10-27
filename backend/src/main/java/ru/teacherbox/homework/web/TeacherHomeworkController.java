@@ -164,6 +164,13 @@ class TeacherHomeworkController {
                 inputs(request.videos()), request.studentIds() == null ? List.of() : request.studentIds());
     }
 
+    /** A draft copy of the assignment with its materials; no students, deadline or board. */
+    @PostMapping("/assignments/{assignmentId}/copy")
+    @ResponseStatus(HttpStatus.CREATED)
+    AssignmentDetails copy(@PathVariable UUID assignmentId) {
+        return assignments.copy(assignmentId);
+    }
+
     @GetMapping("/assignments/{assignmentId}")
     AssignmentDetails get(@PathVariable UUID assignmentId) {
         return assignments.get(assignmentId);

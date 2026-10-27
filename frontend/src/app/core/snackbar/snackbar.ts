@@ -7,6 +7,8 @@ export type SnackbarSeverity = 'success' | 'info' | 'error';
 /** How long a message stays on the screen (ADR-0024): time to read it, an error longer. */
 export const SNACKBAR_LIFE = 5000;
 export const SNACKBAR_ERROR_LIFE = 8000;
+/** A result that can be taken back by «Отменить». */
+export const SNACKBAR_UNDO_LIFE = 6000;
 
 /**
  * The snackbar (M3, ADR-0024): a short message at the bottom of the screen. One cause — one message:
@@ -33,6 +35,12 @@ export class Snackbar {
   /** A note that stays until it is closed: a step left to do. */
   notice(detail: string): void {
     this.show('info', detail, true);
+  }
+
+  /** A result with «Отменить» for a while: the action needs no confirmation, it can be taken back. */
+  undoable(detail: string, undo: () => void): void {
+    this.shown.set(`success:${detail}`, Date.now() + SNACKBAR_UNDO_LIFE);
+    this.messages.add({ severity: 'success', detail, life: SNACKBAR_UNDO_LIFE, data: { undo } });
   }
 
   show(severity: SnackbarSeverity, detail: string, sticky = false): void {

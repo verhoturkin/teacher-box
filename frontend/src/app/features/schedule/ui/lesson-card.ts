@@ -2,10 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   linkedSignal,
   output,
+  signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
@@ -124,21 +126,23 @@ interface OutcomeOption {
             <span class="tb-list__title">{{ t.outcome }}</span>
           </div>
           <div class="tb-list__trail">
-            <p-selectbutton
-              [options]="outcomes"
-              optionLabel="label"
-              optionValue="value"
-              [allowEmpty]="true"
-              [disabled]="busy()"
-              [ngModel]="selected()"
-              (ngModelChange)="pick($event)"
-              [ariaLabel]="t.outcome"
-            >
-              <ng-template #item let-option>
-                <i [class]="'tb-i tb-i-' + option.icon" aria-hidden="true"></i>
-                <span>{{ option.label }}</span>
-              </ng-template>
-            </p-selectbutton>
+            @for (key of [toggleKey()]; track key) {
+              <p-selectbutton
+                [options]="outcomes"
+                optionLabel="label"
+                optionValue="value"
+                [allowEmpty]="true"
+                [disabled]="busy()"
+                [ngModel]="selected()"
+                (ngModelChange)="pick($event)"
+                [ariaLabel]="t.outcome"
+              >
+                <ng-template #item let-option>
+                  <i [class]="'tb-i tb-i-' + option.icon" aria-hidden="true"></i>
+                  <span>{{ option.label }}</span>
+                </ng-template>
+              </p-selectbutton>
+            }
           </div>
         </li>
       }
@@ -271,6 +275,19 @@ export class LessonCard {
     return status === 'CONDUCTED' || status === 'MISSED' ? status : null;
   });
 
+  /** The toggle is made anew when the mark was taken back from outside: PrimeNG keeps the pressed button. */
+  protected readonly toggleKey = signal(0);
+  private picked: LessonOutcome | null = null;
+
+  constructor() {
+    effect(() => {
+      if (this.lesson().status === 'SCHEDULED' && this.picked !== null) {
+        this.picked = null;
+        this.toggleKey.update((key) => key + 1);
+      }
+    });
+  }
+
   protected start(iso: string): string {
     return formatLessonStart(iso);
   }
@@ -293,6 +310,7 @@ export class LessonCard {
 
   protected pick(value: LessonOutcome | null): void {
     const previous = this.selected();
+    this.picked = value;
     this.selected.set(value);
     this.outcomeChange.emit({
       outcome: value,

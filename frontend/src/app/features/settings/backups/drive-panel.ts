@@ -21,6 +21,7 @@ import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 import { HelpButton } from '@features/help/parts';
 import { Portal } from '@core/portal/portal';
+import { guardUnsaved } from '@core/routing/unsaved-changes';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { formatFileSize } from '@shared/files/file-size';
@@ -341,6 +342,7 @@ export class DrivePanel implements OnInit {
   private readonly resultCode = signal<string | null>(null);
 
   constructor() {
+    guardUnsaved(() => this.editingClient() && this.form.dirty);
     inject(DestroyRef).onDestroy(() => {
       this.store.cancel();
     });

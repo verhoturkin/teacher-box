@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { Message } from 'primeng/message';
 import { SelectButton } from 'primeng/selectbutton';
 import { EMPTY } from 'rxjs';
+import { LessonMarkUndo } from '../data-access/lesson-mark-undo';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { AttendanceMark, ScheduledLesson } from '../data-access/schedule.models';
 import { formatLessonTime, lessonWith } from '../schedule-labels';
@@ -101,10 +102,13 @@ export class AttendanceDialog {
   protected readonly c = SHARED_T.common;
   protected readonly t = T.attendanceDialog;
   private readonly api = inject(ScheduleApi);
+  private readonly undo = inject(LessonMarkUndo);
 
   readonly visible = model(false);
   readonly lesson = input<ScheduledLesson | null>(null);
   readonly saved = output<ScheduledLesson>();
+  /** «Отменить» in the snackbar put the previous attendance back. */
+  readonly restored = output<ScheduledLesson>();
 
   protected readonly options = [...MARK_OPTIONS];
   protected readonly with = lessonWith;
@@ -138,6 +142,12 @@ export class AttendanceDialog {
       return lesson === null ? EMPTY : this.api.markAttendance(lesson.id, this.marks());
     },
     done: (saved) => {
+      const before = this.lesson();
+      if (before !== null) {
+        this.undo.offer(before, saved, (lesson) => {
+          this.restored.emit(lesson);
+        });
+      }
       this.saved.emit(saved);
     },
   });

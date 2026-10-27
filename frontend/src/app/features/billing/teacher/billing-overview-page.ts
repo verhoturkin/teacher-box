@@ -10,19 +10,23 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EMPTY, Subject, catchError, forkJoin, switchMap } from 'rxjs';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { MenuItem } from 'primeng/api';
+import { Menu } from 'primeng/menu';
 import { Select } from 'primeng/select';
 import { Tooltip } from 'primeng/tooltip';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { locale } from '@core/i18n/language';
 import { injectMobile } from '@core/layout/mobile';
 import { openOnCreate } from '@core/routing/create-param';
+import { writeQuery } from '@core/routing/query-state';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { HelpButton } from '@features/help/parts';
 import { TeacherColors } from '@features/identity/parts';
 import { BroadcastDialog } from '@features/notifications/parts';
+import { FileSaver } from '@shared/files/file-saver';
 import { monthLabel, toIsoDate, toIsoMonth } from '@shared/dates/iso-date';
 import { formatMoney, toMajorUnits } from '@shared/money/money';
 import { MoneyPipe } from '@shared/money/money.pipe';
@@ -60,6 +64,17 @@ const KINDS: Readonly<Record<Exclude<OperationsFilter, 'all'>, OperationKind>> =
 const RUNNING_OUT_LESSONS = 2;
 /** Rows of «Авансы заканчиваются». */
 const RUNNING_OUT_ROWS = 5;
+
+const FILTERS: readonly OperationsFilter[] = ['all', 'payments', 'lessons', 'absences'];
+
+function filterFrom(kind: string | null): OperationsFilter {
+  return FILTERS.find((filter) => filter === kind) ?? 'all';
+}
+
+/** The month of the address; the current one when it is missing or not `YYYY-MM`. */
+function monthFrom(month: string | null): string {
+  return month !== null && /^\d{4}-(0[1-9]|1[0-2])$/.test(month) ? month : toIsoMonth(new Date());
+}
 
 /** A student whose prepayment is running out, with the lessons it still covers. */
 interface RunningOut {
@@ -99,6 +114,7 @@ const NUMBER = new Intl.NumberFormat(locale());
     FilterChips,
     HelpButton,
     LoadStateView,
+    Menu,
     MoneyPipe,
     PageHeader,
     Pane,
@@ -149,6 +165,16 @@ const NUMBER = new Intl.NumberFormat(locale());
                 <i pButtonIcon aria-hidden="true" class="tb-i tb-i-download"></i>
                 <span pButtonLabel>{{ t.report }}</span>
               </a>
+              <p-button
+                icon="tb-i tb-i-more_vert"
+                [text]="true"
+                [rounded]="true"
+                severity="secondary"
+                [ariaLabel]="t.moreActions"
+                aria-haspopup="menu"
+                (onClick)="actions.toggle($event)"
+              />
+              <p-menu #actions [model]="menuItems" [popup]="true" appendTo="body" />
             </div>
             <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
             @if (mobile()) {
@@ -624,6 +650,11 @@ export class BillingOverviewPage implements OnInit {
   private readonly api = inject(BillingApi);
   private readonly date = inject(DatePipe);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly fileSaver = inject(FileSaver);
+  /** The filters of the journal come from the address (`?month=&kind=&student=`) and go back to it. */
+  private readonly fromUrl = this.route.snapshot.queryParamMap;
 
   protected readonly overview = signal<BillingOverview | null>(null);
   protected readonly summary = signal<BillingSummary | null>(null);
@@ -633,11 +664,22 @@ export class BillingOverviewPage implements OnInit {
   private readonly narrowed = signal<Operations | null>(null);
   protected readonly state = new LoadState();
 
-  protected readonly month = signal(toIsoMonth(new Date()));
-  protected readonly filter = signal<OperationsFilter>('all');
-  readonly studentControl = new FormControl<string | null>(null);
-  private readonly chosenStudent = signal<string | null>(null);
+  protected readonly month = signal(monthFrom(this.fromUrl.get('month')));
+  protected readonly filter = signal<OperationsFilter>(filterFrom(this.fromUrl.get('kind')));
+  readonly studentControl = new FormControl<string | null>(this.fromUrl.get('student'));
+  private readonly chosenStudent = signal<string | null>(this.fromUrl.get('student'));
   private readonly narrow = new Subject<void>();
+
+  /** «⋮»: the journal as CSV with the current month, chip and student. */
+  protected readonly menuItems: MenuItem[] = [
+    {
+      label: T.overview.downloadCsv,
+      icon: 'tb-i tb-i-download',
+      command: () => {
+        this.downloadCsv();
+      },
+    },
+  ];
 
   protected readonly paymentVisible = signal(false);
   protected readonly remindVisible = signal(false);
@@ -722,6 +764,7 @@ export class BillingOverviewPage implements OnInit {
     });
     this.studentControl.valueChanges.pipe(takeUntilDestroyed()).subscribe((id) => {
       this.chosenStudent.set(id);
+      writeQuery(this.router, this.route, { student: id });
       this.narrow.next();
     });
     this.narrow
@@ -754,13 +797,32 @@ export class BillingOverviewPage implements OnInit {
   /** Chooses another kind of operations. */
   protected setFilter(filter: OperationsFilter): void {
     this.filter.set(filter);
+    writeQuery(this.router, this.route, { kind: filter === 'all' ? null : filter });
     this.narrow.next();
   }
 
   protected shift(by: number): void {
     const [year, month] = this.month().split('-').map(Number);
     this.month.set(toIsoMonth(new Date(year ?? 0, (month ?? 1) - 1 + by, 1)));
+    writeQuery(this.router, this.route, {
+      month: this.isCurrentMonth() ? null : this.month(),
+    });
     this.loadMonth();
+  }
+
+  protected downloadCsv(): void {
+    const month = this.month();
+    const filter = this.filter();
+    this.api
+      .operationsCsv(
+        month,
+        filter === 'all' ? undefined : KINDS[filter],
+        this.chosenStudent() ?? undefined,
+      )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((csv) => {
+        this.fileSaver.save(csv, `operations-${month}.csv`);
+      });
   }
 
   protected openPayment(): void {

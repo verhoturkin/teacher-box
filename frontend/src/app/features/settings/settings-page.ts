@@ -9,7 +9,9 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Badge } from 'primeng/badge';
+import { CanLeave } from '@core/routing/can-leave.guard';
 import { pageDetail } from '@core/routing/page-detail';
+import { UnsavedChanges } from '@core/routing/unsaved-changes';
 import { HelpButton } from '@features/help/parts';
 import { AiSettingsPanel } from '@features/ai/parts';
 import { DefaultPriceCard } from '@features/billing/parts';
@@ -17,6 +19,8 @@ import { AccountPanel } from '@features/identity/parts';
 import { MeetingsSettingsPanel } from '@features/meetings/parts';
 import { MessengersSettingsPanel } from '@features/notifications/parts';
 import { CalendarFeedPanel, GoogleCalendarPanel } from '@features/schedule/parts';
+import { SHARED_T } from '@shared/i18n/texts';
+import { Confirm } from '@shared/ui/confirm';
 import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
 import { BackupsCard } from './backups/backups-card';
 import { DrivePanel } from './backups/drive-panel';
@@ -250,10 +254,12 @@ import { T } from './i18n/texts';
     }
   `,
 })
-export class SettingsPage implements OnInit {
+export class SettingsPage implements OnInit, CanLeave {
   protected readonly t = T.page;
   protected readonly items = CATEGORY_ITEMS;
   private readonly api = inject(SettingsApi);
+  private readonly confirm = inject(Confirm);
+  private readonly unsaved = inject(UnsavedChanges);
 
   /** Route parameter: the chosen category; none — the list (beside it the first category). */
   readonly category = input<string>();
@@ -274,6 +280,18 @@ export class SettingsPage implements OnInit {
   ngOnInit(): void {
     this.api.notificationsStatus().subscribe((status) => {
       this.failed.set(status.failedDeliveries);
+    });
+  }
+
+  /** Asks «Отменить изменения?» when a card of the category holds a form not saved. */
+  canLeave(): boolean | Promise<boolean> {
+    if (!this.unsaved.dirty()) {
+      return true;
+    }
+    return this.confirm.danger({
+      header: SHARED_T.dialog.discardTitle,
+      message: SHARED_T.dialog.discardText,
+      acceptLabel: SHARED_T.dialog.discard,
     });
   }
 

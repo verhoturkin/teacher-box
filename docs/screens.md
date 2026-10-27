@@ -139,7 +139,9 @@ One content component in `schedule/ui` for teacher and student in a `tb-dialog k
 - **«Итог»** (`fact_check`, a past one-student lesson, teacher): the toggle «Проведено | Пропуск» —
   **M3** connected group, single-select, selection optional: nothing selected until marked; a press
   saves at once (the toggle is disabled while saving); a press on the selected one clears the mark;
-  an error is a snackbar and the choice returns. *Ours:* the width of a list row, icons `check` and
+  an error is a snackbar and the choice returns; a mark is told by the snackbar
+  «Отмечено: пропуск · Отменить» (6 s, no confirmation) — «Отменить» puts the previous state back.
+  *Ours:* the width of a list row, icons `check` and
   `person_remove`.
 - **Group lesson:** the subtitle «Участники» (Title Medium) and a `tb-list` of avatar, name and
   attendance tag. A student's request is a tertiary-container row (**M3**: tertiary for small items
@@ -168,7 +170,8 @@ active on both, `NavItem.alsoActive`).
 
 - **List** — one `tb-list` in the fixed pane: header «Ученики» + «N учеников · M групп» (current
   ones; the total hidden on compact), the search, filter chips «Все · Группы · Должники N · Без
-  мессенджера N · Отключённые» («Отключённые» — students without access and archived groups). From
+  мессенджера N · Отключённые» («Отключённые» — students without access and archived groups; the chip is kept in the
+  address as `?filter=`). From
   expanded the header, search and chips stay and only the list scrolls. Students by name, then
   groups (group icon in the lead). A row: avatar / icon; the name links to the card; supporting
   «nearest lesson · аванс N» (a group: members · nearest lesson; «нет занятий» without lessons in 4
@@ -214,12 +217,14 @@ Three panes of one route (`/teacher/homework[/tasks/:taskId | /:assignmentId]`,
 `features/homework/teacher/`):
 
 - **List** (fixed pane): the connected group «На проверку · Активные · Готовые» with counts, the
-  search always above the list; tonal rows — a work: avatar, student, «задание · сдано …», the
+  search always above the list (kept in the address as `?q=`); tonal rows — a work: avatar,
+  student, «задание · сдано …», the
   «Просрочено» tag; «Ждут сдачи» under them; an assignment row: icon (a board icon when on a board),
   title link + «кому · до dd.MM.yyyy HH:mm» (three names, then «и ещё N»), the progress tag
   (`assignmentProgress`: «Не выдано» secondary, «На проверке: N» warn, «Принято» success, «Выдано» /
-  «Принято N из M» primary) and «⋮» («Открыть», «Изменить», «Проверить работы», «Открыть доску»,
-  «Удалить…»).
+  «Принято N из M» primary) and «⋮» («Создать копию» — a draft «<title> (копия)» with the text,
+  files, textbooks and videos, whose editor opens; 0.36.0). The header of the open assignment has the
+  same «⋮» after «Изменить» and «Удалить…».
 - **Detail** (flexible pane): the work or the assignment, blocks on the pane under uppercase labels;
   the students of an assignment (avatar, name link, «Сдано … / Не сдано», status; «Добавить» opens
   «Выдать ещё ученикам»); files as rows (type icon, name button that downloads or opens a PDF / a
@@ -255,13 +260,16 @@ pane «По ученикам».
 
 - **Header:** the month with ‹ › and tonal «Отчёт за месяц» (`monthly-report-page.ts`, nested route:
   one flexible pane, persistent title, back and month picker, tonal figures, labelled report
-  tables).
+  tables); next to it «⋮» (`p-menu` popup) with «Скачать CSV» — the journal of the month with the
+  current chip and student (`operations.csv`, saved by `FileSaver`).
 - **Figures** `tb-ops-figures`: four tonal tiles — «Поступило», «Начислено за занятия», «Долг»
   (error container), «Авансы», each with a note («11 оплат»).
 - **«Операции»:** the filter group «Все · Оплаты · Занятия · Пропуски» and the «Ученик» select; the
   journal is a `tb-list` — kind icon, student avatar, «Занятие · Анна Смирнова» + «date, time ·
   status», the amount (`+` payment `tb-positive`, `−` charge, `0 ₽` absence without charge); the
-  name links to the card's «Оплаты». The month, figures and filters stay above the scroll.
+  name links to the card's «Оплаты». The month, figures and filters stay above the scroll. The
+  month, the kind and the student are kept in the address (`?month=&kind=&student=`, written with
+  `replaceUrl`): «Назад» from a card and a reload bring the same journal back.
 - **Supporting pane:** «Должники» (debt in `tb-negative`, tonal «Напомнить»), «Авансы
   заканчиваются» (≤ 2 lessons left, *ours*; 5 rows), «По неделям» (bars, today's week lighter),
   «Все в Учениках».
@@ -296,7 +304,8 @@ the `tb-material-grid` of `tb-material-card`s (§10).
 `medium="two"`: the categories as a list of tonal two-line rows (40 px tonal icon circle, name,
 «what it holds»; the chosen one secondary-container with an emphasized name and the icon circle on
 the surface; group outer corners 16 px) in the fixed pane, the chosen category beside it as a stack
-of sections (from expanded `/teacher/settings` shows «Мой аккаунт»).
+of sections (from expanded `/teacher/settings` shows «Мой аккаунт»). A form changed and not saved
+asks «Отменить изменения?» before another category or page opens (design-system «Dialogs»).
 
 - Categories: «Мой аккаунт» (`account`), «Портал» (`portal`), «Расписание и календарь» (`calendar`:
   time zone, Google Calendar, calendar feed), «Звонки» (`calls`), «Мессенджеры» (`messengers`:

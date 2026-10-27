@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { payment, studentBalance } from '@testing/billing-fixtures';
-import { bodyText, buttonByText, requireElement } from '@testing/dom';
+import { bodyText, buttonByText, requireElement, settleFiles } from '@testing/dom';
 import { Payment } from '../data-access/billing.models';
 import { PaymentDialog } from './payment-dialog';
 import { testProviders } from '@testing/setup';
@@ -68,17 +68,20 @@ describe('PaymentDialog', () => {
     Object.defineProperty(big, 'size', { value: 10 * 1024 * 1024 + 1 });
     Object.defineProperty(picker, 'files', { value: [big], configurable: true });
     picker.dispatchEvent(new Event('change'));
+    await settleFiles();
     await fixture.whenStable();
-    expect(bodyText()).toContain('Чек — до 10 МБ');
+    expect(bodyText()).toContain('«big.pdf» больше 10 МБ');
 
     const file = new File(['%PDF'], 'чек.pdf', { type: 'application/pdf' });
     Object.defineProperty(picker, 'files', { value: [file], configurable: true });
     picker.dispatchEvent(new Event('change'));
+    await settleFiles();
     Object.defineProperty(picker, 'files', { value: [], configurable: true });
     picker.dispatchEvent(new Event('change'));
+    await settleFiles();
     await fixture.whenStable();
     expect(bodyText()).toContain('чек.pdf');
-    expect(bodyText()).not.toContain('Чек — до 10 МБ');
+    expect(bodyText()).not.toContain('больше 10 МБ');
     dialog.form.patchValue({ amount: 1000 });
     buttonByText(document.body, 'Сохранить').click();
 

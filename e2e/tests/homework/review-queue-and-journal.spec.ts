@@ -159,3 +159,41 @@ test('the journal of the month narrows by the chips', async ({ page }) => {
   await chip('Все').click();
   await expect(payment).toBeVisible();
 });
+
+test('the journal filter stays in the address and the journal downloads as CSV', async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.goto('/teacher/billing?kind=payments');
+  await expect(page.getByRole('button', { name: 'Оплаты', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Оплаты', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+  const download = page.waitForEvent('download');
+  await page.getByRole('menuitem', { name: 'Скачать CSV' }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toMatch(/\.csv$/);
+});
+
+test('an assignment is copied from the «⋮» menu of the list', async ({ page, request }) => {
+  const title = `Копия ${RUN}`;
+  await api(request, await token(request), 'POST', '/api/teacher/homework/assignments', {
+    title,
+    description: 'Текст',
+    dueAt: null,
+    studentIds: [],
+    videos: [],
+  });
+  await signIn(page);
+  await page.goto('/teacher/homework');
+  await page.getByText('Активные').first().click();
+  await page.getByRole('button', { name: `Действия: ${title}` }).click();
+  await page.getByRole('menuitem', { name: 'Создать копию' }).click();
+  await expect(page.getByLabel('Название').first()).toHaveValue(`${title} (копия)`);
+});

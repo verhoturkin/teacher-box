@@ -74,4 +74,8 @@ export const ru = {
     bytes: 'Б',
     units: ['КБ', 'МБ', 'ГБ'],
   },
+  fileCheck: {
+    tooLarge: (name: string, max: string) => `«${name}» больше ${max}`,
+    unsupported: (name: string) => `«${name}»: такой тип файла загружать нельзя`,
+  },
 };

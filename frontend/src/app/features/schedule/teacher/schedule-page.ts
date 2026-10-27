@@ -64,6 +64,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { forkJoin } from 'rxjs';
 import { openOnCreate } from '@core/routing/create-param';
+import { LessonMarkUndo } from '../data-access/lesson-mark-undo';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
@@ -365,7 +366,8 @@ const ALL_DAY_START_HOUR = 10;
     <tb-attendance-dialog
       [(visible)]="attendanceVisible"
       [lesson]="selected()"
-      (saved)="done(t.attendanceSaved)"
+      (saved)="reload()"
+      (restored)="reload()"
     />
 
     <tb-off-time-dialog
@@ -453,6 +455,7 @@ export class SchedulePage implements OnInit {
   private readonly identity = inject(IdentityApi);
   private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
+  private readonly markUndo = inject(LessonMarkUndo);
 
   protected readonly mobile = injectMobile();
   protected readonly kind = requestKindLabel;
@@ -685,8 +688,11 @@ export class SchedulePage implements OnInit {
   }
 
   mark(lesson: ScheduledLesson, outcome: LessonOutcome): void {
-    this.marks.guard(lesson.id, this.api.setOutcome(lesson.id, outcome)).subscribe(() => {
-      this.done(T.page.marked);
+    this.marks.guard(lesson.id, this.api.setOutcome(lesson.id, outcome)).subscribe((updated) => {
+      this.markUndo.offer(lesson, updated, () => {
+        this.reload();
+      });
+      this.reload();
     });
   }
 

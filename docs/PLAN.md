@@ -19,14 +19,10 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
-## Next release
-
-Nothing planned yet.
-
 ## Backlog
 
 Feature proposals with detailed plans (lesson notes, progress report, packages, invoices, parents,
-quizzes, web push, self-booking, calls, spaced repetition, quick wins) —
+quizzes, web push, self-booking, calls, spaced repetition) —
 [`roadmap/`](roadmap/README.md); move one here as a release when the teacher picks it.
 
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the

@@ -3093,6 +3093,27 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
   overflow-wrap: break-word;
 }
 
+.tb-snackbar__action {
+  flex: none;
+  min-height: 2.5rem;
+  padding: 0 var(--tb-space-3);
+  border: 0;
+  border-radius: var(--tb-shape-full);
+  background: none;
+  color: var(--p-md-inverse-primary);
+  font: var(--tb-type-label-l);
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in srgb, var(--p-md-inverse-primary) var(--tb-state-hover), transparent);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--p-md-inverse-primary);
+    outline-offset: 2px;
+  }
+}
+
 .tb-snackbar__close {
   display: flex;
   flex: none;

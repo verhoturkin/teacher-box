@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router, Routes, UrlMatcher } from '@angular/router';
 import { CORE_T } from '@core/i18n/texts';
+import { canLeaveGuard } from '@core/routing/can-leave.guard';
 import { SettingsPage } from './settings-page';
 import { categoryOfFolds, isCategory } from './settings-categories';
 
@@ -41,6 +42,7 @@ export const SETTINGS_ROUTES: Routes = [
     matcher: settingsMatcher,
     title: CORE_T.nav.settings,
     canActivate: [settingsAddress],
+    canDeactivate: [canLeaveGuard],
     component: SettingsPage,
   },
 ];

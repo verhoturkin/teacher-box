@@ -189,7 +189,7 @@ Students see this time as «Busy» and cannot ask to move a lesson to it. You ca
 
 ## After the lesson
 
-Click the lesson — a dialog opens on a computer, a bottom sheet on a phone — and choose «Held» or «Missed» in the «Outcome» row; the mark is saved at once. For a group — «Mark attendance». The portal charges the lesson by the mark.
+Click the lesson — a dialog opens on a computer, a bottom sheet on a phone — and choose «Held» or «Missed» in the «Outcome» row; the mark is saved at once, without a confirmation. A message «Marked: … · Undo» stays at the bottom for 6 seconds — press «Undo» after a slip and the mark and the charge return as they were. The same goes for marks from «To do» on the home page and from the attendance window. For a group — «Mark attendance». The portal charges the lesson by the mark.
 
 If you made a mistake — press the chosen option in «Outcome» again: the mark is cleared and the charge is undone; or choose the other option to replace the mark. For a group — «Remove the mark» in the «⋮» menu.
 
@@ -338,7 +338,7 @@ Pages of a textbook can be put on a board too — from the «Textbooks» tab or 
 
 «Assign and put on a board» gives the homework out first, then offers a board of its students: the text, pictures and textbook pages go on it in a frame. The portal remembers the board — the students get «Go to the board» in the homework. «To a board» on the homework's page does the same.
 
-«Edit» on the homework's page opens the same editor — the title, the text, the videos and the due date; the textbooks and files of saved homework change on its page. Leaving the editor without saving asks first. Homework is one list with a switch «To review / Active / Done» and a search by the title or a student's name. A row: the title, who has it and the due date, a badge of the progress («To review», «Accepted»…), the actions under «⋮»; a click opens the homework to the right of the list.
+«Edit» on the homework's page opens the same editor — the title, the text, the videos and the due date; the textbooks and files of saved homework change on its page. Leaving the editor without saving asks first. To give the same homework again, press «⋮» in the list row or on the homework's page → «Make a copy»: a draft «… (copy)» appears with the text, files, textbooks and videos but without students and a due date, and its editor opens. The search of the list is kept in the page address too. Homework is one list with a switch «To review / Active / Done» and a search by the title or a student's name. A row: the title, who has it and the due date, a badge of the progress («To review», «Accepted»…), the actions under «⋮»; a click opens the homework to the right of the list.
 
 ## The homework's page
 
@@ -438,7 +438,7 @@ Each held lesson (and each one missed without notice) is charged at the student'
 The page shows one month; the ‹ › arrows next to the title switch months.
 
 - **Four figures:** «Received», «Charged for lessons», «Debt» (the red tile — how many students owe) and «Prepaid».
-- **Operations** — the month's list: payments, lessons and absences; the amount on the right (a payment with «+», a charge with «−», an absence without a charge — «0»). The buttons «All · Payments · Lessons · Absences» and the «Student» select keep only what you need. A student's name opens the «Payments» tab of their card.
+- **Operations** — the month's list: payments, lessons and absences; the amount on the right (a payment with «+», a charge with «−», an absence without a charge — «0»). The buttons «All · Payments · Lessons · Absences» and the «Student» select keep only what you need; the month and the filters are kept in the page address, so «Back» and a reload keep them. «⋮» in the header → «Download CSV» saves the current list as a file for Excel. A student's name opens the «Payments» tab of their card.
 - **By students** (on the right on a wide screen): «Debtors» with the «Remind» button — it sends the student a reminder, «Prepaid running out» — whose prepayment covers 2 lessons or fewer, and «By weeks» — what came in each week. «All in Students» opens the students list.
 - **Monthly report** — the button in the header.
 
@@ -581,6 +581,8 @@ Students can make such a link too — it has only their lessons.
 - **Payments** — the lesson price for new students and groups ([Payments](/teacher/help/billing)).
 - **AI assistant** — the model, tokens spent this month, recent requests, the prompt library and the system prompts ([AI assistant](/teacher/help/ai)).
 - **Data** — backups: the portal makes a backup every night, here you can back up now, download a backup, restore it and connect Google Drive for the backups ([Backups and full reset](/teacher/help/backups)); full reset — delete all data and start again.
+
+If a settings card has unsaved changes, leaving the page or reloading asks «Discard changes?» first. Files the portal would not accept (too large or of a wrong type) are rejected right when you pick them, before sending.
 
 The portal address is set during the initial setup; later the portal administrator changes it.
 `,

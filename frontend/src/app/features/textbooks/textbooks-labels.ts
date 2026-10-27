@@ -1,3 +1,4 @@
+import type { FilePolicy } from '@shared/files/check-files';
 import { formatFileSize } from '@shared/files/file-size';
 import { MyTextbook, Textbook, TextbookFormat, TextbookKind } from './data-access/textbooks.models';
 import { T } from './i18n/texts';
@@ -16,6 +17,12 @@ export const TEXTBOOK_FORMAT_LABELS: Readonly<Record<TextbookFormat, string>> = 
 export const TEXTBOOK_FILES = '.pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.gif';
 /** The largest file, bytes. */
 export const TEXTBOOK_MAX_SIZE = 100 * 1024 * 1024;
+
+/** What a textbook file may be before it is sent: the size and the type, as the backend checks them. */
+export const TEXTBOOK_POLICY: FilePolicy = {
+  extensions: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg', 'webp', 'gif'],
+  maxSize: TEXTBOOK_MAX_SIZE,
+};
 
 /** A Word file: the teacher gives its number of pages. */
 export function isDocumentFile(name: string): boolean {

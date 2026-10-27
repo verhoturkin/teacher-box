@@ -1,8 +1,8 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { PageDetail } from '@core/routing/page-detail';
-import { hostElement, readableText, requireElement } from '@testing/dom';
+import { hostElement, readableText, requireElement, typeInto } from '@testing/dom';
 import { aiStatus, systemPrompt, usageReport } from '@testing/ai-fixtures';
 import { overview } from '@testing/billing-fixtures';
 import { portalSettings } from '@testing/portal-fixtures';
@@ -315,5 +315,52 @@ describe('SettingsPage', () => {
       text.indexOf('Что присылать в мессенджеры'),
     );
     expect(host.querySelector('p-badge')).toBeNull();
+  });
+
+  describe('leaving a form not saved', () => {
+    /** The answers of «Отменить изменения?», one per question. */
+    function answer(...answers: boolean[]): void {
+      const confirmation = fixture.debugElement.injector.get(ConfirmationService);
+      vi.spyOn(confirmation, 'confirm').mockImplementation((request) => {
+        if (answers.shift() === true) {
+          request.accept?.();
+        } else {
+          request.reject?.();
+        }
+        return confirmation;
+      });
+    }
+
+    it('leaves a clean category without a question', async () => {
+      await render(1200, 'portal');
+
+      expect(fixture.componentInstance.canLeave()).toBe(true);
+    });
+
+    it('asks «Отменить изменения?» about a typed form and obeys the answer', async () => {
+      const host = await render(1200, 'portal');
+      answer(false, true);
+
+      typeInto(requireElement(host, '#portal-name', HTMLInputElement), 'Школа Анны');
+
+      await expect(fixture.componentInstance.canLeave()).resolves.toBe(false);
+      await expect(fixture.componentInstance.canLeave()).resolves.toBe(true);
+    });
+
+    it('stops a reload with the browser prompt only while the form is changed', async () => {
+      const host = await render(1200, 'portal');
+      const reload = (): boolean => {
+        const event = new Event('beforeunload', { cancelable: true });
+        window.dispatchEvent(event);
+        return event.defaultPrevented;
+      };
+
+      expect(reload()).toBe(false);
+      typeInto(requireElement(host, '#portal-name', HTMLInputElement), 'Школа Анны');
+      expect(reload()).toBe(true);
+
+      fixture.destroy();
+      expect(reload()).toBe(false);
+    });
   });
 });

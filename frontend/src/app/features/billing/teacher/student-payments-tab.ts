@@ -15,7 +15,8 @@ import { BillingApi } from '../data-access/billing-api';
 import { Lesson, Payment, StudentLedger } from '../data-access/billing.models';
 import { BalanceAmount } from '../ledger/balance-amount';
 import { LedgerList } from '../ledger/ledger-list';
-import { RECEIPT_MAX_SIZE } from '../receipts';
+import { checkFiles } from '@shared/files/check-files';
+import { RECEIPT_POLICY } from '../receipts';
 import { describeError } from '@core/http/error-messages';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
@@ -154,9 +155,10 @@ export class StudentPaymentsTab {
     }
   }
 
-  protected attachReceipt(payment: Payment, file: File): void {
-    if (file.size > RECEIPT_MAX_SIZE) {
-      this.snackbar.error(T.studentLedger.receiptTooLarge);
+  protected async attachReceipt(payment: Payment, file: File): Promise<void> {
+    const { rejected } = await checkFiles([file], RECEIPT_POLICY);
+    if (rejected[0] !== undefined) {
+      this.snackbar.error(rejected[0].message);
       return;
     }
     this.receiptBusy.set(payment.id);

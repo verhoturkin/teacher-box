@@ -13,6 +13,10 @@ import {
   untracked,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { MenuItem } from 'primeng/api';
+import { Menu } from 'primeng/menu';
+import { Tooltip } from 'primeng/tooltip';
+import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Placed, ToBoardDialog } from '@features/boards/parts';
 import { BoardTextbook, TextbookToBoardDialog } from '@features/textbooks/parts';
@@ -71,6 +75,9 @@ import { T } from '../i18n/texts';
     PageHeader,
     HelpButton,
     LoadStateView,
+    Menu,
+    Tooltip,
+    ButtonAttributes,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -112,6 +119,22 @@ import { T } from '../i18n/texts';
             severity="danger"
             [text]="true"
             (onClick)="confirmDelete(assignment)"
+          />
+          <p-button
+            icon="tb-i tb-i-more_vert"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            [pTooltip]="m.actions"
+            [ariaLabel]="m.actions"
+            [tbAttributes]="{ 'aria-haspopup': 'menu' }"
+            (onClick)="menu.toggle($event)"
+          />
+          <p-menu
+            #menu
+            [model]="menuItems(assignment)"
+            [popup]="true"
+            appendTo="body"
           /> </tb-page-header
       ></ng-template>
 
@@ -279,6 +302,7 @@ export class AssignmentPage {
   protected readonly colors = inject(TeacherColors);
   protected readonly tv = T.videos;
   protected readonly r = T.remove;
+  protected readonly m = T.menu;
   private readonly api = inject(HomeworkApi);
   private readonly router = inject(Router);
   private readonly confirm = inject(Confirm);
@@ -401,6 +425,27 @@ export class AssignmentPage {
         });
       });
     }
+  }
+
+  protected menuItems(assignment: AssignmentDetails): MenuItem[] {
+    return [
+      {
+        label: T.copy.action,
+        icon: 'tb-i tb-i-content_copy',
+        command: () => {
+          this.copy(assignment);
+        },
+      },
+    ];
+  }
+
+  /** A draft copy: the list beside reads itself again and the editor of the copy opens. */
+  private copy(assignment: AssignmentDetails): void {
+    this.api.copyAssignment(assignment.id).subscribe((copy) => {
+      this.snackbar.success(T.copy.copied(copy.title));
+      this.changed.emit();
+      void this.router.navigate(['/teacher/homework', copy.id, 'edit']);
+    });
   }
 
   /** Deletes the assignment with the answers and the files, then back to the list. */

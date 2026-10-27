@@ -25,6 +25,15 @@ const SNACKBAR_PT = { message: { role: 'status', 'aria-live': 'polite' } };
             [attr.role]="message.severity === 'error' ? 'alert' : null"
             >{{ message.detail ?? message.summary }}</span
           >
+          @if (message.data?.undo) {
+            <button
+              type="button"
+              class="tb-snackbar__action"
+              (click)="message.data.undo(); close($event)"
+            >
+              {{ undoLabel }}
+            </button>
+          }
           <button
             type="button"
             class="tb-snackbar__close"
@@ -50,6 +59,7 @@ export class App {
   private readonly snackbar = inject(Snackbar);
   protected readonly pt = SNACKBAR_PT;
   protected readonly closeLabel = CORE_T.close;
+  protected readonly undoLabel = CORE_T.undo;
 
   constructor() {
     inject(KeyboardFocus).start();

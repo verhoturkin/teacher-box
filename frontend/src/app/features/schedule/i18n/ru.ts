@@ -343,7 +343,6 @@ export const ru = {
     saved: 'Занятие сохранено',
     updated: 'Занятие обновлено',
     deleted: 'Занятие удалено',
-    attendanceSaved: 'Посещаемость сохранена',
     answered: 'Ответ отправлен',
     calendarPane: 'Календарь',
     sidePane: 'Запросы и нерабочее время',
@@ -363,7 +362,8 @@ export const ru = {
     noLessonsDay: 'В этот день занятий нет',
     unmarkedJump: (count: number) => `Не отмечено занятий: ${String(count)}`,
     moveFailed: 'Не удалось перенести занятие',
-    marked: 'Занятие отмечено',
+    markedMissed: 'Отмечено: пропуск',
+    markedConducted: 'Отмечено: проведено',
     seriesSaved: (count: number) => `Расписание сохранено, занятий: ${String(count)}`,
     stopHeader: 'Завершить регулярные занятия?',
     stopMessage: (weekly: string) =>

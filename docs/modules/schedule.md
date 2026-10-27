@@ -96,7 +96,12 @@ Lesson card (0.34.0, ADR-0050): the teacher's `teacher/lesson-details-dialog.ts`
 `student/my-schedule-page.ts` share the content `ui/lesson-card.ts` inside `<tb-dialog kind="sheet">`. A past
 lesson with one student has the row «Итог» — a connected single-select toggle «Проведено | Пропуск»: a press
 saves at once (`PUT`/`DELETE …/outcome`), a press on the chosen one removes the mark, a failure puts the toggle
-back. A past group lesson has «Отметить посещаемость» in the footer and «Снять отметку» in «⋮»; a cancelled one
+back. Every mark (the toggle, the agenda buttons, Today «Нужно сделать», the attendance dialog)
+needs no confirmation: the snackbar «Отмечено: пропуск · Отменить» (6 s) calls the correction
+endpoint with the previous state (`data-access/lesson-mark-undo.ts`: `DELETE …/outcome`,
+`PUT …/outcome` or `PUT …/attendance`; the backend publishes `LessonCompletionRevoked`) and the
+list is refreshed.
+A past group lesson has «Отметить посещаемость» in the footer and «Снять отметку» in «⋮»; a cancelled one
 «Восстановить» (an overlap asks `Confirm.safe`). «Отменить занятие…» (`teacher/lesson-cancel-dialog.ts`) and
 «Удалить…» of a series lesson (`teacher/lesson-delete-dialog.ts`) are dialogs of their own with the scope list
 «Только это / Это и следующие» (`teacher/lesson-scope.ts`: the count comes from `…/following`, a send waits for

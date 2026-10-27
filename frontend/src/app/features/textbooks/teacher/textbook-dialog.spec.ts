@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { aTextbook, aWorkbook } from '@testing/textbooks-fixtures';
-import { bodyText, buttonByText, requireElement } from '@testing/dom';
+import { bodyText, buttonByText, requireElement, settleFiles } from '@testing/dom';
 import { formData } from '@testing/form-data';
 import { testProviders } from '@testing/setup';
 import { Textbook } from '../data-access/textbooks.models';
@@ -40,6 +40,7 @@ describe('TextbookDialog', () => {
     const input = requireElement(document.body, 'input[type="file"]', HTMLInputElement);
     Object.defineProperty(input, 'files', { value: [file], configurable: true });
     input.dispatchEvent(new Event('change'));
+    await settleFiles();
     await fixture.whenStable();
   }
 
@@ -85,7 +86,7 @@ describe('TextbookDialog', () => {
     Object.defineProperty(huge, 'size', { value: 101 * 1024 * 1024 });
     await pick(huge);
     expect(dialog.form.controls.title.value).toBe('Своё название');
-    expect(bodyText()).toContain('Файл больше 100 МБ');
+    expect(bodyText()).toContain('«Тетрадь.docx» больше 100 МБ');
     expect(document.body.querySelector('#textbook-pages')).not.toBeNull();
     buttonByText(document.body, 'Добавить').click();
     backend.expectNone('/api/teacher/textbooks');

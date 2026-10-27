@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable, catchError, forkJoin, of } from 'rxjs';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
@@ -26,6 +26,7 @@ import { quietContext } from '@core/http/api-error.interceptor';
 import { injectMobile } from '@core/layout/mobile';
 import { openOnCreate } from '@core/routing/create-param';
 import { pageDetail } from '@core/routing/page-detail';
+import { readQuery, writeQuery } from '@core/routing/query-state';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { labelKey } from '@core/theme/label-colors';
 import { toIsoDate } from '@shared/dates/iso-date';
@@ -55,6 +56,7 @@ import { T } from '../i18n/texts';
 import { InviteLinkDialog } from './invite-link-dialog';
 import {
   GroupRow,
+  ROSTER_FILTERS,
   RosterFilter,
   RosterRow,
   StudentRow,
@@ -146,7 +148,12 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
 
             <div class="tb-roster__filters">
               <tb-search-field [formControl]="search" [label]="t.search" />
-              <tb-filter-chips [label]="t.filters" [chips]="chips()" [(value)]="filter" />
+              <tb-filter-chips
+                [label]="t.filters"
+                [chips]="chips()"
+                [value]="filter()"
+                (valueChange)="setFilter($event)"
+              />
             </div>
           </div>
           <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
@@ -344,6 +351,7 @@ export class StudentsPage implements OnInit {
   private readonly snackbar = inject(Snackbar);
   private readonly date = inject(DatePipe);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly menu = viewChild.required<Menu>('menu');
 
   /** Route parameter: the student whose card is open. */
@@ -371,7 +379,9 @@ export class StudentsPage implements OnInit {
   protected readonly state = new LoadState();
   protected readonly search = new FormControl('', { nonNullable: true });
   private readonly query = toSignal(this.search.valueChanges, { initialValue: '' });
-  protected readonly filter = signal<RosterFilter>('all');
+  protected readonly filter = signal<RosterFilter>(
+    readQuery(this.route, 'filter', ROSTER_FILTERS) ?? 'all',
+  );
 
   protected readonly rows = computed(() => {
     const extras = this.extras();
@@ -607,6 +617,12 @@ export class StudentsPage implements OnInit {
       queryParams: { tab: 'profile' },
     });
     this.showInvite(created.student, created.invite);
+  }
+
+  /** The chip is kept in the address (`?filter=`), so «Назад» from a card and a reload bring it back. */
+  protected setFilter(filter: RosterFilter): void {
+    this.filter.set(filter);
+    writeQuery(this.router, this.route, { filter: filter === 'all' ? null : filter });
   }
 
   protected onUpdated(student: Student): void {

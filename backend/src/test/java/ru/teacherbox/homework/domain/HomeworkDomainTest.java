@@ -34,6 +34,23 @@ class HomeworkDomainTest {
     }
 
     @Test
+    void copyIsADraftWithoutDeadlineAndBoard() {
+        Instant now = Instant.parse("2030-01-01T10:00:00Z");
+        Assignment source = Assignment.create(UUID.randomUUID(), "Дроби", "Текст", now.plusSeconds(60), now);
+        source.placeOnBoard(UUID.randomUUID());
+
+        Assignment copy = source.copy(UUID.randomUUID(), " (копия)", now.plusSeconds(5));
+
+        assertThat(copy.title()).isEqualTo("Дроби (копия)");
+        assertThat(copy.description()).isEqualTo("Текст");
+        assertThat(copy.dueAt()).isNull();
+        assertThat(copy.boardId()).isNull();
+        Assignment longTitle = Assignment.create(UUID.randomUUID(), "я".repeat(Assignment.MAX_TITLE), null, null, now);
+        assertThat(longTitle.copy(UUID.randomUUID(), " (копия)", now).title())
+                .hasSize(Assignment.MAX_TITLE).endsWith(" (копия)");
+    }
+
+    @Test
     void taskLifecycle() {
         HomeworkTask task = HomeworkTask.assign(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), NOW);
         assertThat(task.status()).isEqualTo(TaskStatus.ASSIGNED);

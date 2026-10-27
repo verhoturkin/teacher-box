@@ -31,6 +31,7 @@ import { ScheduleApi } from '../data-access/schedule-api';
 import { GoogleCalendarStatus } from '../data-access/schedule.models';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { guardUnsaved } from '@core/routing/unsaved-changes';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
 import { T } from '../i18n/texts';
@@ -304,6 +305,10 @@ export class GoogleCalendarPanel implements OnInit {
   });
 
   private readonly resultCode = signal<string | null>(null);
+
+  constructor() {
+    guardUnsaved(() => this.editingClient() && this.form.dirty);
+  }
 
   ngOnInit(): void {
     this.resultCode.set(this.route.snapshot.queryParamMap.get('google'));

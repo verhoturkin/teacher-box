@@ -108,7 +108,7 @@ If a textbook is bound to homework, it is in the homework, in «Textbooks», wit
 ## Send work for review
 
 1. Open the homework.
-2. Write the answer and attach files if needed (photos, documents).
+2. Write the answer and attach files if needed (photos, documents). A file that is too large or of a wrong type is rejected right when you pick it.
 3. Click «Send for review».
 
 The teacher reviews the work: accepts it with a grade or returns it for rework with a comment. If it was returned — fix it and hand it in again.

@@ -73,6 +73,7 @@ export const en: Translation<typeof ru> = {
     message: 'Message',
   },
   close: 'Close',
+  undo: 'Undo',
   notFound: {
     title: 'Page not found',
     empty: 'There is no such page',

@@ -51,6 +51,18 @@ describe('BillingApi', () => {
     });
   });
 
+  it('downloads the journal CSV narrowed by kind and student', () => {
+    api.operationsCsv('2031-03', 'PAYMENT', 's-1').subscribe();
+    api.operationsCsv('2031-03').subscribe();
+
+    const narrowed = backend.expectOne((request) => request.params.get('studentId') === 's-1');
+    expect(narrowed.request.url).toBe('/api/teacher/billing/operations.csv');
+    expect(narrowed.request.params.get('kind')).toBe('PAYMENT');
+    expect(narrowed.request.responseType).toBe('blob');
+    const plain = backend.expectOne('/api/teacher/billing/operations.csv?month=2031-03');
+    expect(plain.request.params.has('kind')).toBe(false);
+  });
+
   it('attaches, removes and downloads receipts', () => {
     const file = new File(['%PDF'], 'чек.pdf', { type: 'application/pdf' });
     api.attachReceipt('p-1', file).subscribe();

@@ -14,6 +14,7 @@ import { Menu } from 'primeng/menu';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { checkFiles } from '@shared/files/check-files';
 import { FileOpener } from '@shared/files/file-opener';
 import { FileSaver } from '@shared/files/file-saver';
 import { Confirm } from '@shared/ui/confirm';
@@ -27,7 +28,7 @@ import { Textbook, TextbookKind } from '../data-access/textbooks.models';
 import {
   TEXTBOOK_FILES,
   TEXTBOOK_KIND_ICONS,
-  TEXTBOOK_MAX_SIZE,
+  TEXTBOOK_POLICY,
   textbookDetails,
   textbookMembersText,
 } from '../textbooks-labels';
@@ -226,7 +227,7 @@ export class TextbooksFeed {
     this.replacement().nativeElement.click();
   }
 
-  protected onReplacement(element: HTMLInputElement): void {
+  protected async onReplacement(element: HTMLInputElement): Promise<void> {
     const file = element.files?.[0] ?? null;
     const textbook = this.replaceTarget;
     element.value = '';
@@ -234,8 +235,9 @@ export class TextbooksFeed {
     if (file === null || textbook === null) {
       return;
     }
-    if (file.size > TEXTBOOK_MAX_SIZE) {
-      this.snackbar.error(T.list.tooLarge);
+    const { rejected } = await checkFiles([file], TEXTBOOK_POLICY);
+    if (rejected[0] !== undefined) {
+      this.snackbar.error(rejected[0].message);
       return;
     }
     this.replacing.set(textbook.id);
