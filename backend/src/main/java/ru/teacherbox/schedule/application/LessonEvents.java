@@ -14,6 +14,7 @@ import ru.teacherbox.schedule.api.LessonCompletionRevoked;
 import ru.teacherbox.schedule.api.LessonDeleted;
 import ru.teacherbox.schedule.api.LessonRescheduled;
 import ru.teacherbox.schedule.api.LessonRestored;
+import ru.teacherbox.schedule.api.LessonSummaryShared;
 import ru.teacherbox.schedule.api.LessonScheduled;
 import ru.teacherbox.schedule.api.ScheduledLessonCancelled;
 import ru.teacherbox.schedule.domain.Lesson;
@@ -51,6 +52,10 @@ class LessonEvents {
     void deleted(Lesson lesson, Instant now) {
         events.publishEvent(new LessonDeleted(lesson.id(), lesson.groupId(), lesson.expectedIds(), lesson.startsAt(),
                 lesson.status() == LessonStatus.SCHEDULED, now));
+    }
+
+    void summaryShared(Lesson lesson, UUID teacherId, Instant now) {
+        events.publishEvent(new LessonSummaryShared(lesson.id(), lesson.studentIds(), teacherId, lesson.startsAt(), now));
     }
 
     void restored(Lesson lesson, Instant now) {

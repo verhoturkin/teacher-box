@@ -51,15 +51,25 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
 
 Events: `LessonScheduled`, `LessonRepeatScheduled`, `LessonRepeatStopped`, `LessonRescheduled`, `ScheduledLessonCancelled`,
 `LessonRestored`, `LessonDeleted`, `LessonStartingSoon`, `LessonChangeRequested`, `LessonChangeResolved`,
-`LessonCompleted`, `LessonCompletionRevoked`, `GoogleCalendarDisconnected`; enums `CancelledBy`, `ChangeKind`.
+`LessonCompleted`, `LessonCompletionRevoked`, `LessonSummaryShared`, `GoogleCalendarDisconnected`; enums `CancelledBy`, `ChangeKind`.
 Lesson events carry `groupId` and participants. Consumers: `billing` (completion), `notifications` (all).
 Repeat events aggregate notifications; generation itself does not notify per occurrence. Deprecated
 `SeriesScheduled`/`SeriesStopped` records and listeners only drain durable publications from older versions.
 
 ## Data
 
-`repeat_rules`, `repeat_exceptions`, `lessons`, `lesson_participants`, `change_requests`, `reminders_sent`, `feeds`, `off_times`,
-`google_connection`, `google_events`, `google_oauth_states`.
+`repeat_rules`, `repeat_exceptions`, `lessons`, `lesson_participants`, `change_requests`, `lesson_notes`, `reminders_sent`, `feeds`,
+`off_times`, `google_connection`, `google_events`, `google_oauth_states`.
+
+Lesson summary (0.37.0): `lessons.summary` (4000, Markdown, shown to the participants), `next_plan` (1000) and
+`summary_updated_at`; `lesson_notes (lesson_id, student_id, note, updated_at)` — the teacher's private note per
+student, never shown to students. They are saved by their own `UPDATE` without the lesson `version`, so they never
+conflict with time edits; last write wins. Allowed only for a lesson that has started and is not `CANCELLED`, and
+not for an individual `MISSED` one — the same for the share action (errors `schedule.lesson-cancelled`,
+`schedule.lesson-not-started`, `schedule.lesson-missed`, `schedule.summary-too-long`, `schedule.not-a-participant`). Series edits do not touch
+them; deleting a lesson deletes its notes. Saving a non-empty `next_plan` copies it (cut to 500 characters, our
+decision) into the topic of the next planned lesson of the same student (or the same group) if that topic is empty;
+a filled topic is never overwritten. Calendar lists, ICS and Google carry none of these fields.
 
 ## REST and bot
 
@@ -71,6 +81,22 @@ student card (237.1); both at once → `schedule.filter-invalid`, an unknown id 
 `/api/me/schedule/**` (lessons, requests, busy, feed, settings, summary), public ICS feed and Google callback.
 Bot actions (`schedule/chat`): schedule, mark lessons, answer requests (teacher); lesson change, my requests
 (student).
+After «Проведено» (or an attendance mark that leaves the lesson conducted) the mark-lessons dialog offers
+«Записать итоги» / «Пропустить»: the next text message (≤ 4000 characters) is saved with `updateSummary` (the
+portal's «Что дальше» is kept), then «Отправить ученику(ам)» (`shareSummary`) / «Готово». The marking is
+audited at once through `AuditLog.bot`, the final step by the dialog (`lesson-summary-shared` /
+`lesson-summary-written`); a changed or refused lesson ends with a short «не получилось» answer.
+`PUT lessons/{id}/summary` (`summary`, `nextPlan`; blank clears) and `PUT lessons/{id}/notes/{studentId}` (`note`)
+return the lesson details: `GET lessons/{id}` of the teacher has `summary`, `nextPlan`, `summaryUpdatedAt`, `notes[]`;
+`GET /api/me/schedule/lessons/{id}` has `summary` only (a lesson the student is not in is 404); lists have none.
+History feeds of held lessons (`CONDUCTED`/`MISSED`, group lessons included, newest first, paged by the
+`before` instant = start of the last item, `limit` 1–100, default 20):
+`GET /api/teacher/schedule/students/{id}/history`
+(date, topic, status, attendance, `summary`, `nextPlan`, the student's own private `note`),
+`GET /api/teacher/schedule/groups/{id}/history` (same without private notes and attendance) and
+`GET /api/me/schedule/history` (own lessons only, `summary` only — no plan, no note).
+`POST lessons/{id}/summary/share` (204) publishes `LessonSummaryShared(lessonId, studentIds, teacherId, startsAt,
+occurredAt)` — only this explicit action, never a plain save; an empty summary is `schedule.summary-empty` (422).
 Lesson POST/PUT accept `repeatWeeks` (0–4), `repeatUntil`; PUT/cancel/DELETE accept `scope` (`ONLY`/`FOLLOWING`)
 and optional optimistic `version`/`repeatVersion`. The UI supplies versions. `GET lessons/{id}/following`
 discloses affected/protected existing lesson IDs and the rule version before a bulk action. Standalone

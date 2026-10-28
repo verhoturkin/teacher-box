@@ -7,6 +7,8 @@ import {
   AiStatus,
   HomeworkBrief,
   HomeworkDraft,
+  LessonSummaryBrief,
+  LessonSummaryDraft,
   PromptInput,
   RequestPage,
   ReviewBrief,
@@ -94,6 +96,13 @@ export class AiApi {
 
   reviewDraft(brief: ReviewBrief): Observable<ReviewDraft> {
     return this.http.post<ReviewDraft>('/api/teacher/ai/review-draft', brief);
+  }
+
+  /** Errors are shown by the caller next to the field. */
+  lessonSummary(brief: LessonSummaryBrief): Observable<LessonSummaryDraft> {
+    return this.http.post<LessonSummaryDraft>('/api/teacher/ai/lesson-summary', brief, {
+      context: new HttpContext().set(SKIP_ERROR_TOAST, true),
+    });
   }
 
   /** @param month `yyyy-MM`, the current month when omitted */

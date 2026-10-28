@@ -32,10 +32,12 @@ import ru.teacherbox.schedule.application.ScheduleService;
 import ru.teacherbox.schedule.application.LessonRepetitionService;
 import ru.teacherbox.schedule.application.LessonRepetitionService.Options;
 import ru.teacherbox.schedule.application.LessonRepetitionService.Scope;
+import ru.teacherbox.schedule.application.ScheduleViews.HistoryEntry;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSummary;
 import ru.teacherbox.schedule.domain.Attendance;
+import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.LessonStatus;
 
 /** The teacher's schedule: lessons, regular series, outcomes and students' requests. */
@@ -70,6 +72,13 @@ class TeacherScheduleController {
             @Nullable Scope scope,
             @Nullable Long version,
             @Nullable Long repeatVersion) {
+    }
+
+    record SummaryRequest(@Size(max = Lesson.MAX_SUMMARY) @Nullable String summary,
+            @Size(max = Lesson.MAX_NEXT_PLAN) @Nullable String nextPlan) {
+    }
+
+    record NoteRequest(@Size(max = Lesson.MAX_SUMMARY) @Nullable String note) {
     }
 
     record CancelRequest(@Size(max = 500) @Nullable String reason, @Nullable Boolean byStudent,
@@ -149,6 +158,38 @@ class TeacherScheduleController {
             @RequestParam(required = false) @Nullable Long version,
             @RequestParam(required = false) @Nullable Long repeatVersion) {
         repetition.delete(lessonId, scope, version, repeatVersion);
+    }
+
+    @PutMapping("/lessons/{lessonId}/summary")
+    LessonView summary(@PathVariable UUID lessonId, @Valid @RequestBody SummaryRequest request) {
+        return schedule.updateSummary(lessonId, request.summary(), request.nextPlan());
+    }
+
+    @PostMapping("/lessons/{lessonId}/summary/share")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void shareSummary(@PathVariable UUID lessonId) {
+        schedule.shareSummary(lessonId);
+    }
+
+    @PutMapping("/lessons/{lessonId}/notes/{studentId}")
+    LessonView note(@PathVariable UUID lessonId, @PathVariable UUID studentId,
+            @Valid @RequestBody NoteRequest request) {
+        return schedule.updateNote(lessonId, studentId, request.note());
+    }
+
+    /** Held lessons of a student, newest first; the next page — {@code before} = start of the last one. */
+    @GetMapping("/students/{studentId}/history")
+    List<HistoryEntry> studentHistory(@PathVariable UUID studentId,
+            @RequestParam(required = false) @Nullable Instant before,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {
+        return queries.studentHistory(studentId, before, limit);
+    }
+
+    @GetMapping("/groups/{groupId}/history")
+    List<HistoryEntry> groupHistory(@PathVariable UUID groupId,
+            @RequestParam(required = false) @Nullable Instant before,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {
+        return queries.groupHistory(groupId, before, limit);
     }
 
     @GetMapping("/lessons/{lessonId}/following")

@@ -163,7 +163,7 @@ export class PreferencesPanel implements OnInit {
   readonly teacher = input(false);
 
   protected readonly topics = computed(() =>
-    MUTABLE_TOPICS.filter((topic) => this.teacher() || !topic.teacherOnly),
+    MUTABLE_TOPICS.filter((topic) => (this.teacher() ? !topic.studentOnly : !topic.teacherOnly)),
   );
   protected readonly times = [...QUIET_TIMES];
   protected readonly loaded = signal(false);

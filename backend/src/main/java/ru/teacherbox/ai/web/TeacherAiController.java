@@ -27,6 +27,8 @@ import ru.teacherbox.ai.application.AiViews.AiStatus;
 import ru.teacherbox.ai.application.AiViews.RequestPage;
 import ru.teacherbox.ai.application.AiViews.HomeworkBrief;
 import ru.teacherbox.ai.application.AiViews.HomeworkDraft;
+import ru.teacherbox.ai.application.AiViews.LessonSummaryBrief;
+import ru.teacherbox.ai.application.AiViews.LessonSummaryDraft;
 import ru.teacherbox.ai.application.AiViews.ReviewBrief;
 import ru.teacherbox.ai.application.AiViews.ReviewDraft;
 import ru.teacherbox.ai.application.AiViews.UsageReport;
@@ -94,6 +96,18 @@ class TeacherAiController {
             @NotBlank @Size(max = 20_000) String answer) {
     }
 
+    /** At least one of the topic and the words must say something; the titles are those of the lesson's assignments. */
+    record LessonSummaryRequest(
+            @Size(max = 200) @Nullable String topic,
+            @Size(max = 2_000) @Nullable String words,
+            @Size(max = 20) @Nullable List<@NotBlank @Size(max = 200) String> assignmentTitles) {
+
+        @AssertTrue
+        boolean isNotEmpty() {
+            return (topic != null && !topic.isBlank()) || (words != null && !words.isBlank());
+        }
+    }
+
     private final AiAssistant assistant;
     private final AiUsage usage;
 
@@ -145,6 +159,12 @@ class TeacherAiController {
     @PostMapping("/review-draft")
     ReviewDraft reviewDraft(@Valid @RequestBody ReviewDraftRequest request) {
         return assistant.reviewDraft(new ReviewBrief(request.title(), request.description(), request.answer()));
+    }
+
+    @PostMapping("/lesson-summary")
+    LessonSummaryDraft lessonSummary(@Valid @RequestBody LessonSummaryRequest request) {
+        return assistant.lessonSummary(new LessonSummaryBrief(request.topic(), request.words(),
+                request.assignmentTitles() == null ? List.of() : request.assignmentTitles()));
     }
 
     /** @param month {@code yyyy-MM}, the current month by default */

@@ -22,6 +22,7 @@ import ru.teacherbox.shared.time.InstanceTimeZone;
 public class NotificationTexts {
 
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    private static final DateTimeFormatter DAY_MONTH = DateTimeFormatter.ofPattern("dd.MM");
     private static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
     private static final DateTimeFormatter LESSON_TIME_RU = DateTimeFormatter.ofPattern("EEEE, dd.MM 'в' HH:mm",
             Language.RU.locale());
@@ -61,6 +62,11 @@ public class NotificationTexts {
     /** Date and time in the instance time zone. */
     public String dateTime(Instant instant) {
         return DATE_TIME.format(instant.atZone(timeZone.zoneId()));
+    }
+
+    /** "01.10": day and month of a lesson in the instance time zone. */
+    public String dayMonth(Instant instant) {
+        return DAY_MONTH.format(instant.atZone(timeZone.zoneId()));
     }
 
     /** "вторник, 01.10 в 18:00", "Tuesday, 01.10 at 18:00" in the instance time zone. */

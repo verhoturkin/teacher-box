@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.teacherbox.schedule.application.ScheduleViews.HistoryEntry;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.schedule.application.ScheduleViews.MyScheduleSummary;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
@@ -27,6 +28,7 @@ import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSettings;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSummary;
 import ru.teacherbox.schedule.domain.ChangeRequest;
 import ru.teacherbox.schedule.domain.Lesson;
+import ru.teacherbox.schedule.domain.LessonNote;
 import ru.teacherbox.schedule.domain.LessonStatus;
 import ru.teacherbox.schedule.domain.RequestStatus;
 import ru.teacherbox.schedule.domain.RepeatRule;
@@ -101,7 +103,8 @@ public class ScheduleQueries {
     }
 
     public LessonView lesson(UUID lessonId) {
-        return views(List.of(lessons.findById(lessonId).orElseThrow(ScheduleQueries::lessonNotFound))).getFirst();
+        Lesson lesson = lessons.findById(lessonId).orElseThrow(ScheduleQueries::lessonNotFound);
+        return views(List.of(lesson)).getFirst().withSummary(lesson, lessons.findNotes(lessonId));
     }
 
     /** A lesson of the student; a lesson the student does not take part in is reported as not found. */
@@ -109,7 +112,40 @@ public class ScheduleQueries {
         Lesson lesson = lessons.findById(lessonId)
                 .filter(found -> found.hasParticipant(studentId))
                 .orElseThrow(ScheduleQueries::lessonNotFound);
-        return views(List.of(lesson)).getFirst().forStudent(studentId);
+        return views(List.of(lesson)).getFirst().forStudent(studentId).withStudentSummary(lesson);
+    }
+
+    /** Held lessons of a student for the teacher: with the summary, the plan and the own private note. */
+    public List<HistoryEntry> studentHistory(UUID studentId, @Nullable Instant before, int limit) {
+        List<Lesson> found = lessons.findHeldOfStudent(studentId, before(before), limit);
+        Map<UUID, LessonNote> notes = lessons.findNotes(studentId, found.stream().map(Lesson::id).toList());
+        return history(found, studentId, true, notes);
+    }
+
+    /** Held lessons of a group for the teacher: the shared summary, no private notes. */
+    public List<HistoryEntry> groupHistory(UUID groupId, @Nullable Instant before, int limit) {
+        return history(lessons.findHeldOfGroup(groupId, before(before), limit), null, true, Map.of());
+    }
+
+    /** Held lessons of the student for the student: the shared summary only. */
+    public List<HistoryEntry> myHistory(UUID studentId, @Nullable Instant before, int limit) {
+        return history(lessons.findHeldOfStudent(studentId, before(before), limit), studentId, false, Map.of());
+    }
+
+    private Instant before(@Nullable Instant before) {
+        return before == null ? clock.instant().plus(Duration.ofDays(3650)) : before;
+    }
+
+    private List<HistoryEntry> history(List<Lesson> found, @Nullable UUID studentId, boolean withPlan,
+            Map<UUID, LessonNote> notes) {
+        ScheduleNames names = directory.namesOf(found);
+        return found.stream().map(lesson -> new HistoryEntry(lesson.id(), lesson.startsAt(), lesson.topic(),
+                lesson.status(), lesson.groupId(), names.group(lesson.groupId()),
+                studentId == null ? null : lesson.participants().stream()
+                        .filter(participant -> participant.studentId().equals(studentId))
+                        .map(participant -> participant.attendance()).findFirst().orElse(null),
+                lesson.summary(), withPlan ? lesson.nextPlan() : null, lesson.summaryUpdatedAt(),
+                notes.containsKey(lesson.id()) ? notes.get(lesson.id()).note() : null)).toList();
     }
 
     /** Lessons that have ended but have no outcome yet, oldest first. */

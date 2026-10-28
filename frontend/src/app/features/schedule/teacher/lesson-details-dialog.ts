@@ -2,8 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
+  untracked,
   linkedSignal,
   model,
   output,
@@ -28,11 +30,24 @@ import { LessonCard, OutcomeChange } from '../ui/lesson-card';
 import { AttendanceDialog } from './attendance-dialog';
 import { LessonCancelDialog } from './lesson-cancel-dialog';
 import { LessonDeleteDialog } from './lesson-delete-dialog';
+import { LessonSummaryDialog } from './lesson-summary-dialog';
+
+/** The lesson of a list with the details of the same lesson. */
+function withDetails(lesson: ScheduledLesson, details: ScheduledLesson): ScheduledLesson {
+  return {
+    ...lesson,
+    summary: details.summary,
+    nextPlan: details.nextPlan,
+    summaryUpdatedAt: details.summaryUpdatedAt,
+    notes: details.notes,
+  };
+}
 
 /**
  * A lesson with the teacher's actions (ADR-0050): a `sheet` whose headline is who the lesson is with,
  * whose body is the shared `<tb-lesson-card>` («Итог» of a past lesson with one student is a toggle
- * there), whose header has ✎ and the menu «⋮» (cancel, unmark a group lesson, delete) and whose
+ * there) and, once the lesson has started, the row «Итоги» that opens `<tb-lesson-summary-dialog>`,
+ * whose header has ✎ and the menu «⋮» (cancel, unmark a group lesson, delete) and whose
  * footer has the one action of the state: «Отметить посещаемость» of a past group lesson,
  * «Восстановить» of a cancelled one. Cancelling and deleting a series lesson are dialogs of their own
  * that open once the card closed.
@@ -49,8 +64,15 @@ import { LessonDeleteDialog } from './lesson-delete-dialog';
     AttendanceDialog,
     LessonCancelDialog,
     LessonDeleteDialog,
+    LessonSummaryDialog,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: `
+    /* ours: the summary is an action of its own, set apart from the facts of the lesson */
+    .tb-lesson-details__summary {
+      margin-top: var(--tb-space-4);
+    }
+  `,
   template: `
     <tb-dialog
       kind="sheet"
@@ -98,6 +120,28 @@ import { LessonDeleteDialog } from './lesson-delete-dialog';
           (outcomeChange)="mark($event)"
           (answer)="answerRequest($event)"
         />
+        @if (summarizable()) {
+          <ul class="tb-list tb-lesson-details__summary">
+            <li>
+              <span class="tb-list__lead" aria-hidden="true"
+                ><i class="tb-i tb-i-rate_review"></i
+              ></span>
+              <span class="tb-list__text">
+                <span class="tb-list__title">{{ summaryT.title }}</span>
+                <span class="tb-list__supporting">{{ summaryLine() }}</span>
+              </span>
+              <span class="tb-list__trail">
+                <p-button
+                  class="tb-list__stretched"
+                  [label]="summaryAction()"
+                  severity="secondary"
+                  [ariaLabel]="summaryT.dialog"
+                  (onClick)="openSummary()"
+                />
+              </span>
+            </li>
+          </ul>
+        }
       }
     </tb-dialog>
 
@@ -106,6 +150,12 @@ import { LessonDeleteDialog } from './lesson-delete-dialog';
       [lesson]="shown()"
       (saved)="onChanged($event)"
       (restored)="onChanged($event)"
+    />
+    <tb-lesson-summary-dialog
+      [visible]="summaryVisible()"
+      (visibleChange)="summaryToggled($event)"
+      [lesson]="shown()"
+      (saved)="onSummarySaved($event)"
     />
     <tb-lesson-cancel-dialog
       [(visible)]="cancelVisible"
@@ -121,6 +171,7 @@ import { LessonDeleteDialog } from './lesson-delete-dialog';
 })
 export class LessonDetailsDialog {
   protected readonly t = T.details;
+  protected readonly summaryT = T.lessonSummary;
   private readonly api = inject(ScheduleApi);
   private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
@@ -138,12 +189,47 @@ export class LessonDetailsDialog {
   /** The teacher answers a request of the student: the card has closed, the answer opens. */
   readonly answerOpened = output<ChangeRequest>();
 
+  /** A reloaded list gives the same lesson again: only another lesson needs its details. */
+  private readonly lessonId = computed(() => this.lesson()?.id ?? null);
+
   protected readonly attendanceVisible = signal(false);
   protected readonly cancelVisible = signal(false);
   protected readonly deleteVisible = signal(false);
+  protected readonly summaryVisible = signal(false);
 
-  /** The lesson as the card shows it: what the page gave, then what the last action returned. */
-  protected readonly shown = linkedSignal(() => this.lesson());
+  /** The details of the lesson (summary, plan, private notes) as the server last gave them or the teacher saved. */
+  private readonly details = signal<ScheduledLesson | null>(null);
+
+  /**
+   * The lesson as the card shows it: what the page gave, then what the last action returned. The
+   * lists carry no summary, so a reloaded list lesson keeps the details already loaded for it.
+   */
+  protected readonly shown = linkedSignal<ScheduledLesson | null, ScheduledLesson | null>({
+    source: () => this.lesson(),
+    computation: (next) => {
+      const known = untracked(this.details);
+      return next !== null && known?.id === next.id ? withDetails(next, known) : next;
+    },
+  });
+
+  /** The card is open: the lesson comes with its summary, the plan and the notes. */
+  constructor() {
+    effect((onCleanup) => {
+      const id = this.lessonId();
+      if (!this.visible() || id === null) {
+        return;
+      }
+      const request = this.api.lesson(id).subscribe((loaded) => {
+        this.details.set(loaded);
+        this.shown.update((current) =>
+          current?.id === loaded.id ? withDetails(current, loaded) : current,
+        );
+      });
+      onCleanup(() => {
+        request.unsubscribe();
+      });
+    });
+  }
 
   protected readonly headline = computed(() => {
     const lesson = this.shown();
@@ -152,6 +238,25 @@ export class LessonDetailsDialog {
   protected readonly started = computed(() => {
     const lesson = this.shown();
     return lesson !== null && new Date(lesson.startsAt) <= this.now();
+  });
+  /** «Итоги» belong to a lesson that has started: not a cancelled one, not a missed one with one student. */
+  protected readonly summarizable = computed(() => {
+    const lesson = this.shown();
+    return (
+      lesson !== null &&
+      this.started() &&
+      lesson.status !== 'CANCELLED' &&
+      !(lesson.groupId === null && lesson.status === 'MISSED')
+    );
+  });
+  /** The button of the row: it is an action of its own, so it names the action. */
+  protected readonly summaryAction = computed(() =>
+    (this.shown()?.summary?.trim() ?? '') === '' ? this.summaryT.addAction : this.summaryT.edit,
+  );
+  /** The first line of «Что прошли», or the invitation to write it. */
+  protected readonly summaryLine = computed(() => {
+    const text = this.shown()?.summary?.trim() ?? '';
+    return text === '' ? this.summaryT.add : (text.split('\n')[0] ?? text);
   });
   /** Not held and nobody charged: planned, or cancelled without a charge (that one is «missed»). */
   protected readonly deletable = computed(() => {
@@ -235,6 +340,26 @@ export class LessonDetailsDialog {
       this.visible.set(false);
       this.attendanceVisible.set(true);
     }
+  }
+
+  /** A dialog does not open over a card (ADR-0026): the card steps aside and comes back with the row updated. */
+  protected openSummary(): void {
+    this.visible.set(false);
+    this.summaryVisible.set(true);
+  }
+
+  protected summaryToggled(open: boolean): void {
+    this.summaryVisible.set(open);
+    if (!open) {
+      this.visible.set(true);
+    }
+  }
+
+  /** A save of the summary or a note: the card keeps the lesson it returned; the page needs no reload. */
+  protected onSummarySaved(lesson: ScheduledLesson): void {
+    this.details.set(lesson);
+    this.shown.set(lesson);
+    this.changed.emit(lesson);
   }
 
   protected onChanged(lesson: ScheduledLesson): void {

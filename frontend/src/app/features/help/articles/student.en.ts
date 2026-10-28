@@ -54,6 +54,10 @@ If you cancel late, the teacher may charge the lesson as missed.
 
 Repeating lessons appear as individual occurrences. Your move or cancellation request concerns only the selected lesson.
 
+## Lesson summary
+
+When the teacher sends a summary, you get a «Lesson summary» notification. Read it in the lesson card («What we covered»); every held lesson is listed in «Lesson history» on the «Schedule» page. You can turn the notification topic off in «My account».
+
 ## Group lessons
 
 If you cannot come to a group lesson, click «I won’t come». If you said so in advance, the teacher knows at once that you will not be there, and the lesson is not charged.

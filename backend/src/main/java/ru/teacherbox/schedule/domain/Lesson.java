@@ -26,6 +26,9 @@ import ru.teacherbox.shared.error.BusinessRuleException;
 public final class Lesson {
 
     public static final int MAX_DURATION_MINUTES = 600;
+    public static final int MAX_TOPIC = 500;
+    public static final int MAX_SUMMARY = 4000;
+    public static final int MAX_NEXT_PLAN = 1000;
 
     private final UUID id;
     private final @Nullable UUID groupId;
@@ -44,6 +47,9 @@ public final class Lesson {
     private final Instant createdAt;
     private Instant updatedAt;
     private long version;
+    private @Nullable String summary;
+    private @Nullable String nextPlan;
+    private @Nullable Instant summaryUpdatedAt;
 
     private Lesson(UUID id, @Nullable UUID groupId, Collection<Participant> participants, @Nullable UUID seriesId,
             @Nullable LocalDate seriesDate, Instant startsAt, int durationMinutes, @Nullable String topic,
@@ -360,6 +366,73 @@ public final class Lesson {
 
     public boolean individuallyChanged() {
         return individuallyChanged;
+    }
+
+    /** Restores the lesson summary kept outside the optimistic lock of the lesson. */
+    public Lesson restoreSummary(@Nullable String summaryText, @Nullable String nextPlanText,
+            @Nullable Instant updatedAt) {
+        summary = summaryText;
+        nextPlan = nextPlanText;
+        summaryUpdatedAt = updatedAt;
+        return this;
+    }
+
+    /**
+     * Writes «what we covered» and «what next»; blank text clears a field. Does not touch the version:
+     * the summary is not part of the time edits the version protects.
+     */
+    public void writeSummary(@Nullable String newSummary, @Nullable String newNextPlan, Instant now) {
+        requireSummarizable(now);
+        summary = bounded(newSummary, MAX_SUMMARY);
+        nextPlan = bounded(newNextPlan, MAX_NEXT_PLAN);
+        summaryUpdatedAt = now;
+    }
+
+    /** Checks that a private note about the student may be written. */
+    public void requireNoteFor(UUID studentId, Instant now) {
+        requireSummarizable(now);
+        if (!hasParticipant(studentId)) {
+            throw new BusinessRuleException("schedule.not-a-participant", "The student is not in this lesson");
+        }
+    }
+
+    /** Normalizes a private note: trimmed, {@code null} when blank. */
+    public static @Nullable String note(@Nullable String text) {
+        return bounded(text, MAX_SUMMARY);
+    }
+
+    /** Only a lesson that has started and was not cancelled has a summary; a missed individual one has none. */
+    public void requireSummarizable(Instant now) {
+        if (status == LessonStatus.CANCELLED) {
+            throw new BusinessRuleException("schedule.lesson-cancelled", "A cancelled lesson has no summary");
+        }
+        if (startsAt.isAfter(now)) {
+            throw new BusinessRuleException("schedule.lesson-not-started", "The lesson has not started yet");
+        }
+        if (!isGroup() && status == LessonStatus.MISSED) {
+            throw new BusinessRuleException("schedule.lesson-missed", "A missed lesson has no summary");
+        }
+    }
+
+    private static @Nullable String bounded(@Nullable String text, int max) {
+        String trimmed = text == null ? "" : text.strip();
+        if (trimmed.length() > max) {
+            throw new BusinessRuleException("schedule.summary-too-long",
+                    "Text must not exceed " + max + " characters");
+        }
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    public @Nullable String summary() {
+        return summary;
+    }
+
+    public @Nullable String nextPlan() {
+        return nextPlan;
+    }
+
+    public @Nullable Instant summaryUpdatedAt() {
+        return summaryUpdatedAt;
     }
 
     public Lesson restoreException(boolean changed) {

@@ -47,6 +47,10 @@ class AssistantIntegrationTests {
             {"title": "Дроби", "description": "Сложите 1/2 и 1/3", "answer": "Ответ: 2/5"}
             """;
 
+    private static final String SUMMARY_BODY = """
+            {"topic": "Дроби", "words": "решали примеры", "assignmentTitles": ["Задача 1", "Задача 2"]}
+            """;
+
     @Autowired
     MockMvcTester mvc;
 
@@ -212,6 +216,37 @@ class AssistantIntegrationTests {
     }
 
     @Test
+    void draftsLessonSummaryAndLogsUsage() {
+        llm.answer("{\"summary\": \"  Повторили дроби.\\n- сложение\"}", 100, 50);
+
+        assertThat(post("/api/teacher/ai/lesson-summary", SUMMARY_BODY))
+                .hasStatusOk()
+                .bodyJson().satisfies(json -> assertThat(json).extractingPath("$.summary")
+                        .isEqualTo("Повторили дроби.\n- сложение"));
+        assertThat(llm.lastRequest().prompt()).contains("Дроби", "— Задача 1", "— Задача 2",
+                "<words>\nрешали примеры\n</words>");
+        assertThat(thisMonth()).singleElement()
+                .satisfies(logged -> assertThat(logged.feature()).isEqualTo(AiFeature.LESSON_SUMMARY));
+    }
+
+    @Test
+    void lessonSummaryWorksFromWordsAloneAndRejectsEmptyOnes() {
+        llm.answer("{\"summary\": \"Ок\"}", 1, 1);
+
+        assertThat(post("/api/teacher/ai/lesson-summary", "{\"words\": \"читали текст\"}")).hasStatusOk();
+        assertThat(llm.lastRequest().prompt()).contains("читали текст").contains("—");
+        assertThat(post("/api/teacher/ai/lesson-summary", "{\"topic\": \" \", \"words\": \" \", \"assignmentTitles\": [\"Задача 1\"]}"))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void unusableLessonSummaryIsReported() {
+        llm.answer("{\"summary\": \" \"}", 1, 1);
+
+        assertThat(post("/api/teacher/ai/lesson-summary", SUMMARY_BODY)).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
+    }
+
+    @Test
     void emptyGradeBecomesNull() {
         llm.answer("{\"comment\": \"Отлично\", \"grade\": \"\", \"accept\": true}", 1, 1);
 
@@ -374,6 +409,9 @@ class AssistantIntegrationTests {
     void onlyTheTeacherUsesTheAssistant() {
         assertThat(mvc.post().uri("/api/teacher/ai/homework-draft").with(TestUsers.student(UUID.randomUUID()))
                 .contentType(MediaType.APPLICATION_JSON).content(HOMEWORK_BODY))
+                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.post().uri("/api/teacher/ai/lesson-summary").with(TestUsers.student(UUID.randomUUID()))
+                .contentType(MediaType.APPLICATION_JSON).content(SUMMARY_BODY))
                 .hasStatus(HttpStatus.FORBIDDEN);
         assertThat(mvc.get().uri("/api/teacher/ai/status")).hasStatus(HttpStatus.UNAUTHORIZED);
     }

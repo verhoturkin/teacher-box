@@ -436,6 +436,31 @@ describe('StudentsPage', () => {
       expect(rows()[0]).not.toContain('Приглашён');
     });
 
+    it('shows the right column only for a debt, a status or an archived group', async () => {
+      const trails = (): (string | null)[] =>
+        Array.from(host.querySelectorAll('ul.tb-list > li')).map(
+          (row) => row.querySelector(':scope > .tb-list__trail')?.textContent.trim() ?? null,
+        );
+      const calm = aStudent({ id: 'c', displayName: 'Антон' });
+      await load([BORIS, MARIA, calm], [OGE], { balances: { m: -300_000 } });
+
+      expect(host.querySelector('ul.tb-list')?.classList).toContain('tb-list--own-trail');
+      // Антон (active, no debt) — nothing; Борис — the status tag; Мария — the debt; the group — nothing
+      const [anton, boris, maria, group] = trails();
+      expect(anton).toBeNull();
+      expect(boris).toContain('Приглашён');
+      expect(maria).toMatch(/Долг 3\s000\s₽/);
+      expect(group).toBeNull();
+    });
+
+    it('shows «Архив» on the right of an archived group', async () => {
+      await load([MARIA], [SUMMER]);
+      await choose('Отключённые');
+
+      const trail = host.querySelector('ul.tb-list > li .tb-list__trail');
+      expect(trail?.textContent).toContain('В архиве');
+    });
+
     it('tells until when the invitation works', async () => {
       await load([BORIS]);
 

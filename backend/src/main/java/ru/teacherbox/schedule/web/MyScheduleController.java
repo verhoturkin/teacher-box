@@ -2,6 +2,8 @@ package ru.teacherbox.schedule.web;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -25,6 +27,7 @@ import ru.teacherbox.schedule.application.ScheduleQueries;
 import ru.teacherbox.schedule.application.TeacherAvailability;
 import ru.teacherbox.schedule.application.TeacherAvailability.BusyTime;
 import ru.teacherbox.schedule.application.ScheduleViews.FeedView;
+import ru.teacherbox.schedule.application.ScheduleViews.HistoryEntry;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.schedule.application.ScheduleViews.MyScheduleSummary;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
@@ -77,6 +80,13 @@ class MyScheduleController {
     @GetMapping("/lessons/{lessonId}")
     LessonView lesson(CurrentUser user, @PathVariable UUID lessonId) {
         return queries.studentLesson(studentId(user), lessonId);
+    }
+
+    /** The student's held lessons with the shared summaries, newest first. */
+    @GetMapping("/history")
+    List<HistoryEntry> history(CurrentUser user, @RequestParam(required = false) @Nullable Instant before,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {
+        return queries.myHistory(studentId(user), before, limit);
     }
 
     /** When the teacher is busy: periods only, without whose lessons they are. */

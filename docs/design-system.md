@@ -516,7 +516,10 @@ inputs), `size="small"`, `success`, `warn`, `info`, `help`, `contrast`.
     two lines of each, cut with an ellipsis (**M3**: label and supporting text can be truncated,
     supporting text one to three lines; *ours*: two lines, the full text in the detail beside).
   - `tb-list__trail` — an amount (Title Medium, `tb-list__trail--amount`), a status or ≤ 3 actions;
-    `tb-list__trail--icons` keeps a status and icon buttons on the right on a phone.
+    `tb-list__trail--icons` keeps a status and icon buttons on the right on a phone. Rows share
+    the trailing column (subgrid); a list whose rows differ much in it (the students: a debt, a
+    tag or nothing) takes `tb-list--own-trail`: each row has its own columns, the column is as wide
+    as its row's trail, and a row without `tb-list__trail` gives the width to the text.
   - On a phone (list < 26 rem) row buttons go under the text, full tile width; an amount goes under
     the text while its icon button stays on the right.
 - **Row interaction:** only rows that open or select as a whole have the hover state layer

@@ -12,6 +12,7 @@ import {
   ChangeRequestBody,
   EditLessonRequest,
   GoogleCalendarStatus,
+  HistoryEntry,
   LessonOutcome,
   MyScheduleSummary,
   OffTime,
@@ -55,8 +56,26 @@ export class ScheduleApi {
     return this.http.get<ScheduledLesson[]>('/api/teacher/schedule/lessons', { ...QUIET, params });
   }
 
+  /** Held lessons of a student or a group, newest first; `before` — the start of the last one shown. */
+  history(of: LessonsOf, before: string | null, limit: number): Observable<HistoryEntry[]> {
+    let params = new HttpParams().set('limit', limit);
+    if (before !== null) {
+      params = params.set('before', before);
+    }
+    const path = 'studentId' in of ? `students/${of.studentId}` : `groups/${of.groupId}`;
+    return this.http.get<HistoryEntry[]>(`/api/teacher/schedule/${path}/history`, {
+      ...QUIET,
+      params,
+    });
+  }
+
   plan(request: PlanLessonRequest): Observable<ScheduledLesson> {
     return this.http.post<ScheduledLesson>('/api/teacher/schedule/lessons', request, QUIET);
+  }
+
+  /** One lesson with its details: the summary, the plan and the private notes (lists carry none). */
+  lesson(lessonId: string): Observable<ScheduledLesson> {
+    return this.http.get<ScheduledLesson>(`/api/teacher/schedule/lessons/${lessonId}`, QUIET);
   }
 
   edit(lessonId: string, request: EditLessonRequest): Observable<ScheduledLesson> {
@@ -126,6 +145,39 @@ export class ScheduleApi {
     return this.http.delete<ScheduledLesson>(`/api/teacher/schedule/lessons/${lessonId}/outcome`);
   }
 
+  /** Saves «Что прошли» and «Что дальше» (an empty text clears the field). */
+  updateSummary(
+    lessonId: string,
+    summary: string | null,
+    nextPlan: string | null,
+  ): Observable<ScheduledLesson> {
+    return this.http.put<ScheduledLesson>(
+      `/api/teacher/schedule/lessons/${lessonId}/summary`,
+      { summary, nextPlan },
+      QUIET,
+    );
+  }
+
+  /** Sends the summary to the participants as «Итоги урока». */
+  shareSummary(lessonId: string): Observable<void> {
+    return this.http
+      .post(`/api/teacher/schedule/lessons/${lessonId}/summary/share`, null, QUIET)
+      .pipe(map(() => undefined));
+  }
+
+  /** Saves the teacher's private note about a student (an empty text removes it). */
+  updateNote(
+    lessonId: string,
+    studentId: string,
+    note: string | null,
+  ): Observable<ScheduledLesson> {
+    return this.http.put<ScheduledLesson>(
+      `/api/teacher/schedule/lessons/${lessonId}/notes/${studentId}`,
+      { note },
+      QUIET,
+    );
+  }
+
   /** Lessons that have ended without a marked outcome. */
   unmarked(): Observable<ScheduledLesson[]> {
     return this.http.get<ScheduledLesson[]>('/api/teacher/schedule/unmarked', QUIET);
@@ -156,6 +208,20 @@ export class ScheduleApi {
       ...QUIET,
       params: range(from, to),
     });
+  }
+
+  /** One lesson of the student with its shared summary. */
+  myLesson(lessonId: string): Observable<ScheduledLesson> {
+    return this.http.get<ScheduledLesson>(`/api/me/schedule/lessons/${lessonId}`, QUIET);
+  }
+
+  /** Held lessons of the student with the shared summaries, newest first. */
+  myHistory(before: string | null, limit: number): Observable<HistoryEntry[]> {
+    let params = new HttpParams().set('limit', limit);
+    if (before !== null) {
+      params = params.set('before', before);
+    }
+    return this.http.get<HistoryEntry[]>('/api/me/schedule/history', { ...QUIET, params });
   }
 
   requestChange(lessonId: string, body: ChangeRequestBody): Observable<ChangeRequest> {

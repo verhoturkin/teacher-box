@@ -153,6 +153,26 @@ One content component in `schedule/ui` for teacher and student in a `tb-dialog k
   оплату», for a series the single choice «Только это / Это и следующие» with the count);
   «Удалить…» — `confirm.danger` for one lesson, for a series an `alert` with the same scope list
   and count; the card closes before either opens. «Снять отметку» only for group lessons.
+- **«Итоги»** (teacher, `schedule/teacher/lesson-details-dialog.ts`): one more row of the card, under
+  the facts, only for a lesson that has started and is not cancelled (an individual lesson marked
+  «Пропуск» has none; a future lesson has none) — icon `rate_review`, title «Итоги», supporting text
+  the first line of «Что прошли» or «Добавить итоги», a trailing tonal button «Добавить» / «Изменить»
+  that covers the row (`tb-list__stretched`); *ours:* the row stands 16 px apart from the list of
+  facts, so that it reads as an action of its own. The row opens the dialog «Итоги урока» in place of the card
+  (ADR-0026) and the card comes back with the row updated.
+- **«Итоги урока»** (`schedule/teacher/lesson-summary-dialog.ts`, `tb-dialog kind="form"`):
+  «Что прошли» — Markdown with the `Текст / Просмотр` toggle of the homework editor (visible to the
+  students; when the AI feature is on, a text button «Черновик» in the field header opens a
+  small panel with «Коротко своими словами» and «Составить»: the draft comes from the topic, the
+  words and the titles of the assignments created that day for the lesson's students (assignments
+  are not bound to lessons — *ours*) and goes into the field, after the text already there);
+  «Что дальше» — two
+  lines, the hint that it goes to the next lesson's empty topic; «Заметка для себя» — private, one
+  field for a one-student lesson, for a group a `tb-list` with an avatar and a name per student
+  whose row folds the field open. Nothing saves by itself: the footer has «Отмена», «Сохранить» and
+  «Сохранить и отправить» (disabled until «Что прошли» is filled); the
+  snackbar «Итоги сохранены» / «Итоги отправлены» follows. *Ours:* the layout and the texts; the
+  toggle, the lists and the dialog are the shared ones.
 - **Student:** the same facts and their own actions («Войти в урок», «Перенести | Отменить» as a
   standard group), without ✎, «⋮» and marks.
 
@@ -178,7 +198,8 @@ active on both, `NavItem.alsoActive`).
   «Пока никого» without members — · nearest lesson; «нет занятий» without lessons in 4
   weeks; balances from billing, messengers from notifications, lessons from schedule — a failed read
   drops only its part); trail — one status: the debt in error (Title Medium, read «Долг N») or the
-  tag «Приглашён» / «Отключён» / «В архиве»; no «⋮» in the row. The open card's row is current.
+  tag «Приглашён» / «Отключён» / «В архиве», as wide as its own row and absent when empty
+  (`tb-list--own-trail`); no «⋮» in the row. The open card's row is current.
   Nothing open — «Выберите ученика или группу».
 - **Creation:** «Новый ученик» (`form`) starts with the connected choice «Ученик · Группа» (the
   group choice opens the group form) and asks only the name and contacts; after it the card opens on
@@ -196,8 +217,10 @@ active on both, `NavItem.alsoActive`).
 - **Student tabs** (`card-tabs.ts`, `?tab=`): «Обзор» — «Ближайшие занятия» (3 of 60 days, «Ещё
   запланировано: N»), «Задания» (open ones, works to review first; 5 + «Ещё открытых: N»), «Баланс»
   (figure, price, last 3 operations), «Связь» (`tb-student-channels`, `tb-room-link`); «Занятия» —
-  «Предстоящие» and «Прошедшие» (half a year each way, «Показать ранее»; a group lesson shows the
-  student's own attendance; cancelled rows inactive); «Задания» — all, open first, then accepted
+  «Предстоящие» (180 days ahead, cancelled rows inactive) and the feed «История» of held lessons
+  (`GET …/history`, 20 per page, «Показать ещё»): date, topic, the outcome tag (a group lesson shows
+  the student's own attendance), «Что прошли» (Markdown), «Что дальше» and «Заметка для себя» when
+  filled; «Задания» — all, open first, then accepted
   with the grade (20 + «Показать ещё»); «Оплаты» — four tonal tiles (balance, charged, paid, price)
   and the ledger «История» (`tb-ledger-list`); «Профиль» — «Данные ученика» (name *, e-mail, phone,
   note, default topic, colour; tonal «Сохранить», enabled when something differs, and «Отмена» shown
@@ -206,7 +229,8 @@ active on both, `NavItem.alsoActive`).
   «Сбросить пароль», disable / reactivate access). *Ours* (**M3** has no in-place edit pattern):
   fields stay editable instead of a read view with a pencil. A payment or lesson from the header
   re-reads the balance and the lessons.
-- **Group tabs** (`GROUP_TABS`): «Обзор» (lessons, «Связь»), «Занятия», «Задания» (every member's,
+- **Group tabs** (`GROUP_TABS`): «Обзор» (lessons, «Связь»), «Занятия» (the same feed without
+  private notes), «Задания» (every member's,
   name first), «Участники» (members with links, status, «Убрать из группы: имя» saved at once; a
   multiselect of other students and tonal «Добавить»), «Профиль» (name *, default topic, colour;
   «Цена занятия»; «Видеовстреча», not for an archived group).
@@ -335,6 +359,11 @@ asks «Отменить изменения?» before another category or page op
   (`fillHeight`, see «Schedule (teacher)»), and a supporting pane (mini-month, upcoming lessons,
   requests); compact starts with the day agenda. Upcoming rows on a phone: icon, time and details, a
   chevron that opens the lesson card; «Войти в урок» above the request pair.
+  **«История занятий»** — the last section of the supporting pane, before the calendar feed: a
+  `tb-list` of held lessons, newest first (icon, date, group · topic, and «Что прошли» — the shared
+  summary as Markdown, when there is one; no plan or private note), «Показать ещё» for the next 20.
+  The lesson card of a lesson that has started shows the same «Что прошли» under its facts; the
+  notification «Итоги урока» links to `/cabinet/schedule?lesson=<id>` and opens that card.
 - **Homework** (`my-homework-page.ts` + `my-task-page.ts`): list-detail of one route; the list pane
   — the connected group «Сдать · На проверке · Готовые» with counts (the first non-empty chosen),
   the search, rows (icon, title link, «до …» red when overdue, status tag); the detail — the task

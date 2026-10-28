@@ -5,11 +5,25 @@ don't read them unless the task needs history.
 
 ## How to use
 
-- A release is a `## vX.Y.Z` section (or `## Backlog
+- A release is a `## vX.Y.Z` section (or `## Next release` until the number is known): goals (2–5
+  lines), new/changed ADRs, then stages.
+- Stages are numbered globally, continuing from the archive. Substeps: `85.1`, `85.2`, … Tags: **B**
+  backend, **F** frontend, **D** docker/infra.
+- A substep names its entry points — files, classes, endpoints, routes
+  (`schedule/teacher/lesson-details-dialog.ts`, `ScheduleService.cancel`) — so the work starts there
+  instead of a repository search.
+- Each substep ends with a green `./scripts/verify.sh` and a commit that also ticks its `[x]`.
+- Partly done? Tick it and note in italics what was dropped and where it went (Backlog or next
+  release).
+- **Archiving** (skill `release`): in the release commit move the whole section to
+  `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
+  Backlog. This file keeps only unreleased work and the Backlog.
 
-Feature proposals with detailed plans (lesson notes, progress report, packages, invoices, parents,
-quizzes, web push, self-booking, calls, spaced repetition) —
-[`roadmap/`](roadmap/README.md); move one here as a release when the teacher picks it.
+## Backlog
+
+Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes, web
+push, self-booking, calls, spaced repetition) — [`roadmap/`](roadmap/README.md); move one here as a
+release when the teacher picks it.
 
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the
 monthly report, homework and board lists by name) and the options of student / group selects.

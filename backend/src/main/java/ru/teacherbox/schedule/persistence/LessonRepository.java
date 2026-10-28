@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Repository;
 import ru.teacherbox.schedule.api.CancelledBy;
 import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.Lesson;
+import ru.teacherbox.schedule.domain.LessonNote;
 import ru.teacherbox.schedule.domain.LessonStatus;
 import ru.teacherbox.schedule.domain.Participant;
 
@@ -27,10 +29,12 @@ public class LessonRepository {
 
     private static final String SELECT = """
             select id, group_id, series_id, series_date, starts_at, duration_minutes, topic, meeting_url, status,
-                   cancelled_by, cancel_reason, original_starts_at, created_at, updated_at, version, individually_changed
+                   cancelled_by, cancel_reason, original_starts_at, created_at, updated_at, version, individually_changed,
+                   summary, next_plan, summary_updated_at
             from schedule.lessons
             """;
     private static final String ORDER = " order by starts_at, id";
+    private static final String HELD_ORDER = " order by starts_at desc, id desc";
     /** Lessons the student takes part in, whatever the attendance. */
     private static final String OF_STUDENT =
             " id in (select lesson_id from schedule.lesson_participants where student_id = :studentId)";
@@ -39,7 +43,8 @@ public class LessonRepository {
     private record Row(UUID id, @Nullable UUID groupId, @Nullable UUID seriesId, @Nullable LocalDate seriesDate,
             Instant startsAt, int durationMinutes, @Nullable String topic, @Nullable String meetingUrl,
             LessonStatus status, @Nullable CancelledBy cancelledBy, @Nullable String cancelReason,
-            @Nullable Instant originalStartsAt, Instant createdAt, Instant updatedAt, long version, boolean individuallyChanged) {
+            @Nullable Instant originalStartsAt, Instant createdAt, Instant updatedAt, long version, boolean individuallyChanged,
+            @Nullable String summary, @Nullable String nextPlan, @Nullable Instant summaryUpdatedAt) {
     }
 
     private final JdbcClient jdbc;
@@ -113,6 +118,7 @@ public class LessonRepository {
     /** Deletes the lesson with its participants, requests and sent reminders. */
     public void delete(Lesson lesson) {
         if (lesson.seriesId() != null && lesson.seriesDate() != null) suppress(lesson.seriesId(), lesson.seriesDate());
+        jdbc.sql("delete from schedule.lesson_notes where lesson_id = :id").param("id", lesson.id()).update();
         int deleted = jdbc.sql("delete from schedule.lessons where id = :id and version = :version")
                 .param("id", lesson.id())
                 .param("version", lesson.version())
@@ -230,6 +236,7 @@ public class LessonRepository {
                 .query(UUID.class)
                 .list();
         if (!ids.isEmpty()) {
+            jdbc.sql("delete from schedule.lesson_notes where lesson_id in (:ids)").param("ids", ids).update();
             jdbc.sql("delete from schedule.lessons where id in (:ids)").param("ids", ids).update();
         }
         return ids;
@@ -254,6 +261,94 @@ public class LessonRepository {
     public void suppress(UUID ruleId, LocalDate date) {
         jdbc.sql("merge into schedule.repeat_exceptions(rule_id, occurrence_date) key(rule_id, occurrence_date) values (:id, :date)")
                 .param("id", ruleId).param("date", date).update();
+    }
+
+    /** Saves the summary fields only: they are outside the lesson version used to lock time edits. */
+    public void updateSummary(Lesson lesson) {
+        jdbc.sql("""
+                update schedule.lessons set summary = :summary, next_plan = :nextPlan,
+                    summary_updated_at = :updatedAt where id = :id
+                """)
+                .param("id", lesson.id())
+                .param("summary", lesson.summary())
+                .param("nextPlan", lesson.nextPlan())
+                .param("updatedAt", lesson.summaryUpdatedAt())
+                .update();
+    }
+
+    /** The nearest planned lesson after {@code lesson} with the same participants: one student or one group. */
+    public Optional<Lesson> findNextPlanned(Lesson lesson) {
+        String owner = lesson.isGroup() ? " group_id = :groupId" : " group_id is null and" + OF_STUDENT;
+        var query = jdbc.sql(SELECT + " where status = 'SCHEDULED' and id <> :id and starts_at > :startsAt and"
+                + owner + ORDER + " limit 1")
+                .param("id", lesson.id())
+                .param("startsAt", lesson.startsAt());
+        query = lesson.isGroup() ? query.param("groupId", lesson.groupId())
+                : query.param("studentId", lesson.studentId());
+        return load(query.query(LessonRepository::map).list()).stream().findFirst();
+    }
+
+    /** Puts a topic into a lesson that has none; a filled topic stays. Does not bump the version. */
+    public void fillEmptyTopic(UUID lessonId, String topic) {
+        jdbc.sql("update schedule.lessons set topic = :topic where id = :id and (topic is null or topic = '')")
+                .param("id", lessonId)
+                .param("topic", topic)
+                .update();
+    }
+
+    public List<LessonNote> findNotes(UUID lessonId) {
+        return jdbc.sql("select lesson_id, student_id, note, updated_at from schedule.lesson_notes"
+                        + " where lesson_id = :id order by updated_at, student_id")
+                .param("id", lessonId)
+                .query((rs, rowNum) -> new LessonNote(rs.getObject("lesson_id", UUID.class),
+                        rs.getObject("student_id", UUID.class), rs.getString("note"),
+                        rs.getObject("updated_at", Instant.class)))
+                .list();
+    }
+
+    /** Writes a note, or deletes it when the text is {@code null}. */
+    public void saveNote(UUID lessonId, UUID studentId, @Nullable String note, Instant now) {
+        if (note == null) {
+            jdbc.sql("delete from schedule.lesson_notes where lesson_id = :lessonId and student_id = :studentId")
+                    .param("lessonId", lessonId).param("studentId", studentId).update();
+            return;
+        }
+        jdbc.sql("""
+                merge into schedule.lesson_notes (lesson_id, student_id, note, updated_at)
+                key (lesson_id, student_id) values (:lessonId, :studentId, :note, :now)
+                """)
+                .param("lessonId", lessonId).param("studentId", studentId).param("note", note).param("now", now)
+                .update();
+    }
+
+    /** Held lessons (outcome marked) of the student, group lessons included, that start before {@code before}, newest first. */
+    public List<Lesson> findHeldOfStudent(UUID studentId, Instant before, int limit) {
+        return load(jdbc.sql(SELECT + " where status in ('CONDUCTED', 'MISSED') and starts_at < :before and"
+                + OF_STUDENT + HELD_ORDER + " limit :limit")
+                .param("studentId", studentId).param("before", before).param("limit", limit)
+                .query(LessonRepository::map).list());
+    }
+
+    /** Held lessons of the group that start before {@code before}, newest first. */
+    public List<Lesson> findHeldOfGroup(UUID groupId, Instant before, int limit) {
+        return load(jdbc.sql(SELECT + " where status in ('CONDUCTED', 'MISSED') and starts_at < :before"
+                + " and group_id = :groupId" + HELD_ORDER + " limit :limit")
+                .param("groupId", groupId).param("before", before).param("limit", limit)
+                .query(LessonRepository::map).list());
+    }
+
+    /** The teacher's private notes about the student in the given lessons, by lesson. */
+    public Map<UUID, LessonNote> findNotes(UUID studentId, Collection<UUID> lessonIds) {
+        if (lessonIds.isEmpty()) {
+            return Map.of();
+        }
+        return jdbc.sql("select lesson_id, student_id, note, updated_at from schedule.lesson_notes"
+                        + " where student_id = :studentId and lesson_id in (:ids)")
+                .param("studentId", studentId).param("ids", lessonIds)
+                .query((rs, rowNum) -> new LessonNote(rs.getObject("lesson_id", UUID.class),
+                        rs.getObject("student_id", UUID.class), rs.getString("note"),
+                        rs.getObject("updated_at", Instant.class)))
+                .list().stream().collect(Collectors.toMap(LessonNote::lessonId, note -> note));
     }
 
     /** Remembers the reminders sent for a lesson (one row per advance time in minutes). */
@@ -324,7 +419,8 @@ public class LessonRepository {
                 .map(row -> Lesson.restore(row.id(), row.groupId(), participants.getOrDefault(row.id(), List.of()),
                         row.seriesId(), row.seriesDate(), row.startsAt(), row.durationMinutes(), row.topic(),
                         row.meetingUrl(), row.status(), row.cancelledBy(), row.cancelReason(),
-                        row.originalStartsAt(), row.createdAt(), row.updatedAt(), row.version()).restoreException(row.individuallyChanged()))
+                        row.originalStartsAt(), row.createdAt(), row.updatedAt(), row.version()).restoreException(row.individuallyChanged())
+                        .restoreSummary(row.summary(), row.nextPlan(), row.summaryUpdatedAt()))
                 .toList();
     }
 
@@ -359,6 +455,7 @@ public class LessonRepository {
                 rs.getObject("original_starts_at", Instant.class),
                 rs.getObject("created_at", Instant.class),
                 rs.getObject("updated_at", Instant.class),
-                rs.getLong("version"), rs.getBoolean("individually_changed"));
+                rs.getLong("version"), rs.getBoolean("individually_changed"), rs.getString("summary"),
+                rs.getString("next_plan"), rs.getObject("summary_updated_at", Instant.class));
     }
 }

@@ -16,7 +16,7 @@ import ru.teacherbox.shared.reset.DataReset;
 @Component
 class ScheduleDataReset implements DataReset {
 
-    private static final List<String> TABLES = List.of("schedule.lesson_participants", "schedule.reminders_sent",
+    private static final List<String> TABLES = List.of("schedule.lesson_participants", "schedule.reminders_sent", "schedule.lesson_notes",
             "schedule.change_requests", "schedule.google_events", "schedule.repeat_exceptions", "schedule.lessons", "schedule.repeat_rules",
             "schedule.feeds", "schedule.google_connection", "schedule.google_oauth_states", "schedule.off_times");
 

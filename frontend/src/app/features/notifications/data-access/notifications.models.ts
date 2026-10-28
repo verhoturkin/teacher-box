@@ -16,13 +16,14 @@ export type NotificationKind =
   | 'SCHEDULE_CALENDAR'
   | 'MEETING_LINK'
   | 'STUDENT_ACTIVATED'
+  | 'LESSON_SUMMARY'
   | 'MESSAGE';
 
 export type ChannelType = 'TELEGRAM' | 'VK' | 'MAX';
 
 /** Groups of notifications a user can stop receiving in messengers (`MESSAGES` is always sent). */
 export type NotificationTopic =
-  'HOMEWORK' | 'SCHEDULE' | 'REMINDERS' | 'BILLING' | 'ACCOUNT' | 'MESSAGES';
+  'HOMEWORK' | 'SCHEDULE' | 'REMINDERS' | 'BILLING' | 'ACCOUNT' | 'LESSON_SUMMARY' | 'MESSAGES';
 
 /** Mirrors `NotificationView` of the backend. */
 export interface NotificationItem {

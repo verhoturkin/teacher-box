@@ -13,6 +13,7 @@ import ru.teacherbox.schedule.api.ChangeKind;
 import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.ChangeRequest;
 import ru.teacherbox.schedule.domain.Lesson;
+import ru.teacherbox.schedule.domain.LessonNote;
 import ru.teacherbox.schedule.domain.LessonStatus;
 import ru.teacherbox.schedule.domain.OffTime;
 import ru.teacherbox.schedule.domain.Participant;
@@ -48,6 +49,9 @@ public final class ScheduleViews {
      * @param joinUrl          where the lesson takes place: its own link or the room of the student or group
      * @param originalStartsAt the time the lesson was first planned for, if it moved
      * @param pendingRequests  unanswered requests of the participants about this lesson
+     * @param summary          «what we covered», filled only in the details of one lesson
+     * @param nextPlan         «what next», the teacher's details only
+     * @param notes            private notes per student, the teacher's details only
      */
     public record LessonView(
             UUID id,
@@ -73,7 +77,11 @@ public final class ScheduleViews {
             int repeatWeeks,
             @Nullable LocalDate repeatUntil,
             @Nullable Long repeatVersion,
-            @Nullable LocalDate occurrenceDate) {
+            @Nullable LocalDate occurrenceDate,
+            @Nullable String summary,
+            @Nullable String nextPlan,
+            @Nullable Instant summaryUpdatedAt,
+            List<NoteView> notes) {
 
         static LessonView of(Lesson lesson, ScheduleNames names, List<RequestView> pendingRequests, @Nullable RepeatRule rule) {
             if (rule != null && rule.endsOn() != null && lesson.seriesDate() != null
@@ -87,7 +95,7 @@ public final class ScheduleViews {
                     lesson.cancelReason(),
                     lesson.originalStartsAt(), List.copyOf(pendingRequests), lesson.version(),
                     rule == null ? 0 : rule.intervalWeeks(), rule == null ? null : rule.endsOn(),
-                    rule == null ? null : rule.version(), lesson.seriesDate());
+                    rule == null ? null : rule.version(), lesson.seriesDate(), null, null, null, List.of());
         }
 
         /** What a participant sees: their own attendance and requests, not those of classmates. */
@@ -97,8 +105,43 @@ public final class ScheduleViews {
                     seriesId, startsAt, endsAt, durationMinutes, topic, meetingUrl, joinUrl, status, cancelledBy,
                     cancelReason, originalStartsAt,
                     pendingRequests.stream().filter(request -> request.studentId().equals(participantId)).toList(),
-                    version, repeatWeeks, repeatUntil, repeatVersion, occurrenceDate);
+                    version, repeatWeeks, repeatUntil, repeatVersion, occurrenceDate, summary, null, summaryUpdatedAt,
+                    List.of());
         }
+
+        /** The teacher's details: the summary, the plan and the private notes (the lists carry none of them). */
+        LessonView withSummary(Lesson lesson, List<LessonNote> found) {
+            return new LessonView(id, studentId, studentName, studentAvatar, groupId, groupName, participants, seriesId,
+                    startsAt, endsAt, durationMinutes, topic, meetingUrl, joinUrl, status, cancelledBy, cancelReason,
+                    originalStartsAt, pendingRequests, version, repeatWeeks, repeatUntil, repeatVersion,
+                    occurrenceDate, lesson.summary(), lesson.nextPlan(), lesson.summaryUpdatedAt(),
+                    found.stream().map(note -> new NoteView(note.studentId(), note.note(), note.updatedAt())).toList());
+        }
+
+        /** A student sees the shared summary of their lesson, never the plan or the notes. */
+        LessonView withStudentSummary(Lesson lesson) {
+            return new LessonView(id, studentId, studentName, studentAvatar, groupId, groupName, participants, seriesId,
+                    startsAt, endsAt, durationMinutes, topic, meetingUrl, joinUrl, status, cancelledBy, cancelReason,
+                    originalStartsAt, pendingRequests, version, repeatWeeks, repeatUntil, repeatVersion,
+                    occurrenceDate, lesson.summary(), null, lesson.summaryUpdatedAt(), List.of());
+        }
+    }
+
+    /**
+     * One held lesson in a history feed.
+     *
+     * @param attendance the student's attendance; {@code null} in a group feed
+     * @param nextPlan   the teacher's feeds only
+     * @param note       the teacher's private note about the student; the student feed never has it
+     */
+    public record HistoryEntry(UUID lessonId, Instant startsAt, @Nullable String topic, LessonStatus status,
+            @Nullable UUID groupId, @Nullable String groupName, @Nullable Attendance attendance,
+            @Nullable String summary, @Nullable String nextPlan, @Nullable Instant summaryUpdatedAt,
+            @Nullable String note) {
+    }
+
+    /** The teacher's private note about a student's part in a lesson. */
+    public record NoteView(UUID studentId, String note, Instant updatedAt) {
     }
 
     /**

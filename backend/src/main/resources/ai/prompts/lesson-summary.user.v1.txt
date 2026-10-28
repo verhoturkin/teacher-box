@@ -1,0 +1,8 @@
+Тема урока: {{topic}}
+
+Задания, выданные на уроке:
+{{assignments}}
+
+<words>
+{{words}}
+</words>
