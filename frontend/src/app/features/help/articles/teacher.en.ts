@@ -450,7 +450,7 @@ Each held lesson (and each one missed without notice) is charged at the student'
 The page shows one month; the ‹ › arrows next to the title switch months.
 
 - **Four figures:** «Received», «Charged for lessons», «Debt» (the red tile — how many students owe) and «Prepaid».
-- **Operations** — the month's list: payments, lessons and absences; the amount on the right (a payment with «+», a charge with «−», an absence without a charge — «0»). The buttons «All · Payments · Lessons · Absences» and the «Student» select keep only what you need; the month and the filters are kept in the page address, so «Back» and a reload keep them. «⋮» in the header → «Download CSV» saves the current list as a file for Excel. A student's name opens the «Payments» tab of their card.
+- **Operations** — the month's list: payments, lessons and absences; the amount on the right (a payment with «+», a charge with «−», an absence without a charge — «0»). The buttons «All · Payments · Lessons · Absences» and the «Student» select keep only what you need; the month and the filters are kept in the page address, so «Back» and a reload keep them. «Monthly report» → «Download CSV» saves the whole journal of the month as a file for Excel. A student's name opens the «Payments» tab of their card.
 - **By students** (on the right on a wide screen): «Debtors» with the «Remind» button — it sends the student a reminder (on a phone «Debtors» sit under the month's figures), «Prepaid running out» — whose prepayment covers 2 lessons or fewer, and «By weeks» — what came in each week. «All in Students» opens the students list.
 - **Monthly report** — the button in the header.
 

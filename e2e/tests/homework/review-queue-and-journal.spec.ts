@@ -160,9 +160,7 @@ test('the journal of the month narrows by the chips', async ({ page }) => {
   await expect(payment).toBeVisible();
 });
 
-test('the journal filter stays in the address and the journal downloads as CSV', async ({
-  page,
-}) => {
+test('the journal filter stays in the address', async ({ page }) => {
   await signIn(page);
   await page.goto('/teacher/billing?kind=payments');
   await expect(page.getByRole('button', { name: 'Оплаты', exact: true })).toHaveAttribute(
@@ -174,9 +172,13 @@ test('the journal filter stays in the address and the journal downloads as CSV',
     'aria-pressed',
     'true',
   );
-  await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+});
+
+test('the monthly report downloads the journal as CSV', async ({ page }) => {
+  await signIn(page);
+  await page.goto('/teacher/billing/report');
   const download = page.waitForEvent('download');
-  await page.getByRole('menuitem', { name: 'Скачать CSV' }).click();
+  await page.getByRole('button', { name: 'Скачать CSV' }).click();
   const file = await download;
   expect(file.suggestedFilename()).toMatch(/\.csv$/);
 });

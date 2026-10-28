@@ -1,6 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { FileSaver } from '@shared/files/file-saver';
 import { toIsoMonth } from '@shared/dates/iso-date';
 import { monthlyReport, payment } from '@testing/billing-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
@@ -85,6 +86,21 @@ describe('MonthlyReportPage', () => {
     expect(text()).toContain('В этом месяце не было ни занятий, ни оплат');
     expect(text()).toContain('Занятий нет');
     expect(text()).toContain('Оплат нет');
+  });
+
+  it('downloads the whole month journal as CSV', async () => {
+    const month = toIsoMonth(new Date());
+    backend.expectOne(`/api/teacher/billing/reports/monthly?month=${month}`).flush(monthlyReport());
+    await fixture.whenStable();
+    const save = vi.spyOn(TestBed.inject(FileSaver), 'save').mockImplementation(() => undefined);
+
+    buttonByText(host, 'Скачать CSV').click();
+    const request = backend.expectOne(`/api/teacher/billing/operations.csv?month=${month}`);
+    expect(request.request.responseType).toBe('blob');
+    const csv = new Blob(['x']);
+    request.flush(csv);
+
+    expect(save).toHaveBeenCalledWith(csv, `operations-${month}.csv`);
   });
 
   it('shows a failed load with «Повторить»', async () => {

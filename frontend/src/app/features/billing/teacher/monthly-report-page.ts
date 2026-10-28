@@ -10,7 +10,9 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { FileSaver } from '@shared/files/file-saver';
 import { Pane, Panes } from '@shared/ui/panes';
 import { DatePicker } from 'primeng/datepicker';
 import { TableModule } from 'primeng/table';
@@ -43,6 +45,7 @@ import { PAYMENTS_TAB } from '../card-link';
     DatePipe,
     ReactiveFormsModule,
     RouterLink,
+    Button,
     Card,
     DatePicker,
     TableModule,
@@ -71,6 +74,12 @@ import { PAYMENTS_TAB } from '../card-link';
               [readonlyInput]="true"
               inputId="report-month"
               [ariaLabel]="t.month"
+            />
+            <p-button
+              [label]="t.downloadCsv"
+              icon="tb-i tb-i-download"
+              severity="secondary"
+              (onClick)="downloadCsv()"
             />
           </div>
         </div>
@@ -263,6 +272,7 @@ export class MonthlyReportPage implements OnInit {
   protected readonly colors = inject(TeacherColors);
   private readonly api = inject(BillingApi);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly fileSaver = inject(FileSaver);
 
   protected readonly lessonStatusLabels = LESSON_STATUS_LABELS;
   protected readonly lessonStatusHints = LESSON_STATUS_HINTS;
@@ -290,6 +300,17 @@ export class MonthlyReportPage implements OnInit {
       .pipe(this.state.track())
       .subscribe((report) => {
         this.report.set(report);
+      });
+  }
+
+  /** The whole journal of the report's month, without the overview's chip and student. */
+  protected downloadCsv(): void {
+    const month = toIsoMonth(this.month.value);
+    this.api
+      .operationsCsv(month)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((csv) => {
+        this.fileSaver.save(csv, `operations-${month}.csv`);
       });
   }
 }

@@ -55,7 +55,7 @@ full-screen dialogs on a phone. No new ADR.
   «Без мессенджера» in the students list (`identity/students/roster.ts`; old `?filter=` values fall
   back to «Все»). The debtors stay reachable on a phone: the payments page shows «Должники» under
   the figures on compact (`billing-overview-page.ts`, now hidden there). Update screens.md.
-- [ ] 328.2 **F** «Скачать CSV» moves from the «⋮» of the payments header into the monthly report
+- [x] 328.2 **F** «Скачать CSV» moves from the «⋮» of the payments header into the monthly report
   (`monthly-report-page.ts`, a tonal button in its header; the whole month's journal); the payments
   header loses «⋮». Update screens.md and the help article.
 

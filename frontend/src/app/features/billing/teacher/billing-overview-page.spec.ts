@@ -17,7 +17,6 @@ import { screenWidth, testProviders } from '@testing/setup';
 import { BroadcastDialog } from '@features/notifications/parts';
 import { RailState } from '@core/layout/rail-state';
 import { toIsoMonth } from '@shared/dates/iso-date';
-import { FileSaver } from '@shared/files/file-saver';
 import { BillingOverviewPage } from './billing-overview-page';
 import { PaymentDialog } from './payment-dialog';
 
@@ -220,31 +219,8 @@ describe('BillingOverviewPage', () => {
     expect(link.getAttribute('href')).toContain(`month=${MONTH}`);
   });
 
-  it('downloads the journal as CSV with the current chip and student from «⋮»', async () => {
-    const save = vi.spyOn(TestBed.inject(FileSaver), 'save').mockImplementation(() => undefined);
-    buttonByText(host, 'Оплаты').click();
-    backend
-      .expectOne(matching('/api/teacher/billing/operations', { month: MONTH, kind: 'PAYMENT' }))
-      .flush(operations([PAID], MONTH));
-    await fixture.whenStable();
-
-    requireElement(host, 'button[aria-label="Ещё"]', HTMLButtonElement).click();
-    await fixture.whenStable();
-    const item = Array.from(document.body.querySelectorAll('.p-menu-item-link')).find((link) =>
-      readableText(link).includes('Скачать CSV'),
-    );
-    expect(item).toBeInstanceOf(HTMLElement);
-    if (item instanceof HTMLElement) {
-      item.click();
-    }
-    const request = backend.expectOne(
-      matching('/api/teacher/billing/operations.csv', { month: MONTH, kind: 'PAYMENT' }),
-    );
-    expect(request.request.responseType).toBe('blob');
-    const csv = new Blob(['x']);
-    request.flush(csv);
-
-    expect(save).toHaveBeenCalledWith(csv, `operations-${MONTH}.csv`);
+  it('has no «⋮» menu in the header: the CSV lives in the monthly report', () => {
+    expect(host.querySelector('button[aria-label="Ещё"]')).toBeNull();
   });
 
   it('shows a failed load with «Повторить»', async () => {
