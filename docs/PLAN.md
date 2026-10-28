@@ -139,7 +139,7 @@ Design:
 
 ### Stage 326 — Docs and E2E
 
-- [ ] 326.1 Docs: `docs/modules/homework.md`, `docs/modules/ai.md`, `docs/screens.md`, wiki pages
+- [x] 326.1 Docs: `docs/modules/homework.md`, `docs/modules/ai.md`, `docs/screens.md`, wiki pages
   for homework and AI (`docs/wiki/`), help articles in every language; E2E
   `e2e/tests/homework/quiz.spec.ts` (teacher creates a quiz with all six types, student answers,
   reveal rule, best attempt, teacher override and grade suggestion).

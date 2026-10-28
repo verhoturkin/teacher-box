@@ -281,6 +281,17 @@ width; the header keeps «Выдать / Сохранить» (filled) and «…
 never changes text without Insert / Replace; its state survives closing the pane; leaving with
 changes asks first.
 
+**Questions** (0.39.0): a «Вопросы» card under the videos (`question-section.ts`): a question is a card
+(type, text, type fields, points, explanation) with up/down/delete; «Добавить вопрос» picks the type; a total
+«Вопросов: N, баллов: M»; «Как проходит тест» — when to show the key and the attempts. Accepted answers of a short
+answer are rows with «Добавить ответ»; server errors show in one message above the questions. After a student starts
+the quiz the card is read-only with a note. The AI pane has a «Что готовить» switch: «Задание» or «Вопросы» (the draft
+cards with the key, «Добавить в конец» / «Заменить все»).
+
+**Quiz review:** the review page shows «Тест: N из M» under the answer — the best attempt's questions, wrong first,
+with the student's answer, the key and «Засчитать» / «Не засчитывать»; the grade field is filled with «N из M» until
+the teacher types one. The assignment page lists «Ошибки по вопросам» («4 из 6»).
+
 ## Payments (teacher)
 
 `features/billing/teacher/billing-overview-page.ts`: a flexible pane and from medium a supporting
@@ -369,7 +380,11 @@ asks «Отменить изменения?» before another category or page op
 - **Homework** (`my-homework-page.ts` + `my-task-page.ts`): list-detail of one route; the list pane
   — the connected group «Сдать · На проверке · Готовые» with counts (the first non-empty chosen),
   the search, rows (icon, title link, «до …» red when overdue, status tag); the detail — the task
-  with the teacher's feedback and the answer form.
+  with the teacher's feedback and the answer form. A task with questions has a «Тест» section above the
+  answer form (`quiz-section.ts`): «Начать тест», on wide all questions as cards, on compact one per screen with
+  «Назад / Далее / Проверить и сдать»; matching is a select per left part, ordering has up/down buttons; answers
+  save themselves; «Сдать тест» asks first. After a submit: «Лучший результат: N из M», attempts left, «Пройти
+  ещё раз», and the key with the explanations when the rule allows.
 - **Payments:** tonal balance / charged / paid / price figures and the journal with filter chips,
   receipts in their rows.
 - **«Мой аккаунт»** (`/cabinet/account`): account, «Мессенджеры», «Уведомления на устройствах»
