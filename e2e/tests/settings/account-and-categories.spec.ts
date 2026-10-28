@@ -144,7 +144,7 @@ test('the teacher sets a photo in «Мой аккаунт» of the settings', as
     .locator('input[type="file"][aria-label="Файл фото"]')
     .setInputFiles({ name: 'me.png', mimeType: 'image/png', buffer: PNG });
   await expect(page.getByText('Фото сохранено')).toBeVisible();
-  await expect(page.locator('.tb-shell__user-button tb-avatar img')).toBeVisible();
+  await expect(page.locator('a[aria-label^="Аккаунт"] tb-avatar img')).toBeVisible();
 
   // «Имя» and «Смена пароля» side by side
   const cards = page.locator('.tb-account__forms > p-card');
@@ -156,7 +156,7 @@ test('the teacher sets a photo in «Мой аккаунт» of the settings', as
   expect(Math.round(name?.y ?? 0)).toBe(Math.round(password?.y ?? 1));
 
   await page.getByRole('button', { name: 'Убрать фото' }).click();
-  await expect(page.locator('.tb-shell__user-button tb-avatar img')).toHaveCount(0);
+  await expect(page.locator('a[aria-label^="Аккаунт"] tb-avatar img')).toHaveCount(0);
 });
 
 test('the settings list their categories, without integrations, profile or address', async ({

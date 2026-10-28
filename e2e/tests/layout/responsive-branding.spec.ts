@@ -41,14 +41,13 @@ test.describe('on a computer', () => {
       .poll(async () => (await page.locator('.tb-shell__header').boundingBox())?.y)
       .toBe(0);
 
-    await page.getByRole('button', { name: 'Меню пользователя' }).click();
-    await page.getByRole('menuitemradio', { name: 'Тёмная тема' }).click();
+    await page.goto('/teacher/settings/account');
+    await page.getByRole('button', { name: 'Тёмная' }).click();
     await expect(page.locator('html')).toHaveClass(/tb-dark/);
     await page.reload();
     await expect(page.locator('html')).toHaveClass(/tb-dark/);
 
-    await page.getByRole('button', { name: 'Меню пользователя' }).click();
-    await page.getByRole('menuitemradio', { name: 'Светлая тема' }).click();
+    await page.getByRole('button', { name: 'Светлая' }).click();
     await expect(page.locator('html')).not.toHaveClass(/tb-dark/);
   });
 

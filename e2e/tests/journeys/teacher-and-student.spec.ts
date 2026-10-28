@@ -90,10 +90,8 @@ test('the student accepts the invitation', async ({ browser }) => {
   await page.getByRole('button', { name: 'Создать аккаунт' }).click();
 
   await expect(page).toHaveURL(/\/cabinet$/);
-  // the top strip shows the avatar only (0.21.0); the name is its accessible name
-  await expect(
-    page.getByRole('button', { name: `${STUDENT_NAME}: меню пользователя` }),
-  ).toBeVisible();
+  // the rail's «Аккаунт» carries the avatar; the name is in its accessible name
+  await expect(page.getByRole('link', { name: `Аккаунт: ${STUDENT_NAME}` })).toBeVisible();
 });
 
 test('the teacher gives homework and the student hands it in', async ({ page, browser }) => {

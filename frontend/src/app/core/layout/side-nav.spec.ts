@@ -116,6 +116,19 @@ describe('SideNav', () => {
     expect(chosen).toHaveBeenCalledOnce();
   });
 
+  it('keeps the account under the settings out of the settings item (except)', async () => {
+    const host = await render(false, '/teacher/settings/account');
+    fixture.componentRef.setInput('footer', [
+      ...TEACHER_FOOTER_LINKS,
+      { label: 'Аккаунт', account: true, routerLink: '/teacher/settings/account' },
+    ]);
+    await fixture.whenStable();
+
+    const current = host.querySelectorAll('a[aria-current="page"]');
+    expect(current).toHaveLength(1);
+    expect(current[0]?.textContent).toContain('Аккаунт');
+  });
+
   it('has no bottom group without links', async () => {
     const host = await render(false);
     fixture.componentRef.setInput('footer', []);

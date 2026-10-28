@@ -32,13 +32,9 @@ export const ru = {
     notFound: 'Страница не найдена',
   },
   shell: {
-    userMenuOf: (name: string) => `${name}: меню пользователя`,
+    accountOf: (name: string) => `Аккаунт: ${name}`,
     help: 'Справка',
-    account: 'Мой аккаунт',
-    lightTheme: 'Светлая тема',
-    darkTheme: 'Тёмная тема',
-    systemTheme: 'Тема как в системе',
-    signOut: 'Выйти',
+    account: 'Аккаунт',
   },
   search: {
     placeholder: 'Ученики, задания, доски',

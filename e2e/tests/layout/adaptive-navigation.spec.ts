@@ -25,6 +25,8 @@ const SECTIONS = [
   // the bottom group of the rail (0.21.0)
   'Настройки',
   'Справка',
+  // 0.40.0: «Аккаунт» last; its avatar initials are part of the link's text
+  /Аккаунт$/,
 ];
 
 async function signIn(page: Page): Promise<void> {
@@ -65,8 +67,8 @@ test('dark content panes remain distinct from the window outside compact layouts
   page,
 }, testInfo) => {
   await signIn(page);
-  await page.getByRole('button', { name: 'Меню пользователя' }).click();
-  await page.getByRole('menuitemradio', { name: 'Тёмная тема' }).click();
+  await page.goto('/teacher/settings/account');
+  await page.getByRole('button', { name: 'Тёмная' }).click();
   await expect(page.locator('html')).toHaveClass(/tb-dark/);
 
   const pane = page.locator('main tb-pane').first();

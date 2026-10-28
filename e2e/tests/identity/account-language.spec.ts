@@ -31,8 +31,8 @@ test('the language chosen in the interface goes to the account', async ({ page, 
   await expect(page.getByRole('region', { name: 'Today', exact: true })).toBeVisible();
   await expect.poll(() => accountLanguage(request)).toBe('en');
 
-  await page.getByRole('button', { name: /user menu/ }).click();
-  await page.getByRole('menuitemradio', { name: 'Русский' }).click();
+  await page.goto('/teacher/settings/account');
+  await page.getByRole('button', { name: 'Русский' }).click();
   await expect(page.getByRole('region', { name: 'Сегодня', exact: true })).toBeVisible();
   await expect.poll(() => accountLanguage(request)).toBe('ru');
 });

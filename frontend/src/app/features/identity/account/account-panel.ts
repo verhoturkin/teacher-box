@@ -13,6 +13,9 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Tooltip } from 'primeng/tooltip';
+import { LANGUAGES, Language, chooseLanguage, language } from '@core/i18n/language';
+import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
+import { Segment, SegmentGroup } from '@shared/ui/segment-group';
 import { AuthService } from '@core/auth/auth.service';
 import { checkFiles } from '@shared/files/check-files';
 import { SquarePhoto } from '@shared/files/square-photo';
@@ -40,7 +43,16 @@ const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
  */
 @Component({
   selector: 'tb-account-panel',
-  imports: [ReactiveFormsModule, Avatar, Button, Card, InputText, Tooltip, ChangePasswordForm],
+  imports: [
+    ReactiveFormsModule,
+    Avatar,
+    Button,
+    Card,
+    InputText,
+    SegmentGroup,
+    Tooltip,
+    ChangePasswordForm,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-stack">
@@ -149,6 +161,37 @@ const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
           <tb-change-password-form [tonal]="true" [narrow]="false" (changed)="passwordChanged()" />
         </p-card>
       </div>
+      <p-card [header]="t.appearance">
+        <div class="tb-form">
+          <div class="tb-field">
+            <span>{{ t.theme }}</span>
+            <tb-segment-group
+              [label]="t.theme"
+              [segments]="themes"
+              [value]="theme.choice()"
+              (valueChange)="theme.choose($event)"
+            />
+          </div>
+          <div class="tb-field">
+            <span>{{ t.language }}</span>
+            <tb-segment-group
+              [label]="t.language"
+              [segments]="languages"
+              [value]="currentLanguage"
+              (valueChange)="chooseLanguage($event)"
+            />
+          </div>
+        </div>
+      </p-card>
+      <div class="tb-form-actions">
+        <p-button
+          [label]="t.signOut"
+          icon="tb-i tb-i-logout"
+          severity="secondary"
+          [loading]="busy.is('sign-out')"
+          (onClick)="signOut()"
+        />
+      </div>
     </div>
   `,
   styles: `
@@ -226,6 +269,19 @@ export class AccountPanel implements OnInit {
   protected readonly c = SHARED_T.common;
   protected readonly t = T.account;
   protected readonly busy = new Busy();
+  protected readonly theme = inject(ThemeMode);
+  protected readonly themes: readonly Segment<ThemeChoice>[] = [
+    { value: 'light', label: T.account.themeLight, icon: 'tb-i tb-i-light_mode' },
+    { value: 'dark', label: T.account.themeDark, icon: 'tb-i tb-i-dark_mode' },
+    { value: 'system', label: T.account.themeSystem, icon: 'tb-i tb-i-brightness_auto' },
+  ];
+  /** Switching the language reloads the page (ADR-0035). */
+  protected readonly languages: readonly Segment<Language>[] = LANGUAGES.map(({ code, name }) => ({
+    value: code,
+    label: name,
+  }));
+  protected readonly currentLanguage = language();
+  protected readonly chooseLanguage = chooseLanguage;
   private readonly api = inject(IdentityApi);
   private readonly auth = inject(AuthService);
   private readonly squarePhoto = inject(SquarePhoto);
@@ -349,6 +405,10 @@ export class AccountPanel implements OnInit {
   protected ownNameUnchanged(account: Account): boolean {
     const name = this.ownNameToSave();
     return (name === '' ? account.profileName : name) === account.displayName;
+  }
+
+  protected signOut(): void {
+    this.busy.guard('sign-out', this.auth.logout()).subscribe();
   }
 
   protected passwordChanged(): void {

@@ -42,7 +42,10 @@ describe('Shell on a phone', () => {
   }
 
   const labels = (root: ParentNode, selector: string): string[] =>
-    Array.from(root.querySelectorAll(selector)).map((link) => link.textContent.trim());
+    Array.from(root.querySelectorAll(selector)).map(
+      (link) =>
+        link.querySelector('.tb-side-nav__label')?.textContent.trim() ?? link.textContent.trim(),
+    );
 
   /** The ☰ of the top app bar. */
   const menuButton = (host: HTMLElement): HTMLButtonElement =>
@@ -146,9 +149,9 @@ describe('Shell on a phone', () => {
     await fixture.whenStable();
     expect(host.querySelector('.tb-shell__title')?.textContent.trim()).toBe('Сегодня');
 
-    await TestBed.inject(Router).navigateByUrl('/teacher/account');
+    await TestBed.inject(Router).navigateByUrl('/teacher/settings/account');
     await fixture.whenStable();
-    expect(host.querySelector('.tb-shell__title')?.textContent.trim()).toBe('Мой аккаунт');
+    expect(host.querySelector('.tb-shell__title')?.textContent.trim()).toBe('Аккаунт');
   });
 
   it('opens the modal expanded rail with the other sections, the settings and the help', async () => {
@@ -164,7 +167,7 @@ describe('Shell on a phone', () => {
     expect(nav.classList).toContain('tb-side-nav--modal');
     expect(nav.querySelector('.tb-side-nav__brand')?.textContent).toContain('Teacher Box');
     expect(labels(nav, 'ul:not(.tb-side-nav__footer) a')).toEqual(['Материалы']);
-    expect(labels(nav, 'ul.tb-side-nav__footer a')).toEqual(['Настройки', 'Справка']);
+    expect(labels(nav, 'ul.tb-side-nav__footer a')).toEqual(['Настройки', 'Справка', 'Аккаунт']);
     // the focus goes into the rail
     expect(rail.contains(document.activeElement)).toBe(true);
   });
@@ -234,7 +237,7 @@ describe('Shell on a phone', () => {
     expect(host.querySelectorAll('nav.tb-bottom-nav a')).toHaveLength(3);
     const rail = await openRail(host);
     expect(rail.querySelector('ul:not(.tb-side-nav__footer)')).toBeNull();
-    expect(labels(rail, 'ul.tb-side-nav__footer a')).toEqual(['Настройки', 'Справка']);
+    expect(labels(rail, 'ul.tb-side-nav__footer a')).toEqual(['Настройки', 'Справка', 'Аккаунт']);
   });
 
   it('hides the bottom bar while a page asks for it (the review of a work, spec §9)', async () => {

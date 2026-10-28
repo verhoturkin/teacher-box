@@ -69,7 +69,7 @@ full-screen dialogs on a phone. No new ADR.
 
 ### 330. Account and settings
 
-- [ ] 330.1 **F** The avatar menu leaves the top bar (only the bell stays). «Аккаунт» (avatar +
+- [x] 330.1 **F** The avatar menu leaves the top bar (only the bell stays). «Аккаунт» (avatar +
   name) becomes the last item of the rail's bottom group and of the ☰ drawer for every role and
   opens «Мой аккаунт». Theme and language move into «Мой аккаунт» (teacher: settings category
   `account`; student: `/cabinet/account`; admin: its settings) together with «Выйти».

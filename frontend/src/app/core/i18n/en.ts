@@ -34,13 +34,9 @@ export const en: Translation<typeof ru> = {
     notFound: 'Page not found',
   },
   shell: {
-    userMenuOf: (name: string) => `${name}: user menu`,
+    accountOf: (name: string) => `Account: ${name}`,
     help: 'Help',
-    account: 'My account',
-    lightTheme: 'Light theme',
-    darkTheme: 'Dark theme',
-    systemTheme: 'System theme',
-    signOut: 'Sign out',
+    account: 'Account',
   },
   search: {
     placeholder: 'Students, assignments, boards',

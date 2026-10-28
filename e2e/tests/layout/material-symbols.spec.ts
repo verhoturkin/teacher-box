@@ -77,13 +77,3 @@ test('no primeicons are left and PrimeNG icons show our symbols', async ({ page 
   );
   expect(primeicons).toBe(0);
 });
-
-test('the user button without a photo shows a person in a circle as large as the photo', async ({
-  page,
-}) => {
-  await signIn(page);
-  const icon = page.locator('.tb-shell__user-button .tb-i-account_circle');
-  await expect(icon).toBeVisible();
-  const box = await icon.boundingBox();
-  expect(Math.round(box?.width ?? 0)).toBe(32);
-});

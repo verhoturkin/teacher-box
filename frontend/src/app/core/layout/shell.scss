@@ -82,7 +82,7 @@
   gap: var(--tb-space-1);
 }
 
-/* The avatar alone (spec §3.2): the button is a 40 px circle around the photo or the icon */
+/* The avatar alone (spec §3.2): the button is a 40 px circle around the icon */
 .tb-shell__user-button--round {
   flex: none;
   justify-content: center;
@@ -90,16 +90,6 @@
   height: 2.5rem;
   padding: 0;
   border-radius: var(--tb-shape-full);
-}
-
-.tb-shell__avatar {
-  flex: none;
-}
-
-/* Without a photo, the person in a circle of the photo's size (32 px): the user button looks the same either way */
-.tb-shell__user-button.p-button .tb-shell__avatar-icon {
-  --tb-icon-size: 2rem;
-  --tb-icon-opsz: 24;
 }
 
 .tb-shell__body {

@@ -10,9 +10,9 @@ this page in the same commit.
 
 | Role | Destinations (rail and bottom bar) | Rail bottom group | Notes |
 |---|---|---|---|
-| Teacher | «Сегодня» (home), «Расписание», «Ученики», «Задания», «Материалы», «Оплаты» | «Настройки», «Справка» | bar: Главная · Расписание · Задания · Ученики · Оплаты; «Создать» (§6) |
-| Student | «Главная», «Расписание», «Задания», «Материалы», «Оплаты» | «Справка» | all five in the bar; inbox in the bell; account in «Мой аккаунт» |
-| Admin | «Состояние», «Журнал», «Интеграции», «Копии», «Настройки» | «Справка» | all five in the bar |
+| Teacher | «Сегодня» (home), «Расписание», «Ученики», «Задания», «Материалы», «Оплаты» | «Настройки», «Справка», «Аккаунт» | bar: Главная · Расписание · Задания · Ученики · Оплаты; «Создать» (§6) |
+| Student | «Главная», «Расписание», «Задания», «Материалы», «Оплаты» | «Справка», «Аккаунт» | all five in the bar; inbox in the bell; «Аккаунт» → `/cabinet/account` |
+| Admin | «Состояние», «Журнал», «Интеграции», «Копии», «Настройки» | «Справка», «Аккаунт» | all five in the bar; «Аккаунт» → `/admin/account` |
 
 - Bar order: `TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV` / `ADMIN_BOTTOM_NAV`, filled up from the
   menu. The student's «Задания» carries the **M3** large badge with the open tasks (`OpenTasks`,
@@ -20,6 +20,9 @@ this page in the same commit.
   screen-reader line «Заданий к сдаче: N»).
 - Installed app: the service worker caches only the shell; without a network the app opens the
   frameless page `/offline` «Нет связи» (empty state + «Повторить»), data is never cached.
+- «Аккаунт» (avatar + name, last in the bottom group and in the ☰ drawer) replaces the avatar
+  menu of the top bar, which keeps only the bell (and the teacher's search). The teacher's leads
+  to `/teacher/settings/account`.
 - There is no Notifications, Calls or AI section (ADR-0048): the inbox is the bell's sheet,
   integrations are teacher Settings.
 
@@ -352,7 +355,9 @@ the surface; group outer corners 16 px) in the fixed pane, the chosen category b
 of sections (from expanded `/teacher/settings` shows «Мой аккаунт»). A form changed and not saved
 asks «Отменить изменения?» before another category or page opens (design-system «Dialogs»).
 
-- Categories: «Мой аккаунт» (`account`: account, «Уведомления на устройствах»), «Портал» (`portal`), «Расписание и календарь» (`calendar`:
+- Categories: «Мой аккаунт» (`account`: account, «Оформление» with theme and language, «Выйти»,
+  «Уведомления на устройствах»; also the rail's «Аккаунт»), «Портал» (`portal`),
+  «Расписание и календарь» (`calendar`:
   time zone, Google Calendar, calendar feed), «Звонки» (`calls`), «Мессенджеры» (`messengers`:
   failed deliveries first with a count badge on the item, then bots, own messengers, bot abilities,
   students' messengers, what to send), «Оплаты» (`payments`: default price), «ИИ-помощник» (`ai`:
@@ -393,7 +398,8 @@ asks «Отменить изменения?» before another category or page op
   ещё раз», and the key with the explanations when the rule allows.
 - **Payments:** tonal balance / charged / paid / price figures and the journal with filter chips,
   receipts in their rows.
-- **«Мой аккаунт»** (`/cabinet/account`): account, «Мессенджеры», «Уведомления на устройствах»
+- **«Мой аккаунт»** (`/cabinet/account`, from «Аккаунт» in the rail / ☰): account,
+  «Оформление» (theme, language), «Выйти», «Мессенджеры», «Уведомления на устройствах»
   (web push, ADR-0051), «Что присылать в мессенджеры и на устройства» in one stack; the «connect» card
   and reminder lead here.
 - **Notifications on devices** (`tb-push-devices-card`, student «Мой аккаунт» and teacher account
@@ -420,8 +426,9 @@ asks «Отменить изменения?» before another category or page op
   `/admin/settings[/:section]`): list-detail with `tb-pane-nav` (two-line items, a tonal icon
   circle, a badge with unsaved changes); headings and «Сохранить и перезапустить» in the persistent
   pane heading; settings grouped by catalog sections and saved together; `?open=<section>`
-  redirects. «Копии» is the teacher's backups section in a pane (rows: database icon, date + «kind ·
-  size», «⋮» «Восстановить…», «Скачать», «Удалить…»).
+  redirects. «Мой аккаунт» (`/admin/account`, from the rail's «Аккаунт») has the account,
+  «Оформление» and «Выйти». «Копии» is the teacher's backups section in a pane (rows: database
+  icon, date + «kind · size», «⋮» «Восстановить…», «Скачать», «Удалить…»).
 
 ## Call window
 

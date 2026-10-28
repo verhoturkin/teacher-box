@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '@core/auth/auth.service';
+import { Avatar } from '@shared/ui/avatar';
 import { CORE_T } from '@core/i18n/texts';
 import { Portal } from '@core/portal/portal';
 import { PortalLogo } from '@core/portal/portal-logo';
@@ -12,13 +14,13 @@ import { NavItem, injectUrl, isNavActive } from './nav-item';
  * below it (ADR-0048, D5). Top to bottom (spec §3.2): the brand (the portal's logo and name, not a
  * button — M3 warns against logos mistaken for actions), the projected main action (the teacher's «Создать»,
  * `tb-create-menu`), the sections, a spacer, the bottom group
- * (Настройки, Справка). It is a list of links (not a menu): Tab goes through the sections, the current
+ * (Настройки, Справка, Аккаунт). It is a list of links (not a menu): Tab goes through the sections, the current
  * one is `aria-current="page"` and has the pill indicator. On compact the shell opens it as the modal
  * expanded rail from ☰ (`modal`), with the sections that are not in the bottom bar.
  */
 @Component({
   selector: 'tb-side-nav',
-  imports: [RouterLink, PortalLogo, NavBadge],
+  imports: [RouterLink, PortalLogo, NavBadge, Avatar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     role: 'navigation',
@@ -43,12 +45,17 @@ import { NavItem, injectUrl, isNavActive } from './nav-item';
               [routerLink]="item.routerLink"
               [class.tb-side-nav__item--active]="isActive(item)"
               [attr.aria-current]="isActive(item) ? 'page' : null"
+              [attr.aria-label]="item.account ? accountOf(userName()) : null"
               (click)="navigate.emit()"
             >
               <span class="tb-side-nav__indicator">
-                <span class="tb-side-nav__icon"
-                  ><i [class]="item.icon" aria-hidden="true"></i
-                ></span>
+                <span class="tb-side-nav__icon">
+                  @if (item.account) {
+                    <tb-avatar [name]="userName()" [photo]="userAvatar()" size="1.5rem" />
+                  } @else {
+                    <i [class]="item.icon" aria-hidden="true"></i>
+                  }
+                </span>
                 <span class="tb-side-nav__label">{{ item.label }}</span>
                 @if (item.count; as badge) {
                   @if (badge() > 0) {
@@ -79,6 +86,10 @@ export class SideNav {
   readonly navigate = output();
 
   protected readonly sections = CORE_T.nav.sections;
+  protected readonly accountOf = CORE_T.shell.accountOf;
+  private readonly auth = inject(AuthService);
+  protected readonly userName = computed(() => this.auth.user()?.displayName ?? '');
+  protected readonly userAvatar = computed(() => this.auth.user()?.avatar ?? null);
   protected readonly portalName = inject(Portal).name;
   /** The sections, then the bottom group, each when it has links. */
   protected readonly groups = computed(() =>

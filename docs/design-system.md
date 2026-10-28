@@ -150,6 +150,8 @@ used icon classes disagree. E2E runs axe on the main screens and checks button r
   surface-container fills that area. Everything fixed at the bottom adds
   `env(safe-area-inset-bottom)`, the shell adds the left and right insets (landscape cutout).
 - **Themes:** «Светлая», «Тёмная», «Как в системе», stored on the device; a class on `<html>`.
+  Chosen in «Мой аккаунт» → «Оформление» as a connected button group with `light_mode` /
+  `dark_mode` / `brightness_auto`.
 
 ## 3. Typography
 
@@ -319,11 +321,16 @@ for the active navigation item and checked states.
   wide as their label, ≥ 64 px (`minmax(64px, auto)`). Destinations per role:
   [`screens.md`](screens.md#frame-by-role).
 - **Top bar** (sticky, no divider): from medium the **top strip** — 80 px (*ours*), the global
-  search in the middle (teacher), the bell and the avatar at the end; on compact the **M3 small top
+  search in the middle (teacher), the bell at the end; on compact the **M3 small top
   app bar** — 64 dp: ☰ («Разделы», `aria-haspopup="dialog"`), the section title in Title Large on
-  one line (not a heading: the h1 stays in `tb-page-header`), search icon (teacher), bell, avatar.
-- **User button** — the avatar alone (40 px circle, photo or `account_circle`), named «<имя>: меню
-  пользователя». Menu: «Мой аккаунт», theme, language, sign out.
+  one line (not a heading: the h1 stays in `tb-page-header`), search icon (teacher), bell. There
+  is no user button (330.1): the account is a navigation item.
+- **«Аккаунт»** — the last item of the rail's bottom group (after «Настройки», «Справка») and of
+  the ☰ drawer, for every role: a 24 px `tb-avatar` (photo or initials) in place of the icon, the
+  label «Аккаунт», accessible name «Аккаунт: <имя>» (starts with the visible label). It leads to
+  `/teacher/settings/account`, `/cabinet/account` or `/admin/account`; active as any item
+  (`NavItem.account`; `except` keeps the teacher's «Настройки» from lighting up with it). Theme,
+  language and «Выйти» live in «Мой аккаунт» (section «Оформление», `tb-segment-group`).
 - **Global search** (`core/search/global-search-view.ts`, teacher): in the top strip the **M3**
   docked search bar (as `tb-search-field`, §9, with the hint chip «Ctrl K» / «⌘ K») and under it the
   search view — a surface-container dropdown, 28 px corners (*ours*), results grouped «Ученики ·
@@ -672,9 +679,9 @@ changes the container; content and markup are the same at every width. Every dia
   return; pointer input hides it, *ours*): 3 px secondary, 2 px offset; fields show focus by their
   2 px primary indicator (§9). In navigation the ring goes around the item and state layers lie over
   the active indicator.
-- Rail and bottom bar are `<nav>` with links, active `aria-current="page"`; the user menu
-  `aria-haspopup="menu"` + `aria-expanded`, ☰ `aria-haspopup="dialog"` + `aria-expanded`; the user
-  menu's name starts with the visible name.
+- Rail and bottom bar are `<nav>` with links, active `aria-current="page"`; ☰
+  `aria-haspopup="dialog"` + `aria-expanded`; the account item's name starts with the visible
+  label.
 - **Headings:** one h1 (the page title; «Вход», «Приглашение»); h2 sections (`p-card` title via the
   global pass-through `core/a11y/pass-through.ts`); Markdown headings one level below their
   container.
@@ -701,9 +708,9 @@ changes the container; content and markup are the same at every width. Every dia
   date or an amount is formatted before it goes in.
 - Russian is the source dictionary; another language has the same keys (`Translation<typeof ru>`),
   checked by `expectComplete`. Wording follows [`glossary.md`](glossary.md).
-- **Language switch** — in the user menu under the themes: each language in its own name with
-  `translate`, the chosen one checked (`aria-checked`); on the sign-in and invitation pages the
-  `tb-language-picker` row under the card. Switching reloads the page.
+- **Language switch** — in «Мой аккаунт» → «Оформление» under the theme: a connected button
+  group, each language in its own name, the chosen one `aria-pressed`; on the sign-in and
+  invitation pages the `tb-language-picker` row under the card. Switching reloads the page.
 - Numbers, money and dates use the language's locale (`locale()`: `ru-RU`, `en-GB`); fixed formats
   `dd.MM.yyyy` / `HH:mm` in both languages.
 - **Server texts** ([ADR-0036](adr/0036-server-texts-in-the-users-language.md)): every `/api`
