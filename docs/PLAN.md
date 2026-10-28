@@ -78,7 +78,7 @@ Design:
 
 ### Stage 313 — Web Push core (B)
 
-- [ ] 313.1 B: ADR 0051 (+ row in `docs/adr/README.md`); `notifications/webpush/` — VAPID key
+- [x] 313.1 B: ADR 0051 (+ row in `docs/adr/README.md`); `notifications/webpush/` — VAPID key
   generation and storage, RFC 8291 encryption, RFC 8292 JWT, a sender over the JDK `HttpClient`;
   RFC test vectors as unit tests; setting `TEACHERBOX_NOTIFICATIONS_WEBPUSH_SUBJECT`
   (`.env.example`, `SettingsCatalog`, wiki; skill `new-setting`); keys included in the backup

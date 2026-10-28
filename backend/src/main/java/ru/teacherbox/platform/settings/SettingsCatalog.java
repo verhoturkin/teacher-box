@@ -128,7 +128,11 @@ public final class SettingsCatalog {
                         NUMBER, NONE)
                 .add("TEACHERBOX_NOTIFICATIONS_LINK_CODE_TTL",
                         w("Код подключения мессенджера действует", "Messenger connection code is valid for"), DURATION,
-                        w("Например 15m.", "E.g. 15m."));
+                        w("Например 15m.", "E.g. 15m."))
+                .add("TEACHERBOX_NOTIFICATIONS_WEBPUSH_SUBJECT",
+                        w("Уведомления в браузере: контакт для push-сервисов", "Browser notifications: contact for push services"),
+                        TEXT, w("mailto:адрес или https-адрес; пусто — адрес портала.",
+                                "mailto: address or an https address; empty — the portal address."));
 
         b.group("ai", w("ИИ-помощник", "AI assistant"))
                 .choice("TEACHERBOX_AI_PROVIDER", w("Сервис ИИ", "AI service"),

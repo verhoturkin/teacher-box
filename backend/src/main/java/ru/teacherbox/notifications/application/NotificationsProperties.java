@@ -18,7 +18,17 @@ public record NotificationsProperties(
         @DefaultValue("15m") Duration linkCodeTtl,
         @DefaultValue Telegram telegram,
         @DefaultValue Vk vk,
-        @DefaultValue Max max) {
+        @DefaultValue Max max,
+        @DefaultValue WebPush webpush) {
+
+    /**
+     * Notifications of the browser (ADR-0051).
+     *
+     * @param subject {@code mailto:} or {@code https:} address that push services may contact the operator
+     *                at (VAPID {@code sub}); the portal address when empty
+     */
+    public record WebPush(@Nullable String subject) {
+    }
 
     /**
      * Telegram bot from @BotFather.

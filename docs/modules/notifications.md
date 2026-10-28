@@ -54,6 +54,14 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
   the teacher's language; typed words of both languages work («меню»/«menu», «да»/«yes», «сегодня»/«today»).
   The commands in Telegram's menu are published per language (`language_code`): Russian by default.
 - Broadcasts and «напомнить подключить» for the teacher. `MessengerIntegrationCheck` for diagnostics.
+- **Web push (0.38.0, ADR-0051), `webpush/`:** `WebPushCrypto` (RFC 8291 `aes128gcm` on JDK crypto; a
+  device key off the curve is refused), `Vapid` (RFC 8292 ES256 token), `VapidKeyStore` (the key pair
+  is made on the first start in `webpush_keys` and kept in backups; the private key is write-only —
+  the store signs for callers, nothing returns it), `WebPushSender` (JDK `HttpClient`, `https`
+  endpoints only; `Outcome`: 2xx `SENT`, 404 / 410 `GONE` — delete the subscription, 429 / 5xx / no
+  connection `RETRY`, other `REJECTED`). Optional `TEACHERBOX_NOTIFICATIONS_WEBPUSH_SUBJECT` is the
+  VAPID `sub` (the portal address when empty). Subscriptions, the channel and REST come in the next
+  substeps of the release.
 
 ## Contract
 
@@ -62,7 +70,8 @@ No `api` package: nothing depends on `notifications`.
 ## Data
 
 `inbox`, `deliveries`, `preferences`, `channel_settings`, `channel_links`, `link_codes`, `broadcasts`,
-`chat_dialogs`, `chat_buttons`, `chat_settings`. `NotificationsHousekeeping` cleans old records.
+`chat_dialogs`, `chat_buttons`, `chat_settings`, `webpush_keys` (the VAPID pair, one row, 0.38.0).
+`NotificationsHousekeeping` cleans old records.
 
 ## REST
 

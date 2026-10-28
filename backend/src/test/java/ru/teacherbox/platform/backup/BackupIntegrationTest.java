@@ -29,6 +29,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import ru.teacherbox.platform.core.PlatformProperties;
@@ -49,6 +50,9 @@ class BackupIntegrationTest {
 
     @Autowired
     PlatformProperties platform;
+
+    @Autowired
+    JdbcClient jdbc;
 
     @BeforeEach
     void cleanUp() throws IOException {
@@ -164,6 +168,26 @@ class BackupIntegrationTest {
             assertThat(teachers.getInt(1)).isEqualTo(1);
         }
         assertThat(target.resolve("files/homework/ab/material.txt")).hasContent("условие");
+    }
+
+    @Test
+    void theVapidKeysOfPushNotificationsSurviveARestore(@TempDir Path target) throws IOException, SQLException {
+        String[] keys = jdbc.sql("select public_key, private_key from notifications.webpush_keys")
+                .query((rs, rowNum) -> new String[] {rs.getString(1), rs.getString(2)}).single();
+        Path archive = platform.dataDir().resolve("backups").resolve(backups.create().name());
+        Files.createDirectories(target.resolve("restore"));
+        Files.copy(archive, target.resolve("restore").resolve(archive.getFileName()));
+        String url = "jdbc:h2:file:" + target.resolve("db/teacherbox").toAbsolutePath();
+
+        assertThat(PendingRestore.restore(target, url, "sa", "", Instant.now())).isPresent();
+
+        try (Connection connection = DriverManager.getConnection(url, "sa", "");
+                ResultSet rows = connection.createStatement()
+                        .executeQuery("select public_key, private_key from notifications.webpush_keys")) {
+            assertThat(rows.next()).isTrue();
+            assertThat(rows.getString(1)).isEqualTo(keys[0]);
+            assertThat(rows.getString(2)).as("subscriptions stay valid on a restored portal").isEqualTo(keys[1]);
+        }
     }
 
     @Test
