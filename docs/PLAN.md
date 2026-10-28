@@ -81,7 +81,7 @@ full-screen dialogs on a phone. No new ADR.
 
 ### 331. Full-screen dialogs and release
 
-- [ ] 331.1 **F** Full-screen dialog (`tb-dialog kind="form"` on compact, `shared/ui/dialog`):
+- [x] 331.1 **F** Full-screen dialog (`tb-dialog kind="form"` on compact, `shared/ui/dialog`):
   28 dp top corners and the top inset of the notifications sheet (*ours*), the confirming button in
   the header is filled (*ours*; M3 has a text button). Update design-system «Full-screen dialog».
 - [ ] 331.2 Release 0.40.0 (skill `release`).

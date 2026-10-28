@@ -76,11 +76,12 @@ let nextId = 0;
   imports: [NgTemplateOutlet, Button, Dialog, Drawer, Message, SubmitFor, DialogConfirmStep],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-template #confirmButton let-text="text">
+    <ng-template #confirmButton let-text="text" let-size="size">
       @if (formId(); as id) {
         <p-button
           [label]="confirmLabel() ?? undefined"
           [text]="text"
+          [size]="size"
           [severity]="confirmSeverity() === 'danger' ? 'danger' : 'primary'"
           [loading]="pending()"
           type="submit"
@@ -90,6 +91,7 @@ let nextId = 0;
         <p-button
           [label]="confirmLabel() ?? undefined"
           [text]="text"
+          [size]="size"
           [severity]="confirmSeverity() === 'danger' ? 'danger' : 'primary'"
           [loading]="pending()"
           (onClick)="confirm.emit()"
@@ -127,7 +129,9 @@ let nextId = 0;
           </span>
         }
         @if (mode() === 'full' && confirmLabel() !== null) {
-          <ng-container *ngTemplateOutlet="confirmButton; context: { text: true }" />
+          <ng-container
+            *ngTemplateOutlet="confirmButton; context: { text: false, size: 'small' }"
+          />
         }
         @if (closeInHeader() && mode() === 'basic') {
           <ng-container *ngTemplateOutlet="closeButton" />
@@ -171,7 +175,9 @@ let nextId = 0;
           />
         }
         @if (confirmLabel() !== null && mode() !== 'full') {
-          <ng-container *ngTemplateOutlet="confirmButton; context: { text: false }" />
+          <ng-container
+            *ngTemplateOutlet="confirmButton; context: { text: false, size: undefined }"
+          />
         }
       }
     </ng-template>

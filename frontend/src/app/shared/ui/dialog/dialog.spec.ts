@@ -154,6 +154,10 @@ describe('TbDialog', () => {
       const kids = Array.from(head.children);
       expect(kids[0]?.classList).toContain('tb-d__close');
       expect(kids[kids.length - 1]?.textContent).toContain('Сохранить');
+      expect(kids[kids.length - 1]?.querySelector('button')?.className).toContain('p-button-sm');
+      expect(kids[kids.length - 1]?.querySelector('button')?.className).not.toContain(
+        'p-button-text',
+      );
       expect(container.querySelector('.p-dialog-footer button')).toBeNull();
       expect(
         Array.from(container.querySelectorAll('button')).map((b) => b.textContent),

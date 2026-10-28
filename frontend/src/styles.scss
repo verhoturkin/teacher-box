@@ -3195,8 +3195,13 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
  * `<tb-dialog>` (ADR-0050, shared/ui/dialog): the basic dialog is 28 dp corners, 24 dp padding, 16 dp
  * headline -> body, 24 dp body -> actions, 8 dp between buttons (the preset has the paddings); the width
  * is a parameter (`normal` 32 rem, `wide` 40 rem, an alert 32 rem at most 35); the compact `form` is the
- * M3 full-screen dialog: 0 corners, a 56 dp header with the close button first and the confirm last.
+ * M3 full-screen dialog: a 56 dp header with the close button first and the filled confirm last; ours:
+ * 28 dp top corners and the 8 px top inset of the notifications sheet.
  */
+.p-dialog-mask:has(> .tb-d--full) {
+  background: transparent;
+}
+
 .p-dialog.tb-d {
   width: min(32rem, calc(100vw - 2rem));
   border-radius: var(--tb-shape-xl);
@@ -3251,8 +3256,16 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
     max-width: 100vw;
     height: 100dvh;
     max-height: 100dvh;
-    margin: 0;
+    margin: auto 0 0;
     border-radius: 0;
+
+    /* ours: rounded top like the notifications sheet, 8 px (+ the notch) below the screen's top */
+    @media (width < 37.5em) {
+      height: calc(100dvh - var(--tb-space-2) - env(safe-area-inset-top));
+      max-height: calc(100dvh - var(--tb-space-2) - env(safe-area-inset-top));
+      border-radius: var(--tb-shape-xl) var(--tb-shape-xl) 0 0;
+      box-shadow: none;
+    }
 
     .p-dialog-header {
       min-height: 3.5rem;

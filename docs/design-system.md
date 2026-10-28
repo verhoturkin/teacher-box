@@ -598,10 +598,13 @@ changes the container; content and markup are the same at every width. Every dia
   the confirming one closest to it; with scrolling content the headline and buttons stay pinned.
   *Ours:* `normal` 32 rem, `wide` 40 rem (= 560 dp), `alert` 32 rem (a confirmation ≤ 35 rem);
   never closer than 1 rem to the screen edge.
-- **Full-screen dialog** (`form` on compact only, **M3**): 0 dp corners, 56 dp header, 24 dp sides,
-  8 dp between elements; «✕» first and the only navigation, the headline, the confirming text button
-  at the end with a clear verb («Создать», «Отправить», not «Готово»), never disabled for invalid
-  fields. Field errors inline.
+- **Full-screen dialog** (`form` on compact only, **M3**): 56 dp header, 24 dp sides, 8 dp between
+  elements; «✕» first and the only navigation, the headline (one line, truncated), the confirming
+  button at the end with a clear verb («Создать», «Отправить», not «Готово»), never disabled for
+  invalid fields. Field errors inline. *Ours (M3 has 0 dp corners and a text button):* 28 dp top
+  corners and the notifications sheet's inset (8 px + `safe-area-inset-top`, transparent scrim, so
+  the page shows above it); the confirming button is **filled**, small (40 dp). No swipe to close
+  (a form may hold unsaved data): «✕», Esc and «Отменить изменения?».
 - **Bottom sheet** (`sheet` on compact only): modal, handle with a 48 dp target, 28 dp top corners,
   surface-container-low (**M3**), height by content up to 50 % of the screen, then scrolling
   (**M3**). *Ours:* compact only (**M3** allows medium); no swipe — Esc, the scrim and an action
