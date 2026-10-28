@@ -43,6 +43,15 @@ export class Snackbar {
     this.messages.add({ severity: 'success', detail, life: SNACKBAR_UNDO_LIFE, data: { undo } });
   }
 
+  /** A note that stays until it is closed, with a button of its own (e.g. «Обновить»). */
+  action(detail: string, label: string, run: () => void): void {
+    if (this.shown.has(`info:${detail}`)) {
+      return;
+    }
+    this.shown.set(`info:${detail}`, Number.POSITIVE_INFINITY);
+    this.messages.add({ severity: 'info', detail, sticky: true, data: { undo: run, label } });
+  }
+
   show(severity: SnackbarSeverity, detail: string, sticky = false): void {
     const now = Date.now();
     const key = `${severity}:${detail}`;

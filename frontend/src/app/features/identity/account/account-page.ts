@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { AuthService } from '@core/auth/auth.service';
-import { ChannelsPanel, PreferencesPanel } from '@features/notifications/parts';
+import { ChannelsPanel, PreferencesPanel, PushDevicesCard } from '@features/notifications/parts';
 import { PageHeader } from '@shared/ui/page-header';
 import { AccountPanel } from './account-panel';
 import { T } from '../i18n/texts';
@@ -11,7 +11,7 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-account-page',
-  imports: [AccountPanel, ChannelsPanel, PageHeader, PreferencesPanel],
+  imports: [AccountPanel, ChannelsPanel, PageHeader, PreferencesPanel, PushDevicesCard],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-page-header [title]="t.title" />
@@ -19,6 +19,7 @@ import { T } from '../i18n/texts';
       <div class="tb-stack">
         <tb-account-panel />
         <tb-channels-panel />
+        <tb-push-devices-card />
         <tb-preferences-panel />
       </div>
     } @else {

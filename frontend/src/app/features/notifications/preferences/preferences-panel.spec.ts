@@ -76,7 +76,7 @@ describe('PreferencesPanel', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(readableText(hostElement(fixture))).toContain(
-      'придут в мессенджер, когда тихие часы закончатся',
+      'придут в мессенджер и на устройства, когда тихие часы закончатся',
     );
     fixture.componentInstance.form.controls.quietFrom.setValue('23:00');
     fixture.detectChanges();

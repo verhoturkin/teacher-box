@@ -26,16 +26,19 @@ import ru.teacherbox.notifications.application.NotificationViews.NotificationsSt
 import ru.teacherbox.notifications.application.NotificationViews.StudentChannels;
 import ru.teacherbox.notifications.application.NotificationViews.TeacherNotificationsSummary;
 import ru.teacherbox.notifications.domain.ChannelLink;
+import ru.teacherbox.notifications.domain.ChannelType;
 import ru.teacherbox.notifications.domain.Delivery;
 import ru.teacherbox.notifications.domain.InboxNotification;
 import ru.teacherbox.notifications.domain.NotificationKind;
 import ru.teacherbox.notifications.domain.Preferences;
+import ru.teacherbox.notifications.domain.PushSubscription;
 import ru.teacherbox.notifications.persistence.BroadcastRepository;
 import ru.teacherbox.notifications.persistence.BroadcastRepository.Broadcast;
 import ru.teacherbox.notifications.persistence.ChannelLinkRepository;
 import ru.teacherbox.notifications.persistence.DeliveryRepository;
 import ru.teacherbox.notifications.persistence.InboxRepository;
 import ru.teacherbox.notifications.persistence.PreferencesRepository;
+import ru.teacherbox.notifications.persistence.PushSubscriptionRepository;
 import ru.teacherbox.shared.chat.ChatSubject;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;
@@ -63,6 +66,7 @@ public class NotificationService {
     private final MessengerChannels channels;
     private final MessengerHealth health;
     private final PreferencesRepository preferences;
+    private final PushSubscriptionRepository pushSubscriptions;
     private final BroadcastRepository broadcasts;
     private final UserDirectory users;
     private final ChatEngine chat;
@@ -73,14 +77,15 @@ public class NotificationService {
 
     public NotificationService(InboxRepository inbox, ChannelLinkRepository links, DeliveryRepository deliveries,
             MessengerChannels channels, MessengerHealth health, PreferencesRepository preferences,
-            BroadcastRepository broadcasts, UserDirectory users, ChatEngine chat, KeyboardCodec keyboards,
-            Portal portal, InstanceTimeZone timeZone, Clock clock) {
+            PushSubscriptionRepository pushSubscriptions, BroadcastRepository broadcasts, UserDirectory users,
+            ChatEngine chat, KeyboardCodec keyboards, Portal portal, InstanceTimeZone timeZone, Clock clock) {
         this.inbox = inbox;
         this.links = links;
         this.deliveries = deliveries;
         this.channels = channels;
         this.health = health;
         this.preferences = preferences;
+        this.pushSubscriptions = pushSubscriptions;
         this.broadcasts = broadcasts;
         this.zone = timeZone.zoneId();
         this.users = users;
@@ -145,6 +150,11 @@ public class NotificationService {
                             channelLink.channel(), channelLink.externalId(), text, now, notBefore)
                             .withKeyboard(keyboards.write(rows)));
                 }
+            }
+            // Web push goes with the messengers: one delivery per browser, read from the inbox record when sent.
+            for (PushSubscription device : pushSubscriptions.findByUser(recipientId)) {
+                deliveries.insert(Delivery.schedule(Ids.newId(), notification.id(), recipientId, ChannelType.WEB_PUSH,
+                        device.id().toString(), notification.title(), now, notBefore));
             }
         }
         return notification;

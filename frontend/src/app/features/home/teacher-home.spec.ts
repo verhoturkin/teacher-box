@@ -85,6 +85,7 @@ describe('TeacherHome', () => {
     expect(widgets).toEqual([
       'tb-upcoming-lesson-widget',
       'tb-today-lessons',
+      'tb-push-onboarding-card',
       'tb-todo-queue',
       'tb-finance-widget',
       'tb-week-figures',

@@ -7,6 +7,7 @@ import {
   ErrorHandler,
   LOCALE_ID,
   inject,
+  isDevMode,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
@@ -16,6 +17,7 @@ import {
   withComponentInputBinding,
   withInMemoryScrolling,
 } from '@angular/router';
+import { provideServiceWorker } from '@angular/service-worker';
 import { ConfirmationService, MessageService, Translation } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { routes } from './app.routes';
@@ -58,6 +60,11 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([apiErrorInterceptor, languageInterceptor, authInterceptor]),
     ),
     ConfirmationService,
+    // installable app (ADR-0051): the shell is cached, `/api` is never; production build only
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
     provideAppInitializer(() => inject(AuthService).restore()),
     provideAppInitializer(() => inject(Portal).load()),
     provideAppInitializer(() => {

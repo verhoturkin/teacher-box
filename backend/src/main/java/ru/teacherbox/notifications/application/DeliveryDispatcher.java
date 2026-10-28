@@ -11,7 +11,7 @@ import ru.teacherbox.notifications.domain.DeliveryStatus;
 import ru.teacherbox.notifications.persistence.DeliveryRepository;
 
 /**
- * Sends pending messenger deliveries (the outbox). Every delivery is saved right after its attempt;
+ * Sends pending deliveries to messengers and browsers (web push) (the outbox). Every delivery is saved right after its attempt;
  * no transaction is held open while a messenger API is called.
  */
 @Component
@@ -25,14 +25,16 @@ public class DeliveryDispatcher {
     private final MessengerChannels channels;
     private final NotificationsProperties properties;
     private final KeyboardCodec keyboards;
+    private final PushChannel push;
     private final Clock clock;
 
     public DeliveryDispatcher(DeliveryRepository deliveries, MessengerChannels channels,
-            NotificationsProperties properties, KeyboardCodec keyboards, Clock clock) {
+            NotificationsProperties properties, KeyboardCodec keyboards, PushChannel push, Clock clock) {
         this.deliveries = deliveries;
         this.channels = channels;
         this.properties = properties;
         this.keyboards = keyboards;
+        this.push = push;
         this.clock = clock;
     }
 
@@ -52,13 +54,17 @@ public class DeliveryDispatcher {
 
     private void attempt(Delivery delivery) {
         Optional<MessengerChannel> channel = channels.find(delivery.channel());
-        if (channel.isEmpty()) {
+        if (channel.isEmpty() && delivery.channel().isMessenger()) {
             delivery.abandon(NOT_CONFIGURED);
             return;
         }
         try {
-            send(channel.get(), delivery.externalId(),
-                    new OutgoingMessage(delivery.text(), keyboards.read(delivery.keyboard())));
+            if (delivery.channel().isMessenger()) {
+                send(channel.get(), delivery.externalId(),
+                        new OutgoingMessage(delivery.text(), keyboards.read(delivery.keyboard())));
+            } else {
+                push.send(delivery);
+            }
             delivery.markSent(clock.instant());
         } catch (DeliveryException e) {
             log.warn("Delivery {} to {} failed: {}", delivery.id(), delivery.channel(), e.getMessage());

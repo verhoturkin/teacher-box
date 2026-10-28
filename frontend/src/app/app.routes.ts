@@ -131,6 +131,11 @@ export const routes: Routes = [
     loadComponent: () => import('@features/identity').then((m) => m.InvitePage),
   },
   {
+    path: 'offline',
+    title: CORE_T.offline.title,
+    loadComponent: () => import('@core/pages/offline').then((m) => m.OfflinePage),
+  },
+  {
     // The link of a built-in room (ADR-0030): opens the call over the user's pages.
     path: 'call/:ownerId',
     loadChildren: () => import('@features/meetings').then((m) => m.CALL_ROUTES),

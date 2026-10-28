@@ -43,6 +43,39 @@ export const en: Translation<typeof ru> = {
     connect: 'Connect',
     later: 'Not now',
   },
+  push: {
+    header: 'Notifications on devices',
+    about:
+      'Notifications reach your phone or computer even when the portal is closed — together with messengers, not instead of them. The topics and quiet hours are the same as for messengers.',
+    enable: 'Turn on notifications on this device',
+    enabled: 'Notifications are on for this device',
+    failed: 'Could not turn on notifications',
+    denied:
+      'The browser blocked notifications for this site. Allow them in the site settings and reload the page.',
+    unsupported:
+      'This browser or the portal address does not support notifications: HTTPS and a modern browser are needed.',
+    homeScreen:
+      'On iPhone and iPad notifications work only in the app on the Home Screen. Add to Home Screen: tap Share → Add to Home Screen and open the portal from there.',
+    empty: 'No devices yet',
+    unknownDevice: 'Device',
+    thisDevice: 'this device',
+    since: (date: string) => `turned on ${date}`,
+    failing: 'notifications are not delivered',
+    disable: 'Turn off',
+    disableOf: (name: string) => `Turn off notifications: ${name}`,
+    disabled: 'Device turned off',
+  },
+  pushCard: {
+    title: 'Notifications on this device',
+    student:
+      'Lesson reminders, new homework and the teacher’s messages come here even when the portal is closed — no messenger needed.',
+    teacher:
+      'Submitted work, reschedule requests and reminders come here even when the portal is closed — no messenger needed.',
+    enable: 'Turn on',
+    later: 'Not now',
+    homeScreenTitle: 'Add to Home Screen',
+    ok: 'Got it',
+  },
   broadcasts: {
     about:
       'The message reaches the students’ cabinets and connected messengers — e.g. about holidays or a new lesson link.',
@@ -90,9 +123,9 @@ export const en: Translation<typeof ru> = {
     myMessengers: 'My messengers',
   },
   preferences: {
-    title: 'What to send to messengers',
+    title: 'What to send to messengers and devices',
     about:
-      'The cabinet shows all notifications. Here you choose which of them also go to messengers.',
+      'The cabinet shows all notifications. Here you choose which of them also go to messengers and to notifications on devices.',
     topics: 'Notification topics',
     messages: 'Messages',
     teacherMessages: 'Teacher’s messages',
@@ -100,7 +133,8 @@ export const en: Translation<typeof ru> = {
     quiet: 'Quiet hours — nothing at night',
     from: 'From',
     to: 'To',
-    quietHint: 'Notifications of this time reach the messenger when the quiet hours are over.',
+    quietHint:
+      'Notifications of this time reach the messenger and the devices when the quiet hours are over.',
     saved: 'Notification settings saved',
     failed: 'Could not save the settings',
   },

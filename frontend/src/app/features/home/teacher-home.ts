@@ -16,7 +16,7 @@ import { BillingApi, FinanceWidget } from '@features/billing/parts';
 import type { BillingSummary } from '@features/billing/parts';
 import { HomeworkApi } from '@features/homework/parts';
 import type { HomeworkSummary } from '@features/homework/parts';
-import { NotificationsApi } from '@features/notifications/parts';
+import { NotificationsApi, PushOnboardingCard } from '@features/notifications/parts';
 import type { TeacherNotificationsSummary } from '@features/notifications/parts';
 import { ScheduleApi, UpcomingLessonWidget } from '@features/schedule/parts';
 import type { ScheduleSummary } from '@features/schedule/parts';
@@ -53,6 +53,7 @@ function dayTitle(date: Date): string {
     Pane,
     PageHeader,
     Panes,
+    PushOnboardingCard,
     TodoQueue,
     TodayLessons,
     WeekFiguresCard,
@@ -85,6 +86,7 @@ function dayTitle(date: Date): string {
                 <tb-today-lessons [all]="schedule.today" [next]="schedule.next" />
               }
             }
+            <tb-push-onboarding-card [teacher]="true" />
           </div>
           <div class="tb-stack tb-feed__queue">
             @if (billing(); as billing) {

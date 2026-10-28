@@ -178,6 +178,20 @@ docker compose cp backend:/data/backups ./teacherbox-backups
   у Let's Encrypt лимит выпусков). Нет сертификата — проверьте, что домен указывает на сервер и порт 80
   открыт: `docker compose logs caddy`. Порт портала тогда публикуйте только на `127.0.0.1`
   (`TEACHERBOX_HTTP_PORT=127.0.0.1:8080`).
+- **Приложение и push-уведомления** (ADR-0051). Установка портала как приложения и уведомления в
+  браузер работают только по **HTTPS** и с публичным адресом (`TEACHERBOX_PUBLIC_URL`): по адресу в
+  локальной сети браузер не регистрирует сервис-воркер, и кнопка «Включить уведомления» объясняет
+  причину. Ключи VAPID создаются при первом запуске и лежат в базе, в копиях и в полном сбросе.
+  `TEACHERBOX_NOTIFICATIONS_WEBPUSH_SUBJECT` — необязательный контакт для push-сервисов Google,
+  Mozilla и Apple (`mailto:` или `https://`; пусто — адрес портала). Сообщения идут через эти
+  сервисы, и серверу нужен к ним исходящий доступ по HTTPS: из России Google может быть недоступен.
+  Администратору видно только число устройств (`/api/admin/notifications/push`: сколько подписок и
+  сколько из них отклоняются, без адресов).
+- Свой nginx или другой прокси перед порталом **не должен кэшировать** `/ngsw.json`,
+  `/ngsw-worker.js`, `/safety-worker.js` и `/worker-basic.min.js`: встроенный nginx отдаёт их с
+  `Cache-Control: no-cache`, а иначе установленное приложение останется на старой версии.
+  Хешированные `*.js` / `*.css` можно кэшировать надолго. В Content-Security-Policy нужен
+  `worker-src 'self'`.
 - Доски Excalidraw работают в реальном времени через WebSocket (`/api/public/boards/live`). Caddy и
   Traefik пропускают его сами; в своём nginx перед порталом добавьте в `location /api/`
   `proxy_http_version 1.1;`, `proxy_set_header Upgrade $http_upgrade;` и

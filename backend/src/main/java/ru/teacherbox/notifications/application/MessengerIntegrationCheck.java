@@ -21,7 +21,7 @@ class MessengerIntegrationCheck implements IntegrationCheck {
 
     @Override
     public List<IntegrationStatus> check() {
-        return Arrays.stream(ChannelType.values()).map(this::check).toList();
+        return Arrays.stream(ChannelType.values()).filter(ChannelType::isMessenger).map(this::check).toList();
     }
 
     /** In the language of the administrator's page (ADR-0036). */
@@ -50,6 +50,7 @@ class MessengerIntegrationCheck implements IntegrationCheck {
             case TELEGRAM -> "Telegram";
             case VK -> language == Language.RU ? "ВКонтакте" : "VK";
             case MAX -> "MAX";
+            case WEB_PUSH -> throw new IllegalArgumentException("Not a messenger: " + type);
         };
     }
 

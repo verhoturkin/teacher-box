@@ -80,6 +80,16 @@ export const en: Translation<typeof ru> = {
     hint: 'The link may be out of date or the address has a typo. Go to the home page and find the section in the menu.',
     home: 'Home page',
   },
+  offline: {
+    title: 'No connection',
+    empty: 'No connection to the portal',
+    hint: 'Check your internet connection and try again. The portal data lives on the server, so it is not available offline.',
+    retry: 'Try again',
+  },
+  update: {
+    available: 'A new version is available',
+    apply: 'Update',
+  },
   bell: {
     notifications: 'Notifications',
     unread: (count: number) => `Notifications, unread: ${String(count)}`,

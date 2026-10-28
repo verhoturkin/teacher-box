@@ -18,6 +18,8 @@ this page in the same commit.
   menu. The student's «Задания» carries the **M3** large badge with the open tasks (`OpenTasks`,
   re-read after each navigation; by the label in the expanded rail, on the icon elsewhere; a
   screen-reader line «Заданий к сдаче: N»).
+- Installed app: the service worker caches only the shell; without a network the app opens the
+  frameless page `/offline` «Нет связи» (empty state + «Повторить»), data is never cached.
 - There is no Notifications, Calls or AI section (ADR-0048): the inbox is the bell's sheet,
   integrations are teacher Settings.
 
@@ -333,7 +335,7 @@ the surface; group outer corners 16 px) in the fixed pane, the chosen category b
 of sections (from expanded `/teacher/settings` shows «Мой аккаунт»). A form changed and not saved
 asks «Отменить изменения?» before another category or page opens (design-system «Dialogs»).
 
-- Categories: «Мой аккаунт» (`account`), «Портал» (`portal`), «Расписание и календарь» (`calendar`:
+- Categories: «Мой аккаунт» (`account`: account, «Уведомления на устройствах»), «Портал» (`portal`), «Расписание и календарь» (`calendar`:
   time zone, Google Calendar, calendar feed), «Звонки» (`calls`), «Мессенджеры» (`messengers`:
   failed deliveries first with a count badge on the item, then bots, own messengers, bot abilities,
   students' messengers, what to send), «Оплаты» (`payments`: default price), «ИИ-помощник» (`ai`:
@@ -370,8 +372,16 @@ asks «Отменить изменения?» before another category or page op
   with the teacher's feedback and the answer form.
 - **Payments:** tonal balance / charged / paid / price figures and the journal with filter chips,
   receipts in their rows.
-- **«Мой аккаунт»** (`/cabinet/account`): account, «Мессенджеры», «Что присылать в мессенджеры» in
-  one stack; the «connect» card and reminder lead here.
+- **«Мой аккаунт»** (`/cabinet/account`): account, «Мессенджеры», «Уведомления на устройствах»
+  (web push, ADR-0051), «Что присылать в мессенджеры и на устройства» in one stack; the «connect» card
+  and reminder lead here.
+- **Notifications on devices** (`tb-push-devices-card`, student «Мой аккаунт» and teacher account
+  category): «Включить уведомления на этом устройстве» only while this browser is not subscribed
+  (a click, the permission prompt needs a gesture), the list of the user's devices (browser · system,
+  «это устройство», date, «уведомления не доходят») with «Отключить»; a message instead of the
+  button for an iPhone tab («Добавьте на экран Домой»), a blocked site or an unsupported browser.
+  The home pages (teacher and student) offer the same in `tb-push-onboarding-card` («Включить» /
+  «Не сейчас», remembered on the device) at the end of the lead column.
 
 ## Admin
 

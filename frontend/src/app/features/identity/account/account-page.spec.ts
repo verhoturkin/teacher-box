@@ -35,13 +35,19 @@ describe('AccountPage', () => {
   it('gives a student the messengers and what to send under the account', async () => {
     const { host, backend } = await render('STUDENT');
     backend.expectOne('/api/me/channels').flush([]);
+    backend.expectOne('/api/me/push/subscriptions').flush([]);
     backend.expectOne('/api/me/notifications/preferences').flush(preferences());
 
     expect(
       Array.from(host.querySelectorAll(':scope > .tb-stack > *'), (part) =>
         part.tagName.toLowerCase(),
       ),
-    ).toEqual(['tb-account-panel', 'tb-channels-panel', 'tb-preferences-panel']);
+    ).toEqual([
+      'tb-account-panel',
+      'tb-channels-panel',
+      'tb-push-devices-card',
+      'tb-preferences-panel',
+    ]);
     const text = readableText(host);
     expect(text).toContain('Мессенджеры');
     expect(text).toContain('Что присылать в мессенджеры');

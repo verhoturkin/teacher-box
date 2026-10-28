@@ -54,6 +54,27 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
   the teacher's language; typed words of both languages work («меню»/«menu», «да»/«yes», «сегодня»/«today»).
   The commands in Telegram's menu are published per language (`language_code`): Russian by default.
 - Broadcasts and «напомнить подключить» for the teacher. `MessengerIntegrationCheck` for diagnostics.
+- **Web push (0.38.0, ADR-0051), `webpush/`:** `WebPushCrypto` (RFC 8291 `aes128gcm` on JDK crypto; a
+  device key off the curve is refused), `Vapid` (RFC 8292 ES256 token), `VapidKeyStore` (the key pair
+  is made on the first start in `webpush_keys` and kept in backups; the private key is write-only —
+  the store signs for callers, nothing returns it), `WebPushSender` (JDK `HttpClient`, `https`
+  endpoints only; `Outcome`: 2xx `SENT`, 404 / 410 `GONE` — delete the subscription, 429 / 5xx / no
+  connection `RETRY`, other `REJECTED`). Optional `TEACHERBOX_NOTIFICATIONS_WEBPUSH_SUBJECT` is the
+  VAPID `sub` (the portal address when empty).
+- **Web push channel (0.38.0, 314.1):** `push_subscriptions` is one row per browser of a user (the
+  endpoint is unique and a secret: never in logs, views or admin answers). `ChannelType.WEB_PUSH`
+  (`isMessenger()` is false: no bot, link code or health). `NotificationService.notify` schedules
+  one `WEB_PUSH` delivery per subscription next to the messenger ones, under the same muted topics
+  and quiet hours of `Preferences`; `externalId` is the subscription id, `text` the title.
+  `PushChannel` (called by `DeliveryDispatcher`) reads the inbox record and sends
+  `{notification:{title, body, tag, data:{url, onActionClick}}}` (the format `ngsw` shows by itself;
+  url via `Portal.link`, TTL one day, nothing beyond the inbox record). A gone device (unsubscribed,
+  404 / 410) is deleted and the delivery ends `SENT` without a failure; 429 / 5xx / no connection
+  retry with the queue backoff; other 4xx fail the delivery. Each failure adds to `failures`, a
+  success resets it; `NotificationsHousekeeping` deletes subscriptions that failed and have taken
+  nothing for 30 days (a quiet working device stays). The per-device switch is the subscription
+  itself: «Отключить» deletes it. `PushSubscriptionService` validates an `https` endpoint and the
+  keys (65 and 16 bytes, base64url) and checks ownership; another user's id is 404.
 
 ## Contract
 
@@ -62,7 +83,9 @@ No `api` package: nothing depends on `notifications`.
 ## Data
 
 `inbox`, `deliveries`, `preferences`, `channel_settings`, `channel_links`, `link_codes`, `broadcasts`,
-`chat_dialogs`, `chat_buttons`, `chat_settings`. `NotificationsHousekeeping` cleans old records.
+`chat_dialogs`, `chat_buttons`, `chat_settings`, `webpush_keys` (the VAPID pair, one row, 0.38.0),
+`push_subscriptions` (the devices that get web push, 0.38.0).
+`NotificationsHousekeeping` cleans old records.
 
 ## REST
 
@@ -71,7 +94,11 @@ ones; unread count, read, preferences), `/api/me/channels/**` (link code, unlink
 `/api/teacher/notifications/**` (status, summary, students, `students/{studentId}` — one student's messengers and
 failed deliveries for the student card, deactivated included, unknown → 404 (237.1), broadcast, remind-connect,
 `channels`, `bot`),
-`/api/admin/notifications/deliveries` (failed deliveries without texts, retry).
+`/api/admin/notifications/deliveries` (failed deliveries without texts, retry),
+`/api/admin/notifications/push` (counts of devices and failing ones, no users or addresses),
+`GET /api/me/push/key` (public VAPID key), `GET|POST /api/me/push/subscriptions` (own devices;
+POST takes `PushSubscription.toJSON()`, the same endpoint again updates it),
+`DELETE /api/me/push/subscriptions/{id}` (teacher and students; the administrator gets 403).
 
 ## Frontend
 
@@ -86,6 +113,18 @@ opened, each part with its own «Показать ещё»; a notification marke
 `new-message-dialog.ts` is the frame's dialog of a new message through `NEW_MESSAGE_DIALOG`, opened by «Создать ›
 Сообщение» on any page and by «Написать ученикам», 235.3; bot wizard), `student/` (`connect-messenger-card.ts` on the student's home → «Мой аккаунт»; the «connect» reminder
 `remindToConnect` links there too), `notification-labels.ts`; the bell in the top bar (`core/notifications`) opens the sheet.
+
+Web push in the interface (0.38.0, ADR-0051): `core/push/web-push.ts` (`WebPush` on `SwPush`: the
+public key, subscribe, unsubscribe, the user's devices; the permission is asked only from a click,
+and an iPhone tab that is not on the Home Screen gets the hint instead), `push/push-devices-card.ts`
+(«Уведомления на устройствах» on «Мой аккаунт» of the teacher and the student: «Включить уведомления
+на этом устройстве», the list with «Отключить») and `push/push-onboarding-card.ts` (a card on the
+home that a click turns into the permission prompt; «Не сейчас» hides it on this device). Without
+HTTPS or a service worker (a dev build) `supported` is false and the card only explains it. The
+service worker itself, the update snackbar and the offline page «Нет связи» are in ADR-0051; nginx
+serves `ngsw*.js` / `ngsw.json` with `no-cache` (`docker/nginx`). E2E:
+`e2e/tests/notifications/web-push.spec.ts` (headers, REST, the card); real delivery through Google /
+Mozilla / Apple is a manual check.
 
 Broadcast recipients use the shared typed member picker. Explicit students and active groups resolve to a
 deduplicated snapshot, preserving explicit students when groups are removed. Empty selection means all;

@@ -119,6 +119,7 @@ describe('StudentHome', () => {
       'tb-my-deadlines-widget',
       'tb-student-welcome-card',
       'tb-connect-messenger-card',
+      'tb-push-onboarding-card',
     ]);
     expect(host.querySelector('.tb-feed__side tb-my-balance-widget')).not.toBeNull();
 

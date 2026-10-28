@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Toast, ToastCloseEvent } from 'primeng/toast';
 import { FocusReturn } from '@core/a11y/focus-return';
 import { KeyboardFocus } from '@core/a11y/keyboard-focus';
+import { AppUpdates } from '@core/pwa/app-updates';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { CORE_T } from '@core/i18n/texts';
 import { CallHost } from '@features/meetings';
@@ -31,7 +32,7 @@ const SNACKBAR_PT = { message: { role: 'status', 'aria-live': 'polite' } };
               class="tb-snackbar__action"
               (click)="message.data.undo(); close($event)"
             >
-              {{ undoLabel }}
+              {{ message.data.label ?? undoLabel }}
             </button>
           }
           <button
@@ -64,6 +65,11 @@ export class App {
   constructor() {
     inject(KeyboardFocus).start();
     inject(FocusReturn).start();
+    inject(AppUpdates).start();
+    // the installed app can start without the network: only the shell is cached (ADR-0051)
+    if (!navigator.onLine) {
+      void inject(Router).navigateByUrl('/offline');
+    }
   }
 
   protected closed(event: ToastCloseEvent): void {

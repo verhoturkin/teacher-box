@@ -21,8 +21,8 @@ don't read them unless the task needs history.
 
 ## Backlog
 
-Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes, web
-push, self-booking, calls, spaced repetition) — [`roadmap/`](roadmap/README.md); move one here as a
+Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,
+self-booking, calls, spaced repetition) — [`roadmap/`](roadmap/README.md); move one here as a
 release when the teacher picks it.
 
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the

@@ -17,7 +17,7 @@ import { AiSettingsPanel } from '@features/ai/parts';
 import { DefaultPriceCard } from '@features/billing/parts';
 import { AccountPanel } from '@features/identity/parts';
 import { MeetingsSettingsPanel } from '@features/meetings/parts';
-import { MessengersSettingsPanel } from '@features/notifications/parts';
+import { MessengersSettingsPanel, PushDevicesCard } from '@features/notifications/parts';
 import { CalendarFeedPanel, GoogleCalendarPanel } from '@features/schedule/parts';
 import { SHARED_T } from '@shared/i18n/texts';
 import { Confirm } from '@shared/ui/confirm';
@@ -53,6 +53,7 @@ import { T } from './i18n/texts';
     CalendarFeedPanel,
     MeetingsSettingsPanel,
     MessengersSettingsPanel,
+    PushDevicesCard,
     FailedDeliveriesCard,
     DefaultPriceCard,
     AiSettingsPanel,
@@ -109,7 +110,10 @@ import { T } from './i18n/texts';
           }
           @switch (current().id) {
             @case ('account') {
-              <tb-account-panel />
+              <div class="tb-stack">
+                <tb-account-panel />
+                <tb-push-devices-card />
+              </div>
             }
             @case ('portal') {
               <tb-portal-settings-card />

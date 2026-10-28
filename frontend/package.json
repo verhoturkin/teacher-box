@@ -1,6 +1,6 @@
 {
     "name": "teacher-box",
-    "version": "0.37.1",
+    "version": "0.38.0",
     "scripts": {
         "ng": "ng",
         "start": "ng serve",
@@ -24,6 +24,7 @@
         "@angular/forms": "^21.2.24",
         "@angular/platform-browser": "^21.2.24",
         "@angular/router": "^21.2.24",
+        "@angular/service-worker": "^21.2.24",
         "@excalidraw/excalidraw": "^0.18.1",
         "@fontsource-variable/google-sans": "^5.3.1",
         "@fullcalendar/angular": "~7.1.0",
