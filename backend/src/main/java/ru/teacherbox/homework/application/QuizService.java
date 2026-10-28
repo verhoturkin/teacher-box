@@ -169,10 +169,10 @@ public class QuizService {
         if (best == null) {
             throw new NotFoundException("homework.quiz-attempt-not-found", "Attempt not found");
         }
-        QuizAnswer answer = attempts.findAnswers(best.id()).stream().filter(a -> a.questionId().equals(questionId))
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("homework.quiz-answer-not-found", "Answer not found"));
-        attempts.saveAnswer(new QuizAnswer(best.id(), questionId, answer.answer(), correct,
+        // A skipped question has no row yet: an empty choice reads as «no answer» in every question kind.
+        Answer given = attempts.findAnswers(best.id()).stream().filter(a -> a.questionId().equals(questionId))
+                .findFirst().map(QuizAnswer::answer).orElseGet(() -> new Answer.Choice(Set.of()));
+        attempts.saveAnswer(new QuizAnswer(best.id(), questionId, given, correct,
                 correct ? question.points() : 0, true));
         int score = attempts.findAnswers(best.id()).stream().mapToInt(QuizAnswer::points).sum();
         attempts.submit(best.id(), Objects.requireNonNull(best.submittedAt()), score,

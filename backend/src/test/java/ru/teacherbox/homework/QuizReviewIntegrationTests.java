@@ -87,6 +87,36 @@ class QuizReviewIntegrationTests {
     }
 
     @Test
+    void anUnansweredQuestionCanBeCreditedAndWithdrawn() {
+        UUID student = directory.addStudent("Лена");
+        MvcTestResult created = mvc.post().uri("/api/teacher/homework/assignments")
+                .with(TestUsers.teacher(directory.teacherId())).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"title\":\"Тест\",\"studentIds\":[\"" + student + "\"],\"questions\":" + QUESTIONS + "}")
+                .exchange();
+        String task = taskOf(created, student);
+        String q1 = JsonPath.read(body(created), "$.questions[0].id");
+        String base = "/api/me/homework/tasks/" + task + "/quiz";
+        String attempt = JsonPath.read(body(mvc.post().uri(base + "/attempts").with(TestUsers.student(student))
+                .exchange()), "$.openAttempt.id");
+        // The first question is left blank; the second is right.
+        String q2 = JsonPath.read(body(mvc.get().uri(base).with(TestUsers.student(student)).exchange()),
+                "$.questions[1].id");
+        assertThat(mvc.put().uri(base + "/attempts/" + attempt + "/answers/" + q2).with(TestUsers.student(student))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"text\":\"берёза\"}").exchange())
+                .hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(mvc.post().uri(base + "/attempts/" + attempt + "/submit").with(TestUsers.student(student))
+                .exchange()).hasStatusOk();
+
+        assertThat(override(task, q1, true)).hasStatusOk().bodyJson().satisfies(json -> {
+            assertThat(json).extractingPath("$.quiz.best.scorePoints").isEqualTo(3);
+            assertThat(json).extractingPath("$.quiz.results[0].correct").isEqualTo(true);
+            assertThat(json).extractingPath("$.quiz.results[0].overridden").isEqualTo(true);
+            assertThat(json).extractingPath("$.quiz.results[0].points").isEqualTo(2);
+        });
+        assertThat(override(task, q1, false)).bodyJson().extractingPath("$.quiz.best.scorePoints").isEqualTo(1);
+    }
+
+    @Test
     void studentsNeverGetTheQuizReviewOrTheTeacherEndpoints() {
         UUID student = directory.addStudent("Лена");
         MvcTestResult created = mvc.post().uri("/api/teacher/homework/assignments")

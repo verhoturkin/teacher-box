@@ -27,7 +27,7 @@ full-screen dialogs on a phone. No new ADR.
 
 ### 327. Quick fixes
 
-- [ ] 327.1 **B** Crediting an unanswered quiz question: `QuizService.override` throws
+- [x] 327.1 **B** Crediting an unanswered quiz question: `QuizService.override` throws
   `homework.quiz-answer-not-found` (404, «Не найдено…») when the best attempt has no answer row for
   the question; save a new `QuizAnswer` with an empty answer instead and recount the score. Test in
   the quiz integration tests: override of an unanswered question → 204 and the score grows.
