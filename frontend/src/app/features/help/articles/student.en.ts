@@ -180,6 +180,12 @@ Before sending a request the bot asks again. «Cancel» or /cancel stops an acti
 
 The bot speaks Russian.
 
+## Notifications on the phone without a messenger
+
+Lesson reminders, new homework and the teacher's messages can arrive as system notifications on your phone even when the cabinet is closed — without a messenger or together with one. Your photo at the top right → «My account» → «Notifications on devices» → «Turn on notifications on this device» (or «Turn on» in the card on the home page), then allow notifications in the browser prompt. «Turn off» in the list removes the device. The topics and quiet hours are the same as for messengers.
+
+On iPhone and iPad notifications work only in the app on the Home Screen: Share → Add to Home Screen, then open the cabinet from the new icon. The portal address must be HTTPS; if notifications are unavailable, the card says why. The notification goes through a Google, Mozilla or Apple service — the text is encrypted with your device key, so the service cannot read it.
+
 ## Turn off
 
 Send the bot /stop or disconnect the messenger in «My account» (your photo at the top right). There, in the «What to send to messengers» card, you can also choose the topics and the quiet hours.

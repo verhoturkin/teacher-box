@@ -103,7 +103,7 @@ Design:
 
 ### Stage 316 — Docs and E2E
 
-- [ ] 316.1 Docs: `docs/modules/notifications.md`, `docs/operations.md` (HTTPS is required), wiki
+- [x] 316.1 Docs: `docs/modules/notifications.md`, `docs/operations.md` (HTTPS is required), wiki
   «Мессенджеры» → section «Уведомления на телефоне без мессенджера», FAQ, help articles ru/en; E2E
   in the notifications suite: grant `notifications`, subscribe / unsubscribe REST flow, a new build
   is picked up by the service worker; real push delivery stays a manual check.

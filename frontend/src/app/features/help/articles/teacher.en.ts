@@ -514,6 +514,12 @@ The «Students’ messengers» card («Settings» → «Messengers») shows who 
 
 Notifications and bot messages are written by the server in Russian.
 
+## Notifications on the phone without a messenger
+
+Submitted work, reschedule requests and reminders can arrive as system notifications on your phone or computer even when the portal is closed — together with messengers, not instead of them. «My account» → «Notifications on devices» → «Turn on notifications on this device», then allow notifications in the browser prompt. The device appears in the list; «Turn off» removes it. Turn it on separately on every phone and every browser. The topics and quiet hours are the same as for messengers.
+
+On iPhone and iPad notifications work only in the app on the Home Screen: Share → Add to Home Screen, then open the portal from the new icon. The portal address must be HTTPS; if notifications are unavailable, the card says why. The notification goes through a Google, Mozilla or Apple service — the text is encrypted with the device key, so the service cannot read it.
+
 The bot does more than send notifications — [What the bot can do](/teacher/help/bot).
 `,
   },

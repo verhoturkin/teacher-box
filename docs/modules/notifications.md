@@ -83,8 +83,8 @@ No `api` package: nothing depends on `notifications`.
 ## Data
 
 `inbox`, `deliveries`, `preferences`, `channel_settings`, `channel_links`, `link_codes`, `broadcasts`,
-`chat_dialogs`, `chat_buttons`, `chat_settings`, `webpush_keys` (the VAPID pair, one row, 0.38.0), `push_subscriptions` (the
-devices that get web push, 0.38.0).
+`chat_dialogs`, `chat_buttons`, `chat_settings`, `webpush_keys` (the VAPID pair, one row, 0.38.0),
+`push_subscriptions` (the devices that get web push, 0.38.0).
 `NotificationsHousekeeping` cleans old records.
 
 ## REST
@@ -113,6 +113,18 @@ opened, each part with its own «Показать ещё»; a notification marke
 `new-message-dialog.ts` is the frame's dialog of a new message through `NEW_MESSAGE_DIALOG`, opened by «Создать ›
 Сообщение» on any page and by «Написать ученикам», 235.3; bot wizard), `student/` (`connect-messenger-card.ts` on the student's home → «Мой аккаунт»; the «connect» reminder
 `remindToConnect` links there too), `notification-labels.ts`; the bell in the top bar (`core/notifications`) opens the sheet.
+
+Web push in the interface (0.38.0, ADR-0051): `core/push/web-push.ts` (`WebPush` on `SwPush`: the
+public key, subscribe, unsubscribe, the user's devices; the permission is asked only from a click,
+and an iPhone tab that is not on the Home Screen gets the hint instead), `push/push-devices-card.ts`
+(«Уведомления на устройствах» on «Мой аккаунт» of the teacher and the student: «Включить уведомления
+на этом устройстве», the list with «Отключить») and `push/push-onboarding-card.ts` (a card on the
+home that a click turns into the permission prompt; «Не сейчас» hides it on this device). Without
+HTTPS or a service worker (a dev build) `supported` is false and the card only explains it. The
+service worker itself, the update snackbar and the offline page «Нет связи» are in ADR-0051; nginx
+serves `ngsw*.js` / `ngsw.json` with `no-cache` (`docker/nginx`). E2E:
+`e2e/tests/notifications/web-push.spec.ts` (headers, REST, the card); real delivery through Google /
+Mozilla / Apple is a manual check.
 
 Broadcast recipients use the shared typed member picker. Explicit students and active groups resolve to a
 deduplicated snapshot, preserving explicit students when groups are removed. Empty selection means all;
