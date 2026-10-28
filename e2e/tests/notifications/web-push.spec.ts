@@ -12,6 +12,7 @@ const OTHER = `push-other-${RUN}`;
 const PASSWORD = 'student-pass-1';
 
 test.describe.configure({ mode: 'serial' });
+test.use({ serviceWorkers: 'allow' });
 
 async function addStudent(request: APIRequestContext, name: string, login: string): Promise<void> {
   const created = await request.post('/api/teacher/students', {

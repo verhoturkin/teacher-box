@@ -29,6 +29,8 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     permissions: ['camera', 'microphone'],
+    // The service worker answers fetches itself, so page.route() mocks never see them; only web-push.spec.ts opts in.
+    serviceWorkers: 'block',
     launchOptions: {
       args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'],
     },
