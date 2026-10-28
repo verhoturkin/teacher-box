@@ -102,7 +102,10 @@ test('«Мой аккаунт»: the permission is granted, the card offers to e
   context,
   request,
 }) => {
-  await context.grantPermissions(['notifications']);
+  // Playwright's headless Chromium reports 'denied' whatever grantPermissions says, so the state is stubbed.
+  await context.addInitScript(() => {
+    Object.defineProperty(Notification, 'permission', { get: () => 'granted' });
+  });
   await page.setViewportSize({ width: 1280, height: 900 });
   await startSession(page, LOGIN, PASSWORD);
   const headers = await bearer(request, LOGIN, PASSWORD);
