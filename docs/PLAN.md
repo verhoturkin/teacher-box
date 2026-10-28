@@ -95,7 +95,7 @@ Design:
 
 ### Stage 320 — Student attempts REST (B)
 
-- [ ] 320.1 B: `MyHomeworkController` + a `QuizService` (`homework/application/`): get quiz, start
+- [x] 320.1 B: `MyHomeworkController` + a `QuizService` (`homework/application/`): get quiz, start
   attempt (limit), autosave answer, submit (best attempt, score), reveal rules (after submit / after
   due / never), shuffling by stable ids; «Сдать» of a quiz-only assignment submits the open attempt
   (`StudentHomeworkService`). Tests: «the key is not leaked» (JSON assertions per reveal rule),

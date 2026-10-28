@@ -75,6 +75,16 @@ keeps them; a list replaces them, copy makes new ids), `quizReveal` and `quizAtt
 unlimited, absent = keep / default 1); the details return the same with the key. Errors
 `homework.quiz-*` (422); the list is frozen once any student started an attempt
 (`homework.quiz-started`; the same list, text and settings stay editable).
+Student REST (`QuizService`, `/api/me/homework/tasks/{id}/quiz`): `GET` (questions without the key,
+options / items / the right column of a matching shuffled by stable ids seeded with the open attempt,
+attempts used / left, `canStart`, best attempt), `POST …/attempts` (returns the open attempt if there
+is one; `homework.quiz-no-attempts-left`), `PUT …/attempts/{a}/answers/{q}` (autosave; one `AnswerInput`
+shape, the field used depends on the type), `POST …/attempts/{a}/submit` (score = sum of points). The
+score is always shown; `results` (key, explanation, the answer and verdict of the best attempt) only
+when the reveal rule allows: `AFTER_SUBMIT` — once an attempt is submitted, `AFTER_DUE` — after `dueAt`
+(never without one), `NEVER`. Attempts are refused once the task is submitted / accepted
+(`homework.quiz-closed`); an overdue task still takes attempts. «Сдать» submits the open attempt; with
+questions, no text and no files it creates no submission row (a quiz alone is an answer).
 
 ## REST
 
