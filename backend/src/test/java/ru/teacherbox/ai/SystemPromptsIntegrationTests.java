@@ -47,7 +47,7 @@ class SystemPromptsIntegrationTests {
         assertThat(mvc.get().uri(URI).with(TestUsers.teacher(TEACHER))).hasStatusOk()
                 .bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$[*].feature").asArray()
-                            .containsExactly("HOMEWORK_DRAFT", "REVIEW_DRAFT", "LESSON_SUMMARY");
+                            .containsExactly("HOMEWORK_DRAFT", "REVIEW_DRAFT", "LESSON_SUMMARY", "QUIZ_DRAFT");
                     assertThat(json).extractingPath("$[0].text").asString().startsWith("Ты помогаешь репетитору");
                     assertThat(json).extractingPath("$[0].custom").isEqualTo(false);
                     assertThat(json).extractingPath("$[0].version").isEqualTo(0);

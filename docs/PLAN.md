@@ -109,7 +109,7 @@ Design:
 
 ### Stage 322 — AI quiz draft (B)
 
-- [ ] 322.1 B: `AiFeature.QUIZ_DRAFT`, JSON schema, system prompt (`SystemPrompts`,
+- [x] 322.1 B: `AiFeature.QUIZ_DRAFT`, JSON schema, system prompt (`SystemPrompts`,
   `PromptLibrary`, editable like the others), sources via `DraftSources`, endpoint next to the
   homework draft, output validated (see Design; module isolation §4.2 — `ai` may use
   `homework::api` only). Tests against the local HTTP server / mock LLM as the existing drafts do.
