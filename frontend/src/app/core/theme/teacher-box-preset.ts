@@ -755,11 +755,21 @@ export const TeacherBoxPreset = definePreset(Aura, {
       },
     },
     tooltip: {
-      root: { padding: '0.25rem 0.5rem', borderRadius: '{border.radius.xs}', shadow: 'none' },
+      root: {
+        padding: '0.25rem 0.5rem',
+        borderRadius: '{border.radius.xs}',
+        shadow: 'none',
+        maxWidth: '15rem',
+      },
       colorScheme: {
         light: { root: { background: '{md.inverse.surface}', color: '{md.inverse.on.surface}' } },
         dark: { root: { background: '{md.inverse.surface}', color: '{md.inverse.on.surface}' } },
       },
+      // M3 plain tooltip: no caret, at least 24 dp high; the max width is ours (M3 gives none)
+      css: `
+        .p-tooltip { min-height: 1.5rem; box-sizing: border-box; }
+        .p-tooltip .p-tooltip-arrow { display: none; }
+      `,
     },
     // M3 badge on an icon button: no outline, its start at the middle of the 24 px icon, its top near the
     // icon's top — inside the 40 px button, not on its corner; clicks go through it to the button

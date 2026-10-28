@@ -454,6 +454,13 @@ inputs), `size="small"`, `success`, `warn`, `info`, `help`, `contrast`.
 - **Icon buttons:** tooltip = accessible name, with row context («Отменить занятие: Анна, 14:00»);
   help «?» names the article («Справка: Портал»); menu buttons have `aria-haspopup` +
   `aria-expanded` (`tbAttributes`).
+- **Tooltip** = M3 plain tooltip: Inverse surface / Inverse on surface, Body Small, 4 dp corners, 8 dp
+  side padding, at least 24 dp high, no caret (**M3**). Placed centred **below** the element (M3:
+  below in an app bar and on desktop) and flipped above by PrimeNG when there is no room, never to
+  the side, kept inside the window (*ours*: one rule for the whole app). The default is set once in
+  `@shared/ui/tooltip-defaults` (PrimeNG `Tooltip` has no global default; patched in `app.config.ts`);
+  `pTooltip` needs nothing extra. Max width 240 px (*ours*; M3 gives none). Shown on
+  hover and focus, on a phone by long press.
 
 ## 9. Fields
 

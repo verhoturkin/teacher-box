@@ -61,7 +61,7 @@ full-screen dialogs on a phone. No new ADR.
 
 ### 329. Tooltips
 
-- [ ] 329.1 **F** M3 plain tooltip everywhere (`pTooltip`, ~45 uses): no arrow, shown below the
+- [x] 329.1 **F** M3 plain tooltip everywhere (`pTooltip`, ~45 uses): no arrow, shown below the
   element and flipped above when there is no room, never to the side; inverse-surface, Body Small,
   4 dp corners, min height 24 dp. One global default (preset `tooltip` in
   `core/theme/teacher-box-preset.ts`, `styles.scss`, a shared default for `tooltipPosition`), not an
