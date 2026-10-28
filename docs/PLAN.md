@@ -38,7 +38,7 @@ full-screen dialogs on a phone. No new ADR.
   `core/notifications/notifications-sheet.ts` sits at the sheet's edge, not beside the cards;
   (d) on compact the sheet's tabs «Входящие · Отправленные» share the width equally with centred
   labels, as on a computer (`tb-tabs` keeps label width on a phone only where tabs may scroll).
-- [ ] 327.3 **F** Android navigation bar in the colour of the bottom bar: edge-to-edge
+- [x] 327.3 **F** Android navigation bar in the colour of the bottom bar: edge-to-edge
   (`viewport-fit=cover` in `index.html`), the bottom bar (`core/layout/shell.scss`) extends under
   the gesture bar with `env(safe-area-inset-bottom)` padding; check that the FAB, the review
   floating toolbar, snackbars and bottom sheets stay above the gesture area. `system-bars.ts` keeps

@@ -143,7 +143,12 @@ used icon classes disagree. E2E runs axe on the main screens and checks button r
   circle). The calendar use is in [`screens.md`](screens.md#schedule-teacher).
 - **System bars** (`core/theme/system-bars.ts`): `<meta name="theme-color">` and the manifest carry
   the top bar's colour — light surface-container, dark surface (on a phone page of panes:
-  `surface`); the manifest's `background_color` is the page.
+  `surface`); the manifest's `background_color` is the page. The web cannot colour the Android
+  navigation (gesture) bar apart, so the app is **edge-to-edge** (*ours*, stage 327.3):
+  `viewport-fit=cover` lets Chrome 135+ on Android draw the page under the gesture bar (older
+  versions and other browsers keep the inset at 0 and nothing changes); the bottom bar's
+  surface-container fills that area. Everything fixed at the bottom adds
+  `env(safe-area-inset-bottom)`, the shell adds the left and right insets (landscape cutout).
 - **Themes:** «Светлая», «Тёмная», «Как в системе», stored on the device; a class on `<html>`.
 
 ## 3. Typography
@@ -304,7 +309,9 @@ for the active navigation item and checked states.
   button at every width.
 - **Bottom bar** (compact, **M3E** flexible navigation bar): five destinations of the role
   (`BAR_ITEMS` in `shell.ts`, **M3**: 3–5), no «Ещё»; 64 px surface-container, no top border, item
-  padding 4 px, 4 px icon → label; indicator and active item as the rail. The other destinations
+  padding 4 px, 4 px icon → label; indicator and active item as the rail. Its background extends
+  under the gesture bar: the content keeps 64 px, `padding-bottom: env(safe-area-inset-bottom)`
+  grows the bar (*ours*, see «System bars»). The other destinations
   and the rail's bottom group are in the **modal expanded rail** under ☰ (**M3E**: more than five
   destinations): `p-drawer` + `tbModalDrawer` on the start edge, scrim 32 %, closed by Esc, the
   scrim, a destination or its `menu_open` button «Закрыть»; focus back to ☰; surface-container,
