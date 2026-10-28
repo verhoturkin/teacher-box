@@ -1,8 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
 import { DeferBlockBehavior, DeferBlockState, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Toast } from 'primeng/toast';
+import { provideServiceWorker } from '@angular/service-worker';
 import { By } from '@angular/platform-browser';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { hostElement } from '@testing/dom';
@@ -12,7 +13,13 @@ describe('App', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter([]), MessageService, ConfirmationService, provideHttpClient()],
+      providers: [
+        provideRouter([]),
+        MessageService,
+        ConfirmationService,
+        provideHttpClient(),
+        provideServiceWorker('ngsw-worker.js', { enabled: false }),
+      ],
       deferBlockBehavior: DeferBlockBehavior.Manual,
     });
     // the call host is a deferred block (ADR-0030)
@@ -52,6 +59,16 @@ describe('App', () => {
     expect(document.body.querySelector('.tb-snackbar__text')?.getAttribute('role')).toBe('alert');
     expect(document.body.querySelector('.p-toast-message')?.getAttribute('role')).toBe('status');
     fixture.destroy();
+  });
+
+  it('opens «Нет связи» when the app starts without the network', () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+    TestBed.createComponent(App);
+
+    expect(navigate).toHaveBeenCalledWith('/offline');
+    vi.restoreAllMocks();
   });
 
   it('lets the snackbar show a closed message again', async () => {

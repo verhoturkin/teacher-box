@@ -18,6 +18,8 @@ this page in the same commit.
   menu. The student's «Задания» carries the **M3** large badge with the open tasks (`OpenTasks`,
   re-read after each navigation; by the label in the expanded rail, on the icon elsewhere; a
   screen-reader line «Заданий к сдаче: N»).
+- Installed app: the service worker caches only the shell; without a network the app opens the
+  frameless page `/offline` «Нет связи» (empty state + «Повторить»), data is never cached.
 - There is no Notifications, Calls or AI section (ADR-0048): the inbox is the bell's sheet,
   integrations are teacher Settings.
 

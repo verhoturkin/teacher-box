@@ -50,6 +50,21 @@ describe('Snackbar', () => {
     expect(shown).toHaveLength(3);
   });
 
+  it('keeps a note with a button of its own until it is closed', () => {
+    const run = vi.fn();
+    snackbar.action('Доступна новая версия', 'Обновить', run);
+    snackbar.action('Доступна новая версия', 'Обновить', run);
+
+    expect(shown).toEqual([
+      {
+        severity: 'info',
+        detail: 'Доступна новая версия',
+        sticky: true,
+        data: { undo: run, label: 'Обновить' },
+      },
+    ]);
+  });
+
   it('keeps a notice until it is closed', () => {
     snackbar.notice('Перезапустите портал');
     snackbar.notice('Перезапустите портал');

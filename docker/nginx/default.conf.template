@@ -96,6 +96,14 @@ server {
         try_files $uri =404;
     }
 
+    # The service worker and its manifest of files (ADR-0051) are revalidated on every start, or a stale app
+    # would stay installed for good.
+    location ~ ^/(?:ngsw-worker\.js|ngsw\.json|safety-worker\.js|worker-basic\.min\.js)$ {
+        include /etc/nginx/snippets/security-headers.conf;
+        add_header Cache-Control "no-cache" always;
+        try_files $uri =404;
+    }
+
     # Hashed build artifacts never change.
     location ~* ^/(?:[^/]+\.(?:js|css)|media/.+)$ {
         include /etc/nginx/snippets/security-headers.conf;

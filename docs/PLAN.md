@@ -70,7 +70,7 @@ Design:
 
 ### Stage 312 — Service worker and installable app (F, D, `m3-expressive`)
 
-- [ ] 312.1 F, D: `@angular/service-worker` + `ngsw-config.json` + `provideServiceWorker`
+- [x] 312.1 F, D: `@angular/service-worker` + `ngsw-config.json` + `provideServiceWorker`
   (`frontend/src/app/app.config.ts`, enabled in production only), update snackbar service (e.g.
   `core/pwa/`, `SwUpdate`), offline page «Нет связи» (`core/pages/`), nginx `no-cache` for
   `ngsw.json` / `ngsw-worker.js` and CSP `worker-src 'self'` (`docker/nginx`). Unit tests of the

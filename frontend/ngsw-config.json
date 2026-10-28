@@ -1,0 +1,44 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "shell",
+      "installMode": "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.ico",
+          "/favicon.svg",
+          "/index.html",
+          "/main-*.js",
+          "/polyfills-*.js",
+          "/styles-*.css"
+        ]
+      }
+    },
+    {
+      "name": "lazy",
+      "installMode": "lazy",
+      "updateMode": "lazy",
+      "resources": {
+        "files": [
+          "/*.js",
+          "/*.css",
+          "/icons/**",
+          "/media/**",
+          "/excalidraw-assets/**",
+          "/*.(svg|png|webp|woff|woff2)"
+        ]
+      }
+    }
+  ],
+  "navigationUrls": [
+    "/**",
+    "!/**/*.*",
+    "!/**/*__*",
+    "!/**/*__*/**",
+    "!/api/**",
+    "!/livekit/**",
+    "!/actuator/**"
+  ]
+}
