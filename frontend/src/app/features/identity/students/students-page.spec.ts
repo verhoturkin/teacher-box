@@ -306,8 +306,8 @@ describe('StudentsPage', () => {
       });
 
       expect(chip('Все').getAttribute('aria-pressed')).toBe('true');
-      expect(readableText(chip('Должники'))).toBe('Должники 2');
-      expect(readableText(chip('Без мессенджера'))).toBe('Без мессенджера 1');
+      expect(host.textContent).not.toContain('Должники');
+      expect(host.textContent).not.toContain('Без мессенджера 1');
       expect(readableText(chip('Группы'))).toBe('Группы');
 
       await choose('Группы');
@@ -315,14 +315,6 @@ describe('StudentsPage', () => {
       expect(chip('Группы').getAttribute('aria-pressed')).toBe('true');
       expect(chip('Группы').querySelector('.tb-i-check')).not.toBeNull();
       expect(rows().map((row) => row.split(' ')[0])).toEqual(['ОГЭ']);
-
-      await choose('Должники');
-      expect(rows()).toHaveLength(2);
-      expect(rows()[1]).toContain('Олег');
-
-      await choose('Без мессенджера');
-      expect(rows()).toHaveLength(1);
-      expect(rows()[0]).toContain('Борис');
 
       await choose('Отключённые');
       expect(rows()).toHaveLength(2);
@@ -358,7 +350,6 @@ describe('StudentsPage', () => {
 
       expect(rows()[0]).toBe('М Мария');
       expect(rows()[1]).toBe('ОГЭ 9 класс 2 участника');
-      expect(readableText(chip('Должники'))).toBe('Должники');
     });
 
     it('invites to add the first student and to create the first group', async () => {

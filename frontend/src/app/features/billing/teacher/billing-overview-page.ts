@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -99,12 +99,13 @@ const NUMBER = new Intl.NumberFormat(locale());
 /**
  * Teacher's «Оплаты» (spec §10.2): the month with ‹ ›, «Отчёт за месяц», four figures and the journal of the
  * month with chips in the flexible pane; the supporting pane «По ученикам» holds debtors, prepayments running out
- * and the weekly income. The balances list lives in Students (chip «Должники»).
+ * and the weekly income. On compact the debtors move under the figures. The balances live in the student cards.
  */
 @Component({
   selector: 'tb-billing-overview-page',
   imports: [
     Avatar,
+    NgTemplateOutlet,
     BroadcastDialog,
     ButtonDirective,
     ButtonIcon,
@@ -128,6 +129,50 @@ const NUMBER = new Intl.NumberFormat(locale());
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <ng-template #debtorsSection>
+      @if (overview(); as overview) {
+        <section class="tb-ops">
+          <h3 class="tb-ops__overline">{{ t.debtors }}</h3>
+          @if (debtors().length > 0) {
+            <ul class="tb-list tb-ops__people">
+              @for (row of debtors(); track row.studentId) {
+                <li>
+                  <tb-avatar
+                    [attr.data-tb-label]="colors.studentLabel(row.studentId)"
+                    [name]="row.displayName"
+                    [photo]="row.avatar"
+                  />
+                  <div class="tb-list__text">
+                    <a
+                      [routerLink]="['/teacher/students', row.studentId]"
+                      [queryParams]="paymentsTab"
+                      class="tb-list__title tb-list__link"
+                      >{{ row.displayName }}</a
+                    >
+                    <span class="tb-list__supporting">{{ owedText(row) }}</span>
+                  </div>
+                  <div class="tb-list__trail">
+                    <span class="tb-negative tb-ops__amount">{{
+                      row.balance | money: overview.currency
+                    }}</span>
+                  </div>
+                </li>
+              }
+            </ul>
+            <p-button
+              class="tb-ops__remind"
+              icon="tb-i tb-i-send"
+              [label]="t.remind"
+              severity="secondary"
+              (onClick)="remindVisible.set(true)"
+            />
+          } @else {
+            <p class="tb-muted">{{ t.noDebtors }}</p>
+          }
+        </section>
+      }
+    </ng-template>
+
     <tb-panes>
       <tb-pane [label]="t.title">
         <div tbPaneHeader>
@@ -216,6 +261,10 @@ const NUMBER = new Intl.NumberFormat(locale());
               </div>
             </dl>
 
+            @if (mobile() && debtors().length > 0) {
+              <ng-container [ngTemplateOutlet]="debtorsSection" />
+            }
+
             <div class="tb-ops__bar">
               <h2 class="tb-ops__title">{{ t.operations }}</h2>
               <div class="tb-ops__filters">
@@ -298,45 +347,7 @@ const NUMBER = new Intl.NumberFormat(locale());
             <a class="tb-link tb-ops__all" routerLink="/teacher/students">{{ t.allInStudents }}</a>
           </div>
           @if (overview(); as overview) {
-            <section class="tb-ops">
-              <h3 class="tb-ops__overline">{{ t.debtors }}</h3>
-              @if (debtors().length > 0) {
-                <ul class="tb-list tb-ops__people">
-                  @for (row of debtors(); track row.studentId) {
-                    <li>
-                      <tb-avatar
-                        [attr.data-tb-label]="colors.studentLabel(row.studentId)"
-                        [name]="row.displayName"
-                        [photo]="row.avatar"
-                      />
-                      <div class="tb-list__text">
-                        <a
-                          [routerLink]="['/teacher/students', row.studentId]"
-                          [queryParams]="paymentsTab"
-                          class="tb-list__title tb-list__link"
-                          >{{ row.displayName }}</a
-                        >
-                        <span class="tb-list__supporting">{{ owedText(row) }}</span>
-                      </div>
-                      <div class="tb-list__trail">
-                        <span class="tb-negative tb-ops__amount">{{
-                          row.balance | money: overview.currency
-                        }}</span>
-                      </div>
-                    </li>
-                  }
-                </ul>
-                <p-button
-                  class="tb-ops__remind"
-                  icon="tb-i tb-i-send"
-                  [label]="t.remind"
-                  severity="secondary"
-                  (onClick)="remindVisible.set(true)"
-                />
-              } @else {
-                <p class="tb-muted">{{ t.noDebtors }}</p>
-              }
-            </section>
+            <ng-container [ngTemplateOutlet]="debtorsSection" />
 
             @if (runningOut().length > 0) {
               <section class="tb-ops">

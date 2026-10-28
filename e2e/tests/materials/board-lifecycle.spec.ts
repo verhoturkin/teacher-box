@@ -263,7 +263,7 @@ test('an external board opens in a new tab', async ({ page, request }) => {
   expect(created.ok()).toBe(true);
 
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  await page.goto(`/teacher/boards?group=${groupId}`);
+  await page.goto(`/teacher/boards`);
   const link = page.getByRole('link', { name: `Холст ${RUN}` });
   await expect(link).toHaveAttribute('href', 'https://app.holst.so/board/e2e-1-7');
   await expect(link).toHaveAttribute('target', '_blank');

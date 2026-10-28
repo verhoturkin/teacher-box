@@ -3,11 +3,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   input,
   signal,
-  untracked,
   viewChild,
 } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -24,7 +22,7 @@ import { BoardsApi } from '../data-access/boards-api';
 import { Board } from '../data-access/boards.models';
 import { boardMembersText, boardRoute, boardServiceTag } from '../boards-labels';
 import { BoardBackupsDialog } from './board-backups-dialog';
-import { BoardDefaults, BoardDialog, MemberOption } from './board-dialog';
+import { BoardDialog, MemberOption } from './board-dialog';
 import { T } from '../i18n/texts';
 
 /** Which boards the feed shows: all, those of the portal (Excalidraw) or the external ones (by link). */
@@ -46,8 +44,7 @@ function found(boards: readonly Board[], text: string): readonly Board[] {
  * Teacher: the boards of the Materials feed (ADR-0028, redesign spec §10.1) as cards with previews — the
  * Excalidraw boards of the portal and the external ones (by link, with the tag of their service). The page
  * of Materials gives the search text, the filter and the sort; a card opens its board, «⋮» keeps change,
- * copies and delete. `student` / `group` ask the server for the boards of a student (with their groups')
- * or of a group.
+ * copies and delete.
  */
 @Component({
   selector: 'tb-boards-feed',
@@ -81,11 +78,7 @@ function found(boards: readonly Board[], text: string): readonly Board[] {
       } @else if (boards().length > 0) {
         <tb-empty-state icon="tb-i-search" [title]="k.notFound" />
       } @else {
-        <tb-empty-state
-          icon="tb-i-co_present"
-          [title]="member() ? t.emptyFilteredTitle : t.emptyTitle"
-          [hint]="t.emptyHint"
-        />
+        <tb-empty-state icon="tb-i-co_present" [title]="t.emptyTitle" [hint]="t.emptyHint" />
       }
     </tb-load-state>
 
@@ -101,7 +94,6 @@ function found(boards: readonly Board[], text: string): readonly Board[] {
       [board]="editing()"
       [students]="students()"
       [groups]="groups()"
-      [defaults]="defaults()"
       (saved)="load()"
     />
     <tb-board-backups-dialog
@@ -123,10 +115,6 @@ export class BoardsFeed {
   readonly query = input('');
   readonly filter = input<BoardsFilter>('all');
   readonly sort = input<MaterialSort>('changed');
-  /** `?student=<id>` — boards of a student, with their groups' boards. */
-  readonly student = input<string | undefined>();
-  /** `?group=<id>` — boards of a group. */
-  readonly group = input<string | undefined>();
   /** The students and the groups the dialog offers. */
   readonly students = input<readonly MemberOption[]>([]);
   readonly groups = input<readonly MemberOption[]>([]);
@@ -141,7 +129,6 @@ export class BoardsFeed {
     const ofKind = this.boards().filter((board) => kind === null || board.kind === kind);
     return sortMaterials(found(ofKind, this.query()), this.sort());
   });
-  protected readonly member = computed(() => this.student() ?? this.group());
   protected readonly editing = signal<Board | null>(null);
   protected readonly dialogVisible = signal(false);
   protected readonly backupsOf = signal<Board | null>(null);
@@ -155,29 +142,17 @@ export class BoardsFeed {
     return board === null ? [] : this.actionsOf(board);
   });
 
-  /** A new board starts with the student or the group of the filter. */
-  protected readonly defaults = computed<BoardDefaults>(() => ({
-    studentIds: this.student() ? [this.student() ?? ''] : [],
-    groupIds: this.group() ? [this.group() ?? ''] : [],
-  }));
-
   /** The preview of a board (a stable function for `tb-blob-image`). */
   protected readonly loadPreview = (id: string): Observable<Blob> =>
     this.api.preview(id, this.boards().find((board) => board.id === id)?.previewUpdatedAt);
 
   constructor() {
-    effect(() => {
-      this.student();
-      this.group();
-      untracked(() => {
-        this.load();
-      });
-    });
+    this.load();
   }
 
   load(): void {
     this.api
-      .list({ studentId: this.student() ?? null, groupId: this.group() ?? null }, quietContext())
+      .list({}, quietContext())
       .pipe(this.state.track())
       .subscribe((boards) => {
         this.boards.set(boards);

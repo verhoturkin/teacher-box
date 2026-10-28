@@ -111,7 +111,6 @@ export const en: Translation<typeof ru> = {
     what: 'the boards',
     actions: (title: string) => `Actions: ${title}`,
     emptyTitle: 'No boards yet',
-    emptyFilteredTitle: 'They have no boards yet',
     search: 'Title or student',
     emptyHint:
       'Click «New board»: an Excalidraw board opens right in the portal, and an external board (e.g. Holst) can be added by link.',

@@ -87,7 +87,7 @@ The student opens the link, chooses a login and a password and gets to their cab
 
 Students and groups are in one list. A student's row shows the photo (if the student uploaded one, otherwise the initials), the name, the nearest lesson and the prepaid amount; on the right — the debt in red and the tag «Invited» or «Turned off». Hover over an invited student's tag to see until when the link is valid. A group's row shows the number of members and the nearest lesson. A long name or line is cut after its second line — the card on the right shows it in full.
 
-On a phone the total above the roster is hidden, and the portal name is larger in the navigation menu. Above the list are the search by name and the filters: **All**, **Groups**, **In debt**, **No messenger** (students who connected no messenger) and **Turned off** (students without access and archived groups). «In debt» and «No messenger» show a number.
+On a phone the total above the roster is hidden, and the portal name is larger in the navigation menu. Above the list are the search by name and the filters: **All**, **Groups** and **Turned off** (students without access and archived groups). The debt is shown on the right of a student's row.
 
 Click a row — the card of the student or the group opens on the right (on a phone the card replaces the list, the «back» arrow returns to it).
 
@@ -291,7 +291,7 @@ Returning to Materials waits for the drawing and its card preview. Emptying a bo
 
 The lesson card and the «Next lesson» card have links to the boards of its student or group.
 
-Each board is a card: a picture on top (an Excalidraw board's latest view, refreshed when it saves; an external board has a tile with the service's icon and name), under it the title, who it is open to and when it changed. The filters above the cards are «All», «In the portal», «External» and «Student or group» (pick a student or a group to keep their boards); the sort button changes the order. Tap a card to open the board. To change the title, the link or the students — «⋮» in the card → «Edit». To delete — «⋮» → «Delete…»: an Excalidraw board is deleted with its drawing, pictures and backups.
+Each board is a card: a picture on top (an Excalidraw board's latest view, refreshed when it saves; an external board has a tile with the service's icon and name), under it the title, who it is open to and when it changed. The filters above the cards are «All», «In the portal», «External» (the search also finds by a student's or a group's name); the sort button changes the order. Tap a card to open the board. To change the title, the link or the students — «⋮» in the card → «Edit». To delete — «⋮» → «Delete…»: an Excalidraw board is deleted with its drawing, pictures and backups.
 
 ## Draw together
 
@@ -451,7 +451,7 @@ The page shows one month; the ‹ › arrows next to the title switch months.
 
 - **Four figures:** «Received», «Charged for lessons», «Debt» (the red tile — how many students owe) and «Prepaid».
 - **Operations** — the month's list: payments, lessons and absences; the amount on the right (a payment with «+», a charge with «−», an absence without a charge — «0»). The buttons «All · Payments · Lessons · Absences» and the «Student» select keep only what you need; the month and the filters are kept in the page address, so «Back» and a reload keep them. «⋮» in the header → «Download CSV» saves the current list as a file for Excel. A student's name opens the «Payments» tab of their card.
-- **By students** (on the right on a wide screen): «Debtors» with the «Remind» button — it sends the student a reminder, «Prepaid running out» — whose prepayment covers 2 lessons or fewer, and «By weeks» — what came in each week. «All in Students» opens the students list.
+- **By students** (on the right on a wide screen): «Debtors» with the «Remind» button — it sends the student a reminder (on a phone «Debtors» sit under the month's figures), «Prepaid running out» — whose prepayment covers 2 lessons or fewer, and «By weeks» — what came in each week. «All in Students» opens the students list.
 - **Monthly report** — the button in the header.
 
 On a phone the month, both arrows and «Monthly report» are directly above the figures; the report button wraps below the month and arrows to fit the screen. The report month picker and amounts also adapt to the phone width. The figures form a grid without sideways scrolling and the «Payment» button at the bottom records a payment. Each student's balance is in «Students» and on the «Payments» tab of their card.

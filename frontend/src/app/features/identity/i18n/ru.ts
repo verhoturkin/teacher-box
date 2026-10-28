@@ -213,8 +213,6 @@ export const ru = {
     chips: {
       all: 'Все',
       groups: 'Группы',
-      debtors: 'Должники',
-      noMessenger: 'Без мессенджера',
       deactivated: 'Отключённые',
     },
     createGroup: 'Создать группу',

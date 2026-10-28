@@ -50,7 +50,7 @@ full-screen dialogs on a phone. No new ADR.
 
 ### 328. Leaner lists
 
-- [ ] 328.1 **F** Remove filter chips: «Ученик или группа» in Materials (`materials-page.ts`, with
+- [x] 328.1 **F** Remove filter chips: «Ученик или группа» in Materials (`materials-page.ts`, with
   the member select and `?student=` / `?group=`; old addresses just open the tab) and «Должники» /
   «Без мессенджера» in the students list (`identity/students/roster.ts`; old `?filter=` values fall
   back to «Все»). The debtors stay reachable on a phone: the payments page shows «Должники» under

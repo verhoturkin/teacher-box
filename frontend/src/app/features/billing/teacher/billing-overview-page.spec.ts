@@ -339,6 +339,14 @@ describe('BillingOverviewPage on a phone', () => {
     expect(host.querySelector('p-button.tb-page-fab')).not.toBeNull();
   });
 
+  it('shows the debtors under the figures, with «Напомнить»', () => {
+    const host = hostElement(fixture);
+    expect(host.querySelectorAll('.tb-ops__people')).toHaveLength(1);
+    expect(host.textContent).toContain('Должники');
+    expect(host.textContent).toContain('Иван');
+    expect(buttonByText(host, 'Напомнить')).not.toBeNull();
+  });
+
   it('navigates months and updates the report month', async () => {
     const host = hostElement(fixture);
     buttonByText(host, 'Предыдущий месяц').click();

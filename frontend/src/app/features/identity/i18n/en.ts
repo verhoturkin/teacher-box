@@ -215,8 +215,6 @@ export const en: Translation<typeof ru> = {
     chips: {
       all: 'All',
       groups: 'Groups',
-      debtors: 'In debt',
-      noMessenger: 'No messenger',
       deactivated: 'Turned off',
     },
     createGroup: 'Create group',

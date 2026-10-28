@@ -193,9 +193,10 @@ List-detail of one route (`/teacher/students[/:studentId]`, `/teacher/groups/:gr
 active on both, `NavItem.alsoActive`).
 
 - **List** — one `tb-list` in the fixed pane: header «Ученики» + «N учеников · M групп» (current
-  ones; the total hidden on compact), the search, filter chips «Все · Группы · Должники N · Без
-  мессенджера N · Отключённые» («Отключённые» — students without access and archived groups; the chip is kept in the
-  address as `?filter=`). From
+  ones; the total hidden on compact), the search, filter chips «Все · Группы · Отключённые»
+  («Отключённые» — students without access and archived groups; the chip is kept in the address as
+  `?filter=`; an old `?filter=debtors|noMessenger` opens «Все»). The debt stays in the row
+  trail. From
   expanded the header, search and chips stay and only the list scrolls. Students by name, then
   groups (group icon in the lead). A row (`tb-list--clamp`): avatar / icon; the name links to the
   card; supporting «nearest lesson · аванс N» (a group: «N участников» — the count, not the names,
@@ -312,7 +313,8 @@ pane «По ученикам».
   name links to the card's «Оплаты». The month, figures and filters stay above the scroll. The
   month, the kind and the student are kept in the address (`?month=&kind=&student=`, written with
   `replaceUrl`): «Назад» from a card and a reload bring the same journal back.
-- **Supporting pane:** «Должники» (debt in `tb-negative`, tonal «Напомнить»), «Авансы
+- **Supporting pane** (on compact the «Должники» block moves into the main pane under the figures,
+  hidden when nobody owes): «Должники» (debt in `tb-negative`, tonal «Напомнить»), «Авансы
   заканчиваются» (≤ 2 lessons left, *ours*; 5 rows), «По неделям» (bars, today's week lighter),
   «Все в Учениках».
 - **Compact:** month, arrows and the report link in the page (no overflow menu), figures in a
@@ -325,12 +327,12 @@ pane «По ученикам».
 `/teacher/materials?tab=boards|textbooks` (`features/materials`): one flexible pane, no card around
 it — the title, the connected group «Доски N · Учебники N» (under the title on compact), a wrapping
 toolbar of `tb-search-field` (364 px on a computer, full width on compact), filter chips («Все · На
-портале · Внешние · Ученик или группа»; textbooks «Все · Учебники · Рабочие тетради · Другое ·
-Ученик или группа») and the sort menu («Сначала изменённые / По названию / Сначала новые»), then
+портале · Внешние»; textbooks «Все · Учебники · Рабочие тетради · Другое») and the sort menu
+(«Сначала изменённые / По названию / Сначала новые»), then
 the `tb-material-grid` of `tb-material-card`s (§10).
 
-- «Ученик или группа» shows a member select kept in `?student=` / `?group=`; «Создать» leads to
-  `?tab=…&create=board|textbook`; `/teacher/boards` and `/teacher/textbooks` redirect to the tabs.
+- «Создать» leads to `?tab=…&create=board|textbook`; old `?student=` / `?group=` are ignored;
+  `/teacher/boards` and `/teacher/textbooks` redirect to the tabs.
 - *Isolation (AGENTS.md §4.2.6):* `features/materials` only composes `BoardsFeed`
   (`@features/boards/parts`) and `TextbooksFeed` (`@features/textbooks/parts`); each owns its API,
   cards, «⋮» and dialogs and takes search, filter, sort and member as inputs. Both stay mounted (the

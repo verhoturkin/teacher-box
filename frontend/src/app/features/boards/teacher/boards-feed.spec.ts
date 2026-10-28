@@ -14,14 +14,12 @@ describe('BoardsFeed', () => {
   let backend: HttpTestingController;
   let host: HTMLElement;
 
-  async function render(inputs: { student?: string; group?: string } = {}): Promise<void> {
+  async function render(): Promise<void> {
     TestBed.configureTestingModule({ imports: [BoardsFeed], providers: testProviders() });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(BoardsFeed);
     fixture.componentRef.setInput('students', [{ id: 's-1', name: 'Мария' }]);
     fixture.componentRef.setInput('groups', [{ id: 'g-1', name: 'ОГЭ' }]);
-    if (inputs.student) fixture.componentRef.setInput('student', inputs.student);
-    if (inputs.group) fixture.componentRef.setInput('group', inputs.group);
     fixture.detectChanges();
     await fixture.whenStable();
     host = hostElement(fixture);
@@ -129,34 +127,21 @@ describe('BoardsFeed', () => {
     expect(dialog.board()).toBeNull();
   });
 
-  it('asks the server for the boards of a student and creates a board for them', async () => {
-    await render({ student: 's-1' });
-    backend.expectOne('/api/teacher/boards?studentId=s-1').flush([]);
+  it('offers the students and the groups in the form of a new board', async () => {
+    await render();
+    backend.expectOne('/api/teacher/boards').flush([]);
     await fixture.whenStable();
-    expect(host.textContent).toContain('У них досок пока нет');
 
     fixture.componentInstance.openCreate();
     await fixture.whenStable();
     const dialog = fixture.debugElement.query(By.directive(BoardDialog)).injector.get(BoardDialog);
-    expect(dialog.defaults()).toEqual({ studentIds: ['s-1'], groupIds: [] });
     expect(dialog.students()).toEqual([{ id: 's-1', name: 'Мария' }]);
     expect(dialog.groups()).toEqual([{ id: 'g-1', name: 'ОГЭ' }]);
 
     dialog.saved.emit(aBoard());
-    backend.expectOne('/api/teacher/boards?studentId=s-1').flush([aBoard()]);
+    backend.expectOne('/api/teacher/boards').flush([aBoard()]);
     await fixture.whenStable();
     expect(titles()).toEqual(['Алгебра']);
-  });
-
-  it('asks the server for the boards of a group', async () => {
-    await render({ group: 'g-1' });
-    backend.expectOne('/api/teacher/boards?groupId=g-1').flush([aLinkBoard()]);
-    await fixture.whenStable();
-
-    expect(titles()).toEqual(['Холст']);
-    fixture.componentRef.setInput('group', undefined);
-    await fixture.whenStable();
-    backend.expectOne('/api/teacher/boards').flush([]);
   });
 
   it('edits a board, opens its copies and deletes it after a confirmation', async () => {
