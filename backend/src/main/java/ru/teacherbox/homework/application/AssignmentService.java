@@ -27,6 +27,8 @@ import ru.teacherbox.homework.domain.Attachment;
 import ru.teacherbox.homework.domain.AttachmentOwner;
 import ru.teacherbox.homework.domain.HomeworkTask;
 import ru.teacherbox.homework.domain.TaskStatus;
+import ru.teacherbox.homework.domain.quiz.Question;
+import ru.teacherbox.homework.domain.quiz.RevealRule;
 import ru.teacherbox.homework.persistence.AssignmentRepository;
 import ru.teacherbox.homework.persistence.SubmissionRepository;
 import ru.teacherbox.homework.persistence.TaskRepository;
@@ -48,19 +50,21 @@ public class AssignmentService {
     private final AttachmentService attachments;
     private final TextbookBindings textbooks;
     private final AssignmentVideos videos;
+    private final AssignmentQuiz quiz;
     private final UserDirectory directory;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
     public AssignmentService(AssignmentRepository assignments, TaskRepository tasks,
             SubmissionRepository submissions, AttachmentService attachments, TextbookBindings textbooks,
-            AssignmentVideos videos, UserDirectory directory, ApplicationEventPublisher events, Clock clock) {
+            AssignmentVideos videos, AssignmentQuiz quiz, UserDirectory directory, ApplicationEventPublisher events, Clock clock) {
         this.assignments = assignments;
         this.tasks = tasks;
         this.submissions = submissions;
         this.attachments = attachments;
         this.textbooks = textbooks;
         this.videos = videos;
+        this.quiz = quiz;
         this.directory = directory;
         this.events = events;
         this.clock = clock;
@@ -77,29 +81,53 @@ public class AssignmentService {
     @Transactional
     public AssignmentDetails create(String title, @Nullable String description, @Nullable Instant dueAt,
             List<VideoInput> videoInputs, Collection<UUID> studentIds) {
+        return create(title, description, dueAt, videoInputs, List.of(), null, null, studentIds);
+    }
+
+    /**
+     * @param videoInputs the videos of the assignment by link (ADR-0047), at most 5
+     * @param questions   auto-checked questions (ADR-0052)
+     * @param reveal      when the student sees the right answers; {@code null} — after submitting
+     * @param attempts    attempts per student, 0 — unlimited; {@code null} — one
+     */
+    @Transactional
+    public AssignmentDetails create(String title, @Nullable String description, @Nullable Instant dueAt,
+            List<VideoInput> videoInputs, List<Question> questions, @Nullable RevealRule reveal,
+            @Nullable Integer attempts, Collection<UUID> studentIds) {
         Instant now = clock.instant();
         Assignment assignment = Assignment.create(Ids.newId(), title, description, dueAt, now);
+        assignment.changeQuiz(reveal, attempts);
         assignments.insert(assignment);
         videos.replace(assignment.id(), videoInputs);
+        quiz.replace(assignment.id(), questions);
         assignTo(assignment, studentIds, now);
         return details(assignment);
     }
 
     /**
      * @param videoInputs the videos in place of the assignment's ones; {@code null} — keep them
+     * @param questions   the questions in place of the assignment's ones; {@code null} — keep them
+     * @param reveal      {@code null} — keep
+     * @param attempts    0 — unlimited; {@code null} — keep
+     * @throws BusinessRuleException {@code homework.quiz-started} if the questions change after a student started
      * @throws OptimisticLockingFailureException if the assignment was changed after {@code expectedVersion}
      */
     @Transactional
     public AssignmentDetails update(UUID assignmentId, String title, @Nullable String description,
-            @Nullable Instant dueAt, @Nullable List<VideoInput> videoInputs, long expectedVersion) {
+            @Nullable Instant dueAt, @Nullable List<VideoInput> videoInputs, @Nullable List<Question> questions,
+            @Nullable RevealRule reveal, @Nullable Integer attempts, long expectedVersion) {
         Assignment assignment = load(assignmentId);
         if (assignment.version() != expectedVersion) {
             throw new OptimisticLockingFailureException("Assignment " + assignmentId + " was modified");
         }
         assignment.update(title, description, dueAt, clock.instant());
+        assignment.changeQuiz(reveal, attempts);
         assignments.update(assignment);
         if (videoInputs != null) {
             videos.replace(assignment.id(), videoInputs);
+        }
+        if (questions != null) {
+            quiz.replace(assignment.id(), questions);
         }
         return details(assignment);
     }
@@ -117,6 +145,7 @@ public class AssignmentService {
         attachments.copyAll(AttachmentOwner.ASSIGNMENT, source.id(), copy.id(), now);
         textbooks.copy(source.id(), copy.id());
         videos.copy(source.id(), copy.id());
+        quiz.copy(source.id(), copy.id());
         return details(copy);
     }
 
@@ -164,6 +193,7 @@ public class AssignmentService {
         attachments.deleteAll(AttachmentOwner.SUBMISSION, submissions.idsByAssignment(assignment.id()));
         attachments.deleteAll(AttachmentOwner.ASSIGNMENT, List.of(assignment.id()));
         submissions.deleteByAssignment(assignment.id());
+        quiz.deleteAttempts(assignment.id());
         tasks.deleteByAssignment(assignment.id());
         assignments.delete(assignment.id());
     }
@@ -260,7 +290,8 @@ public class AssignmentService {
                         .sorted(Comparator.comparing(TaskSummary::studentName, String.CASE_INSENSITIVE_ORDER))
                         .toList(),
                 textbooks.of(assignment.id()),
-                videos.of(assignment.id()));
+                videos.of(assignment.id()),
+                quiz.of(assignment.id()), assignment.quizReveal(), assignment.quizAttempts());
     }
 
     private Assignment load(UUID assignmentId) {

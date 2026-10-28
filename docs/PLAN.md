@@ -88,7 +88,7 @@ Design:
 
 ### Stage 319 — Teacher REST (B)
 
-- [ ] 319.1 B: `questions[]`, `quizReveal`, `quizAttempts` in the assignment requests and views
+- [x] 319.1 B: `questions[]`, `quizReveal`, `quizAttempts` in the assignment requests and views
   (`TeacherHomeworkController`, `AssignmentService`, `HomeworkViews`); validation errors with
   codes (`homework.quiz-*`); refusal `homework.quiz-started`; controller tests with role checks
   (student → 403).

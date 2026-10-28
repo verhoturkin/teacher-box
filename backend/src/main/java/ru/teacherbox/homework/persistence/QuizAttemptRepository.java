@@ -67,6 +67,18 @@ public class QuizAttemptRepository {
                 .single() > 0;
     }
 
+    /** Attempts (with answers) of every task of the assignment, before the tasks go. */
+    public void deleteByAssignment(UUID assignmentId) {
+        jdbc.sql("delete from homework.quiz_answers where attempt_id in (select a.id from homework.quiz_attempts a "
+                + "join homework.tasks t on t.id = a.task_id where t.assignment_id = :assignmentId)")
+                .param("assignmentId", assignmentId)
+                .update();
+        jdbc.sql("delete from homework.quiz_attempts where task_id in (select id from homework.tasks "
+                + "where assignment_id = :assignmentId)")
+                .param("assignmentId", assignmentId)
+                .update();
+    }
+
     /** Closes the attempt with its score; the answers were saved with their verdicts before. */
     public void submit(UUID id, Instant submittedAt, int scorePoints, int maxPoints) {
         jdbc.sql("""

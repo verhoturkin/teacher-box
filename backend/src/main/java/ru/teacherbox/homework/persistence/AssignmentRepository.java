@@ -11,12 +11,15 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.homework.domain.Assignment;
+import ru.teacherbox.homework.domain.quiz.RevealRule;
 
 @Repository
 public class AssignmentRepository {
 
     private static final String SELECT =
-            "select id, title, description, due_at, board_id, created_at, updated_at, version from homework.assignments";
+            """
+            select id, title, description, due_at, board_id, quiz_reveal, quiz_attempts, created_at, updated_at, version
+            from homework.assignments""";
 
     private final JdbcClient jdbc;
 
@@ -26,13 +29,16 @@ public class AssignmentRepository {
 
     public void insert(Assignment assignment) {
         jdbc.sql("""
-                insert into homework.assignments (id, title, description, due_at, created_at, updated_at, version)
-                values (:id, :title, :description, :dueAt, :createdAt, :updatedAt, :version)
+                insert into homework.assignments (id, title, description, due_at, quiz_reveal, quiz_attempts, created_at,
+                    updated_at, version)
+                values (:id, :title, :description, :dueAt, :quizReveal, :quizAttempts, :createdAt, :updatedAt, :version)
                 """)
                 .param("id", assignment.id())
                 .param("title", assignment.title())
                 .param("description", assignment.description())
                 .param("dueAt", assignment.dueAt())
+                .param("quizReveal", assignment.quizReveal().name())
+                .param("quizAttempts", assignment.quizAttempts())
                 .param("createdAt", assignment.createdAt())
                 .param("updatedAt", assignment.updatedAt())
                 .param("version", assignment.version())
@@ -42,8 +48,8 @@ public class AssignmentRepository {
     public void update(Assignment assignment) {
         int updated = jdbc.sql("""
                 update homework.assignments
-                set title = :title, description = :description, due_at = :dueAt, updated_at = :updatedAt,
-                    version = version + 1
+                set title = :title, description = :description, due_at = :dueAt, quiz_reveal = :quizReveal,
+                    quiz_attempts = :quizAttempts, updated_at = :updatedAt, version = version + 1
                 where id = :id and version = :version
                 """)
                 .param("id", assignment.id())
@@ -51,6 +57,8 @@ public class AssignmentRepository {
                 .param("title", assignment.title())
                 .param("description", assignment.description())
                 .param("dueAt", assignment.dueAt())
+                .param("quizReveal", assignment.quizReveal().name())
+                .param("quizAttempts", assignment.quizAttempts())
                 .param("updatedAt", assignment.updatedAt())
                 .update();
         if (updated != 1) {
@@ -94,6 +102,8 @@ public class AssignmentRepository {
                 rs.getString("description"),
                 rs.getObject("due_at", Instant.class),
                 rs.getObject("board_id", UUID.class),
+                RevealRule.valueOf(rs.getString("quiz_reveal")),
+                rs.getObject("quiz_attempts", Integer.class),
                 rs.getObject("created_at", Instant.class),
                 rs.getObject("updated_at", Instant.class),
                 rs.getLong("version"));

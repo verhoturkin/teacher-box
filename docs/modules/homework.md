@@ -69,6 +69,12 @@ text, `options` and `answer` as JSON by type, points, explanation), `quiz_attemp
 `quiz_answers` (attempt, question, answer, verdict, points, overridden); `assignments.quiz_reveal`
 (`AFTER_SUBMIT` / `AFTER_DUE` / `NEVER`) and `quiz_attempts` (null = unlimited). Six question types, sealed
 `Question` with a pure `check(Answer)`; limits: 50 questions, 2–10 options / pairs / items, 1–100 points.
+Teacher REST (0.39.0): assignment create / update take `questions [{id?, type, text, points?,
+explanation?, options, correct, accepted, value, tolerance, pairs}]` (update without `questions`
+keeps them; a list replaces them, copy makes new ids), `quizReveal` and `quizAttempts` (0 =
+unlimited, absent = keep / default 1); the details return the same with the key. Errors
+`homework.quiz-*` (422); the list is frozen once any student started an attempt
+(`homework.quiz-started`; the same list, text and settings stay editable).
 
 ## REST
 
