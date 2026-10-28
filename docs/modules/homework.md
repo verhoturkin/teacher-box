@@ -64,6 +64,12 @@ file of the assignment's materials — name, type, size, content; another assign
 `assignments`, `tasks`, `submissions`, `attachments`, `assignment_textbooks` (assignment, textbook, pages),
 `assignment_videos` (position, url, provider, video ID, start, title, transcript, shown).
 
+Quizzes ([ADR-0052](../adr/0052-auto-checked-quizzes.md), `domain/quiz/`): `assignment_questions` (position, type,
+text, `options` and `answer` as JSON by type, points, explanation), `quiz_attempts` (task, start, submit, score),
+`quiz_answers` (attempt, question, answer, verdict, points, overridden); `assignments.quiz_reveal`
+(`AFTER_SUBMIT` / `AFTER_DUE` / `NEVER`) and `quiz_attempts` (null = unlimited). Six question types, sealed
+`Question` with a pure `check(Answer)`; limits: 50 questions, 2–10 options / pairs / items, 1–100 points.
+
 ## REST
 
 `/api/teacher/homework/**` (assignments — the list has the names of the students of each, `DELETE assignments/{id}`, `POST assignments/{id}/copy`, students, attachments,

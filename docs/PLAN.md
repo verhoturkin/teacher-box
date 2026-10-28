@@ -80,7 +80,7 @@ Design:
 
 ### Stage 318 — Quiz domain and data (B)
 
-- [ ] 318.1 B: ADR 0052 (+ row in `docs/adr/README.md`); migration; `homework/domain/quiz/` sealed
+- [x] 318.1 B: ADR 0052 (+ row in `docs/adr/README.md`); migration; `homework/domain/quiz/` sealed
   `Question` with the six types, `check`, normalization, validation (limits, ids, at least one
   correct option) — table tests; `QuestionRepository` / `QuizAttemptRepository` in
   `homework/persistence/` with repository tests; `HomeworkDataReset` and the backup cover the new
