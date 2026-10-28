@@ -613,8 +613,22 @@ export class QuizSection implements OnDestroy {
   }
 
   /** Saves the answers changed since the last save; `false` when one could not be saved. */
-  async flush(): Promise<boolean> {
+  flush(): Promise<boolean> {
     clearTimeout(this.timer);
+    // queued behind a save in flight, so submitting never overtakes the last answer
+    const run = this.saving === null ? this.save() : this.saving.then(() => this.save());
+    const tracked = run.finally(() => {
+      if (this.saving === tracked) {
+        this.saving = null;
+      }
+    });
+    this.saving = tracked;
+    return tracked;
+  }
+
+  private saving: Promise<boolean> | null = null;
+
+  private async save(): Promise<boolean> {
     const attempt = this.view()?.openAttempt;
     if (!attempt) {
       return true;

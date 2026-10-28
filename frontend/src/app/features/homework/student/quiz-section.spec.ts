@@ -221,7 +221,9 @@ describe('QuizSection', () => {
 
     buttonByText(host, 'Сдать тест').click();
     await fixture.whenStable();
+    // the submit waits for the answer that is still being saved
     backend.expectOne(`${ATTEMPT}/at-1/answers/q-SINGLE_CHOICE`).flush(null);
+    await new Promise((resolve) => setTimeout(resolve));
     await fixture.whenStable();
     backend.expectOne(`${ATTEMPT}/at-1/submit`).flush(
       quiz({
@@ -331,7 +333,7 @@ describe('QuizSection', () => {
     backend
       .expectOne(`${ATTEMPT}/at-1/answers/q-SINGLE_CHOICE`)
       .flush(null, { status: 500, statusText: 'Error' });
-    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve));
     const retry = fixture.componentInstance.flush();
     backend.expectOne(`${ATTEMPT}/at-1/answers/q-SINGLE_CHOICE`).flush(null);
     await expect(retry).resolves.toBe(true);

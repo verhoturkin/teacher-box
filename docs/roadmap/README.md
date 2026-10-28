@@ -21,7 +21,7 @@ How to use:
 | 03 | [Lesson packages](03-lesson-packages.md) | billing, notifications | L | yes | — |
 | 04 | [Invoices with a payment QR](04-invoices.md) | billing, notifications | M | yes | 03 (soft) |
 | 05 | [Parent access](05-parent-access.md) | identity, every module, platform | XL | yes | — |
-| 06 | Auto-checked quizzes — moved to [`PLAN.md`](../PLAN.md) v0.39.0 (stages 318–327) | homework, ai | L | yes | — |
+| 06 | Auto-checked quizzes — released in 0.39.0, see [plan archive](../archive/plans/v0.39.0.md) | homework, ai | L | yes | — |
 | 07 | Installable app and web push — moved to [`PLAN.md`](../PLAN.md) v0.38.0 (stages 312–317) | frontend, notifications | M | yes | — |
 | 08 | [Self-booking of free slots](08-self-booking.md) | schedule, notifications | L | yes | — |
 | 09 | [Calls: «ученик ждёт» and recording](09-calls-waiting-recording.md) | meetings, notifications, docker | L | yes | — |
