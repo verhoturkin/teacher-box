@@ -16,13 +16,13 @@ How to use:
 
 | # | Feature | Modules | Size | ADR | Depends on |
 |---|---|---|---|---|---|
-| 01 | Lesson notes and summary — moved to [`PLAN.md`](../PLAN.md) v0.37.0 (stages 304–310) | schedule, ai, notifications | M | no | — |
+| 01 | Lesson notes and summary — released in 0.37.0, see [plan archive](../archive/plans/v0.37.0.md) | schedule, ai, notifications | M | no | — |
 | 02 | [Student progress report](02-progress-report.md) | schedule, homework, billing, frontend | L | yes | 01 (soft) |
 | 03 | [Lesson packages](03-lesson-packages.md) | billing, notifications | L | yes | — |
 | 04 | [Invoices with a payment QR](04-invoices.md) | billing, notifications | M | yes | 03 (soft) |
 | 05 | [Parent access](05-parent-access.md) | identity, every module, platform | XL | yes | — |
-| 06 | [Auto-checked quizzes](06-quizzes.md) | homework, ai | L | yes | — |
-| 07 | Installable app and web push — moved to [`PLAN.md`](../PLAN.md) v0.38.0 (stages 312–317) | frontend, notifications | M | yes | — |
+| 06 | Auto-checked quizzes — released in 0.39.0, see [plan archive](../archive/plans/v0.39.0.md) | homework, ai | L | yes | — |
+| 07 | Installable app and web push — released in 0.38.0, see [plan archive](../archive/plans/v0.38.0.md) | frontend, notifications | M | yes | — |
 | 08 | [Self-booking of free slots](08-self-booking.md) | schedule, notifications | L | yes | — |
 | 09 | [Calls: «ученик ждёт» and recording](09-calls-waiting-recording.md) | meetings, notifications, docker | L | yes | — |
 | 10 | [Spaced repetition](10-spaced-repetition.md) | new module `practice`, ai | XL | yes | 06 (soft) |

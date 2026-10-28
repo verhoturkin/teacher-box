@@ -29,6 +29,7 @@ test('the teacher rewrites a system prompt and restores the standard one', async
     'HOMEWORK_DRAFT',
     'REVIEW_DRAFT',
     'LESSON_SUMMARY',
+    'QUIZ_DRAFT',
   ]);
   const review = prompts[1];
   if (review === undefined) {

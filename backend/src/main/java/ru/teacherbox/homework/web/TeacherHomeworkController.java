@@ -4,7 +4,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -33,12 +35,27 @@ import ru.teacherbox.homework.application.HomeworkViews.MyTask;
 import ru.teacherbox.homework.application.HomeworkViews.ReviewQueueItem;
 import ru.teacherbox.homework.application.HomeworkViews.TaskDetails;
 import ru.teacherbox.homework.application.HomeworkViews.VideoInput;
+import ru.teacherbox.homework.application.QuizViews;
 import ru.teacherbox.homework.application.ReviewService;
 import ru.teacherbox.homework.application.StudentHomeworkService;
 import ru.teacherbox.homework.application.VideoCaptions;
 import ru.teacherbox.homework.application.VideoTranscripts;
 import ru.teacherbox.homework.domain.AssignmentVideo;
 import ru.teacherbox.homework.domain.VideoLink;
+import ru.teacherbox.homework.domain.quiz.Matching;
+import ru.teacherbox.homework.domain.quiz.MultipleChoice;
+import ru.teacherbox.homework.domain.quiz.Numeric;
+import ru.teacherbox.homework.domain.quiz.Option;
+import ru.teacherbox.homework.domain.quiz.Ordering;
+import ru.teacherbox.homework.domain.quiz.Pair;
+import ru.teacherbox.homework.domain.quiz.Question;
+import ru.teacherbox.homework.domain.quiz.QuestionType;
+import ru.teacherbox.homework.domain.quiz.Quiz;
+import ru.teacherbox.homework.domain.quiz.RevealRule;
+import ru.teacherbox.homework.domain.quiz.ShortText;
+import ru.teacherbox.homework.domain.quiz.SingleChoice;
+import ru.teacherbox.shared.Ids;
+import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.textbooks.api.PageRanges;
 
 /** The teacher's homework API. */
@@ -63,22 +80,101 @@ class TeacherHomeworkController {
         }
     }
 
+    record OptionRequest(@Nullable UUID id, @Nullable String text) {
+
+        Option toOption() {
+            return new Option(id == null ? Ids.newId() : id, text == null ? "" : text);
+        }
+    }
+
+    record PairRequest(@Nullable UUID id, @Nullable String left, @Nullable String right) {
+
+        Pair toPair() {
+            return new Pair(id == null ? Ids.newId() : id, left == null ? "" : left, right == null ? "" : right);
+        }
+    }
+
+    /**
+     * A question of the assignment (ADR-0052); which fields count depends on the type. Limits are checked by the
+     * domain (codes {@code homework.quiz-*}).
+     *
+     * @param id          {@code null} — a new question
+     * @param points      {@code null} — 1
+     * @param options     choices of a single / multiple choice, items of an ordering in the right order
+     * @param correct     ids of the right options
+     * @param accepted    accepted texts of a short text
+     * @param value       the number, with {@code tolerance} (0 by default)
+     * @param pairs       pairs of a matching
+     */
+    record QuestionRequest(
+            @Nullable UUID id,
+            @NotNull QuestionType type,
+            @Nullable String text,
+            @Nullable Integer points,
+            @Nullable String explanation,
+            @Size(max = 20) @Nullable List<@Valid @NotNull OptionRequest> options,
+            @Size(max = 20) @Nullable List<@NotNull UUID> correct,
+            @Size(max = 20) @Nullable List<@NotNull String> accepted,
+            @Nullable BigDecimal value,
+            @Nullable BigDecimal tolerance,
+            @Size(max = 20) @Nullable List<@Valid @NotNull PairRequest> pairs) {
+
+        Question toQuestion() {
+            UUID questionId = id == null ? Ids.newId() : id;
+            String questionText = text == null ? "" : text;
+            int questionPoints = points == null ? 1 : points;
+            List<Option> optionList = options == null ? List.of() : options.stream().map(OptionRequest::toOption).toList();
+            return switch (type) {
+                case SINGLE_CHOICE -> new SingleChoice(questionId, questionText, questionPoints, explanation,
+                        optionList, correct != null && correct.size() == 1 ? correct.getFirst() : noCorrect());
+                case MULTIPLE_CHOICE -> new MultipleChoice(questionId, questionText, questionPoints, explanation,
+                        optionList, new LinkedHashSet<>(correct == null ? List.of() : correct));
+                case SHORT_TEXT -> new ShortText(questionId, questionText, questionPoints, explanation,
+                        accepted == null ? List.of() : accepted);
+                case NUMBER -> new Numeric(questionId, questionText, questionPoints, explanation,
+                        value == null ? noValue() : value, tolerance == null ? BigDecimal.ZERO : tolerance);
+                case MATCHING -> new Matching(questionId, questionText, questionPoints, explanation,
+                        pairs == null ? List.of() : pairs.stream().map(PairRequest::toPair).toList());
+                case ORDERING -> new Ordering(questionId, questionText, questionPoints, explanation, optionList);
+            };
+        }
+
+        private static UUID noCorrect() {
+            throw new BusinessRuleException("homework.quiz-no-correct", "A single choice needs one correct option");
+        }
+
+        private static BigDecimal noValue() {
+            throw new BusinessRuleException("homework.quiz-value-missing", "A number question needs a value");
+        }
+    }
+
     /** @param videos the videos by link, at most 5 */
     record CreateAssignmentRequest(
             @NotBlank @Size(max = 200) String title,
             @Size(max = 20_000) @Nullable String description,
             @Nullable Instant dueAt,
             @Nullable List<UUID> studentIds,
-            @Size(max = AssignmentVideo.MAX_PER_ASSIGNMENT) @Nullable List<@Valid @NotNull VideoRequest> videos) {
+            @Size(max = AssignmentVideo.MAX_PER_ASSIGNMENT) @Nullable List<@Valid @NotNull VideoRequest> videos,
+            @Size(max = Quiz.MAX_QUESTIONS) @Nullable List<@Valid @NotNull QuestionRequest> questions,
+            @Nullable RevealRule quizReveal,
+            @Nullable Integer quizAttempts) {
     }
 
-    /** @param videos the videos in place of the assignment's ones; {@code null} — keep them */
+    /**
+     * @param videos       the videos in place of the assignment's ones; {@code null} — keep them
+     * @param questions    the questions in place of the assignment's ones; {@code null} — keep them
+     * @param quizReveal   {@code null} — keep
+     * @param quizAttempts 0 — unlimited; {@code null} — keep
+     */
     record UpdateAssignmentRequest(
             @NotBlank @Size(max = 200) String title,
             @Size(max = 20_000) @Nullable String description,
             @Nullable Instant dueAt,
             @NotNull Long version,
-            @Size(max = AssignmentVideo.MAX_PER_ASSIGNMENT) @Nullable List<@Valid @NotNull VideoRequest> videos) {
+            @Size(max = AssignmentVideo.MAX_PER_ASSIGNMENT) @Nullable List<@Valid @NotNull VideoRequest> videos,
+            @Size(max = Quiz.MAX_QUESTIONS) @Nullable List<@Valid @NotNull QuestionRequest> questions,
+            @Nullable RevealRule quizReveal,
+            @Nullable Integer quizAttempts) {
     }
 
     record CaptionsRequest(@NotBlank @Size(max = VideoLink.MAX_URL) String url) {
@@ -112,6 +208,9 @@ class TeacherHomeworkController {
             @NotNull ReviewService.Decision decision,
             @Size(max = 20) @Nullable String grade,
             @Size(max = 5_000) @Nullable String comment) {
+    }
+
+    record OverrideRequest(@NotNull Boolean correct) {
     }
 
     private final AssignmentService assignments;
@@ -161,7 +260,8 @@ class TeacherHomeworkController {
     @ResponseStatus(HttpStatus.CREATED)
     AssignmentDetails create(@Valid @RequestBody CreateAssignmentRequest request) {
         return assignments.create(request.title(), request.description(), request.dueAt(),
-                inputs(request.videos()), request.studentIds() == null ? List.of() : request.studentIds());
+                inputs(request.videos()), questions(request.questions()), request.quizReveal(),
+                request.quizAttempts(), request.studentIds() == null ? List.of() : request.studentIds());
     }
 
     /** A draft copy of the assignment with its materials; no students, deadline or board. */
@@ -179,7 +279,9 @@ class TeacherHomeworkController {
     @PutMapping("/assignments/{assignmentId}")
     AssignmentDetails update(@PathVariable UUID assignmentId, @Valid @RequestBody UpdateAssignmentRequest request) {
         return assignments.update(assignmentId, request.title(), request.description(), request.dueAt(),
-                request.videos() == null ? null : inputs(request.videos()), request.version());
+                request.videos() == null ? null : inputs(request.videos()),
+                request.questions() == null ? null : questions(request.questions()), request.quizReveal(),
+                request.quizAttempts(), request.version());
     }
 
     /** Deletes the assignment with the tasks, the answers and every file of them. */
@@ -243,7 +345,23 @@ class TeacherHomeworkController {
         return reviews.review(taskId, request.decision(), request.grade(), request.comment());
     }
 
+    /** The teacher's verdict on one answer of the best attempt; recomputes the score. */
+    @PutMapping("/tasks/{taskId}/quiz/answers/{questionId}")
+    TaskDetails overrideAnswer(@PathVariable UUID taskId, @PathVariable UUID questionId,
+            @Valid @RequestBody OverrideRequest request) {
+        return reviews.overrideAnswer(taskId, questionId, request.correct());
+    }
+
+    @GetMapping("/assignments/{assignmentId}/quiz/stats")
+    QuizViews.QuizStats quizStats(@PathVariable UUID assignmentId) {
+        return reviews.quizStats(assignmentId);
+    }
+
     private static List<VideoInput> inputs(@Nullable List<VideoRequest> videos) {
         return videos == null ? List.of() : videos.stream().map(VideoRequest::toInput).toList();
+    }
+
+    private static List<Question> questions(@Nullable List<QuestionRequest> questions) {
+        return questions == null ? List.of() : questions.stream().map(QuestionRequest::toQuestion).toList();
     }
 }

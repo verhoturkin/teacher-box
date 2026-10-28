@@ -13,9 +13,11 @@ import ru.teacherbox.ai.application.AiViews.HomeworkDraft;
 import ru.teacherbox.ai.application.AiViews.LessonSummaryBrief;
 import ru.teacherbox.ai.application.AiViews.LessonSummaryDraft;
 import ru.teacherbox.ai.application.AiViews.ReviewBrief;
+import ru.teacherbox.ai.application.AiViews.QuizDraft;
 import ru.teacherbox.ai.application.AiViews.ReviewDraft;
 import ru.teacherbox.ai.domain.AiFeature;
 import ru.teacherbox.ai.domain.RequestStatus;
+import ru.teacherbox.homework.api.QuizDrafts;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
@@ -30,6 +32,7 @@ public class AiAssistant {
     static final String HOMEWORK_PROMPT = "homework-draft.user.v3";
     static final String REVIEW_PROMPT = "review-draft.user.v1";
     static final String LESSON_SUMMARY_PROMPT = "lesson-summary.user.v1";
+    static final String QUIZ_PROMPT = "quiz-draft.user.v1";
     static final int MAX_TITLE = 200;
 
     static final Map<String, Object> HOMEWORK_SCHEMA = object(
@@ -40,8 +43,29 @@ public class AiAssistant {
             "grade", property("string", "Оценка «2»–«5» или пустая строка"),
             "accept", property("boolean", "true — принять работу, false — вернуть на доработку"));
 
+    static final Map<String, Object> QUIZ_SCHEMA = object(
+            "questions", array(object(
+                    "type", enumeration("SINGLE_CHOICE", "MULTIPLE_CHOICE", "SHORT_TEXT", "NUMBER", "MATCHING",
+                            "ORDERING"),
+                    "text", property("string", "Текст вопроса в Markdown"),
+                    "points", nullable(Map.of("type", "integer"), "Баллы, 1–5"),
+                    "explanation", nullable(Map.of("type", "string"), "Почему ответ верный"),
+                    "options", nullable(array(property("string", "Вариант или элемент")),
+                            "Варианты выбора или элементы упорядочивания в верном порядке"),
+                    "correct", nullable(array(property("integer", "Индекс варианта с нуля")),
+                            "Индексы верных вариантов"),
+                    "accepted", nullable(array(property("string", "Допустимый ответ")), "Допустимые ответы"),
+                    "value", nullable(Map.of("type", "number"), "Верное число"),
+                    "tolerance", nullable(Map.of("type", "number"), "Допустимое отклонение"),
+                    "pairs", nullable(array(object(
+                            "left", property("string", "Слева"),
+                            "right", property("string", "Справа"))), "Пары соответствия"))));
+
     static final Map<String, Object> LESSON_SUMMARY_SCHEMA = object(
             "summary", property("string", "Итоги урока в Markdown: что прошли"));
+
+    private record QuizAnswer(@Nullable List<QuizDrafts.Draft> questions) {
+    }
 
     private record LessonSummaryAnswer(@Nullable String summary) {
     }
@@ -53,6 +77,7 @@ public class AiAssistant {
     }
 
     private final ObjectProvider<LlmClient> llm;
+    private final QuizDrafts quizDrafts;
     private final PromptTemplates prompts;
     private final SystemPrompts systemPrompts;
     private final AiUsage usage;
@@ -60,7 +85,8 @@ public class AiAssistant {
     private final JsonMapper json;
 
     public AiAssistant(ObjectProvider<LlmClient> llm, PromptTemplates prompts, SystemPrompts systemPrompts,
-            AiUsage usage, DraftSources sources, JsonMapper json) {
+            AiUsage usage, DraftSources sources, JsonMapper json, QuizDrafts quizDrafts) {
+        this.quizDrafts = quizDrafts;
         this.llm = llm;
         this.prompts = prompts;
         this.systemPrompts = systemPrompts;
@@ -91,6 +117,22 @@ public class AiAssistant {
             }
             return new HomeworkDraft(title.length() > MAX_TITLE ? title.substring(0, MAX_TITLE) : title,
                     description);
+        });
+    }
+
+    /** A draft of quiz questions from the teacher's request and the materials it names. */
+    public QuizDraft quizDraft(HomeworkBrief brief) {
+        List<LlmSource> materials = sources.read(brief.sources());
+        Map<String, String> values = Map.of(
+                "sources", materials.isEmpty() ? "—"
+                        : materials.stream().map(LlmSource::name).collect(Collectors.joining("; ")),
+                "prompt", brief.prompt().strip());
+        LlmRequest request = new LlmRequest(systemPrompts.text(AiFeature.QUIZ_DRAFT),
+                prompts.render(QUIZ_PROMPT, values), "quiz_draft", QUIZ_SCHEMA, materials);
+        return call(AiFeature.QUIZ_DRAFT, request, QuizAnswer.class, answer -> {
+            List<QuizDrafts.Drafted> questions = quizDrafts.validate(
+                    answer.questions() == null ? List.of() : answer.questions());
+            return questions.isEmpty() ? null : new QuizDraft(questions);
         });
     }
 
@@ -199,6 +241,28 @@ public class AiAssistant {
     private static Map<String, Object> property(String type, String description) {
         Map<String, Object> property = new LinkedHashMap<>();
         property.put("type", type);
+        property.put("description", description);
+        return Collections.unmodifiableMap(property);
+    }
+
+    private static Map<String, Object> array(Map<String, Object> items) {
+        Map<String, Object> schema = new LinkedHashMap<>();
+        schema.put("type", "array");
+        schema.put("items", items);
+        return Collections.unmodifiableMap(schema);
+    }
+
+    private static Map<String, Object> enumeration(String... values) {
+        Map<String, Object> schema = new LinkedHashMap<>();
+        schema.put("type", "string");
+        schema.put("enum", List.of(values));
+        return Collections.unmodifiableMap(schema);
+    }
+
+    /** A property every object must list but may leave {@code null}. */
+    private static Map<String, Object> nullable(Map<String, Object> schema, String description) {
+        Map<String, Object> property = new LinkedHashMap<>();
+        property.put("anyOf", List.of(schema, Map.of("type", "null")));
         property.put("description", description);
         return Collections.unmodifiableMap(property);
     }

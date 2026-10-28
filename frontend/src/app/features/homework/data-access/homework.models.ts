@@ -107,6 +107,138 @@ export interface VideoTranscript {
   readonly truncated: boolean;
 }
 
+export type QuestionType =
+  'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'SHORT_TEXT' | 'NUMBER' | 'MATCHING' | 'ORDERING';
+
+/** When the student sees the correct answers of a quiz. */
+export type QuizReveal = 'AFTER_SUBMIT' | 'AFTER_DUE' | 'NEVER';
+
+/** A choice of a question, or an item of an ordering (in the right order). */
+export interface QuestionOption {
+  readonly id: string;
+  readonly text: string;
+}
+
+/** A pair of a matching question. */
+export interface QuestionPair {
+  readonly id: string;
+  readonly left: string;
+  readonly right: string;
+}
+
+/** A question as the teacher sees it, with the key (ADR-0052); the fields of other types are empty. */
+export interface Question {
+  readonly id: string;
+  readonly type: QuestionType;
+  readonly text: string;
+  readonly points: number;
+  readonly explanation: string | null;
+  readonly options: readonly QuestionOption[];
+  /** Ids of the right options. */
+  readonly correct: readonly string[];
+  readonly accepted: readonly string[];
+  readonly value: number | null;
+  readonly tolerance: number | null;
+  readonly pairs: readonly QuestionPair[];
+}
+
+/** An option, an ordering item or one side of a matching pair as the student sees it (no key). */
+export interface QuizItem {
+  readonly id: string;
+  readonly text: string;
+}
+
+/** A question without the key; options, items and the right column are shuffled by the server. */
+export interface QuizQuestion {
+  readonly id: string;
+  readonly type: QuestionType;
+  readonly text: string;
+  readonly points: number;
+  readonly options: readonly QuizItem[];
+  readonly left: readonly QuizItem[];
+  readonly right: readonly QuizItem[];
+}
+
+/** The student's answer; the field used depends on the question type. */
+export interface QuizAnswer {
+  readonly ids?: readonly string[] | null;
+  readonly text?: string | null;
+  readonly number?: number | null;
+  /** Left pair id → right pair id. */
+  readonly pairs?: Readonly<Record<string, string>> | null;
+}
+
+export interface QuizAttempt {
+  readonly id: string;
+  readonly startedAt: string;
+  readonly submittedAt: string | null;
+  readonly scorePoints: number | null;
+  readonly maxPoints: number | null;
+}
+
+export interface QuizOpenAttempt {
+  readonly id: string;
+  readonly startedAt: string;
+  readonly answers: Readonly<Record<string, QuizAnswer>>;
+}
+
+/** A question of the best attempt with the key; only after the reveal rule allows it. */
+export interface QuizResult {
+  readonly question: Question;
+  readonly answer: QuizAnswer | null;
+  readonly correct: boolean;
+  readonly points: number;
+}
+
+/** The quiz of a task for the student. */
+export interface QuizView {
+  readonly questions: readonly QuizQuestion[];
+  readonly maxPoints: number;
+  readonly reveal: QuizReveal;
+  /** `null` — unlimited. */
+  readonly attemptsAllowed: number | null;
+  readonly attemptsUsed: number;
+  readonly attemptsLeft: number | null;
+  readonly canStart: boolean;
+  readonly openAttempt: QuizOpenAttempt | null;
+  readonly attempts: readonly QuizAttempt[];
+  readonly best: QuizAttempt | null;
+  readonly results: readonly QuizResult[] | null;
+}
+
+/** One question of the best attempt for the teacher; `answer` is `null` when it was left blank. */
+export interface ReviewResult {
+  readonly question: Question;
+  readonly answer: QuizAnswer | null;
+  readonly correct: boolean;
+  readonly points: number;
+  /** The teacher changed the verdict. */
+  readonly overridden: boolean;
+}
+
+/** The quiz in the task review: the best attempt with the key and the verdicts. */
+export interface QuizReview {
+  readonly maxPoints: number;
+  readonly attemptsUsed: number;
+  /** «7 из 10» for the grade field; `null` — no submitted attempt. */
+  readonly suggestedGrade: string | null;
+  readonly best: QuizAttempt | null;
+  readonly results: readonly ReviewResult[];
+}
+
+export interface QuestionStats {
+  readonly questionId: string;
+  readonly text: string;
+  /** Students whose best attempt has the question wrong or blank. */
+  readonly wrong: number;
+}
+
+export interface QuizStats {
+  /** Students with a submitted attempt. */
+  readonly students: number;
+  readonly questions: readonly QuestionStats[];
+}
+
 export interface AssignmentDetails {
   readonly id: string;
   readonly title: string;
@@ -120,6 +252,10 @@ export interface AssignmentDetails {
   readonly tasks: TaskSummary[];
   readonly textbooks: BoundTextbook[];
   readonly videos: Video[];
+  readonly questions: Question[];
+  readonly quizReveal: QuizReveal;
+  /** `null` — unlimited. */
+  readonly quizAttempts: number | null;
 }
 
 export interface Submission {
@@ -154,6 +290,8 @@ export interface TaskDetails {
   readonly overdue: boolean;
   readonly assignment: AssignmentInfo;
   readonly submissions: Submission[];
+  /** The quiz with its key; `null`/absent — the assignment has no questions. */
+  readonly quiz?: QuizReview | null;
 }
 
 export interface ReviewQueueItem {
@@ -186,6 +324,11 @@ export interface AssignmentInput {
   readonly dueAt: string | null;
   /** The videos in place of the assignment's ones; left out — keep them. */
   readonly videos?: readonly VideoInput[];
+  /** The questions in place of the assignment's ones; left out — keep them. */
+  readonly questions?: readonly Question[];
+  readonly quizReveal?: QuizReveal;
+  /** 0 — unlimited. */
+  readonly quizAttempts?: number;
 }
 
 /** Mirrors `HomeworkSummary`: homework at a glance for the teacher. */

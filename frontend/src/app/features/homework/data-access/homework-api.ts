@@ -12,6 +12,9 @@ import {
   MyTask,
   ReviewDecision,
   ReviewQueueItem,
+  QuizAnswer,
+  QuizStats,
+  QuizView,
   TaskDetails,
   VideoTranscript,
   CaptionTrack,
@@ -133,6 +136,23 @@ export class HomeworkApi {
     return this.http.get<TaskDetails>(`${TEACHER}/tasks/${taskId}`, { context: quietContext() });
   }
 
+  /** The teacher's verdict on one answer of the best attempt. */
+  overrideQuizAnswer(
+    taskId: string,
+    questionId: string,
+    correct: boolean,
+  ): Observable<TaskDetails> {
+    return this.http.put<TaskDetails>(`${TEACHER}/tasks/${taskId}/quiz/answers/${questionId}`, {
+      correct,
+    });
+  }
+
+  quizStats(assignmentId: string): Observable<QuizStats> {
+    return this.http.get<QuizStats>(`${TEACHER}/assignments/${assignmentId}/quiz/stats`, {
+      context: quietContext(),
+    });
+  }
+
   review(
     taskId: string,
     decision: ReviewDecision,
@@ -173,6 +193,32 @@ export class HomeworkApi {
       form.append('text', text);
     }
     return this.http.post<TaskDetails>(`${ME}/tasks/${taskId}/submissions`, form);
+  }
+
+  myQuiz(taskId: string): Observable<QuizView> {
+    return this.http.get<QuizView>(`${ME}/tasks/${taskId}/quiz`, { context: quietContext() });
+  }
+
+  startQuizAttempt(taskId: string): Observable<QuizView> {
+    return this.http.post<QuizView>(`${ME}/tasks/${taskId}/quiz/attempts`, {});
+  }
+
+  /** Autosave of one answer of the attempt in progress. */
+  saveQuizAnswer(
+    taskId: string,
+    attemptId: string,
+    questionId: string,
+    answer: QuizAnswer,
+  ): Observable<unknown> {
+    return this.http.put(
+      `${ME}/tasks/${taskId}/quiz/attempts/${attemptId}/answers/${questionId}`,
+      answer,
+      { context: quietContext() },
+    );
+  }
+
+  submitQuizAttempt(taskId: string, attemptId: string): Observable<QuizView> {
+    return this.http.post<QuizView>(`${ME}/tasks/${taskId}/quiz/attempts/${attemptId}/submit`, {});
   }
 
   /** The bound pages of a textbook (a PDF cut to them). */

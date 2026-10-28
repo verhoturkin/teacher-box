@@ -348,6 +348,14 @@ Pages of a textbook can be put on a board too — from the «Textbooks» tab or 
 
 The text, «Video» (the player and a «Transcript» button), «Materials» (files) and «Textbooks» are cards; a name opens the file or the textbook in a new tab (a textbook at its first bound page, a Word file is downloaded), the arrow button downloads a file, the cross in a row removes a file or a textbook. «Open the board» leads to the board the homework is already on, «To a board» puts it on a board. «Students» has a card for each: the name (click it to open or review the work), when it was handed in and the status. «Add» at the top right of the block gives the homework to more students and groups.
 
+## Auto-checked questions
+
+In the editor, under the videos, the «Questions» card lets the portal check the student's answers. «Add a question» offers six types — «Single choice», «Multiple choice», «Short answer» (any recorded answer counts; case, ё/е and spaces do not matter), «Number» (with a ± tolerance), «Matching» (pairs; the student sees the right column shuffled) and «Ordering» (write the items in order, the student sees them shuffled). Each question has its own points (1 by default) and an explanation; matching and ordering are all or nothing. In «How the quiz goes» choose when the correct answers are shown (right after submitting, after the due date or never) and the number of attempts (one, several or unlimited; the best one counts). Once a student has started the quiz the questions cannot be changed; the rest of the homework can.
+
+The AI assistant can draft questions: in its pane switch «What to prepare» to «Questions» and add the draft to the end or replace all the questions with it; you still save the homework yourself.
+
+The review page shows a «Quiz: 5 of 6» block — the best attempt, wrong answers first, the key and «Count as right» / «Count as wrong» buttons if you disagree with the portal. The result fills the grade field until you type your own. The homework's page has «Mistakes by question» showing where students slipped most. The student hands in the work as usual: a quiz alone is already an answer.
+
 ## Delete homework
 
 «Delete…» on the homework's page or in the «⋮» menu of the list. The homework is deleted with the students' answers and the files — it can be brought back only from a backup.

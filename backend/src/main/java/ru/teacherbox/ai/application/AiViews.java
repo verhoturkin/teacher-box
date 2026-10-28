@@ -1,5 +1,6 @@
 package ru.teacherbox.ai.application;
 
+import ru.teacherbox.homework.api.QuizDrafts;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +27,10 @@ public final class AiViews {
         public HomeworkBrief {
             sources = List.copyOf(sources);
         }
+    }
+
+    /** A draft of the questions of an assignment, valid by the rules of a quiz, for the question editor. */
+    public record QuizDraft(List<QuizDrafts.Drafted> questions) {
     }
 
     /** A draft of an assignment for the homework editor. */

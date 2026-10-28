@@ -64,6 +64,35 @@ file of the assignment's materials — name, type, size, content; another assign
 `assignments`, `tasks`, `submissions`, `attachments`, `assignment_textbooks` (assignment, textbook, pages),
 `assignment_videos` (position, url, provider, video ID, start, title, transcript, shown).
 
+Quizzes ([ADR-0052](../adr/0052-auto-checked-quizzes.md), `domain/quiz/`): `assignment_questions` (position, type,
+text, `options` and `answer` as JSON by type, points, explanation), `quiz_attempts` (task, start, submit, score),
+`quiz_answers` (attempt, question, answer, verdict, points, overridden); `assignments.quiz_reveal`
+(`AFTER_SUBMIT` / `AFTER_DUE` / `NEVER`) and `quiz_attempts` (null = unlimited). Six question types, sealed
+`Question` with a pure `check(Answer)`; limits: 50 questions, 2–10 options / pairs / items, 1–100 points.
+Teacher REST (0.39.0): assignment create / update take `questions [{id?, type, text, points?,
+explanation?, options, correct, accepted, value, tolerance, pairs}]` (update without `questions`
+keeps them; a list replaces them, copy makes new ids), `quizReveal` and `quizAttempts` (0 =
+unlimited, absent = keep / default 1); the details return the same with the key. Errors
+`homework.quiz-*` (422); the list is frozen once any student started an attempt
+(`homework.quiz-started`; the same list, text and settings stay editable).
+Student REST (`QuizService`, `/api/me/homework/tasks/{id}/quiz`): `GET` (questions without the key,
+options / items / the right column of a matching shuffled by stable ids seeded with the open attempt,
+attempts used / left, `canStart`, best attempt), `POST …/attempts` (returns the open attempt if there
+is one; `homework.quiz-no-attempts-left`), `PUT …/attempts/{a}/answers/{q}` (autosave; one `AnswerInput`
+shape, the field used depends on the type), `POST …/attempts/{a}/submit` (score = sum of points). The
+score is always shown; `results` (key, explanation, the answer and verdict of the best attempt) only
+when the reveal rule allows: `AFTER_SUBMIT` — once an attempt is submitted, `AFTER_DUE` — after `dueAt`
+(never without one), `NEVER`. Attempts are refused once the task is submitted / accepted
+(`homework.quiz-closed`); an overdue task still takes attempts. «Сдать» submits the open attempt; with
+questions, no text and no files it creates no submission row (a quiz alone is an answer).
+Teacher review: `GET /api/teacher/homework/tasks/{id}` carries `quiz` (never in the student's task): the
+best attempt (most points, earliest on a tie) with each question, key, answer, verdict and `overridden`,
+and `suggestedGrade` «N из M» for the grade field (the teacher still types the grade).
+`PUT /api/teacher/homework/tasks/{id}/quiz/answers/{questionId}` `{correct}` overrides one answer of the
+best attempt (points = the question's or 0) and recomputes the attempt score; a blank answer cannot be
+overridden (404 `homework.quiz-answer-not-found`). `GET assignments/{id}/quiz/stats` — per question,
+how many students (of those with a submitted attempt) got it wrong in their best attempt.
+
 ## REST
 
 `/api/teacher/homework/**` (assignments — the list has the names of the students of each, `DELETE assignments/{id}`, `POST assignments/{id}/copy`, students, attachments,
@@ -76,6 +105,16 @@ zone, for the Today page, 239.1),
 `/api/me/homework/**` (tasks, submissions, attachments, `tasks/{taskId}/textbooks/{textbookId}`, summary, `limits`).
 
 ## Frontend
+
+Quizzes (0.39.0): the «Вопросы» card of the editor (`teacher/question-section.ts`: a question per type, options with
+«верный» toggles, accepted answers as rows with «Добавить ответ», number and tolerance, pairs, ordering items with
+arrows, points, explanation, reorder, delete; «Как проходит тест» — when to reveal the key and attempts); locked with
+a message once a student started. Server errors of the questions show in one message above them, not under each
+field. The student's `student/quiz-section.ts` on the task page: a list of questions on wide, one per screen with
+«Назад / Далее» on compact; matching by a select per left part and ordering by arrow buttons (no drag-only
+interaction); autosave on change and blur; «Сдать тест» asks for confirmation. The teacher's `teacher/quiz-review.ts`
+(«Тест: N из M», wrong answers first, «Засчитать» / «Не засчитывать») on the review page and the per-question mistakes
+on the assignment page. E2E: `e2e/tests/homework/quiz.spec.ts`.
 
 `features/homework/`: `teacher/` (assignments list pane, assignment page, editor), `student/` (my tasks, task
 page), `ui/`, `home/` widgets, `homework-labels.ts`. Textbooks: `ui/textbook-list.ts` (kind icon, title,

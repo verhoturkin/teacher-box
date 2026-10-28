@@ -12,6 +12,7 @@ import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.teacherbox.homework.api.AssignmentFiles;
+import ru.teacherbox.homework.api.QuizDrafts;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.textbooks.api.Textbooks;
 
@@ -25,7 +26,7 @@ import ru.teacherbox.textbooks.api.Textbooks;
 @ApplicationModuleTest
 @AutoConfigureMockMvc
 @Import(AiIntegrationTest.Beans.class)
-@MockitoBean(types = {Textbooks.class, AssignmentFiles.class})
+@MockitoBean(types = {Textbooks.class, AssignmentFiles.class, QuizDrafts.class})
 @TestPropertySource(properties = {
         "teacherbox.ai.monthly-token-limit=100000",
         "teacherbox.timezone=Europe/Moscow"

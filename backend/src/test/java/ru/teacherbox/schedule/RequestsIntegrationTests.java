@@ -135,11 +135,13 @@ class RequestsIntegrationTests {
             throws UnsupportedEncodingException {
         UUID student = directory.addStudent("Заранее");
         String cancelled = planned(student, Slots.next(clock));
-        String moved = planned(student, Slots.next(clock));
+        Instant movedStart = Slots.next(clock);
+        String moved = planned(student, movedStart);
         String cancelRequest = id(request(student, cancelled, "{\"kind\":\"CANCEL\"}"));
+        // within the lesson's own two-hour slot: a third slot was busy on CI, depending on the hour
         String moveRequest = id(request(student, moved, """
                 {"kind":"RESCHEDULE","proposedStartsAt":"%s"}
-                """.formatted(Slots.next(clock))));
+                """.formatted(movedStart.plus(Duration.ofMinutes(30)))));
 
         assertThat(teacherPost("/api/teacher/schedule/requests/" + cancelRequest + "/approve", "{}"))
                 .hasStatusOk()

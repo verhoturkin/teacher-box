@@ -29,6 +29,7 @@ import ru.teacherbox.ai.domain.RequestStatus;
 import ru.teacherbox.ai.persistence.AiRequestRepository;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
+import ru.teacherbox.homework.api.QuizDrafts;
 import ru.teacherbox.textbooks.api.TextbookContent;
 import ru.teacherbox.textbooks.api.TextbookFormat;
 import ru.teacherbox.textbooks.api.TextbookKind;
@@ -65,6 +66,9 @@ class AssistantIntegrationTests {
 
     @Autowired
     Textbooks textbooks;
+
+    @Autowired
+    QuizDrafts quizDrafts;
 
     @BeforeEach
     void setUp() {
@@ -213,6 +217,46 @@ class AssistantIntegrationTests {
         assertThat(llm.lastRequest().prompt()).contains("<answer>\nОтвет: 2/5\n</answer>", "Сложите 1/2 и 1/3");
         assertThat(thisMonth()).singleElement()
                 .satisfies(logged -> assertThat(logged.feature()).isEqualTo(AiFeature.REVIEW_DRAFT));
+    }
+
+    @Test
+    void draftsQuizQuestionsThroughTheHomeworkRules() {
+        UUID questionId = UUID.randomUUID();
+        when(quizDrafts.validate(any())).thenReturn(java.util.List.of(new QuizDrafts.Drafted(questionId,
+                "NUMBER", "2+2?", 1, null, java.util.List.of(), java.util.List.of(), java.util.List.of(),
+                java.math.BigDecimal.valueOf(4), java.math.BigDecimal.ZERO, java.util.List.of())));
+        llm.answer("""
+                {"questions": [{"type": "NUMBER", "text": "2+2?", "points": null, "explanation": null,
+                 "options": null, "correct": null, "accepted": null, "value": 4, "tolerance": 0, "pairs": null}]}
+                """, 100, 50);
+
+        assertThat(post("/api/teacher/ai/quiz-draft", HOMEWORK_BODY))
+                .hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.questions[0].id").isEqualTo(questionId.toString());
+                    assertThat(json).extractingPath("$.questions[0].type").isEqualTo("NUMBER");
+                });
+
+        LlmRequest request = llm.lastRequest();
+        assertThat(request).isNotNull();
+        assertThat(request.system()).contains("MATCHING", "ORDERING").doesNotContain("{{");
+        assertThat(request.prompt()).contains("<request>\nДроби, 5 класс, 4 задачи\n</request>");
+        assertThat(request.schemaName()).isEqualTo("quiz_draft");
+        org.mockito.Mockito.verify(quizDrafts).validate(org.mockito.ArgumentMatchers.argThat(drafts ->
+                drafts.size() == 1 && drafts.getFirst().value().intValue() == 4));
+        assertThat(thisMonth()).singleElement()
+                .satisfies(logged -> assertThat(logged.feature()).isEqualTo(AiFeature.QUIZ_DRAFT));
+    }
+
+    @Test
+    void aQuizWithoutValidQuestionsIsReported() {
+        when(quizDrafts.validate(any())).thenReturn(java.util.List.of());
+        llm.answer("{\"questions\": []}", 10, 5);
+        llm.answer("{}", 10, 5);
+
+        assertThat(post("/api/teacher/ai/quiz-draft", HOMEWORK_BODY)).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
+        assertThat(post("/api/teacher/ai/quiz-draft", HOMEWORK_BODY)).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
+        assertThat(thisMonth()).hasSize(2).allSatisfy(logged -> assertThat(logged.status()).isEqualTo(RequestStatus.FAILED));
     }
 
     @Test

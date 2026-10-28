@@ -1,6 +1,6 @@
 # ai
 
-LLM features for the teacher: homework draft, review draft and lesson summary draft. Depends on: `shared`,
+LLM features for the teacher: homework draft, quiz questions draft, review draft and lesson summary draft. Depends on: `shared`,
 `textbooks::api`,
 `homework::api` — only to read the sources of a draft ([ADR-0039](../adr/0039-ai-reads-homework-sources.md)); other
 texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integration.md),
@@ -33,9 +33,9 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
   or not.
 - Prompts are versioned module resources. `AiIntegrationCheck` checks the provider without spending tokens.
 - System prompts (`SystemPrompts`, `ai.system_prompts`, [ADR-0043](../adr/0043-editable-system-prompts.md), since
-  0.14.6): the teacher rewrites the system prompt of a feature (`HOMEWORK_DRAFT`, `REVIEW_DRAFT`, `LESSON_SUMMARY`; 1–10000 characters,
+  0.14.6): the teacher rewrites the system prompt of a feature (`HOMEWORK_DRAFT`, `QUIZ_DRAFT`, `REVIEW_DRAFT`, `LESSON_SUMMARY`; 1–10000 characters,
   `ai.system-prompt-invalid`); a feature without a row uses its resource (`homework-draft.system.v4`,
-  `review-draft.system.v1`, `lesson-summary.system.v1`). The teacher's text goes to the model as is (no placeholders). Optimistic locking — the
+  `quiz-draft.system.v1`, `review-draft.system.v1`, `lesson-summary.system.v1`). The teacher's text goes to the model as is (no placeholders). Optimistic locking — the
   default prompt has version 0; in the UI (0.34.0) «Вернуть стандартный» is in the «⋮» of the edit dialog's header; `DELETE` returns to the default; in the full reset. The user prompts (`*.user.*`,
   with `<request>` / `<answer>`) stay resources.
 - Homework draft (`POST homework-draft` `{prompt ≤ 4000, title?, sources?}`, prompts `homework-draft.*.v3`): always
@@ -56,6 +56,13 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
   `LlmRequest.sources` go before the prompt: Anthropic — `document` (titled) and `image`
   blocks; OpenAI-compatible — `image_url` data URIs, a PDF drawn page by page by `PdfPictures` (PDFBox, 100 dpi). The
   prompt names them; `ai.requests` keeps no names.
+- Quiz questions draft (`POST quiz-draft`, JSON or `multipart/form-data` as the homework draft, the same request and
+  `sources`, prompts `quiz-draft.*.v1`, 0.39.0, [ADR-0052](../adr/0052-auto-checked-quizzes.md)): `{questions: [...]}`
+  with the six types. `ai` does not know `homework` internals: every draft goes through the facade
+  `homework::api.QuizDrafts`, which applies the same rules as saving (limits, ids, a correct option) and drops what
+  fails; a draft with no valid question is an empty list. The answer is never saved: the editor shows it with the key
+  and the teacher appends it to the questions or replaces them, then saves the assignment. The enum value
+  `QUIZ_DRAFT` is allowed in `system_prompts` by migration `V3__quiz_draft_feature.sql`.
 - Lesson summary draft (`POST lesson-summary` `{topic ≤ 200?, words ≤ 2000?, assignmentTitles[≤ 20]?}` → `{summary}`,
   prompts `lesson-summary.*.v1`, since 0.37.0): a short Markdown «Что прошли» from the topic, the titles of the
   assignments given at the lesson and the teacher's words (between `<words>` tags, data only); at least the topic or the
@@ -65,7 +72,7 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 
 ## Data, REST
 
-`requests`, `prompts`, `system_prompts`. `/api/teacher/ai/**` (status, usage, requests, homework-draft, review-draft, lesson-summary,
+`requests`, `prompts`, `system_prompts`. `/api/teacher/ai/**` (status, usage, requests, homework-draft, quiz-draft, review-draft, lesson-summary,
 `prompts` CRUD, `system-prompts` list / `PUT` / `DELETE` by feature), `/api/admin/ai/**`
 (status, usage, requests — metadata).
 
@@ -76,6 +83,8 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 
 The assignment editor uses a main authoring pane and an AI supporting pane (0.29.0 variant 1).
 From expanded width the AI is on the right; compact/medium use a modal right drawer with focus return.
-`HomeworkAiState` is scoped to the editor so requests, source keys, draft and in-flight generation survive
+In the pane a switch «Что готовить» chooses «Задание» (the text draft) or «Вопросы» (0.39.0): the same request and
+sources, the draft of questions with their type, points and key, «Добавить в конец» / «Заменить все»; disabled with a
+hint once students started the quiz. `HomeworkAiState` is scoped to the editor so requests, source keys, draft and in-flight generation survive
 closing or adapting the panel. Markdown preview remains a single Text/Preview field. Applying a draft
 requires Insert/Replace; closing the AI never changes authored text. Materials/videos and submit order stay intact.

@@ -56,6 +56,28 @@ export const en: Translation<typeof ru> = {
     insert: 'Add to the end',
     discard: 'Discard',
     failed: 'Could not get a draft. Try again',
+    modeLabel: 'What to prepare',
+    modeTask: 'Homework',
+    modeQuestions: 'Questions',
+    questionsPlaceholder:
+      'What to do: for example, 6 questions on fractions: choice, matching and a number',
+    questionsDraft: 'Questions draft',
+    questionsAppend: 'Add to the end',
+    questionsReplace: 'Replace all',
+    questionsLocked: 'Students have already started the quiz: the questions cannot change.',
+    questionsEmpty: 'The AI offered no usable questions. Try again',
+    questionsHint:
+      'The questions are not saved by themselves: you check them in the editor and save the homework.',
+    questionsCount: (n: number) => `Questions: ${String(n)}`,
+    points: (n: number) => `${String(n)} pt`,
+    types: {
+      SINGLE_CHOICE: 'Single answer',
+      MULTIPLE_CHOICE: 'Several answers',
+      SHORT_TEXT: 'Short answer',
+      NUMBER: 'Number',
+      MATCHING: 'Matching',
+      ORDERING: 'Ordering',
+    },
   },
   library: {
     title: 'Prompt library',

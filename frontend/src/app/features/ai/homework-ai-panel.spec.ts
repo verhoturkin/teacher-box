@@ -11,7 +11,7 @@ import {
   typeInto,
 } from '@testing/dom';
 import { testProviders } from '@testing/setup';
-import { AppliedDraft, HomeworkAiPanel } from './homework-ai-panel';
+import { AppliedDraft, AppliedQuestions, HomeworkAiPanel } from './homework-ai-panel';
 
 describe('HomeworkAiPanel', () => {
   let fixture: ComponentFixture<HomeworkAiPanel>;
@@ -36,6 +36,16 @@ describe('HomeworkAiPanel', () => {
   async function open(host: HTMLElement, button: string) {
     buttonByText(host, button).click();
     await fixture.whenStable();
+  }
+
+  function switchToQuestions(host: HTMLElement): void {
+    const toggle = Array.from(host.querySelectorAll<HTMLElement>('p-selectbutton [role]')).find(
+      (candidate) => candidate.textContent.includes('Вопросы'),
+    );
+    if (toggle === undefined) {
+      throw new Error(host.querySelector('p-selectbutton')?.outerHTML ?? 'no select button');
+    }
+    toggle.click();
   }
 
   function option(text: string): HTMLElement {
@@ -220,6 +230,88 @@ describe('HomeworkAiPanel', () => {
     fixture.componentRef.setInput('sources', []);
     await fixture.whenStable();
     expect(readableText(host)).not.toContain('Опереться на');
+  });
+
+  it('drafts quiz questions, shows the key and appends or replaces them', async () => {
+    const { panel, host } = await render([]);
+    const taken: AppliedQuestions[] = [];
+    panel.questionsApplied.subscribe((questions) => taken.push(questions));
+    const question = (id: string, type: string, extra: object) => ({
+      id,
+      type,
+      text: `Вопрос ${id}`,
+      points: 2,
+      explanation: null,
+      options: [],
+      correct: [],
+      accepted: [],
+      value: null,
+      tolerance: null,
+      pairs: [],
+      ...extra,
+    });
+    const drafted = [
+      question('a', 'SINGLE_CHOICE', {
+        options: [
+          { id: 'o1', text: 'Один' },
+          { id: 'o2', text: 'Два' },
+        ],
+        correct: ['o2'],
+      }),
+      question('b', 'ORDERING', {
+        options: [
+          { id: 'o1', text: 'Раз' },
+          { id: 'o2', text: 'Два' },
+        ],
+      }),
+      question('c', 'MATCHING', { pairs: [{ id: 'p', left: 'Кот', right: 'Cat' }] }),
+      question('d', 'NUMBER', { value: 3 }),
+      question('e', 'SHORT_TEXT', { accepted: ['да', 'ага'] }),
+    ];
+
+    switchToQuestions(host);
+    await fixture.whenStable();
+    panel.prompt.setValue('Пять вопросов');
+    panel.generate();
+    backend.expectOne('/api/teacher/ai/quiz-draft').flush({ questions: drafted });
+    await fixture.whenStable();
+    const text = readableText(host);
+    for (const part of ['Один ответ · 2 б.', 'Два', 'Раз → Два', 'Кот — Cat', '3', 'да; ага']) {
+      expect(text).toContain(part);
+    }
+    expect(text).not.toContain('Заменить все');
+    expect(text).toContain('Ещё раз');
+
+    fixture.componentRef.setInput('questionCount', 2);
+    await fixture.whenStable();
+    buttonByText(host, 'Добавить в конец').click();
+    await fixture.whenStable();
+    expect(taken.map(({ mode, questions }) => [mode, questions.length])).toEqual([['append', 5]]);
+
+    panel.generate();
+    backend.expectOne('/api/teacher/ai/quiz-draft').flush({ questions: drafted });
+    await fixture.whenStable();
+    buttonByText(host, 'Заменить все').click();
+    await fixture.whenStable();
+    expect(taken[1]?.mode).toBe('replace');
+  });
+
+  it('keeps the quiz when it is locked and says when no question fits', async () => {
+    const { panel, host } = await render([]);
+    fixture.componentRef.setInput('quizLocked', true);
+    switchToQuestions(host);
+    await fixture.whenStable();
+    panel.prompt.setValue('Вопросы');
+    panel.generate();
+    backend.expectOne('/api/teacher/ai/quiz-draft').flush({ questions: [] });
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('не предложил');
+    expect(readableText(host)).toContain('Ученики уже начали тест');
+
+    panel.generate();
+    backend.expectOne('/api/teacher/ai/quiz-draft').flush(null, { status: 500, statusText: 'E' });
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Не удалось получить черновик');
   });
 
   it('works without the library', async () => {

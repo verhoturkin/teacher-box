@@ -41,7 +41,18 @@ export class ReviewForm {
   }
 
   reset(task: TaskDetails): void {
-    this.form.reset({ grade: task.grade ?? '', comment: task.teacherComment ?? '' });
+    this.form.reset({
+      grade: task.grade ?? task.quiz?.suggestedGrade ?? '',
+      comment: task.teacherComment ?? '',
+    });
+  }
+
+  /** The same work changed (a verdict on an answer): the suggested grade follows unless the teacher typed one. */
+  refresh(previous: TaskDetails, task: TaskDetails): void {
+    const grade = this.form.controls.grade;
+    if (grade.value === '' || grade.value === previous.quiz?.suggestedGrade) {
+      grade.setValue(task.grade ?? task.quiz?.suggestedGrade ?? '');
+    }
   }
 
   submit(task: TaskDetails, decision: ReviewDecision, saved: (task: TaskDetails) => void): void {

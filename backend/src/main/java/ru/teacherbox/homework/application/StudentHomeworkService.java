@@ -39,12 +39,14 @@ public class StudentHomeworkService {
     private final AttachmentService attachments;
     private final TaskDetailsAssembler assembler;
     private final TextbookBindings textbooks;
+    private final QuizService quiz;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
     public StudentHomeworkService(TaskRepository tasks, AssignmentRepository assignments,
             SubmissionRepository submissions, AttachmentService attachments, TaskDetailsAssembler assembler,
-            TextbookBindings textbooks, ApplicationEventPublisher events, Clock clock) {
+            TextbookBindings textbooks, QuizService quiz, ApplicationEventPublisher events, Clock clock) {
+        this.quiz = quiz;
         this.tasks = tasks;
         this.assignments = assignments;
         this.submissions = submissions;
@@ -89,11 +91,15 @@ public class StudentHomeworkService {
     public TaskDetails submit(UUID studentId, UUID taskId, @Nullable String text, List<UploadedFile> files) {
         HomeworkTask task = ownTask(studentId, taskId);
         Instant now = clock.instant();
+        // A quiz is part of the answer: «Сдать» submits the open attempt, and a quiz alone needs no text.
+        boolean quizOnly = quiz.handIn(task) && (text == null || text.isBlank()) && files.isEmpty();
         task.submit(now);
-        Submission submission = Submission.create(Ids.newId(), task.id(), text, !files.isEmpty(), now);
         tasks.update(task);
-        submissions.insert(submission);
-        attachments.store(AttachmentOwner.SUBMISSION, submission.id(), files, now);
+        if (!quizOnly) {
+            Submission submission = Submission.create(Ids.newId(), task.id(), text, !files.isEmpty(), now);
+            submissions.insert(submission);
+            attachments.store(AttachmentOwner.SUBMISSION, submission.id(), files, now);
+        }
         String title = assignments.findById(task.assignmentId()).map(Assignment::title).orElse("");
         events.publishEvent(new HomeworkSubmitted(task.id(), task.assignmentId(), studentId, title, now));
         return assembler.details(task);

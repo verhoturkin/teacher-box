@@ -50,6 +50,29 @@ export interface HomeworkDraft {
   readonly description: string;
 }
 
+export type DraftedType =
+  'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'SHORT_TEXT' | 'NUMBER' | 'MATCHING' | 'ORDERING';
+
+/** A question drafted by the AI, valid by the rules of a quiz, in the shape of the editor's question (ids new). */
+export interface DraftedQuestion {
+  readonly id: string;
+  readonly type: DraftedType;
+  readonly text: string;
+  readonly points: number;
+  readonly explanation: string | null;
+  readonly options: readonly { readonly id: string; readonly text: string }[];
+  /** Ids of the right options. */
+  readonly correct: readonly string[];
+  readonly accepted: readonly string[];
+  readonly value: number | null;
+  readonly tolerance: number | null;
+  readonly pairs: readonly { readonly id: string; readonly left: string; readonly right: string }[];
+}
+
+export interface QuizDraft {
+  readonly questions: readonly DraftedQuestion[];
+}
+
 /** Mirrors `PromptView`: a prompt of the teacher's library. */
 export interface SavedPrompt {
   readonly id: string;

@@ -17,12 +17,19 @@ import { Checkbox } from 'primeng/checkbox';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Popover } from 'primeng/popover';
+import { SelectButton } from 'primeng/selectbutton';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { AiApi } from './data-access/ai-api';
-import { DraftSource, HomeworkDraft, SavedPrompt, SourceOption } from './data-access/ai.models';
+import {
+  DraftSource,
+  DraftedQuestion,
+  HomeworkDraft,
+  SavedPrompt,
+  SourceOption,
+} from './data-access/ai.models';
 import { T } from './i18n/texts';
 import { SearchField } from '@shared/ui/search-field';
 
@@ -31,6 +38,14 @@ export interface AppliedDraft {
   readonly draft: HomeworkDraft;
   readonly mode: 'replace' | 'insert';
 }
+
+/** Drafted questions the teacher took: they go after the questions of the quiz or replace them. */
+export interface AppliedQuestions {
+  readonly questions: readonly DraftedQuestion[];
+  readonly mode: 'replace' | 'append';
+}
+
+export type AiMode = 'TASK' | 'QUESTIONS';
 
 /** State belongs to the editor so adapting or closing its supporting pane preserves ongoing work. */
 @Injectable()
@@ -45,7 +60,9 @@ export class HomeworkAiState {
   });
   readonly library = signal<SavedPrompt[]>([]);
   readonly query = signal('');
+  readonly mode = signal<AiMode>('TASK');
   readonly draft = signal<HomeworkDraft | null>(null);
+  readonly questions = signal<readonly DraftedQuestion[] | null>(null);
   /** Keys of the chosen sources. */
   readonly chosen = signal<ReadonlySet<string>>(new Set());
   readonly pending = signal(false);
@@ -75,12 +92,23 @@ export class HomeworkAiState {
     InputText,
     Message,
     Popover,
+    SelectButton,
     Textarea,
     MarkdownView,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="tb-ai-panel" [attr.aria-label]="t.title">
+      <p-selectbutton
+        class="tb-ai-panel__mode"
+        [options]="modes"
+        optionLabel="label"
+        optionValue="value"
+        [allowEmpty]="false"
+        [ngModel]="mode()"
+        (ngModelChange)="mode.set($event)"
+        [ariaLabel]="t.modeLabel"
+      />
       <div class="tb-ai-panel__request" [class.tb-ai-panel__request--folded]="folded()">
         <i class="tb-i tb-i-auto_awesome tb-ai-panel__mark" aria-hidden="true"></i>
         <textarea
@@ -90,7 +118,7 @@ export class HomeworkAiState {
           [formControl]="prompt"
           rows="2"
           [attr.aria-label]="t.prompt"
-          [placeholder]="t.placeholder"
+          [placeholder]="mode() === 'TASK' ? t.placeholder : t.questionsPlaceholder"
           (focus)="focused.set(true)"
           (blur)="focused.set(false)"
         ></textarea>
@@ -114,8 +142,8 @@ export class HomeworkAiState {
         }
         <p-button
           class="tb-ai-panel__generate"
-          [label]="draft() === null ? t.generate : t.again"
-          [icon]="draft() === null ? 'tb-i tb-i-auto_awesome' : 'tb-i tb-i-refresh'"
+          [label]="shown() === null ? t.generate : t.again"
+          [icon]="shown() === null ? 'tb-i tb-i-auto_awesome' : 'tb-i tb-i-refresh'"
           [loading]="pending()"
           (onClick)="generate()"
         />
@@ -208,7 +236,7 @@ export class HomeworkAiState {
       @if (error(); as message) {
         <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
       }
-      @if (draft(); as current) {
+      @if (mode() === 'TASK' && draft(); as current) {
         <section class="tb-ai-panel__draft" [attr.aria-label]="t.draft">
           <header class="tb-ai-panel__draft-header">
             <span class="tb-ai-panel__badge">{{ t.draft }}</span>
@@ -238,6 +266,59 @@ export class HomeworkAiState {
             <tb-markdown [text]="current.description" />
           </div>
           <small class="tb-hint tb-ai-panel__draft-hint">{{ t.hint }}</small>
+        </section>
+      }
+      @if (mode() === 'QUESTIONS' && questions(); as drafted) {
+        <section class="tb-ai-panel__draft" [attr.aria-label]="t.questionsDraft">
+          <header class="tb-ai-panel__draft-header">
+            <span class="tb-ai-panel__badge">{{ t.questionsDraft }}</span>
+            <h3 class="tb-ai-panel__draft-title">{{ t.questionsCount(drafted.length) }}</h3>
+            <div class="tb-actions">
+              <p-button
+                [label]="t.discard"
+                severity="secondary"
+                [text]="true"
+                (onClick)="questions.set(null)"
+              />
+              @if (drafted.length > 0) {
+                @if (questionCount() > 0) {
+                  <p-button
+                    [label]="t.questionsAppend"
+                    severity="secondary"
+                    [disabled]="quizLocked()"
+                    (onClick)="applyQuestions(drafted, 'append')"
+                  />
+                }
+                <p-button
+                  [label]="questionCount() > 0 ? t.questionsReplace : t.questionsAppend"
+                  icon="tb-i tb-i-check"
+                  [disabled]="quizLocked()"
+                  (onClick)="applyQuestions(drafted, questionCount() > 0 ? 'replace' : 'append')"
+                />
+              }
+            </div>
+          </header>
+          @if (quizLocked()) {
+            <p-message severity="warn" styleClass="tb-form-message">{{
+              t.questionsLocked
+            }}</p-message>
+          }
+          @if (drafted.length === 0) {
+            <p class="tb-hint tb-ai-panel__draft-hint">{{ t.questionsEmpty }}</p>
+          } @else {
+            <ol class="tb-ai-panel__questions">
+              @for (question of drafted; track question.id) {
+                <li class="tb-ai-panel__question">
+                  <span class="tb-ai-panel__question-meta">
+                    {{ t.types[question.type] }} · {{ t.points(question.points) }}
+                  </span>
+                  <span class="tb-ai-panel__question-text">{{ question.text }}</span>
+                  <small class="tb-hint tb-ai-panel__question-key">{{ key(question) }}</small>
+                </li>
+              }
+            </ol>
+          }
+          <small class="tb-hint tb-ai-panel__draft-hint">{{ t.questionsHint }}</small>
         </section>
       }
     </section>
@@ -410,6 +491,37 @@ export class HomeworkAiState {
     .tb-ai-panel__draft-hint {
       padding: 0 var(--tb-space-3) var(--tb-space-2);
     }
+
+    .tb-ai-panel__mode {
+      justify-self: start;
+      max-width: 100%;
+    }
+
+    .tb-ai-panel__questions {
+      display: grid;
+      gap: var(--tb-space-2);
+      max-height: 24rem;
+      margin: 0;
+      overflow: auto;
+      padding: var(--tb-space-3) var(--tb-space-3) var(--tb-space-3) var(--tb-space-6);
+    }
+
+    .tb-ai-panel__question {
+      min-width: 0;
+      padding-left: var(--tb-space-1);
+      overflow-wrap: anywhere;
+    }
+
+    .tb-ai-panel__question-meta {
+      display: block;
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-label-m);
+    }
+
+    .tb-ai-panel__question-text {
+      display: block;
+      font: var(--tb-type-body-m);
+    }
   `,
 })
 export class HomeworkAiPanel implements OnInit {
@@ -424,7 +536,12 @@ export class HomeworkAiPanel implements OnInit {
   readonly hasText = input(false);
   /** Textbook pages and files (saved or just picked) the draft may be based on. */
   readonly sources = input<readonly SourceOption[]>([]);
+  /** How many questions the quiz already has: «Добавить» appears only when there are some. */
+  readonly questionCount = input(0);
+  /** A student started the quiz: its questions cannot change. */
+  readonly quizLocked = input(false);
   readonly applied = output<AppliedDraft>();
+  readonly questionsApplied = output<AppliedQuestions>();
 
   private readonly state = inject(HomeworkAiState, { optional: true }) ?? new HomeworkAiState();
   readonly prompt = this.state.prompt;
@@ -439,7 +556,17 @@ export class HomeworkAiPanel implements OnInit {
           `${prompt.title} ${prompt.text}`.toLocaleLowerCase().includes(query),
         );
   });
+  protected readonly mode = this.state.mode;
+  protected readonly modes = [
+    { label: this.t.modeTask, value: 'TASK' },
+    { label: this.t.modeQuestions, value: 'QUESTIONS' },
+  ];
   protected readonly draft = this.state.draft;
+  protected readonly questions = this.state.questions;
+  /** The draft of the chosen mode, if there is one. */
+  protected readonly shown = computed(() =>
+    this.mode() === 'TASK' ? this.draft() : this.questions(),
+  );
   protected readonly chosen = this.state.chosen;
   /** The chosen sources still offered: a file taken off the assignment drops out. */
   protected readonly picked = computed(() =>
@@ -451,7 +578,7 @@ export class HomeworkAiPanel implements OnInit {
   protected readonly error = this.state.error;
   protected readonly focused = this.state.focused;
   /** The request folds to a line while the teacher looks at a draft. */
-  protected readonly folded = computed(() => this.draft() !== null && !this.focused());
+  protected readonly folded = computed(() => this.shown() !== null && !this.focused());
 
   ngOnInit(): void {
     this.api.prompts().subscribe({
@@ -493,25 +620,59 @@ export class HomeworkAiPanel implements OnInit {
     this.pending.set(true);
     this.error.set(null);
     const picked = this.picked().map((option) => option.source);
-    this.api
-      .homeworkDraft(
-        {
-          prompt,
-          title: title === '' ? null : title,
-          sources: picked.filter((source): source is DraftSource => !(source instanceof File)),
-        },
-        picked.filter((source): source is File => source instanceof File),
-      )
-      .subscribe({
+    const files = picked.filter((source): source is File => source instanceof File);
+    const brief = {
+      prompt,
+      title: title === '' ? null : title,
+      sources: picked.filter((source): source is DraftSource => !(source instanceof File)),
+    };
+    const failed = (error: unknown): void => {
+      this.pending.set(false);
+      this.error.set(describeError(error, T.panel.failed));
+    };
+    if (this.mode() === 'TASK') {
+      this.api.homeworkDraft(brief, files).subscribe({
         next: (draft) => {
           this.pending.set(false);
           this.draft.set(draft);
         },
-        error: (error: unknown) => {
-          this.pending.set(false);
-          this.error.set(describeError(error, T.panel.failed));
-        },
+        error: failed,
       });
+    } else {
+      this.api.quizDraft(brief, files).subscribe({
+        next: ({ questions }) => {
+          this.pending.set(false);
+          this.questions.set(questions);
+        },
+        error: failed,
+      });
+    }
+  }
+
+  /** What is right in a question, in a line, for the teacher's review. */
+  protected key(question: DraftedQuestion): string {
+    const text = (id: string): string => question.options.find((o) => o.id === id)?.text ?? '';
+    switch (question.type) {
+      case 'SINGLE_CHOICE':
+      case 'MULTIPLE_CHOICE':
+        return question.correct.map(text).join('; ');
+      case 'ORDERING':
+        return question.options.map((option) => option.text).join(' → ');
+      case 'MATCHING':
+        return question.pairs.map((pair) => `${pair.left} — ${pair.right}`).join('; ');
+      case 'NUMBER':
+        return String(question.value ?? '');
+      case 'SHORT_TEXT':
+        return question.accepted.join('; ');
+    }
+  }
+
+  protected applyQuestions(
+    questions: readonly DraftedQuestion[],
+    mode: 'replace' | 'append',
+  ): void {
+    this.questionsApplied.emit({ questions, mode });
+    this.questions.set(null);
   }
 
   protected apply(draft: HomeworkDraft, mode: 'replace' | 'insert'): void {

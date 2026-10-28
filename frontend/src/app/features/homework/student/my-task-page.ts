@@ -9,6 +9,7 @@ import {
   output,
   signal,
   untracked,
+  viewChild,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
@@ -34,6 +35,7 @@ import { HelpButton } from '@features/help/parts';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { pageDetail } from '@core/routing/page-detail';
 import { T } from '../i18n/texts';
+import { QuizSection } from './quiz-section';
 
 /**
  * Student: the detail pane of the homework list-detail (redesign spec §9) — an assignment, the teacher's feedback
@@ -60,6 +62,7 @@ import { T } from '../i18n/texts';
     PageHeader,
     HelpButton,
     MyBoardButton,
+    QuizSection,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -125,6 +128,8 @@ import { T } from '../i18n/texts';
             />
           }
         </section>
+
+        <tb-quiz-section [taskId]="task.taskId" />
 
         @if (task.status !== 'ACCEPTED') {
           <section>
@@ -214,6 +219,7 @@ export class MyTaskPage {
     validators: [Validators.maxLength(20_000)],
   });
   readonly files = signal<File[]>([]);
+  private readonly quiz = viewChild(QuizSection);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly state = new LoadState();
@@ -227,9 +233,14 @@ export class MyTaskPage {
       });
   }
 
-  submit(): void {
+  async submit(): Promise<void> {
     const text = this.text.value.trim();
-    if (text === '' && this.files().length === 0) {
+    // a quiz alone is an answer: «Сдать» hands in the open attempt too
+    const quiz = this.quiz();
+    if (quiz?.started()) {
+      await quiz.flush();
+    }
+    if (text === '' && this.files().length === 0 && !quiz?.started()) {
       this.error.set(T.myTask.empty);
       return;
     }
@@ -244,6 +255,7 @@ export class MyTaskPage {
         this.task.set(task);
         this.text.setValue('');
         this.files.set([]);
+        this.quiz()?.reload();
         this.changed.emit(task);
         this.snackbar.success(T.myTask.sent);
       },

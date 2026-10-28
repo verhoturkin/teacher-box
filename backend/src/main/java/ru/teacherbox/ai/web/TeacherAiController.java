@@ -29,6 +29,7 @@ import ru.teacherbox.ai.application.AiViews.HomeworkBrief;
 import ru.teacherbox.ai.application.AiViews.HomeworkDraft;
 import ru.teacherbox.ai.application.AiViews.LessonSummaryBrief;
 import ru.teacherbox.ai.application.AiViews.LessonSummaryDraft;
+import ru.teacherbox.ai.application.AiViews.QuizDraft;
 import ru.teacherbox.ai.application.AiViews.ReviewBrief;
 import ru.teacherbox.ai.application.AiViews.ReviewDraft;
 import ru.teacherbox.ai.application.AiViews.UsageReport;
@@ -138,14 +139,32 @@ class TeacherAiController {
                 .toList());
     }
 
+    @PostMapping(path = "/quiz-draft", consumes = MediaType.APPLICATION_JSON_VALUE)
+    QuizDraft quizDraft(@Valid @RequestBody HomeworkDraftRequest request) {
+        return assistant.quizDraft(brief(request, List.of()));
+    }
+
+    /** The same with files of an assignment not saved yet, as the homework draft takes them. */
+    @PostMapping(path = "/quiz-draft", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    QuizDraft quizDraftWithFiles(@Valid @RequestPart("brief") HomeworkDraftRequest request,
+            @RequestPart(name = "files", required = false) @Nullable List<MultipartFile> files) {
+        return assistant.quizDraft(brief(request, files == null ? List.of() : files.stream()
+                .map(TeacherAiController::upload)
+                .toList()));
+    }
+
     private HomeworkDraft homeworkDraft(HomeworkDraftRequest request, List<DraftSources.Source> uploads) {
+        return assistant.homeworkDraft(brief(request, uploads));
+    }
+
+    private static HomeworkBrief brief(HomeworkDraftRequest request, List<DraftSources.Source> uploads) {
         List<SourceRequest> sources = request.sources();
         List<DraftSources.Source> all = new ArrayList<>();
         if (sources != null) {
             sources.stream().map(SourceRequest::toSource).forEach(all::add);
         }
         all.addAll(uploads);
-        return assistant.homeworkDraft(new HomeworkBrief(request.prompt(), request.title(), all));
+        return new HomeworkBrief(request.prompt(), request.title(), all);
     }
 
     private static DraftSources.Source upload(MultipartFile file) {

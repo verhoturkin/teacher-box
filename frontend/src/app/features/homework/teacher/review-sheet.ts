@@ -521,11 +521,17 @@ export class ReviewSheet {
 
   constructor() {
     // another work: the form starts again
+    let shown: TaskDetails | null = null;
     effect(() => {
       const task = this.task();
       untracked(() => {
-        this.draft.set(null);
-        this.reviewForm.reset(task);
+        if (shown?.taskId === task.taskId) {
+          this.reviewForm.refresh(shown, task);
+        } else {
+          this.draft.set(null);
+          this.reviewForm.reset(task);
+        }
+        shown = task;
       });
     });
   }

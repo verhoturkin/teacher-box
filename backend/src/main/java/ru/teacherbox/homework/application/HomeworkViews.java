@@ -1,5 +1,6 @@
 package ru.teacherbox.homework.application;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -8,6 +9,18 @@ import ru.teacherbox.homework.domain.AssignmentVideo;
 import ru.teacherbox.homework.domain.Attachment;
 import ru.teacherbox.homework.domain.TaskStatus;
 import ru.teacherbox.homework.domain.VideoLink;
+import ru.teacherbox.homework.domain.quiz.Matching;
+import ru.teacherbox.homework.domain.quiz.MultipleChoice;
+import ru.teacherbox.homework.domain.quiz.Numeric;
+import ru.teacherbox.homework.domain.quiz.Option;
+import ru.teacherbox.homework.domain.quiz.Ordering;
+import ru.teacherbox.homework.domain.quiz.Pair;
+import ru.teacherbox.homework.application.QuizViews.QuizReview;
+import ru.teacherbox.homework.domain.quiz.Question;
+import ru.teacherbox.homework.domain.quiz.QuestionType;
+import ru.teacherbox.homework.domain.quiz.RevealRule;
+import ru.teacherbox.homework.domain.quiz.ShortText;
+import ru.teacherbox.homework.domain.quiz.SingleChoice;
 import ru.teacherbox.textbooks.api.TextbookFormat;
 import ru.teacherbox.textbooks.api.TextbookKind;
 import ru.teacherbox.textbooks.api.TextbookSummary;
@@ -117,7 +130,52 @@ public final class HomeworkViews {
             List<AttachmentView> attachments,
             List<TaskSummary> tasks,
             List<BoundTextbookView> textbooks,
-            List<VideoView> videos) {
+            List<VideoView> videos,
+            List<QuestionView> questions,
+            RevealRule quizReveal,
+            @Nullable Integer quizAttempts) {
+    }
+
+    /**
+     * A question as the teacher sees it, with the key (ADR-0052); the fields of other types are empty.
+     *
+     * @param options  choices, or the items of an ordering in the right order
+     * @param correct  ids of the right choices
+     * @param accepted accepted texts of a short text
+     * @param value    the number, with {@code tolerance}
+     * @param pairs    matching pairs
+     */
+    public record QuestionView(UUID id, QuestionType type, String text, int points, @Nullable String explanation,
+            List<Option> options, List<UUID> correct, List<String> accepted, @Nullable BigDecimal value,
+            @Nullable BigDecimal tolerance, List<Pair> pairs) {
+
+        static QuestionView of(Question q) {
+            List<Option> options = List.of();
+            List<UUID> correct = List.of();
+            List<String> accepted = List.of();
+            BigDecimal value = null;
+            BigDecimal tolerance = null;
+            List<Pair> pairs = List.of();
+            switch (q) {
+                case SingleChoice s -> {
+                    options = s.options();
+                    correct = List.of(s.correct());
+                }
+                case MultipleChoice m -> {
+                    options = m.options();
+                    correct = m.options().stream().map(Option::id).filter(m.correct()::contains).toList();
+                }
+                case ShortText t -> accepted = t.accepted();
+                case Numeric n -> {
+                    value = n.value();
+                    tolerance = n.tolerance();
+                }
+                case Matching m -> pairs = m.pairs();
+                case Ordering o -> options = o.items();
+            }
+            return new QuestionView(q.id(), q.type(), q.text(), q.points(), q.explanation(), options, correct,
+                    accepted, value, tolerance, pairs);
+        }
     }
 
     public record SubmissionView(UUID id, @Nullable String text, Instant submittedAt, List<AttachmentView> attachments) {
@@ -139,7 +197,7 @@ public final class HomeworkViews {
             List<VideoView> videos) {
     }
 
-    /** A task with the assignment, all submissions (newest first) and the review. */
+    /** A task with the assignment, all submissions (newest first) and the review; {@code quiz} — teacher only. */
     public record TaskDetails(
             UUID taskId,
             UUID studentId,
@@ -152,7 +210,8 @@ public final class HomeworkViews {
             @Nullable Instant reviewedAt,
             boolean overdue,
             AssignmentInfo assignment,
-            List<SubmissionView> submissions) {
+            List<SubmissionView> submissions,
+            @Nullable QuizReview quiz) {
     }
 
     /** @param studentAvatar address of the student's photo; {@code null}: none */

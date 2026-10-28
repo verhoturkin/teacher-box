@@ -10,6 +10,7 @@ import {
   LessonSummaryBrief,
   LessonSummaryDraft,
   PromptInput,
+  QuizDraft,
   RequestPage,
   ReviewBrief,
   ReviewDraft,
@@ -49,6 +50,15 @@ export class AiApi {
    * `multipart/form-data` (ADR-0042).
    */
   homeworkDraft(brief: HomeworkBrief, files: readonly File[] = []): Observable<HomeworkDraft> {
+    return this.draft<HomeworkDraft>('homework-draft', brief, files);
+  }
+
+  /** Questions for the quiz of an assignment, from the same request and sources as a draft. */
+  quizDraft(brief: HomeworkBrief, files: readonly File[] = []): Observable<QuizDraft> {
+    return this.draft<QuizDraft>('quiz-draft', brief, files);
+  }
+
+  private draft<R>(path: string, brief: HomeworkBrief, files: readonly File[]): Observable<R> {
     let body: HomeworkBrief | FormData = brief;
     if (files.length > 0) {
       body = new FormData();
@@ -57,7 +67,7 @@ export class AiApi {
         body.append('files', file, file.name);
       }
     }
-    return this.http.post<HomeworkDraft>('/api/teacher/ai/homework-draft', body, {
+    return this.http.post<R>(`/api/teacher/ai/${path}`, body, {
       context: new HttpContext().set(SKIP_ERROR_TOAST, true),
     });
   }
