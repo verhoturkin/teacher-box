@@ -116,7 +116,7 @@ Design:
 
 ### Stage 323 — Question editor (F, `m3-expressive`)
 
-- [ ] 323.1 F: «Вопросы» card in `homework/teacher/assignment-editor-page.ts` (a component like
+- [x] 323.1 F: «Вопросы» card in `homework/teacher/assignment-editor-page.ts` (a component like
   `video-section.ts`): add a question by type, options with «верный» toggles, accepted answers
   chips, number + tolerance, matching pairs, ordering items, points, explanation, reorder, delete;
   reveal and attempts settings; `canLeave` dirty tracking; server errors shown on the fields;

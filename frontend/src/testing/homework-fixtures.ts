@@ -64,6 +64,9 @@ export function assignmentDetails(overrides: Partial<AssignmentDetails> = {}): A
     attachments: [attachment()],
     textbooks: [],
     videos: [],
+    questions: [],
+    quizReveal: 'AFTER_SUBMIT',
+    quizAttempts: 1,
     tasks: [
       {
         taskId: 't-1',

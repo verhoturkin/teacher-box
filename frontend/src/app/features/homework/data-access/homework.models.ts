@@ -107,6 +107,41 @@ export interface VideoTranscript {
   readonly truncated: boolean;
 }
 
+export type QuestionType =
+  'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'SHORT_TEXT' | 'NUMBER' | 'MATCHING' | 'ORDERING';
+
+/** When the student sees the correct answers of a quiz. */
+export type QuizReveal = 'AFTER_SUBMIT' | 'AFTER_DUE' | 'NEVER';
+
+/** A choice of a question, or an item of an ordering (in the right order). */
+export interface QuestionOption {
+  readonly id: string;
+  readonly text: string;
+}
+
+/** A pair of a matching question. */
+export interface QuestionPair {
+  readonly id: string;
+  readonly left: string;
+  readonly right: string;
+}
+
+/** A question as the teacher sees it, with the key (ADR-0052); the fields of other types are empty. */
+export interface Question {
+  readonly id: string;
+  readonly type: QuestionType;
+  readonly text: string;
+  readonly points: number;
+  readonly explanation: string | null;
+  readonly options: readonly QuestionOption[];
+  /** Ids of the right options. */
+  readonly correct: readonly string[];
+  readonly accepted: readonly string[];
+  readonly value: number | null;
+  readonly tolerance: number | null;
+  readonly pairs: readonly QuestionPair[];
+}
+
 export interface AssignmentDetails {
   readonly id: string;
   readonly title: string;
@@ -120,6 +155,10 @@ export interface AssignmentDetails {
   readonly tasks: TaskSummary[];
   readonly textbooks: BoundTextbook[];
   readonly videos: Video[];
+  readonly questions: Question[];
+  readonly quizReveal: QuizReveal;
+  /** `null` — unlimited. */
+  readonly quizAttempts: number | null;
 }
 
 export interface Submission {
@@ -186,6 +225,11 @@ export interface AssignmentInput {
   readonly dueAt: string | null;
   /** The videos in place of the assignment's ones; left out — keep them. */
   readonly videos?: readonly VideoInput[];
+  /** The questions in place of the assignment's ones; left out — keep them. */
+  readonly questions?: readonly Question[];
+  readonly quizReveal?: QuizReveal;
+  /** 0 — unlimited. */
+  readonly quizAttempts?: number;
 }
 
 /** Mirrors `HomeworkSummary`: homework at a glance for the teacher. */

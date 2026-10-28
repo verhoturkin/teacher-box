@@ -12,6 +12,7 @@ import { By } from '@angular/platform-browser';
 import { aBoard } from '@testing/boards-fixtures';
 import { ToBoardDialog } from '@features/boards/parts';
 import { AssignmentEditorPage } from './assignment-editor-page';
+import { questionDraft } from './question-section';
 
 const STUDENTS = [
   { id: 's-1', displayName: 'Анна', status: 'ACTIVE' },
@@ -484,6 +485,94 @@ describe('AssignmentEditorPage', () => {
     put.flush(assignmentDetails({ version: 1 }));
     await fixture.whenStable();
     expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-1']);
+  });
+
+  it('saves the questions and the quiz settings, sending nothing when the quiz is untouched', async () => {
+    const { page, host } = await edit(assignmentDetails({ attachments: [] }));
+    exactButton(host, 'Сохранить').click();
+    const plain = backend.expectOne({
+      method: 'PUT',
+      url: '/api/teacher/homework/assignments/a-1',
+    });
+    expect(plain.request.body).not.toHaveProperty('questions');
+    expect(plain.request.body).not.toHaveProperty('quizReveal');
+    plain.flush(assignmentDetails({ version: 1 }));
+    await fixture.whenStable();
+
+    const again = await edit(assignmentDetails({ attachments: [] }));
+    expect(again.page.canLeave()).toBe(true);
+    again.page.changeQuestions([
+      { ...questionDraft('NUMBER'), text: 'Сколько будет 2 + 2?', value: 4 },
+    ]);
+    again.page.changeReveal('NEVER');
+    again.page.changeAttempts(0);
+    expect(again.page.canLeave()).not.toBe(true);
+    exactButton(again.host, 'Сохранить').click();
+    const put = backend.expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' });
+    expect(put.request.body).toMatchObject({
+      questions: [{ type: 'NUMBER', text: 'Сколько будет 2 + 2?', value: 4, tolerance: 0 }],
+      quizReveal: 'NEVER',
+      quizAttempts: 0,
+    });
+    put.flush(assignmentDetails({ version: 1 }));
+    expect(page).toBeTruthy();
+  });
+
+  it('shows the saved questions and holds the save while a question is incomplete', async () => {
+    const { page, host } = await edit(
+      assignmentDetails({
+        attachments: [],
+        questions: [
+          {
+            id: 'q-1',
+            type: 'SHORT_TEXT',
+            text: 'Столица России?',
+            points: 1,
+            explanation: null,
+            options: [],
+            correct: [],
+            accepted: ['Москва'],
+            value: null,
+            tolerance: null,
+            pairs: [],
+          },
+        ],
+        quizAttempts: null,
+      }),
+    );
+    expect(host.querySelector<HTMLTextAreaElement>('#question-text-q-1')?.value).toBe(
+      'Столица России?',
+    );
+    expect(readableText(host)).toContain('Без ограничений');
+
+    page.changeQuestions([...page.questions(), questionDraft('SINGLE_CHOICE')]);
+    exactButton(host, 'Сохранить').click();
+    await fixture.whenStable();
+    backend.expectNone({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' });
+    expect(readableText(host)).toContain('Напишите текст вопроса');
+  });
+
+  it('locks the questions when a student has started the quiz and saves the rest', async () => {
+    const { page, host } = await edit(assignmentDetails({ attachments: [] }));
+    page.changeQuestions([{ ...questionDraft('NUMBER'), text: 'Вопрос', value: 1 }]);
+    exactButton(host, 'Сохранить').click();
+    backend
+      .expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' })
+      .flush(
+        { status: 422, code: 'homework.quiz-started' },
+        { status: 422, statusText: 'Unprocessable' },
+      );
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Ученик уже начал тест: вопросы изменить нельзя');
+    expect(page.questions()).toEqual([]);
+
+    exactButton(host, 'Сохранить').click();
+    const retry = backend.expectOne({
+      method: 'PUT',
+      url: '/api/teacher/homework/assignments/a-1',
+    });
+    expect(retry.request.body).not.toHaveProperty('questions');
+    retry.flush(assignmentDetails({ version: 1 }));
   });
 
   it('offers the assistant the textbooks and readable files picked for a new assignment', async () => {

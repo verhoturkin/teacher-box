@@ -62,6 +62,91 @@ export const ru = {
     aiSource: (name: string) => `Видео: ${name}`,
     failed: 'Не удалось получить субтитры',
   },
+  quiz: {
+    title: 'Вопросы',
+    hint: 'Портал сам проверит ответы ученика. Текст вопроса и пояснение — Markdown.',
+    addQuestion: 'Добавить вопрос',
+    types: {
+      SINGLE_CHOICE: 'Один ответ',
+      MULTIPLE_CHOICE: 'Несколько ответов',
+      SHORT_TEXT: 'Короткий ответ',
+      NUMBER: 'Число',
+      MATCHING: 'Соответствие',
+      ORDERING: 'Порядок',
+    },
+    typeHints: {
+      SINGLE_CHOICE: 'Отметьте верный вариант.',
+      MULTIPLE_CHOICE: 'Отметьте все верные варианты.',
+      SHORT_TEXT:
+        'Верным считается любой из записанных ответов: регистр, ё/е и лишние пробелы не важны.',
+      NUMBER: 'Верным считается число, отличающееся от ответа не больше чем на допуск.',
+      MATCHING: 'Ученик увидит правый столбец в случайном порядке.',
+      ORDERING: 'Запишите элементы в правильном порядке: ученик увидит их перемешанными.',
+    },
+    question: (index: number, type: string) => `Вопрос ${String(index)} · ${type}`,
+    text: 'Текст вопроса',
+    points: 'Баллы',
+    explanation: 'Пояснение к ответу',
+    explanationHint: 'Ученик увидит его вместе с верным ответом.',
+    option: (index: number) => `Вариант ${String(index)}`,
+    item: (index: number) => `Элемент ${String(index)}`,
+    answer: (index: number) => `Ответ ${String(index)}`,
+    left: (index: number) => `Левая часть ${String(index)}`,
+    right: (index: number) => `Правая часть ${String(index)}`,
+    correct: (option: string) => `Верный: ${option}`,
+    addOption: 'Добавить вариант',
+    addItem: 'Добавить элемент',
+    addAnswer: 'Добавить ответ',
+    addPair: 'Добавить пару',
+    removeOption: (index: number) => `Убрать вариант ${String(index)}`,
+    removeItem: (index: number) => `Убрать элемент ${String(index)}`,
+    removeAnswer: (index: number) => `Убрать ответ ${String(index)}`,
+    removePair: (index: number) => `Убрать пару ${String(index)}`,
+    moveItemUp: (index: number) => `Элемент ${String(index)} выше`,
+    moveItemDown: (index: number) => `Элемент ${String(index)} ниже`,
+    value: 'Число',
+    tolerance: 'Допуск, ±',
+    remove: (index: number) => `Убрать вопрос ${String(index)}`,
+    moveUp: (index: number) => `Вопрос ${String(index)} выше`,
+    moveDown: (index: number) => `Вопрос ${String(index)} ниже`,
+    total: (count: number, points: number) =>
+      `Вопросов: ${String(count)}, баллов: ${String(points)}`,
+    settings: 'Как проходит тест',
+    reveal: 'Когда показать верные ответы',
+    reveals: {
+      AFTER_SUBMIT: 'Сразу после сдачи теста',
+      AFTER_DUE: 'После срока сдачи',
+      NEVER: 'Не показывать',
+    },
+    attempts: 'Попытки',
+    attemptsHint: 'Засчитывается лучшая попытка.',
+    attemptCount: (count: number) => {
+      if (count === 0) {
+        return 'Без ограничений';
+      }
+      const last = count % 10;
+      const tens = count % 100;
+      if (last === 1 && tens !== 11) {
+        return `${String(count)} попытка`;
+      }
+      return `${String(count)} ${last >= 2 && last <= 4 && (tens < 10 || tens >= 20) ? 'попытки' : 'попыток'}`;
+    },
+    locked:
+      'Ученик уже начал тест, поэтому вопросы изменить нельзя. Остальное в задании можно править.',
+    problems: {
+      text: 'Напишите текст вопроса',
+      options: 'Нужно не меньше двух вариантов с текстом',
+      correct: 'Отметьте верный вариант',
+      correctMany: 'Отметьте хотя бы один верный вариант',
+      accepted: 'Нужен хотя бы один ответ',
+      value: 'Укажите число',
+      tolerance: 'Допуск не может быть отрицательным',
+      pairs: 'Нужно не меньше двух пар с обеими частями',
+      items: 'Нужно не меньше двух элементов с текстом',
+      points: 'Баллы — от 1 до 100',
+    },
+    failed: 'Не удалось сохранить вопросы',
+  },
   captionLanguage: {
     header: 'Субтитры на каком языке взять?',
     replacing: 'Текущая расшифровка будет заменена.',

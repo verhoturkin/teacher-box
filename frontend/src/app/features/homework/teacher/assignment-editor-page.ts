@@ -40,6 +40,7 @@ import { Message } from 'primeng/message';
 import { SelectButton } from 'primeng/selectbutton';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
+import { problemCode } from '@core/http/problem-detail';
 import { CanLeave } from '@core/routing/can-leave.guard';
 import { pageDetail } from '@core/routing/page-detail';
 import { Snackbar } from '@core/snackbar/snackbar';
@@ -68,7 +69,12 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { HomeworkApi } from '../data-access/homework-api';
-import { AssignmentDetails, AssignmentInput, BoundTextbook } from '../data-access/homework.models';
+import {
+  AssignmentDetails,
+  AssignmentInput,
+  BoundTextbook,
+  QuizReveal,
+} from '../data-access/homework.models';
 import { T } from '../i18n/texts';
 import { FilePicker } from '../ui/file-picker';
 import { TextbookList } from '../ui/textbook-list';
@@ -77,6 +83,13 @@ import { assignmentBoard } from './assignment-board';
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { MaterialOpener } from './material-opener';
 import { NEXT_LESSON_DAYS, nextLessonStart } from './next-lesson';
+import {
+  QuestionDraft,
+  QuestionSection,
+  firstProblem,
+  questionDraft,
+  questionInputs,
+} from './question-section';
 import { VideoDraft, VideoSection, videoDraft, videoInputs } from './video-section';
 
 /** A student that can receive homework. */
@@ -123,6 +136,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     TextbookList,
     BindTextbookDialog,
     VideoSection,
+    QuestionSection,
   ],
   providers: [HomeworkAiState],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -256,6 +270,19 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
             <p-card [header]="tv.title">
               <tb-video-section [videos]="videos()" (videosChange)="changeVideos($event)" />
             </p-card>
+            <p-card [header]="tq.title">
+              <tb-question-section
+                [questions]="questions()"
+                (questionsChange)="changeQuestions($event)"
+                [reveal]="quizReveal()"
+                (revealChange)="changeReveal($event)"
+                [attempts]="quizAttempts()"
+                (attemptsChange)="changeAttempts($event)"
+                [locked]="quizLocked()"
+                [error]="quizError()"
+                [showProblems]="quizChecked()"
+              />
+            </p-card>
           </form>
         </tb-pane>
         @if (aiEnabled() && !single() && aiOpen()) {
@@ -364,6 +391,7 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     else this.aiOpen.update((open) => !open);
   }
   protected readonly tv = T.videos;
+  protected readonly tq = T.quiz;
   private readonly api = inject(HomeworkApi);
   private readonly ai = inject(AiApi);
   private readonly identity = inject(IdentityApi);
@@ -467,6 +495,18 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   readonly videos = signal<readonly VideoDraft[]>([]);
   /** The teacher changed the videos: leaving asks. */
   private readonly videosChanged = signal(false);
+  /** The questions of the quiz (ADR-0052) and how it goes; saved with the assignment. */
+  readonly questions = signal<readonly QuestionDraft[]>([]);
+  protected readonly quizReveal = signal<QuizReveal>('AFTER_SUBMIT');
+  /** 0 — unlimited. */
+  protected readonly quizAttempts = signal(1);
+  /** The teacher changed the quiz: leaving asks and the quiz is sent. */
+  private readonly quizChanged = signal(false);
+  /** A student started the quiz: the questions can no longer change. */
+  protected readonly quizLocked = signal(false);
+  protected readonly quizError = signal<string | null>(null);
+  /** A save was tried: each question says what is wrong with it. */
+  protected readonly quizChecked = signal(false);
   /** Textbooks of a new assignment, bound after it is created. */
   private readonly pickedTextbooks = signal<readonly BoundTextbook[]>([]);
   protected readonly textbooks = computed(
@@ -612,8 +652,17 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
           studentIds: [],
         });
         this.videos.set(assignment.videos.map((video) => videoDraft(video)));
+        this.loadQuiz(assignment);
         this.dueTouched.set(true);
       });
+  }
+
+  private loadQuiz(assignment: AssignmentDetails): void {
+    this.questions.set(
+      assignment.questions.map((question) => questionDraft(question.type, question)),
+    );
+    this.quizReveal.set(assignment.quizReveal);
+    this.quizAttempts.set(assignment.quizAttempts ?? 0);
   }
 
   private loadStudents(): void {
@@ -663,6 +712,21 @@ ${draft.description}`,
     this.videosChanged.set(true);
   }
 
+  changeQuestions(questions: readonly QuestionDraft[]): void {
+    this.questions.set(questions);
+    this.quizChanged.set(true);
+  }
+
+  changeReveal(reveal: QuizReveal): void {
+    this.quizReveal.set(reveal);
+    this.quizChanged.set(true);
+  }
+
+  changeAttempts(attempts: number): void {
+    this.quizAttempts.set(attempts);
+    this.quizChanged.set(true);
+  }
+
   protected bindTextbook(): void {
     this.binding.set(null);
     this.bindVisible.set(true);
@@ -692,12 +756,25 @@ ${draft.description}`,
     if (!revealErrors(this.form) || this.pending()) {
       return;
     }
+    this.quizChecked.set(true);
+    if (!this.quizLocked() && firstProblem(this.questions()) !== null) {
+      this.quizError.set(T.quiz.failed);
+      return;
+    }
+    this.quizError.set(null);
     const value = this.form.getRawValue();
     const input: AssignmentInput = {
       title: value.title.trim(),
       description: value.description.trim() === '' ? null : value.description,
       dueAt: value.dueAt === null ? null : value.dueAt.toISOString(),
       videos: videoInputs(this.videos()),
+      ...(this.quizChanged()
+        ? {
+            ...(this.quizLocked() ? {} : { questions: questionInputs(this.questions()) }),
+            quizReveal: this.quizReveal(),
+            quizAttempts: this.quizAttempts(),
+          }
+        : {}),
     };
     const existing = this.assignment();
     this.pending.set(true);
@@ -749,9 +826,26 @@ ${draft.description}`,
       },
       error: (error: unknown) => {
         this.pending.set(false);
+        const code = problemCode(error);
+        if (code?.startsWith('homework.quiz-') === true) {
+          this.quizError.set(describeError(error, T.quiz.failed));
+          if (code === 'homework.quiz-started') {
+            this.lockQuiz();
+          }
+          return;
+        }
         this.error.set(describeError(error, T.editor.failed));
       },
     });
+  }
+
+  /** The server has the questions as they were: show those, read-only. */
+  private lockQuiz(): void {
+    this.quizLocked.set(true);
+    const saved = this.assignment();
+    if (saved !== null) {
+      this.questions.set(saved.questions.map((question) => questionDraft(question.type, question)));
+    }
   }
 
   /**
@@ -800,7 +894,8 @@ ${draft.description}`,
       this.form.dirty ||
       this.newFiles().length > 0 ||
       this.pickedTextbooks().length > 0 ||
-      this.videosChanged();
+      this.videosChanged() ||
+      this.quizChanged();
     if (this.saved || !dirty) {
       return true;
     }
