@@ -95,7 +95,7 @@ Design:
 
 ### Stage 315 — Push in the frontend (F, `m3-expressive`)
 
-- [ ] 315.1 F: `core/push/` service on `SwPush` (key, subscribe from a user gesture, unsubscribe),
+- [x] 315.1 F: `core/push/` service on `SwPush` (key, subscribe from a user gesture, unsubscribe),
   devices card in «Мой аккаунт» («Включить уведомления на этом устройстве», list with «Отключить»),
   onboarding card on the home for teacher and student, iOS «Добавьте на экран Домой» hint when
   `navigator.standalone` is false; push preferences next to messengers

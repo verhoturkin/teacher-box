@@ -8,6 +8,8 @@ export { NotificationsSheetContent } from './sheet/notifications-sheet-content';
 export { NewMessageDialog } from './teacher/new-message-dialog';
 export { ChannelsPanel } from './channels/channels-panel';
 export { ConnectMessengerCard } from './student/connect-messenger-card';
+export { PushDevicesCard } from './push/push-devices-card';
+export { PushOnboardingCard } from './push/push-onboarding-card';
 export { PreferencesPanel } from './preferences/preferences-panel';
 export { MessengersSettingsPanel } from './teacher/messengers-settings-panel';
 export { BroadcastDialog } from './teacher/broadcast-dialog';

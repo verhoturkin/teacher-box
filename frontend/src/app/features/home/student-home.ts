@@ -16,7 +16,7 @@ import { BillingApi, MyBalanceWidget } from '@features/billing/parts';
 import type { MyBillingSummary } from '@features/billing/parts';
 import { HomeworkApi, MyDeadlinesWidget } from '@features/homework/parts';
 import type { MyHomeworkSummary } from '@features/homework/parts';
-import { ConnectMessengerCard } from '@features/notifications/parts';
+import { ConnectMessengerCard, PushOnboardingCard } from '@features/notifications/parts';
 import { NextLessonWidget, ScheduleApi, formatLessonStart } from '@features/schedule/parts';
 import type { MyScheduleSummary } from '@features/schedule/parts';
 import { MyTextbooksFeed } from '@features/textbooks/parts';
@@ -39,6 +39,7 @@ const MATERIALS = 1;
   imports: [
     HelpButton,
     ConnectMessengerCard,
+    PushOnboardingCard,
     MyBalanceWidget,
     MyBoardsFeed,
     MyDeadlinesWidget,
@@ -78,6 +79,7 @@ const MATERIALS = 1;
             }
             <tb-student-welcome-card />
             <tb-connect-messenger-card />
+            <tb-push-onboarding-card />
           </div>
           <div class="tb-stack tb-feed__side">
             @if (billing(); as billing) {

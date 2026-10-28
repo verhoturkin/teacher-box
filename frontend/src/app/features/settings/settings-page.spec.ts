@@ -57,6 +57,7 @@ describe('SettingsPage', () => {
     switch (category) {
       case 'account':
         backend.expectOne('/api/me');
+        backend.expectOne('/api/me/push/subscriptions').flush([]);
         break;
       case 'portal':
         backend.expectOne('/api/teacher/portal').flush(portalSettings());
