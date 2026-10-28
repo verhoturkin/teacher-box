@@ -75,7 +75,7 @@ full-screen dialogs on a phone. No new ADR.
   `account`; student: `/cabinet/account`; admin: its settings) together with «Выйти».
   `core/layout/shell.ts`, `side-nav.ts`, `identity/account/account-page.ts`. Update design-system
   «Top bar» / «User button», screens.md «Frame by role», help articles, wiki.
-- [ ] 330.2 **F** «Уведомления на устройствах» moves from «Мой аккаунт» into the category
+- [x] 330.2 **F** «Уведомления на устройствах» moves from «Мой аккаунт» into the category
   «Мессенджеры», renamed «Уведомления и мессенджеры» (`settings/settings-categories.ts`; the old
   address redirects). Student: the same block stays in their account. Update screens.md, help, wiki.
 

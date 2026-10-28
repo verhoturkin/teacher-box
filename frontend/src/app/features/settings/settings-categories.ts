@@ -43,7 +43,12 @@ export const CATEGORY_ITEMS: readonly CategoryItem[] = [
   { id: 'portal', icon: 'tb-i-palette', title: t.portal, summary: t.portalSummary },
   { id: 'calendar', icon: 'tb-i-calendar_month', title: t.calendar, summary: t.calendarSummary },
   { id: 'calls', icon: 'tb-i-videocam', title: t.calls, summary: t.callsSummary },
-  { id: 'messengers', icon: 'tb-i-chat', title: t.messengers, summary: t.messengersSummary },
+  {
+    id: 'messengers',
+    icon: 'tb-i-notifications',
+    title: t.messengers,
+    summary: t.messengersSummary,
+  },
   {
     id: 'payments',
     icon: 'tb-i-account_balance_wallet',

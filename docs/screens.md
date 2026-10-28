@@ -355,11 +355,12 @@ the surface; group outer corners 16 px) in the fixed pane, the chosen category b
 of sections (from expanded `/teacher/settings` shows «Мой аккаунт»). A form changed and not saved
 asks «Отменить изменения?» before another category or page opens (design-system «Dialogs»).
 
-- Categories: «Мой аккаунт» (`account`: account, «Оформление» with theme and language, «Выйти»,
-  «Уведомления на устройствах»; also the rail's «Аккаунт»), «Портал» (`portal`),
+- Categories: «Мой аккаунт» (`account`: account, «Оформление» with theme and language, «Выйти»; also
+  the rail's «Аккаунт»), «Портал» (`portal`),
   «Расписание и календарь» (`calendar`:
-  time zone, Google Calendar, calendar feed), «Звонки» (`calls`), «Мессенджеры» (`messengers`:
-  failed deliveries first with a count badge on the item, then bots, own messengers, bot abilities,
+  time zone, Google Calendar, calendar feed), «Звонки» (`calls`), «Уведомления и мессенджеры»
+  (`messengers`, icon `notifications`: failed deliveries first with a count badge on the item, then
+  «Уведомления на устройствах» (web push of this device), bots, own messengers, bot abilities,
   students' messengers, what to send), «Оплаты» (`payments`: default price), «ИИ-помощник» (`ai`:
   model, usage, prompt library, system prompts), «Данные» (`data`).
 - Old addresses redirect: `?open=<fold>`, `?google=` (→ calendar), `?drive=` (→ data),

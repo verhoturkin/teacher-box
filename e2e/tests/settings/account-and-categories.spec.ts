@@ -172,7 +172,7 @@ test('the settings list their categories, without integrations, profile or addre
     'Портал',
     'Расписание и календарь',
     'Звонки',
-    'Мессенджеры',
+    'Уведомления и мессенджеры',
     // 234.4: «Оплаты» and «ИИ-помощник»
     'Оплаты',
     'ИИ-помощник',

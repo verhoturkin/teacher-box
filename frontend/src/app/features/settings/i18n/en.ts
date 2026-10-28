@@ -20,9 +20,9 @@ export const en: Translation<typeof ru> = {
     timeZoneAdmin: 'The portal administrator can change it.',
     otherZone: (zone: string) =>
       `This device has another time zone (${zone}): the portal shows the time in its own time zone.`,
-    messengers: 'Messengers',
+    messengers: 'Notifications and messengers',
     deliveries: 'Failed deliveries',
-    messengersSummary: 'Bots, what to send',
+    messengersSummary: 'This device, bots, what to send',
     allDelivered: 'All notifications are delivered',
     when: 'When',
     to: 'To',

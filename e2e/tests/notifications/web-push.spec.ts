@@ -3,7 +3,7 @@ import { type APIRequestContext, expect, test } from '@playwright/test';
 
 /**
  * Installable app and web push (ADR-0051): the service worker files are revalidated, the devices REST,
- * and the devices card in «Мой аккаунт». Real delivery through a push service stays a manual check.
+ * and the devices card in the account. Real delivery through a push service stays a manual check.
  */
 
 const RUN = Date.now().toString(36);

@@ -16,7 +16,7 @@ After the first sign-in the portal opens the [initial setup](/teacher/help/setup
 1. **Add students.** «Create» → «Student» (on a phone — «Students» → «Add student»). The portal shows an invitation link — send it to the student in a messenger or by email. With the link the student chooses a login and a password.
 2. **Check the lesson price.** «Students» → the student → the «Profile» tab of their card → «Lesson price». Debts and prepayments are counted from it.
 3. **Plan lessons.** «Create» → «Lesson» → «Repeat»: once or every 1–4 weeks.
-4. **Connect a messenger.** «Settings» → «Messengers» → «Connect». The wizard helps to create a bot, and reminders and students' requests reach you in Telegram, VK or MAX.
+4. **Connect a messenger.** «Settings» → «Notifications and messengers» → «Connect». The wizard helps to create a bot, and reminders and students' requests reach you in Telegram, VK or MAX.
 
 On the «Today» page the «Getting started» list sits at the end of the «To do» card — only the steps not done yet stay in it, and the bar shows how many are done.
 
@@ -500,17 +500,17 @@ The bell opens the notifications at the side, on a phone — full screen without
 
 On a wide screen the notifications open as a third column on the right and do not cover the page: you can keep working and move between sections — the column stays until you press «×» (or Esc) or the bell again. On a narrower screen and on a phone they close when you open a notification that leads to another page. Old links to the «Notifications» section open the bell.
 
-Bots, your messengers, students' messengers and what to send are in «Settings» → «Messengers».
+Bots, your messengers, students' messengers and what to send are in «Settings» → «Notifications and messengers».
 
 ## Connect a bot
 
-«Settings» → «Messengers» → «Messenger bots» → «Connect» next to a messenger. The wizard shows step by step how to create a bot, checks it and sends you a test message.
+«Settings» → «Notifications and messengers» → «Messenger bots» → «Connect» next to a messenger. The wizard shows step by step how to create a bot, checks it and sends you a test message.
 
 One messenger is enough — the one your students use. Students connect a messenger themselves, in their «My account».
 
 ## Who is connected
 
-The «Students’ messengers» card («Settings» → «Messengers») shows who has a messenger connected and whether deliveries failed. «Remind everyone without a messenger» (or «Remind the selected») asks the others to connect.
+The «Students’ messengers» card («Settings» → «Notifications and messengers») shows who has a messenger connected and whether deliveries failed. «Remind everyone without a messenger» (or «Remind the selected») asks the others to connect.
 
 ## Message to students
 
@@ -518,13 +518,13 @@ The «Students’ messengers» card («Settings» → «Messengers») shows who 
 
 ## What to send
 
-«Settings» → «Messengers» → «What to send to messengers»: choose the topics for the messenger and the quiet hours — at night messages wait until the morning.
+«Settings» → «Notifications and messengers» → «What to send to messengers»: choose the topics for the messenger and the quiet hours — at night messages wait until the morning.
 
 Notifications and bot messages are written by the server in Russian.
 
 ## Notifications on the phone without a messenger
 
-Submitted work, reschedule requests and reminders can arrive as system notifications on your phone or computer even when the portal is closed — together with messengers, not instead of them. «My account» → «Notifications on devices» → «Turn on notifications on this device», then allow notifications in the browser prompt. The device appears in the list; «Turn off» removes it. Turn it on separately on every phone and every browser. The topics and quiet hours are the same as for messengers.
+Submitted work, reschedule requests and reminders can arrive as system notifications on your phone or computer even when the portal is closed — together with messengers, not instead of them. «Settings» → «Notifications and messengers» → «Notifications on devices» → «Turn on notifications on this device», then allow notifications in the browser prompt. The device appears in the list; «Turn off» removes it. Turn it on separately on every phone and every browser. The topics and quiet hours are the same as for messengers.
 
 On iPhone and iPad notifications work only in the app on the Home Screen: Share → Add to Home Screen, then open the portal from the new icon. The portal address must be HTTPS; if notifications are unavailable, the card says why. The notification goes through a Google, Mozilla or Apple service — the text is encrypted with the device key, so the service cannot read it.
 
@@ -560,7 +560,7 @@ The schedule and the lesson link, cancelling and moving a lesson (in a group —
 
 ## Turn management off
 
-«Settings» → «Messengers» → «What the bot can do» → turn off «Manage the portal through the bot» if other people can access your messenger. Notifications keep coming.
+«Settings» → «Notifications and messengers» → «What the bot can do» → turn off «Manage the portal through the bot» if other people can access your messenger. Notifications keep coming.
 
 In VK the buttons need «Bot features» turned on in the community settings.
 `,
@@ -595,7 +595,7 @@ Students can make such a link too — it has only their lessons.
 - **Portal** — the portal's name, address, colour and logo ([Look, language and phone](/teacher/help/appearance)).
 - **Schedule and calendar** — the portal's time zone, Google Calendar and the schedule subscription ([Calendars](/teacher/help/calendars)).
 - **Calls** — calls in the portal ([Calls](/teacher/help/calls)) and video meetings ([Video meetings](/teacher/help/meetings)).
-- **Messengers** — bots, your messengers, what the bot can do, students' messengers and what to send ([Notifications and bots](/teacher/help/notifications)). If messages did not reach a messenger, the group shows their number in the list, and the «Failed deliveries» card comes first; the portal administrator can resend them.
+- **Notifications and messengers** — notifications on this device, bots, your messengers, what the bot can do, students' messengers and what to send ([Notifications and bots](/teacher/help/notifications)). If messages did not reach a messenger, the group shows their number in the list, and the «Failed deliveries» card comes first; the portal administrator can resend them.
 - **Payments** — the lesson price for new students and groups ([Payments](/teacher/help/billing)).
 - **AI assistant** — the model, tokens spent this month, recent requests, the prompt library and the system prompts ([AI assistant](/teacher/help/ai)).
 - **Data** — backups: the portal makes a backup every night, here you can back up now, download a backup, restore it and connect Google Drive for the backups ([Backups and full reset](/teacher/help/backups)); full reset — delete all data and start again.
@@ -752,7 +752,7 @@ Check that their access is not turned off. Issue a password reset link: «Studen
 Issue a new one in the same place — the old one stops working.
 
 **Notifications do not reach the messenger.**
-Check «Settings» → «Messengers»: the bot must be connected. The student must connect the messenger in their cabinet themselves. Undelivered messages are there too, in the «Failed deliveries» card (the number next to «Messengers» in the settings list).
+Check «Settings» → «Notifications and messengers»: the bot must be connected. The student must connect the messenger in their cabinet themselves. Undelivered messages are there too, in the «Failed deliveries» card (the number next to «Notifications and messengers» in the settings list).
 
 **A lesson was marked by mistake.**
 Open the lesson and press the chosen option in «Outcome» again (for a group — «Remove the mark» in the «⋮» menu) — the charge is undone.
