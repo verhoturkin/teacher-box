@@ -8,8 +8,8 @@ import ru.teacherbox.shared.reset.DataReset;
 
 /**
  * Full reset (ADR-0014): notifications, deliveries, messenger connections, preferences, messages,
- * dialogs with the bots, the bots configured in the settings (those from the environment stay) and
- * the VAPID keys (a new pair is made on the next push).
+ * dialogs with the bots, the bots configured in the settings (those from the environment stay), the
+ * devices that get web push and the VAPID keys (a new pair is made on the next push).
  */
 @Component
 class NotificationsDataReset implements DataReset {
@@ -17,7 +17,8 @@ class NotificationsDataReset implements DataReset {
     private static final List<String> TABLES = List.of("notifications.deliveries", "notifications.inbox",
             "notifications.channel_links", "notifications.link_codes", "notifications.channel_settings",
             "notifications.preferences", "notifications.broadcasts", "notifications.chat_dialogs",
-            "notifications.chat_buttons", "notifications.chat_settings", "notifications.webpush_keys");
+            "notifications.chat_buttons", "notifications.chat_settings", "notifications.webpush_keys",
+            "notifications.push_subscriptions");
 
     private final JdbcClient jdbc;
     private final ChannelSettingsService channels;

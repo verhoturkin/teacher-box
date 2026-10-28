@@ -60,8 +60,21 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
   the store signs for callers, nothing returns it), `WebPushSender` (JDK `HttpClient`, `https`
   endpoints only; `Outcome`: 2xx `SENT`, 404 / 410 `GONE` — delete the subscription, 429 / 5xx / no
   connection `RETRY`, other `REJECTED`). Optional `TEACHERBOX_NOTIFICATIONS_WEBPUSH_SUBJECT` is the
-  VAPID `sub` (the portal address when empty). Subscriptions, the channel and REST come in the next
-  substeps of the release.
+  VAPID `sub` (the portal address when empty).
+- **Web push channel (0.38.0, 314.1):** `push_subscriptions` is one row per browser of a user (the
+  endpoint is unique and a secret: never in logs, views or admin answers). `ChannelType.WEB_PUSH`
+  (`isMessenger()` is false: no bot, link code or health). `NotificationService.notify` schedules
+  one `WEB_PUSH` delivery per subscription next to the messenger ones, under the same muted topics
+  and quiet hours of `Preferences`; `externalId` is the subscription id, `text` the title.
+  `PushChannel` (called by `DeliveryDispatcher`) reads the inbox record and sends
+  `{notification:{title, body, tag, data:{url, onActionClick}}}` (the format `ngsw` shows by itself;
+  url via `Portal.link`, TTL one day, nothing beyond the inbox record). A gone device (unsubscribed,
+  404 / 410) is deleted and the delivery ends `SENT` without a failure; 429 / 5xx / no connection
+  retry with the queue backoff; other 4xx fail the delivery. Each failure adds to `failures`, a
+  success resets it; `NotificationsHousekeeping` deletes subscriptions that failed and have taken
+  nothing for 30 days (a quiet working device stays). The per-device switch is the subscription
+  itself: «Отключить» deletes it. `PushSubscriptionService` validates an `https` endpoint and the
+  keys (65 and 16 bytes, base64url) and checks ownership; another user's id is 404.
 
 ## Contract
 
@@ -70,7 +83,8 @@ No `api` package: nothing depends on `notifications`.
 ## Data
 
 `inbox`, `deliveries`, `preferences`, `channel_settings`, `channel_links`, `link_codes`, `broadcasts`,
-`chat_dialogs`, `chat_buttons`, `chat_settings`, `webpush_keys` (the VAPID pair, one row, 0.38.0).
+`chat_dialogs`, `chat_buttons`, `chat_settings`, `webpush_keys` (the VAPID pair, one row, 0.38.0), `push_subscriptions` (the
+devices that get web push, 0.38.0).
 `NotificationsHousekeeping` cleans old records.
 
 ## REST
@@ -80,7 +94,11 @@ ones; unread count, read, preferences), `/api/me/channels/**` (link code, unlink
 `/api/teacher/notifications/**` (status, summary, students, `students/{studentId}` — one student's messengers and
 failed deliveries for the student card, deactivated included, unknown → 404 (237.1), broadcast, remind-connect,
 `channels`, `bot`),
-`/api/admin/notifications/deliveries` (failed deliveries without texts, retry).
+`/api/admin/notifications/deliveries` (failed deliveries without texts, retry),
+`/api/admin/notifications/push` (counts of devices and failing ones, no users or addresses),
+`GET /api/me/push/key` (public VAPID key), `GET|POST /api/me/push/subscriptions` (own devices;
+POST takes `PushSubscription.toJSON()`, the same endpoint again updates it),
+`DELETE /api/me/push/subscriptions/{id}` (teacher and students; the administrator gets 403).
 
 ## Frontend
 

@@ -86,7 +86,7 @@ Design:
 
 ### Stage 314 — Subscriptions and delivery (B)
 
-- [ ] 314.1 B: migration `push_subscriptions`; REST `/api/me/push/**` (controller tests with role
+- [x] 314.1 B: migration `push_subscriptions`; REST `/api/me/push/**` (controller tests with role
   checks, another user gets 404); `ChannelType.WEB_PUSH` + `PushChannel` in `DeliveryDispatcher`
   (404/410 → delete the subscription, 429/5xx → backoff); push as a channel next to messengers in
   `notifications/preferences/` (`PreferencesService`, per-device switch); housekeeping of stale
