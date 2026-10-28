@@ -131,7 +131,7 @@ Design:
 
 ### Stage 325 — Review and AI in the frontend (F, `m3-expressive`)
 
-- [ ] 325.1 F: review page block «Тест: 7 из 10» with the answers, wrong ones first, per-answer
+- [x] 325.1 F: review page block «Тест: 7 из 10» with the answers, wrong ones first, per-answer
   override, the grade suggestion in the grade field (`homework/teacher/task-review-page.ts`);
   per-question stats on `assignment-page.ts`. Unit tests; browser check.
 - [ ] 325.2 F: «Вопросы» mode in the editor's AI pane (`ai/homework-ai-panel.ts`): draft questions

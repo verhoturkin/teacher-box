@@ -206,6 +206,39 @@ export interface QuizView {
   readonly results: readonly QuizResult[] | null;
 }
 
+/** One question of the best attempt for the teacher; `answer` is `null` when it was left blank. */
+export interface ReviewResult {
+  readonly question: Question;
+  readonly answer: QuizAnswer | null;
+  readonly correct: boolean;
+  readonly points: number;
+  /** The teacher changed the verdict. */
+  readonly overridden: boolean;
+}
+
+/** The quiz in the task review: the best attempt with the key and the verdicts. */
+export interface QuizReview {
+  readonly maxPoints: number;
+  readonly attemptsUsed: number;
+  /** «7 из 10» for the grade field; `null` — no submitted attempt. */
+  readonly suggestedGrade: string | null;
+  readonly best: QuizAttempt | null;
+  readonly results: readonly ReviewResult[];
+}
+
+export interface QuestionStats {
+  readonly questionId: string;
+  readonly text: string;
+  /** Students whose best attempt has the question wrong or blank. */
+  readonly wrong: number;
+}
+
+export interface QuizStats {
+  /** Students with a submitted attempt. */
+  readonly students: number;
+  readonly questions: readonly QuestionStats[];
+}
+
 export interface AssignmentDetails {
   readonly id: string;
   readonly title: string;
@@ -257,6 +290,8 @@ export interface TaskDetails {
   readonly overdue: boolean;
   readonly assignment: AssignmentInfo;
   readonly submissions: Submission[];
+  /** The quiz with its key; `null`/absent — the assignment has no questions. */
+  readonly quiz?: QuizReview | null;
 }
 
 export interface ReviewQueueItem {

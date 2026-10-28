@@ -36,7 +36,7 @@ import { T } from '../i18n/texts';
 const SAVE_DELAY_MS = 600;
 
 /** The answer as lines of text for the result; matching gives a line per pair. */
-function answerLines(question: Question, answer: QuizAnswer | null): string[] {
+export function answerLines(question: Question, answer: QuizAnswer | null): string[] {
   if (answer === null) {
     return [];
   }
@@ -63,7 +63,7 @@ function answerLines(question: Question, answer: QuizAnswer | null): string[] {
 }
 
 /** The key of a question as lines of text. */
-function keyLines(question: Question): string[] {
+export function keyLines(question: Question): string[] {
   switch (question.type) {
     case 'SINGLE_CHOICE':
     case 'MULTIPLE_CHOICE':

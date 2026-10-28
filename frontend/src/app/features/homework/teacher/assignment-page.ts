@@ -29,6 +29,7 @@ import {
   AssignmentDetails,
   Attachment,
   BoundTextbook,
+  QuizStats,
   TaskSummary,
 } from '../data-access/homework.models';
 import { AttachmentList } from '../ui/attachment-list';
@@ -190,6 +191,30 @@ import { T } from '../i18n/texts';
           </div>
         </section>
 
+        @if (stats(); as quizStats) {
+          <section>
+            <h2 class="tb-asg__label">{{ tq.stats }}</h2>
+            @if (quizStats.students === 0) {
+              <p class="tb-muted">{{ tq.statsNone }}</p>
+            } @else {
+              <p class="tb-muted">{{ tq.statsHint(quizStats.students) }}</p>
+              <ol class="tb-asg-stats">
+                @for (q of quizStats.questions; track q.questionId; let n = $index) {
+                  <li class="tb-asg-stats__row">
+                    <span class="tb-asg-stats__text">{{ n + 1 }}. {{ plain(q.text) }}</span>
+                    <span class="tb-asg-stats__count">{{
+                      tq.statsRow(q.wrong, quizStats.students)
+                    }}</span>
+                    <span class="tb-asg-stats__bar" aria-hidden="true"
+                      ><span [style.inline-size.%]="(q.wrong / quizStats.students) * 100"></span
+                    ></span>
+                  </li>
+                }
+              </ol>
+            }
+          </section>
+        }
+
         <section>
           <div class="tb-asg__head">
             <h2 class="tb-asg__label">{{ t.students }}</h2>
@@ -284,6 +309,43 @@ import { T } from '../i18n/texts';
       text-transform: uppercase;
     }
 
+    /* the mistakes of a question: text and count over a bar of the share of students (our decision) */
+    .tb-asg-stats {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--tb-space-3);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .tb-asg-stats__row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: var(--tb-space-1) var(--tb-space-3);
+      overflow-wrap: anywhere;
+    }
+
+    .tb-asg-stats__count {
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-label-m);
+      white-space: nowrap;
+    }
+
+    .tb-asg-stats__bar {
+      grid-column: 1 / -1;
+      block-size: 4px;
+      border-radius: var(--tb-shape-full, 999px);
+      background: var(--p-md-surface-container-highest);
+      overflow: hidden;
+    }
+
+    .tb-asg-stats__bar > span {
+      display: block;
+      block-size: 100%;
+      background: var(--p-md-error);
+    }
+
     .tb-asg__head {
       display: flex;
       align-items: center;
@@ -357,18 +419,31 @@ export class AssignmentPage {
   protected readonly boardPages = signal<string | null>(null);
   /** The bound textbook whose pages change; `null` binds a new one. */
   protected readonly binding = signal<BoundTextbook | null>(null);
+  protected readonly tq = T.quizReview;
+  protected readonly stats = signal<QuizStats | null>(null);
   protected readonly newFiles = signal<File[]>([]);
   protected readonly uploading = signal(false);
 
   protected readonly state = new LoadState();
 
   protected load(): void {
+    this.stats.set(null);
     this.api
       .assignment(this.assignmentId())
       .pipe(this.state.track())
       .subscribe((assignment) => {
         this.details.set(assignment);
+        if (assignment.questions.length > 0) {
+          this.api.quizStats(assignment.id).subscribe((stats) => {
+            this.stats.set(stats);
+          });
+        }
       });
+  }
+
+  /** A question's Markdown as one plain line for the stats. */
+  protected plain(text: string): string {
+    return text.replace(/[#*_`>-]/g, '').trim();
   }
 
   protected date(value: string): string {

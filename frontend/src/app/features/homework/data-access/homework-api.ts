@@ -13,6 +13,7 @@ import {
   ReviewDecision,
   ReviewQueueItem,
   QuizAnswer,
+  QuizStats,
   QuizView,
   TaskDetails,
   VideoTranscript,
@@ -133,6 +134,23 @@ export class HomeworkApi {
 
   task(taskId: string): Observable<TaskDetails> {
     return this.http.get<TaskDetails>(`${TEACHER}/tasks/${taskId}`, { context: quietContext() });
+  }
+
+  /** The teacher's verdict on one answer of the best attempt. */
+  overrideQuizAnswer(
+    taskId: string,
+    questionId: string,
+    correct: boolean,
+  ): Observable<TaskDetails> {
+    return this.http.put<TaskDetails>(`${TEACHER}/tasks/${taskId}/quiz/answers/${questionId}`, {
+      correct,
+    });
+  }
+
+  quizStats(assignmentId: string): Observable<QuizStats> {
+    return this.http.get<QuizStats>(`${TEACHER}/assignments/${assignmentId}/quiz/stats`, {
+      context: quietContext(),
+    });
   }
 
   review(

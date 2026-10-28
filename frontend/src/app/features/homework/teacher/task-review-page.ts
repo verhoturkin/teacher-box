@@ -34,6 +34,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { pageDetail } from '@core/routing/page-detail';
 import { T } from '../i18n/texts';
 import { MaterialOpener } from './material-opener';
+import { QuizReviewBlock } from './quiz-review';
 import { ReviewForm } from './review-form';
 
 /** Teacher: review of one student's work. */
@@ -54,6 +55,7 @@ import { ReviewForm } from './review-form';
     MarkdownView,
     AttachmentList,
     SubmissionList,
+    QuizReviewBlock,
     TaskStatusTag,
     ToBoardDialog,
     PageHeader,
@@ -120,6 +122,10 @@ import { ReviewForm } from './review-form';
           <h2 class="tb-task__label">{{ t.answer }}</h2>
           <tb-submission-list [submissions]="task.submissions" (download)="download($event)" />
         </section>
+
+        @if (task.quiz; as quiz) {
+          <tb-quiz-review [taskId]="task.taskId" [quiz]="quiz" (changed)="quizChanged($event)" />
+        }
 
         @if (sheet() && (task.status === 'SUBMITTED' || task.status === 'ACCEPTED')) {
           <!-- the review is in the side sheet beside the work (extra-large) -->
@@ -367,6 +373,16 @@ export class TaskReviewPage {
       this.changed.emit();
       this.snackbar.success(decision === 'ACCEPT' ? T.review.accepted : T.review.returned);
     });
+  }
+
+  /** A verdict on an answer: the score and the suggested grade follow, what the teacher typed stays. */
+  protected quizChanged(task: TaskDetails): void {
+    const previous = this.task();
+    this.task.set(task);
+    this.loaded.emit(task);
+    if (previous !== null) {
+      this.reviewForm.refresh(previous, task);
+    }
   }
 
   protected latestAnswer(task: TaskDetails): string | null {
