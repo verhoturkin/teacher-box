@@ -67,8 +67,10 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
   one `WEB_PUSH` delivery per subscription next to the messenger ones, under the same muted topics
   and quiet hours of `Preferences`; `externalId` is the subscription id, `text` the title.
   `PushChannel` (called by `DeliveryDispatcher`) reads the inbox record and sends
-  `{notification:{title, body, tag, data:{url, onActionClick}}}` (the format `ngsw` shows by itself;
-  url via `Portal.link`, TTL one day, nothing beyond the inbox record). A gone device (unsubscribed,
+  `{notification:{title, body, icon, badge, tag, data:{url, onActionClick}}}` (the format `ngsw` shows
+  by itself; `icon` is the transparent `/push-icon.png`, so Chrome on Android draws no letter avatar,
+  `badge` the monochrome `/push-badge.png`; urls via `Portal.link`, TTL one day,
+  nothing beyond the inbox record). A gone device (unsubscribed,
   404 / 410) is deleted and the delivery ends `SENT` without a failure; 429 / 5xx / no connection
   retry with the queue backoff; other 4xx fail the delivery. Each failure adds to `failures`, a
   success resets it; `NotificationsHousekeeping` deletes subscriptions that failed and have taken

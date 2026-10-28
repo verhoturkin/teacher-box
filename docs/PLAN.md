@@ -43,7 +43,7 @@ full-screen dialogs on a phone. No new ADR.
   the gesture bar with `env(safe-area-inset-bottom)` padding; check that the FAB, the review
   floating toolbar, snackbars and bottom sheets stay above the gesture area. `system-bars.ts` keeps
   `theme-color` for the status bar. Update design-system «System bars».
-- [ ] 327.4 **B** Push without the letter circle: Chrome on Android draws a letter avatar of the
+- [x] 327.4 **B** Push without the letter circle: Chrome on Android draws a letter avatar of the
   origin when a notification has no `icon`. `notifications/application/PushChannel.payload` adds
   `icon` — a transparent 1×1 PNG served by the frontend (`frontend/public/`) — and `badge` — a
   monochrome app icon; absolute links via `Portal.link`. Test of the payload.
