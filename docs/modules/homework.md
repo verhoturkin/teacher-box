@@ -85,6 +85,13 @@ when the reveal rule allows: `AFTER_SUBMIT` — once an attempt is submitted, `A
 (never without one), `NEVER`. Attempts are refused once the task is submitted / accepted
 (`homework.quiz-closed`); an overdue task still takes attempts. «Сдать» submits the open attempt; with
 questions, no text and no files it creates no submission row (a quiz alone is an answer).
+Teacher review: `GET /api/teacher/homework/tasks/{id}` carries `quiz` (never in the student's task): the
+best attempt (most points, earliest on a tie) with each question, key, answer, verdict and `overridden`,
+and `suggestedGrade` «N из M» for the grade field (the teacher still types the grade).
+`PUT /api/teacher/homework/tasks/{id}/quiz/answers/{questionId}` `{correct}` overrides one answer of the
+best attempt (points = the question's or 0) and recomputes the attempt score; a blank answer cannot be
+overridden (404 `homework.quiz-answer-not-found`). `GET assignments/{id}/quiz/stats` — per question,
+how many students (of those with a submitted attempt) got it wrong in their best attempt.
 
 ## REST
 

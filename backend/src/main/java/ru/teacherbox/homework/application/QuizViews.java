@@ -90,6 +90,30 @@ public final class QuizViews {
     public record QuestionResult(QuestionView question, @Nullable AnswerInput answer, boolean correct, int points) {
     }
 
+    /** One question of the best attempt for the teacher; {@code answer} is {@code null} when it was left blank. */
+    public record ReviewResult(QuestionView question, @Nullable AnswerInput answer, boolean correct, int points,
+            boolean overridden) {
+    }
+
+    /**
+     * The quiz in the task review: the best attempt with the key and the verdicts.
+     *
+     * @param suggestedGrade «N из M» for the grade field; {@code null} — no submitted attempt
+     * @param best           the best submitted attempt, {@code null} — none yet
+     * @param results        questions of {@code best} in the teacher's order, empty without it
+     */
+    public record QuizReview(int maxPoints, int attemptsUsed, @Nullable String suggestedGrade,
+            @Nullable AttemptView best, List<ReviewResult> results) {
+    }
+
+    /** @param wrong students whose best attempt has this question wrong or blank, out of {@code students} */
+    public record QuestionStats(UUID questionId, String text, int wrong) {
+    }
+
+    /** @param students students with a submitted attempt */
+    public record QuizStats(int students, List<QuestionStats> questions) {
+    }
+
     /**
      * @param attemptsAllowed {@code null} — unlimited
      * @param attemptsLeft    {@code null} — unlimited

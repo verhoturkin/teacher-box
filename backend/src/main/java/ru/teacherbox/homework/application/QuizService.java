@@ -4,12 +4,15 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.homework.application.HomeworkViews.QuestionView;
@@ -18,8 +21,12 @@ import ru.teacherbox.homework.application.QuizViews.AttemptView;
 import ru.teacherbox.homework.application.QuizViews.Item;
 import ru.teacherbox.homework.application.QuizViews.OpenAttempt;
 import ru.teacherbox.homework.application.QuizViews.QuestionResult;
+import ru.teacherbox.homework.application.QuizViews.QuestionStats;
 import ru.teacherbox.homework.application.QuizViews.QuizQuestion;
+import ru.teacherbox.homework.application.QuizViews.QuizReview;
+import ru.teacherbox.homework.application.QuizViews.QuizStats;
 import ru.teacherbox.homework.application.QuizViews.QuizView;
+import ru.teacherbox.homework.application.QuizViews.ReviewResult;
 import ru.teacherbox.homework.domain.Assignment;
 import ru.teacherbox.homework.domain.HomeworkTask;
 import ru.teacherbox.homework.domain.quiz.Answer;
@@ -39,6 +46,7 @@ import ru.teacherbox.homework.persistence.TaskRepository;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.i18n.Language;
 
 /**
  * Quiz attempts of a student (ADR-0052). The key leaves this class only in {@link QuizView#results()}, once the
@@ -127,6 +135,86 @@ public class QuizService {
             }
         }
         return !all.isEmpty();
+    }
+
+    /** The quiz for the teacher's review; {@code null} when the assignment has no questions. */
+    @Nullable
+    QuizReview review(HomeworkTask task) {
+        List<Question> list = questions.findByAssignment(task.assignmentId());
+        if (list.isEmpty()) {
+            return null;
+        }
+        List<QuizAttempt> all = attempts.findByTask(task.id());
+        QuizAttempt best = bestOf(all);
+        if (best == null) {
+            return new QuizReview(Quiz.maxPoints(list), all.size(), null, null, List.of());
+        }
+        Map<UUID, QuizAnswer> given = attempts.findAnswers(best.id()).stream()
+                .collect(Collectors.toMap(QuizAnswer::questionId, Function.identity()));
+        List<ReviewResult> results = list.stream().map(q -> {
+            QuizAnswer a = given.get(q.id());
+            return new ReviewResult(QuestionView.of(q), a == null ? null : AnswerInput.of(a.answer()),
+                    a != null && a.correct(), a == null ? 0 : a.points(), a != null && a.overridden());
+        }).toList();
+        return new QuizReview(Quiz.maxPoints(list), all.size(), suggestion(best), attemptView(best), results);
+    }
+
+    /** The teacher's verdict on one answer of the best attempt; the attempt score follows. */
+    @Transactional
+    void override(HomeworkTask task, UUID questionId, boolean correct) {
+        Question question = questions.findByAssignment(task.assignmentId()).stream()
+                .filter(q -> q.id().equals(questionId)).findFirst()
+                .orElseThrow(() -> new NotFoundException("homework.quiz-question-not-found", "Question not found"));
+        QuizAttempt best = bestOf(attempts.findByTask(task.id()));
+        if (best == null) {
+            throw new NotFoundException("homework.quiz-attempt-not-found", "Attempt not found");
+        }
+        QuizAnswer answer = attempts.findAnswers(best.id()).stream().filter(a -> a.questionId().equals(questionId))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("homework.quiz-answer-not-found", "Answer not found"));
+        attempts.saveAnswer(new QuizAnswer(best.id(), questionId, answer.answer(), correct,
+                correct ? question.points() : 0, true));
+        int score = attempts.findAnswers(best.id()).stream().mapToInt(QuizAnswer::points).sum();
+        attempts.submit(best.id(), Objects.requireNonNull(best.submittedAt()), score,
+                Objects.requireNonNull(best.maxPoints()));
+    }
+
+    /** How many students got each question wrong in their best attempt. */
+    @Transactional(readOnly = true)
+    QuizStats stats(UUID assignmentId) {
+        List<Question> list = questions.findByAssignment(assignmentId);
+        Map<UUID, Integer> wrong = new LinkedHashMap<>();
+        list.forEach(q -> wrong.put(q.id(), 0));
+        int students = 0;
+        for (HomeworkTask task : tasks.findByAssignment(assignmentId)) {
+            QuizAttempt best = bestOf(attempts.findByTask(task.id()));
+            if (best == null) {
+                continue;
+            }
+            students++;
+            Set<UUID> right = attempts.findAnswers(best.id()).stream().filter(QuizAnswer::correct)
+                    .map(QuizAnswer::questionId).collect(Collectors.toSet());
+            wrong.replaceAll((id, n) -> right.contains(id) ? n : n + 1);
+        }
+        return new QuizStats(students, list.stream().map(q -> new QuestionStats(q.id(), q.text(), wrong.get(q.id())))
+                .toList());
+    }
+
+    /** The submitted attempt with the most points (the earliest on a tie). */
+    @Nullable
+    private static QuizAttempt bestOf(List<QuizAttempt> all) {
+        return all.stream().filter(a -> a.submittedAt() != null)
+                .max(Comparator.comparingInt((QuizAttempt a) -> Objects.requireNonNull(a.scorePoints()))
+                        .thenComparing(Comparator.comparing(QuizAttempt::startedAt).reversed()))
+                .orElse(null);
+    }
+
+    /** «N из M» for the grade field, in the language of the page. */
+    private static String suggestion(QuizAttempt best) {
+        return switch (Language.current()) {
+            case RU -> best.scorePoints() + " из " + best.maxPoints();
+            case EN -> best.scorePoints() + " of " + best.maxPoints();
+        };
     }
 
     private void close(QuizAttempt attempt, List<Question> list, Instant now) {

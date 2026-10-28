@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.homework.api.HomeworkReviewed;
 import ru.teacherbox.homework.application.HomeworkViews.ReviewQueueItem;
 import ru.teacherbox.homework.application.HomeworkViews.TaskDetails;
+import ru.teacherbox.homework.application.QuizViews.QuizStats;
 import ru.teacherbox.homework.domain.Assignment;
 import ru.teacherbox.homework.domain.HomeworkTask;
 import ru.teacherbox.homework.persistence.AssignmentRepository;
@@ -35,11 +36,13 @@ public class ReviewService {
     private final AssignmentRepository assignments;
     private final TaskDetailsAssembler assembler;
     private final UserDirectory directory;
+    private final QuizService quiz;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
     public ReviewService(TaskRepository tasks, AssignmentRepository assignments, TaskDetailsAssembler assembler,
-            UserDirectory directory, ApplicationEventPublisher events, Clock clock) {
+            UserDirectory directory, QuizService quiz, ApplicationEventPublisher events, Clock clock) {
+        this.quiz = quiz;
         this.tasks = tasks;
         this.assignments = assignments;
         this.assembler = assembler;
@@ -72,7 +75,23 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public TaskDetails task(UUID taskId) {
-        return assembler.details(load(taskId));
+        return assembler.details(load(taskId), true);
+    }
+
+    /** Marks one answer of the task's best attempt right or wrong and recomputes the score. */
+    @Transactional
+    public TaskDetails overrideAnswer(UUID taskId, UUID questionId, boolean correct) {
+        HomeworkTask task = load(taskId);
+        quiz.override(task, questionId, correct);
+        return assembler.details(task, true);
+    }
+
+    /** Per-question results of the assignment's quiz. */
+    @Transactional(readOnly = true)
+    public QuizStats quizStats(UUID assignmentId) {
+        assignments.findById(assignmentId)
+                .orElseThrow(() -> new NotFoundException("assignment.not-found", "Assignment not found"));
+        return quiz.stats(assignmentId);
     }
 
     @Transactional
@@ -87,7 +106,7 @@ public class ReviewService {
         String title = assignments.findById(task.assignmentId()).map(Assignment::title).orElse("");
         events.publishEvent(new HomeworkReviewed(task.id(), task.assignmentId(), task.studentId(), title,
                 decision == Decision.ACCEPT, task.grade(), now));
-        return assembler.details(task);
+        return assembler.details(task, true);
     }
 
     private HomeworkTask load(UUID taskId) {

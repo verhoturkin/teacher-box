@@ -15,6 +15,7 @@ import ru.teacherbox.homework.domain.quiz.Numeric;
 import ru.teacherbox.homework.domain.quiz.Option;
 import ru.teacherbox.homework.domain.quiz.Ordering;
 import ru.teacherbox.homework.domain.quiz.Pair;
+import ru.teacherbox.homework.application.QuizViews.QuizReview;
 import ru.teacherbox.homework.domain.quiz.Question;
 import ru.teacherbox.homework.domain.quiz.QuestionType;
 import ru.teacherbox.homework.domain.quiz.RevealRule;
@@ -196,7 +197,7 @@ public final class HomeworkViews {
             List<VideoView> videos) {
     }
 
-    /** A task with the assignment, all submissions (newest first) and the review. */
+    /** A task with the assignment, all submissions (newest first) and the review; {@code quiz} — teacher only. */
     public record TaskDetails(
             UUID taskId,
             UUID studentId,
@@ -209,7 +210,8 @@ public final class HomeworkViews {
             @Nullable Instant reviewedAt,
             boolean overdue,
             AssignmentInfo assignment,
-            List<SubmissionView> submissions) {
+            List<SubmissionView> submissions,
+            @Nullable QuizReview quiz) {
     }
 
     /** @param studentAvatar address of the student's photo; {@code null}: none */

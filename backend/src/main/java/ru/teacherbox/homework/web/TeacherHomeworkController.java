@@ -35,6 +35,7 @@ import ru.teacherbox.homework.application.HomeworkViews.MyTask;
 import ru.teacherbox.homework.application.HomeworkViews.ReviewQueueItem;
 import ru.teacherbox.homework.application.HomeworkViews.TaskDetails;
 import ru.teacherbox.homework.application.HomeworkViews.VideoInput;
+import ru.teacherbox.homework.application.QuizViews;
 import ru.teacherbox.homework.application.ReviewService;
 import ru.teacherbox.homework.application.StudentHomeworkService;
 import ru.teacherbox.homework.application.VideoCaptions;
@@ -209,6 +210,9 @@ class TeacherHomeworkController {
             @Size(max = 5_000) @Nullable String comment) {
     }
 
+    record OverrideRequest(@NotNull Boolean correct) {
+    }
+
     private final AssignmentService assignments;
     private final ReviewService reviews;
     private final HomeworkSummaryService summaries;
@@ -339,6 +343,18 @@ class TeacherHomeworkController {
     @PostMapping("/tasks/{taskId}/review")
     TaskDetails review(@PathVariable UUID taskId, @Valid @RequestBody ReviewRequest request) {
         return reviews.review(taskId, request.decision(), request.grade(), request.comment());
+    }
+
+    /** The teacher's verdict on one answer of the best attempt; recomputes the score. */
+    @PutMapping("/tasks/{taskId}/quiz/answers/{questionId}")
+    TaskDetails overrideAnswer(@PathVariable UUID taskId, @PathVariable UUID questionId,
+            @Valid @RequestBody OverrideRequest request) {
+        return reviews.overrideAnswer(taskId, questionId, request.correct());
+    }
+
+    @GetMapping("/assignments/{assignmentId}/quiz/stats")
+    QuizViews.QuizStats quizStats(@PathVariable UUID assignmentId) {
+        return reviews.quizStats(assignmentId);
     }
 
     private static List<VideoInput> inputs(@Nullable List<VideoRequest> videos) {

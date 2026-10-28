@@ -103,7 +103,7 @@ Design:
 
 ### Stage 321 — Review results and stats (B)
 
-- [ ] 321.1 B: quiz result in the task review details (`TaskDetailsAssembler`), grade suggestion
+- [x] 321.1 B: quiz result in the task review details (`TaskDetailsAssembler`), grade suggestion
   «N из M», per-answer override `PUT /api/teacher/homework/tasks/{id}/quiz/answers/{questionId}`
   (recomputes the attempt score), per-question stats of an assignment. Tests incl. roles.
 

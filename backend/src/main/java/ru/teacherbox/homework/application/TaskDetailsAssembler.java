@@ -31,11 +31,13 @@ class TaskDetailsAssembler {
     private final TextbookBindings textbooks;
     private final AssignmentVideos videos;
     private final UserDirectory directory;
+    private final QuizService quiz;
     private final Clock clock;
 
     TaskDetailsAssembler(AssignmentRepository assignments, SubmissionRepository submissions,
             AttachmentService attachments, TextbookBindings textbooks, AssignmentVideos videos, UserDirectory directory,
-            Clock clock) {
+            QuizService quiz, Clock clock) {
+        this.quiz = quiz;
         this.assignments = assignments;
         this.submissions = submissions;
         this.attachments = attachments;
@@ -46,6 +48,11 @@ class TaskDetailsAssembler {
     }
 
     TaskDetails details(HomeworkTask task) {
+        return details(task, false);
+    }
+
+    /** @param teacher whether the viewer is the teacher: only they get the quiz with its key */
+    TaskDetails details(HomeworkTask task, boolean teacher) {
         Assignment assignment = assignments.findById(task.assignmentId())
                 .orElseThrow(() -> new IllegalStateException("Task " + task.id() + " has no assignment"));
         List<Submission> taskSubmissions = submissions.findByTask(task.id());
@@ -70,7 +77,8 @@ class TaskDetailsAssembler {
                 taskSubmissions.stream()
                         .map(submission -> new SubmissionView(submission.id(), submission.text(),
                                 submission.submittedAt(), submissionFiles.getOrDefault(submission.id(), List.of())))
-                        .toList());
+                        .toList(),
+                teacher ? quiz.review(task) : null);
     }
 
     /** In the language of the page (ADR-0036). */
