@@ -425,7 +425,9 @@ export class ScheduleCalendar {
             start: moved.startsAt,
             end: new Date(moved.startsAt.getTime() + lesson.durationMinutes * 60_000),
           }),
-      editable: editable && lesson.status === 'SCHEDULED' && moved?.saving !== true,
+      // not `editable`: it would also switch on resizing
+      durationEditable: false,
+      startEditable: editable && lesson.status === 'SCHEDULED' && moved?.saving !== true,
       className: classes.join(' '),
     };
   }

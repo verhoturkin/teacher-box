@@ -327,7 +327,9 @@ for the active navigation item and checked states.
 - **Tabs** `tb-tabs` (**M3** primary fixed tabs, every tab bar): no container, 48 dp, Title Small,
   label primary when active, a 3 dp primary indicator with 3 dp rounded top corners as wide as the
   label (`::after` of `tb-tab-label`), one 1 dp outline-variant divider under the bar; tabs share
-  the width equally (on a phone they keep their label width and scroll). The tab is in the address
+  the width equally (on a phone they keep their label width and scroll, unless the bar has the
+  modifier `tb-tabs--fixed`: two or three short labels that share the width on every width, as
+  the bell's «Входящие · Отправленные»). The tab is in the address
   (`?tab=`), the default one left out.
 
 ## 7. Panes and page anatomy

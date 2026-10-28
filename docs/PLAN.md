@@ -31,7 +31,7 @@ full-screen dialogs on a phone. No new ADR.
   `homework.quiz-answer-not-found` (404, «Не найдено…») when the best attempt has no answer row for
   the question; save a new `QuizAnswer` with an empty answer instead and recount the score. Test in
   the quiz integration tests: override of an unanswered question → 204 and the score grows.
-- [ ] 327.2 **F** Small frontend fixes: (a) `schedule/ui/schedule-calendar.ts` `toEvent` sets
+- [x] 327.2 **F** Small frontend fixes: (a) `schedule/ui/schedule-calendar.ts` `toEvent` sets
   `startEditable` instead of `editable`, so a lesson can be moved but never resized from its bottom
   edge; (b) the second «?» in homework: drop `tb-help-button` from the detail panes
   `assignment-page.ts` and `task-review-page.ts` (the list pane keeps it); (c) the scrollbar of

@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { FullCalendarComponent } from '@fullcalendar/angular';
 import { changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { hostElement, readableText, requireElement } from '@testing/dom';
 import { TeacherColors } from '@features/identity/parts';
@@ -235,6 +237,18 @@ describe('ScheduleCalendar', () => {
     fixture.componentInstance.handleClick('unknown');
 
     expect(clicked.map((lesson) => lesson.id)).toEqual(['l-1']);
+  });
+
+  it('lets a scheduled lesson be moved but not resized', async () => {
+    fixture.componentRef.setInput('editable', true);
+    await render([scheduledLesson()]);
+    const calendar = fixture.debugElement
+      .query(By.directive(FullCalendarComponent))
+      .injector.get(FullCalendarComponent);
+    const event = calendar.getApi().getEvents()[0];
+
+    expect(event?.startEditable).toBe(true);
+    expect(event?.durationEditable).toBe(false);
   });
 
   it('puts back a drop it does not know', async () => {

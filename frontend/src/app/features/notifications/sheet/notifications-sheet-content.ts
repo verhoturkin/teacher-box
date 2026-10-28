@@ -22,7 +22,7 @@ import { T } from '../i18n/texts';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (teacher) {
-      <p-tabs class="tb-tabs" [value]="state.tab()" (valueChange)="choose($event)">
+      <p-tabs class="tb-tabs tb-tabs--fixed" [value]="state.tab()" (valueChange)="choose($event)">
         <p-tablist>
           <p-tab value="inbox">
             <span class="tb-tab-label">
@@ -48,8 +48,10 @@ import { T } from '../i18n/texts';
     }
   `,
   styles: `
-    /* Portal decision: the sheet heading and tabs stay visible; only tab content scrolls. */
+    /* Portal decision: the sheet heading and tabs stay visible; only tab content scrolls. The sheet has no side
+       padding: the tabs and the scrolled content carry the gutter, so the scrollbar sits at the sheet's edge. */
     :host {
+      --tb-notifications-gutter: var(--tb-space-6);
       display: flex;
       flex-direction: column;
       flex: 1;
@@ -67,6 +69,18 @@ import { T } from '../i18n/texts';
 
     p-tablist {
       flex: none;
+      padding-inline: var(--tb-notifications-gutter);
+    }
+
+    p-tabpanel,
+    tb-inbox-panel.tb-notifications-scroll {
+      padding-inline: var(--tb-notifications-gutter);
+    }
+
+    @media (width < 37.5em) {
+      :host {
+        --tb-notifications-gutter: var(--tb-space-4);
+      }
     }
 
     .tb-notifications-scroll {

@@ -3708,6 +3708,11 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
     overflow: hidden;
   }
 
+  /* no side padding: the content's own gutter keeps its scrollbar at the sheet's edge */
+  .p-drawer-content {
+    padding-inline: 0;
+  }
+
   .p-card > .p-card-body {
     padding: 0;
   }
@@ -3729,10 +3734,6 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
     overflow: hidden;
 
     .p-drawer-header {
-      padding-inline: var(--tb-space-4);
-    }
-
-    .p-drawer-content {
       padding-inline: var(--tb-space-4);
     }
   }
@@ -3796,7 +3797,7 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
 
   /* a phone (the sketches): the tabs keep the width of their label and scroll (M3 scrollable tabs) */
   @media (width < 37.5em) {
-    .p-tab {
+    &:not(.tb-tabs--fixed) .p-tab {
       flex: 0 0 auto;
     }
   }

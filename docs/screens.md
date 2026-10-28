@@ -34,7 +34,9 @@ this page in the same commit.
   margins, no shadow, transparent scrim — *ours*), closed by a notification that leads elsewhere.
 - Anatomy: header (headline «Уведомления», «Прочитать все» `done_all`, «×»), the teacher's tabs
   «Входящие N» (badge ≤ 4 characters, **M3**) and «Отправленные» (the student has the inbox only),
-  the tab's content — the only part that scrolls (*ours*).
+  the tab's content — the only part that scrolls (*ours*); the sheet has no side padding, the tabs
+  and the scrolled content carry the 24 dp (16 on compact) gutter, so the scrollbar sits at the
+  sheet's edge. The two tabs are `tb-tabs--fixed`: equal width, centred labels on every width.
 - «Входящие»: unread items (`tb-list--no-lead`, titles emphasized, no dots; a tick on a computer; a
   swipe on a phone marks read, no tick there), «Показать ещё», then the folded «Прочитанные».
   «Отправленные»: a line of explanation with «Написать ученикам» (opens the new-message dialog) and
@@ -241,7 +243,8 @@ active on both, `NavItem.alsoActive`).
 ## Homework (teacher)
 
 Three panes of one route (`/teacher/homework[/tasks/:taskId | /:assignmentId]`,
-`features/homework/teacher/`):
+`features/homework/teacher/`); the «?» help button is in the list pane and the editor only, the
+detail panes do not repeat it:
 
 - **List** (fixed pane): the connected group «На проверку · Активные · Готовые» with counts, the
   search always above the list (kept in the address as `?q=`); tonal rows (`tb-list--clamp`) — a
