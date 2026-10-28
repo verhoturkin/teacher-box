@@ -12,6 +12,8 @@ import {
   MyTask,
   ReviewDecision,
   ReviewQueueItem,
+  QuizAnswer,
+  QuizView,
   TaskDetails,
   VideoTranscript,
   CaptionTrack,
@@ -173,6 +175,32 @@ export class HomeworkApi {
       form.append('text', text);
     }
     return this.http.post<TaskDetails>(`${ME}/tasks/${taskId}/submissions`, form);
+  }
+
+  myQuiz(taskId: string): Observable<QuizView> {
+    return this.http.get<QuizView>(`${ME}/tasks/${taskId}/quiz`, { context: quietContext() });
+  }
+
+  startQuizAttempt(taskId: string): Observable<QuizView> {
+    return this.http.post<QuizView>(`${ME}/tasks/${taskId}/quiz/attempts`, {});
+  }
+
+  /** Autosave of one answer of the attempt in progress. */
+  saveQuizAnswer(
+    taskId: string,
+    attemptId: string,
+    questionId: string,
+    answer: QuizAnswer,
+  ): Observable<unknown> {
+    return this.http.put(
+      `${ME}/tasks/${taskId}/quiz/attempts/${attemptId}/answers/${questionId}`,
+      answer,
+      { context: quietContext() },
+    );
+  }
+
+  submitQuizAttempt(taskId: string, attemptId: string): Observable<QuizView> {
+    return this.http.post<QuizView>(`${ME}/tasks/${taskId}/quiz/attempts/${attemptId}/submit`, {});
   }
 
   /** The bound pages of a textbook (a PDF cut to them). */

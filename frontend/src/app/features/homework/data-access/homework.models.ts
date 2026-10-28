@@ -142,6 +142,70 @@ export interface Question {
   readonly pairs: readonly QuestionPair[];
 }
 
+/** An option, an ordering item or one side of a matching pair as the student sees it (no key). */
+export interface QuizItem {
+  readonly id: string;
+  readonly text: string;
+}
+
+/** A question without the key; options, items and the right column are shuffled by the server. */
+export interface QuizQuestion {
+  readonly id: string;
+  readonly type: QuestionType;
+  readonly text: string;
+  readonly points: number;
+  readonly options: readonly QuizItem[];
+  readonly left: readonly QuizItem[];
+  readonly right: readonly QuizItem[];
+}
+
+/** The student's answer; the field used depends on the question type. */
+export interface QuizAnswer {
+  readonly ids?: readonly string[] | null;
+  readonly text?: string | null;
+  readonly number?: number | null;
+  /** Left pair id → right pair id. */
+  readonly pairs?: Readonly<Record<string, string>> | null;
+}
+
+export interface QuizAttempt {
+  readonly id: string;
+  readonly startedAt: string;
+  readonly submittedAt: string | null;
+  readonly scorePoints: number | null;
+  readonly maxPoints: number | null;
+}
+
+export interface QuizOpenAttempt {
+  readonly id: string;
+  readonly startedAt: string;
+  readonly answers: Readonly<Record<string, QuizAnswer>>;
+}
+
+/** A question of the best attempt with the key; only after the reveal rule allows it. */
+export interface QuizResult {
+  readonly question: Question;
+  readonly answer: QuizAnswer | null;
+  readonly correct: boolean;
+  readonly points: number;
+}
+
+/** The quiz of a task for the student. */
+export interface QuizView {
+  readonly questions: readonly QuizQuestion[];
+  readonly maxPoints: number;
+  readonly reveal: QuizReveal;
+  /** `null` — unlimited. */
+  readonly attemptsAllowed: number | null;
+  readonly attemptsUsed: number;
+  readonly attemptsLeft: number | null;
+  readonly canStart: boolean;
+  readonly openAttempt: QuizOpenAttempt | null;
+  readonly attempts: readonly QuizAttempt[];
+  readonly best: QuizAttempt | null;
+  readonly results: readonly QuizResult[] | null;
+}
+
 export interface AssignmentDetails {
   readonly id: string;
   readonly title: string;

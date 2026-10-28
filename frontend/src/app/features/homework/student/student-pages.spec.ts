@@ -314,7 +314,7 @@ describe('MyTaskPage', () => {
     );
     fixture.componentInstance.files.set([new File(['x'], 'virus.exe')]);
 
-    fixture.componentInstance.submit();
+    await fixture.componentInstance.submit();
     backend
       .expectOne('/api/me/homework/tasks/t-1/submissions')
       .flush(

@@ -124,7 +124,7 @@ Design:
 
 ### Stage 324 — Student quiz (F, `m3-expressive`)
 
-- [ ] 324.1 F: quiz on `homework/student/my-task-page.ts`: one question per screen on compact, a
+- [x] 324.1 F: quiz on `homework/student/my-task-page.ts`: one question per screen on compact, a
   list on wide; inputs for the six types (matching and ordering usable by touch and keyboard, no
   drag-only interaction); autosave; submit with confirmation; result view (score, correct answers
   when revealed, explanations), new attempt when allowed. Unit tests; browser check.
