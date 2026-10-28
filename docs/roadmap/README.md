@@ -22,7 +22,7 @@ How to use:
 | 04 | [Invoices with a payment QR](04-invoices.md) | billing, notifications | M | yes | 03 (soft) |
 | 05 | [Parent access](05-parent-access.md) | identity, every module, platform | XL | yes | — |
 | 06 | [Auto-checked quizzes](06-quizzes.md) | homework, ai | L | yes | — |
-| 07 | [Installable app and web push](07-pwa-web-push.md) | frontend, notifications | M | yes | — |
+| 07 | Installable app and web push — moved to [`PLAN.md`](../PLAN.md) v0.38.0 (stages 312–317) | frontend, notifications | M | yes | — |
 | 08 | [Self-booking of free slots](08-self-booking.md) | schedule, notifications | L | yes | — |
 | 09 | [Calls: «ученик ждёт» and recording](09-calls-waiting-recording.md) | meetings, notifications, docker | L | yes | — |
 | 10 | [Spaced repetition](10-spaced-repetition.md) | new module `practice`, ai | XL | yes | 06 (soft) |
