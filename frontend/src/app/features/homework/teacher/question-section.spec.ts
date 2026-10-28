@@ -214,18 +214,21 @@ describe('QuestionSection', () => {
     expect(section.questions()[1]?.pairs).toHaveLength(2);
   });
 
-  it('shows what is wrong once asked, the server error and no add buttons at the limit', async () => {
+  it('shows what is wrong once asked and the server error', async () => {
     section.add('SHORT_TEXT');
     fixture.componentRef.setInput('showProblems', true);
     fixture.componentRef.setInput('error', 'Вопросы не сохранены');
     await fixture.whenStable();
     expect(readableText(host)).toContain('Напишите текст вопроса');
     expect(readableText(host)).toContain('Вопросы не сохранены');
+  });
 
+  // Rendering 50 questions took 5.7 s on CI with coverage, over the default 5 s.
+  it('hides the add buttons at the limit', async () => {
     section.questions.set(Array.from({ length: MAX_QUESTIONS }, () => questionDraft('NUMBER')));
     await fixture.whenStable();
     expect(host.querySelector('.tb-question-types')).toBeNull();
-  });
+  }, 20_000);
 
   it('is read-only once a student started the quiz', async () => {
     section.add('MULTIPLE_CHOICE');
