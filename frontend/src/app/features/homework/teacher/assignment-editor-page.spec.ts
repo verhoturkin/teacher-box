@@ -378,6 +378,31 @@ describe('AssignmentEditorPage', () => {
     expect(page.form.controls.description.value).toBe('1. Найдите 10%\n\n2. Найдите 20%');
   });
 
+  it('puts AI questions into the quiz: appended or replacing', async () => {
+    const { page } = await create([], true);
+    const drafted = (id: string) => ({
+      id,
+      type: 'NUMBER' as const,
+      text: `Вопрос ${id}`,
+      points: 1,
+      explanation: null,
+      options: [],
+      correct: [],
+      accepted: [],
+      value: 2,
+      tolerance: 0,
+      pairs: [],
+    });
+
+    page.applyQuestions({ questions: [drafted('a')], mode: 'append' });
+    page.applyQuestions({ questions: [drafted('b')], mode: 'append' });
+    expect(page.questions().map((question) => question.text)).toEqual(['Вопрос a', 'Вопрос b']);
+    expect(page.canLeave()).not.toBe(true);
+
+    page.applyQuestions({ questions: [drafted('c')], mode: 'replace' });
+    expect(page.questions().map((question) => question.text)).toEqual(['Вопрос c']);
+  });
+
   it('preserves AI request, sources and draft when the supporting pane is closed', async () => {
     const { page, host } = await create([], true);
     const state = fixture.debugElement.injector.get(HomeworkAiState);

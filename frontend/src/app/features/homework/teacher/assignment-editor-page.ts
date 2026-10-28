@@ -47,6 +47,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import {
   AiApi,
   AppliedDraft,
+  AppliedQuestions,
   HomeworkAiPanel,
   HomeworkAiState,
   SourceOption,
@@ -84,6 +85,7 @@ import { BindTextbookDialog } from './bind-textbook-dialog';
 import { MaterialOpener } from './material-opener';
 import { NEXT_LESSON_DAYS, nextLessonStart } from './next-lesson';
 import {
+  MAX_QUESTIONS,
   QuestionDraft,
   QuestionSection,
   firstProblem,
@@ -303,7 +305,10 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
               [title]="titleValue()"
               [hasText]="textValue().trim() !== ''"
               [sources]="sourceOptions()"
+              [questionCount]="questions().length"
+              [quizLocked]="quizLocked()"
               (applied)="applyDraft($event)"
+              (questionsApplied)="applyQuestions($event)"
             />
           </tb-pane>
         }
@@ -323,7 +328,10 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
             [title]="titleValue()"
             [hasText]="textValue().trim() !== ''"
             [sources]="sourceOptions()"
+            [questionCount]="questions().length"
+            [quizLocked]="quizLocked()"
             (applied)="applyDraft($event)"
+            (questionsApplied)="applyQuestions($event)"
           />
         </p-drawer>
       }
@@ -705,6 +713,15 @@ ${draft.description}`,
     }
     this.form.markAsDirty();
     this.mode.setValue('preview');
+  }
+
+  /** AI questions go into the quiz; the teacher reviews them in the questions card before saving. */
+  applyQuestions({ questions, mode }: AppliedQuestions): void {
+    const drafted = questions.map((question) => questionDraft(question.type, question));
+    this.changeQuestions(
+      (mode === 'replace' ? drafted : [...this.questions(), ...drafted]).slice(0, MAX_QUESTIONS),
+    );
+    this.form.markAsDirty();
   }
 
   changeVideos(videos: readonly VideoDraft[]): void {
