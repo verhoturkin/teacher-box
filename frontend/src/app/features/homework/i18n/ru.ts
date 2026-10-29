@@ -352,6 +352,7 @@ export const ru = {
     groupCount: (label: string, count: number) => `${label} · ${String(count)}`,
     whom: 'Кому',
     whomAll: 'Кому: все',
+    whomChosen: (name: string) => `Кому: ${name}`,
     everyone: 'Все',
     groupsOption: 'Группы',
     studentsOption: 'Ученики',

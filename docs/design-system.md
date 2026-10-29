@@ -576,6 +576,10 @@ action — «Изменить» next to «Проверить N работ» (hom
   do not fit are measured (`ResizeObserver`) and go to a «Ещё N» chip (trailing drop-down arrow,
   at least 88 dp wide) that opens a menu of them; the first chip and the chosen one always stay in
   the row, so the filter in force is never hidden.
+  **Menu chip** (`[menu]`, **M3** dropdown filter chip; «Кому: все ▾» of the homework list on a
+  phone, homework sketches): a second filter after the set, a trailing drop-down arrow and no check;
+  it opens a menu (`p-menu`), and while a choice is in force it is selected and names it («Кому:
+  Анна»), so the filter in force is visible (*ours*).
 - **Material card** `tb-material-card` (`@shared/ui`): corner 20, surface-container-low, a preview
   on top (8:5; fetched as a blob by `tb-blob-image`, the kind icon while there is none; an external
   board shows a tonal tile with the service tag), the title (Title Medium) and «кому · дата» under

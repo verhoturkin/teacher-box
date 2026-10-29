@@ -344,6 +344,7 @@ export const en: Translation<typeof ru> = {
     groupCount: (label: string, count: number) => `${label} · ${String(count)}`,
     whom: 'For',
     whomAll: 'For: everyone',
+    whomChosen: (name: string) => `For: ${name}`,
     everyone: 'Everyone',
     groupsOption: 'Groups',
     studentsOption: 'Students',

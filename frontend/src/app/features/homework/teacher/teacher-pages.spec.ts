@@ -579,6 +579,31 @@ describe('AssignmentsPage', () => {
       expect(host.querySelectorAll('.tb-list > li')).toHaveLength(1);
     });
 
+    it('has «Кому» as a chip with a menu in the row of the filter chips', async () => {
+      const { backend, host, fixture } = await render(GROUPED, WORKS, 390);
+      backend.expectOne('/api/teacher/students').flush(STUDENTS);
+      backend.expectOne('/api/teacher/groups').flush([aGroup()]);
+      await fixture.whenStable();
+
+      expect(host.querySelector('p-select')).toBeNull();
+      expect(host.querySelector('tb-filter-chips .tb-filter-chip--menu')).not.toBeNull();
+      buttonByText(host, 'Кому: все').click();
+      await fixture.whenStable();
+      const menu = readableText(requireElement(document.body, '.p-menu', HTMLElement));
+      expect(menu).toContain('Все');
+      expect(menu).toContain('ОГЭ 9 класс');
+      expect(menu).toContain('Вера');
+
+      const vera = [
+        ...document.body.querySelectorAll<HTMLElement>('.p-menu a.p-menu-item-link'),
+      ].find((item) => readableText(item) === 'Вера');
+      vera?.click();
+      await fixture.whenStable();
+      expect(readableText(host)).toContain('Кому: Вера');
+      expect(host.querySelector('.tb-filter-chip--menu.tb-filter-chip--selected')).not.toBeNull();
+      expect(titles(host)).toEqual([]);
+    });
+
     it('scrolls the review strip sideways', async () => {
       const { host } = await render(GROUPED, WORKS, 390);
 

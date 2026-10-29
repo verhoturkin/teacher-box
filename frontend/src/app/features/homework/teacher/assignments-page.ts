@@ -32,7 +32,7 @@ import { IdentityApi, TeacherColors } from '@features/identity/parts';
 import { Avatar } from '@shared/ui/avatar';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { EmptyState } from '@shared/ui/empty-state';
-import { FilterChip, FilterChips } from '@shared/ui/filter-chips';
+import { FilterChip, FilterChips, FilterMenuChip } from '@shared/ui/filter-chips';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
@@ -194,23 +194,27 @@ interface Material {
             <div class="tb-toolbar tb-hw__toolbar">
               <tb-search-field [formControl]="search" [label]="t.search" />
               @if (mobile()) {
-                <tb-filter-chips [label]="t.filters" [chips]="chips()" [(value)]="filter" />
-              }
-              <p-select
-                [formControl]="whom"
-                [options]="whomOptions()"
-                [group]="true"
-                optionGroupLabel="label"
-                optionGroupChildren="items"
-                optionLabel="label"
-                optionValue="value"
-                [placeholder]="mobile() ? t.whomAll : t.everyone"
-                [showClear]="true"
-                [ariaLabel]="t.whom"
-                appendTo="body"
-                [fluid]="mobile()"
-              />
-              @if (!mobile()) {
+                <!-- one row of chips, «Кому» a chip with a menu (M3 dropdown chip) -->
+                <tb-filter-chips
+                  [label]="t.filters"
+                  [chips]="chips()"
+                  [menu]="whomChip()"
+                  [(value)]="filter"
+                />
+              } @else {
+                <p-select
+                  [formControl]="whom"
+                  [options]="whomOptions()"
+                  [group]="true"
+                  optionGroupLabel="label"
+                  optionGroupChildren="items"
+                  optionLabel="label"
+                  optionValue="value"
+                  [placeholder]="t.whomAll"
+                  [showClear]="true"
+                  [ariaLabel]="t.whom"
+                  appendTo="body"
+                />
                 <tb-segment-group [label]="t.filters" [segments]="segments()" [(value)]="filter" />
               }
             </div>
@@ -803,6 +807,34 @@ export class AssignmentsPage implements OnInit {
       ...(groups.length > 0 ? [{ label: this.t.groupsOption, items: groups }] : []),
       { label: this.t.studentsOption, items: students },
     ];
+  });
+  /** «Кому: все ▾»: the chip of a phone, its menu lists the same groups and students as the select. */
+  protected readonly whomChip = computed<FilterMenuChip>(() => {
+    const value = this.whomValue();
+    const options = this.whomOptions().flatMap((group) => group.items);
+    const chosen = value === null ? undefined : options.find((option) => option.value === value);
+    const item = (option: WhomOption): MenuItem => ({
+      label: option.label,
+      command: () => {
+        this.whom.setValue(option.value);
+      },
+    });
+    return {
+      label: chosen === undefined ? this.t.whomAll : this.t.whomChosen(chosen.label),
+      selected: chosen !== undefined,
+      items: [
+        {
+          label: this.t.everyone,
+          command: () => {
+            this.whom.setValue(null);
+          },
+        },
+        ...this.whomOptions().map((group) => ({
+          label: group.label,
+          items: group.items.map(item),
+        })),
+      ],
+    };
   });
   /** The ids of the students «Кому» stands for; `null` — everybody. */
   private readonly whomIds = computed<ReadonlySet<string> | null>(() => {

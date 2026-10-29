@@ -23,6 +23,13 @@ export interface FilterChip<T extends string> {
   readonly count?: number;
 }
 
+/** A chip that opens a menu instead of choosing a value («Кому: все ▾»); `selected` — a choice is in force. */
+export interface FilterMenuChip {
+  readonly label: string;
+  readonly selected: boolean;
+  readonly items: MenuItem[];
+}
+
 /**
  * The chips that stay in the row of a one-row set: the `required` ones (the first and the chosen) and, in
  * order, as many following as fit next to the «Ещё N» button; `null` — all fit, no button is needed.
@@ -102,6 +109,27 @@ export function fitChips(
           <span class="tb-filter-chip__count">{{ chip.count }}</span>
         }
       </button>
+    }
+    @if (menu(); as extra) {
+      <button
+        type="button"
+        class="tb-filter-chip tb-filter-chip--menu"
+        [class.tb-filter-chip--selected]="extra.selected"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="extraOpen() ? 'true' : 'false'"
+        (click)="extraMenu.toggle($event)"
+      >
+        <span>{{ extra.label }}</span>
+        <i class="tb-i tb-i-arrow_drop_down" aria-hidden="true"></i>
+      </button>
+      <p-menu
+        #extraMenu
+        [model]="extra.items"
+        [popup]="true"
+        appendTo="body"
+        (onShow)="extraOpen.set(true)"
+        (onHide)="extraOpen.set(false)"
+      />
     }
     @if (oneRow()) {
       <button
@@ -197,6 +225,11 @@ export function fitChips(
       }
     }
 
+    /* a menu chip has no check, only the trailing arrow (M3 dropdown chip) */
+    .tb-filter-chip--menu {
+      padding-inline: var(--tb-space-4) var(--tb-space-2);
+    }
+
     /* «Ещё N»: a trailing arrow, so less padding on that side; a fixed least width keeps the measure stable */
     .tb-filter-chip--more {
       min-inline-size: 5.5rem;
@@ -223,9 +256,12 @@ export class FilterChips<T extends string> {
   readonly value = model.required<T>();
   /** One row: the chips that do not fit go to the «Ещё N» menu. */
   readonly oneRow = input(false);
+  /** A chip after the set that opens a menu (a second filter, «Кому: все ▾»). */
+  readonly menu = input<FilterMenuChip | null>(null);
 
   protected readonly t = SHARED_T;
   protected readonly menuOpen = signal(false);
+  protected readonly extraOpen = signal(false);
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   /** The indices of the chips in the row; `null` — all of them (nothing measured or everything fits). */

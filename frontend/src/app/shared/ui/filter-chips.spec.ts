@@ -141,3 +141,49 @@ describe('FilterChips', () => {
     expect(chips()[0]?.querySelector('.tb-i-check')).toBeNull();
   });
 });
+
+@Component({
+  imports: [FilterChips],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `<tb-filter-chips label="Фильтр" [chips]="chips" [menu]="menu()" [(value)]="value" />`,
+})
+class MenuHost {
+  readonly chips: FilterChip<string>[] = [{ value: 'all', label: 'Все' }];
+  readonly value = signal('all');
+  readonly picked = signal('');
+  readonly menu = signal({
+    label: 'Кому: все',
+    selected: false,
+    items: [
+      {
+        label: 'Анна',
+        command: () => {
+          this.picked.set('Анна');
+        },
+      },
+    ],
+  });
+}
+
+describe('FilterChips with a menu chip', () => {
+  it('opens a menu from the trailing chip and shows a choice in force as selected', async () => {
+    const fixture = TestBed.createComponent(MenuHost);
+    const host = hostElement(fixture);
+    await fixture.whenStable();
+
+    const chip = host.querySelector<HTMLButtonElement>('.tb-filter-chip--menu');
+    expect(chip?.getAttribute('aria-haspopup')).toBe('menu');
+    expect(chip?.getAttribute('aria-expanded')).toBe('false');
+    expect(chip?.classList).not.toContain('tb-filter-chip--selected');
+    chip?.click();
+    await fixture.whenStable();
+    expect(chip?.getAttribute('aria-expanded')).toBe('true');
+    document.body.querySelector<HTMLAnchorElement>('.p-menu a.p-menu-item-link')?.click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.picked()).toBe('Анна');
+
+    fixture.componentInstance.menu.update((menu) => ({ ...menu, selected: true }));
+    await fixture.whenStable();
+    expect(chip?.classList).toContain('tb-filter-chip--selected');
+  });
+});
