@@ -72,8 +72,10 @@ import { T } from '../i18n/texts';
       padding-inline: var(--tb-notifications-gutter);
     }
 
-    p-tabpanel,
+    /* p-tabpanel is inline by default: its padding would not move the cards inside (the inactive one stays hidden) */
+    p-tabpanel.p-tabpanel-active,
     tb-inbox-panel.tb-notifications-scroll {
+      display: block;
       padding-inline: var(--tb-notifications-gutter);
     }
 

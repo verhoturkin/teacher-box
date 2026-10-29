@@ -141,10 +141,13 @@ used icon classes disagree. E2E runs axe on the main screens and checks button r
   chips of member multiselects take the container (`tbChipColors`); rows keep the neutral surface.
   Dialogs pick the colour in a select «Цвет» with a 20 px swatch («Без цвета» — an outlined empty
   circle). The calendar use is in [`screens.md`](screens.md#schedule-teacher).
-- **System bars** (`core/theme/system-bars.ts`): `<meta name="theme-color">` and the manifest carry
-  the top bar's colour — light surface-container, dark surface (on a phone page of panes:
-  `surface`); the manifest's `background_color` is the page. The web cannot colour the Android
-  navigation (gesture) bar apart, so the app is **edge-to-edge** (*ours*, stage 327.3):
+- **System bars** (`core/theme/system-bars.ts`): `<meta name="theme-color">` carries the top
+  bar's colour for the status bar — light surface-container, dark surface (on a phone page of
+  panes: `surface`). The manifest's `theme_color` and `background_color` are the bottom bar's
+  surface-container of the current theme: the installed app (Chrome 153+) paints the navigation
+  bar with `theme_color` and rereads it only when it updates the app, so a theme change reaches it
+  later (stage 336.1). In the browser the meta tag cannot colour the Android navigation (gesture)
+  bar apart, so the app is **edge-to-edge** (*ours*, stage 327.3):
   `viewport-fit=cover` lets Chrome 135+ on Android draw the page under the gesture bar (older
   versions and other browsers keep the inset at 0 and nothing changes); the bottom bar's
   surface-container fills that area. Everything fixed at the bottom adds
@@ -327,7 +330,8 @@ for the active navigation item and checked states.
   is no user button (330.1): the account is a navigation item.
 - **«Аккаунт»** — the last item of the rail's bottom group (after «Настройки», «Справка») and of
   the ☰ drawer, for every role: a 24 px `tb-avatar` (photo or initials) in place of the icon, the
-  label «Аккаунт», accessible name «Аккаунт: <имя>» (starts with the visible label). It leads to
+  user's name as the label (two lines at most in the 96 px rail, never hyphenated; «Аккаунт» while
+  the name is unknown), accessible name «Аккаунт: <имя>». It leads to
   `/teacher/settings/account`, `/cabinet/account` or `/admin/account`; active as any item
   (`NavItem.account`; `except` keeps the teacher's «Настройки» from lighting up with it). Theme,
   language and «Выйти» live in «Мой аккаунт» (section «Оформление», `tb-segment-group`).
@@ -603,7 +607,9 @@ changes the container; content and markup are the same at every width. Every dia
   button at the end with a clear verb («Создать», «Отправить», not «Готово»), never disabled for
   invalid fields. Field errors inline. *Ours (M3 has 0 dp corners and a text button):* 28 dp top
   corners and the notifications sheet's inset (8 px + `safe-area-inset-top`, transparent scrim, so
-  the page shows above it); the confirming button is **filled**, small (40 dp). No swipe to close
+  the page shows above it); the confirming button is **filled**, small (40 dp). Under the rounded
+  corners the header is padded by inner = outer − padding: «✕» 8 px from the top and the start,
+  the confirming button 12 px from the top and the end, 16 px down to the content. No swipe to close
   (a form may hold unsaved data): «✕», Esc and «Отменить изменения?».
 - **Bottom sheet** (`sheet` on compact only): modal, handle with a 48 dp target, 28 dp top corners,
   surface-container-low (**M3**), height by content up to 50 % of the screen, then scrolling

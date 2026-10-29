@@ -19,6 +19,20 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
+## v0.40.1
+
+Goals: fixes to 0.40.0 after a look on a phone.
+
+### 336. Fixes to 0.40.0
+
+- [x] 336.1 **F** The installed app's navigation bar takes the bottom bar's surface-container from
+  the manifest (`core/theme/system-bars.ts`); the notifications sheet keeps its gutter
+  (`notifications-sheet-content.ts`: an inline `p-tabpanel` ignored its padding); the full-screen
+  dialog header is padded under its 28 dp corners (`styles.scss`); the account item shows the
+  user's name (`side-nav.ts`); «Выйти» is the last on a student's «Мой аккаунт»
+  (`account-page.ts`, `account-panel.ts`).
+- [ ] 336.2 Release 0.40.1.
+
 ## v0.41.0
 
 Goals: the student card and the homework list scale to hundreds of items; a lesson has a title and

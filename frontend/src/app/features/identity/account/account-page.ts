@@ -16,12 +16,11 @@ import { T } from '../i18n/texts';
   template: `
     <tb-page-header [title]="t.title" />
     @if (student) {
-      <div class="tb-stack">
-        <tb-account-panel />
+      <tb-account-panel>
         <tb-channels-panel />
         <tb-push-devices-card />
         <tb-preferences-panel />
-      </div>
+      </tb-account-panel>
     } @else {
       <tb-account-panel />
     }

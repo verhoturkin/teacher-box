@@ -56,7 +56,10 @@ import { NavItem, injectUrl, isNavActive } from './nav-item';
                     <i [class]="item.icon" aria-hidden="true"></i>
                   }
                 </span>
-                <span class="tb-side-nav__label">{{ item.label }}</span>
+                <!-- the account is named by its user; a name never hyphenates and takes two lines at most -->
+                <span class="tb-side-nav__label" [class.tb-side-nav__label--name]="item.account">{{
+                  item.account ? userName() || item.label : item.label
+                }}</span>
                 @if (item.count; as badge) {
                   @if (badge() > 0) {
                     <tb-nav-badge [count]="badge()" [inline]="!rail()" />

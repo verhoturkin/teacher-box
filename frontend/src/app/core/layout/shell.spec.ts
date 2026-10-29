@@ -92,7 +92,7 @@ describe('Shell', () => {
     const links = Array.from(footer.querySelectorAll('a'));
     expect(
       links.map((a) => a.querySelector('.tb-side-nav__label')?.textContent.trim() ?? ''),
-    ).toEqual(['Настройки', 'Справка', 'Аккаунт']);
+    ).toEqual(['Настройки', 'Справка', 'Анна Сергеевна']);
     expect(links.map((a) => a.getAttribute('href'))).toEqual([
       '/teacher/settings',
       '/teacher/help',

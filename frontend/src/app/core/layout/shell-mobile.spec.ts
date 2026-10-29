@@ -167,7 +167,11 @@ describe('Shell on a phone', () => {
     expect(nav.classList).toContain('tb-side-nav--modal');
     expect(nav.querySelector('.tb-side-nav__brand')?.textContent).toContain('Teacher Box');
     expect(labels(nav, 'ul:not(.tb-side-nav__footer) a')).toEqual(['Материалы']);
-    expect(labels(nav, 'ul.tb-side-nav__footer a')).toEqual(['Настройки', 'Справка', 'Аккаунт']);
+    expect(labels(nav, 'ul.tb-side-nav__footer a')).toEqual([
+      'Настройки',
+      'Справка',
+      'Анна Сергеевна',
+    ]);
     // the focus goes into the rail
     expect(rail.contains(document.activeElement)).toBe(true);
   });
@@ -237,7 +241,11 @@ describe('Shell on a phone', () => {
     expect(host.querySelectorAll('nav.tb-bottom-nav a')).toHaveLength(3);
     const rail = await openRail(host);
     expect(rail.querySelector('ul:not(.tb-side-nav__footer)')).toBeNull();
-    expect(labels(rail, 'ul.tb-side-nav__footer a')).toEqual(['Настройки', 'Справка', 'Аккаунт']);
+    expect(labels(rail, 'ul.tb-side-nav__footer a')).toEqual([
+      'Настройки',
+      'Справка',
+      'Анна Сергеевна',
+    ]);
   });
 
   it('hides the bottom bar while a page asks for it (the review of a work, spec §9)', async () => {

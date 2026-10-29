@@ -400,9 +400,9 @@ asks «Отменить изменения?» before another category or page op
 - **Payments:** tonal balance / charged / paid / price figures and the journal with filter chips,
   receipts in their rows.
 - **«Мой аккаунт»** (`/cabinet/account`, from «Аккаунт» in the rail / ☰): account,
-  «Оформление» (theme, language), «Выйти», «Мессенджеры», «Уведомления на устройствах»
-  (web push, ADR-0051), «Что присылать в мессенджеры и на устройства» in one stack; the «connect» card
-  and reminder lead here.
+  «Оформление» (theme, language), «Мессенджеры», «Уведомления на устройствах»
+  (web push, ADR-0051), «Что присылать в мессенджеры и на устройства», «Выйти» last, in one
+  stack; the «connect» card and reminder lead here.
 - **Notifications on devices** (`tb-push-devices-card`, student «Мой аккаунт» and teacher account
   category): «Включить уведомления на этом устройстве» only while this browser is not subscribed
   (a click, the permission prompt needs a gesture), the list of the user's devices (browser · system,

@@ -51,7 +51,13 @@ describe('SystemBars', () => {
     theme.choose('dark');
     TestBed.tick();
     expect(meta()).toBe(indigo.dark.surface);
-    expect(manifest()).toContain(encodeURIComponent(indigo.dark.surfaceContainer));
+    // the installed app's navigation bar takes the bottom navigation's color, not the top bar's
+    expect(manifest()).toBe(
+      `${MANIFEST_PATH}?${new URLSearchParams({
+        theme: indigo.dark.surfaceContainer,
+        background: indigo.dark.surfaceContainer,
+      }).toString()}`,
+    );
 
     TestBed.inject(Portal).set({ name: 'Портал', address: null, accent: 'emerald', logo: null });
     TestBed.tick();

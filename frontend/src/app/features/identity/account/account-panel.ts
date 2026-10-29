@@ -183,6 +183,8 @@ const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
           </div>
         </div>
       </p-card>
+      <!-- the page's own sections (a student's messengers and notifications): «Выйти» stays the last -->
+      <ng-content />
       <div class="tb-form-actions">
         <p-button
           [label]="t.signOut"

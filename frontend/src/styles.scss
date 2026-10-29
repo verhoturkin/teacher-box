@@ -3270,6 +3270,14 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
     .p-dialog-header {
       min-height: 3.5rem;
       padding: 0 var(--tb-space-4) 0 var(--tb-space-1);
+
+      /*
+       * ours, under the 28 px corners (inner = outer − padding): the 40 px close button 8 px from the top and the
+       * start, the 34 px confirm button 12 px from the top and the end; 16 px down to the content
+       */
+      @media (width < 37.5em) {
+        padding: var(--tb-space-2) var(--tb-space-3) var(--tb-space-4) var(--tb-space-2);
+      }
     }
 
     .tb-d__headline {
