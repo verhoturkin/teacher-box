@@ -19,6 +19,14 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
+## Repository maintenance
+
+### Stage 336 — GitHub releases and README screenshots
+
+- [x] **336.1** Publish missing GitHub releases for existing version tags using their
+  `CHANGELOG.md` entries; refresh the nine `docs/assets/readme/*.png` screenshots from a
+  disposable instance of v0.41.0 with fictional students and verify the README image links.
+
 ## Backlog
 
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,

@@ -99,6 +99,8 @@ curl -fsSL https://raw.githubusercontent.com/verhoturkin/teacher-box/main/script
 
 ## Скриншоты
 
+Интерфейс версии 0.41.0. Имена учеников и данные на снимках вымышлены.
+
 <details>
 <summary><b>Кабинет учителя</b></summary>
 
