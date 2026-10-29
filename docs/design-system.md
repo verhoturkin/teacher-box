@@ -715,8 +715,16 @@ changes the container; content and markup are the same at every width. Every dia
   component keeps its part as `protected readonly t = T.<part>` (and `c = SHARED_T.common`) and
   binds it. Texts with numbers or names are functions (`t.saved(name)`, `countOf` for plurals); a
   date or an amount is formatted before it goes in.
-- Russian is the source dictionary; another language has the same keys (`Translation<typeof ru>`),
-  checked by `expectComplete`. Wording follows [`glossary.md`](glossary.md).
+- Russian and English are equal writing languages. Write both versions in the same change from
+  the same user intent, independently in idiomatic Russian and British English; do not translate
+  Russian sentences literally. Review each version on its own for clarity, tone and context.
+- The Russian dictionary defines the key and parameter contract (`Translation<typeof ru>`), checked
+  by `expectComplete`; it is not the prose source for English. Keep meaning, variables and action
+  labels aligned across UI, help and server messages. Wording follows [`glossary.md`](glossary.md):
+  Homework names the section, assignment names one item, and submission names work handed in.
+- Help in every language explains how to complete tasks and what actions do. Keep layout geometry,
+  styling rules and implementation mechanics in developer documentation; include technical details
+  only when they help the reader make a decision or solve a problem.
 - **Language switch** — in «Мой аккаунт» → «Оформление» under the theme: a connected button
   group, each language in its own name, the chosen one `aria-pressed`; on the sign-in and
   invitation pages the `tb-language-picker` row under the card. Switching reloads the page.

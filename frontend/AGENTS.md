@@ -26,7 +26,10 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
 - Status → label/severity maps — `features/<m>/*-labels.ts`.
 - **No UI text in templates or code** ([ADR-0035](../docs/adr/0035-interface-languages.md)): dictionaries
   `features/<m>/i18n/{ru,en}.ts` (`T` from `i18n/texts.ts`), common words `SHARED_T`, the frame `CORE_T`; a new
-  text goes into `ru.ts` and `en.ts` together (design-system §14).
+  text goes into `ru.ts` and `en.ts` together (design-system §14). Write each version independently
+  from the same intent, using natural Russian and British English. `Translation<typeof ru>` shares
+  keys and parameter types, not wording or sentence structure. Review English copy on its own and
+  keep action labels consistent with English help and server messages (`docs/glossary.md`).
 - User help — `features/help/articles/{teacher,student,admin}.{ru,en}.ts`; a UI change updates its article in every
   language.
 

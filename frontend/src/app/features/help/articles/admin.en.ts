@@ -1,96 +1,97 @@
 import { HelpArticleText } from '../help.models';
 import { AdminTopic } from '../help-topics';
 
-/** Help articles in English (ADR-0035): plain words, steps to click and short answers. */
+/** English help, written for administrators alongside the Russian edition. */
 export const ADMIN_ARTICLES: Readonly<Record<AdminTopic, HelpArticleText>> = {
   diagnostics: {
-    title: 'Log and diagnostics',
-    summary: 'What the administrator can do and how to help with the server',
+    title: 'Logs and diagnostics',
+    summary: 'Check server health, investigate errors and collect diagnostic information',
     body: `
-Pane headings stay above scrolling content, while search and help text fill the available width.
-Focus rings appear during keyboard use, not automatically when opening a dialog with the pointer.
+Administrators manage the server and integrations. They can inspect logs and collect diagnostics, but cannot view student records.
 
-The administrator helps with the server: reads the log, checks the integrations and collects data for the developer. The administrator does not see the students' data.
+## Find the right section
 
-## Sections
+- **Status:** service health, pending events, version, uptime, memory, disk space, latest backup and portal address. “Collect diagnostics” downloads an archive for a developer with logs, redacted settings and system information.
+- **Log:** switch between “Logs”, “Events” and “Errors”. Select an entry to see its request code and error details. With no entry selected, you can temporarily enable more detailed logging for a section.
+- **Integrations:** check messaging apps, AI, the LiveKit call server and other connected services. This section also contains AI settings.
+- **Backups:** create and restore [backups](/admin/help/backups).
+- **Settings:** manage [portal settings](/admin/help/settings) without editing .env.
 
-- **Status** — tiles: the services, the event queue, the version and uptime, memory and disk space, the last backup, the portal address. The «Collect diagnostics» button at the top downloads an archive for the developer: the log and the settings without passwords and personal data.
-- **Log** — three filters: «Logs» (the server's records; pick a record — the request code and the error details are on the right), «Events» (internal events of the portal; stuck ones can be resubmitted) and «Errors». With no record picked, detailed records can be turned on for a while for one section on the right.
-- **Integrations** — the connection check of the messengers, the AI, the call server (LiveKit) and other external services, and the «AI assistant» section.
-- **Backups** — [backups](/admin/help/backups): making and restoring them.
-- **Settings** — [portal settings](/admin/help/settings) instead of the .env file.
+On a computer, use the sidebar; on a phone, use the bottom navigation bar. Help is at the bottom of the sidebar or under ☰ on a phone. Select your name to open “My account”, choose a theme or language, or sign out.
 
-The sections are in the panel on the left, «Help» at its bottom. On a phone all five sections are at the bottom of the screen, «Help» is under the ☰ button at the top left. The item with your name at the bottom of the panel opens «My account»: the theme, the language and «Sign out» are there.
+## Investigate a problem
 
-## If something broke
+1. Open “Integrations” and run a connection check.
+2. Search the log around the time of the problem.
+3. In “Status”, choose “Collect diagnostics” and send the archive to the developer with the error code and steps to reproduce it.
 
-1. Open «Integrations» and click «Check».
-2. Look through the «Log» for the time you need.
-3. Click «Collect diagnostics» in «Status» and send the archive to the developer.
+## Server commands
 
-## On the server
+If the installer was used, the server provides the following commands:
 
-If the portal was set up by the installer, the server has the \`teacherbox\` command:
+- \`sudo teacherbox status\` — show the running version and service status;
+- \`sudo teacherbox logs backend\` — view backend logs, including when the portal will not open;
+- \`sudo teacherbox update\` — install an update while keeping data and settings;
+- \`sudo teacherbox backups\` — copy backups to a server directory;
+- \`sudo teacherbox reset\` — delete the database, files, server backups and accounts, then start a fresh installation. Settings in .env are kept.
 
-- \`sudo teacherbox status\` — whether the portal runs and its version;
-- \`sudo teacherbox logs backend\` — the log, if the portal does not open;
-- \`sudo teacherbox update\` — update the portal to a new release (the data and the settings stay);
-- \`sudo teacherbox backups\` — copy the backups to a folder on the server;
-- \`sudo teacherbox reset\` — delete all data of the portal (the database, files, backups on the server, accounts) and start it as after a new installation; the settings in .env stay.
-
-HTTPS comes from the built-in Caddy: it gets a certificate for the domain of the TEACHERBOX_DOMAIN setting by itself. If there is no certificate, check that the domain points to the server and ports 80 and 443 are open (\`sudo teacherbox logs caddy\`).
+The bundled Caddy service obtains an HTTPS certificate for TEACHERBOX_DOMAIN automatically. If it cannot, check that the domain points to the server and ports 80 and 443 are open. View its logs with \`sudo teacherbox logs caddy\`.
 `,
   },
   backups: {
     title: 'Backups and portal address',
-    summary: 'How the administrator makes and restores backups and changes the portal address',
+    summary: 'Create and restore backups, and check the portal’s public address',
     body: `
 ## Backups
 
-The «Backups» section: the list of backups, «Back up now» and restoring. Only the teacher can download a backup — backups hold the students' data. The teacher connects Google Drive for backups. The «Backups» section also shows copies in Google Drive: bring a copy to the server, then restore it from the server list.
+Open “Backups” to view existing backups, choose “Back up now” or restore a backup. Only the teacher can download backups because they contain student data. The teacher also manages the Google Drive connection.
 
-Backups are kept for as many days as «Settings» → «Backups» → «Days to keep backups» says (14 by default); the portal deletes older backups of every kind after making a new one, on the server and in Google Drive.
+Backups in Google Drive appear here too. Download one to the server before restoring it from the server list.
 
-To restore a backup:
+Retention is set in “Settings” → “Backups” → “Days to keep backups”, with a default of 14 days. After creating a new backup, the portal removes older backups of every kind from both the server and Google Drive.
 
-1. Click «⋮» in the backup's row → «Restore…».
-2. Enter the administrator's password.
-3. Wait for the result: the portal backs up its current state, restarts and restores the chosen backup.
+## Restore a backup
 
-After the restore, sign in with the password that was valid at the time of the backup. Warn the teacher: everything added after the backup is lost.
+1. Open the backup’s ⋮ menu and choose “Restore…”.
+2. Enter your administrator password.
+3. Keep the page open while the portal backs up its current state, restarts and restores the selected backup.
 
-To restart, the container needs the \`restart: unless-stopped\` policy (the portal's compose files have it). Without Docker the backup is restored at the next start.
+Let the teacher know before restoring: data added after the backup will be replaced. Afterwards, sign in with the password that was in use when the backup was created.
+
+Automatic restart requires the container policy \`restart: unless-stopped\`, which is included in the portal’s Compose files. Outside Docker, restoration runs the next time the portal starts.
 
 ## Portal address
 
-«Status» → the «Portal address» tile. All the portal's links start with it: invitations, bot messages, the calendar subscription, Google and Yandex return addresses. If the address is set by the TEACHERBOX_PUBLIC_URL variable, the portal only shows it.
+Find the public address in “Status” → “Portal address”. It is used for invitation links, bot messages, calendar subscriptions and Google and Yandex callback URLs. If TEACHERBOX_PUBLIC_URL sets the address, it is read-only in the portal.
 `,
   },
   settings: {
     title: 'Portal settings',
-    summary: 'How to change the .env settings in the interface',
+    summary: 'Change server settings from the portal and apply them with a restart',
     body: `
-The «Settings» section shows all the portal's settings of the .env file by section: the value and where it comes from — «default», «from .env» or «set here». The sections are listed on the left and the chosen one is on the right (on a phone the list comes first and a section opens on its own page with a «back» button); the number next to a section's name is how many unsaved changes it has. The changes of all sections are saved together. On a computer, headings and «Save and restart» stay visible while the fields scroll.
+“Settings” groups the settings from .env by section. Each value shows its source: the default, .env or a value saved here. Choose a section on the left to edit it on the right. On a phone, open a section and use the back arrow to return to the list.
 
-## Change
+The number beside a section shows its unsaved changes. Changes across all sections are saved together.
 
-1. Change the values — they are marked «changed». The time zone is chosen from a list: start typing a city, e.g. Moscow.
-2. Click «Save and restart» and enter the administrator's password.
-3. Wait until the portal restarts: it is unavailable to everyone for a minute.
+## Apply changes
 
-Values set here take precedence over the .env file. «Back to .env» removes your value.
+1. Edit the values you need. Changed fields are marked. For a time zone, search for a city such as Moscow.
+2. Choose “Save and restart” and enter your administrator password.
+3. Wait for the portal to restart. It will be unavailable to everyone for about a minute.
 
-The names and hints of the settings and the results of the integration checks are shown in the language of the interface.
+Values saved here override .env. Choose “Use .env value” to remove an override. Setting labels, hints, validation messages and integration check results use your interface language.
 
-The AI assistant — the «AI assistant» section: choose the service and set the API key. For OpenRouter (openrouter) a key from openrouter.ai is enough: the address is preset, by default OpenRouter picks the model itself, and a specific one goes into «Model» by its name from openrouter.ai/models. For DeepSeek (deepseek) — a key from platform.deepseek.com, the default model is deepseek-flash.
+## Set up AI
 
-Passwords, tokens and keys are not shown — they can only be set again. Docker settings (port, domain, version, limits) and the accounts are only shown here: the former are changed in .env, the latter in «My account».
+In “AI assistant”, choose a provider and enter its API key. For OpenRouter, use a key from openrouter.ai. The API URL is preset; leave the model blank for automatic selection or enter a model ID from openrouter.ai/models. For DeepSeek, use a key from platform.deepseek.com; the default model is deepseek-flash.
 
-The titles and descriptions of the settings come from the server in Russian.
+## Read-only and secret settings
 
-## If the portal did not start
+Saved passwords, tokens and keys are hidden. Enter a new value to replace one. Docker settings, such as ports, domain, version and resource limits, must be changed in .env. Account details are managed in “My account”.
 
-Most likely some value prevents the start. Open the file config/settings.properties in the data folder on the server, fix or delete the line and restart the container. All changes are written to the log with the names of the settings.
+## If the portal will not start
+
+A setting may be preventing startup. On the server, open config/settings.properties in the data directory, correct or remove the relevant entry, then restart the container. Setting changes are recorded in the log by setting name.
 `,
   },
 };

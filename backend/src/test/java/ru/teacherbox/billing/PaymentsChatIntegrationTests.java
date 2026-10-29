@@ -61,6 +61,6 @@ class PaymentsChatIntegrationTests {
         ChatUser english = new ChatUser(student, Role.STUDENT, Language.EN);
         assertThat(payments.title(Language.EN)).isEqualTo("Payments");
         assertThat(done(payments.start(english)).reply().text()).startsWith("Credit: ₽3,000.50\nLesson price: ₽1,500")
-                .contains("Latest payments:\n• 02.09.2026 — ₽4,500.50");
+                .contains("Recent payments:\n• 02.09.2026 — ₽4,500.50");
     }
 }

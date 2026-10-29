@@ -39,11 +39,11 @@ export const en: Translation<typeof ru> = {
   },
   dialog: {
     discardTitle: 'Discard changes?',
-    discardText: 'The data you entered will not be saved.',
+    discardText: 'Your changes will not be saved.',
     discard: 'Discard',
   },
   fields: {
-    required: 'Fill in the field',
+    required: 'This field is required',
     email: 'Invalid email address',
     minLength: (length: number) =>
       `At least ${countOf(length, 'character', 'characters', 'characters')}`,
@@ -58,7 +58,7 @@ export const en: Translation<typeof ru> = {
     loading: 'Loading',
     failed: (what: string) => `Could not load ${what}`,
     data: 'the data',
-    unknownError: 'Something went wrong. Try again now or a little later',
+    unknownError: 'Something went wrong. Please try again',
   },
   password: {
     show: 'Show password',

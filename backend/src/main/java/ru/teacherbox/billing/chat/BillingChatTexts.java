@@ -71,55 +71,44 @@ enum BillingChatTexts {
         @Override String addLesson() { return "Add a lesson"; }
         @Override String payments() { return "Payments"; }
         @Override String noStudents() { return "No students yet."; }
-        @Override String studentGone() { return "This student is no longer among the current ones."; }
-        @Override String groupGone() { return "This group is no longer among the current ones."; }
+        @Override String studentGone() { return "This student is no longer active."; }
+        @Override String groupGone() { return "This group is no longer active."; }
         @Override String group(String name) { return "Group “" + name + "”"; }
         @Override String whoPaid() { return "Who paid?"; }
         @Override String howMuch(String student) {
             return "How much did " + student + " pay? Choose or type the amount, e.g. 3000.";
         }
         @Override String lessons(int count) { return count + " " + Plural.english(count, "lesson", "lessons"); }
-        @Override String amountNotUnderstood() { return "I didn't understand the amount."; }
+        @Override String amountNotUnderstood() { return "I couldn't read that amount. Please try again."; }
         @Override String confirmPayment(String student, String amount, String date) {
             return "Record the payment: " + student + ", " + amount + ", " + date + "?";
         }
-        @Override String notRecording() { return "OK, not recording it."; }
-        @Override String receiptReceived() { return "Receipt received — I'll record the payment with it."; }
-        @Override String notAReceipt() {
-            return "This doesn't look like a receipt: send a photo (JPEG, PNG, WebP, HEIC) or a PDF up to 10 MB.";
-        }
-        @Override String withReceipt(String question) { return withoutQuestionMark(question) + ", with the receipt?"; }
-        @Override String paymentFailed() { return "Couldn't record the payment. Record it on the portal."; }
-        @Override String paymentRecorded(String balance) { return "Payment recorded. The student has " + balance + "."; }
+        @Override String notRecording() { return "OK, payment not recorded."; }
+        @Override String receiptReceived() { return "Receipt received. I'll attach it to the payment."; }
+        @Override String notAReceipt() { return "Please send the receipt as an image (JPEG, PNG, WebP or HEIC) or a PDF, up to 10 MB."; }
+        @Override String withReceipt(String question) { return withoutQuestionMark(question) + " with this receipt attached?"; }
+        @Override String paymentFailed() { return "Couldn't record the payment. Please try on the portal."; }
+        @Override String paymentRecorded(String balance) { return "Payment recorded. The student " + balance + "."; }
         @Override String withWhom() { return "Who was the lesson with?"; }
         @Override String when() { return "When was the lesson? Choose a day or type a date, e.g. 25.09."; }
-        @Override String dateNotUnderstood() { return "I didn't understand the date."; }
-        @Override String future() { return "That day is in the future — the lesson hasn't taken place yet."; }
-        @Override String noMembers(String group) { return "The group “" + group + "” has no students."; }
-        @Override String confirmGroupLesson(String group, String date, int students, String price) {
-            return "Add a lesson of the group “" + group + "” that took place on " + date + ": " + students(students)
-                    + " at " + price + "?";
-        }
-        @Override String confirmLesson(String student, String date, String price) {
-            return "Add a lesson that took place: " + student + ", " + date + ", " + price + "?";
-        }
-        @Override String notAdding() { return "OK, not adding it."; }
-        @Override String groupLessonAdded(int students) {
-            return "The group's lesson is added to the journal: " + students(students) + ".";
-        }
-        @Override String lessonAdded(String balance) {
-            return "The lesson is added to the journal. The student has " + balance + ".";
-        }
-        @Override String lessonFailed() { return "Couldn't add the lesson. Add it on the portal."; }
-        @Override String debt(String amount) { return "a debt of " + amount; }
-        @Override String credit(String amount) { return "a credit of " + amount; }
-        @Override String noDebt() { return "no debt"; }
-        @Override String debtLine(String amount) { return "Debt: " + amount; }
+        @Override String dateNotUnderstood() { return "I couldn't read that date. Please try again."; }
+        @Override String future() { return "That date is in the future. You can only record lessons that have already taken place."; }
+        @Override String noMembers(String group) { return "There are no students in “" + group + "”."; }
+        @Override String confirmGroupLesson(String group, String date, int students, String price) { return "Record a completed lesson for “" + group + "” on " + date + ": " + students(students) + ", " + price + " each?"; }
+        @Override String confirmLesson(String student, String date, String price) { return "Record a completed lesson for " + student + " on " + date + " at " + price + "?"; }
+        @Override String notAdding() { return "OK, lesson not added."; }
+        @Override String groupLessonAdded(int students) { return "Group lesson recorded for " + students(students) + "."; }
+        @Override String lessonAdded(String balance) { return "Lesson recorded. The student " + balance + "."; }
+        @Override String lessonFailed() { return "Couldn't record the lesson. Please try on the portal."; }
+        @Override String debt(String amount) { return "owes " + amount; }
+        @Override String credit(String amount) { return "has " + amount + " in credit"; }
+        @Override String noDebt() { return "has nothing to pay"; }
+        @Override String debtLine(String amount) { return "Amount due: " + amount; }
         @Override String creditLine(String amount) { return "Credit: " + amount; }
-        @Override String zeroLine() { return "Balance: 0 — no debt."; }
+        @Override String zeroLine() { return "Balance: 0 — nothing to pay."; }
         @Override String lessonPrice(String amount) { return "Lesson price: " + amount; }
-        @Override String latestPayments() { return "Latest payments:"; }
-        @Override String latestLessons() { return "Latest lessons:"; }
+        @Override String latestPayments() { return "Recent payments:"; }
+        @Override String latestLessons() { return "Recent lessons:"; }
 
         private String students(int count) {
             return count + " " + Plural.english(count, "student", "students");

@@ -71,7 +71,7 @@ class NotificationTextsTest {
     @Test
     void writesInEnglish() {
         assertThat(texts.money(Money.of(123_456_789, RUB), EN)).isEqualTo("₽1,234,567.89");
-        assertThat(texts.balance(Money.of(-150_000, RUB), EN)).isEqualTo("Debt: ₽1,500");
+        assertThat(texts.balance(Money.of(-150_000, RUB), EN)).isEqualTo("Amount due: ₽1,500");
         assertThat(texts.balance(Money.of(50_000, RUB), EN)).isEqualTo("Balance: ₽500");
         assertThat(texts.lessonTime(Instant.parse("2026-10-01T13:00:00Z"), EN)).isEqualTo("Thursday, 01.10 at 18:00");
         assertThat(texts.weekly(List.of(DayOfWeek.THURSDAY, DayOfWeek.MONDAY), LocalTime.of(18, 0), EN))

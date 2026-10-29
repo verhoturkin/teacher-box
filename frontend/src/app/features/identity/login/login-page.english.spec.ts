@@ -25,12 +25,12 @@ describe('LoginPage in English', () => {
     const host = hostElement(fixture);
 
     expect(readableText(host)).toContain('Sign in to Teacher Box');
-    expect(readableText(host)).toContain('Login Password');
+    expect(readableText(host)).toContain('Username Password');
     expect(buttonByText(host, 'English').getAttribute('aria-pressed')).toBe('true');
 
     buttonByText(host, 'Sign in').click();
     await fixture.whenStable();
-    expect(readableText(host)).toContain('Enter the login and the password');
+    expect(readableText(host)).toContain('Enter your username and password');
     TestBed.inject(HttpTestingController).verify();
   });
 });

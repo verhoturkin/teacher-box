@@ -95,8 +95,8 @@ class ScheduleChatIntegrationTests {
 
         ChatStep.Done english = done(lessons.start(new ChatUser(anna, Role.STUDENT, Language.EN)));
         assertThat(english.reply().text()).startsWith("Upcoming lessons:")
-                .contains("— Дроби (your request awaits an answer)", "group “ОГЭ” (you said you won't come)");
-        assertThat(url(english, "Join the nearest lesson")).isEqualTo("https://telemost.yandex.ru/j/1");
+                .contains("— Дроби (awaiting your teacher's reply)", "group “ОГЭ” (you're not attending)");
+        assertThat(url(english, "Join next lesson")).isEqualTo("https://telemost.yandex.ru/j/1");
     }
 
     @Test

@@ -45,13 +45,13 @@ public class NotificationTexts {
         return MoneyFormat.format(money, language);
     }
 
-    /** "Баланс: 1 500 ₽" or "Задолженность: 1 500 ₽"; "Balance: ₽1,500" or "Debt: ₽1,500". */
+    /** "Баланс: 1 500 ₽" or "Задолженность: 1 500 ₽"; "Balance: ₽1,500" or "Amount due: ₽1,500". */
     public String balance(Money balance, Language language) {
         boolean debt = balance.isNegative();
         String amount = money(debt ? balance.negate() : balance, language);
         return switch (language) {
             case RU -> (debt ? "Задолженность: " : "Баланс: ") + amount;
-            case EN -> (debt ? "Debt: " : "Balance: ") + amount;
+            case EN -> (debt ? "Amount due: " : "Balance: ") + amount;
         };
     }
 

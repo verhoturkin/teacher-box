@@ -25,12 +25,10 @@ enum ChatWords {
         @Override String no() { return "No"; }
         @Override String back() { return "‹ Back"; }
         @Override String more() { return "More ›"; }
-        @Override String gone(String prompt) { return "This option is gone. " + prompt; }
-        @Override String nothingFound(String query, String prompt) {
-            return "Nothing found for “" + query + "”. " + prompt;
-        }
-        @Override String severalFound(String prompt) { return "Several found. " + prompt; }
-        @Override String typePartOfName() { return "You can type a part of the name."; }
+        @Override String gone(String prompt) { return "This option is no longer available. " + prompt; }
+        @Override String nothingFound(String query, String prompt) { return "No matches for “" + query + "”. " + prompt; }
+        @Override String severalFound(String prompt) { return "Several matches found. " + prompt; }
+        @Override String typePartOfName() { return "You can search by part of a name."; }
     };
 
     static ChatWords of(Language language) {

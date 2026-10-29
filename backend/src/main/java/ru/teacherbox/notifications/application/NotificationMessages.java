@@ -48,41 +48,40 @@ enum NotificationMessages {
     },
 
     EN {
-        @Override String taskAssigned(String title) { return "New task: “" + title + "”"; }
+        @Override String taskAssigned(String title) { return "New assignment: “" + title + "”"; }
         @Override String dueAt(String when) { return "Due: " + when; }
         @Override String dueSoon(String title) { return "Due soon: “" + title + "”"; }
-        @Override String taskAccepted(String title) { return "Task “" + title + "” accepted"; }
+        @Override String taskAccepted(String title) { return "Assignment accepted: “" + title + "”"; }
         @Override String grade(String grade) { return "Grade: " + grade; }
-        @Override String taskReturned(String title) { return "Task “" + title + "” returned for rework"; }
-        @Override String seeTeacherComment() { return "See the teacher's comment."; }
-        @Override String toReview(String title) { return "Work to review: “" + title + "”"; }
+        @Override String taskReturned(String title) { return "Changes requested: “" + title + "”"; }
+        @Override String seeTeacherComment() { return "Check your teacher's feedback."; }
+        @Override String toReview(String title) { return "Submission ready for review: “" + title + "”"; }
         @Override String student(String name) { return "Student: " + name; }
         @Override String unknownStudent() { return "A student"; }
-        @Override String lessonRecorded(String date) { return "Lesson " + date; }
-        @Override String lessonMissed(String date) { return "Missed lesson " + date; }
+        @Override String lessonRecorded(String date) { return "Lesson completed: " + date; }
+        @Override String lessonMissed(String date) { return "Lesson missed: " + date; }
         @Override String price(String amount) { return "Price: " + amount + "."; }
-        @Override String chargeRemoved(String date) { return "The charge for the lesson " + date + " is removed"; }
-        @Override String notCharged() { return "The lesson is not charged."; }
+        @Override String chargeRemoved(String date) { return "Charge removed for the lesson on " + date; }
+        @Override String notCharged() { return "You won't be charged for this lesson."; }
         @Override String paymentRecorded(String amount) { return "Payment received: " + amount; }
         @Override String paymentVoided(String amount) { return "Payment of " + amount + " voided"; }
         @Override String meetingLink() { return "Lesson link"; }
-        @Override String ourLessons(String url) { return "Our lessons take place at this link: " + url; }
-        @Override String groupLessons(String group, String url) {
-            return "Lessons of the group “" + group + "” take place at this link: " + url;
-        }
-        @Override String ourRoom() { return "Our lessons take place here."; }
-        @Override String groupRoom(String group) { return "Lessons of the group “" + group + "” take place here."; }
+        @Override String ourLessons(String url) { return "Join our lessons here: " + url; }
+        @Override String groupLessons(String group, String url) { return "Join lessons for “" + group + "” here: " + url; }
+        @Override String ourRoom() { return "Join our lessons in this room."; }
+        @Override String groupRoom(String group) { return "Join lessons for “" + group + "” in this room."; }
         @Override String open() { return "Open"; }
         @Override String join() { return "Join"; }
-        @Override String studentJoined() { return "A student joined the portal"; }
+        @Override String studentJoined() { return "A student has joined the portal"; }
         @Override String studentJoinedBody(String name) {
             return name + " accepted the invitation and can now sign in to their account.";
         }
-        @Override String connectTitle() { return "Connect a messenger"; }
+        @Override String connectTitle() { return "Connect a messaging app"; }
         @Override String connectBody() {
-            return "To get notifications in Telegram, VK or MAX, open “Notifications” and press “Connect”.";
+            return "To receive notifications on Telegram, VK or MAX, open your portal account's messenger "
+                    + "settings and select “Connect”.";
         }
-        @Override String testMessage() { return "Connection test: notifications of the teacher's portal will come here."; }
+        @Override String testMessage() { return "Connection successful! You'll receive portal notifications here."; }
     };
 
     static NotificationMessages of(Language language) {

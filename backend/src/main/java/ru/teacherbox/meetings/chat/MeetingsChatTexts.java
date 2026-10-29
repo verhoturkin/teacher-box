@@ -14,8 +14,8 @@ enum MeetingsChatTexts {
     },
 
     EN {
-        @Override String joinLesson() { return "Join the lesson"; }
-        @Override String noLink() { return "There is no video meeting link yet — the teacher will send it before the lesson."; }
+        @Override String joinLesson() { return "Join lesson"; }
+        @Override String noLink() { return "Your teacher hasn't shared a lesson link yet. They'll send it before the lesson."; }
         @Override String link() { return "Lesson link:"; }
         @Override String links() { return "Lesson links:"; }
         @Override String group(String name) { return "Group “" + name + "”"; }

@@ -266,7 +266,7 @@ class ScheduleNotificationsIntegrationTests {
         InboxNotification series = latest(scenario, regular, new LessonRepeatScheduled(UUID.randomUUID(), null,
                 List.of(regular), List.of(DayOfWeek.TUESDAY, DayOfWeek.THURSDAY), LocalTime.of(18, 0), 60, 2,
                 LocalDate.of(2026, 10, 1), LocalDate.of(2026, 12, 31), Instant.now()));
-        assertThat(series.title()).isEqualTo("Repeating lessons on Tuesdays and Thursdays at 18:00");
+        assertThat(series.title()).isEqualTo("Recurring lessons on Tuesdays and Thursdays at 18:00");
         assertThat(series.body()).isEqualTo("From 01.10.2026 to 31.12.2026, every 2 weeks.");
 
         UUID reminded = directory.addStudent("Reminded");
@@ -274,7 +274,7 @@ class ScheduleNotificationsIntegrationTests {
         InboxNotification soon = latest(scenario, reminded, new LessonStartingSoon(UUID.randomUUID(), null,
                 List.of(reminded), START, 60, "Maths", "Fractions", "https://zoom.us/j/1", Duration.ofHours(24), false,
                 Instant.now()));
-        assertThat(soon.title()).isEqualTo("Lesson soon: Thursday, 01.10 at 18:00");
+        assertThat(soon.title()).isEqualTo("Upcoming lesson: Thursday, 01.10 at 18:00");
         assertThat(soon.body()).isEqualTo("In 24 hours. Lesson “Maths”. Topic: Fractions. Lesson link: https://zoom.us/j/1");
 
         directory.setLanguage(directory.teacherId(), Language.EN);
@@ -282,10 +282,10 @@ class ScheduleNotificationsIntegrationTests {
             UUID asks = directory.addStudent("Asks");
             scenario.publish(new LessonChangeRequested(UUID.randomUUID(), UUID.randomUUID(), asks, null,
                             ChangeKind.RESCHEDULE, START, LATER, "Later?", false, false, Instant.now()))
-                    .andWaitForStateChange(() -> teacherNotifications("Asks asks to move a lesson"),
+                    .andWaitForStateChange(() -> teacherNotifications("Asks requested a lesson reschedule"),
                             list -> !list.isEmpty())
                     .andVerify(list -> assertThat(list.getFirst().body()).isEqualTo(
-                            "Lesson: Thursday, 01.10 at 18:00. Proposes: Friday, 02.10 at 19:30. Comment: Later?"));
+                            "Lesson: Thursday, 01.10 at 18:00. Suggested time: Friday, 02.10 at 19:30. Comment: Later?"));
         } finally {
             directory.setLanguage(directory.teacherId(), Language.RU);
         }

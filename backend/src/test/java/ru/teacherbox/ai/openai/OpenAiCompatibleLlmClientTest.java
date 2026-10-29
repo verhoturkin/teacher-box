@@ -244,7 +244,7 @@ class OpenAiCompatibleLlmClientTest {
 
         assertThat(client.ping(Language.RU)).isEqualTo("Модель qwen3:14b доступна");
         assertThat(client.ping(Language.EN))
-                .isEqualTo("The provider answers, but the model qwen3:14b is not among 1 available");
+                .isEqualTo("The provider is responding, but qwen3:14b is not in its list of 1 available models.");
         assertThatThrownBy(() -> client.ping(Language.RU)).isInstanceOfSatisfying(LlmException.class,
                 e -> assertThat(e.getMessage()).isEqualTo("Provider 401: Invalid API key"));
         assertThatThrownBy(() -> client.ping(Language.RU)).isInstanceOfSatisfying(LlmException.class,

@@ -100,7 +100,7 @@ class FeedIntegrationTests {
         directory.setLanguage(directory.teacherId(), Language.EN);
         try {
             assertThat(mvc.get().uri(createFeed(teacher())).exchange().getResponse().getContentAsString()
-                    .replace("\r\n ", "")).contains(" — lessons", "SUMMARY:Lesson: Vera");
+                    .replace("\r\n ", "")).contains(" — lessons", "SUMMARY:Lesson with Vera");
         } finally {
             directory.setLanguage(directory.teacherId(), Language.RU);
         }

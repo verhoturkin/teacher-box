@@ -16,7 +16,7 @@ enum BoardsChatTexts {
         @Override String myBoards() { return "My boards"; }
         @Override String noBoards() { return "No boards yet."; }
         @Override String yourBoards() { return "Your boards:"; }
-        @Override String openInCabinet() { return "Boards open in your account on the portal."; }
+        @Override String openInCabinet() { return "Open the portal to view your boards."; }
     };
 
     static BoardsChatTexts of(Language language) {

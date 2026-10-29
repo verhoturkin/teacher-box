@@ -302,7 +302,7 @@ public class GoogleCalendarService {
                 case RU -> exists ? "Календарь портала доступен"
                         : "Календарь портала удалён в Google — синхронизация создаст его заново";
                 case EN -> exists ? "The portal's calendar is available"
-                        : "The portal's calendar was deleted in Google — the sync will create it again";
+                        : "The portal calendar was deleted from Google Calendar. It will be recreated during the next sync.";
             };
         } catch (GoogleAuthException e) {
             lost(e);

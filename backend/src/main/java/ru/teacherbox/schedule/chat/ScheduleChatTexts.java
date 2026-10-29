@@ -197,9 +197,9 @@ enum ScheduleChatTexts {
     EN {
         @Override String schedule() { return "Schedule"; }
         @Override String today() { return "Today"; }
-        @Override String unmarked() { return "Unmarked"; }
+        @Override String unmarked() { return "Attendance to record"; }
         @Override String cancelLesson() { return "Cancel a lesson"; }
-        @Override String moveLesson() { return "Move a lesson"; }
+        @Override String moveLesson() { return "Reschedule a lesson"; }
         @Override String myRequests() { return "My requests"; }
         @Override String requests() { return "Requests"; }
 
@@ -210,174 +210,130 @@ enum ScheduleChatTexts {
         @Override String status(LessonStatus status) {
             return switch (status) {
                 case SCHEDULED -> "scheduled";
-                case CONDUCTED -> "conducted";
+                case CONDUCTED -> "completed";
                 case MISSED -> "missed";
                 case CANCELLED -> "cancelled";
             };
         }
-        @Override String tooLong(int max) { return "Too long: at most " + max + " characters."; }
-        @Override String dateNotUnderstood() { return "I didn't understand the date."; }
+        @Override String tooLong(int max) { return "Please use " + max + " characters or fewer."; }
+        @Override String dateNotUnderstood() { return "I couldn't read that date. Please try again."; }
 
         @Override String todayHeading() { return "Today's lessons:"; }
         @Override String noLessonsToday() { return "No lessons today."; }
-        @Override String unmarkedHeading() { return "Past lessons without a mark:"; }
-        @Override String allMarked() { return "All past lessons are marked."; }
-        @Override String whichToMark() { return "Which lesson shall I mark?"; }
-        @Override String markedOrNotStarted() { return "This lesson is already marked or hasn't started yet."; }
+        @Override String unmarkedHeading() { return "Past lessons awaiting attendance:"; }
+        @Override String allMarked() { return "Attendance has been recorded for all past lessons."; }
+        @Override String whichToMark() { return "Which lesson would you like to record attendance for?"; }
+        @Override String markedOrNotStarted() { return "Attendance has already been recorded for this lesson, or it hasn't started yet."; }
         @Override String howWasIt() { return "How did the lesson go?"; }
-        @Override String conducted() { return "Conducted"; }
+        @Override String conducted() { return "Completed"; }
         @Override String missed() { return "Missed"; }
-        @Override String groupTooBig(int max) {
-            return "The group has more than " + max + " students — mark the attendance on the portal, in the schedule.";
-        }
-        @Override String markWhoCame() { return "Mark who was at the lesson and press “Done”."; }
-        @Override String excused(String name) { return name + " said they won't come."; }
+        @Override String groupTooBig(int max) { return "This group has more than " + max + " students. Please record attendance in the portal's schedule."; }
+        @Override String markWhoCame() { return "Select the students who attended, then choose “Done”."; }
+        @Override String excused(String name) { return name + " let you know they wouldn't be attending."; }
         @Override String done() { return "Done"; }
-        @Override String alreadyMarked() { return "This lesson is already marked."; }
-        @Override String allExcused() { return "All the students said they won't come: cancel the lesson on the portal."; }
-        @Override String confirmAttendance(List<String> came, List<String> missed) {
-            return "Mark the attendance: present — " + (came.isEmpty() ? "nobody" : String.join(", ", came))
-                    + (missed.isEmpty() ? "" : "; absent — " + String.join(", ", missed)) + "?";
-        }
-        @Override String chooseOutcome() { return "Choose: “Conducted” or “Missed”."; }
-        @Override String confirmOutcome(String lesson, boolean conducted) {
-            return "Mark the lesson " + lesson + " as " + (conducted ? "conducted" : "missed") + "?";
-        }
-        @Override String notMarking() { return "OK, not marking it."; }
-        @Override String attendanceMarked() { return "Attendance marked."; }
+        @Override String alreadyMarked() { return "Attendance has already been recorded for this lesson."; }
+        @Override String allExcused() { return "No students will be attending. Please cancel the lesson on the portal."; }
+        @Override String confirmAttendance(List<String> came, List<String> missed) { return "Record attendance? Present: " + (came.isEmpty() ? "no one" : String.join(", ", came)) + (missed.isEmpty() ? "" : "; absent: " + String.join(", ", missed)) + "."; }
+        @Override String chooseOutcome() { return "Choose “Completed” or “Missed”."; }
+        @Override String confirmOutcome(String lesson, boolean conducted) { return "Mark lesson " + lesson + " as " + (conducted ? "completed" : "missed") + "?"; }
+        @Override String notMarking() { return "OK, attendance unchanged."; }
+        @Override String attendanceMarked() { return "Attendance recorded."; }
         @Override String marked(LessonStatus status) { return "Marked: " + status(status) + "."; }
-        @Override String markFailed() { return "Couldn't mark it: the lesson has changed. Open the list again."; }
-        @Override String offerSummary(String marked) { return marked + " Write the lesson summary?"; }
-        @Override String writeSummary() { return "Write summary"; }
+        @Override String markFailed() { return "Couldn't record attendance because the lesson has changed. Open the list and try again."; }
+        @Override String offerSummary(String marked) { return marked + " Would you like to add a lesson summary?"; }
+        @Override String writeSummary() { return "Add summary"; }
         @Override String skipSummary() { return "Skip"; }
         @Override String summarySkipped() { return "Okay. You can write the summary later on the portal."; }
-        @Override String askSummary(int max) {
-            return "Write in one message what you covered in the lesson (at most " + max + " characters).";
-        }
+        @Override String askSummary(int max) { return "Describe what you covered in one message (" + max + " characters maximum)."; }
         @Override String summarySaved(boolean group) {
             return "Summary saved. Send it to the " + (group ? "students" : "student") + "?";
         }
         @Override String sendSummary(boolean group) { return group ? "Send to students" : "Send to student"; }
-        @Override String summaryKept() { return "Summary saved, not sent to the students."; }
+        @Override String summaryKept() { return "Summary saved. It hasn't been sent to the students."; }
         @Override String summarySent() { return "Summary sent."; }
-        @Override String summaryFailed() { return "Couldn't write the summary: the lesson has changed."; }
+        @Override String summaryFailed() { return "Couldn't save the summary because the lesson has changed."; }
 
-        @Override String nothingToChange(boolean cancel) {
-            return "There are no lessons you can " + (cancel ? "cancel" : "move")
-                    + ": no planned lessons, or they already have requests.";
-        }
-        @Override String whichToChange(boolean cancel) {
-            return cancel ? "Which lesson shall I cancel?" : "Which lesson shall I move?";
-        }
-        @Override String chooseByButton() { return "Choose a lesson with a button."; }
-        @Override String whichDay() { return "Which day shall I move it to? Choose or type a date, e.g. 05.10."; }
-        @Override String whatTime() { return "At what time? Type it, e.g. 18:30."; }
-        @Override String timeNotUnderstood() { return "I didn't understand the time. Type it like this: 18:30."; }
+        @Override String nothingToChange(boolean cancel) { return "No lessons are available to " + (cancel ? "cancel" : "reschedule") + ". There are no upcoming lessons, or a request is already pending for each one."; }
+        @Override String whichToChange(boolean cancel) { return "Which lesson would you like to " + (cancel ? "cancel" : "reschedule") + "?"; }
+        @Override String chooseByButton() { return "Select a lesson using the buttons below."; }
+        @Override String whichDay() { return "What date would you like? Select a day or enter a date, such as 05.10."; }
+        @Override String whatTime() { return "What time would you like? Enter a time, such as 18:30."; }
+        @Override String timeNotUnderstood() { return "I couldn't read that time. Use the format 18:30."; }
         @Override String timePassed() { return "That time has already passed."; }
-        @Override String teacherBusy() {
-            return "The teacher is busy at that time. Type another time, e.g. 18:30, or start again: /menu.";
-        }
-        @Override String askReason() { return "Write the reason — the teacher will see it. Or press “No comment”."; }
-        @Override String askComment() { return "Write a comment for the teacher or press “No comment”."; }
+        @Override String teacherBusy() { return "Your teacher is unavailable then. Enter another time, such as 18:30, or send /menu to start again."; }
+        @Override String askReason() { return "Tell your teacher why, or choose “No comment”."; }
+        @Override String askComment() { return "Add a message for your teacher, or choose “No comment”."; }
         @Override String noComment() { return "No comment"; }
-        @Override String askToMove(String when, String to) {
-            return "Ask the teacher to move the lesson on " + when + " to " + to + "?";
-        }
-        @Override String tellAbsence(String group, String when) {
-            return "Tell the teacher you won't come to the lesson of the group “" + group + "” on " + when + "?";
-        }
-        @Override String askToCancel(String when) { return "Ask the teacher to cancel the lesson on " + when + "?"; }
-        @Override String lateWarning() { return "The lesson is soon: the teacher may count it as missed."; }
+        @Override String askToMove(String when, String to) { return "Ask your teacher to reschedule the lesson from " + when + " to " + to + "?"; }
+        @Override String tellAbsence(String group, String when) { return "Let your teacher know you can't attend the “" + group + "” lesson on " + when + "?"; }
+        @Override String askToCancel(String when) { return "Ask your teacher to cancel the lesson on " + when + "?"; }
+        @Override String lateWarning() { return "The lesson starts soon. Your teacher may mark it as missed."; }
         @Override String comment(String comment) { return "Comment: " + comment; }
-        @Override String notSending() { return "OK, not sending anything."; }
-        @Override String cannotChange() {
-            return "This lesson can't be changed any more: it was moved, cancelled or already has a request.";
-        }
-        @Override String slotBusy() { return "Couldn't send the request: the teacher is already busy at that time."; }
-        @Override String requestFailed() {
-            return "Couldn't send the request: the lesson has changed or already has a request.";
-        }
-        @Override String absenceSent() { return "Done: the teacher will see you won't be there."; }
-        @Override String requestSent() { return "The request is sent to the teacher. The answer will come here."; }
+        @Override String notSending() { return "OK, nothing sent."; }
+        @Override String cannotChange() { return "This lesson has been rescheduled or cancelled, or a request is already pending."; }
+        @Override String slotBusy() { return "Couldn't send the request. Your teacher is no longer available at that time."; }
+        @Override String requestFailed() { return "Couldn't send the request. The lesson has changed or another request is already pending."; }
+        @Override String absenceSent() { return "Your teacher has been notified that you can't attend."; }
+        @Override String requestSent() { return "Request sent to your teacher. You'll receive their reply here."; }
 
-        @Override String noPlannedLessons() { return "No planned lessons yet."; }
+        @Override String noPlannedLessons() { return "No upcoming lessons."; }
         @Override String upcoming() { return "Upcoming lessons:"; }
-        @Override String youWontCome() { return " (you said you won't come)"; }
-        @Override String requestPending() { return " (your request awaits an answer)"; }
+        @Override String youWontCome() { return " (you're not attending)"; }
+        @Override String requestPending() { return " (awaiting your teacher's reply)"; }
         @Override String andMore(int count) { return "…and " + count + " more"; }
-        @Override String joinNearest() { return "Join the nearest lesson"; }
+        @Override String joinNearest() { return "Join next lesson"; }
 
         @Override String noRequests() { return "No requests yet."; }
         @Override String yourRequests() { return "Your requests:"; }
         @Override String teacherAnswer(String answer) { return "Teacher: “" + answer + "”"; }
-        @Override String canWithdraw() { return "A request without an answer can be withdrawn."; }
+        @Override String canWithdraw() { return "You can withdraw a request until your teacher replies."; }
         @Override String withdraw(String when) { return "Withdraw: " + when; }
         @Override String confirmWithdraw(String request) { return "Withdraw the request: " + request + "?"; }
-        @Override String requestStays() { return "OK, the request stays."; }
-        @Override String cannotWithdraw() { return "This request can't be withdrawn any more: the teacher has answered it."; }
+        @Override String requestStays() { return "OK, your request is still pending."; }
+        @Override String cannotWithdraw() { return "Your teacher has already replied, so this request can no longer be withdrawn."; }
         @Override String withdrawn() { return "Request withdrawn."; }
-        @Override String myMove(String when, @Nullable String to) {
-            return "moving the lesson on " + when + (to == null ? "" : " to " + to);
-        }
-        @Override String myAbsence(String when) { return "won't come to the lesson on " + when; }
-        @Override String myCancel(String when) { return "cancelling the lesson on " + when; }
+        @Override String myMove(String when, @Nullable String to) { return "reschedule the lesson on " + when + (to == null ? "" : " to " + to); }
+        @Override String myAbsence(String when) { return "absence from the lesson on " + when; }
+        @Override String myCancel(String when) { return "cancel the lesson on " + when; }
         @Override String requestStatus(RequestStatus status) {
             return switch (status) {
-                case PENDING -> "awaits an answer";
-                case APPROVED -> "accepted";
+                case PENDING -> "pending";
+                case APPROVED -> "approved";
                 case DECLINED -> "declined";
                 case WITHDRAWN -> "withdrawn";
-                case OUTDATED -> "outdated";
+                case OUTDATED -> "no longer applicable";
             };
         }
 
         @Override String answered() { return "This request has already been answered or withdrawn."; }
         @Override String noNewRequests() { return "No new requests."; }
         @Override String studentsRequests() { return "Students' requests:"; }
-        @Override String whichToAnswer() { return "Which one shall I answer?"; }
-        @Override String lateCharge() { return "The cancellation is late. Count the lesson as missed (it will be charged)?"; }
-        @Override String charge() { return "Count it"; }
-        @Override String free() { return "Don't count it"; }
-        @Override String askAnswer() {
-            return "Write an answer to the student — e.g. propose another time. Or press “No answer”.";
-        }
-        @Override String noAnswer() { return "No answer"; }
-        @Override String confirmDecline(String request, @Nullable String answer) {
-            return "Decline the request: " + request + "?" + (answer == null ? "" : "\nAnswer: " + answer);
-        }
-        @Override String requestWaits() { return "OK, the request awaits an answer."; }
-        @Override String youAreBusy() {
-            return "You have another lesson or plans in the calendar at that time. Answer on the portal.";
-        }
-        @Override String acceptFailed() { return "Couldn't accept the request: the lesson has changed. Answer on the portal."; }
-        @Override String lessonMoved() { return "Lesson moved. The student will get a notification."; }
-        @Override String absenceMarked() { return "Marked that the student won't come. The student will get a notification."; }
-        @Override String lessonCancelled() { return "Lesson cancelled. The student will get a notification."; }
-        @Override String declined() { return "Request declined. The student will get the answer."; }
+        @Override String whichToAnswer() { return "Which request would you like to respond to?"; }
+        @Override String lateCharge() { return "This is a late cancellation. Mark the lesson as missed and charge for it?"; }
+        @Override String charge() { return "Charge for lesson"; }
+        @Override String free() { return "Don't charge"; }
+        @Override String askAnswer() { return "Add a reply to the student, for example to suggest another time, or choose “Skip reply”."; }
+        @Override String noAnswer() { return "Skip reply"; }
+        @Override String confirmDecline(String request, @Nullable String answer) { return "Decline the request: " + request + "?" + (answer == null ? "" : "\nReply: " + answer); }
+        @Override String requestWaits() { return "OK, the request is still pending."; }
+        @Override String youAreBusy() { return "You have a lesson or another calendar event at that time. Please respond on the portal."; }
+        @Override String acceptFailed() { return "Couldn't approve the request because the lesson has changed. Please respond on the portal."; }
+        @Override String lessonMoved() { return "Lesson rescheduled. The student will be notified."; }
+        @Override String absenceMarked() { return "Absence recorded. The student will be notified."; }
+        @Override String lessonCancelled() { return "Lesson cancelled. The student will be notified."; }
+        @Override String declined() { return "Request declined. Your reply will be sent to the student."; }
         @Override String theStudent() { return "the student"; }
-        @Override String confirmMove(String student, String when, @Nullable String to) {
-            return "Move the lesson (" + student + ") from " + when + " to " + (to == null ? "the proposed time" : to)
-                    + "?";
-        }
-        @Override String confirmAbsence(String student, String group, String when, boolean charge) {
-            return "Mark that " + student + " won't come to the lesson of the group “" + group + "” on " + when
-                    + (charge ? " and count it as missed?" : "?");
-        }
-        @Override String confirmCancel(String student, String when, boolean charge) {
-            return "Cancel the lesson (" + student + ") on " + when + (charge ? " and count it as missed?" : "?");
-        }
-        @Override String asksToMove(String student, String when, @Nullable String to) {
-            return student + ": move the lesson on " + when + (to == null ? "" : " to " + to);
-        }
-        @Override String wontCome(String student, String group, String when) {
-            return student + ": won't come to the lesson of the group “" + group + "” on " + when;
-        }
+        @Override String confirmMove(String student, String when, @Nullable String to) { return "Reschedule the lesson with " + student + " from " + when + " to " + (to == null ? "the requested time" : to) + "?"; }
+        @Override String confirmAbsence(String student, String group, String when, boolean charge) { return "Record " + student + "'s absence from the “" + group + "” lesson on " + when + (charge ? " and mark it as missed?" : "?"); }
+        @Override String confirmCancel(String student, String when, boolean charge) { return "Cancel the lesson with " + student + " on " + when + (charge ? " and mark it as missed?" : "?"); }
+        @Override String asksToMove(String student, String when, @Nullable String to) { return student + ": reschedule the lesson on " + when + (to == null ? "" : " to " + to); }
+        @Override String wontCome(String student, String group, String when) { return student + ": can't attend the “" + group + "” lesson on " + when; }
         @Override String asksToCancel(String student, String when) {
             return student + ": cancel the lesson on " + when;
         }
         @Override String late() { return " (late)"; }
         @Override String quoted(String comment) { return " — “" + comment + "”"; }
-        @Override String accept() { return "Accept"; }
+        @Override String accept() { return "Approve"; }
         @Override String decline() { return "Decline"; }
     };
 

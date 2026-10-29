@@ -169,15 +169,15 @@ class EventNotificationsIntegrationTests {
 
         InboxNotification assigned = single(scenario, student,
                 new HomeworkAssigned(task, UUID.randomUUID(), student, "Fractions", DUE, Instant.now()));
-        assertThat(assigned.title()).isEqualTo("New task: “Fractions”");
+        assertThat(assigned.title()).isEqualTo("New assignment: “Fractions”");
         assertThat(assigned.body()).isEqualTo("Due: 25.09.2026 18:30");
 
         UUID payer = directory.addStudent("Payer");
         directory.setLanguage(payer, Language.EN);
         InboxNotification lesson = single(scenario, payer, new LessonRecorded(UUID.randomUUID(), payer,
                 LocalDate.of(2026, 9, 24), 60, rub(150_000), false, rub(-150_000), Instant.now()));
-        assertThat(lesson.title()).isEqualTo("Lesson 24.09.2026");
-        assertThat(lesson.body()).isEqualTo("Price: ₽1,500. Debt: ₽1,500");
+        assertThat(lesson.title()).isEqualTo("Lesson completed: 24.09.2026");
+        assertThat(lesson.body()).isEqualTo("Price: ₽1,500. Amount due: ₽1,500");
     }
 
     @Test

@@ -72,48 +72,45 @@ enum ScheduleMessages {
         @Override String lessonTitle(String title) { return "Lesson “" + title + "”."; }
         @Override String topic(String topic) { return "Topic: " + topic; }
         @Override String newLesson(String when) { return "New lesson: " + when; }
-        @Override String series(String weekly) { return "Repeating lessons " + weekly; }
+        @Override String series(String weekly) { return "Recurring lessons " + weekly; }
         @Override String seriesDates(String from, @Nullable String to) { return "From " + from + (to == null ? "" : " to " + to); }
-        @Override String everyWeeks(int weeks) { return ", every " + weeks + " weeks"; }
-        @Override String seriesStopped() { return "Repeating lessons ended"; }
-        @Override String seriesStoppedFrom(String from) { return "Scheduled lessons from " + from + " are cancelled."; }
-        @Override String moved(String when) { return "Lesson moved to " + when; }
-        @Override String was(String when) { return "Was: " + when + "."; }
+        @Override String everyWeeks(int weeks) { return ", every " + weeks + " " + Plural.english(weeks, "week", "weeks"); }
+        @Override String seriesStopped() { return "Recurring lessons ended"; }
+        @Override String seriesStoppedFrom(String from) { return "Lessons scheduled for " + from + " onwards have been cancelled."; }
+        @Override String moved(String when) { return "Lesson rescheduled to " + when; }
+        @Override String was(String when) { return "Previously: " + when + "."; }
         @Override String reason(String reason) { return "Reason: " + reason; }
-        @Override String countedAsMissed() { return "The lesson counts as missed."; }
+        @Override String countedAsMissed() { return "This lesson has been marked as missed."; }
         @Override String cancelled(String when) { return "Lesson on " + when + " cancelled"; }
-        @Override String restored(String when) { return "Lesson on " + when + " is back in the schedule"; }
-        @Override String cancellationWithdrawn() { return "The cancellation is withdrawn."; }
+        @Override String restored(String when) { return "Lesson on " + when + " reinstated"; }
+        @Override String cancellationWithdrawn() { return "The lesson has been reinstated."; }
         @Override String requestedLesson(String when, @Nullable String group) {
             return "Lesson: " + when + (group == null ? "" : ", group “" + group + "”") + ".";
         }
-        @Override String proposes(String when) { return "Proposes: " + when + "."; }
+        @Override String proposes(String when) { return "Suggested time: " + when + "."; }
         @Override String lateCancellation() { return "Late cancellation."; }
-        @Override String lateAbsence() { return "Late — decide whether to count it as missed."; }
+        @Override String lateAbsence() { return "This is short notice. Decide whether to mark the lesson as missed."; }
         @Override String comment(String comment) { return "Comment: " + comment; }
-        @Override String asksToMove(String student) { return student + " asks to move a lesson"; }
-        @Override String wontCome(String student) { return student + " won't come to a group lesson"; }
-        @Override String asksToCancel(String student) { return student + " asks to cancel a lesson"; }
-        @Override String moveDeclined() { return "Moving the lesson is not agreed"; }
-        @Override String absenceDeclined() { return "Missing the lesson is not agreed"; }
-        @Override String cancelDeclined() { return "Cancelling the lesson is not agreed"; }
-        @Override String lessonStays(String when) { return "The lesson stays: " + when + "."; }
-        @Override String moveAgreed(String when) { return "Move agreed: " + when; }
-        @Override String absenceKnown(String when) { return "The teacher knows you won't be there on " + when; }
-        @Override String cancelAgreed(String when) { return "Cancelling the lesson on " + when + " is agreed"; }
-        @Override String lateCharged() { return "The cancellation is late, the lesson counts as missed."; }
+        @Override String asksToMove(String student) { return student + " requested a lesson reschedule"; }
+        @Override String wontCome(String student) { return student + " can't attend a group lesson"; }
+        @Override String asksToCancel(String student) { return student + " requested a lesson cancellation"; }
+        @Override String moveDeclined() { return "Reschedule request declined"; }
+        @Override String absenceDeclined() { return "Absence request declined"; }
+        @Override String cancelDeclined() { return "Cancellation request declined"; }
+        @Override String lessonStays(String when) { return "The lesson is still scheduled for " + when + "."; }
+        @Override String moveAgreed(String when) { return "Reschedule approved: " + when; }
+        @Override String absenceKnown(String when) { return "Your teacher has acknowledged your absence on " + when + "."; }
+        @Override String cancelAgreed(String when) { return "Cancellation approved for the lesson on " + when; }
+        @Override String lateCharged() { return "This was a late cancellation. The lesson has been marked as missed."; }
         @Override String teacherComment(String comment) { return "Teacher's comment: " + comment; }
         @Override String in(String duration) { return "In " + duration + "."; }
         @Override String meetingLink(String url) { return "Lesson link: " + url; }
-        @Override String soonForStudent(String when) { return "Lesson soon: " + when; }
-        @Override String soonForTeacher(String with, String when) { return "Lesson soon: " + with + ", " + when; }
-        @Override String lessonSummary(String date) { return "Lesson summary " + date; }
-        @Override String lessonSummaryBody() { return "Your teacher wrote down what you covered in the lesson."; }
+        @Override String soonForStudent(String when) { return "Upcoming lesson: " + when; }
+        @Override String soonForTeacher(String with, String when) { return "Upcoming lesson: " + with + ", " + when; }
+        @Override String lessonSummary(String date) { return "Lesson summary: " + date; }
+        @Override String lessonSummaryBody() { return "Your teacher has shared a summary of what you covered."; }
         @Override String calendarDisconnected() { return "Google Calendar disconnected"; }
-        @Override String calendarDisconnectedBody() {
-            return "Google no longer accepts the portal's access, lessons don't get into the calendar. "
-                    + "Connect the calendar again in the settings.";
-        }
+        @Override String calendarDisconnectedBody() { return "The portal no longer has access to your Google Calendar, so lessons aren't syncing. Reconnect it in Settings."; }
     };
 
     static ScheduleMessages of(Language language) {

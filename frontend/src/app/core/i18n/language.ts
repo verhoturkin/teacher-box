@@ -14,7 +14,7 @@ export type Language = (typeof LANGUAGES)[number]['code'];
 /** Device setting with the chosen language. */
 export const LANGUAGE_KEY = 'tb.language';
 
-/** The texts are written in it; the others are translations of its dictionaries. */
+/** Default language and dictionary shape; each language's prose is authored independently. */
 const SOURCE = 'ru' satisfies Language;
 
 function isLanguage(value: string | null): value is Language {
@@ -86,8 +86,8 @@ type Dictionaries<T> = Readonly<Record<typeof SOURCE, T>> &
   Readonly<Record<Exclude<Language, typeof SOURCE>, Translation<T>>>;
 
 /**
- * The dictionary of the current language: `translations({ ru, en })`. The Russian dictionary is the source;
- * a missing or extra key in another one is a compile error. Each section is taken from the language of the
+ * The dictionary of the current language: `translations({ ru, en })`. Russian defines the key/type
+ * contract only; a missing or extra key is a compile error. Each section is taken from the language of the
  * moment it is read (a component reads its section when it is created), so the dictionaries do not depend
  * on the order in which modules load.
  */
