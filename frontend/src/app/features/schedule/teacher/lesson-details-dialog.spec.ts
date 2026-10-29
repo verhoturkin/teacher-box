@@ -166,6 +166,7 @@ describe('LessonDetailsDialog', () => {
   });
 
   it('marks the outcome of a past lesson by the toggle and shows the saved one', async () => {
+    const success = vi.spyOn(TestBed.inject(Snackbar), 'success');
     await open(scheduledLesson(), PAST);
 
     toggle('Проведено').click();
@@ -178,6 +179,8 @@ describe('LessonDetailsDialog', () => {
     expect(fixture.componentInstance.visible()).toBe(true);
     expect(pressed()).toEqual(['Проведено']);
     expect(bodyText()).toContain('Проведено');
+    // the undo snackbar tells the mark: no second «Занятие обновлено»
+    expect(success).not.toHaveBeenCalled();
   });
 
   it('offers to take the toggle back and shows the lesson as it was', async () => {
@@ -387,6 +390,7 @@ describe('LessonDetailsDialog', () => {
   });
 
   it('restores a cancelled lesson', async () => {
+    const success = vi.spyOn(TestBed.inject(Snackbar), 'success');
     await open(scheduledLesson({ status: 'CANCELLED', cancelReason: 'Болезнь' }), PAST);
     expect(bodyText()).toContain('Причина отмены: Болезнь');
 
@@ -398,6 +402,7 @@ describe('LessonDetailsDialog', () => {
 
     expect(changed).toHaveLength(1);
     expect(fixture.componentInstance.visible()).toBe(false);
+    expect(success).toHaveBeenCalledExactlyOnceWith('Занятие обновлено');
   });
 
   it('asks before restoring a lesson over another one, and restores on a yes', async () => {
@@ -479,6 +484,7 @@ describe('LessonDetailsDialog', () => {
   });
 
   it('saves the summary in place: the card stays open and keeps the saved lesson', async () => {
+    const success = vi.spyOn(TestBed.inject(Snackbar), 'success');
     await open(scheduledLesson({ topic: 'Past Simple' }), PAST);
     const text = requireElement(document.body, '#lesson-summary-text', HTMLTextAreaElement);
     expect(text.value).toBe('Past Simple');
@@ -492,6 +498,7 @@ describe('LessonDetailsDialog', () => {
     await fixture.whenStable();
 
     expect(changed).toEqual([updated]);
+    expect(success).toHaveBeenCalledExactlyOnceWith('Итоги сохранены');
     expect(fixture.componentInstance.visible()).toBe(true);
     expect(requireElement(document.body, '#lesson-summary-text', HTMLTextAreaElement).value).toBe(
       'Итоги дня',

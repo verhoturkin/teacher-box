@@ -358,7 +358,7 @@ const ALL_DAY_START_HOUR = 10;
     <tb-lesson-details-dialog
       [(visible)]="detailsVisible"
       [lesson]="selected()"
-      (changed)="done(t.updated)"
+      (changed)="reload()"
       (deleted)="done(t.deleted)"
       (edit)="editLesson($event)"
       (answerOpened)="answer($event)"

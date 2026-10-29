@@ -123,7 +123,7 @@ function withDetails(lesson: ScheduledLesson, details: ScheduledLesson): Schedul
     <tb-attendance-dialog
       [(visible)]="attendanceVisible"
       [lesson]="shown()"
-      (saved)="onChanged($event)"
+      (saved)="onChanged($event, false)"
       (restored)="onChanged($event)"
     />
     <tb-lesson-cancel-dialog
@@ -307,8 +307,17 @@ export class LessonDetailsDialog {
     this.changed.emit(lesson);
   }
 
-  protected onChanged(lesson: ScheduledLesson): void {
+  /** `announce` is false when the action told its result itself (attendance with «Отменить»). */
+  protected onChanged(lesson: ScheduledLesson, announce = true): void {
     this.visible.set(false);
+    this.emitChanged(lesson, announce);
+  }
+
+  /** One snackbar per action: the page only reloads, the card tells what nothing else told. */
+  private emitChanged(lesson: ScheduledLesson, announce: boolean): void {
+    if (announce) {
+      this.snackbar.success(T.page.updated);
+    }
     this.changed.emit(lesson);
   }
 
@@ -326,11 +335,12 @@ export class LessonDetailsDialog {
     this.busy.guard('outcome', request).subscribe({
       next: (updated) => {
         this.shown.set(updated);
-        this.changed.emit(updated);
+        // a mark is told by the undo snackbar, a reopen by the card
+        this.emitChanged(updated, change.outcome === null);
         if (change.outcome !== null) {
           this.markUndo.offer(lesson, updated, (restored) => {
             this.shown.set(restored);
-            this.changed.emit(restored);
+            this.emitChanged(restored, true);
           });
         }
       },
@@ -347,7 +357,7 @@ export class LessonDetailsDialog {
     }
     this.busy.guard('outcome', this.api.reopen(lesson.id)).subscribe((updated) => {
       this.shown.set(updated);
-      this.changed.emit(updated);
+      this.emitChanged(updated, true);
     });
   }
 
