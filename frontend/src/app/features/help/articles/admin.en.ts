@@ -20,7 +20,7 @@ The administrator helps with the server: reads the log, checks the integrations 
 - **Backups** — [backups](/admin/help/backups): making and restoring them.
 - **Settings** — [portal settings](/admin/help/settings) instead of the .env file.
 
-The sections are in the panel on the left, «Help» at its bottom. On a phone all five sections are at the bottom of the screen, «Help» is under the ☰ button at the top left. «Account» at the bottom of the panel opens «My account»: the theme, the language and «Sign out» are there.
+The sections are in the panel on the left, «Help» at its bottom. On a phone all five sections are at the bottom of the screen, «Help» is under the ☰ button at the top left. The item with your name at the bottom of the panel opens «My account»: the theme, the language and «Sign out» are there.
 
 ## If something broke
 

@@ -22,15 +22,15 @@ Ask the teacher to send a password reset link. Set a new password with it.
 
 ## Change the password
 
-«Account» (at the bottom of the panel on the left, under ☰ on a phone) → «Change password».
+The item with your name (at the bottom of the panel on the left, under ☰ on a phone) → «Change password».
 
 If a link does not open or is out of date, ask the teacher to send a new one.
 
 ## Photo and name
 
-«Account» (at the bottom of the panel on the left, under ☰ on a phone): the photo is in the top card, the name in the «Name» card.
+The item with your name (at the bottom of the panel on the left, under ☰ on a phone): the photo is in the top card, the name in the «Name» card.
 
-- **Photo** — «Upload photo» and choose a picture (JPEG, PNG or WebP). The portal cuts a square out of its centre and makes it smaller. You see the photo next to «Account», and the teacher sees it in the list of students, in payments, calls, the schedule and on the home page. The bin next to it removes the photo.
+- **Photo** — «Upload photo» and choose a picture (JPEG, PNG or WebP). The portal cuts a square out of its centre and makes it smaller. You see the photo next to the item with your name, and the teacher sees it in the list of students, in payments, calls, the schedule and on the home page. The bin next to it removes the photo.
 - **Name** — how the portal calls you in the cabinet. The teacher still sees you under the name they gave. Erase your name and save to go back to the teacher's name.
 `,
   },
@@ -164,7 +164,7 @@ The bell in the header opens the notifications at the side (on a phone — full 
 
 ## Connect
 
-«Account» → the «Messengers» card → «Connect» next to a messenger (or «Connect» on the card on the home page). A chat with the bot opens — press «Start» or send it the code shown.
+The item with your name → the «Messengers» card → «Connect» next to a messenger (or «Connect» on the card on the home page). A chat with the bot opens — press «Start» or send it the code shown.
 
 ## Buttons under notifications
 
@@ -186,13 +186,13 @@ The bot speaks Russian.
 
 ## Notifications on the phone without a messenger
 
-Lesson reminders, new homework and the teacher's messages can arrive as system notifications on your phone even when the cabinet is closed — without a messenger or together with one. «Account» → «Notifications on devices» → «Turn on notifications on this device» (or «Turn on» in the card on the home page), then allow notifications in the browser prompt. «Turn off» in the list removes the device. The topics and quiet hours are the same as for messengers.
+Lesson reminders, new homework and the teacher's messages can arrive as system notifications on your phone even when the cabinet is closed — without a messenger or together with one. The item with your name → «Notifications on devices» → «Turn on notifications on this device» (or «Turn on» in the card on the home page), then allow notifications in the browser prompt. «Turn off» in the list removes the device. The topics and quiet hours are the same as for messengers.
 
 On iPhone and iPad notifications work only in the app on the Home Screen: Share → Add to Home Screen, then open the cabinet from the new icon. The portal address must be HTTPS; if notifications are unavailable, the card says why. The notification goes through a Google, Mozilla or Apple service — the text is encrypted with your device key, so the service cannot read it.
 
 ## Turn off
 
-Send the bot /stop or disconnect the messenger in «My account» («Account» in the panel on the left). There, in the «What to send to messengers» card, you can also choose the topics and the quiet hours.
+Send the bot /stop or disconnect the messenger in «My account» (the item with your name in the panel on the left). There, in the «What to send to messengers» card, you can also choose the topics and the quiet hours.
 `,
   },
   appearance: {
@@ -215,7 +215,7 @@ The cabinet works in the phone's browser, nothing needs installing. If you want 
 
 ## Dark theme
 
-«Account» → «Appearance» → «Light», «Dark» or «System». The choice is remembered on this device.
+The item with your name → «Appearance» → «Light», «Dark» or «System». The choice is remembered on this device.
 
 ## Language
 

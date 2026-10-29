@@ -591,7 +591,7 @@ Students can make such a link too — it has only their lessons.
     body: `
 «Settings» (at the bottom of the sections panel on the left, on a phone — under ☰) gathers what concerns the whole portal: connections, appearance and data. On the left is the list of setting groups, on the right — the chosen group. On a phone the list comes first; the chosen group opens in its place, and the back arrow returns to the list. Each group has its own address — you can bookmark it.
 
-- **My account** — photo, name and password. The same section opens with «Account» at the bottom of the panel on the left (on a phone, under the ☰ button).
+- **My account** — photo, name and password. The same section opens with the item with your name at the bottom of the panel on the left (on a phone, under the ☰ button).
 - **Portal** — the portal's name, address, colour and logo ([Look, language and phone](/teacher/help/appearance)).
 - **Schedule and calendar** — the portal's time zone, Google Calendar and the schedule subscription ([Calendars](/teacher/help/calendars)).
 - **Calls** — calls in the portal ([Calls](/teacher/help/calls)) and video meetings ([Video meetings](/teacher/help/meetings)).
@@ -626,7 +626,7 @@ The portal's name is there too — it is shown next to the logo at the top of th
 
 ## Dark theme
 
-«Account» (bottom of the panel on the left, under ☰ on a phone) → «Appearance» → «Light», «Dark» or «System». The choice is remembered on this device; students have their own setting.
+The item with your name (bottom of the panel on the left, under ☰ on a phone) → «Appearance» → «Light», «Dark» or «System». The choice is remembered on this device; students have their own setting.
 
 ## Language
 
@@ -648,7 +648,7 @@ The top of the sections panel holds the portal's logo and name with «Create» u
 
 Icons are Material Symbols, as in Android; the chosen section's icon is filled, the others are outlined.
 
-The search is at the top centre: start typing a student's or group's name, or the title of an assignment, board or textbook, and matches appear under the bar in groups (up to five in each, the rest counted as «N more»). Pick a result with ↑ ↓ and Enter or click it; Esc closes the list. Open the search from the keyboard with Ctrl K (⌘ K on a Mac) on any page. It searches the lists already loaded, so it finds what you have opened in this session; on a phone the magnifier icon at the top opens a full-screen search. The bell is always at the top right; your photo and «Sign out» are in «Account» at the bottom of the panel. A page's title starts its content, and a «?» next to the title of a page or a block opens help about it. On a phone the top has ☰ and the section's name, and the page itself shows no section title and no «?»: help is under ☰.
+The search is at the top centre: start typing a student's or group's name, or the title of an assignment, board or textbook, and matches appear under the bar in groups (up to five in each, the rest counted as «N more»). Pick a result with ↑ ↓ and Enter or click it; Esc closes the list. Open the search from the keyboard with Ctrl K (⌘ K on a Mac) on any page. It searches the lists already loaded, so it finds what you have opened in this session; on a phone the magnifier icon at the top opens a full-screen search. The bell is always at the top right; your photo and «Sign out» are in the item with your name at the bottom of the panel. A page's title starts its content, and a «?» next to the title of a page or a block opens help about it. On a phone the top has ☰ and the section's name, and the page itself shows no section title and no «?»: help is under ☰.
 
 Lists in blocks (students, payments and payment history, boards, lessons, notifications) are separate tiles, a line per record, not tables: on the left the student's photo (or initials) or an icon, in the middle the name and details, on the right an amount, a status or buttons. The buttons of all rows of a list stand on one line.
 
