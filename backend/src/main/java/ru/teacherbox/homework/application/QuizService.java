@@ -218,6 +218,17 @@ public class QuizService {
     }
 
     private void close(QuizAttempt attempt, List<Question> list, Instant now) {
+        // An order the student never moved is the one they saw: the shuffle may already be the right order.
+        Set<UUID> answered = attempts.findAnswers(attempt.id()).stream().map(QuizAnswer::questionId)
+                .collect(Collectors.toSet());
+        for (Question question : list) {
+            if (question instanceof Ordering ordering && !answered.contains(ordering.id())) {
+                Answer shown = new Answer.Order(items(ordering.items(), attempt.id()).stream().map(Item::id).toList());
+                boolean correct = ordering.check(shown);
+                attempts.saveAnswer(new QuizAnswer(attempt.id(), ordering.id(), shown, correct,
+                        correct ? ordering.points() : 0, false));
+            }
+        }
         int score = attempts.findAnswers(attempt.id()).stream().mapToInt(QuizAnswer::points).sum();
         attempts.submit(attempt.id(), now, score, Quiz.maxPoints(list));
     }

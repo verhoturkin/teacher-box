@@ -113,6 +113,28 @@ class StudentQuizIntegrationTests {
     }
 
     @Test
+    void anOrderLeftAsShownIsTheAnswer() {
+        UUID student = directory.addStudent("Не двигал");
+        MvcTestResult created = mvc.post().uri("/api/teacher/homework/assignments")
+                .with(TestUsers.teacher(directory.teacherId())).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"title\":\"Порядок\",\"studentIds\":[\"" + student + "\"],\"quizReveal\":\"AFTER_SUBMIT\","
+                        + "\"quizAttempts\":1,\"questions\":[{\"type\":\"ORDERING\",\"text\":\"По порядку\","
+                        + "\"options\":[{\"text\":\"раз\"},{\"text\":\"два\"},{\"text\":\"три\"}]}]}")
+                .exchange();
+        String task = JsonPath.read(body(created), "$.tasks[0].taskId");
+        List<String> right = JsonPath.read(body(created), "$.questions[0].options[*].id");
+        String started = body(mvc.post().uri(quiz(task) + "/attempts").with(TestUsers.student(student)).exchange());
+        String attempt = JsonPath.read(started, "$.openAttempt.id");
+        List<String> shown = JsonPath.read(started, "$.questions[0].options[*].id");
+
+        // Nothing moved: the shuffle may already be the right order, so what the student saw is the answer.
+        String submitted = body(submit(student, task, attempt));
+        assertThat(JsonPath.<List<String>>read(submitted, "$.results[0].answer.ids")).isEqualTo(shown);
+        assertThat(JsonPath.<Boolean>read(submitted, "$.results[0].correct")).isEqualTo(shown.equals(right));
+        assertThat(JsonPath.<Integer>read(submitted, "$.best.scorePoints")).isEqualTo(shown.equals(right) ? 1 : 0);
+    }
+
+    @Test
     void revealRulesAfterDueAndNever() {
         UUID student = directory.addStudent("Лена");
         String later = assign(student, "AFTER_DUE", 1, clock.instant().plus(Duration.ofHours(2)).toString());

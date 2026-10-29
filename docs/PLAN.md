@@ -19,6 +19,17 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
+## v0.40.2
+
+Goals: an ordering question left as shown is not lost.
+
+### 337. Quiz ordering
+
+- [x] 337.1 **B** `QuizService.close`: an ordering question the student never moved is answered with
+  the order they saw (the shuffle may already be the right one); before, it counted as wrong, and
+  the E2E quiz scenario flaked.
+- [ ] 337.2 Release 0.40.2.
+
 ## v0.41.0
 
 Goals: the student card and the homework list scale to hundreds of items; a lesson has a title and

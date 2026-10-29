@@ -79,7 +79,8 @@ Student REST (`QuizService`, `/api/me/homework/tasks/{id}/quiz`): `GET` (questio
 options / items / the right column of a matching shuffled by stable ids seeded with the open attempt,
 attempts used / left, `canStart`, best attempt), `POST …/attempts` (returns the open attempt if there
 is one; `homework.quiz-no-attempts-left`), `PUT …/attempts/{a}/answers/{q}` (autosave; one `AnswerInput`
-shape, the field used depends on the type), `POST …/attempts/{a}/submit` (score = sum of points). The
+shape, the field used depends on the type), `POST …/attempts/{a}/submit` (score = sum of points; an
+ordering the student never moved is answered with the order they were shown, which may be right). The
 score is always shown; `results` (key, explanation, the answer and verdict of the best attempt) only
 when the reveal rule allows: `AFTER_SUBMIT` — once an attempt is submitted, `AFTER_DUE` — after `dueAt`
 (never without one), `NEVER`. Attempts are refused once the task is submitted / accepted
