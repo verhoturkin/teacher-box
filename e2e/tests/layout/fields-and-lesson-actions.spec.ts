@@ -155,9 +155,9 @@ for (const theme of ['Светлая тема', 'Тёмная тема']) {
       request,
     }) => {
       await signIn(page, 'teacher', TEACHER_PASSWORD, width);
+      await page.goto('/teacher/settings/account');
+      await page.getByRole('button', { name: theme.split(' ')[0], exact: true }).click();
       await page.goto('/teacher/students');
-      await page.locator('.tb-shell__user-button').click();
-      await page.getByRole('menuitemradio', { name: theme, exact: true }).click();
       if (width < 600)
         await page.getByRole('button', { name: 'Добавить ученика', exact: true }).click();
       else await create(page, 'Ученик');
@@ -268,7 +268,7 @@ for (const theme of ['Светлая тема', 'Тёмная тема']) {
   }
 }
 
-test('the search is a filled pill and a menu is an Expressive menu', async ({ page }) => {
+test('the search is a filled pill', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD, 1280);
   await page.goto('/teacher/students');
 
@@ -282,17 +282,6 @@ test('the search is a filled pill and a menu is an Expressive menu', async ({ pa
   });
   expect(style.radius).toBeGreaterThanOrEqual(28);
   expect(style.background).not.toBe('rgba(0, 0, 0, 0)');
-
-  await page.getByRole('button', { name: 'Меню пользователя' }).click();
-  const menu = page.locator('.p-menu, .p-tieredmenu').filter({ hasText: 'Мой аккаунт' }).first();
-  await expect(menu).toBeVisible();
-  expect(await menu.evaluate((element) => getComputedStyle(element).borderTopLeftRadius)).toBe(
-    '16px',
-  );
-  const item = menu.locator('.p-menu-item-content, .p-tieredmenu-item-content').first();
-  expect(await item.evaluate((element) => getComputedStyle(element).borderTopLeftRadius)).toBe(
-    '12px',
-  );
 });
 
 test('«Начать урок» is a split button with the browser in its menu', async ({

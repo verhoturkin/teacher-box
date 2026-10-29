@@ -42,7 +42,7 @@ export type TextbooksFilter = 'all' | TextbookKind;
 /**
  * Teacher: the textbooks of the Materials feed (ADR-0033, redesign spec §10.1) as cards — the cover is the
  * first page of the file (a Word file has none: the icon of its kind). The page of Materials gives the
- * search text, the filter, the sort and the student or the group; a card opens the file, «⋮» keeps
+ * search text, the filter and the sort; a card opens the file, «⋮» keeps
  * change, replace the file, download, «На доску» and delete.
  */
 @Component({
@@ -118,8 +118,6 @@ export class TextbooksFeed {
   readonly query = input('');
   readonly filter = input<TextbooksFilter>('all');
   readonly sort = input<MaterialSort>('changed');
-  /** Only the textbooks open to this student or group (the id of a member); none — all. */
-  readonly member = input<string | undefined>();
   /** The students and the groups the dialog offers. */
   readonly students = input<readonly MemberOption[]>([]);
   readonly groups = input<readonly MemberOption[]>([]);
@@ -130,15 +128,13 @@ export class TextbooksFeed {
   protected readonly textbooks = signal<Textbook[]>([]);
   /** How many textbooks there are (before the search, the filter and the sort). */
   readonly total = computed(() => this.textbooks().length);
-  /** The textbooks of the filter, the member and the search, in the order of the sort. */
+  /** The textbooks of the filter and the search, in the order of the sort. */
   protected readonly shown = computed(() => {
     const filter = this.filter();
-    const member = this.member();
     const query = this.query().trim().toLocaleLowerCase('ru');
     const matching = this.textbooks().filter(
       (textbook) =>
         (filter === 'all' || textbook.kind === filter) &&
-        (member === undefined || textbook.members.some((item) => item.id === member)) &&
         (query === '' ||
           textbook.title.toLocaleLowerCase('ru').includes(query) ||
           (textbook.course?.toLocaleLowerCase('ru').includes(query) ?? false) ||

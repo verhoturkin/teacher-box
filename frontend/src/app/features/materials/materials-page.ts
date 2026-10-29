@@ -10,12 +10,11 @@ import {
   viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
-import { Select } from 'primeng/select';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { injectMobile } from '@core/layout/mobile';
 import { openOnCreate } from '@core/routing/create-param';
@@ -34,10 +33,7 @@ import { T } from './i18n/texts';
 /** The two kinds of materials the page switches between (`?tab=`). */
 export type MaterialsTab = 'boards' | 'textbooks';
 
-/** The chip that asks for a student or a group; the others are the filters of the tab's feed. */
-const MEMBER = 'member';
-
-/** A student or a group of the member filter, with the `student:<id>` / `group:<id>` value of its option. */
+/** A student or a group the create dialogs of the feeds offer. */
 interface MemberOption {
   readonly id: string;
   readonly name: string;
@@ -46,9 +42,8 @@ interface MemberOption {
 /**
  * Teacher: «Материалы» (redesign spec §10.1, ADR-0049) — boards and textbooks as one feed of cards with
  * previews. The connected button group «Доски N · Учебники N» switches the kind (`?tab=boards|textbooks`),
- * the chips filter it («Все · На портале · Внешние · Ученик или группа»; for textbooks — by kind), one
- * search field and the sort menu. A card opens the material, «⋮» keeps its actions. A student or a group
- * (`?student=`, `?group=`) shows the materials open to them. The feeds belong to their modules
+ * the chips filter it («Все · На портале · Внешние»; for textbooks — by kind), one search field and
+ * the sort menu. A card opens the material, «⋮» keeps its actions. The feeds belong to their modules
  * (`@features/boards/parts`, `@features/textbooks/parts`); this page only composes them.
  */
 @Component({
@@ -58,7 +53,6 @@ interface MemberOption {
     TextbooksFeed,
     Button,
     FilterChips,
-    FormsModule,
     HelpButton,
     Menu,
     PageHeader,
@@ -67,7 +61,6 @@ interface MemberOption {
     ReactiveFormsModule,
     SearchField,
     SegmentGroup,
-    Select,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -114,7 +107,7 @@ interface MemberOption {
               [label]="t.filters"
               [chips]="chips()"
               [value]="chip()"
-              (valueChange)="selectChip($event)"
+              (valueChange)="chip.set($event)"
             />
             <p-button
               class="tb-materials__sort"
@@ -127,20 +120,6 @@ interface MemberOption {
             />
             <p-menu #sortPopup [model]="sortItems()" [popup]="true" appendTo="body" />
           </div>
-          @if (chip() === 'member') {
-            <p-select
-              class="tb-materials__member"
-              [options]="memberOptions()"
-              [group]="true"
-              optionLabel="label"
-              optionValue="value"
-              [ngModel]="memberValue()"
-              (ngModelChange)="selectMember($event)"
-              [placeholder]="t.member.placeholder"
-              [ariaLabel]="t.member.label"
-              [showClear]="true"
-            />
-          }
         </div>
         <div [hidden]="active() !== 'boards'">
           <tb-boards-feed
@@ -148,8 +127,6 @@ interface MemberOption {
             [query]="query()"
             [filter]="boardsFilter()"
             [sort]="sort()"
-            [student]="student()"
-            [group]="group()"
             [students]="students()"
             [groups]="groups()"
           />
@@ -160,7 +137,6 @@ interface MemberOption {
             [query]="query()"
             [filter]="textbooksFilter()"
             [sort]="sort()"
-            [member]="student() ?? group()"
             [students]="students()"
             [groups]="groups()"
           />
@@ -183,11 +159,6 @@ interface MemberOption {
 
     .tb-materials__sort {
       margin-inline-start: auto;
-    }
-
-    p-select.tb-materials__member {
-      inline-size: min(22rem, 100%);
-      margin-block-end: var(--tb-space-4);
     }
 
     .tb-materials__tabs {
@@ -213,10 +184,6 @@ export class MaterialsPage implements OnInit {
 
   /** `?tab=` — boards (by default) or textbooks. */
   readonly tab = input<string | undefined>();
-  /** `?student=<id>` — the materials open to a student (their groups' too). */
-  readonly student = input<string | undefined>();
-  /** `?group=<id>` — the materials open to a group. */
-  readonly group = input<string | undefined>();
 
   protected readonly boards = viewChild<BoardsFeed>('boards');
   protected readonly textbooks = viewChild<TextbooksFeed>('textbooks');
@@ -232,14 +199,11 @@ export class MaterialsPage implements OnInit {
   protected readonly sort = signal<MaterialSort>('changed');
   protected readonly sortLabels = T.sort;
 
-  /** The chip the teacher chose; a student or a group in the address always means the member chip. */
-  private readonly picked = linkedSignal<MaterialsTab, string>({
+  /** The chip the teacher chose; it resets to «Все» when the tab changes. */
+  protected readonly chip = linkedSignal<MaterialsTab, string>({
     source: this.active,
     computation: () => 'all',
   });
-  protected readonly chip = computed(() =>
-    this.student() || this.group() ? MEMBER : this.picked(),
-  );
   protected readonly boardsFilter = computed<BoardsFilter>(() => {
     const chip = this.chip();
     return chip === 'portal' || chip === 'external' ? chip : 'all';
@@ -264,11 +228,7 @@ export class MaterialsPage implements OnInit {
             value: kind,
             label: T.chips[kind],
           }));
-    return [
-      { value: 'all', label: T.chips.all },
-      ...kinds,
-      { value: MEMBER, label: T.chips.member },
-    ];
+    return [{ value: 'all', label: T.chips.all }, ...kinds];
   });
   protected readonly sortItems = computed<MenuItem[]>(() =>
     (['changed', 'title', 'created'] as const).map((value) => ({
@@ -279,25 +239,6 @@ export class MaterialsPage implements OnInit {
       },
     })),
   );
-  protected readonly memberOptions = computed(() => [
-    {
-      label: T.member.students,
-      items: this.students().map((student) => ({
-        label: student.name,
-        value: `student:${student.id}`,
-      })),
-    },
-    {
-      label: T.member.groups,
-      items: this.groups().map((group) => ({ label: group.name, value: `group:${group.id}` })),
-    },
-  ]);
-  protected readonly memberValue = computed(() => {
-    const student = this.student();
-    const group = this.group();
-    return student ? `student:${student}` : group ? `group:${group}` : null;
-  });
-
   constructor() {
     // «Новая доска» / «Новый учебник» of the rail's «Создать»: the form of the feed (`?tab=` came with it)
     openOnCreate('board', () => {
@@ -330,25 +271,6 @@ export class MaterialsPage implements OnInit {
       queryParams: { tab },
       queryParamsHandling: 'merge',
       replaceUrl: true,
-    });
-  }
-
-  protected selectChip(value: string): void {
-    this.picked.set(value);
-    if (value !== MEMBER && this.memberValue() !== null) {
-      this.selectMember(null);
-    }
-  }
-
-  /** The student or the group of the select, or none: the address keeps it (`?student=`, `?group=`). */
-  selectMember(value: string | null): void {
-    const [kind, id] = value?.split(':') ?? [];
-    void this.router.navigate([], {
-      queryParams: {
-        student: kind === 'student' ? id : null,
-        group: kind === 'group' ? id : null,
-      },
-      queryParamsHandling: 'merge',
     });
   }
 

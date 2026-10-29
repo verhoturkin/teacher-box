@@ -257,7 +257,7 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
     // the student's schedule lists this week only: tomorrow is next week on a Sunday
     startsAt: thisWeek(15),
     durationMinutes: 60,
-    topic: 'Проценты',
+    title: 'Проценты',
     allowOverlap: true,
   });
 

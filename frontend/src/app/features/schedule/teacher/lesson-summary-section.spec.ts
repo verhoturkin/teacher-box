@@ -6,51 +6,40 @@ import { assignmentSummary } from '@testing/homework-fixtures';
 import { at, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { testProviders } from '@testing/setup';
 import { ScheduledLesson } from '../data-access/schedule.models';
-import { LessonSummaryDialog } from './lesson-summary-dialog';
+import { LessonSummarySection } from './lesson-summary-section';
 
 const STATUS = '/api/teacher/ai/status';
 const DRAFT = '/api/teacher/ai/lesson-summary';
 const ASSIGNMENTS = '/api/teacher/homework/assignments';
 const SUMMARY = '/api/teacher/schedule/lessons/l-1/summary';
-const NOTE_FIELD = 'textarea[aria-label^="Заметка для себя"]';
+const SHARE = '/api/teacher/schedule/lessons/l-1/summary/share';
 
-describe('LessonSummaryDialog', () => {
-  let fixture: ComponentFixture<LessonSummaryDialog>;
-  let created: boolean;
+describe('LessonSummarySection', () => {
+  let fixture: ComponentFixture<LessonSummarySection>;
   let ai: boolean;
   let backend: HttpTestingController;
   let saved: ScheduledLesson[];
   let success: ReturnType<typeof vi.spyOn>;
-
-  /** The component is created when a test opens it: the status of the AI feature is read at once. */
-  function create(): void {
-    fixture = TestBed.createComponent(LessonSummaryDialog);
-    created = true;
-    saved = [];
-    fixture.componentInstance.saved.subscribe((lesson) => saved.push(lesson));
-  }
+  let failure: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ imports: [LessonSummaryDialog], providers: testProviders() });
+    TestBed.configureTestingModule({ imports: [LessonSummarySection], providers: testProviders() });
     backend = TestBed.inject(HttpTestingController);
     success = vi.spyOn(TestBed.inject(Snackbar), 'success');
+    failure = vi.spyOn(TestBed.inject(Snackbar), 'error');
     ai = false;
-    created = false;
   });
 
   afterEach(() => {
     backend.verify();
-    if (created) {
-      fixture.destroy();
-    }
+    fixture.destroy();
   });
 
   async function open(lesson: ScheduledLesson): Promise<void> {
-    if (!created) {
-      create();
-    }
+    fixture = TestBed.createComponent(LessonSummarySection);
+    saved = [];
+    fixture.componentInstance.saved.subscribe((result) => saved.push(result));
     fixture.componentRef.setInput('lesson', lesson);
-    fixture.componentRef.setInput('visible', true);
     await fixture.whenStable();
     backend.expectOne(STATUS).flush({ enabled: ai });
     await fixture.whenStable();
@@ -65,20 +54,33 @@ describe('LessonSummaryDialog', () => {
     await fixture.whenStable();
   }
 
-  function mode(label: string): HTMLElement | undefined {
-    return Array.from(document.body.querySelectorAll<HTMLElement>('p-togglebutton')).find(
-      (option) => option.textContent.includes(label),
-    );
+  async function press(label: string): Promise<void> {
+    buttonByText(document.body, label).click();
+    await fixture.whenStable();
   }
 
-  it('writes nothing by itself and saves the changed fields at «Сохранить»', async () => {
+  it('prefills «Что прошли» with the topic while no summary is saved', async () => {
+    await open(scheduledLesson({ topic: 'Past Simple' }));
+
+    expect(field('#lesson-summary-text').value).toBe('Past Simple');
+    expect(bodyText()).toContain('Видно ученикам этого занятия');
+  });
+
+  it('shows the saved summary and plan rather than the topic', async () => {
+    await open(scheduledLesson({ topic: 'Тема', summary: 'Было', nextPlan: 'План' }));
+
+    expect(field('#lesson-summary-text').value).toBe('Было');
+    expect(field('#lesson-summary-next').value).toBe('План');
+    expect(buttonByText(document.body, 'Сохранить').disabled).toBe(true);
+  });
+
+  it('saves the changed fields at «Сохранить» and shares nothing', async () => {
     await open(scheduledLesson());
     await type('#lesson-summary-text', ' Past Simple ');
     await type('#lesson-summary-next', 'Past Continuous');
     backend.expectNone(SUMMARY);
 
-    buttonByText(document.body, 'Сохранить').click();
-    await fixture.whenStable();
+    await press('Сохранить');
     const request = backend.expectOne(SUMMARY);
     expect(request.request.method).toBe('PUT');
     expect(request.request.body).toEqual({ summary: 'Past Simple', nextPlan: 'Past Continuous' });
@@ -86,19 +88,9 @@ describe('LessonSummaryDialog', () => {
     request.flush(updated);
     await fixture.whenStable();
 
+    backend.expectNone(SHARE);
     expect(saved).toEqual([updated]);
     expect(success).toHaveBeenCalledWith('Итоги сохранены');
-    expect(fixture.componentInstance.visible()).toBe(false);
-  });
-
-  it('closes without a request when nothing changed', async () => {
-    await open(scheduledLesson({ summary: 'Было' }));
-
-    buttonByText(document.body, 'Сохранить').click();
-    await fixture.whenStable();
-
-    expect(fixture.componentInstance.visible()).toBe(false);
-    expect(saved).toHaveLength(1);
   });
 
   it('clears an emptied field', async () => {
@@ -106,25 +98,24 @@ describe('LessonSummaryDialog', () => {
     await type('#lesson-summary-text', '  ');
     await type('#lesson-summary-next', '');
 
-    buttonByText(document.body, 'Сохранить').click();
-    await fixture.whenStable();
+    await press('Сохранить');
 
     const request = backend.expectOne(SUMMARY);
     expect(request.request.body).toEqual({ summary: null, nextPlan: null });
     request.flush(scheduledLesson());
   });
 
-  it('saves and sends: the write first, then the share', async () => {
-    await open(scheduledLesson());
-    await type('#lesson-summary-text', 'Прошли Past Simple');
+  it('sends the prefilled topic: the write first, then the share', async () => {
+    await open(scheduledLesson({ topic: 'Past Simple' }));
 
-    buttonByText(document.body, 'Сохранить и отправить').click();
+    await press('Отправить ученику');
+    backend.expectNone(SHARE);
+    const updated = scheduledLesson({ topic: 'Past Simple', summary: 'Past Simple' });
+    const request = backend.expectOne(SUMMARY);
+    expect(request.request.body).toEqual({ summary: 'Past Simple', nextPlan: null });
+    request.flush(updated);
     await fixture.whenStable();
-    backend.expectNone('/api/teacher/schedule/lessons/l-1/summary/share');
-    const updated = scheduledLesson({ summary: 'Прошли Past Simple' });
-    backend.expectOne(SUMMARY).flush(updated);
-    await fixture.whenStable();
-    backend.expectOne('/api/teacher/schedule/lessons/l-1/summary/share').flush(null);
+    backend.expectOne(SHARE).flush(null);
     await fixture.whenStable();
 
     expect(saved).toEqual([updated]);
@@ -134,104 +125,46 @@ describe('LessonSummaryDialog', () => {
   it('sends a saved summary without writing it again', async () => {
     await open(scheduledLesson({ summary: 'Готово' }));
 
-    buttonByText(document.body, 'Сохранить и отправить').click();
-    await fixture.whenStable();
+    await press('Отправить ученику');
 
-    backend.expectOne('/api/teacher/schedule/lessons/l-1/summary/share').flush(null);
+    backend.expectOne(SHARE).flush(null);
     await fixture.whenStable();
+    backend.expectNone(SUMMARY);
     expect(saved).toHaveLength(1);
   });
 
-  it('does not send an empty summary', async () => {
-    await open(scheduledLesson());
+  it('does not send an empty summary and names the students of a group', async () => {
+    await open(groupLesson());
 
-    expect(buttonByText(document.body, 'Сохранить и отправить').disabled).toBe(true);
-    backend.expectNone(SUMMARY);
+    const send = buttonByText(document.body, 'Отправить ученикам');
+    expect(send.disabled).toBe(true);
+    send.click();
+    await fixture.whenStable();
+    backend.expectNone('/api/teacher/schedule/lessons/gl-1/summary');
   });
 
-  it('tells a failed save and stays open', async () => {
+  it('tells a failed save and keeps the text', async () => {
     await open(scheduledLesson());
     await type('#lesson-summary-text', 'Текст');
 
-    buttonByText(document.body, 'Сохранить').click();
-    await fixture.whenStable();
+    await press('Сохранить');
     backend.expectOne(SUMMARY).flush({}, { status: 500, statusText: 'Server Error' });
     await fixture.whenStable();
 
-    expect(bodyText()).toContain('Не удалось сохранить итоги');
-    expect(fixture.componentInstance.visible()).toBe(true);
-    expect(success).not.toHaveBeenCalled();
+    expect(failure).toHaveBeenCalledWith('Не удалось сохранить итоги');
+    expect(field('#lesson-summary-text').value).toBe('Текст');
+    expect(saved).toEqual([]);
   });
 
-  it('shows the Markdown preview and back', async () => {
-    await open(scheduledLesson({ summary: '**Жирный**' }));
-
-    mode('Просмотр')?.click();
-    await fixture.whenStable();
-    expect(document.body.querySelector('.tb-preview strong')?.textContent).toBe('Жирный');
-
-    mode('Текст')?.click();
-    await fixture.whenStable();
-    expect(document.body.querySelector('.tb-preview')).toBeNull();
-  });
-
-  it('saves the private note of a lesson with one student', async () => {
+  it('has no field for private notes', async () => {
     await open(
       scheduledLesson({
         notes: [{ studentId: 's-1', note: 'Старое', updatedAt: '2026-10-01T00:00:00Z' }],
       }),
     );
-    expect(field('#lesson-summary-note').value).toBe('Старое');
-    await type('#lesson-summary-note', 'Путает времена');
 
-    buttonByText(document.body, 'Сохранить').click();
-    await fixture.whenStable();
-
-    const request = backend.expectOne('/api/teacher/schedule/lessons/l-1/notes/s-1');
-    expect(request.request.method).toBe('PUT');
-    expect(request.request.body).toEqual({ note: 'Путает времена' });
-    request.flush(scheduledLesson());
-  });
-
-  it('lists the students of a group, each note folds open; the summary and the notes save in turn', async () => {
-    await open(
-      groupLesson({
-        notes: [{ studentId: 's-2', note: 'Хорошо', updatedAt: '2026-10-01T00:00:00Z' }],
-      }),
-    );
-    expect(bodyText()).toContain('Иван Петров');
-    expect(bodyText()).toContain('Хорошо');
-    expect(document.body.querySelector(NOTE_FIELD)).toBeNull();
-
-    const rows = document.body.querySelectorAll<HTMLButtonElement>('.tb-lesson-summary__expand');
-    rows[1]?.click();
-    await fixture.whenStable();
-    expect(field(NOTE_FIELD).value).toBe('Хорошо');
-    expect(rows[1]?.getAttribute('aria-expanded')).toBe('true');
-    await type(NOTE_FIELD, '');
-    await type('#lesson-summary-text', 'Итоги');
-
-    buttonByText(document.body, 'Сохранить').click();
-    await fixture.whenStable();
-    backend.expectOne('/api/teacher/schedule/lessons/gl-1/summary').flush(groupLesson());
-    await fixture.whenStable();
-    const note = backend.expectOne('/api/teacher/schedule/lessons/gl-1/notes/s-2');
-    expect(note.request.body).toEqual({ note: null });
-    note.flush(groupLesson());
-    await fixture.whenStable();
-    expect(saved).toHaveLength(1);
-  });
-
-  it('folds a student note shut again', async () => {
-    await open(groupLesson());
-    const row = requireElement(document.body, '.tb-lesson-summary__expand', HTMLButtonElement);
-
-    row.click();
-    await fixture.whenStable();
-    expect(document.body.querySelector(NOTE_FIELD)).not.toBeNull();
-    row.click();
-    await fixture.whenStable();
-    expect(document.body.querySelector(NOTE_FIELD)).toBeNull();
+    expect(bodyText()).not.toContain('Заметка для себя');
+    expect(bodyText()).not.toContain('Старое');
   });
 
   describe('AI draft', () => {
@@ -248,15 +181,13 @@ describe('LessonSummaryDialog', () => {
         ai = true;
       });
 
-      it('drafts from the topic, the words and the assignments of the day', async () => {
+      it('drafts from the topic, the words and the assignments of the day, in place of the topic', async () => {
         await open(scheduledLesson({ topic: 'Past Simple' }));
         draftButton().click();
         await fixture.whenStable();
-        expect(buttonByText(document.body, 'Составить').disabled).toBe(false);
         await type('#lesson-summary-words', 'ошибки в глаголах');
 
-        buttonByText(document.body, 'Составить').click();
-        await fixture.whenStable();
+        await press('Составить');
         backend.expectOne(ASSIGNMENTS).flush([
           assignmentSummary({
             title: 'Глаголы',
@@ -294,8 +225,7 @@ describe('LessonSummaryDialog', () => {
         await fixture.whenStable();
 
         for (const answer of ['Первый', 'Второй']) {
-          buttonByText(document.body, answer === 'Первый' ? 'Составить' : 'Ещё раз').click();
-          await fixture.whenStable();
+          await press(answer === 'Первый' ? 'Составить' : 'Ещё раз');
           if (answer === 'Первый') {
             backend.expectOne(ASSIGNMENTS).flush([]);
             await fixture.whenStable();
@@ -323,15 +253,14 @@ describe('LessonSummaryDialog', () => {
         draftButton().click();
         await fixture.whenStable();
 
-        buttonByText(document.body, 'Составить').click();
-        await fixture.whenStable();
+        await press('Составить');
         backend.expectOne(ASSIGNMENTS).error(new ProgressEvent('offline'));
         await fixture.whenStable();
         backend.expectOne(DRAFT).flush({}, { status: 502, statusText: 'Bad Gateway' });
         await fixture.whenStable();
 
         expect(bodyText()).toContain('Не удалось составить черновик');
-        expect(field('#lesson-summary-text').value).toBe('');
+        expect(field('#lesson-summary-text').value).toBe('Тема');
       });
     });
   });

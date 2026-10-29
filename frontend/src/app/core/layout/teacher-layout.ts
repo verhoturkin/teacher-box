@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MenuItem } from 'primeng/api';
 import { CORE_T } from '@core/i18n/texts';
 import { NavItem } from './nav-item';
 import { Shell } from './shell';
@@ -45,8 +44,14 @@ export const TEACHER_BOTTOM_NAV: readonly string[] = [
 ];
 
 /** The bottom of the rail before «Справка»: the settings of the instance (spec §3.2). */
-export const TEACHER_FOOTER_LINKS: MenuItem[] = [
-  { label: CORE_T.nav.settings, icon: 'tb-i tb-i-settings', routerLink: '/teacher/settings' },
+export const TEACHER_FOOTER_LINKS: NavItem[] = [
+  {
+    label: CORE_T.nav.settings,
+    icon: 'tb-i tb-i-settings',
+    routerLink: '/teacher/settings',
+    // «Аккаунт» below has its own place in the rail
+    except: ['/teacher/settings/account'],
+  },
 ];
 
 /** Frame of the teacher area (`/teacher/**`). */

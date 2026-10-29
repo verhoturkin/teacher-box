@@ -514,7 +514,7 @@ export class MySchedulePage implements OnInit {
     if (lesson === null) {
       return '';
     }
-    return lesson.groupId === null ? T.details.title : lessonWith(lesson);
+    return lesson.title ?? (lesson.groupId === null ? T.details.title : lessonWith(lesson));
   });
 
   /** «Что прошли» of the lesson in the sheet, read with its details. */
@@ -639,7 +639,7 @@ export class MySchedulePage implements OnInit {
       entry.groupId === null
         ? null
         : lessonWith({ groupId: entry.groupId, groupName: entry.groupName, studentName: null }),
-      entry.topic ?? T.lessonsTab.noTopic,
+      entry.title ?? T.lessonsTab.noTopic,
     ]
       .filter((part) => part !== null)
       .join(' · ');

@@ -16,6 +16,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { LessonsOf, ScheduleApi } from '../data-access/schedule-api';
 import { ScheduledLesson } from '../data-access/schedule.models';
+import { dayCaption } from '../home/lesson-clock';
 import { lessonWith } from '../schedule-labels';
 import { T } from '../i18n/texts';
 
@@ -25,16 +26,11 @@ const DAYS = 60;
 const SHOWN = 3;
 const DAY_MS = 86_400_000;
 
-const DAY = new Intl.DateTimeFormat(locale(), {
-  weekday: 'short',
-  day: '2-digit',
-  month: '2-digit',
-});
-const START = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-digit' });
+const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-digit' });
 
 /**
  * Overview of a student's or a group's card (redesign spec §8): the next planned lessons of the student —
- * alone or in a group — or of the group, with the time, the group and the topic.
+ * alone or in a group — or of the group, each an M3 two-line item: day and time range, then title · topic.
  */
 @Component({
   selector: 'tb-student-lessons-card',
@@ -49,12 +45,11 @@ const START = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-di
           <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
             @for (lesson of next(); track lesson.id; let first = $first) {
               <li>
-                <span class="tb-list__lead tb-lesson-tile" [class.tb-lesson-tile--next]="first">
-                  <small>{{ day(lesson) }}</small>
-                  <strong>{{ start(lesson) }}</strong>
-                </span>
+                <span class="tb-list__lead" [class.tb-list__lead--accent]="first" aria-hidden="true"
+                  ><i class="tb-i tb-i-event"></i
+                ></span>
                 <div class="tb-list__text">
-                  <span class="tb-list__title">{{ lesson.topic ?? t.noTopic }}</span>
+                  <span class="tb-list__title">{{ when(lesson) }}</span>
                   <span class="tb-list__supporting">{{ details(lesson) }}</span>
                 </div>
               </li>
@@ -68,34 +63,6 @@ const START = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-di
     </p-card>
   `,
   styles: `
-    /* the sketch: the date and the time in a tile, the nearest one filled (ours: 4 px corner step of the list) */
-    .tb-lesson-tile {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-width: 3.5rem;
-      padding: var(--tb-space-1) var(--tb-space-2);
-      border-radius: var(--tb-shape-md);
-      background: var(--p-md-secondary-container);
-      color: var(--p-md-on-secondary-container);
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-
-      small {
-        font: var(--tb-type-label-s);
-      }
-
-      strong {
-        font: var(--tb-type-title-m-emphasized);
-      }
-    }
-
-    .tb-lesson-tile--next {
-      background: var(--p-md-primary);
-      color: var(--p-md-on-primary);
-    }
-
     .tb-student-lessons__more {
       margin: var(--tb-space-2) 0 0;
     }
@@ -141,25 +108,14 @@ export class StudentLessonsCard {
       });
   }
 
-  protected day(lesson: ScheduledLesson): string {
-    return DAY.format(new Date(lesson.startsAt));
+  /** «Сегодня, 15:00–16:00». */
+  protected when(lesson: ScheduledLesson): string {
+    const start = new Date(lesson.startsAt);
+    return `${dayCaption(start, new Date())}, ${TIME.format(start)}–${TIME.format(new Date(lesson.endsAt))}`;
   }
 
-  protected start(lesson: ScheduledLesson): string {
-    return START.format(new Date(lesson.startsAt));
-  }
-
-  /** «Группа «ОГЭ» · 60 мин · регулярное». */
+  /** «Иван Петров · Теорема Виета»; just the title when the topic is empty. */
   protected details(lesson: ScheduledLesson): string {
-    const minutes = Math.round(
-      (new Date(lesson.endsAt).getTime() - new Date(lesson.startsAt).getTime()) / 60_000,
-    );
-    return [
-      lesson.groupId === null || 'groupId' in this.of() ? null : lessonWith(lesson),
-      T.clock.duration(minutes),
-      lesson.seriesId === null ? null : this.t.recurring,
-    ]
-      .filter((part) => part !== null)
-      .join(' · ');
+    return [lesson.title ?? lessonWith(lesson), lesson.topic].filter((part) => part).join(' · ');
   }
 }

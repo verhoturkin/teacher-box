@@ -36,6 +36,7 @@ import ru.teacherbox.schedule.application.ScheduleViews.HistoryEntry;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSummary;
+import ru.teacherbox.schedule.application.ScheduleViews.UpcomingLessons;
 import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.LessonStatus;
@@ -51,6 +52,7 @@ class TeacherScheduleController {
             @Nullable UUID groupId,
             @NotNull Instant startsAt,
             @Min(1) @Max(600) @Nullable Integer durationMinutes,
+            @Size(max = 500) @Nullable String title,
             @Size(max = 500) @Nullable String topic,
             @Size(max = 1000) @Nullable String meetingUrl,
             @Nullable Boolean allowOverlap,
@@ -64,6 +66,7 @@ class TeacherScheduleController {
     record EditRequest(
             @NotNull Instant startsAt,
             @NotNull @Min(1) @Max(600) Integer durationMinutes,
+            @Size(max = 500) @Nullable String title,
             @Size(max = 500) @Nullable String topic,
             @Size(max = 1000) @Nullable String meetingUrl,
             @Nullable Boolean allowOverlap,
@@ -76,9 +79,6 @@ class TeacherScheduleController {
 
     record SummaryRequest(@Size(max = Lesson.MAX_SUMMARY) @Nullable String summary,
             @Size(max = Lesson.MAX_NEXT_PLAN) @Nullable String nextPlan) {
-    }
-
-    record NoteRequest(@Size(max = Lesson.MAX_SUMMARY) @Nullable String note) {
     }
 
     record CancelRequest(@Size(max = 500) @Nullable String reason, @Nullable Boolean byStudent,
@@ -134,14 +134,14 @@ class TeacherScheduleController {
     @ResponseStatus(HttpStatus.CREATED)
     LessonView plan(@Valid @RequestBody LessonRequest request) {
         return repetition.plan(new ScheduleService.PlanLesson(request.studentId(), request.groupId(), request.startsAt(),
-                request.durationMinutes(), request.topic(), request.meetingUrl(), yes(request.allowOverlap())),
+                request.durationMinutes(), request.title(), request.topic(), request.meetingUrl(), yes(request.allowOverlap())),
                 new Options(request.repeatWeeks(), request.repeatUntil(), scope(request.scope()), request.version(), request.repeatVersion()));
     }
 
     @PutMapping("/lessons/{lessonId}")
     LessonView edit(@PathVariable UUID lessonId, @Valid @RequestBody EditRequest request) {
         return repetition.edit(lessonId, new ScheduleService.EditLesson(request.startsAt(), request.durationMinutes(),
-                request.topic(), request.meetingUrl(), yes(request.allowOverlap())),
+                request.title(), request.topic(), request.meetingUrl(), yes(request.allowOverlap())),
                 new Options(request.repeatWeeks(), request.repeatUntil(), scope(request.scope()), request.version(), request.repeatVersion()));
     }
 
@@ -171,12 +171,6 @@ class TeacherScheduleController {
         schedule.shareSummary(lessonId);
     }
 
-    @PutMapping("/lessons/{lessonId}/notes/{studentId}")
-    LessonView note(@PathVariable UUID lessonId, @PathVariable UUID studentId,
-            @Valid @RequestBody NoteRequest request) {
-        return schedule.updateNote(lessonId, studentId, request.note());
-    }
-
     /** Held lessons of a student, newest first; the next page — {@code before} = start of the last one. */
     @GetMapping("/students/{studentId}/history")
     List<HistoryEntry> studentHistory(@PathVariable UUID studentId,
@@ -190,6 +184,17 @@ class TeacherScheduleController {
             @RequestParam(required = false) @Nullable Instant before,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {
         return queries.groupHistory(groupId, before, limit);
+    }
+
+    /** Lessons ahead of a student: a series is one item, one-off lessons and exceptions are their own. */
+    @GetMapping("/students/{studentId}/upcoming")
+    UpcomingLessons studentUpcoming(@PathVariable UUID studentId) {
+        return queries.studentUpcoming(studentId);
+    }
+
+    @GetMapping("/groups/{groupId}/upcoming")
+    UpcomingLessons groupUpcoming(@PathVariable UUID groupId) {
+        return queries.groupUpcoming(groupId);
     }
 
     @GetMapping("/lessons/{lessonId}/following")

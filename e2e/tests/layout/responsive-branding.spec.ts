@@ -41,14 +41,13 @@ test.describe('on a computer', () => {
       .poll(async () => (await page.locator('.tb-shell__header').boundingBox())?.y)
       .toBe(0);
 
-    await page.getByRole('button', { name: 'Меню пользователя' }).click();
-    await page.getByRole('menuitemradio', { name: 'Тёмная тема' }).click();
+    await page.goto('/teacher/settings/account');
+    await page.getByRole('button', { name: 'Тёмная' }).click();
     await expect(page.locator('html')).toHaveClass(/tb-dark/);
     await page.reload();
     await expect(page.locator('html')).toHaveClass(/tb-dark/);
 
-    await page.getByRole('button', { name: 'Меню пользователя' }).click();
-    await page.getByRole('menuitemradio', { name: 'Светлая тема' }).click();
+    await page.getByRole('button', { name: 'Светлая' }).click();
     await expect(page.locator('html')).not.toHaveClass(/tb-dark/);
   });
 
@@ -145,7 +144,7 @@ test.describe('on a phone', () => {
     await page.locator('p-button.tb-page-fab').getByRole('button', { name: 'Занятие' }).click();
     const dialog = page.getByRole('dialog', { name: 'Новое занятие' });
     await expect(dialog).toBeVisible();
-    await expect.poll(async () => (await dialog.boundingBox())?.height).toBe(PHONE.height);
+    await expect.poll(async () => (await dialog.boundingBox())?.height).toBe(PHONE.height - 8); // the 8 dp top inset of the full-screen dialog
     await dialog.getByRole('button', { name: 'Закрыть' }).click();
   });
 

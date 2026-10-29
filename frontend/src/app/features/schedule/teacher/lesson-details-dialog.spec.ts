@@ -81,6 +81,10 @@ describe('LessonDetailsDialog', () => {
     for (const request of backend.match((request) => request.url === '/api/teacher/boards')) {
       request.flush([]);
     }
+    // the summary of a lesson that has started asks whether the AI draft is on
+    for (const request of backend.match('/api/teacher/ai/status')) {
+      request.flush({ enabled: false });
+    }
   }
 
   /** Picks an action from the menu of the header. */
@@ -119,6 +123,12 @@ describe('LessonDetailsDialog', () => {
     expect(text).toContain('Начать урок');
     expect(text).not.toContain('Запланировано');
     expect(text).not.toContain('Проведено');
+  });
+
+  it('heads the card with the title of the lesson', async () => {
+    await open(scheduledLesson({ title: 'Английский' }));
+
+    expect(document.body.querySelector('.p-dialog-title')?.textContent).toContain('Английский');
   });
 
   it('has no footer for a lesson to come or a past one with one student', async () => {
@@ -450,54 +460,42 @@ describe('LessonDetailsDialog', () => {
     expect(text).toContain('Предупредил');
   });
 
-  it('shows the row «Итоги» only of a lesson that has started, not cancelled, not missed alone', async () => {
+  it('holds the summary only of a lesson that has started, not cancelled, not missed alone', async () => {
+    const summary = (): Element | null => document.body.querySelector('#lesson-summary-text');
     await open(scheduledLesson(), FUTURE);
-    expect(bodyText()).not.toContain('Добавить итоги');
+    expect(summary()).toBeNull();
 
     await open(scheduledLesson(), PAST);
-    expect(bodyText()).toContain('Добавить итоги');
+    expect(summary()).not.toBeNull();
 
     await open(scheduledLesson({ status: 'CANCELLED', cancelledBy: 'TEACHER' }), PAST);
-    expect(bodyText()).not.toContain('Добавить итоги');
+    expect(summary()).toBeNull();
 
     await open(scheduledLesson({ status: 'MISSED' }), PAST);
-    expect(bodyText()).not.toContain('Добавить итоги');
+    expect(summary()).toBeNull();
 
     await open(groupLesson({ status: 'MISSED' }), PAST);
-    expect(bodyText()).toContain('Добавить итоги');
+    expect(summary()).not.toBeNull();
   });
 
-  it('shows the first line of «Что прошли» in the row', async () => {
-    await open(scheduledLesson({ summary: 'Past Simple\nи ещё' }), PAST);
+  it('saves the summary in place: the card stays open and keeps the saved lesson', async () => {
+    await open(scheduledLesson({ topic: 'Past Simple' }), PAST);
+    const text = requireElement(document.body, '#lesson-summary-text', HTMLTextAreaElement);
+    expect(text.value).toBe('Past Simple');
 
-    expect(bodyText()).toContain('Past Simple');
-    expect(bodyText()).not.toContain('и ещё');
-    expect(bodyText()).not.toContain('Добавить итоги');
-  });
-
-  it('opens the dialog in place of the card and brings the card back with the saved row', async () => {
-    await open(scheduledLesson(), PAST);
-
-    buttonByText(document.body, 'Добавить').click();
+    typeInto(text, 'Итоги дня');
     await fixture.whenStable();
-    expect(fixture.componentInstance.visible()).toBe(false);
-    backend.expectOne('/api/teacher/ai/status').flush({ enabled: false });
-    await fixture.whenStable();
-    typeInto(
-      requireElement(document.body, '#lesson-summary-text', HTMLTextAreaElement),
-      'Итоги дня',
-    );
     buttonByText(document.body, 'Сохранить').click();
     await fixture.whenStable();
-    const updated = scheduledLesson({ summary: 'Итоги дня' });
+    const updated = scheduledLesson({ topic: 'Past Simple', summary: 'Итоги дня' });
     backend.expectOne('/api/teacher/schedule/lessons/l-1/summary').flush(updated);
-    await fixture.whenStable();
-    flushDetails(updated, { summary: 'Итоги дня' });
     await fixture.whenStable();
 
     expect(changed).toEqual([updated]);
     expect(fixture.componentInstance.visible()).toBe(true);
-    expect(bodyText()).toContain('Итоги дня');
+    expect(requireElement(document.body, '#lesson-summary-text', HTMLTextAreaElement).value).toBe(
+      'Итоги дня',
+    );
   });
 
   it('loads the summary of the lesson when the card opens', async () => {
@@ -505,8 +503,9 @@ describe('LessonDetailsDialog', () => {
     const lesson = scheduledLesson({ notes: [] });
     await open(lesson, PAST, { summary: 'Из деталей' });
 
-    expect(bodyText()).toContain('Из деталей');
-    expect(bodyText()).not.toContain('Добавить итоги');
+    expect(requireElement(document.body, '#lesson-summary-text', HTMLTextAreaElement).value).toBe(
+      'Из деталей',
+    );
   });
 
   it('keeps the loaded summary when the list reloads without it', async () => {
@@ -514,9 +513,11 @@ describe('LessonDetailsDialog', () => {
     const lesson = scheduledLesson({ notes: [] });
     await open(lesson, PAST, { summary: 'Из деталей' });
 
-    fixture.componentRef.setInput('lesson', scheduledLesson({ topic: 'Новая тема', notes: [] }));
+    fixture.componentRef.setInput('lesson', scheduledLesson({ title: 'Новая тема', notes: [] }));
     await fixture.whenStable();
 
-    expect(bodyText()).toContain('Из деталей');
+    expect(requireElement(document.body, '#lesson-summary-text', HTMLTextAreaElement).value).toBe(
+      'Из деталей',
+    );
   });
 });

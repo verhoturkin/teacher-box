@@ -5,9 +5,11 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -26,6 +28,10 @@ import ru.teacherbox.schedule.application.ScheduleViews.MyScheduleSummary;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSettings;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSummary;
+import ru.teacherbox.schedule.application.ScheduleViews.UpcomingKind;
+import ru.teacherbox.schedule.application.ScheduleViews.UpcomingLesson;
+import ru.teacherbox.schedule.application.ScheduleViews.UpcomingLessons;
+import ru.teacherbox.schedule.application.ScheduleViews.UpcomingSeries;
 import ru.teacherbox.schedule.domain.ChangeRequest;
 import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.LessonNote;
@@ -139,13 +145,88 @@ public class ScheduleQueries {
     private List<HistoryEntry> history(List<Lesson> found, @Nullable UUID studentId, boolean withPlan,
             Map<UUID, LessonNote> notes) {
         ScheduleNames names = directory.namesOf(found);
-        return found.stream().map(lesson -> new HistoryEntry(lesson.id(), lesson.startsAt(), lesson.topic(),
-                lesson.status(), lesson.groupId(), names.group(lesson.groupId()),
+        return found.stream().map(lesson -> new HistoryEntry(lesson.id(), lesson.startsAt(), lesson.title(),
+                lesson.topic(), lesson.status(), lesson.groupId(), names.group(lesson.groupId()),
                 studentId == null ? null : lesson.participants().stream()
                         .filter(participant -> participant.studentId().equals(studentId))
                         .map(participant -> participant.attendance()).findFirst().orElse(null),
                 lesson.summary(), withPlan ? lesson.nextPlan() : null, lesson.summaryUpdatedAt(),
                 notes.containsKey(lesson.id()) ? notes.get(lesson.id()).note() : null)).toList();
+    }
+
+    /** The teacher's view of what is ahead of a student (group lessons included): series grouped. */
+    public UpcomingLessons studentUpcoming(UUID studentId) {
+        LocalDate today = LocalDate.ofInstant(clock.instant(), zone);
+        return upcoming(lessons.findStartingBetween(studentId, start(today), start(today.plusDays(MAX_RANGE_DAYS))));
+    }
+
+    public UpcomingLessons groupUpcoming(UUID groupId) {
+        LocalDate today = LocalDate.ofInstant(clock.instant(), zone);
+        return upcoming(lessons.findStartingBetweenOfGroup(groupId, start(today),
+                start(today.plusDays(MAX_RANGE_DAYS))));
+    }
+
+    /** What makes rules one row: everything but the weekday and the start date. */
+    private record SeriesKey(@Nullable UUID groupId, LocalTime startTime, int durationMinutes, int intervalWeeks,
+            @Nullable String title, @Nullable LocalDate endsOn) {
+    }
+
+    private UpcomingLessons upcoming(List<Lesson> found) {
+        Instant now = clock.instant();
+        List<Lesson> ahead = found.stream().filter(lesson -> lesson.endsAt().isAfter(now))
+                .sorted(Comparator.comparing(Lesson::startsAt)).toList();
+        ScheduleNames names = directory.namesOf(ahead);
+        Map<UUID, RepeatRule> rules = new LinkedHashMap<>();
+        Map<UUID, Integer> regular = new LinkedHashMap<>();
+        Map<UUID, Instant> next = new LinkedHashMap<>();
+        List<Lesson> single = new ArrayList<>();
+        for (Lesson lesson : ahead) {
+            RepeatRule rule = lesson.seriesId() == null ? null
+                    : rules.computeIfAbsent(lesson.seriesId(), id -> series.findById(id).orElse(null));
+            if (rule == null || lesson.status() == LessonStatus.CANCELLED || lesson.individuallyChanged()
+                    || lesson.originalStartsAt() != null) {
+                single.add(lesson);
+            } else {
+                regular.merge(rule.id(), 1, Integer::sum);
+                next.putIfAbsent(rule.id(), lesson.startsAt());
+            }
+        }
+        Map<SeriesKey, List<RepeatRule>> grouped = new LinkedHashMap<>();
+        for (UUID ruleId : regular.keySet()) {
+            RepeatRule rule = rules.get(ruleId);
+            grouped.computeIfAbsent(new SeriesKey(rule.groupId(), rule.startTime(), rule.durationMinutes(),
+                    rule.intervalWeeks(), rule.title(), rule.endsOn()), key -> new ArrayList<>()).add(rule);
+        }
+        List<UpcomingSeries> rows = grouped.entrySet().stream().map(entry -> {
+            List<RepeatRule> alike = entry.getValue();
+            SeriesKey key = entry.getKey();
+            Integer remaining = key.endsOn() == null ? null : alike.stream()
+                    .mapToInt(rule -> regular.get(rule.id())
+                            + rule.datesBetween(rule.generatedUntil().plusDays(1), key.endsOn()).size())
+                    .sum();
+            return new UpcomingSeries(alike.stream().map(RepeatRule::id).toList(),
+                    alike.stream().flatMap(rule -> rule.weekdays().stream()).distinct().sorted().toList(),
+                    key.startTime(), key.durationMinutes(), key.intervalWeeks(),
+                    alike.stream().map(RepeatRule::startsOn).min(Comparator.naturalOrder()).orElseThrow(),
+                    key.endsOn(), remaining, key.title(), key.groupId(), names.group(key.groupId()),
+                    alike.stream().map(rule -> next.get(rule.id())).min(Comparator.naturalOrder()).orElseThrow());
+        }).toList();
+        List<LessonView> views = views(single);
+        List<UpcomingLesson> others = new ArrayList<>();
+        for (int i = 0; i < single.size(); i++) {
+            others.add(new UpcomingLesson(kind(single.get(i), rules), views.get(i)));
+        }
+        return new UpcomingLessons(rows, others);
+    }
+
+    private static UpcomingKind kind(Lesson lesson, Map<UUID, RepeatRule> rules) {
+        if (lesson.seriesId() == null || rules.get(lesson.seriesId()) == null) {
+            return UpcomingKind.ONE_OFF;
+        }
+        if (lesson.status() == LessonStatus.CANCELLED) {
+            return UpcomingKind.CANCELLED;
+        }
+        return lesson.originalStartsAt() != null ? UpcomingKind.MOVED : UpcomingKind.CHANGED;
     }
 
     /** Lessons that have ended but have no outcome yet, oldest first. */

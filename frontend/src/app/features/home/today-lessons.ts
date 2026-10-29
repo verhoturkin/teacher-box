@@ -24,6 +24,9 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
             <tb-avatar [name]="with(lesson)" [photo]="lesson.studentAvatar" />
             <div class="tb-list__text">
               <span class="tb-list__title">{{ with(lesson) }}</span>
+              @if (lesson.title !== null) {
+                <span class="tb-list__supporting">{{ lesson.title }}</span>
+              }
               @if (lesson.topic !== null) {
                 <span class="tb-list__supporting">{{ lesson.topic }}</span>
               }

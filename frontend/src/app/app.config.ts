@@ -39,7 +39,9 @@ import { AppTitleStrategy } from '@core/routing/app-title-strategy';
 import { TeacherBoxPreset } from '@core/theme/teacher-box-preset';
 import { SystemBars } from '@core/theme/system-bars';
 import { DARK_CLASS, ThemeMode } from '@core/theme/theme-mode';
+import { applyTooltipDefaults } from '@shared/ui/tooltip-defaults';
 
+applyTooltipDefaults();
 registerLocaleData(localeRu);
 registerLocaleData(localeEnGb);
 

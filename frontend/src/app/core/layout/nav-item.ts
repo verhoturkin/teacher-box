@@ -10,6 +10,10 @@ import { filter, map } from 'rxjs';
  */
 export interface NavItem extends MenuItem {
   readonly alsoActive?: readonly string[];
+  /** Addresses under the link that belong to another destination («Аккаунт» under the settings). */
+  readonly except?: readonly string[];
+  /** «Аккаунт»: the user's avatar instead of the icon, the name in the accessible name. */
+  readonly account?: boolean;
   /** The counter on the destination (M3 badge); nothing at 0. */
   readonly count?: Signal<number>;
   /** What a screen reader hears for the counter. */
@@ -34,6 +38,9 @@ function under(path: string, link: string): boolean {
 export function isNavActive(item: NavItem, url: string): boolean {
   const path = url.split(/[?#]/)[0] ?? '';
   const link: unknown = item.routerLink;
+  if ((item.except ?? []).some((other) => under(path, other))) {
+    return false;
+  }
   if (typeof link === 'string' && (exact(item) ? path === link : under(path, link))) {
     return true;
   }

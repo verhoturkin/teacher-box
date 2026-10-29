@@ -41,7 +41,6 @@ import { FilePicker } from '../ui/file-picker';
 import { TaskStatusTag } from '../ui/task-status-tag';
 import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
-import { HelpButton } from '@features/help/parts';
 import { Confirm } from '@shared/ui/confirm';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
@@ -74,7 +73,6 @@ import { T } from '../i18n/texts';
     ToBoardDialog,
     TextbookToBoardDialog,
     PageHeader,
-    HelpButton,
     LoadStateView,
     Menu,
     Tooltip,
@@ -89,7 +87,6 @@ import { T } from '../i18n/texts';
           [back]="single() ? '/teacher/homework' : null"
           [backLabel]="t.back"
         >
-          <tb-help-button help topic="teacher/homework" />
           <span meta>
             {{ assignment.dueAt ? t.due(date(assignment.dueAt)) : t.noDueDate }}
           </span>

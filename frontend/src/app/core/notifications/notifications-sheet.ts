@@ -110,7 +110,7 @@ function pathOf(url: string): string {
       height: calc(100dvh - var(--tb-header-height) - var(--tb-space-6));
       /* the rail runs up beside the top strip and the body is pulled up under it (shell.scss): the pane starts below the strip */
       margin: var(--tb-header-height) var(--tb-space-6) var(--tb-space-6) 0;
-      padding: 0 var(--tb-space-6) var(--tb-space-6);
+      padding: 0 0 var(--tb-space-6);
       overflow: hidden;
       overscroll-behavior: contain;
       border-radius: var(--tb-shape-xl);
@@ -128,8 +128,7 @@ function pathOf(url: string): string {
       display: flex;
       align-items: center;
       gap: var(--tb-space-2);
-      margin-inline-end: calc(-1 * var(--tb-space-3));
-      padding-block: var(--tb-space-4);
+      padding: var(--tb-space-4) var(--tb-space-3) var(--tb-space-4) var(--tb-space-6);
     }
 
     .tb-notifications-pane__title {

@@ -31,6 +31,9 @@ import { T } from '../i18n/texts';
             <tb-avatar [name]="with(next)" [photo]="next.studentAvatar" size="2rem" />
             <strong>{{ with(next) }}</strong>
           </div>
+          @if (next.title !== null) {
+            <span class="tb-muted">{{ next.title }}</span>
+          }
           @if (next.topic !== null) {
             <span class="tb-muted">{{ next.topic }}</span>
           }

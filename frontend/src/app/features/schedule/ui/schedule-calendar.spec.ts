@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { FullCalendarComponent } from '@fullcalendar/angular';
 import { changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { hostElement, readableText, requireElement } from '@testing/dom';
 import { TeacherColors } from '@features/identity/parts';
@@ -35,9 +37,9 @@ describe('ScheduleCalendar', () => {
     fixture.componentInstance.rangeChange.subscribe((range) => ranges.push(range));
 
     const text = await render([
-      scheduledLesson({ topic: 'Дроби' }),
+      scheduledLesson({ title: 'Дроби' }),
       scheduledLesson({ id: 'l-2', studentName: null, pendingRequests: [changeRequest()] }),
-      groupLesson({ topic: 'Разбор' }),
+      groupLesson({ title: 'Разбор' }),
       groupLesson({ id: 'gl-2', groupName: null }),
     ]);
 
@@ -67,7 +69,7 @@ describe('ScheduleCalendar', () => {
     await render([
       scheduledLesson(),
       groupLesson(),
-      scheduledLesson({ id: 'l-3', studentId: 's-3', topic: 'Без цвета' }),
+      scheduledLesson({ id: 'l-3', studentId: 's-3', title: 'Без цвета' }),
     ]);
     const host = hostElement(fixture);
 
@@ -152,7 +154,7 @@ describe('ScheduleCalendar', () => {
 
   it('shows the student the topics', async () => {
     const text = await render(
-      [scheduledLesson({ topic: 'Степени' }), scheduledLesson({ id: 'l-2' })],
+      [scheduledLesson({ title: 'Степени' }), scheduledLesson({ id: 'l-2' })],
       false,
     );
 
@@ -235,6 +237,18 @@ describe('ScheduleCalendar', () => {
     fixture.componentInstance.handleClick('unknown');
 
     expect(clicked.map((lesson) => lesson.id)).toEqual(['l-1']);
+  });
+
+  it('lets a scheduled lesson be moved but not resized', async () => {
+    fixture.componentRef.setInput('editable', true);
+    await render([scheduledLesson()]);
+    const calendar = fixture.debugElement
+      .query(By.directive(FullCalendarComponent))
+      .injector.get(FullCalendarComponent);
+    const event = calendar.getApi().getEvents()[0];
+
+    expect(event?.startEditable).toBe(true);
+    expect(event?.durationEditable).toBe(false);
   });
 
   it('puts back a drop it does not know', async () => {

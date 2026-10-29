@@ -169,10 +169,10 @@ public class QuizService {
         if (best == null) {
             throw new NotFoundException("homework.quiz-attempt-not-found", "Attempt not found");
         }
-        QuizAnswer answer = attempts.findAnswers(best.id()).stream().filter(a -> a.questionId().equals(questionId))
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("homework.quiz-answer-not-found", "Answer not found"));
-        attempts.saveAnswer(new QuizAnswer(best.id(), questionId, answer.answer(), correct,
+        // A skipped question has no row yet: an empty choice reads as «no answer» in every question kind.
+        Answer given = attempts.findAnswers(best.id()).stream().filter(a -> a.questionId().equals(questionId))
+                .findFirst().map(QuizAnswer::answer).orElseGet(() -> new Answer.Choice(Set.of()));
+        attempts.saveAnswer(new QuizAnswer(best.id(), questionId, given, correct,
                 correct ? question.points() : 0, true));
         int score = attempts.findAnswers(best.id()).stream().mapToInt(QuizAnswer::points).sum();
         attempts.submit(best.id(), Objects.requireNonNull(best.submittedAt()), score,
@@ -218,6 +218,17 @@ public class QuizService {
     }
 
     private void close(QuizAttempt attempt, List<Question> list, Instant now) {
+        // An order the student never moved is the one they saw: the shuffle may already be the right order.
+        Set<UUID> answered = attempts.findAnswers(attempt.id()).stream().map(QuizAnswer::questionId)
+                .collect(Collectors.toSet());
+        for (Question question : list) {
+            if (question instanceof Ordering ordering && !answered.contains(ordering.id())) {
+                Answer shown = new Answer.Order(items(ordering.items(), attempt.id()).stream().map(Item::id).toList());
+                boolean correct = ordering.check(shown);
+                attempts.saveAnswer(new QuizAnswer(attempt.id(), ordering.id(), shown, correct,
+                        correct ? ordering.points() : 0, false));
+            }
+        }
         int score = attempts.findAnswers(attempt.id()).stream().mapToInt(QuizAnswer::points).sum();
         attempts.submit(attempt.id(), now, score, Quiz.maxPoints(list));
     }

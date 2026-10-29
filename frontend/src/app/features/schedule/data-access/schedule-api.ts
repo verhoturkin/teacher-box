@@ -24,6 +24,7 @@ import {
   ScheduleSettings,
   ScheduleSummary,
   ScheduledLesson,
+  UpcomingLessons,
 } from './schedule.models';
 
 /** Requests whose errors the dialog (e.g. an overlap) or the page (a failed load, ADR-0025) shows itself. */
@@ -67,6 +68,12 @@ export class ScheduleApi {
       ...QUIET,
       params,
     });
+  }
+
+  /** The lessons ahead of a student or a group: a series is one item. */
+  upcoming(of: LessonsOf): Observable<UpcomingLessons> {
+    const path = 'studentId' in of ? `students/${of.studentId}` : `groups/${of.groupId}`;
+    return this.http.get<UpcomingLessons>(`/api/teacher/schedule/${path}/upcoming`, QUIET);
   }
 
   plan(request: PlanLessonRequest): Observable<ScheduledLesson> {
@@ -163,19 +170,6 @@ export class ScheduleApi {
     return this.http
       .post(`/api/teacher/schedule/lessons/${lessonId}/summary/share`, null, QUIET)
       .pipe(map(() => undefined));
-  }
-
-  /** Saves the teacher's private note about a student (an empty text removes it). */
-  updateNote(
-    lessonId: string,
-    studentId: string,
-    note: string | null,
-  ): Observable<ScheduledLesson> {
-    return this.http.put<ScheduledLesson>(
-      `/api/teacher/schedule/lessons/${lessonId}/notes/${studentId}`,
-      { note },
-      QUIET,
-    );
   }
 
   /** Lessons that have ended without a marked outcome. */

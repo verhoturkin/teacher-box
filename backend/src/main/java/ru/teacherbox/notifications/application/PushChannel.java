@@ -80,6 +80,8 @@ class PushChannel {
     /**
      * {@code onActionClick} is what {@code ngsw} reads on a click: it opens the page of the notification.
      * The link is absolute when the portal address is known, else a path of the portal itself.
+     * {@code icon} is a transparent pixel: without an icon Chrome on Android draws a letter avatar of the
+     * origin; {@code badge} is the monochrome glyph of the status bar.
      */
     private byte[] payload(InboxNotification notification) {
         String path = notification.link() == null ? "/" : notification.link();
@@ -89,10 +91,16 @@ class PushChannel {
         if (notification.body() != null) {
             shown.put("body", shorten(notification.body()));
         }
+        shown.put("icon", asset("/push-icon.png"));
+        shown.put("badge", asset("/push-badge.png"));
         shown.put("tag", notification.id().toString());
         shown.put("data", Map.of("url", url,
                 "onActionClick", Map.of("default", Map.of("operation", "navigateLastFocusedOrOpen", "url", url))));
         return json.writeValueAsBytes(Map.of("notification", shown));
+    }
+
+    private String asset(String path) {
+        return portal.link(path).orElse(path);
     }
 
     private static String shorten(String text) {

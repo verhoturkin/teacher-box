@@ -62,6 +62,13 @@ export const ru = {
     nameSaved: 'Имя сохранено',
     photoSaved: 'Фото сохранено',
     photoUnreadable: 'Не удалось открыть картинку. Выберите фото в JPEG, PNG или WebP.',
+    appearance: 'Оформление',
+    theme: 'Тема',
+    themeLight: 'Светлая',
+    themeDark: 'Тёмная',
+    themeSystem: 'Как в системе',
+    language: 'Язык',
+    signOut: 'Выйти',
     passwordChanged: 'Пароль изменён',
   },
   changePassword: {
@@ -213,8 +220,6 @@ export const ru = {
     chips: {
       all: 'Все',
       groups: 'Группы',
-      debtors: 'Должники',
-      noMessenger: 'Без мессенджера',
       deactivated: 'Отключённые',
     },
     createGroup: 'Создать группу',

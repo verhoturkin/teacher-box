@@ -1,7 +1,10 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '@core/auth/auth.service';
+import { LANGUAGE_KEY, forgetLanguage, pageReload } from '@core/i18n/language';
+import { ThemeMode } from '@core/theme/theme-mode';
 import { authResponse } from '@testing/auth';
 import {
   aFile,
@@ -312,5 +315,40 @@ describe('AccountPanel', () => {
 
     expect(hostElement(fixture).textContent).toContain('Пароли не совпадают');
     backend.expectNone('/api/me/password');
+  });
+
+  it('switches the theme in the appearance section', async () => {
+    const host = hostElement(fixture);
+    expect(buttonByText(host, 'Как в системе').getAttribute('aria-pressed')).toBe('true');
+
+    buttonByText(host, 'Тёмная').click();
+    await fixture.whenStable();
+
+    expect(TestBed.inject(ThemeMode).choice()).toBe('dark');
+    expect(buttonByText(host, 'Тёмная').getAttribute('aria-pressed')).toBe('true');
+    TestBed.inject(ThemeMode).choose('system');
+    localStorage.clear();
+  });
+
+  it('switches the language and reloads the page (ADR-0035)', () => {
+    const reload = vi.spyOn(pageReload, 'now').mockImplementation(() => undefined);
+
+    buttonByText(hostElement(fixture), 'English').click();
+
+    expect(localStorage.getItem(LANGUAGE_KEY)).toBe('en');
+    expect(reload).toHaveBeenCalledOnce();
+    localStorage.clear();
+    forgetLanguage();
+  });
+
+  it('signs out at the end of the page', async () => {
+    TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+    buttonByText(hostElement(fixture), 'Выйти').click();
+    await fixture.whenStable();
+    backend.expectOne('/api/auth/logout').flush(null);
+
+    expect(TestBed.inject(AuthService).isAuthenticated()).toBe(false);
   });
 });

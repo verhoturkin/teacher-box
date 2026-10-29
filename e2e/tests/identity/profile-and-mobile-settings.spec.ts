@@ -61,16 +61,19 @@ test('a student sets a photo and an own name; the teacher keeps the name they ga
     .locator('input[type="file"][aria-label="Файл фото"]')
     .setInputFiles({ name: 'me.png', mimeType: 'image/png', buffer: PNG });
   await expect(student.getByText('Фото сохранено')).toBeVisible();
-  await expect(student.locator('.tb-shell__user-button tb-avatar img')).toBeVisible();
+  await expect(student.locator('a[aria-label^="Аккаунт"] tb-avatar img')).toBeVisible();
 
   await student.locator('#account-own-name').fill(OWN_NAME);
   await student.getByRole('button', { name: 'Сохранить' }).first().click();
   await expect(student.getByText('Имя сохранено')).toBeVisible();
-  // the avatar alone since 0.21.0: the name is in the accessible name of the user button
-  await expect(student.locator('.tb-shell__user-button')).toHaveAttribute(
+  // the name is in the accessible name of the rail's «Аккаунт»
+  await expect(student.locator('a[aria-label^="Аккаунт"]')).toHaveAttribute(
     'aria-label',
-    `${OWN_NAME}: меню пользователя`,
+    `Аккаунт: ${OWN_NAME}`,
   );
+  // 0.40.1: the item shows the name; «Выйти» is the last of the student's account page
+  await expect(student.locator('a[aria-label^="Аккаунт"]')).toContainText(OWN_NAME);
+  await expect(student.locator('tb-account-panel > .tb-stack > :last-child')).toHaveText(/Выйти/);
   await expect(student.getByText(`Учитель видит вас как «${STUDENT}»`)).toBeVisible();
 
   const teacher = await (await browser.newContext()).newPage();

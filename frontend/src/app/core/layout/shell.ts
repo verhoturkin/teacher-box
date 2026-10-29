@@ -1,6 +1,4 @@
-import { Avatar } from '@shared/ui/avatar';
 import {
-  DOCUMENT,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -14,17 +12,14 @@ import { MenuItem } from 'primeng/api';
 import { ButtonDirective, ButtonIcon } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
 import { Menu } from 'primeng/menu';
-import { AuthService } from '@core/auth/auth.service';
 import { injectWindowSize } from '@core/layout/mobile';
 import { NotificationBell } from '@core/notifications/notification-bell';
 import { NewMessage } from '@core/notifications/new-message';
 import { NotificationsSheet } from '@core/notifications/notifications-sheet';
 import { openOnNotificationsParam } from '@core/notifications/notifications-sheet-state';
-import { LANGUAGES, chooseLanguage, language } from '@core/i18n/language';
 import { CORE_T } from '@core/i18n/texts';
 import { GlobalSearchView } from '@core/search/global-search-view';
 import { ModalDrawer } from '@shared/ui/modal-drawer';
-import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
 import { CreateMenu } from './create-menu';
 import { NavBadge } from './nav-badge';
 import { SideNav } from './side-nav';
@@ -33,25 +28,15 @@ import { RailState } from './rail-state';
 
 const T = CORE_T.shell;
 
-const THEMES: readonly { choice: ThemeChoice; label: string; icon: string }[] = [
-  { choice: 'light', label: T.lightTheme, icon: 'tb-i tb-i-light_mode' },
-  { choice: 'dark', label: T.darkTheme, icon: 'tb-i tb-i-dark_mode' },
-  { choice: 'system', label: T.systemTheme, icon: 'tb-i tb-i-brightness_auto' },
-];
-
 /** M3: a navigation bar holds up to five destinations; the others are under ☰ in the modal rail. */
 const BAR_ITEMS = 5;
 
 /**
- * Application frame (ADR-0017, ADR-0019, spec §3): the top strip with the bell and the user menu (on compact
+ * Application frame (ADR-0017, ADR-0019, spec §3): the top strip with the bell (on compact
  * the top app bar with ☰ and the title of the section before them); the sections of the role in the expanded
  * navigation rail from extra-large, in the collapsed rail from medium to large (ADR-0048, D5) and, on compact,
  * in the bottom navigation with the rest in the modal expanded rail under ☰; the routed content.
  */
-/** An item of a choice in a menu (the theme, the language) and the chosen one. */
-const CHOICE = 'tb-menu-item--choice';
-const CHOSEN = `${CHOICE} tb-menu-item--selected`;
-
 @Component({
   selector: 'tb-shell',
   imports: [
@@ -69,7 +54,6 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
     RouterOutlet,
     RouterLink,
     SideNav,
-    Avatar,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -155,37 +139,6 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
           @if (notifications()) {
             <tb-notification-bell />
           }
-          <!-- the visible name is the start of the accessible one (WCAG 2.5.3, ADR-0024) -->
-          <button
-            pButton
-            type="button"
-            class="tb-shell__user-button tb-shell__user-button--round"
-            [text]="true"
-            [rounded]="true"
-            severity="secondary"
-            [attr.aria-label]="t.userMenuOf(userName())"
-            aria-haspopup="menu"
-            [attr.aria-expanded]="userOpen()"
-            (click)="userMenu.toggle($event)"
-          >
-            @if (userAvatar(); as photo) {
-              <tb-avatar class="tb-shell__avatar" [name]="userName()" [photo]="photo" size="2rem" />
-            } @else {
-              <i
-                pButtonIcon
-                class="tb-i tb-i-account_circle tb-shell__avatar-icon"
-                aria-hidden="true"
-              ></i>
-            }
-          </button>
-          <p-menu
-            #userMenu
-            [model]="userItems()"
-            [popup]="true"
-            appendTo="body"
-            (onShow)="userOpen.set(true); markChoices()"
-            (onHide)="userOpen.set(false)"
-          />
         </div>
       }
     </header>
@@ -280,9 +233,6 @@ const CHOSEN = `${CHOICE} tb-menu-item--selected`;
   styleUrl: './shell.scss',
 })
 export class Shell {
-  private readonly auth = inject(AuthService);
-  private readonly theme = inject(ThemeMode);
-
   protected readonly t = T;
   protected readonly sections = CORE_T.nav.sections;
   protected readonly close = CORE_T.close;
@@ -342,8 +292,6 @@ export class Shell {
   protected readonly searchOpen = signal(false);
   protected readonly searchLabel = CORE_T.search.open;
   private readonly searchBar = viewChild(GlobalSearchView);
-  private readonly document = inject(DOCUMENT);
-  protected readonly userOpen = signal(false);
   private readonly url = injectUrl();
   /**
    * The title of the top app bar on compact (spec §3.2): the destination the page belongs to — the longest
@@ -358,7 +306,6 @@ export class Shell {
         ...(item.alsoActive ?? []).map((link) => ({ label: item.label, routerLink: link })),
       ]),
       ...this.footer(),
-      { label: T.account, routerLink: `${home}/account` },
     ];
     let best = { label: '', length: 0 };
     for (const item of destinations) {
@@ -395,58 +342,16 @@ export class Shell {
   protected isActive(item: NavItem): boolean {
     return isNavActive(item, this.url());
   }
-  protected readonly userName = computed(() => this.auth.user()?.displayName ?? '');
-  /** The photo of a student or the teacher on the user button; without one, the person icon. */
-  protected readonly userAvatar = computed(() => this.auth.user()?.avatar ?? null);
-  /**
-   * The theme and the language items are radio items of the open menu: the chosen one is checked for
-   * screen readers (PrimeNG names an item by its label only, the label says nothing about the choice).
-   */
-  protected markChoices(): void {
-    for (const item of this.document.querySelectorAll(`.p-menu li.${CHOICE}`)) {
-      item.setAttribute('role', 'menuitemradio');
-      item.setAttribute('aria-checked', String(item.classList.contains('tb-menu-item--selected')));
-    }
-  }
+  /** The teacher's account is a category of the settings; the others have a page of their own. */
+  private readonly accountLink = computed(() => {
+    const home = this.homeLink();
+    return home === '/teacher' ? '/teacher/settings/account' : `${home}/account`;
+  });
 
-  /** The bottom group of the rail: the settings of the area and the help (spec §3.2). */
+  /** The bottom group of the rail: the settings of the area, the help, the account (spec §3.2). */
   protected readonly footer = computed<MenuItem[]>(() => [
     ...this.footerLinks(),
     { label: T.help, icon: 'tb-i tb-i-help', routerLink: `${this.homeLink()}/help` },
-  ]);
-
-  /** «Мой аккаунт», theme, language, sign out (spec §3.2): the settings and the help are in the rail. */
-  protected readonly userItems = computed<MenuItem[]>(() => [
-    { label: T.account, icon: 'tb-i tb-i-badge', routerLink: `${this.homeLink()}/account` },
-    { separator: true },
-    // Flat items: a group (`items`) would turn every top-level item into a group label.
-    // the chosen theme: its icon stays, the item is highlighted with a check (ADR-0024); screen
-    // readers hear it as a checked radio item (`markChoices`)
-    ...THEMES.map(({ choice, label, icon }) => ({
-      icon,
-      label,
-      styleClass: this.theme.choice() === choice ? CHOSEN : CHOICE,
-      command: () => {
-        this.theme.choose(choice);
-      },
-    })),
-    { separator: true },
-    // the language under the theme (ADR-0035): another one reloads the page
-    ...LANGUAGES.map(({ code, name }) => ({
-      icon: 'tb-i tb-i-translate',
-      label: name,
-      styleClass: language() === code ? CHOSEN : CHOICE,
-      command: () => {
-        chooseLanguage(code);
-      },
-    })),
-    { separator: true },
-    {
-      label: T.signOut,
-      icon: 'tb-i tb-i-logout',
-      command: () => {
-        this.auth.logout().subscribe();
-      },
-    },
+    { label: T.account, account: true, routerLink: this.accountLink() },
   ]);
 }

@@ -13,6 +13,7 @@ import org.jspecify.annotations.Nullable;
  *                     revoked by {@link LessonCompletionRevoked}
  * @param groupId      the group of a group lesson (charged at the group price), {@code null} otherwise
  * @param date         date of the lesson in the instance time zone
+ * @param title        the lesson's name; {@code null} means the default (the student's or the group's name)
  * @param missed       the student missed the lesson or cancelled too late
  */
 public record LessonCompleted(
@@ -22,7 +23,7 @@ public record LessonCompleted(
         @Nullable UUID groupId,
         LocalDate date,
         int durationMinutes,
-        @Nullable String topic,
+        @Nullable String title,
         boolean missed,
         Instant occurredAt) {
 }

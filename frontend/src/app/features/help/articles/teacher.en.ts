@@ -16,7 +16,7 @@ After the first sign-in the portal opens the [initial setup](/teacher/help/setup
 1. **Add students.** «Create» → «Student» (on a phone — «Students» → «Add student»). The portal shows an invitation link — send it to the student in a messenger or by email. With the link the student chooses a login and a password.
 2. **Check the lesson price.** «Students» → the student → the «Profile» tab of their card → «Lesson price». Debts and prepayments are counted from it.
 3. **Plan lessons.** «Create» → «Lesson» → «Repeat»: once or every 1–4 weeks.
-4. **Connect a messenger.** «Settings» → «Messengers» → «Connect». The wizard helps to create a bot, and reminders and students' requests reach you in Telegram, VK or MAX.
+4. **Connect a messenger.** «Settings» → «Notifications and messengers» → «Connect». The wizard helps to create a bot, and reminders and students' requests reach you in Telegram, VK or MAX.
 
 On the «Today» page the «Getting started» list sits at the end of the «To do» card — only the steps not done yet stay in it, and the bar shows how many are done.
 
@@ -87,13 +87,13 @@ The student opens the link, chooses a login and a password and gets to their cab
 
 Students and groups are in one list. A student's row shows the photo (if the student uploaded one, otherwise the initials), the name, the nearest lesson and the prepaid amount; on the right — the debt in red and the tag «Invited» or «Turned off». Hover over an invited student's tag to see until when the link is valid. A group's row shows the number of members and the nearest lesson. A long name or line is cut after its second line — the card on the right shows it in full.
 
-On a phone the total above the roster is hidden, and the portal name is larger in the navigation menu. Above the list are the search by name and the filters: **All**, **Groups**, **In debt**, **No messenger** (students who connected no messenger) and **Turned off** (students without access and archived groups). «In debt» and «No messenger» show a number.
+On a phone the total above the roster is hidden, and the portal name is larger in the navigation menu. Above the list are the search by name and the filters: **All**, **Groups** and **Turned off** (students without access and archived groups). The debt is shown on the right of a student's row.
 
 Click a row — the card of the student or the group opens on the right (on a phone the card replaces the list, the «back» arrow returns to it).
 
 The top of a student's card shows the photo, the name, since which month they study with you and the tags: the messenger (or «No messenger»), the prepayment or the debt. Next to them are three buttons: **Write** — a message to this student only, **Payment** — record their payment, **Lesson** — plan a lesson with them (the default topic is filled in). The **Overview** tab gathers the main things: the next lessons, the open homework (each opens by its title), the balance with the last operations and «Contact» — the connected messengers (with none, «Remind» sends the student a link to connect one) and the video meeting link.
 
-The **Lessons** tab lists all the student's lessons, group ones too: «Upcoming» (nearest first) and «Past» (latest first) with the outcome — conducted, missed, cancelled; for a group lesson — whether this student was there. Half a year back and ahead is shown, «Show earlier» adds the year before. **Homework** — every task of the student with its status: the open ones first, then the accepted ones with the grade; the title opens the task. **Payments** — the balance, charged and paid in total, the lesson price and the history (see [Payments](/teacher/help/billing)).
+The **Lessons** tab lists all the student's lessons, group ones too: «Upcoming» (nearest first; a regular lesson is one row — «Every Tue and Thu, 15:00 · 60 min» with its start, end and «N more» — and «Show all dates» unfolds every date; moved and cancelled lessons are rows of their own) and «Past» (latest first) with the outcome — conducted, missed, cancelled; for a group lesson — whether this student was there. Half a year back and ahead is shown, «Show earlier» adds the year before. **Homework** — every task of the student with its status: the open ones first, then the accepted ones with the grade; the title opens the task. **Payments** — the balance, charged and paid in total, the lesson price and the history (see [Payments](/teacher/help/billing)).
 
 The name in the list is the one you gave: the student can choose how the portal calls them in the cabinet, but their name does not change for you.
 
@@ -163,10 +163,10 @@ On the home page, Mark for a group lesson opens attendance directly, just as in 
 
 ## Plan a lesson
 
-«Create» → «Lesson» (on a phone — «Schedule» → «Lesson»). Choose a student or group, date, time and duration; optionally add a topic and meeting link.
+«Create» → «Lesson» (on a phone — «Schedule» → «Lesson»). Choose a student or group, date, time and duration; optionally add a title (empty — the lesson is named after the student or group), a topic — what the lesson covers — and a meeting link. A series does not copy the topic: each lesson has its own.
 «Repeat» offers Once, Every week, Every 2 weeks, Every 3 weeks and Every 4 weeks for new and existing lessons. The date determines the weekday; the repeat end date is optional. Lessons are generated 84 days ahead and extended daily.
 
-**Default topic.** If a student or a group has a default topic (on the «Profile» tab of the student or the group), it is filled in for a new lesson as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
+**Default topic.** If a student or a group has a default topic (on the «Profile» tab of the student or the group), it is filled in as the title of a new lesson as soon as you choose them. You can change or clear it; a title you typed yourself is never replaced.
 
 **How the section is laid out.** On a computer the calendar (week or month) is the main area; on the right are a mini-month for jumping between days, «Students’ requests» and «Time off». The calendar adapts to the window height: on a big screen the rows of the week and the weeks of the month stretch, on a low one they stay as before and the section scrolls. Today is marked by colour. The filter by students and groups above the calendar stays in one row: what does not fit is collected in the «N more» menu (the chosen student always stays in the row). Overlapping time off is shown as one hatched block. On a phone the section opens as the «Agenda»: a strip of the week's days and the list of the chosen day's lessons; «Agenda», «Week», «Month» and «Time off» are available as chips above the calendar.
 
@@ -197,7 +197,7 @@ A past lesson without a mark is outlined in red in the calendar; open it and mar
 
 ## Lesson summary
 
-A lesson that has started has a «Summary» row (except a cancelled one and an individual «Missed» one). Press it to open «Lesson summary»: «What we covered» (the student sees it; «Text / Preview» as in homework), «What next» and «Note to self» — only you see it (a group has one per student). «What next» is copied into the topic of the next lesson if that is empty. «Save» only saves; «Save and send» also sends the students a «Lesson summary» notification. With the AI assistant on, «Draft» writes «What we covered» from the topic, the tasks and your words — it is a draft, edit it. Held lessons with summaries are listed in «History» on the «Lessons» tab of a student and a group. In the bot: after «Held» press «Record summary» and send the text.
+The summary of a lesson that has started (except a cancelled one and an individual «Missed» one) is written right in its card. The students of the lesson see «What we covered»; while there is no summary it holds the lesson topic — add to it. «Topic of the next lesson» is copied into the topic of the next lesson if that is empty. «Save» only saves; «Send to the student» saves and sends the students a «Lesson summary» notification. With the AI assistant on, «Draft» writes «What we covered» from the topic, the tasks and your words — it is a draft, edit it. Held lessons with summaries are listed in «History» on the «Lessons» tab of a student and a group; notes to self written earlier are shown there too — there are no new ones. In the bot: after «Held» press «Record summary» and send the text.
 
 ## Cancel, delete, restore
 
@@ -291,7 +291,7 @@ Returning to Materials waits for the drawing and its card preview. Emptying a bo
 
 The lesson card and the «Next lesson» card have links to the boards of its student or group.
 
-Each board is a card: a picture on top (an Excalidraw board's latest view, refreshed when it saves; an external board has a tile with the service's icon and name), under it the title, who it is open to and when it changed. The filters above the cards are «All», «In the portal», «External» and «Student or group» (pick a student or a group to keep their boards); the sort button changes the order. Tap a card to open the board. To change the title, the link or the students — «⋮» in the card → «Edit». To delete — «⋮» → «Delete…»: an Excalidraw board is deleted with its drawing, pictures and backups.
+Each board is a card: a picture on top (an Excalidraw board's latest view, refreshed when it saves; an external board has a tile with the service's icon and name), under it the title, who it is open to and when it changed. The filters above the cards are «All», «In the portal», «External» (the search also finds by a student's or a group's name); the sort button changes the order. Tap a card to open the board. To change the title, the link or the students — «⋮» in the card → «Edit». To delete — «⋮» → «Delete…»: an Excalidraw board is deleted with its drawing, pictures and backups.
 
 ## Draw together
 
@@ -366,7 +366,7 @@ On the homework's page, in «Textbooks», click «Bind a textbook», choose a te
 
 ## Review work
 
-«Homework» is a list on the left and the opened item on the right. A switch at the top of the list: **To review** (handed-in work, and under it «Waiting for hand-in» — who has not handed in yet), **Active** (given homework where not everything is accepted; below it «Not given» — drafts) and **Done** (everything accepted). Search by the homework title or a student's name is always visible above the list. Status tags are stacked vertically. A work in the list shows the student, the homework and when it was handed in; the «Overdue» tag means it was handed in after the due date.
+«Homework» is a list on the left and the opened item on the right. A switch at the top of the list: **To review** (handed-in work, and under it «Waiting for hand-in» — who has not handed in yet), **Active** (given homework where not everything is accepted; grouped by due date: «Overdue» (folded, opens on click), «Due this week», «Later», «No due date»; below it «Not given» — drafts) and **Done** (everything accepted). Search by the homework title or a student's name is always visible above the list, with a «For» select next to it — one student or one group (kept in the page address). «Done» shows 20 at a time; «Show more» adds more. Status tags are stacked vertically. A work in the list shows the student, the homework and when it was handed in; the «Overdue» tag means it was handed in after the due date.
 
 Press a work and it opens on the right: the task (it collapses), the student's answer and the picture files. «Open on the board» leads to the homework's board. On a wide screen the review is a separate panel at the right:
 
@@ -450,8 +450,8 @@ Each held lesson (and each one missed without notice) is charged at the student'
 The page shows one month; the ‹ › arrows next to the title switch months.
 
 - **Four figures:** «Received», «Charged for lessons», «Debt» (the red tile — how many students owe) and «Prepaid».
-- **Operations** — the month's list: payments, lessons and absences; the amount on the right (a payment with «+», a charge with «−», an absence without a charge — «0»). The buttons «All · Payments · Lessons · Absences» and the «Student» select keep only what you need; the month and the filters are kept in the page address, so «Back» and a reload keep them. «⋮» in the header → «Download CSV» saves the current list as a file for Excel. A student's name opens the «Payments» tab of their card.
-- **By students** (on the right on a wide screen): «Debtors» with the «Remind» button — it sends the student a reminder, «Prepaid running out» — whose prepayment covers 2 lessons or fewer, and «By weeks» — what came in each week. «All in Students» opens the students list.
+- **Operations** — the month's list: payments, lessons and absences; the amount on the right (a payment with «+», a charge with «−», an absence without a charge — «0»). The buttons «All · Payments · Lessons · Absences» and the «Student» select keep only what you need; the month and the filters are kept in the page address, so «Back» and a reload keep them. «Monthly report» → «Download CSV» saves the whole journal of the month as a file for Excel. A student's name opens the «Payments» tab of their card.
+- **By students** (on the right on a wide screen): «Debtors» with the «Remind» button — it sends the student a reminder (on a phone «Debtors» sit under the month's figures), «Prepaid running out» — whose prepayment covers 2 lessons or fewer, and «By weeks» — what came in each week. «All in Students» opens the students list.
 - **Monthly report** — the button in the header.
 
 On a phone the month, both arrows and «Monthly report» are directly above the figures; the report button wraps below the month and arrows to fit the screen. The report month picker and amounts also adapt to the phone width. The figures form a grid without sideways scrolling and the «Payment» button at the bottom records a payment. Each student's balance is in «Students» and on the «Payments» tab of their card.
@@ -500,17 +500,17 @@ The bell opens the notifications at the side, on a phone — full screen without
 
 On a wide screen the notifications open as a third column on the right and do not cover the page: you can keep working and move between sections — the column stays until you press «×» (or Esc) or the bell again. On a narrower screen and on a phone they close when you open a notification that leads to another page. Old links to the «Notifications» section open the bell.
 
-Bots, your messengers, students' messengers and what to send are in «Settings» → «Messengers».
+Bots, your messengers, students' messengers and what to send are in «Settings» → «Notifications and messengers».
 
 ## Connect a bot
 
-«Settings» → «Messengers» → «Messenger bots» → «Connect» next to a messenger. The wizard shows step by step how to create a bot, checks it and sends you a test message.
+«Settings» → «Notifications and messengers» → «Messenger bots» → «Connect» next to a messenger. The wizard shows step by step how to create a bot, checks it and sends you a test message.
 
 One messenger is enough — the one your students use. Students connect a messenger themselves, in their «My account».
 
 ## Who is connected
 
-The «Students’ messengers» card («Settings» → «Messengers») shows who has a messenger connected and whether deliveries failed. «Remind everyone without a messenger» (or «Remind the selected») asks the others to connect.
+The «Students’ messengers» card («Settings» → «Notifications and messengers») shows who has a messenger connected and whether deliveries failed. «Remind everyone without a messenger» (or «Remind the selected») asks the others to connect.
 
 ## Message to students
 
@@ -518,13 +518,13 @@ The «Students’ messengers» card («Settings» → «Messengers») shows who 
 
 ## What to send
 
-«Settings» → «Messengers» → «What to send to messengers»: choose the topics for the messenger and the quiet hours — at night messages wait until the morning.
+«Settings» → «Notifications and messengers» → «What to send to messengers»: choose the topics for the messenger and the quiet hours — at night messages wait until the morning.
 
 Notifications and bot messages are written by the server in Russian.
 
 ## Notifications on the phone without a messenger
 
-Submitted work, reschedule requests and reminders can arrive as system notifications on your phone or computer even when the portal is closed — together with messengers, not instead of them. «My account» → «Notifications on devices» → «Turn on notifications on this device», then allow notifications in the browser prompt. The device appears in the list; «Turn off» removes it. Turn it on separately on every phone and every browser. The topics and quiet hours are the same as for messengers.
+Submitted work, reschedule requests and reminders can arrive as system notifications on your phone or computer even when the portal is closed — together with messengers, not instead of them. «Settings» → «Notifications and messengers» → «Notifications on devices» → «Turn on notifications on this device», then allow notifications in the browser prompt. The device appears in the list; «Turn off» removes it. Turn it on separately on every phone and every browser. The topics and quiet hours are the same as for messengers.
 
 On iPhone and iPad notifications work only in the app on the Home Screen: Share → Add to Home Screen, then open the portal from the new icon. The portal address must be HTTPS; if notifications are unavailable, the card says why. The notification goes through a Google, Mozilla or Apple service — the text is encrypted with the device key, so the service cannot read it.
 
@@ -560,7 +560,7 @@ The schedule and the lesson link, cancelling and moving a lesson (in a group —
 
 ## Turn management off
 
-«Settings» → «Messengers» → «What the bot can do» → turn off «Manage the portal through the bot» if other people can access your messenger. Notifications keep coming.
+«Settings» → «Notifications and messengers» → «What the bot can do» → turn off «Manage the portal through the bot» if other people can access your messenger. Notifications keep coming.
 
 In VK the buttons need «Bot features» turned on in the community settings.
 `,
@@ -591,11 +591,11 @@ Students can make such a link too — it has only their lessons.
     body: `
 «Settings» (at the bottom of the sections panel on the left, on a phone — under ☰) gathers what concerns the whole portal: connections, appearance and data. On the left is the list of setting groups, on the right — the chosen group. On a phone the list comes first; the chosen group opens in its place, and the back arrow returns to the list. Each group has its own address — you can bookmark it.
 
-- **My account** — photo, name and password. The same section opens from the menu under your photo at the top right.
+- **My account** — photo, name and password. The same section opens with the item with your name at the bottom of the panel on the left (on a phone, under the ☰ button).
 - **Portal** — the portal's name, address, colour and logo ([Look, language and phone](/teacher/help/appearance)).
 - **Schedule and calendar** — the portal's time zone, Google Calendar and the schedule subscription ([Calendars](/teacher/help/calendars)).
 - **Calls** — calls in the portal ([Calls](/teacher/help/calls)) and video meetings ([Video meetings](/teacher/help/meetings)).
-- **Messengers** — bots, your messengers, what the bot can do, students' messengers and what to send ([Notifications and bots](/teacher/help/notifications)). If messages did not reach a messenger, the group shows their number in the list, and the «Failed deliveries» card comes first; the portal administrator can resend them.
+- **Notifications and messengers** — notifications on this device, bots, your messengers, what the bot can do, students' messengers and what to send ([Notifications and bots](/teacher/help/notifications)). If messages did not reach a messenger, the group shows their number in the list, and the «Failed deliveries» card comes first; the portal administrator can resend them.
 - **Payments** — the lesson price for new students and groups ([Payments](/teacher/help/billing)).
 - **AI assistant** — the model, tokens spent this month, recent requests, the prompt library and the system prompts ([AI assistant](/teacher/help/ai)).
 - **Data** — backups: the portal makes a backup every night, here you can back up now, download a backup, restore it and connect Google Drive for the backups ([Backups and full reset](/teacher/help/backups)); full reset — delete all data and start again.
@@ -626,11 +626,11 @@ The portal's name is there too — it is shown next to the logo at the top of th
 
 ## Dark theme
 
-The menu under your photo (top right) → «Light theme», «Dark theme» or «System theme». The choice is remembered on this device; students have their own setting.
+The item with your name (bottom of the panel on the left, under ☰ on a phone) → «Appearance» → «Light», «Dark» or «System». The choice is remembered on this device; students have their own setting.
 
 ## Language
 
-The same menu → under the theme — «Русский» or «English». The portal reloads in the chosen language; the choice is remembered on this device. On the sign-in and invitation pages the languages are under the card, so a student chooses theirs before signing in.
+There, in «Appearance», — «Русский» or «English». The portal reloads in the chosen language; the choice is remembered on this device. On the sign-in and invitation pages the languages are under the card, so a student chooses theirs before signing in.
 
 The chosen language is also kept in the account: notifications in the «Inbox» and in messengers, the bot's answers and the calendar by link come in it. Each student gets them in their own language. Notifications already received are not translated. Group names, lesson topics and your messages to students stay as you wrote them.
 
@@ -648,7 +648,7 @@ The top of the sections panel holds the portal's logo and name with «Create» u
 
 Icons are Material Symbols, as in Android; the chosen section's icon is filled, the others are outlined.
 
-The search is at the top centre: start typing a student's or group's name, or the title of an assignment, board or textbook, and matches appear under the bar in groups (up to five in each, the rest counted as «N more»). Pick a result with ↑ ↓ and Enter or click it; Esc closes the list. Open the search from the keyboard with Ctrl K (⌘ K on a Mac) on any page. It searches the lists already loaded, so it finds what you have opened in this session; on a phone the magnifier icon at the top opens a full-screen search. The bell and your photo (or a person in a circle) are always at the top right: the photo opens the menu — «My account», the theme, the language and «Sign out». A page's title starts its content, and a «?» next to the title of a page or a block opens help about it. On a phone the top has ☰ and the section's name, and the page itself shows no section title and no «?»: help is under ☰.
+The search is at the top centre: start typing a student's or group's name, or the title of an assignment, board or textbook, and matches appear under the bar in groups (up to five in each, the rest counted as «N more»). Pick a result with ↑ ↓ and Enter or click it; Esc closes the list. Open the search from the keyboard with Ctrl K (⌘ K on a Mac) on any page. It searches the lists already loaded, so it finds what you have opened in this session; on a phone the magnifier icon at the top opens a full-screen search. The bell is always at the top right; your photo and «Sign out» are in the item with your name at the bottom of the panel. A page's title starts its content, and a «?» next to the title of a page or a block opens help about it. On a phone the top has ☰ and the section's name, and the page itself shows no section title and no «?»: help is under ☰.
 
 Lists in blocks (students, payments and payment history, boards, lessons, notifications) are separate tiles, a line per record, not tables: on the left the student's photo (or initials) or an icon, in the middle the name and details, on the right an amount, a status or buttons. The buttons of all rows of a list stand on one line.
 
@@ -752,7 +752,7 @@ Check that their access is not turned off. Issue a password reset link: «Studen
 Issue a new one in the same place — the old one stops working.
 
 **Notifications do not reach the messenger.**
-Check «Settings» → «Messengers»: the bot must be connected. The student must connect the messenger in their cabinet themselves. Undelivered messages are there too, in the «Failed deliveries» card (the number next to «Messengers» in the settings list).
+Check «Settings» → «Notifications and messengers»: the bot must be connected. The student must connect the messenger in their cabinet themselves. Undelivered messages are there too, in the «Failed deliveries» card (the number next to «Notifications and messengers» in the settings list).
 
 **A lesson was marked by mistake.**
 Open the lesson and press the chosen option in «Outcome» again (for a group — «Remove the mark» in the «⋮» menu) — the charge is undone.

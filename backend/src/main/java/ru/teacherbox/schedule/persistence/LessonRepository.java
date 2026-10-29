@@ -28,7 +28,7 @@ import ru.teacherbox.schedule.domain.Participant;
 public class LessonRepository {
 
     private static final String SELECT = """
-            select id, group_id, series_id, series_date, starts_at, duration_minutes, topic, meeting_url, status,
+            select id, group_id, series_id, series_date, starts_at, duration_minutes, title, topic, meeting_url, status,
                    cancelled_by, cancel_reason, original_starts_at, created_at, updated_at, version, individually_changed,
                    summary, next_plan, summary_updated_at
             from schedule.lessons
@@ -41,10 +41,11 @@ public class LessonRepository {
 
     /** A lesson row before its participants are loaded. */
     private record Row(UUID id, @Nullable UUID groupId, @Nullable UUID seriesId, @Nullable LocalDate seriesDate,
-            Instant startsAt, int durationMinutes, @Nullable String topic, @Nullable String meetingUrl,
+            Instant startsAt, int durationMinutes, @Nullable String title, @Nullable String meetingUrl,
             LessonStatus status, @Nullable CancelledBy cancelledBy, @Nullable String cancelReason,
             @Nullable Instant originalStartsAt, Instant createdAt, Instant updatedAt, long version, boolean individuallyChanged,
-            @Nullable String summary, @Nullable String nextPlan, @Nullable Instant summaryUpdatedAt) {
+            @Nullable String summary, @Nullable String nextPlan, @Nullable Instant summaryUpdatedAt,
+            @Nullable String topic) {
     }
 
     private final JdbcClient jdbc;
@@ -56,9 +57,9 @@ public class LessonRepository {
     public void insert(Lesson lesson) {
         jdbc.sql("""
                 insert into schedule.lessons (id, group_id, series_id, series_date, starts_at, ends_at,
-                    duration_minutes, topic, meeting_url, status, cancelled_by, cancel_reason, original_starts_at,
-                    created_at, updated_at, version)
-                values (:id, :groupId, :seriesId, :seriesDate, :startsAt, :endsAt, :duration, :topic, :meetingUrl,
+                    duration_minutes, title, topic, meeting_url, status, cancelled_by, cancel_reason,
+                    original_starts_at, created_at, updated_at, version)
+                values (:id, :groupId, :seriesId, :seriesDate, :startsAt, :endsAt, :duration, :title, :topic, :meetingUrl,
                     :status, :cancelledBy, :cancelReason, :originalStartsAt, :createdAt, :updatedAt, :version)
                 """)
                 .param("id", lesson.id())
@@ -68,6 +69,7 @@ public class LessonRepository {
                 .param("startsAt", lesson.startsAt())
                 .param("endsAt", lesson.endsAt())
                 .param("duration", lesson.durationMinutes())
+                .param("title", lesson.title())
                 .param("topic", lesson.topic())
                 .param("meetingUrl", lesson.meetingUrl())
                 .param("status", lesson.status().name())
@@ -86,7 +88,7 @@ public class LessonRepository {
         int updated = jdbc.sql("""
                 update schedule.lessons
                 set series_id = :seriesId, series_date = :seriesDate, individually_changed = :individuallyChanged,
-                    starts_at = :startsAt, ends_at = :endsAt, duration_minutes = :duration, topic = :topic,
+                    starts_at = :startsAt, ends_at = :endsAt, duration_minutes = :duration, title = :title, topic = :topic,
                     meeting_url = :meetingUrl, status = :status, cancelled_by = :cancelledBy,
                     cancel_reason = :cancelReason, original_starts_at = :originalStartsAt,
                     updated_at = :updatedAt, version = version + 1
@@ -99,6 +101,7 @@ public class LessonRepository {
                 .param("startsAt", lesson.startsAt())
                 .param("endsAt", lesson.endsAt())
                 .param("duration", lesson.durationMinutes())
+                .param("title", lesson.title())
                 .param("topic", lesson.topic())
                 .param("meetingUrl", lesson.meetingUrl())
                 .param("status", lesson.status().name())
@@ -306,21 +309,6 @@ public class LessonRepository {
                 .list();
     }
 
-    /** Writes a note, or deletes it when the text is {@code null}. */
-    public void saveNote(UUID lessonId, UUID studentId, @Nullable String note, Instant now) {
-        if (note == null) {
-            jdbc.sql("delete from schedule.lesson_notes where lesson_id = :lessonId and student_id = :studentId")
-                    .param("lessonId", lessonId).param("studentId", studentId).update();
-            return;
-        }
-        jdbc.sql("""
-                merge into schedule.lesson_notes (lesson_id, student_id, note, updated_at)
-                key (lesson_id, student_id) values (:lessonId, :studentId, :note, :now)
-                """)
-                .param("lessonId", lessonId).param("studentId", studentId).param("note", note).param("now", now)
-                .update();
-    }
-
     /** Held lessons (outcome marked) of the student, group lessons included, that start before {@code before}, newest first. */
     public List<Lesson> findHeldOfStudent(UUID studentId, Instant before, int limit) {
         return load(jdbc.sql(SELECT + " where status in ('CONDUCTED', 'MISSED') and starts_at < :before and"
@@ -417,10 +405,10 @@ public class LessonRepository {
         }
         return rows.stream()
                 .map(row -> Lesson.restore(row.id(), row.groupId(), participants.getOrDefault(row.id(), List.of()),
-                        row.seriesId(), row.seriesDate(), row.startsAt(), row.durationMinutes(), row.topic(),
+                        row.seriesId(), row.seriesDate(), row.startsAt(), row.durationMinutes(), row.title(),
                         row.meetingUrl(), row.status(), row.cancelledBy(), row.cancelReason(),
                         row.originalStartsAt(), row.createdAt(), row.updatedAt(), row.version()).restoreException(row.individuallyChanged())
-                        .restoreSummary(row.summary(), row.nextPlan(), row.summaryUpdatedAt()))
+                        .restoreSummary(row.summary(), row.nextPlan(), row.summaryUpdatedAt()).describe(row.topic()))
                 .toList();
     }
 
@@ -447,7 +435,7 @@ public class LessonRepository {
                 rs.getObject("series_date", LocalDate.class),
                 rs.getObject("starts_at", Instant.class),
                 rs.getInt("duration_minutes"),
-                rs.getString("topic"),
+                rs.getString("title"),
                 rs.getString("meeting_url"),
                 LessonStatus.valueOf(rs.getString("status")),
                 cancelledBy == null ? null : CancelledBy.valueOf(cancelledBy),
@@ -456,6 +444,6 @@ public class LessonRepository {
                 rs.getObject("created_at", Instant.class),
                 rs.getObject("updated_at", Instant.class),
                 rs.getLong("version"), rs.getBoolean("individually_changed"), rs.getString("summary"),
-                rs.getString("next_plan"), rs.getObject("summary_updated_at", Instant.class));
+                rs.getString("next_plan"), rs.getObject("summary_updated_at", Instant.class), rs.getString("topic"));
     }
 }

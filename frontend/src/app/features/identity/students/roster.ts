@@ -3,15 +3,9 @@ import type { ScheduledLesson } from '@features/schedule/parts';
 import { Student, StudentGroup } from '../data-access/identity.models';
 
 /** The chips over the list of students and groups (redesign spec §8). */
-export type RosterFilter = 'all' | 'groups' | 'debtors' | 'noMessenger' | 'deactivated';
+export type RosterFilter = 'all' | 'groups' | 'deactivated';
 
-export const ROSTER_FILTERS: readonly RosterFilter[] = [
-  'all',
-  'groups',
-  'debtors',
-  'noMessenger',
-  'deactivated',
-];
+export const ROSTER_FILTERS: readonly RosterFilter[] = ['all', 'groups', 'deactivated'];
 
 /** A student in the list with what the other features know of them; `null` — not known (not loaded). */
 export interface StudentRow {
@@ -118,10 +112,6 @@ export function matchesFilter(row: RosterRow, filter: RosterFilter): boolean {
       return !isOff(row);
     case 'groups':
       return row.kind === 'group' && !isOff(row);
-    case 'debtors':
-      return row.kind === 'student' && (row.balance ?? 0) < 0;
-    case 'noMessenger':
-      return row.kind === 'student' && !isOff(row) && row.messenger === false;
     case 'deactivated':
       return isOff(row);
   }
@@ -137,11 +127,6 @@ export function filterRows(
   return rows.filter(
     (row) => matchesFilter(row, filter) && row.name.toLocaleLowerCase('ru').includes(text),
   );
-}
-
-/** How many rows the chip finds. */
-export function countRows(rows: readonly RosterRow[], filter: RosterFilter): number {
-  return rows.filter((row) => matchesFilter(row, filter)).length;
 }
 
 const DAY_MS = 86_400_000;

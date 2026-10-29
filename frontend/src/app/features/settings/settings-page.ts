@@ -112,7 +112,6 @@ import { T } from './i18n/texts';
             @case ('account') {
               <div class="tb-stack">
                 <tb-account-panel />
-                <tb-push-devices-card />
               </div>
             }
             @case ('portal') {
@@ -134,6 +133,7 @@ import { T } from './i18n/texts';
                 @if (failed().length > 0) {
                   <tb-failed-deliveries-card [deliveries]="failed()" />
                 }
+                <tb-push-devices-card />
                 <tb-messengers-settings-panel />
                 @if (failed().length === 0) {
                   <tb-failed-deliveries-card [deliveries]="failed()" />

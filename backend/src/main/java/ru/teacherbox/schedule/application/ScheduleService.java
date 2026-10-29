@@ -47,11 +47,12 @@ public class ScheduleService {
      * @param allowOverlap    plan even if the time overlaps another lesson
      */
     public record PlanLesson(@Nullable UUID studentId, @Nullable UUID groupId, Instant startsAt,
-            @Nullable Integer durationMinutes, @Nullable String topic, @Nullable String meetingUrl,
-            boolean allowOverlap) {
+            @Nullable Integer durationMinutes, @Nullable String title, @Nullable String topic,
+            @Nullable String meetingUrl, boolean allowOverlap) {
     }
 
-    public record EditLesson(Instant startsAt, int durationMinutes, @Nullable String topic,
+    /** @param topic what this lesson covers; a series edit never copies it to the following lessons */
+    public record EditLesson(Instant startsAt, int durationMinutes, @Nullable String title, @Nullable String topic,
             @Nullable String meetingUrl, boolean allowOverlap) {
     }
 
@@ -101,12 +102,13 @@ public class ScheduleService {
         if (groupId != null) {
             List<UUID> members = requireMembers(groupId);
             lesson = Lesson.planForGroup(Ids.newId(), groupId, members, null, null, command.startsAt(), duration,
-                    command.topic(), command.meetingUrl(), now);
+                    command.title(), command.meetingUrl(), now);
         } else {
             UUID studentId = directory.currentStudent(required(command.studentId())).id();
-            lesson = Lesson.plan(Ids.newId(), studentId, null, null, command.startsAt(), duration, command.topic(),
+            lesson = Lesson.plan(Ids.newId(), studentId, null, null, command.startsAt(), duration, command.title(),
                     command.meetingUrl(), now);
         }
+        lesson.describe(command.topic());
         requireFree(lesson.startsAt(), lesson.endsAt(), null, command.allowOverlap());
         lessons.insert(lesson);
         if (notify) lessonEvents.scheduled(lesson, now);
@@ -118,8 +120,9 @@ public class ScheduleService {
         Lesson lesson = find(lessonId);
         Instant previousStart = lesson.startsAt();
         Instant now = clock.instant();
-        boolean moved = lesson.edit(command.startsAt(), command.durationMinutes(), command.topic(),
+        boolean moved = lesson.edit(command.startsAt(), command.durationMinutes(), command.title(),
                 command.meetingUrl(), now);
+        lesson.describe(command.topic());
         if (moved) {
             requireFree(lesson.startsAt(), lesson.endsAt(), lesson.id(), command.allowOverlap());
         }
@@ -188,15 +191,6 @@ public class ScheduleService {
             throw new BusinessRuleException("schedule.summary-empty", "Write the summary before sending it");
         }
         lessonEvents.summaryShared(lesson, directory.teacherId(), clock.instant());
-    }
-
-    /** Writes the teacher's private note about a participant (blank deletes it). */
-    @Transactional
-    public LessonView updateNote(UUID lessonId, UUID studentId, @Nullable String note) {
-        Lesson lesson = find(lessonId);
-        lesson.requireNoteFor(studentId, clock.instant());
-        lessons.saveNote(lessonId, studentId, Lesson.note(note), clock.instant());
-        return queries.lesson(lessonId);
     }
 
     /** Deletes a lesson that was not held: a planned or cancelled one nobody is charged for. */
@@ -342,9 +336,9 @@ public class ScheduleService {
             Instant start = source.startOn(date, zone);
             lessons.insert(groupId == null
                     ? Lesson.plan(Ids.newId(), required(source.studentId()), source.id(), date, start,
-                            source.durationMinutes(), source.topic(), source.meetingUrl(), now)
+                            source.durationMinutes(), source.title(), source.meetingUrl(), now)
                     : Lesson.planForGroup(Ids.newId(), groupId, members, source.id(), date, start,
-                            source.durationMinutes(), source.topic(), source.meetingUrl(), now));
+                            source.durationMinutes(), source.title(), source.meetingUrl(), now));
             created++;
         }
         source.generatedThrough(until, now);

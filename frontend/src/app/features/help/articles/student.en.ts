@@ -22,15 +22,15 @@ Ask the teacher to send a password reset link. Set a new password with it.
 
 ## Change the password
 
-Your photo (or a person icon) at the top right → «My account» → «Change password».
+The item with your name (at the bottom of the panel on the left, under ☰ on a phone) → «Change password».
 
 If a link does not open or is out of date, ask the teacher to send a new one.
 
 ## Photo and name
 
-Your photo at the top right → «My account»: the photo is in the top card, the name in the «Name» card.
+The item with your name (at the bottom of the panel on the left, under ☰ on a phone): the photo is in the top card, the name in the «Name» card.
 
-- **Photo** — «Upload photo» and choose a picture (JPEG, PNG or WebP). The portal cuts a square out of its centre and makes it smaller. You see the photo at the top right, and the teacher sees it in the list of students, in payments, calls, the schedule and on the home page. The bin next to it removes the photo.
+- **Photo** — «Upload photo» and choose a picture (JPEG, PNG or WebP). The portal cuts a square out of its centre and makes it smaller. You see the photo next to the item with your name, and the teacher sees it in the list of students, in payments, calls, the schedule and on the home page. The bin next to it removes the photo.
 - **Name** — how the portal calls you in the cabinet. The teacher still sees you under the name they gave. Erase your name and save to go back to the teacher's name.
 `,
   },
@@ -38,7 +38,7 @@ Your photo at the top right → «My account»: the photo is in the top card, th
     title: 'Schedule and moving',
     summary: 'Your lessons, cancelling and moving',
     body: `
-Clicking a calendar lesson opens a centered window on a computer and a bottom sheet on a phone. It shows who teaches, the time, the topic, boards and the room; «Join lesson» is in the room row, «Move» and «Cancel» sit beside it. On a phone, upcoming lessons and calendar subscription use separate rounded sections.
+Clicking a calendar lesson opens a centered window on a computer and a bottom sheet on a phone. It shows who teaches, the title, the time, the topic, boards and the room; «Join lesson» is in the room row, «Move» and «Cancel» sit beside it. On a phone, upcoming lessons and calendar subscription use separate rounded sections.
 
 «Schedule» shows a week or month calendar; today is marked by colour. On a computer, the mini calendar, upcoming lessons and «My requests» sit beside it. On a phone it opens with an agenda: a week strip and lessons of the selected day, with switches to week or month.
 
@@ -119,7 +119,7 @@ The teacher reviews the work: accepts it with a grade or returns it for rework w
 
 ## A quiz in the homework
 
-If the homework has questions, a «Quiz» block appears under the text. Click «Start the quiz» and answer: pick an option, type a short answer or a number, for «Matching» choose a pair for every line, and in «Ordering» put the items in order with the arrow buttons. On a phone the questions come one at a time («Back» / «Next»). Answers are saved by themselves. At the end click «Submit the quiz» and confirm — the attempt cannot be changed after that. You see «Result: N of M» at once. The teacher shows the correct answers and explanations right away, after the due date, or not at all. If there are several attempts, «Try again» starts a new one and the best counts. When you are done, click «Send for review» — the teacher will see your result.
+If the homework has questions, a «Quiz» block appears under the text. Click «Start the quiz» and answer: pick an option, type a short answer or a number, for «Matching» choose a pair for every line, and in «Ordering» put the items in order with the arrow buttons (if the order is already right, leave it: it counts as it is). On a phone the questions come one at a time («Back» / «Next»). Answers are saved by themselves. At the end click «Submit the quiz» and confirm — the attempt cannot be changed after that. You see «Result: N of M» at once. The teacher shows the correct answers and explanations right away, after the due date, or not at all. If there are several attempts, «Try again» starts a new one and the best counts. When you are done, click «Send for review» — the teacher will see your result.
 
 ## Homework on a board
 
@@ -164,7 +164,7 @@ The bell in the header opens the notifications at the side (on a phone — full 
 
 ## Connect
 
-Your photo at the top right → «My account» → the «Messengers» card → «Connect» next to a messenger (or «Connect» on the card on the home page). A chat with the bot opens — press «Start» or send it the code shown.
+The item with your name → the «Messengers» card → «Connect» next to a messenger (or «Connect» on the card on the home page). A chat with the bot opens — press «Start» or send it the code shown.
 
 ## Buttons under notifications
 
@@ -186,13 +186,13 @@ The bot speaks Russian.
 
 ## Notifications on the phone without a messenger
 
-Lesson reminders, new homework and the teacher's messages can arrive as system notifications on your phone even when the cabinet is closed — without a messenger or together with one. Your photo at the top right → «My account» → «Notifications on devices» → «Turn on notifications on this device» (or «Turn on» in the card on the home page), then allow notifications in the browser prompt. «Turn off» in the list removes the device. The topics and quiet hours are the same as for messengers.
+Lesson reminders, new homework and the teacher's messages can arrive as system notifications on your phone even when the cabinet is closed — without a messenger or together with one. The item with your name → «Notifications on devices» → «Turn on notifications on this device» (or «Turn on» in the card on the home page), then allow notifications in the browser prompt. «Turn off» in the list removes the device. The topics and quiet hours are the same as for messengers.
 
 On iPhone and iPad notifications work only in the app on the Home Screen: Share → Add to Home Screen, then open the cabinet from the new icon. The portal address must be HTTPS; if notifications are unavailable, the card says why. The notification goes through a Google, Mozilla or Apple service — the text is encrypted with your device key, so the service cannot read it.
 
 ## Turn off
 
-Send the bot /stop or disconnect the messenger in «My account» (your photo at the top right). There, in the «What to send to messengers» card, you can also choose the topics and the quiet hours.
+Send the bot /stop or disconnect the messenger in «My account» (the item with your name in the panel on the left). There, in the «What to send to messengers» card, you can also choose the topics and the quiet hours.
 `,
   },
   appearance: {
@@ -215,11 +215,11 @@ The cabinet works in the phone's browser, nothing needs installing. If you want 
 
 ## Dark theme
 
-Your photo (or a person icon) at the top right → «Light theme», «Dark theme» or «System theme». The choice is remembered on this device.
+The item with your name → «Appearance» → «Light», «Dark» or «System». The choice is remembered on this device.
 
 ## Language
 
-The same menu → «Русский» or «English» (under the theme). On the sign-in page the languages are under the sign-in card. The choice is remembered on this device and in your account: notifications, the bot in the messenger and the calendar by link come in this language.
+There, in «Appearance», — «Русский» or «English». On the sign-in page the languages are under the sign-in card. The choice is remembered on this device and in your account: notifications, the bot in the messenger and the calendar by link come in this language.
 `,
   },
 };

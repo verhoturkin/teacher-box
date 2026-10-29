@@ -425,7 +425,9 @@ export class ScheduleCalendar {
             start: moved.startsAt,
             end: new Date(moved.startsAt.getTime() + lesson.durationMinutes * 60_000),
           }),
-      editable: editable && lesson.status === 'SCHEDULED' && moved?.saving !== true,
+      // not `editable`: it would also switch on resizing
+      durationEditable: false,
+      startEditable: editable && lesson.status === 'SCHEDULED' && moved?.saving !== true,
       className: classes.join(' '),
     };
   }
@@ -468,9 +470,9 @@ export class ScheduleCalendar {
     if (this.showStudent() || lesson.groupId !== null) {
       const name =
         lesson.groupId !== null ? (lesson.groupName ?? C.group) : (lesson.studentName ?? T.student);
-      return request + (lesson.topic === null ? name : `${name} · ${lesson.topic}`);
+      return request + (lesson.title === null ? name : `${name} · ${lesson.title}`);
     }
-    return request + (lesson.topic ?? C.lesson);
+    return request + (lesson.title ?? C.lesson);
   }
 }
 

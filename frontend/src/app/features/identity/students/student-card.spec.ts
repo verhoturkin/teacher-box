@@ -21,7 +21,7 @@ import { StudentProfileTab } from './student-profile-tab';
 
 /** What the cards of Обзор read: answered by their own specs. */
 const OVERVIEW_READS =
-  /schedule\/(lessons|students\/[^/]+\/history)|homework\/students\/|billing\/students\/|notifications\/students\/|meetings\/(rooms|calls)/;
+  /schedule\/(lessons|students\/[^/]+\/(history|upcoming))|homework\/students\/|billing\/students\/|notifications\/students\/|meetings\/(rooms|calls)/;
 
 function row(student: Partial<Student> = {}, balance: number | null = null): StudentRow {
   const value = aStudent({ id: 'm', displayName: 'Мария', ...student });
@@ -251,7 +251,7 @@ describe('StudentCard', () => {
     const dialog = part(LessonDialog);
     expect(dialog.visible()).toBe(true);
     expect(dialog.form.getRawValue()).toEqual(
-      expect.objectContaining({ owner: 'student:m', durationMinutes: 90, topic: 'Алгебра' }),
+      expect.objectContaining({ owner: 'student:m', durationMinutes: 90, title: 'Алгебра' }),
     );
     overviewReads(/schedule\/lessons/);
 

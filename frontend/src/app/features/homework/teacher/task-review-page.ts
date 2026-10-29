@@ -26,7 +26,6 @@ import { AttachmentList } from '../ui/attachment-list';
 import { SubmissionList } from '../ui/submission-list';
 import { TaskStatusTag } from '../ui/task-status-tag';
 import { PageHeader } from '@shared/ui/page-header';
-import { HelpButton } from '@features/help/parts';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
@@ -59,7 +58,6 @@ import { ReviewForm } from './review-form';
     TaskStatusTag,
     ToBoardDialog,
     PageHeader,
-    HelpButton,
     LoadStateView,
     FieldErrors,
   ],
@@ -72,7 +70,6 @@ import { ReviewForm } from './review-form';
           [back]="single() ? '/teacher/homework' : null"
           [backLabel]="t.back"
         >
-          <tb-help-button help topic="teacher/homework" />
           <span meta class="tb-task__meta">
             {{ task.studentName }} ·
             {{ task.assignment.dueAt ? t.due(date(task.assignment.dueAt)) : noDueDate }}

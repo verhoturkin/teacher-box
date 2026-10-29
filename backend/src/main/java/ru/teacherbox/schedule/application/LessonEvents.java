@@ -36,7 +36,7 @@ class LessonEvents {
 
     void scheduled(Lesson lesson, Instant now) {
         events.publishEvent(new LessonScheduled(lesson.id(), lesson.groupId(), lesson.studentIds(), lesson.startsAt(),
-                lesson.durationMinutes(), lesson.topic(), now));
+                lesson.durationMinutes(), lesson.title(), lesson.topic(), now));
     }
 
     void rescheduled(Lesson lesson, Instant previousStartsAt, @Nullable UUID requestedBy, Instant now) {
@@ -91,6 +91,6 @@ class LessonEvents {
 
     void completed(Lesson lesson, UUID studentId, UUID completionId, boolean missed, Instant now) {
         events.publishEvent(new LessonCompleted(completionId, lesson.id(), studentId, lesson.groupId(),
-                LocalDate.ofInstant(lesson.startsAt(), zone), lesson.durationMinutes(), lesson.topic(), missed, now));
+                LocalDate.ofInstant(lesson.startsAt(), zone), lesson.durationMinutes(), lesson.title(), missed, now));
     }
 }

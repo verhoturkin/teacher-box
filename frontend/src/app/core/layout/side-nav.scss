@@ -253,6 +253,15 @@
     overflow-wrap: break-word;
     hyphens: auto;
   }
+
+  .tb-side-nav__label--name {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    hyphens: manual;
+  }
 }
 
 /* The modal expanded rail under ☰ on compact (M3E): it fills the sheet of the drawer (shell.scss) */

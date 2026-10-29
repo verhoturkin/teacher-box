@@ -60,7 +60,6 @@ import {
   RosterFilter,
   RosterRow,
   StudentRow,
-  countRows,
   filterRows,
   isOff,
   lessonWhen,
@@ -402,13 +401,10 @@ export class StudentsPage implements OnInit {
     filterRows(this.rows(), this.filter(), this.query()),
   );
   protected readonly chips = computed<FilterChip<RosterFilter>[]>(() => {
-    const rows = this.rows();
     const chips = this.t.chips;
     return [
       { value: 'all', label: chips.all },
       { value: 'groups', label: chips.groups },
-      { value: 'debtors', label: chips.debtors, count: countRows(rows, 'debtors') },
-      { value: 'noMessenger', label: chips.noMessenger, count: countRows(rows, 'noMessenger') },
       { value: 'deactivated', label: chips.deactivated },
     ];
   });

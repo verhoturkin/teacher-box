@@ -141,10 +141,20 @@ used icon classes disagree. E2E runs axe on the main screens and checks button r
   chips of member multiselects take the container (`tbChipColors`); rows keep the neutral surface.
   Dialogs pick the colour in a select «Цвет» with a 20 px swatch («Без цвета» — an outlined empty
   circle). The calendar use is in [`screens.md`](screens.md#schedule-teacher).
-- **System bars** (`core/theme/system-bars.ts`): `<meta name="theme-color">` and the manifest carry
-  the top bar's colour — light surface-container, dark surface (on a phone page of panes:
-  `surface`); the manifest's `background_color` is the page.
+- **System bars** (`core/theme/system-bars.ts`): `<meta name="theme-color">` carries the top
+  bar's colour for the status bar — light surface-container, dark surface (on a phone page of
+  panes: `surface`). The manifest's `theme_color` and `background_color` are the bottom bar's
+  surface-container of the current theme: the installed app (Chrome 153+) paints the navigation
+  bar with `theme_color` and rereads it only when it updates the app, so a theme change reaches it
+  later (stage 336.1). In the browser the meta tag cannot colour the Android navigation (gesture)
+  bar apart, so the app is **edge-to-edge** (*ours*, stage 327.3):
+  `viewport-fit=cover` lets Chrome 135+ on Android draw the page under the gesture bar (older
+  versions and other browsers keep the inset at 0 and nothing changes); the bottom bar's
+  surface-container fills that area. Everything fixed at the bottom adds
+  `env(safe-area-inset-bottom)`, the shell adds the left and right insets (landscape cutout).
 - **Themes:** «Светлая», «Тёмная», «Как в системе», stored on the device; a class on `<html>`.
+  Chosen in «Мой аккаунт» → «Оформление» as a connected button group with `light_mode` /
+  `dark_mode` / `brightness_auto`.
 
 ## 3. Typography
 
@@ -304,7 +314,9 @@ for the active navigation item and checked states.
   button at every width.
 - **Bottom bar** (compact, **M3E** flexible navigation bar): five destinations of the role
   (`BAR_ITEMS` in `shell.ts`, **M3**: 3–5), no «Ещё»; 64 px surface-container, no top border, item
-  padding 4 px, 4 px icon → label; indicator and active item as the rail. The other destinations
+  padding 4 px, 4 px icon → label; indicator and active item as the rail. Its background extends
+  under the gesture bar: the content keeps 64 px, `padding-bottom: env(safe-area-inset-bottom)`
+  grows the bar (*ours*, see «System bars»). The other destinations
   and the rail's bottom group are in the **modal expanded rail** under ☰ (**M3E**: more than five
   destinations): `p-drawer` + `tbModalDrawer` on the start edge, scrim 32 %, closed by Esc, the
   scrim, a destination or its `menu_open` button «Закрыть»; focus back to ☰; surface-container,
@@ -312,11 +324,17 @@ for the active navigation item and checked states.
   wide as their label, ≥ 64 px (`minmax(64px, auto)`). Destinations per role:
   [`screens.md`](screens.md#frame-by-role).
 - **Top bar** (sticky, no divider): from medium the **top strip** — 80 px (*ours*), the global
-  search in the middle (teacher), the bell and the avatar at the end; on compact the **M3 small top
+  search in the middle (teacher), the bell at the end; on compact the **M3 small top
   app bar** — 64 dp: ☰ («Разделы», `aria-haspopup="dialog"`), the section title in Title Large on
-  one line (not a heading: the h1 stays in `tb-page-header`), search icon (teacher), bell, avatar.
-- **User button** — the avatar alone (40 px circle, photo or `account_circle`), named «<имя>: меню
-  пользователя». Menu: «Мой аккаунт», theme, language, sign out.
+  one line (not a heading: the h1 stays in `tb-page-header`), search icon (teacher), bell. There
+  is no user button (330.1): the account is a navigation item.
+- **«Аккаунт»** — the last item of the rail's bottom group (after «Настройки», «Справка») and of
+  the ☰ drawer, for every role: a 24 px `tb-avatar` (photo or initials) in place of the icon, the
+  user's name as the label (two lines at most in the 96 px rail, never hyphenated; «Аккаунт» while
+  the name is unknown), accessible name «Аккаунт: <имя>». It leads to
+  `/teacher/settings/account`, `/cabinet/account` or `/admin/account`; active as any item
+  (`NavItem.account`; `except` keeps the teacher's «Настройки» from lighting up with it). Theme,
+  language and «Выйти» live in «Мой аккаунт» (section «Оформление», `tb-segment-group`).
 - **Global search** (`core/search/global-search-view.ts`, teacher): in the top strip the **M3**
   docked search bar (as `tb-search-field`, §9, with the hint chip «Ctrl K» / «⌘ K») and under it the
   search view — a surface-container dropdown, 28 px corners (*ours*), results grouped «Ученики ·
@@ -327,7 +345,9 @@ for the active navigation item and checked states.
 - **Tabs** `tb-tabs` (**M3** primary fixed tabs, every tab bar): no container, 48 dp, Title Small,
   label primary when active, a 3 dp primary indicator with 3 dp rounded top corners as wide as the
   label (`::after` of `tb-tab-label`), one 1 dp outline-variant divider under the bar; tabs share
-  the width equally (on a phone they keep their label width and scroll). The tab is in the address
+  the width equally (on a phone they keep their label width and scroll, unless the bar has the
+  modifier `tb-tabs--fixed`: two or three short labels that share the width on every width, as
+  the bell's «Входящие · Отправленные»). The tab is in the address
   (`?tab=`), the default one left out.
 
 ## 7. Panes and page anatomy
@@ -445,6 +465,13 @@ inputs), `size="small"`, `success`, `warn`, `info`, `help`, `contrast`.
 - **Icon buttons:** tooltip = accessible name, with row context («Отменить занятие: Анна, 14:00»);
   help «?» names the article («Справка: Портал»); menu buttons have `aria-haspopup` +
   `aria-expanded` (`tbAttributes`).
+- **Tooltip** = M3 plain tooltip: Inverse surface / Inverse on surface, Body Small, 4 dp corners,
+  8 dp side padding, at least 24 dp high, no caret (**M3**). Placed centred **below** the element
+  (M3: below in an app bar and on desktop) and flipped above by PrimeNG when there is no room,
+  never to the side, kept inside the window (*ours*: one rule for the whole app). The default is
+  set once in `@shared/ui/tooltip-defaults` (PrimeNG `Tooltip` has no global default; applied in
+  `app.config.ts`), so `pTooltip` needs nothing extra. Max width 240 px (*ours*; M3 gives none).
+  Shown on hover and focus, on a phone by long press.
 
 ## 9. Fields
 
@@ -575,10 +602,15 @@ changes the container; content and markup are the same at every width. Every dia
   the confirming one closest to it; with scrolling content the headline and buttons stay pinned.
   *Ours:* `normal` 32 rem, `wide` 40 rem (= 560 dp), `alert` 32 rem (a confirmation ≤ 35 rem);
   never closer than 1 rem to the screen edge.
-- **Full-screen dialog** (`form` on compact only, **M3**): 0 dp corners, 56 dp header, 24 dp sides,
-  8 dp between elements; «✕» first and the only navigation, the headline, the confirming text button
-  at the end with a clear verb («Создать», «Отправить», not «Готово»), never disabled for invalid
-  fields. Field errors inline.
+- **Full-screen dialog** (`form` on compact only, **M3**): 56 dp header, 24 dp sides, 8 dp between
+  elements; «✕» first and the only navigation, the headline (one line, truncated), the confirming
+  button at the end with a clear verb («Создать», «Отправить», not «Готово»), never disabled for
+  invalid fields. Field errors inline. *Ours (M3 has 0 dp corners and a text button):* 28 dp top
+  corners and the notifications sheet's inset (8 px + `safe-area-inset-top`, transparent scrim, so
+  the page shows above it); the confirming button is **filled**, small (40 dp). Under the rounded
+  corners the header is padded by inner = outer − padding: «✕» 8 px from the top and the start,
+  the confirming button 12 px from the top and the end, 16 px down to the content. No swipe to close
+  (a form may hold unsaved data): «✕», Esc and «Отменить изменения?».
 - **Bottom sheet** (`sheet` on compact only): modal, handle with a 48 dp target, 28 dp top corners,
   surface-container-low (**M3**), height by content up to 50 % of the screen, then scrolling
   (**M3**). *Ours:* compact only (**M3** allows medium); no swipe — Esc, the scrim and an action
@@ -656,9 +688,9 @@ changes the container; content and markup are the same at every width. Every dia
   return; pointer input hides it, *ours*): 3 px secondary, 2 px offset; fields show focus by their
   2 px primary indicator (§9). In navigation the ring goes around the item and state layers lie over
   the active indicator.
-- Rail and bottom bar are `<nav>` with links, active `aria-current="page"`; the user menu
-  `aria-haspopup="menu"` + `aria-expanded`, ☰ `aria-haspopup="dialog"` + `aria-expanded`; the user
-  menu's name starts with the visible name.
+- Rail and bottom bar are `<nav>` with links, active `aria-current="page"`; ☰
+  `aria-haspopup="dialog"` + `aria-expanded`; the account item's name starts with the visible
+  label.
 - **Headings:** one h1 (the page title; «Вход», «Приглашение»); h2 sections (`p-card` title via the
   global pass-through `core/a11y/pass-through.ts`); Markdown headings one level below their
   container.
@@ -685,9 +717,9 @@ changes the container; content and markup are the same at every width. Every dia
   date or an amount is formatted before it goes in.
 - Russian is the source dictionary; another language has the same keys (`Translation<typeof ru>`),
   checked by `expectComplete`. Wording follows [`glossary.md`](glossary.md).
-- **Language switch** — in the user menu under the themes: each language in its own name with
-  `translate`, the chosen one checked (`aria-checked`); on the sign-in and invitation pages the
-  `tb-language-picker` row under the card. Switching reloads the page.
+- **Language switch** — in «Мой аккаунт» → «Оформление» under the theme: a connected button
+  group, each language in its own name, the chosen one `aria-pressed`; on the sign-in and
+  invitation pages the `tb-language-picker` row under the card. Switching reloads the page.
 - Numbers, money and dates use the language's locale (`locale()`: `ru-RU`, `en-GB`); fixed formats
   `dd.MM.yyyy` / `HH:mm` in both languages.
 - **Server texts** ([ADR-0036](adr/0036-server-texts-in-the-users-language.md)): every `/api`

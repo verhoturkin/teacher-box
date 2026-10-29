@@ -34,7 +34,7 @@ function lesson() {
     startsAt: start.toISOString(),
     endsAt: new Date(start.getTime() + 3600000).toISOString(),
     durationMinutes: 60,
-    topic: 'Тема занятия',
+    title: 'Тема занятия',
     meetingUrl: null,
     joinUrl: 'https://example.org/lesson',
     status: 'SCHEDULED',

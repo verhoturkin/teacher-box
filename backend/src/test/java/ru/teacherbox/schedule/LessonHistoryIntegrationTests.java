@@ -40,7 +40,7 @@ class LessonHistoryIntegrationTests extends ScheduleHttpTestSupport {
         post(LESSONS + cancelled + "/cancel", "{}");
         put(LESSONS + planned + "/summary", "{\"summary\":\"Рано\"}");
         put(LESSONS + first + "/summary", "{\"summary\":\"Past Simple\",\"nextPlan\":\"Повторить\"}");
-        put(LESSONS + first + "/notes/" + anna, "{\"note\":\"Личное\"}");
+        oldNote(first, anna, "Личное");
 
         assertThat(get("/api/teacher/schedule/students/" + anna + "/history")).hasStatusOk().bodyJson()
                 .satisfies(json -> {
@@ -53,6 +53,8 @@ class LessonHistoryIntegrationTests extends ScheduleHttpTestSupport {
                     assertThat(json).extractingPath("$[1].nextPlan").isEqualTo("Повторить");
                     assertThat(json).extractingPath("$[1].note").isEqualTo("Личное");
                 });
+        assertThat(mvc.get().uri("/api/teacher/schedule/students/" + anna + "/history")
+                .with(TestUsers.admin(UUID.randomUUID()))).hasStatus(HttpStatus.FORBIDDEN);
     }
 
     @Test
@@ -88,7 +90,7 @@ class LessonHistoryIntegrationTests extends ScheduleHttpTestSupport {
         put(LESSONS + lesson + "/attendance", "{\"marks\":{\"" + anna + "\":\"ATTENDED\",\"" + boris
                 + "\":\"EXCUSED\"}}");
         put(LESSONS + lesson + "/summary", "{\"summary\":\"Общий итог\"}");
-        put(LESSONS + lesson + "/notes/" + anna, "{\"note\":\"Личное про Анну\"}");
+        oldNote(lesson, anna, "Личное про Анну");
         String otherLesson = id(post("/api/teacher/schedule/lessons", groupLesson(other, Slots.past(clock))));
         put(LESSONS + otherLesson + "/attendance", "{\"marks\":{\"" + boris + "\":\"ATTENDED\"}}");
 
@@ -112,7 +114,7 @@ class LessonHistoryIntegrationTests extends ScheduleHttpTestSupport {
         String mine = held(anna, Slots.past(clock));
         String theirs = held(boris, Slots.past(clock));
         put(LESSONS + mine + "/summary", "{\"summary\":\"Мои итоги\",\"nextPlan\":\"План\"}");
-        put(LESSONS + mine + "/notes/" + anna, "{\"note\":\"Личное\"}");
+        oldNote(mine, anna, "Личное");
         put(LESSONS + theirs + "/summary", "{\"summary\":\"Чужие итоги\"}");
 
         var response = mvc.get().uri("/api/me/schedule/history").with(TestUsers.student(anna)).exchange();

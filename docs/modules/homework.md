@@ -15,6 +15,8 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
 - **The board of an assignment** (ADR-0041): `assignments.board_id` — the board it was put on (a UUID only,
   `homework` does not know `boards`); `PUT /api/teacher/homework/assignments/{id}/board {boardId}` (`null` forgets it)
   changes no version. `boardId` is in `AssignmentDetails`, `AssignmentSummary` and the student's `AssignmentInfo`.
+  `AssignmentSummary.studentIds` (0.41.0) lets the teacher's list filter by student or group on the
+  client; the list endpoint still returns every assignment (paging of «Готовые» is client-side).
 - **Videos by link** ([ADR-0047](../adr/0047-video-links-and-transcripts.md), 0.19.0): up to 5 per assignment
   (`homework.assignment_videos`, cascade with the assignment), sent as `videos [{url, title?, transcript?,
   transcriptShown}]` in the create / update requests — the list replaces the old one, an update without it keeps them.
@@ -79,7 +81,8 @@ Student REST (`QuizService`, `/api/me/homework/tasks/{id}/quiz`): `GET` (questio
 options / items / the right column of a matching shuffled by stable ids seeded with the open attempt,
 attempts used / left, `canStart`, best attempt), `POST …/attempts` (returns the open attempt if there
 is one; `homework.quiz-no-attempts-left`), `PUT …/attempts/{a}/answers/{q}` (autosave; one `AnswerInput`
-shape, the field used depends on the type), `POST …/attempts/{a}/submit` (score = sum of points). The
+shape, the field used depends on the type), `POST …/attempts/{a}/submit` (score = sum of points; an
+ordering the student never moved is answered with the order they were shown, which may be right). The
 score is always shown; `results` (key, explanation, the answer and verdict of the best attempt) only
 when the reveal rule allows: `AFTER_SUBMIT` — once an attempt is submitted, `AFTER_DUE` — after `dueAt`
 (never without one), `NEVER`. Attempts are refused once the task is submitted / accepted
@@ -89,8 +92,8 @@ Teacher review: `GET /api/teacher/homework/tasks/{id}` carries `quiz` (never in 
 best attempt (most points, earliest on a tie) with each question, key, answer, verdict and `overridden`,
 and `suggestedGrade` «N из M» for the grade field (the teacher still types the grade).
 `PUT /api/teacher/homework/tasks/{id}/quiz/answers/{questionId}` `{correct}` overrides one answer of the
-best attempt (points = the question's or 0) and recomputes the attempt score; a blank answer cannot be
-overridden (404 `homework.quiz-answer-not-found`). `GET assignments/{id}/quiz/stats` — per question,
+best attempt (points = the question's or 0) and recomputes the attempt score; a skipped question can
+be credited too (an empty answer row is saved and still reads as blank). `GET assignments/{id}/quiz/stats` — per question,
 how many students (of those with a submitted attempt) got it wrong in their best attempt.
 
 ## REST

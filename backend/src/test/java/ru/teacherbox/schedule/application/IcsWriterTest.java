@@ -20,7 +20,8 @@ class IcsWriterTest {
     @Test
     void writesOneEventPerLesson() {
         Lesson lesson = Lesson.plan(UUID.randomUUID(), UUID.randomUUID(), null, null,
-                Instant.parse("2026-10-02T15:00:00Z"), 90, "Дроби; задачи, часть 2", "https://zoom.us/j/1", NOW);
+                Instant.parse("2026-10-02T15:00:00Z"), 90, "Английский", "https://zoom.us/j/1", NOW)
+                .describe("Дроби; задачи, часть 2");
         Lesson cancelled = Lesson.plan(UUID.randomUUID(), UUID.randomUUID(), null, null,
                 Instant.parse("2026-10-03T15:00:00Z"), 60, null, null, NOW);
         cancelled.cancel(CancelledBy.TEACHER, "Болезнь", NOW);

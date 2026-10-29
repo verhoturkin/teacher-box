@@ -38,7 +38,7 @@ public final class RepeatRule {
     private final LocalDate startsOn;
     private @Nullable LocalDate originDate;
     private @Nullable LocalDate endsOn;
-    private final @Nullable String topic;
+    private final @Nullable String title;
     private final @Nullable String meetingUrl;
     private LocalDate generatedUntil;
     private final Instant createdAt;
@@ -47,7 +47,7 @@ public final class RepeatRule {
 
     private RepeatRule(UUID id, @Nullable UUID studentId, @Nullable UUID groupId, Set<DayOfWeek> weekdays,
             LocalTime startTime, int durationMinutes, int intervalWeeks, LocalDate startsOn, @Nullable LocalDate endsOn,
-            @Nullable String topic, @Nullable String meetingUrl, LocalDate generatedUntil, Instant createdAt,
+            @Nullable String title, @Nullable String meetingUrl, LocalDate generatedUntil, Instant createdAt,
             Instant updatedAt, long version) {
         if ((studentId == null) == (groupId == null)) {
             throw new IllegalArgumentException("A series belongs either to a student or to a group");
@@ -61,7 +61,7 @@ public final class RepeatRule {
         this.intervalWeeks = intervalWeeks;
         this.startsOn = Objects.requireNonNull(startsOn);
         this.endsOn = endsOn;
-        this.topic = topic;
+        this.title = title;
         this.meetingUrl = meetingUrl;
         this.generatedUntil = Objects.requireNonNull(generatedUntil);
         this.createdAt = Objects.requireNonNull(createdAt);
@@ -76,7 +76,7 @@ public final class RepeatRule {
     public static RepeatRule create(UUID id, @Nullable UUID studentId, @Nullable UUID groupId,
             Collection<DayOfWeek> weekdays, LocalTime startTime,
             int durationMinutes, int intervalWeeks, LocalDate startsOn, @Nullable LocalDate endsOn,
-            @Nullable String topic, @Nullable String meetingUrl, Instant now) {
+            @Nullable String title, @Nullable String meetingUrl, Instant now) {
         if (weekdays.isEmpty()) {
             throw new BusinessRuleException("schedule.weekdays-empty", "Choose at least one day of the week");
         }
@@ -88,17 +88,17 @@ public final class RepeatRule {
             throw new BusinessRuleException("schedule.series-dates-invalid", "The series ends before it starts");
         }
         return new RepeatRule(id, studentId, groupId, EnumSet.copyOf(weekdays), startTime.withSecond(0).withNano(0),
-                Texts.duration(durationMinutes), intervalWeeks, startsOn, endsOn, Texts.optional(topic),
+                Texts.duration(durationMinutes), intervalWeeks, startsOn, endsOn, Texts.optional(title),
                 Texts.meetingUrl(meetingUrl), startsOn.minusDays(1), now, now, 0);
     }
 
     public static RepeatRule restore(UUID id, @Nullable UUID studentId, @Nullable UUID groupId,
             Set<DayOfWeek> weekdays, LocalTime startTime,
             int durationMinutes, int intervalWeeks, LocalDate startsOn, @Nullable LocalDate endsOn,
-            @Nullable String topic, @Nullable String meetingUrl, LocalDate generatedUntil, Instant createdAt,
+            @Nullable String title, @Nullable String meetingUrl, LocalDate generatedUntil, Instant createdAt,
             Instant updatedAt, long version) {
         return new RepeatRule(id, studentId, groupId, weekdays, startTime, durationMinutes, intervalWeeks, startsOn, endsOn,
-                topic, meetingUrl, generatedUntil, createdAt, updatedAt, version);
+                title, meetingUrl, generatedUntil, createdAt, updatedAt, version);
     }
 
     /** Days with a lesson in {@code [from, to]}, in order. */
@@ -224,8 +224,8 @@ public final class RepeatRule {
         return endsOn;
     }
 
-    public @Nullable String topic() {
-        return topic;
+    public @Nullable String title() {
+        return title;
     }
 
     public @Nullable String meetingUrl() {

@@ -38,7 +38,8 @@ describe('UpcomingLessonWidget', () => {
   it('shows when and with whom, the lesson link and the boards of the student', async () => {
     const host = await render(
       scheduledLesson({
-        topic: 'Степени',
+        title: 'Степени',
+        topic: 'Показатель и основание',
         joinUrl: 'https://telemost.yandex.ru/j/1',
         studentAvatar: '/api/public/avatars/ivan',
       }),
@@ -53,6 +54,7 @@ describe('UpcomingLessonWidget', () => {
       '/api/public/avatars/ivan',
     );
     expect(text).toContain('Степени');
+    expect(text).toContain('Показатель и основание');
     expect(text).toContain('Начать урок');
     expect(host.querySelector('tb-join-lesson-button .tb-button-m')).not.toBeNull();
     expect(text).toContain('Алгебра');

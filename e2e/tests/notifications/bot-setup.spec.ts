@@ -27,7 +27,7 @@ test('the teacher connects a Telegram bot step by step', async ({ page, request 
 
   // 0.22.0: the bots are in the category «Мессенджеры» of the settings
   await page.goto('/teacher/settings');
-  await page.getByRole('link', { name: /^Мессенджеры/ }).click();
+  await page.getByRole('link', { name: /^Уведомления и мессенджеры/ }).click();
   await expect(page).toHaveURL(/\/teacher\/settings\/messengers$/);
   const bots = page.locator('tb-bots-panel');
   await bots

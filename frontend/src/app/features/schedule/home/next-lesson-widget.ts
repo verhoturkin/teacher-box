@@ -44,7 +44,9 @@ import { T } from '../i18n/texts';
             <tb-lesson-time-tile [time]="time" />
           }
           <div class="tb-lesson-event__info">
-            <strong>{{ lesson.groupId !== null ? with(lesson) : t.lesson }}</strong>
+            <strong>{{
+              lesson.title ?? (lesson.groupId !== null ? with(lesson) : t.lesson)
+            }}</strong>
             @if (lesson.topic !== null) {
               <span>{{ lesson.topic }}</span>
             }

@@ -374,7 +374,7 @@ class TeacherChatIntegrationTests {
         return LocalDate.ofInstant(clock.instant(), MOSCOW).atStartOfDay(MOSCOW).toInstant();
     }
 
-    private UUID plan(UUID studentId, UUID groupId, Instant startsAt, String topic) {
-        return schedule.plan(new PlanLesson(studentId, groupId, startsAt, 60, topic, null, true)).id();
+    private UUID plan(UUID studentId, UUID groupId, Instant startsAt, String title) {
+        return schedule.plan(new PlanLesson(studentId, groupId, startsAt, 60, title, null, null, true)).id();
     }
 }

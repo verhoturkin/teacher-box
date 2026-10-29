@@ -10,9 +10,9 @@ this page in the same commit.
 
 | Role | Destinations (rail and bottom bar) | Rail bottom group | Notes |
 |---|---|---|---|
-| Teacher | «Сегодня» (home), «Расписание», «Ученики», «Задания», «Материалы», «Оплаты» | «Настройки», «Справка» | bar: Главная · Расписание · Задания · Ученики · Оплаты; «Создать» (§6) |
-| Student | «Главная», «Расписание», «Задания», «Материалы», «Оплаты» | «Справка» | all five in the bar; inbox in the bell; account in «Мой аккаунт» |
-| Admin | «Состояние», «Журнал», «Интеграции», «Копии», «Настройки» | «Справка» | all five in the bar |
+| Teacher | «Сегодня» (home), «Расписание», «Ученики», «Задания», «Материалы», «Оплаты» | «Настройки», «Справка», «Аккаунт» | bar: Главная · Расписание · Задания · Ученики · Оплаты; «Создать» (§6) |
+| Student | «Главная», «Расписание», «Задания», «Материалы», «Оплаты» | «Справка», «Аккаунт» | all five in the bar; inbox in the bell; «Аккаунт» → `/cabinet/account` |
+| Admin | «Состояние», «Журнал», «Интеграции», «Копии», «Настройки» | «Справка», «Аккаунт» | all five in the bar; «Аккаунт» → `/admin/account` |
 
 - Bar order: `TEACHER_BOTTOM_NAV` / `STUDENT_BOTTOM_NAV` / `ADMIN_BOTTOM_NAV`, filled up from the
   menu. The student's «Задания» carries the **M3** large badge with the open tasks (`OpenTasks`,
@@ -20,6 +20,9 @@ this page in the same commit.
   screen-reader line «Заданий к сдаче: N»).
 - Installed app: the service worker caches only the shell; without a network the app opens the
   frameless page `/offline` «Нет связи» (empty state + «Повторить»), data is never cached.
+- «Аккаунт» (avatar + name, last in the bottom group and in the ☰ drawer) replaces the avatar
+  menu of the top bar, which keeps only the bell (and the teacher's search). The teacher's leads
+  to `/teacher/settings/account`.
 - There is no Notifications, Calls or AI section (ADR-0048): the inbox is the bell's sheet,
   integrations are teacher Settings.
 
@@ -34,7 +37,9 @@ this page in the same commit.
   margins, no shadow, transparent scrim — *ours*), closed by a notification that leads elsewhere.
 - Anatomy: header (headline «Уведомления», «Прочитать все» `done_all`, «×»), the teacher's tabs
   «Входящие N» (badge ≤ 4 characters, **M3**) and «Отправленные» (the student has the inbox only),
-  the tab's content — the only part that scrolls (*ours*).
+  the tab's content — the only part that scrolls (*ours*); the sheet has no side padding, the tabs
+  and the scrolled content carry the 24 dp (16 on compact) gutter, so the scrollbar sits at the
+  sheet's edge. The two tabs are `tb-tabs--fixed`: equal width, centred labels on every width.
 - «Входящие»: unread items (`tb-list--no-lead`, titles emphasized, no dots; a tick on a computer; a
   swipe on a phone marks read, no tick there), «Показать ещё», then the folded «Прочитанные».
   «Отправленные»: a line of explanation with «Написать ученикам» (opens the new-message dialog) and
@@ -75,7 +80,7 @@ event in `tb-hero`.
   «чт, 16.10», Label Large), the start in Display Small emphasized (*ours*: the portal's one hero
   moment; tabular figures, one line, the tile grows on a narrow card), the length; within an hour
   «через N мин», while it runs «Идёт сейчас» and «ещё N мин» (`lesson-clock.ts`).
-- Beside it who and the topic, the boards as assist chips (`tb-board-links [chips]` /
+- Beside it who, the title and the topic (each when set), the boards as assist chips (`tb-board-links [chips]` /
   `tb-my-board-links`, `tb-board-chip` in the text colour at 12 %).
 - One filled size-M button «Начать урок» / «Войти в урок» (`tb-join-lesson-button [medium]`, a split
   button too; on a narrow card under the tile, full width — `tb-join-wide`). The student's request
@@ -133,10 +138,10 @@ the calendar), «Запросы учеников» and «Нерабочее вр
 
 One content component in `schedule/ui` for teacher and student in a `tb-dialog kind="sheet"` (§11).
 
-- **Header:** the headline is who (student or group name); trailing ✎ (planned lessons only) and
+- **Header:** the headline is the lesson title, or who (student or group name) when it has none; trailing ✎ (planned lessons only) and
   «⋮». One status tag at the top of the body when the lesson is not planned.
 - **Body** — one `tb-list`, a fact per row with an icon: `schedule` date · time (second line
-  «перенесено с …»); `topic`; `videocam` the room with tonal «Начать урок» (the student «Войти в
+  «перенесено с …»); `topic` the topic, when set; `videocam` the room with tonal «Начать урок» (the student «Войти в
   урок»); `dashboard` board chips; `event_busy` the cancel reason.
 - **«Итог»** (`fact_check`, a past one-student lesson, teacher): the toggle «Проведено | Пропуск» —
   **M3** connected group, single-select, selection optional: nothing selected until marked; a press
@@ -155,26 +160,21 @@ One content component in `schedule/ui` for teacher and student in a `tb-dialog k
   оплату», for a series the single choice «Только это / Это и следующие» with the count);
   «Удалить…» — `confirm.danger` for one lesson, for a series an `alert` with the same scope list
   and count; the card closes before either opens. «Снять отметку» only for group lessons.
-- **«Итоги»** (teacher, `schedule/teacher/lesson-details-dialog.ts`): one more row of the card, under
-  the facts, only for a lesson that has started and is not cancelled (an individual lesson marked
-  «Пропуск» has none; a future lesson has none) — icon `rate_review`, title «Итоги», supporting text
-  the first line of «Что прошли» or «Добавить итоги», a trailing tonal button «Добавить» / «Изменить»
-  that covers the row (`tb-list__stretched`); *ours:* the row stands 16 px apart from the list of
-  facts, so that it reads as an action of its own. The row opens the dialog «Итоги урока» in place of the card
-  (ADR-0026) and the card comes back with the row updated.
-- **«Итоги урока»** (`schedule/teacher/lesson-summary-dialog.ts`, `tb-dialog kind="form"`):
-  «Что прошли» — Markdown with the `Текст / Просмотр` toggle of the homework editor (visible to the
-  students; when the AI feature is on, a text button «Черновик» in the field header opens a
-  small panel with «Коротко своими словами» and «Составить»: the draft comes from the topic, the
-  words and the titles of the assignments created that day for the lesson's students (assignments
-  are not bound to lessons — *ours*) and goes into the field, after the text already there);
-  «Что дальше» — two
-  lines, the hint that it goes to the next lesson's empty topic; «Заметка для себя» — private, one
-  field for a one-student lesson, for a group a `tb-list` with an avatar and a name per student
-  whose row folds the field open. Nothing saves by itself: the footer has «Отмена», «Сохранить» and
-  «Сохранить и отправить» (disabled until «Что прошли» is filled); the
-  snackbar «Итоги сохранены» / «Итоги отправлены» follows. *Ours:* the layout and the texts; the
-  toggle, the lists and the dialog are the shared ones.
+- **Summary** (teacher, `schedule/teacher/lesson-summary-section.ts` inside
+  `lesson-details-dialog.ts`, 0.41.0): under the facts, only for a lesson that has started and is
+  not cancelled (an individual lesson marked «Пропуск» has none; a future lesson has none), the
+  fields in place — no dialog of its own. «Что прошли» — four lines of Markdown, prefilled with the
+  lesson topic while no summary is saved, hint «Видно ученикам этого занятия.»; when the AI feature
+  is on, a text button «Черновик» in the field header opens a small panel with «Коротко своими
+  словами» and «Составить»: the draft comes from the topic, the words and the titles of the
+  assignments created that day for the lesson's students (assignments are not bound to lessons —
+  *ours*) and replaces the prefilled topic or follows the text already there. «Тема следующего
+  занятия» — two lines, the hint that it goes to the next lesson's empty topic. Below, end-aligned:
+  tonal «Сохранить» (enabled when something differs from the saved summary) and filled «Отправить
+  ученику» / «Отправить ученикам» (a group; disabled while «Что прошли» is empty) — saves, then
+  sends; the snackbar «Итоги сохранены» / «Итоги отправлены» follows and the card stays open.
+  Private notes are no longer written; the old ones are read in the student's «История». *Ours:*
+  the layout, the 16 px gap above the section and the texts.
 - **Student:** the same facts and their own actions («Войти в урок», «Перенести | Отменить» as a
   standard group), without ✎, «⋮» and marks.
 
@@ -191,9 +191,10 @@ List-detail of one route (`/teacher/students[/:studentId]`, `/teacher/groups/:gr
 active on both, `NavItem.alsoActive`).
 
 - **List** — one `tb-list` in the fixed pane: header «Ученики» + «N учеников · M групп» (current
-  ones; the total hidden on compact), the search, filter chips «Все · Группы · Должники N · Без
-  мессенджера N · Отключённые» («Отключённые» — students without access and archived groups; the chip is kept in the
-  address as `?filter=`). From
+  ones; the total hidden on compact), the search, filter chips «Все · Группы · Отключённые»
+  («Отключённые» — students without access and archived groups; the chip is kept in the address as
+  `?filter=`; an old `?filter=debtors|noMessenger` opens «Все»). The debt stays in the row
+  trail. From
   expanded the header, search and chips stay and only the list scrolls. Students by name, then
   groups (group icon in the lead). A row (`tb-list--clamp`): avatar / icon; the name links to the
   card; supporting «nearest lesson · аванс N» (a group: «N участников» — the count, not the names,
@@ -212,17 +213,22 @@ active on both, `NavItem.alsoActive`).
   header carries it); «с сентября 2025» (Body Medium, on-surface-variant); tags — status (not for an
   active student), messengers or «Без мессенджера» (warn), «Аванс N» (success) / «Долг N» (danger).
   Student actions: tonal «Написать» (`tb-broadcast-dialog [to]`) and «Оплата» (`tb-payment-dialog`),
-  filled «Занятие» (`tb-lesson-dialog [studentId]`: who fixed, default topic and length); a
+  filled «Занятие» (`tb-lesson-dialog [studentId]`: who fixed, default title and length); a
   deactivated student keeps only «Оплата»; on compact all three tonal, equal width. Group actions:
   tonal «Написать» (`[toGroup]`, hidden without members), filled «Занятие» (`[groupId]`), «⋮» «В
   архив…» / «Вернуть из архива»; an archived group has neither action.
-- **Student tabs** (`card-tabs.ts`, `?tab=`): «Обзор» — «Ближайшие занятия» (3 of 60 days, «Ещё
+- **Student tabs** (`card-tabs.ts`, `?tab=`): «Обзор» — «Ближайшие занятия» (3 of 60 days, M3 two-line
+  items: «Сегодня, 15:00–16:00» / title · topic, the nearest lead in primary container; «Ещё
   запланировано: N»), «Задания» (open ones, works to review first; 5 + «Ещё открытых: N»), «Баланс»
   (figure, price, last 3 operations), «Связь» (`tb-student-channels`, `tb-room-link`); «Занятия» —
-  «Предстоящие» (180 days ahead, cancelled rows inactive) and the feed «История» of held lessons
+  «Предстоящие» (`GET …/upcoming`: a series is one row «Каждый вт и чт, 15:00 · 60 мин» over
+  «title · с 3 ноября · до 25 декабря · ещё 12», one-off lessons and exceptions — «Перенесено на …»,
+  cancelled (inactive, tag), «изменено отдельно» — their own rows, the nearest lead in primary
+  container; the text button «Показать все даты» / «Свернуть даты» swaps in every date of 180 days)
+  and the feed «История» of held lessons
   (`GET …/history`, 20 per page, «Показать ещё»): date, topic, the outcome tag (a group lesson shows
-  the student's own attendance), «Что прошли» (Markdown), «Что дальше» and «Заметка для себя» when
-  filled; «Задания» — all, open first, then accepted
+  the student's own attendance), «Что прошли» (Markdown), «Что дальше» and the old read-only
+  «Заметка для себя» (written before 0.41.0) when filled; «Задания» — all, open first, then accepted
   with the grade (20 + «Показать ещё»); «Оплаты» — four tonal tiles (balance, charged, paid, price)
   and the ledger «История» (`tb-ledger-list`); «Профиль» — «Данные ученика» (name *, e-mail, phone,
   note, default topic, colour; tonal «Сохранить», enabled when something differs, and «Отмена» shown
@@ -241,10 +247,15 @@ active on both, `NavItem.alsoActive`).
 ## Homework (teacher)
 
 Three panes of one route (`/teacher/homework[/tasks/:taskId | /:assignmentId]`,
-`features/homework/teacher/`):
+`features/homework/teacher/`); the «?» help button is in the list pane and the editor only, the
+detail panes do not repeat it:
 
 - **List** (fixed pane): the connected group «На проверку · Активные · Готовые» with counts, the
-  search always above the list (kept in the address as `?q=`); tonal rows (`tb-list--clamp`) — a
+  search always above the list (kept in the address as `?q=`) and a «Кому» select (groups, then
+  students; «Все» clears it; kept as `?who=student:<id>|group:<id>`); «Активные» are grouped by the
+  due date — «Просрочено: N» (a folded button, `aria-expanded`), «Срок на этой неделе» (up to the
+  next Monday), «Позже», «Без срока» — then «Не выдано»; «Готовые» show 20 rows and «Показать ещё»
+  adds 20 more (333.1); tonal rows (`tb-list--clamp`) — a
   work: avatar, student, «задание · сдано …», the
   «Просрочено» tag; «Ждут сдачи» under them; an assignment row: icon (a board icon when on a board),
   title link + «кому · до dd.MM HH:mm» (the year only when it is not the current one; two names,
@@ -299,8 +310,9 @@ pane «По ученикам».
 
 - **Header:** the month with ‹ › and tonal «Отчёт за месяц» (`monthly-report-page.ts`, nested route:
   one flexible pane, persistent title, back and month picker, tonal figures, labelled report
-  tables); next to it «⋮» (`p-menu` popup) with «Скачать CSV» — the journal of the month with the
-  current chip and student (`operations.csv`, saved by `FileSaver`).
+  tables); the report's toolbar has tonal «Скачать CSV» (download icon) next to the month picker —
+  the whole journal of the report's month, no chip or student (`operations.csv`, saved by
+  `FileSaver`). The payments header has no «⋮».
 - **Figures** `tb-ops-figures`: four tonal tiles — «Поступило», «Начислено за занятия», «Долг»
   (error container), «Авансы», each with a note («11 оплат»).
 - **«Операции»:** the filter group «Все · Оплаты · Занятия · Пропуски» and the «Ученик» select; the
@@ -309,7 +321,8 @@ pane «По ученикам».
   name links to the card's «Оплаты». The month, figures and filters stay above the scroll. The
   month, the kind and the student are kept in the address (`?month=&kind=&student=`, written with
   `replaceUrl`): «Назад» from a card and a reload bring the same journal back.
-- **Supporting pane:** «Должники» (debt in `tb-negative`, tonal «Напомнить»), «Авансы
+- **Supporting pane** (on compact the «Должники» block moves into the main pane under the figures,
+  hidden when nobody owes): «Должники» (debt in `tb-negative`, tonal «Напомнить»), «Авансы
   заканчиваются» (≤ 2 lessons left, *ours*; 5 rows), «По неделям» (bars, today's week lighter),
   «Все в Учениках».
 - **Compact:** month, arrows and the report link in the page (no overflow menu), figures in a
@@ -322,12 +335,12 @@ pane «По ученикам».
 `/teacher/materials?tab=boards|textbooks` (`features/materials`): one flexible pane, no card around
 it — the title, the connected group «Доски N · Учебники N» (under the title on compact), a wrapping
 toolbar of `tb-search-field` (364 px on a computer, full width on compact), filter chips («Все · На
-портале · Внешние · Ученик или группа»; textbooks «Все · Учебники · Рабочие тетради · Другое ·
-Ученик или группа») and the sort menu («Сначала изменённые / По названию / Сначала новые»), then
+портале · Внешние»; textbooks «Все · Учебники · Рабочие тетради · Другое») and the sort menu
+(«Сначала изменённые / По названию / Сначала новые»), then
 the `tb-material-grid` of `tb-material-card`s (§10).
 
-- «Ученик или группа» shows a member select kept in `?student=` / `?group=`; «Создать» leads to
-  `?tab=…&create=board|textbook`; `/teacher/boards` and `/teacher/textbooks` redirect to the tabs.
+- «Создать» leads to `?tab=…&create=board|textbook`; old `?student=` / `?group=` are ignored;
+  `/teacher/boards` and `/teacher/textbooks` redirect to the tabs.
 - *Isolation (AGENTS.md §4.2.6):* `features/materials` only composes `BoardsFeed`
   (`@features/boards/parts`) and `TextbooksFeed` (`@features/textbooks/parts`); each owns its API,
   cards, «⋮» and dialogs and takes search, filter, sort and member as inputs. Both stay mounted (the
@@ -346,9 +359,12 @@ the surface; group outer corners 16 px) in the fixed pane, the chosen category b
 of sections (from expanded `/teacher/settings` shows «Мой аккаунт»). A form changed and not saved
 asks «Отменить изменения?» before another category or page opens (design-system «Dialogs»).
 
-- Categories: «Мой аккаунт» (`account`: account, «Уведомления на устройствах»), «Портал» (`portal`), «Расписание и календарь» (`calendar`:
-  time zone, Google Calendar, calendar feed), «Звонки» (`calls`), «Мессенджеры» (`messengers`:
-  failed deliveries first with a count badge on the item, then bots, own messengers, bot abilities,
+- Categories: «Мой аккаунт» (`account`: account, «Оформление» with theme and language, «Выйти»; also
+  the rail's «Аккаунт»), «Портал» (`portal`),
+  «Расписание и календарь» (`calendar`:
+  time zone, Google Calendar, calendar feed), «Звонки» (`calls`), «Уведомления и мессенджеры»
+  (`messengers`, icon `notifications`: failed deliveries first with a count badge on the item, then
+  «Уведомления на устройствах» (web push of this device), bots, own messengers, bot abilities,
   students' messengers, what to send), «Оплаты» (`payments`: default price), «ИИ-помощник» (`ai`:
   model, usage, prompt library, system prompts), «Данные» (`data`).
 - Old addresses redirect: `?open=<fold>`, `?google=` (→ calendar), `?drive=` (→ data),
@@ -387,9 +403,10 @@ asks «Отменить изменения?» before another category or page op
   ещё раз», and the key with the explanations when the rule allows.
 - **Payments:** tonal balance / charged / paid / price figures and the journal with filter chips,
   receipts in their rows.
-- **«Мой аккаунт»** (`/cabinet/account`): account, «Мессенджеры», «Уведомления на устройствах»
-  (web push, ADR-0051), «Что присылать в мессенджеры и на устройства» in one stack; the «connect» card
-  and reminder lead here.
+- **«Мой аккаунт»** (`/cabinet/account`, from «Аккаунт» in the rail / ☰): account,
+  «Оформление» (theme, language), «Мессенджеры», «Уведомления на устройствах»
+  (web push, ADR-0051), «Что присылать в мессенджеры и на устройства», «Выйти» last, in one
+  stack; the «connect» card and reminder lead here.
 - **Notifications on devices** (`tb-push-devices-card`, student «Мой аккаунт» and teacher account
   category): «Включить уведомления на этом устройстве» only while this browser is not subscribed
   (a click, the permission prompt needs a gesture), the list of the user's devices (browser · system,
@@ -414,8 +431,9 @@ asks «Отменить изменения?» before another category or page op
   `/admin/settings[/:section]`): list-detail with `tb-pane-nav` (two-line items, a tonal icon
   circle, a badge with unsaved changes); headings and «Сохранить и перезапустить» in the persistent
   pane heading; settings grouped by catalog sections and saved together; `?open=<section>`
-  redirects. «Копии» is the teacher's backups section in a pane (rows: database icon, date + «kind ·
-  size», «⋮» «Восстановить…», «Скачать», «Удалить…»).
+  redirects. «Мой аккаунт» (`/admin/account`, from the rail's «Аккаунт») has the account,
+  «Оформление» and «Выйти». «Копии» is the teacher's backups section in a pane (rows: database
+  icon, date + «kind · size», «⋮» «Восстановить…», «Скачать», «Удалить…»).
 
 ## Call window
 

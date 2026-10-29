@@ -665,6 +665,7 @@ export class SchedulePage implements OnInit {
       .edit(lesson.id, {
         startsAt: move.startsAt.toISOString(),
         durationMinutes: lesson.durationMinutes,
+        title: lesson.title,
         topic: lesson.topic,
         meetingUrl: lesson.meetingUrl,
         allowOverlap,

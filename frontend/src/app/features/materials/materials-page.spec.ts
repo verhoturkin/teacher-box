@@ -13,11 +13,7 @@ describe('MaterialsPage', () => {
   let backend: HttpTestingController;
   let host: HTMLElement;
 
-  async function render(
-    inputs: { tab?: string; student?: string; group?: string } = {},
-    width = 1280,
-    boardsUrl = '/api/teacher/boards',
-  ): Promise<void> {
+  async function render(inputs: { tab?: string } = {}, width = 1280): Promise<void> {
     TestBed.configureTestingModule({
       imports: [MaterialsPage],
       providers: testProviders(screenWidth(width)),
@@ -40,7 +36,7 @@ describe('MaterialsPage', () => {
         aGroup({ id: 'g-1', name: 'ОГЭ' }),
         aGroup({ id: 'old', archivedAt: '2026-01-01T00:00:00Z' }),
       ]);
-    backend.expectOne(boardsUrl).flush([aBoard(), aLinkBoard()]);
+    backend.expectOne('/api/teacher/boards').flush([aBoard(), aLinkBoard()]);
     backend
       .expectOne('/api/teacher/textbooks')
       .flush([aTextbook({ hasCover: false }), aWorkbook({ hasCover: false })]);
@@ -82,7 +78,7 @@ describe('MaterialsPage', () => {
     await render();
 
     expect(segments()).toEqual(['Доски2', 'Учебники2']);
-    expect(chips()).toEqual(['Все', 'На портале', 'Внешние', 'Ученик или группа']);
+    expect(chips()).toEqual(['Все', 'На портале', 'Внешние']);
     expect(host.querySelector('[hidden] tb-boards-feed')).toBeNull();
     expect(host.querySelector('[hidden] tb-textbooks-feed')).not.toBeNull();
     expect(shownTitles('boards')).toHaveLength(2);
@@ -93,7 +89,7 @@ describe('MaterialsPage', () => {
 
     expect(host.querySelector('[hidden] tb-boards-feed')).not.toBeNull();
     expect(host.querySelector('[hidden] tb-textbooks-feed')).toBeNull();
-    expect(chips()).toEqual(['Все', 'Учебники', 'Рабочие тетради', 'Другое', 'Ученик или группа']);
+    expect(chips()).toEqual(['Все', 'Учебники', 'Рабочие тетради', 'Другое']);
     chip('Рабочие тетради').click();
     await fixture.whenStable();
     expect(shownTitles('textbooks')).toEqual(['Рабочая тетрадь']);
@@ -135,49 +131,6 @@ describe('MaterialsPage', () => {
     await fixture.whenStable();
     expect(shownTitles('boards')).toEqual(['Алгебра', 'Холст']);
     expect(host.textContent).toContain('По названию');
-  });
-
-  it('asks for a student or a group with the last chip and keeps the choice in the address', async () => {
-    await render();
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    expect(host.querySelector('p-select')).toBeNull();
-
-    chip('Ученик или группа').click();
-    await fixture.whenStable();
-    expect(host.querySelector('p-select')).not.toBeNull();
-
-    const page = fixture.componentInstance;
-    page.selectMember('student:s-1');
-    expect(navigate).toHaveBeenLastCalledWith([], {
-      queryParams: { student: 's-1', group: null },
-      queryParamsHandling: 'merge',
-    });
-    page.selectMember('group:g-1');
-    expect(navigate).toHaveBeenLastCalledWith([], {
-      queryParams: { student: null, group: 'g-1' },
-      queryParamsHandling: 'merge',
-    });
-    page.selectMember(null);
-    expect(navigate).toHaveBeenLastCalledWith([], {
-      queryParams: { student: null, group: null },
-      queryParamsHandling: 'merge',
-    });
-  });
-
-  it('takes a student of the address: their boards, the member chip, textbooks open to them', async () => {
-    await render({ student: 's-1' }, 1280, '/api/teacher/boards?studentId=s-1');
-
-    expect(chip('Ученик или группа').getAttribute('aria-pressed')).toBe('true');
-    expect(host.querySelector('p-select')).not.toBeNull();
-    expect(shownTitles('textbooks')).toEqual(['Spotlight 5']);
-
-    // another chip drops the student from the address
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    chip('Все').click();
-    expect(navigate).toHaveBeenLastCalledWith([], {
-      queryParams: { student: null, group: null },
-      queryParamsHandling: 'merge',
-    });
   });
 
   it('opens the form of a new board or textbook from «Создать»', async () => {

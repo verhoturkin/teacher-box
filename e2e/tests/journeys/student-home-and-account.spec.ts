@@ -82,7 +82,7 @@ test.beforeAll(async ({ request }) => {
       studentId,
       startsAt,
       durationMinutes: 60,
-      topic: 'Present Perfect',
+      title: 'Present Perfect',
       allowOverlap: true,
     });
   await lesson(inHours(-0.25));

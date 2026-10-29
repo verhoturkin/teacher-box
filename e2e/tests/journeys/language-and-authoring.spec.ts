@@ -2,7 +2,7 @@ import { bearer as teacher } from '../support/session';
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 
 /**
- * Version 0.11.0: the interface in English, chosen on the sign-in page and in the user menu under the
+ * Version 0.11.0: the interface in English, chosen on the sign-in page and in «Мой аккаунт» under the
  * theme and kept on the device; a task put on an Excalidraw board as text stays there; a day picked in the
  * month view plans a lesson with the default duration, not of the whole day.
  */
@@ -32,13 +32,18 @@ test('the interface speaks English and goes back to Russian', async ({ page }) =
   await page.reload();
   await expect(page.getByRole('region', { name: 'Today', exact: true })).toBeVisible();
 
-  await page.getByRole('button', { name: /user menu/ }).click();
-  // 0.15.0: the chosen language is a checked radio item, without «(selected)»
-  await expect(page.getByRole('menuitemradio', { name: 'English' })).toHaveAttribute(
-    'aria-checked',
+  await page.goto('/teacher/settings/account');
+  // the chosen language is a pressed button of the group
+  await expect(page.getByRole('button', { name: 'English' })).toHaveAttribute(
+    'aria-pressed',
     'true',
   );
-  await page.getByRole('menuitemradio', { name: 'Русский' }).click();
+  await page.getByRole('button', { name: 'Русский' }).click();
+  await expect(page.getByRole('button', { name: 'Русский' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.goto('/teacher');
   await expect(page.getByRole('region', { name: 'Сегодня', exact: true })).toBeVisible();
 });
 

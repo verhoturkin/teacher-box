@@ -41,7 +41,10 @@ class LessonTest {
         assertThat(lesson.isGroup()).isFalse();
         assertThat(lesson.studentId()).isEqualTo(ANNA);
         assertThat(lesson.participants()).containsExactly(new Participant(ANNA, Attendance.EXPECTED, null));
-        assertThat(lesson.topic()).isEqualTo("Дроби");
+        assertThat(lesson.title()).isEqualTo("Дроби");
+        assertThat(lesson.topic()).isNull();
+        assertThat(lesson.describe(" Степени ").topic()).isEqualTo("Степени");
+        assertThat(lesson.describe(" ").topic()).isNull();
         assertThat(lesson.meetingUrl()).isEqualTo("https://telemost.yandex.ru/j/1");
         assertThat(lesson.endsAt()).isEqualTo(START.plus(Duration.ofHours(1)));
         assertThat(lesson.version()).isZero();
@@ -62,7 +65,7 @@ class LessonTest {
                 "schedule.meeting-url-invalid");
         assertRule(() -> Lesson.plan(UUID.randomUUID(), student, null, null, START, 60, null,
                 "https://x/" + "a".repeat(1000), NOW), "schedule.meeting-url-invalid");
-        assertThat(Lesson.plan(UUID.randomUUID(), student, null, null, START, 60, " ", " ", NOW).topic()).isNull();
+        assertThat(Lesson.plan(UUID.randomUUID(), student, null, null, START, 60, " ", " ", NOW).title()).isNull();
         assertThatThrownBy(() -> Lesson.plan(UUID.randomUUID(), student, UUID.randomUUID(), null, START, 60, null,
                 null, NOW)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> Lesson.restore(UUID.randomUUID(), null, List.of(), null, null, START, 60, null, null,

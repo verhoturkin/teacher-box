@@ -67,8 +67,10 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
   one `WEB_PUSH` delivery per subscription next to the messenger ones, under the same muted topics
   and quiet hours of `Preferences`; `externalId` is the subscription id, `text` the title.
   `PushChannel` (called by `DeliveryDispatcher`) reads the inbox record and sends
-  `{notification:{title, body, tag, data:{url, onActionClick}}}` (the format `ngsw` shows by itself;
-  url via `Portal.link`, TTL one day, nothing beyond the inbox record). A gone device (unsubscribed,
+  `{notification:{title, body, icon, badge, tag, data:{url, onActionClick}}}` (the format `ngsw` shows
+  by itself; `icon` is the transparent `/push-icon.png`, so Chrome on Android draws no letter avatar,
+  `badge` the monochrome `/push-badge.png`; urls via `Portal.link`, TTL one day,
+  nothing beyond the inbox record). A gone device (unsubscribed,
   404 / 410) is deleted and the delivery ends `SENT` without a failure; 429 / 5xx / no connection
   retry with the queue backoff; other 4xx fail the delivery. Each failure adds to `failures`, a
   success resets it; `NotificationsHousekeeping` deletes subscriptions that failed and have taken
@@ -108,7 +110,8 @@ the teacher's tabs «Входящие» / «Отправленные», the stud
 the active tab's content scrolls inside the sheet on desktop and compact screens; `/teacher/notifications` leads to
 `/teacher?notifications=inbox`, the old `?open=` / `?tab=` messenger addresses to `/teacher/settings/messengers`;
 `/cabinet/notifications` to `/cabinet?notifications=inbox`), `teacher/messengers-settings-panel.ts`
-= the settings category «Мессенджеры» (bots, own messengers, bot abilities, students' messengers, what to send), `inbox/` (unread notifications on top; «Прочитанные» folded by default, loaded when
+= the settings category «Уведомления и мессенджеры» (device notifications after the failed
+deliveries, bots, own messengers, bot abilities, students' messengers, what to send), `inbox/` (unread notifications on top; «Прочитанные» folded by default, loaded when
 opened, each part with its own «Показать ещё»; a notification marked read moves there; `notification-list.ts`), `channels/`, `preferences/` (the student's are on «Мой аккаунт», `/cabinet/account`, 235.2), `teacher/` (broadcast —
 `new-message-dialog.ts` is the frame's dialog of a new message through `NEW_MESSAGE_DIALOG`, opened by «Создать ›
 Сообщение» on any page and by «Написать ученикам», 235.3; bot wizard), `student/` (`connect-messenger-card.ts` on the student's home → «Мой аккаунт»; the «connect» reminder
@@ -117,7 +120,8 @@ opened, each part with its own «Показать ещё»; a notification marke
 Web push in the interface (0.38.0, ADR-0051): `core/push/web-push.ts` (`WebPush` on `SwPush`: the
 public key, subscribe, unsubscribe, the user's devices; the permission is asked only from a click,
 and an iPhone tab that is not on the Home Screen gets the hint instead), `push/push-devices-card.ts`
-(«Уведомления на устройствах» on «Мой аккаунт» of the teacher and the student: «Включить уведомления
+(«Уведомления на устройствах» in the teacher's «Уведомления и мессенджеры» and on the student's
+«Мой аккаунт»: «Включить уведомления
 на этом устройстве», the list with «Отключить») and `push/push-onboarding-card.ts` (a card on the
 home that a click turns into the permission prompt; «Не сейчас» hides it on this device). Without
 HTTPS or a service worker (a dev build) `supported` is false and the card only explains it. The

@@ -160,9 +160,7 @@ test('the journal of the month narrows by the chips', async ({ page }) => {
   await expect(payment).toBeVisible();
 });
 
-test('the journal filter stays in the address and the journal downloads as CSV', async ({
-  page,
-}) => {
+test('the journal filter stays in the address', async ({ page }) => {
   await signIn(page);
   await page.goto('/teacher/billing?kind=payments');
   await expect(page.getByRole('button', { name: 'Оплаты', exact: true })).toHaveAttribute(
@@ -174,9 +172,13 @@ test('the journal filter stays in the address and the journal downloads as CSV',
     'aria-pressed',
     'true',
   );
-  await page.getByRole('button', { name: 'Ещё', exact: true }).click();
+});
+
+test('the monthly report downloads the journal as CSV', async ({ page }) => {
+  await signIn(page);
+  await page.goto('/teacher/billing/report');
   const download = page.waitForEvent('download');
-  await page.getByRole('menuitem', { name: 'Скачать CSV' }).click();
+  await page.getByRole('button', { name: 'Скачать CSV' }).click();
   const file = await download;
   expect(file.suggestedFilename()).toMatch(/\.csv$/);
 });
@@ -196,4 +198,27 @@ test('an assignment is copied from the «⋮» menu of the list', async ({ page,
   await page.getByRole('button', { name: `Действия: ${title}` }).click();
   await page.getByRole('menuitem', { name: 'Создать копию' }).click();
   await expect(page.getByLabel('Название').first()).toHaveValue(`${title} (копия)`);
+});
+
+test('«Активные» are grouped by the deadline', async ({ page, request }) => {
+  const title = `Срок ${RUN}`;
+  const teacher = await token(request);
+  const created = await api<Created>(request, teacher, 'POST', '/api/teacher/students', {
+    displayName: `Срок ${RUN}`,
+    email: null,
+    phone: null,
+    note: null,
+  });
+  await api(request, teacher, 'POST', '/api/teacher/homework/assignments', {
+    title,
+    description: 'Текст',
+    dueAt: new Date(Date.now() + 60 * 86_400_000).toISOString(),
+    studentIds: [created.student.id],
+    videos: [],
+  });
+  await signIn(page);
+  await page.goto('/teacher/homework');
+  await page.getByText('Активные').first().click();
+  await expect(page.getByText('Позже', { exact: true })).toBeVisible();
+  await expect(page.getByText(title).first()).toBeVisible();
 });

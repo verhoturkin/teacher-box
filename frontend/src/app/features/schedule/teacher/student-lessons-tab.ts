@@ -12,19 +12,26 @@ import { forkJoin } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tag } from 'primeng/tag';
-import { toIsoDate } from '@shared/dates/iso-date';
+import { locale } from '@core/i18n/language';
+import { fromIsoDate, toIsoDate } from '@shared/dates/iso-date';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { LessonsOf, ScheduleApi } from '../data-access/schedule-api';
-import { HistoryEntry, ScheduledLesson } from '../data-access/schedule.models';
+import {
+  HistoryEntry,
+  ScheduledLesson,
+  UpcomingKind,
+  UpcomingSeries,
+} from '../data-access/schedule.models';
 import {
   ATTENDANCE_LABELS,
   STATUS_LABELS,
   TagSeverity,
   formatLessonStart,
   formatLessonTime,
+  WEEKDAYS,
   lessonWith,
 } from '../schedule-labels';
 import { T } from '../i18n/texts';
@@ -46,6 +53,22 @@ interface LessonRow {
   readonly tag: Tone | null;
 }
 
+/** A row of the grouped lessons ahead: a series or a lesson of its own. */
+interface GroupedRow {
+  readonly key: string;
+  readonly at: string;
+  readonly title: string;
+  readonly supporting: string;
+  readonly group: boolean;
+  readonly inactive: boolean;
+  readonly tag: Tone | null;
+}
+
+const DAY_MONTH = new Intl.DateTimeFormat(locale(), { day: 'numeric', month: 'long' });
+const LIST = new Intl.ListFormat(locale(), { type: 'conjunction' });
+/** «вт», «Tue»: as the weekday reads inside a sentence (5 January 2026 is a Monday). */
+const DAY_IN_TEXT = new Intl.DateTimeFormat(locale(), { weekday: 'short' });
+
 function daysFrom(date: Date, days: number): Date {
   return new Date(date.getTime() + days * DAY_MS);
 }
@@ -65,7 +88,7 @@ function daysFrom(date: Date, days: number): Date {
         <p-card [header]="t.upcoming">
           @if (upcoming().length === 0) {
             <tb-empty-state [compact]="true" icon="tb-i-event" [title]="t.noUpcoming" />
-          } @else {
+          } @else if (all()) {
             <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.upcoming">
               @for (row of upcoming(); track row.lesson.id) {
                 <li [class.tb-inactive]="row.lesson.status === 'CANCELLED'">
@@ -88,6 +111,39 @@ function daysFrom(date: Date, days: number): Date {
                 </li>
               }
             </ul>
+          } @else {
+            <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.upcoming">
+              @for (row of grouped(); track row.key; let first = $first) {
+                <li [class.tb-inactive]="row.inactive">
+                  <span
+                    class="tb-list__lead"
+                    [class.tb-list__lead--accent]="first"
+                    aria-hidden="true"
+                    ><i
+                      class="tb-i"
+                      [class.tb-i-group]="row.group"
+                      [class.tb-i-event]="!row.group"
+                    ></i
+                  ></span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{ row.title }}</span>
+                    <span class="tb-list__supporting">{{ row.supporting }}</span>
+                  </div>
+                  @if (row.tag !== null) {
+                    <div class="tb-list__trail">
+                      <p-tag [value]="row.tag.label" [severity]="row.tag.severity" />
+                    </div>
+                  }
+                </li>
+              }
+            </ul>
+          }
+          @if (series().length > 0) {
+            <p-button
+              [label]="all() ? t.hideAll : t.showAll"
+              [text]="true"
+              (onClick)="all.set(!all())"
+            />
           }
         </p-card>
         <p-card [header]="t.history">
@@ -177,6 +233,10 @@ export class StudentLessonsTab {
   /** A full page came back, so there may be more. */
   protected readonly more = signal(false);
   private readonly lessons = signal<readonly ScheduledLesson[]>([]);
+  protected readonly series = signal<readonly UpcomingSeries[]>([]);
+  private readonly singles = signal<readonly { kind: UpcomingKind; lesson: ScheduledLesson }[]>([]);
+  /** «Показать все даты»: every date ahead instead of a row per series. */
+  protected readonly all = signal(false);
   protected readonly history = signal<readonly HistoryEntry[]>([]);
 
   protected readonly upcoming = computed<LessonRow[]>(() => {
@@ -189,6 +249,14 @@ export class StudentLessonsTab {
         tag: lesson.status === 'SCHEDULED' ? null : STATUS_LABELS[lesson.status],
       }));
   });
+
+  /** A series is one row, one-off lessons and exceptions their own; the nearest first. */
+  protected readonly grouped = computed<GroupedRow[]>(() =>
+    [
+      ...this.series().map((series) => this.seriesRow(series)),
+      ...this.singles().map(({ kind, lesson }) => this.singleRow(kind, lesson)),
+    ].sort((a, b) => a.at.localeCompare(b.at)),
+  );
 
   constructor() {
     effect(() => {
@@ -208,11 +276,14 @@ export class StudentLessonsTab {
         toIsoDate(daysFrom(today, AHEAD_DAYS)),
         this.of(),
       ),
+      grouped: this.api.upcoming(this.of()),
       history: this.api.history(this.of(), null, PAGE),
     })
       .pipe(this.state.track())
-      .subscribe(({ lessons, history }) => {
+      .subscribe(({ lessons, grouped, history }) => {
         this.lessons.set(lessons);
+        this.series.set(grouped.series);
+        this.singles.set(grouped.lessons);
         this.history.set(history);
         this.more.set(history.length === PAGE);
       });
@@ -234,6 +305,58 @@ export class StudentLessonsTab {
     });
   }
 
+  /** «Каждый вт и чт, 15:00 · 60 мин» over «Английский · с 3 ноября · до 25 декабря · ещё 12». */
+  private seriesRow(series: UpcomingSeries): GroupedRow {
+    const days = WEEKDAYS.flatMap((day, index) =>
+      series.weekdays.includes(day.value) ? [DAY_IN_TEXT.format(new Date(2026, 0, 5 + index))] : [],
+    );
+    return {
+      key: series.ruleIds.join(),
+      at: series.nextStartsAt,
+      title: this.t.series(
+        series.intervalWeeks,
+        LIST.format(days),
+        series.startTime.slice(0, 5),
+        series.durationMinutes,
+      ),
+      supporting: [
+        series.groupId === null || 'groupId' in this.of()
+          ? null
+          : lessonWith({ groupId: series.groupId, groupName: series.groupName, studentName: null }),
+        series.title,
+        this.t.since(DAY_MONTH.format(fromIsoDate(series.since))),
+        series.endsOn === null ? null : this.t.until(DAY_MONTH.format(fromIsoDate(series.endsOn))),
+        series.remaining === null ? null : this.t.left(series.remaining),
+      ]
+        .filter((part) => part !== null)
+        .join(' · '),
+      group: series.groupId !== null,
+      inactive: false,
+      tag: null,
+    };
+  }
+
+  /** A moved lesson reads «чт, 05.11, 15:00» over «Перенесено на пт, 06.11, 16:00 · Английский». */
+  private singleRow(kind: UpcomingKind, lesson: ScheduledLesson): GroupedRow {
+    const moved = kind === 'MOVED' && lesson.originalStartsAt !== null;
+    return {
+      key: lesson.id,
+      at: lesson.startsAt,
+      title: moved ? formatLessonStart(lesson.originalStartsAt) : this.time(lesson),
+      supporting: [
+        moved ? this.t.movedTo(formatLessonStart(lesson.startsAt)) : null,
+        kind === 'CHANGED' ? this.t.changed : null,
+        lesson.groupId === null || 'groupId' in this.of() ? null : lessonWith(lesson),
+        lesson.title ?? this.t.noTopic,
+      ]
+        .filter((part) => part !== null)
+        .join(' · '),
+      group: lesson.groupId !== null,
+      inactive: lesson.status === 'CANCELLED',
+      tag: lesson.status === 'SCHEDULED' ? null : STATUS_LABELS[lesson.status],
+    };
+  }
+
   protected time(lesson: ScheduledLesson): string {
     return formatLessonTime(lesson.startsAt, lesson.endsAt);
   }
@@ -246,7 +369,7 @@ export class StudentLessonsTab {
   protected details(lesson: ScheduledLesson): string {
     return [
       lesson.groupId === null || 'groupId' in this.of() ? null : lessonWith(lesson),
-      lesson.topic ?? this.t.noTopic,
+      lesson.title ?? this.t.noTopic,
       lesson.seriesId === null ? null : this.t.recurring,
     ]
       .filter((part) => part !== null)
@@ -259,7 +382,7 @@ export class StudentLessonsTab {
       entry.groupId === null || 'groupId' in this.of()
         ? null
         : lessonWith({ groupId: entry.groupId, groupName: entry.groupName, studentName: null }),
-      entry.topic ?? this.t.noTopic,
+      entry.title ?? this.t.noTopic,
     ]
       .filter((part) => part !== null)
       .join(' · ');

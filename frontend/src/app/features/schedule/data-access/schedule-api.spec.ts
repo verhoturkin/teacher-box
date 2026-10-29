@@ -24,6 +24,7 @@ describe('ScheduleApi', () => {
     const details = {
       startsAt: '2026-10-01T15:00:00Z',
       durationMinutes: 60,
+      title: null,
       topic: null,
       meetingUrl: null,
       allowOverlap: false,

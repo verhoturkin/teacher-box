@@ -334,7 +334,7 @@ public class GoogleCalendarService {
             CalendarTexts texts) {
         String name = studentName == null ? texts.aStudent() : studentName;
         Map<String, Object> event = new LinkedHashMap<>();
-        event.put("summary", texts.lessonWith(name) + (lesson.topic() == null ? "" : " — " + lesson.topic()));
+        event.put("summary", texts.lessonWith(name) + (lesson.title() == null ? "" : " — " + lesson.title()));
         List<String> description = new ArrayList<>();
         if (lesson.topic() != null) {
             description.add(texts.topic(lesson.topic()));

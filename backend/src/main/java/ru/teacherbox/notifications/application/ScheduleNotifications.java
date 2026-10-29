@@ -62,8 +62,11 @@ class ScheduleNotifications {
         notifyStudents(event.studentIds(), NotificationKind.SCHEDULE_LESSON_PLANNED, (t, language) -> {
             List<String> body = new ArrayList<>();
             group(event.groupId()).ifPresent(name -> body.add(t.group(name)));
+            if (event.title() != null) {
+                body.add(t.lessonTitle(event.title()));
+            }
             if (event.topic() != null) {
-                body.add(t.topic(event.topic()));
+                body.add(t.topic(event.topic()) + ".");
             }
             return new Message(t.newLesson(texts.lessonTime(event.startsAt(), language)), join(body));
         });
@@ -221,6 +224,9 @@ class ScheduleNotifications {
             body.add(t.in(texts.duration(event.before(), language)));
             if (groupName != null) {
                 body.add(t.group(groupName));
+            }
+            if (event.title() != null) {
+                body.add(t.lessonTitle(event.title()));
             }
             if (event.topic() != null) {
                 body.add(t.topic(event.topic()) + ".");

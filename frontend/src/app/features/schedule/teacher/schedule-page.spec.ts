@@ -53,6 +53,10 @@ describe('SchedulePage', () => {
     )) {
       request.flush({});
     }
+    // the summary of an opened past lesson asks whether the AI draft is on
+    for (const request of backend.match('/api/teacher/ai/status')) {
+      request.flush({ enabled: false });
+    }
     for (const request of offTimePeriodRequests()) {
       request.flush([]);
     }
@@ -366,7 +370,7 @@ describe('SchedulePage', () => {
     await fixture.whenStable();
     expect(bodyText()).toContain('Новое занятие');
 
-    page.openLesson(scheduledLesson({ topic: 'Логарифмы' }));
+    page.openLesson(scheduledLesson({ title: 'Логарифмы' }));
     await fixture.whenStable();
     expect(bodyText()).toContain('Логарифмы');
 
@@ -384,6 +388,7 @@ describe('SchedulePage', () => {
     expect(request.request.body).toEqual({
       startsAt: new Date(2026, 9, 2, 17).toISOString(),
       durationMinutes: 60,
+      title: null,
       topic: null,
       meetingUrl: null,
       allowOverlap: false,

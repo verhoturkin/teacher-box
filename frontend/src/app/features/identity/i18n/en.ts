@@ -64,6 +64,13 @@ export const en: Translation<typeof ru> = {
     nameSaved: 'Name saved',
     photoSaved: 'Photo saved',
     photoUnreadable: 'Could not open the picture. Choose a JPEG, PNG or WebP photo.',
+    appearance: 'Appearance',
+    theme: 'Theme',
+    themeLight: 'Light',
+    themeDark: 'Dark',
+    themeSystem: 'System',
+    language: 'Language',
+    signOut: 'Sign out',
     passwordChanged: 'Password changed',
   },
   changePassword: {
@@ -215,8 +222,6 @@ export const en: Translation<typeof ru> = {
     chips: {
       all: 'All',
       groups: 'Groups',
-      debtors: 'In debt',
-      noMessenger: 'No messenger',
       deactivated: 'Turned off',
     },
     createGroup: 'Create group',

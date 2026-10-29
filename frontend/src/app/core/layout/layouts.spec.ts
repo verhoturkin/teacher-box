@@ -17,24 +17,24 @@ describe('The rail of each role (spec §3.2)', () => {
       TeacherLayout,
       'TEACHER',
       TEACHER_MENU.map((item) => String(item.label)),
-      ['/teacher/settings', '/teacher/help'],
+      ['/teacher/settings', '/teacher/help', '/teacher/settings/account'],
     ],
     [
       'student',
       StudentLayout,
       'STUDENT',
       studentMenu(signal(0)).map((item) => String(item.label)),
-      ['/cabinet/help'],
+      ['/cabinet/help', '/cabinet/account'],
     ],
     [
       'administrator',
       AdminLayout,
       'ADMIN',
       ADMIN_MENU.map((item) => String(item.label)),
-      ['/admin/help'],
+      ['/admin/help', '/admin/account'],
     ],
   ])(
-    'of the %s: the brand, «Создать» of the teacher, the sections, then the settings and the help',
+    'of the %s: the brand, «Создать» of the teacher, the sections, then the settings, the help and the account',
     async (_, layout, role, sections, footer) => {
       TestBed.configureTestingModule({
         imports: [layout],
@@ -71,21 +71,21 @@ describe('The phone navigation of each role (spec §3.1, D2)', () => {
       TeacherLayout,
       'TEACHER',
       ['Сегодня', 'Расписание', 'Задания', 'Ученики', 'Оплаты'],
-      ['Материалы', 'Настройки', 'Справка'],
+      ['Материалы', 'Настройки', 'Справка', 'Анна Сергеевна'],
     ],
     [
       'student',
       StudentLayout,
       'STUDENT',
       ['Главная', 'Расписание', 'Задания', 'Материалы', 'Оплаты'],
-      ['Справка'],
+      ['Справка', 'Иван Петров'],
     ],
     [
       'administrator',
       AdminLayout,
       'ADMIN',
       ['Состояние', 'Журнал', 'Интеграции', 'Копии', 'Настройки'],
-      ['Справка'],
+      ['Справка', 'Администратор'],
     ],
   ])(
     'of the %s: five sections in the bar, the rest under ☰, no «Ещё»',
@@ -102,7 +102,9 @@ describe('The phone navigation of each role (spec §3.1, D2)', () => {
       await fixture.whenStable();
       const host = hostElement(fixture);
       const texts = (root: ParentNode, selector: string) =>
-        Array.from(root.querySelectorAll(selector)).map((a) => a.textContent.trim());
+        Array.from(root.querySelectorAll(selector)).map(
+          (a) => a.querySelector('.tb-side-nav__label')?.textContent.trim() ?? a.textContent.trim(),
+        );
 
       expect(texts(host, 'nav.tb-bottom-nav a')).toEqual(bar);
       expect(host.querySelector('nav.tb-bottom-nav button')).toBeNull();

@@ -194,6 +194,8 @@ class PushIntegrationTests {
         String message = new String(payload.getValue(), StandardCharsets.UTF_8);
         assertThat(message).contains("\"title\":\"Новое сообщение\"", "\"body\":\"Текст\"",
                 "\"tag\":\"" + notification.id() + "\"",
+                "\"icon\":\"https://school.example.com/push-icon.png\"",
+                "\"badge\":\"https://school.example.com/push-badge.png\"",
                 "\"url\":\"https://school.example.com/cabinet/notifications\"");
         assertThat(deliveries.findByRecipient(student)).extracting(Delivery::status)
                 .containsOnly(DeliveryStatus.SENT);

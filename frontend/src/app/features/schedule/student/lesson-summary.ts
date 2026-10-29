@@ -18,6 +18,9 @@ import { T } from '../i18n/texts';
     @if (item.groupId !== null) {
       <span class="tb-list__supporting">{{ with(item) }}</span>
     }
+    @if (item.title !== null) {
+      <span class="tb-list__supporting">{{ item.title }}</span>
+    }
     @if (item.topic !== null) {
       <span class="tb-list__supporting">{{ item.topic }}</span>
     }

@@ -25,6 +25,8 @@ const SECTIONS = [
   // the bottom group of the rail (0.21.0)
   'Настройки',
   'Справка',
+  // 0.40.0: the account last; 0.40.1: labelled with the teacher's name (other suites may rename them)
+  /\S$/,
 ];
 
 async function signIn(page: Page): Promise<void> {
@@ -65,8 +67,8 @@ test('dark content panes remain distinct from the window outside compact layouts
   page,
 }, testInfo) => {
   await signIn(page);
-  await page.getByRole('button', { name: 'Меню пользователя' }).click();
-  await page.getByRole('menuitemradio', { name: 'Тёмная тема' }).click();
+  await page.goto('/teacher/settings/account');
+  await page.getByRole('button', { name: 'Тёмная' }).click();
   await expect(page.locator('html')).toHaveClass(/tb-dark/);
 
   const pane = page.locator('main tb-pane').first();
@@ -104,6 +106,7 @@ test('on a tablet the sections are in the rail', async ({ browser }) => {
 
   const rail = page.locator('tb-side-nav.tb-side-nav--rail');
   await expect(rail.getByRole('link')).toHaveText(SECTIONS);
+  await expect(rail.getByRole('link').last()).toHaveAttribute('aria-label', /^Аккаунт: \S/);
   expect((await rail.boundingBox())?.width).toBeLessThan(100);
   await rail.getByRole('link', { name: 'Оплаты' }).click();
   await expect(page).toHaveURL(/\/teacher\/billing$/);

@@ -90,7 +90,7 @@ public class FeedService {
             return Optional.of(IcsWriter.calendar(texts.teacherCalendar(portal.name()), all,
                     lesson -> texts.lessonWith(Objects.requireNonNullElse(names.title(lesson),
                             lesson.isGroup() ? texts.aGroup() : texts.aStudent()))
-                            + (lesson.topic() == null ? "" : " — " + lesson.topic()),
+                            + (lesson.title() == null ? "" : " — " + lesson.title()),
                     names::joinUrl, now, texts));
         }
         if (!directory.isCurrentStudent(ownerId)) {
@@ -100,7 +100,7 @@ public class FeedService {
         ScheduleNames names = directory.namesOf(own);
         return Optional.of(IcsWriter.calendar(texts.studentCalendar(portal.name()), own,
                 lesson -> (lesson.isGroup() ? texts.groupLesson(String.valueOf(names.group(lesson.groupId())))
-                        : texts.lesson()) + (lesson.topic() == null ? "" : ": " + lesson.topic()),
+                        : texts.lesson()) + (lesson.title() == null ? "" : ": " + lesson.title()),
                 names::joinUrl, now, texts));
     }
 }

@@ -103,7 +103,7 @@ describe('MySchedulePage', () => {
 
   it('lists upcoming lessons with the link to the online lesson', async () => {
     const text = await render([
-      scheduledLesson({ ...future(24), topic: 'Дроби', joinUrl: 'https://zoom.us/j/1' }),
+      scheduledLesson({ ...future(24), title: 'Дроби', joinUrl: 'https://zoom.us/j/1' }),
       scheduledLesson({ id: 'l-2', ...future(48), status: 'CANCELLED' }),
       scheduledLesson({ id: 'l-0', ...future(-5) }),
     ]);
@@ -119,7 +119,7 @@ describe('MySchedulePage', () => {
   });
 
   it('opens calendar lesson details in a centered dialog on desktop', async () => {
-    const lesson = scheduledLesson({ ...future(24), topic: 'Desktop details' });
+    const lesson = scheduledLesson({ ...future(24), title: 'Desktop details' });
     await render([lesson]);
     const calendar = fixture.debugElement
       .query(By.directive(ScheduleCalendar))
@@ -174,7 +174,7 @@ describe('MySchedulePage', () => {
 
   it('uses the shared compact agenda and switches to week and month with lesson actions', async () => {
     phone.next({ matches: true, breakpoints: {} });
-    await render([scheduledLesson({ ...future(1), topic: 'Тема в повестке' })]);
+    await render([scheduledLesson({ ...future(1), title: 'Тема в повестке' })]);
     const host = hostElement(fixture);
     const agenda = fixture.debugElement
       .query(By.directive(ScheduleAgenda))
@@ -431,7 +431,8 @@ describe('MySchedulePage lesson summaries', () => {
   const held = (overrides: Partial<HistoryEntry> = {}): HistoryEntry => ({
     lessonId: 'h-1',
     startsAt: new Date(Date.now() - 86_400_000).toISOString(),
-    topic: 'Дроби',
+    title: 'Дроби',
+    topic: null,
     status: 'CONDUCTED',
     groupId: null,
     groupName: null,
@@ -507,7 +508,7 @@ describe('MySchedulePage lesson summaries', () => {
     buttonByText(hostElement(fixture), 'Показать ещё').click();
     const more = backend.expectOne((r) => r.url === '/api/me/schedule/history');
     expect(more.request.params.get('before')).toBe(page[19]?.startsAt);
-    more.flush([held({ lessonId: 'h-last', topic: 'Степени', groupId: 'g-1', groupName: 'ОГЭ' })]);
+    more.flush([held({ lessonId: 'h-last', title: 'Степени', groupId: 'g-1', groupName: 'ОГЭ' })]);
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain('Степени');
@@ -522,7 +523,7 @@ describe('MySchedulePage lesson summaries', () => {
   });
 
   it('shows «Что прошли» in the sheet of a lesson that has started', async () => {
-    const lesson = scheduledLesson({ id: 'l-p', ...past(2), status: 'CONDUCTED', topic: 'Дроби' });
+    const lesson = scheduledLesson({ id: 'l-p', ...past(2), status: 'CONDUCTED', title: 'Дроби' });
     await start([], [lesson]);
 
     fixture.componentInstance.openSheet(lesson);

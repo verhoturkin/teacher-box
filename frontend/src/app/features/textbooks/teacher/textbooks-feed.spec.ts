@@ -208,7 +208,7 @@ describe('TextbooksFeed', () => {
     backend.expectNone('/api/teacher/textbooks/tb-1/file');
   });
 
-  it('filters by kind, by student or group and by the search over the course, and sorts', async () => {
+  it('filters by kind and by the search over the course, and sorts', async () => {
     await render([
       aTextbook({ hasCover: false }),
       aWorkbook({
@@ -234,10 +234,6 @@ describe('TextbooksFeed', () => {
     await fixture.whenStable();
     expect(titles()).toEqual(['Альфа']);
     fixture.componentRef.setInput('filter', 'all');
-    fixture.componentRef.setInput('member', 'g-1');
-    await fixture.whenStable();
-    expect(titles()).toEqual(['Spotlight 5']);
-    fixture.componentRef.setInput('member', undefined);
     fixture.componentRef.setInput('query', 'английский');
     await fixture.whenStable();
     expect(titles()).toEqual(['Spotlight 5']);

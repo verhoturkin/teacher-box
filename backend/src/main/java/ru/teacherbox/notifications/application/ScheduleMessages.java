@@ -15,6 +15,7 @@ enum ScheduleMessages {
         @Override String groupOf(String name) { return "группа «" + name + "»"; }
         @Override String aStudent() { return "ученик"; }
         @Override String unknownStudent() { return "Ученик"; }
+        @Override String lessonTitle(String title) { return "Занятие «" + title + "»."; }
         @Override String topic(String topic) { return "Тема: " + topic; }
         @Override String newLesson(String when) { return "Новое занятие: " + when; }
         @Override String series(String weekly) { return "Занятия с повтором " + weekly; }
@@ -68,6 +69,7 @@ enum ScheduleMessages {
         @Override String groupOf(String name) { return "group “" + name + "”"; }
         @Override String aStudent() { return "a student"; }
         @Override String unknownStudent() { return "A student"; }
+        @Override String lessonTitle(String title) { return "Lesson “" + title + "”."; }
         @Override String topic(String topic) { return "Topic: " + topic; }
         @Override String newLesson(String when) { return "New lesson: " + when; }
         @Override String series(String weekly) { return "Repeating lessons " + weekly; }
@@ -131,6 +133,8 @@ enum ScheduleMessages {
     abstract String aStudent();
 
     abstract String unknownStudent();
+
+    abstract String lessonTitle(String title);
 
     abstract String topic(String topic);
 

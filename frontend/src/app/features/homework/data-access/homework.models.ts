@@ -20,6 +20,8 @@ export interface AssignmentSummary {
   readonly createdAt: string;
   /** The names of its students, alphabetically. */
   readonly students: readonly string[];
+  /** The ids of its students: the list filters by student or group. */
+  readonly studentIds: readonly string[];
   /** The board it was put on; `null` — none. */
   readonly boardId: string | null;
   readonly totalTasks: number;

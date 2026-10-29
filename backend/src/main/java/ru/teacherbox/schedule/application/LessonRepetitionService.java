@@ -154,7 +154,7 @@ public class LessonRepetitionService {
         LocalDate date = LocalDate.ofInstant(selected.startsAt(), zone);
         RepeatRule created = RepeatRule.create(Ids.newId(), selected.isGroup() ? null : selected.studentId(),
                 selected.groupId(), Set.of(date.getDayOfWeek()), LocalTime.ofInstant(selected.startsAt(), zone),
-                selected.durationMinutes(), weeks, date, until, selected.topic(), selected.meetingUrl(), clock.instant())
+                selected.durationMinutes(), weeks, date, until, selected.title(), selected.meetingUrl(), clock.instant())
                 .continueFrom(occurrence(selected));
         rules.insert(created);
         selected.repeatWith(created.id(), occurrence(selected));

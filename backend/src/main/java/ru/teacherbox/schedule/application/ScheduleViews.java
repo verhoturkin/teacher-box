@@ -65,6 +65,7 @@ public final class ScheduleViews {
             Instant startsAt,
             Instant endsAt,
             int durationMinutes,
+            @Nullable String title,
             @Nullable String topic,
             @Nullable String meetingUrl,
             @Nullable String joinUrl,
@@ -90,8 +91,8 @@ public final class ScheduleViews {
             return new LessonView(lesson.id(), studentId, studentId == null ? null : names.student(studentId),
                     names.avatar(studentId), lesson.groupId(), names.group(lesson.groupId()),
                     lesson.participants().stream().map(participant -> ParticipantView.of(participant, names)).toList(),
-                    lesson.seriesId(), lesson.startsAt(), lesson.endsAt(), lesson.durationMinutes(), lesson.topic(),
-                    lesson.meetingUrl(), names.joinUrl(lesson), lesson.status(), lesson.cancelledBy(),
+                    lesson.seriesId(), lesson.startsAt(), lesson.endsAt(), lesson.durationMinutes(), lesson.title(),
+                    lesson.topic(), lesson.meetingUrl(), names.joinUrl(lesson), lesson.status(), lesson.cancelledBy(),
                     lesson.cancelReason(),
                     lesson.originalStartsAt(), List.copyOf(pendingRequests), lesson.version(),
                     rule == null ? 0 : rule.intervalWeeks(), rule == null ? null : rule.endsOn(),
@@ -102,7 +103,7 @@ public final class ScheduleViews {
         LessonView forStudent(UUID participantId) {
             return new LessonView(id, studentId, studentName, studentAvatar, groupId, groupName,
                     participants.stream().filter(participant -> participant.studentId().equals(participantId)).toList(),
-                    seriesId, startsAt, endsAt, durationMinutes, topic, meetingUrl, joinUrl, status, cancelledBy,
+                    seriesId, startsAt, endsAt, durationMinutes, title, topic, meetingUrl, joinUrl, status, cancelledBy,
                     cancelReason, originalStartsAt,
                     pendingRequests.stream().filter(request -> request.studentId().equals(participantId)).toList(),
                     version, repeatWeeks, repeatUntil, repeatVersion, occurrenceDate, summary, null, summaryUpdatedAt,
@@ -112,7 +113,7 @@ public final class ScheduleViews {
         /** The teacher's details: the summary, the plan and the private notes (the lists carry none of them). */
         LessonView withSummary(Lesson lesson, List<LessonNote> found) {
             return new LessonView(id, studentId, studentName, studentAvatar, groupId, groupName, participants, seriesId,
-                    startsAt, endsAt, durationMinutes, topic, meetingUrl, joinUrl, status, cancelledBy, cancelReason,
+                    startsAt, endsAt, durationMinutes, title, topic, meetingUrl, joinUrl, status, cancelledBy, cancelReason,
                     originalStartsAt, pendingRequests, version, repeatWeeks, repeatUntil, repeatVersion,
                     occurrenceDate, lesson.summary(), lesson.nextPlan(), lesson.summaryUpdatedAt(),
                     found.stream().map(note -> new NoteView(note.studentId(), note.note(), note.updatedAt())).toList());
@@ -121,7 +122,7 @@ public final class ScheduleViews {
         /** A student sees the shared summary of their lesson, never the plan or the notes. */
         LessonView withStudentSummary(Lesson lesson) {
             return new LessonView(id, studentId, studentName, studentAvatar, groupId, groupName, participants, seriesId,
-                    startsAt, endsAt, durationMinutes, topic, meetingUrl, joinUrl, status, cancelledBy, cancelReason,
+                    startsAt, endsAt, durationMinutes, title, topic, meetingUrl, joinUrl, status, cancelledBy, cancelReason,
                     originalStartsAt, pendingRequests, version, repeatWeeks, repeatUntil, repeatVersion,
                     occurrenceDate, lesson.summary(), null, lesson.summaryUpdatedAt(), List.of());
         }
@@ -134,7 +135,8 @@ public final class ScheduleViews {
      * @param nextPlan   the teacher's feeds only
      * @param note       the teacher's private note about the student; the student feed never has it
      */
-    public record HistoryEntry(UUID lessonId, Instant startsAt, @Nullable String topic, LessonStatus status,
+    public record HistoryEntry(UUID lessonId, Instant startsAt, @Nullable String title, @Nullable String topic,
+            LessonStatus status,
             @Nullable UUID groupId, @Nullable String groupName, @Nullable Attendance attendance,
             @Nullable String summary, @Nullable String nextPlan, @Nullable Instant summaryUpdatedAt,
             @Nullable String note) {
@@ -252,5 +254,29 @@ public final class ScheduleViews {
 
     /** One period of off time in the teacher's calendar. */
     public record OffTimePeriod(UUID offTimeId, Instant start, Instant end, @Nullable String note) {
+    }
+
+    /** The lessons ahead of a student or a group for the teacher: series as one item, the rest one by one. */
+    public record UpcomingLessons(List<UpcomingSeries> series, List<UpcomingLesson> lessons) {
+    }
+
+    /**
+     * Repeat rules alike but for the weekday, as one item.
+     *
+     * @param since     the first day of the rules
+     * @param remaining regular lessons left until {@code endsOn}; {@code null} without an end
+     */
+    public record UpcomingSeries(List<UUID> ruleIds, List<DayOfWeek> weekdays, LocalTime startTime,
+            int durationMinutes, int intervalWeeks, LocalDate since, @Nullable LocalDate endsOn,
+            @Nullable Integer remaining, @Nullable String title, @Nullable UUID groupId, @Nullable String groupName,
+            Instant nextStartsAt) {
+    }
+
+    /** A one-off lesson or an exception of a series. */
+    public record UpcomingLesson(UpcomingKind kind, LessonView lesson) {
+    }
+
+    public enum UpcomingKind {
+        ONE_OFF, MOVED, CANCELLED, CHANGED
     }
 }

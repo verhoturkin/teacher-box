@@ -50,7 +50,7 @@ async function planLesson(
   student: string,
   daysFromToday: number,
   hours: number,
-  topic: string,
+  title: string,
 ): Promise<void> {
   await page.goto('/teacher/schedule');
   await create(page, 'Занятие');
@@ -58,7 +58,7 @@ async function planLesson(
   await page.getByRole('option', { name: student }).click();
   // The date picker parses typed keys, not a pasted value.
   await page.locator('#schedule-lesson-start').pressSequentially(dateTime(daysFromToday, hours));
-  await page.locator('#schedule-lesson-topic').fill(topic);
+  await page.locator('#schedule-lesson-title').fill(title);
   await saveLesson(page);
 }
 
@@ -134,7 +134,7 @@ test('the teacher cancels, restores and deletes a lesson', async ({ page }) => {
   // Today is always in the week shown; 07:00 is the first hour of the calendar.
   await planLesson(page, STUDENT, 0, 7, 'Лишнее');
   const event = page.getByText(`${STUDENT} · Лишнее`);
-  const card = page.getByRole('dialog', { name: STUDENT });
+  const card = page.getByRole('dialog', { name: 'Лишнее' });
 
   await event.click();
   await card.getByRole('button', { name: 'Другие действия' }).click();

@@ -118,7 +118,7 @@ export interface AgendaMark {
               }
               <span class="tb-agenda__text">
                 <span class="tb-agenda__title">{{
-                  showStudent() ? with(lesson) : (lesson.topic ?? t.lesson)
+                  showStudent() ? with(lesson) : (lesson.title ?? t.lesson)
                 }}</span>
                 <span class="tb-agenda__supporting">{{ time(lesson) }}</span>
               </span>

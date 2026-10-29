@@ -1,14 +1,6 @@
 import { aGroup, aStudent } from '@testing/identity-fixtures';
 import { at, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
-import {
-  RosterData,
-  RosterFilter,
-  countRows,
-  filterRows,
-  isOff,
-  lessonWhen,
-  rosterRows,
-} from './roster';
+import { RosterData, RosterFilter, filterRows, isOff, lessonWhen, rosterRows } from './roster';
 
 const NOW = new Date(2026, 9, 20, 12).getTime();
 const WORDS = { today: 'сегодня', tomorrow: 'завтра' };
@@ -52,10 +44,6 @@ describe('roster', () => {
   it('filters by the chips', () => {
     expect(names('all')).toEqual(['Борис', 'Мария', 'ОГЭ']);
     expect(names('groups')).toEqual(['ОГЭ']);
-    // a turned-off student still owes
-    expect(names('debtors')).toEqual(['Мария', 'Олег']);
-    // only current students are asked to connect a messenger
-    expect(names('noMessenger')).toEqual(['Борис']);
     expect(names('deactivated')).toEqual(['Олег', 'Летняя школа']);
   });
 
@@ -65,18 +53,10 @@ describe('roster', () => {
     expect(names('groups', 'мар')).toEqual([]);
   });
 
-  it('counts the rows of a chip', () => {
-    const rows = rosterRows(data(), NOW);
-    expect(countRows(rows, 'debtors')).toBe(2);
-    expect(countRows(rows, 'noMessenger')).toBe(1);
-  });
-
   it('knows nothing of balances and messengers it could not read', () => {
     const rows = rosterRows(data({ balances: null, messengers: null, lessons: null }), NOW);
     const maria = rows.find((row) => row.id === 'm');
     expect(maria).toMatchObject({ balance: null, messenger: null, next: null });
-    expect(countRows(rows, 'debtors')).toBe(0);
-    expect(countRows(rows, 'noMessenger')).toBe(0);
   });
 
   it('takes a student without a balance as settled', () => {

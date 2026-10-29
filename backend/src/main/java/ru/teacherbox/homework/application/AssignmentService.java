@@ -178,7 +178,8 @@ public class AssignmentService {
                     .sorted(String.CASE_INSENSITIVE_ORDER)
                     .toList();
             return new AssignmentSummary(assignment.id(), assignment.title(), assignment.dueAt(),
-                    assignment.createdAt(), students, assignment.boardId(), assigned + submitted + returned + accepted, assigned, submitted, returned,
+                    assignment.createdAt(), students, studentsOf.getOrDefault(assignment.id(), List.of()),
+                    assignment.boardId(), assigned + submitted + returned + accepted, assigned, submitted, returned,
                     accepted);
         }).toList();
     }

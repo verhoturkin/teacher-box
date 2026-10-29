@@ -100,7 +100,8 @@ class SummaryIntegrationTests {
 
         Instant soon = clock.instant().truncatedTo(ChronoUnit.SECONDS).plus(Duration.ofHours(5));
         String next = id(plan(lesson(student, soon, 45, true)));
-        plan(lesson(student, soon.plus(Duration.ofDays(10)), 45, true));
+        // a lesson after this week, years ahead: Slots hands out the days after the next two to other tests
+        plan(lesson(student, soon.plus(Duration.ofDays(2 * 365)), 45, true));
         plan(lesson(directory.addStudent("Чужой"), soon.minus(Duration.ofHours(1)), 45, true));
         assertThat(mvc.post().uri("/api/me/schedule/lessons/{id}/requests", next).with(TestUsers.student(student))
                 .contentType(MediaType.APPLICATION_JSON).content("{\"kind\":\"CANCEL\"}"))

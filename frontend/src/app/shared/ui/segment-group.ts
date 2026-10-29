@@ -6,6 +6,8 @@ export interface Segment<T extends string> {
   readonly label: string;
   /** How many items the segment holds («На проверку 3»); none — no number. */
   readonly count?: number;
+  /** A `tb-i tb-i-…` icon before the label. */
+  readonly icon?: string;
 }
 
 /**
@@ -31,6 +33,9 @@ export interface Segment<T extends string> {
         [attr.aria-pressed]="segment.value === value()"
         (click)="value.set(segment.value)"
       >
+        @if (segment.icon) {
+          <i [class]="segment.icon" aria-hidden="true"></i>
+        }
         <span class="tb-segment__label">{{ segment.label }}</span>
         @if (segment.count !== undefined) {
           <span class="tb-segment__count">{{ segment.count }}</span>

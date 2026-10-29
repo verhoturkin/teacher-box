@@ -158,7 +158,10 @@ test('the student has the textbook and only the bound pages in the task', async 
   );
 });
 
-test('the system bars of a phone take the colour of the top bar', async ({ page, request }) => {
+test('the status bar takes the top bar colour, the installed navigation bar the bottom bar one', async ({
+  page,
+  request,
+}) => {
   await signIn(page, 390);
   const header = await page
     .locator('.tb-shell__header')
@@ -176,6 +179,10 @@ test('the system bars of a phone take the colour of the top bar', async ({ page,
     icons: { sizes: string }[];
   };
   expect(manifest.display).toBe('standalone');
-  expect(manifest.theme_color).toBe(meta);
+  // 0.40.1: the installed app paints its navigation bar with theme_color — the bottom bar's colour
+  const bottom = await page
+    .locator('.tb-bottom-nav')
+    .evaluate((element) => getComputedStyle(element).backgroundColor);
+  expect(rgb(manifest.theme_color)).toBe(bottom);
   expect(manifest.icons.map((icon) => icon.sizes)).toContain('512x512');
 });

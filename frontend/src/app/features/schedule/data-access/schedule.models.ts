@@ -71,6 +71,9 @@ export interface ScheduledLesson {
   readonly startsAt: string;
   readonly endsAt: string;
   readonly durationMinutes: number;
+  /** The lesson's name; `null` — the student's or the group's name stands for it. */
+  readonly title: string | null;
+  /** What the lesson covers; its own, a series never copies it. */
   readonly topic: string | null;
   /** The lesson's own link to the online lesson. */
   readonly meetingUrl: string | null;
@@ -122,6 +125,7 @@ export interface PlanLessonRequest {
   readonly groupId: string | null;
   readonly startsAt: string;
   readonly durationMinutes: number;
+  readonly title: string | null;
   readonly topic: string | null;
   readonly meetingUrl: string | null;
   readonly allowOverlap: boolean;
@@ -135,6 +139,7 @@ export interface PlanLessonRequest {
 export interface EditLessonRequest {
   readonly startsAt: string;
   readonly durationMinutes: number;
+  readonly title: string | null;
   readonly topic: string | null;
   readonly meetingUrl: string | null;
   readonly allowOverlap: boolean;
@@ -186,6 +191,33 @@ export interface GoogleCalendarStatus {
   readonly connectedAt: string | null;
   /** Path of the redirect URI to register in Google Cloud. */
   readonly callbackPath: string;
+}
+
+/** Repeat rules alike but for the weekday, as one item of the lessons ahead (`UpcomingSeries`). */
+export interface UpcomingSeries {
+  readonly ruleIds: string[];
+  readonly weekdays: Weekday[];
+  /** Local time in the instance time zone, `HH:mm:ss`. */
+  readonly startTime: string;
+  readonly durationMinutes: number;
+  readonly intervalWeeks: number;
+  readonly since: string;
+  readonly endsOn: string | null;
+  /** Regular lessons left until `endsOn`; `null` without an end. */
+  readonly remaining: number | null;
+  readonly title: string | null;
+  readonly groupId: string | null;
+  readonly groupName: string | null;
+  readonly nextStartsAt: string;
+}
+
+/** Why a lesson ahead is not part of a series row. */
+export type UpcomingKind = 'ONE_OFF' | 'MOVED' | 'CANCELLED' | 'CHANGED';
+
+/** Mirrors `UpcomingLessons`: series as one item, one-off lessons and exceptions one by one. */
+export interface UpcomingLessons {
+  readonly series: UpcomingSeries[];
+  readonly lessons: { readonly kind: UpcomingKind; readonly lesson: ScheduledLesson }[];
 }
 
 export type OffTimeKind = 'ONCE' | 'WEEKLY';
@@ -266,6 +298,7 @@ export interface MyScheduleSummary {
 export interface HistoryEntry {
   readonly lessonId: string;
   readonly startsAt: string;
+  readonly title: string | null;
   readonly topic: string | null;
   readonly status: ScheduleLessonStatus;
   readonly groupId: string | null;

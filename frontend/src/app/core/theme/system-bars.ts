@@ -10,9 +10,11 @@ import { ThemeMode } from './theme-mode';
 export const MANIFEST_PATH = '/api/public/portal/manifest.webmanifest';
 
 /**
- * The system bars of a phone take the color of the top bar (ADR-0034): `<meta name="theme-color">` for the
- * browser and the status bar, the manifest's colors for the installed app (Chrome paints the navigation bar
- * with its `theme_color`). Both follow the theme and the portal color while the page is open.
+ * The system bars of a phone (ADR-0034): `<meta name="theme-color">` gives the status bar the color of the top
+ * bar; the browser draws the page under the navigation bar (`viewport-fit=cover`). The installed app paints its
+ * navigation bar with the manifest's `theme_color` (Chrome 153+), so the manifest gets the color of the bottom
+ * navigation, surface-container. Chrome rereads the manifest only when it updates the app: a new theme reaches
+ * the installed navigation bar later.
  */
 @Injectable({ providedIn: 'root' })
 export class SystemBars {
@@ -38,7 +40,7 @@ export class SystemBars {
       ? scheme.light.surface
       : scheme.light.surfaceContainer;
   });
-  /** The page behind the content: the splash screen of the installed app. */
+  /** The bottom navigation and the page behind the content: the navigation bar and splash of the installed app. */
   readonly background = computed(() => {
     const scheme = this.portal.scheme();
     return (this.theme.dark() ? scheme.dark : scheme.light).surfaceContainer;
@@ -55,7 +57,10 @@ export class SystemBars {
     });
     effect(() => {
       this.element('meta', 'name', 'theme-color').setAttribute('content', this.color());
-      const query = new URLSearchParams({ theme: this.color(), background: this.background() });
+      const query = new URLSearchParams({
+        theme: this.background(),
+        background: this.background(),
+      });
       this.element('link', 'rel', 'manifest').setAttribute('href', `${MANIFEST_PATH}?${query}`);
     });
   }

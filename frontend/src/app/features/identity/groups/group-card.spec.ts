@@ -20,7 +20,7 @@ import { GroupProfileTab } from './group-profile-tab';
 
 /** What the tabs read: answered by their own specs. */
 const TAB_READS =
-  /schedule\/(lessons|groups\/[^/]+\/history)|homework\/students\/|billing\/groups|meetings\/(rooms|calls)/;
+  /schedule\/(lessons|groups\/[^/]+\/(history|upcoming))|homework\/students\/|billing\/groups|meetings\/(rooms|calls)/;
 
 const OGE = aGroup({
   id: 'g',
@@ -218,7 +218,7 @@ describe('GroupCard', () => {
     const dialog = part(LessonDialog);
     expect(dialog.visible()).toBe(true);
     expect(dialog.form.getRawValue()).toEqual(
-      expect.objectContaining({ owner: 'group:g', durationMinutes: 90, topic: 'Дроби' }),
+      expect.objectContaining({ owner: 'group:g', durationMinutes: 90, title: 'Дроби' }),
     );
     reads(/schedule\/lessons/);
 

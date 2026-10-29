@@ -57,7 +57,6 @@ describe('SettingsPage', () => {
     switch (category) {
       case 'account':
         backend.expectOne('/api/me');
-        backend.expectOne('/api/me/push/subscriptions').flush([]);
         break;
       case 'portal':
         backend.expectOne('/api/teacher/portal').flush(portalSettings());
@@ -81,6 +80,7 @@ describe('SettingsPage', () => {
         backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
         break;
       case 'messengers':
+        backend.expectOne('/api/me/push/subscriptions').flush([]);
         backend.expectOne('/api/teacher/notifications/channels').flush([channelSetup()]);
         backend.expectOne('/api/me/channels').flush([]);
         backend
@@ -163,7 +163,7 @@ describe('SettingsPage', () => {
     expect(list).toContain('Портал Название и оформление');
     expect(list).toContain('Расписание и календарь Пояс, Google, подписка');
     expect(list).toContain('Звонки Телемост, ссылки');
-    expect(list).toContain('Мессенджеры Боты, что присылать 2');
+    expect(list).toContain('Уведомления и мессенджеры Это устройство, боты, что присылать 2');
     expect(list).toContain('Оплаты Цена по умолчанию');
     expect(list).toContain('ИИ-помощник Модель, расход, промты');
     expect(list).toContain('Данные');
@@ -295,12 +295,17 @@ describe('SettingsPage', () => {
     expect(text).toContain('Неудачные доставки');
     expect(text).toContain('Мария Telegram Telegram 403: Forbidden: bot was blocked by the user');
     expect(text).toContain('Вы MAX —');
-    expect(text.indexOf('Неудачные доставки')).toBeLessThan(text.indexOf('Мои мессенджеры'));
+    expect(text.indexOf('Неудачные доставки')).toBeLessThan(
+      text.indexOf('Уведомления на устройствах'),
+    );
+    expect(text.indexOf('Уведомления на устройствах')).toBeLessThan(
+      text.indexOf('Мои мессенджеры'),
+    );
     expect(text).toContain('Что умеет бот');
     expect(text).toContain('Подключили мессенджер');
     expect(text).toContain('Что присылать в мессенджеры');
     expect(readableText(requireElement(host, '[aria-current="page"]', HTMLElement))).toContain(
-      'Мессенджеры',
+      'Уведомления и мессенджеры',
     );
   });
 

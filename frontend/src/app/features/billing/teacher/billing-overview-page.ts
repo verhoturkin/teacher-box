@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -13,8 +13,6 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EMPTY, Subject, catchError, forkJoin, switchMap } from 'rxjs';
 import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
-import { MenuItem } from 'primeng/api';
-import { Menu } from 'primeng/menu';
 import { Select } from 'primeng/select';
 import { Tooltip } from 'primeng/tooltip';
 import { quietContext } from '@core/http/api-error.interceptor';
@@ -26,7 +24,6 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { HelpButton } from '@features/help/parts';
 import { TeacherColors } from '@features/identity/parts';
 import { BroadcastDialog } from '@features/notifications/parts';
-import { FileSaver } from '@shared/files/file-saver';
 import { monthLabel, toIsoDate, toIsoMonth } from '@shared/dates/iso-date';
 import { formatMoney, toMajorUnits } from '@shared/money/money';
 import { MoneyPipe } from '@shared/money/money.pipe';
@@ -99,12 +96,13 @@ const NUMBER = new Intl.NumberFormat(locale());
 /**
  * Teacher's «Оплаты» (spec §10.2): the month with ‹ ›, «Отчёт за месяц», four figures and the journal of the
  * month with chips in the flexible pane; the supporting pane «По ученикам» holds debtors, prepayments running out
- * and the weekly income. The balances list lives in Students (chip «Должники»).
+ * and the weekly income. On compact the debtors move under the figures. The balances live in the student cards.
  */
 @Component({
   selector: 'tb-billing-overview-page',
   imports: [
     Avatar,
+    NgTemplateOutlet,
     BroadcastDialog,
     ButtonDirective,
     ButtonIcon,
@@ -114,7 +112,6 @@ const NUMBER = new Intl.NumberFormat(locale());
     FilterChips,
     HelpButton,
     LoadStateView,
-    Menu,
     MoneyPipe,
     PageHeader,
     Pane,
@@ -128,6 +125,50 @@ const NUMBER = new Intl.NumberFormat(locale());
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <ng-template #debtorsSection>
+      @if (overview(); as overview) {
+        <section class="tb-ops">
+          <h3 class="tb-ops__overline">{{ t.debtors }}</h3>
+          @if (debtors().length > 0) {
+            <ul class="tb-list tb-ops__people">
+              @for (row of debtors(); track row.studentId) {
+                <li>
+                  <tb-avatar
+                    [attr.data-tb-label]="colors.studentLabel(row.studentId)"
+                    [name]="row.displayName"
+                    [photo]="row.avatar"
+                  />
+                  <div class="tb-list__text">
+                    <a
+                      [routerLink]="['/teacher/students', row.studentId]"
+                      [queryParams]="paymentsTab"
+                      class="tb-list__title tb-list__link"
+                      >{{ row.displayName }}</a
+                    >
+                    <span class="tb-list__supporting">{{ owedText(row) }}</span>
+                  </div>
+                  <div class="tb-list__trail">
+                    <span class="tb-negative tb-ops__amount">{{
+                      row.balance | money: overview.currency
+                    }}</span>
+                  </div>
+                </li>
+              }
+            </ul>
+            <p-button
+              class="tb-ops__remind"
+              icon="tb-i tb-i-send"
+              [label]="t.remind"
+              severity="secondary"
+              (onClick)="remindVisible.set(true)"
+            />
+          } @else {
+            <p class="tb-muted">{{ t.noDebtors }}</p>
+          }
+        </section>
+      }
+    </ng-template>
+
     <tb-panes>
       <tb-pane [label]="t.title">
         <div tbPaneHeader>
@@ -165,16 +206,6 @@ const NUMBER = new Intl.NumberFormat(locale());
                 <i pButtonIcon aria-hidden="true" class="tb-i tb-i-download"></i>
                 <span pButtonLabel>{{ t.report }}</span>
               </a>
-              <p-button
-                icon="tb-i tb-i-more_vert"
-                [text]="true"
-                [rounded]="true"
-                severity="secondary"
-                [ariaLabel]="t.moreActions"
-                aria-haspopup="menu"
-                (onClick)="actions.toggle($event)"
-              />
-              <p-menu #actions [model]="menuItems" [popup]="true" appendTo="body" />
             </div>
             <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
             @if (mobile()) {
@@ -215,6 +246,10 @@ const NUMBER = new Intl.NumberFormat(locale());
                 <dd class="tb-ops-figure__note">{{ t.students(prepaidStudents()) }}</dd>
               </div>
             </dl>
+
+            @if (mobile() && debtors().length > 0) {
+              <ng-container [ngTemplateOutlet]="debtorsSection" />
+            }
 
             <div class="tb-ops__bar">
               <h2 class="tb-ops__title">{{ t.operations }}</h2>
@@ -298,45 +333,7 @@ const NUMBER = new Intl.NumberFormat(locale());
             <a class="tb-link tb-ops__all" routerLink="/teacher/students">{{ t.allInStudents }}</a>
           </div>
           @if (overview(); as overview) {
-            <section class="tb-ops">
-              <h3 class="tb-ops__overline">{{ t.debtors }}</h3>
-              @if (debtors().length > 0) {
-                <ul class="tb-list tb-ops__people">
-                  @for (row of debtors(); track row.studentId) {
-                    <li>
-                      <tb-avatar
-                        [attr.data-tb-label]="colors.studentLabel(row.studentId)"
-                        [name]="row.displayName"
-                        [photo]="row.avatar"
-                      />
-                      <div class="tb-list__text">
-                        <a
-                          [routerLink]="['/teacher/students', row.studentId]"
-                          [queryParams]="paymentsTab"
-                          class="tb-list__title tb-list__link"
-                          >{{ row.displayName }}</a
-                        >
-                        <span class="tb-list__supporting">{{ owedText(row) }}</span>
-                      </div>
-                      <div class="tb-list__trail">
-                        <span class="tb-negative tb-ops__amount">{{
-                          row.balance | money: overview.currency
-                        }}</span>
-                      </div>
-                    </li>
-                  }
-                </ul>
-                <p-button
-                  class="tb-ops__remind"
-                  icon="tb-i tb-i-send"
-                  [label]="t.remind"
-                  severity="secondary"
-                  (onClick)="remindVisible.set(true)"
-                />
-              } @else {
-                <p class="tb-muted">{{ t.noDebtors }}</p>
-              }
-            </section>
+            <ng-container [ngTemplateOutlet]="debtorsSection" />
 
             @if (runningOut().length > 0) {
               <section class="tb-ops">
@@ -652,7 +649,6 @@ export class BillingOverviewPage implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
-  private readonly fileSaver = inject(FileSaver);
   /** The filters of the journal come from the address (`?month=&kind=&student=`) and go back to it. */
   private readonly fromUrl = this.route.snapshot.queryParamMap;
 
@@ -669,17 +665,6 @@ export class BillingOverviewPage implements OnInit {
   readonly studentControl = new FormControl<string | null>(this.fromUrl.get('student'));
   private readonly chosenStudent = signal<string | null>(this.fromUrl.get('student'));
   private readonly narrow = new Subject<void>();
-
-  /** «⋮»: the journal as CSV with the current month, chip and student. */
-  protected readonly menuItems: MenuItem[] = [
-    {
-      label: T.overview.downloadCsv,
-      icon: 'tb-i tb-i-download',
-      command: () => {
-        this.downloadCsv();
-      },
-    },
-  ];
 
   protected readonly paymentVisible = signal(false);
   protected readonly remindVisible = signal(false);
@@ -808,21 +793,6 @@ export class BillingOverviewPage implements OnInit {
       month: this.isCurrentMonth() ? null : this.month(),
     });
     this.loadMonth();
-  }
-
-  protected downloadCsv(): void {
-    const month = this.month();
-    const filter = this.filter();
-    this.api
-      .operationsCsv(
-        month,
-        filter === 'all' ? undefined : KINDS[filter],
-        this.chosenStudent() ?? undefined,
-      )
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((csv) => {
-        this.fileSaver.save(csv, `operations-${month}.csv`);
-      });
   }
 
   protected openPayment(): void {
