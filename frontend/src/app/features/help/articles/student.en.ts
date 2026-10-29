@@ -119,7 +119,7 @@ The teacher reviews the work: accepts it with a grade or returns it for rework w
 
 ## A quiz in the homework
 
-If the homework has questions, a «Quiz» block appears under the text. Click «Start the quiz» and answer: pick an option, type a short answer or a number, for «Matching» choose a pair for every line, and in «Ordering» put the items in order with the arrow buttons. On a phone the questions come one at a time («Back» / «Next»). Answers are saved by themselves. At the end click «Submit the quiz» and confirm — the attempt cannot be changed after that. You see «Result: N of M» at once. The teacher shows the correct answers and explanations right away, after the due date, or not at all. If there are several attempts, «Try again» starts a new one and the best counts. When you are done, click «Send for review» — the teacher will see your result.
+If the homework has questions, a «Quiz» block appears under the text. Click «Start the quiz» and answer: pick an option, type a short answer or a number, for «Matching» choose a pair for every line, and in «Ordering» put the items in order with the arrow buttons (if the order is already right, leave it: it counts as it is). On a phone the questions come one at a time («Back» / «Next»). Answers are saved by themselves. At the end click «Submit the quiz» and confirm — the attempt cannot be changed after that. You see «Result: N of M» at once. The teacher shows the correct answers and explanations right away, after the due date, or not at all. If there are several attempts, «Try again» starts a new one and the best counts. When you are done, click «Send for review» — the teacher will see your result.
 
 ## Homework on a board
 
