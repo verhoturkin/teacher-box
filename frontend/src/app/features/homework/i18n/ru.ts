@@ -313,6 +313,12 @@ export const ru = {
     leaveHeader: 'Уйти без сохранения?',
     leaveMessage: 'Изменения в задании пропадут.',
     leave: 'Уйти',
+    assignMore: 'Выдать ещё',
+    sections: 'Разделы задания',
+    sectionTask: 'Задание',
+    sectionMaterials: (count: number) => `Материалы · ${String(count)}`,
+    sectionQuestions: (count: number) => `Вопросы · ${String(count)}`,
+    sectionSettings: 'Как проходит тест',
     boardFailed:
       'Задание на доске, но отметка о ней не сохранилась — поставьте её со страницы задания',
   },

@@ -8,19 +8,26 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 @Component({
   selector: 'tb-input-chip',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class.tb-input-chip--static]': 'readonly()' },
   template: `
     <span class="tb-input-chip__lead"><ng-content select="[lead]" /></span>
     <span class="tb-input-chip__label">{{ label() }}</span>
-    <button
-      type="button"
-      class="tb-input-chip__remove"
-      [attr.aria-label]="removeLabel()"
-      (click)="removed.emit()"
-    >
-      <i class="tb-i tb-i-close" aria-hidden="true"></i>
-    </button>
+    @if (!readonly()) {
+      <button
+        type="button"
+        class="tb-input-chip__remove"
+        [attr.aria-label]="removeLabel()"
+        (click)="removed.emit()"
+      >
+        <i class="tb-i tb-i-close" aria-hidden="true"></i>
+      </button>
+    }
   `,
   styles: `
+    :host(.tb-input-chip--static) {
+      padding-inline-end: var(--tb-space-3);
+    }
+
     :host {
       display: inline-flex;
       align-items: center;
@@ -73,6 +80,8 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 })
 export class InputChip {
   readonly label = input.required<string>();
-  readonly removeLabel = input.required<string>();
+  readonly removeLabel = input('');
+  /** A chosen entity that cannot be removed here: no «×». */
+  readonly readonly = input(false);
   readonly removed = output();
 }

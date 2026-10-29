@@ -594,7 +594,14 @@ action — «Изменить» next to «Проверить N работ» (hom
   can remove): 32 dp, 8 dp corners, outline-variant border, a leading 24 dp `tb-avatar` or 18 dp icon
   (`<… lead>`), the label, a trailing 18 dp «×» button named «Убрать: <name>». With a dashed assist chip
   at the end it is the «Кому» field of the quick assignment dialog: `tb-member-picker` `[bare]` keeps
-  the data and the panel (`open()`), the chips are the field (*ours*).
+  the data and the panel (`open()`), the chips are the field (*ours*). `[readonly]="true"` drops the «×»
+  (the students an assignment is already given to; *ours*).
+- **Section list** `tb-section-nav` (`@shared/ui/section-nav`, the contents of a long page, e.g. the
+  assignment editor from expanded width): a one-line list in the **M3** navigation-drawer manner — 48 dp
+  items (the drawer's 56 dp is *ours* lowered for an in-page list), full corners, a leading 20 dp icon,
+  label large; the section in view is filled with secondary container and set in label large
+  emphasized (`aria-current="location"`); a click scrolls to the section. About 200 dp wide and sticky;
+  hidden below expanded and while a supporting pane is open (*ours*).
 - **Material card** `tb-material-card` (`@shared/ui`): corner 20, surface-container-low, a preview
   on top (8:5; fetched as a blob by `tb-blob-image`, the kind icon while there is none; an external
   board shows a tonal tile with the service tag), the title (Title Medium) and «кому · дата» under

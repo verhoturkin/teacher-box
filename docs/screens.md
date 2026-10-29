@@ -336,7 +336,16 @@ the editor from expanded and is a modal right drawer below; main content precede
 order; one Markdown field at every width; the AI never changes text without Insert / Replace; its
 state survives closing the pane; leaving with changes asks first. The recipients, deadline and
 materials parts are the components of the dialog (`ui/recipients-field.ts`, `ui/due-chips.ts`,
-`ui/material-chips.ts`). The sketch's contents column (`Разделы задания`) is not built.
+`ui/material-chips.ts`).
+
+**Sections column** (from expanded width, hidden beside the AI pane): `tb-section-nav` «Разделы задания»
+(design-system §10) lists the shown sections — «Задание», «Материалы · N», «Вопросы · N», «Как проходит
+тест» — the one in view highlighted, a click scrolls to it. The sketch's «Добавить» group is not built:
+the assist chips under «Материалы» do that.
+
+**Recipients of a saved assignment:** a draft shows its `draftStudentIds` as the editable «Кому» chips
+(saving updates `draft-students` once the student list is in); an issued one shows its students as
+read-only chips and «Выдать ещё» (`assign-more-dialog.ts`; the text stays as typed).
 
 **Questions** (0.39.0): a «Вопросы» card under the videos (`question-section.ts`): a question is a card
 (type, text, type fields, points, explanation) with up/down/delete; «Добавить вопрос» picks the type; a total

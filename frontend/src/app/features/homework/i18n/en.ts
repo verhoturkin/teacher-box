@@ -305,6 +305,12 @@ export const en: Translation<typeof ru> = {
     leaveHeader: 'Leave without saving?',
     leaveMessage: 'Your changes to this assignment will be lost.',
     leave: 'Leave',
+    assignMore: 'Assign to more',
+    sections: 'Assignment sections',
+    sectionTask: 'Instructions',
+    sectionMaterials: (count: number) => `Materials · ${String(count)}`,
+    sectionQuestions: (count: number) => `Questions · ${String(count)}`,
+    sectionSettings: 'Quiz settings',
     boardFailed:
       'The assignment was added to the board, but its board link could not be saved. Set the link on the assignment page',
   },

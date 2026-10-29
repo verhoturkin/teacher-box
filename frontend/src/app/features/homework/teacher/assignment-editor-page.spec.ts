@@ -11,9 +11,11 @@ import { screenWidth, testProviders } from '@testing/setup';
 import { By } from '@angular/platform-browser';
 import { aBoard } from '@testing/boards-fixtures';
 import { ToBoardDialog } from '@features/boards/parts';
+import { AssignMoreDialog } from './assign-more-dialog';
 import { AssignmentDraftHandover } from './assignment-draft';
 import { AssignmentEditorPage } from './assignment-editor-page';
 import { questionDraft } from './question-section';
+import { videoDraft } from './video-section';
 
 const STUDENTS = [
   { id: 's-1', displayName: 'Анна', status: 'ACTIVE' },
@@ -401,6 +403,85 @@ describe('AssignmentEditorPage', () => {
 
     backend.expectNone('/api/teacher/homework/assignments/a-1/attachments');
     expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-1']);
+  });
+
+  it('shows the students of a draft as chips and keeps them on save', async () => {
+    const { page, host } = await edit(
+      assignmentDetails({ tasks: [], draftStudentIds: ['s-1'], attachments: [] }),
+    );
+    backend.expectOne('/api/teacher/students').flush(STUDENTS);
+    flushGroups();
+    await fixture.whenStable();
+
+    expect(page.form.controls.members.value).toEqual([{ kind: 'STUDENT', id: 's-1' }]);
+    expect(host.querySelector('tb-recipients-field')).not.toBeNull();
+    expect(readableText(host)).toContain('Анна');
+
+    page.form.controls.members.setValue([{ kind: 'STUDENT', id: 's-2' }]);
+    exactButton(host, 'Сохранить').click();
+    backend
+      .expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' })
+      .flush(assignmentDetails({ tasks: [], version: 1 }));
+    const kept = backend.expectOne('/api/teacher/homework/assignments/a-1/draft-students');
+    expect(kept.request.body).toEqual({ studentIds: ['s-2'] });
+    kept.flush(assignmentDetails({ tasks: [] }));
+    await fixture.whenStable();
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-1']);
+  });
+
+  it('leaves the students of a draft alone until the list of students is in', async () => {
+    const { host } = await edit(
+      assignmentDetails({ tasks: [], draftStudentIds: ['s-1'], attachments: [] }),
+    );
+    exactButton(host, 'Сохранить').click();
+    backend
+      .expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' })
+      .flush(assignmentDetails({ tasks: [], version: 1 }));
+    backend.expectNone('/api/teacher/homework/assignments/a-1/draft-students');
+  });
+
+  it('shows the students of an issued assignment read-only and gives it to more', async () => {
+    const { host } = await edit(assignmentDetails());
+
+    expect(host.querySelector('tb-recipients-field')).toBeNull();
+    expect(host.querySelector('tb-input-chip')?.textContent).toContain('Анна');
+    expect(host.querySelector('tb-input-chip button')).toBeNull();
+
+    buttonByText(host, 'Выдать ещё').click();
+    await fixture.whenStable();
+    const more = fixture.debugElement
+      .query(By.directive(AssignMoreDialog))
+      .injector.get(AssignMoreDialog);
+    expect(more.visible()).toBe(true);
+    const issued = assignmentDetails();
+    const first = issued.tasks[0];
+    if (first === undefined) {
+      throw new Error('no task in the fixture');
+    }
+    more.saved.emit({
+      ...issued,
+      version: 3,
+      tasks: [...issued.tasks, { ...first, taskId: 't-2', studentId: 's-2', studentName: 'Борис' }],
+    });
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Борис');
+  });
+
+  it('lists the shown sections in a column and drops it beside the AI', async () => {
+    const { page, host } = await create([], true);
+    const labels = () =>
+      [...host.querySelectorAll('tb-section-nav a')].map((item) => item.textContent.trim());
+    expect(labels()).toEqual(['Задание', 'Материалы']);
+
+    buttonByText(host, 'Тест с вопросами').click();
+    page.changeQuestions([{ ...questionDraft('NUMBER'), text: 'Вопрос', value: 1 }]);
+    page.changeVideos([...page.videos(), videoDraft()]);
+    await fixture.whenStable();
+    expect(labels()).toEqual(['Задание', 'Материалы · 1', 'Вопросы · 1', 'Как проходит тест']);
+
+    exactButton(host, 'ИИ-помощник').click();
+    await fixture.whenStable();
+    expect(host.querySelector('tb-section-nav')).toBeNull();
   });
 
   it('asks before leaving unsaved work', async () => {

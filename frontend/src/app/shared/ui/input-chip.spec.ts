@@ -20,6 +20,13 @@ class Host {
   readonly removed = signal(false);
 }
 
+@Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [InputChip],
+  template: `<tb-input-chip label="Анна" [readonly]="true" />`,
+})
+class ReadonlyHost {}
+
 describe('InputChip', () => {
   it('shows the label with its lead and emits `removed` from the named «×»', async () => {
     const fixture = TestBed.createComponent(Host);
@@ -31,5 +38,13 @@ describe('InputChip', () => {
 
     host.querySelector<HTMLButtonElement>('button[aria-label="Убрать: Группа B1"]')?.click();
     expect(fixture.componentInstance.removed()).toBe(true);
+  });
+
+  it('has no «×» when it is read-only', async () => {
+    const fixture = TestBed.createComponent(ReadonlyHost);
+    await fixture.whenStable();
+
+    expect(hostElement(fixture).querySelector('button')).toBeNull();
+    expect(hostElement(fixture).textContent).toContain('Анна');
   });
 });

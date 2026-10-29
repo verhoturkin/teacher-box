@@ -64,6 +64,9 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { PageHeader } from '@shared/ui/page-header';
+import { Avatar } from '@shared/ui/avatar';
+import { InputChip } from '@shared/ui/input-chip';
+import { SectionNav, SectionNavItem } from '@shared/ui/section-nav';
 import { HomeworkApi } from '../data-access/homework-api';
 import {
   AssignmentDetails,
@@ -79,6 +82,7 @@ import { TextbookList } from '../ui/textbook-list';
 import { videoName } from '../ui/video-list';
 import { AssignmentDraftHandover, titleOf } from './assignment-draft';
 import { assignmentBoard } from './assignment-board';
+import { AssignMoreDialog } from './assign-more-dialog';
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { MaterialOpener } from './material-opener';
 import { NEXT_LESSON_DAYS, nextLessonStart } from './next-lesson';
@@ -124,6 +128,10 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     DueChips,
     MaterialChips,
     RecipientsField,
+    SectionNav,
+    Avatar,
+    InputChip,
+    AssignMoreDialog,
     SelectButton,
     Textarea,
     HomeworkAiPanel,
@@ -190,127 +198,158 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
               }
             </tb-page-header>
           </ng-template>
-          <form tbFieldErrors class="tb-editor tb-form" [formGroup]="form" (ngSubmit)="save()">
-            <p-card>
-              <div class="tb-form">
-                @if (isNew()) {
-                  <tb-recipients-field
-                    inputId="editor-students"
-                    [control]="form.controls.members"
-                    [students]="studentOptions()"
-                    [groups]="groups()"
-                  />
-                }
-
-                <div class="tb-field">
-                  <div class="tb-field__header">
-                    <label for="editor-text">{{ c.task }}</label>
-                    <p-selectbutton
-                      [options]="modes"
-                      [formControl]="mode"
-                      optionLabel="label"
-                      optionValue="value"
-                      [allowEmpty]="false"
-                      [ariaLabel]="t.editorMode"
+          <div class="tb-editor__layout">
+            @if (showNav()) {
+              <tb-section-nav class="tb-editor__nav" [items]="navItems()" [label]="t.sections" />
+            }
+            <form
+              tbFieldErrors
+              class="tb-editor tb-editor__form tb-form"
+              [formGroup]="form"
+              (ngSubmit)="save()"
+            >
+              <p-card>
+                <div class="tb-form">
+                  @if (isNew() || isDraft()) {
+                    <tb-recipients-field
+                      inputId="editor-students"
+                      [control]="form.controls.members"
+                      [students]="studentOptions()"
+                      [groups]="groups()"
                     />
-                  </div>
-                  @if (modeValue() === 'preview') {
-                    <div class="tb-preview" [style.min-height.px]="editorHeight()">
-                      <tb-markdown [text]="textValue()" />
-                    </div>
                   } @else {
-                    <textarea
-                      pTextarea
-                      id="editor-text"
-                      class="tb-editor__text"
-                      #editor
-                      [style.height.px]="editorHeight()"
-                      formControlName="description"
-                      rows="14"
-                    ></textarea>
+                    <div class="tb-field">
+                      <span id="editor-given">{{ c.whom }}</span>
+                      <div class="tb-editor__chips" role="group" aria-labelledby="editor-given">
+                        @for (task of assignment()?.tasks ?? []; track task.taskId) {
+                          <tb-input-chip [label]="task.studentName" [readonly]="true">
+                            <tb-avatar lead [name]="task.studentName" size="1.5rem" />
+                          </tb-input-chip>
+                        }
+                        <p-button
+                          [label]="t.assignMore"
+                          icon="tb-i tb-i-add"
+                          severity="secondary"
+                          (onClick)="giveMore()"
+                        />
+                      </div>
+                    </div>
                   }
-                  <small class="tb-hint">{{ c.firstLine }}. {{ t.markdownHint }}</small>
-                </div>
 
-                <tb-due-chips
-                  [lesson]="nextLesson()"
-                  [choice]="dueChoice()"
-                  (choiceChange)="chooseDue($event)"
-                  [date]="duePicked()"
-                  (dateChange)="pickDue($event)"
-                />
-
-                <section class="tb-editor__materials" [attr.aria-label]="c.materials">
-                  <h3 class="tb-subtitle">{{ c.materials }}</h3>
-                  @if (isNew() && textbooks().length > 0) {
-                    <tb-textbook-list
-                      [textbooks]="textbooks()"
-                      [editable]="true"
-                      (opened)="materials.textbook($event)"
-                      (edit)="editTextbook($event)"
-                      (remove)="removeTextbook($event)"
-                    />
-                  }
-                  @if (videos().length > 0) {
-                    <tb-video-section [videos]="videos()" (videosChange)="changeVideos($event)" />
-                  }
-                  @if (onBoard()) {
-                    <div class="tb-editor__row">
-                      <i class="tb-i tb-i-co_present" aria-hidden="true"></i>
-                      <span class="tb-editor__grow">{{ c.onBoard }}</span>
-                      <p-button
-                        icon="tb-i tb-i-close"
-                        severity="secondary"
-                        [text]="true"
-                        [rounded]="true"
-                        [ariaLabel]="c.remove"
-                        (onClick)="onBoard.set(false)"
+                  <div id="editor-task" class="tb-field">
+                    <div class="tb-field__header">
+                      <label for="editor-text">{{ c.task }}</label>
+                      <p-selectbutton
+                        [options]="modes"
+                        [formControl]="mode"
+                        optionLabel="label"
+                        optionValue="value"
+                        [allowEmpty]="false"
+                        [ariaLabel]="t.editorMode"
                       />
                     </div>
-                  }
-                  <tb-material-chips
-                    [(files)]="newFiles"
-                    [compact]="compact()"
-                    [withFiles]="isNew()"
-                    [videosFull]="videos().length >= maxVideos"
-                    [quizDisabled]="quizShown()"
-                    [onBoard]="onBoard()"
-                    (textbook)="bindTextbook()"
-                    (video)="addVideo()"
-                    (quiz)="quizOpen.set(true)"
-                    (board)="onBoard.set(true)"
+                    @if (modeValue() === 'preview') {
+                      <div class="tb-preview" [style.min-height.px]="editorHeight()">
+                        <tb-markdown [text]="textValue()" />
+                      </div>
+                    } @else {
+                      <textarea
+                        pTextarea
+                        id="editor-text"
+                        class="tb-editor__text"
+                        #editor
+                        [style.height.px]="editorHeight()"
+                        formControlName="description"
+                        rows="14"
+                      ></textarea>
+                    }
+                    <small class="tb-hint">{{ c.firstLine }}. {{ t.markdownHint }}</small>
+                  </div>
+
+                  <tb-due-chips
+                    [lesson]="nextLesson()"
+                    [choice]="dueChoice()"
+                    (choiceChange)="chooseDue($event)"
+                    [date]="duePicked()"
+                    (dateChange)="pickDue($event)"
                   />
-                </section>
-              </div>
-              @if (error(); as message) {
-                <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-              }
-            </p-card>
-            @if (quizShown()) {
-              <p-card [header]="tq.title">
-                <tb-question-section
-                  [questions]="questions()"
-                  (questionsChange)="changeQuestions($event)"
-                  [reveal]="quizReveal()"
-                  (revealChange)="changeReveal($event)"
-                  [attempts]="quizAttempts()"
-                  (attemptsChange)="changeAttempts($event)"
-                  [locked]="quizLocked()"
-                  [error]="quizError()"
-                  [showProblems]="quizChecked()"
-                />
-                @if (!quizLocked()) {
-                  <p-button
-                    [label]="c.remove"
-                    icon="tb-i tb-i-delete"
-                    severity="secondary"
-                    [text]="true"
-                    (onClick)="removeQuiz()"
-                  />
+
+                  <section
+                    id="editor-materials"
+                    class="tb-editor__materials"
+                    [attr.aria-label]="c.materials"
+                  >
+                    <h3 class="tb-subtitle">{{ c.materials }}</h3>
+                    @if (isNew() && textbooks().length > 0) {
+                      <tb-textbook-list
+                        [textbooks]="textbooks()"
+                        [editable]="true"
+                        (opened)="materials.textbook($event)"
+                        (edit)="editTextbook($event)"
+                        (remove)="removeTextbook($event)"
+                      />
+                    }
+                    @if (videos().length > 0) {
+                      <tb-video-section [videos]="videos()" (videosChange)="changeVideos($event)" />
+                    }
+                    @if (onBoard()) {
+                      <div class="tb-editor__row">
+                        <i class="tb-i tb-i-co_present" aria-hidden="true"></i>
+                        <span class="tb-editor__grow">{{ c.onBoard }}</span>
+                        <p-button
+                          icon="tb-i tb-i-close"
+                          severity="secondary"
+                          [text]="true"
+                          [rounded]="true"
+                          [ariaLabel]="c.remove"
+                          (onClick)="onBoard.set(false)"
+                        />
+                      </div>
+                    }
+                    <tb-material-chips
+                      [(files)]="newFiles"
+                      [compact]="compact()"
+                      [withFiles]="isNew()"
+                      [videosFull]="videos().length >= maxVideos"
+                      [quizDisabled]="quizShown()"
+                      [onBoard]="onBoard()"
+                      (textbook)="bindTextbook()"
+                      (video)="addVideo()"
+                      (quiz)="quizOpen.set(true)"
+                      (board)="onBoard.set(true)"
+                    />
+                  </section>
+                </div>
+                @if (error(); as message) {
+                  <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
                 }
               </p-card>
-            }
-          </form>
+              @if (quizShown()) {
+                <p-card id="editor-quiz" [header]="tq.title">
+                  <tb-question-section
+                    [questions]="questions()"
+                    (questionsChange)="changeQuestions($event)"
+                    [reveal]="quizReveal()"
+                    (revealChange)="changeReveal($event)"
+                    [attempts]="quizAttempts()"
+                    (attemptsChange)="changeAttempts($event)"
+                    [locked]="quizLocked()"
+                    [error]="quizError()"
+                    [showProblems]="quizChecked()"
+                  />
+                  @if (!quizLocked()) {
+                    <p-button
+                      [label]="c.remove"
+                      icon="tb-i tb-i-delete"
+                      severity="secondary"
+                      [text]="true"
+                      (onClick)="removeQuiz()"
+                    />
+                  }
+                </p-card>
+              }
+            </form>
+          </div>
         </tb-pane>
         @if (aiEnabled() && !single() && aiOpen()) {
           <tb-pane class="tb-editor__ai" [label]="t.aiTitle">
@@ -373,6 +412,13 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
           (placed)="rememberBoard(saved, $event)"
         />
       }
+      @if (assignment(); as current) {
+        <tb-assign-more-dialog
+          [assignmentId]="current.id"
+          [assigned]="givenTo()"
+          (saved)="given($event)"
+        />
+      }
       <tb-bind-textbook-dialog
         [(visible)]="bindVisible"
         [taken]="textbooks()"
@@ -398,6 +444,30 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
 
     .tb-editor {
       min-width: 0;
+    }
+
+    .tb-editor__layout {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--tb-space-6);
+    }
+
+    .tb-editor__nav {
+      position: sticky;
+      inset-block-start: var(--tb-space-4);
+      flex: 0 0 12.5rem;
+    }
+
+    .tb-editor__form {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .tb-editor__chips {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--tb-space-2);
     }
 
     .tb-editor__text {
@@ -498,6 +568,44 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     return assignment === null ? '/teacher/homework' : ['/teacher/homework', assignment.id];
   });
   protected readonly backLabel = computed(() => this.assignment()?.title ?? T.editor.back);
+
+  /** A saved assignment nobody has yet: its students are still a choice. */
+  protected readonly isDraft = computed(() => this.assignment()?.tasks.length === 0);
+  /** The students of an issued assignment; «Выдать ещё» adds more. */
+  protected readonly givenTo = computed(
+    () => this.assignment()?.tasks.map((task) => task.studentId) ?? [],
+  );
+  private readonly assignMore = viewChild(AssignMoreDialog);
+  /** The student list is in: only then a draft's students are saved (an empty list must not wipe them). */
+  private readonly studentsLoaded = signal(false);
+  protected readonly showNav = computed(() => !this.single() && !this.aiOpen());
+  protected readonly navItems = computed<SectionNavItem[]>(() => {
+    const materials =
+      (this.isNew() ? this.textbooks().length + this.newFiles().length : 0) +
+      this.videos().length +
+      (this.onBoard() ? 1 : 0);
+    const questions = this.questions().length;
+    return [
+      { id: 'editor-task', icon: 'description', label: this.t.sectionTask },
+      {
+        id: 'editor-materials',
+        icon: 'attach_file',
+        label: materials === 0 ? this.c.materials : this.t.sectionMaterials(materials),
+      },
+      ...(this.quizShown()
+        ? [
+            {
+              id: 'editor-quiz',
+              icon: 'quiz',
+              label: this.t.sectionQuestions(questions),
+            },
+            ...(questions > 0
+              ? [{ id: 'quiz-settings', icon: 'tune', label: this.t.sectionSettings }]
+              : []),
+          ]
+        : []),
+    ];
+  });
 
   protected readonly students = signal<StudentOption[]>([]);
   protected readonly groups = signal<StudentGroup[]>([]);
@@ -637,9 +745,7 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     if (this.isNew()) {
       this.takeDraft();
       this.loadStudents();
-      this.identity.listGroups().subscribe((groups) => {
-        this.groups.set(groups.filter((group) => group.archivedAt === null));
-      });
+      this.loadGroups();
       const today = new Date();
       const until = new Date(
         today.getFullYear(),
@@ -695,6 +801,13 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
         this.duePicked.set(assignment.dueAt === null ? null : new Date(assignment.dueAt));
         this.videos.set(assignment.videos.map((video) => videoDraft(video)));
         this.loadQuiz(assignment);
+        if (assignment.tasks.length === 0) {
+          this.loadStudents();
+          this.loadGroups();
+          this.form.controls.members.setValue(
+            assignment.draftStudentIds.map((id) => ({ kind: 'STUDENT' as const, id })),
+          );
+        }
       });
   }
 
@@ -706,14 +819,30 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     this.quizAttempts.set(assignment.quizAttempts ?? 0);
   }
 
+  private loadGroups(): void {
+    this.identity.listGroups().subscribe((groups) => {
+      this.groups.set(groups.filter((group) => group.archivedAt === null));
+    });
+  }
+
   private loadStudents(): void {
     this.identity.listStudents().subscribe((students) => {
+      this.studentsLoaded.set(true);
       this.students.set(
         students
           .filter((student) => student.status !== 'DEACTIVATED')
           .map((student) => ({ id: student.id, displayName: student.displayName })),
       );
     });
+  }
+
+  protected giveMore(): void {
+    this.assignMore()?.open(this.assignment()?.draftStudentIds ?? []);
+  }
+
+  /** «Выдать ещё» gave it to more students: the chips and the version follow, the text stays. */
+  protected given(details: AssignmentDetails): void {
+    this.assignment.set(details);
   }
 
   protected chooseDue(choice: Due): void {
@@ -878,7 +1007,13 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
             .pipe(
               switchMap((updated) =>
                 this.addMaterials(updated.id).pipe(
-                  map((complete) => ({ assignment: updated, complete })),
+                  switchMap((complete) =>
+                    this.isDraft() && this.studentsLoaded()
+                      ? this.api
+                          .saveDraftStudents(updated.id, students)
+                          .pipe(map((assignment) => ({ assignment, complete })))
+                      : of({ assignment: updated, complete }),
+                  ),
                 ),
               ),
             );

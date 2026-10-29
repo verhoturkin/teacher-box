@@ -314,7 +314,7 @@ You can also add [textbook pages](/teacher/help/textbooks) from Materials or an 
 
 ## Manage assignments
 
-“Edit” opens the editor for the instructions (their first line is the title), videos, quiz and due date. Update the textbooks and files of a saved assignment on its details page. The portal checks before discarding unsaved changes.
+“Edit” opens the editor. On a wide screen a list of sections on the left scrolls to the one you choose. A draft keeps its students under “To” and you can change them; an issued assignment shows its students without “×”, and “Assign to more” adds new ones. The editor covers the instructions (their first line is the title), videos, quiz and due date. Update the textbooks and files of a saved assignment on its details page. The portal checks before discarding unsaved changes.
 
 “Make a copy” creates a draft with the original text, files, textbooks and videos, but no recipients or due date. The editor opens so you can adapt it.
 

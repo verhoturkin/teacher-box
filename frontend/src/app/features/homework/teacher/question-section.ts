@@ -578,7 +578,7 @@ export function firstProblem(drafts: readonly QuestionDraft[]): string | null {
 
     @if (questions().length > 0) {
       <p class="tb-question-total" role="status">{{ total() }}</p>
-      <fieldset class="tb-question-settings">
+      <fieldset id="quiz-settings" class="tb-question-settings">
         <legend class="tb-subtitle">{{ t.settings }}</legend>
         <div class="tb-field">
           <label for="quiz-reveal">{{ t.reveal }}</label>
