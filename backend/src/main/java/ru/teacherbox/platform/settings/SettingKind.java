@@ -85,19 +85,19 @@ public enum SettingKind {
                 case CHOICE -> "нужно одно из значений: " + String.join(", ", choices);
             };
             case EN -> switch (this) {
-                case TEXT -> "a text is needed";
-                case NUMBER -> "a whole number is needed";
-                case BOOLEAN -> "true or false is needed";
-                case DURATION -> "a duration is needed, e.g. 15m, 24h or 7d";
-                case DURATIONS -> "durations separated by commas are needed, e.g. 24h,1h";
-                case DATA_SIZE -> "a size is needed, e.g. 20MB";
-                case CRON -> "a cron schedule of 6 parts (second minute hour day month weekday) or - is needed";
-                case ADDRESS -> "an address like https://school.example.com without a path is needed";
-                case URL -> "an address starting with http:// or https:// is needed";
-                case PROXY -> "a proxy address like http://host:port or socks5://host:port is needed";
-                case TIME_ZONE -> "a time zone is needed, e.g. Europe/Moscow";
-                case CURRENCY -> "an ISO 4217 currency code is needed, e.g. RUB";
-                case CHOICE -> "one of the values is needed: " + String.join(", ", choices);
+                case TEXT -> "Enter some text";
+                case NUMBER -> "Enter a whole number";
+                case BOOLEAN -> "Enter true or false";
+                case DURATION -> "Enter a duration, such as 15m, 24h or 7d";
+                case DURATIONS -> "Enter comma-separated durations, such as 24h,1h";
+                case DATA_SIZE -> "Enter a file size, such as 20MB";
+                case CRON -> "Enter a six-field cron expression (second minute hour day month weekday), or -";
+                case ADDRESS -> "Enter a URL such as https://school.example.com, without a path";
+                case URL -> "Enter a URL starting with http:// or https://";
+                case PROXY -> "Enter a proxy URL such as http://host:port or socks5://host:port";
+                case TIME_ZONE -> "Enter a time zone, such as Europe/Moscow";
+                case CURRENCY -> "Enter an ISO 4217 currency code, such as RUB";
+                case CHOICE -> "Choose one of: " + String.join(", ", choices);
             };
         };
     }

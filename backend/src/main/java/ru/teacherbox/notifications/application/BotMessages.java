@@ -61,32 +61,30 @@ enum BotMessages {
 
     EN {
         @Override List<BotCommand> commands() {
-            return List.of(new BotCommand("menu", "Main menu"), new BotCommand("cancel", "Cancel the action"),
+            return List.of(new BotCommand("menu", "Main menu"), new BotCommand("cancel", "Cancel current action"),
                     new BotCommand("help", "What the bot can do"), new BotCommand("stop", "Turn off notifications"));
         }
-        @Override String menuTeacher() { return "What shall I do?"; }
+        @Override String menuTeacher() { return "What would you like to do?"; }
         @Override String menuStudent() { return "What would you like to do?"; }
-        @Override String nothingYet() { return "For now the bot only sends notifications from the portal."; }
-        @Override String notUnderstood() { return "I didn't understand the message."; }
-        @Override String fileNotTaken() { return "The bot does nothing with files yet."; }
-        @Override String fileTooLarge() { return "The file is too large: the bot takes up to 20 MB."; }
-        @Override String fileFailed() { return "Couldn't receive the file. Send it again."; }
+        @Override String nothingYet() { return "This bot currently sends portal notifications only."; }
+        @Override String notUnderstood() { return "Sorry, I didn't understand that."; }
+        @Override String fileNotTaken() { return "This bot can't process files yet."; }
+        @Override String fileTooLarge() { return "Files must be 20 MB or smaller."; }
+        @Override String fileFailed() { return "Couldn't download the file. Please send it again."; }
         @Override String cancelled() { return "Action cancelled."; }
-        @Override String stale() { return "This button no longer works."; }
-        @Override String noAccess() { return "Access to the portal is turned off."; }
+        @Override String stale() { return "This action is no longer available. Open the menu to continue."; }
+        @Override String noAccess() { return "Your portal access has been disabled."; }
         @Override String teacherOff() {
-            return "Managing the portal through the bot is turned off: “Notifications” → “Messengers” on the portal. "
-                    + "Notifications will keep coming.";
+            return "Bot controls are disabled. Enable teacher actions under “Settings” → "
+                    + "“Notifications and messengers” → “What the bot can do”. You'll still receive notifications.";
         }
-        @Override String failed() { return "That didn't work: the data may have changed. Open the menu and try again."; }
-        @Override String chooseAccount() {
-            return "Several accounts are connected to this chat. On whose behalf shall I continue?";
-        }
+        @Override String failed() { return "Something changed before this action could finish. Open the menu and try again."; }
+        @Override String chooseAccount() { return "Several accounts are linked to this chat. Which account would you like to use?"; }
         @Override String commandsHelp() {
             return """
                     Commands:
                     /menu — main menu
-                    /cancel — cancel the action
+                    /cancel — cancel current action
                     /stop — turn off notifications""";
         }
         @Override String canDo() { return "The bot can:"; }
@@ -96,20 +94,20 @@ enum BotMessages {
         @Override String cancel() { return "Cancel"; }
         @Override String menu() { return "Menu"; }
         @Override String switchAccount() { return "Switch account"; }
-        @Override String actingFor(String name) { return "You act on behalf of: " + name + "."; }
-        @Override String linked() { return "Done! Notifications of the teacher's portal will come here. Turn off: /stop"; }
+        @Override String actingFor(String name) { return "Using account: " + name + "."; }
+        @Override String linked() { return "Connected! You'll receive portal notifications here. Send /stop to turn them off."; }
         @Override String invalidCode() {
-            return "The code is not found or has expired. Get a new code in your account, “Notifications”.";
+            return "This code is invalid or has expired. Get a new one in your portal account's messenger settings.";
         }
         @Override String howToConnect() {
-            return "Hello! This is the notification bot of the teacher's portal. To get notifications, open "
-                    + "“Notifications” in your account, press “Connect” and send the code here.";
+            return "Hello! I send notifications from your teacher's portal. To connect, open your account's "
+                    + "messenger settings, select “Connect” and send me the code.";
         }
-        @Override String alreadyLinked() { return "This chat gets notifications of the teacher's portal. Turn off: /stop"; }
+        @Override String alreadyLinked() { return "This chat already receives portal notifications. Send /stop to turn them off."; }
         @Override String stopped() {
-            return "Notifications are turned off. You can connect again in your account, “Notifications”.";
+            return "Notifications turned off. Reconnect in your portal account's messenger settings.";
         }
-        @Override String notLinked() { return "This chat is not connected to notifications."; }
+        @Override String notLinked() { return "Notifications aren't enabled for this chat."; }
     };
 
     static BotMessages of(Language language) {

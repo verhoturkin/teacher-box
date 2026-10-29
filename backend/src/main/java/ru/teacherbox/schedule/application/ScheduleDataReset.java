@@ -49,7 +49,7 @@ class ScheduleDataReset implements DataReset {
         // the administrator reads it on the page of the reset (ADR-0036)
         return remove.getAsBoolean() ? Optional.empty() : Optional.of(switch (Language.current()) {
             case RU -> "Календарь портала остался в Google Календаре — удалите его там вручную.";
-            case EN -> "The portal's calendar stayed in Google Calendar — delete it there by hand.";
+            case EN -> "The portal calendar is still in Google Calendar. Delete it there manually.";
         });
     }
 }

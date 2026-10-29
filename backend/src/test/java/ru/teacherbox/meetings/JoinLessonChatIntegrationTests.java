@@ -59,7 +59,7 @@ class JoinLessonChatIntegrationTests {
 
         ChatStep english = done(join.start(new ChatUser(student, Role.STUDENT, Language.EN)));
         assertThat(english.reply().text()).isEqualTo("Lesson links:");
-        assertThat(url(english, "Join the lesson")).isEqualTo("https://telemost.yandex.ru/j/1");
+        assertThat(url(english, "Join lesson")).isEqualTo("https://telemost.yandex.ru/j/1");
         assertThat(url(english, "Group “ОГЭ”")).isEqualTo("https://zoom.us/j/2");
     }
 }

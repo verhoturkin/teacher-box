@@ -102,7 +102,7 @@ class AdminSettingsIntegrationTest {
                 .content("{\"password\":\"admin-password\",\"values\":{\"TEACHERBOX_BACKUP_KEEP_DAYS\":\"many\"}}"))
                 .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
                 .bodyJson().extractingPath("$.detail").asString()
-                .isEqualTo("Days to keep backups (TEACHERBOX_BACKUP_KEEP_DAYS): a whole number is needed");
+                .isEqualTo("Days to keep backups (TEACHERBOX_BACKUP_KEEP_DAYS): Enter a whole number");
     }
 
     @Test

@@ -1,225 +1,237 @@
 import { HelpArticleText } from '../help.models';
 import { StudentTopic } from '../help-topics';
 
-/** Help articles in English (ADR-0035): plain words, steps to click and short answers. */
+/** English help, written for students alongside the Russian edition. */
 export const STUDENT_ARTICLES: Readonly<Record<StudentTopic, HelpArticleText>> = {
   login: {
     title: 'Sign-in, password and profile',
-    summary: 'How to sign in to the cabinet, change the password, the photo and the name',
+    summary: 'Set up your account, reset your password and update your profile',
     body: `
-Pane headings stay above scrolling content, while search and help text fill the available width.
-Focus rings appear during keyboard use, not automatically when opening a dialog with the pointer.
+## Set up your account
 
-On a phone, the home page starts with the next lesson card; the briefing above it is hidden.
+Your teacher will send you an invitation link. Open it and choose a username and password. You can then sign in to the portal with those details. If the invitation has expired or does not open, ask your teacher for a new link.
 
-## First sign-in
+## Reset or change your password
 
-The teacher sends an invitation link. Open it, choose a login and a password — and you are in your cabinet. After that, sign in on the sign-in page with this login and password.
+If you have forgotten your password, ask your teacher for a password reset link.
 
-## Forgot the password
+To change a password you know, select your name at the bottom of the sidebar, then “Change password”. On a phone, open the ☰ menu to find your account.
 
-Ask the teacher to send a password reset link. Set a new password with it.
+## Update your photo and name
 
-## Change the password
+Select your name to open “My account”.
 
-The item with your name (at the bottom of the panel on the left, under ☰ on a phone) → «Change password».
-
-If a link does not open or is out of date, ask the teacher to send a new one.
-
-## Photo and name
-
-The item with your name (at the bottom of the panel on the left, under ☰ on a phone): the photo is in the top card, the name in the «Name» card.
-
-- **Photo** — «Upload photo» and choose a picture (JPEG, PNG or WebP). The portal cuts a square out of its centre and makes it smaller. You see the photo next to the item with your name, and the teacher sees it in the list of students, in payments, calls, the schedule and on the home page. The bin next to it removes the photo.
-- **Name** — how the portal calls you in the cabinet. The teacher still sees you under the name they gave. Erase your name and save to go back to the teacher's name.
+- **Photo:** choose “Upload photo” and select a JPEG, PNG or WebP image. The portal crops it to a square and resizes it. Your teacher sees it alongside your name throughout the portal. Use the bin button to remove it.
+- **Name:** enter the display name you want to use in the portal. Your teacher will still see the name they entered for you. Leave this field blank and save to use that name again.
 `,
   },
   schedule: {
-    title: 'Schedule and moving',
-    summary: 'Your lessons, cancelling and moving',
+    title: 'Schedule and rescheduling',
+    summary: 'Find your lessons, request a new time or report an absence',
     body: `
-Clicking a calendar lesson opens a centered window on a computer and a bottom sheet on a phone. It shows who teaches, the title, the time, the topic, boards and the room; «Join lesson» is in the room row, «Move» and «Cancel» sit beside it. On a phone, upcoming lessons and calendar subscription use separate rounded sections.
+“Schedule” shows your lessons in a week or month view. On a phone it opens in agenda view: choose a day in the week strip to see its lessons. Tap a lesson to see its time, topic, boards and meeting link.
 
-«Schedule» shows a week or month calendar; today is marked by colour. On a computer, the mini calendar, upcoming lessons and «My requests» sit beside it. On a phone it opens with an agenda: a week strip and lessons of the selected day, with switches to week or month.
+On a computer, upcoming lessons and “My requests” appear beside the calendar. On a phone, lesson details open in a panel at the bottom of the screen.
 
-## Cancel or move a lesson
+## Request a change
 
-Next to the lesson click «Move» or «Cancel». On a phone, tap the lesson — a panel opens at the bottom with the buttons «Join lesson», «Move» and «Cancel». To move it, propose a convenient time. You can write a comment to the teacher.
+Choose “Reschedule” or “Cancel” beside the lesson. To reschedule, suggest a new date and time. You can also include a message for your teacher.
 
-In the calendar (week, month, list) the time when the teacher is busy or not working is greyed out with «Busy». Choose free time: a lesson cannot be moved to busy time, the portal tells you at once.
+Times when your teacher is unavailable are marked “Busy”. Choose a free time; the portal will tell you if your suggested time is unavailable.
 
-The teacher gets the request and answers — the answer comes as a notification, and its status is shown in «My requests». Until the teacher answers, the request can be withdrawn with «Withdraw» next to the lesson (on a phone — «Withdraw request» in the lesson's panel).
+Your teacher will receive the request and you will be notified of their response. Check its status in “My requests”. Until your teacher responds, you can withdraw it with “Withdraw” or “Withdraw request”.
 
-If you cancel late, the teacher may charge the lesson as missed.
-
-Repeating lessons appear as individual occurrences. Your move or cancellation request concerns only the selected lesson.
-
-## Lesson summary
-
-When the teacher sends a summary, you get a «Lesson summary» notification. Read it in the lesson card («What we covered»); every held lesson is listed in «Lesson history» on the «Schedule» page. You can turn the notification topic off in «My account».
+A late cancellation may be charged as a missed lesson. A request for a recurring lesson applies only to the date you selected.
 
 ## Group lessons
 
-If you cannot come to a group lesson, click «I won’t come». If you said so in advance, the teacher knows at once that you will not be there, and the lesson is not charged.
+If you cannot attend a group lesson, choose “I can’t attend”. Let your teacher know in advance so you will not be charged for your absence.
 
-## Calendar on the phone
+## Lesson summaries
 
-The «Calendar on the phone» card → «Get link» → add it to your phone's calendar as a subscription. The lessons appear there by themselves.
+When your teacher sends a summary, you will receive a “Lesson summary” notification. Open the lesson and read “What we covered”. Completed lessons are also listed in “Lesson history” on the Schedule page. You can turn off summary notifications in “My account”.
 
-The same can be done through the bot in a messenger ([Bot](/cabinet/help/bot)).
+## Add lessons to your own calendar
+
+In “Calendar subscription”, choose “Get subscription link” and add the link to your calendar as a subscription. Lessons will update automatically. You can also get the link through a [messaging bot](/cabinet/help/bot).
 `,
   },
   lesson: {
-    title: 'Lesson and board',
-    summary: 'How to join a call and open a board',
+    title: 'Lessons and boards',
+    summary: 'Join a lesson, use the call controls and open shared boards',
     body: `
-On the home page, lesson material cards sit together with consistent gaps even on wide screens; on phones they wrap without horizontal scrolling.
-
 ## Join a lesson
 
-Before the lesson click «Join lesson» — the next lesson is shown first on the home page, and the button is in the schedule too. The tile on the left of the card shows the day and the start time, an hour before the lesson — «in 25 min», and during the lesson — «Now» and how much is left (a running lesson can no longer be moved or cancelled).
+Choose “Join lesson” on your home page or in the schedule. Your next lesson appears first on the home page, with its date, start time and duration. Shortly before it starts, the card shows a countdown; during the lesson, it shows the time remaining. Once a lesson has started, you cannot request to reschedule or cancel it.
 
-The call runs right in the portal. A window opens before joining: check the camera and the microphone (the browser asks for permission — allow it) and click «Join». In the call you can turn the microphone or the camera off, drag the window with your camera to another corner, and «Minimize» keeps the call in a small window — open a board or homework and the talk goes on. «Leave the call» is the red button.
+For a portal call, check your camera and microphone in the preview, allow browser access when prompted, then choose “Join”. During the call you can:
 
-If the teacher has set a link to another video service (e.g. Telemost), the button opens it in a new tab.
+- turn your microphone and camera on or off;
+- drag your camera preview to another corner;
+- choose “Minimise” to keep talking while you use a board or work on an assignment;
+- choose “Expand” to return to the full call window;
+- choose “Leave call” to leave.
 
-## Boards
+If your teacher uses an external video service, such as Telemost, the lesson link opens that service in a new tab.
 
-The boards the teacher opened to you or your group are in «Materials», the «Boards» tab: cards with the board's picture, the filters «All», «In the portal», «External» and a search by title. Tap a card to open the board. The boards of the next lesson are buttons right in its card on the home page: tap one to open it.
+## Open a board
 
-On both «Boards» and «Textbooks», search and filters share one row; on narrow screens they wrap and search fills the width. Cards keep a compact size even when the list contains a single material.
+Open “Materials” → “Boards” to see boards shared with you or your group. Search by title or filter by “All”, “In the portal” or “External”. The next lesson card also links directly to its boards.
 
-- **An Excalidraw board** opens right in the portal, full screen. Draw together with the teacher: the board saves itself, the teacher's strokes appear at once, and you see the teacher's cursor with the name. The board's menu (☰) has, at the bottom, the theme, the grid and what the mouse wheel does: «Zoom» or «Scroll (touchpad)». At the top you see whether it is saved («Saved», «Saving…», «Offline — will retry»). The board's pictures appear as they load — you can draw without waiting for them. To go back — «← Back» (where you opened the board from) or «← Boards» if the board was opened by a link; the same is in the board's menu (☰). Save the shapes you need to your library: right click → «Add to library»; open it with the «Library» button at the top right.
-- **An external board** (e.g. Holst) opens in a new tab.
+An **Excalidraw board** opens in the portal. You and your teacher can draw together and see each other’s cursors. Changes are saved automatically. The status at the top shows “Saved”, “Saving…” or “Offline — reconnecting…”. Images appear as they load, so you can start drawing straight away.
 
-The links to the lesson and the boards are in the bot too: «Join lesson» and «My boards».
+The board menu (☰) contains the theme, grid and mouse-wheel settings. Choose “Zoom” or “Scroll (touchpad)” to suit your device. Use “Back” to return to where you opened the board, or “Back to boards” if you followed a direct link. These actions are also in the board menu.
+
+To save reusable shapes, select them, right-click and choose “Add to library”. Open your library with the button at the top right.
+
+An **external board**, such as Holst, opens in a new tab. The bot also provides “Join lesson” and “My boards” links.
 `,
   },
   homework: {
     title: 'Homework',
-    summary: 'How to see and hand in homework',
+    summary: 'Read assignments, submit your work and respond to feedback',
     body: `
-## See the homework
+## Find an assignment
 
-«Homework» — the list on the left and the chosen task on the right (on a phone the list and the task open one after another; the «back» arrow leads from the task to the list). Above the list are three buttons with numbers: «To hand in» (still to do, or returned by the teacher), «In review» (you handed it in and wait for the teacher) and «Done» (accepted). The one with something to do opens first. Search by title is always visible above the list. Status and overdue tags are stacked vertically. A row: the title, the deadline and the status; overdue ones are marked red. The number on the «Homework» icon in the menu is how many tasks wait for you to hand in. A reminder comes before the deadline.
+Open “Homework”. On a computer, the list is on the left and the selected assignment opens on the right. On a phone, select an assignment to open it, then use the back arrow to return to the list.
 
-On the home page the tasks to hand in are in the «To hand in» block (the nearest deadline first; a returned one has «Fix»), and the latest reviewed ones are in «Reviewed recently».
+Use the search field to find an assignment by title. The three filters show:
 
-If the homework has a video, it plays right in the homework (a link to another site opens with «Open the video in a new tab»). If the teacher shows its transcript, there is a «Transcript» button under the video.
+- **To hand in:** new assignments and work returned for revision;
+- **In review:** work you have submitted to your teacher;
+- **Done:** assignments your teacher has accepted.
 
-If a textbook is bound to homework, it is in the homework, in «Textbooks», with its pages. Click the title — only the pages you need open; the arrow button downloads them.
+Each entry shows the title, due date and status. Overdue assignments are marked in red. The number on the Homework menu icon counts assignments you still need to submit. You will receive a reminder before a deadline.
 
-## Send work for review
+Your home page also lists outstanding assignments under “To hand in”, with the nearest deadline first. Choose “Revise” for returned work. Recent feedback appears under “Reviewed recently”.
 
-1. Open the homework.
-2. Write the answer and attach files if needed (photos, documents). A file that is too large or of a wrong type is rejected right when you pick it.
-3. Click «Send for review».
+## Videos and textbooks
 
-The teacher reviews the work: accepts it with a grade or returns it for rework with a comment. If it was returned — fix it and hand it in again.
+Videos play within the assignment when supported; other links open in a new tab. If your teacher has shared a transcript, choose “Transcript” below the video.
 
-## A quiz in the homework
+Attached textbooks appear under “Textbooks”, with the relevant page numbers. Select a title to open it or use the download button to save the assigned pages.
 
-If the homework has questions, a «Quiz» block appears under the text. Click «Start the quiz» and answer: pick an option, type a short answer or a number, for «Matching» choose a pair for every line, and in «Ordering» put the items in order with the arrow buttons (if the order is already right, leave it: it counts as it is). On a phone the questions come one at a time («Back» / «Next»). Answers are saved by themselves. At the end click «Submit the quiz» and confirm — the attempt cannot be changed after that. You see «Result: N of M» at once. The teacher shows the correct answers and explanations right away, after the due date, or not at all. If there are several attempts, «Try again» starts a new one and the best counts. When you are done, click «Send for review» — the teacher will see your result.
+## Submit your work
 
-## Homework on a board
+1. Open the assignment.
+2. Write your response and attach any files, such as photos or documents. The portal checks the file type and size when you select them.
+3. Choose “Submit for review”.
 
-If the teacher put the homework on your board, it has «Go to the board» at the top — the text of the homework and the textbook pages are already there. Still hand in your answer in the homework: as a text or a file.
+Your teacher can accept the submission, add a grade and feedback, or return it for revision. If revisions are requested, make the changes and submit again.
+
+## Take a quiz
+
+If an assignment includes a quiz, choose “Start the quiz”. Questions may ask you to select answers, enter text or a number, match pairs, or put items in order. Use the arrow buttons for ordering questions; an order that is already correct can be left as it is.
+
+On a phone, use “Back” and “Next” to move between questions. Answers are saved automatically. When you finish, choose “Submit the quiz” and confirm. You cannot change that attempt afterwards.
+
+Your score appears immediately. Depending on your teacher’s settings, correct answers and explanations appear immediately, after the due date, or are not shown. If more attempts are allowed, choose “Try again”. Your best score counts.
+
+When you are ready, choose “Submit for review” so your teacher can review your work and quiz result.
+
+## Work on a board
+
+If your teacher has added an assignment to a board, choose “Go to board” at the top of the assignment. Its text and textbook pages will already be there. Submit your response on the assignment page as text or a file.
 `,
   },
   textbooks: {
     title: 'Textbooks',
-    summary: 'Textbooks and workbooks from the teacher',
+    summary: 'Open and download textbooks and workbooks shared by your teacher',
     body: `
-Textbooks are a tab of the «Materials» section (next to «Boards»): the textbooks, workbooks and other materials the teacher opened to you or your group. Each is a card with a cover (the first page) and the title; the filters are «All», «Textbooks», «Workbooks», «Other»; a group's textbook shows the group's name.
+Open “Materials” → “Textbooks” to find textbooks, workbooks and other resources shared with you or your group. Each card shows a cover and title. Group resources also show the group’s name.
 
-Click the title to open the textbook in a new tab (a Word file is downloaded), and the arrow button downloads it. The «Search by title» field helps to find a textbook. A textbook disappears from the list if the teacher closes it to you or you leave the group.
+Search by title or use “All”, “Textbooks”, “Workbooks” and “Other” to filter the list.
+
+Select a title to open the file in a new tab. Word documents download instead. Use the download button to save a copy.
+
+A textbook disappears from this list if your teacher stops sharing it with you or you leave the group it was shared with.
 `,
   },
   billing: {
     title: 'Payments',
-    summary: 'Balance, lesson price and history',
+    summary: 'Check your balance, lesson price and payment history',
     body: `
-On a phone, balance, charges, payments and lesson price form a grid without sideways scrolling. History filters wrap to the next line.
+“Payments” shows your balance, lesson price and transaction history. Filter the history to see all transactions, payments only or lesson charges only.
 
-«Payments» shows figures at the top and history below. History filters show all operations, only payments or only charges. The figures show:
+- **Credit** is money you have paid towards future lessons.
+- **Outstanding balance** is the amount still to pay for past lessons.
+- **History** lists lesson charges and recorded payments, with dates and amounts. The latest 20 entries appear first; choose “Show more” for older entries.
 
-- **Balance** — prepaid (you paid in advance) or debt;
-- **Lesson price**;
-- **History** — held lessons and your payments, a line for each: the date, the details and the amount. The latest 20 are shown first, the rest with «Show more».
+A lesson is charged when your teacher marks it completed or missed without notice. Your teacher records payments after receiving them.
 
-A lesson is charged when the teacher marks it held (or missed without notice). The teacher records a payment when they receive it. If the teacher attached a receipt to a payment, its row has a receipt button that opens it (a HEIC photo is downloaded).
+If a payment has a receipt, use its receipt button to open it. HEIC images download instead of opening in the browser.
 
-If something does not add up — write to the teacher.
+Contact your teacher if a payment or charge does not look right.
 `,
   },
   bot: {
-    title: 'Bot in a messenger',
-    summary: 'Notifications and actions in Telegram, VK or MAX',
+    title: 'Messaging bots',
+    summary: 'Get notifications and manage lessons through Telegram, VK or MAX',
     body: `
-The notification heading stays visible on computers and phones; only the list inside the panel scrolls.
+## Notifications in the portal
 
-## Notifications in the cabinet
+The bell at the top of the page opens your notifications. Its badge shows how many are unread. New notifications appear first; read notifications are grouped under “Read”. Open that group to see them.
 
-The bell in the header opens the notifications at the side (on a phone — full screen without a shadow or background dimming); its number is how many are unread, new ones are at the top. There is no separate «Notifications» section. Read ones (ticked, opened or after «Mark all read») move to «Read» at the bottom — that part is folded, click it to open. On a phone there is no tick: mark a notification read with a swipe — slide it left or right.
+Open a notification, mark it as read, or choose “Mark all as read”. On a phone, swipe a notification left or right to mark it as read.
 
-## Connect
+## Connect a messaging app
 
-The item with your name → the «Messengers» card → «Connect» next to a messenger (or «Connect» on the card on the home page). A chat with the bot opens — press «Start» or send it the code shown.
+Select your name → “Messengers” → “Connect” beside the app you use. You can also use the connection card on your home page. Open the bot chat and press “Start”, or send the code shown in the portal.
 
-## Buttons under notifications
+The bot uses your account language. Notifications include an “Open” button for the relevant portal page or a “Join” button for a lesson. If the messaging app cannot display a link button, the link appears as text.
 
-A notification has buttons: «Open» leads to the page of the portal, «Join» — to the lesson. If the messenger does not take such buttons, the link comes as text: «Open: …».
+## Use the bot
 
-## What the bot can do
+Send /menu to see the available actions:
 
-Send the bot /menu:
+- **Schedule:** upcoming lessons and meeting links;
+- **Join lesson** and **My boards:** quick links;
+- **Cancel a lesson** and **Reschedule a lesson:** send a request to your teacher, or report that you cannot attend a group lesson;
+- **My requests:** pending requests, which you can withdraw, and resolved requests;
+- **Payments:** your balance and recent payments.
 
-- **Schedule** — upcoming lessons and the lesson link;
-- **Join lesson** and **My boards** — links;
-- **Cancel lesson** and **Move lesson** — a request to the teacher (in a group — «I won’t come»);
-- **My requests** — the requests waiting for an answer (they can be withdrawn); the resolved ones (approved, declined) are under «Resolved»;
-- **Payments** — the balance and the latest payments.
+The bot asks for confirmation before sending a request. Choose “Cancel” or send /cancel to stop an action. Enter times as 18:30 and dates as 05.10.
 
-Before sending a request the bot asks again. «Cancel» or /cancel stops an action. Write the time like 18:30 and the date like 05.10.
+## Device notifications
 
-The bot speaks Russian.
+You can receive lesson reminders, new assignments and teacher messages on your phone or computer even when the portal is closed. You can use these alongside messaging app notifications.
 
-## Notifications on the phone without a messenger
+Select your name → “Device notifications” → “Turn on notifications on this device”, then allow notifications in your browser. Enable them separately on each device and browser. Choose “Turn off” in the device list to remove one.
 
-Lesson reminders, new homework and the teacher's messages can arrive as system notifications on your phone even when the cabinet is closed — without a messenger or together with one. The item with your name → «Notifications on devices» → «Turn on notifications on this device» (or «Turn on» in the card on the home page), then allow notifications in the browser prompt. «Turn off» in the list removes the device. The topics and quiet hours are the same as for messengers.
+On iPhone and iPad, first add the portal to your Home Screen using Share → Add to Home Screen, then open it from that icon. Device notifications require HTTPS. The portal explains if your browser does not support them.
 
-On iPhone and iPad notifications work only in the app on the Home Screen: Share → Add to Home Screen, then open the cabinet from the new icon. The portal address must be HTTPS; if notifications are unavailable, the card says why. The notification goes through a Google, Mozilla or Apple service — the text is encrypted with your device key, so the service cannot read it.
+Notifications pass through Google, Mozilla or Apple services. Their content is encrypted with your device’s key, so those services cannot read it. Your notification topics and quiet hours apply to both device and messaging app notifications.
 
-## Turn off
+## Turn notifications off
 
-Send the bot /stop or disconnect the messenger in «My account» (the item with your name in the panel on the left). There, in the «What to send to messengers» card, you can also choose the topics and the quiet hours.
+Send /stop to the bot or disconnect the app in “My account”. You can also choose notification topics and quiet hours there.
 `,
   },
   appearance: {
-    title: 'Phone, theme and language',
-    summary: 'How to use the cabinet from a phone, turn on the dark theme and choose the language',
+    title: 'Mobile use, theme and language',
+    summary: 'Use the portal on your phone and choose your theme and language',
     body: `
-Input fields are filled: the label sits inside the field and moves up when you type, and stays visible in light and dark themes. An error turns the label red.
+## Use the portal on your phone
 
-## From a phone
+The portal works in your phone’s browser. To give it its own app icon in Chrome on Android, open the browser menu (⋮) → “Add to Home screen” → “Install”. It will open in a separate window.
 
-The cabinet works in the phone's browser, nothing needs installing. If you want an icon of its own — in Chrome on Android: the browser menu (⋮) → «Add to Home screen» → «Install»: the cabinet opens in its own window, and the bars at the top and the bottom of the screen take the portal's colour.
+The bottom bar contains “Home”, “Schedule”, “Homework”, “Materials” and “Payments”. Open ☰ at the top left for Help and your account. On a computer, these sections are in the sidebar.
 
-- All five sections are in the bottom bar of the screen: «Home», «Schedule», «Homework», «Materials», «Payments»; the ☰ button at the top left opens «Help», and the section's name is next to it. On a computer all the sections are in the panel on the left, «Help» at its bottom. The chosen section's icon is filled, and «Homework» has a red number — how many tasks wait to be handed in.
-- The main button of a screen is in the portal colour («Send for review», «Save»), the others are calm. A red button only confirms in a window what cannot be undone, such as «Ask to cancel». «Cancel» in a window just closes it and changes nothing.
-- On a wide screen the home page has two columns: on the left the lesson, «To hand in» and «Reviewed recently», on the right «Paid» (N lessons) (how many lessons the balance covers at the lesson price) and the lesson's materials; on a narrow screen everything is one column in the same order.
-- The next lesson and the «Join lesson» button come first on the home page: the tile with the day and the time on the left, the buttons under it across the width. «Join lesson» is the largest button of the portal.
-- Lists are shown as cards. Forms open full screen with the action («Send») at the top right; if you close a form with unsaved changes, the portal asks «Discard changes?».
-- If a field of a form is filled in wrong, the portal says so under the field; if a block did not load, it offers «Retry».
-- The cabinet can be used from the keyboard: Tab moves between buttons and fields, Esc closes windows and panels.
+Your home page starts with your next lesson and “Join lesson”. Below it you will find assignments to submit, recent feedback, your lesson credit and materials. On wider screens these appear in two columns.
 
-## Dark theme
+Select a list entry to open its details. Forms with several fields open full screen, with the main action at the top right. If you close a form with unsaved changes, choose “Discard” to lose them or “Cancel” to keep editing.
 
-The item with your name → «Appearance» → «Light», «Dark» or «System». The choice is remembered on this device.
+Errors appear below the relevant field. If a section fails to load, choose “Retry”. You can also use a keyboard: Tab moves between controls and Esc closes dialogs and panels.
 
-## Language
+## Choose a theme
 
-There, in «Appearance», — «Русский» or «English». On the sign-in page the languages are under the sign-in card. The choice is remembered on this device and in your account: notifications, the bot in the messenger and the calendar by link come in this language.
+Select your name → “Appearance”, then choose “Light”, “Dark” or “System”. Your choice is saved on this device.
+
+## Choose a language
+
+In the same Appearance section, choose “Русский” or “English”. You can also choose a language below the sign-in or invitation card before signing in.
+
+Your choice is saved on the device and in your account. New notifications, bot replies and calendar subscriptions use that language. Your teacher’s messages and lesson content remain as they wrote them.
 `,
   },
 };

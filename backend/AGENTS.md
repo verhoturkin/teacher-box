@@ -65,6 +65,10 @@ types (`JwtEncoder`, `PasswordEncoder`, `Clock`, `FileStorage`, `CurrentUser`).
 - Input validation — Jakarta Validation in `web`. REST prefixes and role checks — root §4.3; every endpoint
   returning student data has a test "another student gets 403/404".
 - Logs — IDs, never names or texts.
+- Write Russian and British English server copy together from the same intent, independently in
+  each language. Match the UI terminology in `docs/glossary.md`; keep bot confirmations,
+  notification actions and calendar descriptions natural in their recipient's language. Preserve
+  placeholders and review complete messages, including balance fragments and singular/plural forms.
 - Spring Boot 4: modular starters (`spring-boot-starter-webmvc`, `-flyway`, `-webmvc-test`); Jackson 3 is
   package `tools.jackson`. Check current docs (context7) for unfamiliar APIs.
 - `ai` module: Claude/LLM integration code — load the `claude-api` skill first.

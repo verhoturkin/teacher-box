@@ -213,7 +213,7 @@ public class QuizService {
     private static String suggestion(QuizAttempt best) {
         return switch (Language.current()) {
             case RU -> best.scorePoints() + " из " + best.maxPoints();
-            case EN -> best.scorePoints() + " of " + best.maxPoints();
+            case EN -> best.scorePoints() + " out of " + best.maxPoints();
         };
     }
 

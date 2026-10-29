@@ -123,7 +123,7 @@ class ChatEngineIntegrationTests {
         directory.setLanguage(student, Language.EN);
         String code = channels.createLinkCode(student, ChannelType.TELEGRAM).code();
         OutgoingMessage linked = say("8051", code);
-        assertThat(linked.text()).startsWith("Done!");
+        assertThat(linked.text()).startsWith("Connected!");
 
         OutgoingMessage menu = say("8051", "menu");
         assertThat(menu.text()).isEqualTo("What would you like to do?");
@@ -131,12 +131,12 @@ class ChatEngineIntegrationTests {
         assertThat(labels(asked)).containsExactly("Cancel");
         assertThat(press("8051", asked, "Cancel").text()).startsWith("Action cancelled.");
         assertThat(say("8051", "help").text()).contains("The bot can:", "/menu — main menu");
-        assertThat(say("8051", "/stop").text()).startsWith("Notifications are turned off.");
+        assertThat(say("8051", "/stop").text()).startsWith("Notifications turned off.");
 
         directory.setLanguage(directory.teacherId(), Language.EN);
         try {
-            assertThat(say("8052", "hello").text()).startsWith("Hello! This is the notification bot");
-            assertThat(say("8052", "/stop").text()).isEqualTo("This chat is not connected to notifications.");
+            assertThat(say("8052", "hello").text()).startsWith("Hello! I send notifications");
+            assertThat(say("8052", "/stop").text()).isEqualTo("Notifications aren't enabled for this chat.");
         } finally {
             directory.setLanguage(directory.teacherId(), Language.RU);
         }

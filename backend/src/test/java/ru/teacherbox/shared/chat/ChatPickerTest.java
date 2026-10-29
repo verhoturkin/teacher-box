@@ -41,10 +41,10 @@ class ChatPickerTest {
     @Test
     void speaksEnglish() {
         assertThat(ChatPicker.show("Who?", STUDENTS, Language.EN).text())
-                .isEqualTo("Who?\nYou can type a part of the name.");
+                .isEqualTo("Who?\nYou can search by part of a name.");
         assertThat(ChatPicker.handle("Who?", STUDENTS, ChatState.EMPTY, new ChatInput.Text("Zed"), Language.EN))
                 .isInstanceOfSatisfying(ChatPicker.Shown.class, shown -> assertThat(shown.reply().text())
-                        .startsWith("Nothing found for “Zed”. Who?"));
+                        .startsWith("No matches for “Zed”. Who?"));
     }
 
     @Test

@@ -4,13 +4,13 @@ import type { ru } from './ru';
 export const en: Translation<typeof ru> = {
   title: 'Materials',
   what: 'the materials',
-  tabs: 'Kind of materials',
+  tabs: 'Material type',
   boards: 'Boards',
   textbooks: 'Textbooks',
-  filters: 'Materials filter',
+  filters: 'Filter materials',
   chips: {
     all: 'All',
-    portal: 'On the portal',
+    portal: 'In the portal',
     external: 'External',
     TEXTBOOK: 'Textbooks',
     WORKBOOK: 'Workbooks',
@@ -20,7 +20,7 @@ export const en: Translation<typeof ru> = {
   searchMine: 'Title',
   sort: {
     label: 'Sort',
-    changed: 'Recently changed',
+    changed: 'Recently updated',
     title: 'By title',
     created: 'Newest first',
   },

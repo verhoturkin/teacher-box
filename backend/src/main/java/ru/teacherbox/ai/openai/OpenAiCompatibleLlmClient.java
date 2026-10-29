@@ -180,7 +180,7 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
             case RU -> listed ? "Модель " + model + " доступна"
                     : "Провайдер отвечает, но модели " + model + " нет среди " + ids.size() + " доступных";
             case EN -> listed ? "Model " + model + " is available"
-                    : "The provider answers, but the model " + model + " is not among " + ids.size() + " available";
+                    : "The provider is responding, but " + model + " is not in its list of " + ids.size() + " available models.";
         };
     }
 

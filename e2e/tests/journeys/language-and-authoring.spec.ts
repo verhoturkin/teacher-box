@@ -23,6 +23,9 @@ test('the interface speaks English and goes back to Russian', async ({ page }) =
   await page.goto('/login');
   await page.getByRole('button', { name: 'English' }).click();
   await expect(page.getByRole('heading', { name: /^Sign in to/ })).toBeVisible();
+  await expect(page.getByLabel('Username', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByText('Enter your username and password', { exact: true })).toBeVisible();
   await signIn(page, 'Sign in');
 
   await expect(page.getByRole('region', { name: 'Today', exact: true })).toBeVisible();
@@ -31,6 +34,20 @@ test('the interface speaks English and goes back to Russian', async ({ page }) =
   // kept on the device: a reload keeps English
   await page.reload();
   await expect(page.getByRole('region', { name: 'Today', exact: true })).toBeVisible();
+
+  const createMenu = page.locator('tb-create-menu');
+  await createMenu.getByRole('button', { name: 'Create', exact: true }).click();
+  await createMenu.getByRole('link', { name: 'Assignment', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'New assignment', exact: true })).toBeVisible();
+
+  await page.goto('/teacher/help/homework');
+  await expect(page.locator('.tb-help__title')).toHaveText('Homework');
+  await expect(
+    page.getByRole('heading', { name: 'Create an assignment', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Review a submission', exact: true }),
+  ).toBeVisible();
 
   await page.goto('/teacher/settings/account');
   // the chosen language is a pressed button of the group

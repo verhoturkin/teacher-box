@@ -34,7 +34,7 @@ class MessengerIntegrationCheck implements IntegrationCheck {
                 String bot = channel.botName();
                 return new IntegrationStatus(name, State.OK, switch (language) {
                     case RU -> "Бот " + bot + " отвечает";
-                    case EN -> "Bot " + bot + " answers";
+                    case EN -> "Bot " + bot + " is responding";
                 }, elapsed(started));
             } catch (RuntimeException e) {
                 return new IntegrationStatus(name, State.FAILED, String.valueOf(e.getMessage()), elapsed(started));

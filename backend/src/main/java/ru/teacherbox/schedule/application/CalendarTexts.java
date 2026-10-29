@@ -27,16 +27,16 @@ public enum CalendarTexts {
     EN {
         @Override String teacherCalendar(String portal) { return portal + " — lessons"; }
         @Override String studentCalendar(String portal) { return "Lessons — " + portal; }
-        @Override public String lessonWith(String who) { return "Lesson: " + who; }
+        @Override public String lessonWith(String who) { return "Lesson with " + who; }
         @Override String aGroup() { return "a group"; }
         @Override public String aStudent() { return "a student"; }
-        @Override String groupLesson(String group) { return "Lesson of the group “" + group + "”"; }
+        @Override String groupLesson(String group) { return "Group lesson: " + group; }
         @Override String lesson() { return "Lesson"; }
         @Override String cancelled() { return "Cancelled: "; }
         @Override public String topic(String topic) { return "Topic: " + topic; }
         @Override public String link(String url) { return "Lesson link: " + url; }
         @Override String cancelReason(String reason) { return "Cancellation reason: " + reason; }
-        @Override public String conducted() { return "Conducted"; }
+        @Override public String conducted() { return "Completed"; }
         @Override public String missed() { return "Missed"; }
     };
 

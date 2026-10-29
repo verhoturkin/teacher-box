@@ -1,4 +1,8 @@
 import { TestBed } from '@angular/core/testing';
+import { en } from './i18n/en';
+import { ADMIN_ARTICLES as ADMIN_EN } from './articles/admin.en';
+import { STUDENT_ARTICLES as STUDENT_EN } from './articles/student.en';
+import { TEACHER_ARTICLES as TEACHER_EN } from './articles/teacher.en';
 import { ADMIN_ARTICLES } from './articles/admin.ru';
 import { STUDENT_ARTICLES } from './articles/student.ru';
 import { TEACHER_ARTICLES } from './articles/teacher.ru';
@@ -10,6 +14,12 @@ const TEXTS: Record<HelpArea, Readonly<Record<string, HelpArticleText>>> = {
   teacher: TEACHER_ARTICLES,
   cabinet: STUDENT_ARTICLES,
   admin: ADMIN_ARTICLES,
+};
+
+const ENGLISH_TEXTS: Record<HelpArea, Readonly<Record<string, HelpArticleText>>> = {
+  teacher: TEACHER_EN,
+  cabinet: STUDENT_EN,
+  admin: ADMIN_EN,
 };
 
 describe('HelpLibrary', () => {
@@ -42,9 +52,21 @@ describe('HelpLibrary', () => {
     }
   });
 
-  it('links inside the articles lead to existing articles', () => {
+  it('keeps English help topics and titles aligned with navigation', () => {
+    for (const area of ['teacher', 'cabinet', 'admin'] as const) {
+      expect(Object.keys(ENGLISH_TEXTS[area]).sort()).toEqual([...HELP_TOPICS[area]].sort());
+      for (const topic of HELP_TOPICS[area]) {
+        const article = ENGLISH_TEXTS[area][topic];
+        expect(article?.title).toBe(Reflect.get(en.titles, `${area}/${topic}`));
+        expect(article?.summary.trim().length).toBeGreaterThan(0);
+        expect(article?.body.trim().length).toBeGreaterThan(100);
+      }
+    }
+  });
+
+  it('links inside Russian and English articles lead to existing articles', () => {
     const links: string[] = [];
-    for (const texts of Object.values(TEXTS)) {
+    for (const texts of [...Object.values(TEXTS), ...Object.values(ENGLISH_TEXTS)]) {
       for (const text of Object.values(texts)) {
         for (const match of text.body.matchAll(/\]\((\/[^)]*)\)/g)) {
           links.push(match[1] ?? '');

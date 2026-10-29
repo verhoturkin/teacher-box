@@ -55,7 +55,7 @@ class SettingKindTest {
         assertThat(fits(SettingKind.CHOICE, "openai")).isFalse();
         assertThat(SettingKind.CHOICE.problem("openai", List.of("anthropic", "gemini"), Language.RU))
                 .isEqualTo("нужно одно из значений: anthropic, gemini");
-        assertThat(SettingKind.NUMBER.problem("ten", List.of(), Language.EN)).isEqualTo("a whole number is needed");
+        assertThat(SettingKind.NUMBER.problem("ten", List.of(), Language.EN)).isEqualTo("Enter a whole number");
     }
 
     @Test
