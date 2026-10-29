@@ -276,4 +276,40 @@ public final class HomeworkViews {
      */
     public record MyHomeworkSummary(int open, int overdue, List<MyTask> upcoming) {
     }
+
+    /** What a cell of the journal shows. */
+    public enum JournalStatus {
+        ACCEPTED, TO_REVIEW, RETURNED, OVERDUE, WAITING, NOT_ASSIGNED
+    }
+
+    /** A column of the journal: an assignment due in the range. */
+    public record JournalColumn(UUID id, String title, Instant dueAt) {
+    }
+
+    /**
+     * One student on one assignment.
+     *
+     * @param taskId      {@code null}: the assignment is not given to the student
+     * @param grade       of an accepted work
+     * @param quizScore   points of the best quiz attempt of a work waiting for review
+     * @param overdueDays full days past the due date (at least one) of an overdue work
+     */
+    public record JournalCell(JournalStatus status, @Nullable UUID taskId, @Nullable String grade,
+            @Nullable Integer quizScore, @Nullable Integer quizMax, @Nullable Integer overdueDays) {
+    }
+
+    /**
+     * A row of the journal.
+     *
+     * @param cells    one per column, in the order of the columns
+     * @param handedIn works accepted or waiting for review
+     * @param given    assignments of the columns given to the student
+     */
+    public record JournalRow(UUID studentId, String studentName, @Nullable String studentAvatar,
+            List<JournalCell> cells, int handedIn, int given) {
+    }
+
+    /** Students by assignments due in a range of dates. */
+    public record Journal(List<JournalColumn> assignments, List<JournalRow> students) {
+    }
 }

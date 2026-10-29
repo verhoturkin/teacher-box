@@ -328,6 +328,12 @@ Each row shows the materials in the assignment (textbooks, files, questions, vid
 
 Select an assignment to open it on its own page; the arrow returns you to the list.
 
+## The “By student” view
+
+The “List · By student” switch at the top of the Homework page shows a whole week at once: students are the rows and the assignments due that week are the columns. The arrows next to the dates move between weeks, and “For” narrows the grid to one student or group. The colour of a cell tells you what to do: green is accepted (with the grade), yellow is waiting for your review (a quiz shows its score), red is overdue or sent back, grey means the student has not handed it in yet, and a dashed cell means the assignment was not given to them. The last column counts the work handed in.
+
+Select a yellow cell to review that piece of work, or a dashed one to open “Assign to more students” with the student already chosen. Any other cell, or a column title, opens the assignment. The view you pick is kept in the page address.
+
 ## Assignment details and textbooks
 
 The page contains the instructions, videos, files, textbooks and student progress. Open or download a file from its row; remove files or textbooks with the cross button. Choose “Add” in the Students section to assign the work to more students or groups.

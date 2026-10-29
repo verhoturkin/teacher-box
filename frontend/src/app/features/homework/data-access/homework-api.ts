@@ -8,6 +8,7 @@ import {
   Attachment,
   HomeworkLimits,
   HomeworkSummary,
+  Journal,
   MyHomeworkSummary,
   MyTask,
   ReviewDecision,
@@ -35,6 +36,14 @@ export class HomeworkApi {
 
   assignments(): Observable<AssignmentSummary[]> {
     return this.http.get<AssignmentSummary[]>(`${TEACHER}/assignments`, {
+      context: quietContext(),
+    });
+  }
+
+  /** Students by the assignments due from `from` to `to` (`yyyy-MM-dd`); `who` — a group or a student id. */
+  journal(from: string, to: string, who: string | null): Observable<Journal> {
+    return this.http.get<Journal>(`${TEACHER}/journal`, {
+      params: who === null ? { from, to } : { from, to, who },
       context: quietContext(),
     });
   }

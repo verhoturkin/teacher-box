@@ -313,6 +313,38 @@ export const en: Translation<typeof ru> = {
     boardFailed:
       'The assignment was added to the board, but its board link could not be saved. Set the link on the assignment page',
   },
+  /** «By student»: the grid of students by the assignments of a week. */
+  journal: {
+    view: 'View',
+    asList: 'List',
+    byStudents: 'By student',
+    previousWeek: 'Previous week',
+    nextWeek: 'Next week',
+    thisWeek: 'This week',
+    range: (from: string, to: string) => `${from} – ${to}`,
+    legend: 'Key',
+    accepted: 'Accepted',
+    toReview: 'Waiting for review',
+    late: 'Overdue / sent back',
+    waiting: 'Not handed in yet',
+    columnStudent: 'Student',
+    columnTotal: 'This week',
+    due: (date: string) => `due ${date}`,
+    total: (handedIn: number, given: number) => `${String(handedIn)} of ${String(given)}`,
+    totalHint: 'handed in',
+    cellAccepted: (grade: string | null) => (grade === null ? 'Accepted' : `Accepted · ${grade}`),
+    cellToReview: (score: number | null, max: number | null) =>
+      score === null || max === null ? 'to review' : `${String(score)}/${String(max)} · to review`,
+    cellReturned: 'sent back',
+    cellOverdue: (days: number) => `${String(days)} d overdue`,
+    cellWaiting: 'waiting',
+    cellNotAssigned: 'not assigned',
+    cellLabel: (student: string, title: string, status: string) =>
+      `${student}, ${title}: ${status}`,
+    emptyTitle: 'Nothing is due this week',
+    emptyHint: 'Assignments whose due date falls on these days will appear here',
+    what: 'the homework journal',
+  },
   list: {
     title: 'Homework',
     create: 'New assignment',

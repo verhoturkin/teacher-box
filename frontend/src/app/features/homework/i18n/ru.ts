@@ -321,6 +321,38 @@ export const ru = {
     boardFailed:
       'Задание на доске, но отметка о ней не сохранилась — поставьте её со страницы задания',
   },
+  /** «По ученикам»: the grid of students by the assignments of a week. */
+  journal: {
+    view: 'Вид',
+    asList: 'Списком',
+    byStudents: 'По ученикам',
+    previousWeek: 'Предыдущая неделя',
+    nextWeek: 'Следующая неделя',
+    thisWeek: 'Эта неделя',
+    range: (from: string, to: string) => `${from} — ${to}`,
+    legend: 'Обозначения',
+    accepted: 'Принято',
+    toReview: 'Ждёт проверки',
+    late: 'Просрочено / на доработке',
+    waiting: 'Ещё не сдано',
+    columnStudent: 'Ученик',
+    columnTotal: 'За неделю',
+    due: (date: string) => `до ${date}`,
+    total: (handedIn: number, given: number) => `${String(handedIn)} из ${String(given)}`,
+    totalHint: 'сдано',
+    cellAccepted: (grade: string | null) => (grade === null ? 'Принято' : `Принято · ${grade}`),
+    cellToReview: (score: number | null, max: number | null) =>
+      score === null || max === null ? 'проверить' : `${String(score)}/${String(max)} · проверить`,
+    cellReturned: 'на доработке',
+    cellOverdue: (days: number) => `просрочено ${String(days)} дн.`,
+    cellWaiting: 'ждём',
+    cellNotAssigned: 'не выдано',
+    cellLabel: (student: string, title: string, status: string) =>
+      `${student}, ${title}: ${status}`,
+    emptyTitle: 'На этой неделе сроков нет',
+    emptyHint: 'Здесь появятся задания, у которых срок сдачи выпадает на эти дни',
+    what: 'журнал заданий',
+  },
   list: {
     title: 'Задания',
     create: 'Новое задание',

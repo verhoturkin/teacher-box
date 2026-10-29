@@ -252,6 +252,17 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
 (339.1). The «?» help button is in the list header and the editor only.
 
 - **Header**: «Задания», «?», the filled «Новое задание» (a phone: the extended FAB «Новое»).
+- **View switch** (339.2): the connected group «Списком · По ученикам» (`view_list` / `grid_view`) in
+  the header actions before the main button; kept in the address as `?view=journal`. «По ученикам»
+  (`journal-view.ts`) replaces the search, the filter group and the review strip with: `‹ 27 октября
+  — 2 ноября ›` (icon buttons «Предыдущая неделя» / «Следующая неделя»), the same «Кому» select
+  (a phone: the chip with a menu), a legend, and the grid — the first column the students (avatar
+  and name on `surface container`, sticky), a column per assignment due in the week (the title is
+  a link; «до пт 04.09»), a cell per student as a 48 dp button with an icon and a label coloured
+  by the role (success / warning / error containers; `surface container` for «ждём»; a dashed
+  outline for «не выдано»), and «3 из 4 сдано» last. A cell: «проверить» → the work and its review
+  sheet; «не выдано» → «Выдать ещё» with the student chosen; the rest → the assignment. The grid
+  scrolls sideways with the student column fixed.
 - **Review strip** «Ждут проверки · N» (shown while a work waits; follows the search and «Кому»):
   up to three cards on `surface container` (avatar, student, «сдано сегодня, 09:12» / «вчера, …» /
   «dd.MM HH:mm», the «С опозданием» tag when handed in after the due date, the assignment title, the

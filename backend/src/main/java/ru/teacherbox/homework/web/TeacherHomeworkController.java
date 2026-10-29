@@ -6,11 +6,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.Resource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.teacherbox.homework.application.AssignmentService;
 import ru.teacherbox.homework.application.HomeworkSummaryService;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentDetails;
+import ru.teacherbox.homework.application.HomeworkViews.Journal;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentSummary;
 import ru.teacherbox.homework.application.HomeworkViews.AttachmentView;
 import ru.teacherbox.homework.application.HomeworkViews.HomeworkSummary;
@@ -243,6 +246,14 @@ class TeacherHomeworkController {
     @GetMapping("/summary")
     HomeworkSummary summary() {
         return summaries.teacherSummary();
+    }
+
+    /** The journal: students by the assignments due from {@code from} to {@code to}; {@code who}: a group or a student. */
+    @GetMapping("/journal")
+    Journal journal(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) @Nullable UUID who) {
+        return summaries.journal(from, to, who);
     }
 
     @GetMapping("/assignments")

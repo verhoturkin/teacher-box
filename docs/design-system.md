@@ -116,6 +116,10 @@ used icon classes disagree. E2E runs axe on the main screens and checks button r
   | error, debt, cancellation («На доработке», «Отменено учеником») | `danger` | error-container |
   | info, hint | `info` | tertiary-container |
 
+  A status grid (the homework journal, 339.2) uses the same roles as 48 dp button cells: success,
+  warning and error containers; a waiting cell is `surface container` with `on surface variant`;
+  an empty cell has no fill and a dashed `outline variant` (*ours*, M3 has no status grid).
+
 - **Messages and badges:** `p-message` — role container, no border or shadow, Body Medium.
   `p-badge` — error by default, `warn`, calm counter `secondary`; a badge on an icon has no outline
   and sits inside the 40 px button, its start at the icon's middle, 4 px from the top (**M3**). The

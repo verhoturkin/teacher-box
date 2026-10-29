@@ -45,7 +45,7 @@ full editor, AI draft, phone, student) — https://claude.ai/artifact/X2SdNjSvCb
   «Кому», «Срок», «Сдали» (progress bar + «3 из 4»), status tag (`assignmentProgress`), «⋮».
   Compact: chips for the filters, the review strip scrolls sideways, cards instead of rows,
   extended FAB «Новое». Update `docs/screens.md` (Homework), help articles, wiki.
-- [ ] **339.2 B/F** «Списком · По ученикам» switch: a week grid, rows — students (of the «Кому»
+- [x] **339.2 B/F** «Списком · По ученикам» switch: a week grid, rows — students (of the «Кому»
   group), columns — assignments due that week, cells — status («Принято · 5», «проверить», «на
   доработке», «ждём», «не выдано»); ‹ › weeks. Cell → review sheet / «Выдать ещё» / assignment.
   Backend: `GET /api/teacher/homework/journal?from&to&who` in `HomeworkSummaryService` +

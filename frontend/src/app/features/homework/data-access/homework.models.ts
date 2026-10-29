@@ -370,3 +370,40 @@ export interface HomeworkLimits {
   readonly maxFileSize: number;
   readonly maxFilesPerUpload: number;
 }
+
+/** What a cell of the journal shows. */
+export type JournalStatus =
+  'ACCEPTED' | 'TO_REVIEW' | 'RETURNED' | 'OVERDUE' | 'WAITING' | 'NOT_ASSIGNED';
+
+/** A column of the journal: an assignment due in the week. */
+export interface JournalColumn {
+  id: string;
+  title: string;
+  dueAt: string;
+}
+
+/** One student on one assignment; `taskId` is `null` when the assignment is not given to them. */
+export interface JournalCell {
+  status: JournalStatus;
+  taskId: string | null;
+  grade: string | null;
+  quizScore: number | null;
+  quizMax: number | null;
+  overdueDays: number | null;
+}
+
+export interface JournalRow {
+  studentId: string;
+  studentName: string;
+  studentAvatar: string | null;
+  /** One per column, in the order of the columns. */
+  cells: JournalCell[];
+  handedIn: number;
+  given: number;
+}
+
+/** Students by the assignments due in a range of dates («По ученикам»). */
+export interface Journal {
+  assignments: JournalColumn[];
+  students: JournalRow[];
+}

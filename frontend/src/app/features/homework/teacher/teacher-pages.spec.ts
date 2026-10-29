@@ -555,7 +555,7 @@ describe('AssignmentsPage', () => {
       const { host, fixture } = await render(GROUPED, WORKS, 390);
 
       expect(host.querySelector('table')).toBeNull();
-      expect(host.querySelector('tb-segment-group')).toBeNull();
+      expect(host.querySelector('.tb-hw__toolbar tb-segment-group')).toBeNull();
       expect(host.querySelector('tb-filter-chips')).not.toBeNull();
       expect(readableText(host)).toContain('Активные 4');
       expect(host.querySelector('p-button.tb-page-fab')?.textContent).toContain('Новое');

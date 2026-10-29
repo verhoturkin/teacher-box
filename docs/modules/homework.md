@@ -104,7 +104,12 @@ how many students (of those with a submitted attempt) got it wrong in their best
 
 `/api/teacher/homework/**` (assignments — the list has the names of the students of each, `DELETE assignments/{id}`, `POST assignments/{id}/copy`, students, attachments,
 `PUT assignments/{id}/board`, `POST assignments/{id}/textbooks` `{textbookId, pages}`,
-`DELETE assignments/{id}/textbooks/{textbookId}`, `POST videos/transcript`, tasks/{id}/review, review-queue, summary (besides the review counters it has `weekAssigned` — assignments given to current students and
+`DELETE assignments/{id}/textbooks/{textbookId}`, `POST videos/transcript`, tasks/{id}/review, review-queue, `GET journal?from&to&who` (`from`/`to` — `yyyy-MM-dd`, whole days of the instance time zone, both
+included; `who` — a group or a student id, none: every student with a task on these assignments):
+the assignments due in the range as columns and the current students as rows, one cell per column —
+`ACCEPTED` (+ `grade`), `TO_REVIEW` (+ the best quiz score), `RETURNED`, `OVERDUE` (+ `overdueDays`),
+`WAITING` or `NOT_ASSIGNED` (no `taskId`) — with `handedIn` (accepted + to review) and `given` per row
+(339.2), summary (besides the review counters it has `weekAssigned` — assignments given to current students and
 `weekOnTime` — works handed in not later than the due date, both in the current Monday–Sunday week of the instance time
 zone, for the Today page, 239.1),
 `GET students/{studentId}/tasks` — the student's tasks as the student's list shows them, for the student card

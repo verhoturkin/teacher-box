@@ -26,7 +26,7 @@ import { injectMobile, injectWindowSize } from '@core/layout/mobile';
 import { collapseRail, hideBottomBar } from '@core/layout/rail-state';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { openOnCreate } from '@core/routing/create-param';
-import { writeQuery } from '@core/routing/query-state';
+import { readQuery, writeQuery } from '@core/routing/query-state';
 import { HelpButton } from '@features/help/parts';
 import { IdentityApi, TeacherColors } from '@features/identity/parts';
 import { Avatar } from '@shared/ui/avatar';
@@ -42,6 +42,7 @@ import { SearchField } from '@shared/ui/search-field';
 import { Segment, SegmentGroup } from '@shared/ui/segment-group';
 import { AssignmentPage } from './assignment-page';
 import { DeadlineKey, groupByDeadline } from './deadline-groups';
+import { JournalView } from './journal-view';
 import { NextWork, ReviewSheet } from './review-sheet';
 import { TaskReviewPage } from './task-review-page';
 import { HomeworkApi } from '../data-access/homework-api';
@@ -68,6 +69,10 @@ interface WhomOption {
 
 /** What the list shows: assignments in progress, drafts (not given yet) or finished ones. */
 type Filter = 'active' | 'drafts' | 'done';
+
+/** What the page shows: the list of assignments or the journal of students by assignments. */
+type View = 'list' | 'journal';
+const VIEWS: readonly View[] = ['list', 'journal'];
 
 /** A run of rows under one heading; `key` — the due-date group, `null` — the heading is left out. */
 interface Section {
@@ -107,6 +112,7 @@ interface Material {
     EmptyState,
     FilterChips,
     HelpButton,
+    JournalView,
     LoadStateView,
     Pane,
     PageHeader,
@@ -179,6 +185,13 @@ interface Material {
           <div tbPaneHeader>
             <tb-page-header [title]="t.title">
               <tb-help-button help topic="teacher/homework" />
+              <tb-segment-group
+                class="tb-hw__views"
+                [label]="journalT.view"
+                [segments]="viewSegments()"
+                [value]="view()"
+                (valueChange)="setView($event)"
+              />
               @if (mobile()) {
                 <p-button
                   class="tb-page-fab"
@@ -191,231 +204,273 @@ interface Material {
               }
             </tb-page-header>
 
-            <div class="tb-toolbar tb-hw__toolbar">
-              <tb-search-field [formControl]="search" [label]="t.search" />
-              @if (mobile()) {
-                <!-- one row of chips, «Кому» a chip with a menu (M3 dropdown chip) -->
-                <tb-filter-chips
-                  [label]="t.filters"
-                  [chips]="chips()"
-                  [menu]="whomChip()"
-                  [(value)]="filter"
-                />
-              } @else {
-                <p-select
-                  [formControl]="whom"
-                  [options]="whomOptions()"
-                  [group]="true"
-                  optionGroupLabel="label"
-                  optionGroupChildren="items"
-                  optionLabel="label"
-                  optionValue="value"
-                  [placeholder]="t.whomAll"
-                  [showClear]="true"
-                  [ariaLabel]="t.whom"
-                  appendTo="body"
-                />
-                <tb-segment-group [label]="t.filters" [segments]="segments()" [(value)]="filter" />
-              }
-            </div>
-          </div>
-          <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
-            @if (works().length > 0) {
-              <section class="tb-hw__review" [attr.aria-label]="t.awaiting(works().length)">
-                <div class="tb-hw__review-head">
-                  <h2 class="tb-hw__label">{{ t.awaiting(works().length) }}</h2>
-                  <p-button
-                    [label]="t.checkAll"
-                    icon="tb-i tb-i-arrow_forward"
-                    iconPos="right"
-                    [text]="true"
-                    (onClick)="reviewAll()"
+            @if (view() === 'list') {
+              <div class="tb-toolbar tb-hw__toolbar">
+                <tb-search-field [formControl]="search" [label]="t.search" />
+                @if (mobile()) {
+                  <!-- one row of chips, «Кому» a chip with a menu (M3 dropdown chip) -->
+                  <tb-filter-chips
+                    [label]="t.filters"
+                    [chips]="chips()"
+                    [menu]="whomChip()"
+                    [(value)]="filter"
                   />
-                </div>
-                <ul class="tb-hw__cards">
-                  @for (work of shownWorks(); track work.taskId) {
-                    <li class="tb-hw__card">
-                      <div class="tb-hw__card-head">
-                        <tb-avatar
-                          [attr.data-tb-label]="colors.studentLabel(work.studentId)"
-                          [name]="work.studentName"
-                          [photo]="work.studentAvatar"
-                        />
-                        <div class="tb-list__text">
-                          <span class="tb-list__title">{{ work.studentName }}</span>
-                          <span class="tb-list__supporting">{{ handedIn(work) }}</span>
-                        </div>
-                        @if (isLate(work)) {
-                          <p-tag [value]="t.lateTag" severity="danger" />
-                        }
-                      </div>
-                      <span class="tb-hw__card-task">{{ work.title }}</span>
-                      <div class="tb-hw__card-foot">
-                        @if (work.quizScore !== null && work.quizMax !== null) {
-                          <p-tag
-                            [value]="t.quizScore(work.quizScore, work.quizMax)"
-                            severity="secondary"
-                          />
-                        }
-                        <p-button
-                          class="tb-hw__card-action"
-                          [label]="t.check"
-                          severity="secondary"
-                          [ariaLabel]="t.reviewOf(work.studentName, work.title)"
-                          (onClick)="openWork(work.taskId)"
-                        />
-                      </div>
-                    </li>
-                  }
-                  @if (waitingCount() > 0) {
-                    <li class="tb-hw__card tb-hw__card--waiting">
-                      <i class="tb-i tb-i-hourglass_top" aria-hidden="true"></i>
-                      {{ t.stillWaiting(waitingCount()) }}
-                    </li>
-                  }
-                </ul>
-              </section>
-            }
-
-            @if (lines().length === 0) {
-              <ng-container [ngTemplateOutlet]="empty" />
-            } @else if (mobile()) {
-              @for (section of sections(); track section.key) {
-                @if (section.title; as title) {
-                  <h2
-                    class="tb-hw__label tb-hw__group"
-                    [class.tb-error]="section.key === 'overdue'"
-                  >
-                    {{ title }}
-                  </h2>
+                } @else {
+                  <p-select
+                    [formControl]="whom"
+                    [options]="whomOptions()"
+                    [group]="true"
+                    optionGroupLabel="label"
+                    optionGroupChildren="items"
+                    optionLabel="label"
+                    optionValue="value"
+                    [placeholder]="t.whomAll"
+                    [showClear]="true"
+                    [ariaLabel]="t.whom"
+                    appendTo="body"
+                  />
+                  <tb-segment-group
+                    [label]="t.filters"
+                    [segments]="segments()"
+                    [(value)]="filter"
+                  />
                 }
-                <ul class="tb-list tb-list--clamp" [attr.aria-label]="section.title ?? t.title">
-                  @for (assignment of section.rows; track assignment.id) {
-                    <li>
-                      <div class="tb-list__text">
-                        <a
-                          class="tb-list__title tb-list__link"
-                          [routerLink]="['/teacher/homework', assignment.id]"
-                          >{{ assignment.title }}</a
-                        >
-                        <span class="tb-list__supporting">{{ details(assignment) }}</span>
-                        <ng-container
-                          [ngTemplateOutlet]="handed"
-                          [ngTemplateOutletContext]="{ assignment }"
-                        />
-                      </div>
-                      <div class="tb-list__trail tb-list__trail--icons tb-hw__row-end">
-                        @if (progress(assignment); as badge) {
-                          <p-tag [value]="badge.label" [severity]="badge.severity" />
-                        }
-                        <ng-container
-                          [ngTemplateOutlet]="rowMenu"
-                          [ngTemplateOutletContext]="{ assignment }"
-                        />
-                      </div>
-                    </li>
-                  }
-                </ul>
-              }
-              <ng-container [ngTemplateOutlet]="showMore" />
-            } @else {
-              <p-table [value]="lines()" styleClass="tb-cards tb-hw__table">
-                <ng-template #header>
-                  <tr>
-                    <th class="tb-col-main">{{ t.columns.task }}</th>
-                    <th>{{ t.columns.whom }}</th>
-                    <th>{{ t.columns.due }}</th>
-                    <th>{{ t.columns.handed }}</th>
-                    <th>{{ t.columns.status }}</th>
-                    <th>
-                      <span class="tb-sr-only">{{ t.columns.actions }}</span>
-                    </th>
-                  </tr>
-                </ng-template>
-                <ng-template #body let-line [tbRowType]="lines()">
-                  @if (line.assignment; as assignment) {
-                    <tr>
-                      <td>
-                        <div class="tb-hw__task">
-                          <span class="tb-list__lead" aria-hidden="true"
-                            ><i
-                              [class]="
-                                assignment.boardId === null
-                                  ? 'tb-i tb-i-assignment'
-                                  : 'tb-i tb-i-co_present'
-                              "
-                            ></i
-                          ></span>
-                          <div class="tb-list__text">
-                            <a
-                              class="tb-list__title tb-link"
-                              [routerLink]="['/teacher/homework', assignment.id]"
-                              >{{ assignment.title }}</a
-                            >
-                            <span class="tb-hw__materials">
-                              @for (material of materials(assignment); track material.icon) {
-                                <span
-                                  class="tb-hw__material"
-                                  role="img"
-                                  [attr.aria-label]="materialLabel(material)"
-                                  [pTooltip]="materialLabel(material)"
-                                >
-                                  <i [class]="material.icon" aria-hidden="true"></i>
-                                  @if (material.count !== null) {
-                                    {{ material.count }}
-                                  }
-                                </span>
-                              }
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <span class="tb-hw__whom">
-                          <i
-                            [class]="
-                              assignment.students.length > 1
-                                ? 'tb-i tb-i-group'
-                                : 'tb-i tb-i-person'
-                            "
-                            aria-hidden="true"
-                          ></i>
-                          {{ whomOf(assignment) }}
-                        </span>
-                      </td>
-                      <td [class.tb-error]="isOverdue(assignment)">{{ due(assignment) }}</td>
-                      <td>
-                        <ng-container
-                          [ngTemplateOutlet]="handed"
-                          [ngTemplateOutletContext]="{ assignment }"
-                        />
-                      </td>
-                      <td>
-                        @if (progress(assignment); as badge) {
-                          <p-tag [value]="badge.label" [severity]="badge.severity" />
-                        }
-                      </td>
-                      <td>
-                        <ng-container
-                          [ngTemplateOutlet]="rowMenu"
-                          [ngTemplateOutletContext]="{ assignment }"
-                        />
-                      </td>
-                    </tr>
-                  } @else {
-                    <tr class="tb-hw__group-row">
-                      <td colspan="6">
-                        <h2 class="tb-hw__label" [class.tb-error]="line.section.key === 'overdue'">
-                          {{ line.section.title }}
-                        </h2>
-                      </td>
-                    </tr>
-                  }
-                </ng-template>
-              </p-table>
-              <ng-container [ngTemplateOutlet]="showMore" />
+              </div>
             }
-          </tb-load-state>
+          </div>
+          @if (view() === 'journal') {
+            <tb-journal-view
+              [who]="whomId()"
+              (review)="openWork($event)"
+              (openAssignment)="openAssignment($event)"
+            >
+              <div whom>
+                @if (mobile()) {
+                  <tb-filter-chips
+                    [label]="t.whom"
+                    [chips]="[]"
+                    [menu]="whomChip()"
+                    [value]="filter()"
+                  />
+                } @else {
+                  <p-select
+                    [formControl]="whom"
+                    [options]="whomOptions()"
+                    [group]="true"
+                    optionGroupLabel="label"
+                    optionGroupChildren="items"
+                    optionLabel="label"
+                    optionValue="value"
+                    [placeholder]="t.whomAll"
+                    [showClear]="true"
+                    [ariaLabel]="t.whom"
+                    appendTo="body"
+                  />
+                }
+              </div>
+            </tb-journal-view>
+          } @else {
+            <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+              @if (works().length > 0) {
+                <section class="tb-hw__review" [attr.aria-label]="t.awaiting(works().length)">
+                  <div class="tb-hw__review-head">
+                    <h2 class="tb-hw__label">{{ t.awaiting(works().length) }}</h2>
+                    <p-button
+                      [label]="t.checkAll"
+                      icon="tb-i tb-i-arrow_forward"
+                      iconPos="right"
+                      [text]="true"
+                      (onClick)="reviewAll()"
+                    />
+                  </div>
+                  <ul class="tb-hw__cards">
+                    @for (work of shownWorks(); track work.taskId) {
+                      <li class="tb-hw__card">
+                        <div class="tb-hw__card-head">
+                          <tb-avatar
+                            [attr.data-tb-label]="colors.studentLabel(work.studentId)"
+                            [name]="work.studentName"
+                            [photo]="work.studentAvatar"
+                          />
+                          <div class="tb-list__text">
+                            <span class="tb-list__title">{{ work.studentName }}</span>
+                            <span class="tb-list__supporting">{{ handedIn(work) }}</span>
+                          </div>
+                          @if (isLate(work)) {
+                            <p-tag [value]="t.lateTag" severity="danger" />
+                          }
+                        </div>
+                        <span class="tb-hw__card-task">{{ work.title }}</span>
+                        <div class="tb-hw__card-foot">
+                          @if (work.quizScore !== null && work.quizMax !== null) {
+                            <p-tag
+                              [value]="t.quizScore(work.quizScore, work.quizMax)"
+                              severity="secondary"
+                            />
+                          }
+                          <p-button
+                            class="tb-hw__card-action"
+                            [label]="t.check"
+                            severity="secondary"
+                            [ariaLabel]="t.reviewOf(work.studentName, work.title)"
+                            (onClick)="openWork(work.taskId)"
+                          />
+                        </div>
+                      </li>
+                    }
+                    @if (waitingCount() > 0) {
+                      <li class="tb-hw__card tb-hw__card--waiting">
+                        <i class="tb-i tb-i-hourglass_top" aria-hidden="true"></i>
+                        {{ t.stillWaiting(waitingCount()) }}
+                      </li>
+                    }
+                  </ul>
+                </section>
+              }
+
+              @if (lines().length === 0) {
+                <ng-container [ngTemplateOutlet]="empty" />
+              } @else if (mobile()) {
+                @for (section of sections(); track section.key) {
+                  @if (section.title; as title) {
+                    <h2
+                      class="tb-hw__label tb-hw__group"
+                      [class.tb-error]="section.key === 'overdue'"
+                    >
+                      {{ title }}
+                    </h2>
+                  }
+                  <ul class="tb-list tb-list--clamp" [attr.aria-label]="section.title ?? t.title">
+                    @for (assignment of section.rows; track assignment.id) {
+                      <li>
+                        <div class="tb-list__text">
+                          <a
+                            class="tb-list__title tb-list__link"
+                            [routerLink]="['/teacher/homework', assignment.id]"
+                            >{{ assignment.title }}</a
+                          >
+                          <span class="tb-list__supporting">{{ details(assignment) }}</span>
+                          <ng-container
+                            [ngTemplateOutlet]="handed"
+                            [ngTemplateOutletContext]="{ assignment }"
+                          />
+                        </div>
+                        <div class="tb-list__trail tb-list__trail--icons tb-hw__row-end">
+                          @if (progress(assignment); as badge) {
+                            <p-tag [value]="badge.label" [severity]="badge.severity" />
+                          }
+                          <ng-container
+                            [ngTemplateOutlet]="rowMenu"
+                            [ngTemplateOutletContext]="{ assignment }"
+                          />
+                        </div>
+                      </li>
+                    }
+                  </ul>
+                }
+                <ng-container [ngTemplateOutlet]="showMore" />
+              } @else {
+                <p-table [value]="lines()" styleClass="tb-cards tb-hw__table">
+                  <ng-template #header>
+                    <tr>
+                      <th class="tb-col-main">{{ t.columns.task }}</th>
+                      <th>{{ t.columns.whom }}</th>
+                      <th>{{ t.columns.due }}</th>
+                      <th>{{ t.columns.handed }}</th>
+                      <th>{{ t.columns.status }}</th>
+                      <th>
+                        <span class="tb-sr-only">{{ t.columns.actions }}</span>
+                      </th>
+                    </tr>
+                  </ng-template>
+                  <ng-template #body let-line [tbRowType]="lines()">
+                    @if (line.assignment; as assignment) {
+                      <tr>
+                        <td>
+                          <div class="tb-hw__task">
+                            <span class="tb-list__lead" aria-hidden="true"
+                              ><i
+                                [class]="
+                                  assignment.boardId === null
+                                    ? 'tb-i tb-i-assignment'
+                                    : 'tb-i tb-i-co_present'
+                                "
+                              ></i
+                            ></span>
+                            <div class="tb-list__text">
+                              <a
+                                class="tb-list__title tb-link"
+                                [routerLink]="['/teacher/homework', assignment.id]"
+                                >{{ assignment.title }}</a
+                              >
+                              <span class="tb-hw__materials">
+                                @for (material of materials(assignment); track material.icon) {
+                                  <span
+                                    class="tb-hw__material"
+                                    role="img"
+                                    [attr.aria-label]="materialLabel(material)"
+                                    [pTooltip]="materialLabel(material)"
+                                  >
+                                    <i [class]="material.icon" aria-hidden="true"></i>
+                                    @if (material.count !== null) {
+                                      {{ material.count }}
+                                    }
+                                  </span>
+                                }
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <span class="tb-hw__whom">
+                            <i
+                              [class]="
+                                assignment.students.length > 1
+                                  ? 'tb-i tb-i-group'
+                                  : 'tb-i tb-i-person'
+                              "
+                              aria-hidden="true"
+                            ></i>
+                            {{ whomOf(assignment) }}
+                          </span>
+                        </td>
+                        <td [class.tb-error]="isOverdue(assignment)">{{ due(assignment) }}</td>
+                        <td>
+                          <ng-container
+                            [ngTemplateOutlet]="handed"
+                            [ngTemplateOutletContext]="{ assignment }"
+                          />
+                        </td>
+                        <td>
+                          @if (progress(assignment); as badge) {
+                            <p-tag [value]="badge.label" [severity]="badge.severity" />
+                          }
+                        </td>
+                        <td>
+                          <ng-container
+                            [ngTemplateOutlet]="rowMenu"
+                            [ngTemplateOutletContext]="{ assignment }"
+                          />
+                        </td>
+                      </tr>
+                    } @else {
+                      <tr class="tb-hw__group-row">
+                        <td colspan="6">
+                          <h2
+                            class="tb-hw__label"
+                            [class.tb-error]="line.section.key === 'overdue'"
+                          >
+                            {{ line.section.title }}
+                          </h2>
+                        </td>
+                      </tr>
+                    }
+                  </ng-template>
+                </p-table>
+                <ng-container [ngTemplateOutlet]="showMore" />
+              }
+            </tb-load-state>
+          }
         </tb-pane>
       </tb-panes>
     }
@@ -491,6 +546,10 @@ interface Material {
     </ng-template>
   `,
   styles: `
+    .tb-hw__views {
+      flex: 0 0 auto;
+    }
+
     /* the search takes the free room, «Кому» and the filter after it (ADR-0018) */
     .tb-hw__toolbar {
       margin-block-start: var(--tb-space-4);
@@ -697,6 +756,7 @@ interface Material {
 export class AssignmentsPage implements OnInit {
   protected readonly mobile = injectMobile();
   protected readonly t = T.list;
+  protected readonly journalT = T.journal;
   protected readonly colors = inject(TeacherColors);
   protected readonly progress = assignmentProgress;
   /** Route parameters: the work or the assignment that takes the place of the list. */
@@ -775,6 +835,12 @@ export class AssignmentsPage implements OnInit {
   });
   protected readonly searching = computed(() => this.query().trim() !== '');
   protected readonly filter = signal<Filter>('active');
+  /** «Списком» or «По ученикам»; kept in the address (`?view=journal`). */
+  protected readonly view = signal<View>(readQuery(this.route, 'view', VIEWS) ?? 'list');
+  protected readonly viewSegments = computed<Segment<View>[]>(() => [
+    { value: 'list', label: T.journal.asList, icon: 'tb-i tb-i-view_list' },
+    { value: 'journal', label: T.journal.byStudents, icon: 'tb-i tb-i-grid_view' },
+  ]);
 
   /** What the search finds: the title or a name of a student of the assignment. */
   private matches(assignment: AssignmentSummary): boolean {
@@ -973,6 +1039,21 @@ export class AssignmentsPage implements OnInit {
           })),
       );
     });
+  }
+
+  protected setView(view: View): void {
+    this.view.set(view);
+    writeQuery(this.router, this.route, { view: view === 'list' ? null : view });
+  }
+
+  /** The id of the group or student «Кому» stands for; `null` — everybody. */
+  protected readonly whomId = computed(() => {
+    const value = this.whomValue();
+    return value === null || value === '' ? null : value.slice(value.indexOf(':') + 1);
+  });
+
+  protected openAssignment(id: string): void {
+    void this.router.navigate(['/teacher/homework', id]);
   }
 
   protected openWork(taskId: string): void {
