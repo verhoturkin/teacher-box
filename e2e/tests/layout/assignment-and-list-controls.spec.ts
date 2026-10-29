@@ -23,6 +23,7 @@ test('assignment panes share width and validation keeps recipients aligned with 
   );
   await page.route('**/api/teacher/ai/prompts', (route) => route.fulfill({ json: [] }));
   await page.goto('/teacher/homework/new');
+  await page.getByRole('button', { name: 'ИИ-помощник', exact: true }).click();
   const panes = page.locator('tb-panes > tb-pane');
   await expect(panes).toHaveCount(2);
   const widths = await panes.evaluateAll((elements) =>
@@ -30,13 +31,7 @@ test('assignment panes share width and validation keeps recipients aligned with 
   );
   expect(Math.abs(widths[0]! - widths[1]!)).toBeLessThanOrEqual(1);
   await page.getByRole('button', { name: 'Выдать', exact: true }).click();
-  await expect(page.locator('#editor-title')).toHaveAttribute('aria-invalid', 'true');
-  const member = page.locator('tb-member-picker .p-multiselect');
-  const due = page.locator('#editor-due');
-  const top = await member.evaluate((element) => element.getBoundingClientRect().top);
-  expect(
-    Math.abs(top - (await due.evaluate((element) => element.getBoundingClientRect().top))),
-  ).toBeLessThanOrEqual(1);
+  await expect(page.getByText('Напишите текст задания')).toBeVisible();
   await page.getByRole('button', { name: 'ИИ-помощник', exact: true }).click();
   await expect(panes).toHaveCount(1);
 });

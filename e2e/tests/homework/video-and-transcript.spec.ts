@@ -18,9 +18,9 @@ async function signIn(page: Page, login: string, password: string): Promise<void
 test('the teacher gives homework with a video and its transcript', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.goto('/teacher/homework/new');
-  await page.locator('#editor-title').fill(TITLE);
+  await page.locator('#editor-text').fill(TITLE);
 
-  await page.getByRole('button', { name: 'Добавить видео' }).click();
+  await page.getByRole('button', { name: 'Видео', exact: true }).click();
   await page.getByLabel('Ссылка на видео').fill('https://youtu.be/dQw4w9WgXcQ?t=35');
   await expect(page.locator('tb-video-section iframe')).toHaveAttribute(
     'src',

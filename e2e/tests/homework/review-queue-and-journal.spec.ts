@@ -215,7 +215,7 @@ test('an assignment is copied from the «⋮» menu of the list', async ({ page,
   await page.getByText('Активные').first().click();
   await page.getByRole('button', { name: `Действия: ${title}` }).click();
   await page.getByRole('menuitem', { name: 'Создать копию' }).click();
-  await expect(page.getByLabel('Название').first()).toHaveValue(`${title} (копия)`);
+  await expect(page.locator('#editor-text')).toHaveValue(`${title} (копия)\n\nТекст`);
 });
 
 test('«Активные» are grouped by the deadline', async ({ page, request }) => {

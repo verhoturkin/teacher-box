@@ -304,17 +304,17 @@ You can also add [textbook pages](/teacher/help/textbooks) from Materials or an 
 ## Create an assignment
 
 1. Choose “Create” → “Assignment”, or “Homework” → “New assignment” on a phone. A quick dialog opens so you can assign work in a minute; “Open full screen” (or “Quiz”) carries everything you have entered into the full editor.
-2. In the dialog, choose who gets the assignment and write the text; its first line becomes the title. Set the due date with “By the next lesson”, “In a week”, “No deadline” or “Pick a date…”. Add textbooks, files, videos or a board with the buttons under the text, and use “Save draft” to keep the assignment unassigned; the students you chose are remembered and already ticked when you choose “Add” on the draft’s page. In the full editor, enter a title and instructions. Markdown supports bold text, lists and links; use Preview to check the result.
-3. Select students and groups. Students in more than one selected group receive the assignment once. Removing a group keeps any students also selected individually. The due date defaults to the next lesson’s start time; change it if needed.
-4. Attach textbooks and files. Select a name to open it; PDFs and images open in a new tab.
-5. Optionally add up to five videos. YouTube, Rutube and VK videos play within the assignment; other links open in a new tab. Import YouTube captions, import an .srt or .vtt file, or enter a transcript yourself. If several caption tracks are available, choose the language and track you need. The AI uses the transcript; students see it only if “Show transcript to students” is enabled.
-6. Choose “Assign”. Students are notified once the materials are ready and reminded before the due date.
+2. In the dialog, choose who gets the assignment and write the text; its first line becomes the title. Set the due date with “By the next lesson”, “In a week”, “No deadline” or “Pick a date…”. Add textbooks, files, videos or a board with the buttons under the text, and use “Save draft” to keep the assignment unassigned; the students you chose are remembered and already ticked when you choose “Add” on the draft’s page. The full editor follows the same order: recipients, text, due date, materials. Markdown supports bold text, lists and links; use Preview to check the result.
+3. Under “To”, add students and groups. Students in more than one selected group receive the assignment once. Removing a group keeps any students also selected individually. “By the next lesson” sets the due date to the start of those students’ next lesson; pick another option if you prefer.
+4. Textbooks, files, videos, a quiz and a board appear in the assignment only once you add them: use the buttons under “Materials”. Textbooks and files show as cards; select a name to open it (PDFs and images open in a new tab). You can remove anything you added, and empty sections take up no room.
+5. For a video, use “Video” (up to five). YouTube, Rutube and VK videos play within the assignment; other links open in a new tab. Import YouTube captions, import an .srt or .vtt file, or enter a transcript yourself. If several caption tracks are available, choose the language and track you need. The AI uses the transcript; students see it only if “Show transcript to students” is enabled.
+6. Choose “Assign”. Students are notified once the materials are ready and reminded before the due date. “Save draft” keeps the assignment with you.
 
 “Assign and add to board” creates the assignment, then lets you place its text, images and textbook pages on a board. The assignment remembers the board and gives students a “Go to board” button. “Add to board” on the assignment page has the same effect.
 
 ## Manage assignments
 
-“Edit” opens the editor for the title, instructions, videos and due date. Update the textbooks and files of a saved assignment on its details page. The portal checks before discarding unsaved changes.
+“Edit” opens the editor for the instructions (their first line is the title), videos, quiz and due date. Update the textbooks and files of a saved assignment on its details page. The portal checks before discarding unsaved changes.
 
 “Make a copy” creates a draft with the original text, files, textbooks and videos, but no recipients or due date. The editor opens so you can adapt it.
 
@@ -344,7 +344,7 @@ Use “Attach a textbook” to select a resource and pages, such as 12-14, 20. L
 
 ## Add a quiz
 
-The Questions section supports six types:
+In the editor, choose “Quiz” under “Materials” to add the Questions section; “Remove” takes it out again. It supports six types:
 
 - **Single choice** and **Multiple choice:** mark the correct options.
 - **Short answer:** list accepted answers. Capitalisation, extra spaces and the difference between ё and е are ignored.

@@ -61,7 +61,7 @@ full editor, AI draft, phone, student) — https://claude.ai/artifact/X2SdNjSvCb
   and the split button «Выдать» (menu: «Выдать и разместить на доске»); «Во весь экран» opens
   `assignment-editor-page.ts`. Compact: a full-screen dialog, «Выдать» in its top bar, «Фото»
   among the materials.
-- [ ] **340.2 F** `assignment-editor-page.ts` follows the same order and hides empty sections
+- [x] **340.2 F** `assignment-editor-page.ts` follows the same order and hides empty sections
   (textbooks, files, videos, questions) behind the same assist chips; the separate title field
   goes. Check that `AssignmentService` accepts the derived title; update `docs/screens.md`
   (Assignment editor), help, wiki.

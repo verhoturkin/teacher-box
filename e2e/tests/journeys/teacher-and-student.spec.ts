@@ -103,10 +103,8 @@ test('the teacher gives homework and the student hands it in', async ({ page, br
   // «Создать › Задание» in the rail (232.2)
   await create(page, 'Задание');
   // The editor page (0.14.0).
-  await page.locator('#editor-title').fill(HOMEWORK_TITLE);
-  await page.locator('#editor-text').fill('1. Сложите 1/2 и 1/3');
-  // PrimeNG puts the id on a hidden input; the component itself opens the list.
-  await page.locator('p-multiselect:has(#editor-students)').click();
+  await page.locator('#editor-text').fill(`${HOMEWORK_TITLE}\n1. Сложите 1/2 и 1/3`);
+  await page.getByRole('button', { name: 'Ученик или группа' }).click();
   await page.getByRole('option', { name: STUDENT_NAME }).click();
   await page.keyboard.press('Escape');
   await page

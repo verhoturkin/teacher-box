@@ -1,9 +1,7 @@
-import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  LOCALE_ID,
   computed,
   effect,
   inject,
@@ -19,7 +17,6 @@ import { Router } from '@angular/router';
 import { Observable, catchError, concat, last, map, of, switchMap, toArray } from 'rxjs';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
-import { DatePicker } from 'primeng/datepicker';
 import { Drawer } from 'primeng/drawer';
 import { Menu } from 'primeng/menu';
 import { Textarea } from 'primeng/textarea';
@@ -30,7 +27,6 @@ import { AiApi, AppliedDraft, HomeworkAiPanel, HomeworkAiState } from '@features
 import { Placed, ToBoardDialog } from '@features/boards/parts';
 import {
   IdentityApi,
-  MemberPicker,
   MemberSelection,
   StudentGroup,
   memberRecipients,
@@ -39,25 +35,19 @@ import { ScheduleApi, ScheduledLesson } from '@features/schedule/parts';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { SHARED_T } from '@shared/i18n/texts';
 import { TbDialog, DialogFooter, DialogHeaderActions } from '@shared/ui/dialog/dialog';
-import { AssistChip } from '@shared/ui/assist-chip';
-import { Avatar } from '@shared/ui/avatar';
-import { FilterChip, FilterChips } from '@shared/ui/filter-chips';
-import { InputChip } from '@shared/ui/input-chip';
 import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, BoundTextbook } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
-import { FilePicker } from '../ui/file-picker';
+import { DueChips, Due, dueAtOf } from '../ui/due-chips';
+import { MaterialChips } from '../ui/material-chips';
+import { RecipientsField } from '../ui/recipients-field';
 import { TextbookList } from '../ui/textbook-list';
 import { AssignmentDraftHandover, titleOf } from './assignment-draft';
 import { assignmentBoard } from './assignment-board';
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { NEXT_LESSON_DAYS, nextLessonStart } from './next-lesson';
 import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from './video-section';
-
-type Due = 'lesson' | 'week' | 'none' | 'date';
-
-const WEEK = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * «Новое задание» over the list: who gets it, one Markdown text whose first line is the title, the due date
@@ -73,19 +63,15 @@ const WEEK = 7 * 24 * 60 * 60 * 1000;
     DialogFooter,
     DialogHeaderActions,
     Button,
-    DatePicker,
     Drawer,
     Menu,
     Textarea,
     ModalDrawer,
-    AssistChip,
-    Avatar,
-    FilterChips,
-    InputChip,
-    MemberPicker,
+    DueChips,
+    MaterialChips,
+    RecipientsField,
     HomeworkAiPanel,
     ToBoardDialog,
-    FilePicker,
     TextbookList,
     BindTextbookDialog,
     VideoSection,
@@ -127,37 +113,12 @@ const WEEK = 7 * 24 * 60 * 60 * 1000;
       </ng-template>
 
       <div class="tb-create">
-        <div class="tb-field">
-          <label for="create-whom">{{ t.whom }}</label>
-          <div class="tb-create__chips">
-            @for (member of chosen(); track member.kind + member.id) {
-              <tb-input-chip
-                [label]="memberLabel(member)"
-                [removeLabel]="t.removeMember(memberName(member))"
-                (removed)="removeMember(member)"
-              >
-                @if (member.kind === 'GROUP') {
-                  <i lead class="tb-i tb-i-groups" aria-hidden="true"></i>
-                } @else {
-                  <tb-avatar lead [name]="memberName(member)" size="1.5rem" />
-                }
-              </tb-input-chip>
-            }
-            <span class="tb-create__add">
-              <tb-assist-chip icon="add" [dashed]="true" (click)="whom.open()">
-                {{ t.whomPlaceholder }}
-              </tb-assist-chip>
-              <tb-member-picker
-                #whom
-                inputId="create-whom"
-                [bare]="true"
-                [formControl]="members"
-                [students]="studentOptions()"
-                [groups]="groupOptions()"
-              />
-            </span>
-          </div>
-        </div>
+        <tb-recipients-field
+          inputId="create-whom"
+          [control]="members"
+          [students]="studentOptions()"
+          [groups]="groups()"
+        />
 
         <div class="tb-field">
           <label for="create-text">{{ t.task }}</label>
@@ -212,24 +173,7 @@ const WEEK = 7 * 24 * 60 * 60 * 1000;
           <small class="tb-hint">{{ t.firstLine }}</small>
         </div>
 
-        <tb-filter-chips
-          [label]="t.due"
-          [chips]="dueChips()"
-          [value]="dueValue()"
-          (valueChange)="chooseDue($event)"
-        />
-        @if (dueChoice() === 'date') {
-          <p-datepicker
-            [formControl]="dueDate"
-            [ariaLabel]="t.dueAt"
-            [showTime]="true"
-            hourFormat="24"
-            dateFormat="dd.mm.yy"
-            [showIcon]="true"
-            appendTo="body"
-            [fluid]="true"
-          />
-        }
+        <tb-due-chips [lesson]="nextLesson()" [(choice)]="dueChoice" [(date)]="picked" />
 
         @if (hasMaterials()) {
           <section class="tb-create__materials" [attr.aria-label]="t.materials">
@@ -257,44 +201,16 @@ const WEEK = 7 * 24 * 60 * 60 * 1000;
             }
           </section>
         }
-        <tb-file-picker #filePicker [(files)]="files" [button]="false" />
-        <tb-file-picker
-          #photoPicker
+        <tb-material-chips
           [(files)]="files"
-          [button]="false"
-          [list]="false"
-          [capture]="true"
+          [compact]="compact()"
+          [videosFull]="videos().length >= maxVideos"
+          [onBoard]="onBoard()"
+          (textbook)="addTextbook()"
+          (video)="addVideo()"
+          (quiz)="openFullscreen()"
+          (board)="onBoard.set(true)"
         />
-        <div class="tb-create__assist" role="group" [attr.aria-label]="t.materials">
-          @if (compact()) {
-            <tb-assist-chip icon="photo_camera" (click)="photoPicker.choose()">
-              {{ t.photo }}
-            </tb-assist-chip>
-          }
-          <tb-assist-chip icon="attach_file" (click)="filePicker.choose()">
-            {{ t.file }}
-          </tb-assist-chip>
-          <tb-assist-chip icon="menu_book" (click)="addTextbook()">
-            {{ t.textbook }}
-          </tb-assist-chip>
-          @if (!compact()) {
-            <tb-assist-chip
-              icon="smart_display"
-              [disabled]="videos().length >= maxVideos"
-              (click)="addVideo()"
-            >
-              {{ t.video }}
-            </tb-assist-chip>
-          }
-          <tb-assist-chip icon="quiz" (click)="openFullscreen()">
-            {{ compact() ? t.quizShort : t.quiz }}
-          </tb-assist-chip>
-          @if (!compact()) {
-            <tb-assist-chip icon="co_present" [disabled]="onBoard()" (click)="onBoard.set(true)">
-              {{ t.board }}
-            </tb-assist-chip>
-          }
-        </div>
       </div>
 
       <ng-template tbDialogFooter>
@@ -411,23 +327,6 @@ const WEEK = 7 * 24 * 60 * 60 * 1000;
       align-items: center;
       gap: var(--tb-space-3);
     }
-
-    .tb-create__chips {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--tb-space-2);
-    }
-
-    .tb-create__add {
-      position: relative;
-    }
-
-    .tb-create__assist {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--tb-space-2);
-    }
   `,
 })
 export class AssignmentCreateDialog {
@@ -441,7 +340,6 @@ export class AssignmentCreateDialog {
   private readonly router = inject(Router);
   private readonly snackbar = inject(Snackbar);
   private readonly handover = inject(AssignmentDraftHandover);
-  private readonly dates = new DatePipe(inject(LOCALE_ID));
   private readonly size = injectWindowSize();
 
   readonly visible = model(false);
@@ -454,11 +352,9 @@ export class AssignmentCreateDialog {
 
   readonly members = new FormControl<MemberSelection[]>([], { nonNullable: true });
   readonly text = new FormControl('', { nonNullable: true });
-  protected readonly dueDate = new FormControl<Date | null>(null);
   protected readonly textValue = toSignal(this.text.valueChanges, { initialValue: '' });
   protected readonly titleValue = computed(() => titleOf(this.textValue()));
   protected readonly chosen = toSignal(this.members.valueChanges, { initialValue: [] });
-  private readonly picked = toSignal(this.dueDate.valueChanges, { initialValue: null });
 
   private readonly students = signal<readonly { id: string; name: string }[]>([]);
   protected readonly studentOptions = this.students;
@@ -473,45 +369,15 @@ export class AssignmentCreateDialog {
       this.students().map((student) => student.id),
     ),
   );
-  private readonly nextLesson = computed(() =>
+  protected readonly nextLesson = computed(() =>
     nextLessonStart(this.lessons(), this.recipients(), new Date()),
   );
 
   protected readonly dueChoice = signal<Due>('lesson');
-  /** «К следующему занятию» stays only while the chosen students have a lesson ahead. */
-  private readonly effectiveDue = computed<Due>(() =>
-    this.dueChoice() === 'lesson' && this.nextLesson() === null ? 'none' : this.dueChoice(),
+  protected readonly picked = signal<Date | null>(null);
+  private readonly dueAt = computed(() =>
+    dueAtOf(this.dueChoice(), this.nextLesson(), this.picked()),
   );
-  protected readonly dueChips = computed<FilterChip<Due>[]>(() => {
-    const lesson = this.nextLesson();
-    return [
-      ...(lesson === null
-        ? []
-        : [
-            {
-              value: 'lesson' as const,
-              label: T.create.nextLesson(this.dates.transform(lesson, 'EEE dd.MM, HH:mm') ?? ''),
-            },
-          ]),
-      { value: 'week', label: T.create.inWeek },
-      { value: 'none', label: T.create.noDue },
-      { value: 'date', label: T.create.pickDate },
-    ];
-  });
-  /** The chip shown as chosen: the effective one (the lesson chip is hidden without a lesson). */
-  protected readonly dueValue = this.effectiveDue;
-  private readonly dueAt = computed<Date | null>(() => {
-    switch (this.effectiveDue()) {
-      case 'lesson':
-        return this.nextLesson();
-      case 'week':
-        return new Date(Date.now() + WEEK);
-      case 'date':
-        return this.picked();
-      case 'none':
-        return null;
-    }
-  });
 
   protected readonly files = signal<File[]>([]);
   private readonly pickedTextbooks = signal<readonly BoundTextbook[]>([]);
@@ -567,7 +433,7 @@ export class AssignmentCreateDialog {
   private reset(): void {
     this.members.reset([]);
     this.text.reset('');
-    this.dueDate.reset(null);
+    this.picked.set(null);
     this.dueChoice.set('lesson');
     this.files.set([]);
     this.pickedTextbooks.set([]);
@@ -609,37 +475,6 @@ export class AssignmentCreateDialog {
         // without the schedule the due date stays for the teacher to set
       },
     });
-  }
-
-  protected readonly groupOptions = computed(() =>
-    this.groups().map((group) => ({ id: group.id, name: group.name })),
-  );
-
-  protected memberName(member: MemberSelection): string {
-    return member.kind === 'GROUP'
-      ? (this.groups().find((group) => group.id === member.id)?.name ?? '')
-      : (this.students().find((student) => student.id === member.id)?.name ?? '');
-  }
-
-  /** A group carries the number of its students. */
-  protected memberLabel(member: MemberSelection): string {
-    const group =
-      member.kind === 'GROUP'
-        ? this.groups().find((candidate) => candidate.id === member.id)
-        : null;
-    return group === undefined || group === null
-      ? this.memberName(member)
-      : `${group.name} · ${String(group.members.length)}`;
-  }
-
-  protected removeMember(member: MemberSelection): void {
-    this.members.setValue(
-      this.members.value.filter((chosen) => chosen.kind !== member.kind || chosen.id !== member.id),
-    );
-  }
-
-  protected chooseDue(choice: Due): void {
-    this.dueChoice.set(choice);
   }
 
   /** Wraps the selection (or the caret) of the text in Markdown marks. */

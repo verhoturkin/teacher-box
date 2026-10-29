@@ -321,14 +321,22 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
 
 ### Assignment editor
 
-A main flexible pane (title, recipients and deadline, Markdown Text / Preview, textbooks and files,
-videos) and a supporting sheet with the AI request (prompt library, search and save, sources,
-generate / error / retry, draft Remove / Insert / Replace). From **M3:** the supporting-pane
-canonical layout. *Ours:* the AI pane shares the width equally with the editor from expanded and is
-a modal right drawer below; main content precedes AI in reading order; one Markdown field at every
-width; the header keeps «Выдать / Сохранить» (filled) and «… и разместить на доске» (tonal); the AI
-never changes text without Insert / Replace; its state survives closing the pane; leaving with
-changes asks first.
+A main flexible pane in the order of the quick dialog (340.2): «Кому» (input chips + dashed «Ученик
+или группа», new assignments only), «Задание» (one Markdown field with the «Текст / Просмотр»
+switch; the first line is the title, hint «Первая строка станет названием»), «Срок» (filter chips),
+«Материалы». Empty sections (textbooks, videos, board, the «Вопросы» card) are hidden; the assist
+chips under «Материалы» («Файл · Учебник · Видео · Тест с вопросами · Доска») add them, a section
+with content shows normally and can be removed. A saved assignment loads its title as the first line
+when the text does not start with it. The header: «ИИ-помощник» (tonal), text «Сохранить черновик»,
+split filled «Выдать» (menu «Выдать и разместить на доске»); a saved assignment has the filled
+«Сохранить». A supporting sheet with the AI request (prompt library, search and save, sources,
+generate / error / retry, draft Remove / Insert / Replace) opens beside the form from the AI button.
+From **M3:** the supporting-pane canonical layout. *Ours:* the AI pane shares the width equally with
+the editor from expanded and is a modal right drawer below; main content precedes AI in reading
+order; one Markdown field at every width; the AI never changes text without Insert / Replace; its
+state survives closing the pane; leaving with changes asks first. The recipients, deadline and
+materials parts are the components of the dialog (`ui/recipients-field.ts`, `ui/due-chips.ts`,
+`ui/material-chips.ts`). The sketch's contents column (`Разделы задания`) is not built.
 
 **Questions** (0.39.0): a «Вопросы» card under the videos (`question-section.ts`): a question is a card
 (type, text, type fields, points, explanation) with up/down/delete; «Добавить вопрос» picks the type; a total

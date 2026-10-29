@@ -61,11 +61,11 @@ test('AI stays beside one Markdown field and preserves state through compact ada
   );
   await page.route('**/api/teacher/ai/prompts', (route) => route.fulfill({ json: [] }));
   await page.goto('/teacher/homework/new');
+  await page.getByRole('button', { name: 'ИИ-помощник', exact: true }).click();
   const supporting = page.locator('tb-pane.tb-editor__ai');
   await expect(supporting.locator('tb-homework-ai-panel')).toBeVisible();
   const prompt = supporting.locator('#ai-prompt');
   await prompt.fill('Составь три задачи');
-  await page.locator('#editor-title').fill('Авторское название');
   await page.locator('#editor-text').fill('Авторский текст');
   await page.getByRole('button', { name: 'Просмотр', exact: true }).click();
   await expect(page.locator('.tb-preview')).toHaveText('Авторский текст');
@@ -80,7 +80,6 @@ test('AI stays beside one Markdown field and preserves state through compact ada
   await expect(page.getByRole('button', { name: 'ИИ-помощник', exact: true })).toBeFocused();
   await page.setViewportSize({ width: 1440, height: 900 });
   await expect(supporting.locator('#ai-prompt')).toHaveValue('Составь три задачи');
-  await expect(page.locator('#editor-title')).toHaveValue('Авторское название');
   await expect(page.locator('.tb-preview')).toHaveText('Авторский текст');
   await expect(supporting).toHaveCSS('opacity', '1');
   await page.screenshot({

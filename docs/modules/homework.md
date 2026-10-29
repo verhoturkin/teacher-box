@@ -140,7 +140,9 @@ the download button saves them under `boundTextbookFilename`; 0.14.5: the teache
 textbook, a PDF at its first bound page — `teacher/material-opener.ts`), `teacher/bind-textbook-dialog.ts` («Привязать учебник»: a textbook not bound yet from
 `@features/textbooks/parts`, pages — none for an image; the pencil changes the pages of a bound one). Editor (`teacher/assignment-editor-page.ts`, routes `/teacher/homework/new` and `/teacher/homework/:id/edit`,
 `canLeaveGuard`; «Создать › Задание» in the rail and, on a phone, «Новое задание» lead there): one Markdown field with a «Текст / Просмотр»
-switch; students and groups (`tb-member-picker`: typed explicit selections resolve to a deduplicated snapshot of current available students; removing a group preserves explicit individual choices),
+switch (its first line is the title — `titleOf`: Markdown stripped, at most 200 characters, as the backend allows;
+a saved assignment loads its title on top when the text does not start with it; empty sections — textbooks, videos,
+questions, board — are hidden behind the assist chips, 340.2); students and groups (`tb-member-picker`: typed explicit selections resolve to a deduplicated snapshot of current available students; removing a group preserves explicit individual choices),
 the due date — the start of the earliest scheduled lesson of the chosen students within 60 days
 (`teacher/next-lesson.ts` over `ScheduleApi.lessons`) until the teacher sets it; textbooks and files only for a new
 assignment (0.14.2: a saved one changes them on its page); picked files — `ui/file-picker.ts`, the same `tb-list` cards
