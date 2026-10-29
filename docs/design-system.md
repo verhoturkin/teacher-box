@@ -18,7 +18,8 @@ primeicons. Minimum browsers: Chrome 119, Safari 17.2, Firefox 128 (`linear()`, 
 `color-mix()`); older ones get no springs.
 
 **Checks.** `core/theme/design-rules.spec.ts` fails on Aura tokens, hex colours outside
-`core/theme/` and `boards/`, `size="small"` and outlined buttons, and when the icon font and the
+`core/theme/` and `boards/`, `size="small"` buttons, outlined ones not written as
+`variant="outlined"`, and when the icon font and the
 used icon classes disagree. E2E runs axe on the main screens and checks button rules (§13).
 
 ## Part A — Foundations
@@ -420,13 +421,17 @@ for the active navigation item and checked states.
 Variant = **weight**, colour = **one accent** (ADR-0045): filled is primary (the portal colour),
 tonal is neutral secondary, red only destroys; green and amber are statuses, never buttons.
 40 px pill (icon button 40×40, 48 px target), Label Large, 16 px sides, 20 px icon (**M3E** small);
-icon buttons 24 px icon; shape morphs to 8 px while pressed. Never `outlined` (outline is for
-inputs), `size="small"`, `success`, `warn`, `info`, `help`, `contrast`.
+icon buttons 24 px icon; shape morphs to 8 px while pressed. Never `size="small"`, `success`,
+`warn`, `info`, `help`, `contrast`. Outlined (**M3** medium emphasis: 1 dp outline, primary label,
+no container) only as `variant="outlined"`, for the secondary action beside a page's filled main
+action — «Изменить» next to «Проверить N работ» (homework sketches, stages 339–342) — and for
+«Сегодня» of the calendar; never a second outlined button in the same bar.
 
 | Role | Variant | PrimeNG |
 |---|---|---|
 | Main page action / dialog confirm / login | filled primary | no severity |
 | Secondary page or section action, section save | tonal | `severity="secondary"` |
+| Secondary action beside the filled main action in a page header («Изменить») | outlined | `variant="outlined"` |
 | «Отмена», «Скрыть», «Понятно», labelled row action | text | `[text]="true"` (+ `severity="secondary"` for «Отмена») |
 | Icon action (edit, link) | text, round, neutral, tooltip | `[text]="true" [rounded]="true" severity="secondary"` + `pTooltip` |
 | Delete or unbind in a row (bin / «×», «Удалить» with a bin) | text red | `[text]="true" severity="danger"` |
@@ -704,8 +709,8 @@ changes the container; content and markup are the same at every width. Every dia
   items are not.
 - Media queries in `em` ranges (§5).
 - E2E runs axe (no critical / serious) on the main screens and checks button height (40 px), the
-  number of filled buttons per page, no red «Отмена», no `outlined` / `size="small"` / `success` /
-  `warn` / `info` buttons, red buttons only for danger confirmations and deletion.
+  number of filled buttons per page (outlined ones are not filled), no red «Отмена», no
+  `size="small"` / `success` / `warn` / `info` buttons, red buttons only for danger confirmations and deletion.
 
 ## 14. Texts and languages (ADR-0035)
 

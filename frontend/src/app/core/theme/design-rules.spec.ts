@@ -63,9 +63,9 @@ describe('design rules', () => {
     expect(breaches(/--p-(primary-color|primary-contrast|text-|content-|highlight-)/)).toEqual([]);
   });
 
-  it('has no small or outlined buttons (§7)', () => {
+  it('has no small buttons; outlined ones only as variant="outlined" (§8)', () => {
     expect(breaches(/size="small"/)).toEqual([]);
-    expect(breaches(/\[outlined\]|variant="outlined"|<p-button\b[^>]*\soutlined\b/)).toEqual([]);
+    expect(breaches(/\[outlined\]|<p-button\b[^>]*\soutlined\b/)).toEqual([]);
   });
 
   it('has no green or coloured tonal buttons: one accent (§7, ADR-0045)', () => {

@@ -37,6 +37,7 @@ describe('StudentLessonsCard', () => {
   }
 
   afterEach(() => {
+    vi.useRealTimers();
     fixture.destroy();
     backend.verify();
   });
@@ -68,6 +69,9 @@ describe('StudentLessonsCard', () => {
   });
 
   it('highlights the nearest lesson and says «Сегодня» with the time range', async () => {
+    // At noon a lesson in half an hour is still today (after 23:30 it would be tomorrow).
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date().setHours(12, 0, 0, 0));
     await render();
     const soon = scheduledLesson({ id: 'soon', ...inHours(0.5) });
     answer([scheduledLesson({ id: 'far', ...inHours(72) }), soon]);

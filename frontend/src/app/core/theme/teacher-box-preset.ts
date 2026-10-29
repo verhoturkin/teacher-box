@@ -221,6 +221,7 @@ const BUTTON_SCHEME = {
     secondary: plain('on.surface.variant'),
     danger: plain('error'),
   },
+  outlined: { primary: plain('primary') },
 };
 
 /** Snackbar: every severity on the inverse surface. */
