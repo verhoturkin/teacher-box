@@ -29,6 +29,11 @@ export interface AssignmentSummary {
   readonly submitted: number;
   readonly returned: number;
   readonly accepted: number;
+  /** How many materials of each kind it has (the board is `boardId`). */
+  readonly textbooks: number;
+  readonly files: number;
+  readonly questions: number;
+  readonly videos: number;
 }
 
 export interface TaskSummary {
@@ -306,6 +311,9 @@ export interface ReviewQueueItem {
   readonly studentAvatar: string | null;
   readonly submittedAt: string | null;
   readonly dueAt: string | null;
+  /** Points of the best quiz attempt; `null`: no quiz. */
+  readonly quizScore: number | null;
+  readonly quizMax: number | null;
 }
 
 export interface MyTask {

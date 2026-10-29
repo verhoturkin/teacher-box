@@ -17,6 +17,10 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   changes no version. `boardId` is in `AssignmentDetails`, `AssignmentSummary` and the student's `AssignmentInfo`.
   `AssignmentSummary.studentIds` (0.41.0) lets the teacher's list filter by student or group on the
   client; the list endpoint still returns every assignment (paging of «Готовые» is client-side).
+  For the list's material icons (339.1) it also carries `textbooks`, `files`, `questions` and
+  `videos` — how many the assignment has (grouped counts in the repositories, one query per kind); a
+  `ReviewQueueItem` carries `quizScore` / `quizMax` — the points of the best submitted quiz attempt
+  (`null` without a quiz) for the «Тест 8 из 10» tag of the review strip.
 - **Videos by link** ([ADR-0047](../adr/0047-video-links-and-transcripts.md), 0.19.0): up to 5 per assignment
   (`homework.assignment_videos`, cascade with the assignment), sent as `videos [{url, title?, transcript?,
   transcriptShown}]` in the create / update requests — the list replaces the old one, an update without it keeps them.
@@ -142,18 +146,15 @@ there is one, «Удалить…» (danger confirmation); materials — `ui/att
 (type icon, name, size, the same red «×»; `openable` — the name opens the file through `MaterialOpener`, a PDF or a
 picture in a tab, with a download button beside it — on the assignment and review pages); «Ученики» — a `tb-list` (avatar, name link to the task, «Сдано … / Не сдано»,
 status), «Добавить» at the top right of the card opens `teacher/assign-more-dialog.ts` («Выдать ещё ученикам»: students
-and groups in one searchable picker). The list (`teacher/assignments-page.ts`, 242.1) — the list pane of a list-detail (`tb-panes`, fixed pane; the detail pane is
-`task-review-page.ts` or `assignment-page.ts`, see below): the connected group «На проверку · Активные · Готовые» with counts (`@shared/ui/segment-group`), the
-filter button of the header opens one search by the title or a student's name. «На проверку» (the default while there is
-work to review, else «Активные») — the works of `review-queue` (avatar, student, «задание · сдано dd.MM HH:mm», the
-«Просрочено» tag when handed in after the due date), then «Ждут сдачи» — assignments somebody still has to hand in
-(«N из M», or «Просрочено»); «Активные» — assignments given and not every task accepted, then «Не выдано» (drafts);
-«Готовые» — `isDone`. A row of an assignment: title, «кому · до …», the progress badge, «⋮» (open, edit, «Проверить
-работы» — switches to «На проверку», open the board, «Удалить…»). `/teacher/homework/review` redirects to the list.
+and groups in one searchable picker). The list (`teacher/assignments-page.ts`, 339.1) takes the full width: the review strip («Ждут
+проверки», up to three works of `review-queue` as cards, «Проверить», «Проверить все подряд»), one
+toolbar (search by title or student, «Кому», «Активные · Черновики · Готовые» with counts) and the
+table of `AssignmentSummary` grouped by `deadline-groups.ts` (cards on a phone); an assignment
+(`assignment-page.ts`) and a work (`task-review-page.ts`) are pages of their own with «back»
+(layout: `docs/screens.md`). `/teacher/homework/review` redirects to the list.
 Detail (242.2): `/teacher/homework`, `/teacher/homework/tasks/:taskId` and `/teacher/homework/:assignmentId` are one route
-(`homeworkMatcher` in `app.routes.ts`, as the students'): the list stays and the work or the assignment opens in the
-second pane (the row is `tb-list__item--current`, `aria-current`); on compact and medium the route shows one of them and
-«back» (`single` input) leads to the list. The pages (`task-review-page.ts`, `assignment-page.ts`) reload when the id
+(`homeworkMatcher` in `app.routes.ts`, as the students'): the page shows the list, the work or the assignment
+(since 339.1 never beside each other); «back» (`single` input, always on) leads to the list. The pages (`task-review-page.ts`, `assignment-page.ts`) reload when the id
 changes and emit `changed` (reviewed, given to more students, deleted), so the list reads itself again. The work: title =
 the assignment, the line «student · срок · status · попытка N», «Открыть на доске» (the assignment's board), the collapsible
 «Задание» block (statement and files), «Ответ ученика», then «Проверка» (the form below extra-large; from extra-large it is the side sheet, see below; on a phone (< 600) the M3 floating toolbar — AI, comment, «На доработку», «Принять» — with the comment, the draft, the quick phrases and the grade in a bottom sheet, and the bottom navigation bar hidden: `RailState.bottomBarHidden`, `ReviewSheet [compact]`); blocks lie

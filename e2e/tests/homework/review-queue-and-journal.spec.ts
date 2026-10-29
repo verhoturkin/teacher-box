@@ -127,6 +127,24 @@ test.beforeAll(async ({ request }) => {
   });
 });
 
+test('the list opens the review from the strip and the assignment from the table', async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.goto('/teacher/homework');
+  await expect(page.getByRole('heading', { name: /^Ждут проверки · \d+$/ })).toBeVisible();
+  await expect(page.locator('tb-pane')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Проверить все подряд' }).click();
+  await expect(page).toHaveURL(/\/teacher\/homework\/tasks\/[0-9a-f-]{36}$/);
+
+  await page.goto('/teacher/homework');
+  await page.getByRole('link', { name: ASSIGNMENT }).click();
+  await expect(page).toHaveURL(/\/teacher\/homework\/[0-9a-f-]{36}$/);
+  await expect(page.locator('h1.tb-page-title', { hasText: ASSIGNMENT })).toBeVisible();
+  await page.getByRole('link', { name: 'Задания', exact: true }).first().click();
+  await expect(page).toHaveURL(/\/teacher\/homework$/);
+});
+
 test('a work is accepted in the review sheet and the next one opens', async ({ page }) => {
   await signIn(page);
   await page.goto(`/teacher/homework/tasks/${firstTaskId}`);
@@ -219,6 +237,6 @@ test('«Активные» are grouped by the deadline', async ({ page, request 
   await signIn(page);
   await page.goto('/teacher/homework');
   await page.getByText('Активные').first().click();
-  await expect(page.getByText('Позже', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /^Позже/ })).toBeVisible();
   await expect(page.getByText(title).first()).toBeVisible();
 });

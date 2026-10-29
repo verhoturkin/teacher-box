@@ -2,7 +2,9 @@ package ru.teacherbox.homework.persistence;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -65,5 +67,15 @@ public class VideoRepository {
         return new AssignmentVideo(rs.getObject("id", UUID.class), rs.getObject("assignment_id", UUID.class),
                 rs.getInt("position"), link, rs.getString("title"), rs.getString("transcript"),
                 rs.getBoolean("transcript_shown"));
+    }
+
+    /** How many videos every assignment has (assignments with none are absent). */
+    public Map<UUID, Integer> countsByAssignment() {
+        Map<UUID, Integer> counts = new HashMap<>();
+        jdbc.sql("select assignment_id, count(*) as total from homework.assignment_videos group by assignment_id")
+                .query((ResultSet rs) -> {
+                    counts.put(rs.getObject("assignment_id", UUID.class), rs.getInt("total"));
+                });
+        return counts;
     }
 }

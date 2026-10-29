@@ -118,7 +118,7 @@ test('assignments are filtered by a connected group, with a search to clear', as
   await signIn(page);
   await page.goto('/teacher/homework');
   const filters = page.getByRole('group', { name: 'Что показать' });
-  await expect(filters.getByRole('button', { name: /^На проверку/ })).toBeVisible();
+  await expect(filters.getByRole('button', { name: /^Черновики/ })).toBeVisible();
   await expect(filters.getByRole('button', { name: /^Готовые/ })).toBeVisible();
   await filters.getByRole('button', { name: /^Активные/ }).click();
 

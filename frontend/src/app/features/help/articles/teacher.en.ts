@@ -318,13 +318,15 @@ You can also add [textbook pages](/teacher/help/textbooks) from Materials or an 
 
 “Make a copy” creates a draft with the original text, files, textbooks and videos, but no recipients or due date. The editor opens so you can adapt it.
 
-The Homework list has “To review”, “Active” and “Done” views. Search by assignment title or student name, and use “For” to select a student or group. Filters are kept in the page address.
+The Homework page lists assignments on the full width. Search by assignment title or student name, and use “For” to select a student or group. Search and “For” are kept in the page address.
 
-- **To review:** student submissions, followed by “Awaiting submission”.
-- **Active:** assignments with work still outstanding, grouped by due date. Expand Overdue to see late items. Unassigned drafts appear below.
+- **Active:** assignments with work still outstanding, grouped by due date: Overdue, This week, Later and No due date.
+- **Drafts:** assignments you have not given to anyone yet.
 - **Done:** assignments with all submissions accepted. Use “Show more” after the first 20.
 
-Select an assignment to open it beside the list. On a phone, it opens as a separate page.
+Each row shows the materials in the assignment (textbooks, files, questions, videos, board), who it is for, the due date, how many submissions are in and the status. On a phone the table becomes cards and the views become chips.
+
+Select an assignment to open it on its own page; the arrow returns you to the list.
 
 ## Assignment details and textbooks
 
@@ -352,7 +354,7 @@ Reviews show the best quiz attempt, incorrect answers first, with an answer key.
 
 ## Review a submission
 
-Select a submission under “To review”. You will see the assignment, the student’s response and attached images. “Open on the board” opens the assignment’s board.
+Submissions waiting for review sit in the “To review” strip at the top of the Homework page: each card shows the student, the assignment, when it was handed in, a “Late” tag and the quiz score. “Review” opens a submission; “Review them all” starts with the oldest and moves on to the next after each decision. You will see the assignment, the student’s response and attached images. “Open on the board” opens the assignment’s board.
 
 Add feedback and a grade, then choose “Accept” or “Return for revision”. Quick comments help with common responses. “Next: …” opens the next submission after your decision. If AI is enabled, “AI draft” suggests feedback and a grade; review them before choosing “Insert”.
 

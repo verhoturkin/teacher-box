@@ -30,8 +30,12 @@ import ru.teacherbox.homework.domain.TaskStatus;
 import ru.teacherbox.homework.domain.quiz.Question;
 import ru.teacherbox.homework.domain.quiz.RevealRule;
 import ru.teacherbox.homework.persistence.AssignmentRepository;
+import ru.teacherbox.homework.persistence.AttachmentRepository;
+import ru.teacherbox.homework.persistence.BoundTextbookRepository;
+import ru.teacherbox.homework.persistence.QuestionRepository;
 import ru.teacherbox.homework.persistence.SubmissionRepository;
 import ru.teacherbox.homework.persistence.TaskRepository;
+import ru.teacherbox.homework.persistence.VideoRepository;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.shared.Ids;
@@ -54,10 +58,21 @@ public class AssignmentService {
     private final UserDirectory directory;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    /** Read-only counts of the materials for the list. */
+    private final BoundTextbookRepository boundTextbooks;
+    private final AttachmentRepository files;
+    private final QuestionRepository questions;
+    private final VideoRepository videoLinks;
 
     public AssignmentService(AssignmentRepository assignments, TaskRepository tasks,
             SubmissionRepository submissions, AttachmentService attachments, TextbookBindings textbooks,
-            AssignmentVideos videos, AssignmentQuiz quiz, UserDirectory directory, ApplicationEventPublisher events, Clock clock) {
+            AssignmentVideos videos, AssignmentQuiz quiz, UserDirectory directory, ApplicationEventPublisher events, Clock clock,
+            BoundTextbookRepository boundTextbooks, AttachmentRepository files, QuestionRepository questions,
+            VideoRepository videoLinks) {
+        this.boundTextbooks = boundTextbooks;
+        this.files = files;
+        this.questions = questions;
+        this.videoLinks = videoLinks;
         this.assignments = assignments;
         this.tasks = tasks;
         this.submissions = submissions;
@@ -167,6 +182,10 @@ public class AssignmentService {
         Map<UUID, String> names = directory
                 .findStudents(studentsOf.values().stream().flatMap(List::stream).distinct().toList()).stream()
                 .collect(Collectors.toMap(StudentSummary::id, StudentSummary::displayName, (a, b) -> a));
+        Map<UUID, Integer> textbookCounts = boundTextbooks.countsByAssignment();
+        Map<UUID, Integer> fileCounts = files.countsByAssignment();
+        Map<UUID, Integer> questionCounts = questions.countsByAssignment();
+        Map<UUID, Integer> videoCounts = videoLinks.countsByAssignment();
         return assignments.findAll().stream().map(assignment -> {
             Map<TaskStatus, Integer> byStatus = counts.getOrDefault(assignment.id(), Map.of());
             int assigned = byStatus.getOrDefault(TaskStatus.ASSIGNED, 0);
@@ -180,7 +199,8 @@ public class AssignmentService {
             return new AssignmentSummary(assignment.id(), assignment.title(), assignment.dueAt(),
                     assignment.createdAt(), students, studentsOf.getOrDefault(assignment.id(), List.of()),
                     assignment.boardId(), assigned + submitted + returned + accepted, assigned, submitted, returned,
-                    accepted);
+                    accepted, textbookCounts.getOrDefault(assignment.id(), 0), fileCounts.getOrDefault(assignment.id(), 0),
+                    questionCounts.getOrDefault(assignment.id(), 0), videoCounts.getOrDefault(assignment.id(), 0));
         }).toList();
     }
 

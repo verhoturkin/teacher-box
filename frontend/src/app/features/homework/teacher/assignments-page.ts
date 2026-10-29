@@ -7,7 +7,6 @@ import {
   computed,
   inject,
   input,
-  linkedSignal,
   signal,
   viewChild,
 } from '@angular/core';
@@ -19,6 +18,7 @@ import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
 import { Select } from 'primeng/select';
+import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 import { quietContext } from '@core/http/api-error.interceptor';
@@ -32,14 +32,16 @@ import { IdentityApi, TeacherColors } from '@features/identity/parts';
 import { Avatar } from '@shared/ui/avatar';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { EmptyState } from '@shared/ui/empty-state';
+import { FilterChip, FilterChips } from '@shared/ui/filter-chips';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
-import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
+import { Pane, Panes } from '@shared/ui/panes';
+import { RowType } from '@shared/ui/row-type.directive';
 import { SearchField } from '@shared/ui/search-field';
 import { Segment, SegmentGroup } from '@shared/ui/segment-group';
 import { AssignmentPage } from './assignment-page';
-import { groupByDeadline } from './deadline-groups';
+import { DeadlineKey, groupByDeadline } from './deadline-groups';
 import { NextWork, ReviewSheet } from './review-sheet';
 import { TaskReviewPage } from './task-review-page';
 import { HomeworkApi } from '../data-access/homework-api';
@@ -53,23 +55,47 @@ const SHOWN_STUDENTS = 2;
 /** How many finished assignments «Готовые» shows at a time. */
 const DONE_PAGE = 20;
 
+/** How many works of the review strip show their own card; the rest go to «Проверить все подряд». */
+const SHOWN_WORKS = 3;
+
+const DAY = 24 * 60 * 60 * 1000;
+
 /** One student or one group in the «Кому» select: `student:<id>` or `group:<id>`. */
 interface WhomOption {
   readonly label: string;
   readonly value: string;
 }
 
-/** What the list shows: works to review, assignments in progress (with the drafts) or finished ones. */
-type Filter = 'review' | 'active' | 'done';
+/** What the list shows: assignments in progress, drafts (not given yet) or finished ones. */
+type Filter = 'active' | 'drafts' | 'done';
+
+/** A run of rows under one heading; `key` — the due-date group, `null` — the heading is left out. */
+interface Section {
+  readonly key: DeadlineKey | null;
+  readonly title: string | null;
+  readonly rows: readonly AssignmentSummary[];
+}
+
+/** A line of the table: a group heading or an assignment. */
+interface Line {
+  readonly section: Section;
+  readonly assignment: AssignmentSummary | null;
+}
+
+/** An icon of a material of an assignment with how many there are (none — the board). */
+interface Material {
+  readonly icon: string;
+  readonly label: string;
+  readonly count: number | null;
+}
 
 /**
- * Teacher: homework as the list pane of a list-detail (redesign spec §9): the connected group
- * «На проверку · Активные · Готовые» with the counts, a persistent search above the list, the
- * rows on the pane's surface. «На проверку» lists the works handed in (then «Ждут сдачи»: the assignments
- * somebody still has to hand in), «Активные» the assignments in progress (then «Не выдано»: the drafts),
- * «Готовые» those with every work accepted. A row opens the work or the assignment; «⋮» of an assignment —
- * its actions. The detail pane is the work (`/teacher/homework/tasks/:taskId`) or the assignment with its
- * students (`/teacher/homework/:assignmentId`); on one pane the route decides what is shown, «back» leads to the list.
+ * Teacher: homework on the full width of the window. The review strip («Ждут проверки»: the latest works
+ * handed in, «Проверить» opens one, «Проверить все подряд» starts the queue); one toolbar (search, «Кому»,
+ * «Активные · Черновики · Готовые»); the assignments grouped by the due date, as a table from medium and as
+ * cards on a phone. An assignment (`/teacher/homework/:assignmentId`) and a work
+ * (`/teacher/homework/tasks/:taskId`) are pages of their own, «back» leads to the list; «⋮» of an
+ * assignment — its actions.
  */
 @Component({
   selector: 'tb-assignments-page',
@@ -79,6 +105,7 @@ type Filter = 'review' | 'active' | 'done';
     Avatar,
     Button,
     EmptyState,
+    FilterChips,
     HelpButton,
     LoadStateView,
     Pane,
@@ -87,9 +114,11 @@ type Filter = 'review' | 'active' | 'done';
     ReactiveFormsModule,
     ReviewSheet,
     RouterLink,
+    RowType,
     SearchField,
     SegmentGroup,
     Select,
+    TableModule,
     Tag,
     Tooltip,
     ButtonAttributes,
@@ -98,26 +127,75 @@ type Filter = 'review' | 'active' | 'done';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-panes>
-      @if (layout.list()) {
-        <tb-pane kind="fixed" [label]="t.title">
+    @if (taskId(); as id) {
+      <tb-panes>
+        <tb-pane [label]="t.title">
+          <tb-task-review-page
+            [taskId]="id"
+            [single]="true"
+            [sheet]="sheetOpen() || phoneReview()"
+            [toolbar]="phoneReview()"
+            [update]="decided()"
+            (loaded)="current.set($event)"
+            (changed)="refresh()"
+          />
+        </tb-pane>
+        @if (sheetOpen() && reviewing(); as task) {
+          <tb-pane kind="sheet" [label]="t.reviewSheet">
+            <tb-review-sheet
+              [task]="task"
+              [place]="place()"
+              [total]="queue().length"
+              [next]="next()"
+              (reviewed)="decide($event)"
+              (opened)="openWork($event)"
+              (closed)="closeReview()"
+            />
+          </tb-pane>
+        }
+      </tb-panes>
+      @if (phoneReview() && reviewing(); as task) {
+        <!-- a phone: the floating toolbar and the comment in a bottom sheet, no bottom bar (spec §9) -->
+        <tb-review-sheet
+          [compact]="true"
+          [task]="task"
+          [place]="place()"
+          [total]="queue().length"
+          [next]="next()"
+          (reviewed)="decide($event)"
+          (opened)="openWork($event)"
+          (closed)="closeReview()"
+        />
+      }
+    } @else if (assignmentId(); as id) {
+      <tb-panes>
+        <tb-pane [label]="t.title">
+          <tb-assignment-page [assignmentId]="id" [single]="true" (changed)="refresh()" />
+        </tb-pane>
+      </tb-panes>
+    } @else {
+      <tb-panes>
+        <tb-pane [label]="t.title">
           <div tbPaneHeader>
             <tb-page-header [title]="t.title">
               <tb-help-button help topic="teacher/homework" />
-              <!-- wider, the rail's «Создать» is the page's FAB (spec §1 principle 5) -->
               @if (mobile()) {
                 <p-button
                   class="tb-page-fab"
-                  [label]="t.create"
+                  [label]="t.createShort"
                   icon="tb-i tb-i-add"
                   (onClick)="openCreate()"
                 />
+              } @else {
+                <p-button [label]="t.create" icon="tb-i tb-i-add" (onClick)="openCreate()" />
               }
             </tb-page-header>
 
-            <div class="tb-hw__filters">
-              <tb-segment-group [label]="t.filters" [segments]="segments()" [(value)]="filter" />
+            <div class="tb-toolbar tb-hw__toolbar">
               <tb-search-field [formControl]="search" [label]="t.search" />
+              @if (mobile()) {
+                <tb-filter-chips [label]="t.filters" [chips]="chips()" [(value)]="filter" />
+              }
               <p-select
                 [formControl]="whom"
                 [options]="whomOptions()"
@@ -126,235 +204,253 @@ type Filter = 'review' | 'active' | 'done';
                 optionGroupChildren="items"
                 optionLabel="label"
                 optionValue="value"
-                [placeholder]="t.everyone"
+                [placeholder]="mobile() ? t.whomAll : t.everyone"
                 [showClear]="true"
                 [ariaLabel]="t.whom"
                 appendTo="body"
-                [fluid]="true"
+                [fluid]="mobile()"
               />
+              @if (!mobile()) {
+                <tb-segment-group [label]="t.filters" [segments]="segments()" [(value)]="filter" />
+              }
             </div>
           </div>
           <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
-            @switch (filter()) {
-              @case ('review') {
-                @if (works().length > 0) {
-                  <ul class="tb-list tb-list--clamp" [attr.aria-label]="t.toReview">
-                    @for (work of works(); track work.taskId) {
-                      <li [class.tb-list__item--current]="taskId() === work.taskId">
+            @if (works().length > 0) {
+              <section class="tb-hw__review" [attr.aria-label]="t.awaiting(works().length)">
+                <div class="tb-hw__review-head">
+                  <h2 class="tb-hw__label">{{ t.awaiting(works().length) }}</h2>
+                  <p-button
+                    [label]="t.checkAll"
+                    icon="tb-i tb-i-arrow_forward"
+                    iconPos="right"
+                    [text]="true"
+                    (onClick)="reviewAll()"
+                  />
+                </div>
+                <ul class="tb-hw__cards">
+                  @for (work of shownWorks(); track work.taskId) {
+                    <li class="tb-hw__card">
+                      <div class="tb-hw__card-head">
                         <tb-avatar
                           [attr.data-tb-label]="colors.studentLabel(work.studentId)"
                           [name]="work.studentName"
                           [photo]="work.studentAvatar"
                         />
                         <div class="tb-list__text">
-                          <a
-                            class="tb-list__title tb-list__link"
-                            [routerLink]="['/teacher/homework/tasks', work.taskId]"
-                            [attr.aria-current]="taskId() === work.taskId ? 'page' : null"
-                            [attr.aria-label]="t.reviewOf(work.studentName, work.title)"
-                            >{{ work.studentName }}</a
-                          >
+                          <span class="tb-list__title">{{ work.studentName }}</span>
                           <span class="tb-list__supporting">{{ handedIn(work) }}</span>
                         </div>
                         @if (isLate(work)) {
-                          <div class="tb-list__trail">
-                            <p-tag [value]="t.late" severity="danger" />
-                          </div>
-                        }
-                      </li>
-                    }
-                  </ul>
-                } @else if (!searching() && waiting().length === 0) {
-                  <tb-empty-state
-                    icon="tb-i-check_circle"
-                    [title]="t.allReviewedTitle"
-                    [hint]="t.allReviewedHint"
-                  />
-                } @else if (searching()) {
-                  <ng-container [ngTemplateOutlet]="notFound" />
-                }
-                @if (waiting().length > 0) {
-                  <h2 class="tb-hw__section">{{ t.waiting }}</h2>
-                  <ng-container
-                    [ngTemplateOutlet]="assignmentRows"
-                    [ngTemplateOutletContext]="{ rows: waiting(), label: t.waiting }"
-                  />
-                }
-              }
-              @case ('active') {
-                @if (given().length > 0) {
-                  @for (group of deadlineGroups(); track group.key) {
-                    @if (group.key === 'overdue') {
-                      <p-button
-                        [label]="t.overdueGroup(group.rows.length)"
-                        [icon]="overdueOpen() ? 'tb-i tb-i-expand_less' : 'tb-i tb-i-expand_more'"
-                        iconPos="right"
-                        [text]="true"
-                        severity="secondary"
-                        [tbAttributes]="{
-                          'aria-expanded': overdueOpen() ? 'true' : 'false',
-                          'aria-controls': 'tb-hw-overdue',
-                        }"
-                        (onClick)="overdueOpen.update((open) => !open)"
-                      />
-                      <div id="tb-hw-overdue">
-                        @if (overdueOpen()) {
-                          <ng-container
-                            [ngTemplateOutlet]="assignmentRows"
-                            [ngTemplateOutletContext]="{ rows: group.rows, label: t.late }"
-                          />
+                          <p-tag [value]="t.lateTag" severity="danger" />
                         }
                       </div>
-                    } @else {
-                      <h2 class="tb-hw__section">{{ groupLabel(group.key) }}</h2>
-                      <ng-container
-                        [ngTemplateOutlet]="assignmentRows"
-                        [ngTemplateOutletContext]="{
-                          rows: group.rows,
-                          label: groupLabel(group.key),
-                        }"
-                      />
-                    }
+                      <span class="tb-hw__card-task">{{ work.title }}</span>
+                      <div class="tb-hw__card-foot">
+                        @if (work.quizScore !== null && work.quizMax !== null) {
+                          <p-tag
+                            [value]="t.quizScore(work.quizScore, work.quizMax)"
+                            severity="secondary"
+                          />
+                        }
+                        <p-button
+                          class="tb-hw__card-action"
+                          [label]="t.check"
+                          severity="secondary"
+                          [ariaLabel]="t.reviewOf(work.studentName, work.title)"
+                          (onClick)="openWork(work.taskId)"
+                        />
+                      </div>
+                    </li>
                   }
-                } @else if (drafts().length === 0) {
-                  <ng-container
-                    [ngTemplateOutlet]="empty"
-                    [ngTemplateOutletContext]="{ done: false }"
-                  />
-                }
-                @if (drafts().length > 0) {
-                  <h2 class="tb-hw__section">{{ t.drafts }}</h2>
-                  <ng-container
-                    [ngTemplateOutlet]="assignmentRows"
-                    [ngTemplateOutletContext]="{ rows: drafts(), label: t.drafts }"
-                  />
-                }
-              }
-              @case ('done') {
-                @if (finished().length > 0) {
-                  <ng-container
-                    [ngTemplateOutlet]="assignmentRows"
-                    [ngTemplateOutletContext]="{ rows: shownDone(), label: t.done }"
-                  />
-                  @if (finished().length > shownDone().length) {
-                    <p-button
-                      [label]="t.showMore"
-                      [text]="true"
-                      severity="secondary"
-                      (onClick)="doneLimit.update((limit) => limit + donePage)"
-                    />
+                  @if (waitingCount() > 0) {
+                    <li class="tb-hw__card tb-hw__card--waiting">
+                      <i class="tb-i tb-i-hourglass_top" aria-hidden="true"></i>
+                      {{ t.stillWaiting(waitingCount()) }}
+                    </li>
                   }
-                } @else {
-                  <ng-container
-                    [ngTemplateOutlet]="empty"
-                    [ngTemplateOutletContext]="{ done: true }"
-                  />
+                </ul>
+              </section>
+            }
+
+            @if (lines().length === 0) {
+              <ng-container [ngTemplateOutlet]="empty" />
+            } @else if (mobile()) {
+              @for (section of sections(); track section.key) {
+                @if (section.title; as title) {
+                  <h2
+                    class="tb-hw__label tb-hw__group"
+                    [class.tb-error]="section.key === 'overdue'"
+                  >
+                    {{ title }}
+                  </h2>
                 }
+                <ul class="tb-list tb-list--clamp" [attr.aria-label]="section.title ?? t.title">
+                  @for (assignment of section.rows; track assignment.id) {
+                    <li>
+                      <div class="tb-list__text">
+                        <a
+                          class="tb-list__title tb-list__link"
+                          [routerLink]="['/teacher/homework', assignment.id]"
+                          >{{ assignment.title }}</a
+                        >
+                        <span class="tb-list__supporting">{{ details(assignment) }}</span>
+                        <ng-container
+                          [ngTemplateOutlet]="handed"
+                          [ngTemplateOutletContext]="{ assignment }"
+                        />
+                      </div>
+                      <div class="tb-list__trail tb-list__trail--icons tb-hw__row-end">
+                        @if (progress(assignment); as badge) {
+                          <p-tag [value]="badge.label" [severity]="badge.severity" />
+                        }
+                        <ng-container
+                          [ngTemplateOutlet]="rowMenu"
+                          [ngTemplateOutletContext]="{ assignment }"
+                        />
+                      </div>
+                    </li>
+                  }
+                </ul>
               }
+              <ng-container [ngTemplateOutlet]="showMore" />
+            } @else {
+              <p-table [value]="lines()" styleClass="tb-cards tb-hw__table">
+                <ng-template #header>
+                  <tr>
+                    <th class="tb-col-main">{{ t.columns.task }}</th>
+                    <th>{{ t.columns.whom }}</th>
+                    <th>{{ t.columns.due }}</th>
+                    <th>{{ t.columns.handed }}</th>
+                    <th>{{ t.columns.status }}</th>
+                    <th>
+                      <span class="tb-sr-only">{{ t.columns.actions }}</span>
+                    </th>
+                  </tr>
+                </ng-template>
+                <ng-template #body let-line [tbRowType]="lines()">
+                  @if (line.assignment; as assignment) {
+                    <tr>
+                      <td>
+                        <div class="tb-hw__task">
+                          <span class="tb-list__lead" aria-hidden="true"
+                            ><i
+                              [class]="
+                                assignment.boardId === null
+                                  ? 'tb-i tb-i-assignment'
+                                  : 'tb-i tb-i-co_present'
+                              "
+                            ></i
+                          ></span>
+                          <div class="tb-list__text">
+                            <a
+                              class="tb-list__title tb-link"
+                              [routerLink]="['/teacher/homework', assignment.id]"
+                              >{{ assignment.title }}</a
+                            >
+                            <span class="tb-hw__materials">
+                              @for (material of materials(assignment); track material.icon) {
+                                <span
+                                  class="tb-hw__material"
+                                  role="img"
+                                  [attr.aria-label]="materialLabel(material)"
+                                  [pTooltip]="materialLabel(material)"
+                                >
+                                  <i [class]="material.icon" aria-hidden="true"></i>
+                                  @if (material.count !== null) {
+                                    {{ material.count }}
+                                  }
+                                </span>
+                              }
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="tb-hw__whom">
+                          <i
+                            [class]="
+                              assignment.students.length > 1
+                                ? 'tb-i tb-i-group'
+                                : 'tb-i tb-i-person'
+                            "
+                            aria-hidden="true"
+                          ></i>
+                          {{ whomOf(assignment) }}
+                        </span>
+                      </td>
+                      <td [class.tb-error]="isOverdue(assignment)">{{ due(assignment) }}</td>
+                      <td>
+                        <ng-container
+                          [ngTemplateOutlet]="handed"
+                          [ngTemplateOutletContext]="{ assignment }"
+                        />
+                      </td>
+                      <td>
+                        @if (progress(assignment); as badge) {
+                          <p-tag [value]="badge.label" [severity]="badge.severity" />
+                        }
+                      </td>
+                      <td>
+                        <ng-container
+                          [ngTemplateOutlet]="rowMenu"
+                          [ngTemplateOutletContext]="{ assignment }"
+                        />
+                      </td>
+                    </tr>
+                  } @else {
+                    <tr class="tb-hw__group-row">
+                      <td colspan="6">
+                        <h2 class="tb-hw__label" [class.tb-error]="line.section.key === 'overdue'">
+                          {{ line.section.title }}
+                        </h2>
+                      </td>
+                    </tr>
+                  }
+                </ng-template>
+              </p-table>
+              <ng-container [ngTemplateOutlet]="showMore" />
             }
           </tb-load-state>
         </tb-pane>
-      }
-      @if (layout.detail()) {
-        <tb-pane [label]="t.pickTitle">
-          @if (taskId(); as id) {
-            <tb-task-review-page
-              [taskId]="id"
-              [single]="layout.single()"
-              [sheet]="sheetOpen() || phoneReview()"
-              [toolbar]="phoneReview()"
-              [update]="decided()"
-              (loaded)="current.set($event)"
-              (changed)="refresh()"
-            />
-          } @else if (assignmentId(); as id) {
-            <tb-assignment-page
-              [assignmentId]="id"
-              [single]="layout.single()"
-              (changed)="refresh()"
-            />
-          } @else {
-            <tb-empty-state icon="tb-i-assignment" [title]="t.pickTitle" [hint]="t.pickHint" />
-          }
-        </tb-pane>
-      }
-      @if (sheetOpen() && reviewing(); as task) {
-        <tb-pane kind="sheet" [label]="t.reviewSheet">
-          <tb-review-sheet
-            [task]="task"
-            [place]="place()"
-            [total]="queue().length"
-            [next]="next()"
-            (reviewed)="decide($event)"
-            (opened)="openWork($event)"
-            (closed)="closeReview()"
-          />
-        </tb-pane>
-      }
-    </tb-panes>
-    @if (phoneReview() && reviewing(); as task) {
-      <!-- a phone: the floating toolbar and the comment in a bottom sheet, no bottom bar (spec §9) -->
-      <tb-review-sheet
-        [compact]="true"
-        [task]="task"
-        [place]="place()"
-        [total]="queue().length"
-        [next]="next()"
-        (reviewed)="decide($event)"
-        (opened)="openWork($event)"
-        (closed)="closeReview()"
-      />
+      </tb-panes>
     }
 
-    <ng-template #assignmentRows let-rows="rows" let-label="label">
-      <ul class="tb-list tb-list--clamp" [attr.aria-label]="label">
-        @for (assignment of rows; track assignment.id) {
-          <li [class.tb-list__item--current]="assignmentId() === assignment.id">
-            <span class="tb-list__lead" aria-hidden="true"
-              ><i
-                [class]="
-                  assignment.boardId === null ? 'tb-i tb-i-assignment' : 'tb-i tb-i-co_present'
-                "
-              ></i
+    <ng-template #handed let-assignment="assignment">
+      @if (assignment.totalTasks > 0) {
+        <span class="tb-hw__handed">
+          <span
+            class="tb-hw__bar"
+            role="img"
+            [attr.aria-label]="t.handedOf(handedCount(assignment), assignment.totalTasks)"
+          >
+            <span [style.inline-size.%]="share(assignment.accepted, assignment)"></span>
+            <span
+              class="tb-hw__bar-awaiting"
+              [style.inline-size.%]="share(assignment.submitted, assignment)"
             ></span>
-            <div class="tb-list__text">
-              <a
-                class="tb-list__title tb-list__link"
-                [routerLink]="['/teacher/homework', assignment.id]"
-                [attr.aria-current]="assignmentId() === assignment.id ? 'page' : null"
-                >{{ assignment.title }}</a
-              >
-              <span class="tb-list__supporting">{{ details(assignment) }}</span>
-            </div>
-            <div class="tb-list__trail tb-list__trail--icons tb-hw__row-end">
-              @if (filter() === 'review') {
-                @if (isOverdue(assignment)) {
-                  <p-tag [value]="t.late" severity="danger" />
-                } @else {
-                  <span class="tb-muted">{{
-                    t.handedOf(assignment.submitted + assignment.accepted, assignment.totalTasks)
-                  }}</span>
-                }
-              } @else if (progress(assignment); as badge) {
-                <p-tag [value]="badge.label" [severity]="badge.severity" />
-              }
-              <p-button
-                icon="tb-i tb-i-more_vert"
-                [text]="true"
-                [rounded]="true"
-                severity="secondary"
-                [pTooltip]="t.actions(assignment.title)"
-                [ariaLabel]="t.actions(assignment.title)"
-                [tbAttributes]="{
-                  'aria-haspopup': 'menu',
-                  'aria-expanded': menuFor()?.id === assignment.id ? 'true' : 'false',
-                }"
-                (onClick)="openMenu(assignment, $event)"
-              />
-            </div>
-          </li>
-        }
-      </ul>
+          </span>
+          <span class="tb-muted">{{
+            t.handedOf(handedCount(assignment), assignment.totalTasks)
+          }}</span>
+        </span>
+      }
+    </ng-template>
+
+    <ng-template #rowMenu let-assignment="assignment">
+      <p-button
+        icon="tb-i tb-i-more_vert"
+        [text]="true"
+        [rounded]="true"
+        severity="secondary"
+        [pTooltip]="t.actions(assignment.title)"
+        [ariaLabel]="t.actions(assignment.title)"
+        [tbAttributes]="{
+          'aria-haspopup': 'menu',
+          'aria-expanded': menuFor()?.id === assignment.id ? 'true' : 'false',
+        }"
+        (onClick)="openMenu(assignment, $event)"
+      />
     </ng-template>
 
     <p-menu
@@ -365,49 +461,232 @@ type Filter = 'review' | 'active' | 'done';
       (onHide)="menuFor.set(null)"
     />
 
-    <ng-template #empty let-done="done">
+    <ng-template #showMore>
+      @if (filter() === 'done' && finished().length > shownDone().length) {
+        <p-button
+          [label]="t.showMore"
+          [text]="true"
+          severity="secondary"
+          (onClick)="doneLimit.update((limit) => limit + donePage)"
+        />
+      }
+    </ng-template>
+
+    <ng-template #empty>
       @if (assignments().length === 0) {
         <tb-empty-state icon="tb-i-assignment" [title]="t.emptyTitle" [hint]="t.emptyHint" />
       } @else if (searching()) {
-        <ng-container [ngTemplateOutlet]="notFound" />
-      } @else if (done) {
+        <tb-empty-state icon="tb-i-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
+      } @else if (filter() === 'done') {
         <tb-empty-state icon="tb-i-check_circle" [title]="t.noDoneTitle" [hint]="t.noDoneHint" />
+      } @else if (filter() === 'drafts') {
+        <tb-empty-state icon="tb-i-assignment" [title]="t.noDraftsTitle" [hint]="t.noDraftsHint" />
       } @else {
         <tb-empty-state icon="tb-i-assignment" [title]="t.noActiveTitle" [hint]="t.noActiveHint" />
       }
     </ng-template>
-
-    <ng-template #notFound>
-      <tb-empty-state icon="tb-i-search" [title]="t.notFoundTitle" [hint]="t.notFoundHint" />
-    </ng-template>
   `,
   styles: `
-    .tb-list__trail {
-      flex-direction: column;
-      align-items: flex-start;
+    /* the search takes the free room, «Кому» and the filter after it (ADR-0018) */
+    .tb-hw__toolbar {
+      margin-block-start: var(--tb-space-4);
     }
 
-    /* the badge and «⋮» side by side (the review rows keep the column) */
-    .tb-hw__row-end {
-      flex-direction: row;
-      align-items: center;
+    .tb-hw__toolbar tb-search-field {
+      flex: 1 1 16rem;
     }
 
-    /* from expanded the pane does not scroll as a whole: its list does (our decision, as the students' list) */
-    .tb-hw__filters {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-3);
-      margin-block-end: var(--tb-space-4);
+    @media (width < 37.5em) {
+      .tb-hw__toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
     }
 
-    /* «Ждут сдачи», «Не выдано»: a label over the rows on the pane's surface (M3 \`label medium\`) */
-    .tb-hw__section {
-      margin: var(--tb-space-5) 0 var(--tb-space-2);
+    /* a label over a block (M3 \`label medium\`, upper case) */
+    .tb-hw__label {
+      margin: 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
       letter-spacing: 0.04em;
       text-transform: uppercase;
+    }
+
+    .tb-hw__label.tb-error {
+      color: var(--p-md-error);
+    }
+
+    .tb-hw__group {
+      margin-block: var(--tb-space-5) var(--tb-space-2);
+    }
+
+    .tb-hw__review {
+      margin-block-end: var(--tb-space-5);
+    }
+
+    .tb-hw__review-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--tb-space-3);
+      margin-block-end: var(--tb-space-2);
+    }
+
+    /* the cards lie in a row; on a phone the row scrolls sideways */
+    .tb-hw__cards {
+      display: flex;
+      gap: var(--tb-space-3);
+      margin: 0;
+      padding: 0;
+      overflow-x: auto;
+      list-style: none;
+    }
+
+    .tb-hw__card {
+      display: flex;
+      flex: 1 1 15rem;
+      flex-direction: column;
+      gap: var(--tb-space-3);
+      min-inline-size: 15rem;
+      max-inline-size: 22rem;
+      padding: var(--tb-space-4);
+      border-radius: var(--tb-shape-lg);
+      background: var(--tb-list-item);
+    }
+
+    @media (width < 37.5em) {
+      .tb-hw__card {
+        flex: 0 0 15rem;
+      }
+    }
+
+    .tb-hw__card--waiting {
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed var(--p-md-outline-variant);
+      background: none;
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-body-m);
+      text-align: center;
+    }
+
+    .tb-hw__card-head {
+      display: flex;
+      align-items: center;
+      gap: var(--tb-space-3);
+    }
+
+    .tb-hw__card-head .tb-list__text {
+      flex: 1;
+      min-inline-size: 0;
+    }
+
+    .tb-hw__card-task {
+      font: var(--tb-type-title-s);
+    }
+
+    .tb-hw__card-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--tb-space-2);
+      margin-block-start: auto;
+    }
+
+    .tb-hw__card-action {
+      margin-inline-start: auto;
+    }
+
+    /* the group heading is not a tile; the tiles round their own corners again around it */
+    .tb-hw__group-row > td {
+      block-size: auto;
+      padding-block: var(--tb-space-4) var(--tb-space-1);
+    }
+
+    :host ::ng-deep .tb-hw__table .p-datatable-tbody > tr.tb-hw__group-row + tr > td:first-child {
+      border-start-start-radius: var(--tb-list-outer);
+    }
+
+    :host ::ng-deep .tb-hw__table .p-datatable-tbody > tr.tb-hw__group-row + tr > td:last-child {
+      border-start-end-radius: var(--tb-list-outer);
+    }
+
+    :host
+      ::ng-deep
+      .tb-hw__table
+      .p-datatable-tbody
+      > tr:has(+ tr.tb-hw__group-row)
+      > td:first-child {
+      border-end-start-radius: var(--tb-list-outer);
+    }
+
+    :host
+      ::ng-deep
+      .tb-hw__table
+      .p-datatable-tbody
+      > tr:has(+ tr.tb-hw__group-row)
+      > td:last-child {
+      border-end-end-radius: var(--tb-list-outer);
+    }
+
+    .tb-hw__task {
+      display: flex;
+      align-items: center;
+      gap: var(--tb-space-3);
+    }
+
+    .tb-hw__materials {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--tb-space-3);
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-body-s);
+    }
+
+    .tb-hw__material {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--tb-space-1);
+    }
+
+    .tb-hw__material i {
+      font-size: 1rem;
+    }
+
+    .tb-hw__whom {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--tb-space-2);
+    }
+
+    .tb-hw__handed {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--tb-space-3);
+    }
+
+    /* accepted — the portal colour, handed in and waiting for review — tertiary */
+    .tb-hw__bar {
+      display: flex;
+      inline-size: 7rem;
+      block-size: 0.5rem;
+      border-radius: var(--tb-shape-xs);
+      background: var(--p-md-surface-container-highest);
+      overflow: hidden;
+    }
+
+    .tb-hw__bar > span {
+      background: var(--p-md-primary);
+    }
+
+    .tb-hw__bar > .tb-hw__bar-awaiting {
+      background: var(--p-md-tertiary);
+    }
+
+    /* the badge and «⋮» side by side */
+    .tb-hw__row-end {
+      flex-direction: row;
+      align-items: center;
     }
   `,
 })
@@ -416,12 +695,9 @@ export class AssignmentsPage implements OnInit {
   protected readonly t = T.list;
   protected readonly colors = inject(TeacherColors);
   protected readonly progress = assignmentProgress;
-  /** Route parameters: the work or the assignment open beside the list. */
+  /** Route parameters: the work or the assignment that takes the place of the list. */
   readonly taskId = input<string>();
   readonly assignmentId = input<string>();
-  protected readonly layout = injectListDetail(
-    () => this.taskId() !== undefined || this.assignmentId() !== undefined,
-  );
   private readonly api = inject(HomeworkApi);
   private readonly identity = inject(IdentityApi);
   private readonly router = inject(Router);
@@ -448,11 +724,11 @@ export class AssignmentsPage implements OnInit {
   private readonly dates = new DatePipe(inject(LOCALE_ID));
 
   private readonly size = injectWindowSize();
-  /** The work the detail pane has read: the side sheet reviews it. */
+  /** The work the page has read: the side sheet reviews it. */
   protected readonly current = signal<TaskDetails | null>(null);
-  /** The work as a decision of the sheet left it: the detail pane shows it. */
+  /** The work as a decision of the sheet left it: the page shows it. */
   protected readonly decided = signal<TaskDetails | null>(null);
-  /** The work open beside the list, once it is read and can be reviewed. */
+  /** The open work, once it is read and can be reviewed. */
   protected readonly reviewing = computed(() => {
     const task = this.current();
     return task !== null &&
@@ -461,13 +737,13 @@ export class AssignmentsPage implements OnInit {
       ? task
       : null;
   });
-  /** The review is the third pane of the extra-large window (spec §9); the rail gives it room. */
+  /** The review is the second pane of the extra-large window (spec §9); the rail gives it room. */
   protected readonly sheetOpen = computed(
     () => this.size() === 'extra-large' && this.reviewing() !== null,
   );
-  /** The work of the review on a phone (compact, one pane): the floating toolbar, no bottom bar (spec §9). */
+  /** The work of the review on a phone (compact): the floating toolbar, no bottom bar (spec §9). */
   protected readonly phoneReview = computed(
-    () => this.size() === 'compact' && this.layout.single() && this.reviewing() !== null,
+    () => this.size() === 'compact' && this.reviewing() !== null,
   );
   /** «1 из 3»: the place of the open work in the queue (0: it is not in it). */
   protected readonly place = computed(
@@ -494,10 +770,7 @@ export class AssignmentsPage implements OnInit {
     initialValue: this.search.value,
   });
   protected readonly searching = computed(() => this.query().trim() !== '');
-  /** The chosen filter; until one is chosen «На проверку» while there is work to review, else «Активные». */
-  protected readonly filter = linkedSignal<Filter>(() =>
-    this.queue().length > 0 ? 'review' : 'active',
-  );
+  protected readonly filter = signal<Filter>('active');
 
   /** What the search finds: the title or a name of a student of the assignment. */
   private matches(assignment: AssignmentSummary): boolean {
@@ -563,18 +836,17 @@ export class AssignmentsPage implements OnInit {
           work.studentName.toLocaleLowerCase().includes(query)),
     );
   });
-  /** Given out and somebody still has to hand in (or hand in again). */
-  protected readonly waiting = computed(() =>
-    this.found().filter(
-      (assignment) => assignment.assigned + assignment.returned > 0 && !isDone(assignment),
-    ),
+  protected readonly shownWorks = computed(() => this.works().slice(0, SHOWN_WORKS));
+  /** Works somebody still has to hand in (or hand in again): «Ещё N работ ждут сдачи». */
+  protected readonly waitingCount = computed(() =>
+    this.found().reduce((sum, assignment) => sum + assignment.assigned + assignment.returned, 0),
   );
   /** Given to somebody, not all the work accepted yet. */
-  protected readonly given = computed(() =>
+  private readonly given = computed(() =>
     this.found().filter((assignment) => assignment.totalTasks > 0 && !isDone(assignment)),
   );
   /** Not given to anybody yet. */
-  protected readonly drafts = computed(() =>
+  private readonly drafts = computed(() =>
     this.found().filter((assignment) => assignment.totalTasks === 0),
   );
   /** Every task of the assignment is accepted («Принято»). */
@@ -582,29 +854,53 @@ export class AssignmentsPage implements OnInit {
   protected readonly donePage = DONE_PAGE;
   protected readonly doneLimit = signal(DONE_PAGE);
   protected readonly shownDone = computed(() => this.finished().slice(0, this.doneLimit()));
-  /** «Активные» by the due date; the overdue ones are folded until the teacher opens them. */
-  protected readonly deadlineGroups = computed(() =>
-    groupByDeadline(this.given(), new Date(this.now())),
-  );
-  protected readonly overdueOpen = signal(false);
 
-  protected groupLabel(key: 'week' | 'later' | 'none' | 'overdue'): string {
-    return key === 'week'
-      ? this.t.weekGroup
-      : key === 'later'
-        ? this.t.laterGroup
-        : this.t.noneGroup;
+  /** The rows of the chosen filter; «Активные» by the due date, the others in one run. */
+  protected readonly sections = computed<readonly Section[]>(() => {
+    switch (this.filter()) {
+      case 'active':
+        return groupByDeadline(this.given(), new Date(this.now())).map((group) => ({
+          key: group.key,
+          title: this.t.groupCount(this.groupLabel(group.key), group.rows.length),
+          rows: group.rows,
+        }));
+      case 'drafts':
+        return this.drafts().length === 0 ? [] : [{ key: null, title: null, rows: this.drafts() }];
+      case 'done':
+        return this.shownDone().length === 0
+          ? []
+          : [{ key: null, title: null, rows: this.shownDone() }];
+    }
+  });
+  /** The table: a heading line before the rows of each group. */
+  protected readonly lines = computed<Line[]>(() =>
+    this.sections().flatMap((section) => [
+      ...(section.title === null ? [] : [{ section, assignment: null }]),
+      ...section.rows.map((assignment) => ({ section, assignment })),
+    ]),
+  );
+
+  private groupLabel(key: DeadlineKey): string {
+    return key === 'overdue'
+      ? this.t.late
+      : key === 'week'
+        ? this.t.weekGroup
+        : key === 'later'
+          ? this.t.laterGroup
+          : this.t.noneGroup;
   }
 
+  private readonly counts = computed(() => ({
+    active: this.assignments().filter((a) => a.totalTasks > 0 && !isDone(a)).length,
+    drafts: this.assignments().filter((a) => a.totalTasks === 0).length,
+    done: this.assignments().filter(isDone).length,
+  }));
   protected readonly segments = computed<Segment<Filter>[]>(() => [
-    { value: 'review', label: this.t.toReview, count: this.queue().length },
-    {
-      value: 'active',
-      label: this.t.active,
-      count: this.assignments().filter((assignment) => !isDone(assignment)).length,
-    },
-    { value: 'done', label: this.t.ready, count: this.assignments().filter(isDone).length },
+    { value: 'active', label: this.t.active, count: this.counts().active },
+    { value: 'drafts', label: this.t.drafts, count: this.counts().drafts },
+    { value: 'done', label: this.t.ready, count: this.counts().done },
   ]);
+  protected readonly chips = computed<FilterChip<Filter>[]>(() => this.segments());
 
   constructor() {
     collapseRail(() => this.sheetOpen());
@@ -649,6 +945,14 @@ export class AssignmentsPage implements OnInit {
 
   protected openWork(taskId: string): void {
     void this.router.navigate(['/teacher/homework/tasks', taskId]);
+  }
+
+  /** «Проверить все подряд»: the oldest work opens, a decision leads to the next one. */
+  protected reviewAll(): void {
+    const first = this.works()[0];
+    if (first !== undefined) {
+      this.openWork(first.taskId);
+    }
   }
 
   protected closeReview(): void {
@@ -706,11 +1010,21 @@ export class AssignmentsPage implements OnInit {
       });
   }
 
-  /** «Дроби · сдано 05.09 10:00». */
+  /** «сдано сегодня, 09:12», «сдано вчера, 22:40», «сдано 05.09 10:00». */
   protected handedIn(work: ReviewQueueItem): string {
-    return work.submittedAt === null
-      ? work.title
-      : this.t.handedIn(work.title, this.dates.transform(work.submittedAt, 'dd.MM HH:mm') ?? '');
+    if (work.submittedAt === null) {
+      return '';
+    }
+    const at = new Date(work.submittedAt);
+    const midnight = (moment: Date): number =>
+      new Date(moment.getFullYear(), moment.getMonth(), moment.getDate()).getTime();
+    const days = Math.round((midnight(new Date(this.now())) - midnight(at)) / DAY);
+    const time = this.dates.transform(at, 'HH:mm') ?? '';
+    return days === 0
+      ? this.t.handedToday(time)
+      : days === 1
+        ? this.t.handedYesterday(time)
+        : this.t.handedOn(this.dates.transform(at, 'dd.MM HH:mm') ?? '');
   }
 
   /** Handed in after the due date. */
@@ -727,24 +1041,66 @@ export class AssignmentsPage implements OnInit {
     );
   }
 
-  /** «Анна и ещё 3 · до 12.10 18:00»; the year only when it is not the current one. */
-  protected details(assignment: AssignmentSummary): string {
-    const names = assignment.students;
-    const who =
-      names.length === 0
-        ? this.t.nobody
-        : names.length > SHOWN_STUDENTS
-          ? this.t.andMore(names[0] ?? '', names.length - 1)
-          : names.join(', ');
-    return `${who} · ${this.dueOf(assignment.dueAt)}`;
+  /** Handed in (waiting for review or accepted). */
+  protected handedCount(assignment: AssignmentSummary): number {
+    return assignment.submitted + assignment.accepted;
   }
 
-  private dueOf(dueAt: string | null): string {
+  /** The width of the progress bar a number of tasks takes, in percent. */
+  protected share(count: number, assignment: AssignmentSummary): number {
+    return assignment.totalTasks === 0 ? 0 : (count / assignment.totalTasks) * 100;
+  }
+
+  /** The materials of the assignment the row shows (the ones it has). */
+  protected materials(assignment: AssignmentSummary): Material[] {
+    const labels = this.t.materials;
+    const all: Material[] = [
+      { icon: 'tb-i tb-i-menu_book', label: labels.textbooks, count: assignment.textbooks },
+      { icon: 'tb-i tb-i-attach_file', label: labels.files, count: assignment.files },
+      { icon: 'tb-i tb-i-quiz', label: labels.questions, count: assignment.questions },
+      { icon: 'tb-i tb-i-videocam', label: labels.videos, count: assignment.videos },
+    ];
+    return [
+      ...all.filter((material) => material.count !== 0),
+      ...(assignment.boardId === null
+        ? []
+        : [{ icon: 'tb-i tb-i-co_present', label: labels.board, count: null }]),
+    ];
+  }
+
+  protected materialLabel(material: Material): string {
+    return material.count === null
+      ? material.label
+      : this.t.materials.count(material.label, material.count);
+  }
+
+  /** «Анна и ещё 3». */
+  protected whomOf(assignment: AssignmentSummary): string {
+    const names = assignment.students;
+    return names.length === 0
+      ? this.t.nobody
+      : names.length > SHOWN_STUDENTS
+        ? this.t.andMore(names[0] ?? '', names.length - 1)
+        : names.join(', ');
+  }
+
+  /** «12.10 18:00»; the year only when it is not the current one. */
+  protected due(assignment: AssignmentSummary): string {
+    return this.dueOf(assignment.dueAt, false);
+  }
+
+  /** «Анна и ещё 3 · до 12.10 18:00»: a card of a phone. */
+  protected details(assignment: AssignmentSummary): string {
+    return `${this.whomOf(assignment)} · ${this.dueOf(assignment.dueAt, true)}`;
+  }
+
+  private dueOf(dueAt: string | null, prefixed: boolean): string {
     if (dueAt === null) {
       return T.noDueDate;
     }
     const year = (moment: string | number): string | null => this.dates.transform(moment, 'yyyy');
     const format = year(dueAt) === year(this.now()) ? 'dd.MM HH:mm' : 'dd.MM.yyyy HH:mm';
-    return this.t.until(this.dates.transform(dueAt, format) ?? '');
+    const text = this.dates.transform(dueAt, format) ?? '';
+    return prefixed ? this.t.until(text) : text;
   }
 }

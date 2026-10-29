@@ -43,7 +43,7 @@ test('on a phone the main action of every section is the same extended FAB', asy
   for (const [path, label] of [
     ['/teacher/students', 'Добавить ученика'],
     ['/teacher/schedule', 'Занятие'],
-    ['/teacher/homework', 'Новое задание'],
+    ['/teacher/homework', 'Новое'],
     ['/teacher/billing', 'Оплата'],
   ] as const) {
     await open(page, path);

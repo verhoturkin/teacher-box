@@ -4,7 +4,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -78,5 +80,15 @@ public class AttachmentRepository {
                 rs.getLong("size_bytes"),
                 rs.getString("sha256"),
                 rs.getObject("uploaded_at", Instant.class));
+    }
+
+    /** How many files every assignment has (assignments with none are absent). */
+    public Map<UUID, Integer> countsByAssignment() {
+        Map<UUID, Integer> counts = new HashMap<>();
+        jdbc.sql("select owner_id as assignment_id, count(*) as total from homework.attachments where owner_type = 'ASSIGNMENT' group by owner_id")
+                .query((ResultSet rs) -> {
+                    counts.put(rs.getObject("assignment_id", UUID.class), rs.getInt("total"));
+                });
+        return counts;
     }
 }

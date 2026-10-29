@@ -37,7 +37,7 @@ full editor, AI draft, phone, student) — https://claude.ai/artifact/X2SdNjSvCb
 
 ### 339. Assignment list on the full width
 
-- [ ] **339.1 F** `homework/teacher/assignments-page.ts`: from expanded the list is one flexible
+- [x] **339.1 F** `homework/teacher/assignments-page.ts`: from expanded the list is one flexible
   pane, the assignment opens as its own page (no third pane). A «Ждут проверки · N» strip of
   cards (avatar, student, assignment, «сдано …», «Проверить», «Проверить все подряд» → the review
   queue); search, «Кому» and «Активные · Черновики · Готовые» in one toolbar; a table grouped by

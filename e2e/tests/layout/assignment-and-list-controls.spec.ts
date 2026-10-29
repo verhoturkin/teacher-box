@@ -44,17 +44,11 @@ test('assignment panes share width and validation keeps recipients aligned with 
 test('materials search matches list searches and shares a row with chips and sorting', async ({
   page,
 }) => {
-  await page.goto('/teacher/homework');
+  await page.goto('/teacher/students');
   const reference = await page
     .locator('tb-pane tb-search-field')
     .evaluate((element) => element.getBoundingClientRect().width);
-  console.log(`Homework search at 1440px: ${reference}px`);
-  await page.goto('/teacher/students');
-  const studentsWidth = await page
-    .locator('tb-pane tb-search-field')
-    .evaluate((element) => element.getBoundingClientRect().width);
-  expect(studentsWidth).toBe(reference);
-  console.log(`Students search at 1440px: ${studentsWidth}px`);
+  console.log(`Students search at 1440px: ${reference}px`);
   await page.goto('/teacher/materials');
   const search = page.locator('.tb-materials__bar tb-search-field');
   await expect(search).toBeVisible();

@@ -114,11 +114,11 @@ test('the actions of the page header are at one height on every page', async ({
   expect(created.ok()).toBe(true);
   await signIn(page);
   await page.goto('/teacher/homework');
-  // 242.1: the list is a pane; the assignment page keeps the window until its own stage (242.2)
+  // 339.1: the list takes the whole pane; the assignment is a page of its own
   await expect(page.locator('h1.tb-page-title')).toHaveText('Задания');
   await page.getByRole('button', { name: /^Активные/ }).click();
   await page.getByRole('link', { name: 'Колонка 0.6.8' }).click();
-  // 0.25.0: the list pane keeps its own title beside the assignment
+  // the assignment page has its own title and the way back to the list
   await expect(page.locator('h1.tb-page-title', { hasText: 'Колонка 0.6.8' })).toBeVisible();
   await expect(page.locator('.tb-page-header > .tb-actions p-button').first()).toBeVisible();
 });

@@ -17,6 +17,7 @@ import ru.teacherbox.homework.application.HomeworkViews.TaskDetails;
 import ru.teacherbox.homework.application.QuizViews.QuizStats;
 import ru.teacherbox.homework.domain.Assignment;
 import ru.teacherbox.homework.domain.HomeworkTask;
+import ru.teacherbox.homework.domain.quiz.QuizAttempt;
 import ru.teacherbox.homework.persistence.AssignmentRepository;
 import ru.teacherbox.homework.persistence.TaskRepository;
 import ru.teacherbox.identity.api.StudentSummary;
@@ -61,14 +62,17 @@ public class ReviewService {
         Map<UUID, StudentSummary> students = directory
                 .findStudents(submitted.stream().map(HomeworkTask::studentId).toList()).stream()
                 .collect(Collectors.toMap(StudentSummary::id, Function.identity(), (a, b) -> a));
+        Map<UUID, QuizAttempt> scores = quiz.bestAttempts(submitted.stream().map(HomeworkTask::id).toList());
         return submitted.stream()
                 .filter(task -> byId.containsKey(task.assignmentId()))
                 .map(task -> {
                     Assignment assignment = byId.get(task.assignmentId());
                     StudentSummary student = students.get(task.studentId());
+                    QuizAttempt score = scores.get(task.id());
                     return new ReviewQueueItem(task.id(), assignment.id(), assignment.title(), task.studentId(),
                             student == null ? TaskDetailsAssembler.unknownStudent() : student.displayName(),
-                            student == null ? null : student.avatar(), task.submittedAt(), assignment.dueAt());
+                            student == null ? null : student.avatar(), task.submittedAt(), assignment.dueAt(),
+                            score == null ? null : score.scorePoints(), score == null ? null : score.maxPoints());
                 })
                 .toList();
     }

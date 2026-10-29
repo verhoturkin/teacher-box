@@ -49,6 +49,10 @@ export function assignmentSummary(overrides: Partial<AssignmentSummary> = {}): A
     submitted: 1,
     returned: 0,
     accepted: 0,
+    textbooks: 0,
+    files: 0,
+    questions: 0,
+    videos: 0,
     ...overrides,
   };
 }
@@ -143,6 +147,8 @@ export function reviewQueueItem(overrides: Partial<ReviewQueueItem> = {}): Revie
     studentAvatar: null,
     submittedAt: '2026-09-05T10:00:00Z',
     dueAt: null,
+    quizScore: null,
+    quizMax: null,
     ...overrides,
   };
 }

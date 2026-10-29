@@ -87,6 +87,7 @@ public final class HomeworkViews {
      * @param students   the names of its students, alphabetically
      * @param studentIds the ids of its students (the list filters by student or group)
      * @param boardId the board it was put on; {@code null} — none
+     * @param textbooks the bound textbooks; files, questions, videos — how many materials of each kind it has
      */
     public record AssignmentSummary(
             UUID id,
@@ -100,7 +101,11 @@ public final class HomeworkViews {
             int assigned,
             int submitted,
             int returned,
-            int accepted) {
+            int accepted,
+            int textbooks,
+            int files,
+            int questions,
+            int videos) {
     }
 
     /**
@@ -216,7 +221,10 @@ public final class HomeworkViews {
             @Nullable QuizReview quiz) {
     }
 
-    /** @param studentAvatar address of the student's photo; {@code null}: none */
+    /**
+     * @param studentAvatar address of the student's photo; {@code null}: none
+     * @param quizScore     points of the best quiz attempt; {@code null}: the assignment has no quiz
+     */
     public record ReviewQueueItem(
             UUID taskId,
             UUID assignmentId,
@@ -225,7 +233,9 @@ public final class HomeworkViews {
             String studentName,
             @Nullable String studentAvatar,
             @Nullable Instant submittedAt,
-            @Nullable Instant dueAt) {
+            @Nullable Instant dueAt,
+            @Nullable Integer quizScore,
+            @Nullable Integer quizMax) {
     }
 
     /** A row of the student's list of tasks. */
