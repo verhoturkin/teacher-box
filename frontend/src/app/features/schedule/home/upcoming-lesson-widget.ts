@@ -34,6 +34,9 @@ import { T } from '../i18n/texts';
           @if (next.title !== null) {
             <span class="tb-muted">{{ next.title }}</span>
           }
+          @if (next.topic !== null) {
+            <span class="tb-muted">{{ next.topic }}</span>
+          }
           <tb-board-links
             [chips]="true"
             [studentId]="next.groupId === null ? next.studentId : null"

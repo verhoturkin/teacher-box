@@ -80,7 +80,7 @@ event in `tb-hero`.
   «чт, 16.10», Label Large), the start in Display Small emphasized (*ours*: the portal's one hero
   moment; tabular figures, one line, the tile grows on a narrow card), the length; within an hour
   «через N мин», while it runs «Идёт сейчас» and «ещё N мин» (`lesson-clock.ts`).
-- Beside it who and the topic, the boards as assist chips (`tb-board-links [chips]` /
+- Beside it who, the title and the topic (each when set), the boards as assist chips (`tb-board-links [chips]` /
   `tb-my-board-links`, `tb-board-chip` in the text colour at 12 %).
 - One filled size-M button «Начать урок» / «Войти в урок» (`tb-join-lesson-button [medium]`, a split
   button too; on a narrow card under the tile, full width — `tb-join-wide`). The student's request
@@ -138,10 +138,10 @@ the calendar), «Запросы учеников» and «Нерабочее вр
 
 One content component in `schedule/ui` for teacher and student in a `tb-dialog kind="sheet"` (§11).
 
-- **Header:** the headline is who (student or group name); trailing ✎ (planned lessons only) and
+- **Header:** the headline is the lesson title, or who (student or group name) when it has none; trailing ✎ (planned lessons only) and
   «⋮». One status tag at the top of the body when the lesson is not planned.
 - **Body** — one `tb-list`, a fact per row with an icon: `schedule` date · time (second line
-  «перенесено с …»); `topic`; `videocam` the room with tonal «Начать урок» (the student «Войти в
+  «перенесено с …»); `topic` the topic, when set; `videocam` the room with tonal «Начать урок» (the student «Войти в
   урок»); `dashboard` board chips; `event_busy` the cancel reason.
 - **«Итог»** (`fact_check`, a past one-student lesson, teacher): the toggle «Проведено | Пропуск» —
   **M3** connected group, single-select, selection optional: nothing selected until marked; a press
@@ -218,7 +218,7 @@ active on both, `NavItem.alsoActive`).
   header carries it); «с сентября 2025» (Body Medium, on-surface-variant); tags — status (not for an
   active student), messengers or «Без мессенджера» (warn), «Аванс N» (success) / «Долг N» (danger).
   Student actions: tonal «Написать» (`tb-broadcast-dialog [to]`) and «Оплата» (`tb-payment-dialog`),
-  filled «Занятие» (`tb-lesson-dialog [studentId]`: who fixed, default topic and length); a
+  filled «Занятие» (`tb-lesson-dialog [studentId]`: who fixed, default title and length); a
   deactivated student keeps only «Оплата»; on compact all three tonal, equal width. Group actions:
   tonal «Написать» (`[toGroup]`, hidden without members), filled «Занятие» (`[groupId]`), «⋮» «В
   архив…» / «Вернуть из архива»; an archived group has neither action.

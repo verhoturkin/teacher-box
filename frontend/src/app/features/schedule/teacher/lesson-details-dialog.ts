@@ -233,7 +233,7 @@ export class LessonDetailsDialog {
 
   protected readonly headline = computed(() => {
     const lesson = this.shown();
-    return lesson === null ? '' : lessonWith(lesson);
+    return lesson === null ? '' : (lesson.title ?? lessonWith(lesson));
   });
   protected readonly started = computed(() => {
     const lesson = this.shown();

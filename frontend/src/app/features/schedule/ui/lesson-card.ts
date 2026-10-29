@@ -75,11 +75,11 @@ interface OutcomeOption {
           }
         </div>
       </li>
-      @if (item.title !== null) {
+      @if (item.topic !== null) {
         <li>
           <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-topic"></i></span>
           <div class="tb-list__text">
-            <span class="tb-list__title">{{ item.title }}</span>
+            <span class="tb-list__title">{{ item.topic }}</span>
           </div>
         </li>
       }

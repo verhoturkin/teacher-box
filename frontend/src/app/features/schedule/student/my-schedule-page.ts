@@ -514,7 +514,7 @@ export class MySchedulePage implements OnInit {
     if (lesson === null) {
       return '';
     }
-    return lesson.groupId === null ? T.details.title : lessonWith(lesson);
+    return lesson.title ?? (lesson.groupId === null ? T.details.title : lessonWith(lesson));
   });
 
   /** «Что прошли» of the lesson in the sheet, read with its details. */

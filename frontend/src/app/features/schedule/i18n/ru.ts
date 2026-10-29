@@ -183,6 +183,7 @@ export const ru = {
     search: 'Поиск',
     start: 'Начало',
     duration: 'Длительность, мин',
+    name: 'Название',
     topic: 'Тема',
     url: 'Ссылка на онлайн-урок',
     urlInvalid: 'Ссылка должна начинаться с http:// или https://',

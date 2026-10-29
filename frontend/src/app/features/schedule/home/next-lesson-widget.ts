@@ -44,9 +44,11 @@ import { T } from '../i18n/texts';
             <tb-lesson-time-tile [time]="time" />
           }
           <div class="tb-lesson-event__info">
-            <strong>{{ lesson.groupId !== null ? with(lesson) : t.lesson }}</strong>
-            @if (lesson.title !== null) {
-              <span>{{ lesson.title }}</span>
+            <strong>{{
+              lesson.title ?? (lesson.groupId !== null ? with(lesson) : t.lesson)
+            }}</strong>
+            @if (lesson.topic !== null) {
+              <span>{{ lesson.topic }}</span>
             }
             <tb-my-board-links [groupName]="lesson.groupId === null ? null : lesson.groupName" />
             @if (lesson.pendingRequests[0]; as request) {

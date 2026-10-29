@@ -163,10 +163,10 @@ On the home page, Mark for a group lesson opens attendance directly, just as in 
 
 ## Plan a lesson
 
-«Create» → «Lesson» (on a phone — «Schedule» → «Lesson»). Choose a student or group, date, time and duration; optionally add a topic and meeting link.
+«Create» → «Lesson» (on a phone — «Schedule» → «Lesson»). Choose a student or group, date, time and duration; optionally add a title (empty — the lesson is named after the student or group), a topic — what the lesson covers — and a meeting link. A series does not copy the topic: each lesson has its own.
 «Repeat» offers Once, Every week, Every 2 weeks, Every 3 weeks and Every 4 weeks for new and existing lessons. The date determines the weekday; the repeat end date is optional. Lessons are generated 84 days ahead and extended daily.
 
-**Default topic.** If a student or a group has a default topic (on the «Profile» tab of the student or the group), it is filled in for a new lesson as soon as you choose them. You can change or clear it; a topic you typed yourself is never replaced.
+**Default topic.** If a student or a group has a default topic (on the «Profile» tab of the student or the group), it is filled in as the title of a new lesson as soon as you choose them. You can change or clear it; a title you typed yourself is never replaced.
 
 **How the section is laid out.** On a computer the calendar (week or month) is the main area; on the right are a mini-month for jumping between days, «Students’ requests» and «Time off». The calendar adapts to the window height: on a big screen the rows of the week and the weeks of the month stretch, on a low one they stay as before and the section scrolls. Today is marked by colour. The filter by students and groups above the calendar stays in one row: what does not fit is collected in the «N more» menu (the chosen student always stays in the row). Overlapping time off is shown as one hatched block. On a phone the section opens as the «Agenda»: a strip of the week's days and the list of the chosen day's lessons; «Agenda», «Week», «Month» and «Time off» are available as chips above the calendar.
 

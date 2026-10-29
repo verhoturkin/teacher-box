@@ -45,7 +45,7 @@ a separate topic, and its summary lives in the lesson card. New ADR for the titl
   group: calendar, ICS, Google, bot, events to billing), a new nullable `topic` (what the lesson
   covers); a saved «Тема следующего занятия» goes into the topic of the next planned lesson of the
   same student or group when empty. ADR, `docs/modules/schedule.md`.
-- [ ] 334.2 **F** Lesson form and card: «Название» and «Тема»; the topic in the card, the home hero,
+- [x] 334.2 **F** Lesson form and card: «Название» and «Тема»; the topic in the card, the home hero,
   the student's views.
 
 ### 335. Summary in the lesson card

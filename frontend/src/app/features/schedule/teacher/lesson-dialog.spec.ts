@@ -99,7 +99,8 @@ describe('LessonDialog', () => {
     );
     dialog.form.patchValue({
       owner: 'student:s-2',
-      topic: '  Дроби ',
+      title: '  Дроби ',
+      topic: ' Сложение ',
       meetingUrl: 'https://zoom.us/j/1',
     });
     await fixture.whenStable();
@@ -113,7 +114,7 @@ describe('LessonDialog', () => {
       startsAt: start.toISOString(),
       durationMinutes: 90,
       title: 'Дроби',
-      topic: null,
+      topic: 'Сложение',
       meetingUrl: 'https://zoom.us/j/1',
       allowOverlap: false,
     });
@@ -178,14 +179,14 @@ describe('LessonDialog', () => {
 
   it('keeps what is typed when inputs change while it is open', async () => {
     const dialog = await open();
-    dialog.form.patchValue({ owner: 'student:s-1', topic: 'Дроби' });
+    dialog.form.patchValue({ owner: 'student:s-1', title: 'Дроби' });
 
     fixture.componentRef.setInput('defaultDuration', 60);
     fixture.componentRef.setInput('students', [{ id: 's-1', displayName: 'Иван' }]);
     await fixture.whenStable();
 
     expect(dialog.form.getRawValue()).toEqual(
-      expect.objectContaining({ owner: 'student:s-1', topic: 'Дроби' }),
+      expect.objectContaining({ owner: 'student:s-1', title: 'Дроби' }),
     );
   });
 
@@ -198,7 +199,7 @@ describe('LessonDialog', () => {
       { id: 'g-1', name: 'ОГЭ', defaultTopic: 'Математика' },
     ]);
     const dialog = await open();
-    const topic = dialog.form.controls.topic;
+    const topic = dialog.form.controls.title;
 
     dialog.form.controls.owner.setValue('student:s-1');
     expect(topic.value).toBe('Физика');
@@ -221,7 +222,7 @@ describe('LessonDialog', () => {
 
     expect(dialog.form.controls.owner.value).toBe('student:s-1');
     expect(dialog.form.controls.owner.disabled).toBe(true);
-    expect(dialog.form.controls.topic.value).toBe('Физика');
+    expect(dialog.form.controls.title.value).toBe('Физика');
   });
 
   it('plans with the group of the card: fixed, with its default topic', async () => {
@@ -231,14 +232,26 @@ describe('LessonDialog', () => {
 
     expect(dialog.form.controls.owner.value).toBe('group:g-1');
     expect(dialog.form.controls.owner.disabled).toBe(true);
-    expect(dialog.form.controls.topic.value).toBe('Дроби');
+    expect(dialog.form.controls.title.value).toBe('Дроби');
   });
 
-  it('keeps the topic of a planned lesson', async () => {
+  it('keeps the title of a planned lesson', async () => {
     fixture.componentRef.setInput('students', [
       { id: 's-1', displayName: 'Иван', defaultTopic: 'Физика' },
     ]);
     const dialog = await open(scheduledLesson({ title: null }));
+    expect(dialog.form.controls.title.value).toBe('');
+  });
+
+  it('names the chosen owner as the placeholder of the title', async () => {
+    fixture.componentRef.setInput('students', [{ id: 's-1', displayName: 'Иван' }]);
+    const dialog = await open();
+    dialog.form.patchValue({ owner: 'student:s-1' });
+    fixture.detectChanges();
+
+    expect(
+      document.body.querySelector<HTMLInputElement>('#schedule-lesson-title')?.placeholder,
+    ).toBe('Иван');
     expect(dialog.form.controls.topic.value).toBe('');
   });
 

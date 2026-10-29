@@ -218,7 +218,7 @@ describe('GroupCard', () => {
     const dialog = part(LessonDialog);
     expect(dialog.visible()).toBe(true);
     expect(dialog.form.getRawValue()).toEqual(
-      expect.objectContaining({ owner: 'group:g', durationMinutes: 90, topic: 'Дроби' }),
+      expect.objectContaining({ owner: 'group:g', durationMinutes: 90, title: 'Дроби' }),
     );
     reads(/schedule\/lessons/);
 

@@ -183,6 +183,7 @@ export const en: Translation<typeof ru> = {
     search: 'Search',
     start: 'Start',
     duration: 'Duration, min',
+    name: 'Title',
     topic: 'Topic',
     url: 'Link to the online lesson',
     urlInvalid: 'The link must start with http:// or https://',

@@ -110,7 +110,7 @@ describe('LessonDetailsDialog', () => {
   }
 
   it('names who the lesson is with and lists its facts', async () => {
-    await open(scheduledLesson({ title: 'Дроби', joinUrl: 'https://zoom.us/j/1' }));
+    await open(scheduledLesson({ topic: 'Дроби', joinUrl: 'https://zoom.us/j/1' }));
 
     const title = document.body.querySelector('.p-dialog-title');
     expect(title?.textContent).toContain('Иван Петров');
@@ -119,6 +119,12 @@ describe('LessonDetailsDialog', () => {
     expect(text).toContain('Начать урок');
     expect(text).not.toContain('Запланировано');
     expect(text).not.toContain('Проведено');
+  });
+
+  it('heads the card with the title of the lesson', async () => {
+    await open(scheduledLesson({ title: 'Английский' }));
+
+    expect(document.body.querySelector('.p-dialog-title')?.textContent).toContain('Английский');
   });
 
   it('has no footer for a lesson to come or a past one with one student', async () => {

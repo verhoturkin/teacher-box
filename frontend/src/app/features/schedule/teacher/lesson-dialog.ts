@@ -186,6 +186,16 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
           }
         }
         <div class="tb-field">
+          <label for="schedule-lesson-title">{{ t.name }}</label>
+          <input
+            pInputText
+            id="schedule-lesson-title"
+            formControlName="title"
+            autocomplete="off"
+            [placeholder]="ownerName()"
+          />
+        </div>
+        <div class="tb-field">
           <label for="schedule-lesson-topic">{{ t.topic }}</label>
           <input pInputText id="schedule-lesson-topic" formControlName="topic" autocomplete="off" />
         </div>
@@ -257,6 +267,7 @@ export class LessonDialog {
       Validators.min(1),
       Validators.max(600),
     ]),
+    title: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(500)] }),
     topic: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(500)] }),
     meetingUrl: new FormControl('', {
       nonNullable: true,
@@ -300,7 +311,7 @@ export class LessonDialog {
     });
     followDefaultTopic(
       this.form.controls.owner,
-      this.form.controls.topic,
+      this.form.controls.title,
       () => ({ students: this.students(), groups: this.groups() }),
       () => this.lesson() === null,
     );
@@ -314,6 +325,16 @@ export class LessonDialog {
         });
       }
     });
+  }
+
+  /** The default title of a lesson: the name of the chosen student or group. */
+  protected ownerName(): string {
+    const owner = this.form.controls.owner.value;
+    return (
+      this.ownerOptions()
+        .flatMap((group) => group.items)
+        .find((option) => option.value === owner)?.label ?? ''
+    );
   }
 
   save(allowOverlap = false): void {
@@ -333,9 +354,8 @@ export class LessonDialog {
     const details = {
       startsAt: value.startsAt.toISOString(),
       durationMinutes: value.durationMinutes ?? this.defaultDuration(),
-      // shortcut: the one text field is the title; the topic field comes with 334.2
-      title: optionalText(value.topic),
-      topic: this.lesson()?.topic ?? null,
+      title: optionalText(value.title),
+      topic: optionalText(value.topic),
       meetingUrl: optionalText(value.meetingUrl),
       allowOverlap,
       repeatWeeks: value.repeatWeeks,
@@ -387,10 +407,11 @@ export class LessonDialog {
       owner: lesson === null ? preset : ownerValue(lesson),
       startsAt: lesson === null ? (slot?.start ?? null) : new Date(lesson.startsAt),
       durationMinutes: lesson?.durationMinutes ?? slot?.durationMinutes ?? this.defaultDuration(),
-      topic:
+      title:
         lesson === null
           ? defaultTopic(preset, { students: this.students(), groups: this.groups() })
           : (lesson.title ?? ''),
+      topic: lesson?.topic ?? '',
       meetingUrl: lesson?.meetingUrl ?? '',
       repeatWeeks: lesson?.repeatWeeks ?? 0,
       repeatUntil: lesson?.repeatUntil ? new Date(lesson.repeatUntil + 'T00:00:00') : null,

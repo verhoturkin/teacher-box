@@ -60,7 +60,7 @@ describe('NextLessonWidget', () => {
   it('shows the lesson with its link and asks to move it', async () => {
     await render(
       myScheduleSummary({
-        next: scheduledLesson({ title: 'Дроби', joinUrl: 'https://meet.example.com/1' }),
+        next: scheduledLesson({ topic: 'Дроби', joinUrl: 'https://meet.example.com/1' }),
         weekLessons: 2,
       }),
     );

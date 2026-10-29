@@ -27,6 +27,9 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
               @if (lesson.title !== null) {
                 <span class="tb-list__supporting">{{ lesson.title }}</span>
               }
+              @if (lesson.topic !== null) {
+                <span class="tb-list__supporting">{{ lesson.topic }}</span>
+              }
             </div>
             @if (lesson.id === nextId()) {
               <span class="tb-today-lesson__next">{{ t.next }}</span>
