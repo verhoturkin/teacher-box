@@ -80,6 +80,7 @@ import { T } from '../i18n/texts';
 import { FilePicker } from '../ui/file-picker';
 import { TextbookList } from '../ui/textbook-list';
 import { videoName } from '../ui/video-list';
+import { AssignmentDraftHandover, titleOf } from './assignment-draft';
 import { assignmentBoard } from './assignment-board';
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { MaterialOpener } from './material-opener';
@@ -407,6 +408,7 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   private readonly router = inject(Router);
   private readonly snackbar = inject(Snackbar);
   private readonly confirm = inject(Confirm);
+  private readonly handover = inject(AssignmentDraftHandover);
   protected readonly materials = inject(MaterialOpener);
   private readonly dates = new DatePipe(inject(LOCALE_ID));
 
@@ -620,6 +622,7 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
 
   ngOnInit(): void {
     if (this.isNew()) {
+      this.takeDraft();
       this.loadStudents();
       this.identity.listGroups().subscribe((groups) => {
         this.groups.set(groups.filter((group) => group.archivedAt === null));
@@ -641,6 +644,26 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     } else {
       this.load();
     }
+  }
+
+  /** What was entered in the quick dialog before «Открыть во весь экран». */
+  private takeDraft(): void {
+    const draft = this.handover.take();
+    if (draft === null) {
+      return;
+    }
+    this.form.patchValue({
+      title: titleOf(draft.text),
+      description: draft.text,
+      members: [...draft.members],
+    });
+    this.dueTouched.set(true);
+    this.form.controls.dueAt.setValue(draft.dueAt);
+    this.newFiles.set([...draft.files]);
+    this.pickedTextbooks.set(draft.textbooks);
+    this.videos.set(draft.videos);
+    this.videosChanged.set(draft.videos.length > 0);
+    this.form.markAsDirty();
   }
 
   protected load(): void {

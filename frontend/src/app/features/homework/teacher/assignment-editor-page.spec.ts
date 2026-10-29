@@ -11,6 +11,7 @@ import { screenWidth, testProviders } from '@testing/setup';
 import { By } from '@angular/platform-browser';
 import { aBoard } from '@testing/boards-fixtures';
 import { ToBoardDialog } from '@features/boards/parts';
+import { AssignmentDraftHandover } from './assignment-draft';
 import { AssignmentEditorPage } from './assignment-editor-page';
 import { questionDraft } from './question-section';
 
@@ -103,6 +104,25 @@ describe('AssignmentEditorPage', () => {
       startsAt: starts.toISOString(),
     });
   }
+
+  it('takes what was entered in the quick dialog', async () => {
+    TestBed.inject(AssignmentDraftHandover).put({
+      text: '# Дроби\nРешите №1',
+      members: [{ kind: 'STUDENT', id: 's-1' }],
+      dueAt: null,
+      files: [new File(['x'], 'условие.pdf')],
+      textbooks: [boundTextbook({ textbookId: 'tb-1' })],
+      videos: [],
+    });
+    const { page } = await create();
+
+    expect(page.form.controls.title.value).toBe('Дроби');
+    expect(page.form.controls.description.value).toBe('# Дроби\nРешите №1');
+    expect(page.form.controls.studentIds.value).toEqual(['s-1']);
+    expect(page.form.controls.dueAt.value).toBeNull();
+    expect(page.newFiles()).toHaveLength(1);
+    expect(page.form.dirty).toBe(true);
+  });
 
   it('creates written homework, adds its materials, then gives it out', async () => {
     const next = lessonIn(2);

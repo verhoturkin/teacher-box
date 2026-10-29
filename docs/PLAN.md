@@ -53,7 +53,7 @@ full editor, AI draft, phone, student) — https://claude.ai/artifact/X2SdNjSvCb
 
 ### 340. Quick assignment creation
 
-- [ ] **340.1 F** `homework/teacher/assignment-create-dialog.ts` (new) from «Новое задание»:
+- [x] **340.1 F** `homework/teacher/assignment-create-dialog.ts` (new) from «Новое задание»:
   «Кому» chips, one Markdown field whose first line becomes the title, the AI button inside the
   field (opens `tb-homework-ai-panel`), deadline chips «К следующему занятию · <date>»
   (`next-lesson.ts`), «Через неделю», «Без срока», «Дата…»; «Материалы» appear only when added

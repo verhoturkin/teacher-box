@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject, input, model } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  inject,
+  input,
+  model,
+  viewChild,
+} from '@angular/core';
 import { catchError, firstValueFrom, of } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Tooltip } from 'primeng/tooltip';
@@ -24,7 +32,7 @@ const ACCEPTED_EXTENSIONS = ACCEPTED_FILES.split(',').map((extension) => extensi
   imports: [Button, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (files().length > 0) {
+    @if (list() && files().length > 0) {
       <ul class="tb-list tb-file-picker__list" [attr.aria-label]="t.picked">
         @for (file of files(); track $index) {
           <li>
@@ -64,16 +72,19 @@ const ACCEPTED_EXTENSIONS = ACCEPTED_FILES.split(',').map((extension) => extensi
       type="file"
       multiple
       class="tb-sr-only"
-      [accept]="accept"
+      [accept]="capture() ? 'image/*' : accept"
+      [attr.capture]="capture() ? 'environment' : null"
       [attr.aria-label]="label()"
       (change)="onSelected(input)"
     />
-    <p-button
-      [label]="label()"
-      icon="tb-i tb-i-attach_file"
-      severity="secondary"
-      (onClick)="input.click()"
-    />
+    @if (button()) {
+      <p-button
+        [label]="label()"
+        icon="tb-i tb-i-attach_file"
+        severity="secondary"
+        (onClick)="choose()"
+      />
+    }
   `,
   styles: `
     /* like the saved files: apart from the button under it */
@@ -89,6 +100,16 @@ export class FilePicker {
   private readonly api = inject(HomeworkApi);
   readonly files = model<File[]>([]);
   readonly label = input(T.ui.attachFiles);
+  /** `false` — no list of the picked files and/or no button: a page opens the chooser with `choose()`. */
+  readonly list = input(true);
+  readonly button = input(true);
+  /** The camera of a phone takes a photo instead of choosing a file. */
+  readonly capture = input(false);
+  private readonly field = viewChild.required<ElementRef<HTMLInputElement>>('input');
+
+  choose(): void {
+    this.field().nativeElement.click();
+  }
 
   protected readonly accept = ACCEPTED_FILES;
 

@@ -303,8 +303,8 @@ You can also add [textbook pages](/teacher/help/textbooks) from Materials or an 
     body: `
 ## Create an assignment
 
-1. Choose “Create” → “Assignment”, or “Homework” → “New assignment” on a phone.
-2. Enter a title and instructions. Markdown supports bold text, lists and links; use Preview to check the result.
+1. Choose “Create” → “Assignment”, or “Homework” → “New assignment” on a phone. A quick dialog opens so you can assign work in a minute; “Open full screen” (or “Quiz”) carries everything you have entered into the full editor.
+2. In the dialog, choose who gets the assignment and write the text; its first line becomes the title. Set the due date with “By the next lesson”, “In a week”, “No deadline” or “Pick a date…”. Add textbooks, files, videos or a board with the buttons under the text, and use “Save draft” to keep the assignment unassigned. In the full editor, enter a title and instructions. Markdown supports bold text, lists and links; use Preview to check the result.
 3. Select students and groups. Students in more than one selected group receive the assignment once. Removing a group keeps any students also selected individually. The due date defaults to the next lesson’s start time; change it if needed.
 4. Attach textbooks and files. Select a name to open it; PDFs and images open in a new tab.
 5. Optionally add up to five videos. YouTube, Rutube and VK videos play within the assignment; other links open in a new tab. Import YouTube captions, import an .srt or .vtt file, or enter a transcript yourself. If several caption tracks are available, choose the language and track you need. The AI uses the transcript; students see it only if “Show transcript to students” is enabled.

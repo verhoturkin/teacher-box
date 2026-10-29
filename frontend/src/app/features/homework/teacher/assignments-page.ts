@@ -40,6 +40,7 @@ import { Pane, Panes } from '@shared/ui/panes';
 import { RowType } from '@shared/ui/row-type.directive';
 import { SearchField } from '@shared/ui/search-field';
 import { Segment, SegmentGroup } from '@shared/ui/segment-group';
+import { AssignmentCreateDialog } from './assignment-create-dialog';
 import { AssignmentPage } from './assignment-page';
 import { DeadlineKey, groupByDeadline } from './deadline-groups';
 import { JournalView } from './journal-view';
@@ -106,6 +107,7 @@ interface Material {
   selector: 'tb-assignments-page',
   imports: [
     NgTemplateOutlet,
+    AssignmentCreateDialog,
     AssignmentPage,
     Avatar,
     Button,
@@ -544,6 +546,7 @@ interface Material {
         <tb-empty-state icon="tb-i-assignment" [title]="t.noActiveTitle" [hint]="t.noActiveHint" />
       }
     </ng-template>
+    <tb-assignment-create-dialog [(visible)]="createVisible" (saved)="refresh()" />
   `,
   styles: `
     .tb-hw__views {
@@ -1009,14 +1012,9 @@ export class AssignmentsPage implements OnInit {
     this.whom.valueChanges.pipe(takeUntilDestroyed()).subscribe((value) => {
       writeQuery(this.router, this.route, { who: value });
     });
-    // the editor is a route of its own: it takes the place of the list in the history
-    openOnCreate(
-      'assignment',
-      () => {
-        void this.router.navigate(['/teacher/homework/new'], { replaceUrl: true });
-      },
-      false,
-    );
+    openOnCreate('assignment', () => {
+      this.openCreate();
+    });
   }
 
   ngOnInit(): void {
@@ -1098,8 +1096,10 @@ export class AssignmentsPage implements OnInit {
     });
   }
 
+  protected readonly createVisible = signal(false);
+
   protected openCreate(): void {
-    void this.router.navigate(['/teacher/homework/new']);
+    this.createVisible.set(true);
   }
 
   /** A work was reviewed or an assignment changed: reads the lists again without the loading state. */
