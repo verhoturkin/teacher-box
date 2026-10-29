@@ -219,7 +219,7 @@ import { T } from '../i18n/texts';
               [label]="t.add"
               icon="tb-i tb-i-add"
               severity="secondary"
-              (onClick)="assignMore.open()"
+              (onClick)="assignMore.open(assignment.draftStudentIds)"
             />
           </div>
           @if (assignment.tasks.length > 0) {

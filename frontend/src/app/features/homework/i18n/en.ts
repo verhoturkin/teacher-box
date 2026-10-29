@@ -319,6 +319,7 @@ export const en: Translation<typeof ru> = {
     fullscreen: 'Open full screen',
     whom: 'For',
     whomPlaceholder: 'Student or group',
+    removeMember: (name: string) => `Remove ${name}`,
     task: 'Assignment',
     firstLine: 'The first line becomes the title',
     bold: 'Bold',

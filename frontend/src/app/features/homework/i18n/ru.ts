@@ -327,6 +327,7 @@ export const ru = {
     fullscreen: 'Открыть во весь экран',
     whom: 'Кому',
     whomPlaceholder: 'Ученик или группа',
+    removeMember: (name: string) => `Убрать: ${name}`,
     task: 'Задание',
     firstLine: 'Первая строка станет названием',
     bold: 'Жирный',

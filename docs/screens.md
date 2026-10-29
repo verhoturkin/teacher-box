@@ -255,16 +255,16 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   opens the quick dialog, `/teacher/homework/new` stays as the full editor.
 - **Quick dialog «Новое задание»** (340.1, `assignment-create-dialog.ts`, `tb-dialog` form: a basic
   dialog from medium, full screen on a phone with «Выдать» in the top bar): header icon buttons
-  «Открыть во весь экран» and «Закрыть»; «Кому» (`tb-member-picker`); «Задание» — one Markdown
+  «Открыть во весь экран» and «Закрыть»; «Кому» — input chips (a group with its member count, a student with an avatar, «×») and the dashed assist chip «Ученик или группа» that opens the panel of `tb-member-picker [bare]`; «Задание» — one Markdown
   field (first line = title, `titleOf`) with a toolbar «Жирный · Список · Ссылка» and «Написать с
   ИИ» (only when AI is on) that opens `tb-homework-ai-panel` in a side drawer; «Срок» —
   `tb-filter-chips` «К следующему занятию · <date>» (hidden without a lesson of the chosen
   students), «Через неделю», «Без срока», «Дата…» (date picker); «Материалы» appear only once
-  added (textbooks, videos, «разместить на доске»; files list) and are filled by outlined buttons
+  added (textbooks, videos, «разместить на доске»; files list) and are filled by assist chips
   «Файл · Учебник · Видео · Тест с вопросами · Доска» (a phone: «Фото» with the camera,
   «Файл · Учебник · Тест»). «Тест с вопросами» opens the full editor (questions are too big for the
   dialog); the entered state travels in `AssignmentDraftHandover`. Footer: text «Сохранить
-  черновик» (creates the assignment without students) and the split button «Выдать» (menu «Выдать и
+  черновик» (creates the assignment and keeps the chosen students as `draftStudentIds`, nobody is given it) and the split button «Выдать» (menu «Выдать и
   разместить на доске»).
 - **View switch** (339.2): the connected group «Списком · По ученикам» (`view_list` / `grid_view`) in
   the header actions before the main button; kept in the address as `?view=journal`. «По ученикам»

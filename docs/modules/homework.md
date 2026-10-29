@@ -52,6 +52,11 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
 - **Deleting** (0.14.2): `DELETE /api/teacher/homework/assignments/{id}` (`AssignmentService.delete`) removes the files of
   the assignment and of its answers (`FileStorage`), the answers, the tasks and the assignment; bound textbooks go by
   cascade. No event: notifications already sent stay in the inbox, their link leads to «not found».
+- **Draft students** (340.1): `PUT /api/teacher/homework/assignments/{id}/draft-students {studentIds}`
+  (`AssignmentService.saveDraftStudents`, `homework.assignment_draft_students`, cascade with the assignment)
+  remembers whom a draft is meant for. It makes no task and no event, students never see it; unknown
+  student → 404 `student.not-found`. `AssignmentDetails.draftStudentIds` returns them; giving the assignment
+  out (`assign`) drops the ones that got a task. The assignment page opens «Добавить» with them chosen.
 - **Copy** (0.36.0): `POST /api/teacher/homework/assignments/{id}/copy` (`AssignmentService.copy`, 201) — a new
   draft «<title> (копия)» (the title is cut to 200 characters) with the text, the files (new `FileStorage` keys, so
   deleting the original keeps the copy's files), the bound textbooks with pages and the videos with transcripts; no

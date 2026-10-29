@@ -200,6 +200,9 @@ class TeacherHomeworkController {
     record PlaceOnBoardRequest(@Nullable UUID boardId) {
     }
 
+    record DraftStudentsRequest(@NotNull @Size(max = 500) List<UUID> studentIds) {
+    }
+
     record AssignStudentsRequest(@NotNull @Size(min = 1) List<UUID> studentIds) {
     }
 
@@ -310,6 +313,13 @@ class TeacherHomeworkController {
     @PostMapping("/assignments/{assignmentId}/students")
     AssignmentDetails assign(@PathVariable UUID assignmentId, @Valid @RequestBody AssignStudentsRequest request) {
         return assignments.assign(assignmentId, request.studentIds());
+    }
+
+    /** Whom a draft is for: kept for «Выдать» later, nobody sees it until then. */
+    @PutMapping("/assignments/{assignmentId}/draft-students")
+    AssignmentDetails saveDraftStudents(@PathVariable UUID assignmentId,
+            @Valid @RequestBody DraftStudentsRequest request) {
+        return assignments.saveDraftStudents(assignmentId, request.studentIds());
     }
 
     @PostMapping(path = "/assignments/{assignmentId}/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

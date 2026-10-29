@@ -101,6 +101,13 @@ export class HomeworkApi {
     });
   }
 
+  /** Whom a draft is for: kept until «Выдать», students see nothing. */
+  saveDraftStudents(id: string, studentIds: string[]): Observable<AssignmentDetails> {
+    return this.http.put<AssignmentDetails>(`${TEACHER}/assignments/${id}/draft-students`, {
+      studentIds,
+    });
+  }
+
   /** Remembers the board the assignment was put on; `null` forgets it. */
   placeOnBoard(id: string, boardId: string | null): Observable<AssignmentDetails> {
     return this.http.put<AssignmentDetails>(`${TEACHER}/assignments/${id}/board`, { boardId });

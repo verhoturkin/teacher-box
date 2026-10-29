@@ -192,6 +192,40 @@ describe('AssignmentCreateDialog', () => {
     expect(dialog.visible()).toBe(false);
   });
 
+  it('keeps the chosen recipients with the draft, still giving it to nobody', async () => {
+    setup();
+    const dialog = await open();
+    dialog.text.setValue('Дроби');
+    dialog.members.setValue([{ kind: 'STUDENT', id: 's-1' }]);
+
+    click('Сохранить черновик');
+    backend
+      .expectOne({ method: 'POST', url: ASSIGNMENTS })
+      .flush(assignmentDetails({ id: 'a-9', tasks: [] }));
+    await fixture.whenStable();
+
+    const kept = backend.expectOne({ method: 'PUT', url: `${ASSIGNMENTS}/a-9/draft-students` });
+    expect(kept.request.body).toEqual({ studentIds: ['s-1'] });
+    kept.flush(assignmentDetails({ id: 'a-9', tasks: [], draftStudentIds: ['s-1'] }));
+    backend.expectNone(`${ASSIGNMENTS}/a-9/students`);
+  });
+
+  it('shows the chosen ones as input chips and removes one with «×»', async () => {
+    setup();
+    const dialog = await open();
+    dialog.members.setValue([{ kind: 'STUDENT', id: 's-1' }]);
+    await fixture.whenStable();
+
+    expect(document.body.querySelector('tb-input-chip')?.textContent).toContain('Анна');
+    expect(readableText(document.body)).toContain('Ученик или группа');
+
+    click('Убрать: Анна');
+    await fixture.whenStable();
+
+    expect(dialog.members.value).toEqual([]);
+    expect(document.body.querySelector('tb-input-chip')).toBeNull();
+  });
+
   it('hands everything to the full editor', async () => {
     setup();
     const dialog = await open();

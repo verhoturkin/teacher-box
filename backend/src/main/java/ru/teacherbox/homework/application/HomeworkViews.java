@@ -140,7 +140,8 @@ public final class HomeworkViews {
             List<VideoView> videos,
             List<QuestionView> questions,
             RevealRule quizReveal,
-            @Nullable Integer quizAttempts) {
+            @Nullable Integer quizAttempts,
+            List<UUID> draftStudentIds) {
     }
 
     /**

@@ -584,6 +584,17 @@ action — «Изменить» next to «Проверить N работ» (hom
   phone, homework sketches): a second filter after the set, a trailing drop-down arrow and no check;
   it opens a menu (`p-menu`), and while a choice is in force it is selected and names it («Кому:
   Анна»), so the filter in force is visible (*ours*).
+- **Assist chips** `tb-assist-chip` (`@shared/ui/assist-chip`, **M3** assist chip: a smart,
+  optional action next to a field — «Файл», «Учебник», «Видео» under a text): 32 dp, 8 dp corners, 1 dp
+  outline-variant, on-surface Label Large, a leading 18 dp primary icon (`icon="attach_file"`); hover
+  state layer; disabled 38 %. `[dashed]="true"` — the chip that adds a missing entity («Ученик или
+  группа»; dashed border, *ours*). A 48 dp target as in filter chips. Not an outlined button (§8): it
+  needs no filled action beside it.
+- **Input chips** `tb-input-chip` (`@shared/ui/input-chip`, **M3** input chip: a chosen entity the user
+  can remove): 32 dp, 8 dp corners, outline-variant border, a leading 24 dp `tb-avatar` or 18 dp icon
+  (`<… lead>`), the label, a trailing 18 dp «×» button named «Убрать: <name>». With a dashed assist chip
+  at the end it is the «Кому» field of the quick assignment dialog: `tb-member-picker` `[bare]` keeps
+  the data and the panel (`open()`), the chips are the field (*ours*).
 - **Material card** `tb-material-card` (`@shared/ui`): corner 20, surface-container-low, a preview
   on top (8:5; fetched as a blob by `tb-blob-image`, the kind icon while there is none; an external
   board shows a tonal tile with the service tag), the title (Title Medium) and «кому · дата» under

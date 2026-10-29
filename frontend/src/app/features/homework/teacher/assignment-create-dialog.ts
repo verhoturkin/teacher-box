@@ -39,7 +39,10 @@ import { ScheduleApi, ScheduledLesson } from '@features/schedule/parts';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { SHARED_T } from '@shared/i18n/texts';
 import { TbDialog, DialogFooter, DialogHeaderActions } from '@shared/ui/dialog/dialog';
+import { AssistChip } from '@shared/ui/assist-chip';
+import { Avatar } from '@shared/ui/avatar';
 import { FilterChip, FilterChips } from '@shared/ui/filter-chips';
+import { InputChip } from '@shared/ui/input-chip';
 import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, BoundTextbook } from '../data-access/homework.models';
@@ -75,7 +78,10 @@ const WEEK = 7 * 24 * 60 * 60 * 1000;
     Menu,
     Textarea,
     ModalDrawer,
+    AssistChip,
+    Avatar,
     FilterChips,
+    InputChip,
     MemberPicker,
     HomeworkAiPanel,
     ToBoardDialog,
@@ -123,13 +129,34 @@ const WEEK = 7 * 24 * 60 * 60 * 1000;
       <div class="tb-create">
         <div class="tb-field">
           <label for="create-whom">{{ t.whom }}</label>
-          <tb-member-picker
-            inputId="create-whom"
-            [formControl]="members"
-            [placeholder]="t.whomPlaceholder"
-            [students]="studentOptions()"
-            [groups]="groups()"
-          />
+          <div class="tb-create__chips">
+            @for (member of chosen(); track member.kind + member.id) {
+              <tb-input-chip
+                [label]="memberLabel(member)"
+                [removeLabel]="t.removeMember(memberName(member))"
+                (removed)="removeMember(member)"
+              >
+                @if (member.kind === 'GROUP') {
+                  <i lead class="tb-i tb-i-groups" aria-hidden="true"></i>
+                } @else {
+                  <tb-avatar lead [name]="memberName(member)" size="1.5rem" />
+                }
+              </tb-input-chip>
+            }
+            <span class="tb-create__add">
+              <tb-assist-chip icon="add" [dashed]="true" (click)="whom.open()">
+                {{ t.whomPlaceholder }}
+              </tb-assist-chip>
+              <tb-member-picker
+                #whom
+                inputId="create-whom"
+                [bare]="true"
+                [formControl]="members"
+                [students]="studentOptions()"
+                [groups]="groupOptions()"
+              />
+            </span>
+          </div>
         </div>
 
         <div class="tb-field">
@@ -240,54 +267,32 @@ const WEEK = 7 * 24 * 60 * 60 * 1000;
         />
         <div class="tb-create__assist" role="group" [attr.aria-label]="t.materials">
           @if (compact()) {
-            <p-button
-              [label]="t.photo"
-              icon="tb-i tb-i-photo_camera"
-              severity="secondary"
-              variant="outlined"
-              (onClick)="photoPicker.choose()"
-            />
+            <tb-assist-chip icon="photo_camera" (click)="photoPicker.choose()">
+              {{ t.photo }}
+            </tb-assist-chip>
           }
-          <p-button
-            [label]="t.file"
-            icon="tb-i tb-i-attach_file"
-            severity="secondary"
-            variant="outlined"
-            (onClick)="filePicker.choose()"
-          />
-          <p-button
-            [label]="t.textbook"
-            icon="tb-i tb-i-menu_book"
-            severity="secondary"
-            variant="outlined"
-            (onClick)="addTextbook()"
-          />
+          <tb-assist-chip icon="attach_file" (click)="filePicker.choose()">
+            {{ t.file }}
+          </tb-assist-chip>
+          <tb-assist-chip icon="menu_book" (click)="addTextbook()">
+            {{ t.textbook }}
+          </tb-assist-chip>
           @if (!compact()) {
-            <p-button
-              [label]="t.video"
-              icon="tb-i tb-i-smart_display"
-              severity="secondary"
-              variant="outlined"
+            <tb-assist-chip
+              icon="smart_display"
               [disabled]="videos().length >= maxVideos"
-              (onClick)="addVideo()"
-            />
+              (click)="addVideo()"
+            >
+              {{ t.video }}
+            </tb-assist-chip>
           }
-          <p-button
-            [label]="compact() ? t.quizShort : t.quiz"
-            icon="tb-i tb-i-quiz"
-            severity="secondary"
-            variant="outlined"
-            (onClick)="openFullscreen()"
-          />
+          <tb-assist-chip icon="quiz" (click)="openFullscreen()">
+            {{ compact() ? t.quizShort : t.quiz }}
+          </tb-assist-chip>
           @if (!compact()) {
-            <p-button
-              [label]="t.board"
-              icon="tb-i tb-i-co_present"
-              severity="secondary"
-              variant="outlined"
-              [disabled]="onBoard()"
-              (onClick)="onBoard.set(true)"
-            />
+            <tb-assist-chip icon="co_present" [disabled]="onBoard()" (click)="onBoard.set(true)">
+              {{ t.board }}
+            </tb-assist-chip>
           }
         </div>
       </div>
@@ -407,6 +412,17 @@ const WEEK = 7 * 24 * 60 * 60 * 1000;
       gap: var(--tb-space-3);
     }
 
+    .tb-create__chips {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--tb-space-2);
+    }
+
+    .tb-create__add {
+      position: relative;
+    }
+
     .tb-create__assist {
       display: flex;
       flex-wrap: wrap;
@@ -441,7 +457,7 @@ export class AssignmentCreateDialog {
   protected readonly dueDate = new FormControl<Date | null>(null);
   protected readonly textValue = toSignal(this.text.valueChanges, { initialValue: '' });
   protected readonly titleValue = computed(() => titleOf(this.textValue()));
-  private readonly chosen = toSignal(this.members.valueChanges, { initialValue: [] });
+  protected readonly chosen = toSignal(this.members.valueChanges, { initialValue: [] });
   private readonly picked = toSignal(this.dueDate.valueChanges, { initialValue: null });
 
   private readonly students = signal<readonly { id: string; name: string }[]>([]);
@@ -595,6 +611,33 @@ export class AssignmentCreateDialog {
     });
   }
 
+  protected readonly groupOptions = computed(() =>
+    this.groups().map((group) => ({ id: group.id, name: group.name })),
+  );
+
+  protected memberName(member: MemberSelection): string {
+    return member.kind === 'GROUP'
+      ? (this.groups().find((group) => group.id === member.id)?.name ?? '')
+      : (this.students().find((student) => student.id === member.id)?.name ?? '');
+  }
+
+  /** A group carries the number of its students. */
+  protected memberLabel(member: MemberSelection): string {
+    const group =
+      member.kind === 'GROUP'
+        ? this.groups().find((candidate) => candidate.id === member.id)
+        : null;
+    return group === undefined || group === null
+      ? this.memberName(member)
+      : `${group.name} · ${String(group.members.length)}`;
+  }
+
+  protected removeMember(member: MemberSelection): void {
+    this.members.setValue(
+      this.members.value.filter((chosen) => chosen.kind !== member.kind || chosen.id !== member.id),
+    );
+  }
+
   protected chooseDue(choice: Due): void {
     this.dueChoice.set(choice);
   }
@@ -704,7 +747,11 @@ export class AssignmentCreateDialog {
                 ? this.api
                     .assignStudents(created.id, students)
                     .pipe(map((assignment) => ({ assignment, complete })))
-                : of({ assignment: created, complete }),
+                : students.length === 0
+                  ? of({ assignment: created, complete })
+                  : this.api
+                      .saveDraftStudents(created.id, students)
+                      .pipe(map((assignment) => ({ assignment, complete }))),
             ),
           ),
         ),

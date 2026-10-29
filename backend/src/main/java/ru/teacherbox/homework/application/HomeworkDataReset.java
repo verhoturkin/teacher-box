@@ -15,6 +15,7 @@ class HomeworkDataReset implements DataReset {
     private static final List<String> TABLES = List.of("homework.quiz_answers", "homework.quiz_attempts",
             "homework.assignment_questions", "homework.attachments", "homework.submissions",
             "homework.tasks", "homework.assignment_textbooks", "homework.assignment_videos",
+            "homework.assignment_draft_students",
             "homework.assignments");
 
     private final JdbcClient jdbc;
@@ -35,6 +36,7 @@ class HomeworkDataReset implements DataReset {
         jdbc.sql("delete from homework.assignment_questions").update();
         jdbc.sql("delete from homework.attachments").update();
         jdbc.sql("delete from homework.submissions").update();
+        jdbc.sql("delete from homework.assignment_draft_students").update();
         jdbc.sql("delete from homework.tasks").update();
         jdbc.sql("delete from homework.assignment_textbooks").update();
         jdbc.sql("delete from homework.assignment_videos").update();

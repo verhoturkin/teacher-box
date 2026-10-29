@@ -32,6 +32,7 @@ import ru.teacherbox.homework.domain.quiz.RevealRule;
 import ru.teacherbox.homework.persistence.AssignmentRepository;
 import ru.teacherbox.homework.persistence.AttachmentRepository;
 import ru.teacherbox.homework.persistence.BoundTextbookRepository;
+import ru.teacherbox.homework.persistence.DraftStudentRepository;
 import ru.teacherbox.homework.persistence.QuestionRepository;
 import ru.teacherbox.homework.persistence.SubmissionRepository;
 import ru.teacherbox.homework.persistence.TaskRepository;
@@ -63,12 +64,14 @@ public class AssignmentService {
     private final AttachmentRepository files;
     private final QuestionRepository questions;
     private final VideoRepository videoLinks;
+    private final DraftStudentRepository draftStudents;
 
     public AssignmentService(AssignmentRepository assignments, TaskRepository tasks,
             SubmissionRepository submissions, AttachmentService attachments, TextbookBindings textbooks,
             AssignmentVideos videos, AssignmentQuiz quiz, UserDirectory directory, ApplicationEventPublisher events, Clock clock,
             BoundTextbookRepository boundTextbooks, AttachmentRepository files, QuestionRepository questions,
-            VideoRepository videoLinks) {
+            VideoRepository videoLinks, DraftStudentRepository draftStudents) {
+        this.draftStudents = draftStudents;
         this.boundTextbooks = boundTextbooks;
         this.files = files;
         this.questions = questions;
@@ -172,6 +175,18 @@ public class AssignmentService {
                 .map(HomeworkTask::studentId)
                 .collect(Collectors.toSet());
         assignTo(assignment, studentIds.stream().filter(id -> !assigned.contains(id)).toList(), clock.instant());
+        return details(assignment);
+    }
+
+    /** Remembers whom a draft is for; they get nothing until the assignment is given out. */
+    @Transactional
+    public AssignmentDetails saveDraftStudents(UUID assignmentId, Collection<UUID> studentIds) {
+        Assignment assignment = load(assignmentId);
+        for (UUID studentId : new LinkedHashSet<>(studentIds)) {
+            directory.findStudent(studentId)
+                    .orElseThrow(() -> new NotFoundException("student.not-found", "Student not found"));
+        }
+        draftStudents.replace(assignmentId, new LinkedHashSet<>(studentIds));
         return details(assignment);
     }
 
@@ -288,6 +303,7 @@ public class AssignmentService {
             events.publishEvent(new HomeworkAssigned(task.id(), assignment.id(), studentId, assignment.title(),
                     assignment.dueAt(), now));
         }
+        draftStudents.remove(assignment.id(), studentIds);
     }
 
     private AssignmentDetails details(Assignment assignment) {
@@ -312,7 +328,8 @@ public class AssignmentService {
                         .toList(),
                 textbooks.of(assignment.id()),
                 videos.of(assignment.id()),
-                quiz.of(assignment.id()), assignment.quizReveal(), assignment.quizAttempts());
+                quiz.of(assignment.id()), assignment.quizReveal(), assignment.quizAttempts(),
+                draftStudents.findByAssignment(assignment.id()));
     }
 
     private Assignment load(UUID assignmentId) {

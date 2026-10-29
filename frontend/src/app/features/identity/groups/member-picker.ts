@@ -8,6 +8,7 @@ import {
   inject,
   input,
   signal,
+  viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ControlValueAccessor, FormsModule, NgControl } from '@angular/forms';
@@ -32,8 +33,10 @@ export interface MemberPickerOption {
   selector: 'tb-member-picker',
   imports: [FormsModule, MultiSelect],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class.tb-member-picker--bare]': 'bare()' },
   template: `
     <p-multiselect
+      #select
       [inputId]="inputId()"
       [ariaLabelledBy]="labelledBy()"
       [ngModel]="selected()"
@@ -69,6 +72,16 @@ export interface MemberPickerOption {
       display: block;
       min-width: 0;
     }
+
+    /* the chips are the caller's: only the panel is wanted, under the element that opens it */
+    :host(.tb-member-picker--bare) {
+      position: absolute;
+      inset-inline-start: 0;
+      inline-size: 16rem;
+      block-size: 0;
+      overflow: hidden;
+      visibility: hidden;
+    }
   `,
 })
 export class MemberPicker implements ControlValueAccessor, OnInit {
@@ -83,6 +96,9 @@ export class MemberPicker implements ControlValueAccessor, OnInit {
   readonly groups = input<readonly MemberPickerOption[]>([]);
   /** Undefined permits any number; one supports callers with a single recipient. */
   readonly selectionLimit = input<number>();
+  /** No visible field: the caller shows the chosen ones and calls `open()`. */
+  readonly bare = input(false);
+  private readonly select = viewChild(MultiSelect);
 
   protected readonly selected = signal<readonly MemberSelection[]>([]);
   protected readonly disabled = signal(false);
@@ -146,6 +162,11 @@ export class MemberPicker implements ControlValueAccessor, OnInit {
     this.selected.set(selected);
     this.changed(selected);
     this.touch();
+  }
+
+  /** Opens the panel of the picker. */
+  open(): void {
+    this.select()?.show();
   }
 
   protected touch(): void {

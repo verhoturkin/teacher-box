@@ -72,6 +72,7 @@ export function assignmentDetails(overrides: Partial<AssignmentDetails> = {}): A
     questions: [],
     quizReveal: 'AFTER_SUBMIT',
     quizAttempts: 1,
+    draftStudentIds: [],
     tasks: [
       {
         taskId: 't-1',

@@ -263,6 +263,8 @@ export interface AssignmentDetails {
   readonly quizReveal: QuizReveal;
   /** `null` — unlimited. */
   readonly quizAttempts: number | null;
+  /** Whom a draft is meant for; empty once given out. */
+  readonly draftStudentIds: string[];
 }
 
 export interface Submission {
