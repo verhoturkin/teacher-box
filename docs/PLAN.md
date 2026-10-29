@@ -26,7 +26,7 @@ a separate topic, and its summary lives in the lesson card. New ADR for the titl
 
 ### 332. Student card
 
-- [ ] 332.1 **F** «Ближайшие занятия» (`schedule/teacher/student-lessons-card.ts`) as an M3 list:
+- [x] 332.1 **F** «Ближайшие занятия» (`schedule/teacher/student-lessons-card.ts`) as an M3 list:
   a 40 px icon circle (the nearest one primary), «Сегодня, 15:00–16:00» and «title · topic»; the
   custom date tile goes.
 - [ ] 332.2 **B F** «Предстоящие» (`student-lessons-tab.ts`): a series is one row («Каждый вт и чт,

@@ -35,7 +35,8 @@ function midnight(date: Date): number {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 }
 
-function dayCaption(start: Date, now: Date): string {
+/** «Сегодня», «Завтра» or «чт, 16.10». */
+export function dayCaption(start: Date, now: Date): string {
   // rounded: a day with a DST change is 23 or 25 hours long
   const days = Math.round((midnight(start) - midnight(now)) / DAY_MS);
   if (days === 0) {

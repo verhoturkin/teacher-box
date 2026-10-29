@@ -139,8 +139,6 @@ export const en: Translation<typeof ru> = {
     title: 'Next lessons',
     what: 'lessons',
     nothing: 'No lessons planned',
-    noTopic: 'No topic',
-    recurring: 'recurring',
     more: (count: number) => `${String(count)} more planned`,
   },
   lessonsTab: {

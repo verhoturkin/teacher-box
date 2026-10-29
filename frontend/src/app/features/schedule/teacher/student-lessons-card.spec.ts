@@ -43,7 +43,12 @@ describe('StudentLessonsCard', () => {
 
   it('lists the next planned lessons of the student, the nearest first', async () => {
     await render();
-    const later = scheduledLesson({ id: 'later', ...inHours(48), title: 'Теорема Виета' });
+    const later = scheduledLesson({
+      id: 'later',
+      ...inHours(48),
+      title: 'Теорема Виета',
+      topic: 'Корни',
+    });
     const group = groupLesson({ id: 'group', ...inHours(24), seriesId: 'series-1' });
     answer([
       later,
@@ -57,10 +62,26 @@ describe('StudentLessonsCard', () => {
       readableText(row),
     );
     expect(rows).toHaveLength(2);
-    expect(rows[0]).toContain('Тема не задана Группа «ОГЭ» · 60 мин · регулярное');
-    expect(rows[1]).toContain('Теорема Виета 60 мин');
+    expect(rows[0]).toContain('Завтра, ');
+    expect(rows[0]).toContain(' Группа «ОГЭ»');
+    expect(rows[1]).toContain('Теорема Виета · Корни');
   });
 
+  it('highlights the nearest lesson and says «Сегодня» with the time range', async () => {
+    await render();
+    const soon = scheduledLesson({ id: 'soon', ...inHours(0.5) });
+    answer([scheduledLesson({ id: 'far', ...inHours(72) }), soon]);
+    await fixture.whenStable();
+
+    const leads = Array.from(hostElement(fixture).querySelectorAll('.tb-list__lead'));
+    expect(leads.map((lead) => lead.classList.contains('tb-list__lead--accent'))).toEqual([
+      true,
+      false,
+    ]);
+    expect(readableText(requireElement(hostElement(fixture), 'li', HTMLLIElement))).toMatch(
+      /^Сегодня, \d\d:\d\d–\d\d:\d\d/,
+    );
+  });
   it('shows three and counts the rest', async () => {
     await render();
     answer(
@@ -112,7 +133,7 @@ describe('StudentLessonsCard', () => {
     await fixture.whenStable();
 
     expect(readableText(requireElement(hostElement(fixture), 'li', HTMLLIElement))).toContain(
-      'Дроби 60 мин',
+      'Дроби',
     );
   });
 });

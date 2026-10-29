@@ -222,7 +222,8 @@ active on both, `NavItem.alsoActive`).
   deactivated student keeps only «Оплата»; on compact all three tonal, equal width. Group actions:
   tonal «Написать» (`[toGroup]`, hidden without members), filled «Занятие» (`[groupId]`), «⋮» «В
   архив…» / «Вернуть из архива»; an archived group has neither action.
-- **Student tabs** (`card-tabs.ts`, `?tab=`): «Обзор» — «Ближайшие занятия» (3 of 60 days, «Ещё
+- **Student tabs** (`card-tabs.ts`, `?tab=`): «Обзор» — «Ближайшие занятия» (3 of 60 days, M3 two-line
+  items: «Сегодня, 15:00–16:00» / title · topic, the nearest lead in primary container; «Ещё
   запланировано: N»), «Задания» (open ones, works to review first; 5 + «Ещё открытых: N»), «Баланс»
   (figure, price, last 3 operations), «Связь» (`tb-student-channels`, `tb-room-link`); «Занятия» —
   «Предстоящие» (180 days ahead, cancelled rows inactive) and the feed «История» of held lessons

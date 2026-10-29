@@ -136,8 +136,6 @@ export const ru = {
     title: 'Ближайшие занятия',
     what: 'занятия',
     nothing: 'Занятий не запланировано',
-    noTopic: 'Тема не задана',
-    recurring: 'регулярное',
     more: (count: number) => `Ещё запланировано: ${String(count)}`,
   },
   lessonsTab: {
