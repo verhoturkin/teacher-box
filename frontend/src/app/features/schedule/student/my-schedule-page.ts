@@ -639,7 +639,7 @@ export class MySchedulePage implements OnInit {
       entry.groupId === null
         ? null
         : lessonWith({ groupId: entry.groupId, groupName: entry.groupName, studentName: null }),
-      entry.topic ?? T.lessonsTab.noTopic,
+      entry.title ?? T.lessonsTab.noTopic,
     ]
       .filter((part) => part !== null)
       .join(' · ');

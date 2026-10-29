@@ -65,7 +65,7 @@ test.beforeAll(async ({ request }) => {
     studentId,
     startsAt: startsAt.toISOString(),
     durationMinutes: 60,
-    topic: 'Герой',
+    title: 'Герой',
     allowOverlap: true,
   });
 });

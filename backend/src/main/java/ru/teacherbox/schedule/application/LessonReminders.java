@@ -55,7 +55,7 @@ public class LessonReminders {
             int nearest = due.getFirst();
             if (!already.contains(nearest)) {
                 events.publishEvent(new LessonStartingSoon(lesson.id(), lesson.groupId(), lesson.expectedIds(),
-                        lesson.startsAt(), lesson.durationMinutes(), lesson.topic(),
+                        lesson.startsAt(), lesson.durationMinutes(), lesson.title(), lesson.topic(),
                         directory.namesOf(List.of(lesson)).joinUrl(lesson),
                         Duration.ofMinutes(nearest), nearest == advances.getFirst().toMinutes(), now));
                 sent++;

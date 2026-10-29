@@ -65,7 +65,7 @@ describe('LessonCard', () => {
   it('lists the time, the topic, the room and the boards of a lesson to come', async () => {
     const root = await show(
       scheduledLesson({
-        topic: 'Дроби',
+        title: 'Дроби',
         joinUrl: 'https://zoom.us/j/1',
         originalStartsAt: at(2026, 9, 30, 17),
       }),
@@ -183,7 +183,7 @@ describe('LessonCard', () => {
     it('shows the facts, the own pending request and no teacher’s controls', async () => {
       const root = await show(
         scheduledLesson({
-          topic: 'Дроби',
+          title: 'Дроби',
           joinUrl: 'https://zoom.us/j/1',
           pendingRequests: [changeRequest()],
         }),

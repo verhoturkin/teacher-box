@@ -79,10 +79,10 @@ class ScheduleNotificationsIntegrationTests {
     void newLessonsAndSeries(Scenario scenario) {
         UUID student = directory.addStudent("Новичок");
         InboxNotification single = latest(scenario, student,
-                new LessonScheduled(UUID.randomUUID(), null, List.of(student), START, 60, "Дроби", Instant.now()));
+                new LessonScheduled(UUID.randomUUID(), null, List.of(student), START, 60, "Английский", "Дроби", Instant.now()));
         assertThat(single.kind()).isEqualTo(NotificationKind.SCHEDULE_LESSON_PLANNED);
         assertThat(single.title()).isEqualTo("Новое занятие: четверг, 01.10 в 18:00");
-        assertThat(single.body()).isEqualTo("Тема: Дроби");
+        assertThat(single.body()).isEqualTo("Занятие «Английский». Тема: Дроби.");
         assertThat(single.link()).isEqualTo("/cabinet/schedule");
 
         UUID regular = directory.addStudent("Регулярный");
@@ -235,14 +235,14 @@ class ScheduleNotificationsIntegrationTests {
     void remindersGoToTheStudentAndTheLastOneToTheTeacher(Scenario scenario) {
         UUID student = directory.addStudent("Напомнить");
         InboxNotification early = latest(scenario, student, new LessonStartingSoon(UUID.randomUUID(), null, List.of(student), START,
-                60, null, null, Duration.ofHours(24), false, Instant.now()));
+                60, null, null, null, Duration.ofHours(24), false, Instant.now()));
         assertThat(early.kind()).isEqualTo(NotificationKind.SCHEDULE_REMINDER);
         assertThat(early.title()).isEqualTo("Скоро занятие: четверг, 01.10 в 18:00");
         assertThat(early.body()).isEqualTo("Через 24 часа.");
         assertThat(teacherNotifications("Скоро урок: Напомнить, четверг, 01.10 в 18:00")).isEmpty();
 
         UUID last = directory.addStudent("Последнее");
-        scenario.publish(new LessonStartingSoon(UUID.randomUUID(), null, List.of(last), START, 60, "Дроби",
+        scenario.publish(new LessonStartingSoon(UUID.randomUUID(), null, List.of(last), START, 60, null, "Дроби",
                         "https://zoom.us/j/1", Duration.ofHours(1), true, Instant.now()))
                 .andWaitForStateChange(() -> teacherNotifications("Скоро урок: Последнее, четверг, 01.10 в 18:00"),
                         list -> !list.isEmpty())
@@ -257,9 +257,9 @@ class ScheduleNotificationsIntegrationTests {
         UUID student = directory.addStudent("Newcomer");
         directory.setLanguage(student, Language.EN);
         InboxNotification single = latest(scenario, student,
-                new LessonScheduled(UUID.randomUUID(), null, List.of(student), START, 60, "Fractions", Instant.now()));
+                new LessonScheduled(UUID.randomUUID(), null, List.of(student), START, 60, null, "Fractions", Instant.now()));
         assertThat(single.title()).isEqualTo("New lesson: Thursday, 01.10 at 18:00");
-        assertThat(single.body()).isEqualTo("Topic: Fractions");
+        assertThat(single.body()).isEqualTo("Topic: Fractions.");
 
         UUID regular = directory.addStudent("Regular");
         directory.setLanguage(regular, Language.EN);
@@ -272,10 +272,10 @@ class ScheduleNotificationsIntegrationTests {
         UUID reminded = directory.addStudent("Reminded");
         directory.setLanguage(reminded, Language.EN);
         InboxNotification soon = latest(scenario, reminded, new LessonStartingSoon(UUID.randomUUID(), null,
-                List.of(reminded), START, 60, "Fractions", "https://zoom.us/j/1", Duration.ofHours(24), false,
+                List.of(reminded), START, 60, "Maths", "Fractions", "https://zoom.us/j/1", Duration.ofHours(24), false,
                 Instant.now()));
         assertThat(soon.title()).isEqualTo("Lesson soon: Thursday, 01.10 at 18:00");
-        assertThat(soon.body()).isEqualTo("In 24 hours. Topic: Fractions. Lesson link: https://zoom.us/j/1");
+        assertThat(soon.body()).isEqualTo("In 24 hours. Lesson “Maths”. Topic: Fractions. Lesson link: https://zoom.us/j/1");
 
         directory.setLanguage(directory.teacherId(), Language.EN);
         try {
@@ -297,7 +297,7 @@ class ScheduleNotificationsIntegrationTests {
         UUID boris = directory.addStudent("Борис");
         UUID group = groups.addGroup("ОГЭ", anna, boris);
 
-        scenario.publish(new LessonScheduled(UUID.randomUUID(), group, List.of(anna, boris), START, 90, null,
+        scenario.publish(new LessonScheduled(UUID.randomUUID(), group, List.of(anna, boris), START, 90, null, null,
                         Instant.now()))
                 .andWaitForStateChange(() -> inbox.findPage(boris, 0, 10), list -> !list.isEmpty())
                 .andVerify(list -> assertThat(list.getFirst().body()).isEqualTo("Группа «ОГЭ»."));
@@ -310,7 +310,7 @@ class ScheduleNotificationsIntegrationTests {
                         .isEqualTo("Группа «ОГЭ». Было: четверг, 01.10 в 18:00."));
         assertThat(inbox.findPage(anna, 0, 10)).as("the student who asked learns from the answer").hasSize(1);
 
-        scenario.publish(new LessonStartingSoon(UUID.randomUUID(), group, List.of(boris), START, 90, null, null,
+        scenario.publish(new LessonStartingSoon(UUID.randomUUID(), group, List.of(boris), START, 90, null, null, null,
                         Duration.ofHours(1), true, Instant.now()))
                 .andWaitForStateChange(() -> teacherNotifications("Скоро урок: группа «ОГЭ», четверг, 01.10 в 18:00"),
                         list -> !list.isEmpty())

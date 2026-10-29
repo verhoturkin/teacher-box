@@ -120,7 +120,7 @@ class SeriesTest {
         assertThat(restored.sameOwner(group, null)).isFalse();
         assertThatThrownBy(() -> RepeatRule.create(UUID.randomUUID(), null, null, Set.of(DayOfWeek.MONDAY),
                 LocalTime.NOON, 60, 1, THURSDAY, null, null, null, NOW)).isInstanceOf(IllegalArgumentException.class);
-        assertThat(restored.topic()).isEqualTo("Английский");
+        assertThat(restored.title()).isEqualTo("Английский");
         assertThat(restored.meetingUrl()).isEqualTo("https://zoom.us/j/1");
         assertThat(restored.durationMinutes()).isEqualTo(45);
         assertThat(restored.intervalWeeks()).isEqualTo(1);

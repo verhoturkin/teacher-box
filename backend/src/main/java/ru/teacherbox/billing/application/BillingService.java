@@ -107,7 +107,7 @@ public class BillingService {
         UUID groupId = completed.groupId();
         Money price = groupId == null ? account.lessonPrice() : groupPrices.lessonPrice(groupId);
         Lesson lesson = Lesson.record(Ids.newId(), completed.studentId(), completed.date(),
-                completed.durationMinutes(), price, completed.topic(),
+                completed.durationMinutes(), price, completed.title(),
                 completed.missed() ? LessonStatus.MISSED : LessonStatus.CONDUCTED, now);
         insert(lesson, completed.completionId(), now);
     }

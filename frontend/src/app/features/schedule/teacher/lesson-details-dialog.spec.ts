@@ -110,7 +110,7 @@ describe('LessonDetailsDialog', () => {
   }
 
   it('names who the lesson is with and lists its facts', async () => {
-    await open(scheduledLesson({ topic: 'Дроби', joinUrl: 'https://zoom.us/j/1' }));
+    await open(scheduledLesson({ title: 'Дроби', joinUrl: 'https://zoom.us/j/1' }));
 
     const title = document.body.querySelector('.p-dialog-title');
     expect(title?.textContent).toContain('Иван Петров');
@@ -514,7 +514,7 @@ describe('LessonDetailsDialog', () => {
     const lesson = scheduledLesson({ notes: [] });
     await open(lesson, PAST, { summary: 'Из деталей' });
 
-    fixture.componentRef.setInput('lesson', scheduledLesson({ topic: 'Новая тема', notes: [] }));
+    fixture.componentRef.setInput('lesson', scheduledLesson({ title: 'Новая тема', notes: [] }));
     await fixture.whenStable();
 
     expect(bodyText()).toContain('Из деталей');

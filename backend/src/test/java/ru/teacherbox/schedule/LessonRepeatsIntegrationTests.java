@@ -69,7 +69,7 @@ class LessonRepeatsIntegrationTests {
         assertThat(list(student, start)).extracting(row -> row.get("id")).containsExactly(root, protectedId);
         assertThat(mvc.get().uri("/api/teacher/schedule/lessons/" + protectedId)
                 .with(TestUsers.teacher(directory.teacherId()))).hasStatusOk().bodyJson()
-                .extractingPath("$.topic").isEqualTo("Индивидуальная тема");
+                .extractingPath("$.title").isEqualTo("Индивидуальная тема");
     }
 
     @Test
@@ -157,14 +157,28 @@ class LessonRepeatsIntegrationTests {
         assertThat(list(student, start)).hasSize(4);
     }
 
+    @Test
+    void theTitleRepeatsButTheTopicStaysWithItsLesson() throws Exception {
+        UUID student = directory.addStudent("Название");
+        Instant start = clock.instant().plusSeconds(86400L * 2);
+        assertThat(post("/lessons", """
+                {"studentId":"%s","startsAt":"%s","durationMinutes":60,"repeatWeeks":1,"allowOverlap":true,
+                 "title":"Английский","topic":"Времена"}
+                """.formatted(student, start))).hasStatus(HttpStatus.CREATED);
+        List<Map<String, Object>> lessons = list(student, start);
+        assertThat(lessons).hasSizeGreaterThan(1).allSatisfy(row -> assertThat(row.get("title")).isEqualTo("Английский"));
+        assertThat(lessons).extracting(row -> row.get("topic")).first().isEqualTo("Времена");
+        assertThat(lessons.subList(1, lessons.size())).allSatisfy(row -> assertThat(row.get("topic")).isNull());
+    }
+
     private String input(UUID student, Instant start, int weeks) {
         return "{\"studentId\":\"%s\",\"startsAt\":\"%s\",\"durationMinutes\":60,\"repeatWeeks\":%d,\"allowOverlap\":true}"
                 .formatted(student, start, weeks);
     }
 
-    private String edit(Instant start, int weeks, String scope, String topic) {
-        return "{\"startsAt\":\"%s\",\"durationMinutes\":60,\"repeatWeeks\":%d,\"scope\":\"%s\",\"topic\":\"%s\",\"allowOverlap\":true}"
-                .formatted(start, weeks, scope, topic);
+    private String edit(Instant start, int weeks, String scope, String title) {
+        return "{\"startsAt\":\"%s\",\"durationMinutes\":60,\"repeatWeeks\":%d,\"scope\":\"%s\",\"title\":\"%s\",\"allowOverlap\":true}"
+                .formatted(start, weeks, scope, title);
     }
 
     private MvcTestResult post(String path, String json) {

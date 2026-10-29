@@ -28,6 +28,7 @@ function entry(overrides: Partial<HistoryEntry> = {}): HistoryEntry {
   return {
     lessonId: 'h-1',
     startsAt: inHours(-24).startsAt,
+    title: null,
     topic: null,
     status: 'CONDUCTED',
     groupId: null,
@@ -108,7 +109,7 @@ describe('StudentLessonsTab', () => {
 
   it('lists the lessons ahead, the nearest first, with the status', async () => {
     await render();
-    const later = scheduledLesson({ id: 'later', ...inHours(48), topic: 'Теорема Виета' });
+    const later = scheduledLesson({ id: 'later', ...inHours(48), title: 'Теорема Виета' });
     const cancelled = scheduledLesson({ id: 'cancelled', ...inHours(24), status: 'CANCELLED' });
     const past = scheduledLesson({ id: 'past', ...inHours(-3) });
     const recurring = groupLesson({ id: 'group', ...inHours(72), seriesId: 'series-1' });
@@ -126,7 +127,7 @@ describe('StudentLessonsTab', () => {
     await render();
     const full = entry({
       lessonId: 'full',
-      topic: 'Дроби',
+      title: 'Дроби',
       summary: 'Сложили **дроби**',
       nextPlan: 'Разобрать степени',
       note: 'Быстро устаёт',
@@ -195,7 +196,7 @@ describe('StudentLessonsTab', () => {
     expect(request.request.params.get('groupId')).toBe('g-1');
     request.flush([lesson]);
     historyRead().flush([
-      entry({ groupId: 'g-1', groupName: 'ОГЭ', topic: 'Итоги', summary: 'Повторили' }),
+      entry({ groupId: 'g-1', groupName: 'ОГЭ', title: 'Итоги', summary: 'Повторили' }),
     ]);
     await fixture.whenStable();
 

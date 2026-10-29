@@ -74,7 +74,7 @@ class TeacherLessons {
     /** «пн 29.09, 18:30–19:30, Мария — Дроби». */
     String describe(LessonView lesson, Language language) {
         String text = ChatText.range(lesson.startsAt(), lesson.endsAt(), zone, language) + ", " + who(lesson, language);
-        return lesson.topic() == null ? text : text + " — " + lesson.topic();
+        return lesson.title() == null ? text : text + " — " + lesson.title();
     }
 
     /** «18:30 Мария», for a button. */

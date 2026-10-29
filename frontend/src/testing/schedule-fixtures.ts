@@ -33,6 +33,7 @@ export function scheduledLesson(overrides: Partial<ScheduledLesson> = {}): Sched
     startsAt: at(2026, 10, 1, 18),
     endsAt: at(2026, 10, 1, 19),
     durationMinutes: 60,
+    title: null,
     topic: null,
     meetingUrl: null,
     joinUrl: null,

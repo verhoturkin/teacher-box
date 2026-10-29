@@ -23,7 +23,7 @@ public class RepeatRuleRepository {
 
     private static final String SELECT = """
             select id, student_id, group_id, weekdays, start_time, duration_minutes, interval_weeks, starts_on,
-                   ends_on, topic, meeting_url, generated_until, created_at, updated_at, version, origin_date
+                   ends_on, title, meeting_url, generated_until, created_at, updated_at, version, origin_date
             from schedule.repeat_rules
             """;
 
@@ -36,10 +36,10 @@ public class RepeatRuleRepository {
     public void insert(RepeatRule series) {
         jdbc.sql("""
                 insert into schedule.repeat_rules (id, student_id, group_id, weekdays, start_time, duration_minutes,
-                    interval_weeks, starts_on, ends_on, topic, meeting_url, generated_until, created_at, updated_at,
+                    interval_weeks, starts_on, ends_on, title, meeting_url, generated_until, created_at, updated_at,
                     version, origin_date)
                 values (:id, :studentId, :groupId, :weekdays, :startTime, :duration, :interval, :startsOn, :endsOn,
-                    :topic, :meetingUrl, :generatedUntil, :createdAt, :updatedAt, :version, :originDate)
+                    :title, :meetingUrl, :generatedUntil, :createdAt, :updatedAt, :version, :originDate)
                 """)
                 .param("id", series.id())
                 .param("studentId", series.studentId())
@@ -50,7 +50,7 @@ public class RepeatRuleRepository {
                 .param("interval", series.intervalWeeks())
                 .param("startsOn", series.startsOn())
                 .param("endsOn", series.endsOn())
-                .param("topic", series.topic())
+                .param("title", series.title())
                 .param("meetingUrl", series.meetingUrl())
                 .param("generatedUntil", series.generatedUntil())
                 .param("createdAt", series.createdAt())
@@ -119,7 +119,7 @@ public class RepeatRuleRepository {
                 rs.getInt("interval_weeks"),
                 rs.getObject("starts_on", LocalDate.class),
                 rs.getObject("ends_on", LocalDate.class),
-                rs.getString("topic"),
+                rs.getString("title"),
                 rs.getString("meeting_url"),
                 rs.getObject("generated_until", LocalDate.class),
                 rs.getObject("created_at", Instant.class),

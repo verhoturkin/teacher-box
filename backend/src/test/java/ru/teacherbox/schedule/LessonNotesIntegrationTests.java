@@ -179,6 +179,8 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
         put(LESSONS + first + "/summary", "{\"nextPlan\":\"Условные предложения\"}");
 
         assertThat(topic(second)).isEqualTo("Условные предложения");
+        assertThat(JsonPath.<String>read(get(LESSONS + second).getResponse().getContentAsString(), "$.title"))
+                .as("the plan goes into the topic, never the title").isNull();
         assertThat(topic(third)).isNull();
         assertThat(topic(other)).isNull();
 

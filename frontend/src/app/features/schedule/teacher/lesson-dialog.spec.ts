@@ -112,7 +112,8 @@ describe('LessonDialog', () => {
       groupId: null,
       startsAt: start.toISOString(),
       durationMinutes: 90,
-      topic: 'Дроби',
+      title: 'Дроби',
+      topic: null,
       meetingUrl: 'https://zoom.us/j/1',
       allowOverlap: false,
     });
@@ -140,6 +141,7 @@ describe('LessonDialog', () => {
         studentId: null,
         groupId: 'g-1',
         allowOverlap: true,
+        title: null,
         topic: null,
         meetingUrl: null,
       }),
@@ -236,12 +238,16 @@ describe('LessonDialog', () => {
     fixture.componentRef.setInput('students', [
       { id: 's-1', displayName: 'Иван', defaultTopic: 'Физика' },
     ]);
-    const dialog = await open(scheduledLesson({ topic: null }));
+    const dialog = await open(scheduledLesson({ title: null }));
     expect(dialog.form.controls.topic.value).toBe('');
   });
 
   it('changes a planned lesson', async () => {
-    const lesson = scheduledLesson({ topic: 'Степени', meetingUrl: 'https://zoom.us/j/2' });
+    const lesson = scheduledLesson({
+      title: 'Степени',
+      topic: 'Дроби',
+      meetingUrl: 'https://zoom.us/j/2',
+    });
     const dialog = await open(lesson);
     expect(bodyText()).toContain('Изменить занятие');
     expect(dialog.form.controls.owner.disabled).toBe(true);
@@ -255,7 +261,8 @@ describe('LessonDialog', () => {
     expect(request.request.body).toMatchObject({
       startsAt: lesson.startsAt,
       durationMinutes: 30,
-      topic: 'Степени',
+      title: 'Степени',
+      topic: 'Дроби',
       meetingUrl: 'https://zoom.us/j/2',
       allowOverlap: false,
     });

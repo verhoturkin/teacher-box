@@ -66,7 +66,7 @@ describe('StudentHome', () => {
     backend.expectOne('/api/me/channels').flush([channel()]);
     backend
       .expectOne('/api/me/schedule/summary')
-      .flush(myScheduleSummary({ next: scheduledLesson({ topic: 'Дроби' }) }));
+      .flush(myScheduleSummary({ next: scheduledLesson({ title: 'Дроби' }) }));
     backend.expectOne('/api/me/homework/summary').flush(
       myHomeworkSummary({
         open: 2,

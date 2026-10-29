@@ -246,7 +246,7 @@ export class StudentLessonsTab {
   protected details(lesson: ScheduledLesson): string {
     return [
       lesson.groupId === null || 'groupId' in this.of() ? null : lessonWith(lesson),
-      lesson.topic ?? this.t.noTopic,
+      lesson.title ?? this.t.noTopic,
       lesson.seriesId === null ? null : this.t.recurring,
     ]
       .filter((part) => part !== null)
@@ -259,7 +259,7 @@ export class StudentLessonsTab {
       entry.groupId === null || 'groupId' in this.of()
         ? null
         : lessonWith({ groupId: entry.groupId, groupName: entry.groupName, studentName: null }),
-      entry.topic ?? this.t.noTopic,
+      entry.title ?? this.t.noTopic,
     ]
       .filter((part) => part !== null)
       .join(' · ');

@@ -41,7 +41,7 @@ a separate topic, and its summary lives in the lesson card. New ADR for the titl
 
 ### 334. Lesson title and topic
 
-- [ ] 334.1 **B** `schedule`: the column `topic` becomes `title` (default from the student or the
+- [x] 334.1 **B** `schedule`: the column `topic` becomes `title` (default from the student or the
   group: calendar, ICS, Google, bot, events to billing), a new nullable `topic` (what the lesson
   covers); a saved «Тема следующего занятия» goes into the topic of the next planned lesson of the
   same student or group when empty. ADR, `docs/modules/schedule.md`.

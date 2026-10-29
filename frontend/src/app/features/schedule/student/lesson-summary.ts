@@ -18,8 +18,8 @@ import { T } from '../i18n/texts';
     @if (item.groupId !== null) {
       <span class="tb-list__supporting">{{ with(item) }}</span>
     }
-    @if (item.topic !== null) {
-      <span class="tb-list__supporting">{{ item.topic }}</span>
+    @if (item.title !== null) {
+      <span class="tb-list__supporting">{{ item.title }}</span>
     }
     @if (item.status !== 'SCHEDULED') {
       <p-tag [value]="statuses[item.status].label" [severity]="statuses[item.status].severity" />

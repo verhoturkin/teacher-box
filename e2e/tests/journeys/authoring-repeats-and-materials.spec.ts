@@ -197,7 +197,7 @@ test('all five repeat choices, conversion, occurrence move, following edit and s
       durationMinutes: 60,
       repeatWeeks: 0,
       allowOverlap: true,
-      topic: name,
+      title: name,
     },
   });
   expect(planned.ok()).toBe(true);
@@ -210,7 +210,7 @@ test('all five repeat choices, conversion, occurrence move, following edit and s
         durationMinutes: 60,
         repeatWeeks,
         scope,
-        topic: name,
+        title: name,
         allowOverlap: true,
       },
     });

@@ -366,7 +366,7 @@ export class LessonSummaryDialog {
   }
 
   protected hasInput(lesson: ScheduledLesson): boolean {
-    return (lesson.topic ?? '').trim() !== '' || this.words().trim() !== '';
+    return (lesson.topic ?? lesson.title ?? '').trim() !== '' || this.words().trim() !== '';
   }
 
   /** The draft goes into «Что прошли»: it fills an empty field and follows the text already there. */
@@ -380,7 +380,7 @@ export class LessonSummaryDialog {
       .pipe(
         switchMap((titles) =>
           this.ai.lessonSummary({
-            topic: this.blankToNull(lesson.topic ?? ''),
+            topic: this.blankToNull(lesson.topic ?? lesson.title ?? ''),
             words: this.blankToNull(this.words()),
             assignmentTitles: titles,
           }),

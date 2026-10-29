@@ -10,6 +10,8 @@ import org.jspecify.annotations.Nullable;
  *
  * @param groupId    the group of a group lesson, {@code null} for a lesson with one student
  * @param studentIds participants of the lesson
+ * @param title      the lesson's name; {@code null} means the default (the student's or the group's name)
+ * @param topic      what the lesson covers
  */
 public record LessonScheduled(
         UUID lessonId,
@@ -17,6 +19,7 @@ public record LessonScheduled(
         List<UUID> studentIds,
         Instant startsAt,
         int durationMinutes,
+        @Nullable String title,
         @Nullable String topic,
         Instant occurredAt) {
 

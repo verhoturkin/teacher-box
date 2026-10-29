@@ -43,7 +43,7 @@ class LessonsIntegrationTests extends ScheduleHttpTestSupport {
         Instant start = Slots.next(clock);
 
         MvcTestResult result = post("/api/teacher/schedule/lessons", """
-                {"studentId":"%s","startsAt":"%s","topic":"Дроби","meetingUrl":"https://zoom.us/j/1","allowOverlap":true}
+                {"studentId":"%s","startsAt":"%s","title":"Английский","topic":"Дроби","meetingUrl":"https://zoom.us/j/1","allowOverlap":true}
                 """.formatted(student, start));
 
         assertThat(result).hasStatus(HttpStatus.CREATED).bodyJson().satisfies(json -> {
@@ -51,19 +51,45 @@ class LessonsIntegrationTests extends ScheduleHttpTestSupport {
             assertThat(json).extractingPath("$.studentAvatar").isEqualTo("/api/public/avatars/ivan");
             assertThat(json).extractingPath("$.participants[0].studentAvatar").isEqualTo("/api/public/avatars/ivan");
             assertThat(json).extractingPath("$.durationMinutes").isEqualTo(60);
+            assertThat(json).extractingPath("$.title").isEqualTo("Английский");
+            assertThat(json).extractingPath("$.topic").isEqualTo("Дроби");
             assertThat(json).extractingPath("$.status").isEqualTo("SCHEDULED");
             assertThat(json).extractingPath("$.endsAt").isEqualTo(start.plusSeconds(3600).toString());
         });
         assertThat(events).contains(LessonScheduled.class)
                 .matching(LessonScheduled::studentIds, List.of(student))
-                .matching(LessonScheduled::startsAt, start);
+                .matching(LessonScheduled::startsAt, start)
+                .matching(LessonScheduled::title, "Английский")
+                .matching(LessonScheduled::topic, "Дроби");
 
         LocalDate day = LocalDate.ofInstant(start, MOSCOW);
         assertThat(mvc.get().uri("/api/teacher/schedule/lessons?from={from}&to={to}", day, day.plusDays(1))
                 .with(teacher()))
                 .hasStatusOk()
-                .bodyJson().extractingPath("$[?(@.studentId == '" + student + "')].topic").asArray()
-                .containsExactly("Дроби");
+                .bodyJson().extractingPath("$[?(@.studentId == '" + student + "')].title").asArray()
+                .containsExactly("Английский");
+    }
+
+    @Test
+    void aStudentSeesTheTitleAndTopicOfOwnLessonsOnly() throws UnsupportedEncodingException {
+        UUID own = directory.addStudent("Свой");
+        UUID other = directory.addStudent("Чужой");
+        Instant start = Slots.next(clock);
+        String id = id(post("/api/teacher/schedule/lessons", """
+                {"studentId":"%s","startsAt":"%s","title":"Английский","topic":"Времена","allowOverlap":true}
+                """.formatted(own, start)));
+        LocalDate day = LocalDate.ofInstant(start, MOSCOW);
+
+        assertThat(mvc.get().uri("/api/me/schedule/lessons/{id}", id).with(TestUsers.student(own))).hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.title").isEqualTo("Английский");
+                    assertThat(json).extractingPath("$.topic").isEqualTo("Времена");
+                });
+        assertThat(mvc.get().uri("/api/me/schedule/lessons/{id}", id).with(TestUsers.student(other)))
+                .hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(mvc.get().uri("/api/me/schedule/lessons?from={from}&to={to}", day, day.plusDays(1))
+                .with(TestUsers.student(other)).exchange().getResponse().getContentAsString())
+                .doesNotContain("Английский").doesNotContain("Времена");
     }
 
     @Test
@@ -122,8 +148,11 @@ class LessonsIntegrationTests extends ScheduleHttpTestSupport {
         String id = id(post("/api/teacher/schedule/lessons", lesson(student, start, 60, true)));
 
         assertThat(put("/api/teacher/schedule/lessons/" + id, """
-                {"startsAt":"%s","durationMinutes":60,"topic":"Новая тема"}
-                """.formatted(start))).hasStatusOk();
+                {"startsAt":"%s","durationMinutes":60,"title":"Название","topic":"Новая тема"}
+                """.formatted(start))).hasStatusOk().bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.title").isEqualTo("Название");
+                    assertThat(json).extractingPath("$.topic").isEqualTo("Новая тема");
+                });
 
         assertThat(events.ofType(LessonRescheduled.class)
                 .matching(event -> event.lessonId().toString().equals(id))).isEmpty();

@@ -38,7 +38,7 @@ describe('UpcomingLessonWidget', () => {
   it('shows when and with whom, the lesson link and the boards of the student', async () => {
     const host = await render(
       scheduledLesson({
-        topic: 'Степени',
+        title: 'Степени',
         joinUrl: 'https://telemost.yandex.ru/j/1',
         studentAvatar: '/api/public/avatars/ivan',
       }),

@@ -37,9 +37,9 @@ describe('ScheduleCalendar', () => {
     fixture.componentInstance.rangeChange.subscribe((range) => ranges.push(range));
 
     const text = await render([
-      scheduledLesson({ topic: 'Дроби' }),
+      scheduledLesson({ title: 'Дроби' }),
       scheduledLesson({ id: 'l-2', studentName: null, pendingRequests: [changeRequest()] }),
-      groupLesson({ topic: 'Разбор' }),
+      groupLesson({ title: 'Разбор' }),
       groupLesson({ id: 'gl-2', groupName: null }),
     ]);
 
@@ -69,7 +69,7 @@ describe('ScheduleCalendar', () => {
     await render([
       scheduledLesson(),
       groupLesson(),
-      scheduledLesson({ id: 'l-3', studentId: 's-3', topic: 'Без цвета' }),
+      scheduledLesson({ id: 'l-3', studentId: 's-3', title: 'Без цвета' }),
     ]);
     const host = hostElement(fixture);
 
@@ -154,7 +154,7 @@ describe('ScheduleCalendar', () => {
 
   it('shows the student the topics', async () => {
     const text = await render(
-      [scheduledLesson({ topic: 'Степени' }), scheduledLesson({ id: 'l-2' })],
+      [scheduledLesson({ title: 'Степени' }), scheduledLesson({ id: 'l-2' })],
       false,
     );
 

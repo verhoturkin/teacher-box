@@ -138,7 +138,7 @@ public class ChangeRequestService {
             if (!approval.allowBusy()) {
                 availability.requireFree(startsAt, startsAt.plus(Duration.ofMinutes(lesson.durationMinutes())), lesson.id());
             }
-            lesson.edit(startsAt, lesson.durationMinutes(), lesson.topic(), lesson.meetingUrl(), now);
+            lesson.edit(startsAt, lesson.durationMinutes(), lesson.title(), lesson.meetingUrl(), now);
             lessons.update(lesson);
             lessons.clearReminders(lesson.id());
             outdateOthers(request, now);

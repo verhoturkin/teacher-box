@@ -38,7 +38,7 @@ describe('TeacherHome', () => {
     backend.expectOne('/api/teacher/schedule/summary').flush(
       scheduleSummary({
         today: [scheduledLesson()],
-        next: scheduledLesson({ topic: 'Степени' }),
+        next: scheduledLesson({ title: 'Степени' }),
         unmarked: 1,
         pendingRequests: 1,
         weekConducted: 4,

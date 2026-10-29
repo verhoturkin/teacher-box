@@ -71,6 +71,9 @@ export interface ScheduledLesson {
   readonly startsAt: string;
   readonly endsAt: string;
   readonly durationMinutes: number;
+  /** The lesson's name; `null` — the student's or the group's name stands for it. */
+  readonly title: string | null;
+  /** What the lesson covers; its own, a series never copies it. */
   readonly topic: string | null;
   /** The lesson's own link to the online lesson. */
   readonly meetingUrl: string | null;
@@ -122,6 +125,7 @@ export interface PlanLessonRequest {
   readonly groupId: string | null;
   readonly startsAt: string;
   readonly durationMinutes: number;
+  readonly title: string | null;
   readonly topic: string | null;
   readonly meetingUrl: string | null;
   readonly allowOverlap: boolean;
@@ -135,6 +139,7 @@ export interface PlanLessonRequest {
 export interface EditLessonRequest {
   readonly startsAt: string;
   readonly durationMinutes: number;
+  readonly title: string | null;
   readonly topic: string | null;
   readonly meetingUrl: string | null;
   readonly allowOverlap: boolean;
@@ -266,6 +271,7 @@ export interface MyScheduleSummary {
 export interface HistoryEntry {
   readonly lessonId: string;
   readonly startsAt: string;
+  readonly title: string | null;
   readonly topic: string | null;
   readonly status: ScheduleLessonStatus;
   readonly groupId: string | null;

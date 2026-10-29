@@ -75,8 +75,8 @@ class StudentLessons {
         if (lesson.groupName() != null) {
             text.append(ScheduleChatTexts.of(language).inGroup(lesson.groupName()));
         }
-        if (lesson.topic() != null) {
-            text.append(" — ").append(lesson.topic());
+        if (lesson.title() != null) {
+            text.append(" — ").append(lesson.title());
         }
         return text.toString();
     }

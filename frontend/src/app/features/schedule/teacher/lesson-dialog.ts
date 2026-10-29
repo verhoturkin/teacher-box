@@ -333,7 +333,9 @@ export class LessonDialog {
     const details = {
       startsAt: value.startsAt.toISOString(),
       durationMinutes: value.durationMinutes ?? this.defaultDuration(),
-      topic: optionalText(value.topic),
+      // shortcut: the one text field is the title; the topic field comes with 334.2
+      title: optionalText(value.topic),
+      topic: this.lesson()?.topic ?? null,
       meetingUrl: optionalText(value.meetingUrl),
       allowOverlap,
       repeatWeeks: value.repeatWeeks,
@@ -388,7 +390,7 @@ export class LessonDialog {
       topic:
         lesson === null
           ? defaultTopic(preset, { students: this.students(), groups: this.groups() })
-          : (lesson.topic ?? ''),
+          : (lesson.title ?? ''),
       meetingUrl: lesson?.meetingUrl ?? '',
       repeatWeeks: lesson?.repeatWeeks ?? 0,
       repeatUntil: lesson?.repeatUntil ? new Date(lesson.repeatUntil + 'T00:00:00') : null,

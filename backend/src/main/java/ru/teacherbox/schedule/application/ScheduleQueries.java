@@ -139,8 +139,8 @@ public class ScheduleQueries {
     private List<HistoryEntry> history(List<Lesson> found, @Nullable UUID studentId, boolean withPlan,
             Map<UUID, LessonNote> notes) {
         ScheduleNames names = directory.namesOf(found);
-        return found.stream().map(lesson -> new HistoryEntry(lesson.id(), lesson.startsAt(), lesson.topic(),
-                lesson.status(), lesson.groupId(), names.group(lesson.groupId()),
+        return found.stream().map(lesson -> new HistoryEntry(lesson.id(), lesson.startsAt(), lesson.title(),
+                lesson.topic(), lesson.status(), lesson.groupId(), names.group(lesson.groupId()),
                 studentId == null ? null : lesson.participants().stream()
                         .filter(participant -> participant.studentId().equals(studentId))
                         .map(participant -> participant.attendance()).findFirst().orElse(null),

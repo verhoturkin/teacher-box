@@ -38,6 +38,7 @@ public final class Lesson {
     private boolean individuallyChanged;
     private Instant startsAt;
     private int durationMinutes;
+    private @Nullable String title;
     private @Nullable String topic;
     private @Nullable String meetingUrl;
     private LessonStatus status;
@@ -52,7 +53,7 @@ public final class Lesson {
     private @Nullable Instant summaryUpdatedAt;
 
     private Lesson(UUID id, @Nullable UUID groupId, Collection<Participant> participants, @Nullable UUID seriesId,
-            @Nullable LocalDate seriesDate, Instant startsAt, int durationMinutes, @Nullable String topic,
+            @Nullable LocalDate seriesDate, Instant startsAt, int durationMinutes, @Nullable String title,
             @Nullable String meetingUrl, LessonStatus status, @Nullable CancelledBy cancelledBy,
             @Nullable String cancelReason, @Nullable Instant originalStartsAt, Instant createdAt, Instant updatedAt,
             long version) {
@@ -63,7 +64,7 @@ public final class Lesson {
         this.seriesDate = seriesDate;
         this.startsAt = Objects.requireNonNull(startsAt);
         this.durationMinutes = durationMinutes;
-        this.topic = topic;
+        this.title = title;
         this.meetingUrl = meetingUrl;
         this.status = Objects.requireNonNull(status);
         this.cancelledBy = cancelledBy;
@@ -84,47 +85,47 @@ public final class Lesson {
      * @param seriesDate the day of the series this lesson stands for (it stays when the lesson moves)
      */
     public static Lesson plan(UUID id, UUID studentId, @Nullable UUID seriesId, @Nullable LocalDate seriesDate,
-            Instant startsAt, int durationMinutes, @Nullable String topic, @Nullable String meetingUrl, Instant now) {
-        return planned(id, null, List.of(studentId), seriesId, seriesDate, startsAt, durationMinutes, topic,
+            Instant startsAt, int durationMinutes, @Nullable String title, @Nullable String meetingUrl, Instant now) {
+        return planned(id, null, List.of(studentId), seriesId, seriesDate, startsAt, durationMinutes, title,
                 meetingUrl, now);
     }
 
     /** A lesson of a group with its current members. */
     public static Lesson planForGroup(UUID id, UUID groupId, Collection<UUID> memberIds, @Nullable UUID seriesId,
-            @Nullable LocalDate seriesDate, Instant startsAt, int durationMinutes, @Nullable String topic,
+            @Nullable LocalDate seriesDate, Instant startsAt, int durationMinutes, @Nullable String title,
             @Nullable String meetingUrl, Instant now) {
         return planned(id, Objects.requireNonNull(groupId), memberIds, seriesId, seriesDate, startsAt,
-                durationMinutes, topic, meetingUrl, now);
+                durationMinutes, title, meetingUrl, now);
     }
 
     private static Lesson planned(UUID id, @Nullable UUID groupId, Collection<UUID> studentIds,
             @Nullable UUID seriesId, @Nullable LocalDate seriesDate, Instant startsAt, int durationMinutes,
-            @Nullable String topic, @Nullable String meetingUrl, Instant now) {
+            @Nullable String title, @Nullable String meetingUrl, Instant now) {
         if ((seriesId == null) != (seriesDate == null)) {
             throw new IllegalArgumentException("A lesson of a series needs both the series and the date");
         }
         List<Participant> participants = studentIds.stream().distinct().map(Participant::expected).toList();
         return new Lesson(id, groupId, participants, seriesId, seriesDate, startsAt, Texts.duration(durationMinutes),
-                Texts.optional(topic), Texts.meetingUrl(meetingUrl), LessonStatus.SCHEDULED, null, null, null, now, now,
+                Texts.optional(title), Texts.meetingUrl(meetingUrl), LessonStatus.SCHEDULED, null, null, null, now, now,
                 0);
     }
 
     public static Lesson restore(UUID id, @Nullable UUID groupId, Collection<Participant> participants,
             @Nullable UUID seriesId, @Nullable LocalDate seriesDate, Instant startsAt, int durationMinutes,
-            @Nullable String topic, @Nullable String meetingUrl, LessonStatus status, @Nullable CancelledBy cancelledBy,
+            @Nullable String title, @Nullable String meetingUrl, LessonStatus status, @Nullable CancelledBy cancelledBy,
             @Nullable String cancelReason, @Nullable Instant originalStartsAt, Instant createdAt, Instant updatedAt,
             long version) {
-        return new Lesson(id, groupId, participants, seriesId, seriesDate, startsAt, durationMinutes, topic,
+        return new Lesson(id, groupId, participants, seriesId, seriesDate, startsAt, durationMinutes, title,
                 meetingUrl, status, cancelledBy, cancelReason, originalStartsAt, createdAt, updatedAt, version);
     }
 
     /**
-     * Changes the time, duration, topic or link of a planned lesson. The first time the lesson moves,
+     * Changes the time, duration, title or link of a planned lesson. The first time the lesson moves,
      * its original start is kept (the lesson then no longer follows changes of its series).
      *
      * @return {@code true} if the start or the duration changed
      */
-    public boolean edit(Instant newStartsAt, int newDurationMinutes, @Nullable String newTopic,
+    public boolean edit(Instant newStartsAt, int newDurationMinutes, @Nullable String newTitle,
             @Nullable String newMeetingUrl, Instant now) {
         requireScheduled();
         individuallyChanged = true;
@@ -135,7 +136,7 @@ public final class Lesson {
         }
         startsAt = newStartsAt;
         durationMinutes = duration;
-        topic = Texts.optional(newTopic);
+        title = Texts.optional(newTitle);
         meetingUrl = Texts.meetingUrl(newMeetingUrl);
         updatedAt = now;
         return moved;
@@ -368,6 +369,15 @@ public final class Lesson {
         return individuallyChanged;
     }
 
+    /**
+     * Sets what the lesson covers (blank clears). Unlike the title it belongs to this lesson only: series edits
+     * never copy it, and it may change whatever the status.
+     */
+    public Lesson describe(@Nullable String newTopic) {
+        topic = Texts.optional(newTopic);
+        return this;
+    }
+
     /** Restores the lesson summary kept outside the optimistic lock of the lesson. */
     public Lesson restoreSummary(@Nullable String summaryText, @Nullable String nextPlanText,
             @Nullable Instant updatedAt) {
@@ -511,6 +521,10 @@ public final class Lesson {
 
     public int durationMinutes() {
         return durationMinutes;
+    }
+
+    public @Nullable String title() {
+        return title;
     }
 
     public @Nullable String topic() {

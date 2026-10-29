@@ -51,6 +51,7 @@ class TeacherScheduleController {
             @Nullable UUID groupId,
             @NotNull Instant startsAt,
             @Min(1) @Max(600) @Nullable Integer durationMinutes,
+            @Size(max = 500) @Nullable String title,
             @Size(max = 500) @Nullable String topic,
             @Size(max = 1000) @Nullable String meetingUrl,
             @Nullable Boolean allowOverlap,
@@ -64,6 +65,7 @@ class TeacherScheduleController {
     record EditRequest(
             @NotNull Instant startsAt,
             @NotNull @Min(1) @Max(600) Integer durationMinutes,
+            @Size(max = 500) @Nullable String title,
             @Size(max = 500) @Nullable String topic,
             @Size(max = 1000) @Nullable String meetingUrl,
             @Nullable Boolean allowOverlap,
@@ -134,14 +136,14 @@ class TeacherScheduleController {
     @ResponseStatus(HttpStatus.CREATED)
     LessonView plan(@Valid @RequestBody LessonRequest request) {
         return repetition.plan(new ScheduleService.PlanLesson(request.studentId(), request.groupId(), request.startsAt(),
-                request.durationMinutes(), request.topic(), request.meetingUrl(), yes(request.allowOverlap())),
+                request.durationMinutes(), request.title(), request.topic(), request.meetingUrl(), yes(request.allowOverlap())),
                 new Options(request.repeatWeeks(), request.repeatUntil(), scope(request.scope()), request.version(), request.repeatVersion()));
     }
 
     @PutMapping("/lessons/{lessonId}")
     LessonView edit(@PathVariable UUID lessonId, @Valid @RequestBody EditRequest request) {
         return repetition.edit(lessonId, new ScheduleService.EditLesson(request.startsAt(), request.durationMinutes(),
-                request.topic(), request.meetingUrl(), yes(request.allowOverlap())),
+                request.title(), request.topic(), request.meetingUrl(), yes(request.allowOverlap())),
                 new Options(request.repeatWeeks(), request.repeatUntil(), scope(request.scope()), request.version(), request.repeatVersion()));
     }
 

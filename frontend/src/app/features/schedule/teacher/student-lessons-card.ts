@@ -54,7 +54,7 @@ const START = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-di
                   <strong>{{ start(lesson) }}</strong>
                 </span>
                 <div class="tb-list__text">
-                  <span class="tb-list__title">{{ lesson.topic ?? t.noTopic }}</span>
+                  <span class="tb-list__title">{{ lesson.title ?? t.noTopic }}</span>
                   <span class="tb-list__supporting">{{ details(lesson) }}</span>
                 </div>
               </li>

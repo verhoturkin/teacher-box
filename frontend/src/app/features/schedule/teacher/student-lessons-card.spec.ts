@@ -43,7 +43,7 @@ describe('StudentLessonsCard', () => {
 
   it('lists the next planned lessons of the student, the nearest first', async () => {
     await render();
-    const later = scheduledLesson({ id: 'later', ...inHours(48), topic: 'Теорема Виета' });
+    const later = scheduledLesson({ id: 'later', ...inHours(48), title: 'Теорема Виета' });
     const group = groupLesson({ id: 'group', ...inHours(24), seriesId: 'series-1' });
     answer([
       later,
@@ -105,7 +105,7 @@ describe('StudentLessonsCard', () => {
     answer([]);
     fixture.componentRef.setInput('of', { groupId: 'g-1' });
     await fixture.whenStable();
-    const group = groupLesson({ id: 'group', ...inHours(24), topic: 'Дроби' });
+    const group = groupLesson({ id: 'group', ...inHours(24), title: 'Дроби' });
     const request = backend.expectOne((r) => r.url === '/api/teacher/schedule/lessons');
     expect(request.request.params.get('groupId')).toBe('g-1');
     request.flush([group]);
