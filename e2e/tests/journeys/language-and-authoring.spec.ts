@@ -39,6 +39,11 @@ test('the interface speaks English and goes back to Russian', async ({ page }) =
     'true',
   );
   await page.getByRole('button', { name: 'Русский' }).click();
+  await expect(page.getByRole('button', { name: 'Русский' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.goto('/teacher');
   await expect(page.getByRole('region', { name: 'Сегодня', exact: true })).toBeVisible();
 });
 

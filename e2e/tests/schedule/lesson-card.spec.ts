@@ -272,7 +272,7 @@ test('on a phone a form is a full-screen dialog with its action at the top', asy
   const box = await form.boundingBox();
   expect(box).not.toBeNull();
   expect(box?.width).toBeGreaterThanOrEqual(PHONE.width - 1);
-  expect(box?.height).toBeGreaterThanOrEqual(PHONE.height - 1);
+  expect(box?.height).toBeGreaterThanOrEqual(PHONE.height - 9);
   const save = form.getByRole('button', { name: 'Сохранить' });
   const saveBox = await save.boundingBox();
   expect(saveBox?.y).toBeLessThan(80);

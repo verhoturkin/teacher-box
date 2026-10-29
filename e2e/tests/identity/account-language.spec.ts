@@ -1,4 +1,4 @@
-import { bearer as teacher } from '../support/session';
+import { bearer as teacher, startSession } from '../support/session';
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 
 /**
@@ -33,6 +33,8 @@ test('the language chosen in the interface goes to the account', async ({ page, 
 
   await page.goto('/teacher/settings/account');
   await page.getByRole('button', { name: 'Русский' }).click();
+  await expect.poll(() => accountLanguage(request)).toBe('ru');
+  await page.goto('/teacher');
   await expect(page.getByRole('region', { name: 'Сегодня', exact: true })).toBeVisible();
   await expect.poll(() => accountLanguage(request)).toBe('ru');
 });
@@ -52,4 +54,17 @@ test("the calendar feed is written in its owner's language", async ({ request })
     await request.put('/api/me/language', { headers, data: { language: 'ru' } });
   }
   expect((await (await request.get(path)).text()).replace(/\r\n /g, '')).toContain(' — занятия');
+});
+
+test('the account item opens «Мой аккаунт»: theme switch and sign out', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await startSession(page, 'teacher', TEACHER_PASSWORD);
+  await page.locator('a[aria-label^="Аккаунт"]').click();
+  await expect(page).toHaveURL(/\/teacher\/settings\/account$/);
+  await page.getByRole('button', { name: 'Тёмная' }).click();
+  await expect(page.locator('html')).toHaveClass(/tb-dark/);
+  await page.getByRole('button', { name: 'Светлая' }).click();
+  await expect(page.locator('html')).not.toHaveClass(/tb-dark/);
+  await page.getByRole('button', { name: 'Выйти', exact: true }).click();
+  await expect(page).toHaveURL(/\/login/);
 });

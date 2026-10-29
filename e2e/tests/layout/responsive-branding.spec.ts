@@ -144,7 +144,7 @@ test.describe('on a phone', () => {
     await page.locator('p-button.tb-page-fab').getByRole('button', { name: 'Занятие' }).click();
     const dialog = page.getByRole('dialog', { name: 'Новое занятие' });
     await expect(dialog).toBeVisible();
-    await expect.poll(async () => (await dialog.boundingBox())?.height).toBe(PHONE.height);
+    await expect.poll(async () => (await dialog.boundingBox())?.height).toBe(PHONE.height - 8); // the 8 dp top inset of the full-screen dialog
     await dialog.getByRole('button', { name: 'Закрыть' }).click();
   });
 

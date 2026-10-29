@@ -13,6 +13,7 @@ const LOGIN = `quiz${RUN}`;
 const PASSWORD = `pass-${RUN}-quiz`;
 const MIXED = `Тест ${RUN}`;
 const OPEN = `Тест с ключом ${RUN}`;
+const BLANK = `Тест без ответа ${RUN}`;
 
 test.describe.configure({ mode: 'serial' });
 
@@ -28,6 +29,7 @@ interface TaskRow {
 
 let mixedTask = '';
 let openTask = '';
+let blankTask = '';
 
 async function token(request: APIRequestContext, login: string, password: string): Promise<string> {
   const response = await request.post('/api/auth/login', { data: { login, password } });
@@ -151,10 +153,18 @@ test.beforeAll(async ({ request }) => {
     quizReveal: 'AFTER_SUBMIT',
   });
 
+  const blank = await assignTo(request, teacher, created.student.id, {
+    title: BLANK,
+    questions: [{ type: 'SHORT_TEXT', text: 'Без ответа?', accepted: ['да'] }],
+    quizReveal: 'AFTER_SUBMIT',
+  });
+
   const own = await token(request, LOGIN, PASSWORD);
   const tasks = await api<TaskRow[]>(request, own, 'GET', '/api/me/homework');
   mixedTask = tasks.find((task) => task.assignmentId === mixed)?.taskId ?? '';
   openTask = tasks.find((task) => task.assignmentId === open)?.taskId ?? '';
+  blankTask = tasks.find((task) => task.assignmentId === blank)?.taskId ?? '';
+  expect(blankTask).not.toBe('');
   expect(mixedTask).not.toBe('');
   expect(openTask).not.toBe('');
 });
@@ -274,4 +284,32 @@ test('the teacher sees the best attempt, overrides a wrong answer and the grade 
   await page.getByRole('button', { name: 'Засчитать', exact: true }).click();
   await expect(page.getByText('Тест: 6 из 6')).toBeVisible();
   await expect(page.getByLabel('Оценка')).toHaveValue('6 из 6');
+});
+
+test('the teacher credits a question the student left unanswered', async ({ page, request }) => {
+  const own = await token(request, LOGIN, PASSWORD);
+  const started = await api<{ openAttempt: { id: string } }>(
+    request,
+    own,
+    'POST',
+    `/api/me/homework/tasks/${blankTask}/quiz/attempts`,
+  );
+  await api(
+    request,
+    own,
+    'POST',
+    `/api/me/homework/tasks/${blankTask}/quiz/attempts/${started.openAttempt.id}/submit`,
+  );
+  const sent = await request.post(`/api/me/homework/tasks/${blankTask}/submissions`, {
+    headers: { Authorization: `Bearer ${own}` },
+    multipart: { text: 'Готово' },
+  });
+  expect(sent.ok() || sent.status() === 409).toBe(true);
+
+  await page.setViewportSize(WIDE);
+  await startSession(page, 'teacher', TEACHER_PASSWORD);
+  await page.goto(`/teacher/homework/tasks/${blankTask}`);
+  await expect(page.getByText('Тест: 0 из 1')).toBeVisible();
+  await page.getByRole('button', { name: 'Засчитать', exact: true }).click();
+  await expect(page.getByText('Тест: 1 из 1')).toBeVisible();
 });
