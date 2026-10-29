@@ -53,6 +53,10 @@ describe('SchedulePage', () => {
     )) {
       request.flush({});
     }
+    // the summary of an opened past lesson asks whether the AI draft is on
+    for (const request of backend.match('/api/teacher/ai/status')) {
+      request.flush({ enabled: false });
+    }
     for (const request of offTimePeriodRequests()) {
       request.flush([]);
     }

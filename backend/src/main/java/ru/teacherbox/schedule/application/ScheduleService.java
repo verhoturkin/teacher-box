@@ -193,15 +193,6 @@ public class ScheduleService {
         lessonEvents.summaryShared(lesson, directory.teacherId(), clock.instant());
     }
 
-    /** Writes the teacher's private note about a participant (blank deletes it). */
-    @Transactional
-    public LessonView updateNote(UUID lessonId, UUID studentId, @Nullable String note) {
-        Lesson lesson = find(lessonId);
-        lesson.requireNoteFor(studentId, clock.instant());
-        lessons.saveNote(lessonId, studentId, Lesson.note(note), clock.instant());
-        return queries.lesson(lessonId);
-    }
-
     /** Deletes a lesson that was not held: a planned or cancelled one nobody is charged for. */
     @Transactional
     public void delete(UUID lessonId) {

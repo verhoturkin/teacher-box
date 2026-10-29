@@ -309,21 +309,6 @@ public class LessonRepository {
                 .list();
     }
 
-    /** Writes a note, or deletes it when the text is {@code null}. */
-    public void saveNote(UUID lessonId, UUID studentId, @Nullable String note, Instant now) {
-        if (note == null) {
-            jdbc.sql("delete from schedule.lesson_notes where lesson_id = :lessonId and student_id = :studentId")
-                    .param("lessonId", lessonId).param("studentId", studentId).update();
-            return;
-        }
-        jdbc.sql("""
-                merge into schedule.lesson_notes (lesson_id, student_id, note, updated_at)
-                key (lesson_id, student_id) values (:lessonId, :studentId, :note, :now)
-                """)
-                .param("lessonId", lessonId).param("studentId", studentId).param("note", note).param("now", now)
-                .update();
-    }
-
     /** Held lessons (outcome marked) of the student, group lessons included, that start before {@code before}, newest first. */
     public List<Lesson> findHeldOfStudent(UUID studentId, Instant before, int limit) {
         return load(jdbc.sql(SELECT + " where status in ('CONDUCTED', 'MISSED') and starts_at < :before and"

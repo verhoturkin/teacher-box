@@ -197,7 +197,7 @@ A past lesson without a mark is outlined in red in the calendar; open it and mar
 
 ## Lesson summary
 
-A lesson that has started has a «Summary» row (except a cancelled one and an individual «Missed» one). Press it to open «Lesson summary»: «What we covered» (the student sees it; «Text / Preview» as in homework), «What next» and «Note to self» — only you see it (a group has one per student). «What next» is copied into the topic of the next lesson if that is empty. «Save» only saves; «Save and send» also sends the students a «Lesson summary» notification. With the AI assistant on, «Draft» writes «What we covered» from the topic, the tasks and your words — it is a draft, edit it. Held lessons with summaries are listed in «History» on the «Lessons» tab of a student and a group. In the bot: after «Held» press «Record summary» and send the text.
+The summary of a lesson that has started (except a cancelled one and an individual «Missed» one) is written right in its card. The students of the lesson see «What we covered»; while there is no summary it holds the lesson topic — add to it. «Topic of the next lesson» is copied into the topic of the next lesson if that is empty. «Save» only saves; «Send to the student» saves and sends the students a «Lesson summary» notification. With the AI assistant on, «Draft» writes «What we covered» from the topic, the tasks and your words — it is a draft, edit it. Held lessons with summaries are listed in «History» on the «Lessons» tab of a student and a group; notes to self written earlier are shown there too — there are no new ones. In the bot: after «Held» press «Record summary» and send the text.
 
 ## Cancel, delete, restore
 

@@ -56,6 +56,10 @@ describe('SchedulePage on a phone', () => {
     )) {
       request.flush({});
     }
+    // the summary of an opened past lesson asks whether the AI draft is on
+    for (const request of backend.match('/api/teacher/ai/status')) {
+      request.flush({ enabled: false });
+    }
     backend.verify();
     fixture.destroy();
   });

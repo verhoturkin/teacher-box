@@ -81,9 +81,6 @@ class TeacherScheduleController {
             @Size(max = Lesson.MAX_NEXT_PLAN) @Nullable String nextPlan) {
     }
 
-    record NoteRequest(@Size(max = Lesson.MAX_SUMMARY) @Nullable String note) {
-    }
-
     record CancelRequest(@Size(max = 500) @Nullable String reason, @Nullable Boolean byStudent,
             @Nullable Boolean charge, @Nullable Scope scope, @Nullable Long version, @Nullable Long repeatVersion) {
     }
@@ -172,12 +169,6 @@ class TeacherScheduleController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void shareSummary(@PathVariable UUID lessonId) {
         schedule.shareSummary(lessonId);
-    }
-
-    @PutMapping("/lessons/{lessonId}/notes/{studentId}")
-    LessonView note(@PathVariable UUID lessonId, @PathVariable UUID studentId,
-            @Valid @RequestBody NoteRequest request) {
-        return schedule.updateNote(lessonId, studentId, request.note());
     }
 
     /** Held lessons of a student, newest first; the next page — {@code before} = start of the last one. */

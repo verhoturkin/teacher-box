@@ -398,19 +398,6 @@ public final class Lesson {
         summaryUpdatedAt = now;
     }
 
-    /** Checks that a private note about the student may be written. */
-    public void requireNoteFor(UUID studentId, Instant now) {
-        requireSummarizable(now);
-        if (!hasParticipant(studentId)) {
-            throw new BusinessRuleException("schedule.not-a-participant", "The student is not in this lesson");
-        }
-    }
-
-    /** Normalizes a private note: trimmed, {@code null} when blank. */
-    public static @Nullable String note(@Nullable String text) {
-        return bounded(text, MAX_SUMMARY);
-    }
-
     /** Only a lesson that has started and was not cancelled has a summary; a missed individual one has none. */
     public void requireSummarizable(Instant now) {
         if (status == LessonStatus.CANCELLED) {

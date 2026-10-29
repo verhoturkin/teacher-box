@@ -172,19 +172,6 @@ export class ScheduleApi {
       .pipe(map(() => undefined));
   }
 
-  /** Saves the teacher's private note about a student (an empty text removes it). */
-  updateNote(
-    lessonId: string,
-    studentId: string,
-    note: string | null,
-  ): Observable<ScheduledLesson> {
-    return this.http.put<ScheduledLesson>(
-      `/api/teacher/schedule/lessons/${lessonId}/notes/${studentId}`,
-      { note },
-      QUIET,
-    );
-  }
-
   /** Lessons that have ended without a marked outcome. */
   unmarked(): Observable<ScheduledLesson[]> {
     return this.http.get<ScheduledLesson[]>('/api/teacher/schedule/unmarked', QUIET);

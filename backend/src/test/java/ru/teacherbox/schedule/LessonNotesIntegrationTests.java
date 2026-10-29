@@ -23,7 +23,7 @@ import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
 
-/** The summary of a lesson, the plan for the next one and the teacher's private notes. */
+/** The summary of a lesson, the plan for the next one and the teacher's old private notes (read-only). */
 @ScheduleIntegrationTest
 class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
 
@@ -49,8 +49,8 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
                     assertThat(json).extractingPath("$.nextPlan").isEqualTo("Повторить");
                     assertThat(json).extractingPath("$.summaryUpdatedAt").isNotNull();
                 });
-        assertThat(put(LESSONS + lesson + "/notes/" + anna, "{\"note\":\"Устала\"}")).hasStatusOk().bodyJson()
-                .extractingPath("$.notes[0].note").isEqualTo("Устала");
+        oldNote(lesson, anna, "Устала");
+        assertThat(get(LESSONS + lesson)).bodyJson().extractingPath("$.notes[0].note").isEqualTo("Устала");
         assertThat(get(LESSONS + lesson)).bodyJson().extractingPath("$.notes[0].studentId")
                 .isEqualTo(anna.toString());
 
@@ -69,22 +69,17 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
         Object version = JsonPath.read(get(LESSONS + lesson).getResponse().getContentAsString(), "$.version");
 
         put(LESSONS + lesson + "/summary", "{\"summary\":\"Итоги\"}");
-        put(LESSONS + lesson + "/notes/" + anna, "{\"note\":\"Заметка\"}");
+        oldNote(lesson, anna, "Заметка");
         assertThat(JsonPath.<Object>read(get(LESSONS + lesson).getResponse().getContentAsString(), "$.version"))
                 .isEqualTo(version);
 
-        put(LESSONS + lesson + "/summary", "{\"summary\":\"  \"}");
-        assertThat(put(LESSONS + lesson + "/notes/" + anna, "{\"note\":\"\"}")).hasStatusOk().bodyJson()
-                .satisfies(json -> {
-                    assertThat(json).extractingPath("$.summary").isNull();
-                    assertThat(json).extractingPath("$.notes").asArray().isEmpty();
-                });
+        assertThat(put(LESSONS + lesson + "/summary", "{\"summary\":\"  \"}")).hasStatusOk().bodyJson()
+                .extractingPath("$.summary").isNull();
     }
 
     @Test
     void invalidWritesAreRejected() throws UnsupportedEncodingException {
         UUID anna = directory.addStudent("Анна");
-        UUID stranger = directory.addStudent("Чужой");
         String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.past(clock), 60, true)));
         String cancelled = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.past(clock), 60, true)));
         post(LESSONS + cancelled + "/cancel", "{}");
@@ -94,10 +89,6 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
         assertThat(put(LESSONS + lesson + "/summary", "{\"nextPlan\":\"" + "я".repeat(1001) + "\"}"))
                 .hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(put(LESSONS + cancelled + "/summary", "{\"summary\":\"x\"}"))
-                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
-        assertThat(put(LESSONS + cancelled + "/notes/" + anna, "{\"note\":\"x\"}"))
-                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
-        assertThat(put(LESSONS + lesson + "/notes/" + stranger, "{\"note\":\"x\"}"))
                 .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
         assertThat(put(LESSONS + UUID.randomUUID() + "/summary", "{}")).hasStatus(HttpStatus.NOT_FOUND);
     }
@@ -109,12 +100,10 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
         String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.past(clock), 60, true)));
         put(LESSONS + lesson + "/summary", "{\"summary\":\"Секрет\"}");
 
-        for (String uri : new String[] {"/summary", "/notes/" + anna}) {
-            assertThat(mvc.put().uri(LESSONS + lesson + uri).with(TestUsers.student(anna))
-                    .contentType(MediaType.APPLICATION_JSON).content("{}")).hasStatus(HttpStatus.FORBIDDEN);
-            assertThat(mvc.put().uri(LESSONS + lesson + uri).contentType(MediaType.APPLICATION_JSON).content("{}"))
-                    .hasStatus(HttpStatus.UNAUTHORIZED);
-        }
+        assertThat(mvc.put().uri(LESSONS + lesson + "/summary").with(TestUsers.student(anna))
+                .contentType(MediaType.APPLICATION_JSON).content("{}")).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.put().uri(LESSONS + lesson + "/summary").contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .hasStatus(HttpStatus.UNAUTHORIZED);
         assertThat(mvc.get().uri("/api/me/schedule/lessons/" + lesson).with(TestUsers.student(stranger)))
                 .hasStatus(HttpStatus.NOT_FOUND);
     }
@@ -152,7 +141,7 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
         Instant start = Slots.past(clock);
         String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, start, 60, true)));
         put(LESSONS + lesson + "/summary", "{\"summary\":\"Итоги дня\",\"nextPlan\":\"Повторить Past Perfect\"}");
-        put(LESSONS + lesson + "/notes/" + anna, "{\"note\":\"Личное\"}");
+        oldNote(lesson, anna, "Личное");
         LocalDate day = start.atZone(ZoneId.of("Europe/Moscow")).toLocalDate();
 
         String teacherList = get("/api/teacher/schedule/lessons?from=" + day + "&to=" + day.plusDays(2))
@@ -214,7 +203,6 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
         String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.next(clock), 60, true)));
 
         for (var result : List.of(put(LESSONS + lesson + "/summary", "{\"summary\":\"Рано\"}"),
-                put(LESSONS + lesson + "/notes/" + anna, "{\"note\":\"Рано\"}"),
                 post(LESSONS + lesson + "/summary/share", ""))) {
             assertThat(result).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT).bodyText()
                     .contains("schedule.lesson-not-started");
@@ -228,7 +216,6 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
         put(LESSONS + missed + "/outcome", "{\"outcome\":\"MISSED\"}");
 
         for (var result : List.of(put(LESSONS + missed + "/summary", "{\"summary\":\"Нет\"}"),
-                put(LESSONS + missed + "/notes/" + anna, "{\"note\":\"Нет\"}"),
                 post(LESSONS + missed + "/summary/share", ""))) {
             assertThat(result).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT).bodyText()
                     .contains("schedule.lesson-missed");
@@ -244,12 +231,29 @@ class LessonNotesIntegrationTests extends ScheduleHttpTestSupport {
     void deletingALessonDeletesItsNotes() throws UnsupportedEncodingException {
         UUID anna = directory.addStudent("Анна");
         String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.past(clock), 60, true)));
-        put(LESSONS + lesson + "/notes/" + anna, "{\"note\":\"Личное\"}");
+        oldNote(lesson, anna, "Личное");
         assertThat(lessons.findNotes(UUID.fromString(lesson))).hasSize(1);
 
         assertThat(delete(LESSONS + lesson)).hasStatus(HttpStatus.NO_CONTENT);
 
         assertThat(lessons.findNotes(UUID.fromString(lesson))).isEmpty();
+    }
+
+    @Test
+    void privateNotesAreNoLongerWrittenButTheOldOnesAreReadByTheTeacherOnly() throws UnsupportedEncodingException {
+        UUID anna = directory.addStudent("Анна");
+        String lesson = id(post("/api/teacher/schedule/lessons", lesson(anna, Slots.past(clock), 60, true)));
+
+        assertThat(put(LESSONS + lesson + "/notes/" + anna, "{\"note\":\"Новая\"}")).hasStatus4xxClientError();
+        assertThat(lessons.findNotes(UUID.fromString(lesson))).isEmpty();
+
+        oldNote(lesson, anna, "Старая");
+        assertThat(get(LESSONS + lesson)).bodyJson().extractingPath("$.notes[0].note").isEqualTo("Старая");
+        assertThat(mvc.get().uri(LESSONS + lesson).with(TestUsers.student(anna))).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.get().uri(LESSONS + lesson).with(TestUsers.admin(UUID.randomUUID())))
+                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.get().uri("/api/me/schedule/lessons/" + lesson).with(TestUsers.student(anna)))
+                .hasStatusOk().bodyText().doesNotContain("Старая");
     }
 
     private String topic(String lessonId) throws UnsupportedEncodingException {

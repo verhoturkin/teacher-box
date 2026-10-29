@@ -50,7 +50,7 @@ a separate topic, and its summary lives in the lesson card. New ADR for the titl
 
 ### 335. Summary in the lesson card
 
-- [ ] 335.1 **F** The lesson card holds «Что прошли» (prefilled with the topic, visible to the
+- [x] 335.1 **F** The lesson card holds «Что прошли» (prefilled with the topic, visible to the
   students, AI «Черновик» kept) and «Тема следующего занятия», with «Сохранить» and «Отправить
   ученику»; the dialog «Итоги урока» goes; private notes are no longer written, old ones stay
   read-only in «История».

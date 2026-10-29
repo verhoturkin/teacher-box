@@ -160,26 +160,21 @@ One content component in `schedule/ui` for teacher and student in a `tb-dialog k
   оплату», for a series the single choice «Только это / Это и следующие» with the count);
   «Удалить…» — `confirm.danger` for one lesson, for a series an `alert` with the same scope list
   and count; the card closes before either opens. «Снять отметку» only for group lessons.
-- **«Итоги»** (teacher, `schedule/teacher/lesson-details-dialog.ts`): one more row of the card, under
-  the facts, only for a lesson that has started and is not cancelled (an individual lesson marked
-  «Пропуск» has none; a future lesson has none) — icon `rate_review`, title «Итоги», supporting text
-  the first line of «Что прошли» or «Добавить итоги», a trailing tonal button «Добавить» / «Изменить»
-  that covers the row (`tb-list__stretched`); *ours:* the row stands 16 px apart from the list of
-  facts, so that it reads as an action of its own. The row opens the dialog «Итоги урока» in place of the card
-  (ADR-0026) and the card comes back with the row updated.
-- **«Итоги урока»** (`schedule/teacher/lesson-summary-dialog.ts`, `tb-dialog kind="form"`):
-  «Что прошли» — Markdown with the `Текст / Просмотр` toggle of the homework editor (visible to the
-  students; when the AI feature is on, a text button «Черновик» in the field header opens a
-  small panel with «Коротко своими словами» and «Составить»: the draft comes from the topic, the
-  words and the titles of the assignments created that day for the lesson's students (assignments
-  are not bound to lessons — *ours*) and goes into the field, after the text already there);
-  «Что дальше» — two
-  lines, the hint that it goes to the next lesson's empty topic; «Заметка для себя» — private, one
-  field for a one-student lesson, for a group a `tb-list` with an avatar and a name per student
-  whose row folds the field open. Nothing saves by itself: the footer has «Отмена», «Сохранить» and
-  «Сохранить и отправить» (disabled until «Что прошли» is filled); the
-  snackbar «Итоги сохранены» / «Итоги отправлены» follows. *Ours:* the layout and the texts; the
-  toggle, the lists and the dialog are the shared ones.
+- **Summary** (teacher, `schedule/teacher/lesson-summary-section.ts` inside
+  `lesson-details-dialog.ts`, 0.41.0): under the facts, only for a lesson that has started and is
+  not cancelled (an individual lesson marked «Пропуск» has none; a future lesson has none), the
+  fields in place — no dialog of its own. «Что прошли» — four lines of Markdown, prefilled with the
+  lesson topic while no summary is saved, hint «Видно ученикам этого занятия.»; when the AI feature
+  is on, a text button «Черновик» in the field header opens a small panel with «Коротко своими
+  словами» and «Составить»: the draft comes from the topic, the words and the titles of the
+  assignments created that day for the lesson's students (assignments are not bound to lessons —
+  *ours*) and replaces the prefilled topic or follows the text already there. «Тема следующего
+  занятия» — two lines, the hint that it goes to the next lesson's empty topic. Below, end-aligned:
+  tonal «Сохранить» (enabled when something differs from the saved summary) and filled «Отправить
+  ученику» / «Отправить ученикам» (a group; disabled while «Что прошли» is empty) — saves, then
+  sends; the snackbar «Итоги сохранены» / «Итоги отправлены» follows and the card stays open.
+  Private notes are no longer written; the old ones are read in the student's «История». *Ours:*
+  the layout, the 16 px gap above the section and the texts.
 - **Student:** the same facts and their own actions («Войти в урок», «Перенести | Отменить» as a
   standard group), without ✎, «⋮» and marks.
 
@@ -232,8 +227,8 @@ active on both, `NavItem.alsoActive`).
   container; the text button «Показать все даты» / «Свернуть даты» swaps in every date of 180 days)
   and the feed «История» of held lessons
   (`GET …/history`, 20 per page, «Показать ещё»): date, topic, the outcome tag (a group lesson shows
-  the student's own attendance), «Что прошли» (Markdown), «Что дальше» and «Заметка для себя» when
-  filled; «Задания» — all, open first, then accepted
+  the student's own attendance), «Что прошли» (Markdown), «Что дальше» and the old read-only
+  «Заметка для себя» (written before 0.41.0) when filled; «Задания» — all, open first, then accepted
   with the grade (20 + «Показать ещё»); «Оплаты» — four tonal tiles (balance, charged, paid, price)
   and the ledger «История» (`tb-ledger-list`); «Профиль» — «Данные ученика» (name *, e-mail, phone,
   note, default topic, colour; tonal «Сохранить», enabled when something differs, and «Отмена» shown

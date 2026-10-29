@@ -2,9 +2,9 @@ import { bearer, startSession } from '../support/session';
 import { type APIRequestContext, expect, test } from '@playwright/test';
 
 /**
- * Lesson summary (0.37.0): the teacher marks a lesson held, writes «Итоги урока» and shares it; the student
- * gets the notification and sees the summary in «История занятий», another student sees nothing, and the
- * private note never reaches the student.
+ * Lesson summary (0.37.0, in the lesson card since 0.41.0): the teacher marks a lesson held, writes
+ * the summary in the card and sends it; the student gets the notification and sees the summary in
+ * «История занятий», another student sees nothing.
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -14,7 +14,6 @@ const NAME = `Итоги ${RUN}`;
 const OTHER = `Чужой ${RUN}`;
 const COVERED = `Past Simple ${RUN}`;
 const NEXT = `Повторить ошибки ${RUN}`;
-const NOTE = `Только для себя ${RUN}`;
 const HOUR = 3_600_000;
 
 test.describe.configure({ mode: 'serial' });
@@ -71,25 +70,24 @@ test('the teacher shares a summary: the student gets it in the inbox and the his
     'true',
   );
 
-  await card.getByRole('button', { name: 'Итоги урока' }).click();
-  const dialog = page.getByRole('dialog', { name: 'Итоги урока' });
-  // nothing to send until the summary has text
-  await expect(dialog.getByRole('button', { name: 'Сохранить и отправить' })).toBeDisabled();
-  await dialog.getByLabel('Что прошли').fill(COVERED);
-  await dialog.getByLabel('Что дальше').fill(NEXT);
-  await dialog.getByLabel('Заметка для себя').fill(NOTE);
-  await dialog.getByRole('button', { name: 'Сохранить и отправить' }).click();
+  // nothing to send until the summary has text; private notes are no longer written
+  await expect(card.getByRole('button', { name: 'Отправить ученику' })).toBeDisabled();
+  await expect(card.getByLabel('Заметка для себя')).toHaveCount(0);
+  await card.getByLabel('Что прошли').fill(COVERED);
+  await card.getByLabel('Тема следующего занятия').fill(NEXT);
+  await card.getByRole('button', { name: 'Отправить ученику' }).click();
   await expect(page.getByText('Итоги отправлены')).toBeVisible();
 
-  // the card is back with the row filled, no reload; opened again from the calendar it still is
-  await expect(card.getByText(COVERED)).toBeVisible();
-  await expect(card.getByText('Добавить итоги')).toHaveCount(0);
+  // the card stays open with the summary; opened again from the calendar it still has it
+  await expect(card.getByLabel('Что прошли')).toHaveValue(COVERED);
   await page.reload();
   await page.getByRole('tab', { name: 'Вид: Месяц', exact: true }).click();
   await page.locator('.tb-lesson', { hasText: NAME }).first().click();
-  await expect(page.getByRole('dialog', { name: NAME }).getByText(COVERED)).toBeVisible();
+  await expect(page.getByRole('dialog', { name: NAME }).getByLabel('Что прошли')).toHaveValue(
+    COVERED,
+  );
 
-  // the student: the inbox record and the history, without the private note
+  // the student: the inbox record and the history, without the plan
   const mine = await bearer(request, `sum-${RUN}`, STUDENT_PASSWORD);
   await expect
     .poll(async () => {
@@ -101,7 +99,7 @@ test('the teacher shares a summary: the student gets it in the inbox and the his
   const own = await request.get('/api/me/schedule/history', { headers: mine });
   const text = await own.text();
   expect(text).toContain(COVERED);
-  expect(text).not.toContain(NOTE);
+  expect(text).not.toContain(NEXT);
 
   const student = await page.context().newPage();
   await student.setViewportSize({ width: 1440, height: 900 });
@@ -109,7 +107,6 @@ test('the teacher shares a summary: the student gets it in the inbox and the his
   await student.goto('/cabinet/schedule');
   await expect(student.getByRole('heading', { name: 'История занятий' })).toBeVisible();
   await expect(student.getByText(COVERED)).toBeVisible();
-  await expect(student.getByText(NOTE)).toHaveCount(0);
 
   // another student sees no part of it
   const other = await bearer(request, `other-${RUN}`, STUDENT_PASSWORD);
