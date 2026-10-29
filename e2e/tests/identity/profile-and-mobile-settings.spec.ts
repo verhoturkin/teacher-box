@@ -71,6 +71,9 @@ test('a student sets a photo and an own name; the teacher keeps the name they ga
     'aria-label',
     `Аккаунт: ${OWN_NAME}`,
   );
+  // 0.40.1: the item shows the name; «Выйти» is the last of the student's account page
+  await expect(student.locator('a[aria-label^="Аккаунт"]')).toContainText(OWN_NAME);
+  await expect(student.locator('tb-account-panel > .tb-stack > :last-child')).toHaveText(/Выйти/);
   await expect(student.getByText(`Учитель видит вас как «${STUDENT}»`)).toBeVisible();
 
   const teacher = await (await browser.newContext()).newPage();
