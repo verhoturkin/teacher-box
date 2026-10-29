@@ -142,6 +142,15 @@ export const en: Translation<typeof ru> = {
     more: (count: number) => `${String(count)} more planned`,
   },
   lessonsTab: {
+    series: (weeks: number, days: string, time: string, minutes: number) =>
+      `${weeks === 1 ? 'Every' : `Every ${String(weeks)} weeks:`} ${days}, ${time} · ${String(minutes)} min`,
+    since: (date: string) => `from ${date}`,
+    until: (date: string) => `until ${date}`,
+    left: (count: number) => `${String(count)} left`,
+    movedTo: (when: string) => `Moved to ${when}`,
+    changed: 'changed separately',
+    showAll: 'Show all dates',
+    hideAll: 'Hide dates',
     what: 'lessons',
     upcoming: 'Upcoming',
     noUpcoming: 'No lessons planned',

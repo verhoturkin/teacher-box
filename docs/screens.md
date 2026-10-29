@@ -226,7 +226,11 @@ active on both, `NavItem.alsoActive`).
   items: «Сегодня, 15:00–16:00» / title · topic, the nearest lead in primary container; «Ещё
   запланировано: N»), «Задания» (open ones, works to review first; 5 + «Ещё открытых: N»), «Баланс»
   (figure, price, last 3 operations), «Связь» (`tb-student-channels`, `tb-room-link`); «Занятия» —
-  «Предстоящие» (180 days ahead, cancelled rows inactive) and the feed «История» of held lessons
+  «Предстоящие» (`GET …/upcoming`: a series is one row «Каждый вт и чт, 15:00 · 60 мин» over
+  «title · с 3 ноября · до 25 декабря · ещё 12», one-off lessons and exceptions — «Перенесено на …»,
+  cancelled (inactive, tag), «изменено отдельно» — their own rows, the nearest lead in primary
+  container; the text button «Показать все даты» / «Свернуть даты» swaps in every date of 180 days)
+  and the feed «История» of held lessons
   (`GET …/history`, 20 per page, «Показать ещё»): date, topic, the outcome tag (a group lesson shows
   the student's own attendance), «Что прошли» (Markdown), «Что дальше» and «Заметка для себя» when
   filled; «Задания» — all, open first, then accepted

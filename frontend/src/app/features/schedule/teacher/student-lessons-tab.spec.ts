@@ -5,8 +5,14 @@ import { groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { testProviders } from '@testing/setup';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { LessonsOf } from '../data-access/schedule-api';
-import { HistoryEntry, ScheduledLesson } from '../data-access/schedule.models';
+import {
+  HistoryEntry,
+  ScheduledLesson,
+  UpcomingLessons,
+  UpcomingSeries,
+} from '../data-access/schedule.models';
 import { formatLessonStart, formatLessonTime } from '../schedule-labels';
+import { fromIsoDate } from '@shared/dates/iso-date';
 import { StudentLessonsTab } from './student-lessons-tab';
 
 const HOUR = 3_600_000;
@@ -42,6 +48,26 @@ function entry(overrides: Partial<HistoryEntry> = {}): HistoryEntry {
   };
 }
 
+function series(overrides: Partial<UpcomingSeries> = {}): UpcomingSeries {
+  return {
+    ruleIds: ['r-1', 'r-2'],
+    weekdays: ['TUESDAY', 'THURSDAY'],
+    startTime: '15:00:00',
+    durationMinutes: 60,
+    intervalWeeks: 1,
+    since: '2026-11-03',
+    endsOn: '2026-12-25',
+    remaining: 12,
+    title: 'Английский',
+    groupId: null,
+    groupName: null,
+    nextStartsAt: inHours(30).startsAt,
+    ...overrides,
+  };
+}
+
+const NONE: UpcomingLessons = { series: [], lessons: [] };
+
 describe('StudentLessonsTab', () => {
   let fixture: ComponentFixture<StudentLessonsTab>;
   let backend: HttpTestingController;
@@ -60,6 +86,16 @@ describe('StudentLessonsTab', () => {
     return backend.expectOne((r) => r.url === '/api/teacher/schedule/lessons');
   }
 
+  function upcomingRead(): TestRequest {
+    return backend.expectOne(
+      (r) =>
+        r.url ===
+        ('studentId' in of
+          ? `/api/teacher/schedule/students/${of.studentId}/upcoming`
+          : `/api/teacher/schedule/groups/${of.groupId}/upcoming`),
+    );
+  }
+
   function historyUrl(): string {
     return 'studentId' in of
       ? `/api/teacher/schedule/students/${of.studentId}/history`
@@ -70,8 +106,16 @@ describe('StudentLessonsTab', () => {
     return backend.expectOne((r) => r.url === historyUrl());
   }
 
-  async function answer(lessons: ScheduledLesson[], history: HistoryEntry[] = []): Promise<void> {
+  async function answer(
+    lessons: ScheduledLesson[],
+    history: HistoryEntry[] = [],
+    grouped: UpcomingLessons = {
+      series: [],
+      lessons: lessons.map((lesson) => ({ kind: 'ONE_OFF' as const, lesson })),
+    },
+  ): Promise<void> {
     lessonsRead().flush(lessons);
+    upcomingRead().flush(grouped);
     historyRead().flush(history);
     await fixture.whenStable();
   }
@@ -98,6 +142,7 @@ describe('StudentLessonsTab', () => {
     expect(page.request.params.get('limit')).toBe('20');
     expect(page.request.params.has('before')).toBe(false);
     request.flush([]);
+    upcomingRead().flush(NONE);
     page.flush([]);
     await fixture.whenStable();
 
@@ -113,7 +158,10 @@ describe('StudentLessonsTab', () => {
     const cancelled = scheduledLesson({ id: 'cancelled', ...inHours(24), status: 'CANCELLED' });
     const past = scheduledLesson({ id: 'past', ...inHours(-3) });
     const recurring = groupLesson({ id: 'group', ...inHours(72), seriesId: 'series-1' });
-    await answer([later, past, recurring, cancelled]);
+    await answer([later, past, recurring, cancelled], [], { series: [series()], lessons: [] });
+
+    buttonByText(hostElement(fixture), 'Показать все даты').click();
+    await fixture.whenStable();
 
     expect(rows('Предстоящие')).toEqual([
       `${formatLessonTime(cancelled.startsAt, cancelled.endsAt)} Тема не задана Отменено`,
@@ -121,6 +169,63 @@ describe('StudentLessonsTab', () => {
       `${formatLessonTime(recurring.startsAt, recurring.endsAt)} Группа «ОГЭ» · Тема не задана · регулярное`,
     ]);
     expect(hostElement(fixture).querySelector('li.tb-inactive')).not.toBeNull();
+
+    buttonByText(hostElement(fixture), 'Свернуть даты').click();
+    await fixture.whenStable();
+    expect(rows('Предстоящие')).toHaveLength(1);
+  });
+
+  it('shows a series as one row and its exceptions and one-off lessons as their own', async () => {
+    await render();
+    const moved = scheduledLesson({
+      id: 'moved',
+      ...inHours(50),
+      originalStartsAt: inHours(26).startsAt,
+      title: 'Английский',
+      seriesId: 'r-1',
+    });
+    const cancelled = scheduledLesson({
+      id: 'off',
+      ...inHours(74),
+      status: 'CANCELLED',
+      seriesId: 'r-2',
+    });
+    const changed = scheduledLesson({ id: 'changed', ...inHours(98), seriesId: 'r-1' });
+    const single = scheduledLesson({ id: 'single', ...inHours(10), title: 'Пробное' });
+    await answer([moved, cancelled, changed, single], [], {
+      series: [
+        series(),
+        series({
+          ruleIds: ['r-3'],
+          weekdays: ['FRIDAY'],
+          intervalWeeks: 2,
+          endsOn: null,
+          remaining: null,
+          title: null,
+          groupId: 'g-1',
+          groupName: 'ОГЭ',
+          nextStartsAt: inHours(120).startsAt,
+        }),
+      ],
+      lessons: [
+        { kind: 'MOVED', lesson: moved },
+        { kind: 'CANCELLED', lesson: cancelled },
+        { kind: 'CHANGED', lesson: changed },
+        { kind: 'ONE_OFF', lesson: single },
+      ],
+    });
+
+    const day = (iso: string): string =>
+      fromIsoDate(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    expect(rows('Предстоящие')).toEqual([
+      `${formatLessonTime(single.startsAt, single.endsAt)} Пробное`,
+      `Каждый вт и чт, 15:00 · 60 мин Английский · с ${day('2026-11-03')} · до ${day('2026-12-25')} · ещё 12`,
+      `${formatLessonStart(moved.originalStartsAt ?? '')} Перенесено на ${formatLessonStart(moved.startsAt)} · Английский`,
+      `${formatLessonTime(cancelled.startsAt, cancelled.endsAt)} Тема не задана Отменено`,
+      `${formatLessonTime(changed.startsAt, changed.endsAt)} изменено отдельно · Тема не задана`,
+      `Раз в 2 недели: пт, 15:00 · 60 мин Группа «ОГЭ» · с ${day('2026-11-03')}`,
+    ]);
+    expect(hostElement(fixture).querySelectorAll('.tb-list__lead--accent')).toHaveLength(1);
   });
 
   it('shows the history with the summary, the plan and the own note', async () => {
@@ -195,6 +300,7 @@ describe('StudentLessonsTab', () => {
     const request = lessonsRead();
     expect(request.request.params.get('groupId')).toBe('g-1');
     request.flush([lesson]);
+    upcomingRead().flush({ series: [], lessons: [{ kind: 'ONE_OFF', lesson }] });
     historyRead().flush([
       entry({ groupId: 'g-1', groupName: 'ОГЭ', title: 'Итоги', summary: 'Повторили' }),
     ]);

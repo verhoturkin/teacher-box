@@ -36,6 +36,7 @@ import ru.teacherbox.schedule.application.ScheduleViews.HistoryEntry;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSummary;
+import ru.teacherbox.schedule.application.ScheduleViews.UpcomingLessons;
 import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.LessonStatus;
@@ -192,6 +193,17 @@ class TeacherScheduleController {
             @RequestParam(required = false) @Nullable Instant before,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {
         return queries.groupHistory(groupId, before, limit);
+    }
+
+    /** Lessons ahead of a student: a series is one item, one-off lessons and exceptions are their own. */
+    @GetMapping("/students/{studentId}/upcoming")
+    UpcomingLessons studentUpcoming(@PathVariable UUID studentId) {
+        return queries.studentUpcoming(studentId);
+    }
+
+    @GetMapping("/groups/{groupId}/upcoming")
+    UpcomingLessons groupUpcoming(@PathVariable UUID groupId) {
+        return queries.groupUpcoming(groupId);
     }
 
     @GetMapping("/lessons/{lessonId}/following")

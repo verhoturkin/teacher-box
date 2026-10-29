@@ -255,4 +255,28 @@ public final class ScheduleViews {
     /** One period of off time in the teacher's calendar. */
     public record OffTimePeriod(UUID offTimeId, Instant start, Instant end, @Nullable String note) {
     }
+
+    /** The lessons ahead of a student or a group for the teacher: series as one item, the rest one by one. */
+    public record UpcomingLessons(List<UpcomingSeries> series, List<UpcomingLesson> lessons) {
+    }
+
+    /**
+     * Repeat rules alike but for the weekday, as one item.
+     *
+     * @param since     the first day of the rules
+     * @param remaining regular lessons left until {@code endsOn}; {@code null} without an end
+     */
+    public record UpcomingSeries(List<UUID> ruleIds, List<DayOfWeek> weekdays, LocalTime startTime,
+            int durationMinutes, int intervalWeeks, LocalDate since, @Nullable LocalDate endsOn,
+            @Nullable Integer remaining, @Nullable String title, @Nullable UUID groupId, @Nullable String groupName,
+            Instant nextStartsAt) {
+    }
+
+    /** A one-off lesson or an exception of a series. */
+    public record UpcomingLesson(UpcomingKind kind, LessonView lesson) {
+    }
+
+    public enum UpcomingKind {
+        ONE_OFF, MOVED, CANCELLED, CHANGED
+    }
 }

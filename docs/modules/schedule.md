@@ -105,6 +105,14 @@ History feeds of held lessons (`CONDUCTED`/`MISSED`, group lessons included, new
 (date, title, topic, status, attendance, `summary`, `nextPlan`, the student's own private `note`),
 `GET /api/teacher/schedule/groups/{id}/history` (same without private notes and attendance) and
 `GET /api/me/schedule/history` (own lessons only, `summary` only — no plan, no note).
+Lessons ahead, grouped (0.41.0): `GET /api/teacher/schedule/students/{id}/upcoming` (group lessons
+included) and `GET /api/teacher/schedule/groups/{id}/upcoming` read up to 400 days of lessons that
+have not ended. `series[]` — repeat rules alike but for the weekday (owner, time, duration,
+interval, title, end) merged into one item: `weekdays`, `startTime`, `durationMinutes`,
+`intervalWeeks`, `since` (the earliest rule start), `endsOn`, `remaining` (regular lessons left,
+ungenerated dates up to the end included; `null` without an end), `title`, group, `nextStartsAt`.
+`lessons[]` — the rest with `kind`: `ONE_OFF` (no rule), `CANCELLED`, `MOVED`
+(`originalStartsAt` set) or `CHANGED` (an individually edited occurrence).
 `POST lessons/{id}/summary/share` (204) publishes `LessonSummaryShared(lessonId, studentIds, teacherId, startsAt,
 occurredAt)` — only this explicit action, never a plain save; an empty summary is `schedule.summary-empty` (422).
 Lesson POST/PUT accept `repeatWeeks` (0–4), `repeatUntil`; PUT/cancel/DELETE accept `scope` (`ONLY`/`FOLLOWING`)

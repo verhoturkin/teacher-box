@@ -20,7 +20,7 @@ import { GroupProfileTab } from './group-profile-tab';
 
 /** What the tabs read: answered by their own specs. */
 const TAB_READS =
-  /schedule\/(lessons|groups\/[^/]+\/history)|homework\/students\/|billing\/groups|meetings\/(rooms|calls)/;
+  /schedule\/(lessons|groups\/[^/]+\/(history|upcoming))|homework\/students\/|billing\/groups|meetings\/(rooms|calls)/;
 
 const OGE = aGroup({
   id: 'g',

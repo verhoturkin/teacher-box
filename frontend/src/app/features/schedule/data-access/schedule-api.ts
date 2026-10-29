@@ -24,6 +24,7 @@ import {
   ScheduleSettings,
   ScheduleSummary,
   ScheduledLesson,
+  UpcomingLessons,
 } from './schedule.models';
 
 /** Requests whose errors the dialog (e.g. an overlap) or the page (a failed load, ADR-0025) shows itself. */
@@ -67,6 +68,12 @@ export class ScheduleApi {
       ...QUIET,
       params,
     });
+  }
+
+  /** The lessons ahead of a student or a group: a series is one item. */
+  upcoming(of: LessonsOf): Observable<UpcomingLessons> {
+    const path = 'studentId' in of ? `students/${of.studentId}` : `groups/${of.groupId}`;
+    return this.http.get<UpcomingLessons>(`/api/teacher/schedule/${path}/upcoming`, QUIET);
   }
 
   plan(request: PlanLessonRequest): Observable<ScheduledLesson> {
