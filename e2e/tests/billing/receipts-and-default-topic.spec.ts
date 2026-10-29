@@ -146,7 +146,7 @@ test('a new lesson gets the default topic of the student', async ({ page, reques
   const dialog = page.getByRole('dialog', { name: 'Новое занятие' });
   await dialog.locator('p-select:has(#schedule-lesson-student)').click();
   await page.getByRole('option', { name: VERA }).click();
-  await expect(dialog.locator('#schedule-lesson-topic')).toHaveValue('Химия ЕГЭ');
+  await expect(dialog.locator('#schedule-lesson-title')).toHaveValue('Химия ЕГЭ');
 });
 
 test('the teacher attaches a receipt and the student opens it', async ({ page, request }) => {

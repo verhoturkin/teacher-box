@@ -278,3 +278,33 @@ test('on a phone a form is a full-screen dialog with its action at the top', asy
   expect(saveBox?.y).toBeLessThan(80);
   expect(saveBox?.x).toBeGreaterThan(PHONE.width / 2);
 });
+
+test('a lesson has a title and a topic; a series is one row on the student card', async ({
+  page,
+  request,
+}) => {
+  const headers = await bearer(request);
+  const name = `Название ${RUN}`;
+  const id = await student(request, headers, name);
+  const title = `Разговорный ${RUN}`;
+  const start = new Date(Date.now() + DAY);
+  start.setMinutes(0, 0, 0);
+  await lesson(request, headers, {
+    studentId: id,
+    startsAt: start.toISOString(),
+    title,
+    topic: `Past Perfect ${RUN}`,
+    repeatWeeks: 1,
+    repeatUntil: new Date(start.getTime() + 21 * DAY).toISOString().slice(0, 10),
+  });
+  await page.setViewportSize(WIDE);
+  await startSession(page, 'teacher', TEACHER_PASSWORD);
+  await page.goto(`/teacher/students/${id}?tab=lessons`);
+  // the series is one row with its repeat and the number of lessons left, not a row per date
+  const rows = page.getByRole('list', { name: 'Предстоящие' }).getByRole('listitem');
+  await expect(rows).toHaveCount(1);
+  await expect(rows).toContainText('Каждый');
+  await expect(rows).toContainText('ещё');
+  await page.getByRole('button', { name: 'Показать все даты' }).click();
+  await expect(rows.first()).toContainText(title);
+});

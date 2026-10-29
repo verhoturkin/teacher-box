@@ -50,7 +50,7 @@ async function planLesson(
   await page.getByRole('option', { name: STUDENT_NAME }).click();
   // The date picker parses typed keys, not a pasted value.
   await page.locator('#schedule-lesson-start').pressSequentially(dateTime(daysFromToday, hours));
-  await page.locator('#schedule-lesson-topic').fill(topic);
+  await page.locator('#schedule-lesson-title').fill(topic);
   await saveLesson(page);
 }
 

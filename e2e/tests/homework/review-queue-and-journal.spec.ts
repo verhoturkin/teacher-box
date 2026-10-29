@@ -199,3 +199,26 @@ test('an assignment is copied from the «⋮» menu of the list', async ({ page,
   await page.getByRole('menuitem', { name: 'Создать копию' }).click();
   await expect(page.getByLabel('Название').first()).toHaveValue(`${title} (копия)`);
 });
+
+test('«Активные» are grouped by the deadline', async ({ page, request }) => {
+  const title = `Срок ${RUN}`;
+  const teacher = await token(request);
+  const created = await api<Created>(request, teacher, 'POST', '/api/teacher/students', {
+    displayName: `Срок ${RUN}`,
+    email: null,
+    phone: null,
+    note: null,
+  });
+  await api(request, teacher, 'POST', '/api/teacher/homework/assignments', {
+    title,
+    description: 'Текст',
+    dueAt: new Date(Date.now() + 60 * 86_400_000).toISOString(),
+    studentIds: [created.student.id],
+    videos: [],
+  });
+  await signIn(page);
+  await page.goto('/teacher/homework');
+  await page.getByText('Активные').first().click();
+  await expect(page.getByText('Позже', { exact: true })).toBeVisible();
+  await expect(page.getByText(title).first()).toBeVisible();
+});
