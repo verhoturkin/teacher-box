@@ -366,7 +366,7 @@ On the homework's page, in «Textbooks», click «Bind a textbook», choose a te
 
 ## Review work
 
-«Homework» is a list on the left and the opened item on the right. A switch at the top of the list: **To review** (handed-in work, and under it «Waiting for hand-in» — who has not handed in yet), **Active** (given homework where not everything is accepted; below it «Not given» — drafts) and **Done** (everything accepted). Search by the homework title or a student's name is always visible above the list. Status tags are stacked vertically. A work in the list shows the student, the homework and when it was handed in; the «Overdue» tag means it was handed in after the due date.
+«Homework» is a list on the left and the opened item on the right. A switch at the top of the list: **To review** (handed-in work, and under it «Waiting for hand-in» — who has not handed in yet), **Active** (given homework where not everything is accepted; grouped by due date: «Overdue» (folded, opens on click), «Due this week», «Later», «No due date»; below it «Not given» — drafts) and **Done** (everything accepted). Search by the homework title or a student's name is always visible above the list, with a «For» select next to it — one student or one group (kept in the page address). «Done» shows 20 at a time; «Show more» adds more. Status tags are stacked vertically. A work in the list shows the student, the homework and when it was handed in; the «Overdue» tag means it was handed in after the due date.
 
 Press a work and it opens on the right: the task (it collapses), the student's answer and the picture files. «Open on the board» leads to the homework's board. On a wide screen the review is a separate panel at the right:
 

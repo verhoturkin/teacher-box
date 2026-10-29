@@ -84,8 +84,9 @@ public final class HomeworkViews {
     /**
      * A row of the teacher's list of assignments.
      *
-     * @param students the names of its students, alphabetically
-     * @param boardId  the board it was put on; {@code null} — none
+     * @param students   the names of its students, alphabetically
+     * @param studentIds the ids of its students (the list filters by student or group)
+     * @param boardId the board it was put on; {@code null} — none
      */
     public record AssignmentSummary(
             UUID id,
@@ -93,6 +94,7 @@ public final class HomeworkViews {
             @Nullable Instant dueAt,
             Instant createdAt,
             List<String> students,
+            List<UUID> studentIds,
             @Nullable UUID boardId,
             int totalTasks,
             int assigned,

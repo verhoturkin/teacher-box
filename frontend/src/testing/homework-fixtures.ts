@@ -42,6 +42,7 @@ export function assignmentSummary(overrides: Partial<AssignmentSummary> = {}): A
     dueAt: '2026-09-10T15:00:00Z',
     createdAt: '2026-09-01T10:00:00Z',
     students: ['Анна', 'Борис'],
+    studentIds: ['s-1', 's-2'],
     boardId: null,
     totalTasks: 2,
     assigned: 1,

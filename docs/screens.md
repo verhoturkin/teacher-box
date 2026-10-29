@@ -256,7 +256,11 @@ Three panes of one route (`/teacher/homework[/tasks/:taskId | /:assignmentId]`,
 detail panes do not repeat it:
 
 - **List** (fixed pane): the connected group «На проверку · Активные · Готовые» with counts, the
-  search always above the list (kept in the address as `?q=`); tonal rows (`tb-list--clamp`) — a
+  search always above the list (kept in the address as `?q=`) and a «Кому» select (groups, then
+  students; «Все» clears it; kept as `?who=student:<id>|group:<id>`); «Активные» are grouped by the
+  due date — «Просрочено: N» (a folded button, `aria-expanded`), «Срок на этой неделе» (up to the
+  next Monday), «Позже», «Без срока» — then «Не выдано»; «Готовые» show 20 rows and «Показать ещё»
+  adds 20 more (333.1); tonal rows (`tb-list--clamp`) — a
   work: avatar, student, «задание · сдано …», the
   «Просрочено» tag; «Ждут сдачи» under them; an assignment row: icon (a board icon when on a board),
   title link + «кому · до dd.MM HH:mm» (the year only when it is not the current one; two names,

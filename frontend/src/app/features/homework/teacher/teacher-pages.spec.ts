@@ -67,6 +67,15 @@ const QUEUE = '/api/teacher/homework/review-queue';
 const ASSIGNMENTS = '/api/teacher/homework/assignments';
 
 describe('AssignmentsPage', () => {
+  // the fixture's due date (10.09) is still ahead; Wednesday 2 September 2026
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-09-02T12:00:00Z'));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   async function render(assignments = [assignmentSummary()], queue = [reviewQueueItem()]) {
     const { backend } = configure();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
@@ -149,8 +158,8 @@ describe('AssignmentsPage', () => {
         assignmentSummary({
           id: 'a-5',
           title: 'Свежее',
-          // mid-year of the run: the row leaves the current year out
-          dueAt: `${String(new Date().getFullYear())}-06-15T10:00:00Z`,
+          // the end of the current year: the row leaves the year out
+          dueAt: `${String(new Date().getFullYear())}-12-15T10:00:00Z`,
           students: ['Анна', 'Борис', 'Вера'],
           totalTasks: 1,
           submitted: 0,
@@ -162,16 +171,26 @@ describe('AssignmentsPage', () => {
     expect(segment(host, 'Активные').getAttribute('aria-pressed')).toBe('true');
     expect(readableText(host)).toContain('Активные 4');
     expect(readableText(host)).toContain('Готовые 1');
-    const list = rows(host);
-    expect(list[0]).toContain('Дроби Анна, Борис · до 10.09.2020');
-    expect(list[0]).toContain('На проверке: 1');
+    // grouped by the due date; the overdue ones are folded
+    const overdue = buttonByText(host, 'Просрочено: 1');
+    expect(overdue.getAttribute('aria-expanded')).toBe('false');
+    expect(readableText(host)).not.toContain('Дроби');
+    const headings = [...host.querySelectorAll('h2')].map((h) => readableText(h));
+    expect(headings).toEqual(['Позже', 'Без срока', 'Не выдано']);
+    let list = rows(host);
+    expect(list[0]).toMatch(/Свежее Анна и ещё 2 · до 15\.12 \d\d:\d\d /);
+    expect(list[0]).toContain('Выдано');
     expect(list[1]).toContain('А и ещё 4 · без срока');
     expect(list[1]).toContain('Принято 2 из 5');
-    expect(list[2]).toMatch(/Свежее Анна и ещё 2 · до 15\.06 \d\d:\d\d /);
-    expect(list[2]).toContain('Выдано');
-    expect(readableText(host)).toContain('Не выдано');
-    expect(list[3]).toContain('Ещё никому не выдано');
+    expect(list[2]).toContain('Ещё никому не выдано');
     expect(readableText(host)).not.toContain('Готово Анна');
+
+    overdue.click();
+    await fixture.whenStable();
+    expect(overdue.getAttribute('aria-expanded')).toBe('true');
+    list = rows(host);
+    expect(list[0]).toContain('Дроби Анна, Борис · до 10.09.2020');
+    expect(list[0]).toContain('На проверке: 1');
 
     segment(host, 'Готовые').click();
     await fixture.whenStable();
@@ -243,6 +262,76 @@ describe('AssignmentsPage', () => {
     expect(rows(host)).toHaveLength(1);
     expect(rows(host)[0]).toContain('Корни');
     fixture.destroy();
+  });
+
+  it('filters by «Кому» from the address: a group, then one student', async () => {
+    const { backend } = configure();
+    await TestBed.inject(Router).navigateByUrl('/?who=group:group-1');
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(AssignmentsPage);
+    await fixture.whenStable();
+    backend
+      .expectOne(ASSIGNMENTS)
+      .flush([
+        assignmentSummary({ id: 'a-1', title: 'Дроби', studentIds: ['student-1'] }),
+        assignmentSummary({ id: 'a-2', title: 'Корни', studentIds: ['s-9'] }),
+        assignmentSummary({ id: 'a-3', title: 'Степени', studentIds: ['s-8', 'student-2'] }),
+      ]);
+    backend.expectOne(QUEUE).flush([]);
+    backend.expectOne('/api/teacher/students').flush([]);
+    backend
+      .expectOne('/api/teacher/groups')
+      .flush([
+        aGroup(),
+        aGroup({ id: 'group-old', name: 'Архив', archivedAt: '2026-09-01T10:00:00Z' }),
+      ]);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+    // the group: its members' assignments only, in the order of the due date (all «Позже» here)
+    expect(rows(host).map((row) => row.split(' ')[0])).toEqual(['Дроби', 'Степени']);
+
+    // another choice goes into the address
+    fixture.componentInstance.whom.setValue('student:s-9');
+    await fixture.whenStable();
+    expect(navigate).toHaveBeenLastCalledWith(
+      [],
+      expect.objectContaining({ queryParams: { who: 'student:s-9' } }),
+    );
+    expect(rows(host).map((row) => row.split(' ')[0])).toEqual(['Корни']);
+
+    // «Все» drops the parameter
+    fixture.componentInstance.whom.setValue(null);
+    await fixture.whenStable();
+    expect(navigate).toHaveBeenLastCalledWith(
+      [],
+      expect.objectContaining({ queryParams: { who: null } }),
+    );
+    expect(rows(host)).toHaveLength(3);
+    fixture.destroy();
+  });
+
+  it('shows the finished assignments 20 at a time', async () => {
+    const finished = Array.from({ length: 45 }, (_, index) =>
+      assignmentSummary({
+        id: `a-${String(index)}`,
+        title: `Готово ${String(index)}`,
+        totalTasks: 1,
+        submitted: 0,
+        accepted: 1,
+      }),
+    );
+    const { host, fixture } = await render(finished, []);
+    segment(host, 'Готовые').click();
+    await fixture.whenStable();
+    expect(rows(host)).toHaveLength(20);
+
+    buttonByText(host, 'Показать ещё').click();
+    await fixture.whenStable();
+    expect(rows(host)).toHaveLength(40);
+    buttonByText(host, 'Показать ещё').click();
+    await fixture.whenStable();
+    expect(rows(host)).toHaveLength(45);
+    expect(() => buttonByText(host, 'Показать ещё')).toThrow();
   });
 
   it('says what is empty in each filter', async () => {

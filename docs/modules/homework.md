@@ -15,6 +15,8 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
 - **The board of an assignment** (ADR-0041): `assignments.board_id` — the board it was put on (a UUID only,
   `homework` does not know `boards`); `PUT /api/teacher/homework/assignments/{id}/board {boardId}` (`null` forgets it)
   changes no version. `boardId` is in `AssignmentDetails`, `AssignmentSummary` and the student's `AssignmentInfo`.
+  `AssignmentSummary.studentIds` (0.41.0) lets the teacher's list filter by student or group on the
+  client; the list endpoint still returns every assignment (paging of «Готовые» is client-side).
 - **Videos by link** ([ADR-0047](../adr/0047-video-links-and-transcripts.md), 0.19.0): up to 5 per assignment
   (`homework.assignment_videos`, cascade with the assignment), sent as `videos [{url, title?, transcript?,
   transcriptShown}]` in the create / update requests — the list replaces the old one, an update without it keeps them.

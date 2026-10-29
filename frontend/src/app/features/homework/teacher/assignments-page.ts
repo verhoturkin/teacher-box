@@ -18,15 +18,17 @@ import { forkJoin } from 'rxjs';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
+import { Select } from 'primeng/select';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
+import { quietContext } from '@core/http/api-error.interceptor';
 import { injectMobile, injectWindowSize } from '@core/layout/mobile';
 import { collapseRail, hideBottomBar } from '@core/layout/rail-state';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { openOnCreate } from '@core/routing/create-param';
 import { writeQuery } from '@core/routing/query-state';
 import { HelpButton } from '@features/help/parts';
-import { TeacherColors } from '@features/identity/parts';
+import { IdentityApi, TeacherColors } from '@features/identity/parts';
 import { Avatar } from '@shared/ui/avatar';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { EmptyState } from '@shared/ui/empty-state';
@@ -37,6 +39,7 @@ import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
 import { SearchField } from '@shared/ui/search-field';
 import { Segment, SegmentGroup } from '@shared/ui/segment-group';
 import { AssignmentPage } from './assignment-page';
+import { groupByDeadline } from './deadline-groups';
 import { NextWork, ReviewSheet } from './review-sheet';
 import { TaskReviewPage } from './task-review-page';
 import { HomeworkApi } from '../data-access/homework-api';
@@ -46,6 +49,15 @@ import { T } from '../i18n/texts';
 
 /** Names a row shows in full; more of them — the first one and «и ещё N» (one row keeps its height). */
 const SHOWN_STUDENTS = 2;
+
+/** How many finished assignments «Готовые» shows at a time. */
+const DONE_PAGE = 20;
+
+/** One student or one group in the «Кому» select: `student:<id>` or `group:<id>`. */
+interface WhomOption {
+  readonly label: string;
+  readonly value: string;
+}
 
 /** What the list shows: works to review, assignments in progress (with the drafts) or finished ones. */
 type Filter = 'review' | 'active' | 'done';
@@ -77,6 +89,7 @@ type Filter = 'review' | 'active' | 'done';
     RouterLink,
     SearchField,
     SegmentGroup,
+    Select,
     Tag,
     Tooltip,
     ButtonAttributes,
@@ -105,6 +118,20 @@ type Filter = 'review' | 'active' | 'done';
             <div class="tb-hw__filters">
               <tb-segment-group [label]="t.filters" [segments]="segments()" [(value)]="filter" />
               <tb-search-field [formControl]="search" [label]="t.search" />
+              <p-select
+                [formControl]="whom"
+                [options]="whomOptions()"
+                [group]="true"
+                optionGroupLabel="label"
+                optionGroupChildren="items"
+                optionLabel="label"
+                optionValue="value"
+                [placeholder]="t.everyone"
+                [showClear]="true"
+                [ariaLabel]="t.whom"
+                appendTo="body"
+                [fluid]="true"
+              />
             </div>
           </div>
           <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
@@ -156,10 +183,39 @@ type Filter = 'review' | 'active' | 'done';
               }
               @case ('active') {
                 @if (given().length > 0) {
-                  <ng-container
-                    [ngTemplateOutlet]="assignmentRows"
-                    [ngTemplateOutletContext]="{ rows: given(), label: t.active }"
-                  />
+                  @for (group of deadlineGroups(); track group.key) {
+                    @if (group.key === 'overdue') {
+                      <p-button
+                        [label]="t.overdueGroup(group.rows.length)"
+                        [icon]="overdueOpen() ? 'tb-i tb-i-expand_less' : 'tb-i tb-i-expand_more'"
+                        iconPos="right"
+                        [text]="true"
+                        severity="secondary"
+                        [tbAttributes]="{
+                          'aria-expanded': overdueOpen() ? 'true' : 'false',
+                          'aria-controls': 'tb-hw-overdue',
+                        }"
+                        (onClick)="overdueOpen.update((open) => !open)"
+                      />
+                      <div id="tb-hw-overdue">
+                        @if (overdueOpen()) {
+                          <ng-container
+                            [ngTemplateOutlet]="assignmentRows"
+                            [ngTemplateOutletContext]="{ rows: group.rows, label: t.late }"
+                          />
+                        }
+                      </div>
+                    } @else {
+                      <h2 class="tb-hw__section">{{ groupLabel(group.key) }}</h2>
+                      <ng-container
+                        [ngTemplateOutlet]="assignmentRows"
+                        [ngTemplateOutletContext]="{
+                          rows: group.rows,
+                          label: groupLabel(group.key),
+                        }"
+                      />
+                    }
+                  }
                 } @else if (drafts().length === 0) {
                   <ng-container
                     [ngTemplateOutlet]="empty"
@@ -178,8 +234,16 @@ type Filter = 'review' | 'active' | 'done';
                 @if (finished().length > 0) {
                   <ng-container
                     [ngTemplateOutlet]="assignmentRows"
-                    [ngTemplateOutletContext]="{ rows: finished(), label: t.done }"
+                    [ngTemplateOutletContext]="{ rows: shownDone(), label: t.done }"
                   />
+                  @if (finished().length > shownDone().length) {
+                    <p-button
+                      [label]="t.showMore"
+                      [text]="true"
+                      severity="secondary"
+                      (onClick)="doneLimit.update((limit) => limit + donePage)"
+                    />
+                  }
                 } @else {
                   <ng-container
                     [ngTemplateOutlet]="empty"
@@ -359,6 +423,7 @@ export class AssignmentsPage implements OnInit {
     () => this.taskId() !== undefined || this.assignmentId() !== undefined,
   );
   private readonly api = inject(HomeworkApi);
+  private readonly identity = inject(IdentityApi);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly snackbar = inject(Snackbar);
@@ -444,15 +509,58 @@ export class AssignmentsPage implements OnInit {
     );
   }
 
-  private readonly found = computed(() => this.assignments().filter((a) => this.matches(a)));
+  /** The students and the groups of the «Кому» select. */
+  private readonly students = signal<{ id: string; name: string }[]>([]);
+  private readonly groups = signal<{ id: string; name: string; memberIds: string[] }[]>([]);
+  /** «Кому» is kept in the address (`?who=student:<id>` / `group:<id>`), like the search. */
+  readonly whom = new FormControl<string | null>(this.route.snapshot.queryParamMap.get('who'));
+  private readonly whomValue = toSignal(this.whom.valueChanges, {
+    initialValue: this.whom.value,
+  });
+  protected readonly whomOptions = computed(() => {
+    const groups = this.groups().map((g): WhomOption => ({
+      label: g.name,
+      value: `group:${g.id}`,
+    }));
+    const students = this.students().map((s): WhomOption => ({
+      label: s.name,
+      value: `student:${s.id}`,
+    }));
+    return [
+      ...(groups.length > 0 ? [{ label: this.t.groupsOption, items: groups }] : []),
+      { label: this.t.studentsOption, items: students },
+    ];
+  });
+  /** The ids of the students «Кому» stands for; `null` — everybody. */
+  private readonly whomIds = computed<ReadonlySet<string> | null>(() => {
+    const value = this.whomValue();
+    if (value === null || value === '') {
+      return null;
+    }
+    const id = value.slice(value.indexOf(':') + 1);
+    return new Set(
+      value.startsWith('group:')
+        ? (this.groups().find((group) => group.id === id)?.memberIds ?? [])
+        : [id],
+    );
+  });
+
+  private readonly found = computed(() => {
+    const ids = this.whomIds();
+    return this.assignments().filter(
+      (a) => this.matches(a) && (ids === null || a.studentIds.some((id) => ids.has(id))),
+    );
+  });
   /** Works handed in whose assignment, student or title has the search text. */
   protected readonly works = computed(() => {
     const query = this.query().trim().toLocaleLowerCase();
+    const ids = this.whomIds();
     return this.queue().filter(
       (work) =>
-        query === '' ||
-        work.title.toLocaleLowerCase().includes(query) ||
-        work.studentName.toLocaleLowerCase().includes(query),
+        (ids === null || ids.has(work.studentId)) &&
+        (query === '' ||
+          work.title.toLocaleLowerCase().includes(query) ||
+          work.studentName.toLocaleLowerCase().includes(query)),
     );
   });
   /** Given out and somebody still has to hand in (or hand in again). */
@@ -471,6 +579,22 @@ export class AssignmentsPage implements OnInit {
   );
   /** Every task of the assignment is accepted («Принято»). */
   protected readonly finished = computed(() => this.found().filter(isDone));
+  protected readonly donePage = DONE_PAGE;
+  protected readonly doneLimit = signal(DONE_PAGE);
+  protected readonly shownDone = computed(() => this.finished().slice(0, this.doneLimit()));
+  /** «Активные» by the due date; the overdue ones are folded until the teacher opens them. */
+  protected readonly deadlineGroups = computed(() =>
+    groupByDeadline(this.given(), new Date(this.now())),
+  );
+  protected readonly overdueOpen = signal(false);
+
+  protected groupLabel(key: 'week' | 'later' | 'none' | 'overdue'): string {
+    return key === 'week'
+      ? this.t.weekGroup
+      : key === 'later'
+        ? this.t.laterGroup
+        : this.t.noneGroup;
+  }
 
   protected readonly segments = computed<Segment<Filter>[]>(() => [
     { value: 'review', label: this.t.toReview, count: this.queue().length },
@@ -488,6 +612,9 @@ export class AssignmentsPage implements OnInit {
     this.search.valueChanges.pipe(takeUntilDestroyed()).subscribe((text) => {
       writeQuery(this.router, this.route, { q: text.trim() });
     });
+    this.whom.valueChanges.pipe(takeUntilDestroyed()).subscribe((value) => {
+      writeQuery(this.router, this.route, { who: value });
+    });
     // the editor is a route of its own: it takes the place of the list in the history
     openOnCreate(
       'assignment',
@@ -500,6 +627,24 @@ export class AssignmentsPage implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.identity.listStudents(quietContext()).subscribe((students) => {
+      this.students.set(
+        students
+          .filter((student) => student.status !== 'DEACTIVATED')
+          .map((student) => ({ id: student.id, name: student.displayName })),
+      );
+    });
+    this.identity.listGroups(quietContext()).subscribe((groups) => {
+      this.groups.set(
+        groups
+          .filter((group) => group.archivedAt === null)
+          .map((group) => ({
+            id: group.id,
+            name: group.name,
+            memberIds: group.members.map((member) => member.id),
+          })),
+      );
+    });
   }
 
   protected openWork(taskId: string): void {

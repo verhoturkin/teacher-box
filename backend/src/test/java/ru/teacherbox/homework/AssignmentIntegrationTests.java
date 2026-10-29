@@ -69,6 +69,8 @@ class AssignmentIntegrationTests {
                     .containsExactly(2);
             assertThat(json).extractingPath("$[?(@.id == '%s')].students[*]".formatted(id)).asArray()
                     .containsExactly("Анна", "Борис");
+            assertThat(json).extractingPath("$[?(@.id == '%s')].studentIds[*]".formatted(id)).asArray()
+                    .containsExactlyInAnyOrder(anna.toString(), boris.toString());
             assertThat(json).extractingPath("$[?(@.id == '%s')].boardId".formatted(id)).asArray()
                     .containsExactly((Object) null);
         });

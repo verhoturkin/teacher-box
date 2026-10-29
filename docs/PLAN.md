@@ -35,7 +35,7 @@ a separate topic, and its summary lives in the lesson card. New ADR for the titl
 
 ### 333. Homework list
 
-- [ ] 333.1 **F** `homework/teacher/assignments-page.ts`: assignments grouped by deadline («Срок на
+- [x] 333.1 **F** `homework/teacher/assignments-page.ts`: assignments grouped by deadline («Срок на
   этой неделе», «Позже», «Без срока», «Просрочено» folded), a «Кому» select (student or group, in
   the address); «Готовые» loads 20 at a time.
 
