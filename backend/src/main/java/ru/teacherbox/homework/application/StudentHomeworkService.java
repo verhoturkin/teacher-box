@@ -20,8 +20,12 @@ import ru.teacherbox.homework.domain.AttachmentOwner;
 import ru.teacherbox.homework.domain.HomeworkTask;
 import ru.teacherbox.homework.domain.Submission;
 import ru.teacherbox.homework.persistence.AssignmentRepository;
+import ru.teacherbox.homework.persistence.AttachmentRepository;
+import ru.teacherbox.homework.persistence.BoundTextbookRepository;
+import ru.teacherbox.homework.persistence.QuestionRepository;
 import ru.teacherbox.homework.persistence.SubmissionRepository;
 import ru.teacherbox.homework.persistence.TaskRepository;
+import ru.teacherbox.homework.persistence.VideoRepository;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.textbooks.api.TextbookContent;
@@ -42,10 +46,21 @@ public class StudentHomeworkService {
     private final QuizService quiz;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    /** Read-only counts of the materials for the list. */
+    private final BoundTextbookRepository boundTextbooks;
+    private final AttachmentRepository files;
+    private final QuestionRepository questions;
+    private final VideoRepository videoLinks;
 
     public StudentHomeworkService(TaskRepository tasks, AssignmentRepository assignments,
             SubmissionRepository submissions, AttachmentService attachments, TaskDetailsAssembler assembler,
-            TextbookBindings textbooks, QuizService quiz, ApplicationEventPublisher events, Clock clock) {
+            TextbookBindings textbooks, QuizService quiz, ApplicationEventPublisher events, Clock clock,
+            BoundTextbookRepository boundTextbooks, AttachmentRepository files, QuestionRepository questions,
+            VideoRepository videoLinks) {
+        this.boundTextbooks = boundTextbooks;
+        this.files = files;
+        this.questions = questions;
+        this.videoLinks = videoLinks;
         this.quiz = quiz;
         this.tasks = tasks;
         this.assignments = assignments;
@@ -65,13 +80,20 @@ public class StudentHomeworkService {
         Map<UUID, Assignment> byId = assignments.findByIds(own.stream().map(HomeworkTask::assignmentId).toList())
                 .stream()
                 .collect(Collectors.toMap(Assignment::id, Function.identity()));
+        Map<UUID, Integer> textbookCounts = boundTextbooks.countsByAssignment();
+        Map<UUID, Integer> fileCounts = files.countsByAssignment();
+        Map<UUID, Integer> questionCounts = questions.countsByAssignment();
+        Map<UUID, Integer> videoCounts = videoLinks.countsByAssignment();
         return own.stream()
                 .filter(task -> byId.containsKey(task.assignmentId()))
                 .map(task -> {
                     Assignment assignment = byId.get(task.assignmentId());
                     return new MyTask(task.id(), assignment.id(), assignment.title(), assignment.dueAt(),
                             task.status(), task.grade(), task.isOverdue(assignment.dueAt(), now), task.assignedAt(),
-                            task.reviewedAt(), task.teacherComment());
+                            task.reviewedAt(), task.teacherComment(), assignment.boardId() != null,
+                            textbookCounts.getOrDefault(assignment.id(), 0), fileCounts.getOrDefault(assignment.id(), 0),
+                            questionCounts.getOrDefault(assignment.id(), 0),
+                            videoCounts.getOrDefault(assignment.id(), 0));
                 })
                 .toList();
     }

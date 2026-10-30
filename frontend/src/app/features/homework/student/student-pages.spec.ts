@@ -75,6 +75,22 @@ describe('MyHomeworkPage', () => {
     vi.useRealTimers();
   });
 
+  it('shows the materials of a task as icons with counts', async () => {
+    const { backend } = configure();
+    const fixture = TestBed.createComponent(MyHomeworkPage);
+    await fixture.whenStable();
+    backend
+      .expectOne('/api/me/homework')
+      .flush([myTask({ textbooks: 1, questions: 10, board: true }), myTask({ taskId: 't-2' })]);
+    await fixture.whenStable();
+
+    const rows = hostElement(fixture).querySelectorAll('.tb-list > li');
+    expect(rows[0]?.querySelectorAll('.tb-hw__material')).toHaveLength(3);
+    expect(rows[0]?.querySelector('[aria-label="Вопросы: 10"]')).not.toBeNull();
+    expect(rows[0]?.querySelector('[aria-label="Доска"]')).not.toBeNull();
+    expect(rows[1]?.querySelectorAll('.tb-hw__material')).toHaveLength(0);
+  });
+
   it('hides the empty groups and the drafts-free list shows only what exists', async () => {
     const { backend } = configure();
     const fixture = TestBed.createComponent(MyHomeworkPage);

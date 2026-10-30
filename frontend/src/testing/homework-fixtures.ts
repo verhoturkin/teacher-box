@@ -174,6 +174,11 @@ export function myTask(overrides: Partial<MyTask> = {}): MyTask {
     assignedAt: '2026-09-01T10:00:00Z',
     reviewedAt: null,
     teacherComment: null,
+    board: false,
+    textbooks: 0,
+    files: 0,
+    questions: 0,
+    videos: 0,
     ...overrides,
   };
 }

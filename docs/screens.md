@@ -465,7 +465,7 @@ asks «Отменить изменения?» before another category or page op
   — groups «Вернули на доработку» (the teacher's comment under the title, error accent),
   «Сделать» (by the deadline: «остался N дн.» / «сегодня» / «просрочено на N дн.») and «Сдано»
   («На проверке» / «Принято» + grade), each hidden when empty; rows (icon of the group, title
-  link, second line, status tag); on compact a tonal «Ближайшее» card (*ours*: the oldest
+  link, second line, material icons with counts as in the teacher's list, status tag); on compact a tonal «Ближайшее» card (*ours*: the oldest
   returned task, else the nearest deadline) with «Открыть» leads the list; the detail — the task
   with the teacher's feedback and the answer form. A task with questions has a «Тест» section above the
   answer form (`quiz-section.ts`): «Начать тест», on wide all questions as cards, on compact one per screen with

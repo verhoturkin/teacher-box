@@ -60,6 +60,9 @@ class SubmissionAndReviewIntegrationTests {
                     assertThat(json).extractingPath("$[0].title").isEqualTo("Сочинение");
                     assertThat(json).extractingPath("$[0].status").isEqualTo("ASSIGNED");
                     assertThat(json).extractingPath("$[0].overdue").isEqualTo(false);
+                    assertThat(json).extractingPath("$[0].files").isEqualTo(1);
+                    assertThat(json).extractingPath("$[0].questions").isEqualTo(0);
+                    assertThat(json).extractingPath("$[0].board").isEqualTo(false);
                 });
         assertThat(mvc.get().uri("/api/me/homework/tasks/" + taskId).with(TestUsers.student(student)))
                 .hasStatusOk()

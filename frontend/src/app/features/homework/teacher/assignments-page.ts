@@ -46,6 +46,7 @@ import { DeadlineKey, groupByDeadline } from './deadline-groups';
 import { JournalView } from './journal-view';
 import { NextWork, ReviewSheet } from './review-sheet';
 import { TaskReviewPage } from './task-review-page';
+import { Material, materialLabel, materialsOf } from '../ui/materials';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentSummary, ReviewQueueItem, TaskDetails } from '../data-access/homework.models';
 import { assignmentProgress, isDone } from '../homework-labels';
@@ -89,12 +90,6 @@ interface Line {
 }
 
 /** An icon of a material of an assignment with how many there are (none — the board). */
-interface Material {
-  readonly icon: string;
-  readonly label: string;
-  readonly count: number | null;
-}
-
 /**
  * Teacher: homework on the full width of the window. The review strip («Ждут проверки»: the latest works
  * handed in, «Проверить» opens one, «Проверить все подряд» starts the queue); one toolbar (search, «Кому»,
@@ -1166,26 +1161,10 @@ export class AssignmentsPage implements OnInit {
 
   /** The materials of the assignment the row shows (the ones it has). */
   protected materials(assignment: AssignmentSummary): Material[] {
-    const labels = this.t.materials;
-    const all: Material[] = [
-      { icon: 'tb-i tb-i-menu_book', label: labels.textbooks, count: assignment.textbooks },
-      { icon: 'tb-i tb-i-attach_file', label: labels.files, count: assignment.files },
-      { icon: 'tb-i tb-i-quiz', label: labels.questions, count: assignment.questions },
-      { icon: 'tb-i tb-i-videocam', label: labels.videos, count: assignment.videos },
-    ];
-    return [
-      ...all.filter((material) => material.count !== 0),
-      ...(assignment.boardId === null
-        ? []
-        : [{ icon: 'tb-i tb-i-co_present', label: labels.board, count: null }]),
-    ];
+    return materialsOf(assignment, assignment.boardId !== null);
   }
 
-  protected materialLabel(material: Material): string {
-    return material.count === null
-      ? material.label
-      : this.t.materials.count(material.label, material.count);
-  }
+  protected readonly materialLabel = materialLabel;
 
   /** «Анна и ещё 3». */
   protected whomOf(assignment: AssignmentSummary): string {

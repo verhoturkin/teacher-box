@@ -247,7 +247,7 @@ public final class HomeworkViews {
             @Nullable Integer quizMax) {
     }
 
-    /** A row of the student's list of tasks. */
+    /** A row of the student's list of tasks; {@code board}, {@code textbooks}… — the materials of its assignment. */
     public record MyTask(
             UUID taskId,
             UUID assignmentId,
@@ -258,7 +258,12 @@ public final class HomeworkViews {
             boolean overdue,
             Instant assignedAt,
             @Nullable Instant reviewedAt,
-            @Nullable String teacherComment) {
+            @Nullable String teacherComment,
+            boolean board,
+            int textbooks,
+            int files,
+            int questions,
+            int videos) {
     }
 
     /**

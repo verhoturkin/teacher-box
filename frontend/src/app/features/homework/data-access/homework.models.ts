@@ -337,6 +337,13 @@ export interface MyTask {
   readonly reviewedAt: string | null;
   /** The teacher's comment of the last review; shown for a returned task. */
   readonly teacherComment: string | null;
+  /** The assignment is on a board. */
+  readonly board: boolean;
+  /** How many materials of each kind the assignment has. */
+  readonly textbooks: number;
+  readonly files: number;
+  readonly questions: number;
+  readonly videos: number;
 }
 
 export interface AssignmentInput {

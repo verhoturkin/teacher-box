@@ -19,6 +19,7 @@ import { PageHeader } from '@shared/ui/page-header';
 import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
 import { HomeworkApi } from '../data-access/homework-api';
 import { MyTask } from '../data-access/homework.models';
+import { Material, materialLabel, materialsOf } from '../ui/materials';
 import { TaskStatusTag } from '../ui/task-status-tag';
 import { T } from '../i18n/texts';
 import { MyTaskPage } from './my-task-page';
@@ -79,6 +80,21 @@ function daysUntil(dueAt: string): number {
                   <span class="tb-hw__group">{{ t.nearest }}</span>
                   <strong class="tb-hw__nearest-title">{{ next.title }}</strong>
                   <span [class.tb-negative]="next.overdue">{{ supporting(next) }}</span>
+                  <span class="tb-hw__materials">
+                    @for (material of materials(next); track material.icon) {
+                      <span
+                        class="tb-hw__material"
+                        role="img"
+                        [attr.aria-label]="materialLabel(material)"
+                      >
+                        <i [class]="material.icon" aria-hidden="true"></i>
+                        @if (material.count !== null) {
+                          {{ material.count }}
+                        }
+                      </span>
+                    }
+                  </span>
+
                   <a
                     pButton
                     severity="secondary"
@@ -109,6 +125,20 @@ function daysUntil(dueAt: string): number {
                           [class.tb-negative]="task.overdue || group.key === 'returned'"
                           >{{ supporting(task) }}</span
                         >
+                        <span class="tb-hw__materials">
+                          @for (material of materials(task); track material.icon) {
+                            <span
+                              class="tb-hw__material"
+                              role="img"
+                              [attr.aria-label]="materialLabel(material)"
+                            >
+                              <i [class]="material.icon" aria-hidden="true"></i>
+                              @if (material.count !== null) {
+                                {{ material.count }}
+                              }
+                            </span>
+                          }
+                        </span>
                       </div>
                       <div class="tb-list__trail tb-list__trail--icons">
                         <tb-task-status
@@ -163,6 +193,20 @@ function daysUntil(dueAt: string): number {
       margin: 0;
       color: inherit;
     }
+    .tb-hw__materials {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--tb-space-3);
+      font: var(--tb-type-body-s);
+    }
+    .tb-hw__material {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--tb-space-1);
+    }
+    .tb-hw__material i {
+      font-size: 1rem;
+    }
     .tb-hw__nearest-title {
       font-size: 1rem;
     }
@@ -210,6 +254,12 @@ export class MyHomeworkPage implements OnInit {
     ];
     return groups.filter((group) => group.tasks.length > 0);
   });
+
+  protected readonly materialLabel = materialLabel;
+
+  protected materials(task: MyTask): Material[] {
+    return materialsOf(task, task.board);
+  }
 
   /** The task to open first: the oldest returned one, else the nearest deadline. */
   protected readonly nearest = computed(() => {
