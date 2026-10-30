@@ -62,6 +62,9 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   deleting the original keeps the copy's files), the bound textbooks with pages and the videos with transcripts; no
   students, no deadline, no board.
 - A student sees only own tasks and attachments (403/404 tests).
+- The teacher's assignment view gives each student entry (`TaskSummary`) a one-line `answerPreview` (the
+  first 200 characters of the latest answer text, whitespace collapsed, `…` when cut), `answerFiles` (files of
+  that answer) and the best finished quiz attempt (`quizScore` / `quizMax`); students never get this view.
 
 ## Contract (`homework::api`)
 

@@ -301,11 +301,23 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   «Принято N из M» primary) and «⋮» («Создать копию» — a draft «<title> (копия)» with the text,
   files, textbooks and videos, whose editor opens; 0.36.0). A phone: the same rows are a segmented
   list (`tb-list`) under the group labels — title, «кому · до …», the bar, the tag and «⋮». The
-  header of the open assignment has the same «⋮» after «Изменить» and «Удалить…».
-- **Assignment / work page**: blocks on the pane under uppercase labels; the students of an
-  assignment (avatar, name link, «Сдано … / Не сдано», status; «Добавить» opens «Выдать ещё
-  ученикам»); files as rows (type icon, name button that downloads or opens a PDF / a picture in a
-  tab, size, red «×»).
+  header of the open assignment has its own «⋮» (see below).
+- **Assignment page** (341.1, `assignment-page.ts`): the header has «back», the title, the subtitle
+  «<N учеников> · до <date>», the outlined «Изменить» (the editor), the filled «Проверить N работ»
+  (hidden at N = 0; opens the first handed-in work in the review sheet, whose «Дальше» goes on) and
+  «⋮» («Создать копию», «На доску», «Открыть доску», «Удалить…»). Two columns from a wide window:
+  - **Ученики** — the label, the tags «Принято N» / «Проверить N» / «На доработке N» (nonzero only),
+    the text button «Выдать ещё» (`assign-more-dialog.ts`) and the tiles in two columns (*ours*:
+    `surface container`, 20 dp corners): avatar, name, the status line («Сдано сегодня, 09:12» /
+    «Принято вчера · оценка 4» / «Отправлено на доработку 28.10» / «Не сдано»), the status tag, the
+    answer preview in a `surface` box (three lines; from `TaskSummary.answerPreview`), «Тест 8 из 10»,
+    «N файлов» and a tonal «Проверить» (handed in) or «Открыть». The filled button of the page stays
+    in the header. There is no «Напомнить»: the portal has no reminder action for a student yet.
+  - **Aside** — «Задание» (the text folded to three lines with «Показать полностью» / «Свернуть»,
+    videos, files and textbooks read-only: they change in the editor) and, with a quiz, «Ошибки по
+    вопросам» (a row per question: the number, a bar of the share of wrong answers, «3 из 4»).
+  - **Compact:** `tb-segment-group` tabs «Ученики N · Задание · Ошибки» («Ошибки» only with a quiz),
+    tiles in one column and a «Проверить N работ» button stuck to the bottom of the page.
 - **Review side sheet** (`review-sheet.ts`, extra-large, standard side sheet ≤ 400 dp): the AI draft
   with the tertiary tag «Черновик ИИ» and «Вставить», the comment, quick phrases as chips, «На
   доработку» tonal + «Принять» filled, «Дальше: <student>». The rail collapses to 96 dp here
@@ -356,7 +368,7 @@ cards with the key, «Добавить в конец» / «Заменить вс
 
 **Quiz review:** the review page shows «Тест: N из M» under the answer — the best attempt's questions, wrong first,
 with the student's answer, the key and «Засчитать» / «Не засчитывать»; the grade field is filled with «N из M» until
-the teacher types one. The assignment page lists «Ошибки по вопросам» («4 из 6»).
+the teacher types one. The assignment page shows «Ошибки по вопросам» («4 из 6») as bars.
 
 ## Payments (teacher)
 

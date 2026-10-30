@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,8 @@ import ru.teacherbox.homework.application.HomeworkViews.VideoInput;
 import ru.teacherbox.homework.domain.Assignment;
 import ru.teacherbox.homework.domain.Attachment;
 import ru.teacherbox.homework.domain.AttachmentOwner;
+import ru.teacherbox.homework.domain.quiz.QuizAttempt;
+import ru.teacherbox.homework.domain.Submission;
 import ru.teacherbox.homework.domain.HomeworkTask;
 import ru.teacherbox.homework.domain.TaskStatus;
 import ru.teacherbox.homework.domain.quiz.Question;
@@ -33,6 +36,7 @@ import ru.teacherbox.homework.persistence.AssignmentRepository;
 import ru.teacherbox.homework.persistence.AttachmentRepository;
 import ru.teacherbox.homework.persistence.BoundTextbookRepository;
 import ru.teacherbox.homework.persistence.DraftStudentRepository;
+import ru.teacherbox.homework.persistence.QuizAttemptRepository;
 import ru.teacherbox.homework.persistence.QuestionRepository;
 import ru.teacherbox.homework.persistence.SubmissionRepository;
 import ru.teacherbox.homework.persistence.TaskRepository;
@@ -64,13 +68,18 @@ public class AssignmentService {
     private final AttachmentRepository files;
     private final QuestionRepository questions;
     private final VideoRepository videoLinks;
+    private static final int PREVIEW_LENGTH = 200;
+
     private final DraftStudentRepository draftStudents;
+    private final QuizAttemptRepository quizAttempts;
 
     public AssignmentService(AssignmentRepository assignments, TaskRepository tasks,
             SubmissionRepository submissions, AttachmentService attachments, TextbookBindings textbooks,
             AssignmentVideos videos, AssignmentQuiz quiz, UserDirectory directory, ApplicationEventPublisher events, Clock clock,
             BoundTextbookRepository boundTextbooks, AttachmentRepository files, QuestionRepository questions,
-            VideoRepository videoLinks, DraftStudentRepository draftStudents) {
+            VideoRepository videoLinks, DraftStudentRepository draftStudents,
+            QuizAttemptRepository quizAttempts) {
+        this.quizAttempts = quizAttempts;
         this.draftStudents = draftStudents;
         this.boundTextbooks = boundTextbooks;
         this.files = files;
@@ -314,10 +323,15 @@ public class AssignmentService {
                 .collect(Collectors.toMap(StudentSummary::id, Function.identity(), (a, b) -> a));
         Function<HomeworkTask, TaskSummary> summary = task -> {
             StudentSummary student = students.get(task.studentId());
+            Submission latest = submissions.findByTask(task.id()).stream().findFirst().orElse(null);
+            QuizAttempt best = quizAttempts.findByTask(task.id()).stream().filter(a -> a.submittedAt() != null)
+                    .max(Comparator.comparingInt(a -> Objects.requireNonNull(a.scorePoints()))).orElse(null);
             return new TaskSummary(task.id(), task.studentId(),
                     student == null ? TaskDetailsAssembler.unknownStudent() : student.displayName(),
                     student == null ? null : student.avatar(), task.status(), task.grade(), task.submittedAt(),
-                    task.reviewedAt(), task.isOverdue(assignment.dueAt(), now));
+                    task.reviewedAt(), task.isOverdue(assignment.dueAt(), now), preview(latest),
+                    latest == null ? 0 : attachments.of(AttachmentOwner.SUBMISSION, latest.id()).size(),
+                    best == null ? null : best.scorePoints(), best == null ? null : best.maxPoints());
         };
         return new AssignmentDetails(assignment.id(), assignment.title(), assignment.description(),
                 assignment.dueAt(), assignment.boardId(), assignment.createdAt(), assignment.version(),
@@ -330,6 +344,16 @@ public class AssignmentService {
                 videos.of(assignment.id()),
                 quiz.of(assignment.id()), assignment.quizReveal(), assignment.quizAttempts(),
                 draftStudents.findByAssignment(assignment.id()));
+    }
+
+    /** The answer text on one line, cut to {@value #PREVIEW_LENGTH} characters. */
+    @Nullable
+    private static String preview(@Nullable Submission submission) {
+        if (submission == null || submission.text() == null || submission.text().isBlank()) {
+            return null;
+        }
+        String line = submission.text().strip().replaceAll("\\s+", " ");
+        return line.length() <= PREVIEW_LENGTH ? line : line.substring(0, PREVIEW_LENGTH) + "…";
     }
 
     private Assignment load(UUID assignmentId) {

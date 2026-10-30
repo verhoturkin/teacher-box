@@ -68,7 +68,7 @@ full editor, AI draft, phone, student) — https://claude.ai/artifact/X2SdNjSvCb
 
 ### 341. Open assignment
 
-- [ ] **341.1 B/F** `homework/teacher/assignment-page.ts`: students as tiles in two columns
+- [x] **341.1 B/F** `homework/teacher/assignment-page.ts`: students as tiles in two columns
   (avatar, name, status, the first lines of the answer, quiz score, attachments, action
   «Проверить / Открыть / Напомнить»), summary tags above them; an aside with the text folded to
   three lines, materials and «Ошибки по вопросам». Header: «Изменить», filled «Проверить N работ»

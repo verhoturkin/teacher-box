@@ -4,30 +4,19 @@ import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToBoardDialog } from '@features/boards/parts';
-import { TextbookToBoardDialog } from '@features/textbooks/parts';
 import { FileSaver } from '@shared/files/file-saver';
 import {
   assignmentDetails,
   assignmentSummary,
-  attachment,
   boundTextbook,
   reviewQueueItem,
   taskDetails,
 } from '@testing/homework-fixtures';
 import { aiStatus } from '@testing/ai-fixtures';
-import {
-  aFile,
-  bodyText,
-  buttonByText,
-  hostElement,
-  readableText,
-  requireElement,
-  settleFiles,
-} from '@testing/dom';
+import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
 import { aBoard } from '@testing/boards-fixtures';
 import { AssignMoreDialog } from './assign-more-dialog';
-import { BindTextbookDialog } from './bind-textbook-dialog';
 import { AssignmentPage } from './assignment-page';
 import { AssignmentsPage } from './assignments-page';
 import { TaskReviewPage } from './task-review-page';
@@ -616,23 +605,63 @@ describe('AssignmentsPage', () => {
 });
 
 describe('AssignmentPage', () => {
-  async function render(details = assignmentDetails()) {
-    const context = configure();
+  const NOW = new Date('2026-09-06T12:00:00Z');
+
+  async function render(details = assignmentDetails(), width = 1200) {
+    TestBed.configureTestingModule({ providers: testProviders(screenWidth(width)) });
+    const backend = TestBed.inject(HttpTestingController);
+    const saved: string[] = [];
+    vi.spyOn(TestBed.inject(FileSaver), 'save').mockImplementation((_blob, filename) => {
+      saved.push(filename);
+    });
+    vi.spyOn(TestBed.inject(MessageService), 'add');
     const fixture = TestBed.createComponent(AssignmentPage);
     fixture.componentRef.setInput('assignmentId', 'a-1');
     await fixture.whenStable();
-    context.backend.expectOne('/api/teacher/homework/assignments/a-1').flush(details);
+    backend.expectOne('/api/teacher/homework/assignments/a-1').flush(details);
     await fixture.whenStable();
-    return { ...context, fixture, host: hostElement(fixture) };
+    return { backend, saved, fixture, host: hostElement(fixture) };
   }
 
-  /** «Добавить» in the «Ученики» header: the dialog loads the students and the groups. */
+  /** The tasks of the fixture with some changes: a submitted, an accepted, a returned, an open one. */
+  function fourTasks() {
+    const [anna, boris] = assignmentDetails().tasks;
+    return [
+      anna!,
+      {
+        ...boris!,
+        taskId: 't-3',
+        studentId: 's-3',
+        studentName: 'Вера',
+        status: 'ACCEPTED' as const,
+        grade: '4',
+        submittedAt: '2026-09-04T10:00:00Z',
+        reviewedAt: '2026-09-05T10:00:00Z',
+        overdue: false,
+        answerPreview: 'Хорошо',
+        quizScore: null,
+        quizMax: null,
+      },
+      {
+        ...boris!,
+        taskId: 't-4',
+        studentId: 's-4',
+        studentName: 'Гена',
+        status: 'RETURNED' as const,
+        submittedAt: '2026-09-02T10:00:00Z',
+        reviewedAt: '2026-09-03T10:00:00Z',
+        overdue: false,
+      },
+      boris!,
+    ];
+  }
+
+  /** «Выдать ещё» in the header of the students: the dialog loads the students and the groups. */
   async function openAssignMore(
     fixture: Awaited<ReturnType<typeof render>>['fixture'],
     backend: HttpTestingController,
   ): Promise<AssignMoreDialog> {
-    // «Добавить» at the top right of the «Ученики» header (not «Добавить файлы»)
-    buttonByText(hostElement(fixture).querySelector('.tb-asg__head')!, 'Добавить').click();
+    buttonByText(hostElement(fixture), 'Выдать ещё').click();
     await fixture.whenStable();
     backend.expectOne('/api/teacher/students').flush(STUDENTS);
     await fixture.whenStable();
@@ -643,57 +672,110 @@ describe('AssignmentPage', () => {
       .injector.get(AssignMoreDialog);
   }
 
-  it('links the board the assignment is on with its own icon', async () => {
-    const { host } = await render(assignmentDetails({ boardId: 'board-1' }));
-    const link = host.querySelector('a[href="/teacher/boards/board-1"]');
-
-    expect(link?.textContent).toContain('Открыть доску');
-    expect(link?.querySelector('.tb-i-arrow_outward')).not.toBeNull();
-    expect(buttonByText(host, 'На доску').querySelector('.tb-i-co_present')).not.toBeNull();
-  });
-
-  it('makes a copy from the header «⋮» and opens its editor', async () => {
-    const { fixture, host, backend } = await render();
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    const changed = vi.fn();
-    fixture.componentInstance.changed.subscribe(changed);
-
-    buttonByText(host, 'Действия').click();
+  /** Opens the header «⋮» and clicks the item with the label. */
+  async function menuItem(
+    fixture: Awaited<ReturnType<typeof render>>['fixture'],
+    label: string,
+  ): Promise<void> {
+    buttonByText(hostElement(fixture), 'Действия').click();
     await fixture.whenStable();
-    requireElement(document.body, '.p-menu a.p-menu-item-link', HTMLAnchorElement).click();
+    const item = [...document.body.querySelectorAll<HTMLElement>('.p-menu .p-menu-item-link')].find(
+      (link) => link.textContent.includes(label),
+    );
+    item?.click();
     await fixture.whenStable();
-    backend
-      .expectOne({ method: 'POST', url: `${ASSIGNMENTS}/a-1/copy` })
-      .flush(assignmentDetails({ id: 'a-2', title: 'Дроби (копия)' }));
-    await fixture.whenStable();
+  }
 
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-2', 'edit']);
-    expect(changed).toHaveBeenCalled();
-    fixture.destroy();
-  });
+  describe('the header', () => {
+    it('has the recipients and the deadline, «Изменить» outlined and «Проверить N работ» filled', async () => {
+      const { host, fixture } = await render();
+      const header = readableText(host);
 
-  it('deletes the assignment after a confirmation and goes back to the list', async () => {
-    const { fixture, host, backend } = await render();
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    const confirmation = fixture.debugElement.injector.get(ConfirmationService);
-    const confirm = vi.spyOn(confirmation, 'confirm').mockImplementation((options) => {
-      options.accept?.();
-      return confirmation;
+      expect(header).toContain('2 ученика · до 10.09.2026');
+      const edit = buttonByText(host, 'Изменить');
+      expect(edit.classList.contains('p-button-outlined')).toBe(true);
+      const review = buttonByText(host, 'Проверить 1 работу');
+      expect(review.classList.contains('p-button-outlined')).toBe(false);
+      expect(review.classList.contains('p-button-secondary')).toBe(false);
+      fixture.destroy();
     });
 
-    buttonByText(host, 'Удалить…').click();
-    expect(confirm.mock.calls[0]?.[0].message).toContain('Задание «Дроби» будет удалено');
-    await fixture.whenStable();
-    backend
-      .expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/a-1' })
-      .flush(null);
-    await fixture.whenStable();
+    it('opens the editor from «Изменить»', async () => {
+      const { host, fixture } = await render();
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework']);
-    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'Задание «Дроби» удалено' }),
-    );
-    fixture.destroy();
+      buttonByText(host, 'Изменить').click();
+
+      expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-1', 'edit']);
+      fixture.destroy();
+    });
+
+    it('opens the review sheet on the first work to review', async () => {
+      const { host, fixture } = await render();
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+      buttonByText(host, 'Проверить 1 работу').click();
+
+      expect(navigate).toHaveBeenCalledWith(['/teacher/homework/tasks', 't-1']);
+      fixture.destroy();
+    });
+
+    it('has no filled button when nothing waits for review', async () => {
+      const [, boris] = assignmentDetails().tasks;
+      const { host, fixture } = await render(assignmentDetails({ tasks: [boris!] }));
+
+      expect(readableText(host)).not.toContain('Проверить 0');
+      expect(host.querySelector('p-button[icon="tb-i tb-i-rate_review"]')).toBeNull();
+      fixture.destroy();
+    });
+
+    it('says there is no deadline', async () => {
+      const { host, fixture } = await render(assignmentDetails({ dueAt: null }));
+
+      expect(readableText(host)).toContain('2 ученика · без срока');
+      fixture.destroy();
+    });
+
+    it('makes a copy from the header «⋮» and opens its editor', async () => {
+      const { fixture, backend } = await render();
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      const changed = vi.fn();
+      fixture.componentInstance.changed.subscribe(changed);
+
+      await menuItem(fixture, 'Создать копию');
+      backend
+        .expectOne({ method: 'POST', url: `${ASSIGNMENTS}/a-1/copy` })
+        .flush(assignmentDetails({ id: 'a-2', title: 'Дроби (копия)' }));
+      await fixture.whenStable();
+
+      expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-2', 'edit']);
+      expect(changed).toHaveBeenCalled();
+      fixture.destroy();
+    });
+
+    it('deletes the assignment from the «⋮» after a confirmation and goes back to the list', async () => {
+      const { fixture, backend } = await render();
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      const confirmation = fixture.debugElement.injector.get(ConfirmationService);
+      const confirm = vi.spyOn(confirmation, 'confirm').mockImplementation((options) => {
+        options.accept?.();
+        return confirmation;
+      });
+
+      await menuItem(fixture, 'Удалить…');
+      expect(confirm.mock.calls[0]?.[0].message).toContain('Задание «Дроби» будет удалено');
+      await fixture.whenStable();
+      backend
+        .expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/a-1' })
+        .flush(null);
+      await fixture.whenStable();
+
+      expect(navigate).toHaveBeenCalledWith(['/teacher/homework']);
+      expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
+        expect.objectContaining({ detail: 'Задание «Дроби» удалено' }),
+      );
+      fixture.destroy();
+    });
   });
 
   it('shows a failed load with «Повторить» and the way back', async () => {
@@ -719,91 +801,74 @@ describe('AssignmentPage', () => {
     expect(host.querySelector('.tb-markdown strong')?.textContent).toBe('№1-5');
   });
 
-  it('shows the assignment, materials and progress', async () => {
-    const { fixture, host, backend, saved } = await render();
-
-    expect(host.querySelector('.tb-markdown strong')?.textContent).toBe('№1-5');
-    expect(readableText(host)).toContain('Срок: 10.09.2026');
-    expect(host.querySelector('table')).toBeNull();
-    const students = [...host.querySelectorAll('ul[aria-label="Ученики"] > li')].map((card) =>
-      readableText(card),
-    );
-    expect(students[0]).toMatch(/^А Анна Сдано 05\.09\.2026 \d\d:\d\d На проверке$/);
-    expect(students[1]).toBe('Б Борис Не сдано Выдано Просрочено');
-    const reviewLink = host.querySelector('a[href="/teacher/homework/tasks/t-1"]');
-    expect(reviewLink?.textContent.trim()).toBe('Анна');
-    expect(reviewLink?.getAttribute('aria-label')).toBe('Проверить: Анна');
-    expect(
-      host.querySelector('a[href="/teacher/homework/tasks/t-2"]')?.getAttribute('aria-label'),
-    ).toBe('Открыть: Борис');
-    expect(host.querySelector('ul[aria-label="Файлы"] .tb-i-picture_as_pdf')).not.toBeNull();
-
-    buttonByText(host, 'условие.pdf').click();
-    backend.expectOne('/api/teacher/homework/attachments/f-1').flush(new Blob(['pdf']));
-    expect(saved).toEqual(['условие.pdf']);
-    fixture.destroy();
-  });
-
-  it('shows the videos and whether the student sees a transcript', async () => {
-    const { host, fixture } = await render(
-      assignmentDetails({
-        videos: [
-          {
-            url: 'https://youtu.be/dQw4w9WgXcQ',
-            provider: 'YOUTUBE' as const,
-            videoId: 'dQw4w9WgXcQ',
-            startSeconds: null,
-            title: 'Present Simple',
-            transcript: '[0:05] We play',
-            transcriptShown: true,
-          },
-        ],
-      }),
-    );
-
-    expect(readableText(host)).toContain('Видео Present Simple');
-    expect(readableText(host)).toContain('ученик видит расшифровку');
-    expect(host.querySelector('iframe')).not.toBeNull();
-    fixture.destroy();
-  });
-
-  it('uploads and removes materials', async () => {
-    const { fixture, host, backend } = await render();
-    const confirmation = fixture.debugElement.injector.get(ConfirmationService);
-    vi.spyOn(confirmation, 'confirm').mockImplementation((options) => {
-      options.accept?.();
-      return confirmation;
+  describe('the student tiles', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(NOW);
+    });
+    afterEach(() => {
+      vi.useRealTimers();
     });
 
-    const picker = host.querySelector('input[type="file"]');
-    if (!(picker instanceof HTMLInputElement)) {
-      throw new Error('file input missing');
-    }
-    Object.defineProperty(picker, 'files', {
-      value: [aFile('схема.png')],
-      configurable: true,
-    });
-    picker.dispatchEvent(new Event('change'));
-    backend
-      .expectOne('/api/me/homework/limits')
-      .flush({ maxFileSize: 1024 * 1024, maxFilesPerUpload: 10 });
-    await settleFiles();
-    await fixture.whenStable();
-    buttonByText(host, 'Загрузить').click();
-    backend
-      .expectOne('/api/teacher/homework/assignments/a-1/attachments')
-      .flush([attachment({ id: 'f-3', filename: 'схема.png' })]);
-    await fixture.whenStable();
-    expect(readableText(host)).toContain('схема.png');
+    it('show the status line, the tag, the preview, the quiz score and the files', async () => {
+      const { host, fixture } = await render(assignmentDetails({ tasks: fourTasks() }));
+      const tiles = [...host.querySelectorAll('ul[aria-label="Ученики"] > li')].map((tile) =>
+        readableText(tile),
+      );
 
-    buttonByText(host, 'Удалить файл условие.pdf').click();
-    await fixture.whenStable();
-    backend
-      .expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/a-1/attachments/f-1' })
-      .flush(null);
-    await fixture.whenStable();
-    expect(readableText(host)).not.toContain('условие.pdf');
-    fixture.destroy();
+      expect(tiles[0]).toMatch(
+        /^А Анна Сдано вчера, \d\d:\d\d На проверке Ответ: 12 и 7 Тест 8 из 10 1 файл Проверить$/,
+      );
+      expect(tiles[1]).toBe('В Вера Принято вчера · оценка 4 Принято Хорошо Открыть');
+      expect(tiles[2]).toBe('Г Гена Отправлено на доработку 03.09 На доработке Открыть');
+      expect(tiles[3]).toBe('Б Борис Не сдано Выдано Просрочено Открыть');
+      fixture.destroy();
+    });
+
+    it('say «сегодня» and «вчера» for the day of the handing in', async () => {
+      const [anna] = assignmentDetails().tasks;
+      const { host, fixture } = await render(
+        assignmentDetails({
+          tasks: [
+            { ...anna!, submittedAt: '2026-09-06T09:12:00Z' },
+            { ...anna!, taskId: 't-5', studentName: 'Яна', submittedAt: '2026-09-05T09:30:00Z' },
+          ],
+        }),
+      );
+      const text = readableText(host);
+
+      expect(text).toMatch(/Сдано сегодня, \d\d:\d\d/);
+      expect(text).toMatch(/Сдано вчера, \d\d:\d\d/);
+      fixture.destroy();
+    });
+
+    it('count the accepted, the returned and the works to review above them', async () => {
+      const { host, fixture } = await render(assignmentDetails({ tasks: fourTasks() }));
+      const head = readableText(requireElement(host, '.tb-asg__head', HTMLElement));
+
+      expect(head).toContain('Принято 1');
+      expect(head).toContain('Проверить 1');
+      expect(head).toContain('На доработке 1');
+      fixture.destroy();
+    });
+
+    it('open the work: «Проверить» for a handed in one, «Открыть» for the others', async () => {
+      const { host, fixture } = await render();
+      const review = host.querySelector('a[href="/teacher/homework/tasks/t-1"]');
+      const open = host.querySelector('a[href="/teacher/homework/tasks/t-2"]');
+
+      expect(review?.getAttribute('aria-label')).toBe('Проверить: Анна');
+      expect(open?.getAttribute('aria-label')).toBe('Открыть: Борис');
+      expect(host.querySelector('.tb-asg-tile__preview')?.textContent).toBe('Ответ: 12 и 7');
+      fixture.destroy();
+    });
+
+    it('say the assignment is not given to anybody', async () => {
+      const { host, fixture } = await render(assignmentDetails({ tasks: [] }));
+
+      expect(readableText(host)).toContain('Задание ещё никому не выдано');
+      fixture.destroy();
+    });
   });
 
   it('gives the assignment to more students in a dialog', async () => {
@@ -812,7 +877,7 @@ describe('AssignmentPage', () => {
 
     dialog.members.setValue([{ kind: 'STUDENT', id: 's-3' }]);
     await fixture.whenStable();
-    buttonByText(document.body, 'Выдать').click();
+    buttonByText(requireElement(document.body, '.p-dialog', HTMLElement), 'Выдать').click();
     const request = backend.expectOne('/api/teacher/homework/assignments/a-1/students');
     expect(request.request.body).toEqual({ studentIds: ['s-3'] });
     request.flush(assignmentDetails());
@@ -851,107 +916,221 @@ describe('AssignmentPage', () => {
     fixture.destroy();
   });
 
-  it('binds, changes and unbinds textbooks', async () => {
-    const { fixture, host, backend } = await render();
-    const dialog = fixture.debugElement
-      .query(By.directive(BindTextbookDialog))
-      .injector.get(BindTextbookDialog);
+  describe('the aside', () => {
+    const LONG = 'Сделайте упражнения 4–7 на с. 42. '.repeat(8);
 
-    buttonByText(host, 'Привязать учебник').click();
-    await fixture.whenStable();
-    expect(dialog.visible()).toBe(true);
-    expect(dialog.bound()).toBeNull();
-    backend.expectOne('/api/teacher/textbooks').flush([]);
-    dialog.saved.emit(
-      assignmentDetails({
-        textbooks: [
-          boundTextbook(),
-          boundTextbook({ textbookId: 'tb-2', title: 'Тетрадь', pages: null }),
-        ],
-      }),
-    );
-    await fixture.whenStable();
-    expect(readableText(host)).toContain('Учебник · Английский · с. 12-14');
-    expect(readableText(host)).toContain('целиком');
+    it('shows the materials and downloads a file', async () => {
+      const { host, backend, saved, fixture } = await render();
 
-    host.querySelector<HTMLButtonElement>('button[aria-label="Страницы: Spotlight 5"]')?.click();
-    await fixture.whenStable();
-    expect(dialog.bound()?.textbookId).toBe('tb-1');
-
-    host.querySelector<HTMLButtonElement>('button[aria-label="На доску: Spotlight 5"]')?.click();
-    await fixture.whenStable();
-    const board = fixture.debugElement
-      .query(By.directive(TextbookToBoardDialog))
-      .injector.get(TextbookToBoardDialog);
-    expect(board.visible()).toBe(true);
-    expect(board.textbook()).toEqual({
-      id: 'tb-1',
-      title: 'Spotlight 5',
-      format: 'PDF',
-      pageCount: 120,
+      expect(host.querySelector('ul[aria-label="Файлы"] .tb-i-picture_as_pdf')).not.toBeNull();
+      buttonByText(host, 'условие.pdf').click();
+      backend.expectOne('/api/teacher/homework/attachments/f-1').flush(new Blob(['pdf']));
+      expect(saved).toEqual(['условие.pdf']);
+      fixture.destroy();
     });
-    expect(board.initialPages()).toBe('12-14');
-    expect(board.students()).toEqual(['s-1', 's-2']);
-    backend.expectOne('/api/teacher/boards?studentId=s-1&studentId=s-2').flush([]);
-    board.visible.set(false);
-    await fixture.whenStable();
 
-    host
-      .querySelector<HTMLButtonElement>('button[aria-label="Убрать из задания: Тетрадь"]')
-      ?.click();
-    backend
-      .expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/a-1/textbooks/tb-2' })
-      .flush(assignmentDetails({ textbooks: [boundTextbook()] }));
-    await fixture.whenStable();
-    expect(readableText(host)).not.toContain('Тетрадь');
-    fixture.destroy();
+    it('has no way to upload or remove a file: the editor does it', async () => {
+      const { host, fixture } = await render();
+
+      expect(host.querySelector('input[type="file"]')).toBeNull();
+      expect(host.querySelector('button[aria-label="Удалить файл условие.pdf"]')).toBeNull();
+      expect(readableText(host)).not.toContain('Привязать учебник');
+      fixture.destroy();
+    });
+
+    it('folds a long text to three lines until «Показать полностью»', async () => {
+      const { host, fixture } = await render(assignmentDetails({ description: LONG }));
+      const text = requireElement(host, '.tb-asg__text', HTMLElement);
+
+      expect(text.classList.contains('tb-asg__text--folded')).toBe(true);
+      buttonByText(host, 'Показать полностью').click();
+      await fixture.whenStable();
+      expect(text.classList.contains('tb-asg__text--folded')).toBe(false);
+      buttonByText(host, 'Свернуть').click();
+      await fixture.whenStable();
+      expect(text.classList.contains('tb-asg__text--folded')).toBe(true);
+      fixture.destroy();
+    });
+
+    it('does not fold a short text', async () => {
+      const { host, fixture } = await render();
+
+      expect(host.querySelector('.tb-asg__text--folded')).toBeNull();
+      expect(readableText(host)).not.toContain('Показать полностью');
+      fixture.destroy();
+    });
+
+    it('says the assignment has no text', async () => {
+      const { host, fixture } = await render(assignmentDetails({ description: null }));
+
+      expect(readableText(host)).toContain('Текст задания не заполнен');
+      fixture.destroy();
+    });
+
+    it('shows the videos and whether the student sees a transcript', async () => {
+      const { host, fixture } = await render(
+        assignmentDetails({
+          videos: [
+            {
+              url: 'https://youtu.be/dQw4w9WgXcQ',
+              provider: 'YOUTUBE' as const,
+              videoId: 'dQw4w9WgXcQ',
+              startSeconds: null,
+              title: 'Present Simple',
+              transcript: '[0:05] We play',
+              transcriptShown: true,
+            },
+          ],
+        }),
+      );
+
+      expect(readableText(host)).toContain('Видео Present Simple');
+      expect(readableText(host)).toContain('ученик видит расшифровку');
+      expect(host.querySelector('iframe')).not.toBeNull();
+      fixture.destroy();
+    });
+
+    it('lists a bound textbook with its pages', async () => {
+      const { host, fixture } = await render(assignmentDetails({ textbooks: [boundTextbook()] }));
+
+      expect(readableText(host)).toContain('Учебник · Английский · с. 12-14');
+      fixture.destroy();
+    });
   });
 
-  it('puts the assignment with its textbook pages on a board and remembers the board', async () => {
-    const assignment = assignmentDetails({
-      description: null,
-      attachments: [],
-      textbooks: [boundTextbook({ pages: '12-13' })],
+  describe('the boards in the «⋮» menu', () => {
+    it('links the board the assignment is on', async () => {
+      const { fixture } = await render(assignmentDetails({ boardId: 'board-1' }));
+
+      buttonByText(hostElement(fixture), 'Действия').click();
+      await fixture.whenStable();
+      const link = document.body.querySelector('.p-menu a[href="/teacher/boards/board-1"]');
+
+      expect(link?.textContent).toContain('Открыть доску');
+      fixture.destroy();
     });
-    const { fixture, host, backend } = await render(assignment);
 
-    buttonByText(host, 'На доску').click();
-    await fixture.whenStable();
-    backend.expectOne((request) => request.url === '/api/teacher/boards').flush([]);
-    await fixture.whenStable();
+    it('puts the assignment with its textbook pages on a board and remembers the board', async () => {
+      const assignment = assignmentDetails({
+        description: null,
+        attachments: [],
+        textbooks: [boundTextbook({ pages: '12-13' })],
+      });
+      const { fixture, host, backend } = await render(assignment);
 
-    // The page's own dialog: the textbook's dialog has another one.
-    const board = fixture.debugElement
-      .queryAll(By.directive(ToBoardDialog))
-      .at(-1)!
-      .injector.get(ToBoardDialog);
-    expect(board.visible()).toBe(true);
-    expect(board.title()).toBe(assignment.title);
-    expect(board.students()).toEqual(assignment.tasks.map((task) => task.studentId));
-    expect(board.pictures()).toEqual([
-      '/api/teacher/textbooks/tb-1/pages/12',
-      '/api/teacher/textbooks/tb-1/pages/13',
-    ]);
+      await menuItem(fixture, 'На доску');
+      backend.expectOne((request) => request.url === '/api/teacher/boards').flush([]);
+      await fixture.whenStable();
 
-    board.placed.emit({ mode: 'text', board: aBoard(), href: '/teacher/boards/board-1' });
-    const placed = backend.expectOne({
-      method: 'PUT',
-      url: '/api/teacher/homework/assignments/a-1/board',
+      // The page's own dialog: the textbook's dialog has another one.
+      const board = fixture.debugElement
+        .queryAll(By.directive(ToBoardDialog))
+        .at(-1)!
+        .injector.get(ToBoardDialog);
+      expect(board.visible()).toBe(true);
+      expect(board.title()).toBe(assignment.title);
+      expect(board.students()).toEqual(assignment.tasks.map((task) => task.studentId));
+      expect(board.pictures()).toEqual([
+        '/api/teacher/textbooks/tb-1/pages/12',
+        '/api/teacher/textbooks/tb-1/pages/13',
+      ]);
+
+      board.placed.emit({ mode: 'text', board: aBoard(), href: '/teacher/boards/board-1' });
+      const placed = backend.expectOne({
+        method: 'PUT',
+        url: '/api/teacher/homework/assignments/a-1/board',
+      });
+      expect(placed.request.body).toEqual({ boardId: 'board-1' });
+      placed.flush({ ...assignment, boardId: 'board-1' });
+      await fixture.whenStable();
+      expect(readableText(host)).toContain('2 ученика');
+      fixture.destroy();
     });
-    expect(placed.request.body).toEqual({ boardId: 'board-1' });
-    placed.flush({ ...assignment, boardId: 'board-1' });
-    await fixture.whenStable();
-    expect(host.querySelector('a[href="/teacher/boards/board-1"]')).not.toBeNull();
-    fixture.destroy();
+
+    it('has nothing to put on a board without a text, pictures or pages', async () => {
+      const { fixture } = await render(
+        assignmentDetails({ description: null, attachments: [], textbooks: [] }),
+      );
+
+      buttonByText(hostElement(fixture), 'Действия').click();
+      await fixture.whenStable();
+      const item = [...document.body.querySelectorAll('.p-menu .p-menu-item')].find((li) =>
+        li.textContent.includes('На доску'),
+      );
+
+      expect(item?.getAttribute('data-p-disabled')).toBe('true');
+      fixture.destroy();
+    });
   });
 
-  it('has nothing to put on a board without a text, pictures or pages', async () => {
-    const { fixture, host } = await render(
-      assignmentDetails({ description: null, attachments: [], textbooks: [] }),
-    );
+  describe('on a phone (compact)', () => {
+    const QUIZ = {
+      students: 4,
+      questions: [{ questionId: 'q-1', text: 'Столица **России**?', wrong: 3 }],
+    };
+    const question = {
+      id: 'q-1',
+      type: 'SINGLE_CHOICE' as const,
+      text: 'Столица?',
+      points: 1,
+      explanation: null,
+      options: [],
+      correct: [],
+      accepted: [],
+      value: null,
+      tolerance: null,
+      pairs: [],
+    };
 
-    expect(buttonByText(host, 'На доску').disabled).toBe(true);
-    fixture.destroy();
+    it('has the tabs «Ученики · Задание» and a fixed «Проверить N работ»', async () => {
+      const { host, fixture } = await render(assignmentDetails(), 390);
+
+      const tabs = [...host.querySelectorAll('.tb-asg__tabs button')].map((tab) =>
+        readableText(tab),
+      );
+      expect(tabs).toEqual(['Ученики 2', 'Задание']);
+      expect(host.querySelector('.tb-asg__main')).not.toBeNull();
+      expect(host.querySelector('.tb-asg__aside')).toBeNull();
+      const bottom = requireElement(host, '.tb-asg__bottom', HTMLElement);
+      expect(readableText(bottom)).toBe('Проверить 1 работу');
+      expect(host.querySelectorAll('p-button[icon="tb-i tb-i-rate_review"]')).toHaveLength(1);
+      fixture.destroy();
+    });
+
+    it('switches to the assignment tab', async () => {
+      const { host, fixture } = await render(assignmentDetails(), 390);
+
+      buttonByText(host, 'Задание').click();
+      await fixture.whenStable();
+
+      expect(host.querySelector('.tb-asg__main')).toBeNull();
+      expect(host.querySelector('.tb-markdown strong')?.textContent).toBe('№1-5');
+      fixture.destroy();
+    });
+
+    it('has the tab «Ошибки» only with a quiz', async () => {
+      const { host, backend, fixture } = await render(
+        assignmentDetails({ questions: [question] }),
+        390,
+      );
+      backend.expectOne('/api/teacher/homework/assignments/a-1/quiz/stats').flush(QUIZ);
+      await fixture.whenStable();
+
+      buttonByText(host, 'Ошибки').click();
+      await fixture.whenStable();
+
+      expect(host.querySelector('.tb-asg-stats')).not.toBeNull();
+      expect(host.querySelector('.tb-asg__main')).toBeNull();
+      fixture.destroy();
+    });
+
+    it('has no fixed button when nothing waits for review', async () => {
+      const [, boris] = assignmentDetails().tasks;
+      const { host, fixture } = await render(assignmentDetails({ tasks: [boris!] }), 390);
+
+      expect(host.querySelector('.tb-asg__bottom')).toBeNull();
+      fixture.destroy();
+    });
   });
 });
 

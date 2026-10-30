@@ -336,11 +336,17 @@ Select a yellow cell to review that piece of work, or a dashed one to open “As
 
 ## Assignment details and textbooks
 
-The page contains the instructions, videos, files, textbooks and student progress. Open or download a file from its row; remove files or textbooks with the cross button. Choose “Add” in the Students section to assign the work to more students or groups.
+The header shows the title, the number of students with the deadline, “Edit” and “Review N submissions” (hidden when nothing is waiting). The review button opens the first submission; “Next” in the review panel moves on to the following one. The “⋮” menu holds “Create copy”, “Add to board”, “Open board” (once the assignment is on a board) and “Delete…”.
 
-Use “Attach a textbook” to select a resource and pages, such as 12-14, 20. Leave pages blank for the whole textbook. Students can access the assigned pages even if the full textbook is not shared with them. Word documents are downloaded in full, with page numbers provided for reference. The pencil changes the pages; the cross removes the attachment. See [Textbooks](/teacher/help/textbooks).
+Each student has a card on the left: when they handed in (“Handed in today at 09:12”, “Accepted yesterday · grade 4”, “Sent back for revision on 28.10”), the status, the start of the answer, the quiz score and the number of files. “Review” opens a submission that has been handed in; “Open” opens any other. Counts above the cards show how many are accepted, waiting for review and sent back. “Assign to more” gives the work to other students or groups.
 
-“Open board” opens a linked board. “Delete…” removes the assignment, submissions and files; recovery requires a portal backup.
+On the right you will find the instructions (long text is folded to three lines until you choose “Show all”), videos, files and textbooks. Select a name to open a file or textbook in a new tab, or use the arrow button to download a file. Change the text, files and textbooks with “Edit”. For an assignment with a quiz, “Mistakes by question” appears below: each question has a bar and a count such as “3 of 4”, showing how many students got it wrong.
+
+On a phone these become the tabs “Students · Assignment · Mistakes” (“Mistakes” only with a quiz), and “Review N submissions” stays at the bottom of the screen.
+
+In the assignment editor (“Edit” on the assignment page), choose “Textbook” under Materials to select a resource and pages, such as 12-14, 20. Leave pages blank for the whole textbook. Students can access the assigned pages even if the full textbook is not shared with them. Word documents are downloaded in full, with page numbers provided for reference. The pencil changes the pages; the cross removes the attachment. See [Textbooks](/teacher/help/textbooks).
+
+“Open board” in the “⋮” menu opens a linked board. “Delete…” in the same menu removes the assignment, submissions and files; recovery requires a portal backup.
 
 ## Add a quiz
 

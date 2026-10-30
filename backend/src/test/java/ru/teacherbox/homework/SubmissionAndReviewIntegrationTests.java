@@ -195,6 +195,29 @@ class SubmissionAndReviewIntegrationTests {
     }
 
     @Test
+    void theTeacherSeesAnswerPreviewsAndStudentsDoNot() {
+        UUID student = directory.addStudent("С ответом");
+        UUID other = directory.addStudent("Другой");
+        AssignmentDetails assignment = assignment("Превью", student);
+        String url = "/api/teacher/homework/assignments/" + assignment.id();
+        assertThat(mvc.get().uri(url).with(teacher())).hasStatusOk().bodyJson()
+                .extractingPath("$.tasks[0].answerPreview").isNull();
+
+        String text = "строка один\n\nстрока   два " +"я".repeat(250);
+        submit(student, assignment.tasks().getFirst().taskId().toString(), text,
+                new MockMultipartFile("files", "a.jpg", "image/jpeg", new byte[] {1}));
+
+        assertThat(mvc.get().uri(url).with(teacher())).hasStatusOk().bodyJson().satisfies(json -> {
+            assertThat(json).extractingPath("$.tasks[0].answerPreview").asString()
+                    .startsWith("строка один строка два я").hasSize(201).endsWith("…");
+            assertThat(json).extractingPath("$.tasks[0].answerFiles").isEqualTo(1);
+            assertThat(json).extractingPath("$.tasks[0].quizScore").isNull();
+        });
+        assertThat(mvc.get().uri(url).with(TestUsers.student(other))).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.get().uri(url).with(TestUsers.student(student))).hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
     void theTeacherDeletesAnAssignmentWithTheAnswers() {
         UUID student = directory.addStudent("Удаляемый");
         AssignmentDetails assignment = assignment("Лишнее", student);

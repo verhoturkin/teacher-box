@@ -47,6 +47,13 @@ export interface TaskSummary {
   readonly submittedAt: string | null;
   readonly reviewedAt: string | null;
   readonly overdue: boolean;
+  /** The first 200 characters of the latest answer on one line; `null`: no text. */
+  readonly answerPreview: string | null;
+  /** Files attached to the latest answer. */
+  readonly answerFiles: number;
+  /** Points of the best finished quiz attempt and its maximum; `null`: none. */
+  readonly quizScore: number | null;
+  readonly quizMax: number | null;
 }
 
 /** A textbook bound to an assignment (ADR-0033); `pages` — «1-3, 7», `null` — the whole textbook. */

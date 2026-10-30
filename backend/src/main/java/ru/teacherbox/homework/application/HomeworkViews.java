@@ -112,6 +112,10 @@ public final class HomeworkViews {
      * Progress of one student on an assignment.
      *
      * @param studentAvatar address of the student's photo; {@code null}: none
+     * @param answerPreview the first 200 characters of the latest answer text on one line; {@code null}: no text
+     * @param answerFiles   files attached to the latest answer
+     * @param quizScore     points of the best finished quiz attempt; {@code null}: none
+     * @param quizMax       the maximum of that attempt
      */
     public record TaskSummary(
             UUID taskId,
@@ -122,7 +126,11 @@ public final class HomeworkViews {
             @Nullable String grade,
             @Nullable Instant submittedAt,
             @Nullable Instant reviewedAt,
-            boolean overdue) {
+            boolean overdue,
+            @Nullable String answerPreview,
+            int answerFiles,
+            @Nullable Integer quizScore,
+            @Nullable Integer quizMax) {
     }
 
     /** @param boardId the board the assignment was put on; {@code null} — none */
