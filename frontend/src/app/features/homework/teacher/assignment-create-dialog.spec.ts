@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { aiStatus } from '@testing/ai-fixtures';
+import { aBoard } from '@testing/boards-fixtures';
 import { buttonByText, readableText } from '@testing/dom';
 import { assignmentDetails } from '@testing/homework-fixtures';
 import { scheduledLesson } from '@testing/schedule-fixtures';
@@ -77,6 +78,16 @@ describe('AssignmentCreateDialog', () => {
     buttonByText(document.body, text).click();
   }
 
+  function exactMenuItem(label: string): HTMLElement {
+    const item = [...document.body.querySelectorAll<HTMLElement>('.p-menu-item-link')].find(
+      (candidate) => candidate.textContent.trim() === label,
+    );
+    if (item === undefined) {
+      throw new Error(`No menu item «${label}»`);
+    }
+    return item;
+  }
+
   function exact(text: string): HTMLButtonElement {
     const button = [...document.body.querySelectorAll('button')].find(
       (candidate) => candidate.textContent.trim() === text,
@@ -114,12 +125,44 @@ describe('AssignmentCreateDialog', () => {
     await open();
     expect(document.body.querySelector('section[aria-label="Материалы"]')).toBeNull();
 
-    click('Доска');
+    click('Видео');
     await fixture.whenStable();
 
     expect(document.body.querySelector('section[aria-label="Материалы"]')).not.toBeNull();
-    expect(readableText(document.body)).toContain('Разместить на доске');
+    expect(document.body.querySelector('tb-video-section')).not.toBeNull();
     expect(readableText(document.body)).not.toContain('Фото');
+  });
+
+  it('adds no empty video section for a board', async () => {
+    setup();
+    await open();
+
+    click('Доска');
+    backend.expectOne('/api/teacher/boards').flush([aBoard()]);
+    await fixture.whenStable();
+    exactMenuItem('Алгебра').click();
+    await fixture.whenStable();
+
+    expect(document.body.querySelector('tb-video-section')).toBeNull();
+    expect(document.body.querySelector('section[aria-label="Материалы"]')).toBeNull();
+    expect(readableText(document.body)).toContain('Доска: Алгебра');
+    expect(readableText(document.body)).not.toContain('Разместить на доске');
+
+    document.body.querySelector<HTMLButtonElement>('tb-input-chip button')?.click();
+    await fixture.whenStable();
+    expect(readableText(document.body)).not.toContain('Доска: Алгебра');
+    expect(buttonByText(document.body, 'Доска')).toBeTruthy();
+  });
+
+  it('says so when there are no boards to choose from', async () => {
+    setup();
+    await open();
+
+    click('Доска');
+    backend.expectOne('/api/teacher/boards').flush([]);
+    await fixture.whenStable();
+
+    expect(document.body.textContent).toContain('Досок пока нет');
   });
 
   it('hides «Написать с ИИ» without AI', async () => {

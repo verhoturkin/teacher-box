@@ -212,6 +212,8 @@ export class ToBoardDialog {
   readonly frame = input<string | null>(null);
   /** API addresses of the assignment's pictures (files, textbook pages), in their order. */
   readonly pictures = input<readonly string[]>([]);
+  /** The board to preselect when it is among the offered ones (chosen beforehand in an assignment). */
+  readonly preferred = input<string | null>(null);
   /** The material went to a board (its tab opened or the clipboard got it). */
   readonly placed = output<Placed>();
 
@@ -302,7 +304,10 @@ export class ToBoardDialog {
         found.subscribe((boards) => {
           this.boards.set(boards);
           this.loaded.set(true);
-          this.chosen.set(this.sorted()[0]?.id ?? null);
+          this.chosen.set(
+            (this.sorted().find((board) => board.id === this.preferred()) ?? this.sorted()[0])
+              ?.id ?? null,
+          );
         });
       });
     });

@@ -40,7 +40,7 @@ import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, BoundTextbook } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
 import { DueChips, Due, dueAtOf } from '../ui/due-chips';
-import { MaterialChips } from '../ui/material-chips';
+import { BoardPick, MaterialChips } from '../ui/material-chips';
 import { RecipientsField } from '../ui/recipients-field';
 import { TextbookList } from '../ui/textbook-list';
 import { AssignmentDraftHandover, titleOf } from './assignment-draft';
@@ -130,7 +130,7 @@ import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from '.
               class="tb-create__text"
               [formControl]="text"
               [autoResize]="true"
-              rows="6"
+              rows="3"
             ></textarea>
             <div class="tb-create__tools">
               <p-button
@@ -184,20 +184,8 @@ import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from '.
               (edit)="editTextbook($event)"
               (remove)="removeTextbook($event)"
             />
-            <tb-video-section [(videos)]="videos" />
-            @if (onBoard()) {
-              <div class="tb-create__row">
-                <i class="tb-i tb-i-co_present" aria-hidden="true"></i>
-                <span class="tb-create__grow">{{ t.onBoard }}</span>
-                <p-button
-                  icon="tb-i tb-i-close"
-                  severity="secondary"
-                  [text]="true"
-                  [rounded]="true"
-                  [ariaLabel]="t.remove"
-                  (onClick)="onBoard.set(false)"
-                />
-              </div>
+            @if (videos().length > 0) {
+              <tb-video-section [(videos)]="videos" />
             }
           </section>
         }
@@ -205,11 +193,10 @@ import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from '.
           [(files)]="files"
           [compact]="compact()"
           [videosFull]="videos().length >= maxVideos"
-          [onBoard]="onBoard()"
+          [(board)]="pickedBoard"
           (textbook)="addTextbook()"
           (video)="addVideo()"
           (quiz)="openFullscreen()"
-          (board)="onBoard.set(true)"
         />
       </div>
 
@@ -269,6 +256,7 @@ import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from '.
         [title]="saved.title"
         [markdown]="saved.description ?? ''"
         [students]="placingStudents()"
+        [preferred]="pickedBoard()?.id ?? null"
         [frame]="board()?.frame ?? null"
         [pictures]="board()?.pictures ?? []"
         (placed)="rememberBoard(saved, $event)"
@@ -284,8 +272,10 @@ import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from '.
   styles: `
     .tb-create {
       display: grid;
-      gap: var(--tb-space-4);
+      gap: var(--tb-space-3);
       min-width: 0;
+      /* the 48 dp target of the last chips reaches 8 dp below them: room for it, so no scroll appears */
+      padding-block-end: var(--tb-space-2);
     }
 
     .tb-create__area {
@@ -302,9 +292,20 @@ import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from '.
       }
     }
 
+    /* the area draws the field's frame: PrimeNG's border, focus ring and the resize grip stay out of it */
     .tb-create__text.tb-create__text {
+      --p-textarea-border-color: transparent;
+      --p-textarea-hover-border-color: transparent;
+      --p-textarea-focus-border-color: transparent;
+      --p-textarea-shadow: none;
+      --p-textarea-focus-ring-shadow: none;
+      --p-textarea-focus-ring-color: transparent;
       width: 100%;
-      min-height: 9rem;
+      min-height: 5rem;
+      max-height: 14rem;
+      resize: none;
+      /* autoResize sets overflow: hidden inline; past the maximum the text scrolls */
+      overflow-y: auto !important;
       border: 0;
       outline: none;
       background: transparent;
@@ -327,12 +328,6 @@ import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from '.
     .tb-create__materials {
       display: grid;
       gap: var(--tb-space-2);
-    }
-
-    .tb-create__row {
-      display: flex;
-      align-items: center;
-      gap: var(--tb-space-3);
     }
   `,
 })
@@ -390,13 +385,9 @@ export class AssignmentCreateDialog {
   private readonly pickedTextbooks = signal<readonly BoundTextbook[]>([]);
   protected readonly textbooks = this.pickedTextbooks;
   protected readonly videos = signal<readonly VideoDraft[]>([]);
-  protected readonly onBoard = signal(false);
+  protected readonly pickedBoard = signal<BoardPick | null>(null);
   protected readonly hasMaterials = computed(
-    () =>
-      this.textbooks().length > 0 ||
-      this.videos().length > 0 ||
-      this.files().length > 0 ||
-      this.onBoard(),
+    () => this.textbooks().length > 0 || this.videos().length > 0,
   );
   protected readonly bindVisible = signal(false);
   protected readonly binding = signal<BoundTextbook | null>(null);
@@ -405,7 +396,12 @@ export class AssignmentCreateDialog {
   protected readonly draftOnly = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly dirty = computed(
-    () => this.textValue() !== '' || this.chosen().length > 0 || this.hasMaterials(),
+    () =>
+      this.textValue() !== '' ||
+      this.chosen().length > 0 ||
+      this.hasMaterials() ||
+      this.files().length > 0 ||
+      this.pickedBoard() !== null,
   );
   protected readonly placing = signal<AssignmentDetails | null>(null);
   protected readonly placingStudents = computed(
@@ -445,7 +441,7 @@ export class AssignmentCreateDialog {
     this.files.set([]);
     this.pickedTextbooks.set([]);
     this.videos.set([]);
-    this.onBoard.set(false);
+    this.pickedBoard.set(null);
     this.error.set(null);
     this.pending.set(false);
     this.aiOpen.set(false);
@@ -556,7 +552,7 @@ export class AssignmentCreateDialog {
       this.error.set(this.t.needWhom);
       return;
     }
-    this.save(true, toBoard || this.onBoard());
+    this.save(true, toBoard || this.pickedBoard() !== null);
   }
 
   private save(give: boolean, toBoard: boolean): void {

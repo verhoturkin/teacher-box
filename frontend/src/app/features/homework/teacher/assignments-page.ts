@@ -1066,7 +1066,7 @@ export class AssignmentsPage implements OnInit {
     effect(() => {
       const journal = this.view() === 'journal';
       this.rail.compactBar.set(
-        this.mobile() && !this.phoneReview()
+        this.mobile() && !this.taskId() && !this.assignmentId()
           ? {
               title: this.t.title,
               actions: [

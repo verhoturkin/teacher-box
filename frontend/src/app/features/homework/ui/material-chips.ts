@@ -1,5 +1,19 @@
-import { ChangeDetectionStrategy, Component, input, model, output, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { MenuItem } from 'primeng/api';
+import { Menu } from 'primeng/menu';
+import { quietContext } from '@core/http/api-error.interceptor';
+import { BoardsApi } from '@features/boards/parts';
 import { AssistChip } from '@shared/ui/assist-chip';
+import { InputChip } from '@shared/ui/input-chip';
 import { T } from '../i18n/texts';
 import { FilePicker } from './file-picker';
 
@@ -9,7 +23,7 @@ import { FilePicker } from './file-picker';
  */
 @Component({
   selector: 'tb-material-chips',
-  imports: [AssistChip, FilePicker],
+  imports: [AssistChip, FilePicker, InputChip, Menu],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (withFiles()) {
@@ -43,9 +57,20 @@ import { FilePicker } from './file-picker';
         {{ compact() ? t.quizShort : t.quiz }}
       </tb-assist-chip>
       @if (!compact()) {
-        <tb-assist-chip icon="co_present" [disabled]="onBoard()" (click)="board.emit()">
-          {{ t.board }}
-        </tb-assist-chip>
+        @if (board(); as picked) {
+          <tb-input-chip
+            [label]="t.boardOn(picked.title)"
+            [removeLabel]="t.remove"
+            (removed)="board.set(null)"
+          >
+            <i lead class="tb-i tb-i-co_present" aria-hidden="true"></i>
+          </tb-input-chip>
+        } @else {
+          <tb-assist-chip icon="co_present" (click)="chooseBoard($event, boardMenu)">
+            {{ t.board }}
+          </tb-assist-chip>
+          <p-menu #boardMenu [model]="boardItems()" [popup]="true" appendTo="body" />
+        }
       }
     </div>
   `,
@@ -67,9 +92,34 @@ export class MaterialChips {
   readonly withFiles = input(true);
   readonly videosFull = input(false);
   readonly quizDisabled = input(false);
-  readonly onBoard = input(false);
+  /** The board the assignment goes on once given out; chosen from the menu of the «Доска» chip. */
+  readonly board = model<BoardPick | null>(null);
+  private readonly boards = inject(BoardsApi);
+  protected readonly boardItems = signal<MenuItem[]>([]);
   readonly textbook = output();
   readonly video = output();
   readonly quiz = output();
-  readonly board = output();
+
+  /** The boards are read when the menu opens; an empty list says so instead of showing nothing. */
+  protected chooseBoard(event: Event, menu: Menu): void {
+    menu.toggle(event);
+    this.boards.list({}, quietContext()).subscribe((boards) => {
+      this.boardItems.set(
+        boards.length === 0
+          ? [{ label: this.t.noBoards, disabled: true }]
+          : boards.map((board) => ({
+              label: board.title,
+              command: () => {
+                this.board.set({ id: board.id, title: board.title });
+              },
+            })),
+      );
+    });
+  }
+}
+
+/** A board of the teacher chosen for an assignment that is not given out yet. */
+export interface BoardPick {
+  readonly id: string;
+  readonly title: string;
 }

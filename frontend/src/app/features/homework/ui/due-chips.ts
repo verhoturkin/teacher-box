@@ -41,13 +41,22 @@ export function dueAtOf(choice: Due, lesson: Date | null, picked: Date | null): 
   selector: 'tb-due-chips',
   imports: [FormsModule, DatePicker, FilterChips],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: `
+    :host {
+      display: grid;
+      gap: var(--tb-space-2);
+    }
+  `,
   template: `
-    <tb-filter-chips
-      [label]="t.due"
-      [chips]="chips()"
-      [value]="shown()"
-      (valueChange)="choice.set($event)"
-    />
+    <div class="tb-field">
+      <span>{{ t.due }}</span>
+      <tb-filter-chips
+        [label]="t.due"
+        [chips]="chips()"
+        [value]="shown()"
+        (valueChange)="choice.set($event)"
+      />
+    </div>
     @if (shown() === 'date') {
       <p-datepicker
         [ngModel]="date()"

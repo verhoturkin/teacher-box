@@ -8,7 +8,7 @@ import {
   signal,
 } from '@angular/core';
 
-/** An anchor of {@link SectionNav}: the `id` of the element it scrolls to, its icon (`tb-i-<name>`) and name. */
+/** An anchor of {@link SectionNav}: the `id` of the element it scrolls to, its icon class (`tb-i-<name>`) and name. */
 export interface SectionNavItem {
   readonly id: string;
   readonly icon: string;
@@ -20,7 +20,7 @@ export interface SectionNavItem {
  * to the section; the section in view is filled with secondary container (`aria-current`).
  *
  * ```html
- * <tb-section-nav [items]="[{ id: 'task', icon: 'description', label: 'Задание' }]" [label]="t.sections" />
+ * <tb-section-nav [items]="[{ id: 'task', icon: 'tb-i-description', label: 'Задание' }]" [label]="t.sections" />
  * ```
  */
 @Component({
@@ -38,7 +38,7 @@ export interface SectionNavItem {
               [attr.aria-current]="item.id === current() ? 'location' : null"
               (click)="go($event, item.id)"
             >
-              <i class="tb-i tb-i-{{ item.icon }}" aria-hidden="true"></i>
+              <i class="tb-i {{ item.icon }}" aria-hidden="true"></i>
               {{ item.label }}
             </a>
           </li>

@@ -76,7 +76,7 @@ import {
 } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
 import { Due, DueChips, dueAtOf } from '../ui/due-chips';
-import { MaterialChips } from '../ui/material-chips';
+import { BoardPick, MaterialChips } from '../ui/material-chips';
 import { RecipientsField } from '../ui/recipients-field';
 import { TextbookList } from '../ui/textbook-list';
 import { videoName } from '../ui/video-list';
@@ -168,7 +168,8 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
               }
               @if (isNew()) {
                 <p-button
-                  [label]="c.saveDraft"
+                  [label]="compact() ? c.saveDraftShort : c.saveDraft"
+                  [ariaLabel]="c.saveDraft"
                   severity="secondary"
                   [text]="true"
                   [loading]="pending() && draftOnly()"
@@ -294,31 +295,16 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                   @if (videos().length > 0) {
                     <tb-video-section [videos]="videos()" (videosChange)="changeVideos($event)" />
                   }
-                  @if (onBoard()) {
-                    <div class="tb-editor__row">
-                      <i class="tb-i tb-i-co_present" aria-hidden="true"></i>
-                      <span class="tb-editor__grow">{{ c.onBoard }}</span>
-                      <p-button
-                        icon="tb-i tb-i-close"
-                        severity="secondary"
-                        [text]="true"
-                        [rounded]="true"
-                        [ariaLabel]="c.remove"
-                        (onClick)="onBoard.set(false)"
-                      />
-                    </div>
-                  }
                   <tb-material-chips
                     [(files)]="newFiles"
                     [compact]="compact()"
                     [withFiles]="isNew()"
                     [videosFull]="videos().length >= maxVideos"
                     [quizDisabled]="quizShown()"
-                    [onBoard]="onBoard()"
+                    [(board)]="pickedBoard"
                     (textbook)="bindTextbook()"
                     (video)="addVideo()"
                     (quiz)="quizOpen.set(true)"
-                    (board)="onBoard.set(true)"
                   />
                 </div>
               </p-card>
@@ -414,6 +400,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
           [title]="saved.title"
           [markdown]="saved.description ?? ''"
           [students]="placingStudents()"
+          [preferred]="pickedBoard()?.id ?? null"
           [frame]="board()?.frame ?? null"
           [pictures]="board()?.pictures ?? []"
           (placed)="rememberBoard(saved, $event)"
@@ -490,16 +477,6 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     .tb-editor__materials {
       display: grid;
       gap: var(--tb-space-2);
-    }
-
-    .tb-editor__row {
-      display: flex;
-      align-items: center;
-      gap: var(--tb-space-3);
-    }
-
-    .tb-editor__grow {
-      flex: 1;
     }
   `,
 })
@@ -594,26 +571,24 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   protected readonly showNav = computed(() => !this.single() && !this.aiOpen());
   protected readonly navItems = computed<SectionNavItem[]>(() => {
     const materials =
-      (this.isNew() ? this.textbooks().length + this.newFiles().length : 0) +
-      this.videos().length +
-      (this.onBoard() ? 1 : 0);
+      (this.isNew() ? this.textbooks().length + this.newFiles().length : 0) + this.videos().length;
     const questions = this.questions().length;
     return [
-      { id: 'editor-task', icon: 'description', label: this.t.sectionTask },
+      { id: 'editor-task', icon: 'tb-i-description', label: this.t.sectionTask },
       {
         id: 'editor-materials',
-        icon: 'attach_file',
+        icon: 'tb-i-attach_file',
         label: materials === 0 ? this.c.materials : this.t.sectionMaterials(materials),
       },
       ...(this.quizShown()
         ? [
             {
               id: 'editor-quiz',
-              icon: 'quiz',
+              icon: 'tb-i-quiz',
               label: this.t.sectionQuestions(questions),
             },
             ...(questions > 0
-              ? [{ id: 'quiz-settings', icon: 'tune', label: this.t.sectionSettings }]
+              ? [{ id: 'quiz-settings', icon: 'tb-i-tune', label: this.t.sectionSettings }]
               : []),
           ]
         : []),
@@ -667,7 +642,7 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   protected readonly quizOpen = signal(false);
   protected readonly quizShown = computed(() => this.quizOpen() || this.questions().length > 0);
   /** The assignment goes on a board once saved: «Доска». */
-  protected readonly onBoard = signal(false);
+  protected readonly pickedBoard = signal<BoardPick | null>(null);
   /** Textbooks of a new assignment, bound after it is created. */
   private readonly pickedTextbooks = signal<readonly BoundTextbook[]>([]);
   protected readonly textbooks = computed(
@@ -997,7 +972,7 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     this.pending.set(true);
     this.draftOnly.set(!give);
     this.error.set(null);
-    const board = toBoard || this.onBoard();
+    const board = toBoard || this.pickedBoard() !== null;
     const saved =
       existing === null
         ? this.api.createAssignment(input).pipe(

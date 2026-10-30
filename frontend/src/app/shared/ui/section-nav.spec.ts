@@ -4,8 +4,8 @@ import { hostElement } from '@testing/dom';
 import { SectionNav, SectionNavItem } from './section-nav';
 
 const ITEMS: SectionNavItem[] = [
-  { id: 'one', icon: 'description', label: 'Первый' },
-  { id: 'two', icon: 'quiz', label: 'Второй' },
+  { id: 'one', icon: 'tb-i-description', label: 'Первый' },
+  { id: 'two', icon: 'tb-i-quiz', label: 'Второй' },
 ];
 
 @Component({

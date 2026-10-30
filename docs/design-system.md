@@ -332,7 +332,8 @@ for the active navigation item and checked states.
 - **Top bar** (sticky, no divider): from medium the **top strip** — 80 px (*ours*), the global
   search in the middle (teacher), the bell at the end; on compact the **M3 small top
   app bar** — 64 dp: ☰ («Разделы», `aria-haspopup="dialog"`), the section title in Title Large on
-  one line (not a heading: the h1 stays in `tb-page-header`), search icon (teacher), bell. There
+  one line (not a heading: the h1 stays in `tb-page-header`), search icon (teacher), the page's own
+  icon actions (a page may add some; the bell is never replaced), bell. There
   is no user button (330.1): the account is a navigation item.
 - **«Аккаунт»** — the last item of the rail's bottom group (after «Настройки», «Справка») and of
   the ☰ drawer, for every role: a 24 px `tb-avatar` (photo or initials) in place of the icon, the
@@ -445,6 +446,7 @@ action — «Изменить» next to «Проверить N работ» (hom
 | Secondary page or section action, section save | tonal | `severity="secondary"` |
 | Secondary action beside the filled main action in a page header («Изменить») | outlined | `variant="outlined"` |
 | «Отмена», «Скрыть», «Понятно», labelled row action | text | `[text]="true"` (+ `severity="secondary"` for «Отмена») |
+| Header actions on a phone | — | the wide action stretches; an icon («⋮»), a text button and a split button keep their own size |
 | Icon action (edit, link) | text, round, neutral, tooltip | `[text]="true" [rounded]="true" severity="secondary"` + `pTooltip` |
 | Delete or unbind in a row (bin / «×», «Удалить» with a bin) | text red | `[text]="true" severity="danger"` |
 | Confirm an irreversible action (in a dialog) | filled red | `severity="danger"` |

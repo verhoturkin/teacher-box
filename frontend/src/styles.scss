@@ -414,6 +414,11 @@ body {
 .tb-search__panel,
 .p-dialog-content,
 .p-drawer-content,
+.p-select-list-container,
+.p-multiselect-list-container,
+.p-autocomplete-list-container,
+.p-treeselect-tree-container,
+.p-menu,
 textarea.p-textarea {
   &::-webkit-scrollbar {
     width: 0.75rem;
@@ -459,6 +464,11 @@ textarea.p-textarea::-webkit-resizer {
   .tb-search__panel,
   .p-dialog-content,
   .p-drawer-content,
+  .p-select-list-container,
+  .p-multiselect-list-container,
+  .p-autocomplete-list-container,
+  .p-treeselect-tree-container,
+  .p-menu,
   textarea.p-textarea {
     scrollbar-color: var(--p-md-outline-variant) transparent;
     scrollbar-width: thin;
@@ -3418,13 +3428,27 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
       width: 100%;
       min-height: 0;
 
-      > p-button,
+      > p-button:not(:has(.p-button-icon-only, .p-button-text)),
       > a.p-button {
         flex: 1 1 auto;
       }
 
-      p-button .p-button {
+      p-button:not(:has(.p-button-icon-only, .p-button-text)) .p-button {
         width: 100%;
+      }
+
+      .tb-split p-button .p-button {
+        width: auto;
+      }
+
+      .tb-split p-button .p-button.tb-split__more {
+        width: 3rem;
+      }
+
+      /* an icon button («⋮»), a text button and a split button keep their own size next to a wide action */
+      > p-button:has(.p-button-icon-only, .p-button-text),
+      > .tb-split {
+        flex: none;
       }
     }
 

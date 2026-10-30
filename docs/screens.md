@@ -260,16 +260,20 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   ИИ» (only when AI is on) that opens `tb-homework-ai-panel` in a side drawer; «Срок» —
   `tb-filter-chips` «К следующему занятию · <date>» (hidden without a lesson of the chosen
   students), «Через неделю», «Без срока», «Дата…» (date picker); «Материалы» appear only once
-  added (textbooks, videos, «разместить на доске»; files list) and are filled by assist chips
-  «Файл · Учебник · Видео · Тест с вопросами · Доска» (a phone: «Фото» with the camera,
-  «Файл · Учебник · Тест»). «Тест с вопросами» opens the full editor (questions are too big for the
+  added (textbooks, videos; each section only once its own chip was used) and are filled by assist
+  chips «Файл · Учебник · Видео · Тест с вопросами · Доска» (a phone: «Фото» with the camera,
+  «Файл · Учебник · Тест»). «Доска» opens a menu of the teacher's boards; the chosen one becomes
+  the input chip «Доска: <name>» with «×» (the choice is kept in the dialog; after «Выдать» the
+  «На доску» dialog opens with it preselected). The dialog fits without scrolling from ~760 px of
+  height: the text field grows from four rows up to a maximum, only taller content scrolls. «Тест с вопросами» opens the full editor (questions are too big for the
   dialog); the entered state travels in `AssignmentDraftHandover`. Footer: text «Сохранить
   черновик» (creates the assignment and keeps the chosen students as `draftStudentIds`, nobody is given it) and the split button «Выдать» (menu «Выдать и
   разместить на доске»).
 - **View switch** (339.2): the outlined segmented buttons «Списком · По ученикам» (`view_list` /
   `grid_view`, a check on the chosen one; design system «Outlined variant») in the header actions
-  before the main button; on a phone one icon button of the top app bar (`grid_view` / `view_list`,
-  «Вид: по ученикам» / «Вид: списком»; the bell gives its place). Kept in the address as
+  before the main button; on a phone one icon button of the top app bar of the list page only
+  (`grid_view` / `view_list`, «Вид: по ученикам» / «Вид: списком»), before the bell, which always
+  stays; the assignment, editor and review pages have no switch. Kept in the address as
   `?view=journal`. «По ученикам»
   (`journal-view.ts`) replaces the search, the filter group and the review strip with: `‹ 27 октября
   — 2 ноября ›` (icon buttons «Предыдущая неделя» / «Следующая неделя»), the same «Кому» select
@@ -346,12 +350,13 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
 
 A main flexible pane in the order of the quick dialog (340.2), each section in its own
 `tb-section-card`: «Кому» and «Срок» side by side in the first card («Кому» — input chips + dashed
-«Ученик или группа», new assignments only; «Срок» — filter chips), «Задание» (one Markdown field
+«Ученик или группа», new assignments only; «Срок» — filter chips; both have a visible label of one
+style; every item of the «Разделы задания» column has an icon), «Задание» (one Markdown field
 with the «Текст / Просмотр» switch; the first line is the title, hint «Первая строка станет
-названием»), «Материалы», «Вопросы» and «Как проходит тест» (`tb-quiz-settings`). Empty sections (textbooks, videos, board, the «Вопросы» card) are hidden; the assist
+названием»), «Материалы», «Вопросы» and «Как проходит тест» (`tb-quiz-settings`). Empty sections (textbooks, videos, the «Вопросы» card) are hidden; the assist
 chips under «Материалы» («Файл · Учебник · Видео · Тест с вопросами · Доска») add them, a section
 with content shows normally and can be removed. A saved assignment loads its title as the first line
-when the text does not start with it. The header: «ИИ-помощник» (tonal), text «Сохранить черновик»,
+when the text does not start with it. The header: «ИИ-помощник» (tonal), text «Сохранить черновик» («Черновик» on a phone),
 split filled «Выдать» (menu «Выдать и разместить на доске»); a saved assignment has the filled
 «Сохранить». A supporting sheet with the AI request (prompt library, search and save, sources,
 generate / error / retry, draft Remove / Insert / Replace) opens beside the form from the AI button.

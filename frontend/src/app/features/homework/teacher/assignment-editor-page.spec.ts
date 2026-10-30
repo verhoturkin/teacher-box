@@ -233,11 +233,9 @@ describe('AssignmentEditorPage', () => {
 
     buttonByText(host, 'Видео').click();
     buttonByText(host, 'Тест с вопросами').click();
-    buttonByText(host, 'Доска').click();
     await fixture.whenStable();
     expect(host.querySelector('tb-video-section')).not.toBeNull();
     expect(host.querySelector('tb-question-section')).not.toBeNull();
-    expect(readableText(host)).toContain('Разместить на доске после выдачи');
     expect(page.videos()).toHaveLength(1);
 
     page.pickTextbook(boundTextbook());
@@ -297,7 +295,11 @@ describe('AssignmentEditorPage', () => {
     page.pickTextbook(boundTextbook({ textbookId: 'tb-1', pages: '3' }));
     await fixture.whenStable();
     buttonByText(host, 'Доска').click();
+    backend.expectOne('/api/teacher/boards').flush([aBoard()]);
     await fixture.whenStable();
+    document.body.querySelector<HTMLElement>('.p-menu-item-link')?.click();
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Доска: Алгебра');
     exactButton(host, 'Выдать').click();
     backend
       .expectOne({ method: 'POST', url: '/api/teacher/homework/assignments' })
