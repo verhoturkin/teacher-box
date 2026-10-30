@@ -37,10 +37,7 @@ test('the teacher gives homework with a video and its transcript', async ({ page
   await expect(page.getByText('Загружено из файла урок.srt')).toBeVisible();
   await page.getByText('Показывать расшифровку ученику').click();
 
-  await page
-    .locator('tb-page-header')
-    .getByRole('button', { name: /Выдать$/ })
-    .click();
+  await page.getByRole('button', { name: 'Сохранить черновик' }).click();
   await expect(page.getByRole('heading', { name: TITLE })).toBeVisible();
 
   const videos = page.getByRole('list', { name: 'Видео задания' });

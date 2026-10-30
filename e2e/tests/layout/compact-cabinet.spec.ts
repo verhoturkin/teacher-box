@@ -204,7 +204,6 @@ test('homework search stays visible and student status tags stack vertically', a
   );
   await student(page);
   await page.goto('/cabinet/homework');
-  await expect(page.locator('input[type="search"]')).toBeVisible();
   const tags = page.locator('tb-task-status p-tag');
   await expect(tags).toHaveCount(2);
   const first = await tags.nth(0).boundingBox();

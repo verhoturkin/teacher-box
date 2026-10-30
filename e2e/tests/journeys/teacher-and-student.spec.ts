@@ -102,15 +102,15 @@ test('the teacher gives homework and the student hands it in', async ({ page, br
     .click();
   // «Создать › Задание» in the rail (232.2)
   await create(page, 'Задание');
-  // The editor page (0.14.0).
-  await page.locator('#editor-text').fill(`${HOMEWORK_TITLE}\n1. Сложите 1/2 и 1/3`);
-  await page.getByRole('button', { name: 'Ученик или группа' }).click();
+  // the quick dialog (340.1): the first line of the text is the title
+  const dialog = page.getByRole('dialog');
+  await dialog.locator('#create-text').fill(`${HOMEWORK_TITLE}\n1. Сложите 1/2 и 1/3`);
+  await dialog.getByRole('button', { name: 'Ученик или группа' }).click();
   await page.getByRole('option', { name: STUDENT_NAME }).click();
   await page.keyboard.press('Escape');
-  await page
-    .locator('tb-page-header')
-    .getByRole('button', { name: /Выдать$/ })
-    .click();
+  await dialog.getByRole('button', { name: 'Выдать', exact: true }).click();
+  await expect(dialog).toBeHidden();
+  await page.getByRole('link', { name: HOMEWORK_TITLE }).click();
   await expect(page.getByRole('heading', { name: HOMEWORK_TITLE })).toBeVisible();
   const studentRow = page
     .getByRole('list', { name: 'Ученики' })

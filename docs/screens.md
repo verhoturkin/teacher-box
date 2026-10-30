@@ -296,7 +296,8 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   icons with counts — textbooks, files, questions, videos, a board without a number), «Кому»
   (person / group icon, two names, from three — the first one and «и ещё N»), «Срок» (dd.MM HH:mm,
   the year only when it is not the current one; the error colour when overdue and not handed in),
-  «Сдали» (a two-part bar — accepted, waiting for review — and «3 из 4» handed in), the status tag
+  «Сдали» (a two-part bar — accepted, waiting for review — and «3 из 4» handed in; below 60em the
+  bar is hidden and only «3 из 4» stays, so the table fits a tablet), the status tag
   (`assignmentProgress`: «Не выдано» secondary, «На проверке: N» warn, «Принято» success, «Выдано» /
   «Принято N из M» primary) and «⋮» («Создать копию» — a draft «<title> (копия)» with the text,
   files, textbooks and videos, whose editor opens; 0.36.0). A phone: the same rows are a segmented

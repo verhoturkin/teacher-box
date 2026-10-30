@@ -212,7 +212,7 @@ test('an assignment is copied from the «⋮» menu of the list', async ({ page,
   });
   await signIn(page);
   await page.goto('/teacher/homework');
-  await page.getByText('Активные').first().click();
+  await page.getByRole('button', { name: /^Черновики/ }).click();
   await page.getByRole('button', { name: `Действия: ${title}` }).click();
   await page.getByRole('menuitem', { name: 'Создать копию' }).click();
   await expect(page.locator('#editor-text')).toHaveValue(`${title} (копия)\n\nТекст`);

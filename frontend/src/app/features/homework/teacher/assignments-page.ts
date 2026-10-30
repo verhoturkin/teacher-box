@@ -736,6 +736,13 @@ interface Line {
       overflow: hidden;
     }
 
+    /* below expanded the table has no room for the bar: the count says the same */
+    @media (width < 60em) {
+      .tb-hw__bar {
+        display: none;
+      }
+    }
+
     .tb-hw__bar > span {
       background: var(--p-md-primary);
     }
