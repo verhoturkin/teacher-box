@@ -5,6 +5,7 @@ import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.homework.api.HomeworkAssigned;
 import ru.teacherbox.homework.api.HomeworkDueSoon;
+import ru.teacherbox.homework.api.HomeworkReminderRequested;
 import ru.teacherbox.homework.api.HomeworkReviewed;
 import ru.teacherbox.homework.api.HomeworkSubmitted;
 import ru.teacherbox.identity.api.StudentSummary;
@@ -41,6 +42,14 @@ class HomeworkNotifications {
         NotificationMessages t = messagesFor(event.studentId());
         notifications.notify(event.studentId(), NotificationKind.HOMEWORK_DUE_SOON, t.dueSoon(event.title()),
                 t.dueAt(texts.dateTime(event.dueAt())), studentTaskLink(event.taskId()));
+    }
+
+    @ApplicationModuleListener
+    void on(HomeworkReminderRequested event) {
+        NotificationMessages t = messagesFor(event.studentId());
+        notifications.notify(event.studentId(), NotificationKind.HOMEWORK_REMINDER, t.reminder(event.title()),
+                event.dueAt() == null ? null : t.dueAt(texts.dateTime(event.dueAt())),
+                studentTaskLink(event.taskId()));
     }
 
     @ApplicationModuleListener

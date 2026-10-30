@@ -6,11 +6,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.Resource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.teacherbox.homework.application.AssignmentService;
 import ru.teacherbox.homework.application.HomeworkSummaryService;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentDetails;
+import ru.teacherbox.homework.application.HomeworkViews.Journal;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentSummary;
 import ru.teacherbox.homework.application.HomeworkViews.AttachmentView;
 import ru.teacherbox.homework.application.HomeworkViews.HomeworkSummary;
@@ -197,6 +200,9 @@ class TeacherHomeworkController {
     record PlaceOnBoardRequest(@Nullable UUID boardId) {
     }
 
+    record DraftStudentsRequest(@NotNull @Size(max = 500) List<UUID> studentIds) {
+    }
+
     record AssignStudentsRequest(@NotNull @Size(min = 1) List<UUID> studentIds) {
     }
 
@@ -243,6 +249,14 @@ class TeacherHomeworkController {
     @GetMapping("/summary")
     HomeworkSummary summary() {
         return summaries.teacherSummary();
+    }
+
+    /** The journal: students by the assignments due from {@code from} to {@code to}; {@code who}: a group or a student. */
+    @GetMapping("/journal")
+    Journal journal(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) @Nullable UUID who) {
+        return summaries.journal(from, to, who);
     }
 
     @GetMapping("/assignments")
@@ -299,6 +313,20 @@ class TeacherHomeworkController {
     @PostMapping("/assignments/{assignmentId}/students")
     AssignmentDetails assign(@PathVariable UUID assignmentId, @Valid @RequestBody AssignStudentsRequest request) {
         return assignments.assign(assignmentId, request.studentIds());
+    }
+
+    /** «Напомнить»: asks the student to hand the work in (one reminder per task an hour). */
+    @PostMapping("/assignments/{assignmentId}/students/{studentId}/remind")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void remind(@PathVariable UUID assignmentId, @PathVariable UUID studentId) {
+        assignments.remind(assignmentId, studentId);
+    }
+
+    /** Whom a draft is for: kept for «Выдать» later, nobody sees it until then. */
+    @PutMapping("/assignments/{assignmentId}/draft-students")
+    AssignmentDetails saveDraftStudents(@PathVariable UUID assignmentId,
+            @Valid @RequestBody DraftStudentsRequest request) {
+        return assignments.saveDraftStudents(assignmentId, request.studentIds());
     }
 
     @PostMapping(path = "/assignments/{assignmentId}/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

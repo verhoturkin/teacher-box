@@ -18,7 +18,8 @@ primeicons. Minimum browsers: Chrome 119, Safari 17.2, Firefox 128 (`linear()`, 
 `color-mix()`); older ones get no springs.
 
 **Checks.** `core/theme/design-rules.spec.ts` fails on Aura tokens, hex colours outside
-`core/theme/` and `boards/`, `size="small"` and outlined buttons, and when the icon font and the
+`core/theme/` and `boards/`, `size="small"` buttons, outlined ones not written as
+`variant="outlined"`, and when the icon font and the
 used icon classes disagree. E2E runs axe on the main screens and checks button rules (§13).
 
 ## Part A — Foundations
@@ -115,7 +116,12 @@ used icon classes disagree. E2E runs axe on the main screens and checks button r
   | error, debt, cancellation («На доработке», «Отменено учеником») | `danger` | error-container |
   | info, hint | `info` | tertiary-container |
 
+  A status grid (the homework journal, 339.2) uses the same roles as 48 dp button cells: success,
+  warning and error containers; a waiting cell is `surface container` with `on surface variant`;
+  an empty cell has no fill and a dashed `outline variant` (*ours*, M3 has no status grid).
+
 - **Messages and badges:** `p-message` — role container, no border or shadow, Body Medium.
+  Tags of one object (status + «Просрочено») go in a wrapping row, never a column (*ours*).
   `p-badge` — error by default, `warn`, calm counter `secondary`; a badge on an icon has no outline
   and sits inside the 40 px button, its start at the icon's middle, 4 px from the top (**M3**). The
   **M3** large badge (`tb-nav-badge`: error / on-error, 16 dp pill, «999+» at most) counts things to
@@ -326,7 +332,8 @@ for the active navigation item and checked states.
 - **Top bar** (sticky, no divider): from medium the **top strip** — 80 px (*ours*), the global
   search in the middle (teacher), the bell at the end; on compact the **M3 small top
   app bar** — 64 dp: ☰ («Разделы», `aria-haspopup="dialog"`), the section title in Title Large on
-  one line (not a heading: the h1 stays in `tb-page-header`), search icon (teacher), bell. There
+  one line (not a heading: the h1 stays in `tb-page-header`), search icon (teacher), the page's own
+  icon actions (a page may add some; the bell is never replaced), bell. There
   is no user button (330.1): the account is a navigation item.
 - **«Аккаунт»** — the last item of the rail's bottom group (after «Настройки», «Справка») and of
   the ☰ drawer, for every role: a 24 px `tb-avatar` (photo or initials) in place of the icon, the
@@ -383,7 +390,10 @@ for the active navigation item and checked states.
 - **No wrapping cards in a pane** (*ours*): inside `tb-pane` a `p-card` has no surface, corner or
   padding — the section title stands on the pane (Title Medium emphasized), its rows or blocks
   (`tb-list`, `tb-figures`) lie under it, 12 px apart; the list group's outer corner is 16 px. The
-  one container left is the filled `tb-hero`.
+  one container left is the filled `tb-hero`. *Exception* `tb-section-card` (the assignment editor,
+  sketch Editor): a `surface-container-low` card with 20 dp corners (**M3** large-increased), 20 dp
+  inside and the title (Title Medium emphasized) 12 px under the top; the cards of a form stand
+  16 px apart (*ours*; the sketch has 14).
 - **Header** `tb-page-header`: «Назад» icon button on nested pages (tooltip = destination); h1; «?»
   help if the section has an article; a detail line; actions on the title line (56 px), the main one
   last. On a phone a section page hides its title (kept for screen readers; the top bar names the
@@ -409,6 +419,10 @@ for the active navigation item and checked states.
 - **Hero** `tb-hero` — the filled primary-container card of the nearest lesson, the portal's one
   hero moment (*ours*); it carries only on-primary-container (links underlined). Layout:
   [`screens.md`](screens.md#nearest-lesson-hero).
+- **Answer panel** (student task, *ours*, M3 allows a docked surface for the page's main input): an
+  outlined container (corner 16, outline-variant, `--tb-card`), «Мой ответ» title, a text field, the
+  attachment rows, assist chips «Фото тетради» / «Файл» and the filled «Сдать» at the end. On compact it is
+  `position: sticky` at the bottom of the pane (`--p-md-surface-container`), the field shrinks to two rows.
 - **Forms on a page** — buttons in `tb-form-actions` bottom right, full width on a phone; a form
   keeps a readable width (`tb-form--narrow`) unless it is a review or editor form.
 - **Toolbar above a list** `tb-toolbar`: search first, filters and period after; it wraps.
@@ -420,14 +434,19 @@ for the active navigation item and checked states.
 Variant = **weight**, colour = **one accent** (ADR-0045): filled is primary (the portal colour),
 tonal is neutral secondary, red only destroys; green and amber are statuses, never buttons.
 40 px pill (icon button 40×40, 48 px target), Label Large, 16 px sides, 20 px icon (**M3E** small);
-icon buttons 24 px icon; shape morphs to 8 px while pressed. Never `outlined` (outline is for
-inputs), `size="small"`, `success`, `warn`, `info`, `help`, `contrast`.
+icon buttons 24 px icon; shape morphs to 8 px while pressed. Never `size="small"`, `success`,
+`warn`, `info`, `help`, `contrast`. Outlined (**M3** medium emphasis: 1 dp outline, primary label,
+no container) only as `variant="outlined"`, for the secondary action beside a page's filled main
+action — «Изменить» next to «Проверить N работ» (homework sketches, stages 339–342) — and for
+«Сегодня» of the calendar; never a second outlined button in the same bar.
 
 | Role | Variant | PrimeNG |
 |---|---|---|
 | Main page action / dialog confirm / login | filled primary | no severity |
 | Secondary page or section action, section save | tonal | `severity="secondary"` |
+| Secondary action beside the filled main action in a page header («Изменить») | outlined | `variant="outlined"` |
 | «Отмена», «Скрыть», «Понятно», labelled row action | text | `[text]="true"` (+ `severity="secondary"` for «Отмена») |
+| Header actions on a phone | — | the wide action stretches; an icon («⋮»), a text button and a split button keep their own size |
 | Icon action (edit, link) | text, round, neutral, tooltip | `[text]="true" [rounded]="true" severity="secondary"` + `pTooltip` |
 | Delete or unbind in a row (bin / «×», «Удалить» with a bin) | text red | `[text]="true" severity="danger"` |
 | Confirm an irreversible action (in a dialog) | filled red | `severity="danger"` |
@@ -454,6 +473,13 @@ inputs), `size="small"`, `success`, `warn`, `info`, `help`, `contrast`.
   `role="group"` with a name, `aria-pressed`, a count after the label, takes the whole width
   (*ours*). Examples: «Итог» of a lesson, a member's attendance, «На проверку · Активные · Готовые»,
   «Доски · Учебники», «Ученик · Группа», the calendar views, «Согласовать | Отклонить».
+  **Outlined variant** (`tb-segment-group [outlined]`, **M3** segmented buttons; the homework list's
+  «Списком · По ученикам» and «Активные · Черновики · Готовые», sketch `.seg`): 40 dp, no gap, the
+  whole group in one 1 dp `outline` border with a full pill outer shape and a 1 dp divider between
+  buttons; the chosen button `secondary-container` with a leading 18 dp check (it replaces the
+  button's own icon; `[checkmark]="false"` leaves it to the colour — the filter «Активные ·
+  Черновики · Готовые», sketch), the others transparent, `on-surface`. A screen takes one variant for all
+  its groups; the other screens keep the tonal one.
 - **Standard button group** `tb-button-group` — actions side by side: an invisible container with
   separate buttons, 12 dp gap (**M3** ButtonGroupSmall.BetweenSpace); a pressed button morphs its
   shape; the neighbours' width change is not done (*ours*). Never a primary button in a connected
@@ -571,6 +597,33 @@ inputs), `size="small"`, `success`, `warn`, `info`, `help`, `contrast`.
   do not fit are measured (`ResizeObserver`) and go to a «Ещё N» chip (trailing drop-down arrow,
   at least 88 dp wide) that opens a menu of them; the first chip and the chosen one always stay in
   the row, so the filter in force is never hidden.
+  **Menu chip** (`[menu]`, **M3** dropdown filter chip; «Кому: все ▾» of the homework list on a
+  phone, homework sketches): a second filter after the set, a trailing drop-down arrow and no check;
+  it opens a menu (`p-menu`), and while a choice is in force it is selected and names it («Кому:
+  Анна»), so the filter in force is visible (*ours*). `[scrollable]` (a phone): one row that
+  scrolls sideways without a visible scrollbar (touch and keyboard still scroll, the focus ring has
+  6 px of room), the chips keep their width (*ours*, homework sketches).
+- **Outlined select** (the «Кому» of the homework list, sketch `.select`): **M3** outlined field
+  shrunk to 40 dp to stand beside the segmented buttons — 8 dp corners, 1 dp `outline`, a leading
+  18 dp person icon, «Кому: все ▾» (*ours*: height).
+- **Assist chips** `tb-assist-chip` (`@shared/ui/assist-chip`, **M3** assist chip: a smart,
+  optional action next to a field — «Файл», «Учебник», «Видео» under a text): 32 dp, 8 dp corners, 1 dp
+  outline-variant, on-surface Label Large, a leading 18 dp primary icon (`icon="attach_file"`); hover
+  state layer; disabled 38 %. `[dashed]="true"` — the chip that adds a missing entity («Ученик или
+  группа»; dashed border, *ours*). A 48 dp target as in filter chips. Not an outlined button (§8): it
+  needs no filled action beside it.
+- **Input chips** `tb-input-chip` (`@shared/ui/input-chip`, **M3** input chip: a chosen entity the user
+  can remove): 32 dp, 8 dp corners, outline-variant border, a leading 24 dp `tb-avatar` or 18 dp icon
+  (`<… lead>`), the label, a trailing 18 dp «×» button named «Убрать: <name>». With a dashed assist chip
+  at the end it is the «Кому» field of the quick assignment dialog: `tb-member-picker` `[bare]` keeps
+  the data and the panel (`open()`), the chips are the field (*ours*). `[readonly]="true"` drops the «×»
+  (the students an assignment is already given to; *ours*).
+- **Section list** `tb-section-nav` (`@shared/ui/section-nav`, the contents of a long page, e.g. the
+  assignment editor from expanded width): a one-line list in the **M3** navigation-drawer manner — 48 dp
+  items (the drawer's 56 dp is *ours* lowered for an in-page list), full corners, a leading 20 dp icon,
+  label large; the section in view is filled with secondary container and set in label large
+  emphasized (`aria-current="location"`); a click scrolls to the section. About 200 dp wide and sticky;
+  hidden below expanded and while a supporting pane is open (*ours*).
 - **Material card** `tb-material-card` (`@shared/ui`): corner 20, surface-container-low, a preview
   on top (8:5; fetched as a blob by `tb-blob-image`, the kind icon while there is none; an external
   board shows a tonal tile with the service tag), the title (Title Medium) and «кому · дата» under
@@ -600,8 +653,19 @@ changes the container; content and markup are the same at every width. Every dia
 - **Basic dialog** (**M3**): 280–560 dp, 28 dp corners, 24 dp padding, 16 dp headline → body, 24 dp
   body → actions, 8 dp between buttons, surface-container-high, scrim; buttons at the trailing edge,
   the confirming one closest to it; with scrolling content the headline and buttons stay pinned.
-  *Ours:* `normal` 32 rem, `wide` 40 rem (= 560 dp), `alert` 32 rem (a confirmation ≤ 35 rem);
-  never closer than 1 rem to the screen edge.
+  *Ours:* `normal` 32 rem, `wide` 40 rem (= 560 dp), `xwide` 47.5 rem (a form with a text editor,
+  «Новое задание»), `split` 77.5 rem (a form with a pane beside it, «Новое задание» with the AI
+  pane), `alert` 32 rem (a confirmation ≤ 35 rem); never closer than 1 rem to the screen edge.
+  **Side pane** (*ours*, sketch `AiDraft`): `surface-container-low`, a 1 dp `outline-variant` divider,
+  24 dp padding, bleeding to the dialog's edge; below the large breakpoint it replaces the content
+  with an arrow back. **AI actions** («Написать с ИИ», «Сгенерировать», the «Черновик ИИ» badge) take
+  the tertiary roles (M3: tertiary is for a contrasting accent): the filled ones are
+  `on-tertiary-container` with `tertiary-container` text (the sketch's `#390035` on `#FFD7F3`; the
+  theme has no `on-tertiary`, and `tertiary` itself is tuned as a text colour), the badge and the
+  unpressed toggle `tertiary-container`. One filled primary action per
+  surface still holds: in the dialog it is «Выдать», so the draft's «Вставить в задание» is tonal
+  and «Ещё вариант» a text button; tertiary «Сгенерировать» is the pane's own action, not a second
+  primary one.
 - **Full-screen dialog** (`form` on compact only, **M3**): 56 dp header, 24 dp sides, 8 dp between
   elements; «✕» first and the only navigation, the headline (one line, truncated), the confirming
   button at the end with a clear verb («Создать», «Отправить», not «Готово»), never disabled for
@@ -704,8 +768,8 @@ changes the container; content and markup are the same at every width. Every dia
   items are not.
 - Media queries in `em` ranges (§5).
 - E2E runs axe (no critical / serious) on the main screens and checks button height (40 px), the
-  number of filled buttons per page, no red «Отмена», no `outlined` / `size="small"` / `success` /
-  `warn` / `info` buttons, red buttons only for danger confirmations and deletion.
+  number of filled buttons per page (outlined ones are not filled), no red «Отмена», no
+  `size="small"` / `success` / `warn` / `info` buttons, red buttons only for danger confirmations and deletion.
 
 ## 14. Texts and languages (ADR-0035)
 

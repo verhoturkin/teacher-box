@@ -3,7 +3,9 @@ package ru.teacherbox.homework.persistence;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -76,5 +78,15 @@ public class BoundTextbookRepository {
     private static BoundTextbook map(ResultSet rs, int rowNum) throws SQLException {
         return new BoundTextbook(rs.getObject("assignment_id", UUID.class), rs.getObject("textbook_id", UUID.class),
                 rs.getString("pages"), rs.getObject("bound_at", Instant.class));
+    }
+
+    /** How many textbooks every assignment has (assignments with none are absent). */
+    public Map<UUID, Integer> countsByAssignment() {
+        Map<UUID, Integer> counts = new HashMap<>();
+        jdbc.sql("select assignment_id, count(*) as total from homework.assignment_textbooks group by assignment_id")
+                .query((ResultSet rs) -> {
+                    counts.put(rs.getObject("assignment_id", UUID.class), rs.getInt("total"));
+                });
+        return counts;
     }
 }

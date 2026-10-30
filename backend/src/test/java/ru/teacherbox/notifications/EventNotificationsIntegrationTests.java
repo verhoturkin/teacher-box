@@ -18,6 +18,7 @@ import ru.teacherbox.billing.api.PaymentRecorded;
 import ru.teacherbox.billing.api.PaymentVoided;
 import ru.teacherbox.homework.api.HomeworkAssigned;
 import ru.teacherbox.homework.api.HomeworkDueSoon;
+import ru.teacherbox.homework.api.HomeworkReminderRequested;
 import ru.teacherbox.homework.api.HomeworkReviewed;
 import ru.teacherbox.homework.api.HomeworkSubmitted;
 import ru.teacherbox.identity.api.StudentActivated;
@@ -75,6 +76,19 @@ class EventNotificationsIntegrationTests {
 
         assertThat(notification.kind()).isEqualTo(NotificationKind.HOMEWORK_DUE_SOON);
         assertThat(notification.title()).isEqualTo("Скоро срок сдачи: «Дроби»");
+        assertThat(notification.body()).isEqualTo("Срок сдачи: 25.09.2026 18:30");
+    }
+
+    @Test
+    void homeworkReminderFromTheTeacher(Scenario scenario) {
+        UUID student = directory.addStudent("Анна");
+
+        InboxNotification notification = single(scenario, student,
+                new HomeworkReminderRequested(UUID.randomUUID(), UUID.randomUUID(), student, "Дроби", DUE,
+                        Instant.now()));
+
+        assertThat(notification.kind()).isEqualTo(NotificationKind.HOMEWORK_REMINDER);
+        assertThat(notification.title()).isEqualTo("Учитель напоминает о задании «Дроби»");
         assertThat(notification.body()).isEqualTo("Срок сдачи: 25.09.2026 18:30");
     }
 

@@ -99,9 +99,9 @@ const BAR_ITEMS = 5;
         <!-- the M3 search bar of the top strip (spec §3.2, 248.2) -->
         <tb-global-search />
       }
-      @if (pageBar(); as bar) {
-        <!-- the page's own actions in place of the bell and the account (spec §10.2) -->
-        <div class="tb-shell__user">
+      <div class="tb-shell__user">
+        @if (pageBar(); as bar) {
+          <!-- the page's own actions before the bell (spec §10.2) -->
           @for (action of bar.actions; track action.label) {
             <button
               pButton
@@ -133,14 +133,11 @@ const BAR_ITEMS = 5;
             </button>
             <p-menu #pageMenu [model]="bar.menu" [popup]="true" appendTo="body" />
           }
-        </div>
-      } @else {
-        <div class="tb-shell__user">
-          @if (notifications()) {
-            <tb-notification-bell />
-          }
-        </div>
-      }
+        }
+        @if (notifications()) {
+          <tb-notification-bell />
+        }
+      </div>
     </header>
     <div class="tb-shell__body">
       @if (!compact()) {

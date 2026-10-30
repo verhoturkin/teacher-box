@@ -32,6 +32,8 @@ import {
 } from './data-access/ai.models';
 import { T } from './i18n/texts';
 import { SearchField } from '@shared/ui/search-field';
+import { AssistChip } from '@shared/ui/assist-chip';
+import { Segment, SegmentGroup } from '@shared/ui/segment-group';
 
 /** A draft the teacher took: it replaces the assignment's content or goes after its text. */
 export interface AppliedDraft {
@@ -63,6 +65,9 @@ export class HomeworkAiState {
   readonly mode = signal<AiMode>('TASK');
   readonly draft = signal<HomeworkDraft | null>(null);
   readonly questions = signal<readonly DraftedQuestion[] | null>(null);
+  /** The variants of the task draft in the order they came, and the one shown. */
+  readonly history = signal<readonly HomeworkDraft[]>([]);
+  readonly variant = signal(0);
   /** Keys of the chosen sources. */
   readonly chosen = signal<ReadonlySet<string>>(new Set());
   readonly pending = signal(false);
@@ -81,6 +86,8 @@ export class HomeworkAiState {
   selector: 'tb-homework-ai-panel',
   imports: [
     SearchField,
+    AssistChip,
+    SegmentGroup,
     FormsModule,
     ReactiveFormsModule,
     RouterLink,
@@ -98,230 +105,390 @@ export class HomeworkAiState {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section class="tb-ai-panel" [attr.aria-label]="t.title">
-      <p-selectbutton
-        class="tb-ai-panel__mode"
-        [options]="modes"
-        optionLabel="label"
-        optionValue="value"
-        [allowEmpty]="false"
-        [ngModel]="mode()"
-        (ngModelChange)="mode.set($event)"
-        [ariaLabel]="t.modeLabel"
-      />
-      <div class="tb-ai-panel__request" [class.tb-ai-panel__request--folded]="folded()">
-        <i class="tb-i tb-i-auto_awesome tb-ai-panel__mark" aria-hidden="true"></i>
-        <textarea
-          pTextarea
-          id="ai-prompt"
-          class="tb-ai-panel__prompt"
-          [formControl]="prompt"
-          rows="2"
-          [attr.aria-label]="t.prompt"
-          [placeholder]="mode() === 'TASK' ? t.placeholder : t.questionsPlaceholder"
-          (focus)="focused.set(true)"
-          (blur)="focused.set(false)"
-        ></textarea>
-      </div>
-      <div class="tb-ai-panel__actions">
-        <p-button
-          [label]="t.prompts"
-          icon="tb-i tb-i-bookmark"
-          severity="secondary"
-          ariaHasPopup="dialog"
-          (onClick)="prompts.toggle($event)"
-        />
-        @if (sources().length > 0) {
-          <p-button
-            [label]="picked().length > 0 ? t.sourcesCount(picked().length) : t.sources"
-            icon="tb-i tb-i-menu_book"
-            severity="secondary"
-            ariaHasPopup="dialog"
-            (onClick)="sourcePicker.toggle($event)"
-          />
-        }
-        <p-button
-          class="tb-ai-panel__generate"
-          [label]="shown() === null ? t.generate : t.again"
-          [icon]="shown() === null ? 'tb-i tb-i-auto_awesome' : 'tb-i tb-i-refresh'"
-          [loading]="pending()"
-          (onClick)="generate()"
-        />
-      </div>
-
-      <p-popover #prompts [ariaLabel]="t.prompts" (onHide)="naming.set(false); query.set('')">
-        <div class="tb-ai-panel__menu">
-          @if (naming()) {
-            <div class="tb-field">
-              <label for="ai-prompt-title">{{ t.promptTitle }}</label>
-              <input
-                pInputText
-                id="ai-prompt-title"
-                [formControl]="promptTitle"
-                autocomplete="off"
-                (keydown.enter)="savePrompt()"
-              />
-            </div>
-            <div class="tb-actions tb-ai-panel__end">
-              <p-button
-                [label]="t.cancel"
-                severity="secondary"
-                [text]="true"
-                (onClick)="naming.set(false)"
-              />
-              <p-button [label]="t.save" [loading]="saving()" (onClick)="savePrompt()" />
+    <p-popover #prompts [ariaLabel]="t.prompts" (onHide)="naming.set(false); query.set('')">
+      <div class="tb-ai-panel__menu">
+        @if (naming()) {
+          <div class="tb-field">
+            <label for="ai-prompt-title">{{ t.promptTitle }}</label>
+            <input
+              pInputText
+              id="ai-prompt-title"
+              [formControl]="promptTitle"
+              autocomplete="off"
+              (keydown.enter)="savePrompt()"
+            />
+          </div>
+          <div class="tb-actions tb-ai-panel__end">
+            <p-button
+              [label]="t.cancel"
+              severity="secondary"
+              [text]="true"
+              (onClick)="naming.set(false)"
+            />
+            <p-button [label]="t.save" [loading]="saving()" (onClick)="savePrompt()" />
+          </div>
+        } @else {
+          @if (library().length > 0) {
+            <tb-search-field
+              class="tb-ai-panel__search"
+              [label]="t.search"
+              [ngModel]="query()"
+              (ngModelChange)="query.set($event)"
+            />
+            <div class="tb-ai-panel__library" role="group" [attr.aria-label]="t.prompts">
+              @for (prompt of found(); track prompt.id) {
+                <button type="button" class="tb-ai-panel__option" (click)="use(prompt)">
+                  <span>{{ prompt.title }}</span>
+                  <small>{{ prompt.text }}</small>
+                </button>
+              } @empty {
+                <p class="tb-hint">{{ t.notFound }}</p>
+              }
             </div>
           } @else {
-            @if (library().length > 0) {
-              <tb-search-field
-                class="tb-ai-panel__search"
-                [label]="t.search"
-                [ngModel]="query()"
-                (ngModelChange)="query.set($event)"
-              />
-              <div class="tb-ai-panel__library" role="group" [attr.aria-label]="t.prompts">
-                @for (prompt of found(); track prompt.id) {
-                  <button type="button" class="tb-ai-panel__option" (click)="use(prompt)">
-                    <span>{{ prompt.title }}</span>
-                    <small>{{ prompt.text }}</small>
-                  </button>
-                } @empty {
-                  <p class="tb-hint">{{ t.notFound }}</p>
-                }
-              </div>
-            } @else {
-              <p class="tb-hint">{{ t.noPrompts }}</p>
-            }
-            <div class="tb-ai-panel__menu-actions">
-              <p-button
-                [label]="t.savePrompt"
-                icon="tb-i tb-i-bookmark"
-                severity="secondary"
-                [text]="true"
-                (onClick)="startNaming()"
-              />
-              <a
-                pButton
-                routerLink="/teacher/settings/ai"
-                fragment="prompt-library"
-                severity="secondary"
-                [text]="true"
-              >
-                <i pButtonIcon aria-hidden="true" class="tb-i tb-i-settings"></i>
-                <span pButtonLabel>{{ t.manage }}</span>
-              </a>
-            </div>
+            <p class="tb-hint">{{ t.noPrompts }}</p>
           }
-        </div>
-      </p-popover>
+          <div class="tb-ai-panel__menu-actions">
+            <p-button
+              [label]="t.savePrompt"
+              icon="tb-i tb-i-bookmark"
+              severity="secondary"
+              [text]="true"
+              (onClick)="startNaming()"
+            />
+            <a
+              pButton
+              routerLink="/teacher/settings/ai"
+              fragment="prompt-library"
+              severity="secondary"
+              [text]="true"
+            >
+              <i pButtonIcon aria-hidden="true" class="tb-i tb-i-settings"></i>
+              <span pButtonLabel>{{ t.manage }}</span>
+            </a>
+          </div>
+        }
+      </div>
+    </p-popover>
 
-      <p-popover #sourcePicker [ariaLabel]="t.sources">
-        <fieldset class="tb-ai-panel__sources">
-          <legend class="tb-sr-only">{{ t.sources }}</legend>
+    @if (pane()) {
+      <section class="tb-ai-pane" [attr.aria-label]="t.title">
+        <tb-segment-group
+          class="tb-ai-pane__mode"
+          [label]="t.modeLabel"
+          [outlined]="true"
+          [segments]="paneModes"
+          [(value)]="mode"
+        />
+        <div class="tb-field">
+          <label for="ai-prompt">{{ t.need }}</label>
+          <textarea
+            pTextarea
+            id="ai-prompt"
+            class="tb-ai-pane__prompt"
+            [formControl]="prompt"
+            rows="3"
+            [placeholder]="mode() === 'TASK' ? t.placeholder : t.questionsPlaceholder"
+          ></textarea>
+          <div class="tb-ai-pane__chips">
+            @for (hint of suggestions; track hint.label) {
+              <tb-assist-chip (click)="prompt.setValue(hint.text)">{{ hint.label }}</tb-assist-chip>
+            }
+            <tb-assist-chip icon="bookmarks" (click)="prompts.toggle($event)">{{
+              t.myPrompts
+            }}</tb-assist-chip>
+          </div>
+        </div>
+
+        <div class="tb-ai-pane__sources">
+          <span class="tb-ai-pane__label">{{ t.considers }}</span>
           @for (option of sources(); track option.key) {
-            <div class="tb-ai-panel__source">
+            <div class="tb-ai-pane__source">
+              <i class="tb-i tb-i-menu_book" aria-hidden="true"></i>
+              <label class="tb-ai-pane__source-name" [for]="'ai-source-' + option.key">{{
+                option.label
+              }}</label>
               <p-checkbox
                 [inputId]="'ai-source-' + option.key"
                 [binary]="true"
                 [ngModel]="chosen().has(option.key)"
                 (ngModelChange)="toggle(option.key, $event)"
               />
-              <label [for]="'ai-source-' + option.key">{{ option.label }}</label>
             </div>
+          } @empty {
+            <small class="tb-hint">{{ t.noSources }}</small>
           }
-          <small class="tb-hint">{{ t.sourcesHint }}</small>
-        </fieldset>
-      </p-popover>
+          <tb-assist-chip icon="add" [dashed]="true" (click)="sourceAdd.emit()">{{
+            t.addSource
+          }}</tb-assist-chip>
+        </div>
 
-      @if (error(); as message) {
-        <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-      }
-      @if (mode() === 'TASK' && draft(); as current) {
-        <section class="tb-ai-panel__draft" [attr.aria-label]="t.draft">
-          <header class="tb-ai-panel__draft-header">
-            <span class="tb-ai-panel__badge">{{ t.draft }}</span>
-            <h3 class="tb-ai-panel__draft-title">{{ current.title }}</h3>
-            <div class="tb-actions">
+        @if (error(); as message) {
+          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
+        }
+        @if (mode() === 'TASK' && draft(); as current) {
+          <section class="tb-ai-pane__draft" [attr.aria-label]="t.draft">
+            <header class="tb-ai-pane__draft-header">
+              <span class="tb-ai-pane__badge">{{ t.draft }}</span>
+              <span class="tb-ai-pane__grow"></span>
+              <span class="tb-hint">{{ t.variantOf(variant() + 1, history().length) }}</span>
               <p-button
-                [label]="t.discard"
+                icon="tb-i tb-i-chevron_left"
                 severity="secondary"
                 [text]="true"
-                (onClick)="draft.set(null)"
+                [rounded]="true"
+                [ariaLabel]="t.previous"
+                [disabled]="variant() === 0"
+                (onClick)="show(variant() - 1)"
               />
-              @if (hasText()) {
+              <p-button
+                icon="tb-i tb-i-chevron_right"
+                severity="secondary"
+                [text]="true"
+                [rounded]="true"
+                [ariaLabel]="t.next"
+                [disabled]="variant() >= history().length - 1"
+                (onClick)="show(variant() + 1)"
+              />
+            </header>
+            <div class="tb-ai-pane__draft-body">
+              <h4 class="tb-ai-pane__draft-title">{{ current.title }}</h4>
+              <tb-markdown [text]="current.description" />
+            </div>
+            <div class="tb-ai-pane__draft-actions">
+              <p-button
+                [label]="t.insertInto"
+                icon="tb-i tb-i-arrow_back"
+                severity="secondary"
+                (onClick)="apply(current, hasText() ? 'insert' : 'replace')"
+              />
+              <p-button
+                [label]="t.moreVariant"
+                icon="tb-i tb-i-refresh"
+                severity="secondary"
+                [text]="true"
+                [loading]="pending()"
+                (onClick)="generate()"
+              />
+            </div>
+          </section>
+        }
+        @if (mode() === 'QUESTIONS' && questions(); as drafted) {
+          <section class="tb-ai-pane__draft" [attr.aria-label]="t.questionsDraft">
+            <header class="tb-ai-pane__draft-header">
+              <span class="tb-ai-pane__badge">{{ t.questionsDraft }}</span>
+              <span class="tb-ai-pane__grow"></span>
+              <span class="tb-hint">{{ t.questionsCount(drafted.length) }}</span>
+            </header>
+            <ol class="tb-ai-pane__draft-body tb-ai-pane__questions">
+              @for (question of drafted; track question.id) {
+                <li>
+                  <span class="tb-hint">{{ t.types[question.type] }}</span>
+                  {{ question.text }}
+                </li>
+              } @empty {
+                <li class="tb-hint">{{ t.questionsEmpty }}</li>
+              }
+            </ol>
+            @if (quizLocked()) {
+              <p-message severity="warn" styleClass="tb-form-message">{{
+                t.questionsLocked
+              }}</p-message>
+            }
+            <div class="tb-ai-pane__draft-actions">
+              @if (drafted.length > 0) {
                 <p-button
-                  [label]="t.insert"
+                  [label]="t.questionsToTest"
+                  icon="tb-i tb-i-arrow_back"
                   severity="secondary"
-                  (onClick)="apply(current, 'insert')"
+                  [disabled]="quizLocked()"
+                  (onClick)="applyQuestions(drafted, 'append')"
                 />
               }
               <p-button
-                [label]="t.replace"
-                icon="tb-i tb-i-check"
-                (onClick)="apply(current, 'replace')"
-              />
-            </div>
-          </header>
-          <div class="tb-ai-panel__draft-body">
-            <tb-markdown [text]="current.description" />
-          </div>
-          <small class="tb-hint tb-ai-panel__draft-hint">{{ t.hint }}</small>
-        </section>
-      }
-      @if (mode() === 'QUESTIONS' && questions(); as drafted) {
-        <section class="tb-ai-panel__draft" [attr.aria-label]="t.questionsDraft">
-          <header class="tb-ai-panel__draft-header">
-            <span class="tb-ai-panel__badge">{{ t.questionsDraft }}</span>
-            <h3 class="tb-ai-panel__draft-title">{{ t.questionsCount(drafted.length) }}</h3>
-            <div class="tb-actions">
-              <p-button
-                [label]="t.discard"
+                [label]="t.moreVariant"
+                icon="tb-i tb-i-refresh"
                 severity="secondary"
                 [text]="true"
-                (onClick)="questions.set(null)"
+                [loading]="pending()"
+                (onClick)="generate()"
               />
-              @if (drafted.length > 0) {
-                @if (questionCount() > 0) {
+            </div>
+          </section>
+        }
+
+        <footer class="tb-ai-pane__foot">
+          <small class="tb-hint tb-ai-pane__grow">{{ t.onlyOnInsert }}</small>
+          <button
+            type="button"
+            class="tb-ai-pane__generate"
+            [disabled]="pending()"
+            (click)="generate()"
+          >
+            <i class="tb-i tb-i-auto_awesome" aria-hidden="true"></i>{{ t.generate }}
+          </button>
+        </footer>
+      </section>
+    } @else {
+      <section class="tb-ai-panel" [attr.aria-label]="t.title">
+        <p-selectbutton
+          class="tb-ai-panel__mode"
+          [options]="modes"
+          optionLabel="label"
+          optionValue="value"
+          [allowEmpty]="false"
+          [ngModel]="mode()"
+          (ngModelChange)="mode.set($event)"
+          [ariaLabel]="t.modeLabel"
+        />
+        <div class="tb-ai-panel__request" [class.tb-ai-panel__request--folded]="folded()">
+          <i class="tb-i tb-i-auto_awesome tb-ai-panel__mark" aria-hidden="true"></i>
+          <textarea
+            pTextarea
+            id="ai-prompt"
+            class="tb-ai-panel__prompt"
+            [formControl]="prompt"
+            rows="2"
+            [attr.aria-label]="t.prompt"
+            [placeholder]="mode() === 'TASK' ? t.placeholder : t.questionsPlaceholder"
+            (focus)="focused.set(true)"
+            (blur)="focused.set(false)"
+          ></textarea>
+        </div>
+        <div class="tb-ai-panel__actions">
+          <p-button
+            [label]="t.prompts"
+            icon="tb-i tb-i-bookmark"
+            severity="secondary"
+            ariaHasPopup="dialog"
+            (onClick)="prompts.toggle($event)"
+          />
+          @if (sources().length > 0) {
+            <p-button
+              [label]="picked().length > 0 ? t.sourcesCount(picked().length) : t.sources"
+              icon="tb-i tb-i-menu_book"
+              severity="secondary"
+              ariaHasPopup="dialog"
+              (onClick)="sourcePicker.toggle($event)"
+            />
+          }
+          <p-button
+            class="tb-ai-panel__generate"
+            [label]="shown() === null ? t.generate : t.again"
+            [icon]="shown() === null ? 'tb-i tb-i-auto_awesome' : 'tb-i tb-i-refresh'"
+            [loading]="pending()"
+            (onClick)="generate()"
+          />
+        </div>
+
+        <p-popover #sourcePicker [ariaLabel]="t.sources">
+          <fieldset class="tb-ai-panel__sources">
+            <legend class="tb-sr-only">{{ t.sources }}</legend>
+            @for (option of sources(); track option.key) {
+              <div class="tb-ai-panel__source">
+                <p-checkbox
+                  [inputId]="'ai-source-' + option.key"
+                  [binary]="true"
+                  [ngModel]="chosen().has(option.key)"
+                  (ngModelChange)="toggle(option.key, $event)"
+                />
+                <label [for]="'ai-source-' + option.key">{{ option.label }}</label>
+              </div>
+            }
+            <small class="tb-hint">{{ t.sourcesHint }}</small>
+          </fieldset>
+        </p-popover>
+
+        @if (error(); as message) {
+          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
+        }
+        @if (mode() === 'TASK' && draft(); as current) {
+          <section class="tb-ai-panel__draft" [attr.aria-label]="t.draft">
+            <header class="tb-ai-panel__draft-header">
+              <span class="tb-ai-panel__badge">{{ t.draft }}</span>
+              <h3 class="tb-ai-panel__draft-title">{{ current.title }}</h3>
+              <div class="tb-actions">
+                <p-button
+                  [label]="t.discard"
+                  severity="secondary"
+                  [text]="true"
+                  (onClick)="discard()"
+                />
+                @if (hasText()) {
                   <p-button
-                    [label]="t.questionsAppend"
+                    [label]="t.insert"
                     severity="secondary"
-                    [disabled]="quizLocked()"
-                    (onClick)="applyQuestions(drafted, 'append')"
+                    (onClick)="apply(current, 'insert')"
                   />
                 }
                 <p-button
-                  [label]="questionCount() > 0 ? t.questionsReplace : t.questionsAppend"
+                  [label]="t.replace"
                   icon="tb-i tb-i-check"
-                  [disabled]="quizLocked()"
-                  (onClick)="applyQuestions(drafted, questionCount() > 0 ? 'replace' : 'append')"
+                  (onClick)="apply(current, 'replace')"
                 />
-              }
+              </div>
+            </header>
+            <div class="tb-ai-panel__draft-body">
+              <tb-markdown [text]="current.description" />
             </div>
-          </header>
-          @if (quizLocked()) {
-            <p-message severity="warn" styleClass="tb-form-message">{{
-              t.questionsLocked
-            }}</p-message>
-          }
-          @if (drafted.length === 0) {
-            <p class="tb-hint tb-ai-panel__draft-hint">{{ t.questionsEmpty }}</p>
-          } @else {
-            <ol class="tb-ai-panel__questions">
-              @for (question of drafted; track question.id) {
-                <li class="tb-ai-panel__question">
-                  <span class="tb-ai-panel__question-meta">
-                    {{ t.types[question.type] }} · {{ t.points(question.points) }}
-                  </span>
-                  <span class="tb-ai-panel__question-text">{{ question.text }}</span>
-                  <small class="tb-hint tb-ai-panel__question-key">{{ key(question) }}</small>
-                </li>
-              }
-            </ol>
-          }
-          <small class="tb-hint tb-ai-panel__draft-hint">{{ t.questionsHint }}</small>
-        </section>
-      }
-    </section>
+            <small class="tb-hint tb-ai-panel__draft-hint">{{ t.hint }}</small>
+          </section>
+        }
+        @if (mode() === 'QUESTIONS' && questions(); as drafted) {
+          <section class="tb-ai-panel__draft" [attr.aria-label]="t.questionsDraft">
+            <header class="tb-ai-panel__draft-header">
+              <span class="tb-ai-panel__badge">{{ t.questionsDraft }}</span>
+              <h3 class="tb-ai-panel__draft-title">{{ t.questionsCount(drafted.length) }}</h3>
+              <div class="tb-actions">
+                <p-button
+                  [label]="t.discard"
+                  severity="secondary"
+                  [text]="true"
+                  (onClick)="questions.set(null)"
+                />
+                @if (drafted.length > 0) {
+                  @if (questionCount() > 0) {
+                    <p-button
+                      [label]="t.questionsAppend"
+                      severity="secondary"
+                      [disabled]="quizLocked()"
+                      (onClick)="applyQuestions(drafted, 'append')"
+                    />
+                  }
+                  <p-button
+                    [label]="questionCount() > 0 ? t.questionsReplace : t.questionsAppend"
+                    icon="tb-i tb-i-check"
+                    [disabled]="quizLocked()"
+                    (onClick)="applyQuestions(drafted, questionCount() > 0 ? 'replace' : 'append')"
+                  />
+                }
+              </div>
+            </header>
+            @if (quizLocked()) {
+              <p-message severity="warn" styleClass="tb-form-message">{{
+                t.questionsLocked
+              }}</p-message>
+            }
+            @if (drafted.length === 0) {
+              <p class="tb-hint tb-ai-panel__draft-hint">{{ t.questionsEmpty }}</p>
+            } @else {
+              <ol class="tb-ai-panel__questions">
+                @for (question of drafted; track question.id) {
+                  <li class="tb-ai-panel__question">
+                    <span class="tb-ai-panel__question-meta">
+                      {{ t.types[question.type] }} · {{ t.points(question.points) }}
+                    </span>
+                    <span class="tb-ai-panel__question-text">{{ question.text }}</span>
+                    <small class="tb-hint tb-ai-panel__question-key">{{ key(question) }}</small>
+                  </li>
+                }
+              </ol>
+            }
+            <small class="tb-hint tb-ai-panel__draft-hint">{{ t.questionsHint }}</small>
+          </section>
+        }
+      </section>
+    }
   `,
   styles: `
     :host {
@@ -518,6 +685,136 @@ export class HomeworkAiState {
       font: var(--tb-type-label-m);
     }
 
+    .tb-ai-pane {
+      display: grid;
+      gap: var(--tb-space-4);
+      align-content: start;
+    }
+
+    .tb-ai-pane__mode {
+      width: 100%;
+    }
+
+    .tb-ai-pane__prompt {
+      width: 100%;
+      max-height: 12rem;
+      resize: none;
+      field-sizing: content;
+      background: var(--p-md-surface-container-lowest);
+    }
+
+    .tb-ai-pane__chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--tb-space-2);
+      margin-top: var(--tb-space-2);
+    }
+
+    .tb-ai-pane__sources {
+      display: grid;
+      gap: var(--tb-space-2);
+      justify-items: start;
+    }
+
+    .tb-ai-pane__label {
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-label-m);
+    }
+
+    .tb-ai-pane__source {
+      display: flex;
+      gap: var(--tb-space-3);
+      align-items: center;
+      width: 100%;
+      box-sizing: border-box;
+      padding: var(--tb-space-2) var(--tb-space-3);
+      border-radius: var(--tb-shape-md);
+      background: var(--p-md-surface-container-lowest);
+      font: var(--tb-type-body-m);
+      cursor: pointer;
+
+      .tb-i {
+        color: var(--p-md-primary);
+        font-size: 1.25rem;
+      }
+    }
+
+    .tb-ai-pane__source-name {
+      flex: 1;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .tb-ai-pane__draft {
+      display: grid;
+      gap: var(--tb-space-3);
+      padding: var(--tb-space-3) var(--tb-space-4);
+      border: 1px solid var(--p-md-outline-variant);
+      border-radius: var(--tb-shape-lg);
+      background: var(--p-md-surface-container-lowest);
+    }
+
+    .tb-ai-pane__draft-header,
+    .tb-ai-pane__draft-actions,
+    .tb-ai-pane__foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--tb-space-2);
+      align-items: center;
+    }
+
+    .tb-ai-pane__grow {
+      flex: 1;
+    }
+
+    .tb-ai-pane__badge {
+      padding: var(--tb-space-1) var(--tb-space-2);
+      border-radius: var(--tb-shape-sm);
+      background: var(--p-md-tertiary-container);
+      color: var(--p-md-on-tertiary-container);
+      font: var(--tb-type-label-m);
+    }
+
+    .tb-ai-pane__draft-body {
+      max-height: 16rem;
+      margin: 0;
+      overflow: auto;
+      font: var(--tb-type-body-m);
+    }
+
+    .tb-ai-pane__draft-title {
+      margin: 0 0 var(--tb-space-1);
+      font: var(--tb-type-title-s);
+    }
+
+    .tb-ai-pane__questions {
+      padding-inline-start: var(--tb-space-6);
+    }
+
+    .tb-ai-pane__foot {
+      margin-top: auto;
+    }
+
+    /* the AI action takes the tertiary role (sketch AiDraft), not the primary one */
+    .tb-ai-pane__generate {
+      display: inline-flex;
+      gap: var(--tb-space-2);
+      align-items: center;
+      block-size: 2.5rem;
+      padding: 0 var(--tb-space-5) 0 var(--tb-space-4);
+      border: 0;
+      border-radius: var(--tb-shape-full);
+      background: var(--p-md-on-tertiary-container);
+      color: var(--p-md-tertiary-container);
+      font: var(--tb-type-label-l);
+      cursor: pointer;
+
+      &:disabled {
+        opacity: 0.38;
+        cursor: default;
+      }
+    }
+
     .tb-ai-panel__question-text {
       display: block;
       font: var(--tb-type-body-m);
@@ -540,6 +837,10 @@ export class HomeworkAiPanel implements OnInit {
   readonly questionCount = input(0);
   /** A student started the quiz: its questions cannot change. */
   readonly quizLocked = input(false);
+  /** The pane of the quick dialog (sketch «Написать с ИИ») instead of the editor's card. */
+  readonly pane = input(false);
+  /** «Источник»: the host adds a source (a textbook) to the assignment. */
+  readonly sourceAdd = output();
   readonly applied = output<AppliedDraft>();
   readonly questionsApplied = output<AppliedQuestions>();
 
@@ -561,7 +862,18 @@ export class HomeworkAiPanel implements OnInit {
     { label: this.t.modeTask, value: 'TASK' },
     { label: this.t.modeQuestions, value: 'QUESTIONS' },
   ];
+  protected readonly paneModes: Segment<AiMode>[] = [
+    { label: this.t.paneTask, value: 'TASK' },
+    { label: this.t.paneQuestions, value: 'QUESTIONS' },
+  ];
+  protected readonly suggestions = [
+    { label: this.t.suggestTopic, text: this.t.suggestTopicText },
+    { label: this.t.suggestEssay, text: this.t.suggestEssayText },
+    { label: this.t.suggestBook, text: this.t.suggestBookText },
+  ];
   protected readonly draft = this.state.draft;
+  protected readonly history = this.state.history;
+  protected readonly variant = this.state.variant;
   protected readonly questions = this.state.questions;
   /** The draft of the chosen mode, if there is one. */
   protected readonly shown = computed(() =>
@@ -634,6 +946,8 @@ export class HomeworkAiPanel implements OnInit {
       this.api.homeworkDraft(brief, files).subscribe({
         next: (draft) => {
           this.pending.set(false);
+          this.history.update((variants) => [...variants, draft]);
+          this.variant.set(this.history().length - 1);
           this.draft.set(draft);
         },
         error: failed,
@@ -677,7 +991,18 @@ export class HomeworkAiPanel implements OnInit {
 
   protected apply(draft: HomeworkDraft, mode: 'replace' | 'insert'): void {
     this.applied.emit({ draft, mode });
+    this.discard();
+  }
+
+  protected discard(): void {
     this.draft.set(null);
+    this.history.set([]);
+    this.variant.set(0);
+  }
+
+  protected show(index: number): void {
+    this.variant.set(index);
+    this.draft.set(this.history()[index] ?? null);
   }
 
   protected startNaming(): void {

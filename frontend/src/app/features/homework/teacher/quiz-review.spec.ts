@@ -161,9 +161,12 @@ describe('quiz stats on the assignment page', () => {
       students: 4,
       questions: [{ questionId: 'q-1', text: 'Столица **России**?', wrong: 3 }],
     });
-    const text = readableText(host.querySelector('.tb-asg-stats')!);
-    expect(text).toContain('1. Столица России?');
-    expect(text).toContain('3 из 4');
+    const row = host.querySelector('.tb-asg-stats__row')!;
+    expect(readableText(row)).toBe('1 3 из 4');
+    expect(row.getAttribute('title')).toBe('Столица России?');
+    expect(row.querySelector<HTMLElement>('.tb-asg-stats__bar > span')?.style.inlineSize).toBe(
+      '75%',
+    );
   });
 
   it('says nobody has submitted yet', async () => {

@@ -17,6 +17,10 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   changes no version. `boardId` is in `AssignmentDetails`, `AssignmentSummary` and the student's `AssignmentInfo`.
   `AssignmentSummary.studentIds` (0.41.0) lets the teacher's list filter by student or group on the
   client; the list endpoint still returns every assignment (paging of «Готовые» is client-side).
+  For the list's material icons (339.1) it also carries `textbooks`, `files`, `questions` and
+  `videos` — how many the assignment has (grouped counts in the repositories, one query per kind); a
+  `ReviewQueueItem` carries `quizScore` / `quizMax` — the points of the best submitted quiz attempt
+  (`null` without a quiz) for the «Тест 8 из 10» tag of the review strip.
 - **Videos by link** ([ADR-0047](../adr/0047-video-links-and-transcripts.md), 0.19.0): up to 5 per assignment
   (`homework.assignment_videos`, cascade with the assignment), sent as `videos [{url, title?, transcript?,
   transcriptShown}]` in the create / update requests — the list replaces the old one, an update without it keeps them.
@@ -48,15 +52,28 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
 - **Deleting** (0.14.2): `DELETE /api/teacher/homework/assignments/{id}` (`AssignmentService.delete`) removes the files of
   the assignment and of its answers (`FileStorage`), the answers, the tasks and the assignment; bound textbooks go by
   cascade. No event: notifications already sent stay in the inbox, their link leads to «not found».
+- **Draft students** (340.1): `PUT /api/teacher/homework/assignments/{id}/draft-students {studentIds}`
+  (`AssignmentService.saveDraftStudents`, `homework.assignment_draft_students`, cascade with the assignment)
+  remembers whom a draft is meant for. It makes no task and no event, students never see it; unknown
+  student → 404 `student.not-found`. `AssignmentDetails.draftStudentIds` returns them; giving the assignment
+  out (`assign`) drops the ones that got a task. The assignment page opens «Добавить» with them chosen.
 - **Copy** (0.36.0): `POST /api/teacher/homework/assignments/{id}/copy` (`AssignmentService.copy`, 201) — a new
   draft «<title> (копия)» (the title is cut to 200 characters) with the text, the files (new `FileStorage` keys, so
   deleting the original keeps the copy's files), the bound textbooks with pages and the videos with transcripts; no
   students, no deadline, no board.
 - A student sees only own tasks and attachments (403/404 tests).
+- The teacher's assignment view gives each student entry (`TaskSummary`) a one-line `answerPreview` (the
+  first 200 characters of the latest answer text, whitespace collapsed, `…` when cut), `answerFiles` (files of
+  that answer) and the best finished quiz attempt (`quizScore` / `quizMax`); students never get this view.
 
 ## Contract (`homework::api`)
 
-Events: `HomeworkAssigned`, `HomeworkSubmitted`, `HomeworkReviewed`, `HomeworkDueSoon` → `notifications`.
+Events: `HomeworkAssigned`, `HomeworkSubmitted`, `HomeworkReviewed`, `HomeworkDueSoon`, `HomeworkReminderRequested` → `notifications`.
+
+`POST /api/teacher/homework/assignments/{id}/students/{studentId}/remind` («Напомнить» on the assignment
+page) publishes `HomeworkReminderRequested` for a task that is `ASSIGNED` or `RETURNED`; otherwise 422
+`task.not-remindable`, an unknown task 404, a second one within an hour 409 `task.reminded-recently`
+(kept in memory: a restart forgets it). Teacher only.
 
 `AssignmentFiles.file(assignmentId, attachmentId)` (for `ai`, [ADR-0039](../adr/0039-ai-reads-homework-sources.md)): a
 file of the assignment's materials — name, type, size, content; another assignment's file — 404 `file.not-found`.
@@ -100,7 +117,12 @@ how many students (of those with a submitted attempt) got it wrong in their best
 
 `/api/teacher/homework/**` (assignments — the list has the names of the students of each, `DELETE assignments/{id}`, `POST assignments/{id}/copy`, students, attachments,
 `PUT assignments/{id}/board`, `POST assignments/{id}/textbooks` `{textbookId, pages}`,
-`DELETE assignments/{id}/textbooks/{textbookId}`, `POST videos/transcript`, tasks/{id}/review, review-queue, summary (besides the review counters it has `weekAssigned` — assignments given to current students and
+`DELETE assignments/{id}/textbooks/{textbookId}`, `POST videos/transcript`, tasks/{id}/review, review-queue, `GET journal?from&to&who` (`from`/`to` — `yyyy-MM-dd`, whole days of the instance time zone, both
+included; `who` — a group or a student id, none: every student with a task on these assignments):
+the assignments due in the range as columns and the current students as rows, one cell per column —
+`ACCEPTED` (+ `grade`), `TO_REVIEW` (+ the best quiz score), `RETURNED`, `OVERDUE` (+ `overdueDays`),
+`WAITING` or `NOT_ASSIGNED` (no `taskId`) — with `handedIn` (accepted + to review) and `given` per row
+(339.2), summary (besides the review counters it has `weekAssigned` — assignments given to current students and
 `weekOnTime` — works handed in not later than the due date, both in the current Monday–Sunday week of the instance time
 zone, for the Today page, 239.1),
 `GET students/{studentId}/tasks` — the student's tasks as the student's list shows them, for the student card
@@ -119,6 +141,12 @@ interaction); autosave on change and blur; «Сдать тест» asks for conf
 («Тест: N из M», wrong answers first, «Засчитать» / «Не засчитывать») on the review page and the per-question mistakes
 on the assignment page. E2E: `e2e/tests/homework/quiz.spec.ts`.
 
+Student answer draft (342.2): the backend stores no draft of a submission (the `Draft` types are the teacher's
+assignment drafts), so the text of an unsent answer lives in `localStorage` as `tb.homework.draft.<taskId>` (a task
+is one student + one assignment), written on every change, cleared on «Сдать», on an empty text and never restored
+into accepted work. Files are not kept: a server draft would need a new table and endpoints for a small gain.
+Voice answers are not done (Backlog in `PLAN.md`).
+
 `features/homework/`: `teacher/` (assignments list pane, assignment page, editor), `student/` (my tasks, task
 page), `ui/`, `home/` widgets, `homework-labels.ts`. Textbooks: `ui/textbook-list.ts` (kind icon, title,
 «Учебник · course · с. 12-14» / «целиком»; the teacher's pencil and cross, the student's tap opens the pages in a new tab,
@@ -126,7 +154,9 @@ the download button saves them under `boundTextbookFilename`; 0.14.5: the teache
 textbook, a PDF at its first bound page — `teacher/material-opener.ts`), `teacher/bind-textbook-dialog.ts` («Привязать учебник»: a textbook not bound yet from
 `@features/textbooks/parts`, pages — none for an image; the pencil changes the pages of a bound one). Editor (`teacher/assignment-editor-page.ts`, routes `/teacher/homework/new` and `/teacher/homework/:id/edit`,
 `canLeaveGuard`; «Создать › Задание» in the rail and, on a phone, «Новое задание» lead there): one Markdown field with a «Текст / Просмотр»
-switch; students and groups (`tb-member-picker`: typed explicit selections resolve to a deduplicated snapshot of current available students; removing a group preserves explicit individual choices),
+switch (its first line is the title — `titleOf`: Markdown stripped, at most 200 characters, as the backend allows;
+a saved assignment loads its title on top when the text does not start with it; empty sections — textbooks, videos,
+questions, board — are hidden behind the assist chips, 340.2); students and groups (`tb-member-picker`: typed explicit selections resolve to a deduplicated snapshot of current available students; removing a group preserves explicit individual choices),
 the due date — the start of the earliest scheduled lesson of the chosen students within 60 days
 (`teacher/next-lesson.ts` over `ScheduleApi.lessons`) until the teacher sets it; textbooks and files only for a new
 assignment (0.14.2: a saved one changes them on its page); picked files — `ui/file-picker.ts`, the same `tb-list` cards
@@ -142,18 +172,15 @@ there is one, «Удалить…» (danger confirmation); materials — `ui/att
 (type icon, name, size, the same red «×»; `openable` — the name opens the file through `MaterialOpener`, a PDF or a
 picture in a tab, with a download button beside it — on the assignment and review pages); «Ученики» — a `tb-list` (avatar, name link to the task, «Сдано … / Не сдано»,
 status), «Добавить» at the top right of the card opens `teacher/assign-more-dialog.ts` («Выдать ещё ученикам»: students
-and groups in one searchable picker). The list (`teacher/assignments-page.ts`, 242.1) — the list pane of a list-detail (`tb-panes`, fixed pane; the detail pane is
-`task-review-page.ts` or `assignment-page.ts`, see below): the connected group «На проверку · Активные · Готовые» with counts (`@shared/ui/segment-group`), the
-filter button of the header opens one search by the title or a student's name. «На проверку» (the default while there is
-work to review, else «Активные») — the works of `review-queue` (avatar, student, «задание · сдано dd.MM HH:mm», the
-«Просрочено» tag when handed in after the due date), then «Ждут сдачи» — assignments somebody still has to hand in
-(«N из M», or «Просрочено»); «Активные» — assignments given and not every task accepted, then «Не выдано» (drafts);
-«Готовые» — `isDone`. A row of an assignment: title, «кому · до …», the progress badge, «⋮» (open, edit, «Проверить
-работы» — switches to «На проверку», open the board, «Удалить…»). `/teacher/homework/review` redirects to the list.
+and groups in one searchable picker). The list (`teacher/assignments-page.ts`, 339.1) takes the full width: the review strip («Ждут
+проверки», up to three works of `review-queue` as cards, «Проверить», «Проверить все подряд»), one
+toolbar (search by title or student, «Кому», «Активные · Черновики · Готовые» with counts) and the
+table of `AssignmentSummary` grouped by `deadline-groups.ts` (cards on a phone); an assignment
+(`assignment-page.ts`) and a work (`task-review-page.ts`) are pages of their own with «back»
+(layout: `docs/screens.md`). `/teacher/homework/review` redirects to the list.
 Detail (242.2): `/teacher/homework`, `/teacher/homework/tasks/:taskId` and `/teacher/homework/:assignmentId` are one route
-(`homeworkMatcher` in `app.routes.ts`, as the students'): the list stays and the work or the assignment opens in the
-second pane (the row is `tb-list__item--current`, `aria-current`); on compact and medium the route shows one of them and
-«back» (`single` input) leads to the list. The pages (`task-review-page.ts`, `assignment-page.ts`) reload when the id
+(`homeworkMatcher` in `app.routes.ts`, as the students'): the page shows the list, the work or the assignment
+(since 339.1 never beside each other); «back» (`single` input, always on) leads to the list. The pages (`task-review-page.ts`, `assignment-page.ts`) reload when the id
 changes and emit `changed` (reviewed, given to more students, deleted), so the list reads itself again. The work: title =
 the assignment, the line «student · срок · status · попытка N», «Открыть на доске» (the assignment's board), the collapsible
 «Задание» block (statement and files), «Ответ ученика», then «Проверка» (the form below extra-large; from extra-large it is the side sheet, see below; on a phone (< 600) the M3 floating toolbar — AI, comment, «На доработку», «Принять» — with the comment, the draft, the quick phrases and the grade in a bottom sheet, and the bottom navigation bar hidden: `RailState.bottomBarHidden`, `ReviewSheet [compact]`); blocks lie

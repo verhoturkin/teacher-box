@@ -126,20 +126,11 @@ test('the nearest lesson of the student is a calendar event like the teacher’s
   await expect(hero.getByRole('button', { name: 'Перенести' })).toHaveCount(0);
 });
 
-test('the student’s homework is filtered to hand in, in review and done, with a search', async ({
-  page,
-}) => {
+test('the student’s homework is grouped by what to do next', async ({ page }) => {
   await signIn(page);
   await page.goto('/cabinet/homework');
-  const filters = page.getByRole('group', { name: 'Что показать' });
-  await expect(filters.getByRole('button', { name: /^Сдать/ })).toBeVisible();
-  await expect(filters.getByRole('button', { name: /^На проверке/ })).toBeVisible();
-  await expect(filters.getByRole('button', { name: /^Готовые/ })).toBeVisible();
-  const search = page.getByRole('searchbox', { name: 'Название задания' });
-  await search.fill(RUN);
+  await expect(page.getByRole('heading', { name: 'Сделать' })).toBeVisible();
   await expect(page.getByRole('link', { name: HOMEWORK })).toBeVisible();
-  await search.fill(`нет такого ${RUN}`);
-  await expect(page.getByText('Ничего не найдено')).toBeVisible();
 });
 
 test('the answered requests are folded under «Решённые»', async ({ page }) => {

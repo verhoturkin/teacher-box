@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.test.context.TestPropertySource;
+import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeTextbooks;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
@@ -36,6 +37,11 @@ public @interface HomeworkIntegrationTest {
         @Bean
         FakeUserDirectory userDirectory() {
             return new FakeUserDirectory();
+        }
+
+        @Bean
+        FakeStudentGroups studentGroups() {
+            return new FakeStudentGroups();
         }
 
         @Bean

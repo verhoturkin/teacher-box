@@ -303,40 +303,54 @@ You can also add [textbook pages](/teacher/help/textbooks) from Materials or an 
     body: `
 ## Create an assignment
 
-1. Choose “Create” → “Assignment”, or “Homework” → “New assignment” on a phone.
-2. Enter a title and instructions. Markdown supports bold text, lists and links; use Preview to check the result.
-3. Select students and groups. Students in more than one selected group receive the assignment once. Removing a group keeps any students also selected individually. The due date defaults to the next lesson’s start time; change it if needed.
-4. Attach textbooks and files. Select a name to open it; PDFs and images open in a new tab.
-5. Optionally add up to five videos. YouTube, Rutube and VK videos play within the assignment; other links open in a new tab. Import YouTube captions, import an .srt or .vtt file, or enter a transcript yourself. If several caption tracks are available, choose the language and track you need. The AI uses the transcript; students see it only if “Show transcript to students” is enabled.
-6. Choose “Assign”. Students are notified once the materials are ready and reminded before the due date.
+1. Choose “Create” → “Assignment”, or “Homework” → “New assignment” on a phone. A quick dialog opens so you can assign work in a minute; “Open full screen” (or “Quiz”) carries everything you have entered into the full editor.
+2. In the dialog, choose who gets the assignment and write the text; its first line becomes the title. Set the due date with “By the next lesson”, “In a week”, “No deadline” or “Pick a date…”. Add textbooks, files, videos or a board with the buttons under the text, and use “Save draft” to keep the assignment unassigned; the students you chose are remembered and already ticked when you choose “Add” on the draft’s page. The full editor follows the same order: recipients, text, due date, materials. Markdown supports bold text, lists and links; use Preview to check the result.
+3. Under “To”, add students and groups. Students in more than one selected group receive the assignment once. Removing a group keeps any students also selected individually. “By the next lesson” sets the due date to the start of those students’ next lesson; pick another option if you prefer.
+4. Textbooks, files, videos, a quiz and a board appear in the assignment only once you add them: use the buttons under “Materials”. Textbooks and files show as cards; select a name to open it (PDFs and images open in a new tab). “Board” opens a list of your boards: the one you choose shows as a “Board: name” chip (the × clears it), and once the assignment is given out the “Add to board” window opens with that board selected. You can remove anything you added, and empty sections take up no room.
+5. For a video, use “Video” (up to five). YouTube, Rutube and VK videos play within the assignment; other links open in a new tab. Import YouTube captions, import an .srt or .vtt file, or enter a transcript yourself. If several caption tracks are available, choose the language and track you need. The AI uses the transcript; students see it only if “Show transcript to students” is enabled.
+6. Choose “Assign”. Students are notified once the materials are ready and reminded before the due date. “Save draft” keeps the assignment with you.
 
 “Assign and add to board” creates the assignment, then lets you place its text, images and textbook pages on a board. The assignment remembers the board and gives students a “Go to board” button. “Add to board” on the assignment page has the same effect.
 
 ## Manage assignments
 
-“Edit” opens the editor for the title, instructions, videos and due date. Update the textbooks and files of a saved assignment on its details page. The portal checks before discarding unsaved changes.
+“Edit” opens the editor. On a wide screen a list of sections on the left scrolls to the one you choose. A draft keeps its students under “To” and you can change them; an issued assignment shows its students without “×”, and “Assign to more” adds new ones. The editor covers the instructions (their first line is the title), videos, quiz and due date. Update the textbooks and files of a saved assignment on its details page. The portal checks before discarding unsaved changes.
 
 “Make a copy” creates a draft with the original text, files, textbooks and videos, but no recipients or due date. The editor opens so you can adapt it.
 
-The Homework list has “To review”, “Active” and “Done” views. Search by assignment title or student name, and use “For” to select a student or group. Filters are kept in the page address.
+The Homework page lists assignments on the full width. Search by assignment title or student name, and use “For” to select a student or group. Search and “For” are kept in the page address.
 
-- **To review:** student submissions, followed by “Awaiting submission”.
-- **Active:** assignments with work still outstanding, grouped by due date. Expand Overdue to see late items. Unassigned drafts appear below.
+- **Active:** assignments with work still outstanding, grouped by due date: Overdue, This week, Later and No due date.
+- **Drafts:** assignments you have not given to anyone yet.
 - **Done:** assignments with all submissions accepted. Use “Show more” after the first 20.
 
-Select an assignment to open it beside the list. On a phone, it opens as a separate page.
+Each row shows the materials in the assignment (textbooks, files, questions, videos, board), who it is for, the due date, how many submissions are in and the status. On a phone the table becomes cards and the views become chips.
+
+Select an assignment to open it on its own page; the arrow returns you to the list.
+
+## The “By student” view
+
+The “List · By student” switch at the top of the Homework page shows a whole week at once: students are the rows and the assignments due that week are the columns. The arrows next to the dates move between weeks, and “For” narrows the grid to one student or group. The colour of a cell tells you what to do: green is accepted (with the grade), yellow is waiting for your review (a quiz shows its score), red is overdue or sent back, grey means the student has not handed it in yet, and a dashed cell means the assignment was not given to them. The last column counts the work handed in.
+
+Select a yellow cell to review that piece of work, or a dashed one to open “Assign to more students” with the student already chosen. Any other cell, or a column title, opens the assignment. The view you pick is kept in the page address.
 
 ## Assignment details and textbooks
 
-The page contains the instructions, videos, files, textbooks and student progress. Open or download a file from its row; remove files or textbooks with the cross button. Choose “Add” in the Students section to assign the work to more students or groups.
+The header shows the title, the number of students with the deadline, “Edit” and “Review N submissions” (hidden when nothing is waiting). The review button opens the first submission; “Next” in the review panel moves on to the following one. The “⋮” menu holds “Create copy”, “Add to board”, “Open board” (once the assignment is on a board) and “Delete…”.
 
-Use “Attach a textbook” to select a resource and pages, such as 12-14, 20. Leave pages blank for the whole textbook. Students can access the assigned pages even if the full textbook is not shared with them. Word documents are downloaded in full, with page numbers provided for reference. The pencil changes the pages; the cross removes the attachment. See [Textbooks](/teacher/help/textbooks).
+Each student has a card on the left: when they handed in (“Handed in today at 09:12”, “Accepted yesterday · grade 4”, “Sent back for revision on 28.10”), the status, the start of the answer, the quiz score and the number of files. “Review” opens a submission that has been handed in; “Open” opens any other, and “Remind” (for students who have not handed in or are revising) sends the student a notification — no more than once an hour. Counts above the cards show how many are accepted, waiting for review and sent back. “Assign to more” gives the work to other students or groups.
 
-“Open board” opens a linked board. “Delete…” removes the assignment, submissions and files; recovery requires a portal backup.
+On the right you will find the instructions (long text is folded to three lines until you choose “Show all”), videos, files and textbooks. Select a name to open a file or textbook in a new tab, or use the arrow button to download a file. Change the text, files and textbooks with “Edit”. For an assignment with a quiz, “Mistakes by question” appears below: each question has a bar and a count such as “3 of 4”, showing how many students got it wrong.
+
+On a phone these become the tabs “Students · Assignment · Mistakes” (“Mistakes” only with a quiz), and “Review N submissions” stays at the bottom of the screen.
+
+In the assignment editor (“Edit” on the assignment page), choose “Textbook” under Materials to select a resource and pages, such as 12-14, 20. Leave pages blank for the whole textbook. Students can access the assigned pages even if the full textbook is not shared with them. Word documents are downloaded in full, with page numbers provided for reference. The pencil changes the pages; the cross removes the attachment. See [Textbooks](/teacher/help/textbooks).
+
+“Open board” in the “⋮” menu opens a linked board. “Delete…” in the same menu removes the assignment, submissions and files; recovery requires a portal backup.
 
 ## Add a quiz
 
-The Questions section supports six types:
+In the editor, choose “Quiz” under “Materials” to add the Questions section; “Remove” takes it out again. It supports six types:
 
 - **Single choice** and **Multiple choice:** mark the correct options.
 - **Short answer:** list accepted answers. Capitalisation, extra spaces and the difference between ё and е are ignored.
@@ -352,7 +366,7 @@ Reviews show the best quiz attempt, incorrect answers first, with an answer key.
 
 ## Review a submission
 
-Select a submission under “To review”. You will see the assignment, the student’s response and attached images. “Open on the board” opens the assignment’s board.
+Submissions waiting for review sit in the “To review” strip at the top of the Homework page: each card shows the student, the assignment, when it was handed in, a “Late” tag and the quiz score. “Review” opens a submission; “Review them all” starts with the oldest and moves on to the next after each decision. You will see the assignment, the student’s response and attached images. “Open on the board” opens the assignment’s board.
 
 Add feedback and a grade, then choose “Accept” or “Return for revision”. Quick comments help with common responses. “Next: …” opens the next submission after your decision. If AI is enabled, “AI draft” suggests feedback and a grade; review them before choosing “Insert”.
 

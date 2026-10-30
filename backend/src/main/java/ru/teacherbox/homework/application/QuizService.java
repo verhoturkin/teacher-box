@@ -3,6 +3,8 @@ package ru.teacherbox.homework.application;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -198,6 +200,19 @@ public class QuizService {
         }
         return new QuizStats(students, list.stream().map(q -> new QuestionStats(q.id(), q.text(), wrong.get(q.id())))
                 .toList());
+    }
+
+    /** The best submitted attempt of each task that has one (a task without a quiz is absent). */
+    @Transactional(readOnly = true)
+    public Map<UUID, QuizAttempt> bestAttempts(Collection<UUID> taskIds) {
+        Map<UUID, QuizAttempt> best = new HashMap<>();
+        for (UUID taskId : taskIds) {
+            QuizAttempt attempt = bestOf(attempts.findByTask(taskId));
+            if (attempt != null) {
+                best.put(taskId, attempt);
+            }
+        }
+        return best;
     }
 
     /** The submitted attempt with the most points (the earliest on a tie). */

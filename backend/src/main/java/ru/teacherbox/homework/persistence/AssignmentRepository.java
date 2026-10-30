@@ -90,6 +90,15 @@ public class AssignmentRepository {
         return jdbc.sql(SELECT + " where id in (:ids)").param("ids", ids).query(AssignmentRepository::map).list();
     }
 
+    /** Assignments due in {@code [from, to)}, the earliest first. */
+    public List<Assignment> findDueBetween(Instant from, Instant to) {
+        return jdbc.sql(SELECT + " where due_at >= :from and due_at < :to order by due_at, title, id")
+                .param("from", from)
+                .param("to", to)
+                .query(AssignmentRepository::map)
+                .list();
+    }
+
     /** Newest first. */
     public List<Assignment> findAll() {
         return jdbc.sql(SELECT + " order by created_at desc").query(AssignmentRepository::map).list();

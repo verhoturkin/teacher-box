@@ -16,6 +16,8 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
   the module, in the recipient's language (0.11.1, ADR-0036: `UserDirectory.language`; dictionaries
   `ScheduleMessages`, `NotificationMessages`, formats `NotificationTexts`); a stored notification keeps the language
   it was written in. Preferences per topic (`Preferences`, `NotificationTopic`).
+- **Reminder from the teacher** (341.1): `HomeworkReminderRequested` → inbox record «Учитель напоминает
+  о задании «…»» with the due date (kind `HOMEWORK_REMINDER`, topic `REMINDERS`), link to the task.
 - **Lesson summary** (0.37.0): `LessonSummaryShared` → inbox record «Итоги урока dd.MM» (kind and topic
   `LESSON_SUMMARY`, on by default, mutable in messengers) for every participant, link
   `/cabinet/schedule?lesson=<id>` (messenger button «Открыть»). The text carries no summary — it stays in

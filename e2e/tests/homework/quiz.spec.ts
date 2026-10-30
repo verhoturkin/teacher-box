@@ -194,6 +194,8 @@ async function putInOrder(page: Page, wanted: readonly string[]): Promise<void> 
       await page
         .getByRole('button', { name: new RegExp(`^Поднять выше: ${String(at + 1)}\\.`) })
         .click();
+      // the list re-renders after the click: read it again only when the item has moved
+      await expect(items.nth(at - 1)).toHaveText(text);
     }
   }
 }

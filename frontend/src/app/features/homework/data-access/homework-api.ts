@@ -8,6 +8,7 @@ import {
   Attachment,
   HomeworkLimits,
   HomeworkSummary,
+  Journal,
   MyHomeworkSummary,
   MyTask,
   ReviewDecision,
@@ -35,6 +36,14 @@ export class HomeworkApi {
 
   assignments(): Observable<AssignmentSummary[]> {
     return this.http.get<AssignmentSummary[]>(`${TEACHER}/assignments`, {
+      context: quietContext(),
+    });
+  }
+
+  /** Students by the assignments due from `from` to `to` (`yyyy-MM-dd`); `who` — a group or a student id. */
+  journal(from: string, to: string, who: string | null): Observable<Journal> {
+    return this.http.get<Journal>(`${TEACHER}/journal`, {
+      params: who === null ? { from, to } : { from, to, who },
       context: quietContext(),
     });
   }
@@ -86,8 +95,23 @@ export class HomeworkApi {
     return this.http.delete(`${TEACHER}/assignments/${id}`);
   }
 
+  /** Reminds a student to hand the work in (once an hour per work: 409 `task.reminded-recently`). */
+  remindStudent(assignmentId: string, studentId: string): Observable<unknown> {
+    return this.http.post(
+      `${TEACHER}/assignments/${assignmentId}/students/${studentId}/remind`,
+      null,
+    );
+  }
+
   assignStudents(id: string, studentIds: string[]): Observable<AssignmentDetails> {
     return this.http.post<AssignmentDetails>(`${TEACHER}/assignments/${id}/students`, {
+      studentIds,
+    });
+  }
+
+  /** Whom a draft is for: kept until «Выдать», students see nothing. */
+  saveDraftStudents(id: string, studentIds: string[]): Observable<AssignmentDetails> {
+    return this.http.put<AssignmentDetails>(`${TEACHER}/assignments/${id}/draft-students`, {
       studentIds,
     });
   }

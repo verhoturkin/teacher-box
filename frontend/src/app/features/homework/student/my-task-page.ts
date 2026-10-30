@@ -25,6 +25,8 @@ import { AttachmentList } from '../ui/attachment-list';
 import { TextbookList, boundTextbookFilename } from '../ui/textbook-list';
 import { VideoList } from '../ui/video-list';
 import { FilePicker } from '../ui/file-picker';
+import { AssistChip } from '@shared/ui/assist-chip';
+import { injectMobile } from '@core/layout/mobile';
 import { SubmissionList } from '../ui/submission-list';
 import { TaskStatusTag } from '../ui/task-status-tag';
 import { LoadState } from '@shared/ui/load-state';
@@ -34,6 +36,11 @@ import { MyBoardButton } from '@features/boards/parts';
 import { HelpButton } from '@features/help/parts';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { pageDetail } from '@core/routing/page-detail';
+import {
+  readDeviceSetting,
+  removeDeviceSetting,
+  writeDeviceSetting,
+} from '@shared/storage/device-settings';
 import { T } from '../i18n/texts';
 import { QuizSection } from './quiz-section';
 
@@ -56,6 +63,7 @@ import { QuizSection } from './quiz-section';
     AttachmentList,
     TextbookList,
     FilePicker,
+    AssistChip,
     SubmissionList,
     TaskStatusTag,
     LoadStateView,
@@ -92,60 +100,70 @@ import { QuizSection } from './quiz-section';
           }</tb-page-header
       ></ng-template>
 
-      <div class="tb-stack">
-        @if (task.teacherComment && (task.status === 'RETURNED' || task.status === 'ACCEPTED')) {
-          <p-message
-            [severity]="task.status === 'ACCEPTED' ? 'success' : 'warn'"
-            styleClass="tb-form-message"
-          >
-            <div>
-              <div class="tb-strong">
-                {{ task.status === 'ACCEPTED' ? t.accepted : t.rework }}
+      <div class="tb-task">
+        <div class="tb-task__main">
+          @if (task.teacherComment && (task.status === 'RETURNED' || task.status === 'ACCEPTED')) {
+            <p-message
+              [severity]="task.status === 'ACCEPTED' ? 'success' : 'warn'"
+              styleClass="tb-form-message"
+            >
+              <div>
+                <div class="tb-strong">
+                  {{ task.status === 'ACCEPTED' ? t.accepted : t.rework }}
+                </div>
+                <p class="tb-pre">{{ task.teacherComment }}</p>
               </div>
-              <p class="tb-pre">{{ task.teacherComment }}</p>
-            </div>
-          </p-message>
-        }
-
-        <section>
-          <h2 class="tb-task__label">{{ t.assignment }}</h2>
-          <tb-markdown [text]="task.assignment.description" />
-          @if (task.assignment.videos.length > 0) {
-            <h3 class="tb-subtitle">{{ tv.title }}</h3>
-            <tb-video-list [videos]="task.assignment.videos" />
+            </p-message>
           }
-          <tb-attachment-list
-            [attachments]="task.assignment.attachments"
-            (download)="download($event)"
-          />
-          @if (task.assignment.textbooks.length > 0) {
-            <h3 class="tb-subtitle">{{ t.textbooks }}</h3>
-            <tb-textbook-list
-              [textbooks]="task.assignment.textbooks"
-              [downloadable]="true"
-              (opened)="openTextbook(task.taskId, $event)"
-              (download)="downloadTextbook(task.taskId, $event)"
-            />
-          }
-        </section>
 
-        <tb-quiz-section [taskId]="task.taskId" />
-
-        @if (task.status !== 'ACCEPTED') {
           <section>
-            <h2 class="tb-task__label">
-              {{ task.submissions.length === 0 ? t.yourAnswer : t.newAnswer }}
-            </h2>
-            <div class="tb-form">
-              <div class="tb-field">
-                <label for="answer-text">{{ t.answerText }}</label>
-                <textarea pTextarea id="answer-text" [formControl]="text" rows="6"></textarea>
+            <h2 class="tb-task__label">{{ t.assignment }}</h2>
+            <tb-markdown [text]="task.assignment.description" />
+            @if (task.assignment.videos.length > 0) {
+              <h3 class="tb-subtitle">{{ tv.title }}</h3>
+              <tb-video-list [videos]="task.assignment.videos" />
+            }
+          </section>
+
+          @if (task.status !== 'ACCEPTED') {
+            <section
+              class="tb-task__answer"
+              [class.tb-task__answer--docked]="mobile()"
+              [attr.aria-label]="t.myAnswer"
+            >
+              <div class="tb-task__answer-head">
+                <h2 class="tb-task__answer-title">{{ t.myAnswer }}</h2>
+                @if (draftSaved()) {
+                  <span class="tb-task__muted">{{ t.draftSaved }}</span>
+                }
               </div>
-              <tb-file-picker [(files)]="files" />
+              <textarea
+                pTextarea
+                id="answer-text"
+                [formControl]="text"
+                [rows]="mobile() ? 2 : 5"
+                [placeholder]="t.answerText"
+                [attr.aria-label]="t.answerText"
+              ></textarea>
+              <tb-file-picker #filePicker [(files)]="files" [button]="false" />
+              <tb-file-picker
+                #photoPicker
+                [(files)]="files"
+                [button]="false"
+                [list]="false"
+                [capture]="true"
+              />
               @if (error(); as message) {
                 <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
               }
-              <div class="tb-form-actions">
+              <div class="tb-task__actions">
+                <tb-assist-chip icon="photo_camera" (click)="photoPicker.choose()">
+                  {{ t.photo }}
+                </tb-assist-chip>
+                <tb-assist-chip icon="attach_file" (click)="filePicker.choose()">
+                  {{ t.file }}
+                </tb-assist-chip>
+                <span class="tb-task__spacer"></span>
                 <p-button
                   [label]="t.submit"
                   icon="tb-i tb-i-send"
@@ -153,14 +171,36 @@ import { QuizSection } from './quiz-section';
                   (onClick)="submit()"
                 />
               </div>
-            </div>
-          </section>
-        }
+            </section>
+          }
 
-        <section>
-          <h2 class="tb-task__label">{{ t.myAnswers }}</h2>
-          <tb-submission-list [submissions]="task.submissions" (download)="download($event)" />
-        </section>
+          <section>
+            <h2 class="tb-task__label">{{ t.myAnswers }}</h2>
+            <tb-submission-list [submissions]="task.submissions" (download)="download($event)" />
+          </section>
+        </div>
+
+        <aside class="tb-task__side">
+          @if (task.assignment.attachments.length > 0 || task.assignment.textbooks.length > 0) {
+            <section>
+              <h2 class="tb-task__label">{{ t.materials }}</h2>
+              <tb-attachment-list
+                [attachments]="task.assignment.attachments"
+                (download)="download($event)"
+              />
+              @if (task.assignment.textbooks.length > 0) {
+                <h3 class="tb-subtitle">{{ t.textbooks }}</h3>
+                <tb-textbook-list
+                  [textbooks]="task.assignment.textbooks"
+                  [downloadable]="true"
+                  (opened)="openTextbook(task.taskId, $event)"
+                  (download)="downloadTextbook(task.taskId, $event)"
+                />
+              }
+            </section>
+          }
+          <tb-quiz-section [taskId]="task.taskId" />
+        </aside>
       </div>
     } @else {
       <ng-template tbPaneHeader
@@ -180,6 +220,71 @@ import { QuizSection } from './quiz-section';
       font: var(--tb-type-label-m);
       letter-spacing: 0.04em;
       text-transform: uppercase;
+    }
+
+    /* the task and the answer, the materials and the test beside; below on a narrow pane */
+    .tb-task {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--tb-space-6);
+      align-items: flex-start;
+    }
+
+    .tb-task__main {
+      display: flex;
+      flex: 999 1 24rem;
+      flex-direction: column;
+      gap: var(--tb-space-4);
+      min-inline-size: 0;
+    }
+
+    .tb-task__side {
+      display: flex;
+      flex: 1 1 16rem;
+      flex-direction: column;
+      gap: var(--tb-space-4);
+      max-inline-size: 22rem;
+    }
+
+    .tb-task__answer {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-3);
+      padding: var(--tb-space-4);
+      border: 1px solid var(--p-md-outline-variant);
+      border-radius: var(--tb-shape-lg);
+      background: var(--p-md-surface-container-lowest);
+    }
+
+    /* a phone: the answer stays at the bottom of the pane while the task scrolls */
+    .tb-task__answer--docked {
+      position: sticky;
+      inset-block-end: 0;
+      z-index: 1;
+      background: var(--p-md-surface-container);
+    }
+
+    .tb-task__answer-head,
+    .tb-task__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--tb-space-2);
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .tb-task__answer-title {
+      margin: 0;
+      font: var(--tb-type-title-m);
+    }
+
+    .tb-task__muted {
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-label-m);
+    }
+
+    .tb-task__spacer {
+      flex: 1;
     }
   `,
 })
@@ -202,6 +307,17 @@ export class MyTaskPage {
 
   constructor() {
     pageDetail(() => this.task()?.assignment.title);
+    this.text.valueChanges.subscribe((value) => {
+      if (this.task() === null) {
+        return;
+      }
+      if (value.trim() === '') {
+        removeDeviceSetting(this.draftKey());
+      } else {
+        writeDeviceSetting(this.draftKey(), value);
+      }
+      this.draftSaved.set(value.trim() !== '');
+    });
     // another work opens beside the list: its own answer form and its own load
     effect(() => {
       this.taskId();
@@ -210,10 +326,17 @@ export class MyTaskPage {
         this.text.reset();
         this.files.set([]);
         this.error.set(null);
+        this.draftSaved.set(false);
         this.load();
       });
     });
   }
+  /** The text of an unsent answer lives on this device, per task (so per student and assignment): see homework.md. */
+  private draftKey(): string {
+    return `tb.homework.draft.${this.taskId()}`;
+  }
+  protected readonly draftSaved = signal(false);
+  protected readonly mobile = injectMobile();
   readonly text = new FormControl('', {
     nonNullable: true,
     validators: [Validators.maxLength(20_000)],
@@ -224,12 +347,21 @@ export class MyTaskPage {
   protected readonly error = signal<string | null>(null);
   protected readonly state = new LoadState();
 
+  private restoreDraft(task: TaskDetails): void {
+    const draft = task.status === 'ACCEPTED' ? null : readDeviceSetting(this.draftKey());
+    if (draft) {
+      this.text.setValue(draft);
+      this.draftSaved.set(true);
+    }
+  }
+
   protected load(): void {
     this.api
       .myTask(this.taskId())
       .pipe(this.state.track())
       .subscribe((task) => {
         this.task.set(task);
+        this.restoreDraft(task);
       });
   }
 
@@ -253,6 +385,8 @@ export class MyTaskPage {
       next: (task) => {
         this.pending.set(false);
         this.task.set(task);
+        removeDeviceSetting(this.draftKey());
+        this.draftSaved.set(false);
         this.text.setValue('');
         this.files.set([]);
         this.quiz()?.reload();

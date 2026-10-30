@@ -29,6 +29,11 @@ export interface AssignmentSummary {
   readonly submitted: number;
   readonly returned: number;
   readonly accepted: number;
+  /** How many materials of each kind it has (the board is `boardId`). */
+  readonly textbooks: number;
+  readonly files: number;
+  readonly questions: number;
+  readonly videos: number;
 }
 
 export interface TaskSummary {
@@ -42,6 +47,13 @@ export interface TaskSummary {
   readonly submittedAt: string | null;
   readonly reviewedAt: string | null;
   readonly overdue: boolean;
+  /** The first 200 characters of the latest answer on one line; `null`: no text. */
+  readonly answerPreview: string | null;
+  /** Files attached to the latest answer. */
+  readonly answerFiles: number;
+  /** Points of the best finished quiz attempt and its maximum; `null`: none. */
+  readonly quizScore: number | null;
+  readonly quizMax: number | null;
 }
 
 /** A textbook bound to an assignment (ADR-0033); `pages` — «1-3, 7», `null` — the whole textbook. */
@@ -258,6 +270,8 @@ export interface AssignmentDetails {
   readonly quizReveal: QuizReveal;
   /** `null` — unlimited. */
   readonly quizAttempts: number | null;
+  /** Whom a draft is meant for; empty once given out. */
+  readonly draftStudentIds: string[];
 }
 
 export interface Submission {
@@ -306,6 +320,9 @@ export interface ReviewQueueItem {
   readonly studentAvatar: string | null;
   readonly submittedAt: string | null;
   readonly dueAt: string | null;
+  /** Points of the best quiz attempt; `null`: no quiz. */
+  readonly quizScore: number | null;
+  readonly quizMax: number | null;
 }
 
 export interface MyTask {
@@ -318,6 +335,15 @@ export interface MyTask {
   readonly overdue: boolean;
   readonly assignedAt: string;
   readonly reviewedAt: string | null;
+  /** The teacher's comment of the last review; shown for a returned task. */
+  readonly teacherComment: string | null;
+  /** The assignment is on a board. */
+  readonly board: boolean;
+  /** How many materials of each kind the assignment has. */
+  readonly textbooks: number;
+  readonly files: number;
+  readonly questions: number;
+  readonly videos: number;
 }
 
 export interface AssignmentInput {
@@ -361,4 +387,41 @@ export interface HomeworkLimits {
   /** Bytes. */
   readonly maxFileSize: number;
   readonly maxFilesPerUpload: number;
+}
+
+/** What a cell of the journal shows. */
+export type JournalStatus =
+  'ACCEPTED' | 'TO_REVIEW' | 'RETURNED' | 'OVERDUE' | 'WAITING' | 'NOT_ASSIGNED';
+
+/** A column of the journal: an assignment due in the week. */
+export interface JournalColumn {
+  id: string;
+  title: string;
+  dueAt: string;
+}
+
+/** One student on one assignment; `taskId` is `null` when the assignment is not given to them. */
+export interface JournalCell {
+  status: JournalStatus;
+  taskId: string | null;
+  grade: string | null;
+  quizScore: number | null;
+  quizMax: number | null;
+  overdueDays: number | null;
+}
+
+export interface JournalRow {
+  studentId: string;
+  studentName: string;
+  studentAvatar: string | null;
+  /** One per column, in the order of the columns. */
+  cells: JournalCell[];
+  handedIn: number;
+  given: number;
+}
+
+/** Students by the assignments due in a range of dates («По ученикам»). */
+export interface Journal {
+  assignments: JournalColumn[];
+  students: JournalRow[];
 }

@@ -41,7 +41,7 @@ test('the teacher picks the language of YouTube captions', async ({ page }) => {
 
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.goto('/teacher/homework/new');
-  await page.getByRole('button', { name: 'Добавить видео' }).click();
+  await page.getByRole('button', { name: 'Видео', exact: true }).click();
   await page.getByLabel('Ссылка на видео').fill('https://youtu.be/dQw4w9WgXcQ');
   await page.getByRole('button', { name: 'Взять субтитры с YouTube' }).click();
 

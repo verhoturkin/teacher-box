@@ -414,6 +414,11 @@ body {
 .tb-search__panel,
 .p-dialog-content,
 .p-drawer-content,
+.p-select-list-container,
+.p-multiselect-list-container,
+.p-autocomplete-list-container,
+.p-treeselect-tree-container,
+.p-menu,
 textarea.p-textarea {
   &::-webkit-scrollbar {
     width: 0.75rem;
@@ -459,6 +464,11 @@ textarea.p-textarea::-webkit-resizer {
   .tb-search__panel,
   .p-dialog-content,
   .p-drawer-content,
+  .p-select-list-container,
+  .p-multiselect-list-container,
+  .p-autocomplete-list-container,
+  .p-treeselect-tree-container,
+  .p-menu,
   textarea.p-textarea {
     scrollbar-color: var(--p-md-outline-variant) transparent;
     scrollbar-width: thin;
@@ -471,7 +481,7 @@ textarea.p-textarea::-webkit-resizer {
  * Today page (`tb-hero`) is the one container left. A list on the pane keeps the 16 px outer corner of the M3
  * list (M3: the corner of a group on the page); ours: a 12 px gap between the title and its content.
  */
-tb-pane .p-card:not(.tb-hero),
+tb-pane .p-card:not(.tb-hero, .tb-section-card),
 .tb-notifications-pane .p-card,
 .tb-side-sheet .p-card {
   background: transparent;
@@ -489,6 +499,27 @@ tb-pane .p-card:not(.tb-hero),
   > .p-card-body > .p-card-content {
     display: grid;
     gap: var(--tb-space-2);
+  }
+
+  .p-card-title {
+    font: var(--tb-type-title-m-emphasized);
+  }
+}
+
+/*
+ * A section card of a form on a pane (the assignment editor, sketch Editor): each section is a tonal card,
+ * `surface-container-low`, 20 dp corners (M3 large-increased), 20 dp inside; the title in Title Medium
+ * emphasized, 12 px under it. Ours: the cards stand 16 px apart (the sketch has 14).
+ */
+.p-card.tb-section-card {
+  background: var(--p-md-surface-container-low);
+  border-radius: var(--tb-shape-lg-plus);
+  color: var(--p-md-on-surface);
+  box-shadow: none;
+
+  > .p-card-body {
+    gap: var(--tb-space-3);
+    padding: var(--tb-space-5);
   }
 
   .p-card-title {
@@ -3210,6 +3241,59 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
     width: min(40rem, calc(100vw - 2rem));
   }
 
+  &.tb-d--xwide {
+    width: min(47.5rem, calc(100vw - 2rem));
+  }
+
+  /*
+   * ours, sketch AiDraft: the pane is a column of the whole dialog height; the headline and the buttons
+   * belong to the form column. The content wrappers dissolve so the form and the pane are grid items.
+   */
+  &.tb-d--split {
+    /* PrimeNG shows the dialog with an inline `display: flex` */
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(26rem, 32.5rem);
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    width: min(77.5rem, calc(100vw - 2rem));
+    overflow: hidden;
+
+    .p-dialog-header,
+    .p-dialog-footer,
+    .tb-d__error {
+      grid-column: 1;
+    }
+
+    .p-dialog-header {
+      grid-row: 1;
+    }
+
+    .tb-d__error {
+      grid-row: 2;
+    }
+
+    .p-dialog-footer {
+      grid-row: 4;
+    }
+
+    .p-dialog-content,
+    .tb-d__content,
+    .tb-create-split {
+      display: contents;
+    }
+
+    .tb-create {
+      grid-column: 1;
+      grid-row: 3;
+      overflow: auto;
+      padding-inline: var(--tb-space-6);
+    }
+
+    .tb-create-ai {
+      grid-column: 2;
+      grid-row: 1 / -1;
+    }
+  }
+
   .p-dialog-header {
     align-items: center;
   }
@@ -3393,13 +3477,27 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
       width: 100%;
       min-height: 0;
 
-      > p-button,
+      > p-button:not(:has(.p-button-icon-only, .p-button-text)),
       > a.p-button {
         flex: 1 1 auto;
       }
 
-      p-button .p-button {
+      p-button:not(:has(.p-button-icon-only, .p-button-text)) .p-button {
         width: 100%;
+      }
+
+      .tb-split p-button .p-button {
+        width: auto;
+      }
+
+      .tb-split p-button .p-button.tb-split__more {
+        width: 3rem;
+      }
+
+      /* an icon button («⋮»), a text button and a split button keep their own size next to a wide action */
+      > p-button:has(.p-button-icon-only, .p-button-text),
+      > .tb-split {
+        flex: none;
       }
     }
 
@@ -3471,7 +3569,9 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
 
   /* M3E SplitButtonSmall: 13 + the 22 px icon + 13 */
   .p-button.tb-split__more {
+    box-sizing: border-box;
     width: 3rem;
+    height: 2.5rem;
     border-start-start-radius: var(--tb-shape-xs);
     border-end-start-radius: var(--tb-shape-xs);
 

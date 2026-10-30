@@ -95,13 +95,13 @@ An **external board**, such as Holst, opens in a new tab. The bot also provides 
 
 Open “Homework”. On a computer, the list is on the left and the selected assignment opens on the right. On a phone, select an assignment to open it, then use the back arrow to return to the list.
 
-Use the search field to find an assignment by title. The three filters show:
+Assignments are grouped by what to do next; empty groups are hidden:
 
-- **To hand in:** new assignments and work returned for revision;
-- **In review:** work you have submitted to your teacher;
-- **Done:** assignments your teacher has accepted.
+- **Sent back for revision:** your teacher left a comment, shown under the title;
+- **To do:** the nearest deadline first, with the days left (or how long it is overdue);
+- **Handed in:** work in review and accepted work with its grade.
 
-Each entry shows the title, due date and status. Overdue assignments are marked in red. The number on the Homework menu icon counts assignments you still need to submit. You will receive a reminder before a deadline.
+On a phone, an “Up next” card at the top opens the returned work or the assignment due soonest. Each entry shows the title, due date and status. Overdue assignments are marked in red. The number on the Homework menu icon counts assignments you still need to submit. You will receive a reminder before a deadline.
 
 Your home page also lists outstanding assignments under “To hand in”, with the nearest deadline first. Choose “Revise” for returned work. Recent feedback appears under “Reviewed recently”.
 
@@ -114,8 +114,10 @@ Attached textbooks appear under “Textbooks”, with the relevant page numbers.
 ## Submit your work
 
 1. Open the assignment.
-2. Write your response and attach any files, such as photos or documents. The portal checks the file type and size when you select them.
-3. Choose “Submit for review”.
+2. Write your response in “My answer”, right under the task. “Photo of your notebook” (it opens the camera on a phone) and “File” attach photos and documents; use “Remove” to take one off. The portal checks the file type and size when you select them.
+3. Choose “Hand in”.
+
+Text you have typed but not handed in is kept on this device, so you can leave the page and come back to it (the note says “draft saved”). Files are not kept in the draft; attach them again. On a phone “My answer” stays at the bottom of the screen, with the materials and the test below the task.
 
 Your teacher can accept the submission, add a grade and feedback, or return it for revision. If revisions are requested, make the changes and submit again.
 
@@ -127,7 +129,7 @@ On a phone, use “Back” and “Next” to move between questions. Answers are
 
 Your score appears immediately. Depending on your teacher’s settings, correct answers and explanations appear immediately, after the due date, or are not shown. If more attempts are allowed, choose “Try again”. Your best score counts.
 
-When you are ready, choose “Submit for review” so your teacher can review your work and quiz result.
+When you are ready, choose “Hand in” so your teacher can review your work and quiz result.
 
 ## Work on a board
 

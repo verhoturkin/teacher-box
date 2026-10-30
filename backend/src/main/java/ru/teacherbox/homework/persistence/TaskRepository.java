@@ -92,6 +92,13 @@ public class TaskRepository {
                 .list();
     }
 
+    public List<HomeworkTask> findByAssignments(java.util.Collection<UUID> assignmentIds) {
+        return jdbc.sql(SELECT + " where t.assignment_id in (:ids)")
+                .param("ids", assignmentIds)
+                .query(TaskRepository::map)
+                .list();
+    }
+
     public List<HomeworkTask> findByStudent(UUID studentId) {
         return jdbc.sql(SELECT + " where t.student_id = :studentId order by t.assigned_at desc")
                 .param("studentId", studentId)

@@ -87,6 +87,7 @@ public final class HomeworkViews {
      * @param students   the names of its students, alphabetically
      * @param studentIds the ids of its students (the list filters by student or group)
      * @param boardId the board it was put on; {@code null} — none
+     * @param textbooks the bound textbooks; files, questions, videos — how many materials of each kind it has
      */
     public record AssignmentSummary(
             UUID id,
@@ -100,13 +101,21 @@ public final class HomeworkViews {
             int assigned,
             int submitted,
             int returned,
-            int accepted) {
+            int accepted,
+            int textbooks,
+            int files,
+            int questions,
+            int videos) {
     }
 
     /**
      * Progress of one student on an assignment.
      *
      * @param studentAvatar address of the student's photo; {@code null}: none
+     * @param answerPreview the first 200 characters of the latest answer text on one line; {@code null}: no text
+     * @param answerFiles   files attached to the latest answer
+     * @param quizScore     points of the best finished quiz attempt; {@code null}: none
+     * @param quizMax       the maximum of that attempt
      */
     public record TaskSummary(
             UUID taskId,
@@ -117,7 +126,11 @@ public final class HomeworkViews {
             @Nullable String grade,
             @Nullable Instant submittedAt,
             @Nullable Instant reviewedAt,
-            boolean overdue) {
+            boolean overdue,
+            @Nullable String answerPreview,
+            int answerFiles,
+            @Nullable Integer quizScore,
+            @Nullable Integer quizMax) {
     }
 
     /** @param boardId the board the assignment was put on; {@code null} — none */
@@ -135,7 +148,8 @@ public final class HomeworkViews {
             List<VideoView> videos,
             List<QuestionView> questions,
             RevealRule quizReveal,
-            @Nullable Integer quizAttempts) {
+            @Nullable Integer quizAttempts,
+            List<UUID> draftStudentIds) {
     }
 
     /**
@@ -216,7 +230,10 @@ public final class HomeworkViews {
             @Nullable QuizReview quiz) {
     }
 
-    /** @param studentAvatar address of the student's photo; {@code null}: none */
+    /**
+     * @param studentAvatar address of the student's photo; {@code null}: none
+     * @param quizScore     points of the best quiz attempt; {@code null}: the assignment has no quiz
+     */
     public record ReviewQueueItem(
             UUID taskId,
             UUID assignmentId,
@@ -225,10 +242,12 @@ public final class HomeworkViews {
             String studentName,
             @Nullable String studentAvatar,
             @Nullable Instant submittedAt,
-            @Nullable Instant dueAt) {
+            @Nullable Instant dueAt,
+            @Nullable Integer quizScore,
+            @Nullable Integer quizMax) {
     }
 
-    /** A row of the student's list of tasks. */
+    /** A row of the student's list of tasks; {@code board}, {@code textbooks}… — the materials of its assignment. */
     public record MyTask(
             UUID taskId,
             UUID assignmentId,
@@ -238,7 +257,13 @@ public final class HomeworkViews {
             @Nullable String grade,
             boolean overdue,
             Instant assignedAt,
-            @Nullable Instant reviewedAt) {
+            @Nullable Instant reviewedAt,
+            @Nullable String teacherComment,
+            boolean board,
+            int textbooks,
+            int files,
+            int questions,
+            int videos) {
     }
 
     /**
@@ -265,5 +290,41 @@ public final class HomeworkViews {
      * @param upcoming open tasks, the nearest due date first (tasks without a date last)
      */
     public record MyHomeworkSummary(int open, int overdue, List<MyTask> upcoming) {
+    }
+
+    /** What a cell of the journal shows. */
+    public enum JournalStatus {
+        ACCEPTED, TO_REVIEW, RETURNED, OVERDUE, WAITING, NOT_ASSIGNED
+    }
+
+    /** A column of the journal: an assignment due in the range. */
+    public record JournalColumn(UUID id, String title, Instant dueAt) {
+    }
+
+    /**
+     * One student on one assignment.
+     *
+     * @param taskId      {@code null}: the assignment is not given to the student
+     * @param grade       of an accepted work
+     * @param quizScore   points of the best quiz attempt of a work waiting for review
+     * @param overdueDays full days past the due date (at least one) of an overdue work
+     */
+    public record JournalCell(JournalStatus status, @Nullable UUID taskId, @Nullable String grade,
+            @Nullable Integer quizScore, @Nullable Integer quizMax, @Nullable Integer overdueDays) {
+    }
+
+    /**
+     * A row of the journal.
+     *
+     * @param cells    one per column, in the order of the columns
+     * @param handedIn works accepted or waiting for review
+     * @param given    assignments of the columns given to the student
+     */
+    public record JournalRow(UUID studentId, String studentName, @Nullable String studentAvatar,
+            List<JournalCell> cells, int handedIn, int given) {
+    }
+
+    /** Students by assignments due in a range of dates. */
+    public record Journal(List<JournalColumn> assignments, List<JournalRow> students) {
     }
 }

@@ -92,9 +92,11 @@ export class AssignMoreDialog {
     initialValue: this.members.value,
   });
 
-  /** Opens the dialog empty, with the current students. */
-  open(): void {
-    this.members.setValue([]);
+  /** Opens the dialog; `chosen` are picked at once (a cell of the journal, the students of a draft). */
+  open(chosen: string | readonly string[] = []): void {
+    this.members.setValue(
+      (typeof chosen === 'string' ? [chosen] : chosen).map((id) => ({ kind: 'STUDENT', id })),
+    );
     this.groups.set([]);
     this.identity.listGroups(quietContext()).subscribe((groups) => {
       this.groups.set(groups.filter((group) => group.archivedAt === null));

@@ -8,7 +8,7 @@ import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { TaskDetails } from '../data-access/homework.models';
 import { MyHomeworkPage } from './my-homework-page';
 import { MyTaskPage } from './my-task-page';
-import { testProviders } from '@testing/setup';
+import { screenWidth, testProviders } from '@testing/setup';
 import { aMyBoard } from '@testing/boards-fixtures';
 
 function configure(): { backend: HttpTestingController; saved: string[] } {
@@ -24,96 +24,135 @@ function configure(): { backend: HttpTestingController; saved: string[] } {
 }
 
 describe('MyHomeworkPage', () => {
-  it('lists the tasks by the filters of the connected group, newest first', async () => {
+  it('groups the tasks: returned with the comment, to do by the deadline, handed in', async () => {
+    vi.setSystemTime(new Date('2026-09-10T09:00:00Z'));
     const { backend } = configure();
     const fixture = TestBed.createComponent(MyHomeworkPage);
     await fixture.whenStable();
     backend.expectOne('/api/me/homework').flush([
+      myTask({ taskId: 't-1', title: 'Принятое', status: 'ACCEPTED', grade: '5' }),
+      myTask({ taskId: 't-2', title: 'Позже', dueAt: '2026-09-14T15:00:00Z' }),
+      myTask({ taskId: 't-3', title: 'Сегодня', dueAt: '2026-09-10T15:00:00Z' }),
+      myTask({ taskId: 't-4', title: 'Без срока', dueAt: null }),
+      myTask({ taskId: 't-5', title: 'Просрочено', dueAt: '2026-09-08T15:00:00Z', overdue: true }),
+      myTask({ taskId: 't-6', title: 'Завтра', dueAt: '2026-09-11T15:00:00Z' }),
       myTask({
-        taskId: 't-1',
-        title: 'Принятое',
-        status: 'ACCEPTED',
-        grade: '5',
-        assignedAt: '2026-09-05T10:00:00Z',
-      }),
-      myTask({
-        taskId: 't-2',
-        title: 'Старое открытое',
-        assignedAt: '2026-09-01T10:00:00Z',
-        overdue: true,
-      }),
-      myTask({
-        taskId: 't-3',
-        title: 'Новое открытое',
+        taskId: 't-7',
+        title: 'Вернули',
         status: 'RETURNED',
-        dueAt: null,
-        assignedAt: '2026-09-03T10:00:00Z',
+        teacherComment: 'Добавь упражнение 3',
       }),
-      myTask({ taskId: 't-4', title: 'Сданное', status: 'SUBMITTED' }),
+      myTask({ taskId: 't-8', title: 'Сданное', status: 'SUBMITTED' }),
     ]);
     await fixture.whenStable();
 
     const host = hostElement(fixture);
-    const group = host.querySelector('.tb-segment-group, [role="group"]');
-    expect(readableText(group ?? host)).toContain('Сдать 2');
-    expect(readableText(group ?? host)).toContain('На проверке 1');
-    expect(readableText(group ?? host)).toContain('Готовые 1');
-
-    // «Сдать» first: the tasks to do, the newest first
-    const rows = Array.from(host.querySelectorAll('.tb-list > li')).map((row) => readableText(row));
-    expect(host.querySelector('table')).toBeNull();
-    expect(rows).toHaveLength(2);
-    expect(rows[0]).toContain('Новое открытое без срока На доработке');
-    expect(rows[1]).toMatch(/^Старое открытое до 10[.]09[.]2026 [0-9][0-9]:[0-9][0-9]/);
-    expect(rows[1]).toContain('Просрочено');
-    expect(host.querySelectorAll('.tb-list__supporting.tb-negative')).toHaveLength(1);
-    expect(host.querySelector('a[href="/cabinet/homework/t-3"]')).not.toBeNull();
-
-    buttonByText(host, 'Готовые').click();
-    await fixture.whenStable();
-    expect(readableText(host.querySelector('.tb-list') ?? host)).toContain('Принятое');
-    expect(readableText(host.querySelector('.tb-list') ?? host)).toContain('Оценка: 5');
-    buttonByText(host, 'На проверке').click();
-    await fixture.whenStable();
-    expect(readableText(host.querySelector('.tb-list') ?? host)).toContain('Сданное');
+    expect(Array.from(host.querySelectorAll('h2')).map((h) => readableText(h))).toEqual([
+      'Вернули на доработку',
+      'Сделать',
+      'Сдано',
+    ]);
+    const lists = Array.from(host.querySelectorAll('.tb-list')).map((list) =>
+      Array.from(list.querySelectorAll(':scope > li')).map((row) => readableText(row)),
+    );
+    expect(lists[0]).toHaveLength(1);
+    expect(lists[0]?.[0]).toContain('Вернули Добавь упражнение 3');
+    expect(lists[1]?.map((row) => row.split(' ')[0])).toEqual([
+      'Просрочено',
+      'Сегодня',
+      'Завтра',
+      'Позже',
+      'Без',
+    ]);
+    expect(lists[1]?.[0]).toContain('просрочено на 2 дня');
+    expect(lists[1]?.[1]).toContain('сегодня');
+    expect(lists[1]?.[2]).toContain('остался 1 день');
+    expect(lists[1]?.[3]).toContain('осталось 4 дня');
+    expect(lists[1]?.[4]).toContain('Без срока');
+    expect(lists[2]).toHaveLength(2);
+    expect(host.querySelector('a[href="/cabinet/homework/t-7"]')).not.toBeNull();
+    expect(host.querySelector('.tb-hw__nearest')).toBeNull();
+    vi.useRealTimers();
   });
 
-  it('searches by the title and shows the empty state of a filter', async () => {
+  it('shows the materials of a task as icons with counts', async () => {
     const { backend } = configure();
     const fixture = TestBed.createComponent(MyHomeworkPage);
     await fixture.whenStable();
     backend
       .expectOne('/api/me/homework')
+      .flush([myTask({ textbooks: 1, questions: 10, board: true }), myTask({ taskId: 't-2' })]);
+    await fixture.whenStable();
+
+    const rows = hostElement(fixture).querySelectorAll('.tb-list > li');
+    expect(rows[0]?.querySelectorAll('.tb-hw__material')).toHaveLength(3);
+    expect(rows[0]?.querySelector('[aria-label="Вопросы: 10"]')).not.toBeNull();
+    expect(rows[0]?.querySelector('[aria-label="Доска"]')).not.toBeNull();
+    expect(rows[1]?.querySelectorAll('.tb-hw__material')).toHaveLength(0);
+  });
+
+  it('hides the empty groups and the drafts-free list shows only what exists', async () => {
+    const { backend } = configure();
+    const fixture = TestBed.createComponent(MyHomeworkPage);
+    await fixture.whenStable();
+    backend.expectOne('/api/me/homework').flush([myTask({ status: 'ACCEPTED', grade: '5' })]);
+    await fixture.whenStable();
+
+    const host = hostElement(fixture);
+    expect(Array.from(host.querySelectorAll('h2')).map((h) => readableText(h))).toEqual(['Сдано']);
+    expect(readableText(host)).toContain('Оценка: 5');
+  });
+
+  it('leads a phone with «Ближайшее»: the oldest returned task, else the nearest to do', async () => {
+    TestBed.configureTestingModule({ providers: testProviders(screenWidth(400)) });
+    const backend = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(MyHomeworkPage);
+    await fixture.whenStable();
+    backend
+      .expectOne('/api/me/homework')
       .flush([
-        myTask({ taskId: 't-2', title: 'Старое открытое' }),
-        myTask({ taskId: 't-3', title: 'Новое открытое' }),
+        myTask({ taskId: 't-1', title: 'Позже', dueAt: '2026-09-20T15:00:00Z' }),
+        myTask({ taskId: 't-2', title: 'Скорее', dueAt: '2026-09-12T15:00:00Z' }),
       ]);
     await fixture.whenStable();
 
     const host = hostElement(fixture);
-    expect(host.querySelector('button[aria-label="Поиск"]')).toBeNull();
-    const search = host.querySelector<HTMLInputElement>('input[aria-label="Название задания"]');
-    if (search === null) {
-      throw new Error('no search');
-    }
-    search.value = 'старое';
-    search.dispatchEvent(new Event('input'));
-    await fixture.whenStable();
-    expect(host.querySelectorAll('.tb-list > li')).toHaveLength(1);
-    search.value = 'логарифмы';
-    search.dispatchEvent(new Event('input'));
-    await fixture.whenStable();
-    expect(readableText(host)).toContain('Ничего не найдено');
+    const card = host.querySelector('.tb-hw__nearest');
+    expect(readableText(card ?? host)).toContain('Ближайшее Скорее');
+    expect(card?.querySelector('a[href="/cabinet/homework/t-2"]')).not.toBeNull();
+  });
 
-    search.value = '';
-    search.dispatchEvent(new Event('input'));
+  it('puts a returned task first in «Ближайшее»', async () => {
+    TestBed.configureTestingModule({ providers: testProviders(screenWidth(400)) });
+    const backend = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(MyHomeworkPage);
     await fixture.whenStable();
-    buttonByText(host, 'Готовые').click();
+    backend.expectOne('/api/me/homework').flush([
+      myTask({ taskId: 't-1', title: 'Обычное' }),
+      myTask({
+        taskId: 't-2',
+        title: 'Вернули',
+        status: 'RETURNED',
+        teacherComment: 'Ещё раз',
+        reviewedAt: '2026-09-02T10:00:00Z',
+      }),
+    ]);
     await fixture.whenStable();
-    expect(readableText(host)).toContain('Готовых заданий пока нет');
-    buttonByText(host, 'На проверке').click();
+
+    expect(
+      readableText(hostElement(fixture).querySelector('.tb-hw__nearest') ?? document.body),
+    ).toContain('Ближайшее Вернули Ещё раз');
+  });
+
+  it('has no «Ближайшее» card when nothing is left to do', async () => {
+    TestBed.configureTestingModule({ providers: testProviders(screenWidth(400)) });
+    const backend = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(MyHomeworkPage);
     await fixture.whenStable();
-    expect(readableText(host)).toContain('Нет работ на проверке');
+    backend.expectOne('/api/me/homework').flush([myTask({ status: 'SUBMITTED' })]);
+    await fixture.whenStable();
+
+    expect(hostElement(fixture).querySelector('.tb-hw__nearest')).toBeNull();
   });
 
   it('opens the task beside the list and reads the list again after an answer', async () => {
@@ -135,7 +174,7 @@ describe('MyHomeworkPage', () => {
     }
     answer.value = 'Готово';
     answer.dispatchEvent(new Event('input'));
-    buttonByText(host, 'Отправить на проверку').click();
+    buttonByText(host, 'Сдать').click();
     backend.expectOne('/api/me/homework/tasks/t-1/submissions').flush(taskDetails());
     backend.expectOne('/api/me/homework').flush([myTask({ taskId: 't-1', status: 'SUBMITTED' })]);
     await fixture.whenStable();
@@ -275,13 +314,13 @@ describe('MyTaskPage', () => {
       taskDetails({ status: 'ASSIGNED', submissions: [] }),
     );
     expect(readableText(host)).toContain('Сдать до 10.09.2026');
-    expect(readableText(host)).toContain('Ваш ответ');
+    expect(readableText(host)).toContain('Мой ответ');
     expect(host.querySelector('.tb-markdown strong')?.textContent).toBe('№1-5');
 
     fixture.componentInstance.text.setValue('  Готово ');
     fixture.componentInstance.files.set([new File(['x'], 'фото.jpg')]);
     await fixture.whenStable();
-    buttonByText(host, 'Отправить на проверку').click();
+    buttonByText(host, 'Сдать').click();
 
     const request = backend.expectOne('/api/me/homework/tasks/t-1/submissions');
     const body: unknown = request.request.body;
@@ -292,8 +331,58 @@ describe('MyTaskPage', () => {
 
     expect(fixture.componentInstance.text.value).toBe('');
     expect(fixture.componentInstance.files()).toEqual([]);
-    expect(readableText(host)).toContain('Новый ответ');
     expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
+  });
+
+  it('keeps the text of an unsent answer and restores it, then forgets it after «Сдать»', async () => {
+    localStorage.clear();
+    const first = await render(taskDetails({ status: 'ASSIGNED', submissions: [] }));
+    first.fixture.componentInstance.text.setValue('черновик');
+    await first.fixture.whenStable();
+    expect(readableText(first.host)).toContain('черновик сохранён');
+    expect(localStorage.getItem('tb.homework.draft.t-1')).toBe('черновик');
+    first.fixture.destroy();
+    TestBed.resetTestingModule();
+
+    const { fixture, host, backend } = await render(
+      taskDetails({ status: 'ASSIGNED', submissions: [] }),
+    );
+    expect(fixture.componentInstance.text.value).toBe('черновик');
+    buttonByText(host, 'Сдать').click();
+    backend.expectOne('/api/me/homework/tasks/t-1/submissions').flush(taskDetails());
+    await fixture.whenStable();
+    expect(localStorage.getItem('tb.homework.draft.t-1')).toBeNull();
+    expect(readableText(host)).not.toContain('черновик сохранён');
+  });
+
+  it('drops the draft when the text is cleared and does not restore it into accepted work', async () => {
+    localStorage.setItem('tb.homework.draft.t-1', 'старое');
+    const accepted = await render(taskDetails({ status: 'ACCEPTED', grade: '5' }));
+    expect(accepted.fixture.componentInstance.text.value).toBe('');
+    accepted.fixture.destroy();
+    TestBed.resetTestingModule();
+
+    const { fixture } = await render(taskDetails({ status: 'ASSIGNED', submissions: [] }));
+    fixture.componentInstance.text.setValue('  ');
+    expect(localStorage.getItem('tb.homework.draft.t-1')).toBeNull();
+  });
+
+  it('docks the answer at the bottom on a phone only', async () => {
+    const wide = await render(taskDetails({ status: 'ASSIGNED', submissions: [] }));
+    expect(wide.host.querySelector('.tb-task__answer--docked')).toBeNull();
+    expect(wide.host.querySelector('.tb-task__side')).not.toBeNull();
+    wide.fixture.destroy();
+    TestBed.resetTestingModule();
+
+    TestBed.configureTestingModule({ providers: testProviders(screenWidth(400)) });
+    const fixture = TestBed.createComponent(MyTaskPage);
+    fixture.componentRef.setInput('taskId', 't-1');
+    await fixture.whenStable();
+    TestBed.inject(HttpTestingController)
+      .expectOne('/api/me/homework/tasks/t-1')
+      .flush(taskDetails({ status: 'ASSIGNED', submissions: [] }));
+    await fixture.whenStable();
+    expect(hostElement(fixture).querySelector('.tb-task__answer--docked')).not.toBeNull();
   });
 
   it('requires text or files', async () => {
@@ -301,7 +390,7 @@ describe('MyTaskPage', () => {
       taskDetails({ status: 'ASSIGNED', submissions: [] }),
     );
 
-    buttonByText(host, 'Отправить на проверку').click();
+    buttonByText(host, 'Сдать').click();
     await fixture.whenStable();
 
     expect(readableText(host)).toContain('Напишите ответ или прикрепите файл');
@@ -332,7 +421,7 @@ describe('MyTaskPage', () => {
     );
 
     expect(readableText(host)).toContain('Нужно доработать Исправь №3');
-    expect(readableText(host)).toContain('Новый ответ');
+    expect(host.querySelector('#answer-text')).not.toBeNull();
   });
 
   it('hides the form for accepted tasks and downloads files', async () => {
@@ -347,7 +436,8 @@ describe('MyTaskPage', () => {
 
     expect(readableText(host)).toContain('Работа принята Отлично');
     expect(readableText(host)).toContain('Без срока');
-    expect(host.textContent).not.toContain('Отправить на проверку');
+    expect(host.querySelector('section[aria-label="Мой ответ"]')).toBeNull();
+    expect(host.querySelector('#answer-text')).toBeNull();
 
     buttonByText(host, 'условие.pdf').click();
     backend.expectOne('/api/me/homework/attachments/f-1').flush(new Blob(['pdf']));

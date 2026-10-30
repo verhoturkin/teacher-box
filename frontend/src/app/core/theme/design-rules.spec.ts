@@ -45,7 +45,8 @@ const HEX_IN_STYLE =
   /(color|background|border|outline|fill|stroke|shadow)[\w-]*\s*:[^;{}\n]*#[0-9a-f]{3,8}\b/i;
 
 /** An icon class: the name of a Material Symbol (ADR-0046). */
-const ICON = /\btb-i-([a-z0-9_]+)/g;
+// an assist chip names its icon in the `icon` attribute, without the class
+const ICON = /(?:\btb-i-|<tb-assist-chip\s+icon=")([a-z0-9_]+)/g;
 
 /** A primeicons class (`api-error` is not one). */
 const PRIMEICONS = /(?<![\w-])pi-[a-z]|class="pi[\s"]/;
@@ -63,9 +64,12 @@ describe('design rules', () => {
     expect(breaches(/--p-(primary-color|primary-contrast|text-|content-|highlight-)/)).toEqual([]);
   });
 
-  it('has no small or outlined buttons (§7)', () => {
+  it('has no small buttons; outlined ones only as variant="outlined" (§8)', () => {
     expect(breaches(/size="small"/)).toEqual([]);
-    expect(breaches(/\[outlined\]|variant="outlined"|<p-button\b[^>]*\soutlined\b/)).toEqual([]);
+    // `tb-segment-group [outlined]` is the M3 segmented button (§8), not an outlined p-button
+    expect(
+      breaches(/<(?!tb-segment-group\b)[a-z-]+\b[^>]*\[outlined\]|<p-button\b[^>]*\soutlined\b/),
+    ).toEqual([]);
   });
 
   it('has no green or coloured tonal buttons: one accent (§7, ADR-0045)', () => {

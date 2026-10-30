@@ -51,7 +51,22 @@ class QuizReviewIntegrationTests {
         assertThat(review(iraTask)).bodyJson().extractingPath("$.quiz.suggestedGrade").isNull();
 
         play(ira, iraTask, "{\"ids\":[\"" + O1 + "\"]}", "{\"text\":\"дуб\"}");
+        assertThat(mvc.post().uri("/api/me/homework/tasks/" + iraTask + "/submissions").with(TestUsers.student(ira))
+                .multipart().param("text", "готово").exchange()).hasStatusOk();
         play(petya, petyaTask, "{\"ids\":[\"" + O2 + "\"]}", "{\"text\":\"берёзка\"}");
+
+        // the list counts the questions, the review queue carries the best score
+        assertThat(mvc.get().uri("/api/teacher/homework/assignments").with(TestUsers.teacher(directory.teacherId()))
+                .exchange()).hasStatusOk().bodyJson()
+                .extractingPath("$[?(@.id=='" + assignment + "')].questions").asArray().containsExactly(2);
+        assertThat(mvc.get().uri("/api/teacher/homework/review-queue")
+                .with(TestUsers.teacher(directory.teacherId())).exchange()).hasStatusOk().bodyJson()
+                .satisfies(json -> {
+                    assertThat(json).extractingPath("$[?(@.taskId=='" + iraTask + "')].quizScore").asArray()
+                            .containsExactly(2);
+                    assertThat(json).extractingPath("$[?(@.taskId=='" + iraTask + "')].quizMax").asArray()
+                            .containsExactly(3);
+                });
 
         assertThat(review(iraTask)).hasStatusOk().bodyJson().satisfies(json -> {
             assertThat(json).extractingPath("$.quiz.suggestedGrade").isEqualTo("2 из 3");

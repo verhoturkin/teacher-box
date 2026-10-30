@@ -19,6 +19,14 @@ export function writeDeviceSetting(key: string, value: string): void {
   }
 }
 
+export function removeDeviceSetting(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Nothing to remove when storage is refused.
+  }
+}
+
 /** A hint the user hid on this device. */
 export function isHintHidden(key: string): boolean {
   return readDeviceSetting(key) === '1';

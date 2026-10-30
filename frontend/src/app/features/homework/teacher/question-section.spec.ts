@@ -6,6 +6,7 @@ import {
   MAX_QUESTIONS,
   QuestionDraft,
   QuestionSection,
+  QuizSettings,
   firstProblem,
   questionDraft,
   questionInputs,
@@ -151,8 +152,6 @@ describe('QuestionSection', () => {
       'ORDERING',
     ]);
     expect(readableText(host)).toContain('Вопросов: 6, баллов: 6');
-    expect(readableText(host)).toContain('Сразу после сдачи теста');
-    expect(readableText(host)).toContain('1 попытка');
   });
 
   it('edits the text, points and explanation of a question', async () => {
@@ -239,13 +238,27 @@ describe('QuestionSection', () => {
     expect(host.querySelector('textarea')?.disabled).toBe(true);
     expect(host.querySelector('[aria-label="Убрать вопрос 1"]')).toBeNull();
   });
+});
+
+describe('QuizSettings', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [QuizSettings], providers: testProviders() });
+  });
+
+  it('shows the reveal and the attempts', async () => {
+    const fixture = TestBed.createComponent(QuizSettings);
+    await fixture.whenStable();
+    expect(readableText(hostElement(fixture))).toContain('Сразу после сдачи теста');
+    expect(readableText(hostElement(fixture))).toContain('1 попытка');
+  });
 
   it('offers the attempts it was given even when they are not in the list', async () => {
-    section.add('NUMBER');
-    section.attempts.set(4);
+    const fixture = TestBed.createComponent(QuizSettings);
+    const host = hostElement(fixture);
+    fixture.componentInstance.attempts.set(4);
     await fixture.whenStable();
     expect(readableText(host)).toContain('4 попытки');
-    section.attempts.set(0);
+    fixture.componentInstance.attempts.set(0);
     await fixture.whenStable();
     expect(readableText(host)).toContain('Без ограничений');
   });

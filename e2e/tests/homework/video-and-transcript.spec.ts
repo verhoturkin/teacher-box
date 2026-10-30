@@ -18,9 +18,9 @@ async function signIn(page: Page, login: string, password: string): Promise<void
 test('the teacher gives homework with a video and its transcript', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.goto('/teacher/homework/new');
-  await page.locator('#editor-title').fill(TITLE);
+  await page.locator('#editor-text').fill(TITLE);
 
-  await page.getByRole('button', { name: 'Добавить видео' }).click();
+  await page.getByRole('button', { name: 'Видео', exact: true }).click();
   await page.getByLabel('Ссылка на видео').fill('https://youtu.be/dQw4w9WgXcQ?t=35');
   await expect(page.locator('tb-video-section iframe')).toHaveAttribute(
     'src',
@@ -37,10 +37,7 @@ test('the teacher gives homework with a video and its transcript', async ({ page
   await expect(page.getByText('Загружено из файла урок.srt')).toBeVisible();
   await page.getByText('Показывать расшифровку ученику').click();
 
-  await page
-    .locator('tb-page-header')
-    .getByRole('button', { name: /Выдать$/ })
-    .click();
+  await page.getByRole('button', { name: 'Сохранить черновик' }).click();
   await expect(page.getByRole('heading', { name: TITLE })).toBeVisible();
 
   const videos = page.getByRole('list', { name: 'Видео задания' });

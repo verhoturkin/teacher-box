@@ -1,12 +1,15 @@
 package ru.teacherbox.homework.application;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -17,6 +20,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.homework.api.HomeworkAssigned;
+import ru.teacherbox.homework.api.HomeworkReminderRequested;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentDetails;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentSummary;
 import ru.teacherbox.homework.application.HomeworkViews.AttachmentView;
@@ -25,17 +29,26 @@ import ru.teacherbox.homework.application.HomeworkViews.VideoInput;
 import ru.teacherbox.homework.domain.Assignment;
 import ru.teacherbox.homework.domain.Attachment;
 import ru.teacherbox.homework.domain.AttachmentOwner;
+import ru.teacherbox.homework.domain.quiz.QuizAttempt;
+import ru.teacherbox.homework.domain.Submission;
 import ru.teacherbox.homework.domain.HomeworkTask;
 import ru.teacherbox.homework.domain.TaskStatus;
 import ru.teacherbox.homework.domain.quiz.Question;
 import ru.teacherbox.homework.domain.quiz.RevealRule;
 import ru.teacherbox.homework.persistence.AssignmentRepository;
+import ru.teacherbox.homework.persistence.AttachmentRepository;
+import ru.teacherbox.homework.persistence.BoundTextbookRepository;
+import ru.teacherbox.homework.persistence.DraftStudentRepository;
+import ru.teacherbox.homework.persistence.QuizAttemptRepository;
+import ru.teacherbox.homework.persistence.QuestionRepository;
 import ru.teacherbox.homework.persistence.SubmissionRepository;
 import ru.teacherbox.homework.persistence.TaskRepository;
+import ru.teacherbox.homework.persistence.VideoRepository;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.error.NotFoundException;
 
 /** The teacher's assignments: creating, editing, giving them to students, materials. */
@@ -54,10 +67,32 @@ public class AssignmentService {
     private final UserDirectory directory;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    /** Read-only counts of the materials for the list. */
+    private final BoundTextbookRepository boundTextbooks;
+    private final AttachmentRepository files;
+    private final QuestionRepository questions;
+    private final VideoRepository videoLinks;
+    private static final int PREVIEW_LENGTH = 200;
+    private static final Duration REMIND_INTERVAL = Duration.ofHours(1);
+
+    // shortcut: kept in memory (one instance per teacher), a restart forgets it; move to a task column if abuse shows up
+    private final Map<UUID, Instant> reminded = new ConcurrentHashMap<>();
+
+    private final DraftStudentRepository draftStudents;
+    private final QuizAttemptRepository quizAttempts;
 
     public AssignmentService(AssignmentRepository assignments, TaskRepository tasks,
             SubmissionRepository submissions, AttachmentService attachments, TextbookBindings textbooks,
-            AssignmentVideos videos, AssignmentQuiz quiz, UserDirectory directory, ApplicationEventPublisher events, Clock clock) {
+            AssignmentVideos videos, AssignmentQuiz quiz, UserDirectory directory, ApplicationEventPublisher events, Clock clock,
+            BoundTextbookRepository boundTextbooks, AttachmentRepository files, QuestionRepository questions,
+            VideoRepository videoLinks, DraftStudentRepository draftStudents,
+            QuizAttemptRepository quizAttempts) {
+        this.quizAttempts = quizAttempts;
+        this.draftStudents = draftStudents;
+        this.boundTextbooks = boundTextbooks;
+        this.files = files;
+        this.questions = questions;
+        this.videoLinks = videoLinks;
         this.assignments = assignments;
         this.tasks = tasks;
         this.submissions = submissions;
@@ -160,6 +195,39 @@ public class AssignmentService {
         return details(assignment);
     }
 
+    /** Reminds a student of a task that is not handed in; at most once an hour per task. */
+    @Transactional
+    public void remind(UUID assignmentId, UUID studentId) {
+        Assignment assignment = load(assignmentId);
+        HomeworkTask task = tasks.findByAssignment(assignmentId).stream()
+                .filter(candidate -> candidate.studentId().equals(studentId))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("task.not-found", "Task not found"));
+        if (task.status() != TaskStatus.ASSIGNED && task.status() != TaskStatus.RETURNED) {
+            throw new BusinessRuleException("task.not-remindable", "The work is already handed in");
+        }
+        Instant now = clock.instant();
+        Instant last = reminded.get(task.id());
+        if (last != null && last.plus(REMIND_INTERVAL).isAfter(now)) {
+            throw new ConflictException("task.reminded-recently", "The student was reminded less than an hour ago");
+        }
+        reminded.put(task.id(), now);
+        events.publishEvent(new HomeworkReminderRequested(task.id(), assignment.id(), studentId, assignment.title(),
+                assignment.dueAt(), now));
+    }
+
+    /** Remembers whom a draft is for; they get nothing until the assignment is given out. */
+    @Transactional
+    public AssignmentDetails saveDraftStudents(UUID assignmentId, Collection<UUID> studentIds) {
+        Assignment assignment = load(assignmentId);
+        for (UUID studentId : new LinkedHashSet<>(studentIds)) {
+            directory.findStudent(studentId)
+                    .orElseThrow(() -> new NotFoundException("student.not-found", "Student not found"));
+        }
+        draftStudents.replace(assignmentId, new LinkedHashSet<>(studentIds));
+        return details(assignment);
+    }
+
     @Transactional(readOnly = true)
     public List<AssignmentSummary> list() {
         Map<UUID, Map<TaskStatus, Integer>> counts = tasks.statusCounts();
@@ -167,6 +235,10 @@ public class AssignmentService {
         Map<UUID, String> names = directory
                 .findStudents(studentsOf.values().stream().flatMap(List::stream).distinct().toList()).stream()
                 .collect(Collectors.toMap(StudentSummary::id, StudentSummary::displayName, (a, b) -> a));
+        Map<UUID, Integer> textbookCounts = boundTextbooks.countsByAssignment();
+        Map<UUID, Integer> fileCounts = files.countsByAssignment();
+        Map<UUID, Integer> questionCounts = questions.countsByAssignment();
+        Map<UUID, Integer> videoCounts = videoLinks.countsByAssignment();
         return assignments.findAll().stream().map(assignment -> {
             Map<TaskStatus, Integer> byStatus = counts.getOrDefault(assignment.id(), Map.of());
             int assigned = byStatus.getOrDefault(TaskStatus.ASSIGNED, 0);
@@ -180,7 +252,8 @@ public class AssignmentService {
             return new AssignmentSummary(assignment.id(), assignment.title(), assignment.dueAt(),
                     assignment.createdAt(), students, studentsOf.getOrDefault(assignment.id(), List.of()),
                     assignment.boardId(), assigned + submitted + returned + accepted, assigned, submitted, returned,
-                    accepted);
+                    accepted, textbookCounts.getOrDefault(assignment.id(), 0), fileCounts.getOrDefault(assignment.id(), 0),
+                    questionCounts.getOrDefault(assignment.id(), 0), videoCounts.getOrDefault(assignment.id(), 0));
         }).toList();
     }
 
@@ -268,6 +341,7 @@ public class AssignmentService {
             events.publishEvent(new HomeworkAssigned(task.id(), assignment.id(), studentId, assignment.title(),
                     assignment.dueAt(), now));
         }
+        draftStudents.remove(assignment.id(), studentIds);
     }
 
     private AssignmentDetails details(Assignment assignment) {
@@ -278,10 +352,15 @@ public class AssignmentService {
                 .collect(Collectors.toMap(StudentSummary::id, Function.identity(), (a, b) -> a));
         Function<HomeworkTask, TaskSummary> summary = task -> {
             StudentSummary student = students.get(task.studentId());
+            Submission latest = submissions.findByTask(task.id()).stream().findFirst().orElse(null);
+            QuizAttempt best = quizAttempts.findByTask(task.id()).stream().filter(a -> a.submittedAt() != null)
+                    .max(Comparator.comparingInt(a -> Objects.requireNonNull(a.scorePoints()))).orElse(null);
             return new TaskSummary(task.id(), task.studentId(),
                     student == null ? TaskDetailsAssembler.unknownStudent() : student.displayName(),
                     student == null ? null : student.avatar(), task.status(), task.grade(), task.submittedAt(),
-                    task.reviewedAt(), task.isOverdue(assignment.dueAt(), now));
+                    task.reviewedAt(), task.isOverdue(assignment.dueAt(), now), preview(latest),
+                    latest == null ? 0 : attachments.of(AttachmentOwner.SUBMISSION, latest.id()).size(),
+                    best == null ? null : best.scorePoints(), best == null ? null : best.maxPoints());
         };
         return new AssignmentDetails(assignment.id(), assignment.title(), assignment.description(),
                 assignment.dueAt(), assignment.boardId(), assignment.createdAt(), assignment.version(),
@@ -292,7 +371,18 @@ public class AssignmentService {
                         .toList(),
                 textbooks.of(assignment.id()),
                 videos.of(assignment.id()),
-                quiz.of(assignment.id()), assignment.quizReveal(), assignment.quizAttempts());
+                quiz.of(assignment.id()), assignment.quizReveal(), assignment.quizAttempts(),
+                draftStudents.findByAssignment(assignment.id()));
+    }
+
+    /** The answer text on one line, cut to {@value #PREVIEW_LENGTH} characters. */
+    @Nullable
+    private static String preview(@Nullable Submission submission) {
+        if (submission == null || submission.text() == null || submission.text().isBlank()) {
+            return null;
+        }
+        String line = submission.text().strip().replaceAll("\\s+", " ");
+        return line.length() <= PREVIEW_LENGTH ? line : line.substring(0, PREVIEW_LENGTH) + "…";
     }
 
     private Assignment load(UUID assignmentId) {

@@ -34,6 +34,13 @@ class HomeworkDomainTest {
     }
 
     @Test
+    void titleDerivedFromTheTextFitsTheLimit() {
+        String longest = "я".repeat(Assignment.MAX_TITLE);
+        assertThat(Assignment.create(UUID.randomUUID(), " " + longest + " ", null, null, NOW).title())
+                .hasSize(Assignment.MAX_TITLE);
+    }
+
+    @Test
     void copyIsADraftWithoutDeadlineAndBoard() {
         Instant now = Instant.parse("2030-01-01T10:00:00Z");
         Assignment source = Assignment.create(UUID.randomUUID(), "Дроби", "Текст", now.plusSeconds(60), now);

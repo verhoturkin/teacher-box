@@ -195,7 +195,7 @@ export function firstProblem(drafts: readonly QuestionDraft[]): string | null {
  */
 @Component({
   selector: 'tb-question-section',
-  imports: [FormsModule, Button, Checkbox, InputNumber, InputText, RadioButton, Select, Textarea],
+  imports: [FormsModule, Button, Checkbox, InputNumber, InputText, RadioButton, Textarea],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <small class="tb-hint">{{ t.hint }}</small>
@@ -578,36 +578,6 @@ export function firstProblem(drafts: readonly QuestionDraft[]): string | null {
 
     @if (questions().length > 0) {
       <p class="tb-question-total" role="status">{{ total() }}</p>
-      <fieldset class="tb-question-settings">
-        <legend class="tb-subtitle">{{ t.settings }}</legend>
-        <div class="tb-field">
-          <label for="quiz-reveal">{{ t.reveal }}</label>
-          <p-select
-            inputId="quiz-reveal"
-            [options]="revealOptions"
-            optionLabel="label"
-            optionValue="value"
-            appendTo="body"
-            [fluid]="true"
-            [ngModel]="reveal()"
-            (ngModelChange)="reveal.set($event)"
-          />
-        </div>
-        <div class="tb-field">
-          <label for="quiz-attempts">{{ t.attempts }}</label>
-          <p-select
-            inputId="quiz-attempts"
-            [options]="attemptOptions()"
-            optionLabel="label"
-            optionValue="value"
-            appendTo="body"
-            [fluid]="true"
-            [ngModel]="attempts()"
-            (ngModelChange)="attempts.set($event)"
-          />
-          <small class="tb-hint">{{ t.attemptsHint }}</small>
-        </div>
-      </fieldset>
     }
   `,
   styles: `
@@ -702,16 +672,6 @@ export function firstProblem(drafts: readonly QuestionDraft[]): string | null {
       margin: 0;
       color: var(--p-md-on-surface-variant);
     }
-
-    .tb-question-settings {
-      display: grid;
-      gap: var(--tb-space-4);
-      width: 100%;
-      min-width: 0;
-      margin: 0;
-      padding: 0;
-      border: 0;
-    }
   `,
 })
 export class QuestionSection {
@@ -721,15 +681,7 @@ export class QuestionSection {
   protected readonly maxItems = MAX_ITEMS;
   protected readonly maxAccepted = MAX_ACCEPTED;
   protected readonly maxQuestions = MAX_QUESTIONS;
-  protected readonly revealOptions = REVEALS.map((value) => ({
-    value,
-    label: T.quiz.reveals[value],
-  }));
-
   readonly questions = model<readonly QuestionDraft[]>([]);
-  readonly reveal = model<QuizReveal>('AFTER_SUBMIT');
-  /** 0 — unlimited. */
-  readonly attempts = model(1);
   /** A student started the quiz: the questions are read-only. */
   readonly locked = input(false);
   /** The server refused the questions. */
@@ -737,12 +689,6 @@ export class QuestionSection {
   /** The teacher tried to save: show what is wrong in each question. */
   readonly showProblems = input(false);
 
-  protected readonly attemptOptions = computed(() =>
-    (ATTEMPTS.includes(this.attempts())
-      ? ATTEMPTS
-      : [...ATTEMPTS, this.attempts()].sort(sortAttempts)
-    ).map((value) => ({ value, label: T.quiz.attemptCount(value) })),
-  );
   protected readonly total = computed(() =>
     T.quiz.total(
       this.questions().length,
@@ -867,4 +813,64 @@ function moved<A>(list: readonly A[], match: (item: A) => boolean, step: -1 | 1)
     }
     return position === to ? item : entry;
   });
+}
+
+/** «Как проходит тест»: when the right answers show and how many attempts a student has. */
+@Component({
+  selector: 'tb-quiz-settings',
+  imports: [FormsModule, Select],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <div class="tb-field">
+      <label for="quiz-reveal">{{ t.reveal }}</label>
+      <p-select
+        inputId="quiz-reveal"
+        [options]="revealOptions"
+        optionLabel="label"
+        optionValue="value"
+        appendTo="body"
+        [fluid]="true"
+        [ngModel]="reveal()"
+        (ngModelChange)="reveal.set($event)"
+      />
+    </div>
+    <div class="tb-field">
+      <label for="quiz-attempts">{{ t.attempts }}</label>
+      <p-select
+        inputId="quiz-attempts"
+        [options]="attemptOptions()"
+        optionLabel="label"
+        optionValue="value"
+        appendTo="body"
+        [fluid]="true"
+        [ngModel]="attempts()"
+        (ngModelChange)="attempts.set($event)"
+      />
+      <small class="tb-hint">{{ t.attemptsHint }}</small>
+    </div>
+  `,
+  styles: `
+    :host {
+      display: grid;
+      gap: var(--tb-space-4);
+    }
+  `,
+})
+export class QuizSettings {
+  protected readonly t = T.quiz;
+  protected readonly revealOptions = REVEALS.map((value) => ({
+    value,
+    label: T.quiz.reveals[value],
+  }));
+
+  readonly reveal = model<QuizReveal>('AFTER_SUBMIT');
+  /** 0 — unlimited. */
+  readonly attempts = model(1);
+
+  protected readonly attemptOptions = computed(() =>
+    (ATTEMPTS.includes(this.attempts())
+      ? ATTEMPTS
+      : [...ATTEMPTS, this.attempts()].sort(sortAttempts)
+    ).map((value) => ({ value, label: T.quiz.attemptCount(value) })),
+  );
 }

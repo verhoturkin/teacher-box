@@ -33,6 +33,10 @@ Feature proposals with detailed plans (progress report, packages, invoices, pare
 self-booking, calls, spaced repetition) — [`roadmap/`](roadmap/README.md); move one here as a
 release when the teacher picks it.
 
+Voice answers («Записать голос»): `MediaRecorder` in the answer panel of `my-task-page.ts` would upload
+a record as an attachment. Missing: the browser records `audio/webm` and `FilePolicy` accepts no `webm` (a one-line
+addition, plus `ACCEPTED_FILES`); decided against for now.
+
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the
 monthly report, homework and board lists by name) and the options of student / group selects.
 

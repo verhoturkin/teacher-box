@@ -49,6 +49,10 @@ export function assignmentSummary(overrides: Partial<AssignmentSummary> = {}): A
     submitted: 1,
     returned: 0,
     accepted: 0,
+    textbooks: 0,
+    files: 0,
+    questions: 0,
+    videos: 0,
     ...overrides,
   };
 }
@@ -68,6 +72,7 @@ export function assignmentDetails(overrides: Partial<AssignmentDetails> = {}): A
     questions: [],
     quizReveal: 'AFTER_SUBMIT',
     quizAttempts: 1,
+    draftStudentIds: [],
     tasks: [
       {
         taskId: 't-1',
@@ -79,6 +84,10 @@ export function assignmentDetails(overrides: Partial<AssignmentDetails> = {}): A
         submittedAt: '2026-09-05T10:00:00Z',
         reviewedAt: null,
         overdue: false,
+        answerPreview: 'Ответ: 12 и 7',
+        answerFiles: 1,
+        quizScore: 8,
+        quizMax: 10,
       },
       {
         taskId: 't-2',
@@ -90,6 +99,10 @@ export function assignmentDetails(overrides: Partial<AssignmentDetails> = {}): A
         submittedAt: null,
         reviewedAt: null,
         overdue: true,
+        answerPreview: null,
+        answerFiles: 0,
+        quizScore: null,
+        quizMax: null,
       },
     ],
     ...overrides,
@@ -143,6 +156,8 @@ export function reviewQueueItem(overrides: Partial<ReviewQueueItem> = {}): Revie
     studentAvatar: null,
     submittedAt: '2026-09-05T10:00:00Z',
     dueAt: null,
+    quizScore: null,
+    quizMax: null,
     ...overrides,
   };
 }
@@ -158,6 +173,12 @@ export function myTask(overrides: Partial<MyTask> = {}): MyTask {
     overdue: false,
     assignedAt: '2026-09-01T10:00:00Z',
     reviewedAt: null,
+    teacherComment: null,
+    board: false,
+    textbooks: 0,
+    files: 0,
+    questions: 0,
+    videos: 0,
     ...overrides,
   };
 }
