@@ -152,9 +152,11 @@ interface CellView {
                         </button>
                       </td>
                     }
-                    <td class="tb-journal__total">
-                      <strong>{{ t.total(row.handedIn, row.given) }}</strong>
-                      <span>{{ t.totalHint }}</span>
+                    <td>
+                      <div class="tb-journal__total">
+                        <strong>{{ t.total(row.handedIn, row.given) }}</strong>
+                        <span>{{ t.totalHint }}</span>
+                      </div>
                     </td>
                   </tr>
                 }
@@ -251,9 +253,20 @@ interface CellView {
       vertical-align: bottom;
     }
 
+    /* every body row is one height: the student, the cells and the total are --tb-journal-row high */
+    .tb-journal__grid {
+      --tb-journal-row: 3.25rem;
+    }
+
     .tb-journal__grid td {
       min-inline-size: 9rem;
       padding: 0;
+      vertical-align: middle;
+    }
+
+    .tb-journal__grid tbody th {
+      padding: 0;
+      vertical-align: middle;
     }
 
     .tb-journal__task {
@@ -284,8 +297,10 @@ interface CellView {
       display: flex;
       align-items: center;
       gap: var(--tb-space-3);
-      padding: var(--tb-space-2) var(--tb-space-3);
-      border-radius: var(--tb-shape-md);
+      box-sizing: border-box;
+      block-size: var(--tb-journal-row);
+      padding: 0 var(--tb-space-3);
+      border-radius: var(--tb-shape-sm);
       background: var(--p-md-surface-container);
       color: var(--p-md-on-surface);
       font: var(--tb-type-title-s);
@@ -297,7 +312,8 @@ interface CellView {
       align-items: center;
       gap: var(--tb-space-2);
       inline-size: 100%;
-      min-block-size: 3rem;
+      box-sizing: border-box;
+      block-size: var(--tb-journal-row);
       padding: 0 var(--tb-space-3);
       border: 0;
       border-radius: var(--tb-shape-sm);
@@ -314,11 +330,15 @@ interface CellView {
       font-size: 1.125rem;
     }
 
+    /* the head and the values of «За неделю» share one inline start and the values one vertical centre */
     .tb-journal__total {
       display: flex;
       flex-direction: column;
+      justify-content: center;
+      box-sizing: border-box;
+      block-size: var(--tb-journal-row);
       min-inline-size: 6rem;
-      padding-inline-start: var(--tb-space-2);
+      padding-inline: var(--tb-space-2);
     }
 
     .tb-journal__total span {

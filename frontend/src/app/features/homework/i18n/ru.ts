@@ -367,6 +367,8 @@ export const ru = {
     view: 'Вид',
     asList: 'Списком',
     byStudents: 'По ученикам',
+    switchToJournal: 'Вид: по ученикам',
+    switchToList: 'Вид: списком',
     previousWeek: 'Предыдущая неделя',
     nextWeek: 'Следующая неделя',
     thisWeek: 'Эта неделя',

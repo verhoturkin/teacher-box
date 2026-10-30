@@ -35,6 +35,31 @@ class OneRowHost {
   readonly value = signal('all');
 }
 
+@Component({
+  imports: [FilterChips],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `<tb-filter-chips
+    label="Фильтр"
+    [chips]="chips"
+    [(value)]="value"
+    [scrollable]="true"
+  />`,
+})
+class ScrollHost {
+  readonly chips: FilterChip<string>[] = [{ value: 'all', label: 'Все' }];
+  readonly value = signal('all');
+}
+
+describe('scrollable FilterChips', () => {
+  it('is a one-row set that scrolls sideways', async () => {
+    const fixture = TestBed.createComponent(ScrollHost);
+    await fixture.whenStable();
+    expect(hostElement(fixture).querySelector('tb-filter-chips')?.classList).toContain(
+      'tb-filter-chips--scroll',
+    );
+  });
+});
+
 describe('fitChips', () => {
   const widths = [60, 80, 80, 80];
 

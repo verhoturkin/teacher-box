@@ -65,7 +65,10 @@ describe('design rules', () => {
 
   it('has no small buttons; outlined ones only as variant="outlined" (§8)', () => {
     expect(breaches(/size="small"/)).toEqual([]);
-    expect(breaches(/\[outlined\]|<p-button\b[^>]*\soutlined\b/)).toEqual([]);
+    // `tb-segment-group [outlined]` is the M3 segmented button (§8), not an outlined p-button
+    expect(
+      breaches(/<(?!tb-segment-group\b)[a-z-]+\b[^>]*\[outlined\]|<p-button\b[^>]*\soutlined\b/),
+    ).toEqual([]);
   });
 
   it('has no green or coloured tonal buttons: one accent (§7, ADR-0045)', () => {

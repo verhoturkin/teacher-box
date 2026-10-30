@@ -2,9 +2,11 @@ import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   LOCALE_ID,
   OnInit,
   computed,
+  effect,
   inject,
   input,
   signal,
@@ -23,7 +25,7 @@ import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { injectMobile, injectWindowSize } from '@core/layout/mobile';
-import { collapseRail, hideBottomBar } from '@core/layout/rail-state';
+import { collapseRail, hideBottomBar, RailState } from '@core/layout/rail-state';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { openOnCreate } from '@core/routing/create-param';
 import { readQuery, writeQuery } from '@core/routing/query-state';
@@ -182,13 +184,16 @@ interface Line {
           <div tbPaneHeader>
             <tb-page-header [title]="t.title">
               <tb-help-button help topic="teacher/homework" />
-              <tb-segment-group
-                class="tb-hw__views"
-                [label]="journalT.view"
-                [segments]="viewSegments()"
-                [value]="view()"
-                (valueChange)="setView($event)"
-              />
+              @if (!mobile()) {
+                <tb-segment-group
+                  class="tb-hw__views"
+                  [label]="journalT.view"
+                  [outlined]="true"
+                  [segments]="viewSegments()"
+                  [value]="view()"
+                  (valueChange)="setView($event)"
+                />
+              }
               @if (mobile()) {
                 <p-button
                   class="tb-page-fab"
@@ -209,25 +214,16 @@ interface Line {
                   <tb-filter-chips
                     [label]="t.filters"
                     [chips]="chips()"
+                    [scrollable]="true"
                     [menu]="whomChip()"
                     [(value)]="filter"
                   />
                 } @else {
-                  <p-select
-                    [formControl]="whom"
-                    [options]="whomOptions()"
-                    [group]="true"
-                    optionGroupLabel="label"
-                    optionGroupChildren="items"
-                    optionLabel="label"
-                    optionValue="value"
-                    [placeholder]="t.whomAll"
-                    [showClear]="true"
-                    [ariaLabel]="t.whom"
-                    appendTo="body"
-                  />
+                  <ng-container [ngTemplateOutlet]="whomSelect" />
                   <tb-segment-group
                     [label]="t.filters"
+                    [outlined]="true"
+                    [checkmark]="false"
                     [segments]="segments()"
                     [(value)]="filter"
                   />
@@ -250,19 +246,7 @@ interface Line {
                     [value]="filter()"
                   />
                 } @else {
-                  <p-select
-                    [formControl]="whom"
-                    [options]="whomOptions()"
-                    [group]="true"
-                    optionGroupLabel="label"
-                    optionGroupChildren="items"
-                    optionLabel="label"
-                    optionValue="value"
-                    [placeholder]="t.whomAll"
-                    [showClear]="true"
-                    [ariaLabel]="t.whom"
-                    appendTo="body"
-                  />
+                  <ng-container [ngTemplateOutlet]="whomSelect" />
                 }
               </div>
             </tb-journal-view>
@@ -472,6 +456,26 @@ interface Line {
       </tb-panes>
     }
 
+    <!-- «Кому»: an M3 outlined select of 40 dp, as high as the segmented buttons beside it -->
+    <ng-template #whomSelect>
+      <span class="tb-hw__select">
+        <i class="tb-i tb-i-person" aria-hidden="true"></i>
+        <p-select
+          [formControl]="whom"
+          [options]="whomOptions()"
+          [group]="true"
+          optionGroupLabel="label"
+          optionGroupChildren="items"
+          optionLabel="label"
+          optionValue="value"
+          [placeholder]="t.whomAll"
+          [showClear]="true"
+          [ariaLabel]="t.whom"
+          appendTo="body"
+        />
+      </span>
+    </ng-template>
+
     <ng-template #handed let-assignment="assignment">
       @if (assignment.totalTasks > 0) {
         <span class="tb-hw__handed">
@@ -548,6 +552,44 @@ interface Line {
       flex: 0 0 auto;
     }
 
+    /* «Кому»: M3 outlined select, 40 dp like the segmented buttons beside it, a leading person icon */
+    .tb-hw__select {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .tb-hw__select > i {
+      position: absolute;
+      inset-inline-start: var(--tb-space-3);
+      z-index: 1;
+      color: var(--p-md-on-surface-variant);
+      font-size: 1.125rem;
+      pointer-events: none;
+    }
+
+    :host ::ng-deep .tb-hw__select .p-select {
+      box-sizing: border-box;
+      block-size: 2.5rem;
+      min-inline-size: 12rem;
+      border: 1px solid var(--p-md-outline);
+      border-radius: var(--tb-shape-sm);
+      background: transparent;
+      box-shadow: none;
+    }
+
+    :host ::ng-deep .tb-hw__select .p-select-label {
+      padding-block: 0;
+      padding-inline: 2.5rem var(--tb-space-2);
+      font: var(--tb-type-body-m);
+      line-height: 2.25rem;
+    }
+
+    /* «⋮» sits at the right edge of the row */
+    :host ::ng-deep .tb-hw__table td:last-child:not([colspan]) {
+      text-align: end;
+    }
+
     /* the search takes the free room, «Кому» and the filter after it (ADR-0018) */
     .tb-hw__toolbar {
       margin-block-start: var(--tb-space-4);
@@ -561,6 +603,12 @@ interface Line {
       .tb-hw__toolbar {
         flex-direction: column;
         align-items: stretch;
+        gap: var(--tb-space-3);
+      }
+
+      /* the 16rem basis is for the row; in a column it would be the height */
+      .tb-hw__toolbar tb-search-field {
+        flex: none;
       }
     }
 
@@ -601,6 +649,11 @@ interface Line {
       padding: 0;
       overflow-x: auto;
       list-style: none;
+      scrollbar-width: none;
+    }
+
+    .tb-hw__cards::-webkit-scrollbar {
+      display: none;
     }
 
     .tb-hw__card {
@@ -714,14 +767,15 @@ interface Line {
       font-size: 1rem;
     }
 
+    /* block-level flex: an inline box would leave the line strut and sit off the row's centre */
     .tb-hw__whom {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       gap: var(--tb-space-2);
     }
 
     .tb-hw__handed {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       gap: var(--tb-space-3);
     }
@@ -772,6 +826,7 @@ export class AssignmentsPage implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly snackbar = inject(Snackbar);
+  private readonly rail = inject(RailState);
   private readonly menu = viewChild.required<Menu>('menu');
 
   /** The row whose «⋮» menu is open: one popup menu serves every row. */
@@ -1007,6 +1062,31 @@ export class AssignmentsPage implements OnInit {
 
   constructor() {
     collapseRail(() => this.sheetOpen());
+    // a phone: the view switch is one icon of the top app bar (the work under review has its own toolbar)
+    effect(() => {
+      const journal = this.view() === 'journal';
+      this.rail.compactBar.set(
+        this.mobile() && !this.phoneReview()
+          ? {
+              title: this.t.title,
+              actions: [
+                {
+                  icon: journal ? 'view_list' : 'grid_view',
+                  label: journal ? this.journalT.switchToList : this.journalT.switchToJournal,
+                  command: () => {
+                    this.setView(journal ? 'list' : 'journal');
+                  },
+                },
+              ],
+              menu: [],
+              menuLabel: '',
+            }
+          : null,
+      );
+    });
+    inject(DestroyRef).onDestroy(() => {
+      this.rail.compactBar.set(null);
+    });
     hideBottomBar(() => this.phoneReview());
     this.search.valueChanges.pipe(takeUntilDestroyed()).subscribe((text) => {
       writeQuery(this.router, this.route, { q: text.trim() });

@@ -467,6 +467,13 @@ action — «Изменить» next to «Проверить N работ» (hom
   `role="group"` with a name, `aria-pressed`, a count after the label, takes the whole width
   (*ours*). Examples: «Итог» of a lesson, a member's attendance, «На проверку · Активные · Готовые»,
   «Доски · Учебники», «Ученик · Группа», the calendar views, «Согласовать | Отклонить».
+  **Outlined variant** (`tb-segment-group [outlined]`, **M3** segmented buttons; the homework list's
+  «Списком · По ученикам» and «Активные · Черновики · Готовые», sketch `.seg`): 40 dp, no gap, the
+  whole group in one 1 dp `outline` border with a full pill outer shape and a 1 dp divider between
+  buttons; the chosen button `secondary-container` with a leading 18 dp check (it replaces the
+  button's own icon; `[checkmark]="false"` leaves it to the colour — the filter «Активные ·
+  Черновики · Готовые», sketch), the others transparent, `on-surface`. A screen takes one variant for all
+  its groups; the other screens keep the tonal one.
 - **Standard button group** `tb-button-group` — actions side by side: an invisible container with
   separate buttons, 12 dp gap (**M3** ButtonGroupSmall.BetweenSpace); a pressed button morphs its
   shape; the neighbours' width change is not done (*ours*). Never a primary button in a connected
@@ -587,7 +594,12 @@ action — «Изменить» next to «Проверить N работ» (hom
   **Menu chip** (`[menu]`, **M3** dropdown filter chip; «Кому: все ▾» of the homework list on a
   phone, homework sketches): a second filter after the set, a trailing drop-down arrow and no check;
   it opens a menu (`p-menu`), and while a choice is in force it is selected and names it («Кому:
-  Анна»), so the filter in force is visible (*ours*).
+  Анна»), so the filter in force is visible (*ours*). `[scrollable]` (a phone): one row that
+  scrolls sideways without a visible scrollbar (touch and keyboard still scroll, the focus ring has
+  6 px of room), the chips keep their width (*ours*, homework sketches).
+- **Outlined select** (the «Кому» of the homework list, sketch `.select`): **M3** outlined field
+  shrunk to 40 dp to stand beside the segmented buttons — 8 dp corners, 1 dp `outline`, a leading
+  18 dp person icon, «Кому: все ▾» (*ours*: height).
 - **Assist chips** `tb-assist-chip` (`@shared/ui/assist-chip`, **M3** assist chip: a smart,
   optional action next to a field — «Файл», «Учебник», «Видео» under a text): 32 dp, 8 dp corners, 1 dp
   outline-variant, on-surface Label Large, a leading 18 dp primary icon (`icon="attach_file"`); hover

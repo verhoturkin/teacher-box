@@ -358,6 +358,8 @@ export const en: Translation<typeof ru> = {
     view: 'View',
     asList: 'List',
     byStudents: 'By student',
+    switchToJournal: 'View: by student',
+    switchToList: 'View: list',
     previousWeek: 'Previous week',
     nextWeek: 'Next week',
     thisWeek: 'This week',

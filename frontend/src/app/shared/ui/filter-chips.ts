@@ -87,6 +87,7 @@ export function fitChips(
   host: {
     class: 'tb-filter-chips',
     '[class.tb-filter-chips--one-row]': 'oneRow()',
+    '[class.tb-filter-chips--scroll]': 'scrollable()',
     role: 'group',
     '[attr.aria-label]': 'label()',
   },
@@ -166,6 +167,19 @@ export function fitChips(
       flex-wrap: nowrap;
       overflow: clip;
       overflow-clip-margin: 0.5rem;
+    }
+
+    /* a phone: one row that scrolls sideways without a scrollbar (the padding keeps the focus ring) */
+    :host(.tb-filter-chips--scroll) {
+      flex-wrap: nowrap;
+      margin: -0.375rem;
+      padding: 0.375rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
     }
 
     .tb-filter-chip {
@@ -256,6 +270,8 @@ export class FilterChips<T extends string> {
   readonly value = model.required<T>();
   /** One row: the chips that do not fit go to the «Ещё N» menu. */
   readonly oneRow = input(false);
+  /** One row that scrolls sideways, no scrollbar (a phone); the chips keep their width. */
+  readonly scrollable = input(false);
   /** A chip after the set that opens a menu (a second filter, «Кому: все ▾»). */
   readonly menu = input<FilterMenuChip | null>(null);
 

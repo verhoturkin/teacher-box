@@ -19,6 +19,49 @@ class Host {
   readonly value = signal<Kind>('review');
 }
 
+@Component({
+  imports: [SegmentGroup],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `<tb-segment-group
+    label="Вид"
+    [outlined]="true"
+    [checkmark]="check()"
+    [segments]="segments"
+    [(value)]="value"
+  />`,
+})
+class OutlinedHost {
+  readonly segments: Segment<'a' | 'b'>[] = [
+    { value: 'a', label: 'A', icon: 'tb-i tb-i-view_list' },
+    { value: 'b', label: 'B', icon: 'tb-i tb-i-grid_view' },
+  ];
+  readonly value = signal<'a' | 'b'>('a');
+  readonly check = signal(true);
+}
+
+describe('outlined SegmentGroup', () => {
+  it('carries the variant class and a check in the chosen button', async () => {
+    const outlined = TestBed.createComponent(OutlinedHost);
+    await outlined.whenStable();
+    const el = hostElement(outlined);
+    expect(el.querySelector('tb-segment-group')?.classList).toContain('tb-segment-group--outlined');
+    const icons = Array.from(el.querySelectorAll('button')).map(
+      (b) => b.querySelector('i')?.className,
+    );
+    expect(icons).toEqual(['tb-i tb-i-check', 'tb-i tb-i-grid_view']);
+  });
+
+  it('keeps the icons when the check is off', async () => {
+    const outlined = TestBed.createComponent(OutlinedHost);
+    outlined.componentInstance.check.set(false);
+    await outlined.whenStable();
+    const icons = Array.from(hostElement(outlined).querySelectorAll('button')).map(
+      (b) => b.querySelector('i')?.className,
+    );
+    expect(icons).toEqual(['tb-i tb-i-view_list', 'tb-i tb-i-grid_view']);
+  });
+});
+
 describe('SegmentGroup', () => {
   let fixture: ComponentFixture<Host>;
   let host: HTMLElement;

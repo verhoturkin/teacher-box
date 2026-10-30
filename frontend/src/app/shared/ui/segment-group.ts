@@ -24,7 +24,12 @@ export interface Segment<T extends string> {
 @Component({
   selector: 'tb-segment-group',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'tb-segment-group', role: 'group', '[attr.aria-label]': 'label()' },
+  host: {
+    class: 'tb-segment-group',
+    '[class.tb-segment-group--outlined]': 'outlined()',
+    role: 'group',
+    '[attr.aria-label]': 'label()',
+  },
   template: `
     @for (segment of segments(); track segment.value) {
       <button
@@ -33,7 +38,9 @@ export interface Segment<T extends string> {
         [attr.aria-pressed]="segment.value === value()"
         (click)="value.set(segment.value)"
       >
-        @if (segment.icon) {
+        @if (outlined() && checkmark() && segment.value === value()) {
+          <i class="tb-i tb-i-check" aria-hidden="true"></i>
+        } @else if (segment.icon) {
           <i [class]="segment.icon" aria-hidden="true"></i>
         }
         <span class="tb-segment__label">{{ segment.label }}</span>
@@ -124,6 +131,55 @@ export interface Segment<T extends string> {
       }
     }
 
+    /*
+     * outlined variant (M3 segmented buttons): one 1 dp outline around the group and between the buttons,
+     * a full pill, the chosen button secondary container with a leading check, the others transparent
+     */
+    :host(.tb-segment-group--outlined) {
+      gap: 0;
+      box-sizing: border-box;
+      block-size: 2.5rem;
+      overflow: hidden;
+      border: 1px solid var(--p-md-outline);
+      border-radius: var(--tb-shape-full);
+
+      .tb-segment {
+        block-size: auto;
+        border-radius: 0;
+        background: transparent;
+        color: var(--p-md-on-surface);
+
+        &:hover {
+          background: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-hover), transparent);
+        }
+
+        &:focus-visible {
+          outline-offset: -3px;
+        }
+
+        & + .tb-segment {
+          border-inline-start: 1px solid var(--p-md-outline);
+        }
+
+        &[aria-pressed='true'] {
+          background: var(--p-md-secondary-container);
+          color: var(--p-md-on-secondary-container);
+
+          &:hover {
+            background: color-mix(
+              in srgb,
+              var(--p-md-on-secondary-container) var(--tb-state-hover),
+              var(--p-md-secondary-container)
+            );
+          }
+        }
+
+        > .tb-i {
+          font-size: 1.125rem;
+        }
+      }
+    }
+
     .tb-segment__label {
       overflow: hidden;
       text-overflow: ellipsis;
@@ -140,4 +196,8 @@ export class SegmentGroup<T extends string> {
   readonly segments = input.required<readonly Segment<T>[]>();
   /** The chosen segment. */
   readonly value = model.required<T>();
+  /** The outlined variant (M3 segmented buttons): one outline round the group and between the buttons. */
+  readonly outlined = input(false);
+  /** The outlined variant marks the chosen button with a check; `false` — the colour alone says it. */
+  readonly checkmark = input(true);
 }

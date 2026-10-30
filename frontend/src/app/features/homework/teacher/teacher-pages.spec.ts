@@ -594,6 +594,22 @@ describe('AssignmentsPage', () => {
       expect(titles(host)).toEqual([]);
     });
 
+    it('puts the view switch into the top app bar as one icon button', async () => {
+      const { host, fixture } = await render(GROUPED, WORKS, 390);
+      const rail = TestBed.inject(RailState);
+
+      expect(host.querySelector('.tb-hw__views')).toBeNull();
+      expect(host.querySelector('tb-filter-chips.tb-filter-chips--scroll')).not.toBeNull();
+      const [action] = rail.compactBar()?.actions ?? [];
+      expect(action?.icon).toBe('grid_view');
+      expect(action?.label).toBe('Вид: по ученикам');
+
+      action?.command();
+      await fixture.whenStable();
+      expect(rail.compactBar()?.actions[0]?.icon).toBe('view_list');
+      expect(rail.compactBar()?.actions[0]?.label).toBe('Вид: списком');
+    });
+
     it('scrolls the review strip sideways', async () => {
       const { host } = await render(GROUPED, WORKS, 390);
 

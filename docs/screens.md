@@ -266,13 +266,17 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   dialog); the entered state travels in `AssignmentDraftHandover`. Footer: text «Сохранить
   черновик» (creates the assignment and keeps the chosen students as `draftStudentIds`, nobody is given it) and the split button «Выдать» (menu «Выдать и
   разместить на доске»).
-- **View switch** (339.2): the connected group «Списком · По ученикам» (`view_list` / `grid_view`) in
-  the header actions before the main button; kept in the address as `?view=journal`. «По ученикам»
+- **View switch** (339.2): the outlined segmented buttons «Списком · По ученикам» (`view_list` /
+  `grid_view`, a check on the chosen one; design system «Outlined variant») in the header actions
+  before the main button; on a phone one icon button of the top app bar (`grid_view` / `view_list`,
+  «Вид: по ученикам» / «Вид: списком»; the bell gives its place). Kept in the address as
+  `?view=journal`. «По ученикам»
   (`journal-view.ts`) replaces the search, the filter group and the review strip with: `‹ 27 октября
   — 2 ноября ›` (icon buttons «Предыдущая неделя» / «Следующая неделя»), the same «Кому» select
   (a phone: the chip with a menu), a legend, and the grid — the first column the students (avatar
   and name on `surface container`, sticky), a column per assignment due in the week (the title is
-  a link; «до пт 04.09»), a cell per student as a 48 dp button with an icon and a label coloured
+  a link; «до пт 04.09»), a cell per student as a 52 dp button (the student cell, the cells and the total of a row are one
+  height, the total centred, its head aligned with its values) with an icon and a label coloured
   by the role (success / warning / error containers; `surface container` for «ждём»; a dashed
   outline for «не выдано»), and «3 из 4 сдано» last. A cell: «проверить» → the work and its review
   sheet; «не выдано» → «Выдать ещё» with the student chosen; the rest → the assignment. The grid
@@ -283,11 +287,13 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   «Тест 8 из 10» tag when the assignment has a quiz, tonal «Проверить» → the work and its review
   sheet), then a dashed card «Ещё N работ ждут сдачи», and the text button «Проверить все подряд →»
   (opens the oldest work; a decision opens the next one). On a phone the cards (15 rem) scroll
-  sideways.
+  sideways without a scrollbar.
 - **Toolbar** (`tb-toolbar`): `tb-search-field` (title and student, kept in the address as `?q=`),
-  the «Кому» select (groups, then students; «Все» clears it; `?who=student:<id>|group:<id>`) and the
-  connected group «Активные · Черновики · Готовые» with counts. A phone: `tb-filter-chips` instead
-  of the group, the select stays under the search.
+  the «Кому» select (40 dp outlined, a person icon; groups, then students; «Все» clears it;
+  `?who=student:<id>|group:<id>`) and the outlined segmented buttons «Активные · Черновики · Готовые»
+  with counts (the chosen one by colour, no check). A phone: `tb-filter-chips` in one row that scrolls sideways without a scrollbar
+  (with «Кому: все ▾» as its last chip) instead of the group, 12 dp under the search. «⋮» stands at
+  the right edge of its row.
 - **Table** (`p-table` `tb-cards`; from medium): «Активные» grouped by the due date —
   «Просрочено · N» (error colour), «На этой неделе» (up to the next Monday), «Позже»,
   «Без срока» — the heading is a label above its rows; «Черновики» and «Готовые» are one run (20
