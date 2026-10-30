@@ -174,7 +174,7 @@ describe('MyHomeworkPage', () => {
     }
     answer.value = 'Готово';
     answer.dispatchEvent(new Event('input'));
-    buttonByText(host, 'Отправить на проверку').click();
+    buttonByText(host, 'Сдать').click();
     backend.expectOne('/api/me/homework/tasks/t-1/submissions').flush(taskDetails());
     backend.expectOne('/api/me/homework').flush([myTask({ taskId: 't-1', status: 'SUBMITTED' })]);
     await fixture.whenStable();
@@ -314,13 +314,13 @@ describe('MyTaskPage', () => {
       taskDetails({ status: 'ASSIGNED', submissions: [] }),
     );
     expect(readableText(host)).toContain('Сдать до 10.09.2026');
-    expect(readableText(host)).toContain('Ваш ответ');
+    expect(readableText(host)).toContain('Мой ответ');
     expect(host.querySelector('.tb-markdown strong')?.textContent).toBe('№1-5');
 
     fixture.componentInstance.text.setValue('  Готово ');
     fixture.componentInstance.files.set([new File(['x'], 'фото.jpg')]);
     await fixture.whenStable();
-    buttonByText(host, 'Отправить на проверку').click();
+    buttonByText(host, 'Сдать').click();
 
     const request = backend.expectOne('/api/me/homework/tasks/t-1/submissions');
     const body: unknown = request.request.body;
@@ -331,8 +331,58 @@ describe('MyTaskPage', () => {
 
     expect(fixture.componentInstance.text.value).toBe('');
     expect(fixture.componentInstance.files()).toEqual([]);
-    expect(readableText(host)).toContain('Новый ответ');
     expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
+  });
+
+  it('keeps the text of an unsent answer and restores it, then forgets it after «Сдать»', async () => {
+    localStorage.clear();
+    const first = await render(taskDetails({ status: 'ASSIGNED', submissions: [] }));
+    first.fixture.componentInstance.text.setValue('черновик');
+    await first.fixture.whenStable();
+    expect(readableText(first.host)).toContain('черновик сохранён');
+    expect(localStorage.getItem('tb.homework.draft.t-1')).toBe('черновик');
+    first.fixture.destroy();
+    TestBed.resetTestingModule();
+
+    const { fixture, host, backend } = await render(
+      taskDetails({ status: 'ASSIGNED', submissions: [] }),
+    );
+    expect(fixture.componentInstance.text.value).toBe('черновик');
+    buttonByText(host, 'Сдать').click();
+    backend.expectOne('/api/me/homework/tasks/t-1/submissions').flush(taskDetails());
+    await fixture.whenStable();
+    expect(localStorage.getItem('tb.homework.draft.t-1')).toBeNull();
+    expect(readableText(host)).not.toContain('черновик сохранён');
+  });
+
+  it('drops the draft when the text is cleared and does not restore it into accepted work', async () => {
+    localStorage.setItem('tb.homework.draft.t-1', 'старое');
+    const accepted = await render(taskDetails({ status: 'ACCEPTED', grade: '5' }));
+    expect(accepted.fixture.componentInstance.text.value).toBe('');
+    accepted.fixture.destroy();
+    TestBed.resetTestingModule();
+
+    const { fixture } = await render(taskDetails({ status: 'ASSIGNED', submissions: [] }));
+    fixture.componentInstance.text.setValue('  ');
+    expect(localStorage.getItem('tb.homework.draft.t-1')).toBeNull();
+  });
+
+  it('docks the answer at the bottom on a phone only', async () => {
+    const wide = await render(taskDetails({ status: 'ASSIGNED', submissions: [] }));
+    expect(wide.host.querySelector('.tb-task__answer--docked')).toBeNull();
+    expect(wide.host.querySelector('.tb-task__side')).not.toBeNull();
+    wide.fixture.destroy();
+    TestBed.resetTestingModule();
+
+    TestBed.configureTestingModule({ providers: testProviders(screenWidth(400)) });
+    const fixture = TestBed.createComponent(MyTaskPage);
+    fixture.componentRef.setInput('taskId', 't-1');
+    await fixture.whenStable();
+    TestBed.inject(HttpTestingController)
+      .expectOne('/api/me/homework/tasks/t-1')
+      .flush(taskDetails({ status: 'ASSIGNED', submissions: [] }));
+    await fixture.whenStable();
+    expect(hostElement(fixture).querySelector('.tb-task__answer--docked')).not.toBeNull();
   });
 
   it('requires text or files', async () => {
@@ -340,7 +390,7 @@ describe('MyTaskPage', () => {
       taskDetails({ status: 'ASSIGNED', submissions: [] }),
     );
 
-    buttonByText(host, 'Отправить на проверку').click();
+    buttonByText(host, 'Сдать').click();
     await fixture.whenStable();
 
     expect(readableText(host)).toContain('Напишите ответ или прикрепите файл');
@@ -371,7 +421,7 @@ describe('MyTaskPage', () => {
     );
 
     expect(readableText(host)).toContain('Нужно доработать Исправь №3');
-    expect(readableText(host)).toContain('Новый ответ');
+    expect(host.querySelector('#answer-text')).not.toBeNull();
   });
 
   it('hides the form for accepted tasks and downloads files', async () => {
@@ -386,7 +436,8 @@ describe('MyTaskPage', () => {
 
     expect(readableText(host)).toContain('Работа принята Отлично');
     expect(readableText(host)).toContain('Без срока');
-    expect(host.textContent).not.toContain('Отправить на проверку');
+    expect(host.querySelector('section[aria-label="Мой ответ"]')).toBeNull();
+    expect(host.querySelector('#answer-text')).toBeNull();
 
     buttonByText(host, 'условие.pdf').click();
     backend.expectOne('/api/me/homework/attachments/f-1').flush(new Blob(['pdf']));

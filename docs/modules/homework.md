@@ -141,6 +141,12 @@ interaction); autosave on change and blur; «Сдать тест» asks for conf
 («Тест: N из M», wrong answers first, «Засчитать» / «Не засчитывать») on the review page and the per-question mistakes
 on the assignment page. E2E: `e2e/tests/homework/quiz.spec.ts`.
 
+Student answer draft (342.2): the backend stores no draft of a submission (the `Draft` types are the teacher's
+assignment drafts), so the text of an unsent answer lives in `localStorage` as `tb.homework.draft.<taskId>` (a task
+is one student + one assignment), written on every change, cleared on «Сдать», on an empty text and never restored
+into accepted work. Files are not kept: a server draft would need a new table and endpoints for a small gain.
+Voice answers are not done (Backlog in `PLAN.md`).
+
 `features/homework/`: `teacher/` (assignments list pane, assignment page, editor), `student/` (my tasks, task
 page), `ui/`, `home/` widgets, `homework-labels.ts`. Textbooks: `ui/textbook-list.ts` (kind icon, title,
 «Учебник · course · с. 12-14» / «целиком»; the teacher's pencil and cross, the student's tap opens the pages in a new tab,

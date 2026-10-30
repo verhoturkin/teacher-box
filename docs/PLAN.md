@@ -80,11 +80,10 @@ full editor, AI draft, phone, student) — https://claude.ai/artifact/X2SdNjSvCb
 - [x] **342.1 F** `my-homework-page.ts`: groups «Вернули на доработку» (with the teacher's
   comment), «Сделать» (with «остался N дн.»), «Сдано» («На проверке», «Принято» + grade); compact
   starts with an «Ближайшее» card.
-- [ ] **342.2 B/F** `my-task-page.ts`: «Мой ответ» right under the task — text, «Фото тетради»,
+- [x] **342.2 B/F** `my-task-page.ts`: «Мой ответ» right under the task — text, «Фото тетради»,
   «Файл», «Записать голос», «Сдать»; materials and the quiz card beside it (below on compact,
   where the answer panel is docked at the bottom). The answer draft survives leaving the page
-  (decide: server draft or local storage). Voice recording — if attachments cannot take audio
-  from the browser yet, move it to Backlog.
+  (`localStorage`, see `docs/modules/homework.md`). Voice recording is not done (Backlog).
 
 ### 343. Release
 
@@ -96,6 +95,10 @@ full editor, AI draft, phone, student) — https://claude.ai/artifact/X2SdNjSvCb
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,
 self-booking, calls, spaced repetition) — [`roadmap/`](roadmap/README.md); move one here as a
 release when the teacher picks it.
+
+Voice answers («Записать голос»): `MediaRecorder` in the answer panel of `my-task-page.ts` would upload
+a record as an attachment. Missing: the browser records `audio/webm` and `FilePolicy` accepts no `webm` (a one-line
+addition, plus `ACCEPTED_FILES`); decided against for now.
 
 Colours of students and groups after 0.20.0: rows without an avatar (the student table of the
 monthly report, homework and board lists by name) and the options of student / group selects.

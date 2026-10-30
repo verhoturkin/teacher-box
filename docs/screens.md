@@ -467,8 +467,11 @@ asks «Отменить изменения?» before another category or page op
   («На проверке» / «Принято» + grade), each hidden when empty; rows (icon of the group, title
   link, second line, material icons with counts as in the teacher's list, status tag); on compact a tonal «Ближайшее» card (*ours*: the oldest
   returned task, else the nearest deadline) with «Открыть» leads the list; the detail — the task
-  with the teacher's feedback and the answer form. A task with questions has a «Тест» section above the
-  answer form (`quiz-section.ts`): «Начать тест», on wide all questions as cards, on compact one per screen with
+  text, «Мой ответ» right under it (text, «Фото тетради» with the camera, «Файл», attachment rows with «Убрать», filled
+  «Сдать»; the unsent text is kept on the device, «черновик сохранён») and, beside it on wide / below on compact,
+  the materials and the test; on compact the answer panel is docked at the bottom. A returned work shows the
+  teacher's comment above; an accepted one has no answer panel. A task with questions has a «Тест» section
+  (`quiz-section.ts`): «Начать тест», on wide all questions as cards, on compact one per screen with
   «Назад / Далее / Проверить и сдать»; matching is a select per left part, ordering has up/down buttons; answers
   save themselves; «Сдать тест» asks first. After a submit: «Лучший результат: N из M», attempts left, «Пройти
   ещё раз», and the key with the explanations when the rule allows.

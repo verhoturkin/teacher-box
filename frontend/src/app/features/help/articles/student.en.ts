@@ -114,8 +114,10 @@ Attached textbooks appear under “Textbooks”, with the relevant page numbers.
 ## Submit your work
 
 1. Open the assignment.
-2. Write your response and attach any files, such as photos or documents. The portal checks the file type and size when you select them.
-3. Choose “Submit for review”.
+2. Write your response in “My answer”, right under the task. “Photo of your notebook” (it opens the camera on a phone) and “File” attach photos and documents; use “Remove” to take one off. The portal checks the file type and size when you select them.
+3. Choose “Hand in”.
+
+Text you have typed but not handed in is kept on this device, so you can leave the page and come back to it (the note says “draft saved”). Files are not kept in the draft; attach them again. On a phone “My answer” stays at the bottom of the screen, with the materials and the test below the task.
 
 Your teacher can accept the submission, add a grade and feedback, or return it for revision. If revisions are requested, make the changes and submit again.
 
@@ -127,7 +129,7 @@ On a phone, use “Back” and “Next” to move between questions. Answers are
 
 Your score appears immediately. Depending on your teacher’s settings, correct answers and explanations appear immediately, after the due date, or are not shown. If more attempts are allowed, choose “Try again”. Your best score counts.
 
-When you are ready, choose “Submit for review” so your teacher can review your work and quiz result.
+When you are ready, choose “Hand in” so your teacher can review your work and quiz result.
 
 ## Work on a board
 

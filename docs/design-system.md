@@ -414,6 +414,10 @@ for the active navigation item and checked states.
 - **Hero** `tb-hero` — the filled primary-container card of the nearest lesson, the portal's one
   hero moment (*ours*); it carries only on-primary-container (links underlined). Layout:
   [`screens.md`](screens.md#nearest-lesson-hero).
+- **Answer panel** (student task, *ours*, M3 allows a docked surface for the page's main input): an
+  outlined container (corner 16, outline-variant, `--tb-card`), «Мой ответ» title, a text field, the
+  attachment rows, assist chips «Фото тетради» / «Файл» and the filled «Сдать» at the end. On compact it is
+  `position: sticky` at the bottom of the pane (`--p-md-surface-container`), the field shrinks to two rows.
 - **Forms on a page** — buttons in `tb-form-actions` bottom right, full width on a phone; a form
   keeps a readable width (`tb-form--narrow`) unless it is a review or editor form.
 - **Toolbar above a list** `tb-toolbar`: search first, filters and period after; it wraps.

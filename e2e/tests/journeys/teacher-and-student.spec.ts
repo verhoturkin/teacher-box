@@ -125,7 +125,7 @@ test('the teacher gives homework and the student hands it in', async ({ page, br
     .click();
   await student.getByRole('link', { name: HOMEWORK_TITLE }).click();
   await student.locator('#answer-text').fill('1/2 + 1/3 = 5/6');
-  await student.getByRole('button', { name: 'Отправить на проверку' }).click();
+  await student.getByRole('button', { name: 'Сдать', exact: true }).click();
   await expect(student.getByText('1/2 + 1/3 = 5/6')).toBeVisible();
 
   await page.reload();
