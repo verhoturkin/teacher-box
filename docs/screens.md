@@ -312,7 +312,10 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
 - **Assignment page** (341.1, `assignment-page.ts`): the header has «back», the title, the subtitle
   «<N учеников> · до <date>», the outlined «Изменить» (the editor), the filled «Проверить N работ»
   (hidden at N = 0; opens the first handed-in work in the review sheet, whose «Дальше» goes on) and
-  «⋮» («Создать копию», «На доску», «Открыть доску», «Удалить…»). Two columns from a wide window:
+  «⋮» («Создать копию», «На доску», «Открыть доску», «Удалить…»). The students (flex 999 1 560px) and
+  the aside (1 1 340px, up to 420px) sit side by side and wrap when the students would get narrower
+  than 560px; the tiles are exactly two columns, one column when the students' column is under 36rem
+  (container query, not the window width):
   - **Ученики** — the label, the tags «Принято N» / «Проверить N» / «На доработке N» (nonzero only),
     the text button «Выдать ещё» (`assign-more-dialog.ts`) and the tiles in two columns (*ours*:
     `surface container`, 20 dp corners): avatar, name, the status line («Сдано сегодня, 09:12» /

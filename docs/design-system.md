@@ -121,6 +121,7 @@ used icon classes disagree. E2E runs axe on the main screens and checks button r
   an empty cell has no fill and a dashed `outline variant` (*ours*, M3 has no status grid).
 
 - **Messages and badges:** `p-message` — role container, no border or shadow, Body Medium.
+  Tags of one object (status + «Просрочено») go in a wrapping row, never a column (*ours*).
   `p-badge` — error by default, `warn`, calm counter `secondary`; a badge on an icon has no outline
   and sits inside the 40 px button, its start at the icon's middle, 4 px from the top (**M3**). The
   **M3** large badge (`tb-nav-badge`: error / on-error, 16 dp pill, «999+» at most) counts things to

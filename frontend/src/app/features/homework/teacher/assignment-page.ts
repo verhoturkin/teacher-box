@@ -337,18 +337,18 @@ const FOLD_LINES = 3;
       text-transform: uppercase;
     }
 
-    /* the students and the aside side by side; one column when the window is narrow (compact: tabs) */
+    /* the students and the aside side by side; the aside wraps under the students when they would be narrower than 560px (as the sketch) */
     .tb-asg {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+      display: flex;
+      flex-wrap: wrap;
       gap: var(--tb-space-5);
-      align-items: start;
+      align-items: flex-start;
     }
 
-    @media (max-width: 62rem) {
-      .tb-asg {
-        grid-template-columns: minmax(0, 1fr);
-      }
+    .tb-asg__main {
+      flex: 999 1 560px;
+      min-width: 0;
+      container-type: inline-size;
     }
 
     .tb-asg__head {
@@ -369,11 +369,18 @@ const FOLD_LINES = 3;
 
     .tb-asg__tiles {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: var(--tb-space-3);
       margin: 0;
       padding: 0;
       list-style: none;
+    }
+
+    /* two tiles do not fit below 36rem of the students' column: one column */
+    @container (width < 36rem) {
+      .tb-asg__tiles {
+        grid-template-columns: minmax(0, 1fr);
+      }
     }
 
     /* a student: a surface container tile (M3 filled card, 20 dp corners; our decision for the content) */
@@ -422,8 +429,10 @@ const FOLD_LINES = 3;
       -webkit-line-clamp: 3;
     }
 
+    /* a tile stretched to the row's height keeps its buttons at the bottom */
     .tb-asg-tile__foot {
       display: flex;
+      margin-block-start: auto;
       flex-wrap: wrap;
       align-items: center;
       gap: var(--tb-space-3);
@@ -438,6 +447,8 @@ const FOLD_LINES = 3;
     }
 
     .tb-asg__aside {
+      flex: 1 1 340px;
+      max-inline-size: 420px;
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-3);

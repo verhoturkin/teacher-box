@@ -23,8 +23,8 @@ import { T } from '../i18n/texts';
   styles: `
     .tb-task-tags {
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
+      flex-wrap: wrap;
+      align-items: center;
       gap: var(--tb-space-1);
     }
   `,
