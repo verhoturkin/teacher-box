@@ -17,6 +17,7 @@ import org.springframework.modulith.test.AssertablePublishedEvents;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import ru.teacherbox.homework.api.HomeworkDueSoon;
+import ru.teacherbox.homework.api.HomeworkReminderRequested;
 import ru.teacherbox.homework.api.HomeworkReviewed;
 import ru.teacherbox.homework.api.HomeworkSubmitted;
 import ru.teacherbox.homework.application.AssignmentService;
@@ -215,6 +216,39 @@ class SubmissionAndReviewIntegrationTests {
         });
         assertThat(mvc.get().uri(url).with(TestUsers.student(other))).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(mvc.get().uri(url).with(TestUsers.student(student))).hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void theTeacherRemindsAStudentOncePerHour(AssertablePublishedEvents events) {
+        UUID student = directory.addStudent("Должник");
+        UUID done = directory.addStudent("Сдавший");
+        AssignmentDetails assignment = assignment("Напомнить", student);
+        assignments.assign(assignment.id(), List.of(done));
+        submit(done, assignments.get(assignment.id()).tasks().stream()
+                .filter(task -> task.studentId().equals(done)).findFirst().orElseThrow().taskId().toString(), "готово");
+        String url = "/api/teacher/homework/assignments/" + assignment.id() + "/students/";
+
+        assertThat(mvc.post().uri(url + student + "/remind").with(TestUsers.student(student)))
+                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.post().uri(url + student + "/remind").with(TestUsers.admin(UUID.randomUUID())))
+                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.post().uri(url + student + "/remind").with(teacher())).hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(events).contains(HomeworkReminderRequested.class)
+                .matching(HomeworkReminderRequested::studentId, student)
+                .matching(HomeworkReminderRequested::title, "Напомнить");
+
+        assertThat(mvc.post().uri(url + student + "/remind").with(teacher())).hasStatus(HttpStatus.CONFLICT)
+                .bodyJson().extractingPath("$.code").isEqualTo("task.reminded-recently");
+        clock.advance(Duration.ofMinutes(61));
+        assertThat(mvc.post().uri(url + student + "/remind").with(teacher())).hasStatus(HttpStatus.NO_CONTENT);
+
+        assertThat(mvc.post().uri(url + done + "/remind").with(teacher()))
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+                .bodyJson().extractingPath("$.code").isEqualTo("task.not-remindable");
+        assertThat(mvc.post().uri(url + UUID.randomUUID() + "/remind").with(teacher()))
+                .hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(mvc.post().uri("/api/teacher/homework/assignments/" + UUID.randomUUID() + "/students/" + student
+                + "/remind").with(teacher())).hasStatus(HttpStatus.NOT_FOUND);
     }
 
     @Test

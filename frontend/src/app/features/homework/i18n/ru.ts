@@ -536,6 +536,8 @@ export const ru = {
     files: (count: number) => `${String(count)} ${plural(count, 'файл', 'файла', 'файлов')}`,
     showAll: 'Показать полностью',
     fold: 'Свернуть',
+    remind: 'Напомнить',
+    reminded: (name: string) => `Напоминание отправлено: ${name}`,
     tabs: 'Раздел',
     tabStudents: 'Ученики',
     tabTask: 'Задание',

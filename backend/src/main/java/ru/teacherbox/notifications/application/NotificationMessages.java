@@ -12,6 +12,7 @@ enum NotificationMessages {
         @Override String taskAssigned(String title) { return "Новое задание: «" + title + "»"; }
         @Override String dueAt(String when) { return "Срок сдачи: " + when; }
         @Override String dueSoon(String title) { return "Скоро срок сдачи: «" + title + "»"; }
+        @Override String reminder(String title) { return "Учитель напоминает о задании «" + title + "»"; }
         @Override String taskAccepted(String title) { return "Задание «" + title + "» принято"; }
         @Override String grade(String grade) { return "Оценка: " + grade; }
         @Override String taskReturned(String title) { return "Задание «" + title + "» возвращено на доработку"; }
@@ -51,6 +52,7 @@ enum NotificationMessages {
         @Override String taskAssigned(String title) { return "New assignment: “" + title + "”"; }
         @Override String dueAt(String when) { return "Due: " + when; }
         @Override String dueSoon(String title) { return "Due soon: “" + title + "”"; }
+        @Override String reminder(String title) { return "Your teacher reminds you about “" + title + "”"; }
         @Override String taskAccepted(String title) { return "Assignment accepted: “" + title + "”"; }
         @Override String grade(String grade) { return "Grade: " + grade; }
         @Override String taskReturned(String title) { return "Changes requested: “" + title + "”"; }
@@ -96,6 +98,8 @@ enum NotificationMessages {
     abstract String dueAt(String when);
 
     abstract String dueSoon(String title);
+
+    abstract String reminder(String title);
 
     abstract String taskAccepted(String title);
 

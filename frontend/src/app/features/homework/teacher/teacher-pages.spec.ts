@@ -820,8 +820,8 @@ describe('AssignmentPage', () => {
         /^А Анна Сдано вчера, \d\d:\d\d На проверке Ответ: 12 и 7 Тест 8 из 10 1 файл Проверить$/,
       );
       expect(tiles[1]).toBe('В Вера Принято вчера · оценка 4 Принято Хорошо Открыть');
-      expect(tiles[2]).toBe('Г Гена Отправлено на доработку 03.09 На доработке Открыть');
-      expect(tiles[3]).toBe('Б Борис Не сдано Выдано Просрочено Открыть');
+      expect(tiles[2]).toBe('Г Гена Отправлено на доработку 03.09 На доработке Напомнить Открыть');
+      expect(tiles[3]).toBe('Б Борис Не сдано Выдано Просрочено Напомнить Открыть');
       fixture.destroy();
     });
 
@@ -860,6 +860,32 @@ describe('AssignmentPage', () => {
       expect(review?.getAttribute('aria-label')).toBe('Проверить: Анна');
       expect(open?.getAttribute('aria-label')).toBe('Открыть: Борис');
       expect(host.querySelector('.tb-asg-tile__preview')?.textContent).toBe('Ответ: 12 и 7');
+      fixture.destroy();
+    });
+
+    it('remind a student who has not handed in, once at a time', async () => {
+      const { host, fixture, backend } = await render();
+      expect(host.querySelector('button[aria-label="Напомнить: Анна"]')).toBeNull();
+
+      const button = requireElement(
+        host,
+        'button[aria-label="Напомнить: Борис"]',
+        HTMLButtonElement,
+      );
+      button.click();
+      button.click();
+      await fixture.whenStable();
+      backend
+        .expectOne({
+          method: 'POST',
+          url: '/api/teacher/homework/assignments/a-1/students/s-2/remind',
+        })
+        .flush(null, { status: 204, statusText: 'No Content' });
+      await fixture.whenStable();
+
+      expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
+        expect.objectContaining({ detail: 'Напоминание отправлено: Борис' }),
+      );
       fixture.destroy();
     });
 

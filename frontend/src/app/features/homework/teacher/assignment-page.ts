@@ -23,6 +23,7 @@ import { Placed, ToBoardDialog } from '@features/boards/parts';
 import { injectMobile } from '@core/layout/mobile';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
+import { Busy } from '@shared/ui/busy';
 import { Segment, SegmentGroup } from '@shared/ui/segment-group';
 import { HomeworkApi } from '../data-access/homework-api';
 import { assignmentBoard } from './assignment-board';
@@ -191,6 +192,15 @@ const FOLD_LINES = 3;
                         >
                       }
                       <span class="tb-asg__spacer"></span>
+                      @if (task.status === 'ASSIGNED' || task.status === 'RETURNED') {
+                        <p-button
+                          severity="secondary"
+                          [label]="t.remind"
+                          [ariaLabel]="t.action(t.remind, task.studentName)"
+                          [loading]="busy.is(task.studentId)"
+                          (onClick)="remind(task)"
+                        />
+                      }
                       <a
                         pButton
                         severity="secondary"
@@ -519,6 +529,7 @@ export class AssignmentPage {
   protected readonly materials = inject(MaterialOpener);
   protected readonly mobile = injectMobile();
   private readonly dates = new DatePipe(inject(LOCALE_ID));
+  protected readonly busy = new Busy();
 
   /** Route parameter. */
   readonly assignmentId = input.required<string>();
@@ -685,6 +696,15 @@ export class AssignmentPage {
 
   protected edit(assignment: AssignmentDetails): void {
     void this.router.navigate(['/teacher/homework', assignment.id, 'edit']);
+  }
+
+  /** «Напомнить»: the student gets a notification; a repeat within the hour is refused by the server. */
+  protected remind(task: TaskSummary): void {
+    this.busy
+      .guard(task.studentId, this.api.remindStudent(this.assignmentId(), task.studentId))
+      .subscribe(() => {
+        this.snackbar.success(this.t.reminded(task.studentName));
+      });
   }
 
   protected download(file: Attachment): void {

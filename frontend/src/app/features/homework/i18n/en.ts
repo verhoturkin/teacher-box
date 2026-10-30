@@ -527,6 +527,8 @@ export const en: Translation<typeof ru> = {
     files: (count: number) => countOf(count, 'file', 'files', 'files'),
     showAll: 'Show all',
     fold: 'Show less',
+    remind: 'Remind',
+    reminded: (name: string) => `Reminder sent to ${name}`,
     tabs: 'Section',
     tabStudents: 'Students',
     tabTask: 'Assignment',

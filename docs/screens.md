@@ -311,8 +311,9 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
     `surface container`, 20 dp corners): avatar, name, the status line («Сдано сегодня, 09:12» /
     «Принято вчера · оценка 4» / «Отправлено на доработку 28.10» / «Не сдано»), the status tag, the
     answer preview in a `surface` box (three lines; from `TaskSummary.answerPreview`), «Тест 8 из 10»,
-    «N файлов» and a tonal «Проверить» (handed in) or «Открыть». The filled button of the page stays
-    in the header. There is no «Напомнить»: the portal has no reminder action for a student yet.
+    «N файлов», a tonal «Напомнить» (not handed in or on rework: a notification to the student, a
+    snackbar «Напоминание отправлено: <name>», the button loads meanwhile) and a tonal «Проверить»
+    (handed in) or «Открыть». The filled button of the page stays in the header.
   - **Aside** — «Задание» (the text folded to three lines with «Показать полностью» / «Свернуть»,
     videos, files and textbooks read-only: they change in the editor) and, with a quiz, «Ошибки по
     вопросам» (a row per question: the number, a bar of the share of wrong answers, «3 из 4»).

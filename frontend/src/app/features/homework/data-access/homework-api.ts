@@ -95,6 +95,14 @@ export class HomeworkApi {
     return this.http.delete(`${TEACHER}/assignments/${id}`);
   }
 
+  /** Reminds a student to hand the work in (once an hour per work: 409 `task.reminded-recently`). */
+  remindStudent(assignmentId: string, studentId: string): Observable<unknown> {
+    return this.http.post(
+      `${TEACHER}/assignments/${assignmentId}/students/${studentId}/remind`,
+      null,
+    );
+  }
+
   assignStudents(id: string, studentIds: string[]): Observable<AssignmentDetails> {
     return this.http.post<AssignmentDetails>(`${TEACHER}/assignments/${id}/students`, {
       studentIds,

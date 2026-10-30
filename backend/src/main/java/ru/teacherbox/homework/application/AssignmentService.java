@@ -1,6 +1,7 @@
 package ru.teacherbox.homework.application;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Comparator;
@@ -8,6 +9,7 @@ import java.util.Objects;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -18,6 +20,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.homework.api.HomeworkAssigned;
+import ru.teacherbox.homework.api.HomeworkReminderRequested;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentDetails;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentSummary;
 import ru.teacherbox.homework.application.HomeworkViews.AttachmentView;
@@ -45,6 +48,7 @@ import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.error.NotFoundException;
 
 /** The teacher's assignments: creating, editing, giving them to students, materials. */
@@ -69,6 +73,10 @@ public class AssignmentService {
     private final QuestionRepository questions;
     private final VideoRepository videoLinks;
     private static final int PREVIEW_LENGTH = 200;
+    private static final Duration REMIND_INTERVAL = Duration.ofHours(1);
+
+    // shortcut: kept in memory (one instance per teacher), a restart forgets it; move to a task column if abuse shows up
+    private final Map<UUID, Instant> reminded = new ConcurrentHashMap<>();
 
     private final DraftStudentRepository draftStudents;
     private final QuizAttemptRepository quizAttempts;
@@ -185,6 +193,27 @@ public class AssignmentService {
                 .collect(Collectors.toSet());
         assignTo(assignment, studentIds.stream().filter(id -> !assigned.contains(id)).toList(), clock.instant());
         return details(assignment);
+    }
+
+    /** Reminds a student of a task that is not handed in; at most once an hour per task. */
+    @Transactional
+    public void remind(UUID assignmentId, UUID studentId) {
+        Assignment assignment = load(assignmentId);
+        HomeworkTask task = tasks.findByAssignment(assignmentId).stream()
+                .filter(candidate -> candidate.studentId().equals(studentId))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("task.not-found", "Task not found"));
+        if (task.status() != TaskStatus.ASSIGNED && task.status() != TaskStatus.RETURNED) {
+            throw new BusinessRuleException("task.not-remindable", "The work is already handed in");
+        }
+        Instant now = clock.instant();
+        Instant last = reminded.get(task.id());
+        if (last != null && last.plus(REMIND_INTERVAL).isAfter(now)) {
+            throw new ConflictException("task.reminded-recently", "The student was reminded less than an hour ago");
+        }
+        reminded.put(task.id(), now);
+        events.publishEvent(new HomeworkReminderRequested(task.id(), assignment.id(), studentId, assignment.title(),
+                assignment.dueAt(), now));
     }
 
     /** Remembers whom a draft is for; they get nothing until the assignment is given out. */

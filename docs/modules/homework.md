@@ -68,7 +68,12 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
 
 ## Contract (`homework::api`)
 
-Events: `HomeworkAssigned`, `HomeworkSubmitted`, `HomeworkReviewed`, `HomeworkDueSoon` → `notifications`.
+Events: `HomeworkAssigned`, `HomeworkSubmitted`, `HomeworkReviewed`, `HomeworkDueSoon`, `HomeworkReminderRequested` → `notifications`.
+
+`POST /api/teacher/homework/assignments/{id}/students/{studentId}/remind` («Напомнить» on the assignment
+page) publishes `HomeworkReminderRequested` for a task that is `ASSIGNED` or `RETURNED`; otherwise 422
+`task.not-remindable`, an unknown task 404, a second one within an hour 409 `task.reminded-recently`
+(kept in memory: a restart forgets it). Teacher only.
 
 `AssignmentFiles.file(assignmentId, attachmentId)` (for `ai`, [ADR-0039](../adr/0039-ai-reads-homework-sources.md)): a
 file of the assignment's materials — name, type, size, content; another assignment's file — 404 `file.not-found`.

@@ -315,6 +315,13 @@ class TeacherHomeworkController {
         return assignments.assign(assignmentId, request.studentIds());
     }
 
+    /** «Напомнить»: asks the student to hand the work in (one reminder per task an hour). */
+    @PostMapping("/assignments/{assignmentId}/students/{studentId}/remind")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void remind(@PathVariable UUID assignmentId, @PathVariable UUID studentId) {
+        assignments.remind(assignmentId, studentId);
+    }
+
     /** Whom a draft is for: kept for «Выдать» later, nobody sees it until then. */
     @PutMapping("/assignments/{assignmentId}/draft-students")
     AssignmentDetails saveDraftStudents(@PathVariable UUID assignmentId,
