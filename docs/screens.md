@@ -257,7 +257,8 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   dialog from medium, full screen on a phone with «Выдать» in the top bar): header icon buttons
   «Открыть во весь экран» and «Закрыть»; «Кому» — input chips (a group with its member count, a student with an avatar, «×») and the dashed assist chip «Ученик или группа» that opens the panel of `tb-member-picker [bare]`; «Задание» — one Markdown
   field (first line = title, `titleOf`) with a toolbar «Жирный · Список · Ссылка» and «Написать с
-  ИИ» (only when AI is on) that opens `tb-homework-ai-panel` in a side drawer; «Срок» —
+  ИИ» (only when AI is on, a tertiary toggle with `aria-pressed`) that opens the AI pane inside the same
+  dialog (see «AI pane» below); «Срок» —
   `tb-filter-chips` «К следующему занятию · <date>» (hidden without a lesson of the chosen
   students), «Через неделю», «Без срока», «Дата…» (date picker); «Материалы» appear only once
   added (textbooks, videos; each section only once its own chip was used) and are filled by assist
@@ -269,6 +270,21 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   dialog); the entered state travels in `AssignmentDraftHandover`. Footer: text «Сохранить
   черновик» (creates the assignment and keeps the chosen students as `draftStudentIds`, nobody is given it) and the split button «Выдать» (menu «Выдать и
   разместить на доске»).
+- **AI pane of the quick dialog** (sketch `AiDraft`; `tb-homework-ai-panel [pane]`, the logic and state
+  are the editor panel's): from the large breakpoint (≥ 1200 dp) the dialog widens to `split` (77.5 rem
+  ≈ 1240 px) and shows the pane beside the form — form `flex 1 1 35rem`, pane `flex 1 1 26rem` (max
+  32.5 rem), `surface-container-low`, 1 dp `outline-variant` divider, 24 dp padding, bleeding to the
+  dialog's edge. «×» «Закрыть помощника» or the toggle shrinks the dialog back to 47.5 rem. Below
+  the large breakpoint (and on a phone) the pane replaces the form with an arrow «Назад к заданию».
+  Top to bottom: the `auto_awesome` header; segmented «Текст задания · Вопросы теста»; «Что нужно»
+  (a field, assist chips «Упражнения по теме · Эссе · По тексту учебника · Мои запросы» — the last opens
+  the prompt library); «ИИ учтёт» (the textbooks bound in the dialog and the picked PDFs and photos,
+  each a checkable row, and the dashed «Источник» chip that opens «Учебник»; there is no group-level
+  source, the backend takes none); the «Черновик ИИ» card (tertiary-container badge, «вариант N из M»
+  with ‹ ›, tonal «Вставить в задание», text «Ещё вариант»); the footer hint «Текст меняется только
+  по кнопке «Вставить»» and the tertiary «Сгенерировать». «Вопросы теста» drafts questions; «Добавить
+  в тест» puts them in `AssignmentDraftHandover.questions` and opens the full editor with the test
+  (the dialog cannot hold questions).
 - **View switch** (339.2): the outlined segmented buttons «Списком · По ученикам» (`view_list` /
   `grid_view`, a check on the chosen one; design system «Outlined variant») in the header actions
   before the main button; on a phone one icon button of the top app bar of the list page only

@@ -328,6 +328,8 @@ export const en: Translation<typeof ru> = {
     list: 'List',
     link: 'Link',
     ai: 'Write with AI',
+    backToForm: 'Back to the assignment',
+    closeAi: 'Close the assistant',
     aiShort: 'AI',
     due: 'Due',
     nextLesson: (date: string) => `By the next lesson · ${date}`,

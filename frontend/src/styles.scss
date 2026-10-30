@@ -3245,6 +3245,55 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
     width: min(47.5rem, calc(100vw - 2rem));
   }
 
+  /*
+   * ours, sketch AiDraft: the pane is a column of the whole dialog height; the headline and the buttons
+   * belong to the form column. The content wrappers dissolve so the form and the pane are grid items.
+   */
+  &.tb-d--split {
+    /* PrimeNG shows the dialog with an inline `display: flex` */
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(26rem, 32.5rem);
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    width: min(77.5rem, calc(100vw - 2rem));
+    overflow: hidden;
+
+    .p-dialog-header,
+    .p-dialog-footer,
+    .tb-d__error {
+      grid-column: 1;
+    }
+
+    .p-dialog-header {
+      grid-row: 1;
+    }
+
+    .tb-d__error {
+      grid-row: 2;
+    }
+
+    .p-dialog-footer {
+      grid-row: 4;
+    }
+
+    .p-dialog-content,
+    .tb-d__content,
+    .tb-create-split {
+      display: contents;
+    }
+
+    .tb-create {
+      grid-column: 1;
+      grid-row: 3;
+      overflow: auto;
+      padding-inline: var(--tb-space-6);
+    }
+
+    .tb-create-ai {
+      grid-column: 2;
+      grid-row: 1 / -1;
+    }
+  }
+
   .p-dialog-header {
     align-items: center;
   }

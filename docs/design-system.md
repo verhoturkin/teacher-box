@@ -654,8 +654,18 @@ changes the container; content and markup are the same at every width. Every dia
   body → actions, 8 dp between buttons, surface-container-high, scrim; buttons at the trailing edge,
   the confirming one closest to it; with scrolling content the headline and buttons stay pinned.
   *Ours:* `normal` 32 rem, `wide` 40 rem (= 560 dp), `xwide` 47.5 rem (a form with a text editor,
-  «Новое задание»), `alert` 32 rem (a confirmation ≤ 35 rem);
-  never closer than 1 rem to the screen edge.
+  «Новое задание»), `split` 77.5 rem (a form with a pane beside it, «Новое задание» with the AI
+  pane), `alert` 32 rem (a confirmation ≤ 35 rem); never closer than 1 rem to the screen edge.
+  **Side pane** (*ours*, sketch `AiDraft`): `surface-container-low`, a 1 dp `outline-variant` divider,
+  24 dp padding, bleeding to the dialog's edge; below the large breakpoint it replaces the content
+  with an arrow back. **AI actions** («Написать с ИИ», «Сгенерировать», the «Черновик ИИ» badge) take
+  the tertiary roles (M3: tertiary is for a contrasting accent): the filled ones are
+  `on-tertiary-container` with `tertiary-container` text (the sketch's `#390035` on `#FFD7F3`; the
+  theme has no `on-tertiary`, and `tertiary` itself is tuned as a text colour), the badge and the
+  unpressed toggle `tertiary-container`. One filled primary action per
+  surface still holds: in the dialog it is «Выдать», so the draft's «Вставить в задание» is tonal
+  and «Ещё вариант» a text button; tertiary «Сгенерировать» is the pane's own action, not a second
+  primary one.
 - **Full-screen dialog** (`form` on compact only, **M3**): 56 dp header, 24 dp sides, 8 dp between
   elements; «✕» first and the only navigation, the headline (one line, truncated), the confirming
   button at the end with a clear verb («Создать», «Отправить», not «Готово»), never disabled for

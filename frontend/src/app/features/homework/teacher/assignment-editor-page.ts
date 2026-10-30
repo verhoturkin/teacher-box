@@ -359,6 +359,8 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
               </div>
             </ng-template>
             <tb-homework-ai-panel
+              [pane]="true"
+              (sourceAdd)="bindTextbook()"
               [title]="titleValue()"
               [hasText]="textValue().trim() !== ''"
               [sources]="sourceOptions()"
@@ -382,6 +384,8 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
           [style]="{ width: 'min(100vw, 25rem)' }"
         >
           <tb-homework-ai-panel
+            [pane]="true"
+            (sourceAdd)="bindTextbook()"
             [title]="titleValue()"
             [hasText]="textValue().trim() !== ''"
             [sources]="sourceOptions()"
@@ -766,6 +770,10 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     this.pickedTextbooks.set(draft.textbooks);
     this.videos.set(draft.videos);
     this.videosChanged.set(draft.videos.length > 0);
+    if (draft.questions !== undefined) {
+      this.applyQuestions({ questions: draft.questions, mode: 'append' });
+      this.quizOpen.set(true);
+    }
     this.form.markAsDirty();
   }
 

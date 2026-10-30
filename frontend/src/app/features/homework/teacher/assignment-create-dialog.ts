@@ -17,13 +17,19 @@ import { Router } from '@angular/router';
 import { Observable, catchError, concat, last, map, of, switchMap, toArray } from 'rxjs';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
-import { Drawer } from 'primeng/drawer';
 import { Menu } from 'primeng/menu';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
 import { injectWindowSize } from '@core/layout/mobile';
 import { Snackbar } from '@core/snackbar/snackbar';
-import { AiApi, AppliedDraft, HomeworkAiPanel, HomeworkAiState } from '@features/ai/parts';
+import {
+  AiApi,
+  AppliedDraft,
+  AppliedQuestions,
+  HomeworkAiPanel,
+  HomeworkAiState,
+  SourceOption,
+} from '@features/ai/parts';
 import { Placed, ToBoardDialog } from '@features/boards/parts';
 import {
   IdentityApi,
@@ -35,7 +41,6 @@ import { ScheduleApi, ScheduledLesson } from '@features/schedule/parts';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { SHARED_T } from '@shared/i18n/texts';
 import { TbDialog, DialogFooter, DialogHeaderActions } from '@shared/ui/dialog/dialog';
-import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails, BoundTextbook } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
@@ -48,6 +53,8 @@ import { assignmentBoard } from './assignment-board';
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { NEXT_LESSON_DAYS, nextLessonStart } from './next-lesson';
 import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from './video-section';
+
+const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
 
 /**
  * «Новое задание» over the list: who gets it, one Markdown text whose first line is the title, the due date
@@ -63,10 +70,8 @@ import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from '.
     DialogFooter,
     DialogHeaderActions,
     Button,
-    Drawer,
     Menu,
     Textarea,
-    ModalDrawer,
     DueChips,
     MaterialChips,
     RecipientsField,
@@ -82,7 +87,7 @@ import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from '.
     <tb-dialog
       #dialog
       kind="form"
-      width="xwide"
+      [width]="aiBeside() ? 'split' : 'xwide'"
       [(visible)]="visible"
       [headline]="t.title"
       [confirmLabel]="t.assign"
@@ -112,92 +117,138 @@ import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from '.
         }
       </ng-template>
 
-      <div class="tb-create">
-        <tb-recipients-field
-          inputId="create-whom"
-          [control]="members"
-          [students]="studentOptions()"
-          [groups]="groups()"
-        />
+      <div class="tb-create-split" [class.tb-create-split--ai]="aiBeside()">
+        @if (!aiOnly()) {
+          <div class="tb-create">
+            <tb-recipients-field
+              inputId="create-whom"
+              [control]="members"
+              [students]="studentOptions()"
+              [groups]="groups()"
+            />
 
-        <div class="tb-field">
-          <label for="create-text">{{ t.task }}</label>
-          <div class="tb-create__area">
-            <textarea
-              pTextarea
-              id="create-text"
-              #field
-              class="tb-create__text"
-              [formControl]="text"
-              [autoResize]="true"
-              rows="3"
-            ></textarea>
-            <div class="tb-create__tools">
-              <p-button
-                icon="tb-i tb-i-format_bold"
-                severity="secondary"
-                [text]="true"
-                [rounded]="true"
-                [ariaLabel]="t.bold"
-                (onClick)="format('**', '**')"
-              />
-              <p-button
-                icon="tb-i tb-i-format_list_bulleted"
-                severity="secondary"
-                [text]="true"
-                [rounded]="true"
-                [ariaLabel]="t.list"
-                (onClick)="format('- ', '')"
-              />
-              <p-button
-                icon="tb-i tb-i-link"
-                severity="secondary"
-                [text]="true"
-                [rounded]="true"
-                [ariaLabel]="t.link"
-                (onClick)="format('[', '](https://)')"
-              />
-              <span class="tb-create__grow"></span>
-              @if (aiEnabled()) {
+            <div class="tb-field tb-create__task">
+              <label for="create-text">{{ t.task }}</label>
+              <div class="tb-create__area">
+                <textarea
+                  pTextarea
+                  id="create-text"
+                  #field
+                  class="tb-create__text"
+                  [formControl]="text"
+                  [autoResize]="true"
+                  rows="3"
+                ></textarea>
+                <div class="tb-create__tools">
+                  <p-button
+                    icon="tb-i tb-i-format_bold"
+                    severity="secondary"
+                    [text]="true"
+                    [rounded]="true"
+                    [ariaLabel]="t.bold"
+                    (onClick)="format('**', '**')"
+                  />
+                  <p-button
+                    icon="tb-i tb-i-format_list_bulleted"
+                    severity="secondary"
+                    [text]="true"
+                    [rounded]="true"
+                    [ariaLabel]="t.list"
+                    (onClick)="format('- ', '')"
+                  />
+                  <p-button
+                    icon="tb-i tb-i-link"
+                    severity="secondary"
+                    [text]="true"
+                    [rounded]="true"
+                    [ariaLabel]="t.link"
+                    (onClick)="format('[', '](https://)')"
+                  />
+                  <span class="tb-create__grow"></span>
+                  @if (aiEnabled()) {
+                    <button
+                      type="button"
+                      class="tb-create__ai"
+                      [attr.aria-pressed]="aiOpen()"
+                      (click)="aiOpen.set(!aiOpen())"
+                    >
+                      <i class="tb-i tb-i-auto_awesome" aria-hidden="true"></i
+                      >{{ compact() ? t.aiShort : t.ai }}
+                    </button>
+                  }
+                </div>
+              </div>
+              <small class="tb-hint">{{ t.firstLine }}</small>
+            </div>
+
+            <tb-due-chips [lesson]="nextLesson()" [(choice)]="dueChoice" [(date)]="picked" />
+
+            @if (hasMaterials()) {
+              <section class="tb-create__materials" [attr.aria-label]="t.materials">
+                <h3 class="tb-subtitle">{{ t.materials }}</h3>
+                <tb-textbook-list
+                  [textbooks]="textbooks()"
+                  [editable]="true"
+                  (edit)="editTextbook($event)"
+                  (remove)="removeTextbook($event)"
+                />
+                @if (videos().length > 0) {
+                  <tb-video-section [(videos)]="videos" />
+                }
+              </section>
+            }
+            <tb-material-chips
+              [(files)]="files"
+              [compact]="compact()"
+              [videosFull]="videos().length >= maxVideos"
+              [(board)]="pickedBoard"
+              (textbook)="addTextbook()"
+              (video)="addVideo()"
+              (quiz)="openFullscreen()"
+            />
+          </div>
+        }
+        @if (aiOpen()) {
+          <aside
+            class="tb-create-ai"
+            [class.tb-create-ai--only]="aiOnly()"
+            [attr.aria-label]="t.ai"
+          >
+            <header class="tb-create-ai__head">
+              @if (aiOnly()) {
                 <p-button
-                  [label]="compact() ? t.aiShort : t.ai"
-                  icon="tb-i tb-i-auto_awesome"
+                  icon="tb-i tb-i-arrow_back"
                   severity="secondary"
-                  [ariaLabel]="t.ai"
-                  [ariaExpanded]="aiOpen()"
-                  (onClick)="aiOpen.set(!aiOpen())"
+                  [text]="true"
+                  [rounded]="true"
+                  [ariaLabel]="t.backToForm"
+                  (onClick)="aiOpen.set(false)"
                 />
               }
-            </div>
-          </div>
-          <small class="tb-hint">{{ t.firstLine }}</small>
-        </div>
-
-        <tb-due-chips [lesson]="nextLesson()" [(choice)]="dueChoice" [(date)]="picked" />
-
-        @if (hasMaterials()) {
-          <section class="tb-create__materials" [attr.aria-label]="t.materials">
-            <h3 class="tb-subtitle">{{ t.materials }}</h3>
-            <tb-textbook-list
-              [textbooks]="textbooks()"
-              [editable]="true"
-              (edit)="editTextbook($event)"
-              (remove)="removeTextbook($event)"
+              <i class="tb-i tb-i-auto_awesome tb-create-ai__mark" aria-hidden="true"></i>
+              <h3 class="tb-create-ai__title">{{ t.ai }}</h3>
+              @if (!aiOnly()) {
+                <p-button
+                  icon="tb-i tb-i-close"
+                  severity="secondary"
+                  [text]="true"
+                  [rounded]="true"
+                  [ariaLabel]="t.closeAi"
+                  (onClick)="aiOpen.set(false)"
+                />
+              }
+            </header>
+            <tb-homework-ai-panel
+              [pane]="true"
+              [title]="titleValue()"
+              [hasText]="textValue().trim() !== ''"
+              [sources]="sourceOptions()"
+              (sourceAdd)="addTextbook()"
+              (applied)="applyDraft($event)"
+              (questionsApplied)="applyQuestions($event)"
             />
-            @if (videos().length > 0) {
-              <tb-video-section [(videos)]="videos" />
-            }
-          </section>
+          </aside>
         }
-        <tb-material-chips
-          [(files)]="files"
-          [compact]="compact()"
-          [videosFull]="videos().length >= maxVideos"
-          [(board)]="pickedBoard"
-          (textbook)="addTextbook()"
-          (video)="addVideo()"
-          (quiz)="openFullscreen()"
-        />
       </div>
 
       <ng-template tbDialogFooter>
@@ -229,25 +280,6 @@ import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from '.
         }
       </ng-template>
     </tb-dialog>
-
-    @if (aiEnabled()) {
-      <p-drawer
-        tbModalDrawer
-        [(visible)]="aiOpen"
-        [header]="t.ai"
-        position="right"
-        [blockScroll]="true"
-        [style]="{ width: 'min(100vw, 25rem)' }"
-      >
-        <tb-homework-ai-panel
-          [title]="titleValue()"
-          [hasText]="textValue().trim() !== ''"
-          [sources]="[]"
-          [quizLocked]="true"
-          (applied)="applyDraft($event)"
-        />
-      </p-drawer>
-    }
 
     @if (placing(); as saved) {
       <tb-to-board-dialog
@@ -321,6 +353,86 @@ import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from '.
       padding-top: var(--tb-space-1);
     }
 
+    /* beside the form the pane is a column of the dialog's grid (styles.scss, .tb-d--split) */
+    .tb-create-ai {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-4);
+      box-sizing: border-box;
+      padding: var(--tb-space-6);
+      overflow: auto;
+    }
+
+    /* the form column takes the pane's height: the text field grows, the chips stay under it */
+    .tb-create-split--ai > .tb-create {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-4);
+    }
+
+    .tb-create-split--ai .tb-create__task {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+    }
+
+    .tb-create-split--ai .tb-create__area {
+      flex: 1;
+      grid-template-rows: 1fr auto;
+    }
+
+    .tb-create-split--ai .tb-create__text.tb-create__text {
+      height: 100% !important;
+      max-height: none;
+    }
+
+    /* where the pane takes the form's place the dialog's own padding is enough */
+    .tb-create-ai--only {
+      padding: 0;
+      overflow: visible;
+    }
+
+    .tb-create-split--ai > .tb-create-ai {
+      border-inline-start: 1px solid var(--p-md-outline-variant);
+      background: var(--p-md-surface-container-low);
+    }
+
+    .tb-create-ai__head {
+      display: flex;
+      gap: var(--tb-space-2);
+      align-items: center;
+    }
+
+    .tb-create-ai__mark {
+      color: var(--p-md-tertiary);
+    }
+
+    .tb-create-ai__title {
+      flex: 1;
+      margin: 0;
+      font: var(--tb-type-title-m);
+    }
+
+    /* the AI action takes the tertiary role (sketch AiDraft); pressed = the pane is open */
+    .tb-create__ai {
+      display: inline-flex;
+      gap: var(--tb-space-2);
+      align-items: center;
+      block-size: 2rem;
+      padding: 0 var(--tb-space-4) 0 var(--tb-space-3);
+      border: 0;
+      border-radius: var(--tb-shape-full);
+      background: var(--p-md-on-tertiary-container);
+      color: var(--p-md-tertiary-container);
+      font: var(--tb-type-label-l);
+      cursor: pointer;
+
+      &[aria-pressed='false'] {
+        background: var(--p-md-tertiary-container);
+        color: var(--p-md-on-tertiary-container);
+      }
+    }
+
     .tb-create__grow {
       flex: 1;
     }
@@ -351,6 +463,10 @@ export class AssignmentCreateDialog {
   protected readonly compact = computed(() => this.size() === 'compact');
   protected readonly aiEnabled = toSignal(this.aiApi.enabled$, { initialValue: false });
   protected readonly aiOpen = signal(false);
+  /** Two panes fit from the large breakpoint; below it the AI pane takes the form's place. */
+  private readonly roomy = computed(() => this.size() === 'large' || this.size() === 'extra-large');
+  protected readonly aiBeside = computed(() => this.aiOpen() && this.roomy());
+  protected readonly aiOnly = computed(() => this.aiOpen() && !this.roomy());
 
   readonly members = new FormControl<MemberSelection[]>([], { nonNullable: true });
   readonly text = new FormControl('', { nonNullable: true });
@@ -389,6 +505,26 @@ export class AssignmentCreateDialog {
   protected readonly hasMaterials = computed(
     () => this.textbooks().length > 0 || this.videos().length > 0,
   );
+  /** What the AI may read: the textbooks bound in the dialog and the files and photos picked in it. */
+  protected readonly sourceOptions = computed<SourceOption[]>(() => [
+    ...this.textbooks()
+      .filter((textbook) => textbook.format !== 'DOCUMENT')
+      .map((textbook) => ({
+        key: `textbook-${textbook.textbookId}`,
+        label:
+          textbook.pages === null
+            ? textbook.title
+            : `${textbook.title}, ${T.editor.pages(textbook.pages)}`,
+        source: { type: 'TEXTBOOK' as const, id: textbook.textbookId, pages: textbook.pages },
+      })),
+    ...this.files()
+      .filter((file) => AI_READABLE.test(file.type))
+      .map((file) => ({
+        key: `picked-${file.name}-${String(file.size)}-${String(file.lastModified)}`,
+        label: file.name,
+        source: file,
+      })),
+  ]);
   protected readonly bindVisible = signal(false);
   protected readonly binding = signal<BoundTextbook | null>(null);
 
@@ -502,6 +638,11 @@ export class AssignmentCreateDialog {
     this.aiOpen.set(false);
   }
 
+  /** A test does not fit the dialog: the drafted questions go to the full editor with the rest. */
+  protected applyQuestions({ questions }: AppliedQuestions): void {
+    this.openFullscreen(questions);
+  }
+
   protected addTextbook(): void {
     this.binding.set(null);
     this.bindVisible.set(true);
@@ -530,8 +671,9 @@ export class AssignmentCreateDialog {
   }
 
   /** The full editor with everything entered so far. */
-  protected openFullscreen(): void {
+  protected openFullscreen(questions?: AppliedQuestions['questions']): void {
     this.handover.put({
+      questions,
       text: this.text.value,
       members: this.members.value,
       dueAt: this.dueAt(),

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import type { AppliedQuestions } from '@features/ai/parts';
 import { MemberSelection } from '@features/identity/parts';
 import { BoundTextbook } from '../data-access/homework.models';
 import { VideoDraft } from './video-section';
@@ -11,6 +12,8 @@ export interface NewAssignmentDraft {
   readonly files: readonly File[];
   readonly textbooks: readonly BoundTextbook[];
   readonly videos: readonly VideoDraft[];
+  /** Questions the AI drafted in the dialog: the editor opens with the test. */
+  readonly questions?: AppliedQuestions['questions'];
 }
 
 /** A one-shot hand-over from the quick dialog to the editor of a new assignment. */

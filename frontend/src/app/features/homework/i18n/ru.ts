@@ -337,6 +337,8 @@ export const ru = {
     list: 'Список',
     link: 'Ссылка',
     ai: 'Написать с ИИ',
+    backToForm: 'Назад к заданию',
+    closeAi: 'Закрыть помощника',
     aiShort: 'ИИ',
     due: 'Срок',
     nextLesson: (date: string) => `К следующему занятию · ${date}`,

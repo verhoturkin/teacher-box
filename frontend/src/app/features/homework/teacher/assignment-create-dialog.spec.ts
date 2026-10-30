@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { aiStatus } from '@testing/ai-fixtures';
 import { aBoard } from '@testing/boards-fixtures';
-import { buttonByText, readableText } from '@testing/dom';
+import { buttonByText, readableText, typeInto } from '@testing/dom';
 import { assignmentDetails } from '@testing/homework-fixtures';
 import { scheduledLesson } from '@testing/schedule-fixtures';
 import { screenWidth, testProviders } from '@testing/setup';
@@ -296,5 +296,128 @@ describe('AssignmentCreateDialog', () => {
     expect(text).toContain('Сохранить черновик');
     expect(document.body.querySelector('.tb-split')).toBeNull();
     expect(document.body.querySelector('.tb-d__head')?.textContent).toContain('Выдать');
+  });
+
+  describe('AI pane', () => {
+    const flushPrompts = async () => {
+      await fixture.whenStable();
+      for (const request of backend.match('/api/teacher/ai/prompts')) {
+        request.flush([]);
+      }
+      await fixture.whenStable();
+    };
+
+    it('opens beside the form in one dialog and closes with the toggle or ×', async () => {
+      setup();
+      await open(true);
+      const toggle = (): HTMLElement => exact('Написать с ИИ');
+      expect(toggle().getAttribute('aria-pressed')).toBe('false');
+
+      toggle().click();
+      await flushPrompts();
+      expect(toggle().getAttribute('aria-pressed')).toBe('true');
+      expect(document.body.querySelector('.tb-d--split')).not.toBeNull();
+      expect(document.body.querySelector('#create-text')).not.toBeNull();
+      expect(readableText(document.body)).toContain('Текст задания');
+      expect(readableText(document.body)).toContain('Вопросы теста');
+      expect(document.body.querySelector('p-drawer')).toBeNull();
+
+      document.body.querySelector<HTMLElement>('[aria-label="Закрыть помощника"]')?.click();
+      await fixture.whenStable();
+      expect(document.body.querySelector('.tb-create-ai')).toBeNull();
+      expect(document.body.querySelector('.tb-d--split')).toBeNull();
+
+      toggle().click();
+      await flushPrompts();
+      toggle().click();
+      await fixture.whenStable();
+      expect(document.body.querySelector('.tb-create-ai')).toBeNull();
+    });
+
+    it('takes the form’s place on a narrow screen and goes back with the arrow', async () => {
+      setup(700);
+      await open(true);
+      exact('Написать с ИИ').click();
+      await flushPrompts();
+      expect(document.body.querySelector('#create-text')).toBeNull();
+      expect(document.body.querySelector('.tb-d--split')).toBeNull();
+
+      document.body.querySelector<HTMLElement>('[aria-label="Назад к заданию"]')?.click();
+      await fixture.whenStable();
+      expect(document.body.querySelector('#create-text')).not.toBeNull();
+      expect(document.body.querySelector('.tb-create-ai')).toBeNull();
+    });
+
+    it('drafts variants, pages through them and inserts one into the text', async () => {
+      setup();
+      const dialog = await open(true);
+      exact('Написать с ИИ').click();
+      await flushPrompts();
+      const generate = (title: string): void => {
+        exact('Сгенерировать').click();
+        backend
+          .expectOne('/api/teacher/ai/homework-draft')
+          .flush({ title, description: `Текст «${title}»` });
+      };
+      dialog.text.setValue('');
+      const prompt = document.body.querySelector<HTMLTextAreaElement>('#ai-prompt');
+      if (prompt === null) {
+        throw new Error('no prompt');
+      }
+      typeInto(prompt, 'Времена');
+      generate('Первый');
+      await fixture.whenStable();
+      expect(readableText(document.body)).toContain('вариант 1 из 1');
+
+      exact('Ещё вариант').click();
+      backend
+        .expectOne('/api/teacher/ai/homework-draft')
+        .flush({ title: 'Второй', description: 'B' });
+      await fixture.whenStable();
+      expect(readableText(document.body)).toContain('вариант 2 из 2');
+
+      document.body.querySelector<HTMLElement>('[aria-label="Предыдущий вариант"]')?.click();
+      await fixture.whenStable();
+      expect(readableText(document.body)).toContain('вариант 1 из 2');
+      expect(dialog.text.value).toBe('');
+
+      exact('Вставить в задание').click();
+      await fixture.whenStable();
+      expect(dialog.text.value).toBe('Первый\n\nТекст «Первый»');
+    });
+
+    it('hands the drafted questions to the full editor', async () => {
+      setup();
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      await open(true);
+      exact('Написать с ИИ').click();
+      await flushPrompts();
+      exact('Вопросы теста').click();
+      await fixture.whenStable();
+      const prompt = document.body.querySelector<HTMLTextAreaElement>('#ai-prompt');
+      if (prompt === null) {
+        throw new Error('no prompt');
+      }
+      typeInto(prompt, 'Пять вопросов');
+      exact('Сгенерировать').click();
+      const question = {
+        id: 'q1',
+        type: 'SHORT_TEXT',
+        text: 'Вопрос',
+        points: 1,
+        explanation: null,
+        options: [],
+        correct: [],
+        accepted: ['да'],
+        value: null,
+        tolerance: null,
+        pairs: [],
+      };
+      backend.expectOne('/api/teacher/ai/quiz-draft').flush({ questions: [question] });
+      await fixture.whenStable();
+      exact('Добавить в тест').click();
+      expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new']);
+      expect(TestBed.inject(AssignmentDraftHandover).take()?.questions).toHaveLength(1);
+    });
   });
 });
