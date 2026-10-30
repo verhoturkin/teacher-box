@@ -462,8 +462,11 @@ asks «Отменить изменения?» before another category or page op
   The lesson card of a lesson that has started shows the same «Что прошли» under its facts; the
   notification «Итоги урока» links to `/cabinet/schedule?lesson=<id>` and opens that card.
 - **Homework** (`my-homework-page.ts` + `my-task-page.ts`): list-detail of one route; the list pane
-  — the connected group «Сдать · На проверке · Готовые» with counts (the first non-empty chosen),
-  the search, rows (icon, title link, «до …» red when overdue, status tag); the detail — the task
+  — groups «Вернули на доработку» (the teacher's comment under the title, error accent),
+  «Сделать» (by the deadline: «остался N дн.» / «сегодня» / «просрочено на N дн.») and «Сдано»
+  («На проверке» / «Принято» + grade), each hidden when empty; rows (icon of the group, title
+  link, second line, status tag); on compact a tonal «Ближайшее» card (*ours*: the oldest
+  returned task, else the nearest deadline) with «Открыть» leads the list; the detail — the task
   with the teacher's feedback and the answer form. A task with questions has a «Тест» section above the
   answer form (`quiz-section.ts`): «Начать тест», on wide all questions as cards, on compact one per screen with
   «Назад / Далее / Проверить и сдать»; matching is a select per left part, ordering has up/down buttons; answers

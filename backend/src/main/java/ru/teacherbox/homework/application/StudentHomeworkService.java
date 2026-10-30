@@ -71,7 +71,7 @@ public class StudentHomeworkService {
                     Assignment assignment = byId.get(task.assignmentId());
                     return new MyTask(task.id(), assignment.id(), assignment.title(), assignment.dueAt(),
                             task.status(), task.grade(), task.isOverdue(assignment.dueAt(), now), task.assignedAt(),
-                            task.reviewedAt());
+                            task.reviewedAt(), task.teacherComment());
                 })
                 .toList();
     }

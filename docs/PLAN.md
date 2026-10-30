@@ -77,7 +77,7 @@ full editor, AI draft, phone, student) — https://claude.ai/artifact/X2SdNjSvCb
 
 ### 342. Student homework
 
-- [ ] **342.1 F** `my-homework-page.ts`: groups «Вернули на доработку» (with the teacher's
+- [x] **342.1 F** `my-homework-page.ts`: groups «Вернули на доработку» (with the teacher's
   comment), «Сделать» (with «остался N дн.»), «Сдано» («На проверке», «Принято» + grade); compact
   starts with an «Ближайшее» card.
 - [ ] **342.2 B/F** `my-task-page.ts`: «Мой ответ» right under the task — text, «Фото тетради»,

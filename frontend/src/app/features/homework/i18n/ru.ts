@@ -1,4 +1,4 @@
-import { plural } from '@shared/text/plural';
+import { countOf, plural } from '@shared/text/plural';
 
 /** Texts of `homework` (ADR-0035). */
 export const ru = {
@@ -247,19 +247,18 @@ export const ru = {
     what: 'задания',
     emptyTitle: 'Заданий пока нет',
     emptyHint: 'Здесь появятся задания от учителя',
-    filters: 'Что показать',
-    todo: 'Сдать',
-    review: 'На проверке',
-    ready: 'Готовые',
-    search: 'Название задания',
-    notFoundTitle: 'Ничего не найдено',
-    notFoundHint: 'Проверьте название задания',
-    noTodoTitle: 'Сдавать нечего',
-    noTodoHint: 'Новые задания и работы на доработку появятся здесь',
-    noReviewTitle: 'Нет работ на проверке',
-    noReviewHint: 'Здесь будут работы, которые вы сдали учителю',
-    noReadyTitle: 'Готовых заданий пока нет',
-    noReadyHint: 'Сюда попадут задания, которые принял учитель',
+    nearest: 'Ближайшее',
+    open: 'Открыть',
+    groupReturned: 'Вернули на доработку',
+    groupTodo: 'Сделать',
+    groupDone: 'Сдано',
+    list: 'Задания',
+    rework: 'Доработать',
+    daysLeft: (days: number) =>
+      `остал${days % 10 === 1 && days % 100 !== 11 ? 'ся' : 'ось'} ${countOf(days, 'день', 'дня', 'дней')}`,
+    today: 'сегодня',
+    overdueBy: (days: number) => `просрочено на ${countOf(days, 'день', 'дня', 'дней')}`,
+    submitted: (date: string) => `сдано ${date}`,
     pickTitle: 'Выберите задание',
     pickHint: 'Здесь откроется задание с вашими ответами',
   },

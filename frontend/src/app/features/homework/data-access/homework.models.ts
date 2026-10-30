@@ -335,6 +335,8 @@ export interface MyTask {
   readonly overdue: boolean;
   readonly assignedAt: string;
   readonly reviewedAt: string | null;
+  /** The teacher's comment of the last review; shown for a returned task. */
+  readonly teacherComment: string | null;
 }
 
 export interface AssignmentInput {

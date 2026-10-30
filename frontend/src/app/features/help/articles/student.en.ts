@@ -95,13 +95,13 @@ An **external board**, such as Holst, opens in a new tab. The bot also provides 
 
 Open “Homework”. On a computer, the list is on the left and the selected assignment opens on the right. On a phone, select an assignment to open it, then use the back arrow to return to the list.
 
-Use the search field to find an assignment by title. The three filters show:
+Assignments are grouped by what to do next; empty groups are hidden:
 
-- **To hand in:** new assignments and work returned for revision;
-- **In review:** work you have submitted to your teacher;
-- **Done:** assignments your teacher has accepted.
+- **Sent back for revision:** your teacher left a comment, shown under the title;
+- **To do:** the nearest deadline first, with the days left (or how long it is overdue);
+- **Handed in:** work in review and accepted work with its grade.
 
-Each entry shows the title, due date and status. Overdue assignments are marked in red. The number on the Homework menu icon counts assignments you still need to submit. You will receive a reminder before a deadline.
+On a phone, an “Up next” card at the top opens the returned work or the assignment due soonest. Each entry shows the title, due date and status. Overdue assignments are marked in red. The number on the Homework menu icon counts assignments you still need to submit. You will receive a reminder before a deadline.
 
 Your home page also lists outstanding assignments under “To hand in”, with the nearest deadline first. Choose “Revise” for returned work. Recent feedback appears under “Reviewed recently”.
 

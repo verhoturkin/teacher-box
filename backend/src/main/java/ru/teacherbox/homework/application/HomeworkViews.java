@@ -257,7 +257,8 @@ public final class HomeworkViews {
             @Nullable String grade,
             boolean overdue,
             Instant assignedAt,
-            @Nullable Instant reviewedAt) {
+            @Nullable Instant reviewedAt,
+            @Nullable String teacherComment) {
     }
 
     /**

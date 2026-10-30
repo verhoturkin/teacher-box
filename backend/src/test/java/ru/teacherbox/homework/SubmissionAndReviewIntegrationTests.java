@@ -149,6 +149,8 @@ class SubmissionAndReviewIntegrationTests {
                 .bodyJson().extractingPath("$.status").isEqualTo("RETURNED");
         assertThat(events).contains(HomeworkReviewed.class)
                 .matching(HomeworkReviewed::accepted, false);
+        assertThat(mvc.get().uri("/api/me/homework").with(TestUsers.student(student)))
+                .bodyJson().extractingPath("$[0].teacherComment").isEqualTo("Молодец");
 
         clock.advance(Duration.ofMinutes(1));
         submit(student, taskId, "Вторая попытка");
