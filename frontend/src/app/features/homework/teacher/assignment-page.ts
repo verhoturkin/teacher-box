@@ -173,7 +173,7 @@ const FOLD_LINES = 3;
                         <span class="tb-asg-tile__name">{{ task.studentName }}</span>
                         <span class="tb-asg-tile__line">{{ statusLine(task) }}</span>
                       </div>
-                      <tb-task-status [status]="task.status" [overdue]="task.overdue" />
+                      <tb-task-status inline [status]="task.status" [overdue]="task.overdue" />
                     </div>
                     @if (task.answerPreview; as preview) {
                       <p class="tb-asg-tile__preview">{{ preview }}</p>

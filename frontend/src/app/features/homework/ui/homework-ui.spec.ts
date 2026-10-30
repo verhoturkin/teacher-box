@@ -200,5 +200,10 @@ describe('SubmissionList and TaskStatusTag', () => {
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toBe('На доработке Просрочено Оценка: 4');
+    const tags = hostElement(fixture).querySelector('.tb-task-tags');
+    expect(tags?.classList.contains('tb-task-tags--inline')).toBe(false);
+    fixture.componentRef.setInput('inline', true);
+    await fixture.whenStable();
+    expect(tags?.classList.contains('tb-task-tags--inline')).toBe(true);
   });
 });
