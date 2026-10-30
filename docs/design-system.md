@@ -389,7 +389,10 @@ for the active navigation item and checked states.
 - **No wrapping cards in a pane** (*ours*): inside `tb-pane` a `p-card` has no surface, corner or
   padding — the section title stands on the pane (Title Medium emphasized), its rows or blocks
   (`tb-list`, `tb-figures`) lie under it, 12 px apart; the list group's outer corner is 16 px. The
-  one container left is the filled `tb-hero`.
+  one container left is the filled `tb-hero`. *Exception* `tb-section-card` (the assignment editor,
+  sketch Editor): a `surface-container-low` card with 20 dp corners (**M3** large-increased), 20 dp
+  inside and the title (Title Medium emphasized) 12 px under the top; the cards of a form stand
+  16 px apart (*ours*; the sketch has 14).
 - **Header** `tb-page-header`: «Назад» icon button on nested pages (tooltip = destination); h1; «?»
   help if the section has an article; a detail line; actions on the title line (56 px), the main one
   last. On a phone a section page hides its title (kept for screen readers; the top bar names the
@@ -648,7 +651,8 @@ changes the container; content and markup are the same at every width. Every dia
 - **Basic dialog** (**M3**): 280–560 dp, 28 dp corners, 24 dp padding, 16 dp headline → body, 24 dp
   body → actions, 8 dp between buttons, surface-container-high, scrim; buttons at the trailing edge,
   the confirming one closest to it; with scrolling content the headline and buttons stay pinned.
-  *Ours:* `normal` 32 rem, `wide` 40 rem (= 560 dp), `alert` 32 rem (a confirmation ≤ 35 rem);
+  *Ours:* `normal` 32 rem, `wide` 40 rem (= 560 dp), `xwide` 47.5 rem (a form with a text editor,
+  «Новое задание»), `alert` 32 rem (a confirmation ≤ 35 rem);
   never closer than 1 rem to the screen edge.
 - **Full-screen dialog** (`form` on compact only, **M3**): 56 dp header, 24 dp sides, 8 dp between
   elements; «✕» first and the only navigation, the headline (one line, truncated), the confirming

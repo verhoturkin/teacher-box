@@ -253,7 +253,7 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
 
 - **Header**: «Задания», «?», the filled «Новое задание» (a phone: the extended FAB «Новое»); it
   opens the quick dialog, `/teacher/homework/new` stays as the full editor.
-- **Quick dialog «Новое задание»** (340.1, `assignment-create-dialog.ts`, `tb-dialog` form: a basic
+- **Quick dialog «Новое задание»** (340.1, `assignment-create-dialog.ts`, `tb-dialog` form, `xwide` 47.5 rem: a basic
   dialog from medium, full screen on a phone with «Выдать» in the top bar): header icon buttons
   «Открыть во весь экран» and «Закрыть»; «Кому» — input chips (a group with its member count, a student with an avatar, «×») and the dashed assist chip «Ученик или группа» that opens the panel of `tb-member-picker [bare]`; «Задание» — one Markdown
   field (first line = title, `titleOf`) with a toolbar «Жирный · Список · Ссылка» and «Написать с
@@ -344,10 +344,11 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
 
 ### Assignment editor
 
-A main flexible pane in the order of the quick dialog (340.2): «Кому» (input chips + dashed «Ученик
-или группа», new assignments only), «Задание» (one Markdown field with the «Текст / Просмотр»
-switch; the first line is the title, hint «Первая строка станет названием»), «Срок» (filter chips),
-«Материалы». Empty sections (textbooks, videos, board, the «Вопросы» card) are hidden; the assist
+A main flexible pane in the order of the quick dialog (340.2), each section in its own
+`tb-section-card`: «Кому» and «Срок» side by side in the first card («Кому» — input chips + dashed
+«Ученик или группа», new assignments only; «Срок» — filter chips), «Задание» (one Markdown field
+with the «Текст / Просмотр» switch; the first line is the title, hint «Первая строка станет
+названием»), «Материалы», «Вопросы» and «Как проходит тест» (`tb-quiz-settings`). Empty sections (textbooks, videos, board, the «Вопросы» card) are hidden; the assist
 chips under «Материалы» («Файл · Учебник · Видео · Тест с вопросами · Доска») add them, a section
 with content shows normally and can be removed. A saved assignment loads its title as the first line
 when the text does not start with it. The header: «ИИ-помощник» (tonal), text «Сохранить черновик»,

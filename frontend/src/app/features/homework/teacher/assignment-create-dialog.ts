@@ -82,7 +82,7 @@ import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from '.
     <tb-dialog
       #dialog
       kind="form"
-      width="wide"
+      width="xwide"
       [(visible)]="visible"
       [headline]="t.title"
       [confirmLabel]="t.assign"
@@ -292,14 +292,21 @@ import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from '.
       display: grid;
       border-radius: var(--tb-shape-md) var(--tb-shape-md) var(--tb-shape-xs) var(--tb-shape-xs);
       background: var(--p-md-surface-container-highest);
-      border-bottom: 2px solid var(--p-md-primary);
+      border-bottom: 1px solid var(--p-md-outline);
       padding: var(--tb-space-3) var(--tb-space-4) var(--tb-space-1);
+
+      /* the filled field's focus: a 2 dp primary indicator, the text itself shows no frame */
+      &:focus-within {
+        border-bottom: 2px solid var(--p-md-primary);
+        padding-bottom: calc(var(--tb-space-1) - 1px);
+      }
     }
 
-    .tb-create__text {
+    .tb-create__text.tb-create__text {
       width: 100%;
       min-height: 9rem;
       border: 0;
+      outline: none;
       background: transparent;
       box-shadow: none;
       padding: 0;

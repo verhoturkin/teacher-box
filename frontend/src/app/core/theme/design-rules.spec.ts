@@ -45,7 +45,8 @@ const HEX_IN_STYLE =
   /(color|background|border|outline|fill|stroke|shadow)[\w-]*\s*:[^;{}\n]*#[0-9a-f]{3,8}\b/i;
 
 /** An icon class: the name of a Material Symbol (ADR-0046). */
-const ICON = /\btb-i-([a-z0-9_]+)/g;
+// an assist chip names its icon in the `icon` attribute, without the class
+const ICON = /(?:\btb-i-|<tb-assist-chip\s+icon=")([a-z0-9_]+)/g;
 
 /** A primeicons class (`api-error` is not one). */
 const PRIMEICONS = /(?<![\w-])pi-[a-z]|class="pi[\s"]/;

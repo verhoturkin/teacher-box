@@ -90,6 +90,7 @@ import {
   MAX_QUESTIONS,
   QuestionDraft,
   QuestionSection,
+  QuizSettings,
   firstProblem,
   questionDraft,
   questionInputs,
@@ -145,6 +146,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     BindTextbookDialog,
     VideoSection,
     QuestionSection,
+    QuizSettings,
   ],
   providers: [HomeworkAiState],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -208,8 +210,8 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
               [formGroup]="form"
               (ngSubmit)="save()"
             >
-              <p-card>
-                <div class="tb-form">
+              <p-card styleClass="tb-section-card">
+                <div class="tb-editor__who">
                   @if (isNew() || isDraft()) {
                     <tb-recipients-field
                       inputId="editor-students"
@@ -236,36 +238,6 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                     </div>
                   }
 
-                  <div id="editor-task" class="tb-field">
-                    <div class="tb-field__header">
-                      <label for="editor-text">{{ c.task }}</label>
-                      <p-selectbutton
-                        [options]="modes"
-                        [formControl]="mode"
-                        optionLabel="label"
-                        optionValue="value"
-                        [allowEmpty]="false"
-                        [ariaLabel]="t.editorMode"
-                      />
-                    </div>
-                    @if (modeValue() === 'preview') {
-                      <div class="tb-preview" [style.min-height.px]="editorHeight()">
-                        <tb-markdown [text]="textValue()" />
-                      </div>
-                    } @else {
-                      <textarea
-                        pTextarea
-                        id="editor-text"
-                        class="tb-editor__text"
-                        #editor
-                        [style.height.px]="editorHeight()"
-                        formControlName="description"
-                        rows="14"
-                      ></textarea>
-                    }
-                    <small class="tb-hint">{{ c.firstLine }}. {{ t.markdownHint }}</small>
-                  </div>
-
                   <tb-due-chips
                     [lesson]="nextLesson()"
                     [choice]="dueChoice()"
@@ -273,66 +245,91 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                     [date]="duePicked()"
                     (dateChange)="pickDue($event)"
                   />
-
-                  <section
-                    id="editor-materials"
-                    class="tb-editor__materials"
-                    [attr.aria-label]="c.materials"
-                  >
-                    <h3 class="tb-subtitle">{{ c.materials }}</h3>
-                    @if (isNew() && textbooks().length > 0) {
-                      <tb-textbook-list
-                        [textbooks]="textbooks()"
-                        [editable]="true"
-                        (opened)="materials.textbook($event)"
-                        (edit)="editTextbook($event)"
-                        (remove)="removeTextbook($event)"
-                      />
-                    }
-                    @if (videos().length > 0) {
-                      <tb-video-section [videos]="videos()" (videosChange)="changeVideos($event)" />
-                    }
-                    @if (onBoard()) {
-                      <div class="tb-editor__row">
-                        <i class="tb-i tb-i-co_present" aria-hidden="true"></i>
-                        <span class="tb-editor__grow">{{ c.onBoard }}</span>
-                        <p-button
-                          icon="tb-i tb-i-close"
-                          severity="secondary"
-                          [text]="true"
-                          [rounded]="true"
-                          [ariaLabel]="c.remove"
-                          (onClick)="onBoard.set(false)"
-                        />
-                      </div>
-                    }
-                    <tb-material-chips
-                      [(files)]="newFiles"
-                      [compact]="compact()"
-                      [withFiles]="isNew()"
-                      [videosFull]="videos().length >= maxVideos"
-                      [quizDisabled]="quizShown()"
-                      [onBoard]="onBoard()"
-                      (textbook)="bindTextbook()"
-                      (video)="addVideo()"
-                      (quiz)="quizOpen.set(true)"
-                      (board)="onBoard.set(true)"
-                    />
-                  </section>
                 </div>
-                @if (error(); as message) {
-                  <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-                }
               </p-card>
+
+              <p-card id="editor-task" styleClass="tb-section-card">
+                <div class="tb-field">
+                  <div class="tb-field__header">
+                    <label for="editor-text">{{ c.task }}</label>
+                    <p-selectbutton
+                      [options]="modes"
+                      [formControl]="mode"
+                      optionLabel="label"
+                      optionValue="value"
+                      [allowEmpty]="false"
+                      [ariaLabel]="t.editorMode"
+                    />
+                  </div>
+                  @if (modeValue() === 'preview') {
+                    <div class="tb-preview" [style.min-height.px]="editorHeight()">
+                      <tb-markdown [text]="textValue()" />
+                    </div>
+                  } @else {
+                    <textarea
+                      pTextarea
+                      id="editor-text"
+                      class="tb-editor__text"
+                      #editor
+                      [style.height.px]="editorHeight()"
+                      formControlName="description"
+                      rows="14"
+                    ></textarea>
+                  }
+                  <small class="tb-hint">{{ c.firstLine }}. {{ t.markdownHint }}</small>
+                </div>
+              </p-card>
+
+              <p-card id="editor-materials" styleClass="tb-section-card" [header]="c.materials">
+                <div class="tb-editor__materials">
+                  @if (isNew() && textbooks().length > 0) {
+                    <tb-textbook-list
+                      [textbooks]="textbooks()"
+                      [editable]="true"
+                      (opened)="materials.textbook($event)"
+                      (edit)="editTextbook($event)"
+                      (remove)="removeTextbook($event)"
+                    />
+                  }
+                  @if (videos().length > 0) {
+                    <tb-video-section [videos]="videos()" (videosChange)="changeVideos($event)" />
+                  }
+                  @if (onBoard()) {
+                    <div class="tb-editor__row">
+                      <i class="tb-i tb-i-co_present" aria-hidden="true"></i>
+                      <span class="tb-editor__grow">{{ c.onBoard }}</span>
+                      <p-button
+                        icon="tb-i tb-i-close"
+                        severity="secondary"
+                        [text]="true"
+                        [rounded]="true"
+                        [ariaLabel]="c.remove"
+                        (onClick)="onBoard.set(false)"
+                      />
+                    </div>
+                  }
+                  <tb-material-chips
+                    [(files)]="newFiles"
+                    [compact]="compact()"
+                    [withFiles]="isNew()"
+                    [videosFull]="videos().length >= maxVideos"
+                    [quizDisabled]="quizShown()"
+                    [onBoard]="onBoard()"
+                    (textbook)="bindTextbook()"
+                    (video)="addVideo()"
+                    (quiz)="quizOpen.set(true)"
+                    (board)="onBoard.set(true)"
+                  />
+                </div>
+              </p-card>
+              @if (error(); as message) {
+                <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
+              }
               @if (quizShown()) {
-                <p-card id="editor-quiz" [header]="tq.title">
+                <p-card id="editor-quiz" styleClass="tb-section-card" [header]="tq.title">
                   <tb-question-section
                     [questions]="questions()"
                     (questionsChange)="changeQuestions($event)"
-                    [reveal]="quizReveal()"
-                    (revealChange)="changeReveal($event)"
-                    [attempts]="quizAttempts()"
-                    (attemptsChange)="changeAttempts($event)"
                     [locked]="quizLocked()"
                     [error]="quizError()"
                     [showProblems]="quizChecked()"
@@ -346,6 +343,16 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                       (onClick)="removeQuiz()"
                     />
                   }
+                </p-card>
+              }
+              @if (quizShown() && questions().length > 0) {
+                <p-card id="quiz-settings" styleClass="tb-section-card" [header]="tq.settings">
+                  <tb-quiz-settings
+                    [reveal]="quizReveal()"
+                    (revealChange)="changeReveal($event)"
+                    [attempts]="quizAttempts()"
+                    (attemptsChange)="changeAttempts($event)"
+                  />
                 </p-card>
               }
             </form>
@@ -461,6 +468,12 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     .tb-editor__form {
       flex: 1;
       min-width: 0;
+    }
+
+    .tb-editor__who {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 17.5rem), 1fr));
+      gap: var(--tb-space-4) var(--tb-space-6);
     }
 
     .tb-editor__chips {

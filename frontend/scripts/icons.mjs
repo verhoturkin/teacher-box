@@ -63,7 +63,7 @@ function sources(dir) {
 }
 
 const names = [
-  ...new Set(sources(SRC).flatMap((text) => Array.from(text.matchAll(/\btb-i-([a-z0-9_]+)/g), (m) => m[1]))),
+  ...new Set(sources(SRC).flatMap((text) => Array.from(text.matchAll(/(?:\btb-i-|<tb-assist-chip\s+icon=")([a-z0-9_]+)/g), (m) => m[1]))),
 ].sort();
 
 const full = readFileSync(FULL_FONT);

@@ -471,7 +471,7 @@ textarea.p-textarea::-webkit-resizer {
  * Today page (`tb-hero`) is the one container left. A list on the pane keeps the 16 px outer corner of the M3
  * list (M3: the corner of a group on the page); ours: a 12 px gap between the title and its content.
  */
-tb-pane .p-card:not(.tb-hero),
+tb-pane .p-card:not(.tb-hero, .tb-section-card),
 .tb-notifications-pane .p-card,
 .tb-side-sheet .p-card {
   background: transparent;
@@ -489,6 +489,27 @@ tb-pane .p-card:not(.tb-hero),
   > .p-card-body > .p-card-content {
     display: grid;
     gap: var(--tb-space-2);
+  }
+
+  .p-card-title {
+    font: var(--tb-type-title-m-emphasized);
+  }
+}
+
+/*
+ * A section card of a form on a pane (the assignment editor, sketch Editor): each section is a tonal card,
+ * `surface-container-low`, 20 dp corners (M3 large-increased), 20 dp inside; the title in Title Medium
+ * emphasized, 12 px under it. Ours: the cards stand 16 px apart (the sketch has 14).
+ */
+.p-card.tb-section-card {
+  background: var(--p-md-surface-container-low);
+  border-radius: var(--tb-shape-lg-plus);
+  color: var(--p-md-on-surface);
+  box-shadow: none;
+
+  > .p-card-body {
+    gap: var(--tb-space-3);
+    padding: var(--tb-space-5);
   }
 
   .p-card-title {
@@ -3210,6 +3231,10 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
     width: min(40rem, calc(100vw - 2rem));
   }
 
+  &.tb-d--xwide {
+    width: min(47.5rem, calc(100vw - 2rem));
+  }
+
   .p-dialog-header {
     align-items: center;
   }
@@ -3471,7 +3496,9 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
 
   /* M3E SplitButtonSmall: 13 + the 22 px icon + 13 */
   .p-button.tb-split__more {
+    box-sizing: border-box;
     width: 3rem;
+    height: 2.5rem;
     border-start-start-radius: var(--tb-shape-xs);
     border-end-start-radius: var(--tb-shape-xs);
 

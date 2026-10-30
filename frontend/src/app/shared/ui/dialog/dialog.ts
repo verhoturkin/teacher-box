@@ -250,8 +250,8 @@ export class TbDialog {
   protected readonly errorId = `tb-d-error-${String(nextId++)}`;
 
   readonly kind = input.required<DialogKind>();
-  /** `normal` 32 rem, `wide` 40 rem (the M3 maximum of a basic dialog). */
-  readonly width = input<'normal' | 'wide'>('normal');
+  /** `normal` 32 rem, `wide` 40 rem, `xwide` 47.5 rem (the form with a text editor, ours). */
+  readonly width = input<'normal' | 'wide' | 'xwide'>('normal');
   readonly visible = model(false);
   readonly headline = input.required<string>();
   /** The confirming action; `null` — no action (a sheet that only shows). */
