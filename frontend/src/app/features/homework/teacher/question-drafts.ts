@@ -271,3 +271,8 @@ export function quizMinutes(count: number): [number, number] {
   const from = Math.max(1, Math.round(count * 0.75));
   return [from, Math.max(from + 1, count)];
 }
+
+/** A problem that goes on after a dash in a sentence: «Отметьте верный…» → «отметьте верный…». */
+export function lowerFirst(text: string): string {
+  return text.charAt(0).toLocaleLowerCase() + text.slice(1);
+}

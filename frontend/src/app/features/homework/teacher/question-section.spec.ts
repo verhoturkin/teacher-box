@@ -36,7 +36,8 @@ describe('QuestionSection', () => {
   }
 
   it('adds a question of a type from the menu and opens it', async () => {
-    buttonByText(host, 'Вопрос').click();
+    expect(readableText(host)).toContain('Добавьте вопросы');
+    buttonByText(host, 'Добавить вопрос').click();
     await fixture.whenStable();
     expect(document.body.textContent).toContain('Один верный вариант из нескольких');
     menuItemByText('Соответствие').click();
@@ -107,6 +108,8 @@ describe('QuestionSection', () => {
     await fixture.whenStable();
     expect(readableText(host)).toContain('Вопросы не сохранены');
     expect(host.querySelectorAll('.tb-qb__row--broken')).toHaveLength(1);
+    expect(readableText(host)).toContain('Задание не выдано: 1 вопрос нужно поправить');
+    expect(readableText(host)).toContain('Вопрос 2 — напишите текст вопроса');
     expect(readableText(host)).toContain('Вопрос 2: Напишите текст вопроса');
     expect(host.querySelector('[aria-current="true"]')?.textContent).toContain('2');
     buttonByText(host, 'Вопрос 1').click();
@@ -114,13 +117,21 @@ describe('QuestionSection', () => {
     requireElement(host, '[aria-label="Открыть вопрос 2"]', HTMLAnchorElement).click();
     await fixture.whenStable();
     expect(host.querySelector('[aria-current="true"]')?.textContent).toContain('2');
+    buttonByText(host, 'Вопрос 1').click();
+    await fixture.whenStable();
+    requireElement(host, '.tb-qb__problems a', HTMLAnchorElement).click();
+    await fixture.whenStable();
+    expect(document.activeElement?.id).toBe('question-text-' + (section.questions()[1]?.id ?? ''));
   });
 
-  it('asks the assistant for questions', () => {
+  it('asks the assistant for questions', async () => {
     const asked = vi.fn();
     section.ai.subscribe(asked);
+    buttonByText(host, 'Составить с ИИ').click();
+    section.questions.set([complete('A')]);
+    await fixture.whenStable();
     buttonByText(host, 'С ИИ').click();
-    expect(asked).toHaveBeenCalled();
+    expect(asked).toHaveBeenCalledTimes(2);
   });
 
   // Rendering 50 questions took 5.7 s on CI with coverage, over the default 5 s.
@@ -139,6 +150,15 @@ describe('QuestionSection', () => {
     await fixture.whenStable();
     expect(host.querySelector('.tb-qb__add')).toBeNull();
     expect(host.querySelector('.tb-drag-handle')).toBeNull();
+    expect(host.querySelector('.tb-qb__lock')).not.toBeNull();
     expect(host.querySelector('[aria-label="Убрать вопрос 1"]')).toBeNull();
+    const copied = vi.fn();
+    section.copyQuiz.subscribe(copied);
+    buttonByText(host, 'Создать копию для правок').click();
+    expect(copied).toHaveBeenCalled();
+    fixture.componentRef.setInput('showProblems', true);
+    section.questions.set([questionDraft('NUMBER')]);
+    await fixture.whenStable();
+    expect(host.querySelector('.tb-qb__problems')).toBeNull();
   });
 });

@@ -678,7 +678,8 @@ changes the container; content and markup are the same at every width. Every dia
   surface still holds: in the dialog it is «Выдать», so the draft's «Вставить в задание» is tonal
   and «Ещё вариант» a text button; tertiary «Сгенерировать» is the pane's own action, not a second
   primary one. An AI action beside other actions («С ИИ», «Составить с ИИ») is a
-  tonal tertiary button `p-button.tb-button-ai` (`tertiary-container`).
+  tonal tertiary button `p-button.tb-button-ai` (`tertiary-container`); the action of a tertiary
+  note («Создать копию для правок») is the filled `p-button.tb-button-tertiary`.
 - **Full-screen dialog** (`form` on compact only, **M3**): 56 dp header, 24 dp sides, 8 dp between
   elements; «✕» first and the only navigation, the headline (one line, truncated), the confirming
   button at the end with a clear verb («Создать», «Отправить», not «Готово»), never disabled for

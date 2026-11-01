@@ -79,7 +79,7 @@ Russian wording; English is written separately (AGENTS.md §6.1).
   Вопрос 4 ›») and the side column «Как проходит тест» (reveal radios, attempts «1 · 2 · 3 · Без
   огр.», «Засчитывается лучшая попытка») and «Итого» (questions, points, «Примерно займёт N–M
   мин», links to questions with errors). The six type editors as in sketch 29.
-- [ ] **347.2 F** States (sketch 30): the empty test («Добавить вопрос» · «Составить с ИИ»);
+- [x] **347.2 F** States (sketch 30): the empty test («Добавить вопрос» · «Составить с ИИ»);
   «Выдать» with broken questions — «Задание не выдано: N вопроса нужно поправить» with links, rows
   marked; a test a student has started — the tertiary note, «Создать копию для правок» (the copy
   opens on «Тест») and read-only rows.

@@ -569,6 +569,26 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
   }
 }
 
+/*
+ * The filled tertiary button: the action of a tertiary note («Создать копию для правок», sketch 30) —
+ * `on-tertiary-container` with `tertiary-container` text, as the filled AI actions (design-system §11).
+ */
+.p-button.tb-button-tertiary {
+  border-color: var(--p-md-on-tertiary-container);
+  background: var(--p-md-on-tertiary-container);
+  color: var(--p-md-tertiary-container);
+
+  &:not(:disabled):hover {
+    border-color: var(--p-md-on-tertiary-container);
+    background: color-mix(
+      in srgb,
+      var(--p-md-tertiary-container) 8%,
+      var(--p-md-on-tertiary-container)
+    );
+    color: var(--p-md-tertiary-container);
+  }
+}
+
 /* The filled variant of the section card («Итого», sketch 28): M3 filled card, surface-container-low */
 .p-card.tb-section-card.tb-section-card--filled {
   border-color: transparent;

@@ -408,6 +408,15 @@ wider it falls back to «Тест»).
   answers are input chips plus a field (Enter or leaving it adds one). On a phone the settings are
   the «Настройки» tab. *Not built:* the sketch's «Ученик увидит в случайном порядке» toggle of
   choice options (the backend has no such setting).
+- **Test states** (347.2, sketch 30): no questions — `tb-empty-state` «Добавьте вопросы» with filled
+  «Добавить вопрос» (the type menu), tertiary «Составить с ИИ» and «ИИ учтёт текст задания и
+  привязанный учебник»; «Выдать» with broken questions — an error-container alert «Задание не
+  выдано: N вопроса нужно поправить» with a link per question («Вопрос 6 — отметьте верный
+  вариант»: opens it with the focus in its text), the rows in error-container; a quiz a student has
+  started (a finished attempt on load, or `homework.quiz-started` on saving) — a tertiary note with
+  `lock` and the filled tertiary «Создать копию для правок» (copies the assignment and opens the
+  copy on «Тест» in the same page), the rows with `lock` instead of the handle, the question
+  read-only.
 - **Header**: back, title, «?», «ИИ-помощник» (tonal). A draft (new or saved without tasks) has
   «сохранено · HH:mm» (Body Small, on-surface-variant) and the split filled «Выдать» (menu «Выдать и
   разместить на доске»); an issued assignment has the filled «Сохранить».

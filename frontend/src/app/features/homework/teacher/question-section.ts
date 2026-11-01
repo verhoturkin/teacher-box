@@ -18,6 +18,7 @@ import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Menu } from 'primeng/menu';
+import { EmptyState } from '@shared/ui/empty-state';
 import { RowType } from '@shared/ui/row-type.directive';
 import { QuestionType, QuizReveal } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
@@ -27,6 +28,7 @@ import {
   QUESTION_TYPES,
   QuestionDraft,
   copyOf,
+  lowerFirst,
   moved,
   problemsOf,
   questionDraft,
@@ -49,6 +51,7 @@ import { QuizSettings } from './quiz-settings';
     CdkDragHandle,
     Button,
     Card,
+    EmptyState,
     Menu,
     RowType,
     QuestionEditor,
@@ -59,210 +62,261 @@ import { QuizSettings } from './quiz-settings';
     @if (error(); as message) {
       <p class="tb-field__error tb-qb__wide" role="alert">{{ message }}</p>
     }
-    <section class="tb-qb__outline" [attr.aria-label]="t.outline">
-      <h2 class="tb-qb__total">{{ t.outlineTotal(questions().length, points()) }}</h2>
-      <ol
-        class="tb-qb__rows"
-        cdkDropList
-        [cdkDropListDisabled]="locked()"
-        (cdkDropListDropped)="drop($event)"
-      >
-        @for (draft of questions(); track draft.id; let n = $index) {
-          <li
-            class="tb-qb__row"
-            cdkDrag
-            [class.tb-qb__row--open]="draft.id === openId()"
-            [class.tb-qb__row--broken]="brokenIds().has(draft.id)"
-          >
-            @if (!locked()) {
-              <button
-                type="button"
-                class="tb-drag-handle"
-                cdkDragHandle
-                [attr.data-handle]="draft.id"
-                [attr.aria-label]="t.dragQuestion(n + 1)"
-                (keydown)="keyMove($event, draft.id)"
-              >
-                <i class="tb-i tb-i-drag_indicator" aria-hidden="true"></i>
-              </button>
-            }
-            <button
-              type="button"
-              class="tb-qb__open"
-              [attr.data-row]="draft.id"
-              [attr.aria-current]="draft.id === openId() ? 'true' : null"
-              (click)="open(draft.id)"
-            >
-              <b class="tb-qb__number">{{ n + 1 }}</b>
-              <i
-                class="tb-i {{ icons[draft.type] }} tb-qb__icon"
-                [title]="t.types[draft.type]"
-                aria-hidden="true"
-              ></i>
-              <span class="tb-qb__text">{{ draft.text.trim() || untitled }}</span>
-              @if (brokenIds().has(draft.id)) {
-                <i
-                  class="tb-i tb-i-error tb-qb__error"
-                  role="img"
-                  [attr.aria-label]="t.hasProblem"
-                ></i>
-              }
-              <span class="tb-qb__points">{{ draft.points }}</span>
-            </button>
-          </li>
+    @if (locked()) {
+      <div class="tb-qb__locked tb-qb__wide">
+        <p class="tb-qb__note">
+          <i class="tb-i tb-i-lock" aria-hidden="true"></i><span>{{ t.locked }}</span>
+        </p>
+        <p-button
+          [label]="t.copyForEdits"
+          icon="tb-i tb-i-content_copy"
+          styleClass="tb-button-tertiary"
+          (onClick)="copyQuiz.emit()"
+        />
+      </div>
+    } @else if (showProblems() && problems().length > 0) {
+      <div class="tb-qb__problems tb-qb__wide" role="alert">
+        <p class="tb-qb__note">
+          <i class="tb-i tb-i-error" aria-hidden="true"></i>{{ t.notGiven(problems().length) }}
+        </p>
+        @for (item of problems(); track item.id) {
+          <a href="" (click)="$event.preventDefault(); show(item.id)">{{
+            t.problemLink(item.number, lower(item.problem))
+          }}</a>
         }
-      </ol>
-      @if (!locked() && questions().length < maxQuestions) {
-        <div class="tb-qb__add">
+      </div>
+    }
+    @if (!locked() && questions().length === 0) {
+      <tb-empty-state
+        class="tb-qb__wide"
+        icon="tb-i-quiz"
+        [title]="t.emptyTitle"
+        [hint]="t.emptyHint"
+      >
+        <div class="tb-qb__empty">
           <p-button
-            [label]="t.newQuestion"
+            [label]="t.addQuestion"
             icon="tb-i tb-i-add"
-            severity="secondary"
             aria-haspopup="menu"
             (onClick)="typeMenu.toggle($event)"
           />
           <p-button
-            [label]="t.withAi"
+            [label]="t.composeWithAi"
             icon="tb-i tb-i-auto_awesome"
             styleClass="tb-button-ai"
             (onClick)="ai.emit()"
           />
+          <small class="tb-hint">{{ t.emptyAiHint }}</small>
         </div>
-        <p-menu
-          #typeMenu
-          [model]="newItems"
-          [popup]="true"
-          appendTo="body"
-          [ariaLabel]="t.type"
-          (onHide)="focusAdded()"
+      </tb-empty-state>
+    } @else {
+      <section class="tb-qb__outline" [attr.aria-label]="t.outline">
+        <h2 class="tb-qb__total">{{ t.outlineTotal(questions().length, points()) }}</h2>
+        <ol
+          class="tb-qb__rows"
+          cdkDropList
+          [cdkDropListDisabled]="locked()"
+          (cdkDropListDropped)="drop($event)"
         >
-          <ng-template #item let-item [tbRowType]="newItems">
-            <a class="p-menu-item-link tb-type-item" data-pc-section="itemlink" tabindex="-1">
-              <i class="{{ item.icon }}" aria-hidden="true"></i>
-              <span class="tb-type-item__text">
-                <span>{{ item.label }}</span>
-                <small>{{ item.title }}</small>
-              </span>
-            </a>
-          </ng-template>
-        </p-menu>
-      }
-    </section>
-
-    @if (opened(); as current) {
-      <p-card styleClass="tb-section-card" class="tb-qb__question">
-        @for (draft of [current.draft]; track draft.id) {
-          <tb-question-editor
-            [attr.aria-label]="t.heading(current.index + 1)"
-            role="group"
-            [question]="draft"
-            (questionChange)="replace($event)"
-            [number]="current.index + 1"
-            [locked]="locked()"
-            [showProblems]="showProblems()"
-          >
-            @if (!locked()) {
-              <span actions class="tb-qb__actions">
-                <p-button
-                  icon="tb-i tb-i-content_copy"
-                  [text]="true"
-                  [rounded]="true"
-                  severity="secondary"
-                  [disabled]="questions().length >= maxQuestions"
-                  [ariaLabel]="t.copy(current.index + 1)"
-                  (onClick)="copy(draft.id)"
-                />
-                <p-button
-                  icon="tb-i tb-i-arrow_upward"
-                  [text]="true"
-                  [rounded]="true"
-                  severity="secondary"
-                  [disabled]="current.index === 0"
-                  [ariaLabel]="t.moveUp(current.index + 1)"
-                  (onClick)="move(draft.id, -1)"
-                />
-                <p-button
-                  icon="tb-i tb-i-arrow_downward"
-                  [text]="true"
-                  [rounded]="true"
-                  severity="secondary"
-                  [disabled]="current.index === questions().length - 1"
-                  [ariaLabel]="t.moveDown(current.index + 1)"
-                  (onClick)="move(draft.id, 1)"
-                />
-                <p-button
-                  icon="tb-i tb-i-delete"
-                  [text]="true"
-                  [rounded]="true"
-                  severity="danger"
-                  [ariaLabel]="t.remove(current.index + 1)"
-                  (onClick)="remove(draft.id)"
-                />
-              </span>
-            }
-          </tb-question-editor>
-        }
-        <nav class="tb-qb__steps" [attr.aria-label]="t.outline">
-          @if (questions()[current.index - 1]; as previous) {
-            <p-button
-              [label]="t.heading(current.index)"
-              icon="tb-i tb-i-arrow_back"
-              [text]="true"
-              (onClick)="open(previous.id)"
-            />
-          }
-          <span class="tb-qb__grow"></span>
-          @if (questions()[current.index + 1]; as next) {
-            <p-button
-              [label]="t.heading(current.index + 2)"
-              icon="tb-i tb-i-arrow_forward"
-              iconPos="right"
-              [text]="true"
-              (onClick)="open(next.id)"
-            />
-          }
-        </nav>
-      </p-card>
-    }
-
-    @if (!compact()) {
-      <aside class="tb-qb__side" [attr.aria-label]="t.settings">
-        <p-card styleClass="tb-section-card" [header]="t.settings">
-          <tb-quiz-settings
-            [reveal]="reveal()"
-            (revealChange)="reveal.set($event)"
-            [attempts]="attempts()"
-            (attemptsChange)="attempts.set($event)"
-          />
-        </p-card>
-        <p-card styleClass="tb-section-card tb-section-card--filled" [header]="s.title">
-          <dl class="tb-qb__sums">
-            <dt>{{ s.questions }}</dt>
-            <dd>{{ questions().length }}</dd>
-            <dt>{{ s.points }}</dt>
-            <dd>{{ points() }}</dd>
-            @if (questions().length > 0) {
-              <dt>{{ s.time }}</dt>
-              <dd>{{ s.minutes(minutes()[0], minutes()[1]) }}</dd>
-            }
-          </dl>
-          @if (showProblems()) {
-            @for (item of problems(); track item.id) {
-              <p class="tb-qb__problem">
-                <i class="tb-i tb-i-error" aria-hidden="true"></i>
-                <span class="tb-qb__grow">{{ s.problem(item.number, item.problem) }}</span>
-                <a
-                  href=""
-                  [attr.aria-label]="s.openProblem(item.number)"
-                  (click)="$event.preventDefault(); open(item.id)"
-                  >{{ s.open }}</a
+          @for (draft of questions(); track draft.id; let n = $index) {
+            <li
+              class="tb-qb__row"
+              cdkDrag
+              [class.tb-qb__row--open]="draft.id === openId()"
+              [class.tb-qb__row--broken]="brokenIds().has(draft.id)"
+            >
+              @if (!locked()) {
+                <button
+                  type="button"
+                  class="tb-drag-handle"
+                  cdkDragHandle
+                  [attr.data-handle]="draft.id"
+                  [attr.aria-label]="t.dragQuestion(n + 1)"
+                  (keydown)="keyMove($event, draft.id)"
                 >
-              </p>
-            }
+                  <i class="tb-i tb-i-drag_indicator" aria-hidden="true"></i>
+                </button>
+              } @else {
+                <i class="tb-i tb-i-lock tb-qb__lock" aria-hidden="true"></i>
+              }
+              <button
+                type="button"
+                class="tb-qb__open"
+                [attr.data-row]="draft.id"
+                [attr.aria-current]="draft.id === openId() ? 'true' : null"
+                (click)="open(draft.id)"
+              >
+                <b class="tb-qb__number">{{ n + 1 }}</b>
+                <i
+                  class="tb-i {{ icons[draft.type] }} tb-qb__icon"
+                  [title]="t.types[draft.type]"
+                  aria-hidden="true"
+                ></i>
+                <span class="tb-qb__text">{{ draft.text.trim() || untitled }}</span>
+                @if (brokenIds().has(draft.id)) {
+                  <i
+                    class="tb-i tb-i-error tb-qb__error"
+                    role="img"
+                    [attr.aria-label]="t.hasProblem"
+                  ></i>
+                }
+                <span class="tb-qb__points">{{ draft.points }}</span>
+              </button>
+            </li>
           }
+        </ol>
+        @if (!locked() && questions().length < maxQuestions) {
+          <div class="tb-qb__add">
+            <p-button
+              [label]="t.newQuestion"
+              icon="tb-i tb-i-add"
+              severity="secondary"
+              aria-haspopup="menu"
+              (onClick)="typeMenu.toggle($event)"
+            />
+            <p-button
+              [label]="t.withAi"
+              icon="tb-i tb-i-auto_awesome"
+              styleClass="tb-button-ai"
+              (onClick)="ai.emit()"
+            />
+          </div>
+        }
+      </section>
+
+      @if (opened(); as current) {
+        <p-card styleClass="tb-section-card" class="tb-qb__question">
+          @for (draft of [current.draft]; track draft.id) {
+            <tb-question-editor
+              [attr.aria-label]="t.heading(current.index + 1)"
+              role="group"
+              [question]="draft"
+              (questionChange)="replace($event)"
+              [number]="current.index + 1"
+              [locked]="locked()"
+              [showProblems]="showProblems()"
+            >
+              @if (!locked()) {
+                <span actions class="tb-qb__actions">
+                  <p-button
+                    icon="tb-i tb-i-content_copy"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="secondary"
+                    [disabled]="questions().length >= maxQuestions"
+                    [ariaLabel]="t.copy(current.index + 1)"
+                    (onClick)="copy(draft.id)"
+                  />
+                  <p-button
+                    icon="tb-i tb-i-arrow_upward"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="secondary"
+                    [disabled]="current.index === 0"
+                    [ariaLabel]="t.moveUp(current.index + 1)"
+                    (onClick)="move(draft.id, -1)"
+                  />
+                  <p-button
+                    icon="tb-i tb-i-arrow_downward"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="secondary"
+                    [disabled]="current.index === questions().length - 1"
+                    [ariaLabel]="t.moveDown(current.index + 1)"
+                    (onClick)="move(draft.id, 1)"
+                  />
+                  <p-button
+                    icon="tb-i tb-i-delete"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="danger"
+                    [ariaLabel]="t.remove(current.index + 1)"
+                    (onClick)="remove(draft.id)"
+                  />
+                </span>
+              }
+            </tb-question-editor>
+          }
+          <nav class="tb-qb__steps" [attr.aria-label]="t.outline">
+            @if (questions()[current.index - 1]; as previous) {
+              <p-button
+                [label]="t.heading(current.index)"
+                icon="tb-i tb-i-arrow_back"
+                [text]="true"
+                (onClick)="open(previous.id)"
+              />
+            }
+            <span class="tb-qb__grow"></span>
+            @if (questions()[current.index + 1]; as next) {
+              <p-button
+                [label]="t.heading(current.index + 2)"
+                icon="tb-i tb-i-arrow_forward"
+                iconPos="right"
+                [text]="true"
+                (onClick)="open(next.id)"
+              />
+            }
+          </nav>
         </p-card>
-      </aside>
+      }
+
+      @if (!compact()) {
+        <aside class="tb-qb__side" [attr.aria-label]="t.settings">
+          <p-card styleClass="tb-section-card" [header]="t.settings">
+            <tb-quiz-settings
+              [reveal]="reveal()"
+              (revealChange)="reveal.set($event)"
+              [attempts]="attempts()"
+              (attemptsChange)="attempts.set($event)"
+            />
+          </p-card>
+          <p-card styleClass="tb-section-card tb-section-card--filled" [header]="s.title">
+            <dl class="tb-qb__sums">
+              <dt>{{ s.questions }}</dt>
+              <dd>{{ questions().length }}</dd>
+              <dt>{{ s.points }}</dt>
+              <dd>{{ points() }}</dd>
+              @if (questions().length > 0) {
+                <dt>{{ s.time }}</dt>
+                <dd>{{ s.minutes(minutes()[0], minutes()[1]) }}</dd>
+              }
+            </dl>
+            @if (showProblems()) {
+              @for (item of problems(); track item.id) {
+                <p class="tb-qb__problem">
+                  <i class="tb-i tb-i-error" aria-hidden="true"></i>
+                  <span class="tb-qb__grow">{{ s.problem(item.number, item.problem) }}</span>
+                  <a
+                    href=""
+                    [attr.aria-label]="s.openProblem(item.number)"
+                    (click)="$event.preventDefault(); open(item.id)"
+                    >{{ s.open }}</a
+                  >
+                </p>
+              }
+            }
+          </p-card>
+        </aside>
+      }
     }
+    <p-menu
+      #typeMenu
+      [model]="newItems"
+      [popup]="true"
+      appendTo="body"
+      [ariaLabel]="t.type"
+      (onHide)="focusAdded()"
+    >
+      <ng-template #item let-item [tbRowType]="newItems">
+        <a class="p-menu-item-link tb-type-item" data-pc-section="itemlink" tabindex="-1">
+          <i class="{{ item.icon }}" aria-hidden="true"></i>
+          <span class="tb-type-item__text">
+            <span>{{ item.label }}</span>
+            <small>{{ item.title }}</small>
+          </span>
+        </a>
+      </ng-template>
+    </p-menu>
   `,
   styles: `
     :host {
@@ -275,6 +329,56 @@ import { QuizSettings } from './quiz-settings';
     .tb-qb__wide {
       flex: 1 0 100%;
       margin: 0;
+    }
+
+    /* the locked quiz (sketch 30): a tertiary note with its own filled action */
+    .tb-qb__locked,
+    .tb-qb__problems {
+      display: grid;
+      gap: var(--tb-space-2);
+      justify-items: start;
+      padding: var(--tb-space-3) var(--tb-space-4);
+      border-radius: var(--tb-shape-lg);
+    }
+
+    .tb-qb__locked {
+      gap: var(--tb-space-3);
+      background: var(--p-md-tertiary-container);
+      color: var(--p-md-on-tertiary-container);
+    }
+
+    .tb-qb__problems {
+      background: var(--p-md-error-container);
+      color: var(--p-md-on-error-container);
+    }
+
+    .tb-qb__problems a {
+      color: inherit;
+    }
+
+    .tb-qb__note {
+      display: flex;
+      gap: var(--tb-space-2);
+      align-items: flex-start;
+      margin: 0;
+    }
+
+    .tb-qb__problems .tb-qb__note {
+      align-items: center;
+      font-weight: 600;
+    }
+
+    .tb-qb__empty {
+      display: grid;
+      gap: var(--tb-space-2);
+      width: min(100%, 17.5rem);
+      margin-top: var(--tb-space-2);
+    }
+
+    .tb-qb__lock {
+      font-size: 1.25rem;
+      padding-inline: var(--tb-space-2);
+      color: var(--p-md-on-surface-variant);
     }
 
     .tb-qb__outline {
@@ -455,6 +559,7 @@ export class QuestionSection {
   protected readonly untitled = T.editor.untitledQuestion;
   protected readonly icons = QUESTION_ICONS;
   protected readonly maxQuestions = MAX_QUESTIONS;
+  protected readonly lower = lowerFirst;
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
 
@@ -470,6 +575,8 @@ export class QuestionSection {
   readonly showProblems = input(false);
   /** A phone: «Как проходит тест» is a tab of its own. */
   readonly compact = input(false);
+  /** «Создать копию для правок» of a locked quiz. */
+  readonly copyQuiz = output();
   /** «С ИИ»: the assistant drafts questions. */
   readonly ai = output();
 
@@ -522,6 +629,12 @@ export class QuestionSection {
 
   open(id: string): void {
     this.chosenId.set(id);
+  }
+
+  /** A link to a broken question: it opens with the focus in its text. */
+  protected show(id: string): void {
+    this.open(id);
+    this.focusLater(`#question-text-${id}`);
   }
 
   add(type: QuestionType): void {

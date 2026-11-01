@@ -5,7 +5,9 @@ import { Drawer } from 'primeng/drawer';
 import {
   ChangeDetectionStrategy,
   Component,
+  OnChanges,
   OnInit,
+  SimpleChanges,
   computed,
   inject,
   input,
@@ -425,6 +427,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                   [showProblems]="quizChecked()"
                   [compact]="compact()"
                   (ai)="openAi()"
+                  (copyQuiz)="copyForEdits()"
                 />
               }
               @if (activeTab() === 'settings') {
@@ -618,7 +621,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     }
   `,
 })
-export class AssignmentEditorPage implements OnInit, CanLeave {
+export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   protected readonly t = T.editor;
   protected readonly c = T.create;
   protected readonly maxVideos = MAX_VIDEOS;
@@ -950,6 +953,21 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     });
   }
 
+  /** «Создать копию для правок» opens the copy in this same page: it starts over with the copy. */
+  ngOnChanges(changes: SimpleChanges): void {
+    const change = changes['assignmentId'];
+    if (change !== undefined && !change.firstChange) {
+      this.quizLocked.set(false);
+      this.quizChecked.set(false);
+      this.quizError.set(null);
+      this.quizChanged.set(false);
+      this.videosChanged.set(false);
+      this.dueChanged.set(false);
+      this.error.set(null);
+      this.load();
+    }
+  }
+
   ngOnInit(): void {
     if (this.isNew()) {
       this.savedSnapshot = this.snapshot();
@@ -1032,6 +1050,27 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     );
     this.quizReveal.set(assignment.quizReveal);
     this.quizAttempts.set(assignment.quizAttempts ?? 0);
+    // a finished attempt shows the quiz was started; a started one only the server knows (homework.quiz-started)
+    this.quizLocked.set(assignment.tasks.some((task) => task.quizScore !== null));
+  }
+
+  /** A locked quiz is changed in a copy of the assignment, opened on «Тест». */
+  protected copyForEdits(): void {
+    const id = this.assignmentId();
+    if (id === undefined) {
+      return;
+    }
+    this.api.copyAssignment(id).subscribe({
+      next: (copy) => {
+        this.snackbar.success(T.copy.copied(copy.title));
+        void this.router.navigate(['/teacher/homework', copy.id, 'edit'], {
+          queryParams: { tab: 'quiz' },
+        });
+      },
+      error: (error: unknown) => {
+        this.error.set(describeError(error, T.editor.failed));
+      },
+    });
   }
 
   private loadGroups(): void {
@@ -1220,7 +1259,8 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
     }
     this.quizChecked.set(true);
     if (!this.quizLocked() && firstProblem(this.questions()) !== null) {
-      this.quizError.set(T.quiz.failed);
+      // the «Тест» tab lists the questions to fix
+      this.quizError.set(null);
       this.choose('quiz');
       return;
     }

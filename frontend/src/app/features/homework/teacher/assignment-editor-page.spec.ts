@@ -37,6 +37,13 @@ const STUDENTS = [
 const DAY = 24 * 60 * 60 * 1000;
 
 /** «Выдать» and not «Выдать и поместить на доску». */
+/** The tasks of the fixture with no quiz attempt: the questions stay editable. */
+const UNSTARTED = assignmentDetails().tasks.map((task) => ({
+  ...task,
+  quizScore: null,
+  quizMax: null,
+}));
+
 function exactButton(host: HTMLElement, text: string): HTMLButtonElement {
   const button = [...host.querySelectorAll('button')].find(
     (candidate) => candidate.textContent.trim() === text,
@@ -888,7 +895,7 @@ describe('AssignmentEditorPage', () => {
   });
 
   it('saves the questions and the quiz settings, sending nothing when the quiz is untouched', async () => {
-    const { page, host } = await edit(assignmentDetails({ attachments: [] }));
+    const { page, host } = await edit(assignmentDetails({ attachments: [], tasks: UNSTARTED }));
     exactButton(host, 'Сохранить').click();
     const plain = backend.expectOne({
       method: 'PUT',
@@ -899,7 +906,7 @@ describe('AssignmentEditorPage', () => {
     plain.flush(assignmentDetails({ version: 1 }));
     await fixture.whenStable();
 
-    const again = await edit(assignmentDetails({ attachments: [] }));
+    const again = await edit(assignmentDetails({ attachments: [], tasks: UNSTARTED }));
     expect(again.page.canLeave()).toBe(true);
     again.page.changeQuestions([
       { ...questionDraft('NUMBER'), text: 'Сколько будет 2 + 2?', value: 4 },
@@ -922,6 +929,7 @@ describe('AssignmentEditorPage', () => {
     const { page, host } = await edit(
       assignmentDetails({
         attachments: [],
+        tasks: UNSTARTED,
         questions: [
           {
             id: 'q-1',
@@ -977,6 +985,42 @@ describe('AssignmentEditorPage', () => {
     });
     expect(retry.request.body).not.toHaveProperty('questions');
     retry.flush(assignmentDetails({ version: 1 }));
+  });
+
+  it('locks a quiz a student finished and edits a copy of it on «Тест»', async () => {
+    const { page, host } = await edit(assignmentDetails({ attachments: [] }));
+    page.choose('quiz');
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Ученик уже начал тест');
+    exactButton(host, 'Создать копию для правок').click();
+    backend
+      .expectOne({ method: 'POST', url: '/api/teacher/homework/assignments/a-1/copy' })
+      .flush(assignmentDetails({ id: 'a-2', title: 'Копия', tasks: [] }));
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-2', 'edit'], {
+      queryParams: { tab: 'quiz' },
+    });
+
+    fixture.componentRef.setInput('assignmentId', 'a-2');
+    await fixture.whenStable();
+    backend
+      .expectOne('/api/teacher/homework/assignments/a-2')
+      .flush(assignmentDetails({ id: 'a-2', tasks: [], draftStudentIds: [] }));
+    backend.expectOne('/api/teacher/students').flush(STUDENTS);
+    flushGroups();
+    await fixture.whenStable();
+    expect(readableText(host)).not.toContain('Ученик уже начал тест');
+  });
+
+  it('reports a copy that failed', async () => {
+    const { page, host } = await edit(assignmentDetails({ attachments: [] }));
+    page.choose('quiz');
+    await fixture.whenStable();
+    exactButton(host, 'Создать копию для правок').click();
+    backend
+      .expectOne({ method: 'POST', url: '/api/teacher/homework/assignments/a-1/copy' })
+      .flush({ status: 500 }, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it('offers the assistant the textbooks and readable files picked for a new assignment', async () => {

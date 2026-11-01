@@ -169,7 +169,14 @@ export const en: Translation<typeof ru> = {
       problem: (index: number, problem: string) => `Question ${String(index)}: ${problem}`,
     },
     locked:
-      'A student has already started the quiz, so the questions can no longer be changed. The rest of the assignment can be edited.',
+      'A student has already started the quiz, so the questions can no longer be changed. You can still edit the instructions, due date and materials.',
+    copyForEdits: 'Duplicate to edit',
+    emptyTitle: 'Add questions',
+    emptyHint: 'Answers are marked automatically, and you will see where each student went wrong.',
+    emptyAiHint: 'The AI uses the assignment text and any linked textbook',
+    notGiven: (count: number) =>
+      `Not assigned: ${String(count)} ${count === 1 ? 'question needs' : 'questions need'} fixing`,
+    problemLink: (index: number, problem: string) => `Question ${String(index)}: ${problem}`,
     problems: {
       text: 'Enter a question',
       options: 'Enter at least two answer options',
