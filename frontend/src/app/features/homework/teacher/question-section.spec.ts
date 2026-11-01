@@ -6,7 +6,7 @@ import {
   readableText,
   requireElement,
 } from '@testing/dom';
-import { testProviders } from '@testing/setup';
+import { screenWidth, testProviders } from '@testing/setup';
 import { MAX_QUESTIONS, QuestionDraft, questionDraft } from './question-drafts';
 import { QuestionSection } from './question-section';
 
@@ -160,5 +160,84 @@ describe('QuestionSection', () => {
     section.questions.set([questionDraft('NUMBER')]);
     await fixture.whenStable();
     expect(host.querySelector('.tb-qb__problems')).toBeNull();
+  });
+});
+
+describe('QuestionSection on a phone', () => {
+  let fixture: ComponentFixture<QuestionSection>;
+  let section: QuestionSection;
+  let host: HTMLElement;
+
+  beforeEach(async () => {
+    TestBed.configureTestingModule({
+      imports: [QuestionSection],
+      providers: testProviders(screenWidth(400)),
+    });
+    fixture = TestBed.createComponent(QuestionSection);
+    section = fixture.componentInstance;
+    host = hostElement(fixture);
+    fixture.componentRef.setInput('compact', true);
+    fixture.componentRef.setInput('single', true);
+    fixture.componentRef.setInput('status', 'сохранено · 11:14');
+    await fixture.whenStable();
+  });
+
+  function ids(): string[] {
+    return section.questions().map((q) => q.id);
+  }
+
+  it('adds a question from the bottom sheet and opens it full screen', async () => {
+    buttonByText(host, 'Добавить вопрос').click();
+    await fixture.whenStable();
+    expect(section.sheetOpen()).toBe(true);
+    buttonByText(document.body, 'Соединить пары').click();
+    await fixture.whenStable();
+    expect(section.questions().map((q) => q.type)).toEqual(['MATCHING']);
+    expect(section.full()).toBe(ids()[0]);
+    expect(document.body.textContent).toContain('Вопрос 1 из 1');
+    expect(host.classList).toContain('tb-qb--single');
+
+    const asked = vi.fn();
+    section.ai.subscribe(asked);
+    section.sheetOpen.set(true);
+    await fixture.whenStable();
+    buttonByText(document.body, 'Составить с ИИ').click();
+    expect(asked).toHaveBeenCalled();
+    expect(section.sheetOpen()).toBe(false);
+  });
+
+  it('opens a row full screen and steps, copies and removes there', async () => {
+    section.questions.set([complete('A'), complete('B')]);
+    await fixture.whenStable();
+    expect(host.querySelector('.tb-qb__question')).toBeNull();
+    expect(host.querySelector('.tb-qb__chevron')).not.toBeNull();
+    expect(host.querySelector('.tb-qb__add.tb-bottom-actions')).not.toBeNull();
+    buttonByText(host, 'Вопрос').click();
+    expect(section.sheetOpen()).toBe(true);
+    section.sheetOpen.set(false);
+
+    requireElement(host, `[data-row="${ids()[0] ?? ''}"]`, HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(document.body.textContent).toContain('Вопрос 1 из 2');
+    expect(document.body.textContent).toContain('сохранено · 11:14');
+    buttonByText(document.body, 'Вопрос 2').click();
+    await fixture.whenStable();
+    expect(section.full()).toBe(ids()[1]);
+    buttonByText(document.body, 'Вопрос 1').click();
+    await fixture.whenStable();
+    expect(section.full()).toBe(ids()[0]);
+
+    buttonByText(document.body, 'Создать копию вопроса 1').click();
+    await fixture.whenStable();
+    expect(ids()).toHaveLength(3);
+    expect(section.full()).toBe(ids()[1]);
+    buttonByText(document.body, 'Убрать вопрос 2').click();
+    await fixture.whenStable();
+    expect(ids()).toHaveLength(2);
+    expect(section.full()).toBe(ids()[1]);
+
+    buttonByText(document.body, 'Закрыть').click();
+    await fixture.whenStable();
+    expect(section.full()).toBeNull();
   });
 });

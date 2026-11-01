@@ -630,8 +630,11 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
  * The points stepper (sketch 28, board 33; ours — M3 publishes no stepper): «− N +» in one 40 dp pill with a
  * 1 dp outline, 40 dp icon buttons; the field is a spinbutton, so the arrow keys change it.
  */
-.p-inputnumber.tb-stepper {
+/* `.p-dialog.tb-d--full .p-inputnumber` stretches fields: the stepper keeps its size */
+.p-inputnumber.tb-stepper,
+.p-dialog.tb-d.tb-d--full .p-inputnumber.tb-stepper {
   display: inline-flex;
+  flex: none;
   inline-size: auto;
   block-size: 2.5rem;
   border: 1px solid var(--p-md-outline);
@@ -639,6 +642,7 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
   overflow: hidden;
 
   .p-inputnumber-input {
+    flex: none;
     inline-size: 3rem;
     padding: 0;
     border: 0;

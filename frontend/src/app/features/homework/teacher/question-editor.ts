@@ -77,7 +77,6 @@ import {
         [label]="t.types[q.type]"
         icon="tb-i {{ icons[q.type] }}"
         severity="secondary"
-        variant="outlined"
         [disabled]="locked()"
         [ariaLabel]="t.type + ': ' + t.types[q.type]"
         aria-haspopup="menu"
@@ -367,7 +366,6 @@ import {
           [label]="t.explanation"
           icon="tb-i tb-i-lightbulb"
           severity="secondary"
-          variant="outlined"
           (onClick)="unfold()"
         />
       }

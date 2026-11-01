@@ -426,6 +426,8 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                   [error]="quizError()"
                   [showProblems]="quizChecked()"
                   [compact]="compact()"
+                  [single]="single()"
+                  [status]="savedStatus()"
                   (ai)="openAi()"
                   (copyQuiz)="copyForEdits()"
                 />
@@ -748,6 +750,11 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   );
   /** «сохранено · HH:mm» of the last autosave. */
   protected readonly savedAt = signal<string | null>(null);
+  /** «сохранено · HH:mm» under a question full screen on a phone. */
+  protected readonly savedStatus = computed(() => {
+    const at = this.savedAt();
+    return at === null ? null : this.t.savedAt(at);
+  });
   protected readonly autosaving = signal(false);
   /** Milliseconds of quiet before a draft saves itself. */
   autosaveDelay = AUTOSAVE_DELAY;

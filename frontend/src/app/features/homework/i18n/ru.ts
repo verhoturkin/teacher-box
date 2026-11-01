@@ -101,6 +101,7 @@ export const ru = {
       ORDERING: 'Ученик увидит элементы перемешанными',
     },
     heading: (index: number) => `Вопрос ${String(index)}`,
+    step: (index: number, total: number) => `Вопрос ${String(index)} из ${String(total)}`,
     type: 'Тип вопроса',
     retype: {
       header: 'Сменить тип вопроса?',

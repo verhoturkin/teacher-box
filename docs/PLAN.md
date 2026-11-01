@@ -83,7 +83,7 @@ Russian wording; English is written separately (AGENTS.md §6.1).
   «Выдать» with broken questions — «Задание не выдано: N вопроса нужно поправить» with links, rows
   marked; a test a student has started — the tertiary note, «Создать копию для правок» (the copy
   opens on «Тест») and read-only rows.
-- [ ] **347.3 F** Compact (sketches 21, 31, 32): «Вопросы» is the outline; a row opens one
+- [x] **347.3 F** Compact (sketches 21, 31, 32): «Вопросы» is the outline; a row opens one
   question full screen («Вопрос 3 из 8», type and points, tap-to-mark options, folded
   explanation, the bottom bar «‹ 2 · сохранено · Вопрос 4 ›»); «Вопрос» opens a bottom sheet of the
   six types and «Составить с ИИ». Medium (19) — one column.

@@ -19,6 +19,7 @@ import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Menu } from 'primeng/menu';
 import { EmptyState } from '@shared/ui/empty-state';
+import { DialogFooter, DialogHeaderActions, TbDialog } from '@shared/ui/dialog/dialog';
 import { RowType } from '@shared/ui/row-type.directive';
 import { QuestionType, QuizReveal } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
@@ -54,10 +55,14 @@ import { QuizSettings } from './quiz-settings';
     EmptyState,
     Menu,
     RowType,
+    TbDialog,
+    DialogFooter,
+    DialogHeaderActions,
     QuestionEditor,
     QuizSettings,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class.tb-qb--single]': 'single()' },
   template: `
     @if (error(); as message) {
       <p class="tb-field__error tb-qb__wide" role="alert">{{ message }}</p>
@@ -97,8 +102,8 @@ import { QuizSettings } from './quiz-settings';
           <p-button
             [label]="t.addQuestion"
             icon="tb-i tb-i-add"
-            aria-haspopup="menu"
-            (onClick)="typeMenu.toggle($event)"
+            [attr.aria-haspopup]="compact() ? 'dialog' : 'menu'"
+            (onClick)="compact() ? sheetOpen.set(true) : typeMenu.toggle($event)"
           />
           <p-button
             [label]="t.composeWithAi"
@@ -122,7 +127,7 @@ import { QuizSettings } from './quiz-settings';
             <li
               class="tb-qb__row"
               cdkDrag
-              [class.tb-qb__row--open]="draft.id === openId()"
+              [class.tb-qb__row--open]="!compact() && draft.id === openId()"
               [class.tb-qb__row--broken]="brokenIds().has(draft.id)"
             >
               @if (!locked()) {
@@ -143,8 +148,8 @@ import { QuizSettings } from './quiz-settings';
                 type="button"
                 class="tb-qb__open"
                 [attr.data-row]="draft.id"
-                [attr.aria-current]="draft.id === openId() ? 'true' : null"
-                (click)="open(draft.id)"
+                [attr.aria-current]="!compact() && draft.id === openId() ? 'true' : null"
+                (click)="compact() ? openFull(draft.id) : open(draft.id)"
               >
                 <b class="tb-qb__number">{{ n + 1 }}</b>
                 <i
@@ -161,18 +166,21 @@ import { QuizSettings } from './quiz-settings';
                   ></i>
                 }
                 <span class="tb-qb__points">{{ draft.points }}</span>
+                @if (compact()) {
+                  <i class="tb-i tb-i-chevron_right tb-qb__chevron" aria-hidden="true"></i>
+                }
               </button>
             </li>
           }
         </ol>
         @if (!locked() && questions().length < maxQuestions) {
-          <div class="tb-qb__add">
+          <div class="tb-qb__add" [class.tb-bottom-actions]="compact()">
             <p-button
               [label]="t.newQuestion"
               icon="tb-i tb-i-add"
               severity="secondary"
-              aria-haspopup="menu"
-              (onClick)="typeMenu.toggle($event)"
+              [attr.aria-haspopup]="compact() ? 'dialog' : 'menu'"
+              (onClick)="compact() ? sheetOpen.set(true) : typeMenu.toggle($event)"
             />
             <p-button
               [label]="t.withAi"
@@ -184,7 +192,7 @@ import { QuizSettings } from './quiz-settings';
         }
       </section>
 
-      @if (opened(); as current) {
+      @if (!compact() && opened(); as current) {
         <p-card styleClass="tb-section-card" class="tb-qb__question">
           @for (draft of [current.draft]; track draft.id) {
             <tb-question-editor
@@ -299,6 +307,98 @@ import { QuizSettings } from './quiz-settings';
         </aside>
       }
     }
+    @if (compact()) {
+      <tb-dialog
+        kind="form"
+        [visible]="full() !== null"
+        (visibleChange)="$event || closeFull()"
+        [headline]="fullHeadline()"
+        [cancelLabel]="null"
+      >
+        <ng-template tbDialogHeaderActions>
+          @if (!locked() && fullOpened(); as current) {
+            <p-button
+              icon="tb-i tb-i-content_copy"
+              [text]="true"
+              [rounded]="true"
+              severity="secondary"
+              [disabled]="questions().length >= maxQuestions"
+              [ariaLabel]="t.copy(current.index + 1)"
+              (onClick)="copyFull(current.draft.id)"
+            />
+            <p-button
+              icon="tb-i tb-i-delete"
+              [text]="true"
+              [rounded]="true"
+              severity="danger"
+              [ariaLabel]="t.remove(current.index + 1)"
+              (onClick)="removeFull(current.draft.id)"
+            />
+          }
+        </ng-template>
+        @if (fullOpened(); as current) {
+          @for (draft of [current.draft]; track draft.id) {
+            <tb-question-editor
+              [question]="draft"
+              (questionChange)="replace($event)"
+              [number]="current.index + 1"
+              [heading]="false"
+              [compact]="true"
+              [locked]="locked()"
+              [showProblems]="showProblems()"
+            />
+          }
+        }
+        <ng-template tbDialogFooter>
+          @if (fullOpened(); as current) {
+            <nav class="tb-qb__dock" [attr.aria-label]="t.outline">
+              @if (questions()[current.index - 1]; as previous) {
+                <p-button
+                  [label]="number(current.index)"
+                  icon="tb-i tb-i-chevron_left"
+                  [text]="true"
+                  [ariaLabel]="t.heading(current.index)"
+                  (onClick)="full.set(previous.id)"
+                />
+              }
+              <span class="tb-qb__status" role="status">{{ status() }}</span>
+              @if (questions()[current.index + 1]; as next) {
+                <p-button
+                  [label]="t.heading(current.index + 2)"
+                  icon="tb-i tb-i-chevron_right"
+                  iconPos="right"
+                  severity="secondary"
+                  (onClick)="full.set(next.id)"
+                />
+              }
+            </nav>
+          }
+        </ng-template>
+      </tb-dialog>
+      <tb-dialog
+        kind="sheet"
+        [(visible)]="sheetOpen"
+        [headline]="t.newQuestionTitle"
+        [cancelLabel]="null"
+      >
+        <div class="tb-qb__sheet">
+          @for (type of types; track type) {
+            <button type="button" class="tb-qb__sheet-item" (click)="addFull(type)">
+              <i class="tb-i {{ icons[type] }}" aria-hidden="true"></i>
+              <span class="tb-type-item__text">
+                <span>{{ t.types[type] }}</span>
+                <small>{{ t.typeMenuHints[type] }}</small>
+              </span>
+            </button>
+          }
+          <hr class="tb-qb__sheet-divider" />
+          <button type="button" class="tb-qb__sheet-item tb-qb__sheet-item--ai" (click)="askAi()">
+            <i class="tb-i tb-i-auto_awesome" aria-hidden="true"></i>
+            <span>{{ t.composeWithAi }}</span>
+          </button>
+        </div>
+      </tb-dialog>
+    }
     <p-menu
       #typeMenu
       [model]="newItems"
@@ -373,6 +473,84 @@ import { QuizSettings } from './quiz-settings';
       gap: var(--tb-space-2);
       width: min(100%, 17.5rem);
       margin-top: var(--tb-space-2);
+    }
+
+    /* medium and phone (sketches 19, 21): one column */
+    :host(.tb-qb--single) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    :host(.tb-qb--single) .tb-qb__outline,
+    :host(.tb-qb--single) .tb-qb__question,
+    :host(.tb-qb--single) .tb-qb__side {
+      flex: none;
+      max-width: none;
+    }
+
+    .tb-qb__chevron {
+      font-size: 1.25rem;
+      color: var(--p-md-on-surface-variant);
+    }
+
+    /* the phone bottom bar «Вопрос · С ИИ» (sketch 21) bleeds to the edges of the pane */
+    .tb-qb__add.tb-bottom-actions {
+      margin: var(--tb-space-2) calc(-1 * var(--tb-space-4)) 0;
+    }
+
+    .tb-qb__dock {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      gap: var(--tb-space-2);
+    }
+
+    .tb-qb__status {
+      flex: 1;
+      text-align: center;
+      font: var(--tb-type-body-s);
+      color: var(--p-md-on-surface-variant);
+    }
+
+    .tb-qb__sheet {
+      display: grid;
+      margin-inline: calc(-1 * var(--tb-space-6));
+    }
+
+    /* a sheet row (sketch 32): a 24 dp primary icon, the type and its hint, 56 dp */
+    .tb-qb__sheet-item {
+      display: flex;
+      gap: var(--tb-space-4);
+      align-items: center;
+      min-height: 3.5rem;
+      padding: var(--tb-space-2) var(--tb-space-6);
+      border: 0;
+      background: transparent;
+      color: var(--p-md-on-surface);
+      font: var(--tb-type-body-l);
+      text-align: start;
+      cursor: pointer;
+    }
+
+    .tb-qb__sheet-item:hover,
+    .tb-qb__sheet-item:focus-visible {
+      background: color-mix(in srgb, currentcolor 8%, transparent);
+    }
+
+    .tb-qb__sheet-item > .tb-i {
+      color: var(--p-md-primary);
+    }
+
+    .tb-qb__sheet-item--ai,
+    .tb-qb__sheet-item--ai > .tb-i {
+      color: var(--p-md-on-tertiary-container);
+    }
+
+    .tb-qb__sheet-divider {
+      width: 100%;
+      margin: var(--tb-space-2) 0;
+      border: 0;
+      border-top: 1px solid var(--p-md-outline-variant);
     }
 
     .tb-qb__lock {
@@ -573,13 +751,35 @@ export class QuestionSection {
   readonly error = input<string | null>(null);
   /** «Выдать» was tried: show what is wrong in each question. */
   readonly showProblems = input(false);
-  /** A phone: «Как проходит тест» is a tab of its own. */
+  /**
+   * A phone (sketches 21, 31, 32): «Как проходит тест» is a tab of its own, a row opens its question full screen and
+   * «Вопрос» a bottom sheet of the types.
+   */
   readonly compact = input(false);
+  /** Medium and phone: one column (sketch 19). */
+  readonly single = input(false);
+  /** What the draft says about saving («сохранено · 11:14»), under a question on a phone. */
+  readonly status = input<string | null>(null);
   /** «Создать копию для правок» of a locked quiz. */
   readonly copyQuiz = output();
   /** «С ИИ»: the assistant drafts questions. */
   readonly ai = output();
 
+  /** The question open full screen on a phone; `null` — the outline. */
+  readonly full = signal<string | null>(null);
+  /** The bottom sheet of the question types on a phone. */
+  readonly sheetOpen = signal(false);
+  protected readonly types = QUESTION_TYPES;
+  protected readonly number = String;
+  protected readonly fullOpened = computed(() => {
+    const index = this.questions().findIndex((draft) => draft.id === this.full());
+    const draft = this.questions()[index];
+    return draft === undefined ? null : { draft, index };
+  });
+  protected readonly fullHeadline = computed(() => {
+    const current = this.fullOpened();
+    return current === null ? '' : this.t.step(current.index + 1, this.questions().length);
+  });
   /** A question just added from the menu: its text takes the focus once the menu closes. */
   private added: string | null = null;
   /** The question open beside the outline; the first one until another is chosen. */
@@ -629,6 +829,45 @@ export class QuestionSection {
 
   open(id: string): void {
     this.chosenId.set(id);
+  }
+
+  /** A row on a phone: its question full screen. */
+  openFull(id: string): void {
+    this.open(id);
+    this.full.set(id);
+  }
+
+  /** A type from the bottom sheet: the new question opens full screen. */
+  addFull(type: QuestionType): void {
+    this.sheetOpen.set(false);
+    this.add(type);
+    this.added = null;
+    this.full.set(this.openId());
+  }
+
+  protected askAi(): void {
+    this.sheetOpen.set(false);
+    this.ai.emit();
+  }
+
+  /** The copy opens full screen in place of its source. */
+  copyFull(id: string): void {
+    this.copy(id);
+    this.full.set(this.openId());
+  }
+
+  /** Removing the question full screen opens its neighbour; the last one goes back to the outline. */
+  removeFull(id: string): void {
+    this.remove(id);
+    this.full.set(this.openId());
+  }
+
+  protected closeFull(): void {
+    const id = this.full();
+    this.full.set(null);
+    if (id !== null) {
+      this.focusLater(`[data-row="${id}"]`);
+    }
   }
 
   /** A link to a broken question: it opens with the focus in its text. */

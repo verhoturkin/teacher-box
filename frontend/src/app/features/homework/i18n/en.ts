@@ -102,6 +102,7 @@ export const en: Translation<typeof ru> = {
       ORDERING: 'Students see the items shuffled',
     },
     heading: (index: number) => `Question ${String(index)}`,
+    step: (index: number, total: number) => `Question ${String(index)} of ${String(total)}`,
     type: 'Question type',
     retype: {
       header: 'Change the question type?',

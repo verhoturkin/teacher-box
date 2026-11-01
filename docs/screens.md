@@ -395,11 +395,11 @@ wider it falls back to «Тест»).
   number, type icon, text, error icon once «Выдать» was tried, points; the open row
   secondary-container; rows reorder by CDK drag or ↑ / ↓ on the handle; tonal «Вопрос» opens a menu
   of the six types with a hint each, tertiary «С ИИ» opens the AI pane), the **open question**
-  (`question-editor.ts` in a section card: «Вопрос N», the type as an outlined menu button — a
+  (`question-editor.ts` in a section card: «Вопрос N», the type as a tonal menu button — a
   change keeps the text, points and explanation, the options pass between the choices and the
   ordering, otherwise «Сменить тип вопроса?» asks first —, copy / ↑ / ↓ / delete, the Markdown
   text, the answer fields of the type as in sketch 29 with a rule hint, the points stepper 1–100,
-  the explanation folded into an outlined «Пояснение к ответу» while empty, «‹ Вопрос 2 · Вопрос 4
+  the explanation folded into a tonal «Пояснение к ответу» while empty, «‹ Вопрос 2 · Вопрос 4
   ›» under a divider) and the **side column** «Как проходит тест» (reveal radios, attempts as the
   connected group «1 · 2 · 3 · Без огр.», «Засчитывается лучшая попытка») and the filled card
   «Итого» (questions, points, «Примерно займёт N–M мин» — ¾ to 1 min a question, *ours* —, after
@@ -417,6 +417,14 @@ wider it falls back to «Тест»).
   `lock` and the filled tertiary «Создать копию для правок» (copies the assignment and opens the
   copy on «Тест» in the same page), the rows with `lock` instead of the handle, the question
   read-only.
+- **Medium and phone** (347.3, sketches 19, 21, 31, 32): one column — the outline, then the open
+  question and the side cards (medium). On a phone «Вопросы» is the outline only: rows end in
+  `chevron_right`, the bottom bar `tb-bottom-actions` holds «Вопрос · С ИИ»; a row opens its
+  question as a full-screen dialog (`tb-dialog kind="form"`: ✕, «Вопрос 3 из 8», copy and delete,
+  the type and the points stepper in one row, tap the circle or box to mark the right option, the
+  explanation folded; the footer «‹ 2 · сохранено · HH:mm · Вопрос 4 ›»); «Вопрос» opens a bottom
+  sheet «Новый вопрос» (the six types with hints, a divider, «Составить с ИИ»). ✕ returns to the
+  outline with the focus on the row.
 - **Header**: back, title, «?», «ИИ-помощник» (tonal). A draft (new or saved without tasks) has
   «сохранено · HH:mm» (Body Small, on-surface-variant) and the split filled «Выдать» (menu «Выдать и
   разместить на доске»); an issued assignment has the filled «Сохранить».
