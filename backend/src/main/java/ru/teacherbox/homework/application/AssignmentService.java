@@ -33,7 +33,7 @@ import ru.teacherbox.homework.domain.quiz.QuizAttempt;
 import ru.teacherbox.homework.domain.Submission;
 import ru.teacherbox.homework.domain.HomeworkTask;
 import ru.teacherbox.homework.domain.TaskStatus;
-import ru.teacherbox.homework.domain.quiz.Question;
+import ru.teacherbox.homework.domain.quiz.QuestionDraft;
 import ru.teacherbox.homework.domain.quiz.RevealRule;
 import ru.teacherbox.homework.persistence.AssignmentRepository;
 import ru.teacherbox.homework.persistence.AttachmentRepository;
@@ -121,27 +121,28 @@ public class AssignmentService {
 
     /**
      * @param videoInputs the videos of the assignment by link (ADR-0047), at most 5
-     * @param questions   auto-checked questions (ADR-0052)
+     * @param questions   auto-checked questions (ADR-0052); a draft (no students) keeps incomplete ones (ADR-0054)
      * @param reveal      when the student sees the right answers; {@code null} — after submitting
      * @param attempts    attempts per student, 0 — unlimited; {@code null} — one
      */
     @Transactional
     public AssignmentDetails create(String title, @Nullable String description, @Nullable Instant dueAt,
-            List<VideoInput> videoInputs, List<Question> questions, @Nullable RevealRule reveal,
+            List<VideoInput> videoInputs, List<QuestionDraft> questions, @Nullable RevealRule reveal,
             @Nullable Integer attempts, Collection<UUID> studentIds) {
         Instant now = clock.instant();
         Assignment assignment = Assignment.create(Ids.newId(), title, description, dueAt, now);
         assignment.changeQuiz(reveal, attempts);
         assignments.insert(assignment);
         videos.replace(assignment.id(), videoInputs);
-        quiz.replace(assignment.id(), questions);
+        quiz.replace(assignment.id(), questions, !studentIds.isEmpty());
         assignTo(assignment, studentIds, now);
         return details(assignment);
     }
 
     /**
      * @param videoInputs the videos in place of the assignment's ones; {@code null} — keep them
-     * @param questions   the questions in place of the assignment's ones; {@code null} — keep them
+     * @param questions   the questions in place of the assignment's ones; {@code null} — keep them; a draft keeps
+     *                    incomplete ones (ADR-0054)
      * @param reveal      {@code null} — keep
      * @param attempts    0 — unlimited; {@code null} — keep
      * @throws BusinessRuleException {@code homework.quiz-started} if the questions change after a student started
@@ -149,7 +150,7 @@ public class AssignmentService {
      */
     @Transactional
     public AssignmentDetails update(UUID assignmentId, String title, @Nullable String description,
-            @Nullable Instant dueAt, @Nullable List<VideoInput> videoInputs, @Nullable List<Question> questions,
+            @Nullable Instant dueAt, @Nullable List<VideoInput> videoInputs, @Nullable List<QuestionDraft> questions,
             @Nullable RevealRule reveal, @Nullable Integer attempts, long expectedVersion) {
         Assignment assignment = load(assignmentId);
         if (assignment.version() != expectedVersion) {
@@ -162,7 +163,7 @@ public class AssignmentService {
             videos.replace(assignment.id(), videoInputs);
         }
         if (questions != null) {
-            quiz.replace(assignment.id(), questions);
+            quiz.replace(assignment.id(), questions, !tasks.findByAssignment(assignmentId).isEmpty());
         }
         return details(assignment);
     }
@@ -184,13 +185,20 @@ public class AssignmentService {
         return details(copy);
     }
 
-    /** Gives the assignment to more students; students who already have it are skipped. */
+    /**
+     * Gives the assignment to more students; students who already have it are skipped.
+     *
+     * @throws BusinessRuleException {@code homework.quiz-incomplete} when a question of the draft is not finished
+     */
     @Transactional
     public AssignmentDetails assign(UUID assignmentId, Collection<UUID> studentIds) {
         Assignment assignment = load(assignmentId);
         Set<UUID> assigned = tasks.findByAssignment(assignmentId).stream()
                 .map(HomeworkTask::studentId)
                 .collect(Collectors.toSet());
+        if (!studentIds.isEmpty()) {
+            quiz.requireComplete(assignmentId);
+        }
         assignTo(assignment, studentIds.stream().filter(id -> !assigned.contains(id)).toList(), clock.instant());
         return details(assignment);
     }

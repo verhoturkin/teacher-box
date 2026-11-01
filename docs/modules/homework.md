@@ -94,6 +94,11 @@ keeps them; a list replaces them, copy makes new ids), `quizReveal` and `quizAtt
 unlimited, absent = keep / default 1); the details return the same with the key. Errors
 `homework.quiz-*` (422); the list is frozen once any student started an attempt
 (`homework.quiz-started`; the same list, text and settings stay editable).
+Drafts ([ADR-0054](../adr/0054-incomplete-questions-in-drafts.md), 346.1): an assignment without tasks
+keeps questions as typed (`QuestionDraft`; only lengths, counts, points and duplicate ids are refused
+at once); the type rules run when it is given out — create with `studentIds`, `POST …/students`, a
+question update of a given assignment — and answer 422 `homework.quiz-incomplete` with
+`questions [{number, code}]` (number from 1, the code of the first broken rule); nothing is saved.
 Student REST (`QuizService`, `/api/me/homework/tasks/{id}/quiz`): `GET` (questions without the key,
 options / items / the right column of a matching shuffled by stable ids seeded with the open attempt,
 attempts used / left, `canStart`, best attempt), `POST …/attempts` (returns the open attempt if there

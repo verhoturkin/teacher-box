@@ -117,12 +117,89 @@ class QuestionTest {
     void quizLimits() {
         var one = new Ordering(UUID.randomUUID(), "Q", 3, null, List.of(A, B));
         var two = new Ordering(UUID.randomUUID(), "Q", 3, null, List.of(A, B));
-        Quiz.requireValid(List.of(one, two));
+        Quiz.requireValid(List.of(QuestionDraft.of(one), QuestionDraft.of(two)));
         assertThat(Quiz.maxPoints(List.of(one, two))).isEqualTo(6);
-        assertCode("homework.quiz-duplicate-id", () -> Quiz.requireValid(List.of(one, one)));
-        List<Question> many = IntStream.range(0, 51)
-                .<Question>mapToObj(i -> new Ordering(UUID.randomUUID(), "Q", 1, null, List.of(A, B))).toList();
+        assertCode("homework.quiz-duplicate-id",
+                () -> Quiz.requireValid(List.of(QuestionDraft.of(one), QuestionDraft.of(one))));
+        List<QuestionDraft> many = IntStream.range(0, 51)
+                .mapToObj(i -> QuestionDraft.of(new Ordering(UUID.randomUUID(), "Q", 1, null, List.of(A, B))))
+                .toList();
         assertCode("homework.quiz-too-many-questions", () -> Quiz.requireValid(many));
+    }
+
+    @Test
+    void draftsRoundTripEveryType() {
+        List<Question> all = List.of(
+                new SingleChoice(UUID.randomUUID(), "S", 2, "why", List.of(A, B), B.id()),
+                new MultipleChoice(UUID.randomUUID(), "M", 1, null, List.of(A, B, C), Set.of(A.id(), C.id())),
+                new ShortText(UUID.randomUUID(), "T", 1, null, List.of("x")),
+                new Numeric(UUID.randomUUID(), "N", 1, null, BigDecimal.TEN, BigDecimal.ONE),
+                new Matching(UUID.randomUUID(), "P", 1, null,
+                        List.of(new Pair(UUID.randomUUID(), "l", "r"), new Pair(UUID.randomUUID(), "l2", "r2"))),
+                new Ordering(UUID.randomUUID(), "O", 1, null, List.of(A, B)));
+
+        assertThat(all.stream().map(q -> QuestionDraft.of(q).toQuestion()).toList()).isEqualTo(all);
+        assertThat(QuestionDraft.of(all.get(1)).correct()).containsExactly(A.id(), C.id());
+        UUID other = UUID.randomUUID();
+        assertThat(QuestionDraft.of(all.getFirst()).withId(other).toQuestion().id()).isEqualTo(other);
+    }
+
+    @Test
+    void draftKeepsIncompleteQuestionsButNotWhatCannotBeStored() {
+        UUID id = UUID.randomUUID();
+        var empty = new QuestionDraft(id, QuestionType.SINGLE_CHOICE, "", 1, " ",
+                List.of(new QuestionDraft.Item(id, "")), List.of(), List.of(), null, null, List.of());
+        assertThat(empty.explanation()).isNull();
+        assertCode("homework.quiz-text-invalid", empty::toQuestion);
+        var number = draft(QuestionType.NUMBER, "Q", List.of(), List.of());
+        assertThat(number.tolerance()).isEqualTo(BigDecimal.ZERO);
+        assertCode("homework.quiz-value-missing", number::toQuestion);
+        assertCode("homework.quiz-no-correct", () -> draft(QuestionType.SINGLE_CHOICE, "Q",
+                List.of(new QuestionDraft.Item(A.id(), "a"), new QuestionDraft.Item(B.id(), "b")), List.of())
+                .toQuestion());
+
+        assertCode("homework.quiz-text-invalid",
+                () -> draft(QuestionType.ORDERING, "x".repeat(2001), List.of(), List.of()));
+        assertCode("homework.quiz-text-invalid", () -> new QuestionDraft(id, QuestionType.ORDERING, "Q", 1,
+                "x".repeat(2001), List.of(), List.of(), List.of(), null, null, List.of()));
+        assertCode("homework.quiz-points-invalid", () -> new QuestionDraft(id, QuestionType.ORDERING, "Q", 0, null,
+                List.of(), List.of(), List.of(), null, null, List.of()));
+        assertCode("homework.quiz-option-invalid", () -> new QuestionDraft.Item(id, "x".repeat(501)));
+        assertCode("homework.quiz-option-invalid", () -> new QuestionDraft.Match(id, "", "x".repeat(501)));
+        assertCode("homework.quiz-option-invalid", () -> new QuestionDraft.Match(id, "x".repeat(501), ""));
+        assertCode("homework.quiz-options-count", () -> draft(QuestionType.ORDERING, "Q",
+                IntStream.range(0, 11).mapToObj(i -> new QuestionDraft.Item(UUID.randomUUID(), "")).toList(),
+                List.of()));
+        assertCode("homework.quiz-options-count", () -> draft(QuestionType.SHORT_TEXT, "Q", List.of(),
+                IntStream.range(0, 11).mapToObj(i -> "a").toList()));
+        assertCode("homework.quiz-option-invalid",
+                () -> draft(QuestionType.SHORT_TEXT, "Q", List.of(), List.of("x".repeat(201))));
+        assertCode("homework.quiz-options-count", () -> new QuestionDraft(id, QuestionType.MATCHING, "Q", 1, null,
+                List.of(), List.of(), List.of(), null, null,
+                IntStream.range(0, 11).mapToObj(i -> new QuestionDraft.Match(UUID.randomUUID(), "", "")).toList()));
+    }
+
+    @Test
+    void completeQuizNamesEveryBrokenQuestion() {
+        var good = QuestionDraft.of(new Ordering(UUID.randomUUID(), "Q", 1, null, List.of(A, B)));
+        var noText = draft(QuestionType.SHORT_TEXT, " ", List.of(), List.of("a"));
+        var noValue = draft(QuestionType.NUMBER, "Q", List.of(), List.of());
+
+        assertThat(Quiz.requireComplete(List.of(good))).containsExactly(good.toQuestion());
+        assertThatThrownBy(() -> Quiz.requireComplete(List.of(good, noText, noValue)))
+                .isInstanceOfSatisfying(BusinessRuleException.class, e -> {
+                    assertThat(e.code()).isEqualTo("homework.quiz-incomplete");
+                    assertThat(e.properties()).containsEntry("questions", List.of(
+                            new Quiz.Problem(2, "homework.quiz-text-invalid"),
+                            new Quiz.Problem(3, "homework.quiz-value-missing")));
+                });
+        assertCode("homework.quiz-duplicate-id", () -> Quiz.requireComplete(List.of(good, good)));
+    }
+
+    private static QuestionDraft draft(QuestionType type, String text, List<QuestionDraft.Item> options,
+            List<String> accepted) {
+        return new QuestionDraft(UUID.randomUUID(), type, text, 1, null, options, List.of(), accepted, null, null,
+                List.of());
     }
 
     private static List<Option> options(int n) {

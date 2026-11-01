@@ -58,7 +58,7 @@ Russian wording; English is written separately (AGENTS.md §6.1).
 
 ### 346. Editor tabs and autosave
 
-- [ ] **346.1 B** A draft keeps incomplete questions: question rules (`homework/domain/quiz`,
+- [x] **346.1 B** A draft keeps incomplete questions: question rules (`homework/domain/quiz`,
   `AssignmentQuiz`, `AssignmentService`) are checked on «Выдать», not on saving a draft; issuing a
   draft with broken questions answers 422 with the question number and the existing error code
   per question. Controller tests for both; ADR if the stored shape changes.

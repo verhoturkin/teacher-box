@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -45,20 +44,13 @@ import ru.teacherbox.homework.application.VideoCaptions;
 import ru.teacherbox.homework.application.VideoTranscripts;
 import ru.teacherbox.homework.domain.AssignmentVideo;
 import ru.teacherbox.homework.domain.VideoLink;
-import ru.teacherbox.homework.domain.quiz.Matching;
-import ru.teacherbox.homework.domain.quiz.MultipleChoice;
-import ru.teacherbox.homework.domain.quiz.Numeric;
-import ru.teacherbox.homework.domain.quiz.Option;
-import ru.teacherbox.homework.domain.quiz.Ordering;
-import ru.teacherbox.homework.domain.quiz.Pair;
-import ru.teacherbox.homework.domain.quiz.Question;
+import ru.teacherbox.homework.domain.quiz.QuestionDraft;
+import ru.teacherbox.homework.domain.quiz.QuestionDraft.Item;
+import ru.teacherbox.homework.domain.quiz.QuestionDraft.Match;
 import ru.teacherbox.homework.domain.quiz.QuestionType;
 import ru.teacherbox.homework.domain.quiz.Quiz;
 import ru.teacherbox.homework.domain.quiz.RevealRule;
-import ru.teacherbox.homework.domain.quiz.ShortText;
-import ru.teacherbox.homework.domain.quiz.SingleChoice;
 import ru.teacherbox.shared.Ids;
-import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.textbooks.api.PageRanges;
 
 /** The teacher's homework API. */
@@ -85,21 +77,21 @@ class TeacherHomeworkController {
 
     record OptionRequest(@Nullable UUID id, @Nullable String text) {
 
-        Option toOption() {
-            return new Option(id == null ? Ids.newId() : id, text == null ? "" : text);
+        Item toItem() {
+            return new Item(id == null ? Ids.newId() : id, text == null ? "" : text);
         }
     }
 
     record PairRequest(@Nullable UUID id, @Nullable String left, @Nullable String right) {
 
-        Pair toPair() {
-            return new Pair(id == null ? Ids.newId() : id, left == null ? "" : left, right == null ? "" : right);
+        Match toMatch() {
+            return new Match(id == null ? Ids.newId() : id, left == null ? "" : left, right == null ? "" : right);
         }
     }
 
     /**
      * A question of the assignment (ADR-0052); which fields count depends on the type. Limits are checked by the
-     * domain (codes {@code homework.quiz-*}).
+     * domain (codes {@code homework.quiz-*}); a draft keeps an incomplete question (ADR-0054).
      *
      * @param id          {@code null} — a new question
      * @param points      {@code null} — 1
@@ -122,32 +114,12 @@ class TeacherHomeworkController {
             @Nullable BigDecimal tolerance,
             @Size(max = 20) @Nullable List<@Valid @NotNull PairRequest> pairs) {
 
-        Question toQuestion() {
-            UUID questionId = id == null ? Ids.newId() : id;
-            String questionText = text == null ? "" : text;
-            int questionPoints = points == null ? 1 : points;
-            List<Option> optionList = options == null ? List.of() : options.stream().map(OptionRequest::toOption).toList();
-            return switch (type) {
-                case SINGLE_CHOICE -> new SingleChoice(questionId, questionText, questionPoints, explanation,
-                        optionList, correct != null && correct.size() == 1 ? correct.getFirst() : noCorrect());
-                case MULTIPLE_CHOICE -> new MultipleChoice(questionId, questionText, questionPoints, explanation,
-                        optionList, new LinkedHashSet<>(correct == null ? List.of() : correct));
-                case SHORT_TEXT -> new ShortText(questionId, questionText, questionPoints, explanation,
-                        accepted == null ? List.of() : accepted);
-                case NUMBER -> new Numeric(questionId, questionText, questionPoints, explanation,
-                        value == null ? noValue() : value, tolerance == null ? BigDecimal.ZERO : tolerance);
-                case MATCHING -> new Matching(questionId, questionText, questionPoints, explanation,
-                        pairs == null ? List.of() : pairs.stream().map(PairRequest::toPair).toList());
-                case ORDERING -> new Ordering(questionId, questionText, questionPoints, explanation, optionList);
-            };
-        }
-
-        private static UUID noCorrect() {
-            throw new BusinessRuleException("homework.quiz-no-correct", "A single choice needs one correct option");
-        }
-
-        private static BigDecimal noValue() {
-            throw new BusinessRuleException("homework.quiz-value-missing", "A number question needs a value");
+        QuestionDraft toDraft() {
+            return new QuestionDraft(id == null ? Ids.newId() : id, type, text == null ? "" : text,
+                    points == null ? 1 : points, explanation,
+                    options == null ? List.of() : options.stream().map(OptionRequest::toItem).toList(),
+                    correct == null ? List.of() : correct, accepted == null ? List.of() : accepted, value, tolerance,
+                    pairs == null ? List.of() : pairs.stream().map(PairRequest::toMatch).toList());
         }
     }
 
@@ -389,7 +361,7 @@ class TeacherHomeworkController {
         return videos == null ? List.of() : videos.stream().map(VideoRequest::toInput).toList();
     }
 
-    private static List<Question> questions(@Nullable List<QuestionRequest> questions) {
-        return questions == null ? List.of() : questions.stream().map(QuestionRequest::toQuestion).toList();
+    private static List<QuestionDraft> questions(@Nullable List<QuestionRequest> questions) {
+        return questions == null ? List.of() : questions.stream().map(QuestionRequest::toDraft).toList();
     }
 }
