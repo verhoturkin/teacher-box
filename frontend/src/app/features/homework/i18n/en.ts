@@ -240,17 +240,14 @@ export const en: Translation<typeof ru> = {
       `${String(unanswered)} ${unanswered === 1 ? 'question has' : 'questions have'} no answer. Once you finish, you cannot change this attempt.`,
     confirmAccept: 'Finish',
     revealAfterSubmit: 'You will see the correct answers after submitting.',
-    result: (score: number, max: number) => `Score: ${String(score)} out of ${String(max)}`,
-    bestResult: (score: number, max: number) =>
-      `Best score: ${String(score)} out of ${String(max)}`,
+    resultTitle: (score: number, max: number) => `Quiz · ${String(score)} of ${String(max)}`,
+    mistakes: (n: number) =>
+      n === 0 ? 'no mistakes' : `${String(n)} ${n === 1 ? 'mistake' : 'mistakes'}`,
     revealAfterDue: 'The correct answers appear after the deadline.',
     revealNever: 'Correct answers are not available for this quiz.',
     yourAnswer: 'Your answer',
     correctAnswer: 'Correct answer',
     noAnswer: 'no answer',
-    right: 'Correct',
-    wrong: 'Incorrect',
-    explanation: 'Explanation',
     answerText: 'Answer',
     answerNumber: 'Number',
     pairChoose: 'Choose a match',
@@ -328,8 +325,6 @@ export const en: Translation<typeof ru> = {
     back: 'Homework',
     submitUntil: (date: string) => `Hand in by ${date}`,
     noDueDate: 'No deadline',
-    accepted: 'Submission accepted',
-    rework: 'Needs revision',
     assignment: 'Assignment',
     textbooks: 'Textbooks',
     myAnswer: 'My answer',
@@ -340,6 +335,23 @@ export const en: Translation<typeof ru> = {
     materials: 'Materials',
     submit: 'Hand in',
     myAnswers: 'My submissions',
+    answerSummary: (text: boolean, files: number) =>
+      [text ? 'text' : '', files > 0 ? `${String(files)} ${files === 1 ? 'file' : 'files'}` : '']
+        .filter((part) => part !== '')
+        .join(', '),
+    resultAccepted: 'Accepted',
+    reviewed: (date: string) => `reviewed ${date}`,
+    teacherComment: 'Teacher’s feedback',
+    returned: 'Returned for revision',
+    attempt: (n: number) =>
+      ['First', 'Second', 'Third', 'Fourth', 'Fifth'][n - 1]?.concat(' attempt') ??
+      `Attempt ${String(n)}`,
+    submitted: (date: string) => `handed in ${date}`,
+    prefilled: 'Your previous answer has been copied here. Add what is missing.',
+    submitAgain: 'Hand in again',
+    next: 'Next assignment',
+    nextShort: 'Next',
+    toList: 'All homework',
     what: 'the assignment',
     empty: 'Write an answer or attach a file',
     sent: 'Your work has been sent to your teacher',

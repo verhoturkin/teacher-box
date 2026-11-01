@@ -1,4 +1,3 @@
-import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -73,87 +72,80 @@ export function keyLines(question: Question): string[] {
 
 /**
  * Student: the quiz of a task (ADR-0052) on the task page — a tonal card «Тест · N вопросов» with the
- * attempts, when the key shows and «Начать тест» / «Продолжить тест»; the test itself opens full screen
- * (`tb-quiz-player`) and its answers are saved as they change. After «Завершить тест» the best score,
- * the key when the teacher allows it, and a new attempt while there are some left. Nothing without
- * questions.
+ * attempts, when the key shows and «Начать тест» / «Продолжить тест» (while there is something to do); the
+ * test itself opens full screen (`tb-quiz-player`) and its answers are saved as they change. After «Завершить
+ * тест» the block «Тест · N из M» with the mistakes (the answer, the key, the explanation) when the teacher
+ * allows it (sketch 24). Nothing without questions.
  */
 @Component({
   selector: 'tb-quiz-section',
-  imports: [NgTemplateOutlet, Button, MarkdownView, QuizPlayer],
+  imports: [Button, MarkdownView, QuizPlayer],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (view(); as quiz) {
       @if (quiz.questions.length > 0) {
         <section class="tb-quiz">
-          <div class="tb-quiz__card">
-            <h2 class="tb-quiz__title">
-              <i class="tb-i tb-i-quiz" aria-hidden="true"></i>
-              {{ t.cardTitle(quiz.questions.length) }}
-            </h2>
-            @if (quiz.best; as best) {
-              <p class="tb-quiz__score">
-                {{ t.bestResult(best.scorePoints ?? 0, best.maxPoints ?? quiz.maxPoints) }}
+          @if (quiz.openAttempt || quiz.canStart || !quiz.best) {
+            <div class="tb-quiz__card">
+              <h2 class="tb-quiz__title">
+                <i class="tb-i tb-i-quiz" aria-hidden="true"></i>
+                {{ t.cardTitle(quiz.questions.length) }}
+              </h2>
+              <p class="tb-quiz__hint">
+                {{
+                  quiz.attemptsAllowed === null
+                    ? t.attemptsUnlimited
+                    : t.attemptsLeft(quiz.attemptsLeft ?? 0)
+                }}.
+                {{ revealHint(quiz) }}
               </p>
-            }
-            <p class="tb-quiz__hint">
-              {{
-                quiz.attemptsAllowed === null
-                  ? t.attemptsUnlimited
-                  : t.attemptsLeft(quiz.attemptsLeft ?? 0)
-              }}.
-              {{ revealHint(quiz) }}
-            </p>
-            @if (quiz.openAttempt) {
-              <p-button [label]="t.continue" (onClick)="playing.set(true)" />
-            } @else if (quiz.canStart) {
-              <p-button
-                [label]="quiz.attemptsUsed === 0 ? t.start : t.newAttempt"
-                [loading]="pending()"
-                (onClick)="start()"
-              />
-            }
-          </div>
-          @for (result of quiz.results ?? []; track result.question.id; let n = $index) {
-            <article class="tb-quiz-card" [class.tb-quiz-card--wrong]="!result.correct">
-              <header class="tb-quiz-card__head">
-                <h3 class="tb-quiz-card__title">{{ t.question(n + 1) }}</h3>
-                <span class="tb-quiz-card__verdict">
-                  <i
-                    class="tb-i"
-                    [class.tb-i-check]="result.correct"
-                    [class.tb-i-close]="!result.correct"
-                    aria-hidden="true"
-                  ></i>
-                  {{ result.correct ? t.right : t.wrong }} · {{ t.points(result.points) }}
-                </span>
-              </header>
-              <tb-markdown [text]="result.question.text" />
-              <ng-container
-                [ngTemplateOutlet]="linesTpl"
-                [ngTemplateOutletContext]="{
-                  label: t.yourAnswer,
-                  lines: mine(result),
-                  empty: true,
-                }"
-              />
-              @if (!result.correct) {
-                <ng-container
-                  [ngTemplateOutlet]="linesTpl"
-                  [ngTemplateOutletContext]="{
-                    label: t.correctAnswer,
-                    lines: key(result),
-                    empty: false,
-                  }"
+              @if (quiz.openAttempt) {
+                <p-button [label]="t.continue" (onClick)="playing.set(true)" />
+              } @else if (quiz.canStart) {
+                <p-button
+                  [label]="quiz.attemptsUsed === 0 ? t.start : t.newAttempt"
+                  [loading]="pending()"
+                  (onClick)="start()"
                 />
               }
-              @if (result.question.explanation; as explanation) {
-                <div>
-                  <div class="tb-quiz__field-label">{{ t.explanation }}</div>
-                  <tb-markdown [text]="explanation" />
-                </div>
+            </div>
+          }
+          @if (quiz.best; as best) {
+            <div class="tb-quiz__result">
+              <div class="tb-quiz__result-head">
+                <h2 class="tb-quiz__label">
+                  {{ t.resultTitle(best.scorePoints ?? 0, best.maxPoints ?? quiz.maxPoints) }}
+                </h2>
+                @if (quiz.results; as results) {
+                  <span class="tb-quiz__muted">{{ t.mistakes(wrong(results).length) }}</span>
+                }
+              </div>
+              @if (quiz.results; as results) {
+                @for (result of wrong(results); track result.question.id) {
+                  <article class="tb-quiz__mistake">
+                    <i class="tb-i tb-i-cancel tb-quiz__mistake-icon" aria-hidden="true"></i>
+                    <div class="tb-quiz__mistake-text">
+                      <tb-markdown [text]="result.question.text" />
+                      <p class="tb-quiz__muted">
+                        {{ t.yourAnswer }}:
+                        @if (mine(result).length > 0) {
+                          <s>{{ mine(result).join(', ') }}</s>
+                        } @else {
+                          {{ t.noAnswer }}
+                        }
+                        · {{ t.correctAnswer }}:
+                        <strong class="tb-quiz__right">{{ key(result).join(', ') }}</strong>
+                      </p>
+                      @if (result.question.explanation; as explanation) {
+                        <tb-markdown class="tb-quiz__muted" [text]="explanation" />
+                      }
+                    </div>
+                  </article>
+                }
+              } @else {
+                <p class="tb-quiz__muted">{{ revealHint(quiz) }}</p>
               }
-            </article>
+            </div>
           }
         </section>
         @if (quiz.openAttempt; as attempt) {
@@ -173,19 +165,6 @@ export function keyLines(question: Question): string[] {
         }
       }
     }
-
-    <ng-template #linesTpl let-label="label" let-lines="lines" let-empty="empty">
-      <div>
-        <div class="tb-quiz__field-label">{{ label }}</div>
-        @for (line of lines; track $index) {
-          <div class="tb-quiz__line">{{ line }}</div>
-        } @empty {
-          @if (empty) {
-            <div class="tb-quiz__line tb-quiz__line--muted">{{ t.noAnswer }}</div>
-          }
-        }
-      </div>
-    </ng-template>
   `,
   styles: `
     :host {
@@ -218,64 +197,66 @@ export function keyLines(question: Question): string[] {
       font: var(--tb-type-title-m);
     }
 
-    .tb-quiz__hint,
-    .tb-quiz__score {
-      margin: 0;
-    }
-
     .tb-quiz__hint {
+      margin: 0;
       font: var(--tb-type-body-m);
     }
 
-    .tb-quiz__score {
-      font: var(--tb-type-title-s);
+    /* the result of sketch 24: a surface-container-low block, the mistakes as rows on the surface */
+    .tb-quiz__result {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-2);
+      padding: var(--tb-space-4) var(--tb-space-5);
+      border-radius: var(--tb-shape-lg);
+      background: var(--p-md-surface-container-low);
     }
 
-    .tb-quiz-card {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: var(--tb-space-3);
-      padding: var(--tb-space-4);
-      border-radius: var(--tb-shape-xs);
-      background: var(--tb-list-item);
-    }
-
-    .tb-quiz-card--wrong {
-      outline: 1px solid var(--p-md-error);
-    }
-
-    .tb-quiz-card__head {
+    .tb-quiz__result-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
       gap: var(--tb-space-2);
     }
 
-    .tb-quiz-card__title {
+    .tb-quiz__label {
       margin: 0;
-      font: var(--p-md-title-medium, inherit);
-    }
-
-    .tb-quiz-card__verdict {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--tb-space-1);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
-    .tb-quiz__field-label {
+    .tb-quiz__muted {
+      margin: 0;
       color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-label-m);
+      font: var(--tb-type-body-m);
     }
 
-    .tb-quiz__line {
+    .tb-quiz__mistake {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--tb-space-3);
+      padding: var(--tb-space-3);
+      border-radius: var(--tb-shape-md);
+      background: var(--p-md-surface);
       overflow-wrap: anywhere;
     }
 
-    .tb-quiz__line--muted {
-      color: var(--p-md-on-surface-variant);
+    .tb-quiz__mistake-icon {
+      color: var(--p-md-error);
+    }
+
+    .tb-quiz__mistake-text {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      gap: var(--tb-space-1);
+      min-inline-size: 0;
+    }
+
+    .tb-quiz__right {
+      color: var(--p-md-on-surface);
     }
   `,
 })
@@ -428,6 +409,10 @@ export class QuizSection implements OnDestroy {
       case 'NEVER':
         return this.t.revealNever;
     }
+  }
+
+  protected wrong(results: readonly QuizResult[]): QuizResult[] {
+    return results.filter((result) => !result.correct);
   }
 
   protected mine(result: QuizResult): string[] {

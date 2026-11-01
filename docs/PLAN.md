@@ -104,7 +104,7 @@ Russian wording; English is written separately (AGENTS.md §6.1).
   large options, «Назад · Дальше», the question numbers 1…N (answered / current), «Выйти из теста
   — ответы сохранятся», «Завершить тест» asking only when questions are skipped; the task page
   keeps «Начать тест» and the result.
-- [ ] **349.2 F** `my-task-page.ts`, `my-homework-page.ts` (sketches 24, 25, 27, 37, 38): the
+- [x] **349.2 F** `my-task-page.ts`, `my-homework-page.ts` (sketches 24, 25, 27, 37, 38): the
   result is the task in its «Принято» / «На доработку» state beside the list — the grade card,
   the teacher's comment, the test mistakes, «Мой ответ» folded, «Следующее задание»; on rework the
   first attempt and a second one prefilled from it, «Сдать снова». Medium: list and task as two

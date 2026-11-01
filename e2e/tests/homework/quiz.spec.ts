@@ -235,7 +235,7 @@ test('a student answers all six types and sees a mixed score without the key', a
   await putInOrder(page, ['Утро', 'День', 'Вечер']);
   await submitQuiz(page);
 
-  await expect(page.getByText('Лучший результат: 5 из 6')).toBeVisible();
+  await expect(page.getByText('Тест · 5 из 6')).toBeVisible();
   await expect(page.getByText('Осталось попыток: 1')).toBeVisible();
   await expect(page.getByText('Верные ответы появятся после срока сдачи.')).toBeVisible();
   await expect(page.getByText('Верный ответ', { exact: true })).toHaveCount(0);
@@ -256,8 +256,7 @@ test('a worse second attempt does not lower the best one', async ({ page, reques
     `/api/me/homework/tasks/${mixedTask}/quiz/attempts/${started.openAttempt.id}/submit`,
   );
   await asStudent(page, mixedTask);
-  await expect(page.getByText('Лучший результат: 5 из 6')).toBeVisible();
-  await expect(page.getByText('Осталось попыток: 0')).toBeVisible();
+  await expect(page.getByText('Тест · 5 из 6')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Пройти ещё раз' })).toHaveCount(0);
 });
 
@@ -269,9 +268,9 @@ test('with the rule «right after submitting» the key and the explanation are s
   await page.getByRole('radio', { name: 'Нет' }).check();
   await submitQuiz(page);
 
-  await expect(page.getByText('Лучший результат: 0 из 1')).toBeVisible();
-  await expect(page.getByText(/Неверно · 0 б./)).toBeVisible();
-  await expect(page.getByText('Верный ответ', { exact: true })).toBeVisible();
+  await expect(page.getByText('Тест · 0 из 1')).toBeVisible();
+  await expect(page.getByText('1 ошибка')).toBeVisible();
+  await expect(page.getByText(/Верный ответ:/)).toBeVisible();
   await expect(page.getByText('Это шар, сплюснутый у полюсов')).toBeVisible();
 });
 

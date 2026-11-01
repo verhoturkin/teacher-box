@@ -160,7 +160,12 @@ function daysUntil(dueAt: string): number {
       @if (layout.detail()) {
         <tb-pane [label]="t.pickTitle">
           @if (taskId(); as id) {
-            <tb-my-task-page [taskId]="id" [single]="layout.single()" (changed)="refresh()" />
+            <tb-my-task-page
+              [taskId]="id"
+              [single]="layout.single()"
+              [next]="nextAfter(id)"
+              (changed)="refresh()"
+            />
           } @else {
             <tb-empty-state icon="tb-i-assignment" [title]="t.pickTitle" [hint]="t.pickHint" />
           }
@@ -269,6 +274,16 @@ export class MyHomeworkPage implements OnInit {
       groups.find((group) => group.key === 'todo')?.tasks[0]
     );
   });
+
+  /** «Следующее задание» after an accepted one: the first returned or open task other than it. */
+  protected nextAfter(taskId: string): string | null {
+    return (
+      this.groups()
+        .filter((group) => group.key !== 'done')
+        .flatMap((group) => group.tasks)
+        .find((task) => task.taskId !== taskId)?.taskId ?? null
+    );
+  }
 
   ngOnInit(): void {
     this.load();

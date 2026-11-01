@@ -119,7 +119,7 @@ Attached textbooks appear under “Textbooks”, with the relevant page numbers.
 
 Text you have typed but not handed in is kept on this device, so you can leave the page and come back to it (the note says “draft saved”). Files are not kept in the draft; attach them again. On a phone “My answer” stays at the bottom of the screen, with the materials and the test below the task.
 
-Your teacher can accept the submission, add a grade and feedback, or return it for revision. If revisions are requested, make the changes and submit again.
+Your teacher can accept the submission, add a grade and feedback, or return it for revision. Reviewed work opens in the same place as the assignment. Accepted work shows your grade, your teacher’s feedback, any quiz mistakes and “Next assignment”; your own answer is folded under “My answer”. Returned work shows the feedback, your previous attempt and a new one: the text of your previous answer is already copied in, so add what is missing, attach your files again and choose “Hand in again”.
 
 ## Take a quiz
 

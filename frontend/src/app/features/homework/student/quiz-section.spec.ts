@@ -286,15 +286,14 @@ describe('QuizSection', () => {
 
     expect(fixture.componentInstance.playing()).toBe(false);
     const text = readableText(host);
-    expect(text).toContain('Лучший результат: 4 из 12');
-    expect(text).toContain('Верно · 2 б.');
-    expect(text).toContain('Неверно · 0 б.');
-    expect(text).toContain('Кот → Мяу');
-    expect(text).toContain('1. Первый');
-    expect(text).toContain('3 ± 0.5');
-    expect(text).toContain('да ага');
-    expect(text).toContain('нет ответа');
+    expect(text).toContain('Тест · 4 из 12 4 ошибки');
+    // only the mistakes: the right matching is not listed
+    expect(text).not.toContain('Кот → Мяу');
+    expect(text).toContain('Ваш ответ: 1. Второй, 2. Первый · Верный ответ: 1. Первый, 2. Второй');
+    expect(text).toContain('Ваш ответ: нет ответа · Верный ответ: 3 ± 0.5');
+    expect(text).toContain('Верный ответ: да, ага');
     expect(text).toContain('Потому что так');
+    expect(host.querySelector('s')?.textContent).toBe('1. Второй, 2. Первый');
     expect(text).not.toContain('Правильные ответы покажем');
     expect(buttonByText(host, 'Пройти ещё раз')).toBeTruthy();
   });
@@ -332,8 +331,8 @@ describe('QuizSection', () => {
       }),
     );
     const text = readableText(host);
-    expect(text).toContain('Верные ответы появятся после срока сдачи.');
-    expect(text).toContain('Осталось попыток: 0');
+    expect(text).toBe('Тест · 4 из 12 Верные ответы появятся после срока сдачи.');
+    // nothing left to do: no card with attempts and no button
     expect(host.querySelector('button')).toBeNull();
   });
 
