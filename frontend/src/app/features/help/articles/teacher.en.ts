@@ -308,13 +308,13 @@ You can also add [textbook pages](/teacher/help/textbooks) from Materials or an 
 3. Under “To”, add students and groups. Students in more than one selected group receive the assignment once. Removing a group keeps any students also selected individually. “By the next lesson” sets the due date to the start of those students’ next lesson; pick another option if you prefer.
 4. Textbooks, files, videos, a quiz and a board appear in the assignment only once you add them: use the buttons under “Materials”. Textbooks and files show as cards; select a name to open it (PDFs and images open in a new tab). “Board” opens a list of your boards: the one you choose shows as a “Board: name” chip (the × clears it), and once the assignment is given out the “Add to board” window opens with that board selected. You can remove anything you added, and empty sections take up no room.
 5. For a video, use “Video” (up to five). YouTube, Rutube and VK videos play within the assignment; other links open in a new tab. Import YouTube captions, import an .srt or .vtt file, or enter a transcript yourself. If several caption tracks are available, choose the language and track you need. The AI uses the transcript; students see it only if “Show transcript to students” is enabled.
-6. Choose “Assign”. Students are notified once the materials are ready and reminded before the due date. “Save draft” keeps the assignment with you.
+6. Choose “Assign”. Students are notified once the materials are ready and reminded before the due date. The full editor has no separate draft button: once the assignment has a title, the draft saves itself a couple of seconds after each change, and the header shows when it was last saved. You can leave the editor at any time without losing anything.
 
 “Assign and add to board” creates the assignment, then lets you place its text, images and textbook pages on a board. The assignment remembers the board and gives students a “Go to board” button. “Add to board” on the assignment page has the same effect.
 
 ## Manage assignments
 
-“Edit” opens the editor. On a wide screen a list of sections on the left scrolls to the one you choose. A draft keeps its students under “To” and you can change them; an issued assignment shows its students without “×”, and “Assign to more” adds new ones. The editor covers the instructions (their first line is the title), videos, quiz and due date. Update the textbooks and files of a saved assignment on its details page. The portal checks before discarding unsaved changes.
+“Edit” opens the editor. It has two tabs: Instructions, for recipients, the due date, the text and materials; and Quiz, for the questions and quiz settings. On a phone these are Instructions, Questions and Settings. If the assignment has a quiz, Instructions shows a summary: the first questions, the number of questions, points and attempts, and “Open quiz”. On a wide screen a list of sections on the left scrolls to the one you choose. A draft keeps its students under “To” and you can change them. You can also add or remove its textbooks and files in the editor, and it saves itself. An issued assignment shows its students without “×”, and “Assign to more” adds new ones. Its textbooks and files are updated on the details page, and “Save” keeps your changes; the portal checks before you leave without saving. “Back” returns to the page you opened the editor from.
 
 “Make a copy” creates a draft with the original text, files, textbooks and videos, but no recipients or due date. The editor opens so you can adapt it.
 
@@ -350,7 +350,7 @@ In the assignment editor (“Edit” on the assignment page), choose “Textbook
 
 ## Add a quiz
 
-In the editor, choose “Quiz” under “Materials” to add the Questions section; “Remove” takes it out again. It supports six types:
+Questions are on the editor’s Quiz tab; “Quiz” under “Materials” opens it too. It supports six types:
 
 - **Single choice** and **Multiple choice:** mark the correct options.
 - **Short answer:** list accepted answers. Capitalisation, extra spaces and the difference between ё and е are ignored.
@@ -358,9 +358,9 @@ In the editor, choose “Quiz” under “Materials” to add the Questions sect
 - **Matching:** enter pairs; the right-hand column is shuffled for students.
 - **Ordering:** enter the correct order; students receive shuffled items.
 
-Each question has points and an optional explanation. Matching and ordering award all points or none. In “Quiz settings”, choose when answers are revealed and how many attempts are allowed. The best attempt counts. Once a student starts the quiz, questions are locked; the rest of the assignment remains editable.
+Each question has points and an optional explanation. Matching and ordering award all points or none. In “Quiz settings”, choose when answers are revealed and how many attempts are allowed. The best attempt counts. A draft keeps unfinished questions as they are, but you can’t assign it until they are complete. The portal names the questions to fix and opens the Quiz tab. Once a student starts the quiz, questions are locked; the rest of the assignment remains editable.
 
-The AI assistant can draft questions. Select Questions under “What to prepare”, then append the draft or replace all questions. Review and save the assignment yourself.
+The AI assistant can draft questions. On the Quiz tab it prepares questions straight away; on Instructions it drafts the text. You can still switch with “What to prepare”. Append the draft or replace all questions, and review them before assigning.
 
 Reviews show the best quiz attempt, incorrect answers first, with an answer key. Use “Mark correct” or “Mark incorrect” to override automatic marking. The score fills the grade field unless you enter a grade yourself. “Mistakes by question” on the assignment page highlights common errors. A completed quiz is enough for a student to submit the assignment for review.
 

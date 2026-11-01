@@ -319,8 +319,29 @@ export const ru = {
     sections: 'Разделы задания',
     sectionTask: 'Задание',
     sectionMaterials: (count: number) => `Материалы · ${String(count)}`,
-    sectionQuestions: (count: number) => `Вопросы · ${String(count)}`,
-    sectionSettings: 'Как проходит тест',
+    sectionQuiz: (count: number) => `Тест · ${String(count)}`,
+    tabs: 'Части задания',
+    tabTask: 'Задание',
+    tabQuiz: (count: number) =>
+      count === 0 ? 'Тест' : `Тест · ${countOf(count, 'вопрос', 'вопроса', 'вопросов')}`,
+    tabQuestions: (count: number) => (count === 0 ? 'Вопросы' : `Вопросы · ${String(count)}`),
+    tabSettings: 'Настройки',
+    savedAt: (time: string) => `сохранено · ${time}`,
+    autosaveFailed: 'Черновик не сохранился. Изменения остались на странице, попробуем ещё раз',
+    quizTitle: 'Тест',
+    quizSummary: (count: number, points: number, attempts: number) =>
+      `${countOf(count, 'вопрос', 'вопроса', 'вопросов')} · ${countOf(points, 'балл', 'балла', 'баллов')} · ${
+        attempts === 0
+          ? 'без ограничения попыток'
+          : countOf(attempts, 'попытка', 'попытки', 'попыток')
+      }`,
+    quizMore: (count: number) => `…и ещё ${countOf(count, 'вопрос', 'вопроса', 'вопросов')}`,
+    quizWhere: 'Вопросы, попытки и показ ответов правятся на вкладке «Тест».',
+    openQuiz: 'Открыть тест',
+    untitledQuestion: 'Без текста',
+    incomplete: (count: number, numbers: string) =>
+      `Задание не выдано: поправьте ${count === 1 ? 'вопрос' : 'вопросы'} ${numbers}`,
+    removeFile: (name: string) => `Убрать файл ${name}`,
     boardFailed:
       'Задание на доске, но отметка о ней не сохранилась — поставьте её со страницы задания',
   },
@@ -356,7 +377,6 @@ export const ru = {
     board: 'Доска',
     boardOn: (name: string) => `Доска: ${name}`,
     noBoards: 'Досок пока нет',
-    saveDraftShort: 'Черновик',
     remove: 'Убрать',
     saveDraft: 'Сохранить черновик',
     assign: 'Выдать',

@@ -62,7 +62,7 @@ Russian wording; English is written separately (AGENTS.md §6.1).
   `AssignmentQuiz`, `AssignmentService`) are checked on «Выдать», not on saving a draft; issuing a
   draft with broken questions answers 422 with the question number and the existing error code
   per question. Controller tests for both; ADR if the stored shape changes.
-- [ ] **346.2 F** `assignment-editor-page.ts` (sketches 11, 13, 28, 19, 21): tabs «Задание» and
+- [x] **346.2 F** `assignment-editor-page.ts` (sketches 11, 13, 28, 19, 21): tabs «Задание» and
   «Тест · N вопросов» (`?tab=quiz`); «Задание» shows the test as a summary card (first questions,
   «N вопросов · M баллов · K попытки», «Открыть тест»); «Как проходит тест» lives on «Тест»; the AI
   pane on «Тест» drafts questions, on «Задание» text. A draft saves itself (debounced, «сохранено ·

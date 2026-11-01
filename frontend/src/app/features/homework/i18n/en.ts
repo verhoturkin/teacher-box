@@ -310,8 +310,28 @@ export const en: Translation<typeof ru> = {
     sections: 'Assignment sections',
     sectionTask: 'Instructions',
     sectionMaterials: (count: number) => `Materials · ${String(count)}`,
-    sectionQuestions: (count: number) => `Questions · ${String(count)}`,
-    sectionSettings: 'Quiz settings',
+    sectionQuiz: (count: number) => `Quiz · ${String(count)}`,
+    tabs: 'Assignment parts',
+    tabTask: 'Instructions',
+    tabQuiz: (count: number) =>
+      count === 0 ? 'Quiz' : `Quiz · ${countOf(count, 'question', 'questions', 'questions')}`,
+    tabQuestions: (count: number) => (count === 0 ? 'Questions' : `Questions · ${String(count)}`),
+    tabSettings: 'Settings',
+    savedAt: (time: string) => `Saved at ${time}`,
+    autosaveFailed: "The draft couldn't be saved. Your changes are still here and we'll try again",
+    quizTitle: 'Quiz',
+    quizSummary: (count: number, points: number, attempts: number) =>
+      `${countOf(count, 'question', 'questions', 'questions')} · ${countOf(points, 'point', 'points', 'points')} · ${
+        attempts === 0 ? 'unlimited attempts' : countOf(attempts, 'attempt', 'attempts', 'attempts')
+      }`,
+    quizMore: (count: number) =>
+      `and ${countOf(count, 'more question', 'more questions', 'more questions')}`,
+    quizWhere: 'Edit the questions, attempts and answer display on the Quiz tab.',
+    openQuiz: 'Open quiz',
+    untitledQuestion: 'No question text yet',
+    incomplete: (count: number, numbers: string) =>
+      `Not assigned yet. Fix ${count === 1 ? 'question' : 'questions'} ${numbers}`,
+    removeFile: (name: string) => `Remove file ${name}`,
     boardFailed:
       'The assignment was added to the board, but its board link could not be saved. Set the link on the assignment page',
   },
@@ -347,7 +367,6 @@ export const en: Translation<typeof ru> = {
     board: 'Board',
     boardOn: (name: string) => `Board: ${name}`,
     noBoards: 'No boards yet',
-    saveDraftShort: 'Draft',
     remove: 'Remove',
     saveDraft: 'Save draft',
     assign: 'Assign',

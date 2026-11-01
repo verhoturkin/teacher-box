@@ -374,35 +374,56 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
 
 ### Assignment editor
 
-A main flexible pane in the order of the quick dialog (340.2), each section in its own
-`tb-section-card`: «Кому» and «Срок» side by side in the first card («Кому» — input chips + dashed
-«Ученик или группа», new assignments only; «Срок» — filter chips; both have a visible label of one
-style; every item of the «Разделы задания» column has an icon), «Задание» (one Markdown field
-with the «Текст / Просмотр» switch; the first line is the title, hint «Первая строка станет
-названием»), «Материалы», «Вопросы» and «Как проходит тест» (`tb-quiz-settings`). Empty sections (textbooks, videos, the «Вопросы» card) are hidden; the assist
-chips under «Материалы» («Файл · Учебник · Видео · Тест с вопросами · Доска») add them, a section
-with content shows normally and can be removed. A saved assignment loads its title as the first line
-when the text does not start with it. The header: «ИИ-помощник» (tonal), text «Сохранить черновик» («Черновик» on a phone),
-split filled «Выдать» (menu «Выдать и разместить на доске»); a saved assignment has the filled
-«Сохранить». A supporting sheet with the AI request (prompt library, search and save, sources,
-generate / error / retry, draft Remove / Insert / Replace) opens beside the form from the AI button.
-From **M3:** the supporting-pane canonical layout. *Ours:* the AI pane shares the width equally with
-the editor from expanded and is a modal right drawer below; main content precedes AI in reading
-order; one Markdown field at every width; the AI never changes text without Insert / Replace; its
-state survives closing the pane; leaving with changes asks first. The recipients, deadline and
-materials parts are the components of the dialog (`ui/recipients-field.ts`, `ui/due-chips.ts`,
-`ui/material-chips.ts`).
+A main flexible pane with two `tb-tabs` (346.2, sketches 11, 28, 21): «Задание» and «Тест · N
+вопросов» (`?tab=quiz`, the default left out; the address is kept with `Location.replaceState`). On
+a phone (< 600) the bar is `tb-tabs--fixed` «Задание · Вопросы · N · Настройки» (`?tab=settings`;
+wider it falls back to «Тест»).
 
-**Sections column** (from expanded width, hidden beside the AI pane): `tb-section-nav` «Разделы задания»
-(design-system §10) lists the shown sections — «Задание», «Материалы · N», «Вопросы · N», «Как проходит
-тест» — the one in view highlighted, a click scrolls to it. The sketch's «Добавить» group is not built:
-the assist chips under «Материалы» do that.
+- **«Задание»** in the order of the quick dialog (340.2), each section in its own `tb-section-card`:
+  «Кому» and «Срок» side by side in the first card («Кому» — input chips + dashed «Ученик или
+  группа», drafts only; «Срок» — filter chips; both have a visible label of one style), «Задание»
+  (one Markdown field with the «Текст / Просмотр» switch; the first line is the title, hint «Первая
+  строка станет названием»), «Материалы» and, with questions, the test summary card «Тест»: «N
+  вопросов · M баллов · K попытки», the first three questions as a `tb-list--no-lead` (number, type
+  icon, text or «Без текста», points), «…и ещё N вопросов», the hint where to edit them and tonal
+  «Открыть тест». Empty sections (textbooks, videos) are hidden; the assist chips under «Материалы»
+  («Файл · Учебник · Видео · Тест с вопросами · Доска») add them, «Тест с вопросами» opens «Тест».
+  A draft lists its saved textbooks (pages, remove — unbound at once) and files (input chips,
+  remove at once) with the picked ones; an issued assignment has them on its page.
+- **«Тест»**: the «Вопросы» card (`question-section.ts`, until 347) and «Как проходит тест»
+  (`tb-quiz-settings`, once there are questions); on a phone the latter is the «Настройки» tab.
+- **Header**: back, title, «?», «ИИ-помощник» (tonal). A draft (new or saved without tasks) has
+  «сохранено · HH:mm» (Body Small, on-surface-variant) and the split filled «Выдать» (menu «Выдать и
+  разместить на доске»); an issued assignment has the filled «Сохранить».
+- **Autosave**: a draft saves itself 1.5 s after the last change once it has a title (create, then
+  update; picked files and textbooks go with it and then show as saved; the draft students are
+  kept), no question is checked; the first save puts `/teacher/homework/<id>/edit` into the address
+  without reloading the page. Leaving a draft saves what is left and never asks. «Выдать» checks the
+  questions first (problems → «Тест»), a `homework.quiz-incomplete` answer shows «Задание не
+  выдано: поправьте вопросы 2, 3» on «Тест». An issued assignment asks before leaving changes.
+- **«Назад»** leads to the page the editor was opened from (`previousNavigation.finalUrl`: the list
+  with its filters, the assignment, a student); opened by a link — the assignment or the list.
+
+A saved assignment loads its title as the first line when the text does not start with it. A
+supporting sheet with the AI request (prompt library, search and save, sources, generate / error /
+retry, draft Remove / Insert / Replace) opens beside the form from the AI button; its «Что готовить»
+follows the tab — text on «Задание», questions on «Тест». From **M3:** primary tabs; the
+supporting-pane canonical layout. *Ours:* the AI pane shares the width equally with the editor from
+expanded and is a modal right drawer below; main content precedes AI in reading order; one Markdown
+field at every width; the AI never changes text without Insert / Replace; its state survives closing
+the pane. The recipients, deadline and materials parts are the components of the dialog
+(`ui/recipients-field.ts`, `ui/due-chips.ts`, `ui/material-chips.ts`).
+
+**Sections column** (on «Задание» from expanded width, hidden beside the AI pane): `tb-section-nav`
+«Разделы задания» (design-system §10) lists «Задание», «Материалы · N» and «Тест · N» — the one in
+view highlighted, a click scrolls to it. The sketch's «Добавить» group is not built: the assist
+chips under «Материалы» do that.
 
 **Recipients of a saved assignment:** a draft shows its `draftStudentIds` as the editable «Кому» chips
 (saving updates `draft-students` once the student list is in); an issued one shows its students as
 read-only chips and «Выдать ещё» (`assign-more-dialog.ts`; the text stays as typed).
 
-**Questions** (0.39.0): a «Вопросы» card under the videos (`question-section.ts`): a question is a card
+**Questions** (0.39.0): «Вопросы» on the «Тест» tab (`question-section.ts`): a question is a card
 (type, text, type fields, points, explanation) with up/down/delete; «Добавить вопрос» picks the type; a total
 «Вопросов: N, баллов: M»; «Как проходит тест» — when to show the key and the attempts. Accepted answers of a short
 answer are rows with «Добавить ответ»; server errors show in one message above the questions. After a student starts

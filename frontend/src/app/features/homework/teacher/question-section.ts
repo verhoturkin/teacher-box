@@ -55,6 +55,16 @@ export const QUESTION_TYPES: readonly QuestionType[] = [
   'ORDERING',
 ];
 
+/** The icon of each question type (sketch 28). */
+export const QUESTION_ICONS: Readonly<Record<QuestionType, string>> = {
+  SINGLE_CHOICE: 'tb-i-radio_button_checked',
+  MULTIPLE_CHOICE: 'tb-i-check_box',
+  SHORT_TEXT: 'tb-i-short_text',
+  NUMBER: 'tb-i-pin',
+  MATCHING: 'tb-i-compare_arrows',
+  ORDERING: 'tb-i-format_list_numbered',
+};
+
 const REVEALS: readonly QuizReveal[] = ['AFTER_SUBMIT', 'AFTER_DUE', 'NEVER'];
 const ATTEMPTS = [1, 2, 3, 5, 10, 0];
 

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, UrlTree } from '@angular/router';
 import { ButtonDirective, ButtonIcon } from 'primeng/button';
 import { Tooltip } from 'primeng/tooltip';
 
@@ -53,7 +53,7 @@ import { SHARED_T } from '@shared/i18n/texts';
 export class PageHeader {
   readonly title = input.required<string>();
   /** The link of «back» on a nested page; none on a section page. */
-  readonly back = input<string | readonly unknown[] | null>(null);
+  readonly back = input<string | readonly unknown[] | UrlTree | null>(null);
   /** Where «back» leads, e.g. «Все задания»: its name and tooltip. */
   readonly backLabel = input(SHARED_T.common.back);
 }
