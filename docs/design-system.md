@@ -492,6 +492,12 @@ action — «Изменить» next to «Проверить N работ» (hom
   (8 px pressed, *ours*), trailing part 48 px with a 22 px chevron (**M3E** small); while its menu
   is open the trailing part is round and the chevron turns 180° on the standard fast spring. The
   arrow has only an `aria-label`, no tooltip (*ours*).
+- **Stepper** `p-inputnumber.tb-stepper` (the points of a question, sketch 28; *ours* — M3
+  publishes no stepper): «− N +» in one 40 dp pill with a 1 dp `outline`, 40 dp icon buttons, the
+  value Label Large 600; the field stays a spinbutton (↑ / ↓ change it).
+- **Drag handle** `.tb-drag-handle` (rows that reorder: quiz questions, options; *ours*): a 40 dp
+  icon button with `drag_indicator` that CDK drag-drop uses as the handle; ↑ / ↓ on it move the row
+  and keep the focus there, so dragging is never the only way.
 - **Icon buttons:** tooltip = accessible name, with row context («Отменить занятие: Анна, 14:00»);
   help «?» names the article («Справка: Портал»); menu buttons have `aria-haspopup` +
   `aria-expanded` (`tbAttributes`).
@@ -671,7 +677,8 @@ changes the container; content and markup are the same at every width. Every dia
   unpressed toggle `tertiary-container`. One filled primary action per
   surface still holds: in the dialog it is «Выдать», so the draft's «Вставить в задание» is tonal
   and «Ещё вариант» a text button; tertiary «Сгенерировать» is the pane's own action, not a second
-  primary one.
+  primary one. An AI action beside other actions («С ИИ», «Составить с ИИ») is a
+  tonal tertiary button `p-button.tb-button-ai` (`tertiary-container`).
 - **Full-screen dialog** (`form` on compact only, **M3**): 56 dp header, 24 dp sides, 8 dp between
   elements; «✕» first and the only navigation, the headline (one line, truncated), the confirming
   button at the end with a clear verb («Создать», «Отправить», not «Готово»), never disabled for

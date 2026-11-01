@@ -71,7 +71,7 @@ Russian wording; English is written separately (AGENTS.md §6.1).
 
 ### 347. Quiz builder
 
-- [ ] **347.1 F** The «Тест» tab (sketches 28, 29) replaces `question-section.ts`: the outline
+- [x] **347.1 F** The «Тест» tab (sketches 28, 29) replaces `question-section.ts`: the outline
   (300 dp: drag handle — CDK drag-drop, number, type icon, error icon, points; «Вопрос» menu with
   the six types and hints, «С ИИ»), the open question (type select that keeps the options where it
   can, copy / up / down / delete, Markdown text, options with drag and «верный», «Добавить

@@ -15,7 +15,7 @@ import { ToBoardDialog } from '@features/boards/parts';
 import { AssignMoreDialog } from './assign-more-dialog';
 import { AssignmentDraftHandover } from './assignment-draft';
 import { AssignmentEditorPage } from './assignment-editor-page';
-import { questionDraft } from './question-section';
+import { questionDraft } from './question-drafts';
 import { videoDraft } from './video-section';
 
 const STUDENTS = [
@@ -945,7 +945,7 @@ describe('AssignmentEditorPage', () => {
     expect(host.querySelector<HTMLTextAreaElement>('#question-text-q-1')?.value).toBe(
       'Столица России?',
     );
-    expect(readableText(host)).toContain('Без ограничений');
+    expect(readableText(host)).toContain('Без огр.');
 
     page.changeQuestions([...page.questions(), questionDraft('SINGLE_CHOICE')]);
     exactButton(host, 'Сохранить').click();

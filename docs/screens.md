@@ -390,8 +390,24 @@ wider it falls back to «Тест»).
   («Файл · Учебник · Видео · Тест с вопросами · Доска») add them, «Тест с вопросами» opens «Тест».
   A draft lists its saved textbooks (pages, remove — unbound at once) and files (input chips,
   remove at once) with the picked ones; an issued assignment has them on its page.
-- **«Тест»**: the «Вопросы» card (`question-section.ts`, until 347) and «Как проходит тест»
-  (`tb-quiz-settings`, once there are questions); on a phone the latter is the «Настройки» tab.
+- **«Тест»** — the quiz builder (`question-section.ts`, 347.1, sketches 28, 29), three columns that
+  wrap: the **outline** (300 dp: «N вопросов · M баллов», a segmented list of rows — drag handle,
+  number, type icon, text, error icon once «Выдать» was tried, points; the open row
+  secondary-container; rows reorder by CDK drag or ↑ / ↓ on the handle; tonal «Вопрос» opens a menu
+  of the six types with a hint each, tertiary «С ИИ» opens the AI pane), the **open question**
+  (`question-editor.ts` in a section card: «Вопрос N», the type as an outlined menu button — a
+  change keeps the text, points and explanation, the options pass between the choices and the
+  ordering, otherwise «Сменить тип вопроса?» asks first —, copy / ↑ / ↓ / delete, the Markdown
+  text, the answer fields of the type as in sketch 29 with a rule hint, the points stepper 1–100,
+  the explanation folded into an outlined «Пояснение к ответу» while empty, «‹ Вопрос 2 · Вопрос 4
+  ›» under a divider) and the **side column** «Как проходит тест» (reveal radios, attempts as the
+  connected group «1 · 2 · 3 · Без огр.», «Засчитывается лучшая попытка») and the filled card
+  «Итого» (questions, points, «Примерно займёт N–M мин» — ¾ to 1 min a question, *ours* —, after
+  «Выдать» each broken question with «Открыть»). Options are 48 dp tonal rows (the right one
+  success-container with «верный»), Enter in the last option or pair adds the next one; short
+  answers are input chips plus a field (Enter or leaving it adds one). On a phone the settings are
+  the «Настройки» tab. *Not built:* the sketch's «Ученик увидит в случайном порядке» toggle of
+  choice options (the backend has no such setting).
 - **Header**: back, title, «?», «ИИ-помощник» (tonal). A draft (new or saved without tasks) has
   «сохранено · HH:mm» (Body Small, on-surface-variant) and the split filled «Выдать» (menu «Выдать и
   разместить на доске»); an issued assignment has the filled «Сохранить».

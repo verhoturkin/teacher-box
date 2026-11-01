@@ -549,6 +549,113 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
   }
 }
 
+/*
+ * An AI action that is not the surface's primary one («С ИИ», «Составить с ИИ»; sketches 28, 30): a tonal
+ * button in the tertiary container (M3: tertiary is the contrasting accent; design-system §11).
+ */
+.p-button.tb-button-ai {
+  border-color: var(--p-md-tertiary-container);
+  background: var(--p-md-tertiary-container);
+  color: var(--p-md-on-tertiary-container);
+
+  &:not(:disabled):hover {
+    border-color: var(--p-md-tertiary-container);
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-tertiary-container) 8%,
+      var(--p-md-tertiary-container)
+    );
+    color: var(--p-md-on-tertiary-container);
+  }
+}
+
+/* The filled variant of the section card («Итого», sketch 28): M3 filled card, surface-container-low */
+.p-card.tb-section-card.tb-section-card--filled {
+  border-color: transparent;
+  background: var(--p-md-surface-container-low);
+}
+
+/*
+ * A drag handle of a row that reorders (the quiz outline, options; ours — M3 has no handle component):
+ * a 40 dp icon button with `drag_indicator`; the arrow keys move the row too, so it is a button.
+ */
+.tb-drag-handle {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border: 0;
+  border-radius: var(--tb-shape-full);
+  background: transparent;
+  color: var(--p-md-on-surface-variant);
+  cursor: grab;
+
+  &:hover {
+    background: color-mix(in srgb, currentcolor 8%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--p-md-primary);
+    outline-offset: -2px;
+  }
+
+  .tb-i {
+    font-size: 1.25rem;
+  }
+}
+
+/*
+ * The points stepper (sketch 28, board 33; ours — M3 publishes no stepper): «− N +» in one 40 dp pill with a
+ * 1 dp outline, 40 dp icon buttons; the field is a spinbutton, so the arrow keys change it.
+ */
+.p-inputnumber.tb-stepper {
+  display: inline-flex;
+  inline-size: auto;
+  block-size: 2.5rem;
+  border: 1px solid var(--p-md-outline);
+  border-radius: var(--tb-shape-full);
+  overflow: hidden;
+
+  .p-inputnumber-input {
+    inline-size: 3rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .p-inputnumber-button {
+    inline-size: 2.5rem;
+    border: 0;
+    background: transparent;
+    color: var(--p-md-on-surface-variant);
+  }
+}
+
+/* A menu item with supporting text (the question types; M3 Expressive vertical menu: supporting text) */
+.p-menu .tb-type-item {
+  align-items: flex-start;
+  gap: var(--tb-space-3);
+
+  .tb-i {
+    color: var(--p-md-primary);
+  }
+}
+
+.tb-type-item__text {
+  display: grid;
+
+  small {
+    font: var(--tb-type-body-s);
+    color: var(--p-md-on-surface-variant);
+  }
+}
+
 .p-dialog .p-dialog-title {
   font: var(--tb-type-headline-s-emphasized);
 }

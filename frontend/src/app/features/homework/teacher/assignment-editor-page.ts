@@ -99,12 +99,12 @@ import {
   MAX_QUESTIONS,
   QUESTION_ICONS,
   QuestionDraft,
-  QuestionSection,
-  QuizSettings,
   firstProblem,
   questionDraft,
   questionInputs,
-} from './question-section';
+} from './question-drafts';
+import { QuestionSection } from './question-section';
+import { QuizSettings } from './quiz-settings';
 import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from './video-section';
 
 /** A student that can receive homework. */
@@ -412,26 +412,22 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                 <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
               }
               @if (activeTab() === 'quiz') {
-                <p-card id="editor-quiz" styleClass="tb-section-card" [header]="tq.title">
-                  <tb-question-section
-                    [questions]="questions()"
-                    (questionsChange)="changeQuestions($event)"
-                    [locked]="quizLocked()"
-                    [error]="quizError()"
-                    [showProblems]="quizChecked()"
-                  />
-                  @if (!quizLocked() && questions().length > 0) {
-                    <p-button
-                      [label]="c.remove"
-                      icon="tb-i tb-i-delete"
-                      severity="secondary"
-                      [text]="true"
-                      (onClick)="removeQuiz()"
-                    />
-                  }
-                </p-card>
+                <tb-question-section
+                  id="editor-quiz"
+                  [questions]="questions()"
+                  (questionsChange)="changeQuestions($event)"
+                  [reveal]="quizReveal()"
+                  (revealChange)="changeReveal($event)"
+                  [attempts]="quizAttempts()"
+                  (attemptsChange)="changeAttempts($event)"
+                  [locked]="quizLocked()"
+                  [error]="quizError()"
+                  [showProblems]="quizChecked()"
+                  [compact]="compact()"
+                  (ai)="openAi()"
+                />
               }
-              @if (activeTab() === 'settings' || (!compact() && questions().length > 0)) {
+              @if (activeTab() === 'settings') {
                 <p-card id="quiz-settings" styleClass="tb-section-card" [header]="tq.settings">
                   <tb-quiz-settings
                     [reveal]="quizReveal()"
@@ -635,6 +631,12 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   protected toggleAi(): void {
     if (this.single()) this.modalAiOpen.update((open) => !open);
     else this.aiOpen.update((open) => !open);
+  }
+
+  /** «С ИИ» of the quiz: the assistant opens on drafting questions. */
+  protected openAi(): void {
+    if (this.single()) this.modalAiOpen.set(true);
+    else this.aiOpen.set(true);
   }
   protected readonly tq = T.quiz;
   private readonly api = inject(HomeworkApi);
@@ -1105,12 +1107,6 @@ export class AssignmentEditorPage implements OnInit, CanLeave {
   changeQuestions(questions: readonly QuestionDraft[]): void {
     this.questions.set(questions);
     this.quizChanged.set(true);
-  }
-
-  /** Takes the whole test out of the assignment. */
-  protected removeQuiz(): void {
-    this.quizError.set(null);
-    this.changeQuestions([]);
   }
 
   changeReveal(reveal: QuizReveal): void {

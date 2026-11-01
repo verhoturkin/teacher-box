@@ -350,15 +350,15 @@ In the assignment editor (“Edit” on the assignment page), choose “Textbook
 
 ## Add a quiz
 
-Questions are on the editor’s Quiz tab; “Quiz” under “Materials” opens it too. It supports six types:
+Questions are on the editor’s Quiz tab; “Quiz” under “Materials” opens it too. The list on the left shows each question’s number, type and points. Select a question to open it on the right. To reorder, drag the handle or focus it and use the up and down arrow keys. “Question” below the list offers six types:
 
 - **Single choice** and **Multiple choice:** mark the correct options.
-- **Short answer:** list accepted answers. Capitalisation, extra spaces and the difference between ё and е are ignored.
+- **Short answer:** list accepted answers; press Enter after each one. Capitalisation, extra spaces and the difference between ё and е are ignored.
 - **Number:** enter a correct answer and an optional tolerance.
 - **Matching:** enter pairs; the right-hand column is shuffled for students.
 - **Ordering:** enter the correct order; students receive shuffled items.
 
-Each question has points and an optional explanation. Matching and ordering award all points or none. In “Quiz settings”, choose when answers are revealed and how many attempts are allowed. The best attempt counts. A draft keeps unfinished questions as they are, but you can’t assign it until they are complete. The portal names the questions to fix and opens the Quiz tab. Once a student starts the quiz, questions are locked; the rest of the assignment remains editable.
+“With AI” opens the AI assistant. In an open question you can change its type, duplicate it, move it or remove it. Options carry over between single choice, multiple choice and ordering; for other changes the portal asks first. Options can be dragged too, and pressing Enter in the last option adds another. Each question has points from 1 to 100 (1 by default) and an optional explanation; choose “Answer explanation” to add one. Matching and ordering award all points or none. On the right, “Quiz settings” sets when answers are revealed and how many attempts are allowed: 1, 2, 3 or unlimited. The best attempt counts. “Summary” shows the number of questions, the points and roughly how long the quiz takes. A draft keeps unfinished questions as they are, but you can’t assign it until they are complete. The portal opens the Quiz tab, marks those questions in red and lists them under “Summary”. Once a student starts the quiz, questions are locked; the rest of the assignment remains editable.
 
 The AI assistant can draft questions. On the Quiz tab it prepares questions straight away; on Instructions it drafts the text. You can still switch with “What to prepare”. Append the draft or replace all questions, and review them before assigning.
 

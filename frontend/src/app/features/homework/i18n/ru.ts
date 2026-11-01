@@ -66,8 +66,14 @@ export const ru = {
   },
   quiz: {
     title: 'Вопросы',
-    hint: 'Портал сам проверит ответы ученика. Текст вопроса и пояснение — Markdown.',
+    outline: 'Вопросы теста',
+    outlineTotal: (count: number, points: number) =>
+      `${countOf(count, 'вопрос', 'вопроса', 'вопросов')} · ${countOf(points, 'балл', 'балла', 'баллов')}`,
     addQuestion: 'Добавить вопрос',
+    newQuestion: 'Вопрос',
+    newQuestionTitle: 'Новый вопрос',
+    withAi: 'С ИИ',
+    composeWithAi: 'Составить с ИИ',
     types: {
       SINGLE_CHOICE: 'Один ответ',
       MULTIPLE_CHOICE: 'Несколько ответов',
@@ -76,43 +82,71 @@ export const ru = {
       MATCHING: 'Соответствие',
       ORDERING: 'Порядок',
     },
-    typeHints: {
-      SINGLE_CHOICE: 'Отметьте верный вариант.',
-      MULTIPLE_CHOICE: 'Отметьте все верные варианты.',
-      SHORT_TEXT:
-        'Верным считается любой из записанных ответов: регистр, ё/е и лишние пробелы не важны.',
-      NUMBER: 'Верным считается число, отличающееся от ответа не больше чем на допуск.',
-      MATCHING: 'Ученик увидит правый столбец в случайном порядке.',
-      ORDERING: 'Запишите элементы в правильном порядке: ученик увидит их перемешанными.',
+    typeMenuHints: {
+      SINGLE_CHOICE: 'Один верный вариант из нескольких',
+      MULTIPLE_CHOICE: 'Отметить все верные варианты',
+      SHORT_TEXT: 'Слово или фраза, без учёта регистра и ё',
+      NUMBER: 'Число с допуском ±',
+      MATCHING: 'Соединить пары',
+      ORDERING: 'Расставить элементы по порядку',
     },
-    question: (index: number, type: string) => `Вопрос ${String(index)} · ${type}`,
+    typeHints: {
+      SINGLE_CHOICE: 'Не меньше двух вариантов, ровно один верный',
+      MULTIPLE_CHOICE: 'Балл — только если отмечены все верные и ни одного лишнего',
+      SHORT_TEXT:
+        'Регистр, ё/е и лишние пробелы не важны: «Москва» и «москва » засчитаются одинаково',
+      NUMBER:
+        'Допуск 0 — засчитается только точный ответ; с допуском 1 ответ 20 засчитается от 19 до 21',
+      MATCHING: 'Ученик увидит правый столбец в случайном порядке',
+      ORDERING: 'Ученик увидит элементы перемешанными',
+    },
+    heading: (index: number) => `Вопрос ${String(index)}`,
+    type: 'Тип вопроса',
+    retype: {
+      header: 'Сменить тип вопроса?',
+      message: 'Варианты ответа этого вопроса пропадут.',
+      accept: 'Сменить',
+    },
+    copy: (index: number) => `Создать копию вопроса ${String(index)}`,
     text: 'Текст вопроса',
+    textHint: 'Markdown: **жирный**, списки, ссылки, картинки',
     points: 'Баллы',
     explanation: 'Пояснение к ответу',
-    explanationHint: 'Ученик увидит его вместе с верным ответом.',
+    explanationHint: 'Ученик увидит его вместе с верным ответом',
+    optionsLabel: {
+      SINGLE_CHOICE: 'Варианты · отметьте верный',
+      MULTIPLE_CHOICE: 'Варианты · отметьте все верные',
+      ORDERING: 'Элементы в верном порядке · перетащите',
+    },
+    correctTag: 'верный',
+    enterHint: 'Enter в последнем варианте добавляет следующий',
     option: (index: number) => `Вариант ${String(index)}`,
     item: (index: number) => `Элемент ${String(index)}`,
-    answer: (index: number) => `Ответ ${String(index)}`,
     left: (index: number) => `Левая часть ${String(index)}`,
     right: (index: number) => `Правая часть ${String(index)}`,
+    leftColumn: 'Слева',
+    rightColumn: 'Справа — верная пара',
     correct: (option: string) => `Верный: ${option}`,
+    acceptedLabel: 'Принимаемые ответы',
+    acceptedPlaceholder: 'Ещё вариант ответа + Enter',
+    newAnswer: 'Новый принимаемый ответ',
     addOption: 'Добавить вариант',
     addItem: 'Добавить элемент',
-    addAnswer: 'Добавить ответ',
     addPair: 'Добавить пару',
     removeOption: (index: number) => `Убрать вариант ${String(index)}`,
     removeItem: (index: number) => `Убрать элемент ${String(index)}`,
-    removeAnswer: (index: number) => `Убрать ответ ${String(index)}`,
+    removeAnswer: (answer: string) => `Убрать ответ ${answer}`,
     removePair: (index: number) => `Убрать пару ${String(index)}`,
-    moveItemUp: (index: number) => `Элемент ${String(index)} выше`,
-    moveItemDown: (index: number) => `Элемент ${String(index)} ниже`,
-    value: 'Число',
+    dragQuestion: (index: number) =>
+      `Переместить вопрос ${String(index)}: перетащите или нажимайте стрелки вверх и вниз`,
+    dragOption: (index: number) =>
+      `Переместить вариант ${String(index)}: перетащите или нажимайте стрелки вверх и вниз`,
+    value: 'Ответ',
     tolerance: 'Допуск, ±',
     remove: (index: number) => `Убрать вопрос ${String(index)}`,
     moveUp: (index: number) => `Вопрос ${String(index)} выше`,
     moveDown: (index: number) => `Вопрос ${String(index)} ниже`,
-    total: (count: number, points: number) =>
-      `Вопросов: ${String(count)}, баллов: ${String(points)}`,
+    hasProblem: 'Есть ошибка',
     settings: 'Как проходит тест',
     reveal: 'Когда показать верные ответы',
     reveals: {
@@ -121,17 +155,17 @@ export const ru = {
       NEVER: 'Не показывать',
     },
     attempts: 'Попытки',
-    attemptsHint: 'Засчитывается лучшая попытка.',
-    attemptCount: (count: number) => {
-      if (count === 0) {
-        return 'Без ограничений';
-      }
-      const last = count % 10;
-      const tens = count % 100;
-      if (last === 1 && tens !== 11) {
-        return `${String(count)} попытка`;
-      }
-      return `${String(count)} ${last >= 2 && last <= 4 && (tens < 10 || tens >= 20) ? 'попытки' : 'попыток'}`;
+    attemptsHint: 'Засчитывается лучшая попытка',
+    attemptShort: (count: number) => (count === 0 ? 'Без огр.' : String(count)),
+    summary: {
+      title: 'Итого',
+      questions: 'Вопросов',
+      points: 'Баллов',
+      time: 'Примерно займёт',
+      minutes: (from: number, to: number) => `${String(from)}–${String(to)} мин`,
+      open: 'Открыть',
+      openProblem: (index: number) => `Открыть вопрос ${String(index)}`,
+      problem: (index: number, problem: string) => `Вопрос ${String(index)}: ${problem}`,
     },
     locked:
       'Ученик уже начал тест, поэтому вопросы изменить нельзя. Остальное в задании можно править.',
