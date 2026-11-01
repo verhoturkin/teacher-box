@@ -157,12 +157,24 @@ let nextId = 0;
 
     <ng-template #foot>
       @if (discarding()) {
-        <tb-dialog-confirm-step
-          [message]="discardText"
-          [confirmLabel]="discardLabel"
-          (confirmed)="close()"
-          (cancelled)="discarding.set(false)"
-        />
+        @if (draftPrompt(); as prompt) {
+          <tb-dialog-confirm-step
+            [message]="prompt.message"
+            [confirmLabel]="prompt.save"
+            [otherLabel]="discardLabel"
+            severity="primary"
+            (confirmed)="saveDraft.emit()"
+            (other)="close()"
+            (cancelled)="discarding.set(false)"
+          />
+        } @else {
+          <tb-dialog-confirm-step
+            [message]="discardText"
+            [confirmLabel]="discardLabel"
+            (confirmed)="close()"
+            (cancelled)="discarding.set(false)"
+          />
+        }
       } @else if (customFooter(); as custom) {
         <ng-container *ngTemplateOutlet="custom.template" />
       } @else {
@@ -265,6 +277,10 @@ export class TbDialog {
   readonly closable = input(true);
   /** The form has unsaved changes: closing it asks «Отменить изменения?». */
   readonly dirty = input(false);
+  /** A form that can be kept as a draft: closing it asks «Сохранить черновик?» (save · discard · cancel). */
+  readonly draftPrompt = input<{ message: string; save: string } | null>(null);
+  /** «Сохранить» of the draft question; the host saves and closes the dialog. */
+  readonly saveDraft = output();
   /** The `id` of the `<form>` in the content that the confirm button submits. */
   readonly formId = input<string>();
 
@@ -353,7 +369,7 @@ export class TbDialog {
       return;
     }
     if (this.kind() === 'form' && this.dirty()) {
-      if (this.mode() === 'full') {
+      if (this.mode() === 'full' && this.draftPrompt() === null) {
         void this.injector
           .get(Confirm)
           .danger({

@@ -67,7 +67,7 @@ import { ReviewForm } from './review-form';
       <ng-template tbPaneHeader
         ><tb-page-header
           [title]="task.assignment.title"
-          [back]="single() ? '/teacher/homework' : null"
+          [back]="single() ? back() : null"
           [backLabel]="t.back"
         >
           <span meta class="tb-task__meta">
@@ -207,10 +207,7 @@ import { ReviewForm } from './review-form';
       />
     } @else {
       <ng-template tbPaneHeader
-        ><tb-page-header
-          [title]="t.title"
-          [back]="single() ? '/teacher/homework' : null"
-          [backLabel]="t.back"
+        ><tb-page-header [title]="t.title" [back]="single() ? back() : null" [backLabel]="t.back"
       /></ng-template>
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
     }
@@ -306,6 +303,8 @@ export class TaskReviewPage {
   readonly taskId = input.required<string>();
   /** One pane at a time: the header has «back» to the list. */
   readonly single = input(false);
+  /** Where «back» leads: the screen the review started from. */
+  readonly back = input<string | readonly unknown[]>('/teacher/homework');
   /** The review is in the side sheet beside the work (extra-large): the page shows no form. */
   readonly sheet = input(false);
   /** A phone's floating toolbar lies over the foot of the page: it leaves room for it. */

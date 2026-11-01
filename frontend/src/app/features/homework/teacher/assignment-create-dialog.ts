@@ -94,6 +94,8 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
       [pending]="pending() && !draftOnly()"
       [error]="error()"
       [dirty]="dirty()"
+      [draftPrompt]="draftPrompt()"
+      (saveDraft)="saveDraft()"
       (confirm)="issue(false)"
     >
       <ng-template tbDialogHeaderActions>
@@ -539,6 +541,10 @@ export class AssignmentCreateDialog {
       this.files().length > 0 ||
       this.pickedBoard() !== null,
   );
+  /** Closing a dialog with a text asks «Сохранить черновик?»; without a text there is nothing to keep. */
+  protected readonly draftPrompt = computed(() =>
+    this.titleValue() === '' ? null : { message: this.t.keepDraft, save: this.t.keepDraftSave },
+  );
   protected readonly placing = signal<AssignmentDetails | null>(null);
   protected readonly placingStudents = computed(
     () => this.placing()?.tasks.map((task) => task.studentId) ?? [],
@@ -740,7 +746,13 @@ export class AssignmentCreateDialog {
         next: ({ assignment, complete }) => {
           this.pending.set(false);
           if (complete) {
-            this.snackbar.success(give ? T.editor.assigned : this.t.drafted);
+            this.snackbar.link(give ? T.editor.assigned : this.t.drafted, this.t.open, () => {
+              void this.router.navigate(
+                give
+                  ? ['/teacher/homework', assignment.id]
+                  : ['/teacher/homework', assignment.id, 'edit'],
+              );
+            });
           } else {
             this.snackbar.error(T.editor.materialsFailed);
           }

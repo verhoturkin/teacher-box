@@ -366,7 +366,7 @@ Reviews show the best quiz attempt, incorrect answers first, with an answer key.
 
 ## Review a submission
 
-Submissions waiting for review sit in the “To review” strip at the top of the Homework page: each card shows the student, the assignment, when it was handed in, a “Late” tag and the quiz score. “Review” opens a submission; “Review them all” starts with the oldest and moves on to the next after each decision. You will see the assignment, the student’s response and attached images. “Open on the board” opens the assignment’s board.
+Submissions waiting for review sit in the “To review” strip at the top of the Homework page: each card shows the student, the assignment, when it was handed in, a “Late” tag and the quiz score. “Review” opens a submission; “Review them all” starts with the oldest and moves on to the next after each decision. When none are left you return to where you started and see “Nothing left to review”. “Review” on an assignment’s page goes through that assignment’s submissions only, and “Back” returns to the assignment. You will see the assignment, the student’s response and attached images. “Open on the board” opens the assignment’s board.
 
 Add feedback and a grade, then choose “Accept” or “Return for revision”. Quick comments help with common responses. “Next: …” opens the next submission after your decision. If AI is enabled, “AI draft” suggests feedback and a grade; review them before choosing “Insert”.
 

@@ -356,6 +356,9 @@ export const en: Translation<typeof ru> = {
     needText: 'Write the assignment text',
     needWhom: 'Choose who gets the assignment',
     drafted: 'Draft saved',
+    open: 'Open',
+    keepDraft: 'Save as a draft?',
+    keepDraftSave: 'Save',
   },
   /** «By student»: the grid of students by the assignments of a week. */
   journal: {
@@ -603,5 +606,6 @@ export const en: Translation<typeof ru> = {
     gradeLine: (grade: string) => `**Grade: ${grade}**`,
     accepted: 'Submission accepted',
     returned: 'Submission returned for revision',
+    allDone: 'Nothing left to review',
   },
 };

@@ -138,6 +138,7 @@ interface Line {
           <tb-task-review-page
             [taskId]="id"
             [single]="true"
+            [back]="origin()"
             [sheet]="sheetOpen() || phoneReview()"
             [toolbar]="phoneReview()"
             [update]="decided()"
@@ -150,7 +151,7 @@ interface Line {
             <tb-review-sheet
               [task]="task"
               [place]="place()"
-              [total]="queue().length"
+              [total]="line().length"
               [next]="next()"
               (reviewed)="decide($event)"
               (opened)="openWork($event)"
@@ -165,7 +166,7 @@ interface Line {
           [compact]="true"
           [task]="task"
           [place]="place()"
-          [total]="queue().length"
+          [total]="line().length"
           [next]="next()"
           (reviewed)="decide($event)"
           (opened)="openWork($event)"
@@ -175,7 +176,12 @@ interface Line {
     } @else if (assignmentId(); as id) {
       <tb-panes>
         <tb-pane [label]="t.title">
-          <tb-assignment-page [assignmentId]="id" [single]="true" (changed)="refresh()" />
+          <tb-assignment-page
+            [assignmentId]="id"
+            [single]="true"
+            (changed)="refresh()"
+            (reviewWork)="startReview($event, id)"
+          />
         </tb-pane>
       </tb-panes>
     } @else {
@@ -234,7 +240,7 @@ interface Line {
           @if (view() === 'journal') {
             <tb-journal-view
               [who]="whomId()"
-              (review)="openWork($event)"
+              (review)="startReview($event)"
               (openAssignment)="openAssignment($event)"
             >
               <div whom>
@@ -294,7 +300,7 @@ interface Line {
                             [label]="t.check"
                             severity="secondary"
                             [ariaLabel]="t.reviewOf(work.studentName, work.title)"
-                            (onClick)="openWork(work.taskId)"
+                            (onClick)="startReview(work.taskId)"
                           />
                         </div>
                       </li>
@@ -871,11 +877,25 @@ export class AssignmentsPage implements OnInit {
   );
   /** «1 из 3»: the place of the open work in the queue (0: it is not in it). */
   protected readonly place = computed(
-    () => this.queue().findIndex((work) => work.taskId === this.taskId()) + 1,
+    () => this.line().findIndex((work) => work.taskId === this.taskId()) + 1,
   );
+  /** The assignment whose works the review goes through; `null` — all works waiting. */
+  protected readonly scope = signal<string | null>(null);
+  /** The queue of the review: the chosen assignment's works or all of them. */
+  protected readonly line = computed(() => {
+    const scope = this.scope();
+    return scope === null
+      ? this.queue()
+      : this.queue().filter((work) => work.assignmentId === scope);
+  });
+  /** Where «Назад» and the end of the queue lead: the assignment it started from, else the list. */
+  protected readonly origin = computed(() => {
+    const scope = this.scope();
+    return scope === null ? ['/teacher/homework'] : ['/teacher/homework', scope];
+  });
   /** The work after the open one (the first one when it is the last); none when it is the only one. */
   protected readonly next = computed<NextWork | null>(() => {
-    const queue = this.queue();
+    const queue = this.line();
     const index = queue.findIndex((work) => work.taskId === this.taskId());
     const work = queue[index + 1] ?? queue.find((other) => other.taskId !== this.taskId());
     return work === undefined ? null : { taskId: work.taskId, studentName: work.studentName };
@@ -1136,6 +1156,12 @@ export class AssignmentsPage implements OnInit {
     void this.router.navigate(['/teacher/homework', id]);
   }
 
+  /** A review starts from a work: the queue is all works waiting, or the works of one assignment. */
+  protected startReview(taskId: string, assignmentId: string | null = null): void {
+    this.scope.set(assignmentId);
+    this.openWork(taskId);
+  }
+
   protected openWork(taskId: string): void {
     void this.router.navigate(['/teacher/homework/tasks', taskId]);
   }
@@ -1144,12 +1170,12 @@ export class AssignmentsPage implements OnInit {
   protected reviewAll(): void {
     const first = this.works()[0];
     if (first !== undefined) {
-      this.openWork(first.taskId);
+      this.startReview(first.taskId);
     }
   }
 
   protected closeReview(): void {
-    void this.router.navigate(['/teacher/homework']);
+    void this.router.navigate(this.origin());
   }
 
   /** A decision: the next work of the queue opens; with none left (or the work was not in the queue) the list stays. */
@@ -1161,6 +1187,7 @@ export class AssignmentsPage implements OnInit {
       this.openWork(next.taskId);
     } else if (this.place() > 0) {
       this.closeReview();
+      this.snackbar.success(T.review.allDone);
     }
   }
 

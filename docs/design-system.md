@@ -695,7 +695,8 @@ changes the container; content and markup are the same at every width. Every dia
 - **Dirty form:** closing a `form` with changes asks «Отменить изменения?» (Esc = «Отмена»): on
   compact a basic dialog over the full-screen one (the only dialog over a dialog, **M3**; the
   discard button red, *ours*); from medium and inside `alert` / `sheet` the inline
-  `<tb-dialog-confirm-step>` — its text and two buttons replace the footer.
+  `<tb-dialog-confirm-step>` — its text and two buttons replace the footer. A form that can be kept
+  sets `[draftPrompt]`: «Сохранить черновик?» with «Сохранить · Не сохранять · Отмена» in the same step.
 - **Inline form not saved** (settings cards, *ours*): a card with a form calls
   `guardUnsaved(() => dirty)` (`core/routing/unsaved-changes.ts`); the page (`SettingsPage.canLeave`
   + `canLeaveGuard`) asks the shared `Confirm` «Отменить изменения?» on a route or category change,

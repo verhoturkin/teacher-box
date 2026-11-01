@@ -728,11 +728,12 @@ describe('AssignmentPage', () => {
 
     it('opens the review sheet on the first work to review', async () => {
       const { host, fixture } = await render();
-      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      const started = vi.fn();
+      fixture.componentInstance.reviewWork.subscribe(started);
 
       buttonByText(host, 'Проверить 1 работу').click();
 
-      expect(navigate).toHaveBeenCalledWith(['/teacher/homework/tasks', 't-1']);
+      expect(started).toHaveBeenCalledWith('t-1');
       fixture.destroy();
     });
 
@@ -870,8 +871,8 @@ describe('AssignmentPage', () => {
 
     it('open the work: «Проверить» for a handed in one, «Открыть» for the others', async () => {
       const { host, fixture } = await render();
-      const review = host.querySelector('a[href="/teacher/homework/tasks/t-1"]');
-      const open = host.querySelector('a[href="/teacher/homework/tasks/t-2"]');
+      const review = host.querySelector('button[aria-label="Проверить: Анна"]');
+      const open = host.querySelector('button[aria-label="Открыть: Борис"]');
 
       expect(review?.getAttribute('aria-label')).toBe('Проверить: Анна');
       expect(open?.getAttribute('aria-label')).toBe('Открыть: Борис');
@@ -1570,6 +1571,9 @@ describe('AssignmentsPage with the review side sheet (extra-large)', () => {
     await fixture.whenStable();
 
     expect(navigate).toHaveBeenCalledWith(['/teacher/homework']);
+    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Все работы проверены' }),
+    );
   });
 
   it('keeps the sheet on a failed decision', async () => {

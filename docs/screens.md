@@ -251,6 +251,13 @@ with three screens: the list on the full width of the window, the assignment and
 page of its own with «back» (`tb-page-header [back]`) to the list — no list pane beside a detail
 (339.1). The «?» help button is in the list header and the editor only.
 
+- **Transitions** (345.1, sketch board 34): «back» leads to the screen the page was opened from —
+  the work to the list or the assignment whose «Проверить» opened it (`AssignmentsPage.origin`), the
+  assignment to the list; the list view (`?view=`), search and filters live in the one page and
+  stay. Every «Проверить» starts a queue (`startReview`): from the strip, the journal and
+  «Проверить все подряд» all works waiting, from an assignment (`scope`) its works only. A decision
+  opens the next work; with none left the page returns to the origin with «Все работы проверены».
+
 - **Header**: «Задания», «?», the filled «Новое задание» (a phone: the extended FAB «Новое»); it
   opens the quick dialog, `/teacher/homework/new` stays as the full editor.
 - **Quick dialog «Новое задание»** (340.1, `assignment-create-dialog.ts`, `tb-dialog` form, `xwide` 47.5 rem: a basic
@@ -269,7 +276,10 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   height: the text field grows from four rows up to a maximum, only taller content scrolls. «Тест с вопросами» opens the full editor (questions are too big for the
   dialog); the entered state travels in `AssignmentDraftHandover`. Footer: text «Сохранить
   черновик» (creates the assignment and keeps the chosen students as `draftStudentIds`, nobody is given it) and the split button «Выдать» (menu «Выдать и
-  разместить на доске»).
+  разместить на доске»). «Выдать» and «Сохранить черновик» leave the list in place with the
+  snackbar «Задание выдано · Открыть» (`Snackbar.link`). Closing a dialog with a text asks «Сохранить
+  черновик?» (Сохранить · Не сохранять · Отмена): `tb-dialog [draftPrompt] (saveDraft)`, the inline
+  confirm step with a third button; without a text the usual «Отменить изменения?».
 - **AI pane of the quick dialog** (sketch `AiDraft`; `tb-homework-ai-panel [pane]`, the logic and state
   are the editor panel's): from the large breakpoint (≥ 1200 dp) the dialog widens to `split` (77.5 rem
   ≈ 1240 px) and shows the pane beside the form — form `flex 1 1 35rem`, pane `flex 1 1 26rem` (max

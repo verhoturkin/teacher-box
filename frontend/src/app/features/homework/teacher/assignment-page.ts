@@ -12,7 +12,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
@@ -69,7 +69,6 @@ const FOLD_LINES = 3;
     VideoList,
     Avatar,
     EmptyState,
-    RouterLink,
     Button,
     ButtonDirective,
     ButtonLabel,
@@ -201,10 +200,11 @@ const FOLD_LINES = 3;
                           (onClick)="remind(task)"
                         />
                       }
-                      <a
+                      <button
                         pButton
+                        type="button"
                         severity="secondary"
-                        [routerLink]="['/teacher/homework/tasks', task.taskId]"
+                        (click)="reviewWork.emit(task.taskId)"
                         [attr.aria-label]="
                           t.action(
                             task.status === 'SUBMITTED' ? t.review : t.open,
@@ -215,7 +215,7 @@ const FOLD_LINES = 3;
                         <span pButtonLabel>{{
                           task.status === 'SUBMITTED' ? t.review : t.open
                         }}</span>
-                      </a>
+                      </button>
                     </div>
                   </li>
                 }
@@ -534,6 +534,8 @@ export class AssignmentPage {
   readonly single = input(false);
   /** The assignment changed (given to more students, deleted): the list beside it changes. */
   readonly changed = output();
+  /** «Проверить»: a work of this assignment opens, the queue is its works. */
+  readonly reviewWork = output<string>();
 
   protected readonly details = signal<AssignmentDetails | null>(null);
   /** The students of the assignment: «На доску» offers only their boards. */
@@ -687,7 +689,7 @@ export class AssignmentPage {
   protected review(): void {
     const first = this.toReview()[0];
     if (first !== undefined) {
-      void this.router.navigate(['/teacher/homework/tasks', first.taskId]);
+      this.reviewWork.emit(first.taskId);
     }
   }
 

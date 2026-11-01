@@ -47,7 +47,7 @@ Russian wording; English is written separately (AGENTS.md §6.1).
 
 ### 345. Transitions
 
-- [ ] **345.1 F** Board 34 `Flow` rules in `assignments-page.ts`, `assignment-create-dialog.ts`,
+- [x] **345.1 F** Board 34 `Flow` rules in `assignments-page.ts`, `assignment-create-dialog.ts`,
   `assignment-page.ts`, `task-review-page.ts`, `review-sheet.ts`: «Назад» returns to the screen it
   came from (list, journal, assignment), keeping the list filters; «Выдать» and «Сохранить
   черновик» in the quick dialog stay on the list with the snackbar «Задание выдано · Открыть»;

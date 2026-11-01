@@ -235,6 +235,59 @@ describe('AssignmentCreateDialog', () => {
     expect(dialog.visible()).toBe(false);
   });
 
+  it('stays on the list with «Открыть» in the message after a draft', async () => {
+    setup();
+    const dialog = await open();
+    dialog.text.setValue('Дроби');
+    await fixture.whenStable();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    click('Сохранить черновик');
+    backend
+      .expectOne({ method: 'POST', url: ASSIGNMENTS })
+      .flush(assignmentDetails({ id: 'a-9', tasks: [] }));
+    await fixture.whenStable();
+
+    const message = vi.mocked(TestBed.inject(MessageService).add).mock.calls.at(-1)?.[0];
+    expect(message?.detail).toBe('Черновик сохранён');
+    expect(message?.data).toHaveProperty('label', 'Открыть');
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('asks «Сохранить черновик?» when closed with a text; «Не сохранять» closes', async () => {
+    setup();
+    const dialog = await open();
+    dialog.text.setValue('Дроби');
+    await fixture.whenStable();
+
+    document.body.querySelector<HTMLElement>('button[aria-label="Закрыть"]')?.click();
+    await fixture.whenStable();
+    expect(document.body.textContent).toContain('Сохранить черновик?');
+    expect(dialog.visible()).toBe(true);
+
+    exact('Не сохранять').click();
+    await fixture.whenStable();
+    expect(dialog.visible()).toBe(false);
+    backend.expectNone({ method: 'POST', url: ASSIGNMENTS });
+  });
+
+  it('saves the draft from the question and closes', async () => {
+    setup();
+    const dialog = await open();
+    dialog.text.setValue('Дроби');
+    await fixture.whenStable();
+
+    document.body.querySelector<HTMLElement>('button[aria-label="Закрыть"]')?.click();
+    await fixture.whenStable();
+    exact('Сохранить').click();
+    backend
+      .expectOne({ method: 'POST', url: ASSIGNMENTS })
+      .flush(assignmentDetails({ id: 'a-9', tasks: [] }));
+    await fixture.whenStable();
+
+    expect(dialog.visible()).toBe(false);
+  });
+
   it('keeps the chosen recipients with the draft, still giving it to nobody', async () => {
     setup();
     const dialog = await open();

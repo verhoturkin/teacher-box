@@ -365,6 +365,9 @@ export const ru = {
     needText: 'Напишите текст задания',
     needWhom: 'Выберите, кому выдать задание',
     drafted: 'Черновик сохранён',
+    open: 'Открыть',
+    keepDraft: 'Сохранить черновик?',
+    keepDraftSave: 'Сохранить',
   },
   /** «По ученикам»: the grid of students by the assignments of a week. */
   journal: {
@@ -611,5 +614,6 @@ export const ru = {
     gradeLine: (grade: string) => `**Оценка: ${grade}**`,
     accepted: 'Работа принята',
     returned: 'Работа возвращена на доработку',
+    allDone: 'Все работы проверены',
   },
 };
