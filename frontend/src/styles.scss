@@ -507,13 +507,14 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
 }
 
 /*
- * A section card of a form on a pane (the assignment editor, sketch Editor): each section is a tonal card,
- * `surface-container-low`, 20 dp corners (M3 large-increased), 20 dp inside; the title in Title Medium
- * emphasized, 12 px under it. Ours: the cards stand 16 px apart (the sketch has 14).
+ * A section card of a form on a pane (the assignment editor, sketch Elements): an M3 outlined card —
+ * `surface-container-lowest`, 1 dp outline-variant, 20 dp corners (M3 large-increased), 20 dp inside,
+ * 12 px between the title (Title Medium emphasized) and the content. Ours: the cards stand 16 px apart.
  */
 .p-card.tb-section-card {
-  background: var(--p-md-surface-container-low);
+  border: 1px solid var(--p-md-outline-variant);
   border-radius: var(--tb-shape-lg-plus);
+  background: var(--p-md-surface-container-lowest);
   color: var(--p-md-on-surface);
   box-shadow: none;
 
@@ -524,6 +525,27 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
 
   .p-card-title {
     font: var(--tb-type-title-m-emphasized);
+  }
+}
+
+/*
+ * The phone bottom action bar (sketch Elements «Панель действий телефона»): sticks to the bottom of the
+ * page, `surface-container-low` (M3 bottom sheet surface), 28 dp top corners, 12 / 16 px inside; the
+ * buttons are the usual 40 dp ones.
+ */
+.tb-bottom-actions {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1;
+  display: flex;
+  gap: var(--tb-space-2);
+  align-items: center;
+  padding: var(--tb-space-3) var(--tb-space-4);
+  border-radius: var(--tb-shape-xl) var(--tb-shape-xl) 0 0;
+  background: var(--p-md-surface-container-low);
+
+  > .p-button:only-child {
+    flex: 1;
   }
 }
 

@@ -369,7 +369,7 @@ describe('MyTaskPage', () => {
 
   it('docks the answer at the bottom on a phone only', async () => {
     const wide = await render(taskDetails({ status: 'ASSIGNED', submissions: [] }));
-    expect(wide.host.querySelector('.tb-task__answer--docked')).toBeNull();
+    expect(wide.host.querySelector('.tb-bottom-actions')).toBeNull();
     expect(wide.host.querySelector('.tb-task__side')).not.toBeNull();
     wide.fixture.destroy();
     TestBed.resetTestingModule();
@@ -382,7 +382,7 @@ describe('MyTaskPage', () => {
       .expectOne('/api/me/homework/tasks/t-1')
       .flush(taskDetails({ status: 'ASSIGNED', submissions: [] }));
     await fixture.whenStable();
-    expect(hostElement(fixture).querySelector('.tb-task__answer--docked')).not.toBeNull();
+    expect(hostElement(fixture).querySelector('.tb-task__answer.tb-bottom-actions')).not.toBeNull();
   });
 
   it('requires text or files', async () => {

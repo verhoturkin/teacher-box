@@ -1133,7 +1133,7 @@ describe('AssignmentPage', () => {
       expect(tabs).toEqual(['Ученики 2', 'Задание']);
       expect(host.querySelector('.tb-asg__main')).not.toBeNull();
       expect(host.querySelector('.tb-asg__aside')).toBeNull();
-      const bottom = requireElement(host, '.tb-asg__bottom', HTMLElement);
+      const bottom = requireElement(host, '.tb-bottom-actions', HTMLElement);
       expect(readableText(bottom)).toBe('Проверить 1 работу');
       expect(host.querySelectorAll('p-button[icon="tb-i tb-i-rate_review"]')).toHaveLength(1);
       fixture.destroy();
@@ -1170,7 +1170,7 @@ describe('AssignmentPage', () => {
       const [, boris] = assignmentDetails().tasks;
       const { host, fixture } = await render(assignmentDetails({ tasks: [boris!] }), 390);
 
-      expect(host.querySelector('.tb-asg__bottom')).toBeNull();
+      expect(host.querySelector('.tb-bottom-actions')).toBeNull();
       fixture.destroy();
     });
   });

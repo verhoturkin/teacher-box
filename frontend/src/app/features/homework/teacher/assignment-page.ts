@@ -292,9 +292,8 @@ const FOLD_LINES = 3;
       </div>
 
       @if (mobile() && toReview().length > 0) {
-        <div class="tb-asg__bottom">
+        <div class="tb-bottom-actions">
           <p-button
-            styleClass="tb-asg__bottom-button"
             [label]="t.reviewWorks(toReview().length)"
             icon="tb-i tb-i-rate_review"
             (onClick)="review()"
@@ -510,19 +509,6 @@ const FOLD_LINES = 3;
       display: block;
       block-size: 100%;
       background: var(--p-md-error);
-    }
-
-    /* a phone: «Проверить N работ» sticks to the bottom of the page */
-    .tb-asg__bottom {
-      position: sticky;
-      inset-block-end: 0;
-      margin-block-start: var(--tb-space-4);
-      padding-block: var(--tb-space-3);
-      background: var(--p-md-surface);
-    }
-
-    :host ::ng-deep .tb-asg__bottom-button {
-      inline-size: 100%;
     }
   `,
 })

@@ -391,9 +391,9 @@ for the active navigation item and checked states.
   padding — the section title stands on the pane (Title Medium emphasized), its rows or blocks
   (`tb-list`, `tb-figures`) lie under it, 12 px apart; the list group's outer corner is 16 px. The
   one container left is the filled `tb-hero`. *Exception* `tb-section-card` (the assignment editor,
-  sketch Editor): a `surface-container-low` card with 20 dp corners (**M3** large-increased), 20 dp
-  inside and the title (Title Medium emphasized) 12 px under the top; the cards of a form stand
-  16 px apart (*ours*; the sketch has 14).
+  sketch Elements): an **M3** outlined card — `surface-container-lowest`, 1 dp outline-variant, 20 dp
+  corners (large-increased), 20 dp inside and the title (Title Medium emphasized) 12 px under the
+  top; the cards of a form stand 16 px apart (*ours*).
 - **Header** `tb-page-header`: «Назад» icon button on nested pages (tooltip = destination); h1; «?»
   help if the section has an article; a detail line; actions on the title line (56 px), the main one
   last. On a phone a section page hides its title (kept for screen readers; the top bar names the
@@ -422,7 +422,11 @@ for the active navigation item and checked states.
 - **Answer panel** (student task, *ours*, M3 allows a docked surface for the page's main input): an
   outlined container (corner 16, outline-variant, `--tb-card`), «Мой ответ» title, a text field, the
   attachment rows, assist chips «Фото тетради» / «Файл» and the filled «Сдать» at the end. On compact it is
-  `position: sticky` at the bottom of the pane (`--p-md-surface-container`), the field shrinks to two rows.
+  the phone bottom action bar (below), the field shrinks to two rows.
+- **Phone bottom action bar** `.tb-bottom-actions` (sketch Elements; the compact assignment page and
+  the student answer panel): sticky at the bottom of the page, `surface-container-low`, 28 dp top
+  corners (the bottom sheet surface, **M3**), 12 / 16 px inside, 40 dp buttons; one button fills
+  the row (*ours*).
 - **Forms on a page** — buttons in `tb-form-actions` bottom right, full width on a phone; a form
   keeps a readable width (`tb-form--narrow`) unless it is a review or editor form.
 - **Toolbar above a list** `tb-toolbar`: search first, filters and period after; it wraps.
@@ -561,7 +565,8 @@ action — «Изменить» next to «Проверить N работ» (hom
   gap, inner corners 4 px, outer `--tb-list-outer` (§1; a single tile has it on all corners), height
   ≥ 56 px, padding 12 / 16 px. No custom row markup for data.
   - `tb-list__lead` — 40 px secondary-container circle: people `tb-avatar` (`@shared/ui/avatar`:
-    photo cut to a circle, otherwise initials; `size` for bigger), an icon for things. A list whose
+    photo cut to a circle, otherwise initials; `size`: only 1.5rem in a chip, 2rem in a dense journal row, 40 px by default in a list;
+    the account photo is a picture, not an avatar), an icon for things. A list whose
     icon only decorates takes `tb-list--no-phone-lead` (on a phone the icon goes); lists of people
     keep avatars; `tb-list--no-lead` has no icon at all.
   - `tb-list__text` — `tb-list__title` (Body Large) + `tb-list__supporting` (Body Medium,
@@ -585,7 +590,8 @@ action — «Изменить» next to «Проверить N работ» (hom
 - **Tables** — `p-table styleClass="tb-cards"`: rows are the same tiles (no cell lines, 2 px gaps);
   on a phone each row becomes a card «column: value» (`data-label`); main column `tb-col-main`,
   amounts `tb-amount`; row typing `tbRowType`.
-- **Tags** `p-tag` — one shape, no wrapping, colour by §2.
+- **Tags** `p-tag` — one shape on every width: 24 dp, 8 dp corners, 12 / 600, no wrapping, colour
+  by §2.
 - Not data lists — wizard steps, help items, checklists, bot capabilities, files before upload —
   are plain text lists.
 - **Filter chips** `tb-filter-chips` (`@shared/ui/filter-chips`, **M3**: an alternative to segmented

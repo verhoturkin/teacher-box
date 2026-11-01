@@ -129,6 +129,7 @@ import { QuizSection } from './quiz-section';
             <section
               class="tb-task__answer"
               [class.tb-task__answer--docked]="mobile()"
+              [class.tb-bottom-actions]="mobile()"
               [attr.aria-label]="t.myAnswer"
             >
               <div class="tb-task__answer-head">
@@ -250,18 +251,18 @@ import { QuizSection } from './quiz-section';
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-3);
+    }
+
+    .tb-task__answer:not(.tb-bottom-actions) {
       padding: var(--tb-space-4);
       border: 1px solid var(--p-md-outline-variant);
       border-radius: var(--tb-shape-lg);
       background: var(--p-md-surface-container-lowest);
     }
 
-    /* a phone: the answer stays at the bottom of the pane while the task scrolls */
+    /* a phone: the answer is the bottom action bar (tb-bottom-actions) and stays while the task scrolls */
     .tb-task__answer--docked {
-      position: sticky;
-      inset-block-end: 0;
-      z-index: 1;
-      background: var(--p-md-surface-container);
+      align-items: stretch;
     }
 
     .tb-task__answer-head,

@@ -37,7 +37,7 @@ Russian wording; English is written separately (AGENTS.md §6.1).
 
 ### 344. Design system from the sketches
 
-- [ ] **344.1 F** Board 33 `Elements` against `docs/design-system.md` and `styles.scss`: chips
+- [x] **344.1 F** Board 33 `Elements` against `docs/design-system.md` and `styles.scss`: chips
   (filter, input, assist) 32 dp with an `outline-variant` border; one tag size (24 dp, 12/600) on
   every width; avatars only 24 (chip), 32 (dense journal) and 40 (list lead); radio 20, stepper
   40; the section card as in the sketches (white with an `outline-variant` border — an M3 outlined
