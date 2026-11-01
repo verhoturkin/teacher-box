@@ -268,7 +268,8 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   dialog (see «AI pane» below); «Срок» —
   `tb-filter-chips` «К следующему занятию · <date>» (hidden without a lesson of the chosen
   students), «Через неделю», «Без срока», «Дата…» (date picker); «Материалы» appear only once
-  added (textbooks, videos; each section only once its own chip was used) and are filled by assist
+  added (textbooks, videos; each section only once its own chip was used; videos — small tiles with «×»
+  and the link field only, sketch 3) and are filled by assist
   chips «Файл · Учебник · Видео · Тест с вопросами · Доска» (a phone: «Фото» with the camera,
   «Файл · Учебник · Тест»). «Доска» opens a menu of the teacher's boards; the chosen one becomes
   the input chip «Доска: <name>» with «×» (the choice is kept in the dialog; after «Выдать» the
@@ -386,7 +387,11 @@ wider it falls back to «Тест»).
   строка станет названием»), «Материалы» and, with questions, the test summary card «Тест»: «N
   вопросов · M баллов · K попытки», the first three questions as a `tb-list--no-lead` (number, type
   icon, text or «Без текста», points), «…и ещё N вопросов», the hint where to edit them and tonal
-  «Открыть тест». Empty sections (textbooks, videos) are hidden; the assist chips under «Материалы»
+  «Открыть тест». Videos are tiles (`video-section.ts`, 348.1, sketches 39, 40: preview, name, source,
+  «Расшифровка» / «Без расшифровки», «видит ученик», «Настроить»; drag to reorder) over one «Вставьте ссылку
+  на видео» field; «Настроить» opens the video's side sheet (a phone: full screen) — player, «Название», the
+  transcript as timed lines, «Субтитры YouTube» (menu of tracks), «Из файла», «Править текст», «Показывать
+  расшифровку ученику», «Убрать видео», ‹ ›. Empty sections (textbooks, videos) are hidden; the assist chips under «Материалы»
   («Файл · Учебник · Видео · Тест с вопросами · Доска») add them, «Тест с вопросами» opens «Тест».
   A draft lists its saved textbooks (pages, remove — unbound at once) and files (input chips,
   remove at once) with the picked ones; an issued assignment has them on its page.

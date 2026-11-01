@@ -285,14 +285,14 @@ describe('AssignmentEditorPage', () => {
     buttonByText(host, 'Видео').click();
     await fixture.whenStable();
     expect(host.querySelector('tb-video-section')).not.toBeNull();
-    expect(page.videos()).toHaveLength(1);
+    expect(page.videos()).toHaveLength(0);
+    expect(document.activeElement?.id).toBe('video-link');
 
     page.pickTextbook(boundTextbook());
     await fixture.whenStable();
     expect(host.querySelector('tb-textbook-list')).not.toBeNull();
     page.changeVideos([]);
     await fixture.whenStable();
-    expect(host.querySelector('tb-video-section')).toBeNull();
 
     buttonByText(host, 'Тест с вопросами').click();
     await fixture.whenStable();
@@ -865,7 +865,7 @@ describe('AssignmentEditorPage', () => {
       }),
     );
 
-    expect(host.querySelector('iframe')).not.toBeNull();
+    expect(host.querySelector('tb-video-section img')).not.toBeNull();
     expect(page.sourceOptions().map((option) => option.label)).toEqual(['Видео: Present Simple']);
     expect(page.sourceOptions()[0]?.source).toEqual({
       type: 'VIDEO',

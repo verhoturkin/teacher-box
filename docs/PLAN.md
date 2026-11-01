@@ -90,7 +90,7 @@ Russian wording; English is written separately (AGENTS.md §6.1).
 
 ### 348. Videos as tiles
 
-- [ ] **348.1 F** `video-section.ts`, `caption-language-dialog.ts`, the quick dialog (sketches 3,
+- [x] **348.1 F** `video-section.ts`, `caption-language-dialog.ts`, the quick dialog (sketches 3,
   39, 40): a video is a tile (preview, title — from YouTube when known, else «Видео N», source,
   tags «Расшифровка» / «Без расшифровки» and «видит ученик», «Настроить»), tiles reorder by drag,
   one «Вставьте ссылку на видео» field under them; «Настроить» opens a side sheet (phone: a page):

@@ -28,7 +28,7 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   (32-hex ID), VK Video (`video-<oid>_<id>`, `video_ext.php`); any other http(s) link is `OTHER` (a link, no
   player); not http(s) — `video.link-invalid`, over 5 — `video.too-many`. Transcript — lines `[m:ss] text`, up to
   100 000 characters; `AssignmentDetails.videos` has every transcript, the student's `AssignmentInfo.videos` only
-  those with `transcriptShown`. «Взять субтитры с YouTube» (saves nothing): `POST /api/teacher/homework/videos/captions
+  those with `transcriptShown`. «Субтитры YouTube» (saves nothing): `POST /api/teacher/homework/videos/captions
   {url}` → `{title, tracks: [{language, automatic}], suggested}` (0.19.1), then `POST …/videos/transcript {url,
   language?, automatic}` — the chosen track, without `language` the suggested one. `VideoTranscripts` over the port
   `VideoCaptions`, adapter `youtube/YoutubeCaptions` — the InnerTube player (client `ANDROID`); suggested: the author's
@@ -197,15 +197,22 @@ of an assignment (`teacher/assignment-board.ts`): the frame «<title> · dd.MM.y
 gif files, then the bound pages of each textbook (a whole PDF — from page 1, an image — its picture, a document —
 none), at most 30. Routes `/teacher/homework/**`, `/cabinet/homework/**`.
 
-Videos (0.19.0, ADR-0047): the editor's «Видео» card (`teacher/video-section.ts`, new and saved assignments alike —
-sent whole with `videos`): per video the link (checked by `ui/video-links.ts` `parseVideoLink`, the player under it),
-«Название», «Расшифровка» with «Взять субтитры с YouTube» (YouTube links; several caption tracks — 0.19.1
-`teacher/caption-language-dialog.ts` «Субтитры на каком языке взять?»: a radio list, the language by `Intl.DisplayNames`
-in the interface language, «От автора видео» / «Автоматические — распознал YouTube», the suggested track first and checked,
-«Взять», or «Заменить» with «Текущая расшифровка будет заменена.» when a transcript is written; a single track is taken
-at once, asking before replacing a transcript; the result — «Субтитры YouTube: английский, автоматические» — or the
-error under it) and «Загрузить субтитры» (.srt / .vtt → `subtitlesToTranscript`, `[m:ss]` paragraphs of
-~30 s), «Показывать расшифровку ученику», a red «×»; «Добавить видео» up to 5; changes count for `canLeave`. Videos
+Videos (0.19.0, ADR-0047; tiles 0.43.0): `teacher/video-section.ts` in the editor and the quick dialog (sent
+whole with `videos`). A video is a tile: the preview (YouTube's public `i.ytimg.com/vi/<id>/mqdefault.jpg`, CSP
+`img-src https:`; Rutube, VK and other links show the source icon — they publish no preview without new backend
+work), the name (the title, else «Видео N»), the source («YouTube · с 0:45», «Rutube», «VK Видео», «Плеера нет —
+ученик откроет по ссылке»), tags «Расшифровка» / «Без расшифровки» and «видит ученик», «Настроить». No length: no
+provider returns it through the existing endpoints. Tiles reorder by CDK drag (or the arrow keys on the handle);
+one «Вставьте ссылку на видео» field under them (`parseVideoLink`) adds a tile — a YouTube / Rutube / VK link at once,
+another on Enter or leaving the field; hidden at 5. The chip «Видео» shows and focuses the field. «Настроить» opens a
+modal `tb-side-sheet--narrow` (a phone: the whole screen) «Видео N из M»: the player, «Название», «Расшифровка» as
+timed lines (`transcriptLines`; on YouTube a time restarts the player there via `?start=`) or a text area («Править
+текст», or when empty), the assist chips «Субтитры YouTube» (YouTube links; one track is taken at once, asking before
+replacing a transcript; several open a menu — the suggested first, the language by `Intl.DisplayNames`, «от автора
+видео» / «автоматические», «Заменит текущую расшифровку» over them when one is written; the result «Субтитры
+YouTube: английский, автоматические» or the error under the chips) and «Из файла» (.srt / .vtt →
+`subtitlesToTranscript`, `[m:ss]` paragraphs of ~30 s), «Показывать расшифровку ученику», «Убрать видео» and ‹ ›.
+The quick dialog (`quick`) has small tiles with «×» and the field only. Videos
 with a transcript are «Видео: <name>» in «Опереться на». `ui/video-player.ts` — a 16:9 `iframe` (`embedUrl`:
 `youtube-nocookie.com/embed`, `rutube.ru/play/embed`, `vkvideo.ru/video_ext.php`, built only from checked IDs), a link
 card «Открыть видео в новой вкладке» otherwise; `ui/video-list.ts` on the assignment and task pages (the title, the

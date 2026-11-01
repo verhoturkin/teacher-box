@@ -1,7 +1,9 @@
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  Injector,
   computed,
   effect,
   inject,
@@ -52,7 +54,7 @@ import { AssignmentDraftHandover, titleOf } from './assignment-draft';
 import { assignmentBoard } from './assignment-board';
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { NEXT_LESSON_DAYS, nextLessonStart } from './next-lesson';
-import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from './video-section';
+import { MAX_VIDEOS, VideoDraft, VideoSection, videoInputs } from './video-section';
 
 const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
 
@@ -194,8 +196,8 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                   (edit)="editTextbook($event)"
                   (remove)="removeTextbook($event)"
                 />
-                @if (videos().length > 0) {
-                  <tb-video-section [(videos)]="videos" />
+                @if (videos().length > 0 || videoField()) {
+                  <tb-video-section quick [(videos)]="videos" />
                 }
               </section>
             }
@@ -505,8 +507,12 @@ export class AssignmentCreateDialog {
   protected readonly videos = signal<readonly VideoDraft[]>([]);
   protected readonly pickedBoard = signal<BoardPick | null>(null);
   protected readonly hasMaterials = computed(
-    () => this.textbooks().length > 0 || this.videos().length > 0,
+    () => this.textbooks().length > 0 || this.videos().length > 0 || this.videoField(),
   );
+  /** The chip «Видео» shows the link field even before the first video. */
+  protected readonly videoField = signal(false);
+  private readonly videoSection = viewChild(VideoSection);
+  private readonly injector = inject(Injector);
   /** What the AI may read: the textbooks bound in the dialog and the files and photos picked in it. */
   protected readonly sourceOptions = computed<SourceOption[]>(() => [
     ...this.textbooks()
@@ -583,6 +589,7 @@ export class AssignmentCreateDialog {
     this.files.set([]);
     this.pickedTextbooks.set([]);
     this.videos.set([]);
+    this.videoField.set(false);
     this.pickedBoard.set(null);
     this.error.set(null);
     this.pending.set(false);
@@ -673,7 +680,13 @@ export class AssignmentCreateDialog {
   }
 
   protected addVideo(): void {
-    this.videos.update((videos) => [...videos, videoDraft()]);
+    this.videoField.set(true);
+    afterNextRender(
+      () => {
+        this.videoSection()?.focusLink();
+      },
+      { injector: this.injector },
+    );
   }
 
   /** The full editor with everything entered so far. */

@@ -3,6 +3,7 @@ import { Pane, Panes, PaneHeader } from '@shared/ui/panes';
 import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { Drawer } from 'primeng/drawer';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   OnChanges,
@@ -14,6 +15,7 @@ import {
   signal,
   viewChild,
   ElementRef,
+  Injector,
   DestroyRef,
   effect,
   untracked,
@@ -349,7 +351,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                         }
                       </div>
                     }
-                    @if (videos().length > 0) {
+                    @if (videos().length > 0 || videoField()) {
                       <tb-video-section [videos]="videos()" (videosChange)="changeVideos($event)" />
                     }
                     <tb-material-chips
@@ -825,6 +827,10 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   readonly videos = signal<readonly VideoDraft[]>([]);
   /** The teacher changed the videos: leaving asks. */
   private readonly videosChanged = signal(false);
+  /** The chip «Видео» shows the link field even before the first video. */
+  protected readonly videoField = signal(false);
+  private readonly videoSection = viewChild(VideoSection);
+  private readonly injector = inject(Injector);
   /** The questions of the quiz (ADR-0052) and how it goes; saved with the assignment. */
   readonly questions = signal<readonly QuestionDraft[]>([]);
   protected readonly quizReveal = signal<QuizReveal>('AFTER_SUBMIT');
@@ -1147,7 +1153,13 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   }
 
   protected addVideo(): void {
-    this.changeVideos([...this.videos(), videoDraft()]);
+    this.videoField.set(true);
+    afterNextRender(
+      () => {
+        this.videoSection()?.focusLink();
+      },
+      { injector: this.injector },
+    );
   }
 
   changeQuestions(questions: readonly QuestionDraft[]): void {
