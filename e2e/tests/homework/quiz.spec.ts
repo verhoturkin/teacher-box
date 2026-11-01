@@ -173,18 +173,23 @@ async function asStudent(page: Page, taskId: string): Promise<void> {
   await page.setViewportSize(WIDE);
   await startSession(page, LOGIN, PASSWORD);
   await page.goto(`/cabinet/homework/${taskId}`);
-  await expect(page.getByRole('heading', { name: 'Тест', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /^Тест · / })).toBeVisible();
 }
 
 async function submitQuiz(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Сдать тест', exact: true }).click();
-  await page.getByRole('alertdialog').getByRole('button', { name: 'Сдать', exact: true }).click();
+  // every question has an answer: «Завершить тест» does not ask
+  await page.getByRole('button', { name: 'Завершить тест', exact: true }).first().click();
+}
+
+/** The full-screen test shows one question at a time. */
+async function next(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Дальше', exact: true }).click();
 }
 
 /** Moves the items with the arrow buttons until they stand in `wanted` order. */
 async function putInOrder(page: Page, wanted: readonly string[]): Promise<void> {
   for (const [target, text] of wanted.entries()) {
-    const items = page.locator('.tb-quiz-order__text');
+    const items = page.locator('.tb-qp__order-text');
     for (;;) {
       const texts = await items.allTextContents();
       const at = texts.map((item) => item.trim()).indexOf(text);
@@ -206,12 +211,16 @@ test('a student answers all six types and sees a mixed score without the key', a
   await page.getByRole('button', { name: 'Начать тест', exact: true }).click();
 
   await page.getByRole('radio', { name: 'Москва' }).check();
+  await next(page);
   for (const text of ['2', '3', '5']) {
     await page.getByRole('checkbox', { name: text, exact: true }).check();
   }
+  await next(page);
   // case, «ё» and spaces do not matter
   await page.getByRole('textbox', { name: 'Ответ', exact: true }).fill('  елка ');
+  await next(page);
   await page.getByRole('textbox', { name: 'Число', exact: true }).fill('3.14');
+  await next(page);
   // one pair is right, so the all-or-nothing question is wrong
   const pairs: [string, string][] = [
     ['Париж', 'Франция'],
@@ -222,6 +231,7 @@ test('a student answers all six types and sees a mixed score without the key', a
     await page.getByRole('combobox', { name: `Пара для «${left}»` }).click();
     await page.getByRole('option', { name: right, exact: true }).click();
   }
+  await next(page);
   await putInOrder(page, ['Утро', 'День', 'Вечер']);
   await submitQuiz(page);
 

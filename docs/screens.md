@@ -563,19 +563,26 @@ asks «Отменить изменения?» before another category or page op
   The lesson card of a lesson that has started shows the same «Что прошли» under its facts; the
   notification «Итоги урока» links to `/cabinet/schedule?lesson=<id>` and opens that card.
 - **Homework** (`my-homework-page.ts` + `my-task-page.ts`): list-detail of one route; the list pane
-  — groups «Вернули на доработку» (the teacher's comment under the title, error accent),
-  «Сделать» (by the deadline: «остался N дн.» / «сегодня» / «просрочено на N дн.») and «Сдано»
-  («На проверке» / «Принято» + grade), each hidden when empty; rows (icon of the group, title
-  link, second line, material icons with counts as in the teacher's list, status tag); on compact a tonal «Ближайшее» card (*ours*: the oldest
-  returned task, else the nearest deadline) with «Открыть» leads the list; the detail — the task
-  text, «Мой ответ» right under it (text, «Фото тетради» with the camera, «Файл», attachment rows with «Убрать», filled
-  «Сдать»; the unsent text is kept on the device, «черновик сохранён») and, beside it on wide / below on compact,
-  the materials and the test; on compact the answer panel is docked at the bottom. A returned work shows the
-  teacher's comment above; an accepted one has no answer panel. A task with questions has a «Тест» section
-  (`quiz-section.ts`): «Начать тест», on wide all questions as cards, on compact one per screen with
-  «Назад / Далее / Проверить и сдать»; matching is a select per left part, ordering has up/down buttons; answers
-  save themselves; «Сдать тест» asks first. After a submit: «Лучший результат: N из M», attempts left, «Пройти
-  ещё раз», and the key with the explanations when the rule allows.
+  — groups «Вернули на доработку» (the teacher's comment under the title, error accent), «Сделать»
+  (by the deadline: «остался N дн.» / «сегодня» / «просрочено на N дн.») and «Сдано» («На проверке»
+  / «Принято» + grade), each hidden when empty; rows (icon of the group, title link, second line,
+  material icons with counts as in the teacher's list, status tag); on compact a tonal «Ближайшее»
+  card (*ours*: the oldest returned task, else the nearest deadline) with «Открыть» leads the list;
+  the detail — the task text, «Мой ответ» right under it (text, «Фото тетради» with the camera,
+  «Файл», attachment rows with «Убрать», filled «Сдать»; the unsent text is kept on the device,
+  «черновик сохранён») and, beside it on wide / below on compact, the materials and the test; on
+  compact the answer panel is docked at the bottom. A returned work shows the teacher's comment
+  above; an accepted one has no answer panel. A task with questions has the tonal card «Тест · N
+  вопросов» (`quiz-section.ts`: attempts, when the key shows, «Начать тест» / «Продолжить тест»).
+  **The test** (`quiz-player.ts`, sketches 23, 26) is full screen on every width (`tb-dialog
+  kind="screen"`): «✕» «Выйти из теста — ответы сохранятся», «Тест · <задание>», «Вопрос 3 из 10»;
+  «Попытка 1 из 2 · ответы сохраняются сами», a 4 dp progress bar; one question (type · points, the
+  text in Headline Small, large options), «Назад · Дальше» (the last question «Завершить тест»);
+  beside it the question numbers (answered / current), «Завершить тест» and when the key shows; on
+  compact dots instead of the numbers and 56 dp buttons at the bottom. Matching is a select per left
+  part, ordering has up/down buttons; answers save themselves; «Завершить тест» asks only when
+  questions are skipped. After a submit: «Лучший результат: N из M», attempts left, «Пройти ещё
+  раз», and the key with the explanations when the rule allows.
 - **Payments:** tonal balance / charged / paid / price figures and the journal with filter chips,
   receipts in their rows.
 - **«Мой аккаунт»** (`/cabinet/account`, from «Аккаунт» in the rail / ☰): account,

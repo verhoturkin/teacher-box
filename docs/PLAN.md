@@ -100,7 +100,7 @@ Russian wording; English is written separately (AGENTS.md §6.1).
 
 ### 349. Student
 
-- [ ] **349.1 F** `quiz-section.ts` → a full-screen test (sketches 23, 26): the question with
+- [x] **349.1 F** `quiz-section.ts` → a full-screen test (sketches 23, 26): the question with
   large options, «Назад · Дальше», the question numbers 1…N (answered / current), «Выйти из теста
   — ответы сохранятся», «Завершить тест» asking only when questions are skipped; the task page
   keeps «Начать тест» and the result.

@@ -222,15 +222,24 @@ export const en: Translation<typeof ru> = {
     question: (n: number) => `Question ${String(n)}`,
     prev: 'Back',
     next: 'Next',
-    finish: 'Review and submit',
-    submit: 'Submit the quiz',
-    saved: 'Answers are saved automatically',
-    confirmHeader: 'Submit the quiz?',
+    finish: 'Finish the quiz',
+    continue: 'Continue the quiz',
+    exit: 'Leave the quiz — your answers are kept',
+    cardTitle: (count: number) =>
+      `Quiz · ${String(count)} ${count === 1 ? 'question' : 'questions'}`,
+    testTitle: (title: string) => (title ? `Quiz · ${title}` : 'Quiz'),
+    attempt: (n: number, allowed: number | null) =>
+      `${allowed === null ? `Attempt ${String(n)}` : `Attempt ${String(n)} of ${String(allowed)}`} · answers save as you go`,
+    questions: 'Questions',
+    numberLabel: (n: number, answered: boolean) =>
+      `Question ${String(n)}${answered ? ', answered' : ''}`,
+    progress: (answered: number, total: number) =>
+      `${String(answered)} of ${String(total)} answered`,
+    confirmHeader: 'Finish the quiz?',
     confirmMessage: (unanswered: number) =>
-      unanswered === 0
-        ? 'You cannot change your answers for this attempt after submitting.'
-        : `Unanswered questions: ${String(unanswered)}. You cannot change your answers for this attempt after submitting.`,
-    confirmAccept: 'Submit',
+      `${String(unanswered)} ${unanswered === 1 ? 'question has' : 'questions have'} no answer. Once you finish, you cannot change this attempt.`,
+    confirmAccept: 'Finish',
+    revealAfterSubmit: 'You will see the correct answers after submitting.',
     result: (score: number, max: number) => `Score: ${String(score)} out of ${String(max)}`,
     bestResult: (score: number, max: number) =>
       `Best score: ${String(score)} out of ${String(max)}`,

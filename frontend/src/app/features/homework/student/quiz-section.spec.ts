@@ -1,3 +1,4 @@
+import type { MockInstance } from 'vitest';
 import { BreakpointObserver, BreakpointState } from '@angular/cdk/layout';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
@@ -95,22 +96,32 @@ describe('QuizSection', () => {
   let fixture: ComponentFixture<QuizSection>;
   let backend: HttpTestingController;
   let host: HTMLElement;
-  let phone: BehaviorSubject<BreakpointState>;
+  let safe: MockInstance<Confirm['safe']>;
+  const open = { id: 'at-1', startedAt: '', answers: {} };
 
-  async function render(view: QuizView, compact = false): Promise<void> {
-    phone = new BehaviorSubject<BreakpointState>({ matches: compact, breakpoints: {} });
+  async function render(view: QuizView): Promise<void> {
+    const phone = new BehaviorSubject<BreakpointState>({ matches: false, breakpoints: {} });
     TestBed.configureTestingModule({
       imports: [QuizSection],
       providers: testProviders({ provide: BreakpointObserver, useValue: { observe: () => phone } }),
     });
     backend = TestBed.inject(HttpTestingController);
-    vi.spyOn(TestBed.inject(Confirm), 'safe').mockResolvedValue(true);
+    safe = vi.spyOn(TestBed.inject(Confirm), 'safe').mockResolvedValue(true);
     fixture = TestBed.createComponent(QuizSection);
     fixture.componentRef.setInput('taskId', 't-1');
+    fixture.componentRef.setInput('title', 'Present Perfect');
     await fixture.whenStable();
     backend.expectOne(URL).flush(view);
     await fixture.whenStable();
     host = hostElement(fixture);
+  }
+
+  /** The full-screen test is appended to the body. */
+  const screen = (): HTMLElement => document.body;
+
+  async function next(): Promise<void> {
+    buttonByText(screen(), 'Дальше').click();
+    await fixture.whenStable();
   }
 
   afterEach(() => {
@@ -124,103 +135,96 @@ describe('QuizSection', () => {
     expect(fixture.componentInstance.started()).toBe(false);
   });
 
-  it('starts an attempt and lists all questions on a wide screen', async () => {
+  it('starts an attempt in the full-screen test', async () => {
     await render(quiz());
-    expect(readableText(host)).toContain('Осталось попыток: 2');
+    const card = readableText(host);
+    expect(card).toContain('Тест · 6 вопросов');
+    expect(card).toContain('Осталось попыток: 2');
+    expect(card).toContain('Правильные ответы покажем после сдачи.');
     buttonByText(host, 'Начать тест').click();
-    backend
-      .expectOne(ATTEMPT)
-      .flush(quiz({ openAttempt: { id: 'at-1', startedAt: '', answers: {} } }));
+    backend.expectOne(ATTEMPT).flush(quiz({ openAttempt: open }));
     await fixture.whenStable();
 
-    expect(host.querySelectorAll('article')).toHaveLength(6);
-    expect(readableText(host)).toContain('Ответы сохраняются автоматически');
+    const text = readableText(screen());
+    expect(text).toContain('Тест · Present Perfect');
+    expect(text).toContain('Попытка 1 из 2 · ответы сохраняются сами');
+    expect(text).toContain('Вопрос 1 из 6');
+    expect(
+      screen().querySelector('button[aria-label="Выйти из теста — ответы сохранятся"]'),
+    ).not.toBeNull();
     expect(fixture.componentInstance.started()).toBe(true);
   });
 
-  it('autosaves every type of answer', async () => {
-    await render(quiz({ openAttempt: { id: 'at-1', startedAt: '', answers: {} } }));
-    const save = (id: string): { body: unknown } => {
+  it('autosaves every type of answer, one question per screen', async () => {
+    await render(quiz({ openAttempt: open }));
+    buttonByText(host, 'Продолжить тест').click();
+    await fixture.whenStable();
+    const save = (id: string): unknown => {
       const request = backend.expectOne(`${ATTEMPT}/at-1/answers/${id}`);
       request.flush(null);
-      return { body: request.request.body };
+      return request.request.body;
     };
 
-    host.querySelector<HTMLInputElement>('#o-b')?.click();
+    screen().querySelector<HTMLInputElement>('#o-b')?.click();
     await fixture.whenStable();
-    expect(save('q-SINGLE_CHOICE').body).toEqual({ ids: ['b'] });
+    expect(save('q-SINGLE_CHOICE')).toEqual({ ids: ['b'] });
+    await next();
 
     for (const [id, ids] of [
       ['c', ['c']],
       ['d', ['c', 'd']],
       ['c', ['d']],
     ] as const) {
-      host.querySelector<HTMLInputElement>(`#o-${id}`)?.click();
+      screen().querySelector<HTMLInputElement>(`#o-${id}`)?.click();
       await fixture.whenStable();
-      expect(save('q-MULTIPLE_CHOICE').body).toEqual({ ids });
+      expect(save('q-MULTIPLE_CHOICE')).toEqual({ ids });
     }
+    await next();
 
-    const text = requireElement(host, 'input[aria-label="Ответ"]', HTMLInputElement);
-    const number = requireElement(host, 'input[aria-label="Число"]', HTMLInputElement);
+    const text = requireElement(screen(), 'input[aria-label="Ответ"]', HTMLInputElement);
     typeInto(text, 'привет');
     text.dispatchEvent(new Event('blur'));
     await fixture.whenStable();
-    expect(save('q-SHORT_TEXT').body).toEqual({ text: 'привет' });
+    expect(save('q-SHORT_TEXT')).toEqual({ text: 'привет' });
+    await next();
 
+    const number = requireElement(screen(), 'input[aria-label="Число"]', HTMLInputElement);
     typeInto(number, 'abc');
     typeInto(number, '2,5');
-    number.dispatchEvent(new Event('blur'));
-    await fixture.whenStable();
-    expect(save('q-NUMBER').body).toEqual({ number: 2.5 });
+    // «Дальше» saves what is typed
+    await next();
+    expect(save('q-NUMBER')).toEqual({ number: 2.5 });
+    await next();
 
     // ordering: the second item up, then back down
-    buttonByText(host, 'Поднять выше: 2. Первый').click();
+    buttonByText(screen(), 'Поднять выше: 2. Первый').click();
     await fixture.whenStable();
-    expect(save('q-ORDERING').body).toEqual({ ids: ['o1', 'o2'] });
-    buttonByText(host, 'Опустить ниже: 1. Первый').click();
+    expect(save('q-ORDERING')).toEqual({ ids: ['o1', 'o2'] });
+    buttonByText(screen(), 'Опустить ниже: 1. Первый').click();
     await fixture.whenStable();
-    expect(save('q-ORDERING').body).toEqual({ ids: ['o2', 'o1'] });
+    expect(save('q-ORDERING')).toEqual({ ids: ['o2', 'o1'] });
   });
 
-  it('saves a matching pair', async () => {
-    await render(quiz({ openAttempt: { id: 'at-1', startedAt: '', answers: {} } }));
-    const matching = QUESTIONS.find((q) => q.type === 'MATCHING');
-    if (matching === undefined) {
-      throw new Error('no matching question');
-    }
-    fixture.componentInstance.setPair(matching, 'p1', 'p1');
+  it('saves typing after a pause', async () => {
+    await render(quiz({ questions: [question('SHORT_TEXT')], openAttempt: open }));
+    buttonByText(host, 'Продолжить тест').click();
     await fixture.whenStable();
-    const request = backend.expectOne(`${ATTEMPT}/at-1/answers/q-MATCHING`);
-    expect(request.request.body).toEqual({ pairs: { p1: 'p1' } });
-    request.flush(null);
+    typeInto(requireElement(screen(), 'input[aria-label="Ответ"]', HTMLInputElement), 'да');
+    backend.expectNone(`${ATTEMPT}/at-1/answers/q-SHORT_TEXT`);
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    backend.expectOne(`${ATTEMPT}/at-1/answers/q-SHORT_TEXT`).flush(null);
   });
 
-  it('shows one question per screen on a phone and keeps the saved answers', async () => {
-    await render(
-      quiz({
-        openAttempt: { id: 'at-1', startedAt: '', answers: { 'q-SINGLE_CHOICE': { ids: ['a'] } } },
-      }),
-      true,
-    );
-    expect(host.querySelectorAll('article')).toHaveLength(1);
-    expect(readableText(host)).toContain('Вопрос 1 из 6');
-    expect(host.querySelector<HTMLInputElement>('#o-a')?.checked).toBe(true);
-
-    buttonByText(host, 'Далее').click();
+  it('finishes after the question about the skipped ones, saving what is still unsaved', async () => {
+    await render(quiz({ openAttempt: open }));
+    buttonByText(host, 'Продолжить тест').click();
     await fixture.whenStable();
-    expect(readableText(host)).toContain('Вопрос 2 из 6');
-    buttonByText(host, 'Назад').click();
-    await fixture.whenStable();
-    expect(readableText(host)).toContain('Вопрос 1 из 6');
-  });
-
-  it('submits after the confirmation, saving what is still unsaved', async () => {
-    await render(quiz({ openAttempt: { id: 'at-1', startedAt: '', answers: {} } }));
-    host.querySelector<HTMLInputElement>('#o-a')?.click();
+    screen().querySelector<HTMLInputElement>('#o-a')?.click();
     await fixture.whenStable();
 
-    buttonByText(host, 'Сдать тест').click();
+    buttonByText(screen(), 'Завершить тест').click();
     await fixture.whenStable();
+    expect(String(safe.mock.calls[0]?.[0]?.message)).toMatch(/^Без ответа 4\s+вопроса/);
     // the submit waits for the answer that is still being saved
     backend.expectOne(`${ATTEMPT}/at-1/answers/q-SINGLE_CHOICE`).flush(null);
     await new Promise((resolve) => setTimeout(resolve));
@@ -280,6 +284,7 @@ describe('QuizSection', () => {
     );
     await fixture.whenStable();
 
+    expect(fixture.componentInstance.playing()).toBe(false);
     const text = readableText(host);
     expect(text).toContain('Лучший результат: 4 из 12');
     expect(text).toContain('Верно · 2 б.');
@@ -290,15 +295,29 @@ describe('QuizSection', () => {
     expect(text).toContain('да ага');
     expect(text).toContain('нет ответа');
     expect(text).toContain('Потому что так');
+    expect(text).not.toContain('Правильные ответы покажем');
     expect(buttonByText(host, 'Пройти ещё раз')).toBeTruthy();
   });
 
-  it('does not submit when the confirmation is declined', async () => {
-    await render(quiz({ openAttempt: { id: 'at-1', startedAt: '', answers: {} } }));
-    vi.spyOn(TestBed.inject(Confirm), 'safe').mockResolvedValue(false);
-    buttonByText(host, 'Сдать тест').click();
+  it('does not finish when the question is declined', async () => {
+    await render(quiz({ openAttempt: open }));
+    safe.mockResolvedValue(false);
+    buttonByText(host, 'Продолжить тест').click();
+    await fixture.whenStable();
+    buttonByText(screen(), 'Завершить тест').click();
     await fixture.whenStable();
     backend.expectNone(`${ATTEMPT}/at-1/submit`);
+  });
+
+  it('saves what is typed when the test is closed', async () => {
+    await render(quiz({ questions: [question('SHORT_TEXT')], openAttempt: open }));
+    buttonByText(host, 'Продолжить тест').click();
+    await fixture.whenStable();
+    typeInto(requireElement(screen(), 'input[aria-label="Ответ"]', HTMLInputElement), 'да');
+    buttonByText(screen(), 'Выйти из теста — ответы сохранятся').click();
+    await fixture.whenStable();
+    backend.expectOne(`${ATTEMPT}/at-1/answers/q-SHORT_TEXT`).flush(null);
+    expect(fixture.componentInstance.playing()).toBe(false);
   });
 
   it('tells why the key is hidden and when no attempts are left', async () => {
@@ -327,8 +346,10 @@ describe('QuizSection', () => {
   });
 
   it('keeps the answer to save again when saving fails', async () => {
-    await render(quiz({ openAttempt: { id: 'at-1', startedAt: '', answers: {} } }));
-    host.querySelector<HTMLInputElement>('#o-a')?.click();
+    await render(quiz({ openAttempt: open }));
+    buttonByText(host, 'Продолжить тест').click();
+    await fixture.whenStable();
+    screen().querySelector<HTMLInputElement>('#o-a')?.click();
     await fixture.whenStable();
     backend
       .expectOne(`${ATTEMPT}/at-1/answers/q-SINGLE_CHOICE`)
@@ -350,5 +371,6 @@ describe('QuizSection', () => {
       );
     await fixture.whenStable();
     expect(fixture.componentInstance.view()?.openAttempt).toBeNull();
+    expect(fixture.componentInstance.playing()).toBe(false);
   });
 });

@@ -136,15 +136,19 @@ zone, for the Today page, 239.1),
 
 ## Frontend
 
-Quizzes (0.39.0): the «Вопросы» card of the editor (`teacher/question-section.ts`: a question per type, options with
-«верный» toggles, accepted answers as rows with «Добавить ответ», number and tolerance, pairs, ordering items with
-arrows, points, explanation, reorder, delete; «Как проходит тест» — when to reveal the key and attempts); locked with
-a message once a student started. Server errors of the questions show in one message above them, not under each
-field. The student's `student/quiz-section.ts` on the task page: a list of questions on wide, one per screen with
-«Назад / Далее» on compact; matching by a select per left part and ordering by arrow buttons (no drag-only
-interaction); autosave on change and blur; «Сдать тест» asks for confirmation. The teacher's `teacher/quiz-review.ts`
-(«Тест: N из M», wrong answers first, «Засчитать» / «Не засчитывать») on the review page and the per-question mistakes
-on the assignment page. E2E: `e2e/tests/homework/quiz.spec.ts`.
+Quizzes (0.39.0): the «Вопросы» card of the editor (`teacher/question-section.ts`: a question per
+type, options with «верный» toggles, accepted answers as rows with «Добавить ответ», number and
+tolerance, pairs, ordering items with arrows, points, explanation, reorder, delete; «Как проходит
+тест» — when to reveal the key and attempts); locked with a message once a student started. Server
+errors of the questions show in one message above them, not under each field. The student's
+`student/quiz-section.ts` on the task page is a card «Тест · N вопросов» with «Начать тест» /
+«Продолжить тест»; the test is `student/quiz-player.ts`, full screen on every width (0.43.0): one
+question, «Назад · Дальше», the question numbers, matching by a select per left part and ordering by
+arrow buttons (no drag-only interaction); autosave on change, blur and moving on; «Завершить тест»
+asks only when questions are skipped. The player only edits answers, so the teacher's preview reuses
+it. The teacher's `teacher/quiz-review.ts` («Тест: N из M», wrong answers first, «Засчитать» / «Не
+засчитывать») on the review page and the per-question mistakes on the assignment page. E2E:
+`e2e/tests/homework/quiz.spec.ts`.
 
 Student answer draft (342.2): the backend stores no draft of a submission (the `Draft` types are the teacher's
 assignment drafts), so the text of an unsent answer lives in `localStorage` as `tb.homework.draft.<taskId>` (a task

@@ -200,7 +200,7 @@ import { QuizSection } from './quiz-section';
               }
             </section>
           }
-          <tb-quiz-section [taskId]="task.taskId" />
+          <tb-quiz-section [taskId]="task.taskId" [title]="task.assignment.title" />
         </aside>
       </div>
     } @else {

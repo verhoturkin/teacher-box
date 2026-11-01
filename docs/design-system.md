@@ -654,6 +654,7 @@ changes the container; content and markup are the same at every width. Every dia
 | `alert` | confirmations, one decision, ≤ 1 field (password, link, language) | basic dialog | basic dialog |
 | `form` | ≥ 2 fields, wizards, pickers | full-screen dialog | basic dialog |
 | `sheet` | an object and its actions (lesson, link code, backups) | modal bottom sheet | basic dialog |
+| `screen` | a focused task over the page (the student's test) | full-screen dialog | full-screen dialog |
 
 - **API:** `kind` (required); `width` `normal | wide`; `[(visible)]`, `headline`, `confirmLabel` /
   `confirmSeverity`, `cancelLabel` (default «Отмена», `null` = none), `pending`, `error`, `dirty`,
@@ -680,15 +681,17 @@ changes the container; content and markup are the same at every width. Every dia
   primary one. An AI action beside other actions («С ИИ», «Составить с ИИ») is a
   tonal tertiary button `p-button.tb-button-ai` (`tertiary-container`); the action of a tertiary
   note («Создать копию для правок») is the filled `p-button.tb-button-tertiary`.
-- **Full-screen dialog** (`form` on compact only, **M3**): 56 dp header, 24 dp sides, 8 dp between
+- **Full-screen dialog** (`form` on compact, **M3**; `screen` on every width — *ours*, sketch 23: M3
+  keeps the full-screen dialog for compact, the test is a task of its own the page waits behind;
+  `closeLabel` names «✕» when it says more than «Закрыть»): 56 dp header, 24 dp sides, 8 dp between
   elements; «✕» first and the only navigation, the headline (one line, truncated), the confirming
   button at the end with a clear verb («Создать», «Отправить», not «Готово»), never disabled for
   invalid fields. Field errors inline. *Ours (M3 has 0 dp corners and a text button):* 28 dp top
   corners and the notifications sheet's inset (8 px + `safe-area-inset-top`, transparent scrim, so
   the page shows above it); the confirming button is **filled**, small (40 dp). Under the rounded
-  corners the header is padded by inner = outer − padding: «✕» 8 px from the top and the start,
-  the confirming button 12 px from the top and the end, 16 px down to the content. No swipe to close
-  (a form may hold unsaved data): «✕», Esc and «Отменить изменения?».
+  corners the header is padded by inner = outer − padding: «✕» 8 px from the top and the start, the
+  confirming button 12 px from the top and the end, 16 px down to the content. No swipe to close (a
+  form may hold unsaved data): «✕», Esc and «Отменить изменения?».
 - **Bottom sheet** (`sheet` on compact only): modal, handle with a 48 dp target, 28 dp top corners,
   surface-container-low (**M3**), height by content up to 50 % of the screen, then scrolling
   (**M3**). *Ours:* compact only (**M3** allows medium); no swipe — Esc, the scrim and an action

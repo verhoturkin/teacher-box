@@ -220,16 +220,24 @@ export const ru = {
     step: (n: number, total: number) => `Вопрос ${String(n)} из ${String(total)}`,
     question: (n: number) => `Вопрос ${String(n)}`,
     prev: 'Назад',
-    next: 'Далее',
-    finish: 'Проверить и сдать',
-    submit: 'Сдать тест',
-    saved: 'Ответы сохраняются автоматически',
-    confirmHeader: 'Сдать тест?',
+    next: 'Дальше',
+    finish: 'Завершить тест',
+    continue: 'Продолжить тест',
+    exit: 'Выйти из теста — ответы сохранятся',
+    cardTitle: (count: number) => `Тест · ${countOf(count, 'вопрос', 'вопроса', 'вопросов')}`,
+    testTitle: (title: string) => (title ? `Тест · ${title}` : 'Тест'),
+    attempt: (n: number, allowed: number | null) =>
+      `${allowed === null ? `Попытка ${String(n)}` : `Попытка ${String(n)} из ${String(allowed)}`} · ответы сохраняются сами`,
+    questions: 'Вопросы',
+    numberLabel: (n: number, answered: boolean) =>
+      `Вопрос ${String(n)}${answered ? ', есть ответ' : ''}`,
+    progress: (answered: number, total: number) =>
+      `Отвечено ${String(answered)} из ${String(total)}`,
+    confirmHeader: 'Завершить тест?',
     confirmMessage: (unanswered: number) =>
-      unanswered === 0
-        ? 'После сдачи ответы этой попытки изменить нельзя.'
-        : `Вопросов без ответа: ${String(unanswered)}. После сдачи ответы этой попытки изменить нельзя.`,
-    confirmAccept: 'Сдать',
+      `Без ответа ${countOf(unanswered, 'вопрос', 'вопроса', 'вопросов')}. После завершения ответы этой попытки изменить нельзя.`,
+    confirmAccept: 'Завершить',
+    revealAfterSubmit: 'Правильные ответы покажем после сдачи.',
     result: (score: number, max: number) => `Результат: ${String(score)} из ${String(max)}`,
     bestResult: (score: number, max: number) =>
       `Лучший результат: ${String(score)} из ${String(max)}`,

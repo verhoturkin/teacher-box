@@ -174,6 +174,14 @@ describe('TbDialog', () => {
       expect(buttons.map((button) => button.textContent.trim())).toEqual(['Отмена', 'Сохранить']);
     });
 
+    it('a screen is full screen on every width, with ✕', async () => {
+      await setup(EXPANDED, 'screen');
+      const container = await show();
+
+      expect(container.classList).toContain('tb-d--full');
+      expect(container.querySelector('.tb-d__close')).not.toBeNull();
+    });
+
     it('a wide form gets the wide class', async () => {
       await setup(EXPANDED, 'form');
       host.wide.set(true);

@@ -123,9 +123,9 @@ Your teacher can accept the submission, add a grade and feedback, or return it f
 
 ## Take a quiz
 
-If an assignment includes a quiz, choose “Start the quiz”. Questions may ask you to select answers, enter text or a number, match pairs, or put items in order. Use the arrow buttons for ordering questions; an order that is already correct can be left as it is.
+If an assignment includes a quiz, a “Quiz” card next to it shows how many questions and attempts you have. Choose “Start the quiz” and it fills the screen, one question at a time. Questions may ask you to select answers, enter text or a number, match pairs, or put items in order. Use the arrow buttons for ordering questions; an order that is already correct can be left as it is.
 
-On a phone, use “Back” and “Next” to move between questions. Answers are saved automatically. When you finish, choose “Submit the quiz” and confirm. You cannot change that attempt afterwards.
+Move between questions with “Back” and “Next”, or jump to one by its number; answered numbers are filled in. Answers save as you go, so you can close the quiz with the cross and pick it up later with “Continue the quiz”. When you are done, choose “Finish the quiz”. If you skipped any questions, you will be asked to confirm. You cannot change that attempt afterwards.
 
 Your score appears immediately. Depending on your teacher’s settings, correct answers and explanations appear immediately, after the due date, or are not shown. If more attempts are allowed, choose “Try again”. Your best score counts.
 
