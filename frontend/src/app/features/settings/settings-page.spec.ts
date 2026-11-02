@@ -6,7 +6,7 @@ import { hostElement, readableText, requireElement, typeInto } from '@testing/do
 import { aiStatus, systemPrompt, usageReport } from '@testing/ai-fixtures';
 import { overview } from '@testing/billing-fixtures';
 import { portalSettings } from '@testing/portal-fixtures';
-import { channelSetup, preferences, studentMessengers } from '@testing/notification-fixtures';
+import { channelSetup, studentMessengers } from '@testing/notification-fixtures';
 import { calendarFeed, scheduleSettings } from '@testing/schedule-fixtures';
 import { screenWidth, testProviders } from '@testing/setup';
 import { BackupInfo, NotificationsStatus } from './data-access/settings.models';
@@ -80,14 +80,11 @@ describe('SettingsPage', () => {
         backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
         break;
       case 'messengers':
-        backend.expectOne('/api/me/push/subscriptions').flush([]);
         backend.expectOne('/api/teacher/notifications/channels').flush([channelSetup()]);
-        backend.expectOne('/api/me/channels').flush([]);
         backend
           .expectOne('/api/teacher/notifications/bot')
           .flush({ teacherActions: true, teacherMenu: [], studentMenu: [] });
         backend.expectOne('/api/teacher/notifications/students').flush([studentMessengers()]);
-        backend.expectOne('/api/me/notifications/preferences').flush(preferences());
         break;
       case 'payments':
         backend.expectOne('/api/teacher/billing/overview').flush(overview([]));
@@ -295,15 +292,10 @@ describe('SettingsPage', () => {
     expect(text).toContain('Неудачные доставки');
     expect(text).toContain('Мария Telegram Telegram 403: Forbidden: bot was blocked by the user');
     expect(text).toContain('Вы MAX —');
-    expect(text.indexOf('Неудачные доставки')).toBeLessThan(
-      text.indexOf('Уведомления на устройствах'),
-    );
-    expect(text.indexOf('Уведомления на устройствах')).toBeLessThan(
-      text.indexOf('Мои мессенджеры'),
-    );
-    expect(text).toContain('Что умеет бот');
+    expect(text.indexOf('Неудачные доставки')).toBeLessThan(text.indexOf('Что умеет бот'));
     expect(text).toContain('Подключили мессенджер');
-    expect(text).toContain('Что присылать в мессенджеры');
+    // own messengers, devices and what to send are in «Мой аккаунт»
+    expect(text).not.toContain('Что присылать');
     expect(readableText(requireElement(host, '[aria-current="page"]', HTMLElement))).toContain(
       'Уведомления и мессенджеры',
     );
@@ -318,7 +310,7 @@ describe('SettingsPage', () => {
     const text = readableText(host);
     expect(text).toContain('Все уведомления доставлены');
     expect(text.indexOf('Все уведомления доставлены')).toBeGreaterThan(
-      text.indexOf('Что присылать в мессенджеры'),
+      text.indexOf('Подключили мессенджер'),
     );
     expect(host.querySelector('p-badge')).toBeNull();
   });

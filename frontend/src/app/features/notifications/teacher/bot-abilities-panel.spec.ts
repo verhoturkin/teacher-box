@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { hostElement, readableText, requireElement } from '@testing/dom';
+import { hostElement, readableText } from '@testing/dom';
 import { BotAbilities } from '../data-access/notifications.models';
 import { BotAbilitiesPanel } from './bot-abilities-panel';
 import { testProviders } from '@testing/setup';
@@ -39,9 +39,6 @@ describe('BotAbilitiesPanel', () => {
     const text = readableText(hostElement(fixture));
     expect(text).toContain('Ученикам Расписание Оплаты');
     expect(text).toContain('Вам Сегодня');
-    expect(
-      requireElement(hostElement(fixture), '#bot-teacher-actions', HTMLInputElement).checked,
-    ).toBe(true);
   });
 
   it('says when the bot only notifies', async () => {
@@ -51,29 +48,5 @@ describe('BotAbilitiesPanel', () => {
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain('Ученикам Пока только уведомления.');
-  });
-
-  it('switches managing the portal through the bot', async () => {
-    backend.expectOne('/api/teacher/notifications/bot').flush(abilities());
-    await fixture.whenStable();
-
-    requireElement(hostElement(fixture), '#bot-teacher-actions', HTMLInputElement).click();
-    const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/notifications/bot' });
-    expect(request.request.body).toEqual({ teacherActions: false });
-    request.flush(abilities({ teacherActions: false }));
-    await fixture.whenStable();
-    expect(
-      requireElement(hostElement(fixture), '#bot-teacher-actions', HTMLInputElement).checked,
-    ).toBe(false);
-
-    fixture.componentInstance.setTeacherActions(true);
-    backend.expectOne({ method: 'PUT', url: '/api/teacher/notifications/bot' }).flush(null, {
-      status: 500,
-      statusText: 'Error',
-    });
-    await fixture.whenStable();
-    expect(
-      requireElement(hostElement(fixture), '#bot-teacher-actions', HTMLInputElement).checked,
-    ).toBe(false);
   });
 });

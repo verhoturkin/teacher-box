@@ -42,7 +42,7 @@ sketch disagrees with it.
   «Вход» (login, «Сменить…» password → `change-password-form.ts`, «Выйти»), «Оформление» (theme
   and language as selects). Fields save on change; the student and teacher stacks differ only by
   the teacher's extra row (356.2).
-- [ ] **356.2 F** «Уведомления» section of the same panel: «Куда присылать» — one list of the
+- [x] **356.2 F** «Уведомления» section of the same panel: «Куда присылать» — one list of the
   user's messengers and this device (`notifications/channels/channels-panel.ts`,
   `push/push-devices-card.ts`), «Подключить» per row; «Что присылать» — topic switches and «Тихие
   часы» (`preferences/preferences-panel.ts`); teacher only «Действия учителя в боте». Replaces the

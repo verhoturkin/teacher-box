@@ -2,7 +2,7 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { buttonByText, readableText, requireElement, typeInto } from '@testing/dom';
 import { channelSetup, linkCode } from '@testing/notification-fixtures';
-import { LINK_POLL_INTERVAL_MS } from '../channels/channels-panel';
+import { LINK_POLL_INTERVAL_MS } from '../account/notifications-section';
 import { ChannelSetup, ChannelType } from '../data-access/notifications.models';
 import { BotWizardDialog } from './bot-wizard-dialog';
 import { testProviders } from '@testing/setup';

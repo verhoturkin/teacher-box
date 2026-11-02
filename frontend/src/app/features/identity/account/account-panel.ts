@@ -35,6 +35,7 @@ import { ChangePasswordForm } from './change-password-form';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
+import { NotificationsSection } from '@features/notifications/parts';
 
 const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
 
@@ -43,10 +44,11 @@ const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
 
 /**
  * Own account of the teacher, a student or the administrator in sections: «Профиль» (photo, name),
- * «Вход» (login, password, «Выйти»), «Оформление» (theme, language). Fields save on change. The
- * teacher renames themselves for the students, a student chooses the name the portal calls them (the
- * teacher keeps seeing the name they gave). The content of «Мой аккаунт»: the page of a student and
- * the administrator, the category of the teacher's settings; the page's own sections follow.
+ * «Вход» (login, password, «Выйти»), «Оформление» (theme, language) in one column and «Уведомления»
+ * of the teacher and a student next to it. Fields save on change. The teacher renames themselves for
+ * the students, a student chooses the name the portal calls them (the teacher keeps seeing the name
+ * they gave). The content of «Мой аккаунт»: the page of a student and the administrator, the
+ * category of the teacher's settings.
  */
 @Component({
   selector: 'tb-account-panel',
@@ -61,133 +63,137 @@ const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
     Tooltip,
     TbDialog,
     ChangePasswordForm,
+    NotificationsSection,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-stack">
-      @if (account(); as account) {
-        <p-card [header]="t.profile">
-          <div class="tb-account__head">
-            <tb-avatar [name]="account.displayName" [photo]="account.avatar" size="4rem" />
-            <div class="tb-account__who">
-              <h2 class="tb-account__name">{{ account.displayName }}</h2>
-              <span class="tb-account__role">{{ roleLabel() }}</span>
-            </div>
-            @if (hasPhoto()) {
-              <input
-                #photoFile
-                type="file"
-                class="tb-sr-only"
-                accept="image/jpeg,image/png,image/webp"
-                [attr.aria-label]="t.photoFile"
-                (change)="uploadPhoto(photoFile)"
-              />
-              <div class="tb-account__photo">
-                <p-button
-                  [label]="account.avatar === null ? t.uploadPhoto : t.changePhoto"
-                  icon="tb-i tb-i-photo_camera"
-                  severity="secondary"
-                  [loading]="busy.is('photo')"
-                  (onClick)="photoFile.click()"
+    <div class="tb-account">
+      <div class="tb-stack">
+        @if (account(); as account) {
+          <p-card [header]="t.profile">
+            <div class="tb-account__head">
+              <tb-avatar [name]="account.displayName" [photo]="account.avatar" size="4rem" />
+              <div class="tb-account__who">
+                <h2 class="tb-account__name">{{ account.displayName }}</h2>
+                <span class="tb-account__role">{{ roleLabel() }}</span>
+              </div>
+              @if (hasPhoto()) {
+                <input
+                  #photoFile
+                  type="file"
+                  class="tb-sr-only"
+                  accept="image/jpeg,image/png,image/webp"
+                  [attr.aria-label]="t.photoFile"
+                  (change)="uploadPhoto(photoFile)"
                 />
-                @if (account.avatar !== null) {
+                <div class="tb-account__photo">
                   <p-button
-                    icon="tb-i tb-i-delete"
-                    severity="danger"
-                    [text]="true"
-                    [rounded]="true"
-                    [pTooltip]="t.removePhoto"
-                    [ariaLabel]="t.removePhoto"
-                    [loading]="busy.is('remove-photo')"
-                    (onClick)="removePhoto()"
+                    [label]="account.avatar === null ? t.uploadPhoto : t.changePhoto"
+                    icon="tb-i tb-i-photo_camera"
+                    severity="secondary"
+                    [loading]="busy.is('photo')"
+                    (onClick)="photoFile.click()"
                   />
-                }
+                  @if (account.avatar !== null) {
+                    <p-button
+                      icon="tb-i tb-i-delete"
+                      severity="danger"
+                      [text]="true"
+                      [rounded]="true"
+                      [pTooltip]="t.removePhoto"
+                      [ariaLabel]="t.removePhoto"
+                      [loading]="busy.is('remove-photo')"
+                      (onClick)="removePhoto()"
+                    />
+                  }
+                </div>
+              }
+            </div>
+            @if (isTeacher()) {
+              <div class="tb-field">
+                <label for="account-name">{{ t.name }}</label>
+                <input
+                  pInputText
+                  id="account-name"
+                  [formControl]="nameForm.controls.name"
+                  maxlength="100"
+                  (change)="rename()"
+                />
+                <small class="tb-hint">{{ t.teacherNameHint }}</small>
               </div>
             }
-          </div>
-          @if (isTeacher()) {
-            <div class="tb-field">
-              <label for="account-name">{{ t.name }}</label>
-              <input
-                pInputText
-                id="account-name"
-                [formControl]="nameForm.controls.name"
-                maxlength="100"
-                (change)="rename()"
-              />
-              <small class="tb-hint">{{ t.teacherNameHint }}</small>
-            </div>
-          }
-          @if (isStudent()) {
-            <div class="tb-field">
-              <label for="account-own-name">{{ t.name }}</label>
-              <input
-                pInputText
-                id="account-own-name"
-                [formControl]="ownNameForm.controls.name"
-                maxlength="100"
-                (change)="renameSelf()"
-              />
-              <small class="tb-hint">{{ t.ownNameHint(account.profileName) }}</small>
-            </div>
-          }
-        </p-card>
-        <p-card [header]="t.signIn">
-          <dl class="tb-account__facts">
-            <div>
-              <dt>{{ t.login }}</dt>
-              <dd>{{ account.login ?? '—' }}</dd>
-            </div>
-            <div>
-              <dt>{{ t.password }}</dt>
-              <dd>
-                <p-button
-                  [label]="t.changePasswordAction"
-                  severity="secondary"
-                  (onClick)="passwordDialog.set(true)"
+            @if (isStudent()) {
+              <div class="tb-field">
+                <label for="account-own-name">{{ t.name }}</label>
+                <input
+                  pInputText
+                  id="account-own-name"
+                  [formControl]="ownNameForm.controls.name"
+                  maxlength="100"
+                  (change)="renameSelf()"
                 />
-              </dd>
+                <small class="tb-hint">{{ t.ownNameHint(account.profileName) }}</small>
+              </div>
+            }
+          </p-card>
+          <p-card [header]="t.signIn">
+            <dl class="tb-account__facts">
+              <div>
+                <dt>{{ t.login }}</dt>
+                <dd>{{ account.login ?? '—' }}</dd>
+              </div>
+              <div>
+                <dt>{{ t.password }}</dt>
+                <dd>
+                  <p-button
+                    [label]="t.changePasswordAction"
+                    severity="secondary"
+                    (onClick)="passwordDialog.set(true)"
+                  />
+                </dd>
+              </div>
+            </dl>
+            <p-button
+              [label]="t.signOut"
+              icon="tb-i tb-i-logout"
+              [text]="true"
+              [loading]="busy.is('sign-out')"
+              (onClick)="signOut()"
+            />
+          </p-card>
+        }
+        <p-card [header]="t.appearance">
+          <div class="tb-form">
+            <div class="tb-field">
+              <label for="account-theme">{{ t.theme }}</label>
+              <p-select
+                inputId="account-theme"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                [options]="themes"
+                [ngModel]="theme.choice()"
+                (onChange)="theme.choose($event.value)"
+              />
             </div>
-          </dl>
-          <p-button
-            [label]="t.signOut"
-            icon="tb-i tb-i-logout"
-            [text]="true"
-            [loading]="busy.is('sign-out')"
-            (onClick)="signOut()"
-          />
+            <div class="tb-field">
+              <label for="account-language">{{ t.language }}</label>
+              <p-select
+                inputId="account-language"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                [options]="languages"
+                [ngModel]="currentLanguage"
+                (onChange)="chooseLanguage($event.value)"
+              />
+            </div>
+          </div>
         </p-card>
+      </div>
+      @if (hasPhoto()) {
+        <tb-notifications-section [teacher]="isTeacher()" />
       }
-      <p-card [header]="t.appearance">
-        <div class="tb-form">
-          <div class="tb-field">
-            <label for="account-theme">{{ t.theme }}</label>
-            <p-select
-              inputId="account-theme"
-              optionLabel="label"
-              optionValue="value"
-              appendTo="body"
-              [options]="themes"
-              [ngModel]="theme.choice()"
-              (onChange)="theme.choose($event.value)"
-            />
-          </div>
-          <div class="tb-field">
-            <label for="account-language">{{ t.language }}</label>
-            <p-select
-              inputId="account-language"
-              optionLabel="label"
-              optionValue="value"
-              appendTo="body"
-              [options]="languages"
-              [ngModel]="currentLanguage"
-              (onChange)="chooseLanguage($event.value)"
-            />
-          </div>
-        </div>
-      </p-card>
-      <!-- the page's own sections (a student's messengers and notifications) -->
-      <ng-content />
     </div>
     <tb-dialog
       kind="form"
@@ -199,6 +205,14 @@ const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
     </tb-dialog>
   `,
   styles: `
+    /* the account and «Уведомления» side by side when both fit (sketch \`Main\`); one column below */
+    .tb-account {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 22.5rem), 1fr));
+      gap: var(--tb-space-4);
+      align-items: start;
+    }
+
     /* the photo, the name and the role in a row; the fields of the section follow */
     .tb-account__head {
       display: flex;
@@ -283,7 +297,7 @@ export class AccountPanel implements OnInit {
   protected readonly account = signal<Account | null>(null);
   protected readonly isTeacher = computed(() => this.account()?.role === 'TEACHER');
   protected readonly isStudent = computed(() => this.account()?.role === 'STUDENT');
-  /** A student and the teacher choose a photo; the administrator has none. */
+  /** A student and the teacher choose a photo and notifications; the administrator has neither. */
   protected readonly hasPhoto = computed(() => this.isStudent() || this.isTeacher());
   protected readonly roleLabel = computed(() => ROLE_LABELS[this.account()?.role ?? 'STUDENT']);
   protected readonly renaming = signal(false);

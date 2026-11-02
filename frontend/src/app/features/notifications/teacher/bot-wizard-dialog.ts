@@ -21,7 +21,7 @@ import { Subscription, interval, switchMap } from 'rxjs';
 import { HelpButton } from '@features/help/parts';
 import { describeError } from '@core/http/error-messages';
 import { isProblemDetail, problemCode } from '@core/http/problem-detail';
-import { LINK_POLL_INTERVAL_MS } from '../channels/channels-panel';
+import { LINK_POLL_INTERVAL_MS } from '../account/notifications-section';
 import { LinkCodeView } from '../channels/link-code-view';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { ChannelSetup, ChannelType, LinkCode } from '../data-access/notifications.models';

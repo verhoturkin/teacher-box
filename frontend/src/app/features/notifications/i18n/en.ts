@@ -5,17 +5,17 @@ import type { ru } from './ru';
 export const en: Translation<typeof ru> = {
   topics: {
     SCHEDULE: 'Schedule',
-    SCHEDULE_HINT: 'new, rescheduled and cancelled lessons; reschedule requests',
+    SCHEDULE_HINT: 'New, rescheduled and cancelled lessons; reschedule requests',
     REMINDERS: 'Reminders',
-    REMINDERS_HINT: 'upcoming lessons and assignment deadlines',
+    REMINDERS_HINT: 'Upcoming lessons and assignment deadlines',
     HOMEWORK: 'Homework',
-    HOMEWORK_HINT: 'new assignments, submissions and feedback',
+    HOMEWORK_HINT: 'New assignments, submissions and feedback',
     BILLING: 'Payments',
-    BILLING_HINT: 'completed lessons and recorded payments',
+    BILLING_HINT: 'Completed lessons and recorded payments',
     LESSON_SUMMARY: 'Lesson summary',
-    LESSON_SUMMARY_HINT: 'what you covered and what comes next',
+    LESSON_SUMMARY_HINT: 'What you covered and what comes next',
     ACCOUNT: 'Students and calendar',
-    ACCOUNT_HINT: 'accepted invitations and Google Calendar connection issues',
+    ACCOUNT_HINT: 'Accepted invitations and Google Calendar connection issues',
   },
   connections: {
     OK: 'Working',
@@ -45,10 +45,6 @@ export const en: Translation<typeof ru> = {
     later: 'Not now',
   },
   push: {
-    header: 'Device notifications',
-    about:
-      'Get notifications on your phone or computer even when the portal is closed. Your topic preferences and quiet hours apply to both device and messaging app notifications.',
-    enable: 'Turn on notifications on this device',
     enabled: 'Notifications enabled on this device',
     failed: 'Could not turn on notifications',
     denied:
@@ -56,13 +52,9 @@ export const en: Translation<typeof ru> = {
     unsupported: 'Device notifications require HTTPS and a supported browser.',
     homeScreen:
       'On iPhone and iPad, add the portal to your Home Screen to receive notifications. Tap Share → Add to Home Screen, then open it from there.',
-    empty: 'No devices yet',
     unknownDevice: 'Device',
-    thisDevice: 'this device',
-    since: (date: string) => `enabled ${date}`,
+    since: (date: string) => `Enabled ${date}`,
     failing: 'delivery failed',
-    disable: 'Turn off',
-    disableOf: (name: string) => `Turn off notifications: ${name}`,
     disabled: 'Notifications disabled for this device',
   },
   pushCard: {
@@ -86,18 +78,10 @@ export const en: Translation<typeof ru> = {
       `Message sent to ${countOf(count, 'recipient', 'recipients', 'recipients')}`,
   },
   channels: {
-    header: 'Messengers',
-    noBotsTitle: 'No messenger bots connected',
-    noMessengersTitle: 'No messengers connected',
-    noBotsHint: 'Set up a bot above to receive notifications and send them to students.',
-    noMessengersHint:
-      'You will receive notifications in your account. Your teacher can set up messaging apps.',
-    duplicated: 'Notifications are also sent to your connected messaging apps.',
     linked: 'connected',
     since: (date: string) => `since ${date}`,
     paused: 'paused',
-    notLinked: 'not connected',
-    send: 'Send',
+    notLinked: 'Not connected',
     unlink: (name: string) => `Disconnect ${name}`,
     connect: 'Connect',
     linkTitle: (name: string) => `Connect ${name}`,
@@ -120,22 +104,28 @@ export const en: Translation<typeof ru> = {
     inbox: 'Inbox',
     sent: 'Sent',
   },
-  page: {
-    myMessengers: 'My messengers',
+  section: {
+    title: 'Notifications',
+    about: 'Everything appears in the portal. Choose where else to receive it.',
+    where: 'Where to send',
+    what: 'What to send',
+    thisDevice: 'This device',
+    quiet: 'Quiet hours',
+    quietOff: 'Pause notifications at night',
+    quietOn: (from: string, to: string) => `${from} to ${to}, delivered after ${to}`,
+    teacherActions: 'Teacher actions in the bot',
+    teacherActionsHint: 'Mark lessons and record payments from the messaging app',
+    alertTitle: 'Connect a messaging app:',
+    alertText:
+      'hear about rescheduled lessons and marked work straight away, without opening the portal.',
+    connectTo: (name: string) => `Connect ${name}`,
   },
   preferences: {
-    title: 'Notification preferences',
-    about:
-      'All notifications appear in your account. Choose which ones you also want to receive on your devices and in your messaging apps.',
-    topics: 'Notification topics',
     messages: 'Messages',
     teacherMessages: 'Teacher’s messages',
-    always: 'always sent',
-    quiet: 'Quiet hours',
+    always: 'Always sent',
     from: 'From',
     to: 'To',
-    quietHint:
-      'Notifications received during quiet hours are delivered to your devices and messaging apps once quiet hours end.',
     saved: 'Notification settings saved',
     failed: 'Could not save the settings',
   },
@@ -146,9 +136,6 @@ export const en: Translation<typeof ru> = {
     students: 'For students',
     you: 'For you',
     onlyNotifications: 'Notifications only.',
-    teacherActions: 'Allow teacher actions in the bot',
-    teacherActionsHint:
-      'Disable this if someone else can access your messaging account. You will still receive notifications, but teacher actions will be unavailable.',
   },
   bots: {
     title: 'Messenger bots',

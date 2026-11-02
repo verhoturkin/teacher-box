@@ -1,15 +1,13 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { Card } from 'primeng/card';
-import { ToggleSwitch } from 'primeng/toggleswitch';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { BotAbilities } from '../data-access/notifications.models';
 import { T } from '../i18n/texts';
 
-/** Teacher: what the bots can do for students and for the teacher; managing the portal through the bot. */
+/** Teacher: what the bots can do for students and for the teacher (allowing teacher actions is in «Мой аккаунт»). */
 @Component({
   selector: 'tb-bot-abilities-panel',
-  imports: [FormsModule, Card, ToggleSwitch],
+  imports: [Card],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="t.title">
@@ -41,16 +39,6 @@ import { T } from '../i18n/texts';
             }
           </div>
         </div>
-        <label class="tb-switch" for="bot-teacher-actions">
-          <p-toggleswitch
-            inputId="bot-teacher-actions"
-            [ngModel]="bot.teacherActions"
-            (ngModelChange)="setTeacherActions($event)"
-            [disabled]="pending()"
-          />
-          {{ t.teacherActions }}
-        </label>
-        <small class="tb-muted">{{ t.teacherActionsHint }}</small>
       }
     </p-card>
   `,
@@ -59,7 +47,6 @@ import { T } from '../i18n/texts';
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-4);
-      margin-bottom: var(--tb-space-4);
 
       ul {
         margin: 0;
@@ -73,26 +60,10 @@ export class BotAbilitiesPanel implements OnInit {
   private readonly api = inject(NotificationsApi);
 
   protected readonly abilities = signal<BotAbilities | null>(null);
-  protected readonly pending = signal(false);
 
   ngOnInit(): void {
     this.api.botAbilities().subscribe((abilities) => {
       this.abilities.set(abilities);
-    });
-  }
-
-  setTeacherActions(enabled: boolean): void {
-    this.pending.set(true);
-    this.api.setTeacherActions(enabled).subscribe({
-      next: (abilities) => {
-        this.pending.set(false);
-        this.abilities.set(abilities);
-      },
-      error: () => {
-        this.pending.set(false);
-        // The switch goes back: the saved value has not changed.
-        this.abilities.update((abilities) => (abilities === null ? null : { ...abilities }));
-      },
     });
   }
 }
