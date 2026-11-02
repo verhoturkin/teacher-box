@@ -1,4 +1,4 @@
-import { Question, QuestionType } from '../data-access/homework.models';
+import { Question, QuestionType, QuizQuestion } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
 
 /** An option, an item of an ordering, being written in the editor. */
@@ -135,6 +135,22 @@ export function questionInputs(drafts: readonly QuestionDraft[]): Question[] {
           : [],
     };
   });
+}
+
+/**
+ * The questions as a student gets them, without the key (the preview «Как увидит ученик»): ordering
+ * items and the right column of a matching come reversed, so the right order is never given away.
+ */
+export function asStudentSees(questions: readonly Question[]): QuizQuestion[] {
+  return questions.map((question) => ({
+    id: question.id,
+    type: question.type,
+    text: question.text,
+    points: question.points,
+    options: question.type === 'ORDERING' ? [...question.options].reverse() : question.options,
+    left: question.pairs.map((item) => ({ id: item.id, text: item.left })),
+    right: question.pairs.map((item) => ({ id: item.id, text: item.right })).reverse(),
+  }));
 }
 
 /** What is wrong with the question, in words, or `null`. */

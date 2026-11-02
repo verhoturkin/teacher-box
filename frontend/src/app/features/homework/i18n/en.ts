@@ -401,6 +401,9 @@ export const en: Translation<typeof ru> = {
     tabQuestions: (count: number) => (count === 0 ? 'Questions' : `Questions · ${String(count)}`),
     tabSettings: 'Settings',
     savedAt: (time: string) => `Saved at ${time}`,
+    studentView: 'Student view',
+    studentViewNote: 'This is what your student sees · answers are not saved',
+    studentViewClose: 'Close the student view',
     autosaveFailed: "The draft couldn't be saved. Your changes are still here and we'll try again",
     quizTitle: 'Quiz',
     quizSummary: (count: number, points: number, attempts: number) =>

@@ -109,7 +109,7 @@ Russian wording; English is written separately (AGENTS.md §6.1).
   the teacher's comment, the test mistakes, «Мой ответ» folded, «Следующее задание»; on rework the
   first attempt and a second one prefilled from it, «Сдать снова». Medium: list and task as two
   pages with the rail (37 → 25).
-- [ ] **349.3 F** «Как увидит ученик» in the quiz builder opens the full-screen test (349.1) with
+- [x] **349.3 F** «Как увидит ученик» in the quiz builder opens the full-screen test (349.1) with
   the questions of the editor, answers not saved.
 
 ### 350. List, journal and dialog on medium

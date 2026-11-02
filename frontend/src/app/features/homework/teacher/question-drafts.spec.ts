@@ -1,6 +1,7 @@
 import { Question } from '../data-access/homework.models';
 import {
   QuestionDraft,
+  asStudentSees,
   copyOf,
   firstProblem,
   moved,
@@ -158,6 +159,39 @@ describe('question drafts', () => {
     expect(copy.id).not.toBe(source.id);
     expect(copy.options[0]?.id).not.toBe('o');
     expect(copy.pairs.map((p) => p.id)).not.toEqual(source.pairs.map((p) => p.id));
+  });
+
+  it('show a student no key: orderings and the right column of a matching come reversed', () => {
+    const [ordering, matching, choice] = asStudentSees([
+      saved({
+        type: 'ORDERING',
+        options: [
+          { id: 'a', text: 'Первый' },
+          { id: 'b', text: 'Второй' },
+        ],
+      }),
+      saved({
+        id: 'q-2',
+        type: 'MATCHING',
+        pairs: [
+          { id: 'p1', left: 'Кот', right: 'Мяу' },
+          { id: 'p2', left: 'Пёс', right: 'Гав' },
+        ],
+      }),
+      saved({ id: 'q-3', options: [{ id: 'c', text: 'Да' }], correct: ['c'] }),
+    ]);
+    expect(ordering?.options.map((item) => item.id)).toEqual(['b', 'a']);
+    expect(matching?.left.map((item) => item.text)).toEqual(['Кот', 'Пёс']);
+    expect(matching?.right.map((item) => item.text)).toEqual(['Гав', 'Мяу']);
+    expect(choice).toEqual({
+      id: 'q-3',
+      type: 'SINGLE_CHOICE',
+      text: 'Столица?',
+      points: 2,
+      options: [{ id: 'c', text: 'Да' }],
+      left: [],
+      right: [],
+    });
   });
 
   it('list the broken questions by number and estimate the time', () => {

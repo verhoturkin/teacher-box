@@ -962,6 +962,48 @@ describe('AssignmentEditorPage', () => {
     expect(readableText(host)).toContain('Напишите текст вопроса');
   });
 
+  it('shows the test as the student sees it without saving the answers', async () => {
+    const { page, host } = await edit(
+      assignmentDetails({
+        attachments: [],
+        tasks: UNSTARTED,
+        questions: [
+          {
+            id: 'q-1',
+            type: 'SINGLE_CHOICE',
+            text: 'Столица России?',
+            points: 1,
+            explanation: null,
+            options: [
+              { id: 'o-1', text: 'Москва' },
+              { id: 'o-2', text: 'Казань' },
+            ],
+            correct: ['o-1'],
+            accepted: [],
+            value: null,
+            tolerance: null,
+            pairs: [],
+          },
+        ],
+      }),
+    );
+    expect(host.querySelector('button[aria-label="Как увидит ученик"]')).toBeNull();
+    page.choose('quiz');
+    await fixture.whenStable();
+    exactButton(host, 'Как увидит ученик').click();
+    await fixture.whenStable();
+
+    const text = readableText(document.body);
+    expect(text).toContain('Так тест увидит ученик · ответы не сохраняются');
+    expect(text).toContain('Вопрос 1 из 1');
+    document.body.querySelector<HTMLInputElement>('#o-o-1')?.click();
+    await fixture.whenStable();
+    exactButton(document.body, 'Завершить тест').click();
+    await fixture.whenStable();
+    backend.expectNone((request) => request.url.includes('/quiz'));
+    expect(document.body.querySelector('button[aria-label="Закрыть просмотр"]')).toBeNull();
+  });
+
   it('locks the questions when a student has started the quiz and saves the rest', async () => {
     const { page, host } = await edit(assignmentDetails({ attachments: [] }));
     page.choose('quiz');

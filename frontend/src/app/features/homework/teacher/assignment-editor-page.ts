@@ -85,6 +85,7 @@ import {
   AssignmentInput,
   Attachment,
   BoundTextbook,
+  QuizAnswer,
   QuizReveal,
 } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
@@ -106,9 +107,11 @@ import {
   firstProblem,
   questionDraft,
   questionInputs,
+  asStudentSees,
 } from './question-drafts';
 import { QuestionSection } from './question-section';
 import { QuizSettings } from './quiz-settings';
+import { QuizPlayer } from '../student/quiz-player';
 import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from './video-section';
 
 /** A student that can receive homework. */
@@ -169,6 +172,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     BindTextbookDialog,
     VideoSection,
     QuestionSection,
+    QuizPlayer,
     QuizSettings,
     Tabs,
     TabList,
@@ -183,6 +187,16 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
           <ng-template tbPaneHeader>
             <tb-page-header [title]="heading()" [back]="backLink()" [backLabel]="backLabel()">
               <tb-help-button help topic="teacher/homework" />
+              @if (activeTab() === 'quiz' && questions().length > 0) {
+                <p-button
+                  [label]="compact() ? undefined : t.studentView"
+                  [ariaLabel]="t.studentView"
+                  icon="tb-i tb-i-visibility"
+                  severity="secondary"
+                  [attr.aria-haspopup]="'dialog'"
+                  (onClick)="openStudentView()"
+                />
+              }
               @if (aiEnabled()) {
                 <p-button
                   [label]="t.aiTitle"
@@ -433,6 +447,15 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                   (ai)="openAi()"
                   (copyQuiz)="copyForEdits()"
                 />
+                <tb-quiz-player
+                  [(visible)]="studentView"
+                  [questions]="studentQuestions()"
+                  [(answers)]="studentAnswers"
+                  [title]="tt.testTitle(titleValue())"
+                  [subtitle]="t.studentViewNote"
+                  [exitLabel]="t.studentViewClose"
+                  (finished)="studentView.set(false)"
+                />
               }
               @if (activeTab() === 'settings') {
                 <p-card id="quiz-settings" styleClass="tb-section-card" [header]="tq.settings">
@@ -646,6 +669,18 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
     else this.aiOpen.set(true);
   }
   protected readonly tq = T.quiz;
+  protected readonly tt = T.quizTake;
+  /** «Как увидит ученик»: the full-screen test with the editor's questions; the answers stay here. */
+  protected readonly studentView = signal(false);
+  protected readonly studentAnswers = signal<Readonly<Record<string, QuizAnswer>>>({});
+  protected readonly studentQuestions = computed(() =>
+    asStudentSees(questionInputs(this.questions())),
+  );
+
+  protected openStudentView(): void {
+    this.studentAnswers.set({});
+    this.studentView.set(true);
+  }
   private readonly api = inject(HomeworkApi);
   private readonly ai = inject(AiApi);
   private readonly identity = inject(IdentityApi);

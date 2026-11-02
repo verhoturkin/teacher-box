@@ -411,7 +411,11 @@ wider it falls back to «Тест»).
   «Выдать» each broken question with «Открыть»). Options are 48 dp tonal rows (the right one
   success-container with «верный»), Enter in the last option or pair adds the next one; short
   answers are input chips plus a field (Enter or leaving it adds one). On a phone the settings are
-  the «Настройки» tab. *Not built:* the sketch's «Ученик увидит в случайном порядке» toggle of
+  the «Настройки» tab. The header of «Тест» has tonal «Как увидит ученик» (sketch 28; an icon
+  on a phone) while there are questions: the student's full-screen test (`quiz-player.ts`) with
+  the editor's questions — orderings and the right column of a matching reversed, the note «Так
+  тест увидит ученик · ответы не сохраняются»; answers stay in the page and «Завершить тест»
+  closes it. *Not built:* the sketch's «Ученик увидит в случайном порядке» toggle of
   choice options (the backend has no such setting).
 - **Test states** (347.2, sketch 30): no questions — `tb-empty-state` «Добавьте вопросы» with filled
   «Добавить вопрос» (the type menu), tertiary «Составить с ИИ» and «ИИ учтёт текст задания и

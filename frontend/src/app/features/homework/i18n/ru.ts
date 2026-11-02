@@ -399,6 +399,9 @@ export const ru = {
     tabQuestions: (count: number) => (count === 0 ? 'Вопросы' : `Вопросы · ${String(count)}`),
     tabSettings: 'Настройки',
     savedAt: (time: string) => `сохранено · ${time}`,
+    studentView: 'Как увидит ученик',
+    studentViewNote: 'Так тест увидит ученик · ответы не сохраняются',
+    studentViewClose: 'Закрыть просмотр',
     autosaveFailed: 'Черновик не сохранился. Изменения остались на странице, попробуем ещё раз',
     quizTitle: 'Тест',
     quizSummary: (count: number, points: number, attempts: number) =>
