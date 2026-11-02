@@ -165,13 +165,6 @@ export interface NextWork {
         @if (next(); as next) {
           <span class="tb-sheet__next">{{ t.next(next.studentName) }}</span>
         }
-        <p-button
-          [label]="t.toBoard"
-          icon="tb-i tb-i-co_present"
-          [text]="true"
-          [disabled]="commentValue().trim() === ''"
-          (onClick)="boardVisible.set(true)"
-        />
       </div>
     }
 
