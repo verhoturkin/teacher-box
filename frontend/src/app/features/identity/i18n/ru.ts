@@ -64,6 +64,8 @@ export const ru = {
     nameSaved: 'Имя сохранено',
     photoSaved: 'Фото сохранено',
     photoUnreadable: 'Не удалось открыть картинку. Выберите фото в JPEG, PNG или WebP.',
+    profileRow: 'Фото, имя, пароль',
+    lookRow: 'Тема и язык',
     appearance: 'Оформление',
     theme: 'Тема',
     themeLight: 'Светлая',

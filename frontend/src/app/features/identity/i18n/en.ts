@@ -66,6 +66,8 @@ export const en: Translation<typeof ru> = {
     nameSaved: 'Name saved',
     photoSaved: 'Photo saved',
     photoUnreadable: 'Could not read this image. Choose a JPEG, PNG or WebP file.',
+    profileRow: 'Photo, name, password',
+    lookRow: 'Theme and language',
     appearance: 'Appearance',
     theme: 'Theme',
     themeLight: 'Light',

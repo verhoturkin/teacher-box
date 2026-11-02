@@ -635,6 +635,9 @@ asks «Отменить изменения?» before another category or page op
   (with «Выйти»), «Оформление» (theme, language), «Мессенджеры», «Уведомления на устройствах»
   (web push, ADR-0051), «Что присылать в мессенджеры и на устройства», in one
   stack; the «connect» card and reminder lead here.
+  Compact: a list of rows — the profile row and «Тема и язык» open sub-pages, «Уведомления» sits
+  between them, «Выйти» ends the list (the teacher's account category too). Medium: the profile,
+  «Уведомления», then «Вход» and «Оформление» as a pair.
 - **Notifications on devices** (`tb-push-devices-card`, student «Мой аккаунт» and teacher account
   category): «Включить уведомления на этом устройстве» only while this browser is not subscribed
   (a click, the permission prompt needs a gesture), the list of the user's devices (browser · system,

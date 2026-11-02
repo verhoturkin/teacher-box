@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -20,6 +21,7 @@ import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Select } from 'primeng/select';
 import { Tooltip } from 'primeng/tooltip';
+import { injectMobile } from '@core/layout/mobile';
 import { LANGUAGES, Language, chooseLanguage, language } from '@core/i18n/language';
 import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
 import { AuthService } from '@core/auth/auth.service';
@@ -64,137 +66,209 @@ const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
     TbDialog,
     ChangePasswordForm,
     NotificationsSection,
+    NgTemplateOutlet,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-account">
-      <div class="tb-stack">
-        @if (account(); as account) {
-          <p-card [header]="t.profile">
-            <div class="tb-account__head">
-              <tb-avatar [name]="account.displayName" [photo]="account.avatar" size="4rem" />
-              <div class="tb-account__who">
-                <h2 class="tb-account__name">{{ account.displayName }}</h2>
-                <span class="tb-account__role">{{ roleLabel() }}</span>
-              </div>
-              @if (hasPhoto()) {
-                <input
-                  #photoFile
-                  type="file"
-                  class="tb-sr-only"
-                  accept="image/jpeg,image/png,image/webp"
-                  [attr.aria-label]="t.photoFile"
-                  (change)="uploadPhoto(photoFile)"
-                />
-                <div class="tb-account__photo">
-                  <p-button
-                    [label]="account.avatar === null ? t.uploadPhoto : t.changePhoto"
-                    icon="tb-i tb-i-photo_camera"
-                    severity="secondary"
-                    [loading]="busy.is('photo')"
-                    (onClick)="photoFile.click()"
-                  />
-                  @if (account.avatar !== null) {
-                    <p-button
-                      icon="tb-i tb-i-delete"
-                      severity="danger"
-                      [text]="true"
-                      [rounded]="true"
-                      [pTooltip]="t.removePhoto"
-                      [ariaLabel]="t.removePhoto"
-                      [loading]="busy.is('remove-photo')"
-                      (onClick)="removePhoto()"
-                    />
-                  }
-                </div>
-              }
+    <ng-template #profileCard>
+      @if (account(); as account) {
+        <p-card [header]="t.profile">
+          <div class="tb-account__head">
+            <tb-avatar [name]="account.displayName" [photo]="account.avatar" size="4rem" />
+            <div class="tb-account__who">
+              <h2 class="tb-account__name">{{ account.displayName }}</h2>
+              <span class="tb-account__role">{{ roleLabel() }}</span>
             </div>
-            @if (isTeacher()) {
-              <div class="tb-field">
-                <label for="account-name">{{ t.name }}</label>
-                <input
-                  pInputText
-                  id="account-name"
-                  [formControl]="nameForm.controls.name"
-                  maxlength="100"
-                  (change)="rename()"
+            @if (hasPhoto()) {
+              <input
+                #photoFile
+                type="file"
+                class="tb-sr-only"
+                accept="image/jpeg,image/png,image/webp"
+                [attr.aria-label]="t.photoFile"
+                (change)="uploadPhoto(photoFile)"
+              />
+              <div class="tb-account__photo">
+                <p-button
+                  [label]="account.avatar === null ? t.uploadPhoto : t.changePhoto"
+                  icon="tb-i tb-i-photo_camera"
+                  severity="secondary"
+                  [loading]="busy.is('photo')"
+                  (onClick)="photoFile.click()"
                 />
-                <small class="tb-hint">{{ t.teacherNameHint }}</small>
+                @if (account.avatar !== null) {
+                  <p-button
+                    icon="tb-i tb-i-delete"
+                    severity="danger"
+                    [text]="true"
+                    [rounded]="true"
+                    [pTooltip]="t.removePhoto"
+                    [ariaLabel]="t.removePhoto"
+                    [loading]="busy.is('remove-photo')"
+                    (onClick)="removePhoto()"
+                  />
+                }
               </div>
             }
-            @if (isStudent()) {
-              <div class="tb-field">
-                <label for="account-own-name">{{ t.name }}</label>
-                <input
-                  pInputText
-                  id="account-own-name"
-                  [formControl]="ownNameForm.controls.name"
-                  maxlength="100"
-                  (change)="renameSelf()"
-                />
-                <small class="tb-hint">{{ t.ownNameHint(account.profileName) }}</small>
-              </div>
-            }
-          </p-card>
-          <p-card [header]="t.signIn">
-            <dl class="tb-account__facts">
-              <div>
-                <dt>{{ t.login }}</dt>
-                <dd>{{ account.login ?? '—' }}</dd>
-              </div>
-              <div>
-                <dt>{{ t.password }}</dt>
-                <dd>
-                  <p-button
-                    [label]="t.changePasswordAction"
-                    severity="secondary"
-                    (onClick)="passwordDialog.set(true)"
-                  />
-                </dd>
-              </div>
-            </dl>
-            <p-button
-              [label]="t.signOut"
-              icon="tb-i tb-i-logout"
-              [text]="true"
-              [loading]="busy.is('sign-out')"
-              (onClick)="signOut()"
-            />
-          </p-card>
-        }
-        <p-card [header]="t.appearance">
-          <div class="tb-form">
-            <div class="tb-field">
-              <label for="account-theme">{{ t.theme }}</label>
-              <p-select
-                inputId="account-theme"
-                optionLabel="label"
-                optionValue="value"
-                appendTo="body"
-                [options]="themes"
-                [ngModel]="theme.choice()"
-                (onChange)="theme.choose($event.value)"
-              />
-            </div>
-            <div class="tb-field">
-              <label for="account-language">{{ t.language }}</label>
-              <p-select
-                inputId="account-language"
-                optionLabel="label"
-                optionValue="value"
-                appendTo="body"
-                [options]="languages"
-                [ngModel]="currentLanguage"
-                (onChange)="chooseLanguage($event.value)"
-              />
-            </div>
           </div>
+          @if (isTeacher()) {
+            <div class="tb-field">
+              <label for="account-name">{{ t.name }}</label>
+              <input
+                pInputText
+                id="account-name"
+                [formControl]="nameForm.controls.name"
+                maxlength="100"
+                (change)="rename()"
+              />
+              <small class="tb-hint">{{ t.teacherNameHint }}</small>
+            </div>
+          }
+          @if (isStudent()) {
+            <div class="tb-field">
+              <label for="account-own-name">{{ t.name }}</label>
+              <input
+                pInputText
+                id="account-own-name"
+                [formControl]="ownNameForm.controls.name"
+                maxlength="100"
+                (change)="renameSelf()"
+              />
+              <small class="tb-hint">{{ t.ownNameHint(account.profileName) }}</small>
+            </div>
+          }
         </p-card>
-      </div>
-      @if (hasPhoto()) {
-        <tb-notifications-section [teacher]="isTeacher()" />
       }
-    </div>
+    </ng-template>
+    <ng-template #signInCard>
+      @if (account(); as account) {
+        <p-card [header]="t.signIn">
+          <dl class="tb-account__facts">
+            <div>
+              <dt>{{ t.login }}</dt>
+              <dd>{{ account.login ?? '—' }}</dd>
+            </div>
+            <div>
+              <dt>{{ t.password }}</dt>
+              <dd>
+                <p-button
+                  [label]="t.changePasswordAction"
+                  severity="secondary"
+                  (onClick)="passwordDialog.set(true)"
+                />
+              </dd>
+            </div>
+          </dl>
+          <p-button
+            [label]="t.signOut"
+            icon="tb-i tb-i-logout"
+            [text]="true"
+            [loading]="busy.is('sign-out')"
+            (onClick)="signOut()"
+          />
+        </p-card>
+      }
+    </ng-template>
+    <ng-template #appearanceCard>
+      <p-card [header]="t.appearance">
+        <div class="tb-form">
+          <div class="tb-field">
+            <label for="account-theme">{{ t.theme }}</label>
+            <p-select
+              inputId="account-theme"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              [options]="themes"
+              [ngModel]="theme.choice()"
+              (onChange)="theme.choose($event.value)"
+            />
+          </div>
+          <div class="tb-field">
+            <label for="account-language">{{ t.language }}</label>
+            <p-select
+              inputId="account-language"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              [options]="languages"
+              [ngModel]="currentLanguage"
+              (onChange)="chooseLanguage($event.value)"
+            />
+          </div>
+        </div>
+      </p-card>
+    </ng-template>
+    @if (mobile() && page() !== 'main') {
+      <div class="tb-account__sub">
+        <p-button
+          icon="tb-i tb-i-arrow_back"
+          severity="secondary"
+          [text]="true"
+          [rounded]="true"
+          [ariaLabel]="c.back"
+          (onClick)="page.set('main')"
+        />
+        <h2 class="tb-account__subtitle">{{ page() === 'profile' ? t.profile : t.lookRow }}</h2>
+      </div>
+      <div class="tb-stack">
+        @if (page() === 'profile') {
+          <ng-container *ngTemplateOutlet="profileCard" />
+          <ng-container *ngTemplateOutlet="signInCard" />
+        } @else {
+          <ng-container *ngTemplateOutlet="appearanceCard" />
+        }
+      </div>
+    } @else if (mobile()) {
+      <div class="tb-account tb-account--list">
+        @if (account(); as account) {
+          <div class="tb-account__rows">
+            <button type="button" class="tb-account__row" (click)="page.set('profile')">
+              <tb-avatar [name]="account.displayName" [photo]="account.avatar" size="2.5rem" />
+              <span class="tb-account__row-text">
+                <strong>{{ account.displayName }}</strong>
+                <small>{{ account.login ?? roleLabel() }} · {{ t.profileRow }}</small>
+              </span>
+              <i class="tb-i tb-i-chevron_right" aria-hidden="true"></i>
+            </button>
+          </div>
+        }
+        @if (hasPhoto()) {
+          <tb-notifications-section [teacher]="isTeacher()" />
+        }
+        <div class="tb-account__rows">
+          <button type="button" class="tb-account__row" (click)="page.set('look')">
+            <span class="tb-account__row-icon" aria-hidden="true"
+              ><i class="tb-i tb-i-contrast"></i
+            ></span>
+            <span class="tb-account__row-text">
+              <strong>{{ t.lookRow }}</strong>
+              <small>{{ lookSummary() }}</small>
+            </span>
+            <i class="tb-i tb-i-chevron_right" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="tb-account__row" (click)="signOut()">
+            <span class="tb-account__row-icon" aria-hidden="true"
+              ><i class="tb-i tb-i-logout"></i
+            ></span>
+            <span class="tb-account__row-text">
+              <strong>{{ t.signOut }}</strong>
+            </span>
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="tb-account">
+        <div class="tb-stack">
+          <ng-container *ngTemplateOutlet="profileCard" />
+          <ng-container *ngTemplateOutlet="signInCard" />
+          <ng-container *ngTemplateOutlet="appearanceCard" />
+        </div>
+        @if (hasPhoto()) {
+          <tb-notifications-section [teacher]="isTeacher()" />
+        }
+      </div>
+    }
     <tb-dialog
       kind="form"
       [(visible)]="passwordDialog"
@@ -266,6 +340,88 @@ const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
       }
     }
 
+    /* medium (sketch \`StudentTablet\`): the profile, «Уведомления», then «Вход» and «Оформление» in a pair */
+    @media (37.5em <= width < 52.5em) {
+      .tb-account {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .tb-account > .tb-stack {
+        display: contents;
+      }
+
+      .tb-account > .tb-stack > :first-child {
+        grid-column: 1 / -1;
+        order: 1;
+      }
+
+      :host ::ng-deep .tb-notify {
+        grid-column: 1 / -1;
+        order: 2;
+      }
+
+      .tb-account > .tb-stack > :nth-child(n + 2) {
+        order: 3;
+      }
+    }
+
+    /* compact: the list of rows, the profile and the look open as sub-pages */
+    .tb-account__rows {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+      border-radius: var(--tb-shape-lg);
+    }
+
+    .tb-account__row {
+      display: flex;
+      align-items: center;
+      gap: var(--tb-space-4);
+      min-height: 3.5rem;
+      padding: var(--tb-space-3) var(--tb-space-4);
+      border: 0;
+      background: var(--p-md-surface-container);
+      color: inherit;
+      font: inherit;
+      text-align: start;
+      cursor: pointer;
+    }
+
+    .tb-account__row-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      background: var(--p-md-secondary-container);
+      color: var(--p-md-on-secondary-container);
+    }
+
+    .tb-account__row-text {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      min-width: 0;
+
+      small {
+        color: var(--p-md-on-surface-variant);
+      }
+    }
+
+    .tb-account__sub {
+      display: flex;
+      align-items: center;
+      gap: var(--tb-space-2);
+      margin-bottom: var(--tb-space-3);
+    }
+
+    .tb-account__subtitle {
+      margin: 0;
+      font: var(--tb-type-title-l);
+    }
+
     @media (width < 37.5em) {
       .tb-account__name {
         font: var(--tb-type-headline-s-emphasized);
@@ -301,6 +457,13 @@ export class AccountPanel implements OnInit {
   protected readonly hasPhoto = computed(() => this.isStudent() || this.isTeacher());
   protected readonly roleLabel = computed(() => ROLE_LABELS[this.account()?.role ?? 'STUDENT']);
   protected readonly renaming = signal(false);
+  /** Compact: the account is a list; the profile and the look open as sub-pages (sketch `StudentPhone`). */
+  protected readonly mobile = injectMobile();
+  protected readonly page = signal<'main' | 'profile' | 'look'>('main');
+  protected readonly lookSummary = computed(
+    () =>
+      `${this.themes.find((theme) => theme.value === this.theme.choice())?.label ?? ''} · ${this.languages.find((lang) => lang.value === this.currentLanguage)?.label ?? ''}`,
+  );
   protected readonly passwordDialog = signal(false);
 
   readonly nameForm = new FormGroup({
