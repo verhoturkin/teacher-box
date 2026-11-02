@@ -64,7 +64,7 @@ export const ru = {
     providers: { YOUTUBE: 'YouTube', RUTUBE: 'Rutube', VK: 'VK Видео' },
     from: (provider: string, time: string) => `${provider} · с ${time}`,
     ofCount: (n: number, count: number) => `Видео ${String(n)} из ${String(count)}`,
-    close: 'Закрыть',
+    done: 'Готово',
     removeVideo: 'Убрать видео',
     previous: 'Предыдущее видео',
     next: 'Следующее видео',

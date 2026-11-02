@@ -65,7 +65,7 @@ export const en: Translation<typeof ru> = {
     providers: { YOUTUBE: 'YouTube', RUTUBE: 'Rutube', VK: 'VK Video' },
     from: (provider: string, time: string) => `${provider} · from ${time}`,
     ofCount: (n: number, count: number) => `Video ${String(n)} of ${String(count)}`,
-    close: 'Close',
+    done: 'Done',
     removeVideo: 'Remove video',
     previous: 'Previous video',
     next: 'Next video',

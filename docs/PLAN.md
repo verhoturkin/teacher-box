@@ -47,7 +47,7 @@ a dialog over the editor (sketches 4, 11, 39, 40 on the design canvas).
   by status («Проверить», «На доработке», «Принято»; empty groups hidden) with compact rows,
   «Выдать ещё» as an icon button, «Ошибки по вопросам» under the students; medium and compact
   layouts (sketches 18, 7) unchanged. Entry point: `homework/teacher/assignment-page.ts`.
-- [ ] **354.3 F** Video settings as a dialog (sketches 39, 40): «Видео N из M» with previous and
+- [x] **354.3 F** Video settings as a dialog (sketches 39, 40): «Видео N из M» with previous and
   next, player, title, transcript, «Показывать расшифровку ученику», «Убрать видео» and
   «Готово»; changes save at once; full screen on a phone. Entry point:
   `homework/teacher/video-section.ts`.

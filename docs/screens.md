@@ -394,11 +394,15 @@ wider it falls back to «Тест»).
   The test is never a material: it lives on «Тест». Narrower — one column in the order who, the
   text, the videos, the board, the test, the materials (sketch 19). Videos are tiles
   (`video-section.ts`, 348.1, sketches 39, 40: preview, name, source, «Расшифровка» / «Без
-  расшифровки», «видит ученик», «Настроить»; drag to reorder); «Настроить» opens the video's side
-  sheet (a phone: full screen) — player, «Название», the transcript as timed lines, «Субтитры
-  YouTube» (menu of tracks), «Из файла», «Править текст», «Показывать расшифровку ученику»,
-  «Убрать видео», ‹ ›. Picked files and textbooks join the saved ones after the autosave; an
-  issued assignment has them on its page.
+  расшифровки», «видит ученик», «Настроить»; drag to reorder); «Настроить» opens the video's
+  dialog over the editor (354.3, sketches 39, 40: `tb-dialog kind="form"`, wide; headline «Видео N
+  из M» with ‹ › in the header, «Убрать видео» (error text) and «Готово» (text) in the footer;
+  every change saves at once, «Готово» and Esc only close; a phone — the full-screen dialog with
+  «✕», the headline and «Готово» in the header, ‹ › beside «Убрать видео») — player,
+  «Название», the transcript as timed lines, «Субтитры YouTube» (menu of tracks), «Из файла»,
+  «Править текст», «Показывать расшифровку ученику». An invalid link and a link without a player
+  stay in the card (the field's error, the «Плеера нет» tile). Picked files and textbooks join the
+  saved ones after the autosave; an issued assignment has them on its page.
 - **«Тест»** — the quiz builder (`question-section.ts`, 347.1, sketches 28, 29), three columns that
   wrap: the **outline** (300 dp: «N вопросов · M баллов», a segmented list of one-line rows —
   drag handle, number, type icon, the text cut with an ellipsis, error icon once «Выдать» was
