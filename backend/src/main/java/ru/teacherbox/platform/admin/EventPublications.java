@@ -1,14 +1,17 @@
 package ru.teacherbox.platform.admin;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.modulith.events.CompletedEventPublications;
 import org.springframework.modulith.events.IncompleteEventPublications;
 import org.springframework.modulith.events.core.EventPublicationRegistry;
 import org.springframework.modulith.events.core.TargetEventPublication;
+import org.springframework.scheduling.annotation.Scheduled;
 
 /**
  * Domain events that a listener has not processed yet (Event Publication Registry). Only the event type and
@@ -25,13 +28,19 @@ public class EventPublications {
             int attempts) {
     }
 
+    /** Completed events are kept this long: the registry only marks them, so the table would grow forever. */
+    static final Duration COMPLETED_RETENTION = Duration.ofDays(7);
+
     private final ObjectProvider<EventPublicationRegistry> registry;
     private final ObjectProvider<IncompleteEventPublications> incomplete;
+    private final ObjectProvider<CompletedEventPublications> completed;
 
     public EventPublications(ObjectProvider<EventPublicationRegistry> registry,
-            ObjectProvider<IncompleteEventPublications> incomplete) {
+            ObjectProvider<IncompleteEventPublications> incomplete,
+            ObjectProvider<CompletedEventPublications> completed) {
         this.registry = registry;
         this.incomplete = incomplete;
+        this.completed = completed;
     }
 
     /** Oldest first. */
@@ -64,5 +73,12 @@ public class EventPublications {
         resubmission.resubmitIncompletePublications(publication -> ids.isEmpty()
                 || ids.contains(publication.getIdentifier()));
         return Math.toIntExact(count);
+    }
+
+    /** Removes events that every listener processed more than {@link #COMPLETED_RETENTION} ago. */
+    @Scheduled(cron = "${teacherbox.platform.events-housekeeping-cron:0 10 4 * * *}",
+            zone = "${teacherbox.timezone:Europe/Moscow}")
+    public void purgeCompleted() {
+        completed.ifAvailable(events -> events.deletePublicationsOlderThan(COMPLETED_RETENTION));
     }
 }

@@ -29,7 +29,9 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
   again with «Открыть: https://…» in the text (`OutgoingMessage.linksInText`, in `DeliveryDispatcher` and
   `MessengerPolling`).
 - `DeliveryDispatcher` sends deliveries with backoff (30 s … 1 h, `TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS`);
-  permanent errors (4xx except 429, VK "no access") fail at once. Deactivated students get inbox only.
+  permanent errors (4xx except 429, VK "no access") fail at once. After a temporary failure the rest
+  of that messenger's batch waits for the next run, so a hung API costs one read timeout per run.
+  Deactivated students get inbox only.
 - Channels — SPI `MessengerChannel`: Telegram (Bot API, long polling, `TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY`),
   VK (community messages), MAX (Bot API). Env tokens win over UI settings. HTTP/1.1 with `Content-Length`;
   tokens scrubbed from errors.
