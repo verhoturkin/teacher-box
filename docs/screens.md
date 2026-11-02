@@ -611,25 +611,31 @@ asks «Отменить изменения?» before another category or page op
 - **Homework** (`my-homework-page.ts` + `my-task-page.ts`): list-detail of one route (compact and
   medium: two pages, on medium with the rail — sketches 37 → 25); the list pane — groups «Вернули на
   доработку» (the teacher's comment under the title, error accent), «Сделать» (by the deadline:
-  «остался N дн.» / «сегодня» / «просрочено на N дн.») and «Сдано» («На проверке» / «Принято» +
-  grade), each hidden when empty; rows (icon of the group, title link, second line, material icons
-  with counts as in the teacher's list, status tag); on compact a tonal «Ближайшее» card (*ours*:
-  the oldest returned task, else the nearest deadline) with «Открыть» leads the list; the detail —
-  the task text, «Мой ответ» right under it (text, «Фото тетради» with the camera, «Файл»,
-  attachment rows with «Убрать», filled «Сдать»; the unsent text is kept on the device, «черновик
-  сохранён») and, beside it on wide / below on compact, the materials and the test; on compact the
-  answer panel is docked at the bottom. **A reviewed work is the same task in its state** (sketches
-  24, 27, 38): «Принято» — a success-container card (✓ «Принято», the grade in Display Small,
-  «проверено …») beside the primary-container «Комментарий учителя», the test result in the main
-  column, no answer panel, and filled «Следующее задание» (the first returned or open task; on
+  «остался N дн.» / «сегодня» / «просрочено на N дн.») and «Сдано» («сдано …» or «оценка 5»),
+  each hidden when empty; rows (icon of the group, the title on one line ending with «…», second
+  line, a status tag only once handed in or returned — sketches 8, 9, 37); on one pane a
+  primary-container «Ближайшее» card (*ours*: the oldest returned task, else the nearest deadline;
+  its material icons with counts) with filled «Открыть» leads the list. Only the panes scroll, never
+  the window. The detail (sketch 8) — the header «Сдать до … — остался N дн.» and the status tag;
+  the task text, «Мой ответ» under it (text, «Фото тетради» with the camera, «Файл», attachment
+  rows with «Убрать», filled «Сдать»; the unsent text is kept on the device, «черновик сохранён»)
+  and a right column of the materials and the test card, while the task is to do (none when there
+  is neither). On one pane (sketches 10, 25) one column: the text, the materials, the test, the
+  answer last — docked at the bottom on compact (above the navigation bar). Handed in, the test
+  result is in the main column. **A reviewed work is the same task in its state** (sketches
+  24, 27, 38): no right column, no deadline and no tag in the header; the task text and its
+  materials fold into «Задание» under the result. «Принято» — a success-container card (✓
+  «Принято», the grade in Display Small, «проверено …»; on compact a row across the width, the
+  grade first) beside the primary-container «Комментарий учителя», the test result, no answer panel, and filled «Следующее задание» (the first returned or open task; on
   compact a bottom bar «К заданиям · Следующее»); «На доработке» — an error-container card (↻
   «Вернули на доработку», the comment, «проверено …»), «Первая попытка» (the last answer on
   surface-container-low) and the form «Вторая попытка» prefilled with its text («Ответ прошлой
   попытки скопирован — допишите недостающее»; a device draft wins), «Сдать снова». Earlier answers
-  fold into «Мой ответ · текст, 2 файла». A task with questions has the tonal card «Тест · N
+  fold into «Мой ответ · текст, 2 файла» (not for a returned work with one attempt — it is above). A task with questions has the tonal card «Тест · N
   вопросов» (`quiz-section.ts`: attempts, when the key shows, «Начать тест» / «Продолжить тест»).
-  **The test** (`quiz-player.ts`, sketches 23, 26) is full screen on every width (`tb-dialog
-  kind="screen"`): «✕» «Выйти из теста — ответы сохранятся», «Тест · <задание>», «Вопрос 3 из 10»;
+  **The test** (`quiz-player.ts`, sketches 23, 26; `tb-dialog kind="screen"`) is a pane in the
+  frame from medium — where the panes are, the rail and the top strip stay — and full screen on
+  compact: «✕» «Выйти из теста — ответы сохранятся», «Тест · <задание>», «Вопрос 3 из 10»;
   «Попытка 1 из 2 · ответы сохраняются сами», a 4 dp progress bar; one question (type · points, the
   text in Headline Small, large options), «Назад · Дальше» (the last question «Завершить тест»);
   beside it the question numbers (answered / current), «Завершить тест» and when the key shows; on

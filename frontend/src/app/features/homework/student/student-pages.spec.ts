@@ -75,8 +75,9 @@ describe('MyHomeworkPage', () => {
     vi.useRealTimers();
   });
 
-  it('shows the materials of a task as icons with counts', async () => {
-    const { backend } = configure();
+  it('keeps a tile to its title and line: the materials on the «Ближайшее» card, no tag on a task to do', async () => {
+    TestBed.configureTestingModule({ providers: testProviders(screenWidth(400)) });
+    const backend = TestBed.inject(HttpTestingController);
     const fixture = TestBed.createComponent(MyHomeworkPage);
     await fixture.whenStable();
     backend
@@ -84,11 +85,15 @@ describe('MyHomeworkPage', () => {
       .flush([myTask({ textbooks: 1, questions: 10, board: true }), myTask({ taskId: 't-2' })]);
     await fixture.whenStable();
 
-    const rows = hostElement(fixture).querySelectorAll('.tb-list > li');
-    expect(rows[0]?.querySelectorAll('.tb-hw__material')).toHaveLength(3);
-    expect(rows[0]?.querySelector('[aria-label="Вопросы: 10"]')).not.toBeNull();
-    expect(rows[0]?.querySelector('[aria-label="Доска"]')).not.toBeNull();
-    expect(rows[1]?.querySelectorAll('.tb-hw__material')).toHaveLength(0);
+    const host = hostElement(fixture);
+    const card = requireElement(host, '.tb-hw__nearest', HTMLElement);
+    expect(card.querySelectorAll('.tb-hw__material')).toHaveLength(3);
+    expect(card.querySelector('[aria-label="Вопросы: 10"]')).not.toBeNull();
+    expect(card.querySelector('[aria-label="Доска"]')).not.toBeNull();
+    const rows = host.querySelectorAll('.tb-list > li');
+    expect(rows[0]?.querySelectorAll('.tb-hw__material')).toHaveLength(0);
+    expect(rows[0]?.querySelector('tb-task-status')).toBeNull();
+    expect(rows[0]?.querySelector('.tb-hw__title')).not.toBeNull();
   });
 
   it('hides the empty groups and the drafts-free list shows only what exists', async () => {
@@ -100,7 +105,7 @@ describe('MyHomeworkPage', () => {
 
     const host = hostElement(fixture);
     expect(Array.from(host.querySelectorAll('h2')).map((h) => readableText(h))).toEqual(['Сдано']);
-    expect(readableText(host)).toContain('Оценка: 5');
+    expect(readableText(host)).toContain('Дроби оценка 5 Принято');
   });
 
   it('leads a phone with «Ближайшее»: the oldest returned task, else the nearest to do', async () => {
@@ -486,7 +491,7 @@ describe('MyTaskPage', () => {
     const text = readableText(host);
     expect(text).toContain('Принято 5');
     expect(text).toContain('Комментарий учителя Отлично');
-    expect(text).toContain('Без срока');
+    expect(text).not.toContain('Без срока');
     expect(text).toContain('Мой ответ текст, 1 файл');
     expect(host.querySelector('#answer-text')).toBeNull();
     expect(text).not.toContain('решение.jpg');
@@ -494,6 +499,10 @@ describe('MyTaskPage', () => {
       requireElement(host, 'a[href="/cabinet/homework/t-2"]', HTMLAnchorElement).textContent,
     ).toContain('Следующее задание');
 
+    // the assignment and its materials fold away under the result
+    expect(text).not.toContain('условие.pdf');
+    buttonByText(host, 'Задание').click();
+    await fixture.whenStable();
     buttonByText(host, 'условие.pdf').click();
     context.backend.expectOne('/api/me/homework/attachments/f-1').flush(new Blob(['pdf']));
     expect(context.saved).toEqual(['условие.pdf']);

@@ -657,7 +657,7 @@ changes the container; content and markup are the same at every width. Every dia
 | `alert` | confirmations, one decision, ≤ 1 field (password, link, language) | basic dialog | basic dialog |
 | `form` | ≥ 2 fields, wizards, pickers | full-screen dialog | basic dialog |
 | `sheet` | an object and its actions (lesson, link code, backups) | modal bottom sheet | basic dialog |
-| `screen` | a focused task over the page (the student's test) | full-screen dialog | full-screen dialog |
+| `screen` | a focused task over the page (the student's test) | full-screen dialog | a pane in the frame: where the panes are, the rail and the top strip stay (sketch 23, *ours* as a dialog) |
 
 - **API:** `kind` (required); `width` `normal | wide`; `[(visible)]`, `headline`, `confirmLabel` /
   `confirmSeverity`, `cancelLabel` (default «Отмена», `null` = none), `pending`, `error`, `dirty`,

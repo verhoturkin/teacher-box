@@ -21,6 +21,7 @@ import { HomeworkApi } from '../data-access/homework-api';
 import { MyTask } from '../data-access/homework.models';
 import { Material, materialLabel, materialsOf } from '../ui/materials';
 import { TaskStatusTag } from '../ui/task-status-tag';
+import { dueIn } from '../homework-labels';
 import { T } from '../i18n/texts';
 import { MyTaskPage } from './my-task-page';
 
@@ -31,14 +32,6 @@ interface Group {
   readonly label: string;
   readonly icon: string;
   readonly tasks: readonly MyTask[];
-}
-
-const DAY = 86_400_000;
-
-/** Whole calendar days from today to the deadline (negative — past it). */
-function daysUntil(dueAt: string): number {
-  const startOfDay = (time: number): number => new Date(time).setHours(0, 0, 0, 0);
-  return Math.round((startOfDay(Date.parse(dueAt)) - startOfDay(Date.now())) / DAY);
 }
 
 /**
@@ -79,7 +72,7 @@ function daysUntil(dueAt: string): number {
                 <section class="tb-hw__nearest" [attr.aria-label]="t.nearest">
                   <span class="tb-hw__group">{{ t.nearest }}</span>
                   <strong class="tb-hw__nearest-title">{{ next.title }}</strong>
-                  <span [class.tb-negative]="next.overdue">{{ supporting(next) }}</span>
+                  <span>{{ supporting(next) }}</span>
                   <span class="tb-hw__materials">
                     @for (material of materials(next); track material.icon) {
                       <span
@@ -95,12 +88,7 @@ function daysUntil(dueAt: string): number {
                     }
                   </span>
 
-                  <a
-                    pButton
-                    severity="secondary"
-                    [routerLink]="['/cabinet/homework', next.taskId]"
-                    >{{ t.open }}</a
-                  >
+                  <a pButton [routerLink]="['/cabinet/homework', next.taskId]">{{ t.open }}</a>
                 </section>
               }
               @for (group of groups(); track group.key) {
@@ -115,7 +103,7 @@ function daysUntil(dueAt: string): number {
                       ></span>
                       <div class="tb-list__text">
                         <a
-                          class="tb-list__title tb-list__link"
+                          class="tb-list__title tb-list__link tb-hw__title"
                           [routerLink]="['/cabinet/homework', task.taskId]"
                           [attr.aria-current]="taskId() === task.taskId ? 'page' : null"
                           >{{ task.title }}</a
@@ -125,24 +113,12 @@ function daysUntil(dueAt: string): number {
                           [class.tb-negative]="task.overdue || group.key === 'returned'"
                           >{{ supporting(task) }}</span
                         >
-                        <span class="tb-hw__materials">
-                          @for (material of materials(task); track material.icon) {
-                            <span
-                              class="tb-hw__material"
-                              role="img"
-                              [attr.aria-label]="materialLabel(material)"
-                            >
-                              <i [class]="material.icon" aria-hidden="true"></i>
-                              @if (material.count !== null) {
-                                {{ material.count }}
-                              }
-                            </span>
-                          }
-                        </span>
                       </div>
-                      <div class="tb-list__trail tb-list__trail--icons">
-                        <tb-task-status [status]="task.status" [grade]="task.grade" />
-                      </div>
+                      @if (task.status !== 'ASSIGNED') {
+                        <div class="tb-list__trail tb-list__trail--icons">
+                          <tb-task-status [status]="task.status" />
+                        </div>
+                      }
                     </li>
                   }
                 </ul>
@@ -179,7 +155,7 @@ function daysUntil(dueAt: string): number {
     .tb-hw__group.tb-negative {
       color: var(--p-md-error);
     }
-    /* the nearest task on one pane: a tonal card (our decision, as the figures block) */
+    /* the nearest task on one pane (sketches 9, 37): a primary-container card with a filled «Открыть» */
     .tb-hw__nearest {
       display: flex;
       flex-direction: column;
@@ -187,8 +163,8 @@ function daysUntil(dueAt: string): number {
       gap: var(--tb-space-2);
       padding: var(--tb-space-4);
       border-radius: var(--tb-shape-lg);
-      background: var(--p-md-secondary-container);
-      color: var(--p-md-on-secondary-container);
+      background: var(--p-md-primary-container);
+      color: var(--p-md-on-primary-container);
     }
     .tb-hw__nearest .tb-hw__group {
       margin: 0;
@@ -207,6 +183,14 @@ function daysUntil(dueAt: string): number {
     }
     .tb-hw__material i {
       font-size: 1rem;
+    }
+    /* the sketches: a title takes one line and ends with «…»; the task page shows it whole */
+    .tb-hw__title {
+      display: block;
+      align-self: stretch;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .tb-hw__nearest-title {
       font-size: 1rem;
@@ -306,15 +290,14 @@ export class MyHomeworkPage implements OnInit {
     if (task.status === 'RETURNED' && task.teacherComment !== null) {
       return task.teacherComment;
     }
+    if (task.status === 'ACCEPTED' && task.grade !== null) {
+      return this.t.graded(task.grade);
+    }
     if (task.status === 'SUBMITTED' || task.status === 'ACCEPTED') {
       return this.t.submitted(
         this.dates.transform(task.reviewedAt ?? task.assignedAt, 'dd.MM.yyyy') ?? '',
       );
     }
-    if (task.dueAt === null) {
-      return T.noDueDate;
-    }
-    const days = daysUntil(task.dueAt);
-    return days < 0 ? this.t.overdueBy(-days) : days === 0 ? this.t.today : this.t.daysLeft(days);
+    return task.dueAt === null ? T.noDueDate : dueIn(task.dueAt);
   }
 }

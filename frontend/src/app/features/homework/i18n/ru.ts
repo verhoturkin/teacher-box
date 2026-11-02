@@ -328,6 +328,7 @@ export const ru = {
       `остал${days % 10 === 1 && days % 100 !== 11 ? 'ся' : 'ось'} ${countOf(days, 'день', 'дня', 'дней')}`,
     today: 'сегодня',
     overdueBy: (days: number) => `просрочено на ${countOf(days, 'день', 'дня', 'дней')}`,
+    graded: (grade: string) => `оценка ${grade}`,
     submitted: (date: string) => `сдано ${date}`,
     pickTitle: 'Выберите задание',
     pickHint: 'Здесь откроется задание с вашими ответами',

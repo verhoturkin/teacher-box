@@ -1,5 +1,5 @@
 import { PaneHeader } from '@shared/ui/panes';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -44,6 +44,7 @@ import {
   writeDeviceSetting,
 } from '@shared/storage/device-settings';
 import { T } from '../i18n/texts';
+import { dueIn } from '../homework-labels';
 import { QuizSection } from './quiz-section';
 
 /**
@@ -76,6 +77,7 @@ import { QuizSection } from './quiz-section';
     ButtonDirective,
     RouterLink,
     FoldCard,
+    NgTemplateOutlet,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -87,14 +89,19 @@ import { QuizSection } from './quiz-section';
           [backLabel]="t.back"
         >
           <tb-help-button help topic="cabinet/homework" />
-          <span meta [class.tb-negative]="task.overdue">
-            {{
-              task.assignment.dueAt
-                ? t.submitUntil((task.assignment.dueAt | date: 'dd.MM.yyyy HH:mm') ?? '')
-                : t.noDueDate
-            }}
-          </span>
-          <tb-task-status meta [status]="task.status" [grade]="task.grade" />
+          @if (task.status !== 'ACCEPTED') {
+            <span meta [class.tb-negative]="task.overdue">
+              {{
+                task.assignment.dueAt
+                  ? t.submitUntil((task.assignment.dueAt | date: 'dd.MM.yyyy HH:mm') ?? '') +
+                    (open(task) ? ' — ' + dueIn(task.assignment.dueAt) : '')
+                  : t.noDueDate
+              }}
+            </span>
+          }
+          @if (!reviewed(task)) {
+            <tb-task-status meta [status]="task.status" />
+          }
           @if (task.assignment.boardId; as boardId) {
             <tb-my-board-button [boardId]="boardId" />
           }</tb-page-header
@@ -142,16 +149,41 @@ import { QuizSection } from './quiz-section';
             </div>
           }
 
-          <section>
-            <h2 class="tb-task__label">{{ t.assignment }}</h2>
+          <ng-template #assignment>
             <tb-markdown [text]="task.assignment.description" />
             @if (task.assignment.videos.length > 0) {
               <h3 class="tb-subtitle">{{ tv.title }}</h3>
               <tb-video-list [videos]="task.assignment.videos" />
             }
-          </section>
+          </ng-template>
+          <ng-template #materials>
+            @if (task.assignment.attachments.length > 0 || task.assignment.textbooks.length > 0) {
+              <section>
+                <h2 class="tb-task__label">{{ t.materials }}</h2>
+                <tb-attachment-list
+                  [attachments]="task.assignment.attachments"
+                  (download)="download($event)"
+                />
+                @if (task.assignment.textbooks.length > 0) {
+                  <h3 class="tb-subtitle">{{ t.textbooks }}</h3>
+                  <tb-textbook-list
+                    [textbooks]="task.assignment.textbooks"
+                    [downloadable]="true"
+                    (opened)="openTextbook(task.taskId, $event)"
+                    (download)="downloadTextbook(task.taskId, $event)"
+                  />
+                }
+              </section>
+            }
+          </ng-template>
 
-          @if (task.status === 'ACCEPTED') {
+          @if (!reviewed(task)) {
+            <section [attr.aria-label]="t.assignment">
+              <ng-container [ngTemplateOutlet]="assignment" />
+            </section>
+          }
+
+          @if (task.status !== 'ASSIGNED') {
             <tb-quiz-section [taskId]="task.taskId" [title]="task.assignment.title" />
           }
 
@@ -230,7 +262,8 @@ import { QuizSection } from './quiz-section';
             </section>
           }
 
-          @if (task.submissions.length > 0) {
+          <!-- a returned work shows its one attempt above (sketch 27): no fold to repeat it -->
+          @if (task.submissions.length > (task.status === 'RETURNED' ? 1 : 0)) {
             <tb-fold-card
               [title]="t.myAnswer"
               [summary]="answerSummary(task)"
@@ -242,6 +275,15 @@ import { QuizSection } from './quiz-section';
                   [submissions]="task.submissions"
                   (download)="download($event)"
                 />
+              </ng-template>
+            </tb-fold-card>
+          }
+
+          @if (reviewed(task)) {
+            <tb-fold-card [title]="t.assignment" [collapsible]="true" [single]="true">
+              <ng-template>
+                <ng-container [ngTemplateOutlet]="assignment" />
+                <ng-container [ngTemplateOutlet]="materials" />
               </ng-template>
             </tb-fold-card>
           }
@@ -259,29 +301,14 @@ import { QuizSection } from './quiz-section';
           }
         </div>
 
-        <aside class="tb-task__side">
-          @if (task.assignment.attachments.length > 0 || task.assignment.textbooks.length > 0) {
-            <section>
-              <h2 class="tb-task__label">{{ t.materials }}</h2>
-              <tb-attachment-list
-                [attachments]="task.assignment.attachments"
-                (download)="download($event)"
-              />
-              @if (task.assignment.textbooks.length > 0) {
-                <h3 class="tb-subtitle">{{ t.textbooks }}</h3>
-                <tb-textbook-list
-                  [textbooks]="task.assignment.textbooks"
-                  [downloadable]="true"
-                  (opened)="openTextbook(task.taskId, $event)"
-                  (download)="downloadTextbook(task.taskId, $event)"
-                />
-              }
-            </section>
-          }
-          @if (task.status !== 'ACCEPTED') {
-            <tb-quiz-section [taskId]="task.taskId" [title]="task.assignment.title" />
-          }
-        </aside>
+        @if (!reviewed(task)) {
+          <aside class="tb-task__side">
+            <ng-container [ngTemplateOutlet]="materials" />
+            @if (task.status === 'ASSIGNED') {
+              <tb-quiz-section [taskId]="task.taskId" [title]="task.assignment.title" />
+            }
+          </aside>
+        }
       </div>
     } @else {
       <ng-template tbPaneHeader
@@ -319,6 +346,11 @@ import { QuizSection } from './quiz-section';
       min-inline-size: 0;
     }
 
+    /* nothing beside the task (no materials, no test): the task takes the width */
+    .tb-task__side:not(:has(section)) {
+      display: none;
+    }
+
     .tb-task__side {
       display: flex;
       flex: 1 1 16rem;
@@ -343,6 +375,29 @@ import { QuizSection } from './quiz-section';
     /* a phone: the answer is the bottom action bar (tb-bottom-actions) and stays while the task scrolls */
     .tb-task__answer--docked {
       align-items: stretch;
+    }
+
+    /* one pane (sketches 10, 25): one column — the task, the materials and the test, the answer last */
+    @media (width < 52.5em) {
+      .tb-task {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: var(--tb-space-4);
+      }
+
+      .tb-task__main {
+        display: contents;
+      }
+
+      .tb-task__side {
+        flex: none;
+        max-inline-size: none;
+      }
+
+      .tb-task__answer {
+        order: 1;
+      }
     }
 
     .tb-task__answer-head,
@@ -393,6 +448,22 @@ import { QuizSection } from './quiz-section';
       flex: 0 0 12.5rem;
       background: var(--p-md-success-container);
       color: var(--p-md-on-success-container);
+    }
+
+    /* a phone (sketch 38): the grade card is a row across the width — the grade, then the state and the date */
+    @media (width < 37.5em) {
+      .tb-task__grade {
+        display: grid;
+        flex-basis: 100%;
+        grid-template-columns: auto 1fr;
+        column-gap: var(--tb-space-4);
+        align-items: center;
+      }
+
+      .tb-task__grade-value {
+        grid-row: 1 / 3;
+        grid-column: 1;
+      }
     }
 
     .tb-task__comment {
@@ -519,6 +590,18 @@ export class MyTaskPage {
       this.prefilled.set(true);
     }
   }
+
+  /** Checked: the cards say the state, the assignment folds away (sketches 24, 27, 38). */
+  protected reviewed(task: TaskDetails): boolean {
+    return task.status === 'ACCEPTED' || task.status === 'RETURNED';
+  }
+
+  /** Still to hand in: the deadline says how many days are left. */
+  protected open(task: TaskDetails): boolean {
+    return task.status === 'ASSIGNED' || task.status === 'RETURNED';
+  }
+
+  protected readonly dueIn = dueIn;
 
   protected answerSummary(task: TaskDetails): string {
     const last = task.submissions[0];

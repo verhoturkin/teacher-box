@@ -549,6 +549,11 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
   }
 }
 
+/* above the navigation bar, which stays fixed at the window's bottom */
+.tb-shell__content--nav .tb-bottom-actions {
+  inset-block-end: calc(var(--tb-bottom-nav-height) + env(safe-area-inset-bottom));
+}
+
 /*
  * An AI action that is not the surface's primary one («С ИИ», «Составить с ИИ»; sketches 28, 30): a tonal
  * button in the tertiary container (M3: tertiary is the contrasting accent; design-system §11).
@@ -3425,6 +3430,48 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
  */
 .p-dialog-mask:has(> .tb-d--full) {
   background: transparent;
+}
+
+/* the rail's width (shell.scss): on :root, so a dialog appended to the body can keep clear of it */
+:root {
+  --tb-rail-width: 96px;
+}
+
+:root:has(.tb-shell--wide) {
+  --tb-rail-width: 280px;
+}
+
+/* a `screen` dialog's content fills its height, so the content can keep its actions at the bottom */
+.p-dialog.tb-d--screen .p-dialog-content,
+.p-dialog.tb-d--screen .tb-d__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+/*
+ * ours, sketch 23: from medium a `screen` dialog (the student's test) is a pane in the frame — where the
+ * panes are, on the window's surface container; the rail and the top strip stay. Full screen on compact.
+ */
+@media (width >= 37.5em) {
+  .p-dialog-mask:has(> .tb-d--screen) {
+    inset: var(--tb-header-height) 0 0 var(--tb-rail-width) !important;
+    width: auto !important;
+    height: auto !important;
+    background: var(--p-md-surface-container) !important;
+  }
+
+  .p-dialog.tb-d.tb-d--full.tb-d--screen {
+    width: calc(100% - var(--tb-space-6)) !important;
+    max-width: none;
+    height: calc(100% - var(--tb-space-6));
+    max-height: none;
+    margin: 0 var(--tb-space-6) var(--tb-space-6) 0;
+    border-radius: var(--tb-shape-xl);
+    /* a pane, as the panes it stands in for */
+    background: var(--p-md-surface);
+    box-shadow: none;
+  }
 }
 
 .p-dialog.tb-d {

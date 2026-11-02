@@ -43,8 +43,8 @@ export interface QuizEdit {
 }
 
 /**
- * The test full screen over the task (sketches 23, 26): one question with large options, «Назад ·
- * Дальше», the question numbers (answered / current; dots on a phone), «Завершить тест» that asks only
+ * The test over the task — a pane in the frame from medium, full screen on a phone (sketches 23, 26):
+ * one question with large options, «Назад · Дальше», the question numbers (answered / current; dots on a phone), «Завершить тест» that asks only
  * when questions are skipped. It only shows and edits `answers`: the host saves them (the task) or
  * keeps them (the teacher's preview).
  */
@@ -281,8 +281,8 @@ export interface QuizEdit {
     .tb-qp {
       display: flex;
       flex-direction: column;
+      flex: 1;
       gap: var(--tb-space-4);
-      min-block-size: 100%;
     }
 
     .tb-qp__subtitle {

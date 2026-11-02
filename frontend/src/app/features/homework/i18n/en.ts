@@ -329,6 +329,7 @@ export const en: Translation<typeof ru> = {
     daysLeft: (days: number) => `${countOf(days, 'day', 'days', 'days')} left`,
     today: 'due today',
     overdueBy: (days: number) => `${countOf(days, 'day', 'days', 'days')} overdue`,
+    graded: (grade: string) => `grade ${grade}`,
     submitted: (date: string) => `handed in ${date}`,
     pickTitle: 'Choose an assignment',
     pickHint: 'The assignment and your submissions will appear here',

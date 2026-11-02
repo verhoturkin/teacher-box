@@ -177,6 +177,8 @@ export class Panes {
     }
 
     .tb-pane__scroll {
+      /* the containing block of absolute descendants (visually hidden inputs): else they stretch the window */
+      position: relative;
       flex: 1;
       min-height: 0;
       box-sizing: border-box;

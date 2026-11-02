@@ -57,10 +57,15 @@ The commit message or the report lists the sketches checked and anything left on
   *Left on purpose: the type stays a tonal menu button (the sketch's outlined one with a trailing
   arrow needs a custom button); accepted answers stay outlined input chips; «Ученик увидит в
   случайном порядке» is still not built (no backend setting).*
-- [ ] **352.4 F** Student (sketches 8, 9, 10, 23, 24, 25, 26, 27, 37, 38): only the pane scrolls,
+- [x] **352.4 F** Student (sketches 8, 9, 10, 23, 24, 25, 26, 27, 37, 38): only the pane scrolls,
   never the whole page; the test on a large screen is inside the frame as in 23 (rail, the
   question and the numbers column), full screen only on a phone (26); the task page has the right
   column as in 8 and none as in 24; long titles wrap inside the tiles.
+  *Long titles end with «…» on one line, as in the sketches. Left on purpose: the reviewed task
+  keeps the assignment folded under «Задание» (the sketches drop it); the test stays a card, not
+  the phone's compact row (10); the answer keeps labelled assist chips, not icon buttons (10, 27);
+  status tags keep the shared names («На доработке», not «Доработать»); no chevron in the tablet
+  list (37); the phone test's header names the test, the step stays on the right (26).*
 - [ ] **352.5** Release refresh: CHANGELOG 0.43.0, help articles and wiki for what 352.1–352.4
   changed, the archive `docs/archive/plans/v0.43.0.md` gets this section; `./scripts/verify.sh`.
   Local only.

@@ -72,3 +72,10 @@ export function fileIcon(contentType: string): string {
       ? 'tb-i tb-i-picture_as_pdf'
       : 'tb-i tb-i-draft';
 }
+
+/** «осталось 2 дня» / «сегодня» / «просрочено на 1 день»: whole calendar days from today to the deadline. */
+export function dueIn(dueAt: string): string {
+  const startOfDay = (time: number): number => new Date(time).setHours(0, 0, 0, 0);
+  const days = Math.round((startOfDay(Date.parse(dueAt)) - startOfDay(Date.now())) / DAY);
+  return days < 0 ? T.mine.overdueBy(-days) : days === 0 ? T.mine.today : T.mine.daysLeft(days);
+}

@@ -58,7 +58,8 @@ let nextId = 0;
  * decision, ≤ 1 field), `form` (≥ 2 fields), `sheet` (an object and its actions) — and the window
  * size picks the container: an `alert` is a basic dialog everywhere, a `form` is the full-screen
  * dialog on compact and a basic one from medium, a `sheet` the bottom sheet on compact and a basic
- * dialog from medium, a `screen` (a focused task over the page, the student's test) full screen on every width. The content is the same in all of them.
+ * dialog from medium, a `screen` (a focused task over the page, the student's test) full screen on compact and a
+ * pane in the frame from medium (styles.scss). The content is the same in all of them.
  *
  * ```html
  * <tb-dialog kind="form" [(visible)]="visible" [headline]="t.title" [confirmLabel]="c.save"

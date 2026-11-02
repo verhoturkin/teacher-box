@@ -1,14 +1,9 @@
 :host {
-  --tb-rail-width: 96px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   /* edge-to-edge (viewport-fit=cover): a display cutout on the side of a phone on its side is not drawn over */
   padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
-}
-
-:host(.tb-shell--wide) {
-  --tb-rail-width: 280px;
 }
 
 /* From medium the rail runs the full height and its brand stands in the row of the top strip (the sketches):
