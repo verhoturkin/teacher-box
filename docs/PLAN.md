@@ -31,7 +31,8 @@ don't read them unless the task needs history.
   changes the order (student quiz page, `QuizService`/`QuizViews` if «answered» comes from there).
 - [x] **353.4** **F** Teacher review: remove the disabled «На доску» button under «На доработку /
   Принять».
-- [ ] **353.5** **F** Student task page: the help (?) icon sits next to the task title.
+- [x] **353.5** **F** Student task page: one help (?) icon, next to the task title; the list pane
+  header «Задания» has none (`my-homework-page.ts`).
 - [x] **353.6** **F** AI generation of task text and quiz questions: the button shows a busy state
   (loading indicator, disabled, «Генерирую…», `aria-busy`).
 
