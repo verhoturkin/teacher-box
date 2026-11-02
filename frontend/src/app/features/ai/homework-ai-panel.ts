@@ -323,9 +323,17 @@ export class HomeworkAiState {
             type="button"
             class="tb-ai-pane__generate"
             [disabled]="pending()"
+            [attr.aria-busy]="pending()"
             (click)="generate()"
           >
-            <i class="tb-i tb-i-auto_awesome" aria-hidden="true"></i>{{ t.generate }}
+            <i
+              class="tb-i"
+              [class.tb-i-auto_awesome]="!pending()"
+              [class.tb-i-progress_activity]="pending()"
+              [class.tb-ai-pane__spin]="pending()"
+              aria-hidden="true"
+            ></i
+            >{{ pending() ? t.generating : t.generate }}
           </button>
         </footer>
       </section>
@@ -374,7 +382,7 @@ export class HomeworkAiState {
           }
           <p-button
             class="tb-ai-panel__generate"
-            [label]="shown() === null ? t.generate : t.again"
+            [label]="pending() ? t.generating : shown() === null ? t.generate : t.again"
             [icon]="shown() === null ? 'tb-i tb-i-auto_awesome' : 'tb-i tb-i-refresh'"
             [loading]="pending()"
             (onClick)="generate()"
@@ -796,6 +804,23 @@ export class HomeworkAiState {
     }
 
     /* the AI action takes the tertiary role (sketch AiDraft), not the primary one */
+    /* the working state of the button: the indicator turns (not with reduced motion) */
+    .tb-ai-pane__spin {
+      animation: tb-ai-spin 1s linear infinite;
+    }
+
+    @keyframes tb-ai-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tb-ai-pane__spin {
+        animation: none;
+      }
+    }
+
     .tb-ai-pane__generate {
       display: inline-flex;
       gap: var(--tb-space-2);
