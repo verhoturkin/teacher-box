@@ -26,7 +26,7 @@ test('the teacher gives homework with a video and its transcript', async ({ page
   await page.locator('#editor-text').fill(TITLE);
 
   // 354.1: the video and the board are added from the section menu, not from «Материалы»
-  const materials = page.getByRole('group', { name: 'Материалы' });
+  const materials = page.getByRole('group', { name: 'Материалы', exact: true });
   await expect(materials.getByRole('button', { name: 'Учебник' })).toBeVisible();
   await expect(materials).not.toContainText(/Видео|Доска|Тест/);
   const add = page.getByRole('list', { name: 'Добавить' });
