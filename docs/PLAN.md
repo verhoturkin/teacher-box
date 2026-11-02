@@ -23,13 +23,13 @@ don't read them unless the task needs history.
 
 ### Stage 353 — homework polish
 
-- [ ] **353.1** **F** Tab indicator sits under the label text only, not the icon — shared tab styling
-  (`teacher-box-preset.ts` / `styles.scss`), every tab bar follows.
-- [ ] **353.2** **F** Student task materials: «Материалы» and «Учебники» headings share one style
+- [x] **353.1** **F** Tab indicator spans the whole tab content, icon and label — the icon moves into
+  `tb-tab-label` (`assignment-editor-page.ts`); other tab bars have no icons.
+- [x] **353.2** **F** Student task materials: «Материалы» and «Учебники» headings share one style
   (`my-task-page.ts` and its sibling headings).
-- [ ] **353.3** **F** Quiz navigator: an ordering question counts as answered only after the student
+- [x] **353.3** **F** Quiz navigator: an ordering question counts as answered only after the student
   changes the order (student quiz page, `QuizService`/`QuizViews` if «answered» comes from there).
-- [ ] **353.4** **F** Teacher review: remove the disabled «На доску» button under «На доработку /
+- [x] **353.4** **F** Teacher review: remove the disabled «На доску» button under «На доработку /
   Принять».
 - [ ] **353.5** **F** Student task page: the help (?) icon sits next to the task title.
 - [ ] **353.6** **F** AI generation of task text and quiz questions: the button shows a busy state
