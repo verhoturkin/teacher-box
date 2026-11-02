@@ -11,71 +11,106 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Button, ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
-import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
-import { Textarea } from 'primeng/textarea';
-import { ToBoardDialog } from '@features/boards/parts';
+import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
+import { Tooltip } from 'primeng/tooltip';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { HomeworkApi } from '../data-access/homework-api';
-import { Attachment, ReviewDecision, TaskDetails } from '../data-access/homework.models';
+import { Attachment, TaskDetails } from '../data-access/homework.models';
+import { handedIn } from '../homework-labels';
 import { AttachmentList } from '../ui/attachment-list';
 import { SubmissionList } from '../ui/submission-list';
 import { TaskStatusTag } from '../ui/task-status-tag';
 import { PageHeader } from '@shared/ui/page-header';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
-import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
-import { Snackbar } from '@core/snackbar/snackbar';
 import { pageDetail } from '@core/routing/page-detail';
+import { injectMobile } from '@core/layout/mobile';
 import { T } from '../i18n/texts';
 import { MaterialOpener } from './material-opener';
 import { QuizReviewBlock } from './quiz-review';
-import { ReviewForm } from './review-form';
+import { NextWork, ReviewSheet } from './review-sheet';
 
-/** Teacher: review of one student's work. */
+/**
+ * Teacher: review of one student's work (sketches 14, 15, 16). The header names the student, «<assignment> ·
+ * сдано сегодня, 09:12 · вовремя», the place in the queue («1 из 2 на проверке») with the previous and the
+ * next work; then the collapsed statement, the answer and the quiz as tonal blocks. The review form is the
+ * side sheet beside the page (`sheet`, from large; a phone's toolbar) or lies under the answer.
+ */
 @Component({
   selector: 'tb-task-review-page',
   imports: [
     PaneHeader,
     DatePipe,
-    ReactiveFormsModule,
-    Button,
     ButtonDirective,
     ButtonIcon,
     ButtonLabel,
     RouterLink,
-    InputText,
-    Message,
-    Textarea,
+    Tooltip,
     MarkdownView,
     AttachmentList,
     SubmissionList,
     QuizReviewBlock,
+    ReviewSheet,
     TaskStatusTag,
-    ToBoardDialog,
     PageHeader,
     LoadStateView,
-    FieldErrors,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (task(); as task) {
       <ng-template tbPaneHeader
         ><tb-page-header
-          [title]="task.assignment.title"
+          class="tb-page-header--one-line"
+          [title]="task.studentName"
           [back]="single() ? back() : null"
           [backLabel]="t.back"
         >
-          <span meta class="tb-task__meta">
-            {{ task.studentName }} ·
-            {{ task.assignment.dueAt ? t.due(date(task.assignment.dueAt)) : noDueDate }}
-            <tb-task-status [status]="task.status" [overdue]="task.overdue" [grade]="task.grade" />
-            · {{ t.attempt(task.submissions.length) }}
-          </span>
+          @if (mobile()) {
+            <!-- a phone (sketch 16): «1 из 2 на проверке» under the name, the line of the work under the header -->
+            @if (total() > 0 && place() > 0) {
+              <span meta>{{ t.position(place(), total()) }}</span>
+            }
+          } @else {
+            <span meta class="tb-task__meta">
+              {{ meta(task) }}
+              @if (task.status !== 'SUBMITTED') {
+                <tb-task-status inline [status]="task.status" [grade]="task.grade" />
+              }
+            </span>
+          }
+          @if (total() > 0 && place() > 0) {
+            @if (!mobile()) {
+              <span class="tb-task__place">{{ t.position(place(), total()) }}</span>
+              <button
+                pButton
+                type="button"
+                [text]="true"
+                [rounded]="true"
+                severity="secondary"
+                [disabled]="previous() === null"
+                [attr.aria-label]="t.previousWork"
+                [pTooltip]="t.previousWork"
+                (click)="openPrevious()"
+              >
+                <i pButtonIcon class="tb-i tb-i-chevron_left" aria-hidden="true"></i>
+              </button>
+            }
+            <button
+              pButton
+              type="button"
+              [text]="true"
+              [rounded]="true"
+              severity="secondary"
+              [disabled]="next() === null"
+              [attr.aria-label]="t.nextWork"
+              [pTooltip]="t.nextWork"
+              (click)="openNext()"
+            >
+              <i pButtonIcon class="tb-i tb-i-chevron_right" aria-hidden="true"></i>
+            </button>
+          }
           @if (task.assignment.boardId; as boardId) {
             <a pButton severity="secondary" [routerLink]="['/teacher/boards', boardId]">
               <i pButtonIcon aria-hidden="true" class="tb-i tb-i-arrow_outward"></i>
@@ -86,6 +121,14 @@ import { ReviewForm } from './review-form';
       >
 
       <div class="tb-stack" [class.tb-task__room]="toolbar()">
+        @if (mobile()) {
+          <p class="tb-task__meta tb-task__meta--below">
+            {{ meta(task) }}
+            @if (task.status !== 'SUBMITTED') {
+              <tb-task-status inline [status]="task.status" [grade]="task.grade" />
+            }
+          </p>
+        }
         <section class="tb-task__statement" [class.tb-task__statement--open]="statementOpen()">
           <button
             type="button"
@@ -115,7 +158,7 @@ import { ReviewForm } from './review-form';
           }
         </section>
 
-        <section>
+        <section class="tb-task__block">
           <h2 class="tb-task__label">{{ t.answer }}</h2>
           <tb-submission-list [submissions]="task.submissions" (download)="download($event)" />
         </section>
@@ -125,72 +168,14 @@ import { ReviewForm } from './review-form';
         }
 
         @if (sheet() && (task.status === 'SUBMITTED' || task.status === 'ACCEPTED')) {
-          <!-- the review is in the side sheet beside the work (extra-large) -->
+          <!-- the review is in the side sheet beside the work (from large) or a phone's toolbar -->
         } @else if (task.status === 'SUBMITTED' || task.status === 'ACCEPTED') {
-          <section>
-            <h2 class="tb-task__label">{{ t.review }}</h2>
-            <form tbFieldErrors class="tb-form" [formGroup]="form">
-              @if (aiEnabled() && task.status === 'SUBMITTED' && latestAnswer(task) !== null) {
-                <div>
-                  <p-button
-                    [label]="t.draft"
-                    icon="tb-i tb-i-auto_awesome"
-                    severity="secondary"
-                    [loading]="drafting()"
-                    (onClick)="draftReview(task)"
-                  />
-                </div>
-              }
-              @if (suggestion(); as decision) {
-                <p-message severity="info" styleClass="tb-form-message">
-                  {{ decision === 'ACCEPT' ? t.suggestsAccept : t.suggestsReturn }}
-                </p-message>
-              }
-              <div class="tb-field">
-                <label for="review-grade">{{ t.grade }}</label>
-                <input
-                  pInputText
-                  id="review-grade"
-                  formControlName="grade"
-                  autocomplete="off"
-                  [placeholder]="t.gradePlaceholder"
-                />
-              </div>
-              <div class="tb-field">
-                <label for="review-comment">{{ t.comment }}</label>
-                <textarea
-                  pTextarea
-                  id="review-comment"
-                  formControlName="comment"
-                  rows="8"
-                ></textarea>
-              </div>
-              <div class="tb-form-actions">
-                @if (task.status === 'SUBMITTED') {
-                  <p-button
-                    [label]="t.accept"
-                    icon="tb-i tb-i-check"
-                    [loading]="pending()"
-                    (onClick)="review('ACCEPT')"
-                  />
-                }
-                <p-button
-                  [label]="t.return"
-                  icon="tb-i tb-i-replay"
-                  severity="secondary"
-                  [loading]="pending()"
-                  (onClick)="review('RETURN')"
-                />
-                <p-button
-                  [label]="t.toBoard"
-                  icon="tb-i tb-i-co_present"
-                  [text]="true"
-                  [disabled]="commentValue().trim() === ''"
-                  (onClick)="boardVisible.set(true)"
-                />
-              </div>
-            </form>
-          </section>
+          <tb-review-sheet
+            [inline]="true"
+            [task]="task"
+            [next]="next()"
+            (reviewed)="decided($event)"
+          />
         } @else if (task.teacherComment) {
           <section>
             <h2 class="tb-task__label">{{ t.yourComment }}</h2>
@@ -199,12 +184,6 @@ import { ReviewForm } from './review-form';
           </section>
         }
       </div>
-      <tb-to-board-dialog
-        [(visible)]="boardVisible"
-        [title]="t.boardTitle(task.assignment.title)"
-        [markdown]="reviewText()"
-        [students]="[task.studentId]"
-      />
     } @else {
       <ng-template tbPaneHeader
         ><tb-page-header [title]="t.title" [back]="single() ? back() : null" [backLabel]="t.back"
@@ -227,6 +206,25 @@ import { ReviewForm } from './review-form';
       padding-block-end: calc(5rem + var(--tb-space-4) + env(safe-area-inset-bottom));
     }
 
+    /* the answer: a tonal block (sketch 14: surface container, 20 dp corners, 16 dp padding) */
+    .tb-task__block {
+      padding: var(--tb-space-4);
+      border-radius: var(--tb-shape-lg-plus);
+      background: var(--p-md-surface-container);
+    }
+
+    .tb-task__meta--below {
+      margin: 0;
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-body-m);
+    }
+
+    .tb-task__place {
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-body-m);
+      white-space: nowrap;
+    }
+
     .tb-task__meta {
       display: inline-flex;
       flex-wrap: wrap;
@@ -236,7 +234,7 @@ import { ReviewForm } from './review-form';
 
     /* the statement: a tonal block, collapsed to its first line (our decision: the sketch's «Задание») */
     .tb-task__statement {
-      border-radius: var(--tb-shape-lg);
+      border-radius: var(--tb-shape-lg-plus);
       background: var(--p-md-surface-container);
     }
 
@@ -293,9 +291,8 @@ import { ReviewForm } from './review-form';
 export class TaskReviewPage {
   protected readonly t = T.review;
   private readonly api = inject(HomeworkApi);
-  private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
-  private readonly reviewForm = new ReviewForm();
+  protected readonly mobile = injectMobile();
   private readonly dates = new DatePipe(inject(LOCALE_ID));
   protected readonly materials = inject(MaterialOpener);
 
@@ -311,12 +308,19 @@ export class TaskReviewPage {
   readonly toolbar = input(false);
   /** The work as the sheet changed it (a decision): the page shows it. */
   readonly update = input<TaskDetails | null>(null);
-  /** The work was reviewed: the list beside it changes. */
-  readonly changed = output();
+  /** The place of the work in the review queue and its length: «1 из 2 на проверке» (0: not in it). */
+  readonly place = input(0);
+  readonly total = input(0);
+  /** The works before and after this one in the queue. */
+  readonly previous = input<string | null>(null);
+  readonly next = input<NextWork | null>(null);
+  /** The teacher opens another work of the queue. */
+  readonly opened = output<string>();
+  /** A decision on the work (the form under the answer): the queue goes on. */
+  readonly reviewed = output<TaskDetails>();
   /** The work is read (or changed): the side sheet reviews it. */
   readonly loaded = output<TaskDetails>();
   protected readonly statementOpen = signal(false);
-  protected readonly noDueDate = T.noDueDate;
 
   protected readonly task = signal<TaskDetails | null>(null);
 
@@ -339,15 +343,6 @@ export class TaskReviewPage {
       });
     });
   }
-  protected readonly pending = this.reviewForm.pending;
-  protected readonly aiEnabled = this.reviewForm.aiEnabled;
-  protected readonly drafting = this.reviewForm.drafting;
-  protected readonly suggestion = signal<ReviewDecision | null>(null);
-  readonly form = this.reviewForm.form;
-  protected readonly boardVisible = signal(false);
-  protected readonly commentValue = this.reviewForm.commentValue;
-  protected readonly reviewText = this.reviewForm.reviewText;
-
   protected readonly state = new LoadState();
 
   protected load(): void {
@@ -359,37 +354,29 @@ export class TaskReviewPage {
       });
   }
 
-  protected review(decision: ReviewDecision): void {
-    const task = this.task();
-    if (task === null || !revealErrors(this.form) || this.pending()) {
-      return;
+  protected decided(task: TaskDetails): void {
+    this.show(task);
+    this.reviewed.emit(task);
+  }
+
+  protected openPrevious(): void {
+    const previous = this.previous();
+    if (previous !== null) {
+      this.opened.emit(previous);
     }
-    this.reviewForm.submit(task, decision, (reviewed) => {
-      this.show(reviewed);
-      this.changed.emit();
-      this.snackbar.success(decision === 'ACCEPT' ? T.review.accepted : T.review.returned);
-    });
+  }
+
+  protected openNext(): void {
+    const next = this.next();
+    if (next !== null) {
+      this.opened.emit(next.taskId);
+    }
   }
 
   /** A verdict on an answer: the score and the suggested grade follow, what the teacher typed stays. */
   protected quizChanged(task: TaskDetails): void {
-    const previous = this.task();
     this.task.set(task);
     this.loaded.emit(task);
-    if (previous !== null) {
-      this.reviewForm.refresh(previous, task);
-    }
-  }
-
-  protected latestAnswer(task: TaskDetails): string | null {
-    return this.reviewForm.latestAnswer(task);
-  }
-
-  protected draftReview(task: TaskDetails): void {
-    this.reviewForm.draft(task, (draft) => {
-      this.form.patchValue({ grade: draft.grade ?? '', comment: draft.comment });
-      this.suggestion.set(draft.decision);
-    });
   }
 
   protected download(file: Attachment): void {
@@ -398,8 +385,20 @@ export class TaskReviewPage {
     });
   }
 
-  protected date(value: string): string {
-    return this.dates.transform(value, 'dd.MM.yyyy HH:mm') ?? '';
+  /** «<assignment> · сдано сегодня, 09:12 · вовремя» (or «с опозданием»); not handed in — the due date. */
+  protected meta(task: TaskDetails): string {
+    const parts = [task.assignment.title];
+    const submitted = task.submissions[0]?.submittedAt ?? task.submittedAt;
+    const due = task.assignment.dueAt;
+    if (submitted) {
+      parts.push(handedIn(submitted, Date.now(), this.dates));
+      if (due !== null) {
+        parts.push(submitted > due ? this.t.late : this.t.onTime);
+      }
+    } else if (due !== null) {
+      parts.push(this.t.due(this.dates.transform(due, 'dd.MM.yyyy HH:mm') ?? ''));
+    }
+    return parts.join(' · ');
   }
 
   /** The first line of the statement under «Задание» while it is collapsed. */
@@ -411,7 +410,5 @@ export class TaskReviewPage {
   private show(task: TaskDetails): void {
     this.task.set(task);
     this.loaded.emit(task);
-    this.suggestion.set(null);
-    this.reviewForm.reset(task);
   }
 }

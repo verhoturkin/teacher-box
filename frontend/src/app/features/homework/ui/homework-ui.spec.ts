@@ -191,15 +191,14 @@ describe('SubmissionList and TaskStatusTag', () => {
     expect(readableText(hostElement(fixture))).toBe('Ответов пока нет');
   });
 
-  it('marks overdue tasks and shows the grade', async () => {
+  it('shows the status and the grade, no «Просрочено» tag', async () => {
     TestBed.configureTestingModule({ imports: [TaskStatusTag], providers: [providePrimeNG()] });
     const fixture = TestBed.createComponent(TaskStatusTag);
     fixture.componentRef.setInput('status', 'RETURNED');
-    fixture.componentRef.setInput('overdue', true);
     fixture.componentRef.setInput('grade', '4');
     await fixture.whenStable();
 
-    expect(readableText(hostElement(fixture))).toBe('На доработке Просрочено Оценка: 4');
+    expect(readableText(hostElement(fixture))).toBe('На доработке Оценка: 4');
     const tags = hostElement(fixture).querySelector('.tb-task-tags');
     expect(tags?.classList.contains('tb-task-tags--inline')).toBe(false);
     fixture.componentRef.setInput('inline', true);

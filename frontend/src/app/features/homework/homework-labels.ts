@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { AssignmentSummary, TaskStatus } from './data-access/homework.models';
 import { T } from './i18n/texts';
 
@@ -23,6 +24,22 @@ export interface AssignmentProgress {
  * Not given yet — neutral; works waiting for review — «На проверке: N»; all accepted — «Принято»; otherwise given
  * (with how many are accepted) — the main container.
  */
+const DAY = 24 * 60 * 60 * 1000;
+
+/** «сдано сегодня, 09:12», «сдано вчера, 22:40», «сдано 05.09 10:00»: when a work was handed in, from `now`. */
+export function handedIn(submittedAt: string, now: number, dates: DatePipe): string {
+  const at = new Date(submittedAt);
+  const midnight = (moment: Date): number =>
+    new Date(moment.getFullYear(), moment.getMonth(), moment.getDate()).getTime();
+  const days = Math.round((midnight(new Date(now)) - midnight(at)) / DAY);
+  const time = dates.transform(at, 'HH:mm') ?? '';
+  return days === 0
+    ? T.list.handedToday(time)
+    : days === 1
+      ? T.list.handedYesterday(time)
+      : T.list.handedOn(dates.transform(at, 'dd.MM HH:mm') ?? '');
+}
+
 /** Every task of the assignment is accepted: the assignment is done («Принято»). */
 export function isDone(assignment: Pick<AssignmentSummary, 'totalTasks' | 'accepted'>): boolean {
   return assignment.totalTasks > 0 && assignment.accepted === assignment.totalTasks;

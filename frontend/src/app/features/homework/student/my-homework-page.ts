@@ -141,11 +141,7 @@ function daysUntil(dueAt: string): number {
                         </span>
                       </div>
                       <div class="tb-list__trail tb-list__trail--icons">
-                        <tb-task-status
-                          [status]="task.status"
-                          [overdue]="task.overdue"
-                          [grade]="task.grade"
-                        />
+                        <tb-task-status [status]="task.status" [grade]="task.grade" />
                       </div>
                     </li>
                   }

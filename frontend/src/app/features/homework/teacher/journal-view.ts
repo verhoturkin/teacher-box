@@ -131,7 +131,9 @@ interface CellView {
                           [name]="row.studentName"
                           [photo]="row.studentAvatar"
                         />
-                        {{ row.studentName }}
+                        <span class="tb-journal__name" [title]="row.studentName">{{
+                          row.studentName
+                        }}</span>
                       </span>
                     </th>
                     @for (cell of row.cells; track $index) {
@@ -288,11 +290,16 @@ interface CellView {
       padding: 0;
     }
 
+    /* a long title is two lines cut with «…», so the column keeps the width of its cells */
     .tb-journal__task {
-      display: block;
+      display: -webkit-box;
+      overflow: hidden;
       color: var(--p-md-on-surface);
       font: var(--tb-type-title-s);
       text-decoration: none;
+      overflow-wrap: anywhere;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
     }
 
     .tb-journal__task:hover {
@@ -309,7 +316,19 @@ interface CellView {
       inset-inline-start: 0;
       z-index: 1;
       min-inline-size: 11rem;
+      max-inline-size: 16rem;
       background: var(--p-md-surface);
+    }
+
+    /* a long name is one line cut with «…»: the column never takes the room of the cells */
+    .tb-journal__name {
+      min-inline-size: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tb-journal__grid--tablet .tb-journal__who {
+      max-inline-size: 11rem;
     }
 
     .tb-journal__student {
@@ -370,7 +389,8 @@ export class JournalView {
   protected readonly t = T.journal;
   protected readonly colors = inject(TeacherColors);
   private readonly size = injectWindowSize();
-  protected readonly tablet = computed(() => this.size() === 'medium');
+  /** Medium and a phone (sketches 35, 20): icon cells with the grade, no «За неделю» column. */
+  protected readonly tablet = computed(() => this.size() === 'medium' || this.size() === 'compact');
   private readonly api = inject(HomeworkApi);
   private readonly locale = inject(LOCALE_ID);
 

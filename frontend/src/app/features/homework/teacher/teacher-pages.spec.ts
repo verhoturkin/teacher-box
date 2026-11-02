@@ -13,13 +13,14 @@ import {
   taskDetails,
 } from '@testing/homework-fixtures';
 import { aiStatus } from '@testing/ai-fixtures';
-import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
+import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
 import { aBoard } from '@testing/boards-fixtures';
 import { AssignMoreDialog } from './assign-more-dialog';
 import { AssignmentPage } from './assignment-page';
 import { AssignmentsPage } from './assignments-page';
 import { TaskReviewPage } from './task-review-page';
+import { TaskDetails } from '../data-access/homework.models';
 import { screenWidth, testProviders } from '@testing/setup';
 import { RailState } from '@core/layout/rail-state';
 
@@ -858,7 +859,10 @@ describe('AssignmentPage', () => {
       );
       expect(tiles[1]).toBe('В Вера Принято вчера · оценка 4 Принято Хорошо Открыть');
       expect(tiles[2]).toBe('Г Гена Отправлено на доработку 03.09 На доработке Напомнить Открыть');
-      expect(tiles[3]).toBe('Б Борис Не сдано Выдано Просрочено Напомнить Открыть');
+      // no «Просрочено» tag: the status line says it
+      expect(tiles[3]).toMatch(
+        /^Б Борис Просрочено на \d+ д(ень|ня|ней) Выдано Напомнить Открыть$/,
+      );
       fixture.destroy();
     });
 
@@ -1201,19 +1205,41 @@ describe('TaskReviewPage', () => {
   async function render(details = taskDetails(), aiEnabled = false) {
     const context = configure();
     const fixture = TestBed.createComponent(TaskReviewPage);
+    const reviewed: TaskDetails[] = [];
+    fixture.componentInstance.reviewed.subscribe((task) => reviewed.push(task));
     fixture.componentRef.setInput('taskId', 't-1');
-    context.backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: aiEnabled }));
     await fixture.whenStable();
     context.backend.expectOne('/api/teacher/homework/tasks/t-1').flush(details);
     await fixture.whenStable();
-    return { ...context, fixture, host: hostElement(fixture) };
+    // the review form under the answer asks whether the AI is on
+    for (const request of context.backend.match('/api/teacher/ai/status')) {
+      request.flush(aiStatus({ enabled: aiEnabled }));
+    }
+    await fixture.whenStable();
+    return { ...context, fixture, host: hostElement(fixture), reviewed };
+  }
+
+  /** A grade chip of the review form by its exact label. */
+  function chip(host: HTMLElement, label: string): HTMLButtonElement {
+    const found = [...host.querySelectorAll<HTMLButtonElement>('.tb-filter-chip')].find(
+      (button) => button.textContent.trim() === label,
+    );
+    if (found === undefined) {
+      throw new Error(`Chip "${label}" not found`);
+    }
+    return found;
+  }
+
+  function comment(host: HTMLElement, text: string): void {
+    const field = requireElement(host, '#sheet-comment', HTMLTextAreaElement);
+    field.value = text;
+    field.dispatchEvent(new Event('input'));
   }
 
   it('shows a failed load with «Повторить»', async () => {
     const { backend } = configure();
     const fixture = TestBed.createComponent(TaskReviewPage);
     fixture.componentRef.setInput('taskId', 't-1');
-    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: false }));
     await fixture.whenStable();
     backend
       .expectOne('/api/teacher/homework/tasks/t-1')
@@ -1230,11 +1256,14 @@ describe('TaskReviewPage', () => {
     expect(readableText(host)).toContain('Мой ответ');
   });
 
-  it('accepts a submission with a grade', async () => {
-    const { fixture, host, backend } = await render();
-    expect(readableText(host)).toContain('Мой ответ');
+  it('accepts a submission with a grade chip and a comment under the answer', async () => {
+    const { fixture, host, backend, reviewed } = await render();
+    expect(readableText(host.querySelector('.tb-sheet--inline')!)).toContain(
+      'Оценка 3 4 5 Без оценки',
+    );
 
-    fixture.componentInstance.form.setValue({ grade: ' 5 ', comment: 'Отлично' });
+    chip(host, '5').click();
+    comment(host, 'Отлично');
     await fixture.whenStable();
     buttonByText(host, 'Принять').click();
 
@@ -1244,16 +1273,18 @@ describe('TaskReviewPage', () => {
     await fixture.whenStable();
 
     expect(readableText(host)).toContain('Оценка: 5');
+    expect(reviewed.map((task) => task.status)).toEqual(['ACCEPTED']);
     expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
       expect.objectContaining({ detail: 'Работа принята' }),
     );
     expect(host.textContent).not.toContain('Принять');
   });
 
-  it('returns a submission for revision', async () => {
-    const { host, backend } = await render();
+  it('returns a submission for revision without a grade', async () => {
+    const { host, backend } = await render(taskDetails({ grade: '4' }));
 
-    buttonByText(host, 'Вернуть на доработку').click();
+    chip(host, 'Без оценки').click();
+    buttonByText(host, 'На доработку').click();
 
     const request = backend.expectOne('/api/teacher/homework/tasks/t-1/review');
     expect(request.request.body).toEqual({ decision: 'RETURN', grade: null, comment: null });
@@ -1270,13 +1301,14 @@ describe('TaskReviewPage', () => {
     );
 
     expect(readableText(host)).toContain('Ваш комментарий Исправь №3');
+    expect(host.querySelector('tb-review-sheet')).toBeNull();
     buttonByText(host, 'решение.jpg').click();
     backend.expectOne('/api/teacher/homework/attachments/f-2').flush(new Blob(['jpg']));
     expect(saved).toEqual(['решение.jpg']);
   });
 
   it('keeps the form after a failed review', async () => {
-    const { host, backend } = await render();
+    const { host, backend, reviewed } = await render();
 
     buttonByText(host, 'Принять').click();
     backend
@@ -1284,95 +1316,13 @@ describe('TaskReviewPage', () => {
       .flush(null, { status: 500, statusText: 'Error' });
 
     expect(buttonByText(host, 'Принять')).toBeDefined();
+    expect(reviewed).toEqual([]);
   });
 
-  it('fills the form with an AI review draft', async () => {
-    const details = taskDetails();
-    const { fixture, host, backend } = await render(details, true);
+  it('offers the AI draft in the form under the answer', async () => {
+    const { host } = await render(taskDetails(), true);
 
-    buttonByText(host, 'Черновик проверки').click();
-    const request = backend.expectOne('/api/teacher/ai/review-draft');
-    expect(request.request.body).toEqual({
-      title: details.assignment.title,
-      description: details.assignment.description,
-      answer: details.submissions[0]?.text,
-    });
-    request.flush({ comment: 'Почти верно, проверь №2', grade: '4', accept: false });
-    await fixture.whenStable();
-
-    expect(fixture.componentInstance.form.getRawValue()).toEqual({
-      grade: '4',
-      comment: 'Почти верно, проверь №2',
-    });
-    expect(readableText(host)).toContain('ИИ предлагает вернуть работу на доработку');
-  });
-
-  it('puts the review on a board', async () => {
-    const details = taskDetails();
-    const { fixture, host, backend } = await render(details);
-    const toBoard = buttonByText(host, 'На доску');
-    expect(toBoard.disabled).toBe(true);
-
-    fixture.componentInstance.form.setValue({ grade: '', comment: 'Проверь №2' });
-    await fixture.whenStable();
-    const board = fixture.debugElement
-      .query(By.directive(ToBoardDialog))
-      .injector.get(ToBoardDialog);
-    expect(board.markdown()).toBe('Проверь №2');
-    fixture.componentInstance.form.setValue({ grade: '4', comment: 'Проверь №2' });
-    await fixture.whenStable();
-    toBoard.click();
-    await fixture.whenStable();
-    backend.expectOne((request) => request.url === '/api/teacher/boards').flush([]);
-    await fixture.whenStable();
-
-    expect(board.visible()).toBe(true);
-    expect(board.title()).toBe('Разбор: ' + details.assignment.title);
-    expect(board.markdown()).toBe('**Оценка: 4**\n\nПроверь №2');
-    expect(board.students()).toEqual([details.studentId]);
-  });
-
-  it('suggests accepting and tolerates a missing grade', async () => {
-    const { fixture, host, backend } = await render(taskDetails(), true);
-
-    buttonByText(host, 'Черновик проверки').click();
-    backend
-      .expectOne('/api/teacher/ai/review-draft')
-      .flush({ comment: 'Отлично', grade: null, accept: true });
-    await fixture.whenStable();
-
-    expect(fixture.componentInstance.form.controls.grade.value).toBe('');
-    expect(readableText(host)).toContain('ИИ предлагает принять работу');
-  });
-
-  it('keeps the form when the AI draft fails', async () => {
-    const { fixture, host, backend } = await render(taskDetails(), true);
-
-    buttonByText(host, 'Черновик проверки').click();
-    backend
-      .expectOne('/api/teacher/ai/review-draft')
-      .flush(null, { status: 422, statusText: 'Unprocessable' });
-    await fixture.whenStable();
-
-    expect(fixture.componentInstance.form.controls.comment.value).toBe('');
-    expect(buttonByText(host, 'Черновик проверки')).toBeDefined();
-  });
-
-  it('offers no AI draft without a text answer or when AI is off', async () => {
-    const withoutText = taskDetails();
-    const filesOnly = {
-      ...withoutText,
-      submissions: withoutText.submissions.map((s) => ({ ...s, text: null })),
-    };
-    const { host } = await render(filesOnly, true);
-    expect(bodyText()).not.toContain('Черновик проверки');
-    expect(host.textContent).toContain('Принять');
-  });
-
-  it('hides the AI draft when AI is off', async () => {
-    const { host } = await render(taskDetails(), false);
-
-    expect(host.textContent).not.toContain('Черновик проверки');
+    expect(buttonByText(host, 'Черновик ИИ')).toBeDefined();
   });
 });
 
@@ -1382,21 +1332,69 @@ describe('TaskReviewPage as a detail pane', () => {
     const fixture = TestBed.createComponent(TaskReviewPage);
     fixture.componentRef.setInput('taskId', 't-1');
     fixture.componentRef.setInput('single', single);
-    context.backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: false }));
+    fixture.componentRef.setInput('sheet', true);
     await fixture.whenStable();
     context.backend.expectOne('/api/teacher/homework/tasks/t-1').flush(details);
     await fixture.whenStable();
     return { ...context, fixture, host: hostElement(fixture) };
   }
 
-  it('titles the work with the assignment and the line «student · due · status · attempt»', async () => {
+  it('titles the work with the student and the line «assignment · handed in · on time»', async () => {
     const { host } = await render(false);
 
-    expect(host.querySelector('h1')?.textContent).toBe('Дроби');
+    expect(host.querySelector('h1')?.textContent).toBe('Анна');
     expect(readableText(host.querySelector('.tb-task__meta')!)).toMatch(
-      /^Анна · срок 10\.09\.2026 \d\d:\d\d .*попытка 1$/,
+      /^Дроби · сдано 05\.09 \d\d:\d\d · вовремя$/,
     );
     expect(host.querySelector('.tb-page-header__back')).toBeNull();
+    expect(host.querySelector('tb-review-sheet')).toBeNull();
+  });
+
+  it('says «с опозданием», shows a status other than «На проверке» and the due date of a work not handed in', async () => {
+    const base = taskDetails();
+    const late = await render(false, {
+      ...base,
+      status: 'ACCEPTED',
+      grade: '5',
+      assignment: { ...base.assignment, dueAt: '2026-09-01T10:00:00Z' },
+    });
+    expect(readableText(late.host.querySelector('.tb-task__meta')!)).toMatch(
+      /с опозданием Принято Оценка: 5$/,
+    );
+    TestBed.resetTestingModule();
+
+    const waiting = await render(false, {
+      ...base,
+      status: 'ASSIGNED',
+      submissions: [],
+      submittedAt: null,
+    });
+    expect(readableText(waiting.host.querySelector('.tb-task__meta')!)).toMatch(
+      /^Дроби · срок 10\.09\.2026 \d\d:\d\d Выдано$/,
+    );
+  });
+
+  it('shows the place in the queue and opens the previous and the next work', async () => {
+    const { fixture, host } = await render(false);
+    const opened: string[] = [];
+    fixture.componentInstance.opened.subscribe((id) => opened.push(id));
+    fixture.componentRef.setInput('place', 2);
+    fixture.componentRef.setInput('total', 3);
+    fixture.componentRef.setInput('previous', 't-0');
+    fixture.componentRef.setInput('next', { taskId: 't-2', studentName: 'Борис' });
+    await fixture.whenStable();
+
+    expect(readableText(host)).toContain('2 из 3 на проверке');
+    requireElement(host, 'button[aria-label="Предыдущая работа"]', HTMLButtonElement).click();
+    requireElement(host, 'button[aria-label="Следующая работа"]', HTMLButtonElement).click();
+    expect(opened).toEqual(['t-0', 't-2']);
+
+    fixture.componentRef.setInput('previous', null);
+    fixture.componentRef.setInput('next', null);
+    await fixture.whenStable();
+    requireElement(host, 'button[aria-label="Предыдущая работа"]', HTMLButtonElement).click();
+    requireElement(host, 'button[aria-label="Следующая работа"]', HTMLButtonElement).click();
+    expect(opened).toEqual(['t-0', 't-2']);
   });
 
   it('has «back» to the list only on one pane', async () => {
@@ -1455,7 +1453,6 @@ describe('AssignmentsPage with a detail (a page of its own)', () => {
 
   it('opens the work on its own page, without the list', async () => {
     const { backend, fixture, host } = await render('taskId', 't-1');
-    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: false }));
     backend.expectOne('/api/teacher/homework/tasks/t-1').flush(taskDetails());
     await fixture.whenStable();
 
@@ -1477,11 +1474,14 @@ describe('AssignmentsPage with a detail (a page of its own)', () => {
     );
   });
 
-  it('reads the lists again after a work is reviewed', async () => {
+  it('reads the lists again after a work is reviewed and leaves the finished queue', async () => {
     const { backend, fixture, host } = await render('taskId', 't-1');
-    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: false }));
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     backend.expectOne('/api/teacher/homework/tasks/t-1').flush(taskDetails());
     await fixture.whenStable();
+    backend.match('/api/teacher/ai/status').forEach((request) => {
+      request.flush(aiStatus({ enabled: false }));
+    });
 
     buttonByText(host, 'Принять').click();
     backend
@@ -1491,12 +1491,13 @@ describe('AssignmentsPage with a detail (a page of its own)', () => {
     backend.expectOne(QUEUE).flush([]);
     await fixture.whenStable();
 
-    // both lists were read again (expectOne above), the page stays on the work
+    // both lists were read again (expectOne above); the work was the last of the queue
     expect(host.querySelector('tb-task-review-page')).not.toBeNull();
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework']);
   });
 });
 
-describe('AssignmentsPage with the review side sheet (extra-large)', () => {
+describe('AssignmentsPage with the review side sheet (from large)', () => {
   const QUEUE_OF_THREE = [
     reviewQueueItem(),
     reviewQueueItem({ taskId: 't-2', studentId: 's-2', studentName: 'Борис' }),
@@ -1504,7 +1505,7 @@ describe('AssignmentsPage with the review side sheet (extra-large)', () => {
   ];
 
   async function render(queue = QUEUE_OF_THREE, aiEnabled = false) {
-    TestBed.configureTestingModule({ providers: testProviders(screenWidth(1700)) });
+    TestBed.configureTestingModule({ providers: testProviders(screenWidth(1440)) });
     vi.spyOn(TestBed.inject(MessageService), 'add');
     const backend = TestBed.inject(HttpTestingController);
     const router = TestBed.inject(Router);
@@ -1514,8 +1515,9 @@ describe('AssignmentsPage with the review side sheet (extra-large)', () => {
     await fixture.whenStable();
     backend.expectOne(ASSIGNMENTS).flush([assignmentSummary()]);
     backend.expectOne(QUEUE).flush(queue);
-    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: aiEnabled }));
     backend.expectOne('/api/teacher/homework/tasks/t-1').flush(taskDetails());
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: aiEnabled }));
     await fixture.whenStable();
     return { backend, fixture, host: hostElement(fixture), navigate };
   }
@@ -1525,16 +1527,20 @@ describe('AssignmentsPage with the review side sheet (extra-large)', () => {
 
     expect(host.querySelector('tb-review-sheet')).not.toBeNull();
     expect(host.querySelector('tb-task-review-page form')).toBeNull();
-    expect(readableText(host)).toContain('1 из 3');
+    expect(readableText(host)).toContain('1 из 3 на проверке');
     expect(TestBed.inject(RailState).collapsed()).toBe(true);
     fixture.destroy();
     expect(TestBed.inject(RailState).collapsed()).toBe(false);
   });
 
-  it('names the next work and opens it', async () => {
+  it('names the next work and opens it from the header', async () => {
     const { host, navigate, fixture } = await render();
 
-    buttonByText(host, 'Дальше: Борис').click();
+    expect(readableText(host)).toContain('После этого откроется: Борис');
+    expect(
+      requireElement(host, 'button[aria-label="Предыдущая работа"]', HTMLButtonElement).disabled,
+    ).toBe(true);
+    requireElement(host, 'button[aria-label="Следующая работа"]', HTMLButtonElement).click();
     await fixture.whenStable();
 
     expect(navigate).toHaveBeenCalledWith(['/teacher/homework/tasks', 't-2']);
@@ -1555,12 +1561,12 @@ describe('AssignmentsPage with the review side sheet (extra-large)', () => {
   it('takes the quick phrases into the comment', async () => {
     const { host, fixture } = await render();
 
-    buttonByText(host, 'Отлично').click();
-    buttonByText(host, 'Есть ошибка').click();
+    buttonByText(host, 'Молодец!').click();
+    buttonByText(host, 'Аккуратнее с орфографией').click();
     await fixture.whenStable();
 
     expect(requireElement(host, '#sheet-comment', HTMLTextAreaElement).value).toBe(
-      'Отлично!\nЕсть ошибка: ',
+      'Молодец!\nАккуратнее с орфографией.',
     );
   });
 
@@ -1622,7 +1628,9 @@ describe('AssignmentsPage with the review side sheet (extra-large)', () => {
     buttonByText(host, 'Вставить').click();
     await fixture.whenStable();
     expect(requireElement(host, '#sheet-comment', HTMLTextAreaElement).value).toBe('Почти верно');
-    expect(requireElement(host, '#sheet-grade', HTMLInputElement).value).toBe('4');
+    expect(requireElement(host, '.tb-filter-chip--selected', HTMLElement).textContent.trim()).toBe(
+      '4',
+    );
   });
 
   it('keeps the form when the AI draft fails', async () => {
@@ -1641,7 +1649,7 @@ describe('AssignmentsPage with the review side sheet (extra-large)', () => {
   it('puts the review on a board', async () => {
     const { host, fixture } = await render();
 
-    buttonByText(host, 'Отлично').click();
+    buttonByText(host, 'Молодец!').click();
     await fixture.whenStable();
     buttonByText(host, 'На доску').click();
     await fixture.whenStable();
@@ -1667,8 +1675,9 @@ describe('AssignmentsPage with the review on a phone (compact)', () => {
         reviewQueueItem(),
         reviewQueueItem({ taskId: 't-2', studentId: 's-2', studentName: 'Борис' }),
       ]);
-    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: aiEnabled }));
     backend.expectOne('/api/teacher/homework/tasks/t-1').flush(taskDetails());
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: aiEnabled }));
     await fixture.whenStable();
     return { backend, fixture, host: hostElement(fixture), navigate };
   }
@@ -1709,7 +1718,7 @@ describe('AssignmentsPage with the review on a phone (compact)', () => {
   it('returns the work for rework from the toolbar', async () => {
     const { backend, fixture, host } = await render();
 
-    buttonByText(host, 'На доработку').click();
+    buttonByText(host, 'Доработать').click();
     backend
       .expectOne('/api/teacher/homework/tasks/t-1/review')
       .flush(taskDetails({ status: 'RETURNED' }));
@@ -1736,19 +1745,19 @@ describe('AssignmentsPage with the review on a phone (compact)', () => {
     toolbarButton(host, 'Черновик ИИ').click();
   });
 
-  it('opens the sheet when the grade is wrong', async () => {
+  it('opens the sheet when the comment is too long', async () => {
     const { fixture, host } = await render();
 
     toolbarButton(host, 'Комментарий ученику').click();
     await fixture.whenStable();
-    const grade = requireElement(document.body, '#sheet-grade', HTMLInputElement);
-    grade.value = 'x'.repeat(21);
-    grade.dispatchEvent(new Event('input'));
+    const comment = requireElement(document.body, '#sheet-comment', HTMLTextAreaElement);
+    comment.value = 'x'.repeat(5001);
+    comment.dispatchEvent(new Event('input'));
     buttonByText(document.body, 'Готово').click();
     await fixture.whenStable();
     buttonByText(host, 'Принять').click();
     await fixture.whenStable();
 
-    expect(document.body.querySelector('#sheet-grade')).not.toBeNull();
+    expect(document.body.querySelector('#sheet-comment')).not.toBeNull();
   });
 });

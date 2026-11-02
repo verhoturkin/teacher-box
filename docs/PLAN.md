@@ -46,10 +46,13 @@ The commit message or the report lists the sketches checked and anything left on
   and one labelled link field; the test summary as one-line rows (number, type icon, text,
   points) — today they stack in a centred column. «Во весь экран» keeps «К следующему занятию»
   as the chosen deadline instead of turning it into a date.
-- [ ] **352.2 F** Teacher list, journal, assignment and review (sketches 1, 2, 4, 5, 7, 14, 15,
+- [x] **352.2 F** Teacher list, journal, assignment and review (sketches 1, 2, 4, 5, 7, 14, 15,
   16, 17, 18, 20, 35): the «Просрочено» tag goes everywhere (teacher and student) — the
   supporting line says it; long titles and texts never leave their card or tile (review strip,
   tiles, rows); the review page and its sheet as in 14, 15, 16.
+  *Left on purpose: «На доработку» stays tonal (the sketches' error container is an M3 error role);
+  no avatar in the review header (the page header has no lead slot); the tablet's test block is not
+  folded (the wrong answers keep «Засчитать» in sight); the journal's hint card is sketch notes.*
 - [ ] **352.3 F** Quiz builder, type editors and states (sketches 28, 29, 30, 31, 32).
 - [ ] **352.4 F** Student (sketches 8, 9, 10, 23, 24, 25, 26, 27, 37, 38): only the pane scrolls,
   never the whole page; the test on a large screen is inside the frame as in 23 (rail, the

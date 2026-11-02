@@ -51,7 +51,7 @@ import { TaskReviewPage } from './task-review-page';
 import { Material, materialLabel, materialsOf } from '../ui/materials';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentSummary, ReviewQueueItem, TaskDetails } from '../data-access/homework.models';
-import { assignmentProgress, isDone } from '../homework-labels';
+import { assignmentProgress, handedIn, isDone } from '../homework-labels';
 import { T } from '../i18n/texts';
 
 /** Names a row shows in full; more of them — the first one and «и ещё N» (one row keeps its height). */
@@ -65,8 +65,6 @@ const SHOWN_WORKS = 3;
 
 /** Medium shows two cards in the strip (sketch 17). */
 const SHOWN_WORKS_MEDIUM = 2;
-
-const DAY = 24 * 60 * 60 * 1000;
 
 /** One student or one group in the «Кому» select: `student:<id>` or `group:<id>`. */
 interface WhomOption {
@@ -145,19 +143,21 @@ interface Line {
             [sheet]="sheetOpen() || phoneReview()"
             [toolbar]="phoneReview()"
             [update]="decided()"
+            [place]="place()"
+            [total]="line().length"
+            [previous]="previous()"
+            [next]="next()"
             (loaded)="current.set($event)"
-            (changed)="refresh()"
+            (opened)="openWork($event)"
+            (reviewed)="decide($event)"
           />
         </tb-pane>
         @if (sheetOpen() && reviewing(); as task) {
           <tb-pane kind="sheet" [label]="t.reviewSheet">
             <tb-review-sheet
               [task]="task"
-              [place]="place()"
-              [total]="line().length"
               [next]="next()"
               (reviewed)="decide($event)"
-              (opened)="openWork($event)"
               (closed)="closeReview()"
             />
           </tb-pane>
@@ -168,11 +168,8 @@ interface Line {
         <tb-review-sheet
           [compact]="true"
           [task]="task"
-          [place]="place()"
-          [total]="line().length"
           [next]="next()"
           (reviewed)="decide($event)"
-          (opened)="openWork($event)"
           (closed)="closeReview()"
         />
       }
@@ -445,7 +442,9 @@ interface Line {
                             {{ whomOf(assignment) }}
                           </span>
                         </td>
-                        <td [class.tb-error]="isOverdue(assignment)">{{ due(assignment) }}</td>
+                        <td class="tb-hw__due" [class.tb-error]="isOverdue(assignment)">
+                          {{ due(assignment) }}
+                        </td>
                         <td>
                           <ng-container
                             [ngTemplateOutlet]="handed"
@@ -663,12 +662,14 @@ interface Line {
       margin-block-end: var(--tb-space-5);
     }
 
+    /* the label and «Проверить все подряд» stay one line each, a phone too (sketch 5) */
     .tb-hw__review-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: var(--tb-space-3);
       margin-block-end: var(--tb-space-2);
+      white-space: nowrap;
     }
 
     /* the cards lie in a row; on a phone the row scrolls sideways */
@@ -723,6 +724,14 @@ interface Line {
     .tb-hw__card-head .tb-list__text {
       flex: 1;
       min-inline-size: 0;
+    }
+
+    /* sketch 1: the name and the title are one line each, cut with «…» however long */
+    .tb-hw__card-head .tb-list__title,
+    .tb-hw__card-task {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .tb-hw__card-task {
@@ -808,6 +817,11 @@ interface Line {
       display: flex;
       align-items: center;
       gap: var(--tb-space-3);
+      white-space: nowrap;
+    }
+
+    .tb-hw__due {
+      white-space: nowrap;
     }
 
     /* accepted — the portal colour, handed in and waiting for review — tertiary */
@@ -909,9 +923,9 @@ export class AssignmentsPage implements OnInit {
       ? task
       : null;
   });
-  /** The review is the second pane of the extra-large window (spec §9); the rail gives it room. */
+  /** From large the review is a side sheet beside the work (sketch 14); the rail gives it room. */
   protected readonly sheetOpen = computed(
-    () => this.size() === 'extra-large' && this.reviewing() !== null,
+    () => (this.size() === 'large' || this.size() === 'extra-large') && this.reviewing() !== null,
   );
   /** The work of the review on a phone (compact): the floating toolbar, no bottom bar (spec §9). */
   protected readonly phoneReview = computed(
@@ -936,6 +950,12 @@ export class AssignmentsPage implements OnInit {
     return scope === null ? ['/teacher/homework'] : ['/teacher/homework', scope];
   });
   /** The work after the open one (the first one when it is the last); none when it is the only one. */
+  /** The work before the open one in the queue. */
+  protected readonly previous = computed(() => {
+    const queue = this.line();
+    const index = queue.findIndex((work) => work.taskId === this.taskId());
+    return index > 0 ? (queue[index - 1]?.taskId ?? null) : null;
+  });
   protected readonly next = computed<NextWork | null>(() => {
     const queue = this.line();
     const index = queue.findIndex((work) => work.taskId === this.taskId());
@@ -1276,21 +1296,8 @@ export class AssignmentsPage implements OnInit {
       });
   }
 
-  /** «сдано сегодня, 09:12», «сдано вчера, 22:40», «сдано 05.09 10:00». */
   protected handedIn(work: ReviewQueueItem): string {
-    if (work.submittedAt === null) {
-      return '';
-    }
-    const at = new Date(work.submittedAt);
-    const midnight = (moment: Date): number =>
-      new Date(moment.getFullYear(), moment.getMonth(), moment.getDate()).getTime();
-    const days = Math.round((midnight(new Date(this.now())) - midnight(at)) / DAY);
-    const time = this.dates.transform(at, 'HH:mm') ?? '';
-    return days === 0
-      ? this.t.handedToday(time)
-      : days === 1
-        ? this.t.handedYesterday(time)
-        : this.t.handedOn(this.dates.transform(at, 'dd.MM HH:mm') ?? '');
+    return work.submittedAt === null ? '' : handedIn(work.submittedAt, this.now(), this.dates);
   }
 
   /** Handed in after the due date. */

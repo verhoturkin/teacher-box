@@ -94,12 +94,7 @@ import { QuizSection } from './quiz-section';
                 : t.noDueDate
             }}
           </span>
-          <tb-task-status
-            meta
-            [status]="task.status"
-            [overdue]="task.overdue"
-            [grade]="task.grade"
-          />
+          <tb-task-status meta [status]="task.status" [grade]="task.grade" />
           @if (task.assignment.boardId; as boardId) {
             <tb-my-board-button [boardId]="boardId" />
           }</tb-page-header
