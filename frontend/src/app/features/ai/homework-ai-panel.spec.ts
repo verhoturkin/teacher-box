@@ -98,6 +98,10 @@ describe('HomeworkAiPanel', () => {
       title: 'Дроби',
       sources: [],
     });
+    await fixture.whenStable();
+    const busy = host.querySelector('.tb-ai-panel__generate button');
+    expect(busy?.hasAttribute('disabled')).toBe(true);
+    expect(busy?.textContent).toContain('Генерирую…');
     request.flush({ title: 'Сложение дробей', description: '1. Сложите **1/2**' });
     await fixture.whenStable();
     expect(host.querySelector('.tb-ai-panel__draft strong')?.textContent).toBe('1/2');
@@ -312,6 +316,21 @@ describe('HomeworkAiPanel', () => {
     backend.expectOne('/api/teacher/ai/quiz-draft').flush(null, { status: 500, statusText: 'E' });
     await fixture.whenStable();
     expect(readableText(host)).toContain('Не удалось получить черновик');
+  });
+
+  it('shows the working state on the generate button of the pane', async () => {
+    const { panel, host } = await render([]);
+    fixture.componentRef.setInput('pane', true);
+    await fixture.whenStable();
+    panel.prompt.setValue('5 задач');
+    panel.generate();
+    await fixture.whenStable();
+
+    const button = requireElement(host, '.tb-ai-pane__generate', HTMLButtonElement);
+    expect(button.getAttribute('aria-busy')).toBe('true');
+    expect(button.disabled).toBe(true);
+    expect(button.textContent).toContain('Генерирую…');
+    backend.expectOne('/api/teacher/ai/homework-draft').flush({ title: 'x', description: 'y' });
   });
 
   it('works without the library', async () => {

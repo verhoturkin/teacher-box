@@ -571,9 +571,9 @@ export class QuizPlayer {
     });
   }
 
-  /** An untouched ordering counts as it stands (the server scores it so), so it is never «skipped». */
+  /** An ordering is answered after the first move: the shuffled order the server shows is not an answer. */
   protected answered(question: QuizQuestion): boolean {
-    return question.type === 'ORDERING' || isAnswered(this.answers()[question.id]);
+    return isAnswered(this.answers()[question.id]);
   }
 
   protected go(step: number): void {

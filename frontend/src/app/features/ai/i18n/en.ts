@@ -64,6 +64,7 @@ export const en: Translation<typeof ru> = {
     placeholder: 'e.g. Create 8 Year 5 exercises on adding fractions, from easy to challenging',
     hint: 'Review the draft, then add it to the assignment. It is not saved automatically.',
     generate: 'Generate',
+    generating: 'Generating…',
     again: 'Regenerate',
     savePrompt: 'Save as prompt',
     promptTitle: 'Prompt title',
