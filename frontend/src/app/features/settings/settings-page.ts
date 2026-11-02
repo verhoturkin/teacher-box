@@ -18,7 +18,7 @@ import { UnsavedChanges } from '@core/routing/unsaved-changes';
 import { HelpButton } from '@features/help/parts';
 import { AiApi, AiSettingsPanel } from '@features/ai/parts';
 import { DefaultPriceCard } from '@features/billing/parts';
-import { AccountPanel } from '@features/identity/parts';
+import { AccountPanel } from '@features/identity';
 import { MeetingsSettingsPanel } from '@features/meetings/parts';
 import { MessengersSettingsPanel } from '@features/notifications/parts';
 import { CalendarFeedPanel, GoogleCalendarPanel } from '@features/schedule/parts';

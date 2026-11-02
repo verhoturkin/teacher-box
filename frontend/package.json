@@ -9,7 +9,7 @@
         "test": "ng test --watch=false --coverage",
         "test:only": "ng test --watch=false --reporters=dot --include",
         "test:watch": "ng test",
-        "lint": "ng lint && npm run format:check && knip --no-progress",
+        "lint": "ng lint && npm run format:check && knip --no-progress && node scripts/import-cycles.mjs",
         "format": "prettier --write \"src/**/*.{ts,html,scss}\" \"../e2e/*.ts\" \"../e2e/tests/**/*.ts\" \"../e2e/telegram-mock/**/*.mjs\"",
         "format:check": "prettier --check \"src/**/*.{ts,html,scss}\" \"../e2e/*.ts\" \"../e2e/tests/**/*.ts\" \"../e2e/telegram-mock/**/*.mjs\"",
         "icons": "node scripts/icons.mjs"

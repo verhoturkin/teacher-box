@@ -24,7 +24,7 @@ import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentDetails } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
-import { StudentOption } from './assignment-editor-page';
+import type { StudentOption } from './assignment-editor-page';
 
 /** «Выдать ещё ученикам»: one typed student/group selection; students who have the assignment are not offered. */
 @Component({
