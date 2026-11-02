@@ -32,6 +32,7 @@ describe('MessengersSettingsPanel', () => {
     const text = readableText(hostElement(fixture));
     expect(text).not.toContain('Мои мессенджеры');
     expect(text).toContain('Что умеет бот');
-    expect(text).toContain('Подключили мессенджер');
+    expect(text).toContain('0 из 1 получают уведомления в мессенджере');
+    expect(text).toContain('Боты');
   });
 });

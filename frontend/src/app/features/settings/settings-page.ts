@@ -214,9 +214,6 @@ import { T } from './i18n/texts';
               <tb-failed-deliveries-card [deliveries]="failed()" />
             }
             <tb-messengers-settings-panel />
-            @if (failed().length === 0) {
-              <tb-failed-deliveries-card [deliveries]="failed()" />
-            }
           </div>
         }
         @case ('ai') {

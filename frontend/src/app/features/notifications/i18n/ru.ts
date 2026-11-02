@@ -128,6 +128,7 @@ export const ru = {
   },
   abilities: {
     title: 'Что умеет бот',
+    summary: 'Ученикам — уведомления и меню /menu',
     about:
       'Кроме уведомлений, бот показывает меню действий: напишите ему /menu или нажмите кнопку под сообщением. Команды: /menu — меню, /cancel — отменить действие, /help — подсказка, /stop — отключить уведомления.',
     students: 'Ученикам',
@@ -135,7 +136,7 @@ export const ru = {
     onlyNotifications: 'Пока только уведомления.',
   },
   bots: {
-    title: 'Боты мессенджеров',
+    title: 'Боты',
     about:
       'Через ботов уведомления приходят вам и ученикам в Telegram, ВКонтакте или MAX. Достаточно одного мессенджера — того, которым пользуются ваши ученики.',
     fromServer: 'бот из настроек сервера',
@@ -145,7 +146,8 @@ export const ru = {
     notConnected: 'не подключён',
     check: 'Проверить',
     setUp: 'Настроить',
-    remove: (name: string) => `Отключить бота ${name}`,
+    actions: (name: string) => `Действия с ботом ${name}`,
+    removeItem: 'Отключить',
     connect: 'Подключить',
     removeHeader: 'Отключить бота?',
     removeMessage: (name: string) =>
@@ -229,20 +231,21 @@ export const ru = {
     failedHint: 'Сообщения за 30 дней, которые мессенджер не принял',
   },
   students: {
-    title: 'Мессенджеры учеников',
+    title: 'Ученики',
     what: 'мессенджеры учеников',
     empty: 'Учеников пока нет',
-    connectedBefore: 'Подключили мессенджер:',
-    of: (total: number) => `из ${String(total)}`,
-    remindSelected: 'Напомнить выбранным',
-    remindAll: 'Напомнить всем без мессенджера',
-    student: 'Ученик',
-    messengers: 'Мессенджеры',
-    delivery: 'Доставка',
-    none: 'не подключены',
-    paused: (name: string) => `${name} (на паузе)`,
+    count: (connected: number, total: number) => `${String(connected)} из ${String(total)}`,
+    countHint: 'получают уведомления в мессенджере',
+    progress: (connected: number, total: number) =>
+      `Подключены ${String(connected)} из ${String(total)}`,
+    missing: 'Не подключились',
+    connected: 'Подключены',
+    notYet: 'Мессенджер не подключён',
+    paused: 'Уведомления на паузе',
     failed: (count: number) => `Не доставлено: ${String(count)}`,
-    hint: 'Напоминание придёт в личный кабинет ученика со ссылкой на подключение. Ученики, у которых мессенджер уже подключён, его не получат. «Не доставлено» — сообщения за 30 дней, которые мессенджер не принял (например, ученик заблокировал бота).',
-    reminded: (count: number) => `Получили учеников: ${String(count)}`,
+    sendLink: 'Отправить ссылку',
+    sendLinkTo: (name: string) => `Отправить ссылку: ${name}`,
+    sent: 'Ссылка на подключение отправлена в личный кабинет',
+    whoWhere: 'Кто где',
   },
 };

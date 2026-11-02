@@ -212,6 +212,7 @@ export const en: Translation<typeof ru> = {
   students: {
     title: 'Students',
     add: 'Add student',
+    writeAll: 'Message all',
     list: 'List of students',
     search: 'Search by name',
     what: 'the students',

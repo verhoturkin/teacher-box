@@ -1,3 +1,4 @@
+import { countOf } from '@shared/text/plural';
 import type { Translation } from '@core/i18n/language';
 import type { ru } from './ru';
 
@@ -24,7 +25,6 @@ export const en: Translation<typeof ru> = {
     otherZone: (zone: string) =>
       `This device uses a different time zone (${zone}). The portal displays times in its own time zone.`,
     messengers: 'Messengers',
-    deliveries: 'Failed deliveries',
     messengersSummary: 'Bots and students',
     notDelivered: (count: number) => `${String(count)} not delivered`,
     messengersWork: (names: string, count: number) =>
@@ -32,7 +32,10 @@ export const en: Translation<typeof ru> = {
     messengerFails: (name: string) => `${name} is not responding`,
     messengersChecking: 'Checking the bots',
     noMessengers: 'No bots connected',
-    allDelivered: 'All notifications delivered',
+    notDeliveredTitle: (count: number) =>
+      `${countOf(count, 'notification', 'notifications', 'notifications')} not delivered.`,
+    showDeliveries: 'Show',
+    hideDeliveries: 'Hide',
     when: 'When',
     to: 'To',
     where: 'Where',

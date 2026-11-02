@@ -1,8 +1,8 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { Card } from 'primeng/card';
+import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
+import { Button } from 'primeng/button';
+import { Message } from 'primeng/message';
 import { TableModule } from 'primeng/table';
-import { EmptyState } from '@shared/ui/empty-state';
 import { RowType } from '@shared/ui/row-type.directive';
 import { SHARED_T } from '@shared/i18n/texts';
 import { FailedDelivery, MessengerType } from './data-access/settings.models';
@@ -14,17 +14,40 @@ const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
   { type: 'MAX', name: 'MAX' },
 ];
 
-/** The notifications that did not reach a messenger (category «Мессенджеры»; its badge counts them). */
+/**
+ * The notifications that did not reach a messenger (category «Мессенджеры»; its badge counts them): an
+ * error alert with the latest one (sketch Messengers), «Показать» unfolds them all.
+ */
 @Component({
   selector: 'tb-failed-deliveries-card',
-  imports: [Card, DatePipe, EmptyState, TableModule, RowType],
+  imports: [Button, DatePipe, Message, TableModule, RowType],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { style: 'display: block' },
   template: `
-    <p-card id="deliveries" [header]="t.deliveries">
-      @if (deliveries().length === 0) {
-        <tb-empty-state [compact]="true" icon="tb-i-check_circle" [title]="t.allDelivered" />
-      } @else {
-        <p-table [value]="deliveries()" styleClass="tb-cards">
+    @if (deliveries()[0]; as last) {
+      <p-message id="deliveries" severity="error" icon="tb-i tb-i-error" role="alert">
+        <div class="tb-deliveries__alert">
+          <span class="tb-deliveries__text">
+            <strong>{{ t.notDeliveredTitle(deliveries().length) }}</strong>
+            {{ last.recipientName ?? t.you }} · {{ messengerName(last) }} ·
+            {{ last.createdAt | date: 'dd.MM HH:mm' }}
+          </span>
+          <p-button
+            [label]="open() ? t.hideDeliveries : t.showDeliveries"
+            severity="danger"
+            [text]="true"
+            aria-controls="tb-deliveries-list"
+            [attr.aria-expanded]="open()"
+            (onClick)="open.set(!open())"
+          />
+        </div>
+      </p-message>
+      @if (open()) {
+        <p-table
+          id="tb-deliveries-list"
+          [value]="deliveries()"
+          styleClass="tb-cards tb-deliveries__table"
+        >
           <ng-template #header>
             <tr>
               <th>{{ t.when }}</th>
@@ -45,9 +68,25 @@ const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
           </ng-template>
         </p-table>
       }
-    </p-card>
+    }
   `,
   styles: `
+    .tb-deliveries__alert {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--tb-space-2);
+    }
+
+    .tb-deliveries__text {
+      flex: 1;
+      min-width: 12rem;
+    }
+
+    :host ::ng-deep .tb-deliveries__table {
+      margin-top: var(--tb-space-3);
+    }
+
     .tb-error-cell {
       overflow-wrap: anywhere;
     }
@@ -56,7 +95,10 @@ const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
 export class FailedDeliveriesCard {
   protected readonly t = T.page;
 
+  /** The latest first. */
   readonly deliveries = input.required<FailedDelivery[]>();
+
+  protected readonly open = signal(false);
 
   protected messengerName(row: FailedDelivery): string {
     return MESSENGERS.find((messenger) => messenger.type === row.channel)?.name ?? row.channel;

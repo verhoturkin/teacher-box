@@ -1,3 +1,5 @@
+import { countOf } from '@shared/text/plural';
+
 /** Texts of the teacher's settings and the first setup (ADR-0035). */
 export const ru = {
   page: {
@@ -22,7 +24,6 @@ export const ru = {
     otherZone: (zone: string) =>
       `На этом устройстве другой часовой пояс (${zone}): время в портале показано по часовому поясу портала.`,
     messengers: 'Мессенджеры',
-    deliveries: 'Неудачные доставки',
     messengersSummary: 'Боты и ученики',
     notDelivered: (count: number) => `${String(count)} не доставлено`,
     messengersWork: (names: string, count: number) =>
@@ -30,7 +31,10 @@ export const ru = {
     messengerFails: (name: string) => `${name} не отвечает`,
     messengersChecking: 'Проверяем связь с ботами',
     noMessengers: 'Боты не подключены',
-    allDelivered: 'Все уведомления доставлены',
+    notDeliveredTitle: (count: number) =>
+      `${countOf(count, 'уведомление не доставлено', 'уведомления не доставлены', 'уведомлений не доставлено')}.`,
+    showDeliveries: 'Показать',
+    hideDeliveries: 'Скрыть',
     when: 'Когда',
     to: 'Кому',
     where: 'Куда',

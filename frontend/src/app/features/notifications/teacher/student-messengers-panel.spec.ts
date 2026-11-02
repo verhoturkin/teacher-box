@@ -5,7 +5,7 @@ import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { channel, studentMessengers } from '@testing/notification-fixtures';
 import { StudentMessengers } from '../data-access/notifications.models';
 import { StudentMessengersPanel } from './student-messengers-panel';
-import { testProviders } from '@testing/setup';
+import { screenWidth, testProviders } from '@testing/setup';
 
 describe('StudentMessengersPanel', () => {
   let fixture: ComponentFixture<StudentMessengersPanel>;
@@ -25,10 +25,10 @@ describe('StudentMessengersPanel', () => {
     avatar: '/api/public/avatars/petr',
   });
 
-  async function render(students: StudentMessengers[]): Promise<void> {
+  async function render(students: StudentMessengers[], width = 1200): Promise<void> {
     TestBed.configureTestingModule({
       imports: [StudentMessengersPanel],
-      providers: testProviders(),
+      providers: [...testProviders(), screenWidth(width)],
     });
     backend = TestBed.inject(HttpTestingController);
     messages = TestBed.inject(MessageService);
@@ -75,49 +75,65 @@ describe('StudentMessengersPanel', () => {
     expect(readableText(hostElement(fixture))).toContain('Учеников пока нет');
   });
 
-  it('shows who connected what and delivery problems', async () => {
-    await render([connected, silent]);
+  it('counts the students who get the notifications and lists the others with why', async () => {
+    const reached = studentMessengers({
+      studentId: 's-3',
+      displayName: 'Анна',
+      channels: [channel({ linked: true, enabled: true })],
+    });
+    const muted = studentMessengers({
+      studentId: 's-4',
+      displayName: 'Олег',
+      channels: [channel({ linked: true, enabled: false })],
+    });
+    await render([connected, silent, reached, muted]);
 
-    const text = readableText(hostElement(fixture));
-    expect(text).toContain('Подключили мессенджер: 1 из 2');
-    expect(text).toContain('Мария Telegram ВКонтакте (на паузе) Не доставлено: 2');
-    expect(text).toContain('Пётр не подключены');
-    expect(hostElement(fixture).querySelector('tb-avatar img')?.getAttribute('src')).toBe(
+    const host = hostElement(fixture);
+    const text = readableText(host);
+    expect(text).toContain('1 из 4 получают уведомления в мессенджере');
+    expect(text).toContain('Не подключились');
+    expect(text).toContain('Мария Не доставлено: 2');
+    expect(text).toContain('Пётр Мессенджер не подключён');
+    expect(text).toContain('Олег Уведомления на паузе');
+    expect(text).toContain('Подключены');
+    expect(host.querySelector('.tb-reach__avatars tb-avatar')?.getAttribute('title')).toBe('Анна');
+    expect(host.querySelector('p-progressbar')?.getAttribute('aria-label')).toBe(
+      'Подключены 1 из 4',
+    );
+    expect(host.querySelector('tb-avatar img')?.getAttribute('src')).toBe(
       '/api/public/avatars/petr',
     );
+    expect(host.querySelector('a[href="/teacher/students"]')?.textContent).toContain('Кто где');
   });
 
-  it('reminds everybody without a messenger', async () => {
+  it('sends the link to connect to one student', async () => {
     await render([connected, silent]);
 
-    buttonByText(hostElement(fixture), 'Напомнить всем без мессенджера').click();
+    const buttons = Array.from(hostElement(fixture).querySelectorAll('button')).filter((button) =>
+      button.textContent.includes('Отправить ссылку'),
+    );
+    expect(buttons).toHaveLength(2);
+    buttons[1]?.click();
     const request = backend.expectOne('/api/teacher/notifications/remind-connect');
-    expect(request.request.body).toEqual({ studentIds: [] });
+    expect(request.request.body).toEqual({ studentIds: ['s-2'] });
     request.flush({ recipients: 1 });
     await fixture.whenStable();
 
     expect(messages.add).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'Получили учеников: 1' }),
+      expect.objectContaining({ detail: 'Ссылка на подключение отправлена в личный кабинет' }),
     );
   });
 
-  it('reminds the selected students', async () => {
-    await render([connected, silent]);
+  it('keeps quiet when the link was not sent; on a phone the button is an icon', async () => {
+    await render([silent], 390);
 
-    fixture.componentInstance.onSelection([connected]);
-    fixture.detectChanges();
-    expect(buttonByText(hostElement(fixture), 'Напомнить выбранным').disabled).toBe(true);
-
-    fixture.componentInstance.onSelection([silent]);
-    fixture.detectChanges();
-    buttonByText(hostElement(fixture), 'Напомнить выбранным').click();
-    const request = backend.expectOne('/api/teacher/notifications/remind-connect');
-    expect(request.request.body).toEqual({ studentIds: ['s-2'] });
-    request.flush(null, { status: 500, statusText: 'Error' });
+    buttonByText(hostElement(fixture), 'Отправить ссылку: Пётр').click();
+    backend
+      .expectOne('/api/teacher/notifications/remind-connect')
+      .flush(null, { status: 500, statusText: 'Error' });
     fixture.detectChanges();
     await fixture.whenStable();
 
     expect(messages.add).not.toHaveBeenCalled();
-    expect(buttonByText(hostElement(fixture), 'Напомнить выбранным').disabled).toBe(false);
   });
 });

@@ -132,6 +132,7 @@ export const en: Translation<typeof ru> = {
   },
   abilities: {
     title: 'What the bot can do',
+    summary: 'Notifications and the /menu for students',
     about:
       'Send /menu to see available actions, or use the buttons under a message. Commands: /menu — show menu; /cancel — cancel an action; /help — help; /stop — stop notifications.',
     students: 'For students',
@@ -139,7 +140,7 @@ export const en: Translation<typeof ru> = {
     onlyNotifications: 'Notifications only.',
   },
   bots: {
-    title: 'Messenger bots',
+    title: 'Bots',
     about:
       'Send notifications to yourself and your students through Telegram, VK or MAX bots. Set up the messaging app your students use.',
     fromServer: 'configured on the server',
@@ -149,7 +150,8 @@ export const en: Translation<typeof ru> = {
     notConnected: 'not connected',
     check: 'Check',
     setUp: 'Set up',
-    remove: (name: string) => `Disconnect the ${name} bot`,
+    actions: (name: string) => `${name} bot actions`,
+    removeItem: 'Disconnect',
     connect: 'Connect',
     removeHeader: 'Disconnect the bot?',
     removeMessage: (name: string) =>
@@ -230,21 +232,21 @@ export const en: Translation<typeof ru> = {
     failedHint: 'Messages rejected by the messaging service in the last 30 days',
   },
   students: {
-    title: 'Students’ messengers',
+    title: 'Students',
     what: 'the students’ messengers',
     empty: 'No students yet',
-    connectedBefore: 'Messaging app connected:',
-    of: (total: number) => `of ${String(total)}`,
-    remindSelected: 'Remind selected students',
-    remindAll: 'Remind students without a connected app',
-    student: 'Student',
-    messengers: 'Messengers',
-    delivery: 'Delivery',
-    none: 'not connected',
-    paused: (name: string) => `${name} (paused)`,
+    count: (connected: number, total: number) => `${String(connected)} of ${String(total)}`,
+    countHint: 'get notifications in a messaging app',
+    progress: (connected: number, total: number) =>
+      `${String(connected)} of ${String(total)} connected`,
+    missing: 'Not connected',
+    connected: 'Connected',
+    notYet: 'Has not connected a messaging app yet',
+    paused: 'Notifications paused',
     failed: (count: number) => `Not delivered: ${String(count)}`,
-    hint: 'Students receive a reminder in their account with a link to connect a messaging app. Students who have already connected one are skipped. “Not delivered” counts messages rejected in the last 30 days, for example because a student blocked the bot.',
-    reminded: (count: number) =>
-      `Reminders sent to ${countOf(count, 'student', 'students', 'students')}`,
+    sendLink: 'Send link',
+    sendLinkTo: (name: string) => `Send link to ${name}`,
+    sent: 'Connection link sent to the student’s account',
+    whoWhere: 'Who uses what',
   },
 };

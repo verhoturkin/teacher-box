@@ -62,7 +62,7 @@ sketch disagrees with it.
 - [x] **357.2 F** «Занятия» (`Lessons`): «Время и цена» (`time-zone-card.ts`,
   `billing/settings/default-price-card.ts`, price saved on change), «Звонки»
   (`meetings/settings/meetings-settings-panel.ts`), «Google Календарь», «Подписка на календарь».
-- [ ] **357.3 F** «Мессенджеры» (`Messengers`, `PhoneMessengers`;
+- [x] **357.3 F** «Мессенджеры» (`Messengers`, `PhoneMessengers`;
   `notifications/teacher/messengers-settings-panel.ts`): failed-deliveries alert
   (`settings/failed-deliveries-card.ts`), bots, «Что умеет бот» folded, students as «5 из 7» with
   the not connected and «Отправить ссылку», «Кто где» → the students list. The per-student

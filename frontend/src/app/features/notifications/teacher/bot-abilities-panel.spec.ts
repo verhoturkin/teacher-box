@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { hostElement, readableText } from '@testing/dom';
+import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { BotAbilities } from '../data-access/notifications.models';
 import { BotAbilitiesPanel } from './bot-abilities-panel';
 import { testProviders } from '@testing/setup';
@@ -32,9 +32,18 @@ describe('BotAbilitiesPanel', () => {
     backend.verify();
   });
 
-  it('lists the menus of students and of the teacher', async () => {
+  it('is folded and unfolds to the menus of students and of the teacher', async () => {
     backend.expectOne('/api/teacher/notifications/bot').flush(abilities());
     await fixture.whenStable();
+    const toggle = buttonByText(hostElement(fixture), 'Что умеет бот');
+    const body = hostElement(fixture).querySelector<HTMLElement>('#tb-bot-abilities');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(body?.hidden).toBe(true);
+
+    toggle.click();
+    await fixture.whenStable();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(body?.hidden).toBe(false);
 
     const text = readableText(hostElement(fixture));
     expect(text).toContain('Ученикам Расписание Оплаты');

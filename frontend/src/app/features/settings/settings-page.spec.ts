@@ -5,7 +5,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { AuthService } from '@core/auth/auth.service';
 import { PageDetail } from '@core/routing/page-detail';
 import { UnsavedChanges } from '@core/routing/unsaved-changes';
-import { hostElement, readableText, requireElement, typeInto } from '@testing/dom';
+import { buttonByText, hostElement, readableText, requireElement, typeInto } from '@testing/dom';
 import { aiStatus, systemPrompt, usageReport } from '@testing/ai-fixtures';
 import { overview } from '@testing/billing-fixtures';
 import { portalSettings } from '@testing/portal-fixtures';
@@ -295,28 +295,34 @@ describe('SettingsPage', () => {
   it('shows the failed deliveries first in the messengers, then the bots and the students', async () => {
     const host = await render(1200, 'messengers');
 
-    const text = readableText(host);
-    expect(text).toContain('Неудачные доставки');
-    expect(text).toContain('Мария Telegram Telegram 403: Forbidden: bot was blocked by the user');
-    expect(text).toContain('Вы MAX —');
-    expect(text.indexOf('Неудачные доставки')).toBeLessThan(text.indexOf('Что умеет бот'));
-    expect(text).toContain('Подключили мессенджер');
+    let text = readableText(host);
+    expect(host.querySelector('#deliveries')?.getAttribute('role')).toBe('alert');
+    expect(text).toContain('2 уведомления не доставлены.');
+    expect(text.indexOf('не доставлены')).toBeLessThan(text.indexOf('Что умеет бот'));
+    expect(text).toContain('получают уведомления в мессенджере');
+    expect(text).not.toContain('403: Forbidden');
     // own messengers, devices and what to send are in «Мой аккаунт»
     expect(text).not.toContain('Что присылать');
     expect(current(host)).toBe('Мессенджеры');
+
+    buttonByText(host, 'Показать').click();
+    await fixture.whenStable();
+    text = readableText(host);
+    expect(text).toContain('Мария Telegram Telegram 403: Forbidden: bot was blocked by the user');
+    expect(text).toContain('Вы MAX —');
+    buttonByText(host, 'Скрыть').click();
+    await fixture.whenStable();
+    expect(readableText(host)).not.toContain('403: Forbidden');
   });
 
-  it('says last when every notification was delivered, without a badge', async () => {
+  it('shows no alert when every notification was delivered, nor a badge', async () => {
     const host = await render(1200, 'messengers', 'messengers', {
       channels: [],
       failedDeliveries: [],
     });
 
     const text = readableText(host);
-    expect(text).toContain('Все уведомления доставлены');
-    expect(text.indexOf('Все уведомления доставлены')).toBeGreaterThan(
-      text.indexOf('Подключили мессенджер'),
-    );
+    expect(host.querySelector('#deliveries')).toBeNull();
     expect(text).toContain('Мессенджеры Боты не подключены');
     expect(host.querySelector('p-tag')).toBeNull();
   });
