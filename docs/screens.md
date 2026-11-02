@@ -336,6 +336,15 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
     вопросам» (a row per question: the number, a bar of the share of wrong answers, «3 из 4»).
   - **Compact:** `tb-segment-group` tabs «Ученики N · Задание · Ошибки» («Ошибки» only with a quiz),
     tiles in one column and a «Проверить N работ» button stuck to the bottom of the page.
+  - **Large and up** (354.2, sketch 4): the task takes the main column — the whole text (no fold,
+    72ch), «Материалы» as one segmented list (`tb-list-group`: textbooks, files), the videos and
+    the test line («Тест · N вопросов · M баллов · K попытки» on surface-container-low) — and the
+    students a narrow column (320–380 px, *ours*): «Ученики · N» with the icon button «Выдать
+    ещё», then the status groups «Проверить», «На доработке», «Ждут сдачи», «Принято» (heading
+    with icon, status colour and «· N»; an empty group is hidden), each a `tb-list` of compact
+    rows — avatar, the name (opens the work), one line (the status line and «Тест 8 из 10»), one
+    button: filled «Проверить», tonal «Напомнить» (waiting, on rework) or tonal «Открыть»
+    (accepted); «Ошибки по вопросам» under the students. Expanded and medium keep the tiles.
 - **Review page** (`task-review-page.ts`, 352.2, sketches 14, 15, 16): the header — «back», the
   student as the title, «<assignment> · сдано сегодня, 09:12 · вовремя / с опозданием» (not handed
   in: «срок …»; a status other than «На проверке» as its tag), «1 из 2 на проверке» with «‹» «›»

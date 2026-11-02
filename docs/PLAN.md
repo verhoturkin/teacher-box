@@ -42,7 +42,7 @@ a dialog over the editor (sketches 4, 11, 39, 40 on the design canvas).
   and dialogs (`styles.scss` `.tb-list`, `tb-list-group`). Entry points:
   `homework/teacher/assignment-editor-page.ts`, `homework/ui/material-chips.ts`,
   `shared/ui/section-nav.ts`.
-- [ ] **354.2 F** Open assignment on a wide screen (sketch 4): the task in the main column (text,
+- [x] **354.2 F** Open assignment on a wide screen (sketch 4): the task in the main column (text,
   materials as a segmented list, the test line), the students in a narrow right column grouped
   by status («Проверить», «На доработке», «Принято»; empty groups hidden) with compact rows,
   «Выдать ещё» as an icon button, «Ошибки по вопросам» under the students; medium and compact

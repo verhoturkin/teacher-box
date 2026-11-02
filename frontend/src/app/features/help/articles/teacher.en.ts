@@ -342,6 +342,8 @@ Each student has a card on the left: when they handed in (“Handed in today at 
 
 On the right you will find the instructions (long text is folded to three lines until you choose “Show all”), videos, files and textbooks. Select a name to open a file or textbook in a new tab, or use the arrow button to download a file. Change the text, files and textbooks with “Edit”. For an assignment with a quiz, “Mistakes by question” appears below: each question has a bar and a count such as “3 of 4”, showing how many students got it wrong.
 
+On a wide screen the instructions take the main column: the full text, the materials as one list and the quiz line. Students sit in a narrow column on the right, grouped under To review, Sent back, Not handed in and Accepted (empty groups are hidden). Each row has one button — “Review”, “Remind” or “Open” — and selecting a student’s name opens their work. “Assign to more” is the person icon at the top of the column, and “Mistakes by question” sits below the students.
+
 On a phone these become the tabs “Students · Assignment · Mistakes” (“Mistakes” only with a quiz), and “Review N submissions” stays at the bottom of the screen.
 
 In the assignment editor (“Edit” on the assignment page), choose “Textbook” under Materials to select a resource and pages, such as 12-14, 20. Leave pages blank for the whole textbook. Students can access the assigned pages even if the full textbook is not shared with them. Word documents are downloaded in full, with page numbers provided for reference. The pencil changes the pages; the cross removes the attachment. See [Textbooks](/teacher/help/textbooks).

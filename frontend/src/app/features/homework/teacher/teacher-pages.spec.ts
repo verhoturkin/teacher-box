@@ -642,7 +642,7 @@ describe('AssignmentsPage', () => {
 describe('AssignmentPage', () => {
   const NOW = new Date('2026-09-06T12:00:00Z');
 
-  async function render(details = assignmentDetails(), width = 1200) {
+  async function render(details = assignmentDetails(), width = 1000) {
     TestBed.configureTestingModule({ providers: testProviders(screenWidth(width)) });
     const backend = TestBed.inject(HttpTestingController);
     const saved: string[] = [];
@@ -1124,6 +1124,117 @@ describe('AssignmentPage', () => {
       );
 
       expect(item?.getAttribute('data-p-disabled')).toBe('true');
+      fixture.destroy();
+    });
+  });
+
+  describe('on a wide screen (sketch 4)', () => {
+    const WIDE = 1400;
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(NOW);
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('gives the task the main column: the whole text, the materials, the videos and the test', async () => {
+      const long = `${'Очень длинный текст задания. '.repeat(10)}\n\n**Конец**`;
+      const { host, fixture, backend } = await render(
+        assignmentDetails({
+          description: long,
+          questions: [
+            {
+              id: 'q-1',
+              type: 'SINGLE_CHOICE',
+              text: 'Столица?',
+              points: 2,
+              explanation: null,
+              options: [],
+              correct: [],
+              accepted: [],
+              value: null,
+              tolerance: null,
+              pairs: [],
+            },
+          ],
+          quizAttempts: 2,
+          textbooks: [boundTextbook()],
+        }),
+        WIDE,
+      );
+      backend
+        .expectOne('/api/teacher/homework/assignments/a-1/quiz/stats')
+        .flush({ students: 2, questions: [{ questionId: 'q-1', text: 'Столица?', wrong: 1 }] });
+      await fixture.whenStable();
+      const task = requireElement(host, '.tb-asg__task', HTMLElement);
+
+      expect(task.querySelector('.tb-markdown strong')?.textContent).toBe('Конец');
+      expect(task.querySelector('.tb-asg__text--folded')).toBeNull();
+      expect(readableText(task)).not.toContain('Показать полностью');
+      // the textbooks and the files are one segmented list
+      const group = requireElement(task, '.tb-list-group', HTMLElement);
+      expect(group.querySelectorAll('li').length).toBeGreaterThan(1);
+      expect(readableText(task)).toContain('Тест · 1 вопрос · 2 балла · 2 попытки');
+      // the mistakes by question are under the students
+      const students = requireElement(host, '.tb-asg__students', HTMLElement);
+      expect(students.querySelector('.tb-asg-stats')).not.toBeNull();
+      expect(host.querySelector('.tb-asg-tile')).toBeNull();
+      fixture.destroy();
+    });
+
+    it('groups the students by status with one action a row; empty groups are hidden', async () => {
+      const [anna, boris] = assignmentDetails().tasks;
+      const { host, fixture } = await render(
+        assignmentDetails({
+          tasks: [
+            ...fourTasks(),
+            { ...boris!, taskId: 't-6', studentId: 's-6', studentName: 'Дина' },
+          ],
+        }),
+        WIDE,
+      );
+      const students = requireElement(host, '.tb-asg__students', HTMLElement);
+      const heads = [...students.querySelectorAll('h3')].map((head) => readableText(head));
+      const rows = (group: string) =>
+        [...students.querySelectorAll(`section[aria-labelledby="tb-asg-group-${group}"] li`)].map(
+          (row) => readableText(row),
+        );
+
+      expect(readableText(requireElement(students, 'h2', HTMLElement))).toBe('Ученики · 5');
+      expect(heads).toEqual(['Проверить · 1', 'На доработке · 1', 'Ждут сдачи · 2', 'Принято · 1']);
+      expect(rows('review')[0]).toMatch(/^А Анна Сдано вчера, \d\d:\d\d · Тест 8 из 10 Проверить$/);
+      expect(rows('returned')).toEqual(['Г Гена Отправлено на доработку 03.09 Напомнить']);
+      expect(rows('waiting')).toHaveLength(2);
+      expect(rows('accepted')).toEqual(['В Вера Принято вчера · оценка 4 Открыть']);
+
+      const opened: string[] = [];
+      fixture.componentInstance.reviewWork.subscribe((taskId) => opened.push(taskId));
+      requireElement(students, 'button[aria-label="Проверить: Анна"]', HTMLButtonElement).click();
+      requireElement(students, 'button[aria-label="Открыть: Гена"]', HTMLButtonElement).click();
+      expect(opened).toEqual([anna!.taskId, 't-4']);
+      fixture.destroy();
+
+      TestBed.resetTestingModule();
+      const only = await render(assignmentDetails({ tasks: [anna!] }), WIDE);
+      expect(
+        [...only.host.querySelectorAll('.tb-asg__students h3')].map((head) => readableText(head)),
+      ).toEqual(['Проверить · 1']);
+      only.fixture.destroy();
+    });
+
+    it('has «Выдать ещё» as an icon button and says when nobody has the assignment', async () => {
+      const { host, fixture, backend } = await render(assignmentDetails({ tasks: [] }), WIDE);
+      const students = requireElement(host, '.tb-asg__students', HTMLElement);
+
+      expect(readableText(students)).toContain('Задание ещё никому не выдано');
+      const more = requireElement(students, 'button[aria-label="Выдать ещё"]', HTMLButtonElement);
+      expect(readableText(more)).toBe('');
+      more.click();
+      await fixture.whenStable();
+      backend.expectOne('/api/teacher/students').flush(STUDENTS);
+      await fixture.whenStable();
+      backend.expectOne('/api/teacher/groups').flush([aGroup()]);
       fixture.destroy();
     });
   });

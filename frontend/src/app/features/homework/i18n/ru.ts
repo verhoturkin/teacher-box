@@ -657,6 +657,11 @@ export const ru = {
     tabStudents: 'Ученики',
     tabTask: 'Задание',
     tabErrors: 'Ошибки',
+    studentsCount: (count: number) => `Ученики · ${String(count)}`,
+    groupToReview: 'Проверить',
+    groupReturned: 'На доработке',
+    groupWaiting: 'Ждут сдачи',
+    groupAccepted: 'Принято',
   },
   bind: {
     newTitle: 'Учебник к заданию',

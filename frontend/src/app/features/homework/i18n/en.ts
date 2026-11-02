@@ -656,6 +656,11 @@ export const en: Translation<typeof ru> = {
     tabStudents: 'Students',
     tabTask: 'Assignment',
     tabErrors: 'Mistakes',
+    studentsCount: (count: number) => `Students · ${String(count)}`,
+    groupToReview: 'To review',
+    groupReturned: 'Sent back',
+    groupWaiting: 'Not handed in',
+    groupAccepted: 'Accepted',
   },
   bind: {
     newTitle: 'Attach textbook',
