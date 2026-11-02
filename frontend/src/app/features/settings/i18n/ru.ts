@@ -13,6 +13,8 @@ export const ru = {
     portalSummary: 'Название, логотип, цвет',
     lessons: 'Занятия',
     lessonsSummary: 'Пояс, цена, календарь, звонки',
+    timeAndPrice: 'Время и цена',
+    calls: 'Звонки',
     timeZoneTitle: 'Часовой пояс',
     timeZoneWhat: 'часовой пояс',
     timeZone: (zone: string) => `Время занятий портал считает по часовому поясу ${zone}.`,

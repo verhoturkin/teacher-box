@@ -1537,6 +1537,59 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
 }
 
 /*
+ * A settings row inside a card (sketch Lessons): the tonal icon, the title with its state under it and
+ * a tag or lock at the end; rows of a card are 2 px apart, the card clips the outer corners.
+ */
+.tb-tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  border-radius: var(--tb-shape-lg);
+}
+
+.tb-tile {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-4);
+  min-block-size: 3.5rem;
+  box-sizing: border-box;
+  padding: var(--tb-space-3) var(--tb-space-4);
+  border-radius: var(--tb-shape-xs);
+  background: var(--tb-list-item);
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-body-m);
+  text-decoration: none;
+}
+
+.tb-tile__icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: var(--tb-shape-full);
+  background: var(--p-md-secondary-container);
+  color: var(--p-md-on-secondary-container);
+}
+
+.tb-tile__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-inline-size: 0;
+
+  b {
+    font: var(--tb-type-title-m);
+  }
+
+  span {
+    color: var(--p-md-on-surface-variant);
+  }
+}
+
+/*
  * The title of a card (section): the title, the «?» of the help next to it and the actions of the
  * section on the right (ADR-0018). Used in the #title template of p-card.
  */

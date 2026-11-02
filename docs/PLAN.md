@@ -59,7 +59,7 @@ sketch disagrees with it.
   account as a lead row above the «Портал» group (`PhoneSettings`); medium per `TabletSettings`.
   Drop the «Отменить изменения?» guard of `settings-page.ts` / `settings.routes.ts` for every
   category but `portal`; saving shows a short «Сохранено».
-- [ ] **357.2 F** «Занятия» (`Lessons`): «Время и цена» (`time-zone-card.ts`,
+- [x] **357.2 F** «Занятия» (`Lessons`): «Время и цена» (`time-zone-card.ts`,
   `billing/settings/default-price-card.ts`, price saved on change), «Звонки»
   (`meetings/settings/meetings-settings-panel.ts`), «Google Календарь», «Подписка на календарь».
 - [ ] **357.3 F** «Мессенджеры» (`Messengers`, `PhoneMessengers`;

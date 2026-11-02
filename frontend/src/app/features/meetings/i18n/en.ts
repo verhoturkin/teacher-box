@@ -125,6 +125,7 @@ export const en: Translation<typeof ru> = {
   },
   settings: {
     title: 'Video meetings',
+    works: 'Working',
     on: 'Portal calls are enabled. Every student and group has a room. Use “Start lesson” in the schedule or open the room link on the student or group’s card.',
     unreachable:
       'Calls are enabled, but the call server is not responding. Contact the portal administrator.',

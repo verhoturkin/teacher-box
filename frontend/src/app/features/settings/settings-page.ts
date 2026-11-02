@@ -17,6 +17,7 @@ import { pageDetail } from '@core/routing/page-detail';
 import { UnsavedChanges } from '@core/routing/unsaved-changes';
 import { HelpButton } from '@features/help/parts';
 import { AiApi, AiSettingsPanel } from '@features/ai/parts';
+import { Card } from 'primeng/card';
 import { DefaultPriceCard } from '@features/billing/parts';
 import { AccountPanel } from '@features/identity';
 import { MeetingsSettingsPanel } from '@features/meetings/parts';
@@ -64,6 +65,7 @@ import { T } from './i18n/texts';
     Panes,
     Pane,
     AccountPanel,
+    Card,
     TimeZoneCard,
     GoogleCalendarPanel,
     CalendarFeedPanel,
@@ -191,13 +193,18 @@ import { T } from './i18n/texts';
           <tb-portal-settings-card />
         }
         @case ('lessons') {
-          <!-- stacked as before the merge; «Время и цена» comes in 357.2 -->
-          <div class="tb-stack">
-            <tb-time-zone-card />
-            <tb-default-price-card />
-            <tb-google-calendar-panel />
-            <tb-calendar-feed-panel />
-            <tb-meetings-settings-panel />
+          <div class="tb-settings__lessons">
+            <div class="tb-stack">
+              <p-card [header]="t.timeAndPrice">
+                <tb-time-zone-card />
+                <tb-default-price-card />
+              </p-card>
+              <p-card [header]="t.calls"><tb-meetings-settings-panel /></p-card>
+            </div>
+            <div class="tb-stack">
+              <tb-google-calendar-panel />
+              <tb-calendar-feed-panel />
+            </div>
           </div>
         }
         @case ('messengers') {
@@ -387,6 +394,14 @@ import { T } from './i18n/texts';
       .tb-settings__current .tb-settings__title {
         font: var(--tb-type-label-l-emphasized);
       }
+    }
+
+    /* «Занятия» (sketch Lessons): two columns of cards from medium up, one below 22 rem each */
+    .tb-settings__lessons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+      align-items: start;
+      gap: var(--tb-space-4);
     }
 
     /* the label of the portal's group on a phone */

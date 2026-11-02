@@ -15,6 +15,8 @@ export const en: Translation<typeof ru> = {
     portalSummary: 'Name, logo, colour',
     lessons: 'Lessons',
     lessonsSummary: 'Time zone, price, calendar, calls',
+    timeAndPrice: 'Time and price',
+    calls: 'Calls',
     timeZoneTitle: 'Time zone',
     timeZoneWhat: 'the time zone',
     timeZone: (zone: string) => `Lesson times use the portal time zone (${zone}).`,
