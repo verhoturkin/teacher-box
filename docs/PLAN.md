@@ -19,6 +19,74 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
+## Next release — settings and «Мой аккаунт»
+
+Goals: one «Мой аккаунт» for the teacher and the student (Профиль, Вход, Оформление, Уведомления);
+teacher settings from 8 categories to 6 (calendar, calls and payments merge into «Занятия»);
+everything but the portal appearance saves on change, without «Отменить изменения?»; each
+category shows its state in the list; rare things folded. No backend change: preferences, quiet
+hours, push and bots already exist.
+
+Sketches (the source for every step): canvas https://claude.ai/artifact/L3wuTYeXnspJ9AGwHRD6kx
+(read it with the Artifact tool, `action: "read"`, `path: "project/<Board>.dc.html"`). Boards:
+`Main` (teacher account), `Portal`, `Lessons`, `Messengers`, `Ai`, `Data`, `StudentAccount`,
+`StudentTablet`, `StudentPhone`, `PhoneSettings`, `PhoneMessengers`, `PhoneConnect`,
+`TabletSettings`, `Changes` (where each setting moved, the six rules). Sketch elements map to the
+existing components (`tb-list` rows, tonal sections, filled fields, M3 buttons); M3 decides where a
+sketch disagrees with it.
+
+### Stage 356 — One «Мой аккаунт»
+
+- [ ] **356.1 F** Shared account sections in `identity/account/account-panel.ts` for
+  `/teacher/settings/account` and `/cabinet/account` (`account-page.ts`): «Профиль» (photo, name),
+  «Вход» (login, «Сменить…» password → `change-password-form.ts`, «Выйти»), «Оформление» (theme
+  and language as selects). Fields save on change; the student and teacher stacks differ only by
+  the teacher's extra row (356.2).
+- [ ] **356.2 F** «Уведомления» section of the same panel: «Куда присылать» — one list of the
+  user's messengers and this device (`notifications/channels/channels-panel.ts`,
+  `push/push-devices-card.ts`), «Подключить» per row; «Что присылать» — topic switches and «Тихие
+  часы» (`preferences/preferences-panel.ts`); teacher only «Действия учителя в боте». Replaces the
+  separate cards on both pages; the student «connect» card leads as an alert (`StudentAccount`).
+- [ ] **356.3 F** Compact and medium account: the student phone list (`StudentPhone`) and tablet
+  (`StudentTablet`); «Подключить» opens a bottom sheet (`PhoneConnect`: «Открыть Telegram», the
+  code with copy, «Ждём подключения…»; `channels/link-code-view.ts`) on compact, a dialog above.
+
+### Stage 357 — Settings in six categories
+
+- [ ] **357.1 F** `settings/settings-categories.ts`: `account`, `portal`, `lessons`, `messengers`,
+  `ai`, `data`; `calendar`, `calls`, `payments` redirect to `lessons`. Each row shows its state as
+  the summary («Telegram работает», «Копия сегодня в 03:00», failed count badge). Compact: the
+  account as a lead row above the «Портал» group (`PhoneSettings`); medium per `TabletSettings`.
+  Drop the «Отменить изменения?» guard of `settings-page.ts` / `settings.routes.ts` for every
+  category but `portal`; saving shows a short «Сохранено».
+- [ ] **357.2 F** «Занятия» (`Lessons`): «Время и цена» (`time-zone-card.ts`,
+  `billing/settings/default-price-card.ts`, price saved on change), «Звонки»
+  (`meetings/settings/meetings-settings-panel.ts`), «Google Календарь», «Подписка на календарь».
+- [ ] **357.3 F** «Мессенджеры» (`Messengers`, `PhoneMessengers`;
+  `notifications/teacher/messengers-settings-panel.ts`): failed-deliveries alert
+  (`settings/failed-deliveries-card.ts`), bots, «Что умеет бот» folded, students as «5 из 7» with
+  the not connected and «Отправить ссылку», «Кто где» → the students list. The per-student
+  messengers move to the student card (`/teacher/students/:studentId`, `student-channels.ts`);
+  «Сообщение ученикам» (`broadcast-dialog.ts`) becomes «Написать всем» on «Ученики».
+- [ ] **357.4 F** «Портал» (`Portal`, `settings/portal-settings-card.ts`): «Название и логотип»,
+  «Цвет портала», schemes and contrast folded as «Тонкая настройка», preview; the only category
+  with an explicit save — a floating bar «Отменить» / «Сохранить» while the draft differs.
+- [ ] **357.5 F** «ИИ-помощник» (`Ai`, `ai/ai-settings-panel.ts`: model, «Мои промты», system
+  prompts folded) and «Данные» (`Data`, `settings/backups/*`, `reset-card.ts`: copies with the last
+  one first and «Все N копий», Google Drive, «Опасные действия» card with restore and reset).
+
+### Stage 358 — Docs and check
+
+- [ ] **358.1** `docs/screens.md` «Settings (teacher)» and student «Мой аккаунт»,
+  `docs/design-system.md` (autosave rule), `docs/glossary.md`, help articles (ru, en), wiki pages
+  that name settings categories, E2E suites under `e2e/tests/` that open the old categories.
+- [ ] **358.2** Check every board of the sketches against the running app (teacher and student,
+  expanded / medium / compact); fix the gaps or list them here as decisions.
+
+### Stage 359 — Release
+
+- [ ] **359.1** Release 0.45.0 (skill `release`).
+
 ## Repository maintenance
 
 ### Stage 336 — GitHub releases and README screenshots
