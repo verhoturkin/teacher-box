@@ -324,3 +324,36 @@ test('the teacher credits a question the student left unanswered', async ({ page
   await page.getByRole('button', { name: 'Засчитать', exact: true }).click();
   await expect(page.getByText('Тест: 1 из 1')).toBeVisible();
 });
+
+test('a draft keeps an incomplete question, giving it out names the broken one', async ({
+  request,
+}) => {
+  const teacher = await token(request, 'teacher', TEACHER_PASSWORD);
+  const created = await api<Created>(request, teacher, 'POST', '/api/teacher/students', {
+    displayName: `Черновик ${RUN}`,
+    email: null,
+    phone: null,
+    note: null,
+  });
+  const draft = await api<{ id: string }>(
+    request,
+    teacher,
+    'POST',
+    '/api/teacher/homework/assignments',
+    {
+      title: `Черновик с вопросом ${RUN}`,
+      description: 'Черновик',
+      studentIds: [],
+      videos: [],
+      questions: [{ type: 'SINGLE_CHOICE', text: '', options: [option('')], correct: [] }],
+    },
+  );
+
+  const issued = await request.post(`/api/teacher/homework/assignments/${draft.id}/students`, {
+    headers: { Authorization: `Bearer ${teacher}` },
+    data: { studentIds: [created.student.id] },
+  });
+  expect(issued.status()).toBe(422);
+  const problem = (await issued.json()) as { questions: { number: number }[] };
+  expect(problem.questions[0]?.number).toBe(1);
+});
