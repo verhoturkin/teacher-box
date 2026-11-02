@@ -114,7 +114,7 @@ Russian wording; English is written separately (AGENTS.md §6.1).
 
 ### 350. List, journal and dialog on medium
 
-- [ ] **350.1 F** Sketches 17, 35, 36: the list on medium is a segmented list of tiles (icon,
+- [x] **350.1 F** Sketches 17, 35, 36: the list on medium is a segmented list of tiles (icon,
   title, «кому · срок», the bar with «3 из 4», the tag) with the review strip as two cards; the
   journal cells show the grade («✓ 5»); the quick dialog on medium has «Фото», and «Написать с ИИ»
   and «Тест с вопросами» open the editor with the AI pane.

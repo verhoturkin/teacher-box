@@ -14,6 +14,8 @@ export interface NewAssignmentDraft {
   readonly videos: readonly VideoDraft[];
   /** Questions the AI drafted in the dialog: the editor opens with the test. */
   readonly questions?: AppliedQuestions['questions'];
+  /** Medium: «Написать с ИИ» and «Тест с вопросами» of the dialog open the editor with the AI pane. */
+  readonly ai?: boolean;
 }
 
 /** A one-shot hand-over from the quick dialog to the editor of a new assignment. */

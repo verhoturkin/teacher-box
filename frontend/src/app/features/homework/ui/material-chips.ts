@@ -38,7 +38,7 @@ import { FilePicker } from './file-picker';
     }
     <div class="tb-material-chips" role="group" [attr.aria-label]="t.materials">
       @if (withFiles()) {
-        @if (compact()) {
+        @if (compact() || tablet()) {
           <tb-assist-chip icon="photo_camera" (click)="photoPicker()?.choose()">
             {{ t.photo }}
           </tb-assist-chip>
@@ -48,7 +48,7 @@ import { FilePicker } from './file-picker';
         </tb-assist-chip>
         <tb-assist-chip icon="menu_book" (click)="textbook.emit()">{{ t.textbook }}</tb-assist-chip>
       }
-      @if (!compact()) {
+      @if (!compact() && !tablet()) {
         <tb-assist-chip icon="smart_display" [disabled]="videosFull()" (click)="video.emit()">
           {{ t.video }}
         </tb-assist-chip>
@@ -88,6 +88,8 @@ export class MaterialChips {
   protected readonly filePicker = viewChild<FilePicker>('filePicker');
   protected readonly photoPicker = viewChild<FilePicker>('photoPicker');
   readonly compact = input(false);
+  /** Medium: the camera chip (a tablet photographs the notebook), no «Видео» in the row. */
+  readonly tablet = input(false);
   /** A new assignment takes files and textbooks here; a saved one has them on its page. */
   readonly withFiles = input(true);
   readonly videosFull = input(false);

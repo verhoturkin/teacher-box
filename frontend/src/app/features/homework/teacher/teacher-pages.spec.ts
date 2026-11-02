@@ -535,6 +535,26 @@ describe('AssignmentsPage', () => {
     fixture.destroy();
   });
 
+  describe('on medium', () => {
+    const WORKS = [
+      reviewQueueItem(),
+      reviewQueueItem({ taskId: 't-2', studentId: 's-2', studentName: 'Борис' }),
+      reviewQueueItem({ taskId: 't-3', studentId: 's-3', studentName: 'Вера' }),
+    ];
+
+    it('shows tiles with the bar and two cards of the review strip', async () => {
+      const { host } = await render(GROUPED, WORKS, 700);
+
+      expect(host.querySelector('table')).toBeNull();
+      expect(host.querySelectorAll('.tb-hw__card:not(.tb-hw__card--waiting)')).toHaveLength(2);
+      const tiles = [...host.querySelectorAll('.tb-list > li')].map((row) => readableText(row));
+      expect(tiles[0]).toContain('Давнее');
+      expect(tiles[0]).toContain('1 из 2');
+      expect(host.querySelector('.tb-list > li .tb-hw__bar')).not.toBeNull();
+      expect(host.querySelector('.tb-list > li .tb-list__lead')).not.toBeNull();
+    });
+  });
+
   describe('on a phone (compact)', () => {
     const WORKS = [
       reviewQueueItem(),

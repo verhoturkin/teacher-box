@@ -325,7 +325,13 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   with counts (the chosen one by colour, no check). A phone: `tb-filter-chips` in one row that scrolls sideways without a scrollbar
   (with «Кому: все ▾» as its last chip) instead of the group, 12 dp under the search. «⋮» stands at
   the right edge of its row.
-- **Table** (`p-table` `tb-cards`; from medium): «Активные» grouped by the due date —
+- **Medium (600–839 dp)** (350.1, sketches 17, 35, 36): instead of the table a segmented `tb-list` of
+  tiles — icon, title, «кому · срок», the bar with «3 из 4» under it, the status tag, «⋮»; the review
+  strip shows two cards; journal cells are the icon and the grade (`✓ 5`, other states the icon
+  only, the label stays in `aria-label`), five columns fit without scrolling and the total column
+  is left out; the quick dialog has «Фото» and no «Видео», and «Написать с ИИ» and «Тест с
+  вопросами» open the editor with the AI pane (`AssignmentDraftHandover.ai`).
+- **Table** (`p-table` `tb-cards`; from expanded): «Активные» grouped by the due date —
   «Просрочено · N» (error colour), «На этой неделе» (up to the next Monday), «Позже»,
   «Без срока» — the heading is a label above its rows; «Черновики» and «Готовые» are one run (20
   rows and «Показать ещё» for the finished ones, 333.1). Columns: «Задание» (icon, a board icon when

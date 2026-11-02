@@ -174,7 +174,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                       type="button"
                       class="tb-create__ai"
                       [attr.aria-pressed]="aiOpen()"
-                      (click)="aiOpen.set(!aiOpen())"
+                      (click)="toggleAi()"
                     >
                       <i class="tb-i tb-i-auto_awesome" aria-hidden="true"></i
                       >{{ compact() ? t.aiShort : t.ai }}
@@ -204,11 +204,12 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
             <tb-material-chips
               [(files)]="files"
               [compact]="compact()"
+              [tablet]="medium()"
               [videosFull]="videos().length >= maxVideos"
               [(board)]="pickedBoard"
               (textbook)="addTextbook()"
               (video)="addVideo()"
-              (quiz)="openFullscreen()"
+              (quiz)="openFullscreen(undefined, medium())"
             />
           </div>
         }
@@ -465,6 +466,7 @@ export class AssignmentCreateDialog {
   readonly saved = output<AssignmentDetails>();
 
   protected readonly compact = computed(() => this.size() === 'compact');
+  protected readonly medium = computed(() => this.size() === 'medium');
   protected readonly aiEnabled = toSignal(this.aiApi.enabled$, { initialValue: false });
   protected readonly aiOpen = signal(false);
   /** Two panes fit from the large breakpoint; below it the AI pane takes the form's place. */
@@ -656,6 +658,15 @@ export class AssignmentCreateDialog {
     this.openFullscreen(questions);
   }
 
+  /** Medium has no room for the AI pane beside the form: the editor opens with it. */
+  protected toggleAi(): void {
+    if (this.medium()) {
+      this.openFullscreen(undefined, true);
+    } else {
+      this.aiOpen.set(!this.aiOpen());
+    }
+  }
+
   protected addTextbook(): void {
     this.binding.set(null);
     this.bindVisible.set(true);
@@ -690,7 +701,7 @@ export class AssignmentCreateDialog {
   }
 
   /** The full editor with everything entered so far. */
-  protected openFullscreen(questions?: AppliedQuestions['questions']): void {
+  protected openFullscreen(questions?: AppliedQuestions['questions'], ai = false): void {
     this.handover.put({
       questions,
       text: this.text.value,
@@ -699,6 +710,7 @@ export class AssignmentCreateDialog {
       files: this.files(),
       textbooks: this.pickedTextbooks(),
       videos: this.videos(),
+      ai,
     });
     this.visible.set(false);
     void this.router.navigate(['/teacher/homework/new']);

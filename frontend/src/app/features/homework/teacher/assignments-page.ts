@@ -63,6 +63,9 @@ const DONE_PAGE = 20;
 /** How many works of the review strip show their own card; the rest go to «Проверить все подряд». */
 const SHOWN_WORKS = 3;
 
+/** Medium shows two cards in the strip (sketch 17). */
+const SHOWN_WORKS_MEDIUM = 2;
+
 const DAY = 24 * 60 * 60 * 1000;
 
 /** One student or one group in the «Кому» select: `student:<id>` or `group:<id>`. */
@@ -317,7 +320,7 @@ interface Line {
 
               @if (lines().length === 0) {
                 <ng-container [ngTemplateOutlet]="empty" />
-              } @else if (mobile()) {
+              } @else if (mobile() || medium()) {
                 @for (section of sections(); track section.key) {
                   @if (section.title; as title) {
                     <h2
@@ -330,6 +333,17 @@ interface Line {
                   <ul class="tb-list tb-list--clamp" [attr.aria-label]="section.title ?? t.title">
                     @for (assignment of section.rows; track assignment.id) {
                       <li>
+                        @if (medium()) {
+                          <span class="tb-list__lead" aria-hidden="true"
+                            ><i
+                              [class]="
+                                assignment.boardId === null
+                                  ? 'tb-i tb-i-assignment'
+                                  : 'tb-i tb-i-co_present'
+                              "
+                            ></i
+                          ></span>
+                        }
                         <div class="tb-list__text">
                           <a
                             class="tb-list__title tb-list__link"
@@ -337,12 +351,22 @@ interface Line {
                             >{{ assignment.title }}</a
                           >
                           <span class="tb-list__supporting">{{ details(assignment) }}</span>
-                          <ng-container
-                            [ngTemplateOutlet]="handed"
-                            [ngTemplateOutletContext]="{ assignment }"
-                          />
+                          @if (!medium()) {
+                            <ng-container
+                              [ngTemplateOutlet]="handed"
+                              [ngTemplateOutletContext]="{ assignment }"
+                            />
+                          }
                         </div>
                         <div class="tb-list__trail tb-list__trail--icons tb-hw__row-end">
+                          @if (medium()) {
+                            <span class="tb-hw__tile-handed">
+                              <ng-container
+                                [ngTemplateOutlet]="handed"
+                                [ngTemplateOutletContext]="{ assignment }"
+                              />
+                            </span>
+                          }
                           @if (progress(assignment); as badge) {
                             <p-tag [value]="badge.label" [severity]="badge.severity" />
                           }
@@ -811,6 +835,22 @@ interface Line {
       background: var(--p-md-tertiary);
     }
 
+    /* a tile of medium: the bar is back (the table hides it below expanded), the count under it */
+    .tb-hw__tile-handed .tb-hw__handed {
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--tb-space-1);
+    }
+
+    .tb-hw__tile-handed .tb-hw__bar {
+      display: flex;
+      inline-size: 6rem;
+    }
+
+    .tb-hw__tile-handed .tb-muted {
+      font: var(--tb-type-body-s);
+    }
+
     /* the badge and «⋮» side by side */
     .tb-hw__row-end {
       flex-direction: row;
@@ -854,6 +894,8 @@ export class AssignmentsPage implements OnInit {
   private readonly dates = new DatePipe(inject(LOCALE_ID));
 
   private readonly size = injectWindowSize();
+  /** Medium (600–839): the list is tiles with the bar, not the table. */
+  protected readonly medium = computed(() => this.size() === 'medium');
   /** The work the page has read: the side sheet reviews it. */
   protected readonly current = signal<TaskDetails | null>(null);
   /** The work as a decision of the sheet left it: the page shows it. */
@@ -1014,7 +1056,9 @@ export class AssignmentsPage implements OnInit {
           work.studentName.toLocaleLowerCase().includes(query)),
     );
   });
-  protected readonly shownWorks = computed(() => this.works().slice(0, SHOWN_WORKS));
+  protected readonly shownWorks = computed(() =>
+    this.works().slice(0, this.medium() ? SHOWN_WORKS_MEDIUM : SHOWN_WORKS),
+  );
   /** Works somebody still has to hand in (or hand in again): «Ещё N работ ждут сдачи». */
   protected readonly waitingCount = computed(() =>
     this.found().reduce((sum, assignment) => sum + assignment.assigned + assignment.returned, 0),

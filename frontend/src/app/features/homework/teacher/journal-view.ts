@@ -15,6 +15,7 @@ import { RouterLink } from '@angular/router';
 import { switchMap } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Tooltip } from 'primeng/tooltip';
+import { injectWindowSize } from '@core/layout/mobile';
 import { TeacherColors } from '@features/identity/parts';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { Avatar } from '@shared/ui/avatar';
@@ -103,7 +104,7 @@ interface CellView {
           <tb-empty-state icon="tb-i-grid_view" [title]="t.emptyTitle" [hint]="t.emptyHint" />
         } @else {
           <div class="tb-journal__scroll">
-            <table class="tb-journal__grid">
+            <table class="tb-journal__grid" [class.tb-journal__grid--tablet]="tablet()">
               <thead>
                 <tr>
                   <th scope="col" class="tb-journal__who">{{ t.columnStudent }}</th>
@@ -115,7 +116,9 @@ interface CellView {
                       <span class="tb-journal__due">{{ t.due(dueOf(column)) }}</span>
                     </th>
                   }
-                  <th scope="col">{{ t.columnTotal }}</th>
+                  @if (!tablet()) {
+                    <th scope="col">{{ t.columnTotal }}</th>
+                  }
                 </tr>
               </thead>
               <tbody>
@@ -148,16 +151,18 @@ interface CellView {
                           (click)="open(data, row, $index)"
                         >
                           <i [class]="view.icon" aria-hidden="true"></i>
-                          {{ view.text }}
+                          {{ tablet() ? gradeOf(cell) : view.text }}
                         </button>
                       </td>
                     }
-                    <td>
-                      <div class="tb-journal__total">
-                        <strong>{{ t.total(row.handedIn, row.given) }}</strong>
-                        <span>{{ t.totalHint }}</span>
-                      </div>
-                    </td>
+                    @if (!tablet()) {
+                      <td>
+                        <div class="tb-journal__total">
+                          <strong>{{ t.total(row.handedIn, row.given) }}</strong>
+                          <span>{{ t.totalHint }}</span>
+                        </div>
+                      </td>
+                    }
                   </tr>
                 }
               </tbody>
@@ -269,6 +274,20 @@ interface CellView {
       vertical-align: middle;
     }
 
+    /* medium: five narrow cells fit without scrolling; a cell is the icon and the grade (sketch 35) */
+    .tb-journal__grid--tablet td {
+      min-inline-size: 0;
+    }
+
+    .tb-journal__grid--tablet .tb-journal__who {
+      min-inline-size: 9rem;
+    }
+
+    .tb-journal__grid--tablet .tb-journal__cell {
+      justify-content: center;
+      padding: 0;
+    }
+
     .tb-journal__task {
       display: block;
       color: var(--p-md-on-surface);
@@ -350,6 +369,8 @@ interface CellView {
 export class JournalView {
   protected readonly t = T.journal;
   protected readonly colors = inject(TeacherColors);
+  private readonly size = injectWindowSize();
+  protected readonly tablet = computed(() => this.size() === 'medium');
   private readonly api = inject(HomeworkApi);
   private readonly locale = inject(LOCALE_ID);
 
@@ -410,6 +431,11 @@ export class JournalView {
 
   protected dueOf(column: JournalColumn): string {
     return new DatePipe(this.locale).transform(column.dueAt, 'EEE dd.MM') ?? '';
+  }
+
+  /** Medium cells show the grade of an accepted work and nothing else (the label is read aloud). */
+  protected gradeOf(cell: JournalCell): string {
+    return cell.status === 'ACCEPTED' ? (cell.grade ?? '') : '';
   }
 
   protected viewOf(cell: JournalCell): CellView {

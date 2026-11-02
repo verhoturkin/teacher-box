@@ -1058,6 +1058,9 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
       this.applyQuestions({ questions: draft.questions, mode: 'append' });
       this.choose('quiz');
     }
+    if (draft.ai === true) {
+      this.openAi();
+    }
     this.form.markAsDirty();
   }
 

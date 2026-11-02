@@ -388,9 +388,9 @@ describe('AssignmentCreateDialog', () => {
     });
 
     it('takes the form’s place on a narrow screen and goes back with the arrow', async () => {
-      setup(700);
+      setup(390);
       await open(true);
-      exact('Написать с ИИ').click();
+      exact('ИИ').click();
       await flushPrompts();
       expect(document.body.querySelector('#create-text')).toBeNull();
       expect(document.body.querySelector('.tb-d--split')).toBeNull();
@@ -472,5 +472,29 @@ describe('AssignmentCreateDialog', () => {
       expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new']);
       expect(TestBed.inject(AssignmentDraftHandover).take()?.questions).toHaveLength(1);
     });
+  });
+
+  it('on medium: «Фото» instead of «Видео», the AI and the test open the editor with the AI pane', async () => {
+    setup(700);
+    await open(true);
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    expect(readableText(document.body)).toContain('Фото');
+    expect(readableText(document.body)).not.toContain('Видео');
+
+    click('Написать с ИИ');
+
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new']);
+    expect(TestBed.inject(AssignmentDraftHandover).take()?.ai).toBe(true);
+  });
+
+  it('on medium: «Тест с вопросами» opens the editor with the AI pane', async () => {
+    setup(700);
+    await open(true);
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    click('Тест с вопросами');
+
+    expect(TestBed.inject(AssignmentDraftHandover).take()?.ai).toBe(true);
   });
 });
