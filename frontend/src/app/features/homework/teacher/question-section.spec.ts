@@ -110,7 +110,7 @@ describe('QuestionSection', () => {
     expect(host.querySelectorAll('.tb-qb__row--broken')).toHaveLength(1);
     expect(readableText(host)).toContain('Задание не выдано: 1 вопрос нужно поправить');
     expect(readableText(host)).toContain('Вопрос 2 — напишите текст вопроса');
-    expect(readableText(host)).toContain('Вопрос 2: Напишите текст вопроса');
+    expect(readableText(host)).toContain('Вопрос 2: напишите текст вопроса');
     expect(host.querySelector('[aria-current="true"]')?.textContent).toContain('2');
     buttonByText(host, 'Вопрос 1').click();
     await fixture.whenStable();
@@ -190,6 +190,8 @@ describe('QuestionSection on a phone', () => {
     buttonByText(host, 'Добавить вопрос').click();
     await fixture.whenStable();
     expect(section.sheetOpen()).toBe(true);
+    expect(document.body.textContent).toContain('Слово или фраза');
+    expect(document.body.textContent).not.toContain('без учёта регистра и ё');
     buttonByText(document.body, 'Соединить пары').click();
     await fixture.whenStable();
     expect(section.questions().map((q) => q.type)).toEqual(['MATCHING']);

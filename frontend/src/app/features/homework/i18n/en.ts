@@ -110,6 +110,14 @@ export const en: Translation<typeof ru> = {
       MATCHING: 'Match up pairs',
       ORDERING: 'Put items in the right order',
     },
+    typeSheetHints: {
+      SINGLE_CHOICE: 'One correct option',
+      MULTIPLE_CHOICE: 'Every correct option',
+      SHORT_TEXT: 'A word or phrase',
+      NUMBER: 'Within a tolerance',
+      MATCHING: 'Match up pairs',
+      ORDERING: 'Put in order',
+    },
     typeHints: {
       SINGLE_CHOICE: 'At least two options, exactly one of them correct',
       MULTIPLE_CHOICE: 'Points are given only when every correct option and nothing else is ticked',

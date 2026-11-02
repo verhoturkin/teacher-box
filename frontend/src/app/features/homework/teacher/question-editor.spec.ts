@@ -161,6 +161,14 @@ describe('QuestionEditor', () => {
     expect(host.querySelector('.tb-qe__head .tb-stepper')).not.toBeNull();
     expect(host.querySelector('.tb-qe__title')).toBeNull();
   });
+
+  it('drags on a phone only the items of an ordering', async () => {
+    fixture.componentRef.setInput('compact', true);
+    await show(questionDraft('SINGLE_CHOICE'));
+    expect(host.querySelector('.tb-drag-handle')).toBeNull();
+    await show(questionDraft('ORDERING'));
+    expect(host.querySelector('.tb-drag-handle')).not.toBeNull();
+  });
 });
 
 describe('reordering helpers', () => {

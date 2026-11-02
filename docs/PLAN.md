@@ -53,7 +53,10 @@ The commit message or the report lists the sketches checked and anything left on
   *Left on purpose: «На доработку» stays tonal (the sketches' error container is an M3 error role);
   no avatar in the review header (the page header has no lead slot); the tablet's test block is not
   folded (the wrong answers keep «Засчитать» in sight); the journal's hint card is sketch notes.*
-- [ ] **352.3 F** Quiz builder, type editors and states (sketches 28, 29, 30, 31, 32).
+- [x] **352.3 F** Quiz builder, type editors and states (sketches 28, 29, 30, 31, 32).
+  *Left on purpose: the type stays a tonal menu button (the sketch's outlined one with a trailing
+  arrow needs a custom button); accepted answers stay outlined input chips; «Ученик увидит в
+  случайном порядке» is still not built (no backend setting).*
 - [ ] **352.4 F** Student (sketches 8, 9, 10, 23, 24, 25, 26, 27, 37, 38): only the pane scrolls,
   never the whole page; the test on a large screen is inside the frame as in 23 (rail, the
   question and the numbers column), full screen only on a phone (26); the task page has the right

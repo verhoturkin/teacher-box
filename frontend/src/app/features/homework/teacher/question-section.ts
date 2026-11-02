@@ -179,6 +179,7 @@ import { QuizSettings } from './quiz-settings';
               [label]="t.newQuestion"
               icon="tb-i tb-i-add"
               severity="secondary"
+              [fluid]="true"
               [attr.aria-haspopup]="compact() ? 'dialog' : 'menu'"
               (onClick)="compact() ? sheetOpen.set(true) : typeMenu.toggle($event)"
             />
@@ -186,6 +187,7 @@ import { QuizSettings } from './quiz-settings';
               [label]="t.withAi"
               icon="tb-i tb-i-auto_awesome"
               styleClass="tb-button-ai"
+              [fluid]="true"
               (onClick)="ai.emit()"
             />
           </div>
@@ -293,7 +295,7 @@ import { QuizSettings } from './quiz-settings';
               @for (item of problems(); track item.id) {
                 <p class="tb-qb__problem">
                   <i class="tb-i tb-i-error" aria-hidden="true"></i>
-                  <span class="tb-qb__grow">{{ s.problem(item.number, item.problem) }}</span>
+                  <span class="tb-qb__grow">{{ s.problem(item.number, lower(item.problem)) }}</span>
                   <a
                     href=""
                     [attr.aria-label]="s.openProblem(item.number)"
@@ -387,7 +389,7 @@ import { QuizSettings } from './quiz-settings';
               <i class="tb-i {{ icons[type] }}" aria-hidden="true"></i>
               <span class="tb-type-item__text">
                 <span>{{ t.types[type] }}</span>
-                <small>{{ t.typeMenuHints[type] }}</small>
+                <small>{{ t.typeSheetHints[type] }}</small>
               </span>
             </button>
           }
@@ -579,6 +581,7 @@ import { QuizSettings } from './quiz-settings';
     /* the outline is a segmented list (design-system §10): 2 px gaps, 16 px outer and 4 px inner corners */
     .tb-qb__rows {
       display: grid;
+      grid-template-columns: minmax(0, 1fr);
       gap: 2px;
       margin: 0;
       padding: 0;
@@ -700,6 +703,11 @@ import { QuizSettings } from './quiz-settings';
       flex: 1 1 17.5rem;
       max-width: 21.25rem;
       min-width: 0;
+    }
+
+    .tb-qb__sums,
+    .tb-qb__problem {
+      font: var(--tb-type-body-m);
     }
 
     .tb-qb__sums {

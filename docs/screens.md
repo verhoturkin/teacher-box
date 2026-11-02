@@ -429,10 +429,12 @@ wider it falls back to «Тест»).
   «Убрать видео», ‹ ›. Picked files and textbooks join the saved ones after the autosave; an
   issued assignment has them on its page.
 - **«Тест»** — the quiz builder (`question-section.ts`, 347.1, sketches 28, 29), three columns that
-  wrap: the **outline** (300 dp: «N вопросов · M баллов», a segmented list of rows — drag handle,
-  number, type icon, text, error icon once «Выдать» was tried, points; the open row
+  wrap: the **outline** (300 dp: «N вопросов · M баллов», a segmented list of one-line rows —
+  drag handle, number, type icon, the text cut with an ellipsis, error icon once «Выдать» was
+  tried, points; the open row
   secondary-container; rows reorder by CDK drag or ↑ / ↓ on the handle; tonal «Вопрос» opens a menu
-  of the six types with a hint each, tertiary «С ИИ» opens the AI pane), the **open question**
+  of the six types with a hint each, tertiary «С ИИ» opens the AI pane — the two share the
+  column's width), the **open question**
   (`question-editor.ts` in a section card: «Вопрос N», the type as a tonal menu button — a
   change keeps the text, points and explanation, the options pass between the choices and the
   ordering, otherwise «Сменить тип вопроса?» asks first —, copy / ↑ / ↓ / delete, the Markdown
@@ -463,9 +465,10 @@ wider it falls back to «Тест»).
   question and the side cards (medium). On a phone «Вопросы» is the outline only: rows end in
   `chevron_right`, the bottom bar `tb-bottom-actions` holds «Вопрос · С ИИ»; a row opens its
   question as a full-screen dialog (`tb-dialog kind="form"`: ✕, «Вопрос 3 из 8», copy and delete,
-  the type and the points stepper in one row, tap the circle or box to mark the right option, the
-  explanation folded; the footer «‹ 2 · сохранено · HH:mm · Вопрос 4 ›»); «Вопрос» opens a bottom
-  sheet «Новый вопрос» (the six types with hints, a divider, «Составить с ИИ»). ✕ returns to the
+  the type and the points stepper in one row, tap the circle or box to mark the right option — no
+  drag handles but on the items of an ordering —, the explanation folded; the footer «‹ 2 · сохранено · HH:mm · Вопрос 4 ›»); «Вопрос» opens a bottom
+  sheet «Новый вопрос» (the six types with one-line hints — «Слово или фраза», shorter than the
+  menu's —, a divider, «Составить с ИИ»). ✕ returns to the
   outline with the focus on the row.
 - **Header** (`tb-page-header--one-line`): back, the assignment's title as it is typed («Новое
   задание» / «Изменить задание» while there is none) on one line cut with «…», «?», «ИИ-помощник»

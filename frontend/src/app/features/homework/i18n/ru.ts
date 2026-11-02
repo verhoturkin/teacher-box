@@ -109,6 +109,15 @@ export const ru = {
       MATCHING: 'Соединить пары',
       ORDERING: 'Расставить элементы по порядку',
     },
+    /** The phone's bottom sheet of the types (sketch 32): one short line each. */
+    typeSheetHints: {
+      SINGLE_CHOICE: 'Один верный вариант',
+      MULTIPLE_CHOICE: 'Все верные варианты',
+      SHORT_TEXT: 'Слово или фраза',
+      NUMBER: 'С допуском ±',
+      MATCHING: 'Соединить пары',
+      ORDERING: 'Расставить по порядку',
+    },
     typeHints: {
       SINGLE_CHOICE: 'Не меньше двух вариантов, ровно один верный',
       MULTIPLE_CHOICE: 'Балл — только если отмечены все верные и ни одного лишнего',

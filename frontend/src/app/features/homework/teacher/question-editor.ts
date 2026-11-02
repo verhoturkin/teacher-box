@@ -239,7 +239,8 @@ import {
                 cdkDrag
                 [class.tb-qe__option--correct]="item.correct"
               >
-                @if (!locked()) {
+                <!-- a phone drags only the items of an ordering (sketch 31) -->
+                @if (!locked() && (!compact() || ordering())) {
                   <button
                     type="button"
                     class="tb-drag-handle"
@@ -414,6 +415,7 @@ import {
 
     .tb-qe__group {
       display: grid;
+      grid-template-columns: minmax(0, 1fr);
       gap: var(--tb-space-2);
       justify-items: start;
     }
@@ -429,6 +431,7 @@ import {
 
     .tb-qe__options {
       display: grid;
+      grid-template-columns: minmax(0, 1fr);
       gap: var(--tb-space-2);
       width: 100%;
     }
@@ -459,9 +462,12 @@ import {
       opacity: 0.4;
     }
 
+    /* a 40 dp field keeps the option row at 48 dp (sketch 28; ours — the M3 text field is 56 dp) */
     .tb-qe__field {
       flex: 1;
       min-width: 0;
+      height: 2.5rem;
+      padding-block: 0;
     }
 
     .tb-qe__number {
