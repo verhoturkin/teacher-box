@@ -215,6 +215,7 @@ public class AssignmentService {
             throw new BusinessRuleException("task.not-remindable", "The work is already handed in");
         }
         Instant now = clock.instant();
+        reminded.values().removeIf(at -> !at.plus(REMIND_INTERVAL).isAfter(now));
         Instant last = reminded.get(task.id());
         if (last != null && last.plus(REMIND_INTERVAL).isAfter(now)) {
             throw new ConflictException("task.reminded-recently", "The student was reminded less than an hour ago");

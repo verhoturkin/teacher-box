@@ -3,6 +3,7 @@ package ru.teacherbox.notifications;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -157,6 +158,25 @@ class DeliveryIntegrationTests {
 
         assertThat(delivery(student).status()).isEqualTo(DeliveryStatus.PENDING);
         assertThat(delivery(student).lastError()).isEqualTo("IllegalStateException");
+    }
+
+    @Test
+    void temporaryFailureLeavesTheRestOfTheMessengersBatchForTheNextRun() {
+        UUID first = connectedStudent("7006");
+        UUID second = connectedStudent("7007");
+        notifications.notify(first, NotificationKind.MESSAGE, "Первое", null, null);
+        notifications.notify(second, NotificationKind.MESSAGE, "Второе", null, null);
+        telegram.failWith(new DeliveryException("Telegram: timeout", false));
+
+        dispatcher.dispatch();
+
+        assertThat(List.of(delivery(first).attempts(), delivery(second).attempts()))
+                .containsExactlyInAnyOrder(1, 0);
+
+        telegram.reset();
+        dispatcher.dispatch();
+        assertThat(telegram.sent()).as("the untried one goes at once, the failed one after its backoff")
+                .hasSize(1);
     }
 
     @Test

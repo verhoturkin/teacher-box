@@ -54,7 +54,8 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   Sections, titles, hints and value problems come in the language of the request (`Accept-Language`,
   `Wording` pairs `ru`/`en`, `SettingKind.problem(…, Language)`; 0.11.1, ADR-0036).
 - `admin/` — logs search and temporary log levels, status (version, uptime, memory, disk, DB, health),
-  incomplete Modulith events with resubmit, integration checks (`IntegrationCheck` beans; names and answers in
+  incomplete Modulith events with resubmit (completed ones are deleted nightly after 7 days,
+  `EventPublications.purgeCompleted`), integration checks (`IntegrationCheck` beans; names and answers in
   the language of the request, `Language.current()`), diagnostics archive.
   Admin actions → `teacherbox.audit` logger.
 - Logs — JSON (ECS) in `/data/logs/teacher-box.log` with rotation; console plain text; no personal data.

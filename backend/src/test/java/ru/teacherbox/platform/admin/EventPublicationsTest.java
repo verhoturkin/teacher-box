@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -13,6 +14,7 @@ import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.support.StaticListableBeanFactory;
+import org.springframework.modulith.events.CompletedEventPublications;
 import org.springframework.modulith.events.EventPublication;
 import org.springframework.modulith.events.IncompleteEventPublications;
 import org.springframework.modulith.events.core.EventPublicationRegistry;
@@ -26,6 +28,7 @@ class EventPublicationsTest {
 
     private final EventPublicationRegistry registry = mock(EventPublicationRegistry.class);
     private final IncompleteEventPublications incomplete = mock(IncompleteEventPublications.class);
+    private final CompletedEventPublications completed = mock(CompletedEventPublications.class);
 
     @Test
     void listsIncompleteEventsWithoutTheirContent() {
@@ -61,21 +64,32 @@ class EventPublicationsTest {
     }
 
     @Test
+    void purgesCompletedEventsOlderThanAWeek() {
+        events().purgeCompleted();
+
+        verify(completed).deletePublicationsOlderThan(Duration.ofDays(7));
+    }
+
+    @Test
     void worksWithoutTheRegistry() {
-        EventPublications none = new EventPublications(new StaticListableBeanFactory().getBeanProvider(
-                EventPublicationRegistry.class), new StaticListableBeanFactory().getBeanProvider(
-                IncompleteEventPublications.class));
+        StaticListableBeanFactory empty = new StaticListableBeanFactory();
+        EventPublications none = new EventPublications(empty.getBeanProvider(EventPublicationRegistry.class),
+                empty.getBeanProvider(IncompleteEventPublications.class),
+                empty.getBeanProvider(CompletedEventPublications.class));
 
         assertThat(none.incomplete()).isEmpty();
         assertThat(none.resubmit(Set.of())).isZero();
+        none.purgeCompleted();
     }
 
     private EventPublications events() {
         StaticListableBeanFactory beans = new StaticListableBeanFactory();
         beans.addBean("registry", registry);
         beans.addBean("incomplete", incomplete);
+        beans.addBean("completed", completed);
         return new EventPublications(beans.getBeanProvider(EventPublicationRegistry.class),
-                beans.getBeanProvider(IncompleteEventPublications.class));
+                beans.getBeanProvider(IncompleteEventPublications.class),
+                beans.getBeanProvider(CompletedEventPublications.class));
     }
 
     private static TargetEventPublication publication(String publishedAt) {

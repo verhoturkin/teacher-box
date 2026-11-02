@@ -10,6 +10,7 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.logging.LoggingSystem;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.modulith.events.CompletedEventPublications;
 import org.springframework.modulith.events.IncompleteEventPublications;
 import org.springframework.modulith.events.core.EventPublicationRegistry;
 import ru.teacherbox.platform.core.PlatformCoreAutoConfiguration;
@@ -46,8 +47,9 @@ public class PlatformAdminAutoConfiguration {
 
     @Bean
     EventPublications eventPublications(ObjectProvider<EventPublicationRegistry> registry,
-            ObjectProvider<IncompleteEventPublications> incomplete) {
-        return new EventPublications(registry, incomplete);
+            ObjectProvider<IncompleteEventPublications> incomplete,
+            ObjectProvider<CompletedEventPublications> completed) {
+        return new EventPublications(registry, incomplete, completed);
     }
 
     @Bean

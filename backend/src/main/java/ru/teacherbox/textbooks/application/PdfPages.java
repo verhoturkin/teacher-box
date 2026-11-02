@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import javax.imageio.ImageIO;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.io.RandomAccessRead;
@@ -31,6 +32,10 @@ class PdfPages {
     static final int COVER_WIDTH = 600;
 
     private static final float POINTS_PER_INCH = 72;
+    /** Pictures rendered at once: each holds a whole page bitmap, and requests run on unbounded virtual threads. */
+    static final int MAX_RENDERS = 2;
+
+    private final Semaphore renders = new Semaphore(MAX_RENDERS);
 
     /** @throws BusinessRuleException {@code textbooks.pdf-unreadable} for a broken or password-protected PDF */
     int count(Resource pdf) {
@@ -80,6 +85,15 @@ class PdfPages {
     }
 
     private byte[] render(Resource pdf, int page, int maxWidth) {
+        renders.acquireUninterruptibly();
+        try {
+            return renderNow(pdf, page, maxWidth);
+        } finally {
+            renders.release();
+        }
+    }
+
+    private static byte[] renderNow(Resource pdf, int page, int maxWidth) {
         try (PDDocument document = load(pdf)) {
             if (page < 1 || page > document.getNumberOfPages()) {
                 throw TextbookService.pageNotFound();
