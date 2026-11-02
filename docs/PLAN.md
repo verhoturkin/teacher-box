@@ -19,46 +19,6 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
-## Next release
-
-Homework after the review of 0.43.0: the editor's section menu adds videos and boards, the open
-assignment gives the task the main column and the students a narrow one, the video settings are
-a dialog over the editor (sketches 4, 11, 39, 40 on the design canvas).
-
-### Stage 353 — homework polish
-
-- [x] **353.1** **F** Tab indicator spans the whole tab content, icon and label — the icon moves into
-  `tb-tab-label` (`assignment-editor-page.ts`); other tab bars have no icons.
-- [x] **353.2** **F** Student task materials: «Материалы» and «Учебники» headings share one style
-  (`my-task-page.ts` and its sibling headings).
-- [x] **353.3** **F** Quiz navigator: an ordering question counts as answered only after the student
-  changes the order (student quiz page, `QuizService`/`QuizViews` if «answered» comes from there).
-- [x] **353.4** **F** Teacher review: remove the disabled «На доску» button under «На доработку /
-  Принять».
-- [x] **353.5** **F** Student task page: one help (?) icon, next to the task title; the list pane
-  header «Задания» has none (`my-homework-page.ts`).
-- [x] **353.6** **F** AI generation of task text and quiz questions: the button shows a busy state
-  (loading indicator, disabled, «Генерирую…», `aria-busy`).
-
-### Stage 354 — editor, open assignment, video dialog
-
-- [x] **354.1 F** Editor materials (sketch 11): videos and the board leave «Материалы» for the
-  left section menu («Добавить: Видео, Доску») and get sections of their own; «Тест с
-  вопросами» leaves the materials (the test lives on «Тест»); textbooks and files are one
-  segmented list without the extra gap; segmented lists keep the 16 px outer corner inside cards
-  and dialogs (`styles.scss` `.tb-list`, `tb-list-group`). Entry points:
-  `homework/teacher/assignment-editor-page.ts`, `homework/ui/material-chips.ts`,
-  `shared/ui/section-nav.ts`.
-- [x] **354.2 F** Open assignment on a wide screen (sketch 4): the task in the main column (text,
-  materials as a segmented list, the test line), the students in a narrow right column grouped
-  by status («Проверить», «На доработке», «Принято»; empty groups hidden) with compact rows,
-  «Выдать ещё» as an icon button, «Ошибки по вопросам» under the students; medium and compact
-  layouts (sketches 18, 7) unchanged. Entry point: `homework/teacher/assignment-page.ts`.
-- [x] **354.3 F** Video settings as a dialog (sketches 39, 40): «Видео N из M» with previous and
-  next, player, title, transcript, «Показывать расшифровку ученику», «Убрать видео» and
-  «Готово»; changes save at once; full screen on a phone. Entry point:
-  `homework/teacher/video-section.ts`.
-
 ## Repository maintenance
 
 ### Stage 336 — GitHub releases and README screenshots
