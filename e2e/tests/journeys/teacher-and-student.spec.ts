@@ -112,11 +112,10 @@ test('the teacher gives homework and the student hands it in', async ({ page, br
   await expect(page).toHaveURL(/\/teacher\/homework$/);
   await page.getByRole('link', { name: HOMEWORK_TITLE }).click();
   await expect(page.getByRole('heading', { name: HOMEWORK_TITLE })).toBeVisible();
-  const studentRow = page
-    .getByRole('list', { name: 'Ученики' })
-    .getByRole('listitem')
-    .filter({ hasText: STUDENT_NAME });
-  await expect(studentRow).toContainText('Выдано');
+  // 354.2 (sketch 4): on a wide screen the students are grouped by status in a column of their own
+  const students = page.getByRole('complementary', { name: 'Ученики' });
+  await expect(students.getByRole('region', { name: /^Ждут сдачи/ })).toContainText(STUDENT_NAME);
+  await expect(students.getByRole('button', { name: 'Выдать ещё' })).toBeVisible();
 
   const student = await studentPage(browser);
   await student
@@ -131,7 +130,8 @@ test('the teacher gives homework and the student hands it in', async ({ page, br
   await expect(student.getByText('1/2 + 1/3 = 5/6')).toBeVisible();
 
   await page.reload();
-  await expect(studentRow).toContainText('На проверке');
+  await expect(students.getByRole('region', { name: /^Проверить/ })).toContainText(STUDENT_NAME);
+  await expect(students.getByRole('button', { name: `Проверить: ${STUDENT_NAME}` })).toBeVisible();
 });
 
 test('a payment reaches the student inbox', async ({ page, browser }) => {

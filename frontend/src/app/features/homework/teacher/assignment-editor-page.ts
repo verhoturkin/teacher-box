@@ -61,7 +61,8 @@ import {
   HomeworkAiState,
   SourceOption,
 } from '@features/ai/parts';
-import { Placed, ToBoardDialog } from '@features/boards/parts';
+import { BoardsApi, Placed, ToBoardDialog } from '@features/boards/parts';
+import { quietContext } from '@core/http/api-error.interceptor';
 import { HelpButton } from '@features/help/parts';
 import {
   MemberSelection,
@@ -79,7 +80,12 @@ import { MarkdownView } from '@shared/ui/markdown-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { Avatar } from '@shared/ui/avatar';
 import { InputChip } from '@shared/ui/input-chip';
-import { SectionNav, SectionNavItem } from '@shared/ui/section-nav';
+import {
+  SectionNav,
+  SectionNavAction,
+  SectionNavItem,
+  SectionNavPress,
+} from '@shared/ui/section-nav';
 import { HomeworkApi } from '../data-access/homework-api';
 import {
   AssignmentDetails,
@@ -287,7 +293,14 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
           @if (activeTab() === 'task') {
             <div class="tb-editor__layout">
               @if (showNav()) {
-                <tb-section-nav class="tb-editor__nav" [items]="navItems()" [label]="t.sections" />
+                <tb-section-nav
+                  class="tb-editor__nav"
+                  [items]="navItems()"
+                  [label]="t.sections"
+                  [actions]="navActions()"
+                  [actionsLabel]="t.addSection"
+                  (pressed)="add($event)"
+                />
               }
               <form
                 tbFieldErrors
@@ -345,6 +358,26 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                           [videos]="videos()"
                           (videosChange)="changeVideos($event)"
                         />
+                      </p-card>
+                    }
+
+                    @if (pickedBoard(); as picked) {
+                      <p-card
+                        id="editor-board"
+                        styleClass="tb-section-card"
+                        class="tb-editor__board"
+                      >
+                        <h2 class="tb-subtitle tb-editor__card-head">{{ t.boardTitle }}</h2>
+                        <div class="tb-editor__chips">
+                          <tb-input-chip
+                            [label]="picked.title"
+                            [removeLabel]="c.remove"
+                            (removed)="pickedBoard.set(null)"
+                          >
+                            <i lead class="tb-i tb-i-co_present" aria-hidden="true"></i>
+                          </tb-input-chip>
+                        </div>
+                        <p class="tb-hint">{{ draft() ? t.boardOnAssign : t.boardOnSave }}</p>
                       </p-card>
                     }
 
@@ -446,42 +479,46 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                       </div>
                     </p-card>
 
-                    <p-card
-                      id="editor-materials"
-                      styleClass="tb-section-card"
-                      class="tb-editor__materials-card"
-                      [header]="c.materials"
-                    >
-                      <div class="tb-editor__materials tb-list--clamp">
-                        @if (draft()) {
-                          <tb-textbook-list
-                            [textbooks]="textbooks()"
-                            [editable]="true"
-                            [withBoard]="false"
-                            (opened)="materials.textbook($event)"
-                            (edit)="editTextbook($event)"
-                            (remove)="removeTextbook($event)"
+                    @if (draft() || extrasInMaterials()) {
+                      <p-card
+                        id="editor-materials"
+                        styleClass="tb-section-card"
+                        class="tb-editor__materials-card"
+                        [header]="c.materials"
+                      >
+                        <div class="tb-editor__materials tb-list--clamp">
+                          @if (draft()) {
+                            <div class="tb-list-group">
+                              <tb-textbook-list
+                                [textbooks]="textbooks()"
+                                [editable]="true"
+                                [withBoard]="false"
+                                (opened)="materials.textbook($event)"
+                                (edit)="editTextbook($event)"
+                                (remove)="removeTextbook($event)"
+                              />
+                              <tb-attachment-list
+                                [attachments]="savedFiles()"
+                                [removable]="true"
+                                (download)="materials.file($event)"
+                                (remove)="removeFile($event)"
+                              />
+                            </div>
+                          }
+                          <tb-material-chips
+                            [(files)]="newFiles"
+                            [compact]="compact()"
+                            [withFiles]="draft()"
+                            [videosFull]="videosFull()"
+                            [withExtras]="extrasInMaterials()"
+                            [boardPicked]="pickedBoard() !== null"
+                            (textbook)="bindTextbook()"
+                            (video)="addVideo()"
+                            (board)="chooseBoard($event)"
                           />
-                          <tb-attachment-list
-                            [attachments]="savedFiles()"
-                            [removable]="true"
-                            (download)="materials.file($event)"
-                            (remove)="removeFile($event)"
-                          />
-                        }
-                        <tb-material-chips
-                          [(files)]="newFiles"
-                          [compact]="compact()"
-                          [withFiles]="draft()"
-                          [videosFull]="videos().length >= maxVideos"
-                          [withQuiz]="questions().length === 0"
-                          [(board)]="pickedBoard"
-                          (textbook)="bindTextbook()"
-                          (video)="addVideo()"
-                          (quiz)="choose('quiz')"
-                        />
-                      </div>
-                    </p-card>
+                        </div>
+                      </p-card>
+                    }
                   </div>
                 </div>
               </form>
@@ -605,6 +642,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
           (saved)="given($event)"
         />
       }
+      <p-menu #boardMenu [model]="boardItems()" [popup]="true" appendTo="body" />
       <tb-bind-textbook-dialog
         [(visible)]="bindVisible"
         [taken]="textbooks()"
@@ -934,11 +972,33 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
       ...(videos > 0 || this.videoField()
         ? [{ id: 'editor-videos', icon: 'tb-i-smart_display', label: this.t.sectionVideos(videos) }]
         : []),
+      ...(this.pickedBoard() === null
+        ? []
+        : [{ id: 'editor-board', icon: 'tb-i-co_present', label: this.t.boardTitle }]),
       ...(questions > 0
         ? [{ id: 'editor-quiz-summary', icon: 'tb-i-quiz', label: this.t.sectionQuiz(questions) }]
         : []),
     ];
   });
+
+  /** «Добавить» of the section menu (sketch 11): a video and, until one is chosen, a board. */
+  protected readonly navActions = computed<SectionNavAction[]>(() => [
+    {
+      id: 'video',
+      icon: 'tb-i-smart_display',
+      label: this.t.addVideo,
+      disabled: this.videosFull(),
+    },
+    ...(this.pickedBoard() === null
+      ? [{ id: 'board', icon: 'tb-i-co_present', label: this.t.addBoard }]
+      : []),
+  ]);
+  /** No section menu (a tablet, the assistant open): «Видео» and «Доска» are chips of the materials; a phone has neither. */
+  protected readonly extrasInMaterials = computed(() => !this.showNav() && !this.compact());
+  protected readonly videosFull = computed(() => this.videos().length >= MAX_VIDEOS);
+  private readonly boards = inject(BoardsApi);
+  private readonly boardMenu = viewChild<Menu>('boardMenu');
+  protected readonly boardItems = signal<MenuItem[]>([]);
 
   protected readonly students = signal<StudentOption[]>([]);
   protected readonly groups = signal<StudentGroup[]>([]);
@@ -1275,6 +1335,28 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   changeVideos(videos: readonly VideoDraft[]): void {
     this.videos.set(videos);
     this.videosChanged.set(true);
+  }
+
+  protected add({ id, event }: SectionNavPress): void {
+    if (id === 'video') this.addVideo();
+    else this.chooseBoard(event);
+  }
+
+  /** The teacher's boards are read when the menu opens; an empty list says so instead of showing nothing. */
+  protected chooseBoard(event: Event): void {
+    this.boardMenu()?.toggle(event);
+    this.boards.list({}, quietContext()).subscribe((boards) => {
+      this.boardItems.set(
+        boards.length === 0
+          ? [{ label: this.c.noBoards, disabled: true }]
+          : boards.map((board) => ({
+              label: board.title,
+              command: () => {
+                this.pickedBoard.set({ id: board.id, title: board.title });
+              },
+            })),
+      );
+    });
   }
 
   protected addVideo(): void {

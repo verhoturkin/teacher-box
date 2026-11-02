@@ -261,30 +261,46 @@ describe('AssignmentEditorPage', () => {
     expect(created.request.body).toMatchObject({ title: 'я'.repeat(200) });
   });
 
-  it('hides the empty sections and shows them from the assist chips', async () => {
+  it('hides the empty sections and adds a video from the section menu', async () => {
     const { page, host } = await create([]);
     expect(host.querySelector('h1')?.textContent.trim()).toBe('Новое задание');
     expect(host.querySelector('tb-textbook-list li')).toBeNull();
     expect(host.querySelector('tb-video-section')).toBeNull();
     expect(host.querySelector('tb-question-section')).toBeNull();
+    // the materials are files and textbooks: the video, the board and the test live elsewhere
+    const materials = host.querySelector<HTMLElement>('tb-material-chips') ?? host;
+    expect(readableText(materials)).not.toMatch(/Видео|Доска|Тест/);
 
-    buttonByText(host, 'Видео').click();
+    const add = () => [...host.querySelectorAll<HTMLButtonElement>('.tb-section-nav__action')];
+    expect(add().map((button) => button.textContent.trim())).toEqual(['Видео', 'Доску']);
+    add()[0]?.click();
     await fixture.whenStable();
     expect(host.querySelector('tb-video-section')).not.toBeNull();
     expect(page.videos()).toHaveLength(0);
     expect(document.activeElement?.id).toBe('video-link');
 
     page.pickTextbook(boundTextbook());
+    page.newFiles.set([new File(['x'], 'условие.pdf')]);
+    page.changeVideos(Array.from({ length: 5 }, () => videoDraft()));
     await fixture.whenStable();
     expect(host.querySelector('tb-textbook-list li')).not.toBeNull();
-    page.changeVideos([]);
-    await fixture.whenStable();
+    expect(add()[0]?.disabled).toBe(true);
+  });
 
-    buttonByText(host, 'Тест с вопросами').click();
+  it('keeps «Видео» and «Доска» in the materials without the section menu', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: testProviders(screenWidth(700)) });
+    backend = TestBed.inject(HttpTestingController);
+    const { host } = await create([]);
+    expect(host.querySelector('tb-section-nav')).toBeNull();
+    const materials = host.querySelector<HTMLElement>('tb-material-chips') ?? host;
+    buttonByText(materials, 'Видео').click();
     await fixture.whenStable();
-    expect(host.querySelector('tb-question-section')).not.toBeNull();
-    expect(host.querySelector('#editor-text')).toBeNull();
-    expect(TestBed.inject(Location).path()).toContain('tab=quiz');
+    expect(host.querySelector('tb-video-section')).not.toBeNull();
+    buttonByText(materials, 'Доска').click();
+    backend.expectOne('/api/teacher/boards').flush([]);
+    await fixture.whenStable();
+    expect(document.body.textContent).toContain('Досок пока нет');
   });
 
   it('keeps the test on its own tab and sums it up on «Задание»', async () => {
@@ -398,12 +414,15 @@ describe('AssignmentEditorPage', () => {
     page.form.patchValue({ description: 'Дроби', members: [{ kind: 'STUDENT', id: 's-1' }] });
     page.pickTextbook(boundTextbook({ textbookId: 'tb-1', pages: '3' }));
     await fixture.whenStable();
-    buttonByText(host, 'Доска').click();
+    exactButton(host, 'Доску').click();
     backend.expectOne('/api/teacher/boards').flush([aBoard()]);
     await fixture.whenStable();
     document.body.querySelector<HTMLElement>('.p-menu-item-link')?.click();
     await fixture.whenStable();
-    expect(readableText(host)).toContain('Доска: Алгебра');
+    const board = readableText(host.querySelector<HTMLElement>('#editor-board') ?? host);
+    expect(board).toContain('Алгебра');
+    expect(board).toContain('когда вы его выдадите');
+    expect(host.querySelector('.tb-section-nav__action:nth-child(2)')).toBeNull();
     exactButton(host, 'Выдать').click();
     backend
       .expectOne({ method: 'POST', url: '/api/teacher/homework/assignments' })

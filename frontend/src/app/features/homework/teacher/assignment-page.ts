@@ -1,5 +1,5 @@
 import { PaneHeader } from '@shared/ui/panes';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -32,6 +32,7 @@ import {
   AssignmentDetails,
   Attachment,
   QuizStats,
+  TaskStatus,
   TaskSummary,
 } from '../data-access/homework.models';
 import { AttachmentList } from '../ui/attachment-list';
@@ -52,15 +53,32 @@ import { T } from '../i18n/texts';
 
 type Tab = 'students' | 'task' | 'errors';
 
+interface StudentGroup {
+  readonly key: string;
+  readonly status: TaskStatus;
+  readonly icon: string;
+  readonly label: string;
+  readonly tasks: readonly TaskSummary[];
+}
+
+const GROUPS: readonly Omit<StudentGroup, 'tasks'>[] = [
+  { key: 'review', status: 'SUBMITTED', icon: 'tb-i-rate_review', label: T.page.groupToReview },
+  { key: 'returned', status: 'RETURNED', icon: 'tb-i-replay', label: T.page.groupReturned },
+  { key: 'waiting', status: 'ASSIGNED', icon: 'tb-i-schedule', label: T.page.groupWaiting },
+  { key: 'accepted', status: 'ACCEPTED', icon: 'tb-i-check_circle', label: T.page.groupAccepted },
+];
+
 /** The text of the assignment is folded to three lines once it is longer than this (or has more lines). */
 const FOLD_LENGTH = 160;
 const FOLD_LINES = 3;
 
 /**
  * Teacher: one assignment. The header has «Изменить» (outlined, the secondary action beside the filled
- * one) and «Проверить N работ»; the students are tiles with the answer preview, the aside holds the
- * folded text, the materials and the mistakes by question. On a phone the three become tabs and the
- * review button sticks to the bottom.
+ * one) and «Проверить N работ». From large (sketch 4) the task takes the main column — the whole text,
+ * the materials, the test — and the students a narrow one, grouped by status with one action a row, the
+ * mistakes by question under them. Narrower (sketch 18) the students are tiles with the answer preview
+ * and the aside holds the folded text, the materials and the mistakes. On a phone the three become tabs
+ * and the review button sticks to the bottom.
  */
 @Component({
   selector: 'tb-assignment-page',
@@ -85,6 +103,7 @@ const FOLD_LINES = 3;
     Tooltip,
     ButtonAttributes,
     SegmentGroup,
+    NgTemplateOutlet,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -137,164 +156,292 @@ const FOLD_LINES = 3;
         />
       }
 
-      <div class="tb-asg">
-        @if (showStudents()) {
-          <section class="tb-asg__main">
-            <div class="tb-asg__head">
-              <h2 class="tb-asg__label">{{ t.students }}</h2>
-              @if (counts().accepted > 0) {
-                <p-tag [value]="t.tagAccepted(counts().accepted)" severity="success" />
-              }
-              @if (toReview().length > 0) {
-                <p-tag [value]="t.tagToReview(toReview().length)" severity="warn" />
-              }
-              @if (counts().returned > 0) {
-                <p-tag [value]="t.tagReturned(counts().returned)" severity="danger" />
-              }
-              <span class="tb-asg__spacer"></span>
-              <p-button
-                [label]="t.assignMoreShort"
-                icon="tb-i tb-i-person_add"
-                [text]="true"
-                (onClick)="assignMore.open(assignment.draftStudentIds)"
-              />
-            </div>
-            @if (assignment.tasks.length > 0) {
-              <ul class="tb-asg__tiles" [attr.aria-label]="t.students">
-                @for (task of assignment.tasks; track task.taskId) {
-                  <li class="tb-asg-tile">
-                    <div class="tb-asg-tile__head">
-                      <tb-avatar
-                        [attr.data-tb-label]="colors.studentLabel(task.studentId)"
-                        [name]="task.studentName"
-                        [photo]="task.studentAvatar"
-                      />
-                      <div class="tb-asg-tile__who">
-                        <span class="tb-asg-tile__name">{{ task.studentName }}</span>
-                        <span
-                          class="tb-asg-tile__line"
-                          [class.tb-negative]="task.overdue && task.submittedAt === null"
-                          >{{ statusLine(task, assignment.dueAt) }}</span
-                        >
-                      </div>
-                      <tb-task-status inline [status]="task.status" />
-                    </div>
-                    @if (task.answerPreview; as preview) {
-                      <p class="tb-asg-tile__preview">{{ preview }}</p>
-                    }
-                    <div class="tb-asg-tile__foot">
-                      @if (task.quizScore !== null && task.quizMax !== null) {
-                        <span class="tb-asg-tile__meta"
-                          ><i class="tb-i tb-i-quiz" aria-hidden="true"></i
-                          >{{ t.quiz(task.quizScore, task.quizMax) }}</span
-                        >
-                      }
-                      @if (task.answerFiles > 0) {
-                        <span class="tb-asg-tile__meta"
-                          ><i class="tb-i tb-i-attach_file" aria-hidden="true"></i
-                          >{{ t.files(task.answerFiles) }}</span
-                        >
-                      }
-                      <span class="tb-asg__spacer"></span>
-                      @if (task.status === 'ASSIGNED' || task.status === 'RETURNED') {
-                        <p-button
-                          severity="secondary"
-                          [label]="t.remind"
-                          [ariaLabel]="t.action(t.remind, task.studentName)"
-                          [loading]="busy.is(task.studentId)"
-                          (onClick)="remind(task)"
-                        />
-                      }
-                      <button
-                        pButton
-                        type="button"
-                        severity="secondary"
-                        (click)="reviewWork.emit(task.taskId)"
-                        [attr.aria-label]="
-                          t.action(
-                            task.status === 'SUBMITTED' ? t.review : t.open,
-                            task.studentName
-                          )
-                        "
-                      >
-                        <span pButtonLabel>{{
-                          task.status === 'SUBMITTED' ? t.review : t.open
-                        }}</span>
-                      </button>
-                    </div>
-                  </li>
-                }
-              </ul>
+      @if (wide()) {
+        <!-- a wide window (sketch 4): the task in the main column, the students by status in a narrow one -->
+        <div class="tb-asg tb-asg--wide">
+          <section class="tb-asg__task" [attr.aria-label]="t.assignment">
+            @if (assignment.description; as description) {
+              <tb-markdown class="tb-asg__body" [text]="description" />
             } @else {
-              <tb-empty-state icon="tb-i-send" [title]="t.notAssigned" />
+              <p class="tb-muted">{{ t.noText }}</p>
             }
-          </section>
-        }
-
-        @if (showTask() || showErrors()) {
-          <aside class="tb-asg__aside">
-            @if (showTask()) {
-              <section class="tb-asg__side">
-                <h2 class="tb-asg__label">{{ t.assignment }}</h2>
-                @if (assignment.description; as description) {
-                  <div class="tb-asg__text" [class.tb-asg__text--folded]="folded(description)">
-                    <tb-markdown [text]="description" />
-                  </div>
-                  @if (isLong(description)) {
-                    <p-button
-                      class="tb-asg__fold"
-                      [label]="expanded() ? t.fold : t.showAll"
-                      [text]="true"
-                      (onClick)="expanded.set(!expanded())"
-                    />
-                  }
-                } @else {
-                  <p class="tb-muted">{{ t.noText }}</p>
-                }
-                @if (assignment.videos.length > 0) {
-                  <h3 class="tb-subtitle">{{ tv.title }}</h3>
-                  <tb-video-list [videos]="assignment.videos" [teacher]="true" />
-                }
-                @if (assignment.attachments.length > 0 || assignment.textbooks.length > 0) {
-                  <h3 class="tb-subtitle">{{ t.materials }}</h3>
-                }
+            @if (assignment.attachments.length > 0 || assignment.textbooks.length > 0) {
+              <h2 class="tb-asg__label">{{ t.materials }}</h2>
+              <div class="tb-list-group tb-asg__block">
+                <tb-textbook-list
+                  [textbooks]="assignment.textbooks"
+                  (opened)="materials.textbook($event)"
+                />
                 <tb-attachment-list
                   [attachments]="assignment.attachments"
                   [openable]="true"
                   (opened)="materials.file($event)"
                   (download)="download($event)"
                 />
-                <tb-textbook-list
-                  [textbooks]="assignment.textbooks"
-                  (opened)="materials.textbook($event)"
-                />
-              </section>
+              </div>
             }
-            @if (showErrors() && stats(); as quizStats) {
-              <section class="tb-asg__side">
-                <h2 class="tb-asg__label">{{ tq.stats }}</h2>
-                @if (quizStats.students === 0) {
-                  <p class="tb-muted">{{ tq.statsNone }}</p>
-                } @else {
-                  <ol class="tb-asg-stats">
-                    @for (q of quizStats.questions; track q.questionId; let n = $index) {
-                      <li class="tb-asg-stats__row" [attr.title]="plain(q.text)">
-                        <span class="tb-asg-stats__n">{{ n + 1 }}</span>
-                        <span class="tb-asg-stats__bar" aria-hidden="true"
-                          ><span [style.inline-size.%]="(q.wrong / quizStats.students) * 100"></span
-                        ></span>
-                        <span class="tb-asg-stats__count">{{
-                          tq.statsRow(q.wrong, quizStats.students)
-                        }}</span>
-                      </li>
-                    }
-                  </ol>
-                }
-              </section>
+            @if (assignment.videos.length > 0) {
+              <h2 class="tb-asg__label">{{ tv.title }}</h2>
+              <tb-video-list class="tb-asg__block" [videos]="assignment.videos" [teacher]="true" />
             }
+            @if (assignment.questions.length > 0) {
+              <p class="tb-asg__quiz tb-asg__block">
+                <i class="tb-i tb-i-quiz" aria-hidden="true"></i>
+                {{ te.quizTitle }} · {{ quizSummary(assignment) }}
+              </p>
+            }
+          </section>
+
+          <aside class="tb-asg__students" [attr.aria-label]="t.students">
+            <div class="tb-asg__head">
+              <h2 class="tb-asg__label tb-asg__spacer">
+                {{ t.studentsCount(assignment.tasks.length) }}
+              </h2>
+              <p-button
+                icon="tb-i tb-i-person_add"
+                [text]="true"
+                [rounded]="true"
+                severity="secondary"
+                [pTooltip]="t.assignMoreShort"
+                [ariaLabel]="t.assignMoreShort"
+                (onClick)="assignMore.open(assignment.draftStudentIds)"
+              />
+            </div>
+            @for (group of groups(); track group.key) {
+              <section class="tb-asg-group" [attr.aria-labelledby]="'tb-asg-group-' + group.key">
+                <h3
+                  class="tb-asg-group__head tb-asg-group__head--{{ group.key }}"
+                  [id]="'tb-asg-group-' + group.key"
+                >
+                  <i class="tb-i {{ group.icon }}" aria-hidden="true"></i>
+                  {{ group.label }}
+                  <span class="tb-asg-group__count">· {{ group.tasks.length }}</span>
+                </h3>
+                <ul class="tb-list tb-list--clamp tb-list--own-trail">
+                  @for (task of group.tasks; track task.taskId) {
+                    <li>
+                      <tb-avatar
+                        class="tb-list__lead"
+                        [attr.data-tb-label]="colors.studentLabel(task.studentId)"
+                        [name]="task.studentName"
+                        [photo]="task.studentAvatar"
+                      />
+                      <div class="tb-list__text">
+                        <button
+                          type="button"
+                          class="tb-list__title tb-link-button"
+                          [attr.aria-label]="t.action(t.open, task.studentName)"
+                          (click)="reviewWork.emit(task.taskId)"
+                        >
+                          {{ task.studentName }}
+                        </button>
+                        <span
+                          class="tb-list__supporting"
+                          [class.tb-negative]="task.overdue && task.submittedAt === null"
+                          >{{ rowLine(task, assignment.dueAt) }}</span
+                        >
+                      </div>
+                      <!-- --icons: the one button stays on the right of the narrow column -->
+                      <div class="tb-list__trail tb-list__trail--icons">
+                        @if (task.status === 'SUBMITTED') {
+                          <p-button
+                            [label]="t.review"
+                            [ariaLabel]="t.action(t.review, task.studentName)"
+                            (onClick)="reviewWork.emit(task.taskId)"
+                          />
+                        } @else if (task.status === 'ACCEPTED') {
+                          <p-button
+                            severity="secondary"
+                            [label]="t.open"
+                            [ariaLabel]="t.action(t.open, task.studentName)"
+                            (onClick)="reviewWork.emit(task.taskId)"
+                          />
+                        } @else {
+                          <p-button
+                            severity="secondary"
+                            [label]="t.remind"
+                            [ariaLabel]="t.action(t.remind, task.studentName)"
+                            [loading]="busy.is(task.studentId)"
+                            (onClick)="remind(task)"
+                          />
+                        }
+                      </div>
+                    </li>
+                  }
+                </ul>
+              </section>
+            } @empty {
+              <tb-empty-state icon="tb-i-send" [title]="t.notAssigned" />
+            }
+            <ng-container [ngTemplateOutlet]="errors" />
           </aside>
+        </div>
+      } @else {
+        <div class="tb-asg">
+          @if (showStudents()) {
+            <section class="tb-asg__main">
+              <div class="tb-asg__head">
+                <h2 class="tb-asg__label">{{ t.students }}</h2>
+                @if (counts().accepted > 0) {
+                  <p-tag [value]="t.tagAccepted(counts().accepted)" severity="success" />
+                }
+                @if (toReview().length > 0) {
+                  <p-tag [value]="t.tagToReview(toReview().length)" severity="warn" />
+                }
+                @if (counts().returned > 0) {
+                  <p-tag [value]="t.tagReturned(counts().returned)" severity="danger" />
+                }
+                <span class="tb-asg__spacer"></span>
+                <p-button
+                  [label]="t.assignMoreShort"
+                  icon="tb-i tb-i-person_add"
+                  [text]="true"
+                  (onClick)="assignMore.open(assignment.draftStudentIds)"
+                />
+              </div>
+              @if (assignment.tasks.length > 0) {
+                <ul class="tb-asg__tiles" [attr.aria-label]="t.students">
+                  @for (task of assignment.tasks; track task.taskId) {
+                    <li class="tb-asg-tile">
+                      <div class="tb-asg-tile__head">
+                        <tb-avatar
+                          [attr.data-tb-label]="colors.studentLabel(task.studentId)"
+                          [name]="task.studentName"
+                          [photo]="task.studentAvatar"
+                        />
+                        <div class="tb-asg-tile__who">
+                          <span class="tb-asg-tile__name">{{ task.studentName }}</span>
+                          <span
+                            class="tb-asg-tile__line"
+                            [class.tb-negative]="task.overdue && task.submittedAt === null"
+                            >{{ statusLine(task, assignment.dueAt) }}</span
+                          >
+                        </div>
+                        <tb-task-status inline [status]="task.status" />
+                      </div>
+                      @if (task.answerPreview; as preview) {
+                        <p class="tb-asg-tile__preview">{{ preview }}</p>
+                      }
+                      <div class="tb-asg-tile__foot">
+                        @if (task.quizScore !== null && task.quizMax !== null) {
+                          <span class="tb-asg-tile__meta"
+                            ><i class="tb-i tb-i-quiz" aria-hidden="true"></i
+                            >{{ t.quiz(task.quizScore, task.quizMax) }}</span
+                          >
+                        }
+                        @if (task.answerFiles > 0) {
+                          <span class="tb-asg-tile__meta"
+                            ><i class="tb-i tb-i-attach_file" aria-hidden="true"></i
+                            >{{ t.files(task.answerFiles) }}</span
+                          >
+                        }
+                        <span class="tb-asg__spacer"></span>
+                        @if (task.status === 'ASSIGNED' || task.status === 'RETURNED') {
+                          <p-button
+                            severity="secondary"
+                            [label]="t.remind"
+                            [ariaLabel]="t.action(t.remind, task.studentName)"
+                            [loading]="busy.is(task.studentId)"
+                            (onClick)="remind(task)"
+                          />
+                        }
+                        <button
+                          pButton
+                          type="button"
+                          severity="secondary"
+                          (click)="reviewWork.emit(task.taskId)"
+                          [attr.aria-label]="
+                            t.action(
+                              task.status === 'SUBMITTED' ? t.review : t.open,
+                              task.studentName
+                            )
+                          "
+                        >
+                          <span pButtonLabel>{{
+                            task.status === 'SUBMITTED' ? t.review : t.open
+                          }}</span>
+                        </button>
+                      </div>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <tb-empty-state icon="tb-i-send" [title]="t.notAssigned" />
+              }
+            </section>
+          }
+
+          @if (showTask() || showErrors()) {
+            <aside class="tb-asg__aside">
+              @if (showTask()) {
+                <section class="tb-asg__side">
+                  <h2 class="tb-asg__label">{{ t.assignment }}</h2>
+                  @if (assignment.description; as description) {
+                    <div class="tb-asg__text" [class.tb-asg__text--folded]="folded(description)">
+                      <tb-markdown [text]="description" />
+                    </div>
+                    @if (isLong(description)) {
+                      <p-button
+                        class="tb-asg__fold"
+                        [label]="expanded() ? t.fold : t.showAll"
+                        [text]="true"
+                        (onClick)="expanded.set(!expanded())"
+                      />
+                    }
+                  } @else {
+                    <p class="tb-muted">{{ t.noText }}</p>
+                  }
+                  @if (assignment.videos.length > 0) {
+                    <h3 class="tb-subtitle">{{ tv.title }}</h3>
+                    <tb-video-list [videos]="assignment.videos" [teacher]="true" />
+                  }
+                  @if (assignment.attachments.length > 0 || assignment.textbooks.length > 0) {
+                    <h3 class="tb-subtitle">{{ t.materials }}</h3>
+                  }
+                  <tb-attachment-list
+                    [attachments]="assignment.attachments"
+                    [openable]="true"
+                    (opened)="materials.file($event)"
+                    (download)="download($event)"
+                  />
+                  <tb-textbook-list
+                    [textbooks]="assignment.textbooks"
+                    (opened)="materials.textbook($event)"
+                  />
+                </section>
+              }
+              @if (showErrors()) {
+                <ng-container [ngTemplateOutlet]="errors" />
+              }
+            </aside>
+          }
+        </div>
+      }
+
+      <ng-template #errors>
+        @if (hasQuiz() && stats(); as quizStats) {
+          <section class="tb-asg__side">
+            <h2 class="tb-asg__label">{{ tq.stats }}</h2>
+            @if (quizStats.students === 0) {
+              <p class="tb-muted">{{ tq.statsNone }}</p>
+            } @else {
+              <ol class="tb-asg-stats">
+                @for (q of quizStats.questions; track q.questionId; let n = $index) {
+                  <li class="tb-asg-stats__row" [attr.title]="plain(q.text)">
+                    <span class="tb-asg-stats__n">{{ n + 1 }}</span>
+                    <span class="tb-asg-stats__bar" aria-hidden="true"
+                      ><span [style.inline-size.%]="(q.wrong / quizStats.students) * 100"></span
+                    ></span>
+                    <span class="tb-asg-stats__count">{{
+                      tq.statsRow(q.wrong, quizStats.students)
+                    }}</span>
+                  </li>
+                }
+              </ol>
+            }
+          </section>
         }
-      </div>
+      </ng-template>
 
       @if (mobile() && toReview().length > 0) {
         <div class="tb-bottom-actions">
@@ -347,6 +494,92 @@ const FOLD_LINES = 3;
       flex-wrap: wrap;
       gap: var(--tb-space-5);
       align-items: flex-start;
+    }
+
+    /* sketch 4: the task takes the main column, the students a narrow one (320–380 px, our decision) */
+    .tb-asg--wide {
+      flex-wrap: nowrap;
+      gap: var(--tb-space-6);
+    }
+
+    .tb-asg__task {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-4);
+    }
+
+    /* the text keeps a readable measure; the materials and the test line stay as wide as a list */
+    .tb-asg__body {
+      max-inline-size: 72ch;
+      font: var(--tb-type-body-l);
+    }
+
+    .tb-asg__block {
+      max-inline-size: 40rem;
+    }
+
+    /* the test line: a tonal row with the quiz icon (sketch 4) */
+    .tb-asg__quiz {
+      display: flex;
+      align-items: center;
+      gap: var(--tb-space-3);
+      margin: 0;
+      padding: var(--tb-space-4);
+      border-radius: var(--tb-shape-lg-plus);
+      background: var(--p-md-surface-container-low);
+      font: var(--tb-type-body-m);
+
+      .tb-i {
+        color: var(--p-md-primary);
+      }
+    }
+
+    .tb-asg__students {
+      flex: 0 1 23.75rem;
+      min-width: 20rem;
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-4);
+    }
+
+    .tb-asg-group {
+      display: grid;
+      gap: var(--tb-space-2);
+    }
+
+    /* a status group: the icon and the name in the status colour, the count muted (title small) */
+    .tb-asg-group__head {
+      display: flex;
+      align-items: center;
+      gap: var(--tb-space-2);
+      margin: 0;
+      font: var(--tb-type-title-s);
+
+      .tb-i {
+        font-size: 1.125rem;
+      }
+    }
+
+    .tb-asg-group__head--review {
+      color: var(--p-md-warning);
+    }
+
+    .tb-asg-group__head--returned {
+      color: var(--p-md-error);
+    }
+
+    .tb-asg-group__head--waiting {
+      color: var(--p-md-on-surface-variant);
+    }
+
+    .tb-asg-group__head--accepted {
+      color: var(--p-md-success);
+    }
+
+    .tb-asg-group__count {
+      color: var(--p-md-on-surface-variant);
     }
 
     .tb-asg__main {
@@ -579,6 +812,19 @@ export class AssignmentPage {
   protected readonly showErrors = computed(
     () => this.hasQuiz() && (!this.mobile() || this.tab() === 'errors'),
   );
+  /** From large the task and the students stand side by side (sketch 4); narrower — the tiles of sketch 18. */
+  protected readonly wide = computed(
+    () => this.size() === 'large' || this.size() === 'extra-large',
+  );
+  /** The students by status (sketch 4): what to review first, then the sent back, the waiting, the accepted. */
+  protected readonly groups = computed<StudentGroup[]>(() => {
+    const tasks = this.details()?.tasks ?? [];
+    return GROUPS.map((group) => ({
+      ...group,
+      tasks: tasks.filter((task) => task.status === group.status),
+    })).filter((group) => group.tasks.length > 0);
+  });
+  protected readonly te = T.editor;
   /** The text of the assignment is shown whole. */
   protected readonly expanded = signal(false);
 
@@ -689,6 +935,22 @@ export class AssignmentPage {
       : days === 1
         ? this.t.submittedYesterday(this.time(task.submittedAt))
         : this.t.submittedAt(this.date(task.submittedAt));
+  }
+
+  /** A compact row's one line: the status line and the quiz score. */
+  protected rowLine(task: TaskSummary, dueAt: string | null): string {
+    const line = this.statusLine(task, dueAt);
+    return task.quizScore !== null && task.quizMax !== null
+      ? `${line} · ${this.t.quiz(task.quizScore, task.quizMax)}`
+      : line;
+  }
+
+  protected quizSummary(assignment: AssignmentDetails): string {
+    return T.editor.quizSummary(
+      assignment.questions.length,
+      assignment.questions.reduce((sum, question) => sum + question.points, 0),
+      assignment.quizAttempts ?? 0,
+    );
   }
 
   protected isLong(text: string): boolean {

@@ -11,10 +11,10 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
-import { Drawer } from 'primeng/drawer';
 import { InputText } from 'primeng/inputtext';
 import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
@@ -25,7 +25,8 @@ import { locale } from '@core/i18n/language';
 import { AssistChip } from '@shared/ui/assist-chip';
 import { Busy } from '@shared/ui/busy';
 import { Confirm } from '@shared/ui/confirm';
-import { ModalDrawer } from '@shared/ui/modal-drawer';
+import { DialogFooter, DialogHeaderActions, TbDialog } from '@shared/ui/dialog/dialog';
+import { injectWindowSize } from '@core/layout/mobile';
 import { RowType } from '@shared/ui/row-type.directive';
 import { HomeworkApi } from '../data-access/homework-api';
 import { CaptionTrack, CaptionTracks, Video, VideoInput } from '../data-access/homework.models';
@@ -117,9 +118,10 @@ interface TranscriptNote {
 /**
  * The videos of an assignment (ADR-0047) as tiles: preview, name, source, whether there is a transcript and whether
  * the student sees it; the tiles reorder by drag (or the arrow keys on the handle), one link field under them adds
- * the next video. «Настроить» opens the side sheet of a video (a phone: the whole screen) — player, title, the
+ * the next video. «Настроить» opens the settings of a video — player, title, the
  * transcript as timed lines («Субтитры YouTube» with a menu of tracks, «Из файла», «Править текст»), «Показывать
- * расшифровку ученику», «Убрать видео» and ‹ › between videos.
+ * расшифровку ученику», «Убрать видео» and ‹ › between videos. «Настроить» opens a dialog over the editor (sketch 39;
+ * a phone: full screen, sketch 40); every change is saved at once, so «Готово» and Esc only close it.
  */
 @Component({
   selector: 'tb-video-section',
@@ -130,11 +132,13 @@ interface TranscriptNote {
     FormsModule,
     AssistChip,
     Button,
-    Drawer,
     InputText,
     Menu,
-    ModalDrawer,
+    NgTemplateOutlet,
     RowType,
+    TbDialog,
+    DialogHeaderActions,
+    DialogFooter,
     Tag,
     Textarea,
     ToggleSwitch,
@@ -218,17 +222,40 @@ interface TranscriptNote {
       </div>
     }
 
-    <p-drawer
-      tbModalDrawer
+    <tb-dialog
+      kind="form"
+      width="wide"
       [visible]="current() !== null"
       (visibleChange)="$event || openKey.set(null)"
-      position="right"
-      appendTo="body"
-      [blockScroll]="true"
-      [ariaCloseLabel]="t.close"
-      styleClass="tb-side-sheet tb-side-sheet--narrow"
-      [header]="current() === null ? '' : t.ofCount(currentIndex() + 1, videos().length)"
+      [headline]="current() === null ? '' : t.ofCount(currentIndex() + 1, videos().length)"
+      [confirmLabel]="compact() ? t.done : null"
+      [cancelLabel]="null"
+      (confirm)="openKey.set(null)"
     >
+      @if (!compact()) {
+        <ng-template tbDialogHeaderActions>
+          <ng-container [ngTemplateOutlet]="stepButtons" />
+        </ng-template>
+      }
+      <ng-template tbDialogFooter>
+        @if (current(); as draft) {
+          <div class="tb-video-sheet__footer">
+            <p-button
+              [label]="t.removeVideo"
+              icon="tb-i tb-i-delete"
+              [text]="true"
+              severity="danger"
+              (onClick)="remove(draft.key)"
+            />
+            <span class="tb-video-sheet__spacer"></span>
+            @if (compact()) {
+              <ng-container [ngTemplateOutlet]="stepButtons" />
+            } @else {
+              <p-button [label]="t.done" [text]="true" (onClick)="openKey.set(null)" />
+            }
+          </div>
+        }
+      </ng-template>
       @if (current(); as draft) {
         <div class="tb-video-sheet">
           @if (playable(draft); as video) {
@@ -334,38 +361,31 @@ interface TranscriptNote {
               (ngModelChange)="change(draft.key, { transcriptShown: $event })"
             />
           </label>
-
-          <div class="tb-video-sheet__footer">
-            <p-button
-              [label]="t.removeVideo"
-              icon="tb-i tb-i-delete"
-              [text]="true"
-              severity="danger"
-              (onClick)="remove(draft.key)"
-            />
-            <span class="tb-video-sheet__spacer"></span>
-            <p-button
-              icon="tb-i tb-i-chevron_left"
-              [text]="true"
-              [rounded]="true"
-              severity="secondary"
-              [ariaLabel]="t.previous"
-              [disabled]="currentIndex() === 0"
-              (onClick)="step(-1)"
-            />
-            <p-button
-              icon="tb-i tb-i-chevron_right"
-              [text]="true"
-              [rounded]="true"
-              severity="secondary"
-              [ariaLabel]="t.next"
-              [disabled]="currentIndex() === videos().length - 1"
-              (onClick)="step(1)"
-            />
-          </div>
         </div>
       }
-    </p-drawer>
+    </tb-dialog>
+
+    <!-- ‹ › leaf through the videos without closing: in the headline, on a phone beside «Убрать видео» -->
+    <ng-template #stepButtons>
+      <p-button
+        icon="tb-i tb-i-chevron_left"
+        [text]="true"
+        [rounded]="true"
+        severity="secondary"
+        [ariaLabel]="t.previous"
+        [disabled]="currentIndex() <= 0"
+        (onClick)="step(-1)"
+      />
+      <p-button
+        icon="tb-i tb-i-chevron_right"
+        [text]="true"
+        [rounded]="true"
+        severity="secondary"
+        [ariaLabel]="t.next"
+        [disabled]="currentIndex() === videos().length - 1"
+        (onClick)="step(1)"
+      />
+    </ng-template>
 
     <p-menu
       #tracksMenu
@@ -485,7 +505,7 @@ interface TranscriptNote {
     .tb-video-sheet {
       display: grid;
       gap: var(--tb-space-4);
-      /* the player rounds by the sheet's corner less its padding (28 − 24), never below 4 px */
+      /* the player rounds by the dialog's corner less its padding (28 − 24), never below 4 px */
       --tb-list-outer: var(--tb-shape-xs);
 
       input,
@@ -545,10 +565,9 @@ interface TranscriptNote {
 
     .tb-video-sheet__footer {
       display: flex;
+      flex: 1;
       align-items: center;
       gap: var(--tb-space-1);
-      padding-top: var(--tb-space-3);
-      border-top: 1px solid var(--p-md-outline-variant);
     }
 
     .tb-video-sheet__spacer {
@@ -565,6 +584,9 @@ export class VideoSection {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
   protected readonly busy = new Busy();
+  /** A phone: the dialog is full screen, «Готово» in its header, ‹ › beside «Убрать видео» (sketch 40). */
+  protected readonly compact = computed(() => this.size() === 'compact');
+  private readonly size = injectWindowSize();
   private readonly linkInput = viewChild<ElementRef<HTMLInputElement>>('linkField');
   private readonly tracksMenu = viewChild.required<Menu>('tracksMenu');
 

@@ -336,6 +336,15 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
     вопросам» (a row per question: the number, a bar of the share of wrong answers, «3 из 4»).
   - **Compact:** `tb-segment-group` tabs «Ученики N · Задание · Ошибки» («Ошибки» only with a quiz),
     tiles in one column and a «Проверить N работ» button stuck to the bottom of the page.
+  - **Large and up** (354.2, sketch 4): the task takes the main column — the whole text (no fold,
+    72ch), «Материалы» as one segmented list (`tb-list-group`: textbooks, files), the videos and
+    the test line («Тест · N вопросов · M баллов · K попытки» on surface-container-low) — and the
+    students a narrow column (320–380 px, *ours*): «Ученики · N» with the icon button «Выдать
+    ещё», then the status groups «Проверить», «На доработке», «Ждут сдачи», «Принято» (heading
+    with icon, status colour and «· N»; an empty group is hidden), each a `tb-list` of compact
+    rows — avatar, the name (opens the work), one line (the status line and «Тест 8 из 10»), one
+    button: filled «Проверить», tonal «Напомнить» (waiting, on rework) or tonal «Открыть»
+    (accepted); «Ошибки по вопросам» under the students. Expanded and medium keep the tiles.
 - **Review page** (`task-review-page.ts`, 352.2, sketches 14, 15, 16): the header — «back», the
   student as the title, «<assignment> · сдано сегодня, 09:12 · вовремя / с опозданием» (not handed
   in: «срок …»; a status other than «На проверке» as its tag), «1 из 2 на проверке» with «‹» «›»
@@ -375,18 +384,25 @@ wider it falls back to «Тест»).
   and, with questions, the test summary «Тест» («N вопросов · M баллов · K попытки», the first
   three questions as one-line rows of a `tb-list--no-lead` — number, type icon, text cut with «…»
   or «Без текста», points —, the row «…и ещё N вопросов», the hint where to edit them and tonal
-  «Открыть тест»), and the aside (300–380 px) with «Кому» and «Срок» in one card (input chips +
-  dashed «Ученик или группа», drafts only; filter chips) and «Материалы»: a draft's textbooks and
-  files as compact rows (`tb-list--clamp`: two lines at most; textbook — «Изменить
-  страницы», «Убрать»; file — «Удалить файл») over the assist chips «Файл · Учебник · Видео ·
-  Доска» («Тест с вопросами» only while there is no test; it opens «Тест»). Narrower — one column
-  in the order who, the text, the videos, the test, the materials (sketch 19). Videos are tiles
+  «Открыть тест»), «Доска» once a board is chosen (354.1: the board as an input chip with «×» and
+  the hint when it gets the assignment), and the aside (300–380 px) with «Кому» and «Срок» in one
+  card (input chips + dashed «Ученик или группа», drafts only; filter chips) and «Материалы»: a
+  draft's textbooks and files as one segmented list (`tb-list-group`, `tb-list--clamp`: two
+  lines at most; textbook — «Изменить страницы», «Убрать»; file — «Удалить файл») over the assist
+  chips «Файл · Учебник». The video and the board are added from the sections column; without it
+  (below expanded, beside the AI) «Видео · Доска» are chips of «Материалы», a phone has neither.
+  The test is never a material: it lives on «Тест». Narrower — one column in the order who, the
+  text, the videos, the board, the test, the materials (sketch 19). Videos are tiles
   (`video-section.ts`, 348.1, sketches 39, 40: preview, name, source, «Расшифровка» / «Без
-  расшифровки», «видит ученик», «Настроить»; drag to reorder); «Настроить» opens the video's side
-  sheet (a phone: full screen) — player, «Название», the transcript as timed lines, «Субтитры
-  YouTube» (menu of tracks), «Из файла», «Править текст», «Показывать расшифровку ученику»,
-  «Убрать видео», ‹ ›. Picked files and textbooks join the saved ones after the autosave; an
-  issued assignment has them on its page.
+  расшифровки», «видит ученик», «Настроить»; drag to reorder); «Настроить» opens the video's
+  dialog over the editor (354.3, sketches 39, 40: `tb-dialog kind="form"`, wide; headline «Видео N
+  из M» with ‹ › in the header, «Убрать видео» (error text) and «Готово» (text) in the footer;
+  every change saves at once, «Готово» and Esc only close; a phone — the full-screen dialog with
+  «✕», the headline and «Готово» in the header, ‹ › beside «Убрать видео») — player,
+  «Название», the transcript as timed lines, «Субтитры YouTube» (menu of tracks), «Из файла»,
+  «Править текст», «Показывать расшифровку ученику». An invalid link and a link without a player
+  stay in the card (the field's error, the «Плеера нет» tile). Picked files and textbooks join the
+  saved ones after the autosave; an issued assignment has them on its page.
 - **«Тест»** — the quiz builder (`question-section.ts`, 347.1, sketches 28, 29), three columns that
   wrap: the **outline** (300 dp: «N вопросов · M баллов», a segmented list of one-line rows —
   drag handle, number, type icon, the text cut with an ellipsis, error icon once «Выдать» was
@@ -462,9 +478,11 @@ the pane. The recipients, deadline and materials parts are `ui/recipients-field.
 `ui/due-chips.ts`, `ui/material-chips.ts`.
 
 **Sections column** (on «Задание» from expanded width, hidden beside the AI pane): `tb-section-nav`
-«Разделы задания» (design-system §10) lists «Текст», «Видео · N» and «Тест · N» — the one in view
-highlighted, a click scrolls to it. The sketch's «Добавить» group is not built: the assist chips of
-«Материалы» add at every width, and the column is hidden beside the AI and below expanded.
+«Разделы задания» (design-system §10) lists «Текст», «Видео · N», «Доска» and «Тест · N» — the
+one in view highlighted, a click scrolls to it. Under a divider the group «Добавить» (354.1,
+sketch 11): «Видео» (disabled at five videos; shows the link field and focuses it) and «Доску»
+(until a board is chosen; the menu of the teacher's boards). The column is hidden beside the AI
+and below expanded; then «Материалы» has the chips «Видео · Доска».
 
 **Recipients of a saved assignment:** a draft shows its `draftStudentIds` as the editable «Кому» chips
 (saving updates `draft-students` once the student list is in); an issued one shows its students as

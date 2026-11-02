@@ -5,14 +5,31 @@ import {
   effect,
   inject,
   input,
+  output,
   signal,
 } from '@angular/core';
+
+let navs = 0;
 
 /** An anchor of {@link SectionNav}: the `id` of the element it scrolls to, its icon class (`tb-i-<name>`) and name. */
 export interface SectionNavItem {
   readonly id: string;
   readonly icon: string;
   readonly label: string;
+}
+
+/** A button under the anchors («Добавить: Видео»): what the page adds, with its icon class and name. */
+export interface SectionNavAction {
+  readonly id: string;
+  readonly icon: string;
+  readonly label: string;
+  readonly disabled?: boolean;
+}
+
+/** A pressed {@link SectionNavAction} and its click, for a menu that opens beside the button. */
+export interface SectionNavPress {
+  readonly id: string;
+  readonly event: Event;
 }
 
 /**
@@ -44,6 +61,25 @@ export interface SectionNavItem {
           </li>
         }
       </ul>
+      @if (actions().length > 0) {
+        <div class="tb-section-nav__divider" role="presentation"></div>
+        <span class="tb-section-nav__subhead" [id]="subheadId">{{ actionsLabel() }}</span>
+        <ul class="tb-section-nav__list" [attr.aria-labelledby]="subheadId">
+          @for (action of actions(); track action.id) {
+            <li>
+              <button
+                type="button"
+                class="tb-section-nav__item tb-section-nav__action"
+                [disabled]="action.disabled ?? false"
+                (click)="pressed.emit({ id: action.id, event: $event })"
+              >
+                <i class="tb-i {{ action.icon }}" aria-hidden="true"></i>
+                {{ action.label }}
+              </button>
+            </li>
+          }
+        </ul>
+      }
     </nav>
   `,
   styles: `
@@ -78,6 +114,50 @@ export interface SectionNavItem {
       }
     }
 
+    /* M3 navigation drawer: a divider and a section headline (Title Small) before the second group */
+    .tb-section-nav__divider {
+      margin: var(--tb-space-2) var(--tb-space-4);
+      border-block-start: 1px solid var(--p-md-outline-variant);
+    }
+
+    .tb-section-nav__subhead {
+      display: block;
+      padding: var(--tb-space-2) var(--tb-space-4);
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-title-s);
+    }
+
+    .tb-section-nav__action {
+      inline-size: 100%;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      text-align: start;
+
+      .tb-i {
+        color: var(--p-md-primary);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--p-md-secondary);
+        outline-offset: 2px;
+      }
+
+      &:disabled {
+        cursor: default;
+        background: transparent;
+        color: color-mix(
+          in srgb,
+          var(--p-md-on-surface) var(--tb-state-disabled-content),
+          transparent
+        );
+
+        .tb-i {
+          color: inherit;
+        }
+      }
+    }
+
     .tb-section-nav__current,
     .tb-section-nav__current:hover {
       background: var(--p-md-secondary-container);
@@ -93,6 +173,11 @@ export interface SectionNavItem {
 export class SectionNav {
   readonly items = input.required<readonly SectionNavItem[]>();
   readonly label = input.required<string>();
+  /** Buttons under the anchors, headed by {@link actionsLabel}. */
+  readonly actions = input<readonly SectionNavAction[]>([]);
+  readonly actionsLabel = input('');
+  readonly pressed = output<SectionNavPress>();
+  protected readonly subheadId = `tb-section-nav-${String(++navs)}`;
   protected readonly current = signal('');
   private readonly inView = new Set<string>();
 

@@ -58,4 +58,9 @@ test('the teacher picks the language of YouTube captions', async ({ page }) => {
   await expect(sheet.getByRole('list', { name: 'Расшифровка' })).toContainText('Мы играем');
   await expect(sheet.getByText('Субтитры YouTube: русский')).toBeVisible();
   expect(chosen).toEqual({ url: 'https://youtu.be/dQw4w9WgXcQ', language: 'ru', automatic: false });
+
+  // 354.3: the settings are a dialog over the editor; the change is kept, «Готово» only closes it
+  await sheet.getByRole('button', { name: 'Готово' }).click();
+  await expect(sheet).toBeHidden();
+  await expect(page.locator('tb-video-section')).toContainText('Расшифровка');
 });

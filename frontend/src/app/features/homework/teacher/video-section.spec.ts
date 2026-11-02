@@ -9,7 +9,7 @@ import {
   requireElement,
   typeInto,
 } from '@testing/dom';
-import { testProviders } from '@testing/setup';
+import { screenWidth, testProviders } from '@testing/setup';
 import { CaptionTrack, CaptionTracks } from '../data-access/homework.models';
 import {
   MAX_VIDEOS,
@@ -56,7 +56,7 @@ describe('VideoSection', () => {
 
   afterEach(() => {
     backend.verify();
-    document.body.querySelectorAll('.p-drawer, .p-menu-overlay').forEach((node) => {
+    document.body.querySelectorAll('.p-dialog-mask, .p-menu-overlay').forEach((node) => {
       node.remove();
     });
   });
@@ -79,7 +79,7 @@ describe('VideoSection', () => {
   async function configure(host: HTMLElement, name: string) {
     buttonByText(host, `Настроить видео: ${name}`).click();
     await fixture.whenStable();
-    return requireElement(document.body, '.p-drawer', HTMLElement);
+    return requireElement(document.body, '.p-dialog', HTMLElement);
   }
 
   it('adds a tile from the link field: a known player at once, another link on Enter', async () => {
@@ -312,6 +312,55 @@ describe('VideoSection', () => {
     buttonByText(sheet, 'Убрать видео').click();
     await fixture.whenStable();
     expect(section.videos().map((video) => video.title)).toEqual(['Второе']);
+    expect(section.openKey()).toBeNull();
+  });
+
+  it('is a dialog over the editor: ‹ › in the headline, «Готово» and Esc only close it', async () => {
+    const { section, host } = await render([
+      videoDraft({ url: YOUTUBE }),
+      videoDraft({ url: YOUTUBE }),
+    ]);
+    const dialog = await configure(host, 'Видео 1');
+    const head = requireElement(dialog, '.tb-d__head', HTMLElement);
+
+    expect(dialog.getAttribute('role')).toBe('dialog');
+    expect(readableText(head)).toContain('Видео 1 из 2');
+    expect(head.querySelector('[aria-label="Следующее видео"]')).not.toBeNull();
+    typeInto(requireElement(dialog, '#video-title', HTMLInputElement), 'Урок');
+    expect(first(section).title).toBe('Урок');
+
+    buttonByText(dialog, 'Готово').click();
+    await fixture.whenStable();
+    expect(section.openKey()).toBeNull();
+    expect(first(section).title).toBe('Урок');
+
+    const again = await configure(host, 'Урок');
+    again.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await fixture.whenStable();
+    expect(section.openKey()).toBeNull();
+  });
+
+  it('is full screen on a phone: «Готово» in the header, ‹ › beside «Убрать видео»', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [VideoSection],
+      providers: testProviders(ConfirmationService, screenWidth(390)),
+    });
+    backend = TestBed.inject(HttpTestingController);
+    const { section, host } = await render([
+      videoDraft({ url: YOUTUBE }),
+      videoDraft({ url: YOUTUBE }),
+    ]);
+    const dialog = await configure(host, 'Видео 1');
+
+    expect(dialog.classList.contains('tb-d--full')).toBe(true);
+    const head = requireElement(dialog, '.tb-d__head', HTMLElement);
+    expect(head.querySelector('[aria-label="Следующее видео"]')).toBeNull();
+    const footer = requireElement(dialog, '.tb-video-sheet__footer', HTMLElement);
+    expect(readableText(footer)).toBe('Убрать видео');
+    expect(footer.querySelector('[aria-label="Следующее видео"]')).not.toBeNull();
+    buttonByText(head, 'Готово').click();
+    await fixture.whenStable();
     expect(section.openKey()).toBeNull();
   });
 

@@ -208,8 +208,10 @@ work), the name (the title, else «Видео N»), the source («YouTube · с 
 ученик откроет по ссылке»), tags «Расшифровка» / «Без расшифровки» and «видит ученик», «Настроить». No length: no
 provider returns it through the existing endpoints. Tiles reorder by CDK drag (or the arrow keys on the handle);
 one «Вставьте ссылку на видео» field under them (`parseVideoLink`) adds a tile — a YouTube / Rutube / VK link at once,
-another on Enter or leaving the field; hidden at 5. The chip «Видео» shows and focuses the field. «Настроить» opens a
-modal `tb-side-sheet--narrow` (a phone: the whole screen) «Видео N из M»: the player, «Название», «Расшифровка» as
+another on Enter or leaving the field; hidden at 5. «Видео» (the editor's «Добавить» menu, or
+the chip of the materials without it) shows and focuses the field. «Настроить» opens a
+`tb-dialog kind="form"` over the editor (a phone: full screen; stage 354.3) «Видео N из M» with
+‹ ›: the player, «Название», «Расшифровка» as
 timed lines (`transcriptLines`; on YouTube a time restarts the player there via `?start=`) or a text area («Править
 текст», or when empty), the assist chips «Субтитры YouTube» (YouTube links; one track is taken at once, asking before
 replacing a transcript; several open a menu — the suggested first, the language by `Intl.DisplayNames`, «от автора
