@@ -85,16 +85,20 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
       }
       @if (status(); as status) {
         @if (status.connected) {
-          <div class="tb-drive-state">
-            <p-tag [value]="t.connected" severity="success" />
-            <span class="tb-muted">{{
-              t.since((status.connectedAt | date: 'dd.MM.yyyy HH:mm') ?? '')
-            }}</span>
-          </div>
-          @if (area() === 'teacher' && status.account !== null) {
-            <p class="tb-muted">{{ t.account(status.account) }}</p>
-          }
-          <p>{{ t.about(portalName()) }}</p>
+          <ul class="tb-list">
+            <li>
+              <span class="tb-list__lead" aria-hidden="true"
+                ><i class="tb-i tb-i-add_to_drive"></i
+              ></span>
+              <div class="tb-list__text">
+                <span class="tb-list__title">{{ status.account ?? t.title }}</span>
+                <span class="tb-list__supporting">{{ t.folder(portalName()) }}</span>
+              </div>
+              <div class="tb-list__trail">
+                <p-tag [value]="t.connected" severity="success" />
+              </div>
+            </li>
+          </ul>
           @if (status.running; as running) {
             <p class="tb-drive-running" role="status">
               <i class="tb-i tb-i-progress_activity tb-i--spin" aria-hidden="true"></i>

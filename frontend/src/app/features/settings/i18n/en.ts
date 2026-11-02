@@ -125,6 +125,10 @@ export const en: Translation<typeof ru> = {
     logoTooLarge: 'The file is larger than 1 MB',
   },
   backups: {
+    latest: (date: string) => `Latest backup: ${date}.`,
+    downloadLabel: (name: string) => `Download backup ${name}`,
+    all: (count: number) => `All ${String(count)} backups`,
+    fewer: 'Show fewer',
     title: 'Backups',
     create: 'Back up now',
     about:
@@ -146,11 +150,12 @@ export const en: Translation<typeof ru> = {
     restore: 'Restore…',
     download: 'Download',
     deleteItem: 'Delete…',
-    inDrive: 'in Google Drive',
+    inDrive: 'in Drive',
     sendToDrive: 'Send to Google Drive',
     sending: (name: string) => `Uploading backup ${name} to Google Drive`,
   },
   drive: {
+    folder: (portal: string) => `Backups go to the “${portal}” folder`,
     title: 'Google Drive',
     connectedResult: 'Google Drive connected. New backups will be uploaded automatically.',
     denied: 'Access to Google Drive was not granted.',
@@ -224,12 +229,16 @@ export const en: Translation<typeof ru> = {
     error: 'Could not restore the backup. Try again later',
   },
   reset: {
-    title: 'Full reset',
-    about:
-      'Deletes all portal data: students and groups, lessons and schedules, payments, assignments and files, notifications and messaging app connections, meeting rooms, boards, AI history, Google and Yandex connections, and the portal name and address.',
+    title: 'Danger zone',
+    about: 'The portal makes a backup before each of these. Your password is required.',
+    restoreTitle: 'Restore from a backup',
+    restoreHint: 'Data goes back to the latest backup; pick another one in the list of backups',
+    restore: 'Restore…',
+    clearTitle: 'Clear the portal',
+    clearHint: 'Delete students, lessons, assignments and payments',
+    open: 'Clear…',
     stays:
       'Teacher and administrator accounts, their passwords, existing backups and the Google Drive backup connection are kept. A backup is created before the reset so you can restore your data.',
-    open: 'Reset all data…',
     header: 'Reset all data?',
     warning:
       'All students, lessons, payments and assignments will be deleted. A backup will be kept in “Backups”.',

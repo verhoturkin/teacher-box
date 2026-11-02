@@ -45,93 +45,46 @@ describe('AiSettingsPanel', () => {
     expect(text).toContain('попросите его подключить ИИ-помощника');
   });
 
-  it('names Gemini', async () => {
-    expect(
-      await render(aiStatus({ provider: 'gemini', model: 'gemini-3.8-flash' }), usageReport()),
-    ).toContain('Модель gemini-3.8-flash Google Gemini');
-  });
-
-  it('names OpenRouter', async () => {
-    expect(
-      await render(aiStatus({ provider: 'openrouter', model: 'openrouter/auto' }), usageReport()),
-    ).toContain('Модель openrouter/auto OpenRouter');
-  });
-
-  it('names DeepSeek', async () => {
-    expect(
-      await render(aiStatus({ provider: 'deepseek', model: 'deepseek-flash' }), usageReport()),
-    ).toContain('Модель deepseek-flash DeepSeek');
-  });
-
-  it('keeps an unknown provider id as is', async () => {
-    expect(await render(aiStatus({ provider: 'custom', model: 'm' }), usageReport())).toContain(
-      'Модель m custom',
+  it('shows the model, the share of the monthly limit and what used it', async () => {
+    const text = await render(
+      aiStatus(),
+      usageReport({
+        features: [
+          { feature: 'HOMEWORK_DRAFT', requests: 3, inputTokens: 300_000, outputTokens: 100_000 },
+          { feature: 'REVIEW_DRAFT', requests: 1, inputTokens: 80_000, outputTokens: 20_000 },
+        ],
+      }),
     );
-  });
 
-  it('shows the model, the monthly usage and recent requests', async () => {
-    const text = await render(aiStatus(), usageReport());
-
-    expect(text).toContain('Модель claude-opus-5 Anthropic (Claude)');
-    expect(text).toContain('Использование за сентябрь 2026');
-    expect(text).toMatch(/Токенов: 500.000 из 2.000.000/);
-    expect(text).toMatch(/Черновики заданий: 3 запроса, 3.000 токенов/);
-    expect(text).toContain('Готово');
-    expect(text).toMatch(/0[.,]8 с Anthropic API 529: Overloaded/);
-    expect(text).toMatch(/12.5 с/);
-    expect(text).toMatch(
-      /Черновики проверки Ошибка \d\d\.09\.2026 \d\d:\d\d · claude-opus-5 · 0[.,]8 с/,
-    );
-    expect(hostElement(fixture).querySelector('.tb-i-rate_review')).not.toBeNull();
+    expect(text).toContain('claude-opus-5');
+    expect(text).toContain('Подключает администратор портала');
+    expect(text).toContain('Работает');
+    expect(text).toMatch(/25 % месячного лимита · обнулится 1 октября/);
+    expect(text).toContain('Больше всего — Черновики заданий (20 %), Черновики проверки (5 %).');
     expect(hostElement(fixture).querySelector('p-progressbar')).not.toBeNull();
+    expect(text).toContain('Мои промты');
     expect(text).toContain('Системные промты');
   });
 
-  it('shows unlimited usage and an empty month', async () => {
-    const text = await render(
-      aiStatus({ monthlyTokenLimit: 0 }),
-      usageReport({ monthlyTokenLimit: 0, recent: [] }),
-    );
+  it('shows unlimited usage without a bar', async () => {
+    const text = await render(aiStatus(), usageReport({ monthlyTokenLimit: 0 }));
 
-    expect(text).toContain('(без лимита)');
-    expect(text).toContain('Запросов в этом месяце не было');
+    expect(text).toContain('токенов за месяц, без лимита');
     expect(hostElement(fixture).querySelector('p-progressbar')).toBeNull();
   });
 
-  it('adds older requests by «Показать ещё»', async () => {
-    const report = usageReport({ moreRecent: true });
-    expect(await render(aiStatus(), report)).toContain('Показать ещё');
+  it('unfolds the system prompts', async () => {
+    await render(aiStatus(), usageReport());
+    const fold = buttonByText(hostElement(fixture), 'Системные промты');
+    const body = hostElement(fixture).querySelector<HTMLElement>('#system-prompts');
 
-    buttonByText(hostElement(fixture), 'Показать ещё').click();
-    const older = report.recent[0];
-    if (older === undefined) {
-      throw new Error('a request is expected');
-    }
-    backend
-      .expectOne('/api/teacher/ai/requests?month=2026-09&offset=2')
-      .flush({ items: [{ ...older, model: 'claude-old' }], hasMore: false });
+    expect(fold.getAttribute('aria-expanded')).toBe('false');
+    expect(body?.hidden).toBe(true);
+    fold.click();
     await fixture.whenStable();
 
-    expect(
-      hostElement(fixture).querySelectorAll('ul[aria-label="Последние запросы"] > li'),
-    ).toHaveLength(3);
-    expect(readableText(hostElement(fixture))).not.toContain('Показать ещё');
-  });
-
-  it('keeps «Показать ещё» when loading more fails', async () => {
-    await render(aiStatus(), usageReport({ moreRecent: true }));
-
-    buttonByText(hostElement(fixture), 'Показать ещё').click();
-    buttonByText(hostElement(fixture), 'Показать ещё').click();
-    backend
-      .expectOne('/api/teacher/ai/requests?month=2026-09&offset=2')
-      .flush(null, { status: 500, statusText: 'Error' });
-    await fixture.whenStable();
-
-    expect(
-      hostElement(fixture).querySelectorAll('ul[aria-label="Последние запросы"] > li'),
-    ).toHaveLength(2);
-    expect(readableText(hostElement(fixture))).toContain('Показать ещё');
+    expect(fold.getAttribute('aria-expanded')).toBe('true');
+    expect(body?.hidden).toBe(false);
   });
 
   it('caps the progress bar at 100%', async () => {

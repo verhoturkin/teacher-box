@@ -71,7 +71,7 @@ sketch disagrees with it.
 - [x] **357.4 F** «Портал» (`Portal`, `settings/portal-settings-card.ts`): «Название и логотип»,
   «Цвет портала», schemes and contrast folded as «Тонкая настройка», preview; the only category
   with an explicit save — a floating bar «Отменить» / «Сохранить» while the draft differs.
-- [ ] **357.5 F** «ИИ-помощник» (`Ai`, `ai/ai-settings-panel.ts`: model, «Мои промты», system
+- [x] **357.5 F** «ИИ-помощник» (`Ai`, `ai/ai-settings-panel.ts`: model, «Мои промты», system
   prompts folded) and «Данные» (`Data`, `settings/backups/*`, `reset-card.ts`: copies with the last
   one first and «Все N копий», Google Drive, «Опасные действия» card with restore and reset).
 

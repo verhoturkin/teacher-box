@@ -14,6 +14,9 @@ import { Password } from 'primeng/password';
 import { HelpButton } from '@features/help/parts';
 import { Portal } from '@core/portal/portal';
 import { SettingsApi } from './data-access/settings-api';
+import { BackupInfo } from './data-access/settings.models';
+import { BackupsApi } from './backups/backups-api';
+import { RestoreDialog } from './backups/restore-dialog';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
@@ -41,21 +44,53 @@ function isWord(value: string): boolean {
     Password,
     PasswordToggle,
     FieldErrors,
+    RestoreDialog,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card id="reset">
       <ng-template #title>
         <div class="tb-card-title">
-          <span class="tb-card-title__text"
+          <span class="tb-card-title__text tb-negative"
             >{{ t.title }} <tb-help-button topic="teacher/backups"
           /></span>
         </div>
       </ng-template>
-      <p>{{ t.about }}</p>
-      <p class="tb-muted">{{ t.stays }}</p>
-      <p-button [label]="t.open" icon="tb-i tb-i-delete" severity="secondary" (onClick)="open()" />
+      <p class="tb-muted">{{ t.about }}</p>
+      <ul class="tb-list tb-list--no-phone-lead">
+        <li>
+          <div class="tb-list__text">
+            <span class="tb-list__title">{{ t.restoreTitle }}</span>
+            <span class="tb-list__supporting">{{ t.restoreHint }}</span>
+          </div>
+          <div class="tb-list__trail">
+            <p-button
+              [label]="t.restore"
+              severity="danger"
+              [text]="true"
+              [loading]="finding()"
+              (onClick)="openRestore()"
+            />
+          </div>
+        </li>
+        <li>
+          <div class="tb-list__text">
+            <span class="tb-list__title">{{ t.clearTitle }}</span>
+            <span class="tb-list__supporting">{{ t.clearHint }}</span>
+          </div>
+          <div class="tb-list__trail">
+            <p-button
+              [label]="t.open"
+              icon="tb-i tb-i-delete"
+              severity="danger"
+              [text]="true"
+              (onClick)="open()"
+            />
+          </div>
+        </li>
+      </ul>
     </p-card>
+    <tb-restore-dialog [(visible)]="restoring" [backup]="newest()" area="teacher" />
     <tb-dialog
       kind="form"
       [(visible)]="visible"
@@ -68,6 +103,7 @@ function isWord(value: string): boolean {
       [dirty]="submit.dirty()"
     >
       <p>{{ t.warning }}</p>
+      <p class="tb-muted">{{ t.stays }}</p>
       <form
         tbFieldErrors
         id="reset-form"
@@ -100,12 +136,16 @@ function isWord(value: string): boolean {
 export class ResetCard {
   protected readonly t = T.reset;
   private readonly api = inject(SettingsApi);
+  private readonly backups = inject(BackupsApi);
   private readonly portal = inject(Portal);
   private readonly router = inject(Router);
   private readonly snackbar = inject(Snackbar);
 
   protected readonly word = RESET_WORD;
   protected readonly visible = signal(false);
+  protected readonly restoring = signal(false);
+  protected readonly finding = signal(false);
+  protected readonly newest = signal<BackupInfo | null>(null);
 
   readonly form = new FormGroup({
     password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -120,6 +160,30 @@ export class ResetCard {
 
   open(): void {
     this.visible.set(true);
+  }
+
+  /** The restore dialog for the newest copy; another one is chosen in the list of copies. */
+  protected openRestore(): void {
+    this.finding.set(true);
+    this.backups.list('teacher').subscribe({
+      next: (backups) => {
+        this.finding.set(false);
+        const newest = backups.reduce<BackupInfo | null>(
+          (latest, backup) =>
+            latest === null || backup.createdAt > latest.createdAt ? backup : latest,
+          null,
+        );
+        if (newest === null) {
+          this.snackbar.notice(T.backups.empty);
+          return;
+        }
+        this.newest.set(newest);
+        this.restoring.set(true);
+      },
+      error: () => {
+        this.finding.set(false);
+      },
+    });
   }
 
   protected readonly submit = dialogSubmit({

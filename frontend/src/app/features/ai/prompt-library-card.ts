@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import {
   AbstractControl,
   FormControl,
@@ -7,8 +15,10 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
+import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { Menu } from 'primeng/menu';
 import { InputText } from 'primeng/inputtext';
 import { Textarea } from 'primeng/textarea';
 import { Snackbar } from '@core/snackbar/snackbar';
@@ -33,6 +43,7 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
     ReactiveFormsModule,
     Button,
     Card,
+    Menu,
     TbDialog,
     InputText,
     Textarea,
@@ -41,7 +52,21 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card id="prompt-library" [header]="t.title">
+    <p-card id="prompt-library">
+      <ng-template #title>
+        <div class="tb-card-title">
+          <span class="tb-card-title__text">{{ t.title }}</span>
+          <div class="tb-card-title__actions">
+            <p-button
+              [label]="t.create"
+              icon="tb-i tb-i-add"
+              severity="secondary"
+              (onClick)="create()"
+            />
+          </div>
+        </div>
+      </ng-template>
+      <p class="tb-muted">{{ t.hint }}</p>
       @if (prompts().length === 0) {
         <tb-empty-state
           [compact]="true"
@@ -50,36 +75,40 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
           [hint]="t.emptyHint"
         />
       } @else {
-        <ul class="tb-list tb-list--no-phone-lead">
+        <ul class="tb-list" [attr.aria-label]="t.title">
           @for (prompt of prompts(); track prompt.id) {
             <li>
+              <span class="tb-list__lead" aria-hidden="true"
+                ><i class="tb-i tb-i-bookmark"></i
+              ></span>
               <div class="tb-list__text">
                 <span class="tb-list__title">{{ prompt.title }}</span>
                 <span class="tb-prompt-text">{{ prompt.text }}</span>
               </div>
               <div class="tb-list__trail tb-list__trail--icons">
                 <p-button
-                  icon="tb-i tb-i-edit"
+                  icon="tb-i tb-i-more_vert"
                   [text]="true"
                   [rounded]="true"
                   severity="secondary"
-                  [ariaLabel]="t.edit(prompt.title)"
-                  (onClick)="edit(prompt)"
-                />
-                <p-button
-                  icon="tb-i tb-i-delete"
-                  [text]="true"
-                  [rounded]="true"
-                  severity="danger"
-                  [ariaLabel]="t.delete(prompt.title)"
-                  (onClick)="confirmDelete(prompt)"
+                  [ariaLabel]="t.actions(prompt.title)"
+                  aria-haspopup="menu"
+                  (onClick)="openMenu(prompt, $event)"
                 />
               </div>
             </li>
           }
         </ul>
       }
+      <ng-content />
     </p-card>
+    <p-menu
+      #menu
+      [model]="menuItems()"
+      [popup]="true"
+      appendTo="body"
+      (onHide)="menuFor.set(null)"
+    />
 
     <tb-dialog
       kind="form"
@@ -113,7 +142,7 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
     .tb-prompt-text {
       display: -webkit-box;
       overflow: hidden;
-      -webkit-line-clamp: 2;
+      -webkit-line-clamp: 1;
       -webkit-box-orient: vertical;
       white-space: pre-line;
     }
@@ -126,6 +155,32 @@ export class PromptLibraryCard implements OnInit {
   private readonly snackbar = inject(Snackbar);
 
   protected readonly prompts = signal<readonly SavedPrompt[]>([]);
+  private readonly menu = viewChild.required<Menu>('menu');
+  /** The prompt whose «⋮» menu is open: one popup menu serves every row. */
+  protected readonly menuFor = signal<SavedPrompt | null>(null);
+  protected readonly menuItems = computed<MenuItem[]>(() => {
+    const prompt = this.menuFor();
+    return prompt === null
+      ? []
+      : [
+          {
+            label: T.library.editItem,
+            icon: 'tb-i tb-i-edit',
+            command: () => {
+              this.edit(prompt);
+            },
+          },
+          {
+            label: T.library.deleteItem,
+            icon: 'tb-i tb-i-delete',
+            styleClass: 'tb-menu-item--danger',
+            command: () => {
+              void this.confirmDelete(prompt);
+            },
+          },
+        ];
+  });
+  /** The prompt in the dialog; null for a new one. */
   readonly editing = signal<SavedPrompt | null>(null);
   readonly visible = signal(false);
   readonly form = new FormGroup({
@@ -145,7 +200,16 @@ export class PromptLibraryCard implements OnInit {
     });
   }
 
-  edit(prompt: SavedPrompt): void {
+  protected openMenu(prompt: SavedPrompt, event: Event): void {
+    this.menuFor.set(prompt);
+    this.menu().toggle(event);
+  }
+
+  protected create(): void {
+    this.edit(null);
+  }
+
+  edit(prompt: SavedPrompt | null): void {
     this.editing.set(prompt);
     this.visible.set(true);
   }
@@ -160,17 +224,17 @@ export class PromptLibraryCard implements OnInit {
     },
     request: (value) => {
       const prompt = this.editing();
-      return this.api.updatePrompt(
-        prompt?.id ?? '',
-        { title: value.title.trim(), text: value.text.trim() },
-        prompt?.version ?? 0,
-      );
+      const input = { title: value.title.trim(), text: value.text.trim() };
+      return prompt === null
+        ? this.api.savePrompt(input)
+        : this.api.updatePrompt(prompt.id, input, prompt.version);
     },
     done: (saved) => {
       this.prompts.update((prompts) =>
-        prompts
-          .map((candidate) => (candidate.id === saved.id ? saved : candidate))
-          .sort((a, b) => a.title.localeCompare(b.title)),
+        (prompts.some((candidate) => candidate.id === saved.id)
+          ? prompts.map((candidate) => (candidate.id === saved.id ? saved : candidate))
+          : [...prompts, saved]
+        ).sort((a, b) => a.title.localeCompare(b.title)),
       );
     },
   });

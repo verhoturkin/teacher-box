@@ -172,7 +172,7 @@ describe('DrivePanel', () => {
 
     const text = readableText(host);
     expect(text).toContain('Google Диск подключён');
-    expect(text).toContain('Аккаунт: teacher@example.com');
+    expect(text).toContain('teacher@example.com');
     expect(text).toContain(`Последняя копия в Диске: 12.10.2026`);
     expect(text).toContain('quota exceeded');
     expect(text).toContain('2,5 МБ · есть на сервере');

@@ -16,7 +16,6 @@ import {
 } from '@angular/forms';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
-import { Card } from 'primeng/card';
 import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
 import { Textarea } from 'primeng/textarea';
@@ -46,7 +45,6 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
   imports: [
     ReactiveFormsModule,
     Button,
-    Card,
     DialogHeaderActions,
     Menu,
     TbDialog,
@@ -56,7 +54,27 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card id="system-prompts" [header]="t.title">
+    <ul class="tb-list">
+      <li>
+        <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-code"></i></span>
+        <div class="tb-list__text">
+          <button
+            type="button"
+            class="tb-list__title tb-fold-link"
+            aria-controls="system-prompts"
+            [attr.aria-expanded]="open()"
+            (click)="open.set(!open())"
+          >
+            {{ t.title }}
+          </button>
+          <span class="tb-list__supporting">{{ t.summary }}</span>
+        </div>
+        <div class="tb-list__trail" aria-hidden="true">
+          <i class="tb-i" [class.tb-i-expand_more]="!open()" [class.tb-i-expand_less]="open()"></i>
+        </div>
+      </li>
+    </ul>
+    <div id="system-prompts" [hidden]="!open()">
       <p class="tb-hint">{{ t.hint }}</p>
       <ul class="tb-list tb-list--no-phone-lead">
         @for (prompt of prompts(); track prompt.feature) {
@@ -83,7 +101,7 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
           </li>
         }
       </ul>
-    </p-card>
+    </div>
 
     <tb-dialog
       kind="form"
@@ -133,6 +151,15 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
     </tb-dialog>
   `,
   styles: `
+    .tb-fold-link {
+      border: 0;
+      padding: 0;
+      background: none;
+      color: inherit;
+      text-align: start;
+      cursor: pointer;
+    }
+
     .tb-list__title {
       display: inline-flex;
       flex-wrap: wrap;
@@ -154,6 +181,7 @@ export class SystemPromptsCard implements OnInit {
   private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
 
+  protected readonly open = signal(false);
   protected readonly prompts = signal<readonly SystemPrompt[]>([]);
   readonly editing = signal<SystemPrompt | null>(null);
   protected readonly header = computed(() => {

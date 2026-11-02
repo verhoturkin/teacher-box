@@ -35,19 +35,61 @@ describe('ResetCard', () => {
   }
 
   async function fill(password: string, word: string): Promise<void> {
-    buttonByText(hostElement(fixture), 'Сбросить все данные…').click();
+    buttonByText(hostElement(fixture), 'Очистить…').click();
     await fixture.whenStable();
     typeInto(requireElement(document.body, '#reset-password', HTMLInputElement), password);
     typeInto(requireElement(document.body, '#reset-word', HTMLInputElement), word);
     await fixture.whenStable();
   }
 
+  it('restores the newest backup after the password', async () => {
+    buttonByText(hostElement(fixture), 'Восстановить…').click();
+    backend.expectOne('/api/teacher/backups').flush([
+      {
+        name: 'old.zip',
+        size: 1,
+        createdAt: '2026-09-01T00:30:00Z',
+        kind: 'SCHEDULED',
+        version: null,
+      },
+      {
+        name: 'new.zip',
+        size: 1,
+        createdAt: '2026-09-25T00:30:00Z',
+        kind: 'MANUAL',
+        version: null,
+      },
+    ]);
+    await fixture.whenStable();
+
+    expect(bodyText()).toContain('Восстановление из копии');
+    expect(bodyText()).toContain('25.09.2026');
+  });
+
+  it('says when there is nothing to restore from', async () => {
+    buttonByText(hostElement(fixture), 'Восстановить…').click();
+    backend.expectOne('/api/teacher/backups').flush([]);
+    await fixture.whenStable();
+
+    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Копий пока нет' }),
+    );
+  });
+
+  it('keeps the button working when the list does not load', async () => {
+    buttonByText(hostElement(fixture), 'Восстановить…').click();
+    backend.expectOne('/api/teacher/backups').flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    expect(buttonByText(hostElement(fixture), 'Восстановить…').disabled).toBe(false);
+  });
+
   it('deletes everything after the password and the word, then opens the first setup', async () => {
-    expect(hostElement(fixture).textContent).toContain('Остаются вход учителя и администратора');
     const portal = TestBed.inject(Portal);
     portal.setSetupCompleted(true);
     await fill('teacher-password', 'сбросить');
     expect(bodyText()).toContain('Сбросить все данные?');
+    expect(bodyText()).toContain('Остаются вход учителя и администратора');
 
     submitButton().click();
     const request = backend.expectOne({ method: 'POST', url: '/api/teacher/reset' });

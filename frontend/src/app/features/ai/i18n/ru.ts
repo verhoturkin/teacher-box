@@ -1,33 +1,21 @@
-import { countOf } from '@shared/text/plural';
-
 /** Texts of the AI assistant (ADR-0035). */
 export const ru = {
   features: {
     HOMEWORK_DRAFT: 'Черновики заданий',
     REVIEW_DRAFT: 'Черновики проверки',
   },
-  openAiCompatible: 'OpenAI-совместимый API',
-  statuses: {
-    SUCCEEDED: 'Готово',
-    FAILED: 'Ошибка',
-    REFUSED: 'Отказ модели',
-  },
   usage: {
+    byAdmin: 'Подключает администратор портала',
+    working: 'Работает',
+    ofMonthLimit: 'месячного лимита',
+    resets: 'обнулится',
+    tokensNoLimit: 'токенов за месяц, без лимита',
+    mostly: (list: string) => `Больше всего — ${list}.`,
     notConfigured: 'ИИ-помощник не настроен',
     notConfiguredHint:
       'Это настраивает администратор портала. Чтобы получать черновики заданий и проверок, попросите его подключить ИИ-помощника.',
     model: 'Модель',
-    usageIn: (month: string) => `Использование за ${month}`,
-    tokens: (used: string) => `Токенов: ${used}`,
-    ofLimit: (limit: string) => `из ${limit}`,
-    noLimit: '(без лимита)',
     used: 'Израсходовано токенов за месяц',
-    requestCount: (count: number) => countOf(count, 'запрос', 'запроса', 'запросов'),
-    tokenCount: (count: number) => countOf(count, 'токен', 'токена', 'токенов'),
-    recent: 'Последние запросы',
-    noRequests: 'Запросов в этом месяце не было',
-    showMore: 'Показать ещё',
-    seconds: (seconds: string) => `${seconds} с`,
   },
   panel: {
     paneTask: 'Текст задания',
@@ -99,7 +87,12 @@ export const ru = {
     },
   },
   library: {
-    title: 'Библиотека промтов',
+    create: 'Новый',
+    hint: 'Готовые просьбы к помощнику — появляются кнопками в окне «Написать с ИИ».',
+    actions: (title: string) => `Действия с промтом «${title}»`,
+    editItem: 'Изменить…',
+    deleteItem: 'Удалить…',
+    title: 'Мои промты',
     empty: 'Промтов пока нет',
     emptyHint: 'Сохраните промт в редакторе задания — он появится здесь.',
     edit: (title: string) => `Изменить промт «${title}»`,
@@ -115,6 +108,7 @@ export const ru = {
     failed: 'Не удалось сохранить промт',
   },
   systemPrompts: {
+    summary: 'Для опытных — как помощник пишет задания и отзывы',
     more: 'Другие действия',
     title: 'Системные промты',
     hint: 'Правила, по которым ИИ готовит черновики: тон, язык, оформление. Их можно переписать под себя.',

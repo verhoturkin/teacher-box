@@ -220,10 +220,12 @@ import { T } from './i18n/texts';
           <tb-ai-settings-panel />
         }
         @case ('data') {
-          <div class="tb-stack">
+          <div class="tb-settings__lessons">
             <tb-backups-card />
-            <tb-drive-panel />
-            <tb-reset-card />
+            <div class="tb-stack">
+              <tb-drive-panel />
+              <tb-reset-card />
+            </div>
           </div>
         }
       }

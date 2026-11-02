@@ -36,6 +36,33 @@ describe('PromptLibraryCard', () => {
     expect(readableText(host)).toContain('Перевод Переведи текст');
   });
 
+  async function pick(host: HTMLElement, prompt: string, item: string): Promise<void> {
+    host
+      .querySelector<HTMLButtonElement>(`button[aria-label="Действия с промтом «${prompt}»"]`)
+      ?.click();
+    await fixture.whenStable();
+    [...document.body.querySelectorAll<HTMLElement>('.p-menu-item-label')]
+      .find((label) => label.textContent.trim() === item)
+      ?.click();
+    await fixture.whenStable();
+  }
+
+  it('saves a new prompt', async () => {
+    const { host } = await render();
+
+    buttonByText(host, 'Новый').click();
+    await fixture.whenStable();
+    const form = fixture.componentInstance.form;
+    form.patchValue({ title: ' Диктант ', text: 'Продиктуй текст' });
+    buttonByText(document.body, 'Сохранить').click();
+    const create = backend.expectOne({ method: 'POST', url: '/api/teacher/ai/prompts' });
+    expect(create.request.body).toEqual({ title: 'Диктант', text: 'Продиктуй текст' });
+    create.flush(savedPrompt({ id: 'p-3', title: 'Диктант', text: 'Продиктуй текст' }));
+    await fixture.whenStable();
+
+    expect(readableText(host)).toContain('Диктант Продиктуй текст');
+  });
+
   it('says when the library is empty', async () => {
     const { host } = await render([]);
 
@@ -45,8 +72,7 @@ describe('PromptLibraryCard', () => {
   it('changes a prompt', async () => {
     const { card, host } = await render();
 
-    host.querySelector<HTMLButtonElement>('button[aria-label="Изменить промт «Перевод»"]')?.click();
-    await fixture.whenStable();
+    await pick(host, 'Перевод', 'Изменить…');
     expect(bodyText()).toContain('Промт');
     card.form.patchValue({ title: ' ' });
     buttonByText(document.body, 'Сохранить').click();
@@ -83,8 +109,7 @@ describe('PromptLibraryCard', () => {
       return confirmation;
     });
 
-    host.querySelector<HTMLButtonElement>('button[aria-label="Удалить промт «Перевод»"]')?.click();
-    await fixture.whenStable();
+    await pick(host, 'Перевод', 'Удалить…');
     backend.expectOne({ method: 'DELETE', url: '/api/teacher/ai/prompts/p-2' }).flush(null);
     await fixture.whenStable();
 

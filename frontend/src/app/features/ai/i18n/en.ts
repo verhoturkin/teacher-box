@@ -1,5 +1,4 @@
 import type { Translation } from '@core/i18n/language';
-import { countOf } from '@shared/text/plural';
 import type { ru } from './ru';
 
 export const en: Translation<typeof ru> = {
@@ -7,28 +6,18 @@ export const en: Translation<typeof ru> = {
     HOMEWORK_DRAFT: 'Assignment drafts',
     REVIEW_DRAFT: 'Review drafts',
   },
-  openAiCompatible: 'OpenAI-compatible API',
-  statuses: {
-    SUCCEEDED: 'Completed',
-    FAILED: 'Error',
-    REFUSED: 'Declined by model',
-  },
   usage: {
+    byAdmin: 'Set up by the portal administrator',
+    working: 'Working',
+    ofMonthLimit: 'of the monthly limit',
+    resets: 'resets on',
+    tokensNoLimit: 'tokens this month, no limit',
+    mostly: (list: string) => `Mostly ${list}.`,
     notConfigured: 'The AI assistant is not set up',
     notConfiguredHint:
       'Ask the portal administrator to enable the AI assistant for assignment drafts and feedback.',
     model: 'Model',
-    usageIn: (month: string) => `Usage for ${month}`,
-    tokens: (used: string) => `Tokens: ${used}`,
-    ofLimit: (limit: string) => `of ${limit}`,
-    noLimit: '(no limit)',
     used: 'Tokens used this month',
-    requestCount: (count: number) => countOf(count, 'request', 'requests', 'requests'),
-    tokenCount: (count: number) => countOf(count, 'token', 'tokens', 'tokens'),
-    recent: 'Recent requests',
-    noRequests: 'No requests this month',
-    showMore: 'Show more',
-    seconds: (seconds: string) => `${seconds} s`,
   },
   panel: {
     paneTask: 'Assignment text',
@@ -100,7 +89,12 @@ export const en: Translation<typeof ru> = {
     },
   },
   library: {
-    title: 'Prompt library',
+    create: 'New',
+    hint: 'Ready-made requests to the assistant — they appear as buttons in the “Write with AI” window.',
+    actions: (title: string) => `Actions for prompt “${title}”`,
+    editItem: 'Edit…',
+    deleteItem: 'Delete…',
+    title: 'My prompts',
     empty: 'No prompts yet',
     emptyHint: 'Save a prompt in the assignment editor to reuse it here.',
     edit: (title: string) => `Edit the prompt “${title}”`,
@@ -116,6 +110,7 @@ export const en: Translation<typeof ru> = {
     failed: 'Could not save the prompt',
   },
   systemPrompts: {
+    summary: 'For advanced users — how the assistant writes tasks and reviews',
     more: 'More actions',
     title: 'System prompts',
     hint: 'Set the tone, language and structure of AI drafts. You can customise these instructions.',

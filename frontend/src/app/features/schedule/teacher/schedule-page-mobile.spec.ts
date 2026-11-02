@@ -10,6 +10,7 @@ import {
   scheduledLesson,
 } from '@testing/schedule-fixtures';
 import { phoneScreen, testProviders } from '@testing/setup';
+import { toIsoDate } from '@shared/dates/iso-date';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { ScheduleAgenda, weekDays, weekStart } from '../ui/schedule-agenda';
 import { ScheduleCalendar } from '../ui/schedule-calendar';
@@ -128,7 +129,7 @@ describe('SchedulePage on a phone', () => {
     const agenda = fixture.debugElement
       .query(By.directive(ScheduleAgenda))
       .injector.get(ScheduleAgenda);
-    const before = weekStart(new Date().toISOString().slice(0, 10));
+    const before = weekStart(toIsoDate(new Date()));
 
     buttonByText(host, 'Следующая неделя').click();
     await settle();
@@ -169,9 +170,9 @@ describe('SchedulePage on a phone', () => {
   });
 
   it('goes to the day with lessons to mark when the chosen day has none', async () => {
-    const week = weekDays(weekStart(new Date().toISOString().slice(0, 10)));
+    const week = weekDays(weekStart(toIsoDate(new Date())));
     const other = new Date(`${week[0] ?? ''}T10:00:00`);
-    if (week[0] === new Date().toISOString().slice(0, 10)) {
+    if (week[0] === toIsoDate(new Date())) {
       other.setDate(other.getDate() + 1);
     }
     unmarked = [
