@@ -103,5 +103,7 @@ test('the student answers on the task page and the draft survives a reload', asy
 
   await student.locator('#answer-text').fill('3 + 4 = 7');
   await student.getByRole('button', { name: 'Сдать', exact: true }).click();
+  // the sent answer folds into «Мой ответ» (sketch 38)
+  await student.getByRole('button', { name: /^Мой ответ/ }).click();
   await expect(student.getByText('3 + 4 = 7')).toBeVisible();
 });

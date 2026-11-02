@@ -148,7 +148,7 @@ test('the list opens the review from the strip and the assignment from the table
 test('a work is accepted in the review sheet and the next one opens', async ({ page }) => {
   await signIn(page);
   await page.goto(`/teacher/homework/tasks/${firstTaskId}`);
-  await expect(page.getByText('Ответ ученика').first()).toBeVisible();
+  await expect(page.getByText(`Ответ Первый ${RUN}`)).toBeVisible();
   const sheet = page.getByRole('heading', { name: 'Проверка', exact: true });
   await expect(sheet).toBeVisible();
   await page.getByRole('button', { name: 'Принять', exact: true }).click();

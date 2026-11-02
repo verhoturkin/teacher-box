@@ -336,6 +336,20 @@ describe('QuizSection', () => {
     expect(host.querySelector('button')).toBeNull();
   });
 
+  it('says once why the key is hidden while another attempt is left', async () => {
+    await render(
+      quiz({
+        reveal: 'AFTER_DUE',
+        attemptsAllowed: 2,
+        attemptsUsed: 1,
+        attemptsLeft: 1,
+        canStart: true,
+        best: attempt(),
+      }),
+    );
+    expect(readableText(host).split('Верные ответы появятся после срока сдачи.')).toHaveLength(2);
+  });
+
   it('tells the answers are never shown and that attempts are unlimited', async () => {
     await render(
       quiz({ reveal: 'NEVER', attemptsAllowed: null, attemptsLeft: null, best: attempt() }),

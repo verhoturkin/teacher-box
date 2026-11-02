@@ -50,7 +50,7 @@ test('the teacher gives homework with a video and its transcript', async ({ page
   });
   await expect(sheet.getByText('Загружено из файла урок.srt')).toBeVisible();
   await expect(sheet.getByRole('list', { name: 'Расшифровка' })).toContainText(
-    '0:05We play football',
+    '0:05 We play football',
   );
   await sheet.getByText('Показывать расшифровку ученику').click();
   await page.keyboard.press('Escape');

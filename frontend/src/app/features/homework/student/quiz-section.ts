@@ -142,7 +142,8 @@ export function keyLines(question: Question): string[] {
                     </div>
                   </article>
                 }
-              } @else {
+              } @else if (!quiz.openAttempt && !quiz.canStart) {
+                <!-- otherwise the card above already says it -->
                 <p class="tb-quiz__muted">{{ revealHint(quiz) }}</p>
               }
             </div>
