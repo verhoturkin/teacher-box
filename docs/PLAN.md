@@ -47,7 +47,7 @@ sketch disagrees with it.
   `push/push-devices-card.ts`), «Подключить» per row; «Что присылать» — topic switches and «Тихие
   часы» (`preferences/preferences-panel.ts`); teacher only «Действия учителя в боте». Replaces the
   separate cards on both pages; the student «connect» card leads as an alert (`StudentAccount`).
-- [ ] **356.3 F** Compact and medium account: the student phone list (`StudentPhone`) and tablet
+- [x] **356.3 F** Compact and medium account: the student phone list (`StudentPhone`) and tablet
   (`StudentTablet`); «Подключить» opens a bottom sheet (`PhoneConnect`: «Открыть Telegram», the
   code with copy, «Ждём подключения…»; `channels/link-code-view.ts`) on compact, a dialog above.
 

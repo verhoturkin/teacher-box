@@ -25,6 +25,7 @@ export const en: Translation<typeof ru> = {
   linkCode: {
     start: 'Open the bot and press “Start” to connect your account automatically.',
     open: (name: string) => `Open ${name}`,
+    copyCode: 'Copy the code',
     orCode: 'Or send this code to the bot:',
     sendCode: 'Send this code',
     toBot: (name: string) => `to the ${name} bot`,

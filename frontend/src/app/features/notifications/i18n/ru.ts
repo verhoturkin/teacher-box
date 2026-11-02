@@ -22,6 +22,7 @@ export const ru = {
   linkCode: {
     start: 'Откройте бота и нажмите «Запустить» — аккаунт подключится автоматически.',
     open: (name: string) => `Открыть ${name}`,
+    copyCode: 'Скопировать код',
     orCode: 'Или отправьте боту код:',
     sendCode: 'Отправьте этот код',
     toBot: (name: string) => `боту ${name}`,
