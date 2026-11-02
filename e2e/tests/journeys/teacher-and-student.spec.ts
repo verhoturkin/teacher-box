@@ -102,14 +102,14 @@ test('the teacher gives homework and the student hands it in', async ({ page, br
     .click();
   // «Создать › Задание» in the rail (232.2)
   await create(page, 'Задание');
-  // the quick dialog (340.1): the first line of the text is the title
-  const dialog = page.getByRole('dialog');
-  await dialog.locator('#create-text').fill(`${HOMEWORK_TITLE}\n1. Сложите 1/2 и 1/3`);
-  await dialog.getByRole('button', { name: 'Ученик или группа' }).click();
+  // the editor of a new assignment (352.6): the first line of the text is the title
+  await page.locator('#editor-text').fill(`${HOMEWORK_TITLE}\n1. Сложите 1/2 и 1/3`);
+  await page.getByRole('button', { name: 'Ученик или группа' }).click();
   await page.getByRole('option', { name: STUDENT_NAME }).click();
   await page.keyboard.press('Escape');
-  await dialog.getByRole('button', { name: 'Выдать', exact: true }).click();
-  await expect(dialog).toBeHidden();
+  await page.getByRole('button', { name: 'Выдать', exact: true }).click();
+  // «Выдать» returns to the list it was opened from
+  await expect(page).toHaveURL(/\/teacher\/homework$/);
   await page.getByRole('link', { name: HOMEWORK_TITLE }).click();
   await expect(page.getByRole('heading', { name: HOMEWORK_TITLE })).toBeVisible();
   const studentRow = page

@@ -27,7 +27,8 @@ import { locale } from '@core/i18n/language';
 import { SHARED_T } from '@shared/i18n/texts';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, UrlTree } from '@angular/router';
+import { CREATE_PARAM } from '@core/routing/create-param';
 import {
   Observable,
   catchError,
@@ -95,7 +96,7 @@ import { BoardPick, MaterialChips } from '../ui/material-chips';
 import { RecipientsField } from '../ui/recipients-field';
 import { TextbookList } from '../ui/textbook-list';
 import { videoName } from '../ui/video-list';
-import { AssignmentDraftHandover, titleOf } from './assignment-draft';
+import { titleOf } from './assignment-draft';
 import { assignmentBoard } from './assignment-board';
 import { AssignMoreDialog } from './assign-more-dialog';
 import { BindTextbookDialog } from './bind-textbook-dialog';
@@ -134,7 +135,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
 
 /**
  * Teacher: the page that creates an assignment or edits one, on two tabs (sketches 11, 28): «Задание» in the
- * order of the quick dialog — who gets it, one Markdown text whose first line is the title, the due date as chips,
+ * order who gets it, one Markdown text whose first line is the title, the due date as chips,
  * the materials (textbooks, files, videos, a board) and the test as a summary card — and «Тест» with the questions
  * and how the test goes (on a phone «Вопросы» and «Настройки»). A draft saves itself a moment after each change
  * and is given out with «Выдать»: created first, it gets its materials, and only then goes to the students — they
@@ -641,7 +642,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
 
     /*
      * Sketch 11: the text, the videos and the test in the middle, «Кому · Срок» and «Материалы» aside; on a
-     * narrow form one column in the order of the quick dialog — who, the text, the videos, the test, the materials.
+     * narrow form one column in the order who, the text, the videos, the test, the materials.
      */
     .tb-editor__form {
       flex: 1;
@@ -796,7 +797,6 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   private readonly router = inject(Router);
   private readonly snackbar = inject(Snackbar);
   private readonly confirm = inject(Confirm);
-  private readonly handover = inject(AssignmentDraftHandover);
   protected readonly materials = inject(MaterialOpener);
 
   /** Route parameter of `/teacher/homework/:assignmentId/edit`; none — a new assignment. */
@@ -849,9 +849,10 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
     () => this.titleValue() || (this.isNew() ? T.editor.newAssignment : T.editor.editAssignment),
   );
   /** The page the editor was opened from (the list with its filters, the assignment, a student): «Назад» leads there. */
-  private readonly origin =
+  private readonly origin = withoutCreate(
     (this.router.currentNavigation() ?? this.router.lastSuccessfulNavigation())?.previousNavigation
-      ?.finalUrl ?? null;
+      ?.finalUrl ?? null,
+  );
   protected readonly backLink = computed(() => {
     if (this.origin !== null) {
       return this.origin;
@@ -1068,6 +1069,8 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   protected readonly error = signal<string | null>(null);
   /** Set once the work is given out or saved: leaving asks nothing then. */
   private saved = false;
+  /** The save gave a draft out: the editor goes back where it was opened from. */
+  private issued = false;
 
   /** What a save sends besides the files and textbooks; a draft whose snapshot differs from the saved one saves itself. */
   private readonly snapshot = computed(() =>
@@ -1123,7 +1126,6 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   ngOnInit(): void {
     if (this.isNew()) {
       this.savedSnapshot = this.snapshot();
-      this.takeDraft();
       this.loadStudents();
       this.loadGroups();
       const today = new Date();
@@ -1143,29 +1145,6 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
     } else {
       this.load();
     }
-  }
-
-  /** What was entered in the quick dialog before «Открыть во весь экран». */
-  private takeDraft(): void {
-    const draft = this.handover.take();
-    if (draft === null) {
-      return;
-    }
-    this.form.patchValue({ description: draft.text, members: [...draft.members] });
-    this.dueChoice.set(draft.due);
-    this.duePicked.set(draft.picked);
-    this.newFiles.set([...draft.files]);
-    this.pickedTextbooks.set(draft.textbooks);
-    this.videos.set(draft.videos);
-    this.videosChanged.set(draft.videos.length > 0);
-    if (draft.questions !== undefined) {
-      this.applyQuestions({ questions: draft.questions, mode: 'append' });
-      this.choose('quiz');
-    }
-    if (draft.ai === true) {
-      this.openAi();
-    }
-    this.form.markAsDirty();
   }
 
   protected load(): void {
@@ -1433,10 +1412,15 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
       next: ({ assignment, complete }) => {
         this.pending.set(false);
         this.saved = true;
-        if (complete) {
-          this.snackbar.success(draft ? T.editor.assigned : T.editor.saved);
-        } else {
+        this.issued = draft;
+        if (!complete) {
           this.snackbar.error(T.editor.materialsFailed);
+        } else if (draft) {
+          this.snackbar.link(T.editor.assigned, this.c.open, () => {
+            void this.router.navigate(['/teacher/homework', assignment.id]);
+          });
+        } else {
+          this.snackbar.success(T.editor.saved);
         }
         if (board) {
           this.assignment.set(assignment);
@@ -1643,10 +1627,14 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
     });
   }
 
-  /** To the page of the saved assignment (after the board dialog, if any, is closed). */
+  /**
+   * After the board dialog, if any, is closed: a given-out draft returns to where the editor was opened (the
+   * list, the assignment), a saved assignment to its page.
+   */
   leaveTo(assignment: AssignmentDetails): void {
     this.placing.set(null);
-    void this.router.navigate(['/teacher/homework', assignment.id]);
+    const back = this.issued ? this.backLink() : ['/teacher/homework', assignment.id];
+    void (Array.isArray(back) ? this.router.navigate(back) : this.router.navigateByUrl(back));
   }
 
   /** A draft saves what is left and lets go; an issued assignment asks before leaving changes. */
@@ -1700,4 +1688,15 @@ function brokenQuestions(error: unknown): number[] {
           : [],
       )
     : [];
+}
+
+/** `?create=` («Создать» in the rail) brought the page that opened the editor: going back must not open it again. */
+function withoutCreate(url: UrlTree | null): UrlTree | null {
+  if (url === null || !(CREATE_PARAM in url.queryParams)) {
+    return url;
+  }
+  const params = Object.fromEntries(
+    Object.entries(url.queryParams).filter(([key]) => key !== CREATE_PARAM),
+  );
+  return new UrlTree(url.root, params, url.fragment);
 }

@@ -491,14 +491,13 @@ describe('AssignmentsPage', () => {
     fixture.destroy();
   });
 
-  it('opens the quick dialog from «Новое задание»', async () => {
+  it('opens the editor of a new assignment from «Новое задание»', async () => {
     const { host, fixture, navigate } = await render([], []);
 
     buttonByText(host, 'Новое задание').click();
     await fixture.whenStable();
 
-    expect(readableText(document.body)).toContain('Первая строка станет названием');
-    expect(navigate).not.toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new'], { replaceUrl: false });
     fixture.destroy();
   });
 
@@ -522,7 +521,7 @@ describe('AssignmentsPage', () => {
     expect(readableText(hostElement(fixture))).toContain('Заданий пока нет');
   });
 
-  it('opens the quick dialog from «Создать» (?create=assignment)', async () => {
+  it('opens the editor from «Создать» (?create=assignment) in place of the address', async () => {
     const { backend } = configure();
     const router = TestBed.inject(Router);
     await router.navigateByUrl('/?create=assignment');
@@ -530,8 +529,7 @@ describe('AssignmentsPage', () => {
     const fixture = TestBed.createComponent(AssignmentsPage);
     await fixture.whenStable();
 
-    expect(readableText(document.body)).toContain('Первая строка станет названием');
-    expect(navigate).not.toHaveBeenCalledWith(['/teacher/homework/new'], expect.anything());
+    expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new'], { replaceUrl: true });
     backend.match(() => true);
     fixture.destroy();
   });

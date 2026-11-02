@@ -44,7 +44,7 @@ import { FilePicker } from './file-picker';
       [attr.aria-label]="t.materials"
     >
       @if (withFiles()) {
-        <!-- «Фото» first on a phone (sketch 6), after «Файл» on a tablet (sketch 36) -->
+        <!-- «Фото» first on a phone -->
         @if (compact()) {
           <ng-container [ngTemplateOutlet]="photoChip" />
         }
@@ -55,9 +55,6 @@ import { FilePicker } from './file-picker';
         >
           {{ t.file }}
         </tb-assist-chip>
-        @if (tablet() && !compact()) {
-          <ng-container [ngTemplateOutlet]="photoChip" />
-        }
         <ng-template #photoChip>
           <tb-assist-chip
             [class.tb-assist-chip--fill]="compact()"
@@ -74,7 +71,7 @@ import { FilePicker } from './file-picker';
           >{{ t.textbook }}</tb-assist-chip
         >
       }
-      @if (!compact() && !tablet()) {
+      @if (!compact()) {
         <tb-assist-chip
           [class.tb-assist-chip--fill]="compact()"
           icon="smart_display"
@@ -131,8 +128,6 @@ export class MaterialChips {
   protected readonly filePicker = viewChild<FilePicker>('filePicker');
   protected readonly photoPicker = viewChild<FilePicker>('photoPicker');
   readonly compact = input(false);
-  /** Medium: the camera chip (a tablet photographs the notebook), no «Видео» in the row. */
-  readonly tablet = input(false);
   /** A new assignment takes files and textbooks here; a saved one has them on its page. */
   readonly withFiles = input(true);
   readonly videosFull = input(false);

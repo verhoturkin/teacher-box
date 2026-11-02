@@ -437,22 +437,14 @@ export const en: Translation<typeof ru> = {
     boardFailed:
       'The assignment was added to the board, but its board link could not be saved. Set the link on the assignment page',
   },
-  /** The quick dialog «New assignment». */
+  /** The form of a new assignment (the editor): who, due date, materials, «Assign». */
   create: {
-    title: 'New assignment',
-    fullscreen: 'Open full screen',
     whom: 'For',
     whomPlaceholder: 'Student or group',
     removeMember: (name: string) => `Remove ${name}`,
     task: 'Assignment',
     firstLine: 'The first line becomes the title',
-    bold: 'Bold',
-    list: 'List',
-    link: 'Link',
-    ai: 'Write with AI',
-    backToForm: 'Back to the assignment',
     closeAi: 'Close the assistant',
-    aiShort: 'AI',
     due: 'Due',
     nextLesson: (date: string) => `By the next lesson · ${date}`,
     inWeek: 'In a week',
@@ -470,16 +462,12 @@ export const en: Translation<typeof ru> = {
     boardOn: (name: string) => `Board: ${name}`,
     noBoards: 'No boards yet',
     remove: 'Remove',
-    saveDraft: 'Save draft',
     assign: 'Assign',
     assignMenu: 'More ways to assign',
     assignToBoard: 'Assign and add to board',
     needText: 'Write the assignment text',
     needWhom: 'Choose who gets the assignment',
-    drafted: 'Draft saved',
     open: 'Open',
-    keepDraft: 'Save as a draft?',
-    keepDraftSave: 'Save',
   },
   /** «By student»: the grid of students by the assignments of a week. */
   journal: {

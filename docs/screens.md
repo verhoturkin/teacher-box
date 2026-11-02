@@ -259,47 +259,8 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   opens the next work; with none left the page returns to the origin with «Все работы проверены».
 
 - **Header**: «Задания», «?», the filled «Новое задание» (a phone: the extended FAB «Новое»); it
-  opens the quick dialog, `/teacher/homework/new` stays as the full editor.
-- **Quick dialog «Новое задание»** (340.1, `assignment-create-dialog.ts`, `tb-dialog` form, `xwide`
-  47.5 rem: a basic dialog from medium, full screen on a phone with «Выдать» in the top bar): header
-  icon buttons «Открыть во весь экран» and «Закрыть»; «Кому» — input chips (a group with its member
-  count, a student with an avatar, «×») and the dashed assist chip «Ученик или группа» that opens
-  the panel of `tb-member-picker [bare]`; «Задание» — one Markdown field (first line = title,
-  `titleOf`) with a toolbar «Жирный · Список · Ссылка» and «Написать с ИИ» (only when AI is on, a
-  tertiary toggle with `aria-pressed`) that opens the AI pane inside the same dialog (see «AI pane»
-  below); «Срок» — `tb-filter-chips` «К следующему занятию · <date>» (hidden without a lesson of the
-  chosen students), «Через неделю», «Без срока», «Дата…» (date picker); «Материалы» — a label of the
-  fields' style over what was added (textbooks, videos — small tiles with «×» and the labelled link
-  field only once «Видео» was pressed, sketch 3) and the assist chips «Файл · Учебник · Видео · Тест
-  с вопросами · Доска» (a tablet: «Файл · Фото · …», sketch 36; a phone: «Фото · Файл · Учебник ·
-  Тест» two a row, sketch 6). «Доска» opens a menu of the teacher's boards; the chosen one becomes
-  the input chip «Доска: <name>» with «×» (the choice is kept in the dialog; after «Выдать» the «На
-  доску» dialog opens with it preselected). The dialog fits without scrolling from ~760 px of
-  height: the text field grows from five rows (sketch 3) up to a maximum, only taller content
-  scrolls. «Тест с вопросами» opens the full editor (questions are too big for the dialog); the
-  entered state travels in `AssignmentDraftHandover` — «Срок» as the chosen chip, so «К следующему
-  занятию» stays that choice in the editor. Footer: text «Сохранить черновик» (creates the
-  assignment and keeps the chosen students as `draftStudentIds`, nobody is given it) and the split
-  button «Выдать» (menu «Выдать и разместить на доске»). «Выдать» and «Сохранить черновик» leave the
-  list in place with the snackbar «Задание выдано · Открыть» (`Snackbar.link`). Closing a dialog
-  with a text asks «Сохранить черновик?» (Сохранить · Не сохранять · Отмена): `tb-dialog
-  [draftPrompt] (saveDraft)`, the inline confirm step with a third button; without a text the usual
-  «Отменить изменения?».
-- **AI pane of the quick dialog** (sketch `AiDraft`; `tb-homework-ai-panel [pane]`, the logic and state
-  are the editor panel's): from the large breakpoint (≥ 1200 dp) the dialog widens to `split` (77.5 rem
-  ≈ 1240 px) and shows the pane beside the form — form `flex 1 1 35rem`, pane `flex 1 1 26rem` (max
-  32.5 rem), `surface-container-low`, 1 dp `outline-variant` divider, 24 dp padding, bleeding to the
-  dialog's edge. «×» «Закрыть помощника» or the toggle shrinks the dialog back to 47.5 rem. Below
-  the large breakpoint (and on a phone) the pane replaces the form with an arrow «Назад к заданию».
-  Top to bottom: the `auto_awesome` header; segmented «Текст задания · Вопросы теста»; «Что нужно»
-  (a field, assist chips «Упражнения по теме · Эссе · По тексту учебника · Мои запросы» — the last opens
-  the prompt library); «ИИ учтёт» (the textbooks bound in the dialog and the picked PDFs and photos,
-  each a checkable row, and the dashed «Источник» chip that opens «Учебник»; there is no group-level
-  source, the backend takes none); the «Черновик ИИ» card (tertiary-container badge, «вариант N из M»
-  with ‹ ›, tonal «Вставить в задание», text «Ещё вариант»); the footer hint «Текст меняется только
-  по кнопке «Вставить»» and the tertiary «Сгенерировать». «Вопросы теста» drafts questions; «Добавить
-  в тест» puts them in `AssignmentDraftHandover.questions` and opens the full editor with the test
-  (the dialog cannot hold questions).
+  and «Создать › Задание» of the rail (`?create=assignment`, replaced in the history) open the
+  editor `/teacher/homework/new` — the one creation form (352.6; the quick dialog is gone).
 - **View switch** (339.2): the outlined segmented buttons «Списком · По ученикам» (`view_list` /
   `grid_view`, a check on the chosen one; design system «Outlined variant») in the header actions
   before the main button; on a phone one icon button of the top app bar of the list page only
@@ -334,9 +295,7 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   of tiles — icon, title, «кому · срок», the bar with «3 из 4» under it, the status tag, «⋮»; the
   review strip shows two cards; journal cells are the icon and the grade (`✓ 5`, other states the
   icon only, the label stays in `aria-label`), five columns fit without scrolling and the total
-  column is left out — a phone's journal the same (sketch 20); the quick dialog has «Фото» and no
-  «Видео», and «Написать с ИИ» and «Тест с вопросами» open the editor with the AI pane
-  (`AssignmentDraftHandover.ai`).
+  column is left out — a phone's journal the same (sketch 20).
 - **Table** (`p-table` `tb-cards`; from expanded): «Активные» grouped by the due date —
   «Просрочено · N» (error colour), «На этой неделе» (up to the next Monday), «Позже»,
   «Без срока» — the heading is a label above its rows; «Черновики» and «Готовые» are one run (20
@@ -476,14 +435,20 @@ wider it falls back to «Тест»).
   Small, on-surface-variant) and the split filled «Выдать» (menu «Выдать и разместить на доске»;
   a phone — a plain «Выдать», sketch 21); an issued assignment has the filled «Сохранить». The
   tabs have their icons from medium (`description`, `quiz`).
+- **A new assignment** (352.6, sketches 11, 19, 21) shows only «Кому», the text, «Срок» and the
+  material assist chips; the video and test sections appear once there is something in them.
 - **Autosave**: a draft saves itself 1.5 s after the last change once it has a title (create, then
   update; picked files and textbooks go with it and then show as saved; the draft students are
   kept), no question is checked; the first save puts `/teacher/homework/<id>/edit` into the address
-  without reloading the page. Leaving a draft saves what is left and never asks. «Выдать» checks the
+  without reloading the page. An empty new assignment creates nothing when left. Leaving a draft saves
+  what is left and never asks. «Выдать» returns to the page the editor was opened from (the list,
+  the assignment) with the snackbar «Задание выдано · Открыть» (→ the assignment); «Сохранить» of
+  an issued assignment goes to its page. «Выдать» checks the
   questions first (problems → «Тест»), a `homework.quiz-incomplete` answer shows «Задание не
   выдано: поправьте вопросы 2, 3» on «Тест». An issued assignment asks before leaving changes.
-- **«Назад»** leads to the page the editor was opened from (`previousNavigation.finalUrl`: the list
-  with its filters, the assignment, a student); opened by a link — the assignment or the list.
+- **«Назад»** leads to the page the editor was opened from (`previousNavigation.finalUrl` without
+  `?create=`: the list with its filters, the assignment, a student); opened by a link — the
+  assignment or the list.
 
 A saved assignment loads its title as the first line when the text does not start with it. A
 supporting sheet with the AI request (prompt library, search and save, sources, generate / error /
@@ -493,8 +458,8 @@ supporting-pane canonical layout. *Ours:* the AI pane is a fixed pane beside the
 expanded (sketch 13), a modal right drawer on medium (sketch 19) and a bottom sheet on a phone
 (sketch 22); main content precedes AI in reading order; one Markdown
 field at every width; the AI never changes text without Insert / Replace; its state survives closing
-the pane. The recipients, deadline and materials parts are the components of the dialog
-(`ui/recipients-field.ts`, `ui/due-chips.ts`, `ui/material-chips.ts`).
+the pane. The recipients, deadline and materials parts are `ui/recipients-field.ts`,
+`ui/due-chips.ts`, `ui/material-chips.ts`.
 
 **Sections column** (on «Задание» from expanded width, hidden beside the AI pane): `tb-section-nav`
 «Разделы задания» (design-system §10) lists «Текст», «Видео · N» and «Тест · N» — the one in view

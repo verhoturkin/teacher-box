@@ -437,22 +437,14 @@ export const ru = {
     boardFailed:
       'Задание на доске, но отметка о ней не сохранилась — поставьте её со страницы задания',
   },
-  /** The quick dialog «Новое задание». */
+  /** The form of a new assignment (the editor): who, due date, materials, «Выдать». */
   create: {
-    title: 'Новое задание',
-    fullscreen: 'Открыть во весь экран',
     whom: 'Кому',
     whomPlaceholder: 'Ученик или группа',
     removeMember: (name: string) => `Убрать: ${name}`,
     task: 'Задание',
     firstLine: 'Первая строка станет названием',
-    bold: 'Жирный',
-    list: 'Список',
-    link: 'Ссылка',
-    ai: 'Написать с ИИ',
-    backToForm: 'Назад к заданию',
     closeAi: 'Закрыть помощника',
-    aiShort: 'ИИ',
     due: 'Срок',
     nextLesson: (date: string) => `К следующему занятию · ${date}`,
     inWeek: 'Через неделю',
@@ -470,16 +462,12 @@ export const ru = {
     boardOn: (name: string) => `Доска: ${name}`,
     noBoards: 'Досок пока нет',
     remove: 'Убрать',
-    saveDraft: 'Сохранить черновик',
     assign: 'Выдать',
     assignMenu: 'Другие способы выдать',
     assignToBoard: 'Выдать и разместить на доске',
     needText: 'Напишите текст задания',
     needWhom: 'Выберите, кому выдать задание',
-    drafted: 'Черновик сохранён',
     open: 'Открыть',
-    keepDraft: 'Сохранить черновик?',
-    keepDraftSave: 'Сохранить',
   },
   /** «По ученикам»: the grid of students by the assignments of a week. */
   journal: {

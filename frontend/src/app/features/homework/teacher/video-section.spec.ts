@@ -61,10 +61,9 @@ describe('VideoSection', () => {
     });
   });
 
-  async function render(videos: readonly VideoDraft[] = [], quick = false) {
+  async function render(videos: readonly VideoDraft[] = []) {
     fixture = TestBed.createComponent(VideoSection);
     fixture.componentRef.setInput('videos', videos);
-    fixture.componentRef.setInput('quick', quick);
     await fixture.whenStable();
     return { section: fixture.componentInstance, host: hostElement(fixture) };
   }
@@ -146,16 +145,13 @@ describe('VideoSection', () => {
     expect(document.activeElement?.getAttribute('aria-label')).toContain('Первое');
   });
 
-  it('has small tiles with «×» only in the quick dialog and hides the field at five', async () => {
+  it('hides the link field at five videos and shows it again when one goes', async () => {
     const { section, host } = await render(
       Array.from({ length: MAX_VIDEOS }, () => ({ ...videoDraft(), url: YOUTUBE })),
-      true,
     );
     expect(host.querySelector('#video-link')).toBeNull();
-    expect(host.textContent).not.toContain('Без расшифровки');
-    expect(host.querySelector('.tb-drag-handle')).toBeNull();
 
-    buttonByText(host, 'Убрать видео: Видео 1').click();
+    section.remove(section.videos()[0]?.key ?? 0);
     await fixture.whenStable();
     expect(section.videos()).toHaveLength(MAX_VIDEOS - 1);
     expect(host.querySelector('#video-link')).not.toBeNull();

@@ -1,3 +1,4 @@
+import { Snackbar } from '@core/snackbar/snackbar';
 import { HttpTestingController, TestRequest } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Location } from '@angular/common';
@@ -13,7 +14,6 @@ import { By } from '@angular/platform-browser';
 import { aBoard } from '@testing/boards-fixtures';
 import { ToBoardDialog } from '@features/boards/parts';
 import { AssignMoreDialog } from './assign-more-dialog';
-import { AssignmentDraftHandover } from './assignment-draft';
 import { AssignmentEditorPage } from './assignment-editor-page';
 import { questionDraft } from './question-drafts';
 import { videoDraft } from './video-section';
@@ -57,12 +57,14 @@ function exactButton(host: HTMLElement, text: string): HTMLButtonElement {
 describe('AssignmentEditorPage', () => {
   let backend: HttpTestingController;
   let navigate: ReturnType<typeof vi.spyOn>;
+  let navigateByUrl: ReturnType<typeof vi.spyOn>;
   let fixture: ComponentFixture<AssignmentEditorPage>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({ providers: testProviders() });
     backend = TestBed.inject(HttpTestingController);
     navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    navigateByUrl = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     vi.spyOn(TestBed.inject(MessageService), 'add');
   });
 
@@ -122,44 +124,8 @@ describe('AssignmentEditorPage', () => {
     });
   }
 
-  it('takes what was entered in the quick dialog', async () => {
-    TestBed.inject(AssignmentDraftHandover).put({
-      text: '# Дроби\nРешите №1',
-      members: [{ kind: 'STUDENT', id: 's-1' }],
-      due: 'none',
-      picked: null,
-      files: [new File(['x'], 'условие.pdf')],
-      textbooks: [boundTextbook({ textbookId: 'tb-1' })],
-      videos: [],
-    });
-    const { page, host } = await create();
-
-    expect(page.form.controls.description.value).toBe('# Дроби\nРешите №1');
-    expect(page.form.controls.members.value).toEqual([{ kind: 'STUDENT', id: 's-1' }]);
-    expect(readableText(host)).toContain('Анна');
-    expect(readableText(host)).toContain('Учебник');
-    expect(page.newFiles()).toHaveLength(1);
-    expect(page.form.dirty).toBe(true);
-  });
-
-  it('keeps «К следующему занятию» from the quick dialog as the choice, not a date', async () => {
-    TestBed.inject(AssignmentDraftHandover).put({
-      text: 'Дроби',
-      members: [{ kind: 'STUDENT', id: 's-1' }],
-      due: 'lesson',
-      picked: null,
-      files: [],
-      textbooks: [],
-      videos: [],
-    });
-    const { host } = await create([lessonIn(2)]);
-
-    expect(host.querySelector('tb-due-chips [aria-pressed="true"]')?.textContent).toContain(
-      'К следующему занятию',
-    );
-  });
-
   it('creates written homework, adds its materials, then gives it out', async () => {
+    const link = vi.spyOn(TestBed.inject(Snackbar), 'link');
     const next = lessonIn(2);
     const { page, host } = await create([lessonIn(5), next, lessonIn(1, 's-9')]);
 
@@ -198,10 +164,11 @@ describe('AssignmentEditorPage', () => {
     assigned.flush(assignmentDetails({ id: 'a-9' }));
     await fixture.whenStable();
 
+    // back where the editor was opened (the list); «Открыть» of the snackbar leads to the assignment
+    expect(navigateByUrl).toHaveBeenCalledWith('/teacher/homework');
+    expect(link).toHaveBeenCalledWith('Задание выдано', 'Открыть', expect.any(Function));
+    link.mock.calls[0]?.[2]();
     expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-9']);
-    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'Задание выдано' }),
-    );
     expect(page.canLeave()).toBe(true);
   });
 
@@ -476,7 +443,7 @@ describe('AssignmentEditorPage', () => {
 
     dialog.visible.set(false);
     await fixture.whenStable();
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-9']);
+    expect(navigateByUrl).toHaveBeenCalledWith('/teacher/homework');
     expect(page.canLeave()).toBe(true);
     localStorage.clear();
   });
@@ -508,7 +475,7 @@ describe('AssignmentEditorPage', () => {
       .flush(assignmentDetails({ id: 'a-8' }));
     await fixture.whenStable();
 
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-8']);
+    expect(navigateByUrl).toHaveBeenCalledWith('/teacher/homework');
     expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
       expect.objectContaining({ severity: 'error' }),
     );

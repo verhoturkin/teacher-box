@@ -20,9 +20,6 @@ import { SHARED_T } from '@shared/i18n/texts';
         [text]="true"
         (onClick)="cancelled.emit()"
       />
-      @if (otherLabel(); as label) {
-        <p-button [label]="label" severity="secondary" [text]="true" (onClick)="other.emit()" />
-      }
       <p-button
         [label]="confirmLabel()"
         [severity]="severity() === 'danger' ? 'danger' : 'primary'"
@@ -40,9 +37,6 @@ export class DialogConfirmStep {
   readonly cancelLabel = input<string | null>(null);
   readonly severity = input<'primary' | 'danger'>('danger');
 
-  /** A third way out between cancelling and confirming («Не сохранять»). */
-  readonly otherLabel = input<string | null>(null);
-  readonly other = output();
   readonly confirmed = output();
   readonly cancelled = output();
 }

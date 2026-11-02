@@ -2,7 +2,7 @@ import { bearer, startSession } from '../support/session';
 import { type Browser, expect, test } from '@playwright/test';
 
 /**
- * Homework redesign (339–342): an assignment is made and issued in the quick dialog, it shows up in the
+ * Homework (339–342, 352.6): an assignment is made and issued in the editor, it shows up in the
  * «По ученикам» journal of the week, and the student answers on the task page with a draft that survives a reload.
  */
 
@@ -30,20 +30,20 @@ test.beforeAll(async ({ request }) => {
   expect(accepted.ok()).toBe(true);
 });
 
-test('an assignment is made and issued in the quick dialog', async ({ page }) => {
+test('an assignment is made in the editor and «Выдать» returns to the list', async ({ page }) => {
   await page.setViewportSize(WIDE);
   await startSession(page, 'teacher', TEACHER_PASSWORD);
   await page.goto('/teacher/homework');
   await page.getByRole('button', { name: 'Новое задание' }).click();
-  const dialog = page.getByRole('dialog');
-  await dialog.getByRole('button', { name: 'Ученик или группа' }).click();
+  await expect(page).toHaveURL(/\/teacher\/homework\/new$/);
+  await page.getByRole('button', { name: 'Ученик или группа' }).click();
   await page.getByRole('option', { name: STUDENT }).click();
   await page.keyboard.press('Escape');
-  await dialog.locator('#create-text').fill(`${TITLE}\nРешите три примера`);
-  await dialog.getByRole('button', { name: 'Без срока' }).click();
-  await dialog.getByRole('button', { name: 'Выдать', exact: true }).click();
-  await expect(dialog).toBeHidden();
-  await page.reload();
+  await page.locator('#editor-text').fill(`${TITLE}\nРешите три примера`);
+  await page.getByRole('button', { name: 'Без срока' }).click();
+  await page.getByRole('button', { name: 'Выдать', exact: true }).click();
+  await expect(page).toHaveURL(/\/teacher\/homework$/);
+  await expect(page.getByText('Задание выдано')).toBeVisible();
   await expect(page.getByRole('link', { name: TITLE })).toBeVisible();
 });
 

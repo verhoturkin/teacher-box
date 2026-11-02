@@ -5,10 +5,8 @@ import {
   ElementRef,
   Injector,
   afterNextRender,
-  booleanAttribute,
   computed,
   inject,
-  input,
   model,
   signal,
   viewChild,
@@ -121,7 +119,7 @@ interface TranscriptNote {
  * the student sees it; the tiles reorder by drag (or the arrow keys on the handle), one link field under them adds
  * the next video. «Настроить» opens the side sheet of a video (a phone: the whole screen) — player, title, the
  * transcript as timed lines («Субтитры YouTube» with a menu of tracks, «Из файла», «Править текст»), «Показывать
- * расшифровку ученику», «Убрать видео» and ‹ › between videos. `quick` (the quick dialog) — small tiles with «×» only.
+ * расшифровку ученику», «Убрать видео» and ‹ › between videos.
  */
 @Component({
   selector: 'tb-video-section',
@@ -147,26 +145,22 @@ interface TranscriptNote {
     @if (videos().length > 0) {
       <ul
         class="tb-video-tiles"
-        [class.tb-video-tiles--quick]="quick()"
         [attr.aria-label]="t.list"
         cdkDropList
-        [cdkDropListDisabled]="quick()"
         (cdkDropListDropped)="drop($event)"
       >
         @for (draft of videos(); track draft.key; let index = $index) {
           <li class="tb-video-tile" cdkDrag>
-            @if (!quick()) {
-              <button
-                type="button"
-                class="tb-drag-handle"
-                cdkDragHandle
-                [attr.data-handle]="draft.key"
-                [attr.aria-label]="t.drag(name(draft, index))"
-                (keydown)="keyMove($event, draft.key)"
-              >
-                <i class="tb-i tb-i-drag_indicator" aria-hidden="true"></i>
-              </button>
-            }
+            <button
+              type="button"
+              class="tb-drag-handle"
+              cdkDragHandle
+              [attr.data-handle]="draft.key"
+              [attr.aria-label]="t.drag(name(draft, index))"
+              (keydown)="keyMove($event, draft.key)"
+            >
+              <i class="tb-i tb-i-drag_indicator" aria-hidden="true"></i>
+            </button>
             <span class="tb-video-tile__preview">
               @if (thumbnail(draft); as src) {
                 <img [src]="src" alt="" loading="lazy" referrerpolicy="no-referrer" />
@@ -177,46 +171,25 @@ interface TranscriptNote {
             <span class="tb-video-tile__text">
               <span class="tb-video-tile__title">{{ name(draft, index) }}</span>
               <span class="tb-video-tile__source">{{ source(draft) }}</span>
-              @if (!quick()) {
-                <span class="tb-video-tile__tags">
-                  @if (draft.transcript.trim() !== '') {
-                    <p-tag
-                      severity="success"
-                      icon="tb-i tb-i-subtitles"
-                      [value]="t.withTranscript"
-                    />
-                    @if (draft.transcriptShown) {
-                      <p-tag
-                        severity="info"
-                        icon="tb-i tb-i-visibility"
-                        [value]="t.studentSeesTag"
-                      />
-                    }
-                  } @else {
-                    <p-tag severity="secondary" [value]="t.noTranscript" />
+              <span class="tb-video-tile__tags">
+                @if (draft.transcript.trim() !== '') {
+                  <p-tag severity="success" icon="tb-i tb-i-subtitles" [value]="t.withTranscript" />
+                  @if (draft.transcriptShown) {
+                    <p-tag severity="info" icon="tb-i tb-i-visibility" [value]="t.studentSeesTag" />
                   }
-                </span>
-              }
+                } @else {
+                  <p-tag severity="secondary" [value]="t.noTranscript" />
+                }
+              </span>
             </span>
-            @if (quick()) {
-              <p-button
-                icon="tb-i tb-i-close"
-                [text]="true"
-                [rounded]="true"
-                severity="secondary"
-                [ariaLabel]="t.remove(name(draft, index))"
-                (onClick)="remove(draft.key)"
-              />
-            } @else {
-              <p-button
-                icon="tb-i tb-i-tune"
-                [text]="true"
-                [rounded]="true"
-                severity="secondary"
-                [ariaLabel]="t.configure(name(draft, index))"
-                (onClick)="openKey.set(draft.key)"
-              />
-            }
+            <p-button
+              icon="tb-i tb-i-tune"
+              [text]="true"
+              [rounded]="true"
+              severity="secondary"
+              [ariaLabel]="t.configure(name(draft, index))"
+              (onClick)="openKey.set(draft.key)"
+            />
           </li>
         }
       </ul>
@@ -454,7 +427,7 @@ interface TranscriptNote {
       opacity: 0.4;
     }
 
-    /* The 16:9 preview: 128 × 72 (the sketch), 96 × 54 in the quick dialog; 8 dp corners (M3 small) */
+    /* The 16:9 preview: 128 × 72 (the sketch); 8 dp corners (M3 small) */
     .tb-video-tile__preview {
       display: flex;
       flex: none;
@@ -471,16 +444,6 @@ interface TranscriptNote {
         inline-size: 100%;
         block-size: 100%;
         object-fit: cover;
-      }
-    }
-
-    .tb-video-tiles--quick {
-      .tb-video-tile {
-        padding: var(--tb-space-2);
-      }
-
-      .tb-video-tile__preview {
-        inline-size: 6rem;
       }
     }
 
@@ -607,8 +570,6 @@ export class VideoSection {
 
   /** The videos of the assignment; every change is a new list. */
   readonly videos = model<readonly VideoDraft[]>([]);
-  /** The quick dialog: small tiles with «×», no settings. */
-  readonly quick = input(false, { transform: booleanAttribute });
 
   /** The text of the link field. */
   protected readonly link = signal('');

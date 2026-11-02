@@ -201,7 +201,7 @@ of an assignment (`teacher/assignment-board.ts`): the frame «<title> · dd.MM.y
 gif files, then the bound pages of each textbook (a whole PDF — from page 1, an image — its picture, a document —
 none), at most 30. Routes `/teacher/homework/**`, `/cabinet/homework/**`.
 
-Videos (0.19.0, ADR-0047; tiles 0.43.0): `teacher/video-section.ts` in the editor and the quick dialog (sent
+Videos (0.19.0, ADR-0047; tiles 0.43.0): `teacher/video-section.ts` in the editor (sent
 whole with `videos`). A video is a tile: the preview (YouTube's public `i.ytimg.com/vi/<id>/mqdefault.jpg`, CSP
 `img-src https:`; Rutube, VK and other links show the source icon — they publish no preview without new backend
 work), the name (the title, else «Видео N»), the source («YouTube · с 0:45», «Rutube», «VK Видео», «Плеера нет —
@@ -216,7 +216,7 @@ replacing a transcript; several open a menu — the suggested first, the languag
 видео» / «автоматические», «Заменит текущую расшифровку» over them when one is written; the result «Субтитры
 YouTube: английский, автоматические» or the error under the chips) and «Из файла» (.srt / .vtt →
 `subtitlesToTranscript`, `[m:ss]` paragraphs of ~30 s), «Показывать расшифровку ученику», «Убрать видео» and ‹ ›.
-The quick dialog (`quick`) has small tiles with «×» and the field only. Videos
+Videos
 with a transcript are «Видео: <name>» in «Опереться на». `ui/video-player.ts` — a 16:9 `iframe` (`embedUrl`:
 `youtube-nocookie.com/embed`, `rutube.ru/play/embed`, `vkvideo.ru/video_ext.php`, built only from checked IDs), a link
 card «Открыть видео в новой вкладке» otherwise; `ui/video-list.ts` on the assignment and task pages (the title, the

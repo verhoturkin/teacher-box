@@ -630,7 +630,7 @@ action — «Изменить» next to «Проверить N работ» (hom
 - **Input chips** `tb-input-chip` (`@shared/ui/input-chip`, **M3** input chip: a chosen entity the user
   can remove): 32 dp, 8 dp corners, outline-variant border, a leading 24 dp `tb-avatar` or 18 dp icon
   (`<… lead>`), the label, a trailing 18 dp «×» button named «Убрать: <name>». With a dashed assist chip
-  at the end it is the «Кому» field of the quick assignment dialog: `tb-member-picker` `[bare]` keeps
+  at the end it is the «Кому» field of the assignment editor: `tb-member-picker` `[bare]` keeps
   the data and the panel (`open()`), the chips are the field (*ours*). `[readonly]="true"` drops the «×»
   (the students an assignment is already given to; *ours*).
 - **Section list** `tb-section-nav` (`@shared/ui/section-nav`, the contents of a long page, e.g. the
@@ -669,23 +669,19 @@ changes the container; content and markup are the same at every width. Every dia
 - **Basic dialog** (**M3**): 280–560 dp, 28 dp corners, 24 dp padding, 16 dp headline → body, 24 dp
   body → actions, 8 dp between buttons, surface-container-high, scrim; buttons at the trailing edge,
   the confirming one closest to it; with scrolling content the headline and buttons stay pinned.
-  *Ours:* `normal` 32 rem, `wide` 40 rem (= 560 dp), `xwide` 47.5 rem (a form with a text editor,
-  «Новое задание»), `split` 77.5 rem (a form with a pane beside it, «Новое задание» with the AI
-  pane), `alert` 32 rem (a confirmation ≤ 35 rem); never closer than 1 rem to the screen edge.
-  **Side pane** (*ours*, sketch `AiDraft`): `surface-container-low`, a 1 dp `outline-variant` divider,
-  24 dp padding, bleeding to the dialog's edge; below the large breakpoint it replaces the content
-  with an arrow back. **AI actions** («Написать с ИИ», «Сгенерировать», the «Черновик ИИ» badge) take
+  *Ours:* `normal` 32 rem, `wide` 40 rem (= 560 dp), `alert` 32 rem (a confirmation ≤ 35 rem);
+  never closer than 1 rem to the screen edge. **AI actions** («Написать с ИИ», «Сгенерировать», the «Черновик ИИ» badge) take
   the tertiary roles (M3: tertiary is for a contrasting accent): the filled ones are
   `on-tertiary-container` with `tertiary-container` text (the sketch's `#390035` on `#FFD7F3`; the
   theme has no `on-tertiary`, and `tertiary` itself is tuned as a text colour), the badge and the
   unpressed toggle `tertiary-container`. One filled primary action per
-  surface still holds: in the dialog it is «Выдать», so the draft's «Вставить в задание» is tonal
+  surface still holds: in the editor it is «Выдать», so the draft's «Вставить в задание» is tonal
   and «Ещё вариант» a text button; tertiary «Сгенерировать» is the pane's own action, not a second
   primary one. An AI action beside other actions («С ИИ», «Составить с ИИ») is a
   tonal tertiary button `p-button.tb-button-ai` (`tertiary-container`); the action of a tertiary
   note («Создать копию для правок») is the filled `p-button.tb-button-tertiary`.
-- **Full-screen dialog** (`form` on compact, **M3**; `screen` on every width — *ours*, sketch 23: M3
-  keeps the full-screen dialog for compact, the test is a task of its own the page waits behind;
+- **Full-screen dialog** (`form` and `screen` on compact, **M3**; from medium `screen` is a pane in
+  the frame — *ours*, sketch 23: the test is a task of its own the page waits behind;
   `closeLabel` names «✕» when it says more than «Закрыть»): 56 dp header, 24 dp sides, 8 dp between
   elements; «✕» first and the only navigation, the headline (one line, truncated), the confirming
   button at the end with a clear verb («Создать», «Отправить», not «Готово»), never disabled for
@@ -709,8 +705,7 @@ changes the container; content and markup are the same at every width. Every dia
 - **Dirty form:** closing a `form` with changes asks «Отменить изменения?» (Esc = «Отмена»): on
   compact a basic dialog over the full-screen one (the only dialog over a dialog, **M3**; the
   discard button red, *ours*); from medium and inside `alert` / `sheet` the inline
-  `<tb-dialog-confirm-step>` — its text and two buttons replace the footer. A form that can be kept
-  sets `[draftPrompt]`: «Сохранить черновик?» with «Сохранить · Не сохранять · Отмена» in the same step.
+  `<tb-dialog-confirm-step>` — its text and two buttons replace the footer.
 - **Inline form not saved** (settings cards, *ours*): a card with a form calls
   `guardUnsaved(() => dirty)` (`core/routing/unsaved-changes.ts`); the page (`SettingsPage.canLeave`
   + `canLeaveGuard`) asks the shared `Confirm` «Отменить изменения?» on a route or category change,

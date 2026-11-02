@@ -66,6 +66,19 @@ The commit message or the report lists the sketches checked and anything left on
   the phone's compact row (10); the answer keeps labelled assist chips, not icon buttons (10, 27);
   status tags keep the shared names («На доработке», not «Доработать»); no chevron in the tablet
   list (37); the phone test's header names the test, the step stays on the right (26).*
+- [x] **352.6 F** One creation form: the quick dialog goes. «Новое задание» (header button, FAB,
+  rail FAB) opens the editor `/teacher/homework/new` on the «Задание» tab. A new assignment shows
+  only «Кому», the text, «Срок» and the material assist chips (empty sections hidden); the AI
+  button opens the editor's AI pane. A draft is created on the first typed character and then
+  saves itself; leaving an empty new assignment creates nothing. «Выдать» returns to where the
+  editor was opened (list or assignment) with the snackbar «Задание выдано · Открыть». Remove
+  `assignment-create-dialog.ts`, its spec, `AssignmentDraftHandover` if nothing else uses it, the
+  dialog-only texts and the design-system / screens rules only the dialog needed. «Выдать ещё» of
+  an assignment and in the journal stays its own small dialog.
+  *Also removed: the dialog-only modes — `tb-dialog` widths `xwide` / `split` and
+  `[draftPrompt]`, the confirm step's third button, the video tiles' `quick` and the chips'
+  `tablet`. The AI pane was not checked in the browser (no AI on the test instance; unit and E2E
+  tests cover it).*
 - [ ] **352.5** Release refresh: CHANGELOG 0.43.0, help articles and wiki for what 352.1–352.4
   changed, the archive `docs/archive/plans/v0.43.0.md` gets this section; `./scripts/verify.sh`.
   Local only.
