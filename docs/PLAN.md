@@ -53,7 +53,7 @@ sketch disagrees with it.
 
 ### Stage 357 — Settings in six categories
 
-- [ ] **357.1 F** `settings/settings-categories.ts`: `account`, `portal`, `lessons`, `messengers`,
+- [x] **357.1 F** `settings/settings-categories.ts`: `account`, `portal`, `lessons`, `messengers`,
   `ai`, `data`; `calendar`, `calls`, `payments` redirect to `lessons`. Each row shows its state as
   the summary («Telegram работает», «Копия сегодня в 03:00», failed count badge). Compact: the
   account as a lead row above the «Портал» group (`PhoneSettings`); medium per `TabletSettings`.

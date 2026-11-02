@@ -3,7 +3,7 @@ import { CanActivateFn, Router, Routes, UrlMatcher } from '@angular/router';
 import { CORE_T } from '@core/i18n/texts';
 import { canLeaveGuard } from '@core/routing/can-leave.guard';
 import { SettingsPage } from './settings-page';
-import { categoryOfFolds, isCategory } from './settings-categories';
+import { categoryOfFolds, isCategory, mergedCategory } from './settings-categories';
 
 /** `/teacher/settings` and `/teacher/settings/:category` are one route: the page stays, the detail changes. */
 const settingsMatcher: UrlMatcher = (segments) => {
@@ -15,19 +15,25 @@ const settingsMatcher: UrlMatcher = (segments) => {
 };
 
 /**
- * Old addresses lead to a category: Google's redirects (`?google=` → «Расписание и календарь», `?drive=` →
- * «Данные», the result stays in the address for the panel) and the fold cards (`?open=portal`); an unknown
- * category — to the list.
+ * Old addresses lead to a category: the merged categories (`calendar`, `calls`, `payments` → «Занятия»,
+ * the query stays), Google's redirects (`?google=` → «Занятия», `?drive=` → «Данные», the result stays in
+ * the address for the panel) and the fold cards (`?open=portal`); an unknown category — to the list.
  */
 const settingsAddress: CanActivateFn = (route) => {
   const router = inject(Router);
   const category: unknown = route.params['category'];
-  if (category !== undefined) {
+  if (typeof category === 'string') {
+    const merged = mergedCategory(category);
+    if (merged !== null) {
+      return router.createUrlTree(['/teacher/settings', merged], {
+        queryParams: route.queryParams,
+      });
+    }
     return isCategory(category) || router.createUrlTree(['/teacher/settings']);
   }
   const { open, google, drive } = route.queryParams as Record<string, string | undefined>;
   if (google !== undefined) {
-    return router.createUrlTree(['/teacher/settings/calendar'], { queryParams: { google } });
+    return router.createUrlTree(['/teacher/settings/lessons'], { queryParams: { google } });
   }
   if (drive !== undefined) {
     return router.createUrlTree(['/teacher/settings/data'], { queryParams: { drive } });

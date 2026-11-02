@@ -1,7 +1,10 @@
 import { HttpTestingController } from '@angular/common/http/testing';
+import { Provider, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { AuthService } from '@core/auth/auth.service';
 import { PageDetail } from '@core/routing/page-detail';
+import { UnsavedChanges } from '@core/routing/unsaved-changes';
 import { hostElement, readableText, requireElement, typeInto } from '@testing/dom';
 import { aiStatus, systemPrompt, usageReport } from '@testing/ai-fixtures';
 import { overview } from '@testing/billing-fixtures';
@@ -61,9 +64,10 @@ describe('SettingsPage', () => {
       case 'portal':
         backend.expectOne('/api/teacher/portal').flush(portalSettings());
         break;
-      case 'calendar':
+      case 'lessons':
         backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
         backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
+        backend.expectOne('/api/teacher/billing/overview').flush(overview([]));
         backend.expectOne('/api/teacher/schedule/google').flush({
           clientConfigured: false,
           clientFromEnvironment: false,
@@ -75,8 +79,6 @@ describe('SettingsPage', () => {
           connectedAt: null,
           callbackPath: '/api/public/schedule/google/callback',
         });
-        break;
-      case 'calls':
         backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
         break;
       case 'messengers':
@@ -86,15 +88,10 @@ describe('SettingsPage', () => {
           .flush({ teacherActions: true, teacherMenu: [], studentMenu: [] });
         backend.expectOne('/api/teacher/notifications/students').flush([studentMessengers()]);
         break;
-      case 'payments':
-        backend.expectOne('/api/teacher/billing/overview').flush(overview([]));
-        break;
       case 'ai':
-        backend.expectOne('/api/teacher/ai/status').flush(aiStatus());
         backend.expectOne('/api/teacher/ai/usage').flush(usageReport());
         break;
       case 'data':
-        backend.expectOne('/api/teacher/backups').flush([BACKUP]);
         backend.expectOne('/api/teacher/backups/google').flush({
           clientConfigured: false,
           clientFromEnvironment: false,
@@ -118,10 +115,11 @@ describe('SettingsPage', () => {
     category: SettingsCategory | undefined,
     shown: SettingsCategory | null = category ?? null,
     status = STATUS,
+    providers: Provider[] = [],
   ): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [SettingsPage],
-      providers: [...testProviders(), screenWidth(width)],
+      providers: [...testProviders(), screenWidth(width), ...providers],
     });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');
@@ -131,6 +129,13 @@ describe('SettingsPage', () => {
     }
     fixture.detectChanges();
     backend.expectOne('/api/teacher/notifications/status').flush(status);
+    // the states of the list; the panels of «ИИ-помощник» and «Данные» ask the same
+    for (const request of backend.match('/api/teacher/ai/status')) {
+      request.flush(aiStatus());
+    }
+    for (const request of backend.match('/api/teacher/backups')) {
+      request.flush([BACKUP]);
+    }
     await fixture.whenStable();
     if (shown !== null) {
       flushCategory(shown);
@@ -152,76 +157,95 @@ describe('SettingsPage', () => {
     fixture.destroy();
   });
 
-  it('lists the categories with what they hold, the failed deliveries counted', async () => {
+  it('lists the six categories with their states, the failed deliveries counted', async () => {
     const host = await render(1200, undefined, 'account');
 
     const list = readableText(requireElement(host, 'nav', HTMLElement));
-    expect(list).toContain('Мой аккаунт Имя, фото, пароль');
-    expect(list).toContain('Портал Название и оформление');
-    expect(list).toContain('Расписание и календарь Пояс, Google, подписка');
-    expect(list).toContain('Звонки Телемост, ссылки');
-    expect(list).toContain('Уведомления и мессенджеры Это устройство, боты, что присылать 2');
-    expect(list).toContain('Оплаты Цена по умолчанию');
-    expect(list).toContain('ИИ-помощник Модель, расход, промты');
-    expect(list).toContain('Данные');
-    expect(list).not.toContain('Интеграции');
+    expect(list).toContain('Мой аккаунт Профиль, уведомления, вход');
+    expect(list).toContain('Портал Название, логотип, цвет');
+    expect(list).toContain('Занятия Пояс, цена, календарь, звонки');
+    expect(list).toContain('Мессенджеры Telegram работает 2');
+    expect(list).toContain('ИИ-помощник Подключён · 0 % лимита');
+    expect(list).toContain('Данные Копия 25 сентября');
+    expect(host.querySelector('nav p-tag')?.textContent.trim()).toBe('2');
     const links = Array.from(host.querySelectorAll('nav a')).map((link) =>
       link.getAttribute('href'),
     );
     expect(links).toEqual([
       '/teacher/settings/account',
       '/teacher/settings/portal',
-      '/teacher/settings/calendar',
-      '/teacher/settings/calls',
+      '/teacher/settings/lessons',
       '/teacher/settings/messengers',
-      '/teacher/settings/payments',
       '/teacher/settings/ai',
       '/teacher/settings/data',
     ]);
   });
 
-  it('shows the account beside the list of /teacher/settings from expanded', async () => {
+  it('keeps the list and the account in one pane of /teacher/settings from expanded', async () => {
     const host = await render(1200, undefined, 'account');
 
-    expect(panes(host)).toHaveLength(2);
+    expect(panes(host)).toHaveLength(1);
     expect(host.querySelector('h1')?.textContent).toContain('Настройки');
-    expect(host.querySelector('h2.tb-settings__heading')?.textContent).toContain('Мой аккаунт');
+    expect(readableText(host)).toContain('Изменения сохраняются сразу');
     expect(host.querySelector('tb-account-panel')).not.toBeNull();
     expect(current(host)).toBe('Мой аккаунт');
     expect(TestBed.inject(PageDetail).value()).toBe('Мой аккаунт');
   });
 
-  it.each([840, 1200])('keeps the list in the fixed pane at %i px', async (width) => {
-    const host = await render(width, 'portal');
+  it('does not promise saving at once in the portal: it has its own «Сохранить»', async () => {
+    const host = await render(1200, 'portal');
 
-    const [list, detail] = panes(host);
-    expect(list?.style.flexBasis).toBe(width === 840 ? '22.5rem' : '25.75rem');
-    expect(detail?.style.flexGrow).toBe('1');
+    expect(readableText(host)).not.toContain('Изменения сохраняются сразу');
     expect(host.querySelector('#portal')).not.toBeNull();
-    expect(current(host)).toBe('Портал');
   });
 
-  it.each([600, 839])('gives the list and the category 50 % each at %i px', async (width) => {
-    const host = await render(width, 'portal');
+  it.each([600, 839])('shows one-line categories beside the chosen one at %i px', async (width) => {
+    const host = await render(width, 'lessons');
 
-    const all = panes(host);
-    expect(all).toHaveLength(2);
-    for (const pane of all) {
-      expect(pane.style.flexBasis).toBe('0%');
-      expect(pane.style.flexGrow).toBe('1');
-    }
-    expect(host.querySelector('tb-panes')?.classList).not.toContain('tb-panes--single');
+    expect(panes(host)).toHaveLength(1);
+    const nav = requireElement(host, 'nav', HTMLElement);
+    expect(nav.classList).toContain('tb-settings__nav--medium');
+    expect(nav.querySelector('.tb-settings__summary')).toBeNull();
+    expect(readableText(host)).not.toContain('Изменения сохраняются сразу');
+    expect(readableText(nav)).toContain('Мессенджеры 2');
+    expect(host.querySelector('#time-zone')).not.toBeNull();
+    expect(current(host)).toBe('Занятия');
     expect(host.querySelector('.tb-page-header__back')).toBeNull();
   });
 
-  it('shows only the list of /teacher/settings at 599 px', async () => {
-    const host = await render(599, undefined, null);
+  it('leads the list with the account at 599 px, the portal’s categories follow', async () => {
+    const user = signal({ displayName: 'Елена Викторовна', avatar: null });
+    const host = await render(599, undefined, null, STATUS, [
+      { provide: AuthService, useValue: { user } },
+    ]);
 
     expect(panes(host)).toHaveLength(1);
-    expect(host.querySelector('nav')).not.toBeNull();
+    const lists = host.querySelectorAll<HTMLElement>('nav ul');
+    expect(lists).toHaveLength(2);
+    expect(readableText(lists[0] ?? host)).toBe(
+      'ЕВ Елена Викторовна Мой аккаунт · уведомления, вход, тема',
+    );
+    expect(host.querySelector('nav h2')?.textContent).toContain('Портал');
+    const portal = readableText(lists[1] ?? host);
+    expect(portal).toContain('Оформление портала Название, логотип, цвет');
+    expect(portal).toContain('Мессенджеры 2 не доставлено 2');
+    expect(portal).not.toContain('Мой аккаунт');
+    expect(host.querySelectorAll('nav .tb-i-chevron_right')).toHaveLength(6);
     expect(current(host)).toBeUndefined();
     expect(host.querySelector('tb-account-panel')).toBeNull();
     expect(TestBed.inject(PageDetail).value()).toBeNull();
+  });
+
+  it('shows the state of the messengers at 599 px when every notification was delivered', async () => {
+    const host = await render(599, undefined, null, {
+      channels: STATUS.channels,
+      failedDeliveries: [],
+    });
+
+    expect(readableText(requireElement(host, 'nav', HTMLElement))).toContain(
+      'Мессенджеры Telegram работает',
+    );
+    expect(host.querySelector('nav p-tag')).toBeNull();
   });
 
   it('shows only the category at 599 px, «back» leads to the list', async () => {
@@ -238,33 +262,16 @@ describe('SettingsPage', () => {
     expect(host.querySelector('#reset')).not.toBeNull();
   });
 
-  it('shows the time zone, Google Calendar and the subscription in the schedule and calendar', async () => {
-    const host = await render(1200, 'calendar');
+  it('shows the time zone, the price, the calendars and the calls in the lessons', async () => {
+    const host = await render(1200, 'lessons');
 
-    expect(host.querySelector('h2.tb-settings__heading')?.textContent).toContain(
-      'Расписание и календарь',
-    );
     expect(host.querySelector('#time-zone')).not.toBeNull();
+    expect(host.querySelector('#default-price')).not.toBeNull();
     expect(host.querySelector('#google')).not.toBeNull();
     expect(host.querySelector('tb-calendar-feed-panel')).not.toBeNull();
-    expect(host.querySelector('#meetings')).toBeNull();
-  });
-
-  it('shows the video meetings in the calls', async () => {
-    const host = await render(1200, 'calls');
-
-    expect(host.querySelector('h2.tb-settings__heading')?.textContent).toContain('Звонки');
     expect(host.querySelector('#meetings')).not.toBeNull();
-    expect(host.querySelector('#google')).toBeNull();
-    expect(current(host)).toBe('Звонки');
-  });
-
-  it('shows the price for new students in the payments', async () => {
-    const host = await render(1200, 'payments');
-
-    expect(readableText(host)).toContain('Цена для новых учеников 1 500 ₽');
-    expect(host.querySelector('#default-price')).not.toBeNull();
-    expect(current(host)).toBe('Оплаты');
+    expect(current(host)).toBe('Занятия');
+    expect(TestBed.inject(PageDetail).value()).toBe('Занятия');
   });
 
   it('shows the model, the usage and the prompts in the AI assistant', async () => {
@@ -296,9 +303,7 @@ describe('SettingsPage', () => {
     expect(text).toContain('Подключили мессенджер');
     // own messengers, devices and what to send are in «Мой аккаунт»
     expect(text).not.toContain('Что присылать');
-    expect(readableText(requireElement(host, '[aria-current="page"]', HTMLElement))).toContain(
-      'Уведомления и мессенджеры',
-    );
+    expect(current(host)).toBe('Мессенджеры');
   });
 
   it('says last when every notification was delivered, without a badge', async () => {
@@ -312,7 +317,8 @@ describe('SettingsPage', () => {
     expect(text.indexOf('Все уведомления доставлены')).toBeGreaterThan(
       text.indexOf('Подключили мессенджер'),
     );
-    expect(host.querySelector('p-badge')).toBeNull();
+    expect(text).toContain('Мессенджеры Боты не подключены');
+    expect(host.querySelector('p-tag')).toBeNull();
   });
 
   describe('leaving a form not saved', () => {
@@ -331,6 +337,13 @@ describe('SettingsPage', () => {
 
     it('leaves a clean category without a question', async () => {
       await render(1200, 'portal');
+
+      expect(fixture.componentInstance.canLeave()).toBe(true);
+    });
+
+    it('leaves a category other than the portal without a question: it saves on change', async () => {
+      await render(1200, 'lessons');
+      vi.spyOn(TestBed.inject(UnsavedChanges), 'dirty').mockReturnValue(true);
 
       expect(fixture.componentInstance.canLeave()).toBe(true);
     });
