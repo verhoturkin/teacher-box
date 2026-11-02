@@ -27,14 +27,6 @@ don't read them unless the task needs history.
   `CHANGELOG.md` entries; refresh the nine `docs/assets/readme/*.png` screenshots from a
   disposable instance of v0.41.0 with fictional students and verify the README image links.
 
-### Stage 355 — backend stability
-
-- [x] **355.1 B** Stability fixes from the backend review: completed Modulith events are deleted
-  nightly after 7 days (`platform/admin/EventPublications.purgeCompleted`); at most two PDF page
-  pictures render at once (`textbooks/application/PdfPages`); after a temporary messenger failure
-  `DeliveryDispatcher` leaves the rest of that messenger's batch for the next run; expired
-  entries leave the homework reminder map (`AssignmentService.remind`).
-
 ## Backlog
 
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,
