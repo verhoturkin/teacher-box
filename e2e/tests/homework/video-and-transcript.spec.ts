@@ -25,7 +25,13 @@ test('the teacher gives homework with a video and its transcript', async ({ page
   );
   await page.locator('#editor-text').fill(TITLE);
 
-  await page.getByRole('button', { name: 'Видео', exact: true }).click();
+  // 354.1: the video and the board are added from the section menu, not from «Материалы»
+  const materials = page.getByRole('group', { name: 'Материалы' });
+  await expect(materials.getByRole('button', { name: 'Учебник' })).toBeVisible();
+  await expect(materials).not.toContainText(/Видео|Доска|Тест/);
+  const add = page.getByRole('list', { name: 'Добавить' });
+  await expect(add.getByRole('button')).toHaveText(['Видео', 'Доску']);
+  await add.getByRole('button', { name: 'Видео', exact: true }).click();
   await page.getByLabel('Ссылка на видео').fill('https://youtu.be/dQw4w9WgXcQ?t=35');
   const tiles = page.locator('tb-video-section').getByRole('list', { name: 'Видео задания' });
   await expect(tiles).toContainText('YouTube · с 0:35');

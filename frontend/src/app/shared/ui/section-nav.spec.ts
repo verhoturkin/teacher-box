@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { hostElement } from '@testing/dom';
-import { SectionNav, SectionNavItem } from './section-nav';
+import { SectionNav, SectionNavAction, SectionNavItem, SectionNavPress } from './section-nav';
 
 const ITEMS: SectionNavItem[] = [
   { id: 'one', icon: 'tb-i-description', label: 'Первый' },
@@ -12,13 +12,24 @@ const ITEMS: SectionNavItem[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [SectionNav],
   template: `
-    <tb-section-nav [items]="items" label="Разделы" />
+    <tb-section-nav
+      [items]="items"
+      label="Разделы"
+      [actions]="actions"
+      actionsLabel="Добавить"
+      (pressed)="pressed.push($event)"
+    />
     <div id="one">1</div>
     <div id="two">2</div>
   `,
 })
 class Host {
   readonly items = ITEMS;
+  readonly actions: SectionNavAction[] = [
+    { id: 'video', icon: 'tb-i-smart_display', label: 'Видео' },
+    { id: 'board', icon: 'tb-i-co_present', label: 'Доску', disabled: true },
+  ];
+  readonly pressed: SectionNavPress[] = [];
 }
 
 describe('SectionNav', () => {
@@ -70,5 +81,23 @@ describe('SectionNav', () => {
     await fixture.whenStable();
     expect(scroll).toHaveBeenCalledOnce();
     expect(current()).toEqual(['location', null]);
+  });
+
+  it('lists the actions under their heading and reports a press', async () => {
+    const fixture = TestBed.createComponent(Host);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+    const buttons = [...host.querySelectorAll<HTMLButtonElement>('.tb-section-nav__action')];
+    const list = host.querySelectorAll('ul')[1];
+    const heading = host.querySelector('.tb-section-nav__subhead');
+    expect(heading?.textContent.trim()).toBe('Добавить');
+    expect(list?.getAttribute('aria-labelledby')).toBe(heading?.id);
+    expect(buttons.map((button) => [button.textContent.trim(), button.disabled])).toEqual([
+      ['Видео', false],
+      ['Доску', true],
+    ]);
+
+    buttons[0]?.click();
+    expect(fixture.componentInstance.pressed.map((press) => press.id)).toEqual(['video']);
   });
 });

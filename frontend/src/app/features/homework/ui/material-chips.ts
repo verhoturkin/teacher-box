@@ -1,30 +1,17 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-  model,
-  output,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model, output, viewChild } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { MenuItem } from 'primeng/api';
-import { Menu } from 'primeng/menu';
-import { quietContext } from '@core/http/api-error.interceptor';
-import { BoardsApi } from '@features/boards/parts';
 import { AssistChip } from '@shared/ui/assist-chip';
-import { InputChip } from '@shared/ui/input-chip';
 import { T } from '../i18n/texts';
 import { FilePicker } from './file-picker';
 
 /**
- * «Материалы»: the assist chips that add what an assignment has no yet — a photo (phone), a file, a textbook,
- * a video, a test with questions, a board. The files go into the `files` model, the rest is the host's.
+ * «Материалы»: the assist chips that add what an assignment has not yet — a photo (phone), a file, a textbook
+ * and, where the editor has no section menu for them (`withExtras`), a video and a board. The files go into the
+ * `files` model, the rest is the host's.
  */
 @Component({
   selector: 'tb-material-chips',
-  imports: [AssistChip, FilePicker, InputChip, Menu, NgTemplateOutlet],
+  imports: [AssistChip, FilePicker, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (withFiles()) {
@@ -71,39 +58,14 @@ import { FilePicker } from './file-picker';
           >{{ t.textbook }}</tb-assist-chip
         >
       }
-      @if (!compact()) {
-        <tb-assist-chip
-          [class.tb-assist-chip--fill]="compact()"
-          icon="smart_display"
-          [disabled]="videosFull()"
-          (click)="video.emit()"
-        >
+      @if (withExtras()) {
+        <tb-assist-chip icon="smart_display" [disabled]="videosFull()" (click)="video.emit()">
           {{ t.video }}
         </tb-assist-chip>
-      }
-      @if (withQuiz()) {
-        <tb-assist-chip [class.tb-assist-chip--fill]="compact()" icon="quiz" (click)="quiz.emit()">
-          {{ compact() ? t.quizShort : t.quiz }}
-        </tb-assist-chip>
-      }
-      @if (!compact()) {
-        @if (board(); as picked) {
-          <tb-input-chip
-            [label]="t.boardOn(picked.title)"
-            [removeLabel]="t.remove"
-            (removed)="board.set(null)"
-          >
-            <i lead class="tb-i tb-i-co_present" aria-hidden="true"></i>
-          </tb-input-chip>
-        } @else {
-          <tb-assist-chip
-            [class.tb-assist-chip--fill]="compact()"
-            icon="co_present"
-            (click)="chooseBoard($event, boardMenu)"
-          >
+        @if (!boardPicked()) {
+          <tb-assist-chip icon="co_present" (click)="board.emit($event)">
             {{ t.board }}
           </tb-assist-chip>
-          <p-menu #boardMenu [model]="boardItems()" [popup]="true" appendTo="body" />
         }
       }
     </div>
@@ -131,32 +93,14 @@ export class MaterialChips {
   /** A new assignment takes files and textbooks here; a saved one has them on its page. */
   readonly withFiles = input(true);
   readonly videosFull = input(false);
-  /** No «Тест с вопросами» once the assignment has a test: its card opens it. */
-  readonly withQuiz = input(true);
-  /** The board the assignment goes on once given out; chosen from the menu of the «Доска» chip. */
-  readonly board = model<BoardPick | null>(null);
-  private readonly boards = inject(BoardsApi);
-  protected readonly boardItems = signal<MenuItem[]>([]);
+  /** «Видео» and «Доска» here: the editor shows them in its section menu when it has one. */
+  readonly withExtras = input(true);
+  /** A board is chosen already: its section shows it. */
+  readonly boardPicked = input(false);
   readonly textbook = output();
   readonly video = output();
-  readonly quiz = output();
-
-  /** The boards are read when the menu opens; an empty list says so instead of showing nothing. */
-  protected chooseBoard(event: Event, menu: Menu): void {
-    menu.toggle(event);
-    this.boards.list({}, quietContext()).subscribe((boards) => {
-      this.boardItems.set(
-        boards.length === 0
-          ? [{ label: this.t.noBoards, disabled: true }]
-          : boards.map((board) => ({
-              label: board.title,
-              command: () => {
-                this.board.set({ id: board.id, title: board.title });
-              },
-            })),
-      );
-    });
-  }
+  /** «Доска»: the click, for the menu of boards beside the chip. */
+  readonly board = output<Event>();
 }
 
 /** A board of the teacher chosen for an assignment that is not given out yet. */

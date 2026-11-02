@@ -375,12 +375,15 @@ wider it falls back to «Тест»).
   and, with questions, the test summary «Тест» («N вопросов · M баллов · K попытки», the first
   three questions as one-line rows of a `tb-list--no-lead` — number, type icon, text cut with «…»
   or «Без текста», points —, the row «…и ещё N вопросов», the hint where to edit them and tonal
-  «Открыть тест»), and the aside (300–380 px) with «Кому» and «Срок» in one card (input chips +
-  dashed «Ученик или группа», drafts only; filter chips) and «Материалы»: a draft's textbooks and
-  files as compact rows (`tb-list--clamp`: two lines at most; textbook — «Изменить
-  страницы», «Убрать»; file — «Удалить файл») over the assist chips «Файл · Учебник · Видео ·
-  Доска» («Тест с вопросами» only while there is no test; it opens «Тест»). Narrower — one column
-  in the order who, the text, the videos, the test, the materials (sketch 19). Videos are tiles
+  «Открыть тест»), «Доска» once a board is chosen (354.1: the board as an input chip with «×» and
+  the hint when it gets the assignment), and the aside (300–380 px) with «Кому» and «Срок» in one
+  card (input chips + dashed «Ученик или группа», drafts only; filter chips) and «Материалы»: a
+  draft's textbooks and files as one segmented list (`tb-list-group`, `tb-list--clamp`: two
+  lines at most; textbook — «Изменить страницы», «Убрать»; file — «Удалить файл») over the assist
+  chips «Файл · Учебник». The video and the board are added from the sections column; without it
+  (below expanded, beside the AI) «Видео · Доска» are chips of «Материалы», a phone has neither.
+  The test is never a material: it lives on «Тест». Narrower — one column in the order who, the
+  text, the videos, the board, the test, the materials (sketch 19). Videos are tiles
   (`video-section.ts`, 348.1, sketches 39, 40: preview, name, source, «Расшифровка» / «Без
   расшифровки», «видит ученик», «Настроить»; drag to reorder); «Настроить» opens the video's side
   sheet (a phone: full screen) — player, «Название», the transcript as timed lines, «Субтитры
@@ -462,9 +465,11 @@ the pane. The recipients, deadline and materials parts are `ui/recipients-field.
 `ui/due-chips.ts`, `ui/material-chips.ts`.
 
 **Sections column** (on «Задание» from expanded width, hidden beside the AI pane): `tb-section-nav`
-«Разделы задания» (design-system §10) lists «Текст», «Видео · N» and «Тест · N» — the one in view
-highlighted, a click scrolls to it. The sketch's «Добавить» group is not built: the assist chips of
-«Материалы» add at every width, and the column is hidden beside the AI and below expanded.
+«Разделы задания» (design-system §10) lists «Текст», «Видео · N», «Доска» and «Тест · N» — the
+one in view highlighted, a click scrolls to it. Under a divider the group «Добавить» (354.1,
+sketch 11): «Видео» (disabled at five videos; shows the link field and focuses it) and «Доску»
+(until a board is chosen; the menu of the teacher's boards). The column is hidden beside the AI
+and below expanded; then «Материалы» has the chips «Видео · Доска».
 
 **Recipients of a saved assignment:** a draft shows its `draftStudentIds` as the editable «Кому» chips
 (saving updates `draft-students` once the student list is in); an issued one shows its students as

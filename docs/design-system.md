@@ -45,10 +45,10 @@ used icon classes disagree. E2E runs axe on the main screens and checks button r
   `--tb-shape-button` (20 px) is half a 40 px button.
 - **Nested corners** (**M3** optical roundness, ADR-0044): a child inside a padded container takes
   `inner = outer − padding`, never below `--tb-shape-xs`, written as `max(xs, calc(outer −
-  padding))` beside the padding. Lists, tile tables and figures set it through `--tb-list-outer`:
-  right on the page 16 px (**M3** list CornerLarge); in a card on a computer 20 − 20 → 4 px; in a
-  dialog 28 − 24 = 4 px; in a phone card 20 − 12 = 8 px; in a pane 28 − 24 = 4 px (compact
-  28 − 16 = 12 px).
+  padding))` beside the padding. Segmented lists and tile tables are the exception (stage 354,
+  *ours*): `--tb-list-outer` is the 16 px of the **M3** list group (CornerLarge) on the page, in a
+  card, a dialog and a pane alike, the rows between 4 px — the list is a component with its own
+  shape, and a 4 px outer corner hid the group.
 - **Elevation** — surfaces differ by tone, not shadow (**M3**). Shadows `--tb-elevation-1..3` only
   on floating elements: bottom sheet (1), FAB, menus, dropdowns, date picker, floating toolbars (2),
   dialogs (3).
@@ -571,7 +571,9 @@ action — «Изменить» next to «Проверить N работ» (hom
 - **Every list of data in a card, pane or dialog is a segmented list** `ul.tb-list` (CSS subgrid:
   lead, text and trail columns shared by all rows, so buttons line up): tiles `--tb-list-item`, 2 px
   gap, inner corners 4 px, outer `--tb-list-outer` (§1; a single tile has it on all corners), height
-  ≥ 56 px, padding 12 / 16 px. No custom row markup for data.
+  ≥ 56 px, padding 12 / 16 px. No custom row markup for data. Lists that read as one (the
+  editor's textbooks and files) sit in `tb-list-group`: 2 px apart, no margins, the outer corners
+  only on the first row of the group and the last.
   - `tb-list__lead` — 40 px secondary-container circle: people `tb-avatar` (`@shared/ui/avatar`:
     photo cut to a circle, otherwise initials; `size`: only 1.5rem in a chip, 2rem in a dense journal row, 40 px by default in a list;
     the account photo is a picture, not an avatar), an icon for things. A list whose
@@ -638,7 +640,10 @@ action — «Изменить» next to «Проверить N работ» (hom
   items (the drawer's 56 dp is *ours* lowered for an in-page list), full corners, a leading 20 dp icon,
   label large; the section in view is filled with secondary container and set in label large
   emphasized (`aria-current="location"`); a click scrolls to the section. About 200 dp wide and sticky;
-  hidden below expanded and while a supporting pane is open (*ours*).
+  hidden below expanded and while a supporting pane is open (*ours*). Optional actions under a
+  divider (`outline-variant`) and a section headline (title small, on-surface-variant) — the
+  drawer's divider and headline (**M3**): buttons of the same shape with a primary icon
+  (`[actions]`, `(pressed)`; the editor's «Добавить: Видео, Доску»).
 - **Material card** `tb-material-card` (`@shared/ui`): corner 20, surface-container-low, a preview
   on top (8:5; fetched as a blob by `tb-blob-image`, the kind icon while there is none; an external
   board shows a tonal tile with the service tag), the title (Title Medium) and «кому · дата» under

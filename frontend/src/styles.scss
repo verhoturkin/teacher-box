@@ -1658,17 +1658,35 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
 }
 
 /*
- * Nested corners (M3 optical roundness, ADR-0044): a list, a table of tiles or key figures inside a card or
- * a dialog round their outer corners by the container's corner less the room around them, never below
- * the 4 px of the tiles: a card 20 − 20 and a dialog 28 − 24 leave 4 px, a phone card 20 − 12 leaves 8 px
- * (set with its padding below). A list right on the page keeps the 16 px of the M3 list.
+ * Segmented lists keep their own shape wherever they lie (stage 354): the group's outer corners are the
+ * 16 px of the M3 list in a card and a dialog too, the rows between keep 4 px, so the group reads as one
+ * (our decision: the list is a component with its own shape, not a surface nested in the card).
+ *
+ * Several lists that read as one (`tb-list-group`: the textbooks and the files of the materials) lie
+ * 2 px apart with no margins of their own; only the first row of the group and the last one take the
+ * outer corners. An empty list host (nothing to show) takes no room.
  */
-.p-card-body {
-  --tb-list-outer: max(var(--tb-shape-xs), calc(var(--tb-shape-lg-plus) - var(--tb-space-5)));
-}
+.tb-list-group {
+  display: grid;
+  gap: 2px;
 
-.p-dialog-content {
-  --tb-list-outer: max(var(--tb-shape-xs), calc(var(--tb-shape-xl) - var(--tb-space-6)));
+  > :empty {
+    display: none;
+  }
+
+  > * > ul.tb-list {
+    margin: 0;
+  }
+
+  > :not(:empty) ~ :not(:empty) > .tb-list > li:first-child {
+    border-start-start-radius: var(--tb-list-inner);
+    border-start-end-radius: var(--tb-list-inner);
+  }
+
+  > :not(:empty):has(~ :not(:empty)) > .tb-list > li:last-child {
+    border-end-start-radius: var(--tb-list-inner);
+    border-end-end-radius: var(--tb-list-inner);
+  }
 }
 
 /*
@@ -3213,8 +3231,6 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
   .p-card:has(.tb-list),
   .p-card:has(tb-search-field) {
     > .p-card-body {
-      --tb-list-outer: calc(var(--tb-shape-lg-plus) - var(--tb-space-3));
-
       padding-inline: var(--tb-space-3);
     }
   }
