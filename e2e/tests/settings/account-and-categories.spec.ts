@@ -135,7 +135,7 @@ test('the teacher sees the student photo in the list of students', async ({ page
 });
 
 test('the teacher sets a photo in «Мой аккаунт» of the settings', async ({ page }) => {
-  // 234.1: the account is the detail pane beside the categories; at 1600 px it holds both forms in a row
+  // 234.1: the account is the detail pane beside the categories
   await signIn(page, 1600);
   await page.goto('/teacher/account');
   await expect(page).toHaveURL(/\/teacher\/settings\/account$/);
@@ -145,15 +145,6 @@ test('the teacher sets a photo in «Мой аккаунт» of the settings', as
     .setInputFiles({ name: 'me.png', mimeType: 'image/png', buffer: PNG });
   await expect(page.getByText('Фото сохранено')).toBeVisible();
   await expect(page.locator('a[aria-label^="Аккаунт"] tb-avatar img')).toBeVisible();
-
-  // «Имя» and «Смена пароля» side by side
-  const cards = page.locator('.tb-account__forms > p-card');
-  await expect(cards).toHaveCount(2);
-  const [name, password] = await Promise.all([
-    cards.nth(0).boundingBox(),
-    cards.nth(1).boundingBox(),
-  ]);
-  expect(Math.round(name?.y ?? 0)).toBe(Math.round(password?.y ?? 1));
 
   await page.getByRole('button', { name: 'Убрать фото' }).click();
   await expect(page.locator('a[aria-label^="Аккаунт"] tb-avatar img')).toHaveCount(0);

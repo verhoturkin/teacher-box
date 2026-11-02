@@ -41,16 +41,12 @@ describe('AccountPage', () => {
     const parts = Array.from(host.querySelectorAll('tb-account-panel > .tb-stack > *'), (part) =>
       part.tagName.toLowerCase(),
     );
-    // the student's sections come after the account's own cards, «Выйти» after all of them
-    expect(parts.slice(-4)).toEqual([
+    // the student's sections come after the account's own cards
+    expect(parts.slice(-3)).toEqual([
       'tb-channels-panel',
       'tb-push-devices-card',
       'tb-preferences-panel',
-      'div',
     ]);
-    expect(host.querySelector('tb-account-panel > .tb-stack > :last-child')?.textContent).toContain(
-      'Выйти',
-    );
     const text = readableText(host);
     expect(text).toContain('Мессенджеры');
     expect(text).toContain('Что присылать в мессенджеры');

@@ -557,7 +557,8 @@ the surface; group outer corners 16 px) in the fixed pane, the chosen category b
 of sections (from expanded `/teacher/settings` shows «Мой аккаунт»). A form changed and not saved
 asks «Отменить изменения?» before another category or page opens (design-system «Dialogs»).
 
-- Categories: «Мой аккаунт» (`account`: account, «Оформление» with theme and language, «Выйти»; also
+- Categories: «Мой аккаунт» (`account`: «Профиль» — photo, name; «Вход» — login, «Сменить…» password in a dialog,
+  «Выйти»; «Оформление» — theme and language as selects, saved on change; also
   the rail's «Аккаунт»), «Портал» (`portal`),
   «Расписание и календарь» (`calendar`:
   time zone, Google Calendar, calendar feed), «Звонки» (`calls`), «Уведомления и мессенджеры»
@@ -630,9 +631,9 @@ asks «Отменить изменения?» before another category or page op
   key shows.
 - **Payments:** tonal balance / charged / paid / price figures and the journal with filter chips,
   receipts in their rows.
-- **«Мой аккаунт»** (`/cabinet/account`, from «Аккаунт» in the rail / ☰): account,
-  «Оформление» (theme, language), «Мессенджеры», «Уведомления на устройствах»
-  (web push, ADR-0051), «Что присылать в мессенджеры и на устройства», «Выйти» last, in one
+- **«Мой аккаунт»** (`/cabinet/account`, from «Аккаунт» in the rail / ☰): «Профиль», «Вход»
+  (with «Выйти»), «Оформление» (theme, language), «Мессенджеры», «Уведомления на устройствах»
+  (web push, ADR-0051), «Что присылать в мессенджеры и на устройства», in one
   stack; the «connect» card and reminder lead here.
 - **Notifications on devices** (`tb-push-devices-card`, student «Мой аккаунт» and teacher account
   category): «Включить уведомления на этом устройстве» only while this browser is not subscribed

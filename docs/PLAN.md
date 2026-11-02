@@ -37,7 +37,7 @@ sketch disagrees with it.
 
 ### Stage 356 — One «Мой аккаунт»
 
-- [ ] **356.1 F** Shared account sections in `identity/account/account-panel.ts` for
+- [x] **356.1 F** Shared account sections in `identity/account/account-panel.ts` for
   `/teacher/settings/account` and `/cabinet/account` (`account-page.ts`): «Профиль» (photo, name),
   «Вход» (login, «Сменить…» password → `change-password-form.ts`, «Выйти»), «Оформление» (theme
   and language as selects). Fields save on change; the student and teacher stacks differ only by

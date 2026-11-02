@@ -7,25 +7,31 @@ import {
   signal,
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { from, switchMap } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
+import { Select } from 'primeng/select';
 import { Tooltip } from 'primeng/tooltip';
 import { LANGUAGES, Language, chooseLanguage, language } from '@core/i18n/language';
 import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
-import { Segment, SegmentGroup } from '@shared/ui/segment-group';
 import { AuthService } from '@core/auth/auth.service';
 import { checkFiles } from '@shared/files/check-files';
 import { SquarePhoto } from '@shared/files/square-photo';
 import { Avatar } from '@shared/ui/avatar';
 import { Busy } from '@shared/ui/busy';
+import { TbDialog } from '@shared/ui/dialog/dialog';
 import { IdentityApi } from '../data-access/identity-api';
 import { Account } from '../data-access/identity.models';
 import { Role } from '@core/auth/auth.models';
 import { ChangePasswordForm } from './change-password-form';
-import { guardUnsaved } from '@core/routing/unsaved-changes';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
@@ -36,30 +42,33 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
 const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
 
 /**
- * Own account of the teacher, a student or the administrator: profile data and password change. The
- * teacher and a student choose a photo; the teacher renames themselves for the students, a student
- * chooses the name the portal calls them (the teacher keeps seeing the name they gave). The content of
- * «Мой аккаунт»: the page of a student and the administrator, the category of the teacher's settings.
+ * Own account of the teacher, a student or the administrator in sections: «Профиль» (photo, name),
+ * «Вход» (login, password, «Выйти»), «Оформление» (theme, language). Fields save on change. The
+ * teacher renames themselves for the students, a student chooses the name the portal calls them (the
+ * teacher keeps seeing the name they gave). The content of «Мой аккаунт»: the page of a student and
+ * the administrator, the category of the teacher's settings; the page's own sections follow.
  */
 @Component({
   selector: 'tb-account-panel',
   imports: [
+    FormsModule,
     ReactiveFormsModule,
     Avatar,
     Button,
     Card,
     InputText,
-    SegmentGroup,
+    Select,
     Tooltip,
+    TbDialog,
     ChangePasswordForm,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-stack">
       @if (account(); as account) {
-        <p-card styleClass="tb-hero tb-account">
+        <p-card [header]="t.profile">
           <div class="tb-account__head">
-            <tb-avatar [name]="account.displayName" [photo]="account.avatar" size="6rem" />
+            <tb-avatar [name]="account.displayName" [photo]="account.avatar" size="4rem" />
             <div class="tb-account__who">
               <h2 class="tb-account__name">{{ account.displayName }}</h2>
               <span class="tb-account__role">{{ roleLabel() }}</span>
@@ -77,6 +86,7 @@ const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
                 <p-button
                   [label]="account.avatar === null ? t.uploadPhoto : t.changePhoto"
                   icon="tb-i tb-i-photo_camera"
+                  severity="secondary"
                   [loading]="busy.is('photo')"
                   (onClick)="photoFile.click()"
                 />
@@ -95,114 +105,107 @@ const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
               </div>
             }
           </div>
+          @if (isTeacher()) {
+            <div class="tb-field">
+              <label for="account-name">{{ t.name }}</label>
+              <input
+                pInputText
+                id="account-name"
+                [formControl]="nameForm.controls.name"
+                maxlength="100"
+                (change)="rename()"
+              />
+              <small class="tb-hint">{{ t.teacherNameHint }}</small>
+            </div>
+          }
+          @if (isStudent()) {
+            <div class="tb-field">
+              <label for="account-own-name">{{ t.name }}</label>
+              <input
+                pInputText
+                id="account-own-name"
+                [formControl]="ownNameForm.controls.name"
+                maxlength="100"
+                (change)="renameSelf()"
+              />
+              <small class="tb-hint">{{ t.ownNameHint(account.profileName) }}</small>
+            </div>
+          }
+        </p-card>
+        <p-card [header]="t.signIn">
           <dl class="tb-account__facts">
             <div>
               <dt>{{ t.login }}</dt>
               <dd>{{ account.login ?? '—' }}</dd>
             </div>
             <div>
-              <dt>{{ t.email }}</dt>
-              <dd>{{ account.email ?? '—' }}</dd>
-            </div>
-            <div>
-              <dt>{{ t.phone }}</dt>
-              <dd>{{ account.phone ?? '—' }}</dd>
+              <dt>{{ t.password }}</dt>
+              <dd>
+                <p-button
+                  [label]="t.changePasswordAction"
+                  severity="secondary"
+                  (onClick)="passwordDialog.set(true)"
+                />
+              </dd>
             </div>
           </dl>
+          <p-button
+            [label]="t.signOut"
+            icon="tb-i tb-i-logout"
+            [text]="true"
+            [loading]="busy.is('sign-out')"
+            (onClick)="signOut()"
+          />
         </p-card>
       }
-      <div class="tb-account__forms">
-        @if (account(); as account) {
-          @if (isTeacher()) {
-            <p-card [header]="t.name">
-              <form class="tb-form" [formGroup]="nameForm" (ngSubmit)="rename()">
-                <div class="tb-field">
-                  <label for="account-name">{{ t.name }}</label>
-                  <input pInputText id="account-name" formControlName="name" maxlength="100" />
-                  <small class="tb-hint">{{ t.teacherNameHint }}</small>
-                </div>
-                <div class="tb-form-actions">
-                  <p-button
-                    type="submit"
-                    [label]="c.save"
-                    severity="secondary"
-                    [disabled]="
-                      nameForm.invalid ||
-                      nameForm.controls.name.value.trim() === account.displayName
-                    "
-                    [loading]="renaming()"
-                  />
-                </div>
-              </form>
-            </p-card>
-          }
-          @if (isStudent()) {
-            <p-card [header]="t.name">
-              <form class="tb-form" [formGroup]="ownNameForm" (ngSubmit)="renameSelf()">
-                <div class="tb-field">
-                  <label for="account-own-name">{{ t.name }}</label>
-                  <input pInputText id="account-own-name" formControlName="name" maxlength="100" />
-                  <small class="tb-hint">{{ t.ownNameHint(account.profileName) }}</small>
-                </div>
-                <div class="tb-form-actions">
-                  <p-button
-                    type="submit"
-                    [label]="c.save"
-                    severity="secondary"
-                    [disabled]="ownNameUnchanged(account)"
-                    [loading]="renaming()"
-                  />
-                </div>
-              </form>
-            </p-card>
-          }
-        }
-        <p-card [header]="t.changePassword">
-          <tb-change-password-form [tonal]="true" [narrow]="false" (changed)="passwordChanged()" />
-        </p-card>
-      </div>
       <p-card [header]="t.appearance">
         <div class="tb-form">
           <div class="tb-field">
-            <span>{{ t.theme }}</span>
-            <tb-segment-group
-              [label]="t.theme"
-              [segments]="themes"
-              [value]="theme.choice()"
-              (valueChange)="theme.choose($event)"
+            <label for="account-theme">{{ t.theme }}</label>
+            <p-select
+              inputId="account-theme"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              [options]="themes"
+              [ngModel]="theme.choice()"
+              (onChange)="theme.choose($event.value)"
             />
           </div>
           <div class="tb-field">
-            <span>{{ t.language }}</span>
-            <tb-segment-group
-              [label]="t.language"
-              [segments]="languages"
-              [value]="currentLanguage"
-              (valueChange)="chooseLanguage($event)"
+            <label for="account-language">{{ t.language }}</label>
+            <p-select
+              inputId="account-language"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              [options]="languages"
+              [ngModel]="currentLanguage"
+              (onChange)="chooseLanguage($event.value)"
             />
           </div>
         </div>
       </p-card>
-      <!-- the page's own sections (a student's messengers and notifications): «Выйти» stays the last -->
+      <!-- the page's own sections (a student's messengers and notifications) -->
       <ng-content />
-      <div class="tb-form-actions">
-        <p-button
-          [label]="t.signOut"
-          icon="tb-i tb-i-logout"
-          severity="secondary"
-          [loading]="busy.is('sign-out')"
-          (onClick)="signOut()"
-        />
-      </div>
     </div>
+    <tb-dialog
+      kind="form"
+      [(visible)]="passwordDialog"
+      [headline]="t.changePassword"
+      [cancelLabel]="c.close"
+    >
+      <tb-change-password-form [tonal]="true" [narrow]="false" (changed)="passwordChanged()" />
+    </tb-dialog>
   `,
   styles: `
-    /* M3 Expressive profile header: a large photo, the name in a headline, the role under it */
+    /* the photo, the name and the role in a row; the fields of the section follow */
     .tb-account__head {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: var(--tb-space-4) var(--tb-space-5);
+      margin-bottom: var(--tb-space-4);
     }
 
     .tb-account__who {
@@ -230,33 +233,22 @@ const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
       gap: var(--tb-space-2);
     }
 
-    /* login, e-mail and phone: label over value, in a row that wraps */
+    /* login and password: label over value, in a row that wraps */
     .tb-account__facts {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
       gap: var(--tb-space-4);
-      margin: var(--tb-space-6) 0 0;
+      margin: 0 0 var(--tb-space-4);
 
       dt {
         font: var(--tb-type-label-l);
+        margin-bottom: var(--tb-space-1);
       }
 
       dd {
-        margin: var(--tb-space-1) 0 0;
+        margin: 0;
         font: var(--tb-type-body-l);
         overflow-wrap: anywhere;
-      }
-    }
-
-    /* «Имя» and «Смена пароля» side by side on a wide screen: a form column does not stretch to the edge */
-    .tb-account__forms {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
-      gap: var(--tb-space-4);
-      align-items: start;
-
-      p-card:only-child {
-        grid-column: 1 / -1;
       }
     }
 
@@ -272,16 +264,15 @@ export class AccountPanel implements OnInit {
   protected readonly t = T.account;
   protected readonly busy = new Busy();
   protected readonly theme = inject(ThemeMode);
-  protected readonly themes: readonly Segment<ThemeChoice>[] = [
-    { value: 'light', label: T.account.themeLight, icon: 'tb-i tb-i-light_mode' },
-    { value: 'dark', label: T.account.themeDark, icon: 'tb-i tb-i-dark_mode' },
-    { value: 'system', label: T.account.themeSystem, icon: 'tb-i tb-i-brightness_auto' },
+  protected readonly themes: { value: ThemeChoice; label: string }[] = [
+    { value: 'light', label: T.account.themeLight },
+    { value: 'dark', label: T.account.themeDark },
+    { value: 'system', label: T.account.themeSystem },
   ];
   /** Switching the language reloads the page (ADR-0035). */
-  protected readonly languages: readonly Segment<Language>[] = LANGUAGES.map(({ code, name }) => ({
-    value: code,
-    label: name,
-  }));
+  protected readonly languages: { value: Language; label: string }[] = LANGUAGES.map(
+    ({ code, name }) => ({ value: code, label: name }),
+  );
   protected readonly currentLanguage = language();
   protected readonly chooseLanguage = chooseLanguage;
   private readonly api = inject(IdentityApi);
@@ -296,6 +287,7 @@ export class AccountPanel implements OnInit {
   protected readonly hasPhoto = computed(() => this.isStudent() || this.isTeacher());
   protected readonly roleLabel = computed(() => ROLE_LABELS[this.account()?.role ?? 'STUDENT']);
   protected readonly renaming = signal(false);
+  protected readonly passwordDialog = signal(false);
 
   readonly nameForm = new FormGroup({
     name: new FormControl('', {
@@ -309,33 +301,28 @@ export class AccountPanel implements OnInit {
     name: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(100)] }),
   });
 
-  constructor() {
-    guardUnsaved(() => {
-      const account = this.account();
-      if (account === null) {
-        return false;
-      }
-      return this.isTeacher()
-        ? this.nameForm.controls.name.value.trim() !== account.displayName
-        : this.isStudent() && !this.ownNameUnchanged(account);
-    });
-  }
-
   ngOnInit(): void {
     this.api.account().subscribe((account) => {
       this.show(account);
     });
   }
 
+  /** Saves on change; an empty or unchanged name goes back to the saved one. */
   rename(): void {
-    if (this.nameForm.invalid || this.renaming()) {
+    const account = this.account();
+    if (account === null || this.renaming()) {
+      return;
+    }
+    const name = this.nameForm.controls.name.value.trim();
+    if (this.nameForm.invalid || name === account.displayName) {
+      this.nameForm.setValue({ name: account.displayName });
       return;
     }
     this.renaming.set(true);
-    this.api.renameTeacher(this.nameForm.controls.name.value.trim()).subscribe({
-      next: (account) => {
+    this.api.renameTeacher(name).subscribe({
+      next: (saved) => {
         this.renaming.set(false);
-        this.changed(account);
+        this.changed(saved);
         this.snackbar.success(T.account.nameSaved);
       },
       error: () => {
@@ -345,14 +332,15 @@ export class AccountPanel implements OnInit {
   }
 
   renameSelf(): void {
-    if (this.renaming()) {
+    const account = this.account();
+    if (account === null || this.renaming() || this.ownNameUnchanged(account)) {
       return;
     }
     this.renaming.set(true);
     this.api.renameSelf(this.ownNameToSave()).subscribe({
-      next: (account) => {
+      next: (saved) => {
         this.renaming.set(false);
-        this.changed(account);
+        this.changed(saved);
         this.snackbar.success(T.account.nameSaved);
       },
       error: () => {
@@ -414,6 +402,7 @@ export class AccountPanel implements OnInit {
   }
 
   protected passwordChanged(): void {
+    this.passwordDialog.set(false);
     this.snackbar.success(T.account.passwordChanged);
   }
 
