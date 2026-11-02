@@ -56,7 +56,11 @@ export const en: Translation<typeof ru> = {
   },
   portal: {
     identityTitle: 'Name and logo',
-    appearanceTitle: 'Appearance',
+    appearanceTitle: 'Portal colour',
+    fineTitle: 'Fine tuning',
+    fineSummary: (scheme: string, contrast: string) => `${scheme} scheme · ${contrast} contrast`,
+    unsaved: 'You have unsaved changes',
+    discard: 'Discard',
     currentColor: 'Current colour',
     scheme: 'Colour scheme',
     contrast: 'Contrast',

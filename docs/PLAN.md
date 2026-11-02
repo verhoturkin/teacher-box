@@ -68,7 +68,7 @@ sketch disagrees with it.
   the not connected and «Отправить ссылку», «Кто где» → the students list. The per-student
   messengers move to the student card (`/teacher/students/:studentId`, `student-channels.ts`);
   «Сообщение ученикам» (`broadcast-dialog.ts`) becomes «Написать всем» on «Ученики».
-- [ ] **357.4 F** «Портал» (`Portal`, `settings/portal-settings-card.ts`): «Название и логотип»,
+- [x] **357.4 F** «Портал» (`Portal`, `settings/portal-settings-card.ts`): «Название и логотип»,
   «Цвет портала», schemes and contrast folded as «Тонкая настройка», preview; the only category
   with an explicit save — a floating bar «Отменить» / «Сохранить» while the draft differs.
 - [ ] **357.5 F** «ИИ-помощник» (`Ai`, `ai/ai-settings-panel.ts`: model, «Мои промты», system

@@ -34,6 +34,7 @@ import { SettingsApi } from './data-access/settings-api';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
+import { FoldCard } from '@shared/ui/fold-card';
 import { T } from './i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 import {
@@ -62,6 +63,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     RadioButton,
     PortalLogo,
     FieldErrors,
+    FoldCard,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -206,46 +208,50 @@ const MAX_LOGO_SIZE = 1024 * 1024;
                 <small class="tb-hint">{{ t.colorHint }}</small>
               </div>
             </section>
-            <section class="tb-portal-section" [attr.aria-label]="t.scheme">
-              <h3>{{ t.scheme }} <tb-help-button topic="teacher/appearance" /></h3>
-              <div class="tb-scheme-grid" role="radiogroup" [attr.aria-label]="t.scheme">
-                @for (option of schemeOptions(); track option.value) {
-                  <label
-                    class="tb-scheme-option"
-                    [for]="'portal-scheme-' + option.value"
-                    [class.tb-scheme-selected]="schemeType() === option.value"
-                  >
-                    <span class="tb-scheme-colors" aria-hidden="true">
-                      <span [style.background]="option.roles.primary"></span>
-                      <span [style.background]="option.roles.secondaryContainer"></span>
-                      <span [style.background]="option.roles.tertiaryContainer"></span>
-                    </span>
-                    <span class="tb-scheme-label"
-                      ><p-radiobutton
-                        formControlName="scheme"
-                        [value]="option.value"
-                        [inputId]="'portal-scheme-' + option.value"
-                      />{{ option.label }}</span
-                    >
-                  </label>
-                }
-              </div>
-            </section>
-            <section class="tb-portal-section" [attr.aria-label]="t.contrast">
-              <h3>{{ t.contrast }}</h3>
-              <div class="tb-contrast-options" role="radiogroup" [attr.aria-label]="t.contrast">
-                @for (option of contrasts; track option.value) {
-                  <label [for]="'portal-contrast-' + option.value"
-                    ><p-radiobutton
-                      formControlName="contrast"
-                      [value]="option.value"
-                      [inputId]="'portal-contrast-' + option.value"
-                    />{{ option.label }}</label
-                  >
-                }
-              </div>
-              <small class="tb-hint">{{ t.contrastHint }}</small>
-            </section>
+            <tb-fold-card [title]="t.fineTitle" [summary]="fineSummary()" [(open)]="fineOpen">
+              <ng-template>
+                <section class="tb-portal-section" [attr.aria-label]="t.scheme">
+                  <h3>{{ t.scheme }} <tb-help-button topic="teacher/appearance" /></h3>
+                  <div class="tb-scheme-grid" role="radiogroup" [attr.aria-label]="t.scheme">
+                    @for (option of schemeOptions(); track option.value) {
+                      <label
+                        class="tb-scheme-option"
+                        [for]="'portal-scheme-' + option.value"
+                        [class.tb-scheme-selected]="schemeType() === option.value"
+                      >
+                        <span class="tb-scheme-colors" aria-hidden="true">
+                          <span [style.background]="option.roles.primary"></span>
+                          <span [style.background]="option.roles.secondaryContainer"></span>
+                          <span [style.background]="option.roles.tertiaryContainer"></span>
+                        </span>
+                        <span class="tb-scheme-label"
+                          ><p-radiobutton
+                            formControlName="scheme"
+                            [value]="option.value"
+                            [inputId]="'portal-scheme-' + option.value"
+                          />{{ option.label }}</span
+                        >
+                      </label>
+                    }
+                  </div>
+                </section>
+                <section class="tb-portal-section" [attr.aria-label]="t.contrast">
+                  <h3>{{ t.contrast }}</h3>
+                  <div class="tb-contrast-options" role="radiogroup" [attr.aria-label]="t.contrast">
+                    @for (option of contrasts; track option.value) {
+                      <label [for]="'portal-contrast-' + option.value"
+                        ><p-radiobutton
+                          formControlName="contrast"
+                          [value]="option.value"
+                          [inputId]="'portal-contrast-' + option.value"
+                        />{{ option.label }}</label
+                      >
+                    }
+                  </div>
+                  <small class="tb-hint">{{ t.contrastHint }}</small>
+                </section>
+              </ng-template>
+            </tb-fold-card>
           </section>
           <aside
             class="tb-portal-card tb-portal-preview"
@@ -283,16 +289,19 @@ const MAX_LOGO_SIZE = 1024 * 1024;
             <small>{{ t.previewHint }}</small>
           </aside>
         </div>
-        <div class="tb-form-actions">
-          <p-button
-            type="button"
-            [label]="c.cancel"
-            severity="secondary"
-            [text]="true"
-            (onClick)="cancel()"
-          />
-          <p-button type="submit" [label]="c.save" severity="secondary" [loading]="pending()" />
-        </div>
+        @if (form.dirty) {
+          <div class="tb-savebar" role="status">
+            {{ t.unsaved }}
+            <p-button
+              type="button"
+              [label]="t.discard"
+              severity="secondary"
+              [text]="true"
+              (onClick)="cancel()"
+            />
+            <p-button type="submit" [label]="c.save" [loading]="pending()" />
+          </div>
+        }
       </form>
     }
   `,
@@ -423,6 +432,24 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       }
     }
 
+    .tb-savebar {
+      position: sticky;
+      bottom: var(--tb-space-4);
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--tb-space-2);
+      width: fit-content;
+      max-width: 100%;
+      margin: var(--tb-space-4) auto 0;
+      padding: var(--tb-space-2) var(--tb-space-2) var(--tb-space-2) var(--tb-space-5);
+      border-radius: var(--tb-shape-lg);
+      background: var(--p-md-inverse-surface);
+      color: var(--p-md-inverse-on-surface);
+      box-shadow: 0 4px 12px rgb(0 0 0 / 25%);
+    }
+
     .tb-accents {
       display: flex;
       flex-wrap: wrap;
@@ -507,6 +534,7 @@ export class PortalSettingsCard implements OnInit {
   });
   protected readonly darkPreview = signal(false);
   private readonly customMode = signal(false);
+  protected readonly fineOpen = signal(false);
   protected readonly contrasts = CONTRASTS.map((value) => ({
     value,
     label: T.portal.contrasts[value],
@@ -556,6 +584,12 @@ export class PortalSettingsCard implements OnInit {
       label: T.portal.schemes[value],
       roles: accentScheme(this.accent(), { scheme: value, contrast: this.contrastLevel() }).light,
     })),
+  );
+  protected readonly fineSummary = computed(() =>
+    T.portal.fineSummary(
+      T.portal.schemes[this.schemeType()],
+      T.portal.contrasts[this.contrastLevel()].toLowerCase(),
+    ),
   );
   protected readonly ownSwatch = computed(() => accentSwatch(this.accent()));
   protected readonly scheme = computed(() => accentScheme(this.accent(), this.appearance()));

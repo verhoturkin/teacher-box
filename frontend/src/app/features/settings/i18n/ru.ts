@@ -55,7 +55,11 @@ export const ru = {
   },
   portal: {
     identityTitle: 'Название и логотип',
-    appearanceTitle: 'Оформление',
+    appearanceTitle: 'Цвет портала',
+    fineTitle: 'Тонкая настройка',
+    fineSummary: (scheme: string, contrast: string) => `Схема «${scheme}» · контраст ${contrast}`,
+    unsaved: 'Есть несохранённые изменения',
+    discard: 'Отменить',
     currentColor: 'Текущий цвет',
     scheme: 'Цветовая схема',
     contrast: 'Контраст',
