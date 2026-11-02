@@ -1755,15 +1755,10 @@ describe('AssignmentsPage with the review side sheet (from large)', () => {
     expect(buttonByText(host, 'Черновик ИИ')).not.toBeNull();
   });
 
-  it('puts the review on a board', async () => {
-    const { host, fixture } = await render();
+  it('has no «На доску» under the decision of the inline sheet', async () => {
+    const { host } = await render();
 
-    buttonByText(host, 'Молодец!').click();
-    await fixture.whenStable();
-    buttonByText(host, 'На доску').click();
-    await fixture.whenStable();
-
-    expect(fixture.debugElement.query(By.directive(ToBoardDialog))).not.toBeNull();
+    expect(host.textContent).not.toContain('На доску');
   });
 });
 

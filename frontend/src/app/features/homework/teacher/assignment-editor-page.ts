@@ -266,10 +266,12 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
           >
             <p-tablist [attr.aria-label]="t.tabs">
               <p-tab value="task">
-                @if (!compact()) {
-                  <i class="tb-i tb-i-description" aria-hidden="true"></i>
-                }
-                <span class="tb-tab-label">{{ t.tabTask }}</span>
+                <span class="tb-tab-label">
+                  @if (!compact()) {
+                    <i class="tb-i tb-i-description" aria-hidden="true"></i>
+                  }
+                  {{ t.tabTask }}
+                </span>
               </p-tab>
               @if (compact()) {
                 <p-tab value="quiz"
@@ -280,8 +282,10 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                 >
               } @else {
                 <p-tab value="quiz">
-                  <i class="tb-i tb-i-quiz" aria-hidden="true"></i>
-                  <span class="tb-tab-label">{{ t.tabQuiz(questions().length) }}</span>
+                  <span class="tb-tab-label">
+                    <i class="tb-i tb-i-quiz" aria-hidden="true"></i>
+                    {{ t.tabQuiz(questions().length) }}
+                  </span>
                 </p-tab>
               }
             </p-tablist>

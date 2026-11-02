@@ -321,13 +321,11 @@ import { QuizSection } from './quiz-section';
     }
   `,
   styles: `
-    /* a label over a block on the pane's surface (M3 label medium, as the teacher's assignment) */
+    /* a heading over a block on the pane's surface: Title Medium, as «Учебники» (.tb-subtitle) under it */
     .tb-task__label {
       margin: 0 0 var(--tb-space-2);
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-label-m);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      color: var(--p-md-on-surface);
+      font: var(--tb-type-title-m);
     }
 
     /* the task and the answer, the materials and the test beside; below on a narrow pane */

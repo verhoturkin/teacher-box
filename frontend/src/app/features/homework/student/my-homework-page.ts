@@ -10,7 +10,6 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { HelpButton } from '@features/help/parts';
 import { ButtonDirective } from 'primeng/button';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
@@ -46,7 +45,6 @@ interface Group {
   imports: [
     ButtonDirective,
     EmptyState,
-    HelpButton,
     LoadStateView,
     MyTaskPage,
     PageHeader,
@@ -61,9 +59,7 @@ interface Group {
       @if (layout.list()) {
         <tb-pane kind="fixed" [label]="t.title">
           <div tbPaneHeader>
-            <tb-page-header [title]="t.title">
-              <tb-help-button help topic="cabinet/homework" />
-            </tb-page-header>
+            <tb-page-header [title]="t.title" />
           </div>
 
           <tb-load-state [state]="state" [what]="t.what" (retry)="load()">

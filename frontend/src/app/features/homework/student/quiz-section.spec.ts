@@ -205,6 +205,26 @@ describe('QuizSection', () => {
     expect(save('q-ORDERING')).toEqual({ ids: ['o2', 'o1'] });
   });
 
+  it('counts an ordering as answered only after the first move', async () => {
+    await render(
+      quiz({
+        questions: [
+          question('ORDERING', { options: [item('o2', 'Второй'), item('o1', 'Первый')] }),
+        ],
+        openAttempt: open,
+      }),
+    );
+    buttonByText(host, 'Продолжить тест').click();
+    await fixture.whenStable();
+    const done = (): number => screen().querySelectorAll('.tb-qp__number--done').length;
+
+    expect(done()).toBe(0);
+    buttonByText(screen(), 'Поднять выше: 2. Первый').click();
+    await fixture.whenStable();
+    backend.expectOne(`${ATTEMPT}/at-1/answers/q-ORDERING`).flush(null);
+    expect(done()).toBe(1);
+  });
+
   it('saves typing after a pause', async () => {
     await render(quiz({ questions: [question('SHORT_TEXT')], openAttempt: open }));
     buttonByText(host, 'Продолжить тест').click();
@@ -224,7 +244,7 @@ describe('QuizSection', () => {
 
     buttonByText(screen(), 'Завершить тест').click();
     await fixture.whenStable();
-    expect(String(safe.mock.calls[0]?.[0]?.message)).toMatch(/^Без ответа 4\s+вопроса/);
+    expect(String(safe.mock.calls[0]?.[0]?.message)).toMatch(/^Без ответа 5\s+вопросов/);
     // the submit waits for the answer that is still being saved
     backend.expectOne(`${ATTEMPT}/at-1/answers/q-SINGLE_CHOICE`).flush(null);
     await new Promise((resolve) => setTimeout(resolve));
