@@ -289,12 +289,15 @@ test('the teacher sees the best attempt, overrides a wrong answer and the grade 
   await page.setViewportSize(WIDE);
   await startSession(page, 'teacher', TEACHER_PASSWORD);
   await page.goto(`/teacher/homework/tasks/${mixedTask}`);
-  await expect(page.getByText('Тест: 5 из 6')).toBeVisible();
-  await expect(page.getByLabel('Оценка')).toHaveValue('5 из 6');
+  // the grade is a chip of the review sheet (sketch 14)
+  const grade = (name: string) =>
+    page.getByRole('group', { name: 'Оценка' }).getByRole('button', { name, exact: true });
+  await expect(page.getByRole('heading', { name: 'Тест · 5 из 6' })).toBeVisible();
+  await expect(grade('5 из 6')).toHaveAttribute('aria-pressed', 'true');
 
   await page.getByRole('button', { name: 'Засчитать', exact: true }).click();
-  await expect(page.getByText('Тест: 6 из 6')).toBeVisible();
-  await expect(page.getByLabel('Оценка')).toHaveValue('6 из 6');
+  await expect(page.getByRole('heading', { name: 'Тест · 6 из 6' })).toBeVisible();
+  await expect(grade('6 из 6')).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('the teacher credits a question the student left unanswered', async ({ page, request }) => {
@@ -320,9 +323,9 @@ test('the teacher credits a question the student left unanswered', async ({ page
   await page.setViewportSize(WIDE);
   await startSession(page, 'teacher', TEACHER_PASSWORD);
   await page.goto(`/teacher/homework/tasks/${blankTask}`);
-  await expect(page.getByText('Тест: 0 из 1')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Тест · 0 из 1' })).toBeVisible();
   await page.getByRole('button', { name: 'Засчитать', exact: true }).click();
-  await expect(page.getByText('Тест: 1 из 1')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Тест · 1 из 1' })).toBeVisible();
 });
 
 test('a draft keeps an incomplete question, giving it out names the broken one', async ({
