@@ -21,6 +21,10 @@ don't read them unless the task needs history.
 
 ## Next release
 
+Homework after the review of 0.43.0: the editor's section menu adds videos and boards, the open
+assignment gives the task the main column and the students a narrow one, the video settings are
+a dialog over the editor (sketches 4, 11, 39, 40 on the design canvas).
+
 ### Stage 353 — homework polish
 
 - [x] **353.1** **F** Tab indicator spans the whole tab content, icon and label — the icon moves into
@@ -35,20 +39,6 @@ don't read them unless the task needs history.
   header «Задания» has none (`my-homework-page.ts`).
 - [x] **353.6** **F** AI generation of task text and quiz questions: the button shows a busy state
   (loading indicator, disabled, «Генерирую…», `aria-busy`).
-
-## Repository maintenance
-
-### Stage 336 — GitHub releases and README screenshots
-
-- [x] **336.1** Publish missing GitHub releases for existing version tags using their
-  `CHANGELOG.md` entries; refresh the nine `docs/assets/readme/*.png` screenshots from a
-  disposable instance of v0.41.0 with fictional students and verify the README image links.
-
-## Next release
-
-Homework after the review of 0.43.0: the editor's section menu adds videos and boards, the open
-assignment gives the task the main column and the students a narrow one, the video settings are
-a dialog over the editor (sketches 4, 11, 39, 40 on the design canvas).
 
 ### Stage 354 — editor, open assignment, video dialog
 
@@ -68,6 +58,14 @@ a dialog over the editor (sketches 4, 11, 39, 40 on the design canvas).
   next, player, title, transcript, «Показывать расшифровку ученику», «Убрать видео» and
   «Готово»; changes save at once; full screen on a phone. Entry point:
   `homework/teacher/video-section.ts`.
+
+## Repository maintenance
+
+### Stage 336 — GitHub releases and README screenshots
+
+- [x] **336.1** Publish missing GitHub releases for existing version tags using their
+  `CHANGELOG.md` entries; refresh the nine `docs/assets/readme/*.png` screenshots from a
+  disposable instance of v0.41.0 with fictional students and verify the README image links.
 
 ## Backlog
 
