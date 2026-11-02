@@ -964,6 +964,47 @@ textarea.p-textarea {
   }
 }
 
+/*
+ * A title the teacher types (`tb-page-header--one-line`, the assignment editor): one line cut with «…», the
+ * actions stay on its right however long it grows
+ */
+.tb-page-header--one-line {
+  flex-wrap: nowrap;
+
+  > .tb-page-header__lead,
+  .tb-page-header__text {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .tb-page-header__text {
+    align-items: stretch;
+  }
+
+  .tb-page-heading,
+  .tb-page-title {
+    min-width: 0;
+  }
+
+  .tb-page-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* a phone too (sketch 21): «Назад», the title and «Выдать» on one line; «Справка» is under ☰ there */
+  &.tb-page-header > .tb-actions {
+    flex: none;
+    width: auto;
+  }
+
+  @media (width < 37.5em) {
+    .tb-page-heading > [help] {
+      display: none;
+    }
+  }
+}
+
 /* A page title with the «?» of the help next to it */
 .tb-page-heading {
   display: flex;
@@ -4045,7 +4086,7 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
 
   .p-tab {
     display: inline-flex;
-    flex: 1 1 0;
+    flex: 0 0 auto;
     align-items: center;
     justify-content: center;
     gap: var(--tb-space-1);
@@ -4069,11 +4110,10 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
     }
   }
 
-  /* a phone (the sketches): the tabs keep the width of their label and scroll (M3 scrollable tabs) */
-  @media (width < 37.5em) {
-    &:not(.tb-tabs--fixed) .p-tab {
-      flex: 0 0 auto;
-    }
+  /* the tabs keep the width of their label, from the start edge (M3 scrollable tabs, sketches 11, 21); a few
+     short labels share the width (M3 fixed tabs) */
+  &.tb-tabs--fixed .p-tab {
+    flex: 1 1 0;
   }
 
   .p-tab-active {

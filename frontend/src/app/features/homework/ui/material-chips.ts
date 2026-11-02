@@ -8,6 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
 import { quietContext } from '@core/http/api-error.interceptor';
@@ -23,7 +24,7 @@ import { FilePicker } from './file-picker';
  */
 @Component({
   selector: 'tb-material-chips',
-  imports: [AssistChip, FilePicker, InputChip, Menu],
+  imports: [AssistChip, FilePicker, InputChip, Menu, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (withFiles()) {
@@ -36,26 +37,58 @@ import { FilePicker } from './file-picker';
         [capture]="true"
       />
     }
-    <div class="tb-material-chips" role="group" [attr.aria-label]="t.materials">
+    <div
+      class="tb-material-chips"
+      [class.tb-material-chips--grid]="compact()"
+      role="group"
+      [attr.aria-label]="t.materials"
+    >
       @if (withFiles()) {
-        @if (compact() || tablet()) {
-          <tb-assist-chip icon="photo_camera" (click)="photoPicker()?.choose()">
-            {{ t.photo }}
-          </tb-assist-chip>
+        <!-- «Фото» first on a phone (sketch 6), after «Файл» on a tablet (sketch 36) -->
+        @if (compact()) {
+          <ng-container [ngTemplateOutlet]="photoChip" />
         }
-        <tb-assist-chip icon="attach_file" (click)="filePicker()?.choose()">
+        <tb-assist-chip
+          [class.tb-assist-chip--fill]="compact()"
+          icon="attach_file"
+          (click)="filePicker()?.choose()"
+        >
           {{ t.file }}
         </tb-assist-chip>
-        <tb-assist-chip icon="menu_book" (click)="textbook.emit()">{{ t.textbook }}</tb-assist-chip>
+        @if (tablet() && !compact()) {
+          <ng-container [ngTemplateOutlet]="photoChip" />
+        }
+        <ng-template #photoChip>
+          <tb-assist-chip
+            [class.tb-assist-chip--fill]="compact()"
+            icon="photo_camera"
+            (click)="photoPicker()?.choose()"
+          >
+            {{ t.photo }}
+          </tb-assist-chip>
+        </ng-template>
+        <tb-assist-chip
+          [class.tb-assist-chip--fill]="compact()"
+          icon="menu_book"
+          (click)="textbook.emit()"
+          >{{ t.textbook }}</tb-assist-chip
+        >
       }
       @if (!compact() && !tablet()) {
-        <tb-assist-chip icon="smart_display" [disabled]="videosFull()" (click)="video.emit()">
+        <tb-assist-chip
+          [class.tb-assist-chip--fill]="compact()"
+          icon="smart_display"
+          [disabled]="videosFull()"
+          (click)="video.emit()"
+        >
           {{ t.video }}
         </tb-assist-chip>
       }
-      <tb-assist-chip icon="quiz" [disabled]="quizDisabled()" (click)="quiz.emit()">
-        {{ compact() ? t.quizShort : t.quiz }}
-      </tb-assist-chip>
+      @if (withQuiz()) {
+        <tb-assist-chip [class.tb-assist-chip--fill]="compact()" icon="quiz" (click)="quiz.emit()">
+          {{ compact() ? t.quizShort : t.quiz }}
+        </tb-assist-chip>
+      }
       @if (!compact()) {
         @if (board(); as picked) {
           <tb-input-chip
@@ -66,7 +99,11 @@ import { FilePicker } from './file-picker';
             <i lead class="tb-i tb-i-co_present" aria-hidden="true"></i>
           </tb-input-chip>
         } @else {
-          <tb-assist-chip icon="co_present" (click)="chooseBoard($event, boardMenu)">
+          <tb-assist-chip
+            [class.tb-assist-chip--fill]="compact()"
+            icon="co_present"
+            (click)="chooseBoard($event, boardMenu)"
+          >
             {{ t.board }}
           </tb-assist-chip>
           <p-menu #boardMenu [model]="boardItems()" [popup]="true" appendTo="body" />
@@ -79,6 +116,12 @@ import { FilePicker } from './file-picker';
       display: flex;
       flex-wrap: wrap;
       gap: var(--tb-space-2);
+    }
+
+    /* a phone (sketch 6): two chips a row, each half the width */
+    .tb-material-chips--grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   `,
 })
@@ -93,7 +136,8 @@ export class MaterialChips {
   /** A new assignment takes files and textbooks here; a saved one has them on its page. */
   readonly withFiles = input(true);
   readonly videosFull = input(false);
-  readonly quizDisabled = input(false);
+  /** No «Тест с вопросами» once the assignment has a test: its card opens it. */
+  readonly withQuiz = input(true);
   /** The board the assignment goes on once given out; chosen from the menu of the «Доска» chip. */
   readonly board = model<BoardPick | null>(null);
   private readonly boards = inject(BoardsApi);

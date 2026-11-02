@@ -40,7 +40,7 @@ The commit message or the report lists the sketches checked and anything left on
 
 ### 352. Conformance review
 
-- [ ] **352.1 F** Editor «Задание» tab and the quick dialog (sketches 3, 6, 11, 12, 13, 19, 21,
+- [x] **352.1 F** Editor «Задание» tab and the quick dialog (sketches 3, 6, 11, 12, 13, 19, 21,
   22, 36, 39, 40): three columns as in 11 (sections, the text and the test, the aside with
   «Кому · Срок» and «Материалы»); materials as compact rows with assist chips, the video tiles
   and one labelled link field; the test summary as one-line rows (number, type icon, text,

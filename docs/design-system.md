@@ -349,13 +349,13 @@ for the active navigation item and checked states.
   group failed. ARIA combobox + listbox (`aria-activedescendant`); ↑ ↓, Enter, Esc. **Ctrl K / ⌘ K**
   focuses the bar. Compact: the top bar's search icon opens a **full-screen search view** with
   «back»; focus returns to the icon.
-- **Tabs** `tb-tabs` (**M3** primary fixed tabs, every tab bar): no container, 48 dp, Title Small,
+- **Tabs** `tb-tabs` (**M3** primary tabs, every tab bar): no container, 48 dp, Title Small,
   label primary when active, a 3 dp primary indicator with 3 dp rounded top corners as wide as the
-  label (`::after` of `tb-tab-label`), one 1 dp outline-variant divider under the bar; tabs share
-  the width equally (on a phone they keep their label width and scroll, unless the bar has the
-  modifier `tb-tabs--fixed`: two or three short labels that share the width on every width, as
-  the bell's «Входящие · Отправленные»). The tab is in the address
-  (`?tab=`), the default one left out.
+  label (`::after` of `tb-tab-label`), one 1 dp outline-variant divider under the bar; an optional
+  20 dp icon before the label. Tabs keep the width of their label from the start edge and scroll
+  (**M3** scrollable tabs, sketches 11, 21); `tb-tabs--fixed` — two or three short labels that
+  share the width (**M3** fixed tabs), as the bell's «Входящие · Отправленные» and the editor on a
+  phone. The tab is in the address (`?tab=`), the default one left out.
 
 ## 7. Panes and page anatomy
 
@@ -398,6 +398,8 @@ for the active navigation item and checked states.
   help if the section has an article; a detail line; actions on the title line (56 px), the main one
   last. On a phone a section page hides its title (kept for screen readers; the top bar names the
   section) and «?»; nested pages keep «Назад» + title on one line; actions go under it, equal width.
+  A title the teacher types (the assignment editor, `tb-page-header--one-line`) stays on one line
+  cut with «…», the actions on its right at every width (a phone: «?» under ☰).
 - **Sections** — a titled block (`p-card` h2, Title Large; Title Medium emphasized on a pane);
   section actions tonal in the title row (`tb-card-title__actions`). A section holding the page's
   only list gets a hidden `h2.tb-sr-only`. `tb-fold-card` exists but no page uses it.
@@ -576,8 +578,9 @@ action — «Изменить» next to «Проверить N работ» (hom
     icon only decorates takes `tb-list--no-phone-lead` (on a phone the icon goes); lists of people
     keep avatars; `tb-list--no-lead` has no icon at all.
   - `tb-list__text` — `tb-list__title` (Body Large) + `tb-list__supporting` (Body Medium,
-    on-surface-variant). The list panes of «Ученики» and «Задания» take `tb-list--clamp`: at most
-    two lines of each, cut with an ellipsis (**M3**: label and supporting text can be truncated,
+    on-surface-variant). The list panes of «Ученики» and «Задания» and the editor's «Материалы»
+    take `tb-list--clamp`: at most two lines of each, cut with an ellipsis (**M3**: label and
+    supporting text can be truncated,
     supporting text one to three lines; *ours*: two lines, the full text in the detail beside).
   - `tb-list__trail` — an amount (Title Medium, `tb-list__trail--amount`), a status or ≤ 3 actions;
     `tb-list__trail--icons` keeps a status and icon buttons on the right on a phone. Rows share

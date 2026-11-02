@@ -224,7 +224,7 @@ interface TranscriptNote {
 
     @if (videos().length < max) {
       <div class="tb-field tb-video-link-field">
-        <label for="video-link" class="tb-sr-only">{{ t.url }}</label>
+        <label for="video-link">{{ t.url }}</label>
         <input
           #linkField
           pInputText

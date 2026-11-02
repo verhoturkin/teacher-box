@@ -141,7 +141,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                   class="tb-create__text"
                   [formControl]="text"
                   [autoResize]="true"
-                  rows="3"
+                  rows="5"
                 ></textarea>
                 <div class="tb-create__tools">
                   <p-button
@@ -187,30 +187,29 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
 
             <tb-due-chips [lesson]="nextLesson()" [(choice)]="dueChoice" [(date)]="picked" />
 
-            @if (hasMaterials()) {
-              <section class="tb-create__materials" [attr.aria-label]="t.materials">
-                <h3 class="tb-subtitle">{{ t.materials }}</h3>
-                <tb-textbook-list
-                  [textbooks]="textbooks()"
-                  [editable]="true"
-                  (edit)="editTextbook($event)"
-                  (remove)="removeTextbook($event)"
-                />
-                @if (videos().length > 0 || videoField()) {
-                  <tb-video-section quick [(videos)]="videos" />
-                }
-              </section>
-            }
-            <tb-material-chips
-              [(files)]="files"
-              [compact]="compact()"
-              [tablet]="medium()"
-              [videosFull]="videos().length >= maxVideos"
-              [(board)]="pickedBoard"
-              (textbook)="addTextbook()"
-              (video)="addVideo()"
-              (quiz)="openFullscreen(undefined, medium())"
-            />
+            <section class="tb-create__materials" aria-labelledby="create-materials">
+              <span id="create-materials" class="tb-create__label">{{ t.materials }}</span>
+              <tb-textbook-list
+                [textbooks]="textbooks()"
+                [editable]="true"
+                [withBoard]="false"
+                (edit)="editTextbook($event)"
+                (remove)="removeTextbook($event)"
+              />
+              @if (videos().length > 0 || videoField()) {
+                <tb-video-section quick [(videos)]="videos" />
+              }
+              <tb-material-chips
+                [(files)]="files"
+                [compact]="compact()"
+                [tablet]="medium()"
+                [videosFull]="videos().length >= maxVideos"
+                [(board)]="pickedBoard"
+                (textbook)="addTextbook()"
+                (video)="addVideo()"
+                (quiz)="openFullscreen(undefined, medium())"
+              />
+            </section>
           </div>
         }
         @if (aiOpen()) {
@@ -445,6 +444,12 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     .tb-create__materials {
       display: grid;
       gap: var(--tb-space-2);
+    }
+
+    /* the label of «Материалы», as those of the fields above it */
+    .tb-create__label {
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-label-l);
     }
   `,
 })
@@ -706,7 +711,8 @@ export class AssignmentCreateDialog {
       questions,
       text: this.text.value,
       members: this.members.value,
-      dueAt: this.dueAt(),
+      due: this.dueChoice(),
+      picked: this.picked(),
       files: this.files(),
       textbooks: this.pickedTextbooks(),
       videos: this.videos(),

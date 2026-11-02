@@ -2,13 +2,17 @@ import { Injectable } from '@angular/core';
 import type { AppliedQuestions } from '@features/ai/parts';
 import { MemberSelection } from '@features/identity/parts';
 import { BoundTextbook } from '../data-access/homework.models';
+import type { Due } from '../ui/due-chips';
 import { VideoDraft } from './video-section';
 
 /** What the quick dialog hands to the full editor when «Открыть во весь экран» is pressed. */
 export interface NewAssignmentDraft {
   readonly text: string;
   readonly members: readonly MemberSelection[];
-  readonly dueAt: Date | null;
+  /** The chosen «Срок»: «К следующему занятию» stays a choice, not the date it means now. */
+  readonly due: Due;
+  /** The date of «Дата…». */
+  readonly picked: Date | null;
   readonly files: readonly File[];
   readonly textbooks: readonly BoundTextbook[];
   readonly videos: readonly VideoDraft[];

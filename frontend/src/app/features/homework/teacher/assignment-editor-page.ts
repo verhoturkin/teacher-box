@@ -90,6 +90,7 @@ import {
 } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
 import { Due, DueChips, dueAtOf } from '../ui/due-chips';
+import { AttachmentList } from '../ui/attachment-list';
 import { BoardPick, MaterialChips } from '../ui/material-chips';
 import { RecipientsField } from '../ui/recipients-field';
 import { TextbookList } from '../ui/textbook-list';
@@ -154,6 +155,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     Message,
     DueChips,
     MaterialChips,
+    AttachmentList,
     RecipientsField,
     SectionNav,
     Avatar,
@@ -185,7 +187,12 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
       <tb-panes>
         <tb-pane [label]="heading()">
           <ng-template tbPaneHeader>
-            <tb-page-header [title]="heading()" [back]="backLink()" [backLabel]="backLabel()">
+            <tb-page-header
+              class="tb-page-header--one-line"
+              [title]="heading()"
+              [back]="backLink()"
+              [backLabel]="backLabel()"
+            >
               <tb-help-button help topic="teacher/homework" />
               @if (activeTab() === 'quiz' && questions().length > 0) {
                 <p-button
@@ -199,14 +206,22 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
               }
               @if (aiEnabled()) {
                 <p-button
-                  [label]="t.aiTitle"
+                  [label]="compact() ? undefined : t.aiTitle"
+                  [ariaLabel]="t.aiTitle"
                   icon="tb-i tb-i-auto_awesome"
                   severity="secondary"
                   [ariaExpanded]="single() ? modalAiOpen() : aiOpen()"
                   (onClick)="toggleAi()"
                 />
               }
-              @if (draft()) {
+              @if (draft() && compact()) {
+                <!-- a phone (sketch 21): «Выдать» alone; the board is not chosen there -->
+                <p-button
+                  [label]="c.assign"
+                  [loading]="pending() && !autosaving()"
+                  (onClick)="save()"
+                />
+              } @else if (draft()) {
                 @if (savedAt(); as at) {
                   <span class="tb-editor__saved" role="status">{{ t.savedAt(at) }}</span>
                 }
@@ -243,9 +258,12 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
             (valueChange)="choose($event)"
           >
             <p-tablist [attr.aria-label]="t.tabs">
-              <p-tab value="task"
-                ><span class="tb-tab-label">{{ t.tabTask }}</span></p-tab
-              >
+              <p-tab value="task">
+                @if (!compact()) {
+                  <i class="tb-i tb-i-description" aria-hidden="true"></i>
+                }
+                <span class="tb-tab-label">{{ t.tabTask }}</span>
+              </p-tab>
               @if (compact()) {
                 <p-tab value="quiz"
                   ><span class="tb-tab-label">{{ t.tabQuestions(questions().length) }}</span></p-tab
@@ -254,9 +272,10 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                   ><span class="tb-tab-label">{{ t.tabSettings }}</span></p-tab
                 >
               } @else {
-                <p-tab value="quiz"
-                  ><span class="tb-tab-label">{{ t.tabQuiz(questions().length) }}</span></p-tab
-                >
+                <p-tab value="quiz">
+                  <i class="tb-i tb-i-quiz" aria-hidden="true"></i>
+                  <span class="tb-tab-label">{{ t.tabQuiz(questions().length) }}</span>
+                </p-tab>
               }
             </p-tablist>
           </p-tabs>
@@ -271,157 +290,195 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                 [formGroup]="form"
                 (ngSubmit)="save()"
               >
-                <p-card styleClass="tb-section-card">
-                  <div class="tb-editor__who">
-                    @if (draft()) {
-                      <tb-recipients-field
-                        inputId="editor-students"
-                        [control]="form.controls.members"
-                        [students]="studentOptions()"
-                        [groups]="groups()"
-                      />
-                    } @else {
+                <div class="tb-editor__columns">
+                  <div class="tb-editor__main">
+                    <p-card id="editor-task" styleClass="tb-section-card" class="tb-editor__task">
                       <div class="tb-field">
-                        <span id="editor-given">{{ c.whom }}</span>
-                        <div class="tb-editor__chips" role="group" aria-labelledby="editor-given">
-                          @for (task of assignment()?.tasks ?? []; track task.taskId) {
-                            <tb-input-chip [label]="task.studentName" [readonly]="true">
-                              <tb-avatar lead [name]="task.studentName" size="1.5rem" />
-                            </tb-input-chip>
-                          }
-                          <p-button
-                            [label]="t.assignMore"
-                            icon="tb-i tb-i-add"
-                            severity="secondary"
-                            (onClick)="giveMore()"
+                        <div class="tb-field__header">
+                          <label for="editor-text">{{ c.task }}</label>
+                          <p-selectbutton
+                            [options]="modes"
+                            [formControl]="mode"
+                            optionLabel="label"
+                            optionValue="value"
+                            [allowEmpty]="false"
+                            [ariaLabel]="t.editorMode"
                           />
                         </div>
-                      </div>
-                    }
-
-                    <tb-due-chips
-                      [lesson]="nextLesson()"
-                      [choice]="dueChoice()"
-                      (choiceChange)="chooseDue($event)"
-                      [date]="duePicked()"
-                      (dateChange)="pickDue($event)"
-                    />
-                  </div>
-                </p-card>
-
-                <p-card id="editor-task" styleClass="tb-section-card">
-                  <div class="tb-field">
-                    <div class="tb-field__header">
-                      <label for="editor-text">{{ c.task }}</label>
-                      <p-selectbutton
-                        [options]="modes"
-                        [formControl]="mode"
-                        optionLabel="label"
-                        optionValue="value"
-                        [allowEmpty]="false"
-                        [ariaLabel]="t.editorMode"
-                      />
-                    </div>
-                    @if (modeValue() === 'preview') {
-                      <div class="tb-preview" [style.min-height.px]="editorHeight()">
-                        <tb-markdown [text]="textValue()" />
-                      </div>
-                    } @else {
-                      <textarea
-                        pTextarea
-                        id="editor-text"
-                        class="tb-editor__text"
-                        #editor
-                        [style.height.px]="editorHeight()"
-                        formControlName="description"
-                        rows="14"
-                      ></textarea>
-                    }
-                    <small class="tb-hint">{{ c.firstLine }}. {{ t.markdownHint }}</small>
-                  </div>
-                </p-card>
-
-                <p-card id="editor-materials" styleClass="tb-section-card" [header]="c.materials">
-                  <div class="tb-editor__materials">
-                    @if (draft() && textbooks().length > 0) {
-                      <tb-textbook-list
-                        [textbooks]="textbooks()"
-                        [editable]="true"
-                        (opened)="materials.textbook($event)"
-                        (edit)="editTextbook($event)"
-                        (remove)="removeTextbook($event)"
-                      />
-                    }
-                    @if (savedFiles().length > 0) {
-                      <div class="tb-editor__chips" role="group" [attr.aria-label]="t.files">
-                        @for (file of savedFiles(); track file.id) {
-                          <tb-input-chip
-                            [label]="file.filename"
-                            [removeLabel]="t.removeFile(file.filename)"
-                            (removed)="removeFile(file)"
-                          >
-                            <i lead class="tb-i tb-i-attach_file" aria-hidden="true"></i>
-                          </tb-input-chip>
+                        @if (modeValue() === 'preview') {
+                          <div class="tb-preview" [style.min-height.px]="editorHeight()">
+                            <tb-markdown [text]="textValue()" />
+                          </div>
+                        } @else {
+                          <textarea
+                            pTextarea
+                            id="editor-text"
+                            class="tb-editor__text"
+                            #editor
+                            [style.height.px]="editorHeight()"
+                            formControlName="description"
+                            rows="10"
+                          ></textarea>
                         }
+                        <small class="tb-hint">{{ c.firstLine }}. {{ t.markdownHint }}</small>
                       </div>
-                    }
+                    </p-card>
+
                     @if (videos().length > 0 || videoField()) {
-                      <tb-video-section [videos]="videos()" (videosChange)="changeVideos($event)" />
+                      <p-card
+                        id="editor-videos"
+                        styleClass="tb-section-card"
+                        class="tb-editor__videos"
+                      >
+                        <div class="tb-editor__card-head">
+                          <h2 class="tb-subtitle">{{ t.videosTitle }}</h2>
+                          <span class="tb-hint">{{
+                            t.videoCount(videos().length, maxVideos)
+                          }}</span>
+                        </div>
+                        <tb-video-section
+                          [videos]="videos()"
+                          (videosChange)="changeVideos($event)"
+                        />
+                      </p-card>
                     }
-                    <tb-material-chips
-                      [(files)]="newFiles"
-                      [compact]="compact()"
-                      [withFiles]="draft()"
-                      [videosFull]="videos().length >= maxVideos"
-                      [quizDisabled]="questions().length > 0"
-                      [(board)]="pickedBoard"
-                      (textbook)="bindTextbook()"
-                      (video)="addVideo()"
-                      (quiz)="choose('quiz')"
-                    />
+
+                    @if (questions().length > 0) {
+                      <p-card
+                        id="editor-quiz-summary"
+                        styleClass="tb-section-card"
+                        class="tb-editor__quiz"
+                      >
+                        <div class="tb-editor__card-head">
+                          <h2 class="tb-subtitle">{{ t.quizTitle }}</h2>
+                          <span class="tb-hint">{{ quizSummary() }}</span>
+                        </div>
+                        <ul class="tb-list tb-list--no-lead" [attr.aria-label]="t.quizTitle">
+                          @for (
+                            question of firstQuestions();
+                            track question.id;
+                            let index = $index
+                          ) {
+                            <li>
+                              <span class="tb-editor__quiz-row">
+                                <b>{{ index + 1 }}</b>
+                                <i
+                                  class="tb-i {{ icons[question.type] }}"
+                                  aria-hidden="true"
+                                  [title]="tq.types[question.type]"
+                                ></i>
+                                <span class="tb-editor__quiz-text">{{
+                                  question.text.trim() || t.untitledQuestion
+                                }}</span>
+                              </span>
+                              <span class="tb-list__trail tb-hint">{{ question.points }}</span>
+                            </li>
+                          }
+                          @if (questions().length > firstQuestions().length) {
+                            <li>
+                              <span class="tb-editor__quiz-row tb-hint">{{
+                                t.quizMore(questions().length - firstQuestions().length)
+                              }}</span>
+                            </li>
+                          }
+                        </ul>
+                        <p class="tb-hint">{{ t.quizWhere }}</p>
+                        <p-button
+                          [label]="t.openQuiz"
+                          icon="tb-i tb-i-edit"
+                          severity="secondary"
+                          (onClick)="choose('quiz')"
+                        />
+                      </p-card>
+                    }
+                    @if (error(); as message) {
+                      <p-message severity="error" styleClass="tb-form-message">{{
+                        message
+                      }}</p-message>
+                    }
                   </div>
-                </p-card>
-                @if (questions().length > 0) {
-                  <p-card id="editor-quiz-summary" styleClass="tb-section-card">
-                    <div class="tb-editor__quiz-head">
-                      <h2 class="tb-subtitle">{{ t.quizTitle }}</h2>
-                      <span class="tb-hint">{{ quizSummary() }}</span>
-                    </div>
-                    <ul class="tb-list tb-list--no-lead">
-                      @for (question of firstQuestions(); track question.id; let index = $index) {
-                        <li>
-                          <span class="tb-list__text tb-editor__quiz-row">
-                            <b>{{ index + 1 }}</b>
-                            <i
-                              class="tb-i {{ icons[question.type] }}"
-                              aria-hidden="true"
-                              [title]="tq.types[question.type]"
-                            ></i>
-                            <span class="tb-editor__quiz-text">{{
-                              question.text.trim() || t.untitledQuestion
-                            }}</span>
-                          </span>
-                          <span class="tb-list__trail tb-hint">{{ question.points }}</span>
-                        </li>
-                      }
-                    </ul>
-                    @if (questions().length > firstQuestions().length) {
-                      <p class="tb-hint">
-                        {{ t.quizMore(questions().length - firstQuestions().length) }}
-                      </p>
-                    }
-                    <p class="tb-hint">{{ t.quizWhere }}</p>
-                    <p-button
-                      [label]="t.openQuiz"
-                      icon="tb-i tb-i-edit"
-                      severity="secondary"
-                      (onClick)="choose('quiz')"
-                    />
-                  </p-card>
-                }
-                @if (error(); as message) {
-                  <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-                }
+
+                  <div class="tb-editor__aside" role="group" [attr.aria-label]="t.params">
+                    <p-card styleClass="tb-section-card" class="tb-editor__who-card">
+                      <div class="tb-editor__who">
+                        @if (draft()) {
+                          <tb-recipients-field
+                            inputId="editor-students"
+                            [control]="form.controls.members"
+                            [students]="studentOptions()"
+                            [groups]="groups()"
+                          />
+                        } @else {
+                          <div class="tb-field">
+                            <span id="editor-given">{{ c.whom }}</span>
+                            <div
+                              class="tb-editor__chips"
+                              role="group"
+                              aria-labelledby="editor-given"
+                            >
+                              @for (task of assignment()?.tasks ?? []; track task.taskId) {
+                                <tb-input-chip [label]="task.studentName" [readonly]="true">
+                                  <tb-avatar lead [name]="task.studentName" size="1.5rem" />
+                                </tb-input-chip>
+                              }
+                              <p-button
+                                [label]="t.assignMore"
+                                icon="tb-i tb-i-add"
+                                severity="secondary"
+                                (onClick)="giveMore()"
+                              />
+                            </div>
+                          </div>
+                        }
+
+                        <tb-due-chips
+                          [lesson]="nextLesson()"
+                          [choice]="dueChoice()"
+                          (choiceChange)="chooseDue($event)"
+                          [date]="duePicked()"
+                          (dateChange)="pickDue($event)"
+                        />
+                      </div>
+                    </p-card>
+
+                    <p-card
+                      id="editor-materials"
+                      styleClass="tb-section-card"
+                      class="tb-editor__materials-card"
+                      [header]="c.materials"
+                    >
+                      <div class="tb-editor__materials tb-list--clamp">
+                        @if (draft()) {
+                          <tb-textbook-list
+                            [textbooks]="textbooks()"
+                            [editable]="true"
+                            [withBoard]="false"
+                            (opened)="materials.textbook($event)"
+                            (edit)="editTextbook($event)"
+                            (remove)="removeTextbook($event)"
+                          />
+                          <tb-attachment-list
+                            [attachments]="savedFiles()"
+                            [removable]="true"
+                            (download)="materials.file($event)"
+                            (remove)="removeFile($event)"
+                          />
+                        }
+                        <tb-material-chips
+                          [(files)]="newFiles"
+                          [compact]="compact()"
+                          [withFiles]="draft()"
+                          [videosFull]="videos().length >= maxVideos"
+                          [withQuiz]="questions().length === 0"
+                          [(board)]="pickedBoard"
+                          (textbook)="bindTextbook()"
+                          (video)="addVideo()"
+                          (quiz)="choose('quiz')"
+                        />
+                      </div>
+                    </p-card>
+                  </div>
+                </div>
               </form>
             </div>
           } @else {
@@ -471,7 +528,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
           }
         </tb-pane>
         @if (aiEnabled() && !single() && aiOpen()) {
-          <tb-pane class="tb-editor__ai" [label]="t.aiTitle">
+          <tb-pane class="tb-editor__ai" kind="fixed" [label]="t.aiTitle">
             <ng-template tbPaneHeader>
               <div class="tb-editor__ai-head">
                 <h2 class="tb-subtitle">{{ t.aiTitle }}</h2>
@@ -504,10 +561,10 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
           [(visible)]="modalAiOpen"
           [header]="t.aiTitle"
           [ariaCloseLabel]="t.closeAi"
-          position="right"
+          [position]="compact() ? 'bottom' : 'right'"
           [blockScroll]="true"
-          styleClass="tb-editor-ai-drawer"
-          [style]="{ width: 'min(100vw, 25rem)' }"
+          [styleClass]="compact() ? 'tb-sheet tb-editor-ai-drawer' : 'tb-editor-ai-drawer'"
+          [style]="compact() ? {} : { width: 'min(100vw, 25rem)' }"
         >
           <tb-homework-ai-panel
             [pane]="true"
@@ -582,9 +639,58 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
       flex: 0 0 12.5rem;
     }
 
+    /*
+     * Sketch 11: the text, the videos and the test in the middle, «Кому · Срок» and «Материалы» aside; on a
+     * narrow form one column in the order of the quick dialog — who, the text, the videos, the test, the materials.
+     */
     .tb-editor__form {
       flex: 1;
       min-width: 0;
+      container: editor-form / inline-size;
+    }
+
+    .tb-editor__columns {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-4);
+    }
+
+    .tb-editor__main,
+    .tb-editor__aside {
+      display: contents;
+    }
+
+    .tb-editor__who-card {
+      order: -1;
+    }
+
+    @container editor-form (width >= 52rem) {
+      .tb-editor__columns {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: var(--tb-space-6);
+      }
+
+      .tb-editor__main,
+      .tb-editor__aside {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-4);
+        min-width: 0;
+      }
+
+      .tb-editor__main {
+        flex: 1;
+      }
+
+      .tb-editor__aside {
+        flex: 0 1 23.75rem;
+        min-width: 18.75rem;
+      }
+
+      .tb-editor__who {
+        grid-template-columns: minmax(0, 1fr);
+      }
     }
 
     .tb-editor__who {
@@ -619,7 +725,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
       margin-block-end: var(--tb-space-4);
     }
 
-    .tb-editor__quiz-head {
+    .tb-editor__card-head {
       display: flex;
       flex-wrap: wrap;
       align-items: baseline;
@@ -628,7 +734,9 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
       margin-block-end: var(--tb-space-3);
     }
 
+    /* one line: the number, the type icon and the text; the points are the row's trail */
     .tb-editor__quiz-row {
+      grid-area: text;
       display: flex;
       align-items: center;
       gap: var(--tb-space-3);
@@ -736,8 +844,9 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   private readonly chosenMembers = toSignal(this.form.controls.members.valueChanges, {
     initialValue: [],
   });
-  protected readonly heading = computed(() =>
-    this.isNew() ? T.editor.newAssignment : T.editor.editAssignment,
+  /** The assignment's title as it is typed (sketch 11); before the first line — «Новое задание». */
+  protected readonly heading = computed(
+    () => this.titleValue() || (this.isNew() ? T.editor.newAssignment : T.editor.editAssignment),
   );
   /** The page the editor was opened from (the list with its filters, the assignment, a student): «Назад» leads there. */
   private readonly origin =
@@ -813,18 +922,13 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   private readonly studentsLoaded = signal(false);
   protected readonly showNav = computed(() => !this.single() && !this.aiOpen());
   protected readonly navItems = computed<SectionNavItem[]>(() => {
-    const materials =
-      (this.draft()
-        ? this.textbooks().length + this.savedFiles().length + this.newFiles().length
-        : 0) + this.videos().length;
+    const videos = this.videos().length;
     const questions = this.questions().length;
     return [
-      { id: 'editor-task', icon: 'tb-i-description', label: this.t.sectionTask },
-      {
-        id: 'editor-materials',
-        icon: 'tb-i-attach_file',
-        label: materials === 0 ? this.c.materials : this.t.sectionMaterials(materials),
-      },
+      { id: 'editor-task', icon: 'tb-i-notes', label: this.t.sectionTask },
+      ...(videos > 0 || this.videoField()
+        ? [{ id: 'editor-videos', icon: 'tb-i-smart_display', label: this.t.sectionVideos(videos) }]
+        : []),
       ...(questions > 0
         ? [{ id: 'editor-quiz-summary', icon: 'tb-i-quiz', label: this.t.sectionQuiz(questions) }]
         : []),
@@ -1048,8 +1152,8 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
       return;
     }
     this.form.patchValue({ description: draft.text, members: [...draft.members] });
-    this.dueChoice.set(draft.dueAt === null ? 'none' : 'date');
-    this.duePicked.set(draft.dueAt);
+    this.dueChoice.set(draft.due);
+    this.duePicked.set(draft.picked);
     this.newFiles.set([...draft.files]);
     this.pickedTextbooks.set(draft.textbooks);
     this.videos.set(draft.videos);

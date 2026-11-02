@@ -120,15 +120,17 @@ describe('AssignmentCreateDialog', () => {
     expect(readableText(document.body)).not.toContain('К следующему занятию');
   });
 
-  it('shows the materials only once something is added', async () => {
+  it('labels «Материалы» always, the video field only after «Видео»', async () => {
     setup();
     await open();
-    expect(document.body.querySelector('section[aria-label="Материалы"]')).toBeNull();
+    expect(
+      document.body.querySelector('section[aria-labelledby="create-materials"]'),
+    ).not.toBeNull();
+    expect(document.body.querySelector('tb-video-section')).toBeNull();
 
     click('Видео');
     await fixture.whenStable();
 
-    expect(document.body.querySelector('section[aria-label="Материалы"]')).not.toBeNull();
     expect(document.body.querySelector('tb-video-section')).not.toBeNull();
     expect(readableText(document.body)).not.toContain('Фото');
   });
@@ -144,7 +146,6 @@ describe('AssignmentCreateDialog', () => {
     await fixture.whenStable();
 
     expect(document.body.querySelector('tb-video-section')).toBeNull();
-    expect(document.body.querySelector('section[aria-label="Материалы"]')).toBeNull();
     expect(readableText(document.body)).toContain('Доска: Алгебра');
     expect(readableText(document.body)).not.toContain('Разместить на доске');
 

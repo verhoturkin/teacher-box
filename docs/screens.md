@@ -260,27 +260,31 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
 
 - **Header**: «Задания», «?», the filled «Новое задание» (a phone: the extended FAB «Новое»); it
   opens the quick dialog, `/teacher/homework/new` stays as the full editor.
-- **Quick dialog «Новое задание»** (340.1, `assignment-create-dialog.ts`, `tb-dialog` form, `xwide` 47.5 rem: a basic
-  dialog from medium, full screen on a phone with «Выдать» in the top bar): header icon buttons
-  «Открыть во весь экран» and «Закрыть»; «Кому» — input chips (a group with its member count, a student with an avatar, «×») and the dashed assist chip «Ученик или группа» that opens the panel of `tb-member-picker [bare]`; «Задание» — one Markdown
-  field (first line = title, `titleOf`) with a toolbar «Жирный · Список · Ссылка» and «Написать с
-  ИИ» (only when AI is on, a tertiary toggle with `aria-pressed`) that opens the AI pane inside the same
-  dialog (see «AI pane» below); «Срок» —
-  `tb-filter-chips` «К следующему занятию · <date>» (hidden without a lesson of the chosen
-  students), «Через неделю», «Без срока», «Дата…» (date picker); «Материалы» appear only once
-  added (textbooks, videos; each section only once its own chip was used; videos — small tiles with «×»
-  and the link field only, sketch 3) and are filled by assist
-  chips «Файл · Учебник · Видео · Тест с вопросами · Доска» (a phone: «Фото» with the camera,
-  «Файл · Учебник · Тест»). «Доска» opens a menu of the teacher's boards; the chosen one becomes
-  the input chip «Доска: <name>» with «×» (the choice is kept in the dialog; after «Выдать» the
-  «На доску» dialog opens with it preselected). The dialog fits without scrolling from ~760 px of
-  height: the text field grows from four rows up to a maximum, only taller content scrolls. «Тест с вопросами» opens the full editor (questions are too big for the
-  dialog); the entered state travels in `AssignmentDraftHandover`. Footer: text «Сохранить
-  черновик» (creates the assignment and keeps the chosen students as `draftStudentIds`, nobody is given it) and the split button «Выдать» (menu «Выдать и
-  разместить на доске»). «Выдать» and «Сохранить черновик» leave the list in place with the
-  snackbar «Задание выдано · Открыть» (`Snackbar.link`). Closing a dialog with a text asks «Сохранить
-  черновик?» (Сохранить · Не сохранять · Отмена): `tb-dialog [draftPrompt] (saveDraft)`, the inline
-  confirm step with a third button; without a text the usual «Отменить изменения?».
+- **Quick dialog «Новое задание»** (340.1, `assignment-create-dialog.ts`, `tb-dialog` form, `xwide`
+  47.5 rem: a basic dialog from medium, full screen on a phone with «Выдать» in the top bar): header
+  icon buttons «Открыть во весь экран» and «Закрыть»; «Кому» — input chips (a group with its member
+  count, a student with an avatar, «×») and the dashed assist chip «Ученик или группа» that opens
+  the panel of `tb-member-picker [bare]`; «Задание» — one Markdown field (first line = title,
+  `titleOf`) with a toolbar «Жирный · Список · Ссылка» and «Написать с ИИ» (only when AI is on, a
+  tertiary toggle with `aria-pressed`) that opens the AI pane inside the same dialog (see «AI pane»
+  below); «Срок» — `tb-filter-chips` «К следующему занятию · <date>» (hidden without a lesson of the
+  chosen students), «Через неделю», «Без срока», «Дата…» (date picker); «Материалы» — a label of the
+  fields' style over what was added (textbooks, videos — small tiles with «×» and the labelled link
+  field only once «Видео» was pressed, sketch 3) and the assist chips «Файл · Учебник · Видео · Тест
+  с вопросами · Доска» (a tablet: «Файл · Фото · …», sketch 36; a phone: «Фото · Файл · Учебник ·
+  Тест» two a row, sketch 6). «Доска» opens a menu of the teacher's boards; the chosen one becomes
+  the input chip «Доска: <name>» with «×» (the choice is kept in the dialog; after «Выдать» the «На
+  доску» dialog opens with it preselected). The dialog fits without scrolling from ~760 px of
+  height: the text field grows from five rows (sketch 3) up to a maximum, only taller content
+  scrolls. «Тест с вопросами» opens the full editor (questions are too big for the dialog); the
+  entered state travels in `AssignmentDraftHandover` — «Срок» as the chosen chip, so «К следующему
+  занятию» stays that choice in the editor. Footer: text «Сохранить черновик» (creates the
+  assignment and keeps the chosen students as `draftStudentIds`, nobody is given it) and the split
+  button «Выдать» (menu «Выдать и разместить на доске»). «Выдать» and «Сохранить черновик» leave the
+  list in place with the snackbar «Задание выдано · Открыть» (`Snackbar.link`). Closing a dialog
+  with a text asks «Сохранить черновик?» (Сохранить · Не сохранять · Отмена): `tb-dialog
+  [draftPrompt] (saveDraft)`, the inline confirm step with a third button; without a text the usual
+  «Отменить изменения?».
 - **AI pane of the quick dialog** (sketch `AiDraft`; `tb-homework-ai-panel [pane]`, the logic and state
   are the editor panel's): from the large breakpoint (≥ 1200 dp) the dialog widens to `split` (77.5 rem
   ≈ 1240 px) and shows the pane beside the form — form `flex 1 1 35rem`, pane `flex 1 1 26rem` (max
@@ -386,21 +390,25 @@ A main flexible pane with two `tb-tabs` (346.2, sketches 11, 28, 21): «Зада
 a phone (< 600) the bar is `tb-tabs--fixed` «Задание · Вопросы · N · Настройки» (`?tab=settings`;
 wider it falls back to «Тест»).
 
-- **«Задание»** in the order of the quick dialog (340.2), each section in its own `tb-section-card`:
-  «Кому» and «Срок» side by side in the first card («Кому» — input chips + dashed «Ученик или
-  группа», drafts only; «Срок» — filter chips; both have a visible label of one style), «Задание»
-  (one Markdown field with the «Текст / Просмотр» switch; the first line is the title, hint «Первая
-  строка станет названием»), «Материалы» and, with questions, the test summary card «Тест»: «N
-  вопросов · M баллов · K попытки», the first three questions as a `tb-list--no-lead` (number, type
-  icon, text or «Без текста», points), «…и ещё N вопросов», the hint where to edit them and tonal
-  «Открыть тест». Videos are tiles (`video-section.ts`, 348.1, sketches 39, 40: preview, name, source,
-  «Расшифровка» / «Без расшифровки», «видит ученик», «Настроить»; drag to reorder) over one «Вставьте ссылку
-  на видео» field; «Настроить» opens the video's side sheet (a phone: full screen) — player, «Название», the
-  transcript as timed lines, «Субтитры YouTube» (menu of tracks), «Из файла», «Править текст», «Показывать
-  расшифровку ученику», «Убрать видео», ‹ ›. Empty sections (textbooks, videos) are hidden; the assist chips under «Материалы»
-  («Файл · Учебник · Видео · Тест с вопросами · Доска») add them, «Тест с вопросами» opens «Тест».
-  A draft lists its saved textbooks (pages, remove — unbound at once) and files (input chips,
-  remove at once) with the picked ones; an issued assignment has them on its page.
+- **«Задание»** (352.1, sketch 11): three columns from a form of 52 rem (a container query) —
+  the sections column, the middle with «Задание» (one Markdown field with the «Текст / Просмотр»
+  switch; the first line is the title, hint «Первая строка станет названием»), «Видео» (once there
+  is a video or «Видео» was pressed: «N из 5», the tiles and the labelled «Ссылка на видео» field)
+  and, with questions, the test summary «Тест» («N вопросов · M баллов · K попытки», the first
+  three questions as one-line rows of a `tb-list--no-lead` — number, type icon, text cut with «…»
+  or «Без текста», points —, the row «…и ещё N вопросов», the hint where to edit them and tonal
+  «Открыть тест»), and the aside (300–380 px) with «Кому» and «Срок» in one card (input chips +
+  dashed «Ученик или группа», drafts only; filter chips) and «Материалы»: a draft's textbooks and
+  files as compact rows (`tb-list--clamp`: two lines at most; textbook — «Изменить
+  страницы», «Убрать»; file — «Удалить файл») over the assist chips «Файл · Учебник · Видео ·
+  Доска» («Тест с вопросами» only while there is no test; it opens «Тест»). Narrower — one column
+  in the order who, the text, the videos, the test, the materials (sketch 19). Videos are tiles
+  (`video-section.ts`, 348.1, sketches 39, 40: preview, name, source, «Расшифровка» / «Без
+  расшифровки», «видит ученик», «Настроить»; drag to reorder); «Настроить» opens the video's side
+  sheet (a phone: full screen) — player, «Название», the transcript as timed lines, «Субтитры
+  YouTube» (menu of tracks), «Из файла», «Править текст», «Показывать расшифровку ученику»,
+  «Убрать видео», ‹ ›. Picked files and textbooks join the saved ones after the autosave; an
+  issued assignment has them on its page.
 - **«Тест»** — the quiz builder (`question-section.ts`, 347.1, sketches 28, 29), three columns that
   wrap: the **outline** (300 dp: «N вопросов · M баллов», a segmented list of rows — drag handle,
   number, type icon, text, error icon once «Выдать» was tried, points; the open row
@@ -440,9 +448,12 @@ wider it falls back to «Тест»).
   explanation folded; the footer «‹ 2 · сохранено · HH:mm · Вопрос 4 ›»); «Вопрос» opens a bottom
   sheet «Новый вопрос» (the six types with hints, a divider, «Составить с ИИ»). ✕ returns to the
   outline with the focus on the row.
-- **Header**: back, title, «?», «ИИ-помощник» (tonal). A draft (new or saved without tasks) has
-  «сохранено · HH:mm» (Body Small, on-surface-variant) and the split filled «Выдать» (menu «Выдать и
-  разместить на доске»); an issued assignment has the filled «Сохранить».
+- **Header** (`tb-page-header--one-line`): back, the assignment's title as it is typed («Новое
+  задание» / «Изменить задание» while there is none) on one line cut with «…», «?», «ИИ-помощник»
+  (tonal; an icon on a phone). A draft (new or saved without tasks) has «сохранено · HH:mm» (Body
+  Small, on-surface-variant) and the split filled «Выдать» (menu «Выдать и разместить на доске»;
+  a phone — a plain «Выдать», sketch 21); an issued assignment has the filled «Сохранить». The
+  tabs have their icons from medium (`description`, `quiz`).
 - **Autosave**: a draft saves itself 1.5 s after the last change once it has a title (create, then
   update; picked files and textbooks go with it and then show as saved; the draft students are
   kept), no question is checked; the first save puts `/teacher/homework/<id>/edit` into the address
@@ -456,16 +467,17 @@ A saved assignment loads its title as the first line when the text does not star
 supporting sheet with the AI request (prompt library, search and save, sources, generate / error /
 retry, draft Remove / Insert / Replace) opens beside the form from the AI button; its «Что готовить»
 follows the tab — text on «Задание», questions on «Тест». From **M3:** primary tabs; the
-supporting-pane canonical layout. *Ours:* the AI pane shares the width equally with the editor from
-expanded and is a modal right drawer below; main content precedes AI in reading order; one Markdown
+supporting-pane canonical layout. *Ours:* the AI pane is a fixed pane beside the editor from
+expanded (sketch 13), a modal right drawer on medium (sketch 19) and a bottom sheet on a phone
+(sketch 22); main content precedes AI in reading order; one Markdown
 field at every width; the AI never changes text without Insert / Replace; its state survives closing
 the pane. The recipients, deadline and materials parts are the components of the dialog
 (`ui/recipients-field.ts`, `ui/due-chips.ts`, `ui/material-chips.ts`).
 
 **Sections column** (on «Задание» from expanded width, hidden beside the AI pane): `tb-section-nav`
-«Разделы задания» (design-system §10) lists «Задание», «Материалы · N» and «Тест · N» — the one in
-view highlighted, a click scrolls to it. The sketch's «Добавить» group is not built: the assist
-chips under «Материалы» do that.
+«Разделы задания» (design-system §10) lists «Текст», «Видео · N» and «Тест · N» — the one in view
+highlighted, a click scrolls to it. The sketch's «Добавить» group is not built: the assist chips of
+«Материалы» add at every width, and the column is hidden beside the AI and below expanded.
 
 **Recipients of a saved assignment:** a draft shows its `draftStudentIds` as the editable «Кому» chips
 (saving updates `draft-students` once the student list is in); an issued one shows its students as

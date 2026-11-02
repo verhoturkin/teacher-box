@@ -126,7 +126,8 @@ describe('AssignmentEditorPage', () => {
     TestBed.inject(AssignmentDraftHandover).put({
       text: '# Дроби\nРешите №1',
       members: [{ kind: 'STUDENT', id: 's-1' }],
-      dueAt: null,
+      due: 'none',
+      picked: null,
       files: [new File(['x'], 'условие.pdf')],
       textbooks: [boundTextbook({ textbookId: 'tb-1' })],
       videos: [],
@@ -139,6 +140,23 @@ describe('AssignmentEditorPage', () => {
     expect(readableText(host)).toContain('Учебник');
     expect(page.newFiles()).toHaveLength(1);
     expect(page.form.dirty).toBe(true);
+  });
+
+  it('keeps «К следующему занятию» from the quick dialog as the choice, not a date', async () => {
+    TestBed.inject(AssignmentDraftHandover).put({
+      text: 'Дроби',
+      members: [{ kind: 'STUDENT', id: 's-1' }],
+      due: 'lesson',
+      picked: null,
+      files: [],
+      textbooks: [],
+      videos: [],
+    });
+    const { host } = await create([lessonIn(2)]);
+
+    expect(host.querySelector('tb-due-chips [aria-pressed="true"]')?.textContent).toContain(
+      'К следующему занятию',
+    );
   });
 
   it('creates written homework, adds its materials, then gives it out', async () => {
@@ -211,7 +229,7 @@ describe('AssignmentEditorPage', () => {
     expect(navigate).not.toHaveBeenCalled();
     expect(TestBed.inject(Location).path()).toBe('/teacher/homework/a-7/edit');
     expect(readableText(host)).toMatch(/сохранено · \d\d:\d\d/);
-    expect(readableText(host)).toContain('Новое задание');
+    expect(host.querySelector('h1')?.textContent.trim()).toBe('Дроби');
 
     page.form.patchValue({ description: 'Дроби\nРешите' });
     await settle();
@@ -278,7 +296,8 @@ describe('AssignmentEditorPage', () => {
 
   it('hides the empty sections and shows them from the assist chips', async () => {
     const { page, host } = await create([]);
-    expect(host.querySelector('tb-textbook-list')).toBeNull();
+    expect(host.querySelector('h1')?.textContent.trim()).toBe('Новое задание');
+    expect(host.querySelector('tb-textbook-list li')).toBeNull();
     expect(host.querySelector('tb-video-section')).toBeNull();
     expect(host.querySelector('tb-question-section')).toBeNull();
 
@@ -290,7 +309,7 @@ describe('AssignmentEditorPage', () => {
 
     page.pickTextbook(boundTextbook());
     await fixture.whenStable();
-    expect(host.querySelector('tb-textbook-list')).not.toBeNull();
+    expect(host.querySelector('tb-textbook-list li')).not.toBeNull();
     page.changeVideos([]);
     await fixture.whenStable();
 
@@ -501,7 +520,7 @@ describe('AssignmentEditorPage', () => {
       attachments: [attachment()],
     });
     const { page, host } = await edit(details);
-    expect(readableText(host)).toContain('Изменить задание');
+    expect(host.querySelector('h1')?.textContent.trim()).toBe('Дроби');
     expect(page.form.controls.description.value).toBe('Дроби\n\nРешить **№1-5**');
     expect(host.querySelector('tb-recipients-field')).toBeNull();
     expect(readableText(host)).not.toContain('Spotlight 5');
@@ -642,7 +661,7 @@ describe('AssignmentEditorPage', () => {
     expect(page.newFiles()).toEqual([]);
     expect(readableText(host)).toContain('ещё.pdf');
 
-    host.querySelector<HTMLButtonElement>('button[aria-label="Убрать файл ещё.pdf"]')?.click();
+    host.querySelector<HTMLButtonElement>('button[aria-label="Удалить файл ещё.pdf"]')?.click();
     backend
       .expectOne({
         method: 'DELETE',
@@ -662,7 +681,7 @@ describe('AssignmentEditorPage', () => {
       })
       .flush(assignmentDetails({ tasks: [], version: 1, textbooks: [], attachments: [] }));
     await fixture.whenStable();
-    expect(host.querySelector('tb-textbook-list')).toBeNull();
+    expect(host.querySelector('tb-textbook-list li')).toBeNull();
   });
 
   it('shows the students of an issued assignment read-only and gives it to more', async () => {
@@ -696,12 +715,12 @@ describe('AssignmentEditorPage', () => {
     const { page, host } = await create([], true);
     const labels = () =>
       [...host.querySelectorAll('tb-section-nav a')].map((item) => item.textContent.trim());
-    expect(labels()).toEqual(['Задание', 'Материалы']);
+    expect(labels()).toEqual(['Текст']);
 
     page.changeQuestions([{ ...questionDraft('NUMBER'), text: 'Вопрос', value: 1 }]);
     page.changeVideos([...page.videos(), videoDraft()]);
     await fixture.whenStable();
-    expect(labels()).toEqual(['Задание', 'Материалы · 1', 'Тест · 1']);
+    expect(labels()).toEqual(['Текст', 'Видео · 1', 'Тест · 1']);
 
     exactButton(host, 'ИИ-помощник').click();
     await fixture.whenStable();
@@ -810,7 +829,8 @@ describe('AssignmentEditorPage', () => {
     const { host } = await create([], true);
     const state = fixture.debugElement.injector.get(HomeworkAiState);
     state.prompt.setValue('Keep this request');
-    exactButton(host, 'ИИ-помощник').click();
+    // a phone: an icon button, named by its label
+    host.querySelector<HTMLButtonElement>('button[aria-label="ИИ-помощник"]')?.click();
     await fixture.whenStable();
     expect(document.body.querySelector('[role="dialog"][aria-modal="true"]')).not.toBeNull();
     const close = document.body.querySelector<HTMLButtonElement>(
