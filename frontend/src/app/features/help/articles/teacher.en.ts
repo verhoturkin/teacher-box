@@ -303,18 +303,18 @@ You can also add [textbook pages](/teacher/help/textbooks) from Materials or an 
     body: `
 ## Create an assignment
 
-1. Choose “Create” → “Assignment”, or “Homework” → “New assignment” on a phone. A quick dialog opens so you can assign work in a minute; “Open full screen” (or “Quiz”) carries everything you have entered into the full editor.
-2. In the dialog, choose who gets the assignment and write the text; its first line becomes the title. Set the due date with “By the next lesson”, “In a week”, “No deadline” or “Pick a date…”. Add textbooks, files, videos or a board with the buttons under the text, and use “Save draft” to keep the assignment unassigned; the students you chose are remembered and already ticked when you choose “Add” on the draft’s page. The full editor follows the same order: recipients, text, due date, materials. Markdown supports bold text, lists and links; use Preview to check the result.
+1. Choose “Create” → “Assignment”, or “Homework” → “New assignment” on a phone. The editor opens with just the essentials: recipients, the text, the due date and the material buttons.
+2. Choose who gets the assignment and write the text; its first line becomes the title. Set the due date with “By the next lesson”, “In a week”, “No deadline” or “Pick a date…”. Add textbooks, files, a photo, videos, a quiz or a board with the buttons under “Materials”. As soon as you start typing, the assignment saves itself as a draft with the students you chose; if you leave without writing anything, nothing is created. Markdown supports bold text, lists and links; use Preview to check the result. The “AI assistant” button opens the assistant beside the text.
 3. Under “To”, add students and groups. Students in more than one selected group receive the assignment once. Removing a group keeps any students also selected individually. “By the next lesson” sets the due date to the start of those students’ next lesson; pick another option if you prefer.
 4. Textbooks, files, videos, a quiz and a board appear in the assignment only once you add them: use the buttons under “Materials”. Textbooks and files show as cards; select a name to open it (PDFs and images open in a new tab). “Board” opens a list of your boards: the one you choose shows as a “Board: name” chip (the × clears it), and once the assignment is given out the “Add to board” window opens with that board selected. You can remove anything you added, and empty sections take up no room.
-5. For a video, use “Video” (up to five). YouTube, Rutube and VK videos play within the assignment; other links open in a new tab. Import YouTube captions, import an .srt or .vtt file, or enter a transcript yourself. If several caption tracks are available, choose the language and track you need. The AI uses the transcript; students see it only if “Show transcript to students” is enabled.
-6. Choose “Assign”. Students are notified once the materials are ready and reminded before the due date. “Save draft” keeps the assignment with you.
+5. For a video, use “Video” (up to five) and paste a link: the video appears as a tile. YouTube, Rutube and VK videos play within the assignment; other links open in a new tab. Students see the videos in the order of the tiles, so drag them to reorder. Each tile shows whether it has a transcript and whether students can see it. Select the settings button on a tile to rename the video, import YouTube captions (if several tracks are available, choose one from the menu), load an .srt or .vtt file, edit the transcript or remove the video. The AI uses the transcript; students see it only if “Show transcript to students” is enabled.
+6. Choose “Assign”. Students are notified once the materials are ready and reminded before the due date. You return to where you opened the editor (the list or the assignment); “Open” in the “Assignment created” message takes you to the assignment. There is no separate draft button: once the assignment has a title, the draft saves itself a couple of seconds after each change, and the header shows when it was last saved. You can leave the editor at any time without losing anything.
 
 “Assign and add to board” creates the assignment, then lets you place its text, images and textbook pages on a board. The assignment remembers the board and gives students a “Go to board” button. “Add to board” on the assignment page has the same effect.
 
 ## Manage assignments
 
-“Edit” opens the editor. On a wide screen a list of sections on the left scrolls to the one you choose. A draft keeps its students under “To” and you can change them; an issued assignment shows its students without “×”, and “Assign to more” adds new ones. The editor covers the instructions (their first line is the title), videos, quiz and due date. Update the textbooks and files of a saved assignment on its details page. The portal checks before discarding unsaved changes.
+“Edit” opens the editor. It has two tabs: Instructions, for recipients, the due date, the text and materials; and Quiz, for the questions and quiz settings. On a phone these are Instructions, Questions and Settings. If the assignment has a quiz, Instructions shows a summary: the first questions, the number of questions, points and attempts, and “Open quiz”. On a wide screen a list of sections on the left scrolls to the one you choose. A draft keeps its students under “To” and you can change them. You can also add or remove its textbooks and files in the editor, and it saves itself. An issued assignment shows its students without “×”, and “Assign to more” adds new ones. Its textbooks and files are updated on the details page, and “Save” keeps your changes; the portal checks before you leave without saving. “Back” returns to the page you opened the editor from.
 
 “Make a copy” creates a draft with the original text, files, textbooks and videos, but no recipients or due date. The editor opens so you can adapt it.
 
@@ -324,7 +324,7 @@ The Homework page lists assignments on the full width. Search by assignment titl
 - **Drafts:** assignments you have not given to anyone yet.
 - **Done:** assignments with all submissions accepted. Use “Show more” after the first 20.
 
-Each row shows the materials in the assignment (textbooks, files, questions, videos, board), who it is for, the due date, how many submissions are in and the status. On a phone the table becomes cards and the views become chips.
+Each row shows the materials in the assignment (textbooks, files, questions, videos, board), who it is for, the due date, how many submissions are in and the status. On a tablet the table becomes tiles with an icon, the title, who it is for and when it is due, a progress bar (“3 of 4”) and the status. On a phone it becomes cards and the views become chips.
 
 Select an assignment to open it on its own page; the arrow returns you to the list.
 
@@ -350,23 +350,23 @@ In the assignment editor (“Edit” on the assignment page), choose “Textbook
 
 ## Add a quiz
 
-In the editor, choose “Quiz” under “Materials” to add the Questions section; “Remove” takes it out again. It supports six types:
+Questions are on the editor’s Quiz tab; “Quiz” under “Materials” opens it too. The list on the left shows each question’s number, type and points. Select a question to open it on the right. To reorder, drag the handle or focus it and use the up and down arrow keys. “Question” below the list offers six types:
 
 - **Single choice** and **Multiple choice:** mark the correct options.
-- **Short answer:** list accepted answers. Capitalisation, extra spaces and the difference between ё and е are ignored.
+- **Short answer:** list accepted answers; press Enter after each one. Capitalisation, extra spaces and the difference between ё and е are ignored.
 - **Number:** enter a correct answer and an optional tolerance.
 - **Matching:** enter pairs; the right-hand column is shuffled for students.
 - **Ordering:** enter the correct order; students receive shuffled items.
 
-Each question has points and an optional explanation. Matching and ordering award all points or none. In “Quiz settings”, choose when answers are revealed and how many attempts are allowed. The best attempt counts. Once a student starts the quiz, questions are locked; the rest of the assignment remains editable.
+“With AI” opens the AI assistant. In an open question you can change its type, duplicate it, move it or remove it. Options carry over between single choice, multiple choice and ordering; for other changes the portal asks first. Options can be dragged too, and pressing Enter in the last option adds another. Each question has points from 1 to 100 (1 by default) and an optional explanation; choose “Answer explanation” to add one. Matching and ordering award all points or none. “Student view” at the top opens the quiz the way your student takes it: full screen, one question at a time. You can try the answers; nothing is saved. On the right, “Quiz settings” sets when answers are revealed and how many attempts are allowed: 1, 2, 3 or unlimited. The best attempt counts. “Summary” shows the number of questions, the points and roughly how long the quiz takes. On a phone, the Questions tab shows only the list: tap a question to open it full screen, use the arrows at the bottom to move between questions, and use “Question” at the bottom to choose the type of a new one. A draft keeps unfinished questions as they are, but you can’t assign it until they are complete. The portal opens the Quiz tab, marks those questions in red and lists them under “Summary”. Once a student starts the quiz, questions are locked; the rest of the assignment remains editable. To change the questions, choose “Duplicate to edit”: the portal copies the assignment and opens the copy’s Quiz tab.
 
-The AI assistant can draft questions. Select Questions under “What to prepare”, then append the draft or replace all questions. Review and save the assignment yourself.
+The AI assistant can draft questions. On the Quiz tab it prepares questions straight away; on Instructions it drafts the text. You can still switch with “What to prepare”. Append the draft or replace all questions, and review them before assigning.
 
 Reviews show the best quiz attempt, incorrect answers first, with an answer key. Use “Mark correct” or “Mark incorrect” to override automatic marking. The score fills the grade field unless you enter a grade yourself. “Mistakes by question” on the assignment page highlights common errors. A completed quiz is enough for a student to submit the assignment for review.
 
 ## Review a submission
 
-Submissions waiting for review sit in the “To review” strip at the top of the Homework page: each card shows the student, the assignment, when it was handed in, a “Late” tag and the quiz score. “Review” opens a submission; “Review them all” starts with the oldest and moves on to the next after each decision. You will see the assignment, the student’s response and attached images. “Open on the board” opens the assignment’s board.
+Submissions waiting for review sit in the “To review” strip at the top of the Homework page: each card shows the student, the assignment, when it was handed in, a “Late” tag and the quiz score. “Review” opens a submission; “Review them all” starts with the oldest and moves on to the next after each decision. When none are left you return to where you started and see “Nothing left to review”. “Review” on an assignment’s page goes through that assignment’s submissions only, and “Back” returns to the assignment. You will see the assignment, the student’s response and attached images. “Open on the board” opens the assignment’s board.
 
 Add feedback and a grade, then choose “Accept” or “Return for revision”. Quick comments help with common responses. “Next: …” opens the next submission after your decision. If AI is enabled, “AI draft” suggests feedback and a grade; review them before choosing “Insert”.
 
@@ -416,7 +416,7 @@ On wide screens, the assistant opens beside the editor. On smaller screens it op
 
 Use “Source materials” to select attached textbook pages, PDFs and images: up to five files and 20 pages at once. Files selected for a new assignment can be used before saving it. Word documents are not supported as sources.
 
-Videos with transcripts are also available as sources. The AI reads the transcript, rather than watching the video, and can refer to timestamps such as [1:05]. Import YouTube captions or upload a transcript first if the video is not listed.
+Videos with transcripts are also available as sources. The AI reads the transcript, rather than watching the video, and can refer to timestamps such as [1:05]. If the video is not listed, add a transcript in its settings first: import YouTube captions or load a file.
 
 Select “Questions” under “What to prepare” to draft quiz questions. Review them in the editor before saving.
 

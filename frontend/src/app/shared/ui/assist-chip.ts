@@ -21,6 +21,11 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       display: inline-flex;
     }
 
+    /* a cell of a grid of chips (the phone's «Материалы», sketch 6): as wide as the cell */
+    :host(.tb-assist-chip--fill) button {
+      inline-size: 100%;
+    }
+
     button {
       position: relative;
       display: inline-flex;

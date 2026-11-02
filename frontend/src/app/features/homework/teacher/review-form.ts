@@ -24,7 +24,7 @@ export class ReviewForm {
     comment: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(5000)] }),
   });
   readonly commentValue = toSignal(this.form.controls.comment.valueChanges, { initialValue: '' });
-  private readonly gradeValue = toSignal(this.form.controls.grade.valueChanges, {
+  readonly gradeValue = toSignal(this.form.controls.grade.valueChanges, {
     initialValue: '',
   });
   readonly reviewText = computed(() => {

@@ -9,18 +9,13 @@ import ru.teacherbox.homework.domain.AssignmentVideo;
 import ru.teacherbox.homework.domain.Attachment;
 import ru.teacherbox.homework.domain.TaskStatus;
 import ru.teacherbox.homework.domain.VideoLink;
-import ru.teacherbox.homework.domain.quiz.Matching;
-import ru.teacherbox.homework.domain.quiz.MultipleChoice;
-import ru.teacherbox.homework.domain.quiz.Numeric;
-import ru.teacherbox.homework.domain.quiz.Option;
-import ru.teacherbox.homework.domain.quiz.Ordering;
-import ru.teacherbox.homework.domain.quiz.Pair;
 import ru.teacherbox.homework.application.QuizViews.QuizReview;
 import ru.teacherbox.homework.domain.quiz.Question;
+import ru.teacherbox.homework.domain.quiz.QuestionDraft;
+import ru.teacherbox.homework.domain.quiz.QuestionDraft.Item;
+import ru.teacherbox.homework.domain.quiz.QuestionDraft.Match;
 import ru.teacherbox.homework.domain.quiz.QuestionType;
 import ru.teacherbox.homework.domain.quiz.RevealRule;
-import ru.teacherbox.homework.domain.quiz.ShortText;
-import ru.teacherbox.homework.domain.quiz.SingleChoice;
 import ru.teacherbox.textbooks.api.TextbookFormat;
 import ru.teacherbox.textbooks.api.TextbookKind;
 import ru.teacherbox.textbooks.api.TextbookSummary;
@@ -162,35 +157,16 @@ public final class HomeworkViews {
      * @param pairs    matching pairs
      */
     public record QuestionView(UUID id, QuestionType type, String text, int points, @Nullable String explanation,
-            List<Option> options, List<UUID> correct, List<String> accepted, @Nullable BigDecimal value,
-            @Nullable BigDecimal tolerance, List<Pair> pairs) {
+            List<Item> options, List<UUID> correct, List<String> accepted, @Nullable BigDecimal value,
+            @Nullable BigDecimal tolerance, List<Match> pairs) {
 
         static QuestionView of(Question q) {
-            List<Option> options = List.of();
-            List<UUID> correct = List.of();
-            List<String> accepted = List.of();
-            BigDecimal value = null;
-            BigDecimal tolerance = null;
-            List<Pair> pairs = List.of();
-            switch (q) {
-                case SingleChoice s -> {
-                    options = s.options();
-                    correct = List.of(s.correct());
-                }
-                case MultipleChoice m -> {
-                    options = m.options();
-                    correct = m.options().stream().map(Option::id).filter(m.correct()::contains).toList();
-                }
-                case ShortText t -> accepted = t.accepted();
-                case Numeric n -> {
-                    value = n.value();
-                    tolerance = n.tolerance();
-                }
-                case Matching m -> pairs = m.pairs();
-                case Ordering o -> options = o.items();
-            }
-            return new QuestionView(q.id(), q.type(), q.text(), q.points(), q.explanation(), options, correct,
-                    accepted, value, tolerance, pairs);
+            return of(QuestionDraft.of(q));
+        }
+
+        static QuestionView of(QuestionDraft q) {
+            return new QuestionView(q.id(), q.type(), q.text(), q.points(), q.explanation(), q.options(), q.correct(),
+                    q.accepted(), q.value(), q.tolerance(), q.pairs());
         }
     }
 

@@ -12,7 +12,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
@@ -20,7 +20,7 @@ import { Tooltip } from 'primeng/tooltip';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { Button, ButtonDirective, ButtonLabel } from 'primeng/button';
 import { Placed, ToBoardDialog } from '@features/boards/parts';
-import { injectMobile } from '@core/layout/mobile';
+import { injectMobile, injectWindowSize } from '@core/layout/mobile';
 import { FileSaver } from '@shared/files/file-saver';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { Busy } from '@shared/ui/busy';
@@ -69,7 +69,6 @@ const FOLD_LINES = 3;
     VideoList,
     Avatar,
     EmptyState,
-    RouterLink,
     Button,
     ButtonDirective,
     ButtonLabel,
@@ -92,6 +91,7 @@ const FOLD_LINES = 3;
     @if (details(); as assignment) {
       <ng-template tbPaneHeader
         ><tb-page-header
+          [class.tb-page-header--one-line]="oneLine()"
           [title]="assignment.title"
           [back]="single() ? '/teacher/homework' : null"
           [backLabel]="t.back"
@@ -171,9 +171,13 @@ const FOLD_LINES = 3;
                       />
                       <div class="tb-asg-tile__who">
                         <span class="tb-asg-tile__name">{{ task.studentName }}</span>
-                        <span class="tb-asg-tile__line">{{ statusLine(task) }}</span>
+                        <span
+                          class="tb-asg-tile__line"
+                          [class.tb-negative]="task.overdue && task.submittedAt === null"
+                          >{{ statusLine(task, assignment.dueAt) }}</span
+                        >
                       </div>
-                      <tb-task-status inline [status]="task.status" [overdue]="task.overdue" />
+                      <tb-task-status inline [status]="task.status" />
                     </div>
                     @if (task.answerPreview; as preview) {
                       <p class="tb-asg-tile__preview">{{ preview }}</p>
@@ -201,10 +205,11 @@ const FOLD_LINES = 3;
                           (onClick)="remind(task)"
                         />
                       }
-                      <a
+                      <button
                         pButton
+                        type="button"
                         severity="secondary"
-                        [routerLink]="['/teacher/homework/tasks', task.taskId]"
+                        (click)="reviewWork.emit(task.taskId)"
                         [attr.aria-label]="
                           t.action(
                             task.status === 'SUBMITTED' ? t.review : t.open,
@@ -215,7 +220,7 @@ const FOLD_LINES = 3;
                         <span pButtonLabel>{{
                           task.status === 'SUBMITTED' ? t.review : t.open
                         }}</span>
-                      </a>
+                      </button>
                     </div>
                   </li>
                 }
@@ -292,9 +297,8 @@ const FOLD_LINES = 3;
       </div>
 
       @if (mobile() && toReview().length > 0) {
-        <div class="tb-asg__bottom">
+        <div class="tb-bottom-actions">
           <p-button
-            styleClass="tb-asg__bottom-button"
             [label]="t.reviewWorks(toReview().length)"
             icon="tb-i tb-i-rate_review"
             (onClick)="review()"
@@ -416,10 +420,12 @@ const FOLD_LINES = 3;
       font: var(--tb-type-body-s);
     }
 
+    /* the inset is a transparent border, not padding: the clamp cuts the text at the content edge, so no
+       half of a fourth line shows in the padding */
     .tb-asg-tile__preview {
       display: -webkit-box;
       margin: 0;
-      padding: var(--tb-space-3);
+      border: var(--tb-space-3) solid transparent;
       border-radius: 12px;
       background: var(--p-md-surface);
       font: var(--tb-type-body-m);
@@ -511,19 +517,6 @@ const FOLD_LINES = 3;
       block-size: 100%;
       background: var(--p-md-error);
     }
-
-    /* a phone: «Проверить N работ» sticks to the bottom of the page */
-    .tb-asg__bottom {
-      position: sticky;
-      inset-block-end: 0;
-      margin-block-start: var(--tb-space-4);
-      padding-block: var(--tb-space-3);
-      background: var(--p-md-surface);
-    }
-
-    :host ::ng-deep .tb-asg__bottom-button {
-      inline-size: 100%;
-    }
   `,
 })
 export class AssignmentPage {
@@ -539,6 +532,11 @@ export class AssignmentPage {
   private readonly fileSaver = inject(FileSaver);
   protected readonly materials = inject(MaterialOpener);
   protected readonly mobile = injectMobile();
+  private readonly size = injectWindowSize();
+  /** From expanded the title is one line with the actions on its right (sketch 4); narrower it wraps (18). */
+  protected readonly oneLine = computed(
+    () => this.size() !== 'compact' && this.size() !== 'medium',
+  );
   private readonly dates = new DatePipe(inject(LOCALE_ID));
   protected readonly busy = new Busy();
 
@@ -548,6 +546,8 @@ export class AssignmentPage {
   readonly single = input(false);
   /** The assignment changed (given to more students, deleted): the list beside it changes. */
   readonly changed = output();
+  /** «Проверить»: a work of this assignment opens, the queue is its works. */
+  readonly reviewWork = output<string>();
 
   protected readonly details = signal<AssignmentDetails | null>(null);
   /** The students of the assignment: «На доску» offers only their boards. */
@@ -669,8 +669,8 @@ export class AssignmentPage {
         : (this.dates.transform(value, 'dd.MM') ?? '');
   }
 
-  /** «Сдано сегодня, 09:12», «Принято вчера · оценка 4», «Отправлено на доработку 28.10». */
-  protected statusLine(task: TaskSummary): string {
+  /** «Сдано сегодня, 09:12», «Принято вчера · оценка 4», «Отправлено на доработку 28.10», «Просрочено на 3 дня». */
+  protected statusLine(task: TaskSummary, dueAt: string | null): string {
     if (task.status === 'ACCEPTED' && task.reviewedAt !== null) {
       const when = this.when(task.reviewedAt);
       return task.grade === null ? this.t.acceptedOn(when) : this.t.acceptedGrade(when, task.grade);
@@ -679,7 +679,9 @@ export class AssignmentPage {
       return this.t.returnedOn(this.dates.transform(task.reviewedAt, 'dd.MM') ?? '');
     }
     if (task.submittedAt === null) {
-      return this.t.notSubmitted;
+      return task.overdue && dueAt !== null
+        ? this.t.overdueBy(Math.max(1, this.daysAgo(dueAt)))
+        : this.t.notSubmitted;
     }
     const days = this.daysAgo(task.submittedAt);
     return days === 0
@@ -701,7 +703,7 @@ export class AssignmentPage {
   protected review(): void {
     const first = this.toReview()[0];
     if (first !== undefined) {
-      void this.router.navigate(['/teacher/homework/tasks', first.taskId]);
+      this.reviewWork.emit(first.taskId);
     }
   }
 

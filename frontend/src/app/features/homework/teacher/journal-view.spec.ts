@@ -88,8 +88,8 @@ describe('JournalView', () => {
     vi.useRealTimers();
   });
 
-  async function render(journal: Journal = WEEK) {
-    TestBed.configureTestingModule({ providers: testProviders(screenWidth(1200)) });
+  async function render(journal: Journal = WEEK, width = 1200) {
+    TestBed.configureTestingModule({ providers: testProviders(screenWidth(width)) });
     vi.spyOn(TestBed.inject(MessageService), 'add');
     const backend = TestBed.inject(HttpTestingController);
     const fixture = TestBed.createComponent(JournalView);
@@ -132,6 +132,14 @@ describe('JournalView', () => {
     expect(readableText(requireElement(host, '.tb-journal__total', HTMLElement))).toContain(
       '2 из 2',
     );
+  });
+
+  it('on medium: a cell is the icon and the grade, no total column', async () => {
+    const { host } = await render(WEEK, 700);
+
+    expect(cells(host).map((button) => readableText(button))).toEqual(['', '5', '', '']);
+    expect(cells(host)[1]?.getAttribute('aria-label')).toContain('Принято · 5');
+    expect(host.querySelector('.tb-journal__total')).toBeNull();
   });
 
   it('words every status', async () => {

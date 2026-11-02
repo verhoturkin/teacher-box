@@ -6,7 +6,7 @@ test.beforeEach(async ({ page }) => {
   await startSession(page, 'teacher', process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass');
 });
 
-test('assignment panes share width and validation keeps recipients aligned with deadline', async ({
+test('the AI pane keeps the fixed M3 width and validation keeps recipients aligned with deadline', async ({
   page,
 }) => {
   await page.route('**/api/teacher/ai/status', (route) =>
@@ -29,7 +29,9 @@ test('assignment panes share width and validation keeps recipients aligned with 
   const widths = await panes.evaluateAll((elements) =>
     elements.map((element) => element.getBoundingClientRect().width),
   );
-  expect(Math.abs(widths[0]! - widths[1]!)).toBeLessThanOrEqual(1);
+  // sketch 13: the editor takes the rest, the AI is a fixed pane of 412 dp at 1440
+  expect(Math.abs(widths[1]! - 412)).toBeLessThanOrEqual(1);
+  expect(widths[0]!).toBeGreaterThan(widths[1]!);
   await page.getByRole('button', { name: 'Выдать', exact: true }).click();
   await expect(page.getByText('Напишите текст задания')).toBeVisible();
   await page.getByRole('button', { name: 'ИИ-помощник', exact: true }).click();

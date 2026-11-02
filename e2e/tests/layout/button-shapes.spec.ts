@@ -74,8 +74,9 @@ test('a pressed connected group: outer corners 8 px, inner ones 4 px', async ({ 
   await expect(choices).toHaveCount(2);
   const first = choices.first();
   const last = choices.last();
-  expect(await corners(first)).toEqual(['20px', '20px', '20px', '20px']);
-  expect(await corners(last)).toEqual(['8px', '20px', '20px', '8px']);
+  // the checked choice rounds with the shape transition
+  await expect.poll(() => corners(first)).toEqual(['20px', '20px', '20px', '20px']);
+  await expect.poll(() => corners(last)).toEqual(['8px', '20px', '20px', '8px']);
 
   await pressAndHold(page, last);
   expect(await corners(last)).toEqual(['4px', '8px', '8px', '4px']);

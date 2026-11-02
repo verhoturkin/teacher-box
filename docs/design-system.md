@@ -349,13 +349,13 @@ for the active navigation item and checked states.
   group failed. ARIA combobox + listbox (`aria-activedescendant`); ↑ ↓, Enter, Esc. **Ctrl K / ⌘ K**
   focuses the bar. Compact: the top bar's search icon opens a **full-screen search view** with
   «back»; focus returns to the icon.
-- **Tabs** `tb-tabs` (**M3** primary fixed tabs, every tab bar): no container, 48 dp, Title Small,
+- **Tabs** `tb-tabs` (**M3** primary tabs, every tab bar): no container, 48 dp, Title Small,
   label primary when active, a 3 dp primary indicator with 3 dp rounded top corners as wide as the
-  label (`::after` of `tb-tab-label`), one 1 dp outline-variant divider under the bar; tabs share
-  the width equally (on a phone they keep their label width and scroll, unless the bar has the
-  modifier `tb-tabs--fixed`: two or three short labels that share the width on every width, as
-  the bell's «Входящие · Отправленные»). The tab is in the address
-  (`?tab=`), the default one left out.
+  label (`::after` of `tb-tab-label`), one 1 dp outline-variant divider under the bar; an optional
+  20 dp icon before the label. Tabs keep the width of their label from the start edge and scroll
+  (**M3** scrollable tabs, sketches 11, 21); `tb-tabs--fixed` — two or three short labels that
+  share the width (**M3** fixed tabs), as the bell's «Входящие · Отправленные» and the editor on a
+  phone. The tab is in the address (`?tab=`), the default one left out.
 
 ## 7. Panes and page anatomy
 
@@ -391,13 +391,15 @@ for the active navigation item and checked states.
   padding — the section title stands on the pane (Title Medium emphasized), its rows or blocks
   (`tb-list`, `tb-figures`) lie under it, 12 px apart; the list group's outer corner is 16 px. The
   one container left is the filled `tb-hero`. *Exception* `tb-section-card` (the assignment editor,
-  sketch Editor): a `surface-container-low` card with 20 dp corners (**M3** large-increased), 20 dp
-  inside and the title (Title Medium emphasized) 12 px under the top; the cards of a form stand
-  16 px apart (*ours*; the sketch has 14).
+  sketch Elements): an **M3** outlined card — `surface-container-lowest`, 1 dp outline-variant, 20 dp
+  corners (large-increased), 20 dp inside and the title (Title Medium emphasized) 12 px under the
+  top; the cards of a form stand 16 px apart (*ours*).
 - **Header** `tb-page-header`: «Назад» icon button on nested pages (tooltip = destination); h1; «?»
   help if the section has an article; a detail line; actions on the title line (56 px), the main one
   last. On a phone a section page hides its title (kept for screen readers; the top bar names the
   section) and «?»; nested pages keep «Назад» + title on one line; actions go under it, equal width.
+  A title the teacher types (the assignment editor, `tb-page-header--one-line`) stays on one line
+  cut with «…», the actions on its right at every width (a phone: «?» under ☰).
 - **Sections** — a titled block (`p-card` h2, Title Large; Title Medium emphasized on a pane);
   section actions tonal in the title row (`tb-card-title__actions`). A section holding the page's
   only list gets a hidden `h2.tb-sr-only`. `tb-fold-card` exists but no page uses it.
@@ -422,7 +424,11 @@ for the active navigation item and checked states.
 - **Answer panel** (student task, *ours*, M3 allows a docked surface for the page's main input): an
   outlined container (corner 16, outline-variant, `--tb-card`), «Мой ответ» title, a text field, the
   attachment rows, assist chips «Фото тетради» / «Файл» and the filled «Сдать» at the end. On compact it is
-  `position: sticky` at the bottom of the pane (`--p-md-surface-container`), the field shrinks to two rows.
+  the phone bottom action bar (below), the field shrinks to two rows.
+- **Phone bottom action bar** `.tb-bottom-actions` (sketch Elements; the compact assignment page and
+  the student answer panel): sticky at the bottom of the page, `surface-container-low`, 28 dp top
+  corners (the bottom sheet surface, **M3**), 12 / 16 px inside, 40 dp buttons; one button fills
+  the row (*ours*).
 - **Forms on a page** — buttons in `tb-form-actions` bottom right, full width on a phone; a form
   keeps a readable width (`tb-form--narrow`) unless it is a review or editor form.
 - **Toolbar above a list** `tb-toolbar`: search first, filters and period after; it wraps.
@@ -488,6 +494,12 @@ action — «Изменить» next to «Проверить N работ» (hom
   (8 px pressed, *ours*), trailing part 48 px with a 22 px chevron (**M3E** small); while its menu
   is open the trailing part is round and the chevron turns 180° on the standard fast spring. The
   arrow has only an `aria-label`, no tooltip (*ours*).
+- **Stepper** `p-inputnumber.tb-stepper` (the points of a question, sketch 28; *ours* — M3
+  publishes no stepper): «− N +» in one 40 dp pill with a 1 dp `outline`, 40 dp icon buttons, the
+  value Label Large 600; the field stays a spinbutton (↑ / ↓ change it).
+- **Drag handle** `.tb-drag-handle` (rows that reorder: quiz questions, options; *ours*): a 40 dp
+  icon button with `drag_indicator` that CDK drag-drop uses as the handle; ↑ / ↓ on it move the row
+  and keep the focus there, so dragging is never the only way.
 - **Icon buttons:** tooltip = accessible name, with row context («Отменить занятие: Анна, 14:00»);
   help «?» names the article («Справка: Портал»); menu buttons have `aria-haspopup` +
   `aria-expanded` (`tbAttributes`).
@@ -561,12 +573,14 @@ action — «Изменить» next to «Проверить N работ» (hom
   gap, inner corners 4 px, outer `--tb-list-outer` (§1; a single tile has it on all corners), height
   ≥ 56 px, padding 12 / 16 px. No custom row markup for data.
   - `tb-list__lead` — 40 px secondary-container circle: people `tb-avatar` (`@shared/ui/avatar`:
-    photo cut to a circle, otherwise initials; `size` for bigger), an icon for things. A list whose
+    photo cut to a circle, otherwise initials; `size`: only 1.5rem in a chip, 2rem in a dense journal row, 40 px by default in a list;
+    the account photo is a picture, not an avatar), an icon for things. A list whose
     icon only decorates takes `tb-list--no-phone-lead` (on a phone the icon goes); lists of people
     keep avatars; `tb-list--no-lead` has no icon at all.
   - `tb-list__text` — `tb-list__title` (Body Large) + `tb-list__supporting` (Body Medium,
-    on-surface-variant). The list panes of «Ученики» and «Задания» take `tb-list--clamp`: at most
-    two lines of each, cut with an ellipsis (**M3**: label and supporting text can be truncated,
+    on-surface-variant). The list panes of «Ученики» and «Задания» and the editor's «Материалы»
+    take `tb-list--clamp`: at most two lines of each, cut with an ellipsis (**M3**: label and
+    supporting text can be truncated,
     supporting text one to three lines; *ours*: two lines, the full text in the detail beside).
   - `tb-list__trail` — an amount (Title Medium, `tb-list__trail--amount`), a status or ≤ 3 actions;
     `tb-list__trail--icons` keeps a status and icon buttons on the right on a phone. Rows share
@@ -585,7 +599,8 @@ action — «Изменить» next to «Проверить N работ» (hom
 - **Tables** — `p-table styleClass="tb-cards"`: rows are the same tiles (no cell lines, 2 px gaps);
   on a phone each row becomes a card «column: value» (`data-label`); main column `tb-col-main`,
   amounts `tb-amount`; row typing `tbRowType`.
-- **Tags** `p-tag` — one shape, no wrapping, colour by §2.
+- **Tags** `p-tag` — one shape on every width: 24 dp, 8 dp corners, 12 / 600, no wrapping, colour
+  by §2.
 - Not data lists — wizard steps, help items, checklists, bot capabilities, files before upload —
   are plain text lists.
 - **Filter chips** `tb-filter-chips` (`@shared/ui/filter-chips`, **M3**: an alternative to segmented
@@ -615,7 +630,7 @@ action — «Изменить» next to «Проверить N работ» (hom
 - **Input chips** `tb-input-chip` (`@shared/ui/input-chip`, **M3** input chip: a chosen entity the user
   can remove): 32 dp, 8 dp corners, outline-variant border, a leading 24 dp `tb-avatar` or 18 dp icon
   (`<… lead>`), the label, a trailing 18 dp «×» button named «Убрать: <name>». With a dashed assist chip
-  at the end it is the «Кому» field of the quick assignment dialog: `tb-member-picker` `[bare]` keeps
+  at the end it is the «Кому» field of the assignment editor: `tb-member-picker` `[bare]` keeps
   the data and the panel (`open()`), the chips are the field (*ours*). `[readonly]="true"` drops the «×»
   (the students an assignment is already given to; *ours*).
 - **Section list** `tb-section-nav` (`@shared/ui/section-nav`, the contents of a long page, e.g. the
@@ -642,6 +657,7 @@ changes the container; content and markup are the same at every width. Every dia
 | `alert` | confirmations, one decision, ≤ 1 field (password, link, language) | basic dialog | basic dialog |
 | `form` | ≥ 2 fields, wizards, pickers | full-screen dialog | basic dialog |
 | `sheet` | an object and its actions (lesson, link code, backups) | modal bottom sheet | basic dialog |
+| `screen` | a focused task over the page (the student's test) | full-screen dialog | a pane in the frame: where the panes are, the rail and the top strip stay (sketch 23, *ours* as a dialog) |
 
 - **API:** `kind` (required); `width` `normal | wide`; `[(visible)]`, `headline`, `confirmLabel` /
   `confirmSeverity`, `cancelLabel` (default «Отмена», `null` = none), `pending`, `error`, `dirty`,
@@ -653,28 +669,28 @@ changes the container; content and markup are the same at every width. Every dia
 - **Basic dialog** (**M3**): 280–560 dp, 28 dp corners, 24 dp padding, 16 dp headline → body, 24 dp
   body → actions, 8 dp between buttons, surface-container-high, scrim; buttons at the trailing edge,
   the confirming one closest to it; with scrolling content the headline and buttons stay pinned.
-  *Ours:* `normal` 32 rem, `wide` 40 rem (= 560 dp), `xwide` 47.5 rem (a form with a text editor,
-  «Новое задание»), `split` 77.5 rem (a form with a pane beside it, «Новое задание» with the AI
-  pane), `alert` 32 rem (a confirmation ≤ 35 rem); never closer than 1 rem to the screen edge.
-  **Side pane** (*ours*, sketch `AiDraft`): `surface-container-low`, a 1 dp `outline-variant` divider,
-  24 dp padding, bleeding to the dialog's edge; below the large breakpoint it replaces the content
-  with an arrow back. **AI actions** («Написать с ИИ», «Сгенерировать», the «Черновик ИИ» badge) take
+  *Ours:* `normal` 32 rem, `wide` 40 rem (= 560 dp), `alert` 32 rem (a confirmation ≤ 35 rem);
+  never closer than 1 rem to the screen edge. **AI actions** («Написать с ИИ», «Сгенерировать», the «Черновик ИИ» badge) take
   the tertiary roles (M3: tertiary is for a contrasting accent): the filled ones are
   `on-tertiary-container` with `tertiary-container` text (the sketch's `#390035` on `#FFD7F3`; the
   theme has no `on-tertiary`, and `tertiary` itself is tuned as a text colour), the badge and the
   unpressed toggle `tertiary-container`. One filled primary action per
-  surface still holds: in the dialog it is «Выдать», so the draft's «Вставить в задание» is tonal
+  surface still holds: in the editor it is «Выдать», so the draft's «Вставить в задание» is tonal
   and «Ещё вариант» a text button; tertiary «Сгенерировать» is the pane's own action, not a second
-  primary one.
-- **Full-screen dialog** (`form` on compact only, **M3**): 56 dp header, 24 dp sides, 8 dp between
+  primary one. An AI action beside other actions («С ИИ», «Составить с ИИ») is a
+  tonal tertiary button `p-button.tb-button-ai` (`tertiary-container`); the action of a tertiary
+  note («Создать копию для правок») is the filled `p-button.tb-button-tertiary`.
+- **Full-screen dialog** (`form` and `screen` on compact, **M3**; from medium `screen` is a pane in
+  the frame — *ours*, sketch 23: the test is a task of its own the page waits behind;
+  `closeLabel` names «✕» when it says more than «Закрыть»): 56 dp header, 24 dp sides, 8 dp between
   elements; «✕» first and the only navigation, the headline (one line, truncated), the confirming
   button at the end with a clear verb («Создать», «Отправить», not «Готово»), never disabled for
   invalid fields. Field errors inline. *Ours (M3 has 0 dp corners and a text button):* 28 dp top
   corners and the notifications sheet's inset (8 px + `safe-area-inset-top`, transparent scrim, so
   the page shows above it); the confirming button is **filled**, small (40 dp). Under the rounded
-  corners the header is padded by inner = outer − padding: «✕» 8 px from the top and the start,
-  the confirming button 12 px from the top and the end, 16 px down to the content. No swipe to close
-  (a form may hold unsaved data): «✕», Esc and «Отменить изменения?».
+  corners the header is padded by inner = outer − padding: «✕» 8 px from the top and the start, the
+  confirming button 12 px from the top and the end, 16 px down to the content. No swipe to close (a
+  form may hold unsaved data): «✕», Esc and «Отменить изменения?».
 - **Bottom sheet** (`sheet` on compact only): modal, handle with a 48 dp target, 28 dp top corners,
   surface-container-low (**M3**), height by content up to 50 % of the screen, then scrolling
   (**M3**). *Ours:* compact only (**M3** allows medium); no swipe — Esc, the scrim and an action

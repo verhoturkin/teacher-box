@@ -345,6 +345,7 @@ export const ru = {
       'homework.quiz-tolerance-invalid': 'Допуск не может быть отрицательным',
       'homework.quiz-points-invalid': 'Баллы за вопрос — от 1 до 100',
       'homework.quiz-duplicate-id': 'В тесте повторяется идентификатор вопроса или варианта',
+      'homework.quiz-incomplete': 'Задание не выдано: в тесте есть незаконченные вопросы',
       'homework.quiz-attempts-invalid': 'Попыток может быть от 1 до 50 или без ограничений',
       'video.link-invalid': 'Ссылка на видео должна начинаться с http:// или https://',
       'video.too-many': 'В задании — не больше 5 видео',

@@ -42,7 +42,6 @@ import { Pane, Panes } from '@shared/ui/panes';
 import { RowType } from '@shared/ui/row-type.directive';
 import { SearchField } from '@shared/ui/search-field';
 import { Segment, SegmentGroup } from '@shared/ui/segment-group';
-import { AssignmentCreateDialog } from './assignment-create-dialog';
 import { AssignmentPage } from './assignment-page';
 import { DeadlineKey, groupByDeadline } from './deadline-groups';
 import { JournalView } from './journal-view';
@@ -51,7 +50,7 @@ import { TaskReviewPage } from './task-review-page';
 import { Material, materialLabel, materialsOf } from '../ui/materials';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentSummary, ReviewQueueItem, TaskDetails } from '../data-access/homework.models';
-import { assignmentProgress, isDone } from '../homework-labels';
+import { assignmentProgress, handedIn, isDone } from '../homework-labels';
 import { T } from '../i18n/texts';
 
 /** Names a row shows in full; more of them — the first one and «и ещё N» (one row keeps its height). */
@@ -63,7 +62,8 @@ const DONE_PAGE = 20;
 /** How many works of the review strip show their own card; the rest go to «Проверить все подряд». */
 const SHOWN_WORKS = 3;
 
-const DAY = 24 * 60 * 60 * 1000;
+/** Medium shows two cards in the strip (sketch 17). */
+const SHOWN_WORKS_MEDIUM = 2;
 
 /** One student or one group in the «Кому» select: `student:<id>` or `group:<id>`. */
 interface WhomOption {
@@ -104,7 +104,6 @@ interface Line {
   selector: 'tb-assignments-page',
   imports: [
     NgTemplateOutlet,
-    AssignmentCreateDialog,
     AssignmentPage,
     Avatar,
     Button,
@@ -138,22 +137,25 @@ interface Line {
           <tb-task-review-page
             [taskId]="id"
             [single]="true"
+            [back]="origin()"
             [sheet]="sheetOpen() || phoneReview()"
             [toolbar]="phoneReview()"
             [update]="decided()"
+            [place]="place()"
+            [total]="line().length"
+            [previous]="previous()"
+            [next]="next()"
             (loaded)="current.set($event)"
-            (changed)="refresh()"
+            (opened)="openWork($event)"
+            (reviewed)="decide($event)"
           />
         </tb-pane>
         @if (sheetOpen() && reviewing(); as task) {
           <tb-pane kind="sheet" [label]="t.reviewSheet">
             <tb-review-sheet
               [task]="task"
-              [place]="place()"
-              [total]="queue().length"
               [next]="next()"
               (reviewed)="decide($event)"
-              (opened)="openWork($event)"
               (closed)="closeReview()"
             />
           </tb-pane>
@@ -164,18 +166,20 @@ interface Line {
         <tb-review-sheet
           [compact]="true"
           [task]="task"
-          [place]="place()"
-          [total]="queue().length"
           [next]="next()"
           (reviewed)="decide($event)"
-          (opened)="openWork($event)"
           (closed)="closeReview()"
         />
       }
     } @else if (assignmentId(); as id) {
       <tb-panes>
         <tb-pane [label]="t.title">
-          <tb-assignment-page [assignmentId]="id" [single]="true" (changed)="refresh()" />
+          <tb-assignment-page
+            [assignmentId]="id"
+            [single]="true"
+            (changed)="refresh()"
+            (reviewWork)="startReview($event, id)"
+          />
         </tb-pane>
       </tb-panes>
     } @else {
@@ -234,7 +238,7 @@ interface Line {
           @if (view() === 'journal') {
             <tb-journal-view
               [who]="whomId()"
-              (review)="openWork($event)"
+              (review)="startReview($event)"
               (openAssignment)="openAssignment($event)"
             >
               <div whom>
@@ -294,7 +298,7 @@ interface Line {
                             [label]="t.check"
                             severity="secondary"
                             [ariaLabel]="t.reviewOf(work.studentName, work.title)"
-                            (onClick)="openWork(work.taskId)"
+                            (onClick)="startReview(work.taskId)"
                           />
                         </div>
                       </li>
@@ -311,7 +315,7 @@ interface Line {
 
               @if (lines().length === 0) {
                 <ng-container [ngTemplateOutlet]="empty" />
-              } @else if (mobile()) {
+              } @else if (mobile() || medium()) {
                 @for (section of sections(); track section.key) {
                   @if (section.title; as title) {
                     <h2
@@ -324,6 +328,17 @@ interface Line {
                   <ul class="tb-list tb-list--clamp" [attr.aria-label]="section.title ?? t.title">
                     @for (assignment of section.rows; track assignment.id) {
                       <li>
+                        @if (medium()) {
+                          <span class="tb-list__lead" aria-hidden="true"
+                            ><i
+                              [class]="
+                                assignment.boardId === null
+                                  ? 'tb-i tb-i-assignment'
+                                  : 'tb-i tb-i-co_present'
+                              "
+                            ></i
+                          ></span>
+                        }
                         <div class="tb-list__text">
                           <a
                             class="tb-list__title tb-list__link"
@@ -331,12 +346,22 @@ interface Line {
                             >{{ assignment.title }}</a
                           >
                           <span class="tb-list__supporting">{{ details(assignment) }}</span>
-                          <ng-container
-                            [ngTemplateOutlet]="handed"
-                            [ngTemplateOutletContext]="{ assignment }"
-                          />
+                          @if (!medium()) {
+                            <ng-container
+                              [ngTemplateOutlet]="handed"
+                              [ngTemplateOutletContext]="{ assignment }"
+                            />
+                          }
                         </div>
                         <div class="tb-list__trail tb-list__trail--icons tb-hw__row-end">
+                          @if (medium()) {
+                            <span class="tb-hw__tile-handed">
+                              <ng-container
+                                [ngTemplateOutlet]="handed"
+                                [ngTemplateOutletContext]="{ assignment }"
+                              />
+                            </span>
+                          }
                           @if (progress(assignment); as badge) {
                             <p-tag [value]="badge.label" [severity]="badge.severity" />
                           }
@@ -415,7 +440,9 @@ interface Line {
                             {{ whomOf(assignment) }}
                           </span>
                         </td>
-                        <td [class.tb-error]="isOverdue(assignment)">{{ due(assignment) }}</td>
+                        <td class="tb-hw__due" [class.tb-error]="isOverdue(assignment)">
+                          {{ due(assignment) }}
+                        </td>
                         <td>
                           <ng-container
                             [ngTemplateOutlet]="handed"
@@ -545,7 +572,6 @@ interface Line {
         <tb-empty-state icon="tb-i-assignment" [title]="t.noActiveTitle" [hint]="t.noActiveHint" />
       }
     </ng-template>
-    <tb-assignment-create-dialog [(visible)]="createVisible" (saved)="refresh()" />
   `,
   styles: `
     .tb-hw__views {
@@ -633,12 +659,14 @@ interface Line {
       margin-block-end: var(--tb-space-5);
     }
 
+    /* the label and «Проверить все подряд» stay one line each, a phone too (sketch 5) */
     .tb-hw__review-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: var(--tb-space-3);
       margin-block-end: var(--tb-space-2);
+      white-space: nowrap;
     }
 
     /* the cards lie in a row; on a phone the row scrolls sideways */
@@ -693,6 +721,14 @@ interface Line {
     .tb-hw__card-head .tb-list__text {
       flex: 1;
       min-inline-size: 0;
+    }
+
+    /* sketch 1: the name and the title are one line each, cut with «…» however long */
+    .tb-hw__card-head .tb-list__title,
+    .tb-hw__card-task {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .tb-hw__card-task {
@@ -778,6 +814,11 @@ interface Line {
       display: flex;
       align-items: center;
       gap: var(--tb-space-3);
+      white-space: nowrap;
+    }
+
+    .tb-hw__due {
+      white-space: nowrap;
     }
 
     /* accepted — the portal colour, handed in and waiting for review — tertiary */
@@ -803,6 +844,22 @@ interface Line {
 
     .tb-hw__bar > .tb-hw__bar-awaiting {
       background: var(--p-md-tertiary);
+    }
+
+    /* a tile of medium: the bar is back (the table hides it below expanded), the count under it */
+    .tb-hw__tile-handed .tb-hw__handed {
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--tb-space-1);
+    }
+
+    .tb-hw__tile-handed .tb-hw__bar {
+      display: flex;
+      inline-size: 6rem;
+    }
+
+    .tb-hw__tile-handed .tb-muted {
+      font: var(--tb-type-body-s);
     }
 
     /* the badge and «⋮» side by side */
@@ -848,6 +905,8 @@ export class AssignmentsPage implements OnInit {
   private readonly dates = new DatePipe(inject(LOCALE_ID));
 
   private readonly size = injectWindowSize();
+  /** Medium (600–839): the list is tiles with the bar, not the table. */
+  protected readonly medium = computed(() => this.size() === 'medium');
   /** The work the page has read: the side sheet reviews it. */
   protected readonly current = signal<TaskDetails | null>(null);
   /** The work as a decision of the sheet left it: the page shows it. */
@@ -861,9 +920,9 @@ export class AssignmentsPage implements OnInit {
       ? task
       : null;
   });
-  /** The review is the second pane of the extra-large window (spec §9); the rail gives it room. */
+  /** From large the review is a side sheet beside the work (sketch 14); the rail gives it room. */
   protected readonly sheetOpen = computed(
-    () => this.size() === 'extra-large' && this.reviewing() !== null,
+    () => (this.size() === 'large' || this.size() === 'extra-large') && this.reviewing() !== null,
   );
   /** The work of the review on a phone (compact): the floating toolbar, no bottom bar (spec §9). */
   protected readonly phoneReview = computed(
@@ -871,11 +930,31 @@ export class AssignmentsPage implements OnInit {
   );
   /** «1 из 3»: the place of the open work in the queue (0: it is not in it). */
   protected readonly place = computed(
-    () => this.queue().findIndex((work) => work.taskId === this.taskId()) + 1,
+    () => this.line().findIndex((work) => work.taskId === this.taskId()) + 1,
   );
+  /** The assignment whose works the review goes through; `null` — all works waiting. */
+  protected readonly scope = signal<string | null>(null);
+  /** The queue of the review: the chosen assignment's works or all of them. */
+  protected readonly line = computed(() => {
+    const scope = this.scope();
+    return scope === null
+      ? this.queue()
+      : this.queue().filter((work) => work.assignmentId === scope);
+  });
+  /** Where «Назад» and the end of the queue lead: the assignment it started from, else the list. */
+  protected readonly origin = computed(() => {
+    const scope = this.scope();
+    return scope === null ? ['/teacher/homework'] : ['/teacher/homework', scope];
+  });
   /** The work after the open one (the first one when it is the last); none when it is the only one. */
+  /** The work before the open one in the queue. */
+  protected readonly previous = computed(() => {
+    const queue = this.line();
+    const index = queue.findIndex((work) => work.taskId === this.taskId());
+    return index > 0 ? (queue[index - 1]?.taskId ?? null) : null;
+  });
   protected readonly next = computed<NextWork | null>(() => {
-    const queue = this.queue();
+    const queue = this.line();
     const index = queue.findIndex((work) => work.taskId === this.taskId());
     const work = queue[index + 1] ?? queue.find((other) => other.taskId !== this.taskId());
     return work === undefined ? null : { taskId: work.taskId, studentName: work.studentName };
@@ -994,7 +1073,9 @@ export class AssignmentsPage implements OnInit {
           work.studentName.toLocaleLowerCase().includes(query)),
     );
   });
-  protected readonly shownWorks = computed(() => this.works().slice(0, SHOWN_WORKS));
+  protected readonly shownWorks = computed(() =>
+    this.works().slice(0, this.medium() ? SHOWN_WORKS_MEDIUM : SHOWN_WORKS),
+  );
   /** Works somebody still has to hand in (or hand in again): «Ещё N работ ждут сдачи». */
   protected readonly waitingCount = computed(() =>
     this.found().reduce((sum, assignment) => sum + assignment.assigned + assignment.returned, 0),
@@ -1094,9 +1175,14 @@ export class AssignmentsPage implements OnInit {
     this.whom.valueChanges.pipe(takeUntilDestroyed()).subscribe((value) => {
       writeQuery(this.router, this.route, { who: value });
     });
-    openOnCreate('assignment', () => {
-      this.openCreate();
-    });
+    // the editor takes the place of `?create=` in the history
+    openOnCreate(
+      'assignment',
+      () => {
+        this.openCreate(true);
+      },
+      false,
+    );
   }
 
   ngOnInit(): void {
@@ -1136,6 +1222,12 @@ export class AssignmentsPage implements OnInit {
     void this.router.navigate(['/teacher/homework', id]);
   }
 
+  /** A review starts from a work: the queue is all works waiting, or the works of one assignment. */
+  protected startReview(taskId: string, assignmentId: string | null = null): void {
+    this.scope.set(assignmentId);
+    this.openWork(taskId);
+  }
+
   protected openWork(taskId: string): void {
     void this.router.navigate(['/teacher/homework/tasks', taskId]);
   }
@@ -1144,12 +1236,12 @@ export class AssignmentsPage implements OnInit {
   protected reviewAll(): void {
     const first = this.works()[0];
     if (first !== undefined) {
-      this.openWork(first.taskId);
+      this.startReview(first.taskId);
     }
   }
 
   protected closeReview(): void {
-    void this.router.navigate(['/teacher/homework']);
+    void this.router.navigate(this.origin());
   }
 
   /** A decision: the next work of the queue opens; with none left (or the work was not in the queue) the list stays. */
@@ -1161,6 +1253,7 @@ export class AssignmentsPage implements OnInit {
       this.openWork(next.taskId);
     } else if (this.place() > 0) {
       this.closeReview();
+      this.snackbar.success(T.review.allDone);
     }
   }
 
@@ -1178,10 +1271,9 @@ export class AssignmentsPage implements OnInit {
     });
   }
 
-  protected readonly createVisible = signal(false);
-
-  protected openCreate(): void {
-    this.createVisible.set(true);
+  /** «Новое задание»: the editor of a new assignment (one creation form, 352.6). */
+  protected openCreate(replaceUrl = false): void {
+    void this.router.navigate(['/teacher/homework/new'], { replaceUrl });
   }
 
   /** A work was reviewed or an assignment changed: reads the lists again without the loading state. */
@@ -1205,21 +1297,8 @@ export class AssignmentsPage implements OnInit {
       });
   }
 
-  /** «сдано сегодня, 09:12», «сдано вчера, 22:40», «сдано 05.09 10:00». */
   protected handedIn(work: ReviewQueueItem): string {
-    if (work.submittedAt === null) {
-      return '';
-    }
-    const at = new Date(work.submittedAt);
-    const midnight = (moment: Date): number =>
-      new Date(moment.getFullYear(), moment.getMonth(), moment.getDate()).getTime();
-    const days = Math.round((midnight(new Date(this.now())) - midnight(at)) / DAY);
-    const time = this.dates.transform(at, 'HH:mm') ?? '';
-    return days === 0
-      ? this.t.handedToday(time)
-      : days === 1
-        ? this.t.handedYesterday(time)
-        : this.t.handedOn(this.dates.transform(at, 'dd.MM HH:mm') ?? '');
+    return work.submittedAt === null ? '' : handedIn(work.submittedAt, this.now(), this.dates);
   }
 
   /** Handed in after the due date. */

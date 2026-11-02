@@ -837,7 +837,7 @@ export class HomeworkAiPanel implements OnInit {
   readonly questionCount = input(0);
   /** A student started the quiz: its questions cannot change. */
   readonly quizLocked = input(false);
-  /** The pane of the quick dialog (sketch «Написать с ИИ») instead of the editor's card. */
+  /** A pane of its own beside the editor (or in its drawer) instead of a card. */
   readonly pane = input(false);
   /** «Источник»: the host adds a source (a textbook) to the assignment. */
   readonly sourceAdd = output();

@@ -20,77 +20,94 @@ interface Row {
 }
 
 /**
- * Teacher: the quiz of a work (ADR-0052) — «Тест: 7 из 10» over the answers of the best attempt, the wrong ones
- * first, each with the key and a button that changes the verdict (the score and the suggested grade follow).
+ * Teacher: the quiz of a work (ADR-0052, sketch 14) — a tonal block «Тест · 7 из 10 · лучшая из 2 попыток»
+ * with a row per wrong answer (the number and the question, «ответ: ~~x~~ · ключ: y», a tonal «Засчитать»);
+ * the right ones open under «Показать верные (N)». A verdict changes the score and the suggested grade.
  */
 @Component({
   selector: 'tb-quiz-review',
   imports: [Button, MarkdownView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section class="tb-qr">
-      <h2 class="tb-qr__label">
-        {{ quiz().best ? t.title(quiz().best?.scorePoints ?? 0, quiz().maxPoints) : t.noAttempt }}
-      </h2>
-      @if (quiz().best) {
-        <p class="tb-qr__hint">{{ t.attempts(quiz().attemptsUsed) }}</p>
-      }
-      @for (row of rows(); track row.result.question.id) {
-        <article class="tb-qr-card" [class.tb-qr-card--wrong]="!row.result.correct">
-          <header class="tb-qr-card__head">
-            <h3 class="tb-qr-card__title">{{ t.question(row.number) }}</h3>
-            <span class="tb-qr-card__verdict">
-              <i
-                class="tb-i"
-                aria-hidden="true"
-                [class.tb-i-check]="row.result.correct"
-                [class.tb-i-close]="!row.result.correct"
-              ></i>
-              {{ row.result.correct ? t.right : t.wrong }} ·
-              {{ t.points(row.result.points, row.result.question.points) }}
+    <section class="tb-qr" [attr.aria-label]="heading()">
+      <div class="tb-qr__head">
+        <h2 class="tb-qr__label">{{ heading() }}</h2>
+        @if (quiz().best) {
+          <span class="tb-qr__hint">{{ t.attempts(quiz().attemptsUsed) }}</span>
+        }
+      </div>
+      @for (row of shown(); track row.result.question.id) {
+        <article class="tb-qr-row">
+          <i
+            class="tb-i tb-qr-row__icon"
+            aria-hidden="true"
+            [class.tb-i-cancel]="!row.result.correct"
+            [class.tb-i-check_circle]="row.result.correct"
+            [class.tb-qr-row__icon--wrong]="!row.result.correct"
+          ></i>
+          <div class="tb-qr-row__text">
+            <h3 class="tb-qr-row__question">
+              <span class="tb-sr-only">{{ row.result.correct ? t.right : t.wrong }}:</span>
+              <b>№{{ row.number }}</b> <tb-markdown [text]="row.result.question.text" />
+            </h3>
+            <div class="tb-qr-row__answer">
+              {{ t.answerShort }}:
+              @if (mine(row.result).join('; '); as answer) {
+                @if (row.result.correct) {
+                  {{ answer }}
+                } @else {
+                  <s>{{ answer }}</s>
+                }
+              } @else {
+                {{ t.noAnswer }}
+              }
+              @if (!row.result.correct) {
+                · {{ t.keyShort }}: <b class="tb-qr-row__key">{{ key(row.result).join('; ') }}</b>
+              }
               @if (row.result.overridden) {
                 · {{ t.overridden }}
               }
-            </span>
-          </header>
-          <tb-markdown [text]="row.result.question.text" />
-          <div>
-            <div class="tb-qr__field-label">{{ t.studentAnswer }}</div>
-            @for (line of mine(row.result); track $index) {
-              <div>{{ line }}</div>
-            } @empty {
-              <div class="tb-qr__muted">{{ t.noAnswer }}</div>
-            }
-          </div>
-          @if (!row.result.correct) {
-            <div>
-              <div class="tb-qr__field-label">{{ t.key }}</div>
-              @for (line of key(row.result); track $index) {
-                <div>{{ line }}</div>
-              }
             </div>
-          }
-          <div>
-            <p-button
-              [label]="row.result.correct ? t.markWrong : t.markRight"
-              [icon]="row.result.correct ? 'tb-i tb-i-close' : 'tb-i tb-i-check'"
-              severity="secondary"
-              [loading]="pending() === row.result.question.id"
-              (onClick)="override(row.result)"
-            />
           </div>
+          <p-button
+            [label]="row.result.correct ? t.markWrong : t.markRight"
+            severity="secondary"
+            [loading]="pending() === row.result.question.id"
+            (onClick)="override(row.result)"
+          />
         </article>
+      }
+      @if (rightCount() > 0) {
+        <p-button
+          class="tb-qr__toggle"
+          [label]="showRight() ? t.hideRight : t.showRight(rightCount())"
+          [text]="true"
+          [ariaExpanded]="showRight()"
+          (onClick)="showRight.set(!showRight())"
+        />
       }
     </section>
   `,
   styles: `
+    /* a tonal block on the pane (sketch 14: surface container, 20 dp corners, 16 dp padding) */
     .tb-qr {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
+      display: flex;
+      flex-direction: column;
       gap: var(--tb-space-3);
+      padding: var(--tb-space-4);
+      border-radius: var(--tb-shape-lg-plus);
+      background: var(--p-md-surface-container);
+    }
+
+    .tb-qr__head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: var(--tb-space-2);
     }
 
     .tb-qr__label {
+      flex: 1;
       margin: 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
@@ -99,51 +116,61 @@ interface Row {
     }
 
     .tb-qr__hint {
-      margin: 0;
       color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-body-m);
+      font: var(--tb-type-body-s);
     }
 
-    .tb-qr-card {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
+    /* a row: the pane's surface inside the block (12 dp corners) */
+    .tb-qr-row {
+      display: flex;
+      align-items: flex-start;
       gap: var(--tb-space-3);
-      padding: var(--tb-space-4);
-      border-radius: var(--tb-shape-xs);
-      background: var(--tb-list-item);
+      padding: var(--tb-space-3);
+      border-radius: var(--tb-shape-md);
+      background: var(--p-md-surface);
+      font: var(--tb-type-body-m);
       overflow-wrap: anywhere;
     }
 
-    .tb-qr-card--wrong {
-      outline: 1px solid var(--p-md-error);
+    .tb-qr-row__icon {
+      color: var(--p-md-primary);
     }
 
-    .tb-qr-card__head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: var(--tb-space-2);
+    .tb-qr-row__icon--wrong {
+      color: var(--p-md-error);
     }
 
-    .tb-qr-card__title {
+    .tb-qr-row__text {
+      flex: 1;
+      min-inline-size: 0;
+    }
+
+    .tb-qr-row__question {
       margin: 0;
-      font: var(--p-md-title-medium, inherit);
+      font: inherit;
     }
 
-    .tb-qr-card__verdict {
-      display: inline-flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: var(--tb-space-1);
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-label-m);
+    /* «№3 She has ___ three letters» on one line: the Markdown blocks of the question flow inline */
+    .tb-qr-row__question tb-markdown,
+    .tb-qr-row__question ::ng-deep :is(div, p) {
+      display: inline;
+      margin: 0;
     }
 
-    .tb-qr__field-label,
-    .tb-qr__muted {
+    .tb-qr-row__question b {
+      margin-inline-end: 0.25em;
+    }
+
+    .tb-qr-row__answer {
       color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-label-m);
+    }
+
+    .tb-qr-row__key {
+      color: var(--p-md-on-surface);
+    }
+
+    .tb-qr__toggle {
+      align-self: flex-start;
     }
   `,
 })
@@ -156,12 +183,25 @@ export class QuizReviewBlock {
   /** The verdict was changed: the work as the server returned it. */
   readonly changed = output<TaskDetails>();
   protected readonly pending = signal<string | null>(null);
+  /** «Показать верные»: the right answers open under the wrong ones. */
+  protected readonly showRight = signal(false);
+
+  protected readonly heading = computed(() => {
+    const quiz = this.quiz();
+    return quiz.best ? this.t.title(quiz.best.scorePoints ?? 0, quiz.maxPoints) : this.t.noAttempt;
+  });
 
   /** Wrong first, then the teacher's order. */
   protected readonly rows = computed<Row[]>(() =>
     this.quiz()
       .results.map((result, index) => ({ number: index + 1, result }))
       .sort((a, b) => Number(a.result.correct) - Number(b.result.correct)),
+  );
+  protected readonly rightCount = computed(
+    () => this.rows().filter((row) => row.result.correct).length,
+  );
+  protected readonly shown = computed(() =>
+    this.showRight() ? this.rows() : this.rows().filter((row) => !row.result.correct),
   );
 
   protected mine(result: ReviewResult): string[] {

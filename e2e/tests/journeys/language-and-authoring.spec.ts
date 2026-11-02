@@ -38,7 +38,8 @@ test('the interface speaks English and goes back to Russian', async ({ page }) =
   const createMenu = page.locator('tb-create-menu');
   await createMenu.getByRole('button', { name: 'Create', exact: true }).click();
   await createMenu.getByRole('link', { name: 'Assignment', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: 'New assignment' })).toBeVisible();
+  await expect(page).toHaveURL(/\/teacher\/homework\/new$/);
+  await expect(page.getByRole('button', { name: 'Assign', exact: true })).toBeVisible();
 
   await page.goto('/teacher/help/homework');
   await expect(page.locator('.tb-help__title')).toHaveText('Homework');

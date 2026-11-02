@@ -68,24 +68,51 @@ describe('quiz in the task review', () => {
     const backend = TestBed.inject(HttpTestingController);
     const fixture = TestBed.createComponent(TaskReviewPage);
     fixture.componentRef.setInput('taskId', 't-1');
-    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: false }));
     await fixture.whenStable();
     backend.expectOne('/api/teacher/homework/tasks/t-1').flush(taskDetails({ quiz: review }));
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: false }));
     await fixture.whenStable();
     return { backend, fixture, host: hostElement(fixture) };
   }
 
-  it('shows the score, the wrong answers first with the key, and suggests the grade', async () => {
+  /** A grade chip of the review form by its exact label. */
+  function chip(host: HTMLElement, label: string): HTMLButtonElement {
+    const found = [...host.querySelectorAll<HTMLButtonElement>('.tb-filter-chip')].find(
+      (button) => button.textContent.trim() === label,
+    );
+    if (found === undefined) {
+      throw new Error(`Chip "${label}" not found`);
+    }
+    return found;
+  }
+
+  /** The grade chosen in the review form. */
+  function grade(host: HTMLElement): string | undefined {
+    return host.querySelector('.tb-filter-chip--selected')?.textContent.trim();
+  }
+
+  it('shows the score, the wrong answers with the key, the right ones on demand, and suggests the grade', async () => {
     const { fixture, host } = await render(quiz([result({}), WRONG]));
 
-    expect(host.querySelector('.tb-qr__label')?.textContent.trim()).toBe('Тест: 1 из 2');
-    const titles = [...host.querySelectorAll('.tb-qr-card__title')].map((h) => h.textContent);
-    expect(titles).toEqual(['Вопрос 2', 'Вопрос 1']);
-    const first = readableText(host.querySelector('.tb-qr-card')!);
-    expect(first).toContain('Неверно · 0 из 1 б.');
-    expect(first).toContain('Ответ ученика 5');
-    expect(first).toContain('Верный ответ 4 ± 0.5');
-    expect(fixture.componentInstance.form.controls.grade.value).toBe('1 из 2');
+    expect(host.querySelector('.tb-qr__label')?.textContent.trim()).toBe('Тест · 1 из 2');
+    expect(readableText(host.querySelector('.tb-qr__head')!)).toBe(
+      'Тест · 1 из 2 лучшая из 2 попыток',
+    );
+    const rows = () => [...host.querySelectorAll('.tb-qr-row')].map((row) => readableText(row));
+    expect(rows()).toHaveLength(1);
+    expect(rows()[0]).toContain('Неверно: №2 Число?');
+    expect(rows()[0]).toContain('ответ: 5 · ключ: 4 ± 0.5');
+    expect(grade(host)).toBe('1 из 2');
+
+    buttonByText(host, 'Показать верные (1)').click();
+    await fixture.whenStable();
+    expect(rows()).toHaveLength(2);
+    expect(rows()[1]).toContain('Верно: №1 Столица?');
+    expect(rows()[1]).toContain('Не засчитывать');
+    buttonByText(host, 'Скрыть верные').click();
+    await fixture.whenStable();
+    expect(rows()).toHaveLength(1);
   });
 
   it('says so when nothing is submitted and shows no block without questions', async () => {
@@ -94,13 +121,13 @@ describe('quiz in the task review', () => {
     expect(host.querySelector('.tb-qr__label')?.textContent.trim()).toBe(
       'Тест: ученик ещё не сдал',
     );
-    expect(host.querySelector('.tb-qr-card')).toBeNull();
+    expect(host.querySelector('.tb-qr-row')).toBeNull();
   });
 
-  it('shows a blank answer and changes a verdict; the grade follows unless typed', async () => {
+  it('shows a blank answer and changes a verdict; the grade follows unless chosen', async () => {
     const blank = { ...WRONG, answer: null };
     const { backend, fixture, host } = await render(quiz([result({}), blank]));
-    expect(readableText(host.querySelector('.tb-qr-card')!)).toContain('нет ответа');
+    expect(readableText(host.querySelector('.tb-qr-row')!)).toContain('ответ: нет ответа');
 
     buttonByText(host, 'Засчитать').click();
     const request = backend.expectOne('/api/teacher/homework/tasks/t-1/quiz/answers/q-2');
@@ -115,16 +142,19 @@ describe('quiz in the task review', () => {
     );
     await fixture.whenStable();
 
+    buttonByText(host, 'Показать верные (2)').click();
+    await fixture.whenStable();
     expect(host.textContent).toContain('вы изменили');
-    expect(fixture.componentInstance.form.controls.grade.value).toBe('2 из 2');
+    expect(grade(host)).toBe('2 из 2');
 
-    fixture.componentInstance.form.controls.grade.setValue('5');
+    chip(host, '5').click();
+    await fixture.whenStable();
     buttonByText(host, 'Не засчитывать').click();
     backend
       .expectOne('/api/teacher/homework/tasks/t-1/quiz/answers/q-1')
       .flush(taskDetails({ quiz: quiz([], '1 из 2') }));
     await fixture.whenStable();
-    expect(fixture.componentInstance.form.controls.grade.value).toBe('5');
+    expect(grade(host)).toBe('5');
   });
 
   it('keeps the block when the override fails', async () => {
@@ -134,7 +164,7 @@ describe('quiz in the task review', () => {
       .expectOne('/api/teacher/homework/tasks/t-1/quiz/answers/q-2')
       .flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
-    expect(host.querySelectorAll('.tb-qr-card')).toHaveLength(1);
+    expect(host.querySelectorAll('.tb-qr-row')).toHaveLength(1);
   });
 });
 

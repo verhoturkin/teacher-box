@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.json.JsonContent;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
@@ -102,18 +103,65 @@ class AssignmentQuizIntegrationTests {
     }
 
     @Test
+    void draftKeepsIncompleteQuestionsAndIssuingNamesTheBrokenOnes() {
+        UUID student = directory.addStudent("Ира");
+        String broken = "[{\"type\":\"SHORT_TEXT\",\"text\":\"Готов\",\"accepted\":[\"a\"]},"
+                + "{\"type\":\"SINGLE_CHOICE\",\"text\":\"\",\"options\":[{\"text\":\"\"}]},"
+                + "{\"type\":\"NUMBER\",\"text\":\"Q\"}]";
+        MvcTestResult draft = post("/api/teacher/homework/assignments",
+                "{\"title\":\"Черновик\",\"questions\":" + broken + "}");
+        assertThat(draft).hasStatus(HttpStatus.CREATED).bodyJson().satisfies(json -> {
+            assertThat(json).extractingPath("$.questions").asArray().hasSize(3);
+            assertThat(json).extractingPath("$.questions[1].text").isEqualTo("");
+            assertThat(json).extractingPath("$.questions[1].options[0].text").isEqualTo("");
+            assertThat(json).extractingPath("$.questions[2].value").isNull();
+        });
+        String id = JsonPath.read(AssignmentIntegrationTests.body(draft), "$.id");
+        // Saving the draft again keeps them too.
+        assertThat(put(id, "{\"title\":\"Черновик\",\"version\":0,\"questions\":" + broken + "}")).hasStatusOk();
+
+        assertThat(mvc.post().uri("/api/teacher/homework/assignments/" + id + "/students").with(teacher())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"studentIds\":[\"" + student + "\"]}"))
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT).bodyJson().satisfies(this::secondAndThirdBroken);
+        assertThat(get(id)).bodyJson().extractingPath("$.tasks").asArray().isEmpty();
+
+        // Created and given at once: the same answer, nothing is saved.
+        assertThat(post("/api/teacher/homework/assignments", "{\"title\":\"Сразу\",\"studentIds\":[\"" + student
+                + "\"],\"questions\":" + broken + "}")).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+                .bodyJson().satisfies(this::secondAndThirdBroken);
+
+        // Finished questions give it out; a given assignment cannot take broken ones back.
+        String fixed = "[{\"type\":\"SHORT_TEXT\",\"text\":\"Готов\",\"accepted\":[\"a\"]}]";
+        assertThat(put(id, "{\"title\":\"Черновик\",\"version\":1,\"questions\":" + fixed + "}")).hasStatusOk();
+        assertThat(mvc.post().uri("/api/teacher/homework/assignments/" + id + "/students").with(teacher())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"studentIds\":[\"" + student + "\"]}"))
+                .hasStatusOk();
+        assertThat(put(id, "{\"title\":\"Черновик\",\"version\":2,\"questions\":" + broken + "}"))
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT).bodyJson().satisfies(this::secondAndThirdBroken);
+    }
+
+    private void secondAndThirdBroken(JsonContent json) {
+        assertThat(json).extractingPath("$.code").isEqualTo("homework.quiz-incomplete");
+        assertThat(json).extractingPath("$.questions[*].number").asArray().containsExactly(2, 3);
+        assertThat(json).extractingPath("$.questions[*].code").asArray()
+                .containsExactly("homework.quiz-text-invalid", "homework.quiz-value-missing");
+    }
+
+    @Test
     void rejectsInvalidQuestionsWithCodes() {
-        expect("[{\"type\":\"SINGLE_CHOICE\",\"text\":\"\",\"options\":[{\"text\":\"a\"},{\"text\":\"b\"}],"
+        expectBroken("[{\"type\":\"SINGLE_CHOICE\",\"text\":\"\",\"options\":[{\"text\":\"a\"},{\"text\":\"b\"}],"
                 + "\"correct\":[\"" + A + "\"]}]", "homework.quiz-text-invalid");
-        expect("[{\"type\":\"SINGLE_CHOICE\",\"text\":\"Q\",\"options\":[{\"id\":\"" + A + "\",\"text\":\"a\"},"
+        expectBroken("[{\"type\":\"SINGLE_CHOICE\",\"text\":\"Q\",\"options\":[{\"id\":\"" + A + "\",\"text\":\"a\"},"
                 + "{\"text\":\"b\"}],\"correct\":[\"" + B + "\"]}]", "homework.quiz-no-correct");
-        expect("[{\"type\":\"SINGLE_CHOICE\",\"text\":\"Q\",\"options\":[{\"text\":\"a\"},{\"text\":\"b\"}]}]",
+        expectBroken("[{\"type\":\"SINGLE_CHOICE\",\"text\":\"Q\",\"options\":[{\"text\":\"a\"},{\"text\":\"b\"}]}]",
                 "homework.quiz-no-correct");
         expect("[{\"type\":\"SHORT_TEXT\",\"text\":\"Q\",\"points\":0,\"accepted\":[\"a\"]}]",
                 "homework.quiz-points-invalid");
-        expect("[{\"type\":\"ORDERING\",\"text\":\"Q\",\"options\":[{\"text\":\"a\"}]}]", "homework.quiz-options-count");
-        expect("[{\"type\":\"NUMBER\",\"text\":\"Q\"}]", "homework.quiz-value-missing");
-        expect("[{\"type\":\"NUMBER\",\"text\":\"Q\",\"value\":1,\"tolerance\":-1}]", "homework.quiz-tolerance-invalid");
+        expectBroken("[{\"type\":\"ORDERING\",\"text\":\"Q\",\"options\":[{\"text\":\"a\"}]}]",
+                "homework.quiz-options-count");
+        expectBroken("[{\"type\":\"NUMBER\",\"text\":\"Q\"}]", "homework.quiz-value-missing");
+        expectBroken("[{\"type\":\"NUMBER\",\"text\":\"Q\",\"value\":1,\"tolerance\":-1}]",
+                "homework.quiz-tolerance-invalid");
         expect("[{\"id\":\"" + A + "\",\"type\":\"SHORT_TEXT\",\"text\":\"R\",\"accepted\":[\"a\"]},"
                 + "{\"id\":\"" + A + "\",\"type\":\"SHORT_TEXT\",\"text\":\"S\",\"accepted\":[\"a\"]}]",
                 "homework.quiz-duplicate-id");
@@ -160,6 +208,20 @@ class AssignmentQuizIntegrationTests {
         assertThat(mvc.put().uri("/api/teacher/homework/assignments/" + UUID.randomUUID())
                 .with(TestUsers.student(student)).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"title\":\"x\",\"version\":0,\"questions\":[]}")).hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    /** A draft takes the question, giving it out names it. */
+    private void expectBroken(String questions, String code) {
+        assertThat(post("/api/teacher/homework/assignments", "{\"title\":\"x\",\"questions\":" + questions + "}"))
+                .hasStatus(HttpStatus.CREATED);
+        UUID student = directory.addStudent("Ученик");
+        assertThat(post("/api/teacher/homework/assignments", "{\"title\":\"x\",\"studentIds\":[\"" + student
+                + "\"],\"questions\":" + questions + "}")).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.code").isEqualTo("homework.quiz-incomplete");
+                    assertThat(json).extractingPath("$.questions[0].number").isEqualTo(1);
+                    assertThat(json).extractingPath("$.questions[0].code").isEqualTo(code);
+                });
     }
 
     private void expect(String questions, String code) {

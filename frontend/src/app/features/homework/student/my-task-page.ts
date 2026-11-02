@@ -1,5 +1,5 @@
 import { PaneHeader } from '@shared/ui/panes';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -12,8 +12,10 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Button } from 'primeng/button';
+import { Button, ButtonDirective } from 'primeng/button';
 import { Message } from 'primeng/message';
+import { RouterLink } from '@angular/router';
+import { FoldCard } from '@shared/ui/fold-card';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
 import { FileOpener } from '@shared/files/file-opener';
@@ -42,6 +44,7 @@ import {
   writeDeviceSetting,
 } from '@shared/storage/device-settings';
 import { T } from '../i18n/texts';
+import { dueIn } from '../homework-labels';
 import { QuizSection } from './quiz-section';
 
 /**
@@ -71,6 +74,10 @@ import { QuizSection } from './quiz-section';
     HelpButton,
     MyBoardButton,
     QuizSection,
+    ButtonDirective,
+    RouterLink,
+    FoldCard,
+    NgTemplateOutlet,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -82,19 +89,19 @@ import { QuizSection } from './quiz-section';
           [backLabel]="t.back"
         >
           <tb-help-button help topic="cabinet/homework" />
-          <span meta [class.tb-negative]="task.overdue">
-            {{
-              task.assignment.dueAt
-                ? t.submitUntil((task.assignment.dueAt | date: 'dd.MM.yyyy HH:mm') ?? '')
-                : t.noDueDate
-            }}
-          </span>
-          <tb-task-status
-            meta
-            [status]="task.status"
-            [overdue]="task.overdue"
-            [grade]="task.grade"
-          />
+          @if (task.status !== 'ACCEPTED') {
+            <span meta [class.tb-negative]="task.overdue">
+              {{
+                task.assignment.dueAt
+                  ? t.submitUntil((task.assignment.dueAt | date: 'dd.MM.yyyy HH:mm') ?? '') +
+                    (open(task) ? ' — ' + dueIn(task.assignment.dueAt) : '')
+                  : t.noDueDate
+              }}
+            </span>
+          }
+          @if (!reviewed(task)) {
+            <tb-task-status meta [status]="task.status" />
+          }
           @if (task.assignment.boardId; as boardId) {
             <tb-my-board-button [boardId]="boardId" />
           }</tb-page-header
@@ -102,41 +109,122 @@ import { QuizSection } from './quiz-section';
 
       <div class="tb-task">
         <div class="tb-task__main">
-          @if (task.teacherComment && (task.status === 'RETURNED' || task.status === 'ACCEPTED')) {
-            <p-message
-              [severity]="task.status === 'ACCEPTED' ? 'success' : 'warn'"
-              styleClass="tb-form-message"
-            >
-              <div>
-                <div class="tb-strong">
-                  {{ task.status === 'ACCEPTED' ? t.accepted : t.rework }}
-                </div>
-                <p class="tb-pre">{{ task.teacherComment }}</p>
+          @if (task.status === 'ACCEPTED') {
+            <div class="tb-task__result">
+              <div class="tb-task__grade">
+                <span class="tb-task__grade-state">
+                  <i class="tb-i tb-i-check_circle" aria-hidden="true"></i>
+                  {{ t.resultAccepted }}
+                </span>
+                @if (task.grade) {
+                  <span class="tb-task__grade-value">{{ task.grade }}</span>
+                }
+                @if (task.reviewedAt) {
+                  <span class="tb-task__small">{{
+                    t.reviewed((task.reviewedAt | date: 'dd.MM.yyyy, HH:mm') ?? '')
+                  }}</span>
+                }
               </div>
-            </p-message>
+              @if (task.teacherComment) {
+                <div class="tb-task__comment">
+                  <span class="tb-task__small tb-strong">{{ t.teacherComment }}</span>
+                  <p class="tb-pre">{{ task.teacherComment }}</p>
+                </div>
+              }
+            </div>
+          } @else if (task.status === 'RETURNED') {
+            <div class="tb-task__returned">
+              <span class="tb-task__grade-state">
+                <i class="tb-i tb-i-replay" aria-hidden="true"></i>
+                {{ t.returned }}
+              </span>
+              @if (task.teacherComment) {
+                <p class="tb-pre">{{ task.teacherComment }}</p>
+              }
+              @if (task.reviewedAt) {
+                <span class="tb-task__small">{{
+                  t.reviewed((task.reviewedAt | date: 'dd.MM.yyyy, HH:mm') ?? '')
+                }}</span>
+              }
+            </div>
           }
 
-          <section>
-            <h2 class="tb-task__label">{{ t.assignment }}</h2>
+          <ng-template #assignment>
             <tb-markdown [text]="task.assignment.description" />
             @if (task.assignment.videos.length > 0) {
               <h3 class="tb-subtitle">{{ tv.title }}</h3>
               <tb-video-list [videos]="task.assignment.videos" />
             }
-          </section>
+          </ng-template>
+          <ng-template #materials>
+            @if (task.assignment.attachments.length > 0 || task.assignment.textbooks.length > 0) {
+              <section>
+                <h2 class="tb-task__label">{{ t.materials }}</h2>
+                <tb-attachment-list
+                  [attachments]="task.assignment.attachments"
+                  (download)="download($event)"
+                />
+                @if (task.assignment.textbooks.length > 0) {
+                  <h3 class="tb-subtitle">{{ t.textbooks }}</h3>
+                  <tb-textbook-list
+                    [textbooks]="task.assignment.textbooks"
+                    [downloadable]="true"
+                    (opened)="openTextbook(task.taskId, $event)"
+                    (download)="downloadTextbook(task.taskId, $event)"
+                  />
+                }
+              </section>
+            }
+          </ng-template>
+
+          @if (!reviewed(task)) {
+            <section [attr.aria-label]="t.assignment">
+              <ng-container [ngTemplateOutlet]="assignment" />
+            </section>
+          }
+
+          @if (task.status !== 'ASSIGNED') {
+            <tb-quiz-section [taskId]="task.taskId" [title]="task.assignment.title" />
+          }
+
+          @if (task.status === 'RETURNED' && task.submissions[0]; as last) {
+            <section
+              class="tb-task__previous"
+              [attr.aria-label]="t.attempt(task.submissions.length)"
+            >
+              <div class="tb-task__answer-head">
+                <h2 class="tb-task__answer-title">{{ t.attempt(task.submissions.length) }}</h2>
+                <span class="tb-task__muted">{{
+                  t.submitted((last.submittedAt | date: 'dd.MM.yyyy') ?? '')
+                }}</span>
+              </div>
+              @if (last.text) {
+                <p class="tb-pre tb-task__muted">{{ last.text }}</p>
+              }
+              <tb-attachment-list [attachments]="last.attachments" (download)="download($event)" />
+            </section>
+          }
 
           @if (task.status !== 'ACCEPTED') {
             <section
               class="tb-task__answer"
               [class.tb-task__answer--docked]="mobile()"
+              [class.tb-bottom-actions]="mobile()"
               [attr.aria-label]="t.myAnswer"
             >
               <div class="tb-task__answer-head">
-                <h2 class="tb-task__answer-title">{{ t.myAnswer }}</h2>
+                <h2 class="tb-task__answer-title">
+                  {{
+                    task.status === 'RETURNED' ? t.attempt(task.submissions.length + 1) : t.myAnswer
+                  }}
+                </h2>
                 @if (draftSaved()) {
                   <span class="tb-task__muted">{{ t.draftSaved }}</span>
                 }
               </div>
+              @if (prefilled()) {
+                <p class="tb-task__muted">{{ t.prefilled }}</p>
+              }
               <textarea
                 pTextarea
                 id="answer-text"
@@ -165,7 +253,7 @@ import { QuizSection } from './quiz-section';
                 </tb-assist-chip>
                 <span class="tb-task__spacer"></span>
                 <p-button
-                  [label]="t.submit"
+                  [label]="task.status === 'RETURNED' ? t.submitAgain : t.submit"
                   icon="tb-i tb-i-send"
                   [loading]="pending()"
                   (onClick)="submit()"
@@ -174,33 +262,53 @@ import { QuizSection } from './quiz-section';
             </section>
           }
 
-          <section>
-            <h2 class="tb-task__label">{{ t.myAnswers }}</h2>
-            <tb-submission-list [submissions]="task.submissions" (download)="download($event)" />
-          </section>
+          <!-- a returned work shows its one attempt above (sketch 27): no fold to repeat it -->
+          @if (task.submissions.length > (task.status === 'RETURNED' ? 1 : 0)) {
+            <tb-fold-card
+              [title]="t.myAnswer"
+              [summary]="answerSummary(task)"
+              [collapsible]="true"
+              [single]="true"
+            >
+              <ng-template>
+                <tb-submission-list
+                  [submissions]="task.submissions"
+                  (download)="download($event)"
+                />
+              </ng-template>
+            </tb-fold-card>
+          }
+
+          @if (reviewed(task)) {
+            <tb-fold-card [title]="t.assignment" [collapsible]="true" [single]="true">
+              <ng-template>
+                <ng-container [ngTemplateOutlet]="assignment" />
+                <ng-container [ngTemplateOutlet]="materials" />
+              </ng-template>
+            </tb-fold-card>
+          }
+
+          @if (task.status === 'ACCEPTED' && next(); as nextId) {
+            <div class="tb-task__next" [class.tb-bottom-actions]="mobile()">
+              @if (mobile()) {
+                <a pButton [text]="true" routerLink="/cabinet/homework">{{ t.toList }}</a>
+              }
+              <a pButton [routerLink]="['/cabinet/homework', nextId]"
+                >{{ mobile() ? t.nextShort : t.next }}
+                <i class="tb-i tb-i-arrow_forward" aria-hidden="true"></i
+              ></a>
+            </div>
+          }
         </div>
 
-        <aside class="tb-task__side">
-          @if (task.assignment.attachments.length > 0 || task.assignment.textbooks.length > 0) {
-            <section>
-              <h2 class="tb-task__label">{{ t.materials }}</h2>
-              <tb-attachment-list
-                [attachments]="task.assignment.attachments"
-                (download)="download($event)"
-              />
-              @if (task.assignment.textbooks.length > 0) {
-                <h3 class="tb-subtitle">{{ t.textbooks }}</h3>
-                <tb-textbook-list
-                  [textbooks]="task.assignment.textbooks"
-                  [downloadable]="true"
-                  (opened)="openTextbook(task.taskId, $event)"
-                  (download)="downloadTextbook(task.taskId, $event)"
-                />
-              }
-            </section>
-          }
-          <tb-quiz-section [taskId]="task.taskId" />
-        </aside>
+        @if (!reviewed(task)) {
+          <aside class="tb-task__side">
+            <ng-container [ngTemplateOutlet]="materials" />
+            @if (task.status === 'ASSIGNED') {
+              <tb-quiz-section [taskId]="task.taskId" [title]="task.assignment.title" />
+            }
+          </aside>
+        }
       </div>
     } @else {
       <ng-template tbPaneHeader
@@ -238,6 +346,11 @@ import { QuizSection } from './quiz-section';
       min-inline-size: 0;
     }
 
+    /* nothing beside the task (no materials, no test): the task takes the width */
+    .tb-task__side:not(:has(section)) {
+      display: none;
+    }
+
     .tb-task__side {
       display: flex;
       flex: 1 1 16rem;
@@ -250,18 +363,41 @@ import { QuizSection } from './quiz-section';
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-3);
+    }
+
+    .tb-task__answer:not(.tb-bottom-actions) {
       padding: var(--tb-space-4);
       border: 1px solid var(--p-md-outline-variant);
       border-radius: var(--tb-shape-lg);
       background: var(--p-md-surface-container-lowest);
     }
 
-    /* a phone: the answer stays at the bottom of the pane while the task scrolls */
+    /* a phone: the answer is the bottom action bar (tb-bottom-actions) and stays while the task scrolls */
     .tb-task__answer--docked {
-      position: sticky;
-      inset-block-end: 0;
-      z-index: 1;
-      background: var(--p-md-surface-container);
+      align-items: stretch;
+    }
+
+    /* one pane (sketches 10, 25): one column — the task, the materials and the test, the answer last */
+    @media (width < 52.5em) {
+      .tb-task {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: var(--tb-space-4);
+      }
+
+      .tb-task__main {
+        display: contents;
+      }
+
+      .tb-task__side {
+        flex: none;
+        max-inline-size: none;
+      }
+
+      .tb-task__answer {
+        order: 1;
+      }
     }
 
     .tb-task__answer-head,
@@ -286,6 +422,96 @@ import { QuizSection } from './quiz-section';
     .tb-task__spacer {
       flex: 1;
     }
+
+    /*
+     * the reviewed task (sketches 24, 27, 38): the grade card success-container, the comment
+     * primary-container, «Вернули на доработку» error-container; 20 dp corners (ours, as the test card)
+     */
+    .tb-task__result {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--tb-space-4);
+    }
+
+    .tb-task__grade,
+    .tb-task__comment,
+    .tb-task__returned,
+    .tb-task__previous {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-2);
+      padding: var(--tb-space-4) var(--tb-space-5);
+      border-radius: var(--tb-shape-lg);
+    }
+
+    .tb-task__grade {
+      flex: 0 0 12.5rem;
+      background: var(--p-md-success-container);
+      color: var(--p-md-on-success-container);
+    }
+
+    /* a phone (sketch 38): the grade card is a row across the width — the grade, then the state and the date */
+    @media (width < 37.5em) {
+      .tb-task__grade {
+        display: grid;
+        flex-basis: 100%;
+        grid-template-columns: auto 1fr;
+        column-gap: var(--tb-space-4);
+        align-items: center;
+      }
+
+      .tb-task__grade-value {
+        grid-row: 1 / 3;
+        grid-column: 1;
+      }
+    }
+
+    .tb-task__comment {
+      flex: 1 1 20rem;
+      background: var(--p-md-primary-container);
+      color: var(--p-md-on-primary-container);
+    }
+
+    .tb-task__returned {
+      background: var(--p-md-error-container);
+      color: var(--p-md-on-error-container);
+    }
+
+    .tb-task__previous {
+      background: var(--p-md-surface-container-low);
+    }
+
+    .tb-task__comment p,
+    .tb-task__returned p,
+    .tb-task__previous p {
+      margin: 0;
+      font: var(--tb-type-body-l);
+    }
+
+    .tb-task__grade-state {
+      display: flex;
+      align-items: center;
+      gap: var(--tb-space-2);
+      font: var(--tb-type-title-s);
+    }
+
+    .tb-task__grade-value {
+      font: var(--tb-type-display-s);
+    }
+
+    .tb-task__small {
+      font: var(--tb-type-body-s);
+    }
+
+    .tb-task__next {
+      display: flex;
+      gap: var(--tb-space-2);
+      justify-content: flex-end;
+    }
+
+    .tb-task__next.tb-bottom-actions {
+      justify-content: space-between;
+    }
   `,
 })
 export class MyTaskPage {
@@ -300,6 +526,8 @@ export class MyTaskPage {
   readonly taskId = input.required<string>();
   /** One pane at a time: the header has «back» to the list. */
   readonly single = input(false);
+  /** The task «Следующее задание» of an accepted one leads to; `null` — none left. */
+  readonly next = input<string | null>(null);
   /** The answer was handed in: the list reads the status again. */
   readonly changed = output<TaskDetails>();
 
@@ -327,6 +555,7 @@ export class MyTaskPage {
         this.files.set([]);
         this.error.set(null);
         this.draftSaved.set(false);
+        this.prefilled.set(false);
         this.load();
       });
     });
@@ -336,6 +565,8 @@ export class MyTaskPage {
     return `tb.homework.draft.${this.taskId()}`;
   }
   protected readonly draftSaved = signal(false);
+  /** The form of a returned work holds the previous answer's text. */
+  protected readonly prefilled = signal(false);
   protected readonly mobile = injectMobile();
   readonly text = new FormControl('', {
     nonNullable: true,
@@ -347,12 +578,34 @@ export class MyTaskPage {
   protected readonly error = signal<string | null>(null);
   protected readonly state = new LoadState();
 
+  /** The unsent text of this device; a returned work without one starts from the previous answer. */
   private restoreDraft(task: TaskDetails): void {
     const draft = task.status === 'ACCEPTED' ? null : readDeviceSetting(this.draftKey());
+    const previous = task.status === 'RETURNED' ? task.submissions[0]?.text : null;
     if (draft) {
       this.text.setValue(draft);
       this.draftSaved.set(true);
+    } else if (previous) {
+      this.text.setValue(previous, { emitEvent: false });
+      this.prefilled.set(true);
     }
+  }
+
+  /** Checked: the cards say the state, the assignment folds away (sketches 24, 27, 38). */
+  protected reviewed(task: TaskDetails): boolean {
+    return task.status === 'ACCEPTED' || task.status === 'RETURNED';
+  }
+
+  /** Still to hand in: the deadline says how many days are left. */
+  protected open(task: TaskDetails): boolean {
+    return task.status === 'ASSIGNED' || task.status === 'RETURNED';
+  }
+
+  protected readonly dueIn = dueIn;
+
+  protected answerSummary(task: TaskDetails): string {
+    const last = task.submissions[0];
+    return last ? this.t.answerSummary(!!last.text, last.attachments.length) : '';
   }
 
   protected load(): void {
@@ -388,6 +641,7 @@ export class MyTaskPage {
         removeDeviceSetting(this.draftKey());
         this.draftSaved.set(false);
         this.text.setValue('');
+        this.prefilled.set(false);
         this.files.set([]);
         this.quiz()?.reload();
         this.changed.emit(task);

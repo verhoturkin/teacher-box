@@ -119,13 +119,13 @@ Attached textbooks appear under “Textbooks”, with the relevant page numbers.
 
 Text you have typed but not handed in is kept on this device, so you can leave the page and come back to it (the note says “draft saved”). Files are not kept in the draft; attach them again. On a phone “My answer” stays at the bottom of the screen, with the materials and the test below the task.
 
-Your teacher can accept the submission, add a grade and feedback, or return it for revision. If revisions are requested, make the changes and submit again.
+Your teacher can accept the submission, add a grade and feedback, or return it for revision. Reviewed work opens in the same place as the assignment. Accepted work shows your grade, your teacher’s feedback, any quiz mistakes and “Next assignment”; your own answer is folded under “My answer”. Returned work shows the feedback, your previous attempt and a new one: the text of your previous answer is already copied in, so add what is missing, attach your files again and choose “Hand in again”.
 
 ## Take a quiz
 
-If an assignment includes a quiz, choose “Start the quiz”. Questions may ask you to select answers, enter text or a number, match pairs, or put items in order. Use the arrow buttons for ordering questions; an order that is already correct can be left as it is.
+If an assignment includes a quiz, a “Quiz” card next to it shows how many questions and attempts you have. Choose “Start the quiz” and it fills the screen, one question at a time. Questions may ask you to select answers, enter text or a number, match pairs, or put items in order. Use the arrow buttons for ordering questions; an order that is already correct can be left as it is.
 
-On a phone, use “Back” and “Next” to move between questions. Answers are saved automatically. When you finish, choose “Submit the quiz” and confirm. You cannot change that attempt afterwards.
+Move between questions with “Back” and “Next”, or jump to one by its number; answered numbers are filled in. Answers save as you go, so you can close the quiz with the cross and pick it up later with “Continue the quiz”. When you are done, choose “Finish the quiz”. If you skipped any questions, you will be asked to confirm. You cannot change that attempt afterwards.
 
 Your score appears immediately. Depending on your teacher’s settings, correct answers and explanations appear immediately, after the due date, or are not shown. If more attempts are allowed, choose “Try again”. Your best score counts.
 

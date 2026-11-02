@@ -173,18 +173,23 @@ async function asStudent(page: Page, taskId: string): Promise<void> {
   await page.setViewportSize(WIDE);
   await startSession(page, LOGIN, PASSWORD);
   await page.goto(`/cabinet/homework/${taskId}`);
-  await expect(page.getByRole('heading', { name: 'Тест', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /^Тест · / })).toBeVisible();
 }
 
 async function submitQuiz(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Сдать тест', exact: true }).click();
-  await page.getByRole('alertdialog').getByRole('button', { name: 'Сдать', exact: true }).click();
+  // every question has an answer: «Завершить тест» does not ask
+  await page.getByRole('button', { name: 'Завершить тест', exact: true }).first().click();
+}
+
+/** The full-screen test shows one question at a time. */
+async function next(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Дальше', exact: true }).click();
 }
 
 /** Moves the items with the arrow buttons until they stand in `wanted` order. */
 async function putInOrder(page: Page, wanted: readonly string[]): Promise<void> {
   for (const [target, text] of wanted.entries()) {
-    const items = page.locator('.tb-quiz-order__text');
+    const items = page.locator('.tb-qp__order-text');
     for (;;) {
       const texts = await items.allTextContents();
       const at = texts.map((item) => item.trim()).indexOf(text);
@@ -206,12 +211,16 @@ test('a student answers all six types and sees a mixed score without the key', a
   await page.getByRole('button', { name: 'Начать тест', exact: true }).click();
 
   await page.getByRole('radio', { name: 'Москва' }).check();
+  await next(page);
   for (const text of ['2', '3', '5']) {
     await page.getByRole('checkbox', { name: text, exact: true }).check();
   }
+  await next(page);
   // case, «ё» and spaces do not matter
   await page.getByRole('textbox', { name: 'Ответ', exact: true }).fill('  елка ');
+  await next(page);
   await page.getByRole('textbox', { name: 'Число', exact: true }).fill('3.14');
+  await next(page);
   // one pair is right, so the all-or-nothing question is wrong
   const pairs: [string, string][] = [
     ['Париж', 'Франция'],
@@ -222,10 +231,11 @@ test('a student answers all six types and sees a mixed score without the key', a
     await page.getByRole('combobox', { name: `Пара для «${left}»` }).click();
     await page.getByRole('option', { name: right, exact: true }).click();
   }
+  await next(page);
   await putInOrder(page, ['Утро', 'День', 'Вечер']);
   await submitQuiz(page);
 
-  await expect(page.getByText('Лучший результат: 5 из 6')).toBeVisible();
+  await expect(page.getByText('Тест · 5 из 6')).toBeVisible();
   await expect(page.getByText('Осталось попыток: 1')).toBeVisible();
   await expect(page.getByText('Верные ответы появятся после срока сдачи.')).toBeVisible();
   await expect(page.getByText('Верный ответ', { exact: true })).toHaveCount(0);
@@ -246,8 +256,7 @@ test('a worse second attempt does not lower the best one', async ({ page, reques
     `/api/me/homework/tasks/${mixedTask}/quiz/attempts/${started.openAttempt.id}/submit`,
   );
   await asStudent(page, mixedTask);
-  await expect(page.getByText('Лучший результат: 5 из 6')).toBeVisible();
-  await expect(page.getByText('Осталось попыток: 0')).toBeVisible();
+  await expect(page.getByText('Тест · 5 из 6')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Пройти ещё раз' })).toHaveCount(0);
 });
 
@@ -259,9 +268,9 @@ test('with the rule «right after submitting» the key and the explanation are s
   await page.getByRole('radio', { name: 'Нет' }).check();
   await submitQuiz(page);
 
-  await expect(page.getByText('Лучший результат: 0 из 1')).toBeVisible();
-  await expect(page.getByText(/Неверно · 0 б./)).toBeVisible();
-  await expect(page.getByText('Верный ответ', { exact: true })).toBeVisible();
+  await expect(page.getByText('Тест · 0 из 1')).toBeVisible();
+  await expect(page.getByText('1 ошибка')).toBeVisible();
+  await expect(page.getByText(/Верный ответ:/)).toBeVisible();
   await expect(page.getByText('Это шар, сплюснутый у полюсов')).toBeVisible();
 });
 
@@ -280,12 +289,15 @@ test('the teacher sees the best attempt, overrides a wrong answer and the grade 
   await page.setViewportSize(WIDE);
   await startSession(page, 'teacher', TEACHER_PASSWORD);
   await page.goto(`/teacher/homework/tasks/${mixedTask}`);
-  await expect(page.getByText('Тест: 5 из 6')).toBeVisible();
-  await expect(page.getByLabel('Оценка')).toHaveValue('5 из 6');
+  // the grade is a chip of the review sheet (sketch 14)
+  const grade = (name: string) =>
+    page.getByRole('group', { name: 'Оценка' }).getByRole('button', { name, exact: true });
+  await expect(page.getByRole('heading', { name: 'Тест · 5 из 6' })).toBeVisible();
+  await expect(grade('5 из 6')).toHaveAttribute('aria-pressed', 'true');
 
   await page.getByRole('button', { name: 'Засчитать', exact: true }).click();
-  await expect(page.getByText('Тест: 6 из 6')).toBeVisible();
-  await expect(page.getByLabel('Оценка')).toHaveValue('6 из 6');
+  await expect(page.getByRole('heading', { name: 'Тест · 6 из 6' })).toBeVisible();
+  await expect(grade('6 из 6')).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('the teacher credits a question the student left unanswered', async ({ page, request }) => {
@@ -311,7 +323,40 @@ test('the teacher credits a question the student left unanswered', async ({ page
   await page.setViewportSize(WIDE);
   await startSession(page, 'teacher', TEACHER_PASSWORD);
   await page.goto(`/teacher/homework/tasks/${blankTask}`);
-  await expect(page.getByText('Тест: 0 из 1')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Тест · 0 из 1' })).toBeVisible();
   await page.getByRole('button', { name: 'Засчитать', exact: true }).click();
-  await expect(page.getByText('Тест: 1 из 1')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Тест · 1 из 1' })).toBeVisible();
+});
+
+test('a draft keeps an incomplete question, giving it out names the broken one', async ({
+  request,
+}) => {
+  const teacher = await token(request, 'teacher', TEACHER_PASSWORD);
+  const created = await api<Created>(request, teacher, 'POST', '/api/teacher/students', {
+    displayName: `Черновик ${RUN}`,
+    email: null,
+    phone: null,
+    note: null,
+  });
+  const draft = await api<{ id: string }>(
+    request,
+    teacher,
+    'POST',
+    '/api/teacher/homework/assignments',
+    {
+      title: `Черновик с вопросом ${RUN}`,
+      description: 'Черновик',
+      studentIds: [],
+      videos: [],
+      questions: [{ type: 'SINGLE_CHOICE', text: '', options: [option('')], correct: [] }],
+    },
+  );
+
+  const issued = await request.post(`/api/teacher/homework/assignments/${draft.id}/students`, {
+    headers: { Authorization: `Bearer ${teacher}` },
+    data: { studentIds: [created.student.id] },
+  });
+  expect(issued.status()).toBe(422);
+  const problem = (await issued.json()) as { questions: { number: number }[] };
+  expect(problem.questions[0]?.number).toBe(1);
 });

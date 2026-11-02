@@ -14,12 +14,12 @@ import { NgTemplateOutlet } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Button, ButtonDirective, ButtonIcon } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
-import { InputText } from 'primeng/inputtext';
 import { Textarea } from 'primeng/textarea';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { ToBoardDialog } from '@features/boards/parts';
 import { SHARED_T } from '@shared/i18n/texts';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { FilterChip, FilterChips } from '@shared/ui/filter-chips';
 import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { ReviewDecision, TaskDetails } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
@@ -33,11 +33,11 @@ export interface NextWork {
 }
 
 /**
- * The review of a work as the third pane of the extra-large window (redesign spec §9, a standard side
- * sheet): «Проверка» with the place of the work in the queue («1 из 3») and the close button, the AI draft
- * («Вставить» takes it), the comment for the student, the quick phrases, the grade, the decision —
- * «На доработку» (tonal) and «Принять» (filled) — and «Дальше: <student>». The sheet holds the form of the
- * work it is given; the work itself lies in the detail pane beside it.
+ * The review of a work (sketches 14, 15, 16): from large the side sheet beside the work, «Проверка» and the
+ * close button; below large (`inline`) the same form under the answer; on a phone (`compact`) the floating
+ * toolbar with the form in a bottom sheet. The form: the AI draft («Вставить» takes it), the comment, the
+ * quick phrases, the grade as chips («3 · 4 · 5 · 8 из 10 · Без оценки»), the decision — «На доработку»
+ * (tonal) and «Принять» (filled) — and «После этого откроется: <student>».
  */
 @Component({
   selector: 'tb-review-sheet',
@@ -50,12 +50,13 @@ export interface NextWork {
     Button,
     ButtonDirective,
     ButtonIcon,
-    InputText,
     Textarea,
     FieldErrors,
+    FilterChips,
     ToBoardDialog,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class.tb-sheet--inline]': 'inline()' },
   template: `
     @if (compact()) {
       <!-- M3 floating toolbar (spec §9): 64 dp, 16 dp margins; the comment is in a bottom sheet -->
@@ -84,7 +85,7 @@ export interface NextWork {
         </button>
         <p-button
           class="tb-toolbar__action"
-          [label]="t.rework"
+          [label]="t.reworkShort"
           severity="secondary"
           [loading]="pending()"
           (onClick)="review('RETURN')"
@@ -121,37 +122,39 @@ export interface NextWork {
         </div>
       </p-drawer>
     } @else {
-      <ng-template tbPaneHeader
-        ><div class="tb-sheet__head">
-          <h2 class="tb-sheet__title">{{ t.sheetTitle }}</h2>
-          @if (total() > 0 && place() > 0) {
-            <span class="tb-sheet__place">{{ t.position(place(), total()) }}</span>
-          }
-          <button
-            pButton
-            type="button"
-            [text]="true"
-            [rounded]="true"
-            severity="secondary"
-            [attr.aria-label]="t.closeReview"
-            (click)="closed.emit()"
-          >
-            <i pButtonIcon class="tb-i tb-i-close" aria-hidden="true"></i>
-          </button>
-        </div>
-      </ng-template>
+      @if (inline()) {
+        <h2 class="tb-sheet__title">{{ t.sheetTitle }}</h2>
+      } @else {
+        <ng-template tbPaneHeader
+          ><div class="tb-sheet__head">
+            <h2 class="tb-sheet__title">{{ t.sheetTitle }}</h2>
+            <button
+              pButton
+              type="button"
+              [text]="true"
+              [rounded]="true"
+              severity="secondary"
+              [attr.aria-label]="t.closeReview"
+              (click)="closed.emit()"
+            >
+              <i pButtonIcon class="tb-i tb-i-close" aria-hidden="true"></i>
+            </button>
+          </div>
+        </ng-template>
+      }
       <ng-container [ngTemplateOutlet]="fields" />
 
       <div class="tb-sheet__decision">
         <p-button
           [label]="t.rework"
+          icon="tb-i tb-i-replay"
           severity="secondary"
           [loading]="pending()"
           (onClick)="review('RETURN')"
         />
         @if (task().status === 'SUBMITTED') {
           <p-button
-            [label]="t.accept"
+            [label]="inline() && next() !== null ? t.acceptNext : t.accept"
             icon="tb-i tb-i-check"
             [loading]="pending()"
             (onClick)="review('ACCEPT')"
@@ -160,9 +163,7 @@ export interface NextWork {
       </div>
       <div class="tb-sheet__foot">
         @if (next(); as next) {
-          <button type="button" class="tb-sheet__next" (click)="opened.emit(next.taskId)">
-            <i class="tb-i tb-i-arrow_forward" aria-hidden="true"></i>{{ t.next(next.studentName) }}
-          </button>
+          <span class="tb-sheet__next">{{ t.next(next.studentName) }}</span>
         }
         <p-button
           [label]="t.toBoard"
@@ -205,7 +206,7 @@ export interface NextWork {
         }
 
         <div class="tb-sheet__field">
-          <label for="sheet-comment">{{ t.commentToStudent }}</label>
+          <label for="sheet-comment">{{ t.comment }}</label>
           <textarea pTextarea id="sheet-comment" formControlName="comment" rows="6"></textarea>
         </div>
 
@@ -222,13 +223,12 @@ export interface NextWork {
         </div>
 
         <div class="tb-sheet__field">
-          <label for="sheet-grade">{{ t.grade }}</label>
-          <input
-            pInputText
-            id="sheet-grade"
-            formControlName="grade"
-            autocomplete="off"
-            [placeholder]="t.gradePlaceholder"
+          <span class="tb-sheet__label" aria-hidden="true">{{ t.grade }}</span>
+          <tb-filter-chips
+            [label]="t.grade"
+            [chips]="grades()"
+            [value]="gradeValue()"
+            (valueChange)="setGrade($event)"
           />
         </div>
       </form>
@@ -325,11 +325,6 @@ export interface NextWork {
       font: var(--tb-type-headline-s);
     }
 
-    .tb-sheet__place {
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-body-m);
-    }
-
     .tb-sheet__form {
       display: flex;
       flex-direction: column;
@@ -400,7 +395,8 @@ export interface NextWork {
       gap: var(--tb-space-1);
     }
 
-    .tb-sheet__field label {
+    .tb-sheet__field label,
+    .tb-sheet__label {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
     }
@@ -456,6 +452,10 @@ export interface NextWork {
       inline-size: 100%;
     }
 
+    .tb-sheet__foot ::ng-deep .p-button {
+      white-space: nowrap;
+    }
+
     .tb-sheet__foot {
       display: flex;
       align-items: center;
@@ -464,21 +464,26 @@ export interface NextWork {
     }
 
     .tb-sheet__next {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--tb-space-2);
+      flex: 1;
       min-inline-size: 0;
-      padding: 0;
-      border: 0;
-      background: none;
-      color: var(--p-md-on-surface);
-      font: var(--tb-type-body-m);
-      text-align: start;
-      cursor: pointer;
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-body-s);
     }
 
-    .tb-sheet__next:hover {
-      text-decoration: underline;
+    /* under the answer (below large): the form is a bordered block on the pane (sketch 15) */
+    :host(.tb-sheet--inline) {
+      min-block-size: 0;
+      padding: var(--tb-space-4);
+      border: 1px solid var(--p-md-outline-variant);
+      border-radius: var(--tb-shape-lg-plus);
+      background: var(--p-md-surface-container-lowest);
+    }
+
+    :host(.tb-sheet--inline) .tb-sheet__title {
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-label-m);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
   `,
 })
@@ -490,9 +495,6 @@ export class ReviewSheet {
 
   /** The work under review (the detail pane shows it). */
   readonly task = input.required<TaskDetails>();
-  /** The place of the work in the queue and its length: «1 из 3» (0: the work is not in the queue). */
-  readonly place = input(0);
-  readonly total = input(0);
   /** The next work of the queue. */
   readonly next = input<NextWork | null>(null);
   /** A decision is made: the work as it is now. */
@@ -502,6 +504,8 @@ export class ReviewSheet {
   readonly closed = output();
   /** A phone (compact, spec §9): the floating toolbar and the comment in a bottom sheet instead of the side sheet. */
   readonly compact = input(false);
+  /** Below large: the form lies under the answer, without the sheet's header. */
+  readonly inline = input(false);
   /** The comment sheet of the phone is open. */
   protected readonly commentOpen = signal(false);
 
@@ -517,6 +521,18 @@ export class ReviewSheet {
   );
   protected readonly form = this.reviewForm.form;
   protected readonly commentValue = this.reviewForm.commentValue;
+  protected readonly gradeValue = this.reviewForm.gradeValue;
+  /** «3 · 4 · 5 · 8 из 10 · Без оценки»: the quiz score and a grade set before join the usual ones. */
+  protected readonly grades = computed<FilterChip<string>[]>(() => {
+    const task = this.task();
+    const values = ['3', '4', '5', task.quiz?.suggestedGrade, task.grade, this.gradeValue()]
+      .map((grade) => grade?.trim() ?? '')
+      .filter((grade, index, all) => grade !== '' && all.indexOf(grade) === index);
+    return [
+      ...values.map((value) => ({ value, label: value })),
+      { value: '', label: this.t.noGrade },
+    ];
+  });
   protected readonly reviewText = this.reviewForm.reviewText;
 
   constructor() {
@@ -555,6 +571,11 @@ export class ReviewSheet {
   /** «Вставить»: the draft's comment (and grade) replace what is in the form. */
   protected insert(draft: ReviewSuggestion): void {
     this.form.patchValue({ comment: draft.comment, grade: draft.grade ?? '' });
+  }
+
+  protected setGrade(grade: string): void {
+    this.form.controls.grade.setValue(grade);
+    this.form.controls.grade.markAsDirty();
   }
 
   /** A quick phrase goes after the comment, on a line of its own. */

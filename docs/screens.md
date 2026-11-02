@@ -251,40 +251,16 @@ with three screens: the list on the full width of the window, the assignment and
 page of its own with «back» (`tb-page-header [back]`) to the list — no list pane beside a detail
 (339.1). The «?» help button is in the list header and the editor only.
 
+- **Transitions** (345.1, sketch board 34): «back» leads to the screen the page was opened from —
+  the work to the list or the assignment whose «Проверить» opened it (`AssignmentsPage.origin`), the
+  assignment to the list; the list view (`?view=`), search and filters live in the one page and
+  stay. Every «Проверить» starts a queue (`startReview`): from the strip, the journal and
+  «Проверить все подряд» all works waiting, from an assignment (`scope`) its works only. A decision
+  opens the next work; with none left the page returns to the origin with «Все работы проверены».
+
 - **Header**: «Задания», «?», the filled «Новое задание» (a phone: the extended FAB «Новое»); it
-  opens the quick dialog, `/teacher/homework/new` stays as the full editor.
-- **Quick dialog «Новое задание»** (340.1, `assignment-create-dialog.ts`, `tb-dialog` form, `xwide` 47.5 rem: a basic
-  dialog from medium, full screen on a phone with «Выдать» in the top bar): header icon buttons
-  «Открыть во весь экран» and «Закрыть»; «Кому» — input chips (a group with its member count, a student with an avatar, «×») and the dashed assist chip «Ученик или группа» that opens the panel of `tb-member-picker [bare]`; «Задание» — one Markdown
-  field (first line = title, `titleOf`) with a toolbar «Жирный · Список · Ссылка» and «Написать с
-  ИИ» (only when AI is on, a tertiary toggle with `aria-pressed`) that opens the AI pane inside the same
-  dialog (see «AI pane» below); «Срок» —
-  `tb-filter-chips` «К следующему занятию · <date>» (hidden without a lesson of the chosen
-  students), «Через неделю», «Без срока», «Дата…» (date picker); «Материалы» appear only once
-  added (textbooks, videos; each section only once its own chip was used) and are filled by assist
-  chips «Файл · Учебник · Видео · Тест с вопросами · Доска» (a phone: «Фото» with the camera,
-  «Файл · Учебник · Тест»). «Доска» opens a menu of the teacher's boards; the chosen one becomes
-  the input chip «Доска: <name>» with «×» (the choice is kept in the dialog; after «Выдать» the
-  «На доску» dialog opens with it preselected). The dialog fits without scrolling from ~760 px of
-  height: the text field grows from four rows up to a maximum, only taller content scrolls. «Тест с вопросами» opens the full editor (questions are too big for the
-  dialog); the entered state travels in `AssignmentDraftHandover`. Footer: text «Сохранить
-  черновик» (creates the assignment and keeps the chosen students as `draftStudentIds`, nobody is given it) and the split button «Выдать» (menu «Выдать и
-  разместить на доске»).
-- **AI pane of the quick dialog** (sketch `AiDraft`; `tb-homework-ai-panel [pane]`, the logic and state
-  are the editor panel's): from the large breakpoint (≥ 1200 dp) the dialog widens to `split` (77.5 rem
-  ≈ 1240 px) and shows the pane beside the form — form `flex 1 1 35rem`, pane `flex 1 1 26rem` (max
-  32.5 rem), `surface-container-low`, 1 dp `outline-variant` divider, 24 dp padding, bleeding to the
-  dialog's edge. «×» «Закрыть помощника» or the toggle shrinks the dialog back to 47.5 rem. Below
-  the large breakpoint (and on a phone) the pane replaces the form with an arrow «Назад к заданию».
-  Top to bottom: the `auto_awesome` header; segmented «Текст задания · Вопросы теста»; «Что нужно»
-  (a field, assist chips «Упражнения по теме · Эссе · По тексту учебника · Мои запросы» — the last opens
-  the prompt library); «ИИ учтёт» (the textbooks bound in the dialog and the picked PDFs and photos,
-  each a checkable row, and the dashed «Источник» chip that opens «Учебник»; there is no group-level
-  source, the backend takes none); the «Черновик ИИ» card (tertiary-container badge, «вариант N из M»
-  with ‹ ›, tonal «Вставить в задание», text «Ещё вариант»); the footer hint «Текст меняется только
-  по кнопке «Вставить»» and the tertiary «Сгенерировать». «Вопросы теста» drafts questions; «Добавить
-  в тест» puts them in `AssignmentDraftHandover.questions` and opens the full editor with the test
-  (the dialog cannot hold questions).
+  and «Создать › Задание» of the rail (`?create=assignment`, replaced in the history) open the
+  editor `/teacher/homework/new` — the one creation form (352.6; the quick dialog is gone).
 - **View switch** (339.2): the outlined segmented buttons «Списком · По ученикам» (`view_list` /
   `grid_view`, a check on the chosen one; design system «Outlined variant») in the header actions
   before the main button; on a phone one icon button of the top app bar of the list page only
@@ -300,28 +276,35 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   by the role (success / warning / error containers; `surface container` for «ждём»; a dashed
   outline for «не выдано»), and «3 из 4 сдано» last. A cell: «проверить» → the work and its review
   sheet; «не выдано» → «Выдать ещё» with the student chosen; the rest → the assignment. The grid
-  scrolls sideways with the student column fixed.
-- **Review strip** «Ждут проверки · N» (shown while a work waits; follows the search and «Кому»):
-  up to three cards on `surface container` (avatar, student, «сдано сегодня, 09:12» / «вчера, …» /
-  «dd.MM HH:mm», the «С опозданием» tag when handed in after the due date, the assignment title, the
-  «Тест 8 из 10» tag when the assignment has a quiz, tonal «Проверить» → the work and its review
-  sheet), then a dashed card «Ещё N работ ждут сдачи», and the text button «Проверить все подряд →»
-  (opens the oldest work; a decision opens the next one). On a phone the cards (15 rem) scroll
-  sideways without a scrollbar.
+  scrolls sideways with the student column fixed. A long name is one line cut with «…» (the
+  column is 11–16 rem, 11 rem on medium and a phone), a long title two lines (352.2).
+- **Review strip** «Ждут проверки · N» (shown while a work waits; follows the search and «Кому»): up
+  to three cards on `surface container` (avatar, student, «сдано сегодня, 09:12» / «вчера, …» /
+  «dd.MM HH:mm», the «С опозданием» tag when handed in after the due date, the assignment title —
+  the name and the title one line each cut with «…», sketch 1 —, the «Тест 8 из 10» tag when the
+  assignment has a quiz, tonal «Проверить» → the work and its review sheet), then a dashed card «Ещё
+  N работ ждут сдачи», and the text button «Проверить все подряд →» (opens the oldest work; a
+  decision opens the next one). On a phone the cards (15 rem) scroll sideways without a scrollbar.
 - **Toolbar** (`tb-toolbar`): `tb-search-field` (title and student, kept in the address as `?q=`),
   the «Кому» select (40 dp outlined, a person icon; groups, then students; «Все» clears it;
   `?who=student:<id>|group:<id>`) and the outlined segmented buttons «Активные · Черновики · Готовые»
   with counts (the chosen one by colour, no check). A phone: `tb-filter-chips` in one row that scrolls sideways without a scrollbar
   (with «Кому: все ▾» as its last chip) instead of the group, 12 dp under the search. «⋮» stands at
   the right edge of its row.
-- **Table** (`p-table` `tb-cards`; from medium): «Активные» grouped by the due date —
+- **Medium (600–839 dp)** (350.1, sketches 17, 35, 36): instead of the table a segmented `tb-list`
+  of tiles — icon, title, «кому · срок», the bar with «3 из 4» under it, the status tag, «⋮»; the
+  review strip shows two cards; journal cells are the icon and the grade (`✓ 5`, other states the
+  icon only, the label stays in `aria-label`), five columns fit without scrolling and the total
+  column is left out — a phone's journal the same (sketch 20).
+- **Table** (`p-table` `tb-cards`; from expanded): «Активные» grouped by the due date —
   «Просрочено · N» (error colour), «На этой неделе» (up to the next Monday), «Позже»,
   «Без срока» — the heading is a label above its rows; «Черновики» and «Готовые» are one run (20
   rows and «Показать ещё» for the finished ones, 333.1). Columns: «Задание» (icon, a board icon when
   on a board; title link; material
   icons with counts — textbooks, files, questions, videos, a board without a number), «Кому»
-  (person / group icon, two names, from three — the first one and «и ещё N»), «Срок» (dd.MM HH:mm,
-  the year only when it is not the current one; the error colour when overdue and not handed in),
+  (person / group icon, two names, from three — the first one and «и ещё N»), «Срок» (dd.MM HH:mm
+  on one line, the year only when it is not the current one; the error colour when overdue and not
+  handed in),
   «Сдали» (a two-part bar — accepted, waiting for review — and «3 из 4» handed in; below 60em the
   bar is hidden and only «3 из 4» stays, so the table fits a tablet), the status tag
   (`assignmentProgress`: «Не выдано» secondary, «На проверке: N» warn, «Принято» success, «Выдано» /
@@ -329,7 +312,9 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   files, textbooks and videos, whose editor opens; 0.36.0). A phone: the same rows are a segmented
   list (`tb-list`) under the group labels — title, «кому · до …», the bar, the tag and «⋮». The
   header of the open assignment has its own «⋮» (see below).
-- **Assignment page** (341.1, `assignment-page.ts`): the header has «back», the title, the subtitle
+- **Assignment page** (341.1, `assignment-page.ts`): the header (from expanded one line: the title
+  cut with «…» and the actions on its right, sketch 4; narrower the title wraps, 18) has «back», the
+  title, the subtitle
   «<N учеников> · до <date>», the outlined «Изменить» (the editor), the filled «Проверить N работ»
   (hidden at N = 0; opens the first handed-in work in the review sheet, whose «Дальше» goes on) and
   «⋮» («Создать копию», «На доску», «Открыть доску», «Удалить…»). The students (flex 999 1 560px) and
@@ -339,8 +324,10 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   - **Ученики** — the label, the tags «Принято N» / «Проверить N» / «На доработке N» (nonzero only),
     the text button «Выдать ещё» (`assign-more-dialog.ts`) and the tiles in two columns (*ours*:
     `surface container`, 20 dp corners): avatar, name, the status line («Сдано сегодня, 09:12» /
-    «Принято вчера · оценка 4» / «Отправлено на доработку 28.10» / «Не сдано»), the status tag, the
-    answer preview in a `surface` box (three lines; from `TaskSummary.answerPreview`), «Тест 8 из 10»,
+    «Принято вчера · оценка 4» / «Отправлено на доработку 28.10» / «Не сдано» / «Просрочено на 3
+    дня» in the error colour), the status tag (no «Просрочено» tag anywhere, teacher or student:
+    the line says it), the answer preview in a `surface` box (three lines cut at the line; from
+    `TaskSummary.answerPreview`), «Тест 8 из 10»,
     «N файлов», a tonal «Напомнить» (not handed in or on rework: a notification to the student, a
     snackbar «Напоминание отправлено: <name>», the button loads meanwhile) and a tonal «Проверить»
     (handed in) or «Открыть». The filled button of the page stays in the header.
@@ -349,59 +336,152 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
     вопросам» (a row per question: the number, a bar of the share of wrong answers, «3 из 4»).
   - **Compact:** `tb-segment-group` tabs «Ученики N · Задание · Ошибки» («Ошибки» only with a quiz),
     tiles in one column and a «Проверить N работ» button stuck to the bottom of the page.
-- **Review side sheet** (`review-sheet.ts`, extra-large, standard side sheet ≤ 400 dp): the AI draft
-  with the tertiary tag «Черновик ИИ» and «Вставить», the comment, quick phrases as chips, «На
-  доработку» tonal + «Принять» filled, «Дальше: <student>». The rail collapses to 96 dp here
-  (`RailState`) and the work page keeps the pane beside the sheet. Below extra-large the review form
-  is under the answer.
+- **Review page** (`task-review-page.ts`, 352.2, sketches 14, 15, 16): the header — «back», the
+  student as the title, «<assignment> · сдано сегодня, 09:12 · вовремя / с опозданием» (not handed
+  in: «срок …»; a status other than «На проверке» as its tag), «1 из 2 на проверке» with «‹» «›»
+  (the previous / next work of the queue); on a phone «1 из 2 на проверке» under the name, only
+  «›», and the assignment line under the header. Then «Задание» collapsed to its first line, «Ответ»
+  and the test as tonal blocks (`surface container`, 20 dp corners).
+- **Review form** (`review-sheet.ts`): from large (≥ 1200, sketch 14) a standard side sheet ≤ 400 dp
+  beside the work, «Проверка» and «×»; the rail collapses to 96 dp (`RailState`). Below large
+  (sketch 15) the same form under the answer as a bordered block «Проверка» (its accept button
+  «Принять и дальше» while the queue goes on). The form: the AI draft (tertiary tag «Черновик ИИ»,
+  «Вставить»), «Комментарий», quick phrases as assist chips («Молодец!», «Аккуратнее с
+  орфографией», «Повтори правило»), «Оценка» as single-select filter chips «3 · 4 · 5 · <quiz score>
+  · Без оценки» (a grade set before is a chip of its own), «На доработку» tonal with ↺ + «Принять»
+  filled, «После этого откроется: <student>» and «На доску». *Ours:* «На доработку» stays tonal,
+  not the sketch's error container — M3 keeps error roles for errors, and the design system keeps
+  red for destruction.
 - **Floating toolbar** (compact, **M3** floating toolbar, sizes *ours*): a surface-container-high
   pill, 64 dp, 16 dp from the edges (plus safe area), elevation 2, with the AI button, the comment
-  button, «На доработку» and «Принять»; the comment, draft, phrases and grade live in a bottom sheet
-  from the comment button; the bottom bar is hidden on this screen (`RailState.bottomBarHidden`).
+  button, «Доработать» and «Принять» (sketch 16); the comment, draft, phrases and grade live in a
+  bottom sheet from the comment button; the bottom bar is hidden on this screen
+  (`RailState.bottomBarHidden`).
 - **AI requests** («Последние запросы»): rows with the feature icon, feature + status tag,
   «dd.MM.yyyy HH:mm · model · N с» with the error under it, tokens as the amount; 10, then «Показать
   ещё».
 
 ### Assignment editor
 
-A main flexible pane in the order of the quick dialog (340.2), each section in its own
-`tb-section-card`: «Кому» and «Срок» side by side in the first card («Кому» — input chips + dashed
-«Ученик или группа», new assignments only; «Срок» — filter chips; both have a visible label of one
-style; every item of the «Разделы задания» column has an icon), «Задание» (one Markdown field
-with the «Текст / Просмотр» switch; the first line is the title, hint «Первая строка станет
-названием»), «Материалы», «Вопросы» and «Как проходит тест» (`tb-quiz-settings`). Empty sections (textbooks, videos, the «Вопросы» card) are hidden; the assist
-chips under «Материалы» («Файл · Учебник · Видео · Тест с вопросами · Доска») add them, a section
-with content shows normally and can be removed. A saved assignment loads its title as the first line
-when the text does not start with it. The header: «ИИ-помощник» (tonal), text «Сохранить черновик» («Черновик» on a phone),
-split filled «Выдать» (menu «Выдать и разместить на доске»); a saved assignment has the filled
-«Сохранить». A supporting sheet with the AI request (prompt library, search and save, sources,
-generate / error / retry, draft Remove / Insert / Replace) opens beside the form from the AI button.
-From **M3:** the supporting-pane canonical layout. *Ours:* the AI pane shares the width equally with
-the editor from expanded and is a modal right drawer below; main content precedes AI in reading
-order; one Markdown field at every width; the AI never changes text without Insert / Replace; its
-state survives closing the pane; leaving with changes asks first. The recipients, deadline and
-materials parts are the components of the dialog (`ui/recipients-field.ts`, `ui/due-chips.ts`,
-`ui/material-chips.ts`).
+A main flexible pane with two `tb-tabs` (346.2, sketches 11, 28, 21): «Задание» and «Тест · N
+вопросов» (`?tab=quiz`, the default left out; the address is kept with `Location.replaceState`). On
+a phone (< 600) the bar is `tb-tabs--fixed` «Задание · Вопросы · N · Настройки» (`?tab=settings`;
+wider it falls back to «Тест»).
 
-**Sections column** (from expanded width, hidden beside the AI pane): `tb-section-nav` «Разделы задания»
-(design-system §10) lists the shown sections — «Задание», «Материалы · N», «Вопросы · N», «Как проходит
-тест» — the one in view highlighted, a click scrolls to it. The sketch's «Добавить» group is not built:
-the assist chips under «Материалы» do that.
+- **«Задание»** (352.1, sketch 11): three columns from a form of 52 rem (a container query) —
+  the sections column, the middle with «Задание» (one Markdown field with the «Текст / Просмотр»
+  switch; the first line is the title, hint «Первая строка станет названием»), «Видео» (once there
+  is a video or «Видео» was pressed: «N из 5», the tiles and the labelled «Ссылка на видео» field)
+  and, with questions, the test summary «Тест» («N вопросов · M баллов · K попытки», the first
+  three questions as one-line rows of a `tb-list--no-lead` — number, type icon, text cut with «…»
+  or «Без текста», points —, the row «…и ещё N вопросов», the hint where to edit them and tonal
+  «Открыть тест»), and the aside (300–380 px) with «Кому» and «Срок» in one card (input chips +
+  dashed «Ученик или группа», drafts only; filter chips) and «Материалы»: a draft's textbooks and
+  files as compact rows (`tb-list--clamp`: two lines at most; textbook — «Изменить
+  страницы», «Убрать»; file — «Удалить файл») over the assist chips «Файл · Учебник · Видео ·
+  Доска» («Тест с вопросами» only while there is no test; it opens «Тест»). Narrower — one column
+  in the order who, the text, the videos, the test, the materials (sketch 19). Videos are tiles
+  (`video-section.ts`, 348.1, sketches 39, 40: preview, name, source, «Расшифровка» / «Без
+  расшифровки», «видит ученик», «Настроить»; drag to reorder); «Настроить» opens the video's side
+  sheet (a phone: full screen) — player, «Название», the transcript as timed lines, «Субтитры
+  YouTube» (menu of tracks), «Из файла», «Править текст», «Показывать расшифровку ученику»,
+  «Убрать видео», ‹ ›. Picked files and textbooks join the saved ones after the autosave; an
+  issued assignment has them on its page.
+- **«Тест»** — the quiz builder (`question-section.ts`, 347.1, sketches 28, 29), three columns that
+  wrap: the **outline** (300 dp: «N вопросов · M баллов», a segmented list of one-line rows —
+  drag handle, number, type icon, the text cut with an ellipsis, error icon once «Выдать» was
+  tried, points; the open row
+  secondary-container; rows reorder by CDK drag or ↑ / ↓ on the handle; tonal «Вопрос» opens a menu
+  of the six types with a hint each, tertiary «С ИИ» opens the AI pane — the two share the
+  column's width), the **open question**
+  (`question-editor.ts` in a section card: «Вопрос N», the type as a tonal menu button — a
+  change keeps the text, points and explanation, the options pass between the choices and the
+  ordering, otherwise «Сменить тип вопроса?» asks first —, copy / ↑ / ↓ / delete, the Markdown
+  text, the answer fields of the type as in sketch 29 with a rule hint, the points stepper 1–100,
+  the explanation folded into a tonal «Пояснение к ответу» while empty, «‹ Вопрос 2 · Вопрос 4
+  ›» under a divider) and the **side column** «Как проходит тест» (reveal radios, attempts as the
+  connected group «1 · 2 · 3 · Без огр.», «Засчитывается лучшая попытка») and the filled card
+  «Итого» (questions, points, «Примерно займёт N–M мин» — ¾ to 1 min a question, *ours* —, after
+  «Выдать» each broken question with «Открыть»). Options are 48 dp tonal rows (the right one
+  success-container with «верный»), Enter in the last option or pair adds the next one; short
+  answers are input chips plus a field (Enter or leaving it adds one). On a phone the settings are
+  the «Настройки» tab. The header of «Тест» has tonal «Как увидит ученик» (sketch 28; an icon
+  on a phone) while there are questions: the student's full-screen test (`quiz-player.ts`) with
+  the editor's questions — orderings and the right column of a matching reversed, the note «Так
+  тест увидит ученик · ответы не сохраняются»; answers stay in the page and «Завершить тест»
+  closes it. *Not built:* the sketch's «Ученик увидит в случайном порядке» toggle of
+  choice options (the backend has no such setting).
+- **Test states** (347.2, sketch 30): no questions — `tb-empty-state` «Добавьте вопросы» with filled
+  «Добавить вопрос» (the type menu), tertiary «Составить с ИИ» and «ИИ учтёт текст задания и
+  привязанный учебник»; «Выдать» with broken questions — an error-container alert «Задание не
+  выдано: N вопроса нужно поправить» with a link per question («Вопрос 6 — отметьте верный
+  вариант»: opens it with the focus in its text), the rows in error-container; a quiz a student has
+  started (a finished attempt on load, or `homework.quiz-started` on saving) — a tertiary note with
+  `lock` and the filled tertiary «Создать копию для правок» (copies the assignment and opens the
+  copy on «Тест» in the same page), the rows with `lock` instead of the handle, the question
+  read-only.
+- **Medium and phone** (347.3, sketches 19, 21, 31, 32): one column — the outline, then the open
+  question and the side cards (medium). On a phone «Вопросы» is the outline only: rows end in
+  `chevron_right`, the bottom bar `tb-bottom-actions` holds «Вопрос · С ИИ»; a row opens its
+  question as a full-screen dialog (`tb-dialog kind="form"`: ✕, «Вопрос 3 из 8», copy and delete,
+  the type and the points stepper in one row, tap the circle or box to mark the right option — no
+  drag handles but on the items of an ordering —, the explanation folded; the footer «‹ 2 · сохранено · HH:mm · Вопрос 4 ›»); «Вопрос» opens a bottom
+  sheet «Новый вопрос» (the six types with one-line hints — «Слово или фраза», shorter than the
+  menu's —, a divider, «Составить с ИИ»). ✕ returns to the
+  outline with the focus on the row.
+- **Header** (`tb-page-header--one-line`): back, the assignment's title as it is typed («Новое
+  задание» / «Изменить задание» while there is none) on one line cut with «…», «?», «ИИ-помощник»
+  (tonal; an icon on a phone). A draft (new or saved without tasks) has «сохранено · HH:mm» (Body
+  Small, on-surface-variant) and the split filled «Выдать» (menu «Выдать и разместить на доске»;
+  a phone — a plain «Выдать», sketch 21); an issued assignment has the filled «Сохранить». The
+  tabs have their icons from medium (`description`, `quiz`).
+- **A new assignment** (352.6, sketches 11, 19, 21) shows only «Кому», the text, «Срок» and the
+  material assist chips; the video and test sections appear once there is something in them.
+- **Autosave**: a draft saves itself 1.5 s after the last change once it has a title (create, then
+  update; picked files and textbooks go with it and then show as saved; the draft students are
+  kept), no question is checked; the first save puts `/teacher/homework/<id>/edit` into the address
+  without reloading the page. An empty new assignment creates nothing when left. Leaving a draft saves
+  what is left and never asks. «Выдать» returns to the page the editor was opened from (the list,
+  the assignment) with the snackbar «Задание выдано · Открыть» (→ the assignment); «Сохранить» of
+  an issued assignment goes to its page. «Выдать» checks the
+  questions first (problems → «Тест»), a `homework.quiz-incomplete` answer shows «Задание не
+  выдано: поправьте вопросы 2, 3» on «Тест». An issued assignment asks before leaving changes.
+- **«Назад»** leads to the page the editor was opened from (`previousNavigation.finalUrl` without
+  `?create=`: the list with its filters, the assignment, a student); opened by a link — the
+  assignment or the list.
+
+A saved assignment loads its title as the first line when the text does not start with it. A
+supporting sheet with the AI request (prompt library, search and save, sources, generate / error /
+retry, draft Remove / Insert / Replace) opens beside the form from the AI button; its «Что готовить»
+follows the tab — text on «Задание», questions on «Тест». From **M3:** primary tabs; the
+supporting-pane canonical layout. *Ours:* the AI pane is a fixed pane beside the editor from
+expanded (sketch 13), a modal right drawer on medium (sketch 19) and a bottom sheet on a phone
+(sketch 22); main content precedes AI in reading order; one Markdown
+field at every width; the AI never changes text without Insert / Replace; its state survives closing
+the pane. The recipients, deadline and materials parts are `ui/recipients-field.ts`,
+`ui/due-chips.ts`, `ui/material-chips.ts`.
+
+**Sections column** (on «Задание» from expanded width, hidden beside the AI pane): `tb-section-nav`
+«Разделы задания» (design-system §10) lists «Текст», «Видео · N» and «Тест · N» — the one in view
+highlighted, a click scrolls to it. The sketch's «Добавить» group is not built: the assist chips of
+«Материалы» add at every width, and the column is hidden beside the AI and below expanded.
 
 **Recipients of a saved assignment:** a draft shows its `draftStudentIds` as the editable «Кому» chips
 (saving updates `draft-students` once the student list is in); an issued one shows its students as
 read-only chips and «Выдать ещё» (`assign-more-dialog.ts`; the text stays as typed).
 
-**Questions** (0.39.0): a «Вопросы» card under the videos (`question-section.ts`): a question is a card
+**Questions** (0.39.0): «Вопросы» on the «Тест» tab (`question-section.ts`): a question is a card
 (type, text, type fields, points, explanation) with up/down/delete; «Добавить вопрос» picks the type; a total
 «Вопросов: N, баллов: M»; «Как проходит тест» — when to show the key and the attempts. Accepted answers of a short
 answer are rows with «Добавить ответ»; server errors show in one message above the questions. After a student starts
 the quiz the card is read-only with a note. The AI pane has a «Что готовить» switch: «Задание» or «Вопросы» (the draft
 cards with the key, «Добавить в конец» / «Заменить все»).
 
-**Quiz review:** the review page shows «Тест: N из M» under the answer — the best attempt's questions, wrong first,
-with the student's answer, the key and «Засчитать» / «Не засчитывать»; the grade field is filled with «N из M» until
-the teacher types one. The assignment page shows «Ошибки по вопросам» («4 из 6») as bars.
+**Quiz review** (352.2, sketch 14): the review page shows the tonal block «Тест · N из M» («лучшая
+из K попыток» on the right) under the answer — a row per wrong answer of the best attempt (✕, «№3»
+and the question, «ответ: ~~x~~ · ключ: y», tonal «Засчитать»); «Показать верные (N)» opens the
+right ones (✓, «Не засчитывать»). The grade chip «N из M» is chosen until the teacher picks another.
+The assignment page shows «Ошибки по вопросам» («4 из 6») as bars.
 
 ## Payments (teacher)
 
@@ -493,20 +573,43 @@ asks «Отменить изменения?» before another category or page op
   summary as Markdown, when there is one; no plan or private note), «Показать ещё» for the next 20.
   The lesson card of a lesson that has started shows the same «Что прошли» under its facts; the
   notification «Итоги урока» links to `/cabinet/schedule?lesson=<id>` and opens that card.
-- **Homework** (`my-homework-page.ts` + `my-task-page.ts`): list-detail of one route; the list pane
-  — groups «Вернули на доработку» (the teacher's comment under the title, error accent),
-  «Сделать» (by the deadline: «остался N дн.» / «сегодня» / «просрочено на N дн.») and «Сдано»
-  («На проверке» / «Принято» + grade), each hidden when empty; rows (icon of the group, title
-  link, second line, material icons with counts as in the teacher's list, status tag); on compact a tonal «Ближайшее» card (*ours*: the oldest
-  returned task, else the nearest deadline) with «Открыть» leads the list; the detail — the task
-  text, «Мой ответ» right under it (text, «Фото тетради» with the camera, «Файл», attachment rows with «Убрать», filled
-  «Сдать»; the unsent text is kept on the device, «черновик сохранён») and, beside it on wide / below on compact,
-  the materials and the test; on compact the answer panel is docked at the bottom. A returned work shows the
-  teacher's comment above; an accepted one has no answer panel. A task with questions has a «Тест» section
-  (`quiz-section.ts`): «Начать тест», on wide all questions as cards, on compact one per screen with
-  «Назад / Далее / Проверить и сдать»; matching is a select per left part, ordering has up/down buttons; answers
-  save themselves; «Сдать тест» asks first. After a submit: «Лучший результат: N из M», attempts left, «Пройти
-  ещё раз», and the key with the explanations when the rule allows.
+- **Homework** (`my-homework-page.ts` + `my-task-page.ts`): list-detail of one route (compact and
+  medium: two pages, on medium with the rail — sketches 37 → 25); the list pane — groups «Вернули на
+  доработку» (the teacher's comment under the title, error accent), «Сделать» (by the deadline:
+  «остался N дн.» / «сегодня» / «просрочено на N дн.») and «Сдано» («сдано …» or «оценка 5»),
+  each hidden when empty; rows (icon of the group, the title on one line ending with «…», second
+  line, a status tag only once handed in or returned — sketches 8, 9, 37); on one pane a
+  primary-container «Ближайшее» card (*ours*: the oldest returned task, else the nearest deadline;
+  its material icons with counts) with filled «Открыть» leads the list. Only the panes scroll, never
+  the window. The detail (sketch 8) — the header «Сдать до … — остался N дн.» and the status tag;
+  the task text, «Мой ответ» under it (text, «Фото тетради» with the camera, «Файл», attachment
+  rows with «Убрать», filled «Сдать»; the unsent text is kept on the device, «черновик сохранён»)
+  and a right column of the materials and the test card, while the task is to do (none when there
+  is neither). On one pane (sketches 10, 25) one column: the text, the materials, the test, the
+  answer last — docked at the bottom on compact (above the navigation bar). Handed in, the test
+  result is in the main column. **A reviewed work is the same task in its state** (sketches
+  24, 27, 38): no right column, no deadline and no tag in the header; the task text and its
+  materials fold into «Задание» under the result. «Принято» — a success-container card (✓
+  «Принято», the grade in Display Small, «проверено …»; on compact a row across the width, the
+  grade first) beside the primary-container «Комментарий учителя», the test result, no answer panel, and filled «Следующее задание» (the first returned or open task; on
+  compact a bottom bar «К заданиям · Следующее»); «На доработке» — an error-container card (↻
+  «Вернули на доработку», the comment, «проверено …»), «Первая попытка» (the last answer on
+  surface-container-low) and the form «Вторая попытка» prefilled with its text («Ответ прошлой
+  попытки скопирован — допишите недостающее»; a device draft wins), «Сдать снова». Earlier answers
+  fold into «Мой ответ · текст, 2 файла» (not for a returned work with one attempt — it is above). A task with questions has the tonal card «Тест · N
+  вопросов» (`quiz-section.ts`: attempts, when the key shows, «Начать тест» / «Продолжить тест»).
+  **The test** (`quiz-player.ts`, sketches 23, 26; `tb-dialog kind="screen"`) is a pane in the
+  frame from medium — where the panes are, the rail and the top strip stay — and full screen on
+  compact: «✕» «Выйти из теста — ответы сохранятся», «Тест · <задание>», «Вопрос 3 из 10»;
+  «Попытка 1 из 2 · ответы сохраняются сами», a 4 dp progress bar; one question (type · points, the
+  text in Headline Small, large options), «Назад · Дальше» (the last question «Завершить тест»);
+  beside it the question numbers (answered / current), «Завершить тест» and when the key shows; on
+  compact dots instead of the numbers and 56 dp buttons at the bottom. Matching is a select per left
+  part, ordering has up/down buttons; answers save themselves; «Завершить тест» asks only when
+  questions are skipped. The card stays while there is something to do (an open attempt, attempts
+  left); the result is a surface-container-low block «Тест · N из M · K ошибки» with the mistakes
+  only (the answer struck out · «Верный ответ», the explanation) when the rule allows, else when the
+  key shows.
 - **Payments:** tonal balance / charged / paid / price figures and the journal with filter chips,
   receipts in their rows.
 - **«Мой аккаунт»** (`/cabinet/account`, from «Аккаунт» in the rail / ☰): account,

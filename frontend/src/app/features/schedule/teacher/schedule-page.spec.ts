@@ -21,6 +21,7 @@ import { LessonDialog } from './lesson-dialog';
 import { OffTimeDialog } from './off-time-dialog';
 import { SchedulePage } from './schedule-page';
 import { testProviders, ConfirmHost } from '@testing/setup';
+import { toIsoDate } from '@shared/dates/iso-date';
 
 describe('SchedulePage', () => {
   let fixture: ComponentFixture<SchedulePage>;
@@ -306,9 +307,12 @@ describe('SchedulePage', () => {
     await fixture.whenStable();
     expect(calendar.lessons()).toHaveLength(1);
 
-    host.querySelector<HTMLButtonElement>('tb-mini-month [data-date="2026-10-14"]')?.click();
+    // a day of the month the mini-month shows: the current one
+    const today = new Date();
+    const day = toIsoDate(new Date(today.getFullYear(), today.getMonth(), 14));
+    host.querySelector<HTMLButtonElement>(`tb-mini-month [data-date="${day}"]`)?.click();
     await fixture.whenStable();
-    expect(calendar.focusDate()).toBe('2026-10-14');
+    expect(calendar.focusDate()).toBe(day);
     // the calendar moved: the lessons of the new range are asked for
     for (const request of backend.match(
       (request) => request.url === '/api/teacher/schedule/lessons',

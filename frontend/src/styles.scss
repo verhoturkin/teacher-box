@@ -507,13 +507,14 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
 }
 
 /*
- * A section card of a form on a pane (the assignment editor, sketch Editor): each section is a tonal card,
- * `surface-container-low`, 20 dp corners (M3 large-increased), 20 dp inside; the title in Title Medium
- * emphasized, 12 px under it. Ours: the cards stand 16 px apart (the sketch has 14).
+ * A section card of a form on a pane (the assignment editor, sketch Elements): an M3 outlined card —
+ * `surface-container-lowest`, 1 dp outline-variant, 20 dp corners (M3 large-increased), 20 dp inside,
+ * 12 px between the title (Title Medium emphasized) and the content. Ours: the cards stand 16 px apart.
  */
 .p-card.tb-section-card {
-  background: var(--p-md-surface-container-low);
+  border: 1px solid var(--p-md-outline-variant);
   border-radius: var(--tb-shape-lg-plus);
+  background: var(--p-md-surface-container-lowest);
   color: var(--p-md-on-surface);
   box-shadow: none;
 
@@ -524,6 +525,163 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
 
   .p-card-title {
     font: var(--tb-type-title-m-emphasized);
+  }
+}
+
+/*
+ * The phone bottom action bar (sketch Elements «Панель действий телефона»): sticks to the bottom of the
+ * page, `surface-container-low` (M3 bottom sheet surface), 28 dp top corners, 12 / 16 px inside; the
+ * buttons are the usual 40 dp ones.
+ */
+.tb-bottom-actions {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1;
+  display: flex;
+  gap: var(--tb-space-2);
+  align-items: center;
+  padding: var(--tb-space-3) var(--tb-space-4);
+  border-radius: var(--tb-shape-xl) var(--tb-shape-xl) 0 0;
+  background: var(--p-md-surface-container-low);
+
+  > .p-button:only-child {
+    flex: 1;
+  }
+}
+
+/* above the navigation bar, which stays fixed at the window's bottom */
+.tb-shell__content--nav .tb-bottom-actions {
+  inset-block-end: calc(var(--tb-bottom-nav-height) + env(safe-area-inset-bottom));
+}
+
+/*
+ * An AI action that is not the surface's primary one («С ИИ», «Составить с ИИ»; sketches 28, 30): a tonal
+ * button in the tertiary container (M3: tertiary is the contrasting accent; design-system §11).
+ */
+.p-button.tb-button-ai {
+  border-color: var(--p-md-tertiary-container);
+  background: var(--p-md-tertiary-container);
+  color: var(--p-md-on-tertiary-container);
+
+  &:not(:disabled):hover {
+    border-color: var(--p-md-tertiary-container);
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-tertiary-container) 8%,
+      var(--p-md-tertiary-container)
+    );
+    color: var(--p-md-on-tertiary-container);
+  }
+}
+
+/*
+ * The filled tertiary button: the action of a tertiary note («Создать копию для правок», sketch 30) —
+ * `on-tertiary-container` with `tertiary-container` text, as the filled AI actions (design-system §11).
+ */
+.p-button.tb-button-tertiary {
+  border-color: var(--p-md-on-tertiary-container);
+  background: var(--p-md-on-tertiary-container);
+  color: var(--p-md-tertiary-container);
+
+  &:not(:disabled):hover {
+    border-color: var(--p-md-on-tertiary-container);
+    background: color-mix(
+      in srgb,
+      var(--p-md-tertiary-container) 8%,
+      var(--p-md-on-tertiary-container)
+    );
+    color: var(--p-md-tertiary-container);
+  }
+}
+
+/* The filled variant of the section card («Итого», sketch 28): M3 filled card, surface-container-low */
+.p-card.tb-section-card.tb-section-card--filled {
+  border-color: transparent;
+  background: var(--p-md-surface-container-low);
+}
+
+/*
+ * A drag handle of a row that reorders (the quiz outline, options; ours — M3 has no handle component):
+ * a 40 dp icon button with `drag_indicator`; the arrow keys move the row too, so it is a button.
+ */
+.tb-drag-handle {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border: 0;
+  border-radius: var(--tb-shape-full);
+  background: transparent;
+  color: var(--p-md-on-surface-variant);
+  cursor: grab;
+
+  &:hover {
+    background: color-mix(in srgb, currentcolor 8%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--p-md-primary);
+    outline-offset: -2px;
+  }
+
+  .tb-i {
+    font-size: 1.25rem;
+  }
+}
+
+/*
+ * The points stepper (sketch 28, board 33; ours — M3 publishes no stepper): «− N +» in one 40 dp pill with a
+ * 1 dp outline, 40 dp icon buttons; the field is a spinbutton, so the arrow keys change it.
+ */
+/* `.p-dialog.tb-d--full .p-inputnumber` stretches fields: the stepper keeps its size */
+.p-inputnumber.tb-stepper,
+.p-dialog.tb-d.tb-d--full .p-inputnumber.tb-stepper {
+  display: inline-flex;
+  flex: none;
+  inline-size: auto;
+  block-size: 2.5rem;
+  border: 1px solid var(--p-md-outline);
+  border-radius: var(--tb-shape-full);
+  overflow: hidden;
+
+  .p-inputnumber-input {
+    flex: none;
+    inline-size: 3rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .p-inputnumber-button {
+    inline-size: 2.5rem;
+    border: 0;
+    background: transparent;
+    color: var(--p-md-on-surface-variant);
+  }
+}
+
+/* A menu item with supporting text (the question types; M3 Expressive vertical menu: supporting text) */
+.p-menu .tb-type-item {
+  align-items: flex-start;
+  gap: var(--tb-space-3);
+
+  .tb-i {
+    color: var(--p-md-primary);
+  }
+}
+
+.tb-type-item__text {
+  display: grid;
+
+  small {
+    font: var(--tb-type-body-s);
+    color: var(--p-md-on-surface-variant);
   }
 }
 
@@ -808,6 +966,47 @@ textarea.p-textarea {
 
   > .tb-negative[meta] {
     color: var(--p-md-error);
+  }
+}
+
+/*
+ * A title the teacher types (`tb-page-header--one-line`, the assignment editor): one line cut with «…», the
+ * actions stay on its right however long it grows
+ */
+.tb-page-header--one-line {
+  flex-wrap: nowrap;
+
+  > .tb-page-header__lead,
+  .tb-page-header__text {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .tb-page-header__text {
+    align-items: stretch;
+  }
+
+  .tb-page-heading,
+  .tb-page-title {
+    min-width: 0;
+  }
+
+  .tb-page-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* a phone too (sketch 21): «Назад», the title and «Выдать» on one line; «Справка» is under ☰ there */
+  &.tb-page-header > .tb-actions {
+    flex: none;
+    width: auto;
+  }
+
+  @media (width < 37.5em) {
+    .tb-page-heading > [help] {
+      display: none;
+    }
   }
 }
 
@@ -3233,65 +3432,54 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
   background: transparent;
 }
 
+/* the rail's width (shell.scss): on :root, so a dialog appended to the body can keep clear of it */
+:root {
+  --tb-rail-width: 96px;
+}
+
+:root:has(.tb-shell--wide) {
+  --tb-rail-width: 280px;
+}
+
+/* a `screen` dialog's content fills its height, so the content can keep its actions at the bottom */
+.p-dialog.tb-d--screen .p-dialog-content,
+.p-dialog.tb-d--screen .tb-d__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+/*
+ * ours, sketch 23: from medium a `screen` dialog (the student's test) is a pane in the frame — where the
+ * panes are, on the window's surface container; the rail and the top strip stay. Full screen on compact.
+ */
+@media (width >= 37.5em) {
+  .p-dialog-mask:has(> .tb-d--screen) {
+    inset: var(--tb-header-height) 0 0 var(--tb-rail-width) !important;
+    width: auto !important;
+    height: auto !important;
+    background: var(--p-md-surface-container) !important;
+  }
+
+  .p-dialog.tb-d.tb-d--full.tb-d--screen {
+    width: calc(100% - var(--tb-space-6)) !important;
+    max-width: none;
+    height: calc(100% - var(--tb-space-6));
+    max-height: none;
+    margin: 0 var(--tb-space-6) var(--tb-space-6) 0;
+    border-radius: var(--tb-shape-xl);
+    /* a pane, as the panes it stands in for */
+    background: var(--p-md-surface);
+    box-shadow: none;
+  }
+}
+
 .p-dialog.tb-d {
   width: min(32rem, calc(100vw - 2rem));
   border-radius: var(--tb-shape-xl);
 
   &.tb-d--wide {
     width: min(40rem, calc(100vw - 2rem));
-  }
-
-  &.tb-d--xwide {
-    width: min(47.5rem, calc(100vw - 2rem));
-  }
-
-  /*
-   * ours, sketch AiDraft: the pane is a column of the whole dialog height; the headline and the buttons
-   * belong to the form column. The content wrappers dissolve so the form and the pane are grid items.
-   */
-  &.tb-d--split {
-    /* PrimeNG shows the dialog with an inline `display: flex` */
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) minmax(26rem, 32.5rem);
-    grid-template-rows: auto auto minmax(0, 1fr) auto;
-    width: min(77.5rem, calc(100vw - 2rem));
-    overflow: hidden;
-
-    .p-dialog-header,
-    .p-dialog-footer,
-    .tb-d__error {
-      grid-column: 1;
-    }
-
-    .p-dialog-header {
-      grid-row: 1;
-    }
-
-    .tb-d__error {
-      grid-row: 2;
-    }
-
-    .p-dialog-footer {
-      grid-row: 4;
-    }
-
-    .p-dialog-content,
-    .tb-d__content,
-    .tb-create-split {
-      display: contents;
-    }
-
-    .tb-create {
-      grid-column: 1;
-      grid-row: 3;
-      overflow: auto;
-      padding-inline: var(--tb-space-6);
-    }
-
-    .tb-create-ai {
-      grid-column: 2;
-      grid-row: 1 / -1;
-    }
   }
 
   .p-dialog-header {
@@ -3892,7 +4080,7 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
 
   .p-tab {
     display: inline-flex;
-    flex: 1 1 0;
+    flex: 0 0 auto;
     align-items: center;
     justify-content: center;
     gap: var(--tb-space-1);
@@ -3916,11 +4104,10 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
     }
   }
 
-  /* a phone (the sketches): the tabs keep the width of their label and scroll (M3 scrollable tabs) */
-  @media (width < 37.5em) {
-    &:not(.tb-tabs--fixed) .p-tab {
-      flex: 0 0 auto;
-    }
+  /* the tabs keep the width of their label, from the start edge (M3 scrollable tabs, sketches 11, 21); a few
+     short labels share the width (M3 fixed tabs) */
+  &.tb-tabs--fixed .p-tab {
+    flex: 1 1 0;
   }
 
   .p-tab-active {

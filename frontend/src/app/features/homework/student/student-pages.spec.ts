@@ -4,7 +4,7 @@ import { MessageService } from 'primeng/api';
 import { FileOpener } from '@shared/files/file-opener';
 import { FileSaver } from '@shared/files/file-saver';
 import { boundTextbook, myTask, taskDetails } from '@testing/homework-fixtures';
-import { buttonByText, hostElement, readableText } from '@testing/dom';
+import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { TaskDetails } from '../data-access/homework.models';
 import { MyHomeworkPage } from './my-homework-page';
 import { MyTaskPage } from './my-task-page';
@@ -75,8 +75,9 @@ describe('MyHomeworkPage', () => {
     vi.useRealTimers();
   });
 
-  it('shows the materials of a task as icons with counts', async () => {
-    const { backend } = configure();
+  it('keeps a tile to its title and line: the materials on the «Ближайшее» card, no tag on a task to do', async () => {
+    TestBed.configureTestingModule({ providers: testProviders(screenWidth(400)) });
+    const backend = TestBed.inject(HttpTestingController);
     const fixture = TestBed.createComponent(MyHomeworkPage);
     await fixture.whenStable();
     backend
@@ -84,11 +85,15 @@ describe('MyHomeworkPage', () => {
       .flush([myTask({ textbooks: 1, questions: 10, board: true }), myTask({ taskId: 't-2' })]);
     await fixture.whenStable();
 
-    const rows = hostElement(fixture).querySelectorAll('.tb-list > li');
-    expect(rows[0]?.querySelectorAll('.tb-hw__material')).toHaveLength(3);
-    expect(rows[0]?.querySelector('[aria-label="Вопросы: 10"]')).not.toBeNull();
-    expect(rows[0]?.querySelector('[aria-label="Доска"]')).not.toBeNull();
-    expect(rows[1]?.querySelectorAll('.tb-hw__material')).toHaveLength(0);
+    const host = hostElement(fixture);
+    const card = requireElement(host, '.tb-hw__nearest', HTMLElement);
+    expect(card.querySelectorAll('.tb-hw__material')).toHaveLength(3);
+    expect(card.querySelector('[aria-label="Вопросы: 10"]')).not.toBeNull();
+    expect(card.querySelector('[aria-label="Доска"]')).not.toBeNull();
+    const rows = host.querySelectorAll('.tb-list > li');
+    expect(rows[0]?.querySelectorAll('.tb-hw__material')).toHaveLength(0);
+    expect(rows[0]?.querySelector('tb-task-status')).toBeNull();
+    expect(rows[0]?.querySelector('.tb-hw__title')).not.toBeNull();
   });
 
   it('hides the empty groups and the drafts-free list shows only what exists', async () => {
@@ -100,7 +105,7 @@ describe('MyHomeworkPage', () => {
 
     const host = hostElement(fixture);
     expect(Array.from(host.querySelectorAll('h2')).map((h) => readableText(h))).toEqual(['Сдано']);
-    expect(readableText(host)).toContain('Оценка: 5');
+    expect(readableText(host)).toContain('Дроби оценка 5 Принято');
   });
 
   it('leads a phone with «Ближайшее»: the oldest returned task, else the nearest to do', async () => {
@@ -180,6 +185,23 @@ describe('MyHomeworkPage', () => {
     await fixture.whenStable();
 
     expect(readableText(host.querySelector('.tb-list') ?? host)).toContain('На проверке');
+  });
+
+  it('leads from an accepted task to the next one to do', async () => {
+    const { backend } = configure();
+    const fixture = TestBed.createComponent(MyHomeworkPage);
+    fixture.componentRef.setInput('taskId', 't-1');
+    await fixture.whenStable();
+    backend
+      .expectOne('/api/me/homework')
+      .flush([
+        myTask({ taskId: 't-1', title: 'Дроби', status: 'ACCEPTED' }),
+        myTask({ taskId: 't-2', title: 'Степени' }),
+      ]);
+    backend.expectOne('/api/me/homework/tasks/t-1').flush(taskDetails({ status: 'ACCEPTED' }));
+    await fixture.whenStable();
+
+    expect(hostElement(fixture).querySelector('a[href="/cabinet/homework/t-2"]')).not.toBeNull();
   });
 
   it('asks to choose a task when none is open', async () => {
@@ -369,7 +391,7 @@ describe('MyTaskPage', () => {
 
   it('docks the answer at the bottom on a phone only', async () => {
     const wide = await render(taskDetails({ status: 'ASSIGNED', submissions: [] }));
-    expect(wide.host.querySelector('.tb-task__answer--docked')).toBeNull();
+    expect(wide.host.querySelector('.tb-bottom-actions')).toBeNull();
     expect(wide.host.querySelector('.tb-task__side')).not.toBeNull();
     wide.fixture.destroy();
     TestBed.resetTestingModule();
@@ -382,7 +404,7 @@ describe('MyTaskPage', () => {
       .expectOne('/api/me/homework/tasks/t-1')
       .flush(taskDetails({ status: 'ASSIGNED', submissions: [] }));
     await fixture.whenStable();
-    expect(hostElement(fixture).querySelector('.tb-task__answer--docked')).not.toBeNull();
+    expect(hostElement(fixture).querySelector('.tb-task__answer.tb-bottom-actions')).not.toBeNull();
   });
 
   it('requires text or files', async () => {
@@ -415,32 +437,78 @@ describe('MyTaskPage', () => {
     expect(readableText(host)).toContain('Такой тип файла загружать нельзя');
   });
 
-  it('shows the teacher feedback on returned tasks', async () => {
-    const { host } = await render(
-      taskDetails({ status: 'RETURNED', teacherComment: 'Исправь №3', overdue: true }),
+  it('shows a returned work with the previous attempt and a second one prefilled from it', async () => {
+    const { host, fixture } = await render(
+      taskDetails({
+        status: 'RETURNED',
+        teacherComment: 'Исправь №3',
+        reviewedAt: '2026-09-06T15:20:00Z',
+        overdue: true,
+      }),
     );
 
-    expect(readableText(host)).toContain('Нужно доработать Исправь №3');
-    expect(host.querySelector('#answer-text')).not.toBeNull();
+    const text = readableText(host);
+    expect(text).toContain('Вернули на доработку Исправь №3');
+    expect(text).toContain('Первая попытка');
+    expect(text).toContain('Вторая попытка');
+    expect(text).toContain('Ответ прошлой попытки скопирован');
+    expect(requireElement(host, '#answer-text', HTMLTextAreaElement).value).toBe('Мой ответ');
+    expect(buttonByText(host, 'Сдать снова')).toBeTruthy();
+    // the copied text is not a draft of this device until the student edits it
+    expect(text).not.toContain('черновик сохранён');
+    expect(fixture.componentInstance.text.value).toBe('Мой ответ');
   });
 
-  it('hides the form for accepted tasks and downloads files', async () => {
-    const { host, backend, saved } = await render(
+  it('keeps the device draft of a returned work over the previous answer', async () => {
+    localStorage.setItem('tb.homework.draft.t-1', 'Новый текст');
+    try {
+      const { host } = await render(taskDetails({ status: 'RETURNED' }));
+      expect(requireElement(host, '#answer-text', HTMLTextAreaElement).value).toBe('Новый текст');
+      expect(readableText(host)).not.toContain('Ответ прошлой попытки скопирован');
+    } finally {
+      localStorage.removeItem('tb.homework.draft.t-1');
+    }
+  });
+
+  it('shows an accepted work as its grade, the comment, the folded answer and the next task', async () => {
+    const context = configure();
+    const fixture = TestBed.createComponent(MyTaskPage);
+    fixture.componentRef.setInput('taskId', 't-1');
+    fixture.componentRef.setInput('next', 't-2');
+    await fixture.whenStable();
+    context.backend.expectOne('/api/me/homework/tasks/t-1').flush(
       taskDetails({
         status: 'ACCEPTED',
         grade: '5',
         teacherComment: 'Отлично',
+        reviewedAt: '2026-09-06T15:20:00Z',
         assignment: { ...taskDetails().assignment, dueAt: null },
       }),
     );
+    await fixture.whenStable();
+    const host = hostElement(fixture);
 
-    expect(readableText(host)).toContain('Работа принята Отлично');
-    expect(readableText(host)).toContain('Без срока');
-    expect(host.querySelector('section[aria-label="Мой ответ"]')).toBeNull();
+    const text = readableText(host);
+    expect(text).toContain('Принято 5');
+    expect(text).toContain('Комментарий учителя Отлично');
+    expect(text).not.toContain('Без срока');
+    expect(text).toContain('Мой ответ текст, 1 файл');
     expect(host.querySelector('#answer-text')).toBeNull();
+    expect(text).not.toContain('решение.jpg');
+    expect(
+      requireElement(host, 'a[href="/cabinet/homework/t-2"]', HTMLAnchorElement).textContent,
+    ).toContain('Следующее задание');
 
+    // the assignment and its materials fold away under the result
+    expect(text).not.toContain('условие.pdf');
+    buttonByText(host, 'Задание').click();
+    await fixture.whenStable();
     buttonByText(host, 'условие.pdf').click();
-    backend.expectOne('/api/me/homework/attachments/f-1').flush(new Blob(['pdf']));
-    expect(saved).toEqual(['условие.pdf']);
+    context.backend.expectOne('/api/me/homework/attachments/f-1').flush(new Blob(['pdf']));
+    expect(context.saved).toEqual(['условие.pdf']);
+
+    buttonByText(host, 'Мой ответ').click();
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('решение.jpg');
   });
 });

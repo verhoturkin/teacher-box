@@ -93,4 +93,12 @@ describe('Snackbar', () => {
     expect(SNACKBAR_UNDO_LIFE).toBe(6000);
     expect(shown[0]?.data).toEqual({ undo });
   });
+
+  it('shows a result with a button that leads on', () => {
+    const run = vi.fn();
+    snackbar.link('Задание выдано', 'Открыть', run);
+
+    expect(shown[0]).toMatchObject({ severity: 'success', detail: 'Задание выдано' });
+    expect(shown[0]?.data).toEqual({ undo: run, label: 'Открыть' });
+  });
 });

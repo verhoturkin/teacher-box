@@ -180,7 +180,9 @@ test('compact payment figures and filters fit both cabinets; teacher report open
   }
 });
 
-test('homework search stays visible and student status tags stack vertically', async ({ page }) => {
+test('homework search stays visible and an overdue task says so without a tag', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await startSession(page, 'teacher', PASSWORD);
   await page.goto('/teacher/homework');
@@ -204,12 +206,10 @@ test('homework search stays visible and student status tags stack vertically', a
   );
   await student(page);
   await page.goto('/cabinet/homework');
-  const tags = page.locator('tb-task-status p-tag');
-  await expect(tags).toHaveCount(2);
-  const first = await tags.nth(0).boundingBox();
-  const second = await tags.nth(1).boundingBox();
-  expect(second!.y).toBeGreaterThanOrEqual(first!.y + first!.height);
-  await fits(page.locator('.tb-list > li').first());
+  const row = page.locator('.tb-list > li').first();
+  await expect(row.locator('.tb-list__supporting')).toContainText('просрочено на');
+  await expect(row.locator('tb-task-status')).toHaveCount(0);
+  await fits(row);
 });
 
 test('notification header keeps read-all beside close and uses compact corners and insets', async ({

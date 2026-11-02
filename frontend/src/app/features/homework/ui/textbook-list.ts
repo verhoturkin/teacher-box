@@ -80,7 +80,7 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
             }
             @if (editable()) {
               <div class="tb-list__trail tb-list__trail--icons">
-                @if (textbook.format !== 'DOCUMENT') {
+                @if (withBoard() && textbook.format !== 'DOCUMENT') {
                   <p-button
                     icon="tb-i tb-i-co_present"
                     [text]="true"
@@ -133,6 +133,8 @@ export class TextbookList {
   readonly downloadable = input(false);
   /** The teacher: put the pages on a board, change them, unbind. */
   readonly editable = input(false);
+  /** The teacher's «На доску» beside the pages; the editor has none. */
+  readonly withBoard = input(true);
   readonly opened = output<BoundTextbook>();
   readonly download = output<BoundTextbook>();
   readonly edit = output<BoundTextbook>();

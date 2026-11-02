@@ -20,6 +20,8 @@ import ru.teacherbox.homework.domain.quiz.Option;
 import ru.teacherbox.homework.domain.quiz.Ordering;
 import ru.teacherbox.homework.domain.quiz.Pair;
 import ru.teacherbox.homework.domain.quiz.Question;
+import ru.teacherbox.homework.domain.quiz.QuestionDraft;
+import ru.teacherbox.homework.domain.quiz.QuestionType;
 import ru.teacherbox.homework.domain.quiz.QuizAnswer;
 import ru.teacherbox.homework.domain.quiz.QuizAttempt;
 import ru.teacherbox.homework.domain.quiz.ShortText;
@@ -55,11 +57,11 @@ class QuizRepositoriesIntegrationTests {
                 new Matching(UUID.randomUUID(), "Match", 1, null, List.of(pair, pair2)),
                 new Ordering(UUID.randomUUID(), "Order", 1, null, List.of(a, b)));
 
-        questions.replace(assignment, all);
+        questions.replace(assignment, drafts(all));
 
         assertThat(questions.findByAssignment(assignment)).isEqualTo(all);
 
-        questions.replace(assignment, all.subList(0, 1));
+        questions.replace(assignment, drafts(all.subList(0, 1)));
         assertThat(questions.findByAssignment(assignment)).containsExactly(all.getFirst());
         assertThat(questions.findByAssignment(UUID.randomUUID())).isEmpty();
     }
@@ -78,7 +80,7 @@ class QuizRepositoriesIntegrationTests {
         UUID pairId = UUID.randomUUID();
         Question q5 = new Matching(UUID.randomUUID(), "Q5", 1, null,
                 List.of(new Pair(pairId, "l", "r"), new Pair(UUID.randomUUID(), "l2", "r2")));
-        questions.replace(assignment, List.of(q1, q2, q3, q4, q5));
+        questions.replace(assignment, drafts(List.of(q1, q2, q3, q4, q5)));
 
         Instant start = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         QuizAttempt attempt = new QuizAttempt(UUID.randomUUID(), task, start, null, null, null);
@@ -117,7 +119,7 @@ class QuizRepositoriesIntegrationTests {
         UUID assignment = assignment();
         UUID task = task(assignment);
         Question q = new ShortText(UUID.randomUUID(), "Q", 1, null, List.of("x"));
-        questions.replace(assignment, List.of(q));
+        questions.replace(assignment, drafts(List.of(q)));
         QuizAttempt attempt = new QuizAttempt(UUID.randomUUID(), task, Instant.now(), null, null, null);
         attempts.insert(attempt);
         attempts.saveAnswer(new QuizAnswer(attempt.id(), q.id(), new Answer.Text("x"), true, 1, false));
@@ -125,6 +127,27 @@ class QuizRepositoriesIntegrationTests {
         questions.replace(assignment, List.of());
 
         assertThat(attempts.findAnswers(attempt.id())).isEmpty();
+    }
+
+    @Test
+    void draftKeepsIncompleteQuestions() {
+        UUID assignment = assignment();
+        UUID id = UUID.randomUUID();
+        List<QuestionDraft> incomplete = List.of(
+                new QuestionDraft(id, QuestionType.SINGLE_CHOICE, "", 1, null,
+                        List.of(new QuestionDraft.Item(id, "")), List.of(), List.of(), null, null, List.of()),
+                new QuestionDraft(UUID.randomUUID(), QuestionType.NUMBER, "Q", 1, null, List.of(), List.of(),
+                        List.of(), null, null, List.of()),
+                new QuestionDraft(UUID.randomUUID(), QuestionType.MATCHING, "Q", 1, null, List.of(), List.of(),
+                        List.of(), null, null, List.of(new QuestionDraft.Match(id, "l", ""))));
+
+        questions.replace(assignment, incomplete);
+
+        assertThat(questions.findDrafts(assignment)).isEqualTo(incomplete);
+    }
+
+    private static List<QuestionDraft> drafts(List<Question> list) {
+        return list.stream().map(QuestionDraft::of).toList();
     }
 
     private UUID assignment() {

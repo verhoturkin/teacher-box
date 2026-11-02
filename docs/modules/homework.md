@@ -28,7 +28,7 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   (32-hex ID), VK Video (`video-<oid>_<id>`, `video_ext.php`); any other http(s) link is `OTHER` (a link, no
   player); not http(s) — `video.link-invalid`, over 5 — `video.too-many`. Transcript — lines `[m:ss] text`, up to
   100 000 characters; `AssignmentDetails.videos` has every transcript, the student's `AssignmentInfo.videos` only
-  those with `transcriptShown`. «Взять субтитры с YouTube» (saves nothing): `POST /api/teacher/homework/videos/captions
+  those with `transcriptShown`. «Субтитры YouTube» (saves nothing): `POST /api/teacher/homework/videos/captions
   {url}` → `{title, tracks: [{language, automatic}], suggested}` (0.19.1), then `POST …/videos/transcript {url,
   language?, automatic}` — the chosen track, without `language` the suggested one. `VideoTranscripts` over the port
   `VideoCaptions`, adapter `youtube/YoutubeCaptions` — the InnerTube player (client `ANDROID`); suggested: the author's
@@ -94,6 +94,11 @@ keeps them; a list replaces them, copy makes new ids), `quizReveal` and `quizAtt
 unlimited, absent = keep / default 1); the details return the same with the key. Errors
 `homework.quiz-*` (422); the list is frozen once any student started an attempt
 (`homework.quiz-started`; the same list, text and settings stay editable).
+Drafts ([ADR-0054](../adr/0054-incomplete-questions-in-drafts.md), 346.1): an assignment without tasks
+keeps questions as typed (`QuestionDraft`; only lengths, counts, points and duplicate ids are refused
+at once); the type rules run when it is given out — create with `studentIds`, `POST …/students`, a
+question update of a given assignment — and answer 422 `homework.quiz-incomplete` with
+`questions [{number, code}]` (number from 1, the code of the first broken rule); nothing is saved.
 Student REST (`QuizService`, `/api/me/homework/tasks/{id}/quiz`): `GET` (questions without the key,
 options / items / the right column of a matching shuffled by stable ids seeded with the open attempt,
 attempts used / left, `canStart`, best attempt), `POST …/attempts` (returns the open attempt if there
@@ -131,15 +136,19 @@ zone, for the Today page, 239.1),
 
 ## Frontend
 
-Quizzes (0.39.0): the «Вопросы» card of the editor (`teacher/question-section.ts`: a question per type, options with
-«верный» toggles, accepted answers as rows with «Добавить ответ», number and tolerance, pairs, ordering items with
-arrows, points, explanation, reorder, delete; «Как проходит тест» — when to reveal the key and attempts); locked with
-a message once a student started. Server errors of the questions show in one message above them, not under each
-field. The student's `student/quiz-section.ts` on the task page: a list of questions on wide, one per screen with
-«Назад / Далее» on compact; matching by a select per left part and ordering by arrow buttons (no drag-only
-interaction); autosave on change and blur; «Сдать тест» asks for confirmation. The teacher's `teacher/quiz-review.ts`
-(«Тест: N из M», wrong answers first, «Засчитать» / «Не засчитывать») on the review page and the per-question mistakes
-on the assignment page. E2E: `e2e/tests/homework/quiz.spec.ts`.
+Quizzes (0.39.0): the «Вопросы» card of the editor (`teacher/question-section.ts`: a question per
+type, options with «верный» toggles, accepted answers as rows with «Добавить ответ», number and
+tolerance, pairs, ordering items with arrows, points, explanation, reorder, delete; «Как проходит
+тест» — when to reveal the key and attempts); locked with a message once a student started. Server
+errors of the questions show in one message above them, not under each field. The student's
+`student/quiz-section.ts` on the task page is a card «Тест · N вопросов» with «Начать тест» /
+«Продолжить тест»; the test is `student/quiz-player.ts`, full screen on every width (0.43.0): one
+question, «Назад · Дальше», the question numbers, matching by a select per left part and ordering by
+arrow buttons (no drag-only interaction); autosave on change, blur and moving on; «Завершить тест»
+asks only when questions are skipped. The player only edits answers, so the teacher's preview reuses
+it. The teacher's `teacher/quiz-review.ts` («Тест: N из M», wrong answers first, «Засчитать» / «Не
+засчитывать») on the review page and the per-question mistakes on the assignment page. E2E:
+`e2e/tests/homework/quiz.spec.ts`.
 
 Student answer draft (342.2): the backend stores no draft of a submission (the `Draft` types are the teacher's
 assignment drafts), so the text of an unsent answer lives in `localStorage` as `tb.homework.draft.<taskId>` (a task
@@ -192,15 +201,22 @@ of an assignment (`teacher/assignment-board.ts`): the frame «<title> · dd.MM.y
 gif files, then the bound pages of each textbook (a whole PDF — from page 1, an image — its picture, a document —
 none), at most 30. Routes `/teacher/homework/**`, `/cabinet/homework/**`.
 
-Videos (0.19.0, ADR-0047): the editor's «Видео» card (`teacher/video-section.ts`, new and saved assignments alike —
-sent whole with `videos`): per video the link (checked by `ui/video-links.ts` `parseVideoLink`, the player under it),
-«Название», «Расшифровка» with «Взять субтитры с YouTube» (YouTube links; several caption tracks — 0.19.1
-`teacher/caption-language-dialog.ts` «Субтитры на каком языке взять?»: a radio list, the language by `Intl.DisplayNames`
-in the interface language, «От автора видео» / «Автоматические — распознал YouTube», the suggested track first and checked,
-«Взять», or «Заменить» with «Текущая расшифровка будет заменена.» when a transcript is written; a single track is taken
-at once, asking before replacing a transcript; the result — «Субтитры YouTube: английский, автоматические» — or the
-error under it) and «Загрузить субтитры» (.srt / .vtt → `subtitlesToTranscript`, `[m:ss]` paragraphs of
-~30 s), «Показывать расшифровку ученику», a red «×»; «Добавить видео» up to 5; changes count for `canLeave`. Videos
+Videos (0.19.0, ADR-0047; tiles 0.43.0): `teacher/video-section.ts` in the editor (sent
+whole with `videos`). A video is a tile: the preview (YouTube's public `i.ytimg.com/vi/<id>/mqdefault.jpg`, CSP
+`img-src https:`; Rutube, VK and other links show the source icon — they publish no preview without new backend
+work), the name (the title, else «Видео N»), the source («YouTube · с 0:45», «Rutube», «VK Видео», «Плеера нет —
+ученик откроет по ссылке»), tags «Расшифровка» / «Без расшифровки» and «видит ученик», «Настроить». No length: no
+provider returns it through the existing endpoints. Tiles reorder by CDK drag (or the arrow keys on the handle);
+one «Вставьте ссылку на видео» field under them (`parseVideoLink`) adds a tile — a YouTube / Rutube / VK link at once,
+another on Enter or leaving the field; hidden at 5. The chip «Видео» shows and focuses the field. «Настроить» opens a
+modal `tb-side-sheet--narrow` (a phone: the whole screen) «Видео N из M»: the player, «Название», «Расшифровка» as
+timed lines (`transcriptLines`; on YouTube a time restarts the player there via `?start=`) or a text area («Править
+текст», or when empty), the assist chips «Субтитры YouTube» (YouTube links; one track is taken at once, asking before
+replacing a transcript; several open a menu — the suggested first, the language by `Intl.DisplayNames`, «от автора
+видео» / «автоматические», «Заменит текущую расшифровку» over them when one is written; the result «Субтитры
+YouTube: английский, автоматические» or the error under the chips) and «Из файла» (.srt / .vtt →
+`subtitlesToTranscript`, `[m:ss]` paragraphs of ~30 s), «Показывать расшифровку ученику», «Убрать видео» and ‹ ›.
+Videos
 with a transcript are «Видео: <name>» in «Опереться на». `ui/video-player.ts` — a 16:9 `iframe` (`embedUrl`:
 `youtube-nocookie.com/embed`, `rutube.ru/play/embed`, `vkvideo.ru/video_ext.php`, built only from checked IDs), a link
 card «Открыть видео в новой вкладке» otherwise; `ui/video-list.ts` on the assignment and task pages (the title, the

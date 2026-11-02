@@ -32,7 +32,7 @@ import { DialogConfirmStep } from './dialog-confirm-step';
 import { FocusReturn } from './focus-return';
 
 /** What the dialog is for (ADR-0050); the window size only changes its container. */
-export type DialogKind = 'alert' | 'form' | 'sheet';
+export type DialogKind = 'alert' | 'form' | 'sheet' | 'screen';
 
 /** The extra buttons of the header (✎, ⋮): `<ng-template tbDialogHeaderActions>`. */
 @Directive({ selector: 'ng-template[tbDialogHeaderActions]' })
@@ -58,7 +58,8 @@ let nextId = 0;
  * decision, ≤ 1 field), `form` (≥ 2 fields), `sheet` (an object and its actions) — and the window
  * size picks the container: an `alert` is a basic dialog everywhere, a `form` is the full-screen
  * dialog on compact and a basic one from medium, a `sheet` the bottom sheet on compact and a basic
- * dialog from medium. The content is the same in all of them.
+ * dialog from medium, a `screen` (a focused task over the page, the student's test) full screen on compact and a
+ * pane in the frame from medium (styles.scss). The content is the same in all of them.
  *
  * ```html
  * <tb-dialog kind="form" [(visible)]="visible" [headline]="t.title" [confirmLabel]="c.save"
@@ -106,7 +107,7 @@ let nextId = 0;
         severity="secondary"
         [text]="true"
         [rounded]="true"
-        [ariaLabel]="c.close"
+        [ariaLabel]="closeLabel()"
         (onClick)="requestClose()"
       />
     </ng-template>
@@ -250,8 +251,8 @@ export class TbDialog {
   protected readonly errorId = `tb-d-error-${String(nextId++)}`;
 
   readonly kind = input.required<DialogKind>();
-  /** `normal` 32 rem, `wide` 40 rem, `xwide` 47.5 rem (the form with a text editor, ours), `split` 77.5 rem (a form with a pane beside it). */
-  readonly width = input<'normal' | 'wide' | 'xwide' | 'split'>('normal');
+  /** `normal` 32 rem, `wide` 40 rem. */
+  readonly width = input<'normal' | 'wide'>('normal');
   readonly visible = model(false);
   readonly headline = input.required<string>();
   /** The confirming action; `null` — no action (a sheet that only shows). */
@@ -263,6 +264,8 @@ export class TbDialog {
   readonly error = input<string | null>(null);
   /** `false` while a stage must not be interrupted (a restart): no ✕, Cancel, Esc or scrim. */
   readonly closable = input(true);
+  /** The name of «✕» when it says more than «Закрыть» («Выйти из теста — ответы сохранятся»). */
+  readonly closeLabel = input(SHARED_T.common.close);
   /** The form has unsaved changes: closing it asks «Отменить изменения?». */
   readonly dirty = input(false);
   /** The `id` of the `<form>` in the content that the confirm button submits. */
@@ -286,6 +289,8 @@ export class TbDialog {
         return compact ? 'full' : 'basic';
       case 'sheet':
         return compact ? 'sheet' : 'basic';
+      case 'screen':
+        return 'full';
     }
   });
 

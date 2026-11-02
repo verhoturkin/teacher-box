@@ -2,6 +2,7 @@ package ru.teacherbox.platform.web;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +44,9 @@ public class ProblemDetailsAdvice extends ResponseEntityExceptionHandler {
             case BusinessRuleException ignored -> HttpStatus.UNPROCESSABLE_CONTENT;
             case UnauthorizedException ignored -> HttpStatus.UNAUTHORIZED;
         };
-        return problem(status, ex.code(), ex.getMessage());
+        ResponseEntity<ProblemDetail> response = problem(status, ex.code(), ex.getMessage());
+        ex.properties().forEach(Objects.requireNonNull(response.getBody())::setProperty);
+        return response;
     }
 
     @ExceptionHandler(OptimisticLockingFailureException.class)

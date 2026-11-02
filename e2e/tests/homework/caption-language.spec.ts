@@ -2,7 +2,7 @@ import { startSession } from '../support/session';
 import { expect, test, type Page } from '@playwright/test';
 
 /**
- * Version 0.19.1: «Взять субтитры с YouTube» asks which caption track to take when a video has several. No network
+ * «Субтитры YouTube» in the side sheet of a video offers a menu of tracks when a video has several. No network
  * to YouTube here: the browser gets the tracks and the transcript from routed answers of the portal's API.
  */
 
@@ -43,18 +43,19 @@ test('the teacher picks the language of YouTube captions', async ({ page }) => {
   await page.goto('/teacher/homework/new');
   await page.getByRole('button', { name: 'Видео', exact: true }).click();
   await page.getByLabel('Ссылка на видео').fill('https://youtu.be/dQw4w9WgXcQ');
-  await page.getByRole('button', { name: 'Взять субтитры с YouTube' }).click();
+  await page.getByRole('button', { name: 'Настроить видео: Видео 1' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Видео 1 из 1' });
+  await sheet.getByRole('button', { name: 'Субтитры YouTube' }).click();
 
-  const dialog = page.getByRole('alertdialog', { name: 'Субтитры на каком языке взять?' });
-  const tracks = dialog.getByRole('radio');
+  const menu = page.getByRole('menu', { name: 'Субтитры на каком языке взять?' });
+  const tracks = menu.getByRole('menuitem');
   await expect(tracks).toHaveCount(2);
-  await expect(tracks.first()).toBeChecked();
-  await expect(dialog).toContainText('Автоматические — распознал YouTube');
-  await dialog.locator('label', { hasText: 'Русский' }).click();
-  await dialog.getByRole('button', { name: 'Взять' }).click();
+  await expect(tracks.first()).toContainText('Английский');
+  await expect(tracks.first()).toContainText('автоматические');
+  await tracks.filter({ hasText: 'Русский' }).click();
 
-  await expect(dialog).toBeHidden();
-  await expect(page.locator('tb-video-section textarea')).toHaveValue('[0:05] Мы играем');
-  await expect(page.getByText('Субтитры YouTube: русский')).toBeVisible();
+  await expect(menu).toBeHidden();
+  await expect(sheet.getByRole('list', { name: 'Расшифровка' })).toContainText('Мы играем');
+  await expect(sheet.getByText('Субтитры YouTube: русский')).toBeVisible();
   expect(chosen).toEqual({ url: 'https://youtu.be/dQw4w9WgXcQ', language: 'ru', automatic: false });
 });

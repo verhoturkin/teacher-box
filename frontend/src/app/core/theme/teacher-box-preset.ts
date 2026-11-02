@@ -544,8 +544,8 @@ export const TeacherBoxPreset = definePreset(Aura, {
     tag: {
       root: {
         fontSize: '0.75rem',
-        fontWeight: '500',
-        padding: '0.25rem 0.625rem',
+        fontWeight: '600',
+        padding: '0 0.5rem',
         gap: '0.375rem',
         borderRadius: '{border.radius.sm}',
         roundedBorderRadius: PILL,

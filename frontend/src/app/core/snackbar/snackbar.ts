@@ -43,6 +43,17 @@ export class Snackbar {
     this.messages.add({ severity: 'success', detail, life: SNACKBAR_UNDO_LIFE, data: { undo } });
   }
 
+  /** A result with a button that leads on («Открыть»); it goes away like any success. */
+  link(detail: string, label: string, run: () => void): void {
+    this.shown.set(`success:${detail}`, Date.now() + SNACKBAR_UNDO_LIFE);
+    this.messages.add({
+      severity: 'success',
+      detail,
+      life: SNACKBAR_UNDO_LIFE,
+      data: { undo: run, label },
+    });
+  }
+
   /** A note that stays until it is closed, with a button of its own (e.g. «Обновить»). */
   action(detail: string, label: string, run: () => void): void {
     if (this.shown.has(`info:${detail}`)) {

@@ -349,6 +349,7 @@ export const en: Translation<typeof ru> = {
       'homework.quiz-tolerance-invalid': 'The tolerance cannot be negative',
       'homework.quiz-points-invalid': 'Each question must be worth between 1 and 100 points',
       'homework.quiz-duplicate-id': 'A question or option ID is duplicated in this quiz',
+      'homework.quiz-incomplete': 'Not assigned yet. Some quiz questions are unfinished',
       'homework.quiz-attempts-invalid': 'Allow between 1 and 50 attempts, or choose unlimited',
       'video.link-invalid': 'Video links must start with http:// or https://',
       'video.too-many': 'An assignment can have up to 5 videos',
