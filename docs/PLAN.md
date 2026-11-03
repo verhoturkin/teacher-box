@@ -76,7 +76,7 @@ sends the context of the recipients with the request, as it does for the lesson 
   у 2 — 8» and a menu to pick one value; the phone sheet shows the chips in one scrolling row
   (sketches `AiEditor`, `PhoneAi`). `docs/screens.md`, `docs/design-system.md` if a new pattern
   appears.
-- [ ] **362.7** User docs and help: `docs/wiki/AI-assistant.md` (how tags shape drafts) and a short
+- [x] **362.7** User docs and help: `docs/wiki/AI-assistant.md` (how tags shape drafts) and a short
   «Теги учеников» section in the students' help article in Russian and English; glossary terms
   «тег», «значение тега» in `docs/glossary.md`; E2E in `e2e/tests/` — the teacher creates a tag,
   sets it on a student, the student's cabinet shows no tag.

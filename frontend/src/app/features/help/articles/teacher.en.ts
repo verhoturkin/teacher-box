@@ -96,6 +96,23 @@ Open the student’s Profile tab to manage access:
 - **Deactivate account…** prevents sign-in while keeping lesson, payment and homework history.
 - **Restore access** lets a deactivated student sign in again.
 
+## Student tags
+
+Tags are your private notes on a student, such as English level, school year or goal. Only you see
+them; students and bots do not.
+
+1. Open “Settings” → “Students” → “Student tags” and create a tag with a name and ordered values.
+   An empty list offers templates: CEFR level, “Year group” and “Goal”.
+2. Keep “Use in AI” on if tasks, quizzes and reviews should adapt to the value.
+3. On the student’s Tags tab, choose a value; it is saved straight away. “What the AI will see”
+   shows what the assistant receives.
+4. In the student list, choose “Tags” and a value to show only those students.
+
+When you ask the AI for a draft, “What I know about the students” chips appear above the request. Remove a chip
+with “×” to leave that tag out of this request. If the chosen students have different values, the chip
+is highlighted: select it and pick one. If your request asks for something else, the AI follows
+your request. Deleting a tag or a value clears it for every student, and this cannot be undone.
+
 ## Student colours
 
 Choose one of ten colours, or “No colour”, on the Profile tab. The colour marks avatars, calendar lessons and selection chips throughout your view of the portal. Students do not see it.
