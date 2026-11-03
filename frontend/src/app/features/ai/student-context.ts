@@ -20,7 +20,7 @@ import { T } from './i18n/texts';
 const MAX_ITEMS = 10;
 const MAX_VALUE = 120;
 
-/** A value of a tag the recipients have, and how many of them have it. */
+/** A value of a tag the recipients have (for a text tag the text is its id), and how many of them have it. */
 export interface ContextShare {
   readonly id: string;
   readonly label: string;
@@ -34,8 +34,10 @@ export interface ContextChip {
   /** The values set on the recipients, in the tag's order. */
   readonly shares: readonly ContextShare[];
   readonly value: string;
-  /** The recipients differ and the teacher kept all the values. */
+  /** The recipients differ and the teacher picked no value. */
   readonly mixed: boolean;
+  /** «All values» fits a request: the joined value is within 120 characters. */
+  readonly all: boolean;
 }
 
 /**
@@ -83,7 +85,15 @@ export class StudentContext {
       if (this.removed().has(tag.id)) {
         return [];
       }
-      const shares = tag.values
+      // a text tag: its distinct texts in the order of the recipients
+      const values =
+        tag.kind === 'TEXT'
+          ? [...new Set(profiles.flatMap((profile) => profile[tag.id] ?? []))].map((text) => ({
+              id: text,
+              label: text,
+            }))
+          : tag.values;
+      const shares = values
         .map((value) => ({
           id: value.id,
           label: value.label,
@@ -93,28 +103,31 @@ export class StudentContext {
       if (shares.length === 0) {
         return [];
       }
+      const joined = shares.map((share) => share.label).join(' · ');
+      const all = joined.length <= MAX_VALUE;
       const picked = shares.find((share) => share.id === this.picked().get(tag.id));
+      // too long to send all: the most common value until the teacher picks one
+      const shown =
+        picked ??
+        (all ? undefined : shares.reduce((top, share) => (share.count > top.count ? share : top)));
       return [
         {
           tagId: tag.id,
           name: tag.name,
           shares,
-          value: picked?.label ?? shares.map((share) => share.label).join(' · '),
+          value: shown?.label ?? joined,
           mixed: picked === undefined && shares.length > 1,
+          all,
         },
       ];
     });
   }
 
-  /** The pairs a draft request takes, within its limits. */
+  /** The pairs a draft request takes, within its limits (a value is never over 120 characters, see `all`). */
   context(studentIds: readonly string[]): ContextItem[] {
     return this.chips(studentIds)
       .slice(0, MAX_ITEMS)
-      .map((chip) => ({
-        name: chip.name,
-        value:
-          chip.value.length > MAX_VALUE ? `${chip.value.slice(0, MAX_VALUE - 1)}…` : chip.value,
-      }));
+      .map((chip) => ({ name: chip.name, value: chip.value }));
   }
 
   remove(tagId: string): void {
@@ -252,12 +265,16 @@ export class AiContextChips implements OnInit {
           this.state().pick(chip.tagId, share.id);
         },
       })),
-      {
-        label: this.t.all(chip.shares.map((share) => share.label).join(' · ')),
-        command: () => {
-          this.state().pick(chip.tagId, null);
-        },
-      },
+      ...(chip.all
+        ? [
+            {
+              label: this.t.all(chip.shares.map((share) => share.label).join(' · ')),
+              command: () => {
+                this.state().pick(chip.tagId, null);
+              },
+            },
+          ]
+        : []),
     ]);
     this.menu().toggle(event);
   }

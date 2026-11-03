@@ -55,7 +55,11 @@ describe('IdentityApi', () => {
     api.listTags().subscribe();
     api.createTag('Класс', true, ['1', '2']).subscribe();
     api
-      .updateTag('t-1', { name: 'Класс', useInAi: false, values: [{ id: 'v', label: '1' }] }, 4)
+      .updateTag(
+        't-1',
+        { name: 'Класс', kind: 'LIST', useInAi: false, values: [{ id: 'v', label: '1' }] },
+        4,
+      )
       .subscribe();
     api.reorderTags(['b', 'a']).subscribe();
     api.deleteTag('t-1').subscribe();
@@ -63,11 +67,18 @@ describe('IdentityApi', () => {
     backend.expectOne({ method: 'GET', url: '/api/teacher/tags' });
     expect(backend.expectOne({ method: 'POST', url: '/api/teacher/tags' }).request.body).toEqual({
       name: 'Класс',
+      kind: 'LIST',
       useInAi: true,
       values: ['1', '2'],
     });
     expect(backend.expectOne({ method: 'PUT', url: '/api/teacher/tags/t-1' }).request.body).toEqual(
-      { name: 'Класс', useInAi: false, values: [{ id: 'v', label: '1' }], version: 4 },
+      {
+        name: 'Класс',
+        kind: 'LIST',
+        useInAi: false,
+        values: [{ id: 'v', label: '1' }],
+        version: 4,
+      },
     );
     expect(
       backend.expectOne({ method: 'PUT', url: '/api/teacher/tags/order' }).request.body,

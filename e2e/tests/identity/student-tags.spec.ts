@@ -3,7 +3,8 @@ import { expect, test } from '@playwright/test';
 
 /**
  * Stage 362, student tags: the teacher creates a tag in «Настройки» → «Ученики», sets its value on the
- * student's card (Теги tab), and the student's cabinet shows no trace of it.
+ * student's card (Теги tab), and the student's cabinet shows no trace of it; a free-text tag (362.9) is
+ * created in the dialog, written on the card, left out of the list filter and keeps its kind once used.
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -60,4 +61,41 @@ test('a tag set on a student is visible to the teacher only', async ({ page, req
   await startSession(cabinet, LOGIN, PASSWORD);
   await expect(cabinet.getByText(TAG)).toHaveCount(0);
   await expect(cabinet.getByText('B1', { exact: true })).toHaveCount(0);
+});
+
+test('a free-text tag is written on the card and locks its kind', async ({ page, request }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await startSession(page, 'teacher', TEACHER_PASSWORD);
+  const name = `Интересы ${RUN}`;
+
+  // the list holds the previous test's tag, so «Тег» opens the dialog
+  await page.goto('/teacher/settings/students');
+  await page.getByRole('button', { name: 'Тег', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByLabel('Название').fill(name);
+  await dialog.getByRole('button', { name: 'Свободный текст' }).click();
+  await expect(dialog.getByLabel('Новое значение')).toHaveCount(0);
+  await dialog.getByRole('button', { name: 'Создать' }).click();
+  await expect(page.getByRole('listitem').filter({ hasText: name })).toContainText(
+    'Свободный текст',
+  );
+
+  await page.goto(`/teacher/students/${studentId}?tab=tags`);
+  const field = page.getByRole('listitem').filter({ hasText: name }).getByLabel('Текст');
+  await field.fill('футбол, Minecraft');
+  await field.press('Enter');
+  await expect(page.getByText(`${name}: футбол, Minecraft`)).toBeVisible();
+  const headers = await bearer(request);
+  const student = await request.get(`/api/teacher/students/${studentId}`, { headers });
+  expect(JSON.stringify(await student.json())).toContain('футбол, Minecraft');
+
+  // the students' list filter offers list tags only
+  await page.goto('/teacher/students');
+  await page.getByRole('button', { name: 'Теги' }).click();
+  await expect(page.getByRole('menuitem', { name: name })).toHaveCount(0);
+  await page.keyboard.press('Escape');
+
+  await page.goto('/teacher/settings/students');
+  await page.getByRole('button', { name: `Изменить тег «${name}»` }).click();
+  await expect(page.getByRole('dialog')).toContainText('поэтому его тип не изменить');
 });

@@ -432,9 +432,9 @@ describe('StudentsPage', () => {
       item.click();
     }
 
-    it('has no chip while there are no tags', async () => {
+    it('has no chip while there are no list tags', async () => {
       await create();
-      await load([TAGGED]);
+      await load([TAGGED], [], {}, [aTag({ id: 'hobby', kind: 'TEXT', values: [] })]);
       expect(menuChip()).toBeNull();
     });
 

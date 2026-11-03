@@ -23,7 +23,10 @@ export interface Student {
   readonly createdAt: string;
   readonly version: number;
   readonly pendingInvite: PendingInvite | null;
-  /** The teacher's tags on the student: the value id by the tag id (teacher-only; `{}` — none). */
+  /**
+   * The teacher's tags on the student by the tag id: the value id of a list tag, the text of a text tag
+   * (teacher-only; `{}` — none).
+   */
   readonly tags: Readonly<Record<string, string>>;
 }
 
@@ -106,12 +109,17 @@ export interface GroupInput {
   readonly color: LabelColor | null;
 }
 
+/** How a tag is set on a student: one of its values, or a free text up to 120 characters. */
+export type TagKind = 'LIST' | 'TEXT';
+
 /** Mirrors `Tag` of the backend (ADR-0055): a teacher's student tag with its ordered values. */
 export interface StudentTag {
   readonly id: string;
   readonly name: string;
+  readonly kind: TagKind;
   /** The tag shapes the AI drafts for the student. */
   readonly useInAi: boolean;
+  /** The values of a list tag; a text tag has none. */
   readonly values: readonly TagValue[];
   readonly version: number;
 }

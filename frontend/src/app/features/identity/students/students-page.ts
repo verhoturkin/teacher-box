@@ -580,9 +580,9 @@ export class StudentsPage implements OnInit {
         this.students.set(students);
         this.groups.set(groups);
       });
-    // without the tags (a failed read) the chip is simply missing, the list works
+    // without the tags (a failed read) the chip is simply missing, the list works; text tags filter nothing
     orNull(this.api.listTags(quietContext())).subscribe((tags) => {
-      this.tags.set(tags ?? []);
+      this.tags.set((tags ?? []).filter((tag) => tag.kind === 'LIST'));
       if (tags !== null && this.tagValue() !== null && this.tagFilter() === null) {
         this.setTag(null);
       }

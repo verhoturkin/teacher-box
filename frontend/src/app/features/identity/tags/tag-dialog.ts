@@ -5,18 +5,30 @@ import {
   CdkDropList,
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
-import { ChangeDetectionStrategy, Component, inject, input, model, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
+  FormControl,
   NonNullableFormBuilder,
   ReactiveFormsModule,
   ValidationErrors,
   Validators,
 } from '@angular/forms';
 import { Observable, map } from 'rxjs';
+import { quietContext } from '@core/http/api-error.interceptor';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
+import { SelectButton } from 'primeng/selectbutton';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Confirm } from '@shared/ui/confirm';
 import { TbDialog } from '@shared/ui/dialog/dialog';
@@ -24,17 +36,18 @@ import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { FieldErrors } from '@shared/ui/field-errors';
 import { InputChip } from '@shared/ui/input-chip';
 import { IdentityApi } from '../data-access/identity-api';
-import { StudentTag, TagChanged, TagValueInput } from '../data-access/identity.models';
+import { StudentTag, TagChanged, TagKind, TagValueInput } from '../data-access/identity.models';
 import { T } from '../i18n/texts';
 
-/** A tag needs at least one value. */
+/** A list tag needs at least one value (the control is disabled for a text tag). */
 function hasValues(control: AbstractControl<readonly TagValueInput[]>): ValidationErrors | null {
   return control.value.length > 0 ? null : { values: true };
 }
 
 /**
- * Creates or edits a tag (sketch Tags): the name, the values as chips that the teacher drags into order
- * and the «Учитывать в ИИ» switch; an existing tag can be deleted after a confirmation.
+ * Creates or edits a tag (sketch Tags): the name, the kind «Список значений / Свободный текст» (locked once
+ * the tag is set on a student), the values of a list tag as chips that the teacher drags into order and the
+ * «Учитывать в ИИ» switch; an existing tag can be deleted after a confirmation.
  */
 @Component({
   selector: 'tb-tag-dialog',
@@ -45,6 +58,7 @@ function hasValues(control: AbstractControl<readonly TagValueInput[]>): Validati
     CdkDropList,
     Button,
     InputText,
+    SelectButton,
     ToggleSwitch,
     TbDialog,
     FieldErrors,
@@ -80,50 +94,64 @@ function hasValues(control: AbstractControl<readonly TagValueInput[]>): Validati
           />
           <small class="tb-field__hint">{{ t.nameHint }}</small>
         </div>
-        <div class="tb-field">
-          <span class="tb-section-label">{{ t.valuesLabel }}</span>
-          <div
-            class="tb-tag-values"
-            cdkDropList
-            cdkDropListOrientation="mixed"
-            (cdkDropListDropped)="drop($event)"
-          >
-            @for (value of values(); track $index; let index = $index) {
-              <tb-input-chip
-                cdkDrag
-                [label]="value.label"
-                [removeLabel]="t.removeValue(value.label)"
-                (removed)="remove(index)"
-              >
-                <button
-                  lead
-                  type="button"
-                  class="tb-tag-handle"
-                  cdkDragHandle
-                  [attr.aria-label]="t.dragValue(value.label)"
-                  (keydown)="keyMove($event, index)"
+        <div class="tb-field tb-field__header">
+          <span id="tag-kind-label">{{ t.kind }}</span>
+          <p-selectbutton
+            formControlName="kind"
+            [options]="kinds"
+            optionLabel="label"
+            optionValue="value"
+            [allowEmpty]="false"
+            ariaLabelledBy="tag-kind-label"
+          />
+          <small class="tb-hint">{{ kindHint() }}</small>
+        </div>
+        @if (kind() === 'LIST') {
+          <div class="tb-field">
+            <span class="tb-section-label">{{ t.valuesLabel }}</span>
+            <div
+              class="tb-tag-values"
+              cdkDropList
+              cdkDropListOrientation="mixed"
+              (cdkDropListDropped)="drop($event)"
+            >
+              @for (value of values(); track $index; let index = $index) {
+                <tb-input-chip
+                  cdkDrag
+                  [label]="value.label"
+                  [removeLabel]="t.removeValue(value.label)"
+                  (removed)="remove(index)"
                 >
-                  <i class="tb-i tb-i-drag_indicator" aria-hidden="true"></i>
-                </button>
-              </tb-input-chip>
+                  <button
+                    lead
+                    type="button"
+                    class="tb-tag-handle"
+                    cdkDragHandle
+                    [attr.aria-label]="t.dragValue(value.label)"
+                    (keydown)="keyMove($event, index)"
+                  >
+                    <i class="tb-i tb-i-drag_indicator" aria-hidden="true"></i>
+                  </button>
+                </tb-input-chip>
+              }
+            </div>
+            @if (form.controls.values.touched && form.controls.values.invalid) {
+              <small class="tb-field__error" role="alert">{{ t.valuesRequired }}</small>
             }
           </div>
-          @if (form.controls.values.touched && form.controls.values.invalid) {
-            <small class="tb-field__error" role="alert">{{ t.valuesRequired }}</small>
-          }
-        </div>
-        <div class="tb-field">
-          <label for="tag-new-value">{{ t.newValue }}</label>
-          <input
-            pInputText
-            id="tag-new-value"
-            autocomplete="off"
-            maxlength="40"
-            #draft
-            (keydown.enter)="add(draft); $event.preventDefault()"
-          />
-          <small class="tb-field__hint">{{ t.newValueHint }}</small>
-        </div>
+          <div class="tb-field">
+            <label for="tag-new-value">{{ t.newValue }}</label>
+            <input
+              pInputText
+              id="tag-new-value"
+              autocomplete="off"
+              maxlength="40"
+              #draft
+              (keydown.enter)="add(draft); $event.preventDefault()"
+            />
+            <small class="tb-field__hint">{{ t.newValueHint }}</small>
+          </div>
+        }
         <label class="tb-tile tb-tag-ai" for="tag-use-in-ai">
           <i class="tb-i tb-i-auto_awesome tb-tile__icon tb-tag-ai__icon" aria-hidden="true"></i>
           <span class="tb-tile__text">
@@ -132,10 +160,12 @@ function hasValues(control: AbstractControl<readonly TagValueInput[]>): Validati
           </span>
           <p-toggleswitch inputId="tag-use-in-ai" formControlName="useInAi" />
         </label>
-        @if (tag() !== null) {
+        @if (tag() !== null && kind() === 'LIST') {
           <p class="tb-tag-note">
             <i class="tb-i tb-i-info" aria-hidden="true"></i>{{ t.removeNote }}
           </p>
+        }
+        @if (tag() !== null) {
           <p-button
             class="tb-tag-delete"
             severity="danger"
@@ -201,14 +231,43 @@ export class TagDialog {
   readonly saved = output<TagChanged>();
   readonly deleted = output<TagChanged>();
 
+  protected readonly kinds: { value: TagKind; label: string }[] = [
+    { value: 'LIST', label: this.t.kindList },
+    { value: 'TEXT', label: this.t.kindText },
+  ];
+  /** The tag is set on a student: its kind cannot change (`tag.kind-used`). */
+  private readonly used = signal(false);
+
   readonly form = inject(NonNullableFormBuilder).group({
     name: ['', [Validators.required, Validators.maxLength(60)]],
+    kind: new FormControl<TagKind>('LIST', { nonNullable: true }),
     useInAi: [true],
     values: [[] as readonly TagValueInput[], hasValues],
   });
   protected readonly values = toSignal(this.form.controls.values.valueChanges, {
     initialValue: this.form.controls.values.value,
   });
+  protected readonly kind = toSignal(this.form.controls.kind.valueChanges, {
+    initialValue: this.form.controls.kind.value,
+  });
+  protected readonly kindHint = computed(() =>
+    this.used()
+      ? this.t.kindLocked
+      : this.kind() === 'LIST'
+        ? this.t.kindListHint
+        : this.t.kindTextHint,
+  );
+
+  constructor() {
+    this.form.controls.kind.valueChanges.subscribe((kind) => {
+      const values = this.form.controls.values;
+      if (kind === 'LIST') {
+        values.enable({ emitEvent: false });
+      } else {
+        values.disable({ emitEvent: false });
+      }
+    });
+  }
 
   protected readonly submit = dialogSubmit({
     visible: this.visible,
@@ -216,26 +275,34 @@ export class TagDialog {
     failed: T.tags.failed,
     reset: () => {
       const tag = this.tag();
+      this.form.controls.kind.enable();
+      this.used.set(false);
       this.form.reset({
         name: tag?.name ?? '',
+        kind: tag?.kind ?? 'LIST',
         useInAi: tag?.useInAi ?? true,
         values: tag?.values.map((value) => ({ id: value.id, label: value.label })) ?? [],
       });
+      if (tag !== null) {
+        this.lockUsedKind(tag.id);
+      }
     },
     request: (value): Observable<TagChanged> => {
       const tag = this.tag();
       const name = value.name.trim();
+      const values = value.kind === 'LIST' ? value.values : [];
       return tag === null
         ? this.api
             .createTag(
               name,
               value.useInAi,
-              value.values.map((entry) => entry.label),
+              values.map((entry) => entry.label),
+              value.kind,
             )
             .pipe(map((created) => ({ tag: created, clearedStudents: 0 })))
         : this.api.updateTag(
             tag.id,
-            { name, useInAi: value.useInAi, values: value.values },
+            { name, kind: value.kind, useInAi: value.useInAi, values },
             tag.version,
           );
     },
@@ -289,6 +356,21 @@ export class TagDialog {
           });
         }
       });
+  }
+
+  /** Locks the kind once a student has the tag; a failed read leaves it to the server's `tag.kind-used`. */
+  private lockUsedKind(tagId: string): void {
+    this.api.listStudents(quietContext()).subscribe({
+      next: (students) => {
+        if (students.some((student) => student.tags[tagId] !== undefined)) {
+          this.used.set(true);
+          this.form.controls.kind.disable({ emitEvent: false });
+        }
+      },
+      error: () => {
+        // the switch stays open
+      },
+    });
   }
 
   private move(from: number, to: number): void {

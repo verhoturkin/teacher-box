@@ -17,5 +17,6 @@ export type {
   StudentTag,
   TagChanged,
   TagValue,
+  TagKind,
   TagValueInput,
 } from './data-access/identity.models';

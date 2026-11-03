@@ -43,13 +43,15 @@ describe('TagsPanel', () => {
         })),
       }),
       aTag({ id: 'tag-2', name: 'Класс', useInAi: false }),
+      aTag({ id: 'tag-3', name: 'Интересы', kind: 'TEXT', values: [] }),
     ]);
 
     const text = readableText(host);
+    expect(text).toContain('Интересы Свободный текст');
     expect(text).toContain('Теги учеников');
     expect(text).toContain('Уровень L0 L1 L2 L3 L4 L5 ещё 2');
-    expect(host.querySelectorAll('.tb-tags__ai')).toHaveLength(1);
-    expect(host.querySelectorAll('li.tb-tile')).toHaveLength(2);
+    expect(host.querySelectorAll('.tb-tags__ai')).toHaveLength(2);
+    expect(host.querySelectorAll('li.tb-tile')).toHaveLength(3);
   });
 
   it('offers templates without tags and creates one at a click', async () => {
@@ -60,6 +62,7 @@ describe('TagsPanel', () => {
     const create = backend.expectOne({ method: 'POST', url: '/api/teacher/tags' });
     expect(create.request.body).toEqual({
       name: 'Класс',
+      kind: 'LIST',
       useInAi: true,
       values: Array.from({ length: 11 }, (_, index) => String(index + 1)),
     });
@@ -67,6 +70,18 @@ describe('TagsPanel', () => {
     await fixture.whenStable();
 
     expect(host.querySelectorAll('li.tb-tile')).toHaveLength(1);
+  });
+
+  it('creates the free-text «Интересы» from its template', async () => {
+    await render([]);
+
+    buttonByText(host, 'Интересы · текст').click();
+    expect(backend.expectOne({ method: 'POST', url: '/api/teacher/tags' }).request.body).toEqual({
+      name: 'Интересы',
+      kind: 'TEXT',
+      useInAi: true,
+      values: [],
+    });
   });
 
   it('opens the dialog for a new tag and for an existing one', async () => {

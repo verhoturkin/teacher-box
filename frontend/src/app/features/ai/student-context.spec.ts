@@ -94,8 +94,36 @@ describe('StudentContext', () => {
 
     const items = context.context(['s0', 's1', 's2', 's3']);
     expect(items).toHaveLength(10);
-    expect(items[0]?.value).toHaveLength(120);
-    expect(items[0]?.value.endsWith('…')).toBe(true);
+    // all four would be 169 characters: the first value goes until the teacher picks one
+    expect(items[0]?.value).toBe('я'.repeat(40));
+    expect(context.chips(['s0', 's1'])[0]).toMatchObject({ mixed: true, all: true });
+    expect(context.chips(['s0', 's1', 's2', 's3'])[0]).toMatchObject({ mixed: true, all: false });
+  });
+
+  it('takes the texts of a text tag as its values', () => {
+    load();
+    const hobby = aTag({ id: 'hobby', name: 'Интересы', kind: 'TEXT', values: [] });
+    backend.expectOne('/api/teacher/tags').flush([hobby]);
+    backend
+      .expectOne('/api/teacher/students')
+      .flush([
+        aStudent({ id: 'a', tags: { hobby: 'футбол' } }),
+        aStudent({ id: 'b', tags: { hobby: 'Minecraft' } }),
+        aStudent({ id: 'c', tags: { hobby: 'футбол' } }),
+        aStudent({ id: 'd', tags: {} }),
+      ]);
+
+    expect(context.context(['a', 'c', 'd'])).toEqual([{ name: 'Интересы', value: 'футбол' }]);
+    expect(context.chips(['b', 'a', 'c'])[0]).toMatchObject({
+      value: 'Minecraft · футбол',
+      mixed: true,
+      shares: [
+        { id: 'Minecraft', label: 'Minecraft', count: 1 },
+        { id: 'футбол', label: 'футбол', count: 2 },
+      ],
+    });
+    context.pick('hobby', 'Minecraft');
+    expect(context.context(['a', 'b'])).toEqual([{ name: 'Интересы', value: 'Minecraft' }]);
   });
 
   it('sends nothing when the tags do not load', () => {
@@ -111,7 +139,15 @@ describe('AiContextChips', () => {
   let fixture: ComponentFixture<AiContextChips>;
   let backend: HttpTestingController;
 
-  async function render(students: string[], row = false) {
+  async function render(
+    students: string[],
+    row = false,
+    tags = [aTag(), CLASS],
+    profiles = [
+      aStudent({ id: 'a', tags: { 'tag-1': 'v-1', class: 'c7' } }),
+      aStudent({ id: 'b', tags: { class: 'c8' } }),
+    ],
+  ) {
     TestBed.configureTestingModule({ imports: [AiContextChips], providers: testProviders() });
     backend = TestBed.inject(HttpTestingController);
     const state = TestBed.runInInjectionContext(() => new StudentContext());
@@ -120,13 +156,8 @@ describe('AiContextChips', () => {
     fixture.componentRef.setInput('students', students);
     fixture.componentRef.setInput('row', row);
     await fixture.whenStable();
-    backend.expectOne('/api/teacher/tags').flush([aTag(), CLASS]);
-    backend
-      .expectOne('/api/teacher/students')
-      .flush([
-        aStudent({ id: 'a', tags: { 'tag-1': 'v-1', class: 'c7' } }),
-        aStudent({ id: 'b', tags: { class: 'c8' } }),
-      ]);
+    backend.expectOne('/api/teacher/tags').flush(tags);
+    backend.expectOne('/api/teacher/students').flush(profiles);
     await fixture.whenStable();
     return { state, host: hostElement(fixture) };
   }
@@ -157,6 +188,26 @@ describe('AiContextChips', () => {
     menuItemByText('Все: 7 · 8').click();
     await fixture.whenStable();
     expect(host.querySelector('.tb-ai-context__mixed')).not.toBeNull();
+  });
+
+  it('offers no «all» when the texts would not fit a request', async () => {
+    const long = (letter: string) => letter.repeat(70);
+    const { state } = await render(
+      ['a', 'b'],
+      false,
+      [aTag({ id: 'hobby', name: 'Интересы', kind: 'TEXT', values: [] })],
+      [
+        aStudent({ id: 'a', tags: { hobby: long('a') } }),
+        aStudent({ id: 'b', tags: { hobby: long('b') } }),
+      ],
+    );
+
+    buttonByText(hostElement(fixture), `Интересы: ${long('a')}`).click();
+    await fixture.whenStable();
+    expect(document.body.textContent).toContain(`${long('b')} — у 1`);
+    expect(document.body.textContent).not.toContain('Все:');
+    menuItemByText(`${long('b')} — у 1`).click();
+    expect(state.context(['a', 'b'])).toEqual([{ name: 'Интересы', value: long('b') }]);
   });
 
   it('removes a chip for these requests and disappears with nothing to send', async () => {

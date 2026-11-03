@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { InputText } from 'primeng/inputtext';
 import { Select } from 'primeng/select';
 import { Tag } from 'primeng/tag';
 import { quietContext } from '@core/http/api-error.interceptor';
@@ -28,7 +29,8 @@ export const TAGS_SETTINGS = '/teacher/settings/students';
 /**
  * The Теги tab of a student's card (sketch Main, ADR-0055): one M3 list row per tag — the lead icon on
  * tertiary container when the AI takes the tag, on secondary container when it does not — with an outlined
- * select of the values («Не задан» first), saved on choosing; beside the rows «Что увидит ИИ». The tab is
+ * select of the values («Не задан» first), saved on choosing, or a filled text field for a text tag, saved on
+ * blur and Enter; beside the rows «Что увидит ИИ». The tab is
  * always there: without tags it tells what they are for and leads to the settings.
  */
 @Component({
@@ -40,6 +42,7 @@ export const TAGS_SETTINGS = '/teacher/settings/students';
     Card,
     EmptyState,
     FormsModule,
+    InputText,
     LoadStateView,
     RouterLink,
     Select,
@@ -78,18 +81,36 @@ export const TAGS_SETTINGS = '/teacher/settings/students';
                   ></i>
                   <span class="tb-tile__text">
                     <b>{{ tag.name }}</b>
-                    <span>{{ tag.useInAi ? t.forAi : t.forFilter }}</span>
+                    <span>{{
+                      tag.useInAi ? t.forAi : tag.kind === 'TEXT' ? t.forYou : t.forFilter
+                    }}</span>
                   </span>
-                  <p-select
-                    class="tb-student-tags__select"
-                    [ariaLabel]="tag.name"
-                    [options]="optionsOf(tag)"
-                    optionLabel="label"
-                    optionValue="id"
-                    appendTo="body"
-                    [ngModel]="values()[tag.id] ?? null"
-                    (ngModelChange)="choose(tag, $event)"
-                  />
+                  @if (tag.kind === 'TEXT') {
+                    <div class="tb-field tb-student-tags__text">
+                      <label [for]="'tag-text-' + tag.id">{{ t.text }}</label>
+                      <input
+                        pInputText
+                        #field
+                        [id]="'tag-text-' + tag.id"
+                        maxlength="120"
+                        autocomplete="off"
+                        [value]="values()[tag.id] ?? ''"
+                        (blur)="write(tag, field)"
+                        (keydown.enter)="field.blur()"
+                      />
+                    </div>
+                  } @else {
+                    <p-select
+                      class="tb-student-tags__select"
+                      [ariaLabel]="tag.name"
+                      [options]="optionsOf(tag)"
+                      optionLabel="label"
+                      optionValue="id"
+                      appendTo="body"
+                      [ngModel]="values()[tag.id] ?? null"
+                      (ngModelChange)="choose(tag, $event)"
+                    />
+                  }
                 </li>
               }
             </ul>
@@ -183,6 +204,12 @@ export const TAGS_SETTINGS = '/teacher/settings/students';
       inline-size: 10.5rem;
     }
 
+    /* a free text needs more room than a value (ours) */
+    .tb-student-tags__text {
+      flex: 0 1 16rem;
+      min-inline-size: 0;
+    }
+
     .tb-student-tags__foot {
       display: flex;
       flex-wrap: wrap;
@@ -233,14 +260,15 @@ export class StudentTagsTab implements OnInit {
 
   protected readonly state = new LoadState();
   protected readonly tags = signal<readonly StudentTag[]>([]);
-  /** What the selects show: the saved values, a choice just made until the server answers. */
+  /** What the rows show: the saved values and texts, a choice just made until the server answers. */
   protected readonly values = signal<Readonly<Record<string, string>>>({});
 
   /** «Уровень английского: B1» for the tags the AI takes and the student has. */
   protected readonly seen = computed(() =>
     this.tags().flatMap((tag) => {
-      const value = tag.values.find((item) => item.id === this.values()[tag.id]);
-      return tag.useInAi && value !== undefined ? [this.t.pair(tag.name, value.label)] : [];
+      const set = this.values()[tag.id];
+      const value = tag.kind === 'TEXT' ? set : tag.values.find((item) => item.id === set)?.label;
+      return tag.useInAi && value !== undefined ? [this.t.pair(tag.name, value)] : [];
     }),
   );
 
@@ -262,6 +290,16 @@ export class StudentTagsTab implements OnInit {
     return [{ id: null, label: this.t.none }, ...tag.values];
   }
 
+  /** Saves the text of a text tag once it changed; a blank one clears the tag. */
+  protected write(tag: StudentTag, field: HTMLInputElement): void {
+    const text = field.value.trim();
+    field.value = text;
+    if (text !== (this.values()[tag.id] ?? '')) {
+      this.choose(tag, text === '' ? null : text);
+    }
+  }
+
+  /** `valueId` — the value of a list tag or the text of a text tag; `null` clears the tag. */
   choose(tag: StudentTag, valueId: string | null): void {
     const before = this.values();
     const next = Object.fromEntries(Object.entries(before).filter(([id]) => id !== tag.id));

@@ -14,6 +14,7 @@ import {
   StudentProfileInput,
   StudentTag,
   TagChanged,
+  TagKind,
   TagValueInput,
 } from './identity.models';
 
@@ -125,13 +126,18 @@ export class IdentityApi {
     return this.http.get<StudentTag[]>('/api/teacher/tags', { context });
   }
 
-  createTag(name: string, useInAi: boolean, values: readonly string[]): Observable<StudentTag> {
-    return this.http.post<StudentTag>('/api/teacher/tags', { name, useInAi, values });
+  createTag(
+    name: string,
+    useInAi: boolean,
+    values: readonly string[],
+    kind: TagKind = 'LIST',
+  ): Observable<StudentTag> {
+    return this.http.post<StudentTag>('/api/teacher/tags', { name, kind, useInAi, values });
   }
 
   updateTag(
     id: string,
-    tag: { name: string; useInAi: boolean; values: readonly TagValueInput[] },
+    tag: { name: string; kind: TagKind; useInAi: boolean; values: readonly TagValueInput[] },
     version: number,
   ): Observable<TagChanged> {
     return this.http.put<TagChanged>(`/api/teacher/tags/${id}`, { ...tag, version });

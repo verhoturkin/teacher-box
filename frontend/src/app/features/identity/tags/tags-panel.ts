@@ -12,7 +12,7 @@ import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { IdentityApi } from '../data-access/identity-api';
-import { StudentTag, TagChanged } from '../data-access/identity.models';
+import { StudentTag, TagChanged, TagKind } from '../data-access/identity.models';
 import { T } from '../i18n/texts';
 import { TagDialog } from './tag-dialog';
 
@@ -25,6 +25,7 @@ interface Template {
   readonly name: string;
   readonly chip: string;
   readonly values: readonly string[];
+  readonly kind?: TagKind;
 }
 
 const t = T.tags;
@@ -42,6 +43,7 @@ const TEMPLATES: readonly Template[] = [
     values: Array.from({ length: 11 }, (_, index) => String(index + 1)),
   },
   { icon: 'flag', name: t.goal.name, chip: t.goal.chip, values: t.goal.values },
+  { icon: 'notes', name: t.interests.name, chip: t.interests.chip, values: [], kind: 'TEXT' },
 ];
 
 /**
@@ -90,6 +92,9 @@ const TEMPLATES: readonly Template[] = [
                 <span class="tb-tile__text">
                   <b>{{ tag.name }}</b>
                   <span class="tb-tags__values">
+                    @if (tag.kind === 'TEXT') {
+                      <span>{{ t.freeText }}</span>
+                    }
                     @for (value of tag.values.slice(0, shown); track value.id) {
                       <p-tag severity="secondary" [value]="value.label" />
                     }
@@ -218,7 +223,7 @@ export class TagsPanel implements OnInit {
 
   protected fromTemplate(template: Template): void {
     this.busy
-      .guard('template', this.api.createTag(template.name, true, template.values))
+      .guard('template', this.api.createTag(template.name, true, template.values, template.kind))
       .subscribe((tag) => {
         this.tags.update((list) => [...list, tag]);
         this.snackbar.success(t.createdFromTemplate(tag.name));

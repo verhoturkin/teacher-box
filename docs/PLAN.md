@@ -88,7 +88,7 @@ sends the context of the recipients with the request, as it does for the lesson 
   (trimmed, blank clears), for a `LIST` tag the value id; `StudentView.tags` the same. The
   `?tag=` list filter stays for list values only. ADR-0055 and `docs/modules/identity.md`
   updated.
-- [ ] **362.9 F** Free-text tags in the UI: kind switch «Список значений / Свободный текст» in the
+- [x] **362.9 F** Free-text tags in the UI: kind switch «Список значений / Свободный текст» in the
   tag dialog (locked once the tag is used), template «Интересы» (text); on the card tab an outlined
   text field instead of the select, saved on blur and Enter; the list filter menu lists only list
   tags; «Учитываю об учениках» chips take the text as the value, recipients with different texts

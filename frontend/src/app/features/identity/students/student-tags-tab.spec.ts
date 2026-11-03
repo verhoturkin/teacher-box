@@ -100,4 +100,40 @@ describe('StudentTagsTab', () => {
     expect(saved).toEqual([]);
     expect(host.querySelector('.tb-student-tags__chip')?.textContent).toContain('B1');
   });
+
+  it('saves the text of a free-text tag on blur and Enter, a blank one clears it', async () => {
+    const hobby = aTag({ id: 'hobby', name: 'Интересы', kind: 'TEXT', values: [] });
+    const note = aTag({ id: 'note', name: 'Заметка', kind: 'TEXT', values: [], useInAi: false });
+    await create(aStudent({ id: 'm', tags: { hobby: 'футбол' } }), [hobby, note]);
+
+    expect(readableText(host)).toContain('Заметка Заметка для вас');
+    expect(host.querySelector('.tb-student-tags__chip')?.textContent).toContain('Интересы: футбол');
+    const field = host.querySelector<HTMLInputElement>('#tag-text-hobby');
+    if (field === null) {
+      throw new Error('no text field');
+    }
+    expect(field.value).toBe('футбол');
+    expect(field.maxLength).toBe(120);
+    expect(field.closest('.tb-field')?.querySelector('label')?.textContent).toBe('Текст');
+
+    // unchanged — nothing to save
+    field.dispatchEvent(new Event('blur'));
+    backend.expectNone('/api/teacher/students/m/tags');
+
+    field.value = '  футбол, Minecraft ';
+    field.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    field.dispatchEvent(new Event('blur'));
+    const request = backend.expectOne('/api/teacher/students/m/tags');
+    expect(request.request.body).toEqual({ hobby: 'футбол, Minecraft' });
+    expect(field.value).toBe('футбол, Minecraft');
+    request.flush(aStudent({ id: 'm', tags: { hobby: 'футбол, Minecraft' } }));
+    await fixture.whenStable();
+    expect(host.querySelector('.tb-student-tags__chip')?.textContent).toContain(
+      'Интересы: футбол, Minecraft',
+    );
+
+    field.value = ' ';
+    field.dispatchEvent(new Event('blur'));
+    expect(backend.expectOne('/api/teacher/students/m/tags').request.body).toEqual({});
+  });
 });

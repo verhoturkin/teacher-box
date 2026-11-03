@@ -25,6 +25,7 @@ export function aStudent(overrides: Partial<Student> = {}): Student {
 export function aTag(overrides: Partial<StudentTag> = {}): StudentTag {
   return {
     id: 'tag-1',
+    kind: 'LIST',
     name: 'Уровень',
     useInAi: true,
     values: [

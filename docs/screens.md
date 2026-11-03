@@ -194,8 +194,9 @@ active on both, `NavItem.alsoActive`).
   ones; the total hidden on compact), the search, filter chips «Все · Группы · Отключённые»
   («Отключённые» — students without access and archived groups; the chip is kept in the address as
   `?filter=`; an old `?filter=debtors|noMessenger` opens «Все»). The debt stays in the row
-  trail. Tags are not shown in rows or in the card header. When a tag exists, a menu filter chip
-  «Теги» ends the chips (hidden without tags; sketch `Main`, `States`): its menu lists the tags,
+  trail. Tags are not shown in rows or in the card header. When a list tag exists, a menu filter
+  chip «Теги» ends the chips (hidden without list tags; sketch `Main`, `States`): its menu lists
+  the list tags (free-text tags filter nothing),
   each with its values and the number of current students («B1 · 3»); a value in force is kept as
   `?tag=<valueId>`, unselects «Все» and shows the chip as «Уровень: B1» (a tag name over 12
   characters is cut to its first word), hides the groups (they have no tags) and, when nobody has
@@ -240,8 +241,10 @@ active on both, `NavItem.alsoActive`).
   and the ledger «История» (`tb-ledger-list`); «Теги» (`StudentTagsTab`, sketch `Main`,
   `PhoneTags`; the tab is always there) — one `tb-tile` row per tag: the lead `auto_awesome` on
   tertiary container for a tag the AI takes, `sell` on secondary container otherwise, the name with
-  «Учитывает ИИ» / «Только для фильтра в списке», an outlined select («Не задан» first) saved on
-  choosing (the whole set goes in one `PUT …/tags`; a failure puts the old value back); beside it
+  «Учитывает ИИ» / «Только для фильтра в списке» («Заметка для вас» for a free-text tag), an
+  outlined select («Не задан» first) saved on choosing, or for a free-text tag a filled field
+  «Текст» (max 120, 16 rem) saved on blur and Enter, blank clears (the whole set goes in one
+  `PUT …/tags`; a failure puts the old value back); beside it
   the card «Что увидит ИИ» with the chips of the AI tags the student has; the text link «Настроить
   теги» leads to the settings category «Ученики». Without tags the tab is an empty state «Тегов
   пока нет» with «Создать теги»; «Профиль» — «Данные ученика» (name *, e-mail, phone,
@@ -498,7 +501,10 @@ input chips «<tag>: <value>» of the recipients' tags marked «Учитыват
 (the students it is given to and the ones being chosen); they go with the homework and quiz
 draft requests as `context`. «×» leaves a tag out of this editor's requests; the student's tag
 stays. Recipients with different values give a warning-tone chip «Класс: 7 · 8» and the hint
-«у 4 — 7, у 2 — 8»; its label opens a menu — one value («7 — у 4») or «Все: 7 · 8». The hint ends
+«у 4 — 7, у 2 — 8»; its label opens a menu — one value («7 — у 4») or «Все: 7 · 8». A free-text
+tag (362.9) takes the texts as its values in the recipients' order; «Все» is offered only while
+the joined value fits 120 characters, otherwise the chip shows the most common text until the
+teacher picks one. The hint ends
 with «Если в просьбе сказано иначе, ИИ следует просьбе.» The phone sheet keeps the chips in one
 scrolling row. No tag to send — no block.
 
@@ -616,11 +622,17 @@ answers with a short snackbar; there is no «Отменить изменения
   the teacher-only tags as segmented M3 list tiles — drag handle (the arrow keys move too), tonal
   `sell` circle, name, the first six values as tags («ещё N»), a tertiary «ИИ» mark for tags the AI
   uses, an edit icon; «+ Тег» under the list. Without tags the empty state offers the templates
-  «Уровень CEFR · A1–C2», «Класс · 1–11», «Цель · ОГЭ, ЕГЭ» (one click creates the tag with the AI
-  switch on) and a dashed «Свой тег». The dialog (`tb-tag-dialog`, form kind): name, values as
-  input chips with a drag handle and an entry field (Enter adds, duplicates ignored), the
-  «Учитывать в ИИ» tile with a switch (tertiary icon); on an existing tag a note that removed
-  values are cleared for students and a red text «Удалить тег» (confirmation). A save or delete
+  «Уровень CEFR · A1–C2», «Класс · 1–11», «Цель · ОГЭ, ЕГЭ», «Интересы · текст» (one click
+  creates the tag with the AI switch on) and a dashed «Свой тег»; a free-text tile reads
+  «Свободный текст» instead of values. The dialog (`tb-tag-dialog`, form kind): name, the kind
+  «Список значений · Свободный текст» (segmented buttons with a header, as the board dialog; its
+  hint explains the kind, and on a tag a student has it is locked with «…его тип не изменить» —
+  the dialog reads the students on open; a 409 `tag.kind-used` shows in the dialog), for a list
+  tag values as input chips with a drag handle and an entry field (Enter adds, duplicates
+  ignored), the
+  «Учитывать в ИИ» tile with a switch (tertiary icon); on an existing list tag a note that
+  removed values are cleared for students; on an existing tag a red text «Удалить тег»
+  (confirmation). A save or delete
   that cleared values says for how many students in the snackbar. The sketch's per-tag student
   counts are not shown: the API does not return them.
 - **«Мессенджеры»:** the failed-deliveries alert first (folds open with the list), «Боты» (one row
