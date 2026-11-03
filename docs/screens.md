@@ -370,7 +370,8 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   beside the work, «Проверка» and «×»; the rail collapses to 96 dp (`RailState`). Below large
   (sketch 15) the same form under the answer as a bordered block «Проверка» (its accept button
   «Принять и дальше» while the queue goes on). The form: the AI draft (tertiary tag «Черновик ИИ»,
-  «Вставить»), «Комментарий», quick phrases as assist chips («Молодец!», «Аккуратнее с
+  «Вставить»; before it, the student's «Учитываю об учениках» chips as in the AI pane of the
+  editor, sent with the review draft), «Комментарий», quick phrases as assist chips («Молодец!», «Аккуратнее с
   орфографией», «Повтори правило»), «Оценка» as single-select filter chips «3 · 4 · 5 · <quiz score>
   · Без оценки» (a grade set before is a chip of its own), «На доработку» tonal with ↺ + «Принять»
   filled, «После этого откроется: <student>» and «На доску». *Ours:* «На доработку» stays tonal,
@@ -491,6 +492,15 @@ expanded (sketch 13), a modal right drawer on medium (sketch 19) and a bottom sh
 field at every width; the AI never changes text without Insert / Replace; its state survives closing
 the pane. The recipients, deadline and materials parts are `ui/recipients-field.ts`,
 `ui/due-chips.ts`, `ui/material-chips.ts`.
+
+**«Учитываю об учениках»** (362.6, sketches 13, 22; `ai/student-context.ts`): under the request,
+input chips «<tag>: <value>» of the recipients' tags marked «Учитывать в ИИ» that have a value
+(the students it is given to and the ones being chosen); they go with the homework and quiz
+draft requests as `context`. «×» leaves a tag out of this editor's requests; the student's tag
+stays. Recipients with different values give a warning-tone chip «Класс: 7 · 8» and the hint
+«у 4 — 7, у 2 — 8»; its label opens a menu — one value («7 — у 4») or «Все: 7 · 8». The hint ends
+with «Если в просьбе сказано иначе, ИИ следует просьбе.» The phone sheet keeps the chips in one
+scrolling row. No tag to send — no block.
 
 **Sections column** (on «Задание» from expanded width, hidden beside the AI pane): `tb-section-nav`
 «Разделы задания» (design-system §10) lists «Текст», «Видео · N», «Доска» and «Тест · N» — the

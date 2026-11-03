@@ -34,6 +34,7 @@ import { T } from './i18n/texts';
 import { SearchField } from '@shared/ui/search-field';
 import { AssistChip } from '@shared/ui/assist-chip';
 import { Segment, SegmentGroup } from '@shared/ui/segment-group';
+import { AiContextChips, StudentContext } from './student-context';
 
 /** A draft the teacher took: it replaces the assignment's content or goes after its text. */
 export interface AppliedDraft {
@@ -75,6 +76,7 @@ export class HomeworkAiState {
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
   readonly focused = signal(false);
+  readonly context = new StudentContext();
 }
 
 /**
@@ -88,6 +90,7 @@ export class HomeworkAiState {
     SearchField,
     AssistChip,
     SegmentGroup,
+    AiContextChips,
     FormsModule,
     ReactiveFormsModule,
     RouterLink,
@@ -199,6 +202,8 @@ export class HomeworkAiState {
             }}</tb-assist-chip>
           </div>
         </div>
+
+        <tb-ai-context-chips [state]="context" [students]="students()" [row]="compact()" />
 
         <div class="tb-ai-pane__sources">
           <span class="tb-ai-pane__label">{{ t.considers }}</span>
@@ -864,6 +869,10 @@ export class HomeworkAiPanel implements OnInit {
   readonly quizLocked = input(false);
   /** A pane of its own beside the editor (or in its drawer) instead of a card. */
   readonly pane = input(false);
+  /** The recipients: their AI tags go with the request. */
+  readonly students = input<readonly string[]>([]);
+  /** The phone sheet: the context chips take one scrolling row. */
+  readonly compact = input(false);
   /** «Источник»: the host adds a source (a textbook) to the assignment. */
   readonly sourceAdd = output();
   readonly applied = output<AppliedDraft>();
@@ -914,6 +923,7 @@ export class HomeworkAiPanel implements OnInit {
   protected readonly saving = this.state.saving;
   protected readonly error = this.state.error;
   protected readonly focused = this.state.focused;
+  protected readonly context = this.state.context;
   /** The request folds to a line while the teacher looks at a draft. */
   protected readonly folded = computed(() => this.shown() !== null && !this.focused());
 
@@ -962,6 +972,7 @@ export class HomeworkAiPanel implements OnInit {
       prompt,
       title: title === '' ? null : title,
       sources: picked.filter((source): source is DraftSource => !(source instanceof File)),
+      context: this.context.context(this.students()),
     };
     const failed = (error: unknown): void => {
       this.pending.set(false);

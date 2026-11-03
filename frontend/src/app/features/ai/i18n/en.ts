@@ -147,4 +147,15 @@ export const en: Translation<typeof ru> = {
     resetAccept: 'Restore',
     resetDone: 'Default prompt restored',
   },
+  context: {
+    label: 'What I know about the students',
+    hint: 'If your request says otherwise, the AI follows your request.',
+    remove: (name: string) => `Leave out: ${name}`,
+    mixed: (name: string, shares: string) =>
+      `The students differ in “${name}”: ${shares}. Select the tag to use one value.`,
+    share: (count: number, value: string) => `${value} for ${String(count)}`,
+    option: (value: string, count: number) =>
+      `${value} — ${String(count)} ${count === 1 ? 'student' : 'students'}`,
+    all: (values: string) => `All: ${values}`,
+  },
 };

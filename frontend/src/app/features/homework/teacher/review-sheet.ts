@@ -16,6 +16,7 @@ import { Button, ButtonDirective, ButtonIcon } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
 import { Textarea } from 'primeng/textarea';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { AiContextChips } from '@features/ai/parts';
 import { ToBoardDialog } from '@features/boards/parts';
 import { SHARED_T } from '@shared/i18n/texts';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
@@ -54,6 +55,7 @@ export interface NextWork {
     FieldErrors,
     FilterChips,
     ToBoardDialog,
+    AiContextChips,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class.tb-sheet--inline]': 'inline()' },
@@ -187,6 +189,7 @@ export interface NextWork {
             </p>
           </section>
         } @else if (aiAvailable()) {
+          <tb-ai-context-chips [state]="context" [students]="student()" [row]="compact()" />
           <div>
             <p-button
               [label]="t.askAi"
@@ -512,6 +515,8 @@ export class ReviewSheet {
       this.task().status === 'SUBMITTED' &&
       this.reviewForm.latestAnswer(this.task()) !== null,
   );
+  protected readonly context = this.reviewForm.context;
+  protected readonly student = computed(() => [this.task().studentId]);
   protected readonly form = this.reviewForm.form;
   protected readonly commentValue = this.reviewForm.commentValue;
   protected readonly gradeValue = this.reviewForm.gradeValue;
@@ -529,6 +534,14 @@ export class ReviewSheet {
   protected readonly reviewText = this.reviewForm.reviewText;
 
   constructor() {
+    // the phone's toolbar asks the AI before the sheet with the chips opens
+    effect(() => {
+      if (this.aiAvailable()) {
+        untracked(() => {
+          this.context.load();
+        });
+      }
+    });
     // another work: the form starts again
     let shown: TaskDetails | null = null;
     effect(() => {

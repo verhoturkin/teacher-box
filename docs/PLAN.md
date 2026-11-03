@@ -70,7 +70,7 @@ sends the context of the recipients with the request, as it does for the lesson 
   menu tag → value (student counts), showing «Уровень: B1» when set, hidden while no tag exists,
   kept as `?tag=<valueId>`; it hides groups; on the phone the set chip goes first with «×»
   (`roster.ts`, `students-page.ts`). Canvas «Ученики — эскизы».
-- [ ] **362.6 F** «Учитываю об учениках» chips in `ai/homework-ai-panel.ts` (homework and quiz
+- [x] **362.6 F** «Учитываю об учениках» chips in `ai/homework-ai-panel.ts` (homework and quiz
   modes) and the review draft in `homework/teacher/review-form.ts`: built from the recipients' AI
   tags, each chip removable for this request, a mixed value shown in the warning tone with «у 4 — 7,
   у 2 — 8» and a menu to pick one value; the phone sheet shows the chips in one scrolling row

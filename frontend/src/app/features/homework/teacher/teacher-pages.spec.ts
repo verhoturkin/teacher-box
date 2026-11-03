@@ -14,7 +14,7 @@ import {
 } from '@testing/homework-fixtures';
 import { aiStatus } from '@testing/ai-fixtures';
 import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
-import { aGroup } from '@testing/identity-fixtures';
+import { aGroup, aStudent, aTag } from '@testing/identity-fixtures';
 import { aBoard } from '@testing/boards-fixtures';
 import { AssignMoreDialog } from './assign-more-dialog';
 import { AssignmentPage } from './assignment-page';
@@ -1726,11 +1726,18 @@ describe('AssignmentsPage with the review side sheet (from large)', () => {
 
   it('shows the AI draft in its own block and «Вставить» takes it', async () => {
     const { backend, host, fixture } = await render(QUEUE_OF_THREE, true);
+    backend.expectOne('/api/teacher/tags').flush([aTag()]);
+    // the page and the AI context both read the students
+    for (const students of backend.match('/api/teacher/students')) {
+      students.flush([aStudent({ id: 's-1', tags: { 'tag-1': 'v-2' } })]);
+    }
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Уровень: A2');
 
     buttonByText(host, 'Черновик ИИ').click();
-    backend
-      .expectOne('/api/teacher/ai/review-draft')
-      .flush({ comment: 'Почти верно', grade: '4', accept: true });
+    const request = backend.expectOne('/api/teacher/ai/review-draft');
+    expect(request.request.body).toMatchObject({ context: [{ name: 'Уровень', value: 'A2' }] });
+    request.flush({ comment: 'Почти верно', grade: '4', accept: true });
     await fixture.whenStable();
 
     expect(readableText(host)).toContain('ИИ предлагает принять работу');

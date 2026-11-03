@@ -1,7 +1,7 @@
 import { computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { AiApi } from '@features/ai/parts';
+import { AiApi, StudentContext } from '@features/ai/parts';
 import { HomeworkApi } from '../data-access/homework-api';
 import { ReviewDecision, TaskDetails } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
@@ -19,6 +19,8 @@ export class ReviewForm {
   readonly aiEnabled = toSignal(this.ai.enabled$, { initialValue: false });
   readonly pending = signal(false);
   readonly drafting = signal(false);
+  /** The student's AI tags for the draft. */
+  readonly context = new StudentContext();
   readonly form = new FormGroup({
     grade: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(20)] }),
     comment: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(5000)] }),
@@ -90,6 +92,7 @@ export class ReviewForm {
         title: task.assignment.title,
         description: task.assignment.description,
         answer,
+        context: this.context.context([task.studentId]),
       })
       .subscribe({
         next: (draft) => {

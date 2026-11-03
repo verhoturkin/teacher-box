@@ -145,4 +145,14 @@ export const ru = {
     resetAccept: 'Вернуть',
     resetDone: 'Стандартный промт возвращён',
   },
+  context: {
+    label: 'Учитываю об учениках',
+    hint: 'Если в просьбе сказано иначе, ИИ следует просьбе.',
+    remove: (name: string) => `Не учитывать: ${name}`,
+    mixed: (name: string, shares: string) =>
+      `Значение «${name}» у учеников разное: ${shares}. Нажмите на тег, чтобы выбрать одно значение.`,
+    share: (count: number, value: string) => `у ${String(count)} — ${value}`,
+    option: (value: string, count: number) => `${value} — у ${String(count)}`,
+    all: (values: string) => `Все: ${values}`,
+  },
 };

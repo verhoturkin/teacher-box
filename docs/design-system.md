@@ -640,7 +640,13 @@ action — «Изменить» next to «Проверить N работ» (hom
   (`<… lead>`), the label, a trailing 18 dp «×» button named «Убрать: <name>». With a dashed assist chip
   at the end it is the «Кому» field of the assignment editor: `tb-member-picker` `[bare]` keeps
   the data and the panel (`open()`), the chips are the field (*ours*). `[readonly]="true"` drops the «×»
-  (the students an assignment is already given to; *ours*).
+  (the students an assignment is already given to; *ours*). `[menu]="true"` makes the label a
+  button (`aria-haspopup="menu"`) that opens the host's menu: the AI context chips «Учитываю об
+  учениках» (`ai/student-context.ts`) pick one value of a tag that differs across recipients that
+  way. Such a mixed chip is in the warning tone — `warning-container` fill, `warning` border,
+  `on-warning-container` label and icon (*ours*: M3 publishes no warning chip); otherwise the 18 dp
+  `sell` icon is primary. On a phone sheet the chips keep one scrolling row (**M3**: input chips
+  may sit in a horizontally scrollable list).
 - **Section list** `tb-section-nav` (`@shared/ui/section-nav`, the contents of a long page, e.g. the
   assignment editor from expanded width): a one-line list in the **M3** navigation-drawer manner — 48 dp
   items (the drawer's 56 dp is *ours* lowered for an in-page list), full corners, a leading 20 dp icon,

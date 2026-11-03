@@ -3,7 +3,8 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 /**
  * An M3 input chip: a chosen entity (a student, a group) that can be removed. 32 dp, 8 dp corners, an
  * outline-variant border, a leading 24 dp avatar or 18 dp icon (`<… lead>`), a trailing «×» button named
- * `removeLabel` (the name of the entity is in it: «Убрать: Анна»).
+ * `removeLabel` (the name of the entity is in it: «Убрать: Анна»). With `menu` the label is a button that opens
+ * a menu of the host (a value to choose).
  */
 @Component({
   selector: 'tb-input-chip',
@@ -11,7 +12,18 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
   host: { '[class.tb-input-chip--static]': 'readonly()' },
   template: `
     <span class="tb-input-chip__lead"><ng-content select="[lead]" /></span>
-    <span class="tb-input-chip__label">{{ label() }}</span>
+    @if (menu()) {
+      <button
+        type="button"
+        class="tb-input-chip__label tb-input-chip__menu"
+        aria-haspopup="menu"
+        (click)="opened.emit($event)"
+      >
+        {{ label() }}
+      </button>
+    } @else {
+      <span class="tb-input-chip__label">{{ label() }}</span>
+    }
     @if (!readonly()) {
       <button
         type="button"
@@ -44,6 +56,22 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
     .tb-input-chip__lead {
       display: inline-flex;
       font-size: 1.125rem;
+    }
+
+    .tb-input-chip__menu {
+      block-size: 100%;
+      padding: 0;
+      border: 0;
+      border-radius: var(--tb-shape-sm);
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+
+      &:focus-visible {
+        outline: 3px solid var(--p-md-secondary);
+        outline-offset: 2px;
+      }
     }
 
     .tb-input-chip__remove {
@@ -84,4 +112,7 @@ export class InputChip {
   /** A chosen entity that cannot be removed here: no «×». */
   readonly readonly = input(false);
   readonly removed = output();
+  /** The label opens a menu (`opened`): a value to choose for the chip. */
+  readonly menu = input(false);
+  readonly opened = output<Event>();
 }

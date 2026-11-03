@@ -5,5 +5,6 @@
 export { AiApi } from './data-access/ai-api';
 export { AiSettingsPanel } from './ai-settings-panel';
 export { HomeworkAiPanel, HomeworkAiState } from './homework-ai-panel';
+export { AiContextChips, StudentContext } from './student-context';
 export type { AppliedDraft, AppliedQuestions } from './homework-ai-panel';
 export type { AiStatus, SourceOption } from './data-access/ai.models';

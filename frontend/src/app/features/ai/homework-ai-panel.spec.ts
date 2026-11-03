@@ -2,6 +2,7 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
 import { savedPrompt } from '@testing/ai-fixtures';
+import { aStudent, aTag } from '@testing/identity-fixtures';
 import {
   bodyText,
   buttonByText,
@@ -97,6 +98,7 @@ describe('HomeworkAiPanel', () => {
       prompt: '5 задач на дроби',
       title: 'Дроби',
       sources: [],
+      context: [],
     });
     await fixture.whenStable();
     const busy = host.querySelector('.tb-ai-panel__generate button');
@@ -321,7 +323,13 @@ describe('HomeworkAiPanel', () => {
   it('shows the working state on the generate button of the pane', async () => {
     const { panel, host } = await render([]);
     fixture.componentRef.setInput('pane', true);
+    fixture.componentRef.setInput('students', ['student-1']);
     await fixture.whenStable();
+    backend.expectOne('/api/teacher/tags').flush([aTag()]);
+    backend.expectOne('/api/teacher/students').flush([aStudent({ tags: { 'tag-1': 'v-2' } })]);
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Учитываю об учениках');
+    expect(readableText(host)).toContain('Уровень: A2');
     panel.prompt.setValue('5 задач');
     panel.generate();
     await fixture.whenStable();
@@ -330,7 +338,9 @@ describe('HomeworkAiPanel', () => {
     expect(button.getAttribute('aria-busy')).toBe('true');
     expect(button.disabled).toBe(true);
     expect(button.textContent).toContain('Генерирую…');
-    backend.expectOne('/api/teacher/ai/homework-draft').flush({ title: 'x', description: 'y' });
+    const request = backend.expectOne('/api/teacher/ai/homework-draft');
+    expect(request.request.body).toMatchObject({ context: [{ name: 'Уровень', value: 'A2' }] });
+    request.flush({ title: 'x', description: 'y' });
   });
 
   it('works without the library', async () => {

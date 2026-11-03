@@ -585,6 +585,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
             </ng-template>
             <tb-homework-ai-panel
               [pane]="true"
+              [students]="aiStudents()"
               (sourceAdd)="bindTextbook()"
               [title]="titleValue()"
               [hasText]="textValue().trim() !== ''"
@@ -610,6 +611,8 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
         >
           <tb-homework-ai-panel
             [pane]="true"
+            [students]="aiStudents()"
+            [compact]="compact()"
             (sourceAdd)="bindTextbook()"
             [title]="titleValue()"
             [hasText]="textValue().trim() !== ''"
@@ -1013,6 +1016,10 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
       this.students().map((student) => student.id),
     ),
   );
+  /** Whose AI tags the assistant takes: the students it is given to and the ones being chosen. */
+  protected readonly aiStudents = computed(() => [
+    ...new Set([...this.givenTo(), ...this.recipients()]),
+  ]);
   /** Lessons ahead, for the due date of a new assignment. */
   private readonly lessons = signal<readonly ScheduledLesson[]>([]);
   protected readonly nextLesson = computed(() =>
