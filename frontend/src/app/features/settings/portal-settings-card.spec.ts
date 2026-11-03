@@ -84,13 +84,15 @@ describe('PortalSettingsCard', () => {
     expect(readableText(fine)).toContain('Схема «Исходная» · контраст стандартный');
     expect(fine.querySelector('#portal-scheme-fidelity')).not.toBeNull();
     expect(host.querySelector('tb-help-button[topic="teacher/appearance"]')).not.toBeNull();
-    expect(host.querySelector('.tb-savebar')).toBeNull();
+    expect(host.querySelector('.tb-portal-save')).toBeNull();
     buttonByText(host, 'Тонкая настройка').click();
     await fixture.whenStable();
     expect(fine.querySelector('#portal-scheme-fidelity')).toBeNull();
-    expect(readableText(requireElement(host, '.tb-portal-preview', HTMLElement))).toContain(
-      'Тёмная тема',
-    );
+    // 361.1: two panes with the same elements, light and dark
+    const panes = Array.from(host.querySelectorAll<HTMLElement>('.tb-portal-preview .tb-look'));
+    expect(panes).toHaveLength(2);
+    expect(panes.map((pane) => readableText(pane).includes('Открыть'))).toEqual([true, true]);
+    expect(host.querySelector('.tb-portal-preview [aria-label="Тёмная тема"]')).not.toBeNull();
     expect(host.querySelector('tb-help-button[topic="teacher/setup"]')).toBeNull();
   });
 
@@ -100,7 +102,7 @@ describe('PortalSettingsCard', () => {
     buttonByText(host, 'Изумруд').click();
     await fixture.whenStable();
     expect(buttonByText(host, 'Изумруд').getAttribute('aria-checked')).toBe('true');
-    expect(readableText(requireElement(host, '.tb-savebar', HTMLElement))).toContain(
+    expect(readableText(requireElement(host, '.tb-portal-save', HTMLElement))).toContain(
       'Цвет изменён',
     );
     expect(host.querySelector('p-message')).toBeNull();
@@ -206,13 +208,13 @@ describe('PortalSettingsCard', () => {
     const host = await render();
     typeInto(requireElement(host, '#portal-name', HTMLInputElement), 'Школа');
     await fixture.whenStable();
-    expect(readableText(requireElement(host, '.tb-savebar', HTMLElement))).toContain(
+    expect(readableText(requireElement(host, '.tb-portal-save', HTMLElement))).toContain(
       'Название изменено',
     );
     buttonByText(host, 'Отменить').click();
     await fixture.whenStable();
     expect(requireElement(host, '#portal-name', HTMLInputElement).value).toBe('Teacher Box');
-    expect(host.querySelector('.tb-savebar')).toBeNull();
+    expect(host.querySelector('.tb-portal-save')).toBeNull();
   });
 
   it('uploads and removes the logo', async () => {

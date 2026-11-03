@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -51,7 +52,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
 
 /**
  * Teacher: the name, the logo and the color of the portal (sketch Portal; the address — setup and
- * administrator). The draft applies on «Сохранить» of the floating bar; the preview shows it in both themes.
+ * administrator). The draft applies on «Сохранить» of the row under the color; the preview shows it in a light and a dark pane.
  */
 @Component({
   selector: 'tb-portal-settings-card',
@@ -67,6 +68,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     SelectButton,
     PortalLogo,
     FieldErrors,
+    NgTemplateOutlet,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -199,6 +201,19 @@ const MAX_LOGO_SIZE = 1024 * 1024;
                   (onChange)="ownTyped()"
                 />
               </div>
+              @if (form.dirty) {
+                <div class="tb-portal-save" role="status">
+                  <span class="tb-portal-save__text">{{ unsavedText() }}</span>
+                  <p-button
+                    type="button"
+                    [label]="t.discard"
+                    [text]="true"
+                    [disabled]="pending()"
+                    (onClick)="cancel()"
+                  />
+                  <p-button type="submit" [label]="c.save" [loading]="pending()" />
+                </div>
+              }
               @if (poorContrast(); as advice) {
                 <p-message severity="warn" styleClass="tb-form-message">{{ advice }}</p-message>
               }
@@ -296,84 +311,62 @@ const MAX_LOGO_SIZE = 1024 * 1024;
             class="tb-portal-preview"
           >
             <p class="tb-muted">{{ t.previewAbout }}</p>
-            <div
-              class="tb-look"
-              [style.background]="scheme().light.surface"
-              [style.color]="scheme().light.onSurface"
-              [style.border-color]="scheme().light.outlineVariant"
-            >
-              <div class="tb-look__bar" [style.background]="scheme().light.surfaceContainer">
-                <tb-portal-logo size="1.5rem" />
-                <b>{{ draftName() || defaultName }}</b>
-              </div>
-              <div class="tb-look__body">
-                <div
-                  class="tb-look__hero"
-                  [style.background]="scheme().light.primaryContainer"
-                  [style.color]="scheme().light.onPrimaryContainer"
-                >
-                  <span class="tb-look__overline">{{ t.previewLesson }}</span>
-                  <b class="tb-look__student">{{ t.previewStudent }}</b>
-                  <span
-                    class="tb-look__button"
-                    [style.background]="scheme().light.primary"
-                    [style.color]="scheme().light.onPrimary"
-                    >{{ t.previewAction }}</span
-                  >
-                </div>
-                <div class="tb-look__row" [style.background]="scheme().light.surfaceContainerLow">
-                  <span
-                    class="tb-look__icon"
-                    [style.background]="scheme().light.secondaryContainer"
-                    [style.color]="scheme().light.onSecondaryContainer"
-                    ><i class="tb-i tb-i-assignment" aria-hidden="true"></i
-                  ></span>
-                  <b class="tb-grow">{{ t.previewQueue }}</b>
-                  <span class="tb-look__link" [style.color]="scheme().light.primary">{{
-                    t.previewOpen
-                  }}</span>
-                </div>
-              </div>
-            </div>
-            <div
-              class="tb-look tb-look--dark"
-              [style.background]="scheme().dark.surface"
-              [style.color]="scheme().dark.onSurface"
-              [style.border-color]="scheme().dark.outlineVariant"
-            >
-              <i
-                class="tb-i tb-i-dark_mode"
-                [style.color]="scheme().dark.primary"
-                aria-hidden="true"
-              ></i>
-              <span class="tb-grow">{{ t.darkTheme }}</span>
-              <span
-                class="tb-look__button"
-                [style.background]="scheme().dark.primary"
-                [style.color]="scheme().dark.onPrimary"
-                >{{ t.previewAction }}</span
-              >
-            </div>
+            <ng-container
+              *ngTemplateOutlet="look; context: { $implicit: scheme().light, dark: false }"
+            />
+            <ng-container
+              *ngTemplateOutlet="look; context: { $implicit: scheme().dark, dark: true }"
+            />
           </p-card>
         </div>
-        @if (form.dirty) {
-          <div class="tb-savebar" role="status">
-            {{ unsavedText() }}
-            <p-button
-              type="button"
-              [label]="t.discard"
-              [text]="true"
-              styleClass="tb-savebar__discard"
-              (onClick)="cancel()"
-            />
-            <p-button
-              type="submit"
-              [label]="c.save"
-              styleClass="tb-savebar__save"
-              [loading]="pending()"
-            />
+        <ng-template #look let-palette let-dark="dark">
+          <div
+            class="tb-look"
+            [style.background]="palette.surface"
+            [style.color]="palette.onSurface"
+            [style.border-color]="palette.outlineVariant"
+          >
+            <div class="tb-look__bar" [style.background]="palette.surfaceContainer">
+              <tb-portal-logo size="1.5rem" />
+              <b class="tb-grow">{{ draftName() || defaultName }}</b>
+              @if (dark) {
+                <i
+                  class="tb-i tb-i-dark_mode"
+                  [style.color]="palette.onSurfaceVariant"
+                  [attr.aria-label]="t.darkTheme"
+                ></i>
+              }
+            </div>
+            <div class="tb-look__body">
+              <div
+                class="tb-look__hero"
+                [style.background]="palette.primaryContainer"
+                [style.color]="palette.onPrimaryContainer"
+              >
+                <span class="tb-look__overline">{{ t.previewLesson }}</span>
+                <b class="tb-look__student">{{ t.previewStudent }}</b>
+                <span
+                  class="tb-look__button"
+                  [style.background]="palette.primary"
+                  [style.color]="palette.onPrimary"
+                  >{{ t.previewAction }}</span
+                >
+              </div>
+              <div class="tb-look__row" [style.background]="palette.surfaceContainerLow">
+                <span
+                  class="tb-look__icon"
+                  [style.background]="palette.secondaryContainer"
+                  [style.color]="palette.onSecondaryContainer"
+                  ><i class="tb-i tb-i-assignment" aria-hidden="true"></i
+                ></span>
+                <b class="tb-grow">{{ t.previewQueue }}</b>
+                <span class="tb-look__link" [style.color]="palette.primary">{{
+                  t.previewOpen
+                }}</span>
+              </div>
+            </div>
           </div>
-        }
+        </ng-template>
       </form>
     }
   `,
@@ -634,41 +627,18 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       font: var(--tb-type-label-l);
     }
 
-    .tb-look--dark {
+    /* the save row under the color (sketch Portal): the text takes the room, the buttons wrap under it */
+    .tb-portal-save {
       display: flex;
-      align-items: center;
-      gap: var(--tb-space-3);
-      padding: var(--tb-space-3) var(--tb-space-4);
-      font: var(--tb-type-body-m);
-    }
-
-    /* the floating save bar (the sketch, an M3 snackbar's look): inverse surface, inverse-primary actions */
-    .tb-savebar {
-      position: sticky;
-      bottom: var(--tb-space-6);
-      z-index: 1;
-      display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: var(--tb-space-2);
-      width: fit-content;
-      max-width: 100%;
-      margin: var(--tb-space-4) auto 0;
-      padding: var(--tb-space-2) var(--tb-space-2) var(--tb-space-2) var(--tb-space-5);
-      border-radius: var(--tb-shape-lg);
-      background: var(--p-md-inverse-surface);
-      color: var(--p-md-inverse-on-surface);
-      box-shadow: 0 4px 12px rgb(0 0 0 / 25%);
+    }
+
+    .tb-portal-save__text {
+      flex: 1 1 10rem;
+      color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
-
-      ::ng-deep .tb-savebar__discard.p-button {
-        color: var(--p-md-inverse-primary);
-      }
-
-      ::ng-deep .tb-savebar__save.p-button {
-        border-color: var(--p-md-inverse-primary);
-        background: var(--p-md-inverse-primary);
-        color: var(--p-md-on-primary-container);
-      }
     }
 
     @container (width < 26rem) {

@@ -17,6 +17,7 @@ import { T } from '../i18n/texts';
   selector: 'tb-meetings-settings-panel',
   imports: [FormsModule, Message, Tag, ToggleSwitch],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'tb-flow' },
   template: `
     <div id="meetings" class="tb-tiles">
       <div class="tb-tile">
