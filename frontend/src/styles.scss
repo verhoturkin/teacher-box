@@ -612,6 +612,13 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
   > p-button {
     align-self: flex-start;
   }
+
+  /* the blocks of a loaded section stand 12 px apart as well */
+  > tb-load-state {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tb-space-3);
+  }
 }
 
 /*
@@ -634,6 +641,23 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
+  }
+}
+
+/*
+ * An alert in a dialog stands 16 px from the field or text above and below it (ours: the dialog
+ * content has no gap of its own); the first and the last child keep the dialog's own padding.
+ */
+.tb-d__content > p-message {
+  display: block;
+  margin-block: var(--tb-space-4);
+
+  &:first-child {
+    margin-block-start: 0;
+  }
+
+  &:last-child {
+    margin-block-end: 0;
   }
 }
 

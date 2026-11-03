@@ -50,7 +50,7 @@ function isWord(value: string): boolean {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card id="reset" styleClass="tb-section-card">
+    <p-card id="reset" styleClass="tb-section-card tb-section-card--flow">
       <ng-template #title>
         <div class="tb-card-title">
           <span class="tb-card-title__text tb-negative"

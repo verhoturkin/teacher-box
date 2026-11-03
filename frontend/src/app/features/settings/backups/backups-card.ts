@@ -70,7 +70,7 @@ const KIND_ICONS: Readonly<Record<BackupKind, string>> = {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card id="backups" styleClass="tb-section-card">
+    <p-card id="backups" styleClass="tb-section-card tb-section-card--flow">
       <ng-template #title
         ><ng-template tbPaneHeader>
           <div class="tb-card-title">

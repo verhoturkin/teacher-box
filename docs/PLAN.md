@@ -34,7 +34,7 @@ only for a gross M3 violation and name it.
   three columns match (`identity/account/account-panel.ts`,
   `notifications/account/notifications-section.ts`). «Подключить» of «Это устройство» stays on
   its row like the other rows (`tb-list__trail--inline`), at every width.
-- [ ] **360.2 F** Spacing: the children of a `.tb-section-card` keep the card's 12 px gap (the
+- [x] **360.2 F** Spacing: the children of a `.tb-section-card` keep the card's 12 px gap (the
   backups alert, list and «Все N копий» touch now, `settings/backups/backups-card.ts`); the
   alerts in dialogs keep the dialog's 16 px gap from the fields around them (restore, reset and
   the other dialogs with a `p-message`). Fix it once in the shared styles, not per card.
