@@ -19,6 +19,14 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
+## Next release
+
+### Stage 355 — fixes after 0.44.0
+
+- [x] **355.1 F** Open assignment on a very wide window: the task column stops at 48 rem and the
+  students column follows it instead of sitting at the far edge with empty space between
+  (`homework/teacher/assignment-page.ts`).
+
 ## Repository maintenance
 
 ### Stage 336 — GitHub releases and README screenshots

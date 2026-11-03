@@ -337,7 +337,8 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   - **Compact:** `tb-segment-group` tabs «Ученики N · Задание · Ошибки» («Ошибки» only with a quiz),
     tiles in one column and a «Проверить N работ» button stuck to the bottom of the page.
   - **Large and up** (354.2, sketch 4): the task takes the main column — the whole text (no fold,
-    72ch), «Материалы» as one segmented list (`tb-list-group`: textbooks, files), the videos and
+    72ch; the column stops at 48 rem and the students follow it, so a very wide window keeps the
+    free space at the end, 355.1), «Материалы» as one segmented list (`tb-list-group`: textbooks, files), the videos and
     the test line («Тест · N вопросов · M баллов · K попытки» on surface-container-low) — and the
     students a narrow column (320–380 px, *ours*): «Ученики · N» with the icon button «Выдать
     ещё», then the status groups «Проверить», «На доработке», «Ждут сдачи», «Принято» (heading
