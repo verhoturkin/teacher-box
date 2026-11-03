@@ -200,6 +200,8 @@ export const ru = {
     files: 'Копии в Google Диске',
     filesWhat: 'копии в Google Диске',
     noFiles: 'В Google Диске пока нет копий',
+    allFiles: (count: number) => `Все ${countOf(count, 'копия', 'копии', 'копий')} в Диске`,
+    fewerFiles: 'Свернуть',
     onServer: 'есть на сервере',
     bringBack: 'Перенести на сервер',
     bringBackLabel: (name: string) => `Перенести на сервер: ${name}`,

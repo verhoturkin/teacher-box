@@ -35,6 +35,9 @@ import { BackupsApi, BackupsArea } from './backups-api';
 import { DriveStore } from './drive-store';
 import { T } from '../i18n/texts';
 
+/** The copies shown before «Все N копий в Диске», as in `backups-card.ts`. */
+const RECENT = 3;
+
 type Severity = 'success' | 'info' | 'warn' | 'error';
 
 /** Messages for the result Google's redirect brings back (`?drive=...`). */
@@ -123,7 +126,7 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
             <tb-empty-state icon="tb-i-cloud" [title]="t.noFiles" />
           } @else {
             <ul class="tb-list" [attr.aria-label]="t.files">
-              @for (file of files(); track file.id) {
+              @for (file of shownFiles(); track file.id) {
                 <li>
                   <span class="tb-list__lead" aria-hidden="true"
                     ><i class="tb-i tb-i-cloud"></i
@@ -148,6 +151,16 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
                 </li>
               }
             </ul>
+            @if (files().length > RECENT) {
+              <div class="tb-actions">
+                <p-button
+                  [label]="allFiles() ? t.fewerFiles : t.allFiles(files().length)"
+                  [text]="true"
+                  [attr.aria-expanded]="allFiles()"
+                  (onClick)="allFiles.set(!allFiles())"
+                />
+              </div>
+            }
           }
           <p class="tb-muted">{{ t.restoreHint }}</p>
           @if (area() === 'teacher') {
@@ -322,6 +335,11 @@ export class DrivePanel implements OnInit {
   protected readonly portalName = this.portal.name;
   protected readonly status = this.store.status;
   protected readonly files = this.store.files;
+  protected readonly RECENT = RECENT;
+  protected readonly allFiles = signal(false);
+  protected readonly shownFiles = computed(() =>
+    this.allFiles() ? this.files() : this.files().slice(0, RECENT),
+  );
   protected readonly pending = signal(false);
   protected readonly editingClient = signal(false);
   protected readonly result = computed(() => {

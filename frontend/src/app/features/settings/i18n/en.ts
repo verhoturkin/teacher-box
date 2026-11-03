@@ -195,6 +195,8 @@ export const en: Translation<typeof ru> = {
     files: 'Backups in Google Drive',
     filesWhat: 'backups in Google Drive',
     noFiles: 'No backups in Google Drive yet',
+    allFiles: (count: number) => `All ${String(count)} backups in Drive`,
+    fewerFiles: 'Show fewer',
     onServer: 'on the server',
     bringBack: 'Download to server',
     bringBackLabel: (name: string) => `Download to server: ${name}`,

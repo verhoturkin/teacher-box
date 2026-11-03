@@ -187,6 +187,26 @@ describe('DrivePanel', () => {
     expect(readableText(host)).toContain(`Копия ${NAME} переносится на сервер…`);
   });
 
+  it('folds the copies in the Drive to the last three', async () => {
+    setUp();
+    const files = [1, 2, 3, 4, 5].map((n) => ({
+      ...FILE,
+      id: `f${String(n)}`,
+      name: `copy-${String(n)}.zip`,
+    }));
+    const host = await render(CONNECTED, files);
+    const rows = (): number =>
+      host.querySelectorAll('ul[aria-label="Копии в Google Диске"] > li').length;
+
+    expect(rows()).toBe(3);
+    buttonByText(host, 'Все 5 копий в Диске').click();
+    await fixture.whenStable();
+    expect(rows()).toBe(5);
+    buttonByText(host, 'Свернуть').click();
+    await fixture.whenStable();
+    expect(rows()).toBe(3);
+  });
+
   it('shows an upload and an empty Drive', async () => {
     setUp();
     const host = await render({

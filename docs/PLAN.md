@@ -38,7 +38,7 @@ only for a gross M3 violation and name it.
   backups alert, list and «Все N копий» touch now, `settings/backups/backups-card.ts`); the
   alerts in dialogs keep the dialog's 16 px gap from the fields around them (restore, reset and
   the other dialogs with a `p-message`). Fix it once in the shared styles, not per card.
-- [ ] **360.3 F** Google Drive copies folded like the server copies: the last three and «Все N
+- [x] **360.3 F** Google Drive copies folded like the server copies: the last three and «Все N
   копий в Диске» (`settings/backups/drive-panel.ts`, as `backups-card.ts` does).
 - [ ] **360.4** Release 0.45.1 (skill `release`).
 
