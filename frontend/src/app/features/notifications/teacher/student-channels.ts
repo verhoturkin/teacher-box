@@ -13,9 +13,11 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { NotificationsApi } from '../data-access/notifications-api';
-import { StudentMessengers } from '../data-access/notifications.models';
+import { ChannelState, ChannelType, StudentMessengers } from '../data-access/notifications.models';
 import { CHANNEL_ICONS, CHANNEL_NAMES } from '../notification-labels';
 import { T } from '../i18n/texts';
+
+const ALL_CHANNELS: readonly ChannelType[] = ['TELEGRAM', 'VK', 'MAX'];
 
 /**
  * «Связь» of a student's card (redesign spec §8): the messengers the student connected, the messages
@@ -26,43 +28,37 @@ import { T } from '../i18n/texts';
   imports: [Button, DatePipe, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display: block' },
+  styles: `
+    .tb-student-channels__remind {
+      display: block;
+      margin-top: var(--tb-space-3);
+    }
+  `,
   template: `
     <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
       @if (messengers(); as messengers) {
         <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
-          @for (channel of messengers.channels; track channel.channel) {
+          @for (row of rows(messengers); track row.type) {
             <li>
               <span class="tb-list__lead" aria-hidden="true"
-                ><i [class]="icons[channel.channel]"></i
+                ><i [class]="icons[row.type]"></i
               ></span>
               <div class="tb-list__text">
-                <span class="tb-list__title">{{ t.connected(names[channel.channel]) }}</span>
+                <span class="tb-list__title">{{ names[row.type] }}</span>
                 <span class="tb-list__supporting">
-                  @if (!channel.enabled) {
-                    {{ t.paused }}
-                  } @else if (channel.linkedAt !== null) {
-                    {{ t.since((channel.linkedAt | date: 'dd.MM.yyyy') ?? '') }}
+                  @if (row.channel; as channel) {
+                    @if (channel.displayName) {
+                      {{ channel.displayName }} ·
+                    }
+                    @if (!channel.enabled) {
+                      {{ t.paused }}
+                    } @else if (channel.linkedAt !== null) {
+                      {{ t.since((channel.linkedAt | date: 'd MMMM') ?? '') }}
+                    }
+                  } @else {
+                    {{ t.notConnected }}
                   }
                 </span>
-              </div>
-            </li>
-          } @empty {
-            <li>
-              <span class="tb-list__lead" aria-hidden="true"
-                ><i class="tb-i tb-i-notifications_off"></i
-              ></span>
-              <div class="tb-list__text">
-                <span class="tb-list__title">{{ t.none }}</span>
-                <span class="tb-list__supporting">{{ t.noneHint }}</span>
-              </div>
-              <div class="tb-list__trail">
-                <p-button
-                  [label]="t.remind"
-                  severity="secondary"
-                  [text]="true"
-                  [loading]="pending()"
-                  (onClick)="remind(messengers.studentId)"
-                />
               </div>
             </li>
           }
@@ -78,6 +74,14 @@ import { T } from '../i18n/texts';
             </li>
           }
         </ul>
+        <p-button
+          class="tb-student-channels__remind"
+          [label]="t.remind"
+          icon="tb-i tb-i-share"
+          severity="secondary"
+          [loading]="pending()"
+          (onClick)="remind(messengers.studentId)"
+        />
       }
     </tb-load-state>
   `,
@@ -102,6 +106,14 @@ export class StudentChannels {
         this.load();
       });
     });
+  }
+
+  /** Every messenger of the portal: the student's one, or «Не подключён» (sketch Details). */
+  protected rows(messengers: StudentMessengers): { type: ChannelType; channel?: ChannelState }[] {
+    return ALL_CHANNELS.map((type) => ({
+      type,
+      channel: messengers.channels.find((channel) => channel.channel === type),
+    }));
   }
 
   protected load(): void {

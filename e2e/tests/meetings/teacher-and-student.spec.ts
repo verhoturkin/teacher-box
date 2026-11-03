@@ -60,8 +60,8 @@ test('the teacher and the student meet in the room of the student', async ({ bro
   await signIn(teacher, 'teacher', TEACHER_PASSWORD);
   // 0.22.0: no «Звонки» section — its address leads to the category of the settings
   await teacher.goto('/teacher/calls');
-  await expect(teacher).toHaveURL(/\/teacher\/settings\/calls$/);
-  await expect(teacher.locator('#meetings')).toContainText('Звонки в портале включены');
+  await expect(teacher).toHaveURL(/\/teacher\/settings\/lessons$/);
+  await expect(teacher.locator('#meetings')).toContainText('Включены — кнопка «Начать урок»');
 
   // the room's link opens the call over the teacher's pages
   await teacher.goto(`/call/${vera.id}`);

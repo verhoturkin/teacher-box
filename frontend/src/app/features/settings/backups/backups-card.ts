@@ -1,5 +1,4 @@
 import { PaneHeader } from '@shared/ui/panes';
-import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -16,11 +15,14 @@ import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Menu } from 'primeng/menu';
+import { Message } from 'primeng/message';
+import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 import { FileSaver } from '@shared/files/file-saver';
 import { formatFileSize } from '@shared/files/file-size';
 import { HelpButton } from '@features/help/parts';
 import type { HelpTopic } from '@features/help/parts';
+import { dayTime } from '@shared/dates/iso-date';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { BackupInfo, BackupKind } from '../data-access/settings.models';
 import { BackupsApi, BackupsArea } from './backups-api';
@@ -36,6 +38,16 @@ import { T } from '../i18n/texts';
 
 const KINDS: Readonly<Record<BackupKind, string>> = T.backups.kinds;
 
+/** The copies shown before «Все N копий». */
+const RECENT = 3;
+
+const KIND_ICONS: Readonly<Record<BackupKind, string>> = {
+  SCHEDULED: 'schedule',
+  MANUAL: 'touch_app',
+  BEFORE_RESTORE: 'history',
+  BEFORE_RESET: 'history',
+};
+
 /**
  * Backups of the portal (ADR-0014): the teacher creates, downloads, restores and deletes them; the
  * administrator creates and restores them (the backups hold the students' data).
@@ -45,11 +57,12 @@ const KINDS: Readonly<Record<BackupKind, string>> = T.backups.kinds;
   imports: [
     PaneHeader,
     EmptyState,
-    DatePipe,
     Button,
     Card,
     HelpButton,
     Menu,
+    Message,
+    Tag,
     ButtonAttributes,
     RestoreDialog,
     Tooltip,
@@ -57,7 +70,7 @@ const KINDS: Readonly<Record<BackupKind, string>> = T.backups.kinds;
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card id="backups">
+    <p-card id="backups" styleClass="tb-section-card tb-section-card--flow">
       <ng-template #title
         ><ng-template tbPaneHeader>
           <div class="tb-card-title">
@@ -68,36 +81,50 @@ const KINDS: Readonly<Record<BackupKind, string>> = T.backups.kinds;
               <p-button
                 [label]="t.create"
                 severity="secondary"
-                icon="tb-i tb-i-database"
+                icon="tb-i tb-i-backup"
                 [loading]="creating()"
                 (onClick)="create()"
               />
             </div>
           </div> </ng-template
       ></ng-template>
-      <p class="tb-muted">
-        {{ t.about }}
-        @if (isAdmin()) {
-          {{ t.teacherOnly }}
-        }
-      </p>
       <tb-load-state [state]="state" [what]="t.what" (retry)="reload()">
         @if (backups().length === 0) {
           <tb-empty-state icon="tb-i-database" [title]="t.empty" />
         } @else {
+          <p-message severity="info" icon="tb-i tb-i-verified" styleClass="tb-form-message">
+            <strong>{{ t.latest(when(backups()[0]?.createdAt ?? '')) }}</strong>
+            {{ t.about }}
+            @if (isAdmin()) {
+              {{ t.teacherOnly }}
+            }
+          </p-message>
           <ul class="tb-list" [attr.aria-label]="t.title">
-            @for (backup of backups(); track backup.name) {
+            @for (backup of shown(); track backup.name) {
               <li>
                 <span class="tb-list__lead" aria-hidden="true"
-                  ><i class="tb-i tb-i-database"></i
+                  ><i class="tb-i" [class]="'tb-i-' + icon(backup)"></i
                 ></span>
                 <div class="tb-list__text">
-                  <span class="tb-list__title">{{
-                    backup.createdAt | date: 'dd.MM.yyyy HH:mm'
-                  }}</span>
+                  <span class="tb-list__title">{{ when(backup.createdAt, true) }}</span>
                   <span class="tb-list__supporting">{{ details(backup) }}</span>
                 </div>
                 <div class="tb-list__trail tb-list__trail--icons">
+                  @if (inDrive(backup)) {
+                    <p-tag [value]="t.inDrive" severity="info" />
+                  }
+                  @if (!isAdmin()) {
+                    <p-button
+                      icon="tb-i tb-i-download"
+                      [text]="true"
+                      [rounded]="true"
+                      severity="secondary"
+                      [pTooltip]="t.download"
+                      [ariaLabel]="t.downloadLabel(backup.name)"
+                      [loading]="busy.is('download-' + backup.name)"
+                      (onClick)="download(backup)"
+                    />
+                  }
                   <p-button
                     icon="tb-i tb-i-more_vert"
                     [text]="true"
@@ -105,7 +132,6 @@ const KINDS: Readonly<Record<BackupKind, string>> = T.backups.kinds;
                     severity="secondary"
                     [pTooltip]="t.actions(backup.name)"
                     [ariaLabel]="t.actions(backup.name)"
-                    [loading]="busy.is('download-' + backup.name)"
                     [tbAttributes]="{
                       'aria-haspopup': 'menu',
                       'aria-expanded': menuFor()?.name === backup.name ? 'true' : 'false',
@@ -116,6 +142,16 @@ const KINDS: Readonly<Record<BackupKind, string>> = T.backups.kinds;
               </li>
             }
           </ul>
+          @if (backups().length > RECENT) {
+            <div class="tb-actions">
+              <p-button
+                [label]="all() ? t.fewer : t.all(backups().length)"
+                [text]="true"
+                [attr.aria-expanded]="all()"
+                (onClick)="all.set(!all())"
+              />
+            </div>
+          }
         }
       </tb-load-state>
     </p-card>
@@ -145,7 +181,14 @@ export class BackupsCard implements OnInit {
   protected readonly helpTopic = computed<HelpTopic>(() =>
     this.isAdmin() ? 'admin/backups' : 'teacher/backups',
   );
+  protected readonly RECENT = RECENT;
+  protected readonly when = dayTime;
+  /** The newest copy first, as the sketch Data shows them. */
   protected readonly backups = signal<BackupInfo[]>([]);
+  protected readonly all = signal(false);
+  protected readonly shown = computed(() =>
+    this.all() ? this.backups() : this.backups().slice(0, RECENT),
+  );
   protected readonly creating = signal(false);
   protected readonly selected = signal<BackupInfo | null>(null);
   protected readonly restoring = signal(false);
@@ -180,12 +223,18 @@ export class BackupsCard implements OnInit {
   protected details(backup: BackupInfo): string {
     const parts = [formatFileSize(backup.size)];
     if (backup.kind !== null) {
-      parts.unshift(KINDS[backup.kind]);
-    }
-    if (this.drive.names().has(backup.name)) {
-      parts.push(T.backups.inDrive);
+      const kind = KINDS[backup.kind];
+      parts.unshift(kind.charAt(0).toUpperCase() + kind.slice(1));
     }
     return parts.join(' · ');
+  }
+
+  protected inDrive(backup: BackupInfo): boolean {
+    return this.drive.names().has(backup.name);
+  }
+
+  protected icon(backup: BackupInfo): string {
+    return backup.kind === null ? 'database' : KIND_ICONS[backup.kind];
   }
 
   protected openMenu(backup: BackupInfo, event: Event): void {
@@ -252,15 +301,6 @@ export class BackupsCard implements OnInit {
         },
       },
     ];
-    if (!this.isAdmin()) {
-      items.push({
-        label: T.backups.download,
-        icon: 'tb-i tb-i-download',
-        command: () => {
-          this.download(backup);
-        },
-      });
-    }
     if (this.drive.connected()) {
       items.push({
         label: T.backups.sendToDrive,
@@ -288,7 +328,7 @@ export class BackupsCard implements OnInit {
       .list(this.area())
       .pipe(this.state.track())
       .subscribe((backups) => {
-        this.backups.set(backups);
+        this.backups.set([...backups].sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
         this.drive.local.set(new Set(backups.map((backup) => backup.name)));
       });
   }

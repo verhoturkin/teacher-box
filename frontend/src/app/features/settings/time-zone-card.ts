@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { ScheduleApi } from '@features/schedule/parts';
 import { LoadState } from '@shared/ui/load-state';
@@ -7,27 +6,33 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { T } from './i18n/texts';
 
 /**
- * The time zone of the portal in «Расписание и календарь» (redesign spec §10.3): the teacher sees it, the
+ * A row of «Время и цена» in the settings category «Занятия» (sketch Lessons): the teacher sees it, the
  * administrator changes it; a device in another zone is told that the portal keeps its own.
  */
 @Component({
   selector: 'tb-time-zone-card',
-  imports: [Card, Message, LoadStateView],
+  imports: [Message, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card id="time-zone" [header]="t.timeZoneTitle">
-      <tb-load-state [state]="state" [what]="t.timeZoneWhat" [compact]="true" (retry)="load()">
-        @if (zone(); as zone) {
-          <p>{{ t.timeZone(zone) }}</p>
-          <p class="tb-muted">{{ t.timeZoneAdmin }}</p>
-          @if (zone !== browserZone) {
-            <p-message severity="info" styleClass="tb-form-message">{{
-              t.otherZone(browserZone)
-            }}</p-message>
-          }
+    <tb-load-state [state]="state" [what]="t.timeZoneWhat" [compact]="true" (retry)="load()">
+      @if (zone(); as zone) {
+        <div id="time-zone" class="tb-tiles">
+          <div class="tb-tile">
+            <i class="tb-i tb-i-schedule tb-tile__icon" aria-hidden="true"></i>
+            <span class="tb-tile__text">
+              <b>{{ t.timeZoneTitle }}</b>
+              <span>{{ t.timeZone(zone) }} {{ t.timeZoneAdmin }}</span>
+            </span>
+            <i class="tb-i tb-i-lock" [attr.title]="t.timeZoneAdmin" aria-hidden="true"></i>
+          </div>
+        </div>
+        @if (zone !== browserZone) {
+          <p-message severity="info" styleClass="tb-form-message">{{
+            t.otherZone(browserZone)
+          }}</p-message>
         }
-      </tb-load-state>
-    </p-card>
+      }
+    </tb-load-state>
   `,
 })
 export class TimeZoneCard implements OnInit {

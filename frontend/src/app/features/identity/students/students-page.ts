@@ -25,6 +25,7 @@ import { ScheduleApi, ScheduledLesson } from '@features/schedule/parts';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { injectMobile } from '@core/layout/mobile';
 import { openOnCreate } from '@core/routing/create-param';
+import { NewMessageState } from '@core/notifications/new-message';
 import { pageDetail } from '@core/routing/page-detail';
 import { readQuery, writeQuery } from '@core/routing/query-state';
 import { Snackbar } from '@core/snackbar/snackbar';
@@ -129,6 +130,25 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
           <div tbPaneHeader>
             <tb-page-header [title]="t.title">
               <tb-help-button help topic="teacher/students" />
+              <!-- the message to everyone is an action of the students, not a setting (sketch Changes) -->
+              @if (mobile()) {
+                <p-button
+                  icon="tb-i tb-i-send"
+                  severity="secondary"
+                  [text]="true"
+                  [rounded]="true"
+                  [ariaLabel]="t.writeAll"
+                  [pTooltip]="t.writeAll"
+                  (onClick)="newMessage.show()"
+                />
+              } @else {
+                <p-button
+                  [label]="t.writeAll"
+                  icon="tb-i tb-i-send"
+                  severity="secondary"
+                  (onClick)="newMessage.show()"
+                />
+              }
               @if (state.ready()) {
                 @if (!mobile()) {
                   <span meta class="tb-muted">{{ summary() }}</span>
@@ -350,6 +370,7 @@ export class StudentsPage implements OnInit {
   private readonly colors = inject(TeacherColors);
   private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
+  protected readonly newMessage = inject(NewMessageState);
   private readonly date = inject(DatePipe);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);

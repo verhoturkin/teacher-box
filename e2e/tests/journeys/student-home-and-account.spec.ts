@@ -163,8 +163,8 @@ test('the student’s messengers and what to send are in «Мой аккаунт
 }) => {
   await signIn(page);
   await page.goto('/cabinet/account');
-  await expect(page.locator('tb-channels-panel')).toContainText('Мессенджеры');
-  await expect(page.locator('tb-preferences-panel')).toContainText('Что присылать в мессенджеры');
+  await expect(page.locator('tb-notifications-section')).toContainText('Куда присылать');
+  await expect(page.locator('tb-notifications-section')).toContainText('Что присылать');
   // the rail has no «Уведомления»: the notifications are in the bell
   await expect(
     page.getByRole('navigation', { name: 'Разделы' }).getByRole('link', { name: 'Уведомления' }),

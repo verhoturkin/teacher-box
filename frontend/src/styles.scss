@@ -594,6 +594,82 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
   }
 }
 
+/*
+ * A settings section card (`tb-section-card--flow`, the settings sketches Main…Messengers): every block of
+ * the card — text, label, list, field, buttons — stands 12 px apart, as in the sketch's card; the blocks
+ * bring no margins of their own. Ours: the homework cards keep their own spacing.
+ */
+.p-card.tb-section-card.tb-section-card--flow > .p-card-body > .p-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-3);
+
+  > * {
+    margin: 0;
+  }
+
+  /* a field with its hint and a lone button keep their own width */
+  > p-button {
+    align-self: flex-start;
+  }
+
+  /* the blocks of a loaded section stand 12 px apart as well */
+  > tb-load-state {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tb-space-3);
+  }
+}
+
+/*
+ * Compact (sketches StudentPhone, PhoneMessengers): the settings sections lie on the pane without a card,
+ * the section's title reads as the label of its block.
+ */
+@media (width < 37.5em) {
+  .p-card.tb-section-card.tb-section-card--flow {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+
+    > .p-card-body {
+      padding: 0;
+    }
+
+    .p-card-title {
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-label-m-emphasized);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+  }
+}
+
+/*
+ * An alert in a dialog stands 16 px from the field or text above and below it (ours: the dialog
+ * content has no gap of its own); the first and the last child keep the dialog's own padding.
+ */
+.tb-d__content > p-message {
+  display: block;
+  margin-block: var(--tb-space-4);
+
+  &:first-child {
+    margin-block-start: 0;
+  }
+
+  &:last-child {
+    margin-block-end: 0;
+  }
+}
+
+/* A label over a block of a section card («Куда присылать», «Тема»): M3 label medium, upper case (ours) */
+.tb-section-label {
+  margin: var(--tb-space-1) 0 0;
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-label-m-emphasized);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 /* The filled variant of the section card («Итого», sketch 28): M3 filled card, surface-container-low */
 .p-card.tb-section-card.tb-section-card--filled {
   border-color: transparent;
@@ -1537,6 +1613,59 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
 }
 
 /*
+ * A settings row inside a card (sketch Lessons): the tonal icon, the title with its state under it and
+ * a tag or lock at the end; rows of a card are 2 px apart, the card clips the outer corners.
+ */
+.tb-tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  border-radius: var(--tb-shape-lg);
+}
+
+.tb-tile {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-4);
+  min-block-size: 3.5rem;
+  box-sizing: border-box;
+  padding: var(--tb-space-3) var(--tb-space-4);
+  border-radius: var(--tb-shape-xs);
+  background: var(--tb-list-item);
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-body-m);
+  text-decoration: none;
+}
+
+.tb-tile__icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: var(--tb-shape-full);
+  background: var(--p-md-secondary-container);
+  color: var(--p-md-on-secondary-container);
+}
+
+.tb-tile__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-inline-size: 0;
+
+  b {
+    font: var(--tb-type-title-m);
+  }
+
+  span {
+    color: var(--p-md-on-surface-variant);
+  }
+}
+
+/*
  * The title of a card (section): the title, the «?» of the help next to it and the actions of the
  * section on the right (ADR-0018). Used in the #title template of p-card.
  */
@@ -1692,12 +1821,16 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
 /*
  * In a narrow list (a phone) the trailing buttons go under the row, across its whole width, so two
  * buttons fit in one line even on a 360 px phone (ADR-0021); an amount or a status stays on the
- * right. The buttons start at the left edge: the first of them stands still from row to row, so a
+ * right (`tb-list__trail--inline` keeps one button beside the text: «Подключить», sketches
+ * PhoneMessengers and StudentPhone). The buttons start at the left edge: the first of them stands still from row to row, so a
  * button with a changing label («Отменить» / «Не приду») keeps its own width.
  */
 @container (max-width: 26rem) {
   .tb-list
-    > li:has(> .tb-list__trail:not(.tb-list__trail--icons) :is(p-button, tb-join-lesson-button)) {
+    > li:has(
+      > .tb-list__trail:not(.tb-list__trail--icons, .tb-list__trail--inline)
+        :is(p-button, tb-join-lesson-button)
+    ) {
     grid-template-areas: 'lead text text' 'trail trail trail';
 
     > .tb-list__trail {
@@ -1759,7 +1892,10 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
 
   @container (max-width: 26rem) {
     .tb-list.tb-list--no-phone-lead
-      > li:has(> .tb-list__trail:not(.tb-list__trail--icons) :is(p-button, tb-join-lesson-button)) {
+      > li:has(
+        > .tb-list__trail:not(.tb-list__trail--icons, .tb-list__trail--inline)
+          :is(p-button, tb-join-lesson-button)
+      ) {
       grid-template-areas: 'text text' 'trail trail';
     }
 
@@ -1783,7 +1919,10 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
 
 @container (max-width: 26rem) {
   .tb-list.tb-list--no-lead
-    > li:has(> .tb-list__trail:not(.tb-list__trail--icons) :is(p-button, tb-join-lesson-button)) {
+    > li:has(
+      > .tb-list__trail:not(.tb-list__trail--icons, .tb-list__trail--inline)
+        :is(p-button, tb-join-lesson-button)
+    ) {
     grid-template-areas: 'text text' 'trail trail';
   }
 }

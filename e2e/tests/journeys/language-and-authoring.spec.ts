@@ -51,16 +51,11 @@ test('the interface speaks English and goes back to Russian', async ({ page }) =
   ).toBeVisible();
 
   await page.goto('/teacher/settings/account');
-  // the chosen language is a pressed button of the group
-  await expect(page.getByRole('button', { name: 'English' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
-  await page.getByRole('button', { name: 'Русский' }).click();
-  await expect(page.getByRole('button', { name: 'Русский' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  // 356.1: the language is a select that shows the chosen one
+  await expect(page.locator('#account-language')).toContainText('English');
+  await page.locator('#account-language').click();
+  await page.getByRole('option', { name: 'Русский' }).click();
+  await expect(page.locator('#account-language')).toContainText('Русский');
   await page.goto('/teacher');
   await expect(page.getByRole('region', { name: 'Сегодня', exact: true })).toBeVisible();
 });

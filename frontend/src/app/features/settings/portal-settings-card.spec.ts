@@ -49,6 +49,7 @@ describe('PortalSettingsCard', () => {
     expect(host.querySelector('#portal-address')).toBeNull();
 
     typeInto(requireElement(host, '#portal-name', HTMLInputElement), 'Английский с Марией');
+    await fixture.whenStable();
     buttonByText(host, 'Сохранить').click();
 
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/portal' });
@@ -70,30 +71,38 @@ describe('PortalSettingsCard', () => {
     expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
   });
 
-  it('groups identity, appearance and preview into three cards with appearance help', async () => {
+  it('groups identity, colour, fine tuning and preview into four cards with appearance help', async () => {
     const host = await render();
-    expect(host.querySelectorAll('.tb-portal-grid > .tb-portal-card')).toHaveLength(3);
+    expect(host.querySelectorAll('.tb-portal-grid .tb-section-card')).toHaveLength(4);
     expect(readableText(requireElement(host, '.tb-portal-identity', HTMLElement))).toContain(
       'Название и логотип',
     );
-    const appearance = requireElement(host, '.tb-portal-appearance', HTMLElement);
-    expect(readableText(appearance)).toContain('Оформление');
-    expect(appearance.querySelector('#portal-scheme-fidelity')).not.toBeNull();
-    expect(host.querySelector('.tb-portal-preview')).not.toBeNull();
+    expect(readableText(requireElement(host, '.tb-portal-appearance', HTMLElement))).toContain(
+      'Цвет портала',
+    );
+    const fine = requireElement(host, '.tb-portal-fine', HTMLElement);
+    expect(readableText(fine)).toContain('Схема «Исходная» · контраст стандартный');
+    expect(fine.querySelector('#portal-scheme-fidelity')).not.toBeNull();
     expect(host.querySelector('tb-help-button[topic="teacher/appearance"]')).not.toBeNull();
+    expect(host.querySelector('.tb-savebar')).toBeNull();
+    buttonByText(host, 'Тонкая настройка').click();
+    await fixture.whenStable();
+    expect(fine.querySelector('#portal-scheme-fidelity')).toBeNull();
+    expect(readableText(requireElement(host, '.tb-portal-preview', HTMLElement))).toContain(
+      'Тёмная тема',
+    );
     expect(host.querySelector('tb-help-button[topic="teacher/setup"]')).toBeNull();
   });
 
   it('saves the chosen color, a green one without a warning: buttons are not green', async () => {
     const host = await render();
 
-    requireElement(host, 'button[aria-label="Изумрудный"]', HTMLButtonElement).click();
+    buttonByText(host, 'Изумруд').click();
     await fixture.whenStable();
-    expect(
-      requireElement(host, 'button[aria-label="Изумрудный"]', HTMLButtonElement).getAttribute(
-        'aria-checked',
-      ),
-    ).toBe('true');
+    expect(buttonByText(host, 'Изумруд').getAttribute('aria-checked')).toBe('true');
+    expect(readableText(requireElement(host, '.tb-savebar', HTMLElement))).toContain(
+      'Цвет изменён',
+    );
     expect(host.querySelector('p-message')).toBeNull();
     buttonByText(host, 'Сохранить').click();
 
@@ -138,9 +147,9 @@ describe('PortalSettingsCard', () => {
     request.flush(portalSettings({ accent: '#1e1b4b' }));
     await fixture.whenStable();
 
-    requireElement(host, 'button[aria-label="Индиго"]', HTMLButtonElement).click();
+    buttonByText(host, 'Индиго').click();
     await fixture.whenStable();
-    expect(host.querySelector('#portal-own-color')).toBeNull();
+    expect(own().getAttribute('aria-checked')).toBe('false');
     own().click();
     await fixture.whenStable();
     expect(requireElement(host, '#portal-own-color', HTMLInputElement).value).toBe('#1e1b4b');
@@ -159,11 +168,9 @@ describe('PortalSettingsCard', () => {
 
   it('retains a selected legacy palette while offering the new base set', async () => {
     const host = await render(portalSettings({ accent: 'emerald' }));
-    expect(
-      requireElement(host, 'button[aria-label="Текущий цвет"]', HTMLButtonElement).getAttribute(
-        'aria-checked',
-      ),
-    ).toBe('true');
+    expect(buttonByText(host, 'Текущий цвет').getAttribute('aria-checked')).toBe('true');
+    typeInto(requireElement(host, '#portal-name', HTMLInputElement), 'Школа');
+    await fixture.whenStable();
     buttonByText(host, 'Сохранить').click();
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/portal' });
     expect(request.request.body).toEqual(expect.objectContaining({ accent: 'emerald' }));
@@ -174,13 +181,17 @@ describe('PortalSettingsCard', () => {
     const host = await render();
     const portal = TestBed.inject(Portal);
     const original = portal.scheme();
-    requireElement(host, '#portal-scheme-monochrome', HTMLInputElement).click();
-    requireElement(host, '#portal-contrast-maximum', HTMLInputElement).click();
+    requireElement(host, '#portal-scheme-monochrome', HTMLButtonElement).click();
+    [...host.querySelectorAll<HTMLElement>('p-togglebutton')]
+      .find((item) => item.textContent.includes('Максимальный'))
+      ?.click();
     await fixture.whenStable();
     expect(portal.scheme()).toBe(original);
-    buttonByText(host, 'Светлая тема').click();
-    await fixture.whenStable();
-    expect(readableText(host)).toContain('Тёмная тема');
+    expect(
+      requireElement(host, '#portal-scheme-monochrome', HTMLButtonElement).getAttribute(
+        'aria-checked',
+      ),
+    ).toBe('true');
     buttonByText(host, 'Сохранить').click();
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/portal' });
     expect(request.request.body).toEqual(
@@ -189,6 +200,19 @@ describe('PortalSettingsCard', () => {
     request.flush(portalSettings({ scheme: 'monochrome', contrast: 'maximum' }));
     await fixture.whenStable();
     expect(portal.scheme()).not.toBe(original);
+  });
+
+  it('offers to discard the draft and goes back to the saved values', async () => {
+    const host = await render();
+    typeInto(requireElement(host, '#portal-name', HTMLInputElement), 'Школа');
+    await fixture.whenStable();
+    expect(readableText(requireElement(host, '.tb-savebar', HTMLElement))).toContain(
+      'Название изменено',
+    );
+    buttonByText(host, 'Отменить').click();
+    await fixture.whenStable();
+    expect(requireElement(host, '#portal-name', HTMLInputElement).value).toBe('Teacher Box');
+    expect(host.querySelector('.tb-savebar')).toBeNull();
   });
 
   it('uploads and removes the logo', async () => {

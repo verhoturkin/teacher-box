@@ -41,8 +41,12 @@ export class AiApi {
       shareReplay({ bufferSize: 1, refCount: false }),
     );
 
-  status(): Observable<AiStatus> {
-    return this.http.get<AiStatus>('/api/teacher/ai/status');
+  /** @param quiet no toast on an error: the caller shows the status only when it comes */
+  status(quiet = false): Observable<AiStatus> {
+    return this.http.get<AiStatus>(
+      '/api/teacher/ai/status',
+      quiet ? { context: quietContext() } : {},
+    );
   }
 
   /**

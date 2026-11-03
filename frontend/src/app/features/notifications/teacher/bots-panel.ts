@@ -1,8 +1,17 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tag } from 'primeng/tag';
-import { Tooltip } from 'primeng/tooltip';
+import { Menu } from 'primeng/menu';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { ChannelSetup, ChannelType } from '../data-access/notifications.models';
 import { CHANNEL_ICONS, CHANNEL_NAMES, CONNECTION_TAGS } from '../notification-labels';
@@ -11,13 +20,16 @@ import { Confirm } from '@shared/ui/confirm';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { T } from '../i18n/texts';
 
-/** Teacher: messenger bots of the instance — connect with a wizard, check, remove. */
+/**
+ * Teacher: messenger bots of the instance (sketch Messengers, «Боты») — connect with a wizard; check and
+ * remove from the bot's menu.
+ */
 @Component({
   selector: 'tb-bots-panel',
-  imports: [Button, Card, Tag, BotWizardDialog, Tooltip],
+  imports: [Button, Card, Menu, Tag, BotWizardDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card [header]="t.title">
+    <p-card [header]="t.title" styleClass="tb-section-card tb-section-card--flow">
       <p class="tb-muted">{{ t.about }}</p>
       <ul class="tb-list tb-bots">
         @for (bot of bots(); track bot.channel) {
@@ -46,28 +58,19 @@ import { T } from '../i18n/texts';
                 <span class="tb-list__supporting">{{ t.notConnected }}</span>
               }
             </div>
-            <div class="tb-list__trail">
+            <div class="tb-list__trail" [class.tb-list__trail--inline]="!bot.configured">
               @if (bot.configured) {
                 @let tag = tags[bot.connection.connection];
                 <p-tag [value]="tag.value" [severity]="tag.severity" />
                 <p-button
-                  [label]="bot.teacherLinked ? t.check : t.setUp"
-                  icon="tb-i tb-i-settings"
+                  icon="tb-i tb-i-more_vert"
                   severity="secondary"
                   [text]="true"
-                  (onClick)="open(bot)"
+                  [rounded]="true"
+                  [ariaLabel]="t.actions(names[bot.channel])"
+                  aria-haspopup="menu"
+                  (onClick)="openMenu($event, bot)"
                 />
-                @if (!bot.fromEnvironment) {
-                  <p-button
-                    icon="tb-i tb-i-delete"
-                    [text]="true"
-                    [pTooltip]="t.remove(names[bot.channel])"
-                    [rounded]="true"
-                    severity="danger"
-                    [ariaLabel]="t.remove(names[bot.channel])"
-                    (onClick)="confirmRemove(bot.channel)"
-                  />
-                }
               } @else {
                 <p-button
                   [label]="t.connect"
@@ -80,7 +83,10 @@ import { T } from '../i18n/texts';
           </li>
         }
       </ul>
+      <!-- «Что умеет бот» (sketch Messengers: inside the card of the bots) -->
+      <ng-content />
     </p-card>
+    <p-menu #menu [model]="menuItems()" [popup]="true" appendTo="body" />
 
     <tb-bot-wizard-dialog
       [visible]="wizardVisible()"
@@ -91,10 +97,6 @@ import { T } from '../i18n/texts';
     />
   `,
   styles: `
-    .tb-bots {
-      margin-top: var(--tb-space-4);
-    }
-
     .tb-bot__error {
       color: var(--p-md-error);
     }
@@ -116,6 +118,8 @@ export class BotsPanel implements OnInit {
   protected readonly wizardVisible = signal(false);
   protected readonly wizardChannel = signal<ChannelType>('TELEGRAM');
   protected readonly wizardSetup = signal<ChannelSetup | null>(null);
+  protected readonly menuItems = signal<MenuItem[]>([]);
+  private readonly menu = viewChild.required<Menu>('menu');
 
   ngOnInit(): void {
     this.reload();
@@ -125,6 +129,27 @@ export class BotsPanel implements OnInit {
     this.wizardChannel.set(bot.channel);
     this.wizardSetup.set(bot);
     this.wizardVisible.set(true);
+  }
+
+  protected openMenu(event: Event, bot: ChannelSetup): void {
+    const items: MenuItem[] = [
+      {
+        label: bot.teacherLinked ? this.t.check : this.t.setUp,
+        icon: 'tb-i tb-i-settings',
+        command: () => {
+          this.open(bot);
+        },
+      },
+    ];
+    if (!bot.fromEnvironment) {
+      items.push({
+        label: this.t.removeItem,
+        icon: 'tb-i tb-i-delete',
+        command: () => void this.confirmRemove(bot.channel),
+      });
+    }
+    this.menuItems.set(items);
+    this.menu().toggle(event);
   }
 
   /** Fresh connection states once the wizard is closed. */

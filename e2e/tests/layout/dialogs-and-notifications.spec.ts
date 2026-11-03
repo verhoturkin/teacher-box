@@ -52,9 +52,8 @@ test('the teacher notifications are in the bell: the inbox and the messages; the
     await page.goto(`/teacher/notifications${old}`);
     await expect(page).toHaveURL(/\/teacher\/settings\/messengers$/);
     await expect(page.locator('tb-student-messengers-panel')).toContainText(
-      'Подключили мессенджер',
+      'получают уведомления в мессенджере',
     );
-    await expect(page.getByText('Мои мессенджеры')).toBeVisible();
   }
 });
 

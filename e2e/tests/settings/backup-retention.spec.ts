@@ -28,5 +28,8 @@ test('the teacher reads that backups are kept two weeks', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.goto('/teacher/settings?open=data');
 
+  // 357.5: the note shows with the list, so make a copy first
+  await page.getByRole('button', { name: 'Создать сейчас', exact: true }).click();
+  await expect(page.getByText(/^Копия .+ создана$/)).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText('копии хранятся две недели')).toBeVisible();
 });

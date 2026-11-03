@@ -45,57 +45,60 @@ describe('AiSettingsPanel', () => {
     expect(text).toContain('попросите его подключить ИИ-помощника');
   });
 
-  it('names Gemini', async () => {
-    expect(
-      await render(aiStatus({ provider: 'gemini', model: 'gemini-3.8-flash' }), usageReport()),
-    ).toContain('Модель gemini-3.8-flash Google Gemini');
-  });
-
-  it('names OpenRouter', async () => {
-    expect(
-      await render(aiStatus({ provider: 'openrouter', model: 'openrouter/auto' }), usageReport()),
-    ).toContain('Модель openrouter/auto OpenRouter');
-  });
-
-  it('names DeepSeek', async () => {
-    expect(
-      await render(aiStatus({ provider: 'deepseek', model: 'deepseek-flash' }), usageReport()),
-    ).toContain('Модель deepseek-flash DeepSeek');
-  });
-
-  it('keeps an unknown provider id as is', async () => {
-    expect(await render(aiStatus({ provider: 'custom', model: 'm' }), usageReport())).toContain(
-      'Модель m custom',
+  it('shows the model, the share of the monthly limit and what used it', async () => {
+    const text = await render(
+      aiStatus(),
+      usageReport({
+        features: [
+          { feature: 'HOMEWORK_DRAFT', requests: 3, inputTokens: 300_000, outputTokens: 100_000 },
+          { feature: 'REVIEW_DRAFT', requests: 1, inputTokens: 80_000, outputTokens: 20_000 },
+        ],
+      }),
     );
-  });
 
-  it('shows the model, the monthly usage and recent requests', async () => {
-    const text = await render(aiStatus(), usageReport());
-
-    expect(text).toContain('Модель claude-opus-5 Anthropic (Claude)');
-    expect(text).toContain('Использование за сентябрь 2026');
-    expect(text).toMatch(/Токенов: 500.000 из 2.000.000/);
-    expect(text).toMatch(/Черновики заданий: 3 запроса, 3.000 токенов/);
-    expect(text).toContain('Готово');
-    expect(text).toMatch(/0[.,]8 с Anthropic API 529: Overloaded/);
-    expect(text).toMatch(/12.5 с/);
+    expect(text).toContain('claude-opus-5');
+    expect(text).toContain('Подключает администратор портала');
+    expect(text).toContain('Работает');
     expect(text).toMatch(
-      /Черновики проверки Ошибка \d\d\.09\.2026 \d\d:\d\d · claude-opus-5 · 0[.,]8 с/,
+      /25 % месячного лимита · 500.000 из 2.000.000 токенов · обнулится 1 октября/,
     );
-    expect(hostElement(fixture).querySelector('.tb-i-rate_review')).not.toBeNull();
-    expect(hostElement(fixture).querySelector('p-progressbar')).not.toBeNull();
+    expect(text).toContain('Черновики заданий · 20 %');
+    expect(text).toContain('Черновики проверки · 5 %');
+    expect(hostElement(fixture).querySelectorAll('.tb-ai__bar > i')).toHaveLength(2);
+    expect(text).toContain('Мои промты');
     expect(text).toContain('Системные промты');
   });
 
-  it('shows unlimited usage and an empty month', async () => {
-    const text = await render(
-      aiStatus({ monthlyTokenLimit: 0 }),
-      usageReport({ monthlyTokenLimit: 0, recent: [] }),
-    );
+  it('shows unlimited usage without a bar', async () => {
+    const text = await render(aiStatus(), usageReport({ monthlyTokenLimit: 0 }));
 
-    expect(text).toContain('(без лимита)');
-    expect(text).toContain('Запросов в этом месяце не было');
-    expect(hostElement(fixture).querySelector('p-progressbar')).toBeNull();
+    expect(text).toContain('токенов за месяц, без лимита');
+    expect(hostElement(fixture).querySelector('.tb-ai__bar')).toBeNull();
+  });
+
+  it('folds the system prompts, open at first', async () => {
+    await render(aiStatus(), usageReport());
+    const fold = buttonByText(hostElement(fixture), 'Системные промты');
+    const body = hostElement(fixture).querySelector<HTMLElement>('#system-prompts');
+
+    expect(fold.getAttribute('aria-expanded')).toBe('true');
+    expect(body?.hidden).toBe(false);
+    fold.click();
+    await fixture.whenStable();
+
+    expect(fold.getAttribute('aria-expanded')).toBe('false');
+    expect(body?.hidden).toBe(true);
+  });
+
+  it('lists the recent requests of the month with tokens and status', async () => {
+    const text = await render(aiStatus(), usageReport());
+
+    expect(text).toContain('Последние запросы · сентябрь');
+    expect(text).toMatch(/Черновик задания .* 300 → 700 токенов · 13 с Готово/);
+    expect(text).toMatch(
+      /Черновик проверки .* 0 → 0 токенов · 1 с Anthropic API 529: Overloaded Ошибка/,
+    );
+    expect(hostElement(fixture).querySelector('.tb-i-rate_review')).not.toBeNull();
   });
 
   it('adds older requests by «Показать ещё»', async () => {
@@ -113,7 +116,7 @@ describe('AiSettingsPanel', () => {
     await fixture.whenStable();
 
     expect(
-      hostElement(fixture).querySelectorAll('ul[aria-label="Последние запросы"] > li'),
+      hostElement(fixture).querySelectorAll('ul[aria-label^="Последние запросы"] > li'),
     ).toHaveLength(3);
     expect(readableText(hostElement(fixture))).not.toContain('Показать ещё');
   });
@@ -129,15 +132,20 @@ describe('AiSettingsPanel', () => {
     await fixture.whenStable();
 
     expect(
-      hostElement(fixture).querySelectorAll('ul[aria-label="Последние запросы"] > li'),
+      hostElement(fixture).querySelectorAll('ul[aria-label^="Последние запросы"] > li'),
     ).toHaveLength(2);
     expect(readableText(hostElement(fixture))).toContain('Показать ещё');
   });
 
-  it('caps the progress bar at 100%', async () => {
+  it('says when the month has no requests', async () => {
+    const text = await render(aiStatus(), usageReport({ recent: [] }));
+
+    expect(text).toContain('Запросов в этом месяце не было');
+  });
+
+  it('caps the bar at 100%', async () => {
     await render(aiStatus(), usageReport({ usedTokens: 3_000_000 }));
 
-    const bar = hostElement(fixture).querySelector('[role="progressbar"]');
-    expect(bar?.getAttribute('aria-valuenow')).toBe('100');
+    expect(readableText(hostElement(fixture))).toContain('100 % месячного лимита');
   });
 });

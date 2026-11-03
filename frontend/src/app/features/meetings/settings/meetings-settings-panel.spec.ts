@@ -36,10 +36,11 @@ describe('MeetingsSettingsPanel', () => {
   it('says that calls are on and keeps the desktop application choice on the device', async () => {
     const text = await render('OK');
 
-    expect(text).toContain('Звонки в портале включены');
-    expect(text).toContain('кнопкой «Начать урок»');
+    expect(text).toContain('Включены — кнопка «Начать урок» у каждого занятия');
+    expect(text).toContain('Работает');
     expect(hostElement(fixture).querySelector('a')).toBeNull();
-    expect(text).toContain('строка «Видеовстреча»');
+    expect(text).toContain('Своя ссылка на звонок');
+    expect(text).toContain('может администратор');
     expect(text).not.toContain('Яндекс');
 
     fixture.componentInstance.setOpenInApp(false);
@@ -54,9 +55,11 @@ describe('MeetingsSettingsPanel', () => {
     expect(await render('UNREACHABLE')).toContain('сервер звонков не отвечает');
     fixture.destroy();
     TestBed.resetTestingModule();
-    expect(await render('OFF')).toContain('Звонки в портале не настроены');
+    expect(await render('OFF')).toContain('Не настроены');
     fixture.destroy();
     TestBed.resetTestingModule();
-    expect(await render(null)).not.toContain('Звонки в портале');
+    const unknown = await render(null);
+    expect(unknown).not.toContain('Включены');
+    expect(unknown).not.toContain('Не настроены');
   });
 });

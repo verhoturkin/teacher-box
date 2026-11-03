@@ -1,4 +1,4 @@
-import { fromIsoDate, fromIsoMonth, toIsoDate, toIsoMonth, monthLabel } from './iso-date';
+import { dayTime, fromIsoDate, fromIsoMonth, toIsoDate, toIsoMonth, monthLabel } from './iso-date';
 
 describe('iso dates', () => {
   it('formats local dates without time zone shifts', () => {
@@ -21,5 +21,14 @@ describe('iso dates', () => {
     expect(monthLabel('2026-09')).toBe('сентябрь 2026 г.');
     expect(monthLabel('2026-01')).toContain('январь');
     expect(monthLabel('bad')).toBe('bad');
+  });
+
+  it('names today and yesterday and dates the older moments', () => {
+    const now = new Date();
+    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 21, 3);
+    const old = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 5, 16, 20);
+    expect(dayTime(now.toISOString())).toMatch(/^сегодня, \d{2}:\d{2}$/);
+    expect(dayTime(yesterday.toISOString(), true)).toBe('Вчера, 21:03');
+    expect(dayTime(old.toISOString())).toMatch(/^\d{1,2} \S+, 16:20$/);
   });
 });

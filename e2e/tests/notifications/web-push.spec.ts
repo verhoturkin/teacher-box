@@ -116,17 +116,15 @@ test('«Мой аккаунт»: the permission is granted, the card offers to e
   expect(created.ok()).toBe(true);
 
   await page.goto('/cabinet/account');
-  const card = page.locator('p-card', {
-    has: page.getByText('Уведомления на устройствах', { exact: true }),
-  });
-  await expect(card).toBeVisible();
-  await expect(
-    card.getByRole('button', { name: 'Включить уведомления на этом устройстве' }),
-  ).toBeVisible();
-  await expect(card.getByRole('listitem')).toHaveCount(1);
+  const card = page.locator('tb-notifications-section');
+  await expect(card).toContainText('Куда присылать');
+  // 356.2: «Это устройство» is a row with «Подключить», the other devices are rows with a switch
+  const here = card.getByRole('listitem').filter({ hasText: 'Это устройство' });
+  await expect(here.getByRole('button', { name: 'Подключить' })).toBeVisible();
+  await expect(card.locator('[id^="notify-device-"]')).toHaveCount(1);
 
-  await card.getByRole('button', { name: /^Отключить уведомления/ }).click();
-  await expect(card.getByRole('listitem')).toHaveCount(0);
+  await card.locator('[id^="notify-device-"]').click();
+  await expect(card.locator('[id^="notify-device-"]')).toHaveCount(0);
   const list = await request.get('/api/me/push/subscriptions', { headers });
   expect(await list.json()).toEqual([]);
 });

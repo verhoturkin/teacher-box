@@ -58,17 +58,19 @@ test.describe('on a computer', () => {
     await signIn(page, 'teacher', TEACHER_PASSWORD);
     await page.goto('/teacher/settings?open=portal');
     const card = page.locator('#portal');
-    await card.getByRole('radio', { name: 'Изумрудный' }).click();
-    await card.getByRole('button', { name: 'Сохранить' }).click();
+    await card.getByRole('radio', { name: 'Изумруд' }).click();
+    // 357.4: the save bar floats over the page, outside the form
+    await page.getByRole('button', { name: 'Сохранить' }).click();
     await card
       .getByLabel('Файл логотипа')
       .setInputFiles({ name: 'logo.svg', mimeType: 'image/svg+xml', buffer: LOGO });
     await expect(page.locator('.tb-side-nav__brand img')).toBeVisible();
 
     await page.reload();
-    await expect(
-      page.locator('#portal').getByRole('radio', { name: 'Изумрудный' }),
-    ).toHaveAttribute('aria-checked', 'true');
+    await expect(page.locator('#portal').getByRole('radio', { name: 'Изумруд' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
 
     const guest = await (await browser.newContext({ baseURL: BASE_URL })).newPage();
     await guest.goto('/login');

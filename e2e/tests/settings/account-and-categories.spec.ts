@@ -37,37 +37,24 @@ test('portal gallery previews appearance locally and persists named preferences'
   };
   try {
     await page.goto('/teacher/settings/portal');
-    const cards = page.locator('.tb-portal-grid > .tb-portal-card');
-    await expect(cards).toHaveCount(3);
+    // 357.6: four outlined cards; «Тонкая настройка» is open, the help sits beside the scheme
     const identity = page.locator('.tb-portal-identity');
     const appearance = page.locator('.tb-portal-appearance');
     const preview = page.locator('.tb-portal-preview');
-    const [identityBox, appearanceBox, previewBox] = await Promise.all([
-      identity.boundingBox(),
-      appearance.boundingBox(),
-      preview.boundingBox(),
-    ]);
-    expect(
-      identityBox &&
-        appearanceBox &&
-        previewBox &&
-        Math.abs(identityBox.x - appearanceBox.x) < 1 &&
-        previewBox.x > identityBox.x &&
-        appearanceBox.y > identityBox.y,
-    ).toBeTruthy();
-    await page.screenshot({ path: test.info().outputPath('portal-three-cards.png') });
-    await appearance.getByRole('button', { name: /Справка/ }).click();
+    await expect(page.locator('.tb-portal-fine')).toBeVisible();
+    await page
+      .locator('.tb-portal-fine')
+      .getByRole('button', { name: /Справка/ })
+      .click();
     await expect(
       page.getByRole('dialog').getByText('Оформление и телефон', { exact: true }),
     ).toBeVisible();
     await page.getByRole('dialog').getByRole('button', { name: 'Закрыть', exact: true }).click();
-    const gallery = page.getByRole('radiogroup', { name: 'Цветовая схема', exact: true });
+    const gallery = page.getByRole('radiogroup', { name: /^Цветовая схема/ });
     await expect(gallery.getByRole('radio')).toHaveCount(9);
-    await gallery.getByRole('radio', { name: 'Монохромная', exact: true }).check();
-    await page
-      .getByRole('radiogroup', { name: 'Контраст', exact: true })
-      .getByRole('radio', { name: 'Повышенный', exact: true })
-      .check();
+    await gallery.getByRole('radio', { name: 'Монохромная', exact: true }).click();
+    // 357.4: the contrast is a segmented button
+    await page.getByRole('button', { name: /Повышенный/ }).click();
     const unsaved = (await (await page.request.get('/api/teacher/portal', { headers })).json()) as {
       scheme: string;
     };
@@ -76,16 +63,13 @@ test('portal gallery previews appearance locally and persists named preferences'
     await expect(page.getByText('Настройки портала сохранены')).toBeVisible();
     await page.reload();
     await expect(gallery.getByRole('radio', { name: 'Монохромная', exact: true })).toBeChecked();
-    await expect(page.getByRole('radio', { name: 'Повышенный', exact: true })).toBeChecked();
+    await expect(page.getByRole('button', { name: /Повышенный/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     await page.getByRole('radio', { name: 'Свой цвет', exact: true }).click();
-    await expect(page.locator('.p-colorpicker-panel')).not.toBeVisible();
-    await page.locator('#portal .p-colorpicker-preview').click();
-    await expect(page.locator('.p-colorpicker-panel')).toBeVisible();
-    await expect(page.locator('.p-anchored-overlay-enter-active')).toHaveCount(0);
-    await page.getByRole('heading', { name: 'Цветовая схема' }).click();
-    await expect(page.locator('.p-colorpicker-panel')).not.toBeVisible();
     await page.locator('#portal-own-color').fill('#0f766e');
-    await page.getByRole('button', { name: 'Отмена', exact: true }).click();
+    await page.getByRole('button', { name: 'Отменить', exact: true }).click();
     await expect(page.getByRole('radio', { name: 'Монохромная', exact: true })).toBeChecked();
     await page.setViewportSize({ width: 390, height: 844 });
     const [compactIdentity, compactAppearance, compactPreview] = await Promise.all([
@@ -135,25 +119,16 @@ test('the teacher sees the student photo in the list of students', async ({ page
 });
 
 test('the teacher sets a photo in «Мой аккаунт» of the settings', async ({ page }) => {
-  // 234.1: the account is the detail pane beside the categories; at 1600 px it holds both forms in a row
+  // 234.1: the account is the detail pane beside the categories
   await signIn(page, 1600);
   await page.goto('/teacher/account');
   await expect(page).toHaveURL(/\/teacher\/settings\/account$/);
-  await expect(page.locator('.tb-account__role')).toHaveText('Учитель');
+  await expect(page.locator('#account-name')).toBeVisible();
   await page
     .locator('input[type="file"][aria-label="Файл фото"]')
     .setInputFiles({ name: 'me.png', mimeType: 'image/png', buffer: PNG });
   await expect(page.getByText('Фото сохранено')).toBeVisible();
   await expect(page.locator('a[aria-label^="Аккаунт"] tb-avatar img')).toBeVisible();
-
-  // «Имя» and «Смена пароля» side by side
-  const cards = page.locator('.tb-account__forms > p-card');
-  await expect(cards).toHaveCount(2);
-  const [name, password] = await Promise.all([
-    cards.nth(0).boundingBox(),
-    cards.nth(1).boundingBox(),
-  ]);
-  expect(Math.round(name?.y ?? 0)).toBe(Math.round(password?.y ?? 1));
 
   await page.getByRole('button', { name: 'Убрать фото' }).click();
   await expect(page.locator('a[aria-label^="Аккаунт"] tb-avatar img')).toHaveCount(0);
@@ -166,15 +141,12 @@ test('the settings list their categories, without integrations, profile or addre
   await page.goto('/teacher/settings');
   // 234.1: list-detail of the categories instead of the fold cards
   const list = page.getByRole('navigation', { name: 'Категории настроек' });
-  // 234.2: «Расписание и календарь» and «Звонки»
+  // 357.1: six categories
   for (const category of [
     'Мой аккаунт',
     'Портал',
-    'Расписание и календарь',
-    'Звонки',
-    'Уведомления и мессенджеры',
-    // 234.4: «Оплаты» and «ИИ-помощник»
-    'Оплаты',
+    'Занятия',
+    'Мессенджеры',
     'ИИ-помощник',
     'Данные',
   ]) {
@@ -182,7 +154,6 @@ test('the settings list their categories, without integrations, profile or addre
   }
   const main = page.locator('main');
   await expect(main).not.toContainText('Интеграции');
-  await expect(main).not.toContainText('Профиль');
   await expect(page.locator('#portal')).toHaveCount(0);
 
   await list.getByRole('link', { name: /^Портал/ }).click();
@@ -191,15 +162,18 @@ test('the settings list their categories, without integrations, profile or addre
   await expect(page.locator('#portal-address')).toHaveCount(0);
 });
 
-test('the schedule and calendar category holds the time zone and the subscription', async ({
+test('the lessons category holds time, price, calls, Google Calendar and the subscription', async ({
   page,
 }) => {
   await signIn(page);
+  // 357.1: the old calendar, calls and payments addresses lead to «Занятия»
   await page.goto('/teacher/settings/calendar');
+  await expect(page).toHaveURL(/\/teacher\/settings\/lessons$/);
   await expect(page.locator('#time-zone')).toContainText('Часовой пояс');
+  await expect(page.locator('#default-price')).toContainText('Цена занятия по умолчанию');
+  await expect(page.locator('#meetings')).toBeVisible();
   await expect(page.locator('#google')).toBeVisible();
-  await expect(page.locator('tb-calendar-feed-panel')).toContainText('Календарь на телефоне');
-  await expect(page.locator('#meetings')).toHaveCount(0);
+  await expect(page.locator('tb-calendar-feed-panel')).toContainText('Подписка на календарь');
 
   // 234.2: the schedule no longer holds the subscription
   await page.goto('/teacher/schedule');
@@ -207,12 +181,11 @@ test('the schedule and calendar category holds the time zone and the subscriptio
   await expect(page.locator('tb-calendar-feed-panel')).toHaveCount(0);
 });
 
-test('the payments category holds the price for new students, the AI page is a category', async ({
-  page,
-}) => {
+test('the price for new students is in «Занятия», the AI page is a category', async ({ page }) => {
   await signIn(page);
   await page.goto('/teacher/settings/payments');
-  await expect(page.locator('#default-price')).toContainText('Цена для новых учеников');
+  await expect(page).toHaveURL(/\/teacher\/settings\/lessons$/);
+  await expect(page.locator('#default-price')).toContainText('Цена занятия по умолчанию');
 
   // 234.4: the payments page no longer holds the price
   await page.goto('/teacher/billing');

@@ -1,11 +1,13 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '@core/auth/auth.service';
 import { LANGUAGE_KEY, forgetLanguage, pageReload } from '@core/i18n/language';
 import { ThemeMode } from '@core/theme/theme-mode';
 import { authResponse } from '@testing/auth';
+import { preferences } from '@testing/notification-fixtures';
 import {
   aFile,
   buttonByText,
@@ -51,19 +53,43 @@ describe('AccountPanel', () => {
     await fixture.whenStable();
     backend.expectOne('/api/me').flush(ACCOUNT);
     await fixture.whenStable();
+    // «Уведомления» of the teacher (its own spec covers it)
+    backend.expectOne('/api/me/channels').flush([]);
+    backend.expectOne('/api/me/push/subscriptions').flush([]);
+    backend.expectOne('/api/me/notifications/preferences').flush(preferences());
+    backend
+      .expectOne('/api/teacher/notifications/bot')
+      .flush({ teacherActions: true, teacherMenu: [], studentMenu: [] });
+    await fixture.whenStable();
   });
 
   afterEach(() => {
     backend.verify();
   });
 
+  /** The password form lives in a dialog (appended to the body) opened by «Сменить…». */
   async function change(current: string, next: string, confirm = next): Promise<void> {
-    const host = hostElement(fixture);
-    typeInto(requireElement(host, '#current', HTMLInputElement), current);
-    typeInto(requireElement(host, '#next', HTMLInputElement), next);
-    typeInto(requireElement(host, '#confirm', HTMLInputElement), confirm);
+    buttonByText(hostElement(fixture), 'Сменить…').click();
     await fixture.whenStable();
-    buttonByText(host, 'Сменить пароль').click();
+    const dialog = document.body;
+    typeInto(requireElement(dialog, '#current', HTMLInputElement), current);
+    typeInto(requireElement(dialog, '#next', HTMLInputElement), next);
+    typeInto(requireElement(dialog, '#confirm', HTMLInputElement), confirm);
+    await fixture.whenStable();
+    requireElement(dialog, 'button[form="change-password-form"]', HTMLButtonElement).click();
+    await fixture.whenStable();
+  }
+
+  /** Saves on change: the field's `change` event, as on blur. */
+  async function commit(input: HTMLInputElement, value: string): Promise<void> {
+    typeInto(input, value);
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    await fixture.whenStable();
+  }
+
+  async function pick(id: string, value: string): Promise<void> {
+    const select = fixture.debugElement.query(By.css(`p-select[inputId="${id}"]`));
+    select.triggerEventHandler('onChange', { value });
     await fixture.whenStable();
   }
 
@@ -72,11 +98,11 @@ describe('AccountPanel', () => {
     expect(requireElement(hostElement(fixture), '#account-name', HTMLInputElement).value).toBe(
       'Анна Сергеевна',
     );
-    expect(text).toContain('anna@example.com');
-    expect(text).toContain('Учитель');
-    expect(buttonByText(hostElement(fixture), 'Загрузить фото')).toBeTruthy();
+    expect(text).toContain('Фото');
+    expect(text).toContain('Пока нет');
+    expect(buttonByText(hostElement(fixture), 'Загрузить')).toBeTruthy();
     expect(hostElement(fixture).querySelector('tb-avatar')?.getAttribute('style')).toContain(
-      '6rem',
+      '2.5rem',
     );
     expect(text).toContain('teacher');
   });
@@ -84,12 +110,9 @@ describe('AccountPanel', () => {
   it('lets the teacher change their name', async () => {
     const host = hostElement(fixture);
     TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
-    const save = buttonByText(host, 'Сохранить');
-    expect(save.disabled).toBe(true);
+    expect(() => buttonByText(host, 'Сохранить')).toThrow();
 
-    typeInto(requireElement(host, '#account-name', HTMLInputElement), ' Мария Ивановна ');
-    await fixture.whenStable();
-    buttonByText(host, 'Сохранить').click();
+    await commit(requireElement(host, '#account-name', HTMLInputElement), ' Мария Ивановна ');
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/profile' });
     expect(request.request.body).toEqual({ displayName: 'Мария Ивановна' });
     request.flush({ ...ACCOUNT, displayName: 'Мария Ивановна' });
@@ -122,17 +145,13 @@ describe('AccountPanel', () => {
     const field = requireElement(host, '#account-own-name', HTMLInputElement);
     expect(field.value).toBe('Ника');
     expect(host.textContent).toContain('Учитель видит вас как «Вероника Петрова»');
-    expect(host.querySelector('.tb-account__role')?.textContent).toBe('Ученик');
-    expect(buttonByText(host, 'Сохранить').disabled).toBe(true);
+    expect(host.textContent).toContain('Как к вам обращаться');
 
-    typeInto(field, ' Ника ');
-    await fixture.whenStable();
-    expect(buttonByText(host, 'Сохранить').disabled).toBe(true);
+    await commit(field, ' Ника ');
+    backend.expectNone('/api/me/profile');
     expect(host.querySelector('tb-avatar')?.textContent.trim()).toBe('Н');
 
-    typeInto(field, ' Вероника Петрова ');
-    await fixture.whenStable();
-    buttonByText(host, 'Сохранить').click();
+    await commit(field, ' Вероника Петрова ');
     const back = backend.expectOne({ method: 'PUT', url: '/api/me/profile' });
     expect(back.request.body).toEqual({ displayName: '' });
     back.flush({ ...STUDENT, displayName: 'Вероника Петрова' });
@@ -141,13 +160,10 @@ describe('AccountPanel', () => {
     expect(field.value).toBe('Вероника Петрова');
     expect(TestBed.inject(AuthService).user()?.displayName).toBe('Вероника Петрова');
     expect(messages.add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Имя сохранено' }));
-    typeInto(field, '');
-    await fixture.whenStable();
-    expect(buttonByText(host, 'Сохранить').disabled).toBe(true);
+    await commit(field, '');
+    backend.expectNone('/api/me/profile');
 
-    typeInto(field, 'Ника');
-    await fixture.whenStable();
-    buttonByText(host, 'Сохранить').click();
+    await commit(field, 'Ника');
     const own = backend.expectOne({ method: 'PUT', url: '/api/me/profile' });
     expect(own.request.body).toEqual({ displayName: 'Ника' });
     own.flush(STUDENT);
@@ -202,7 +218,8 @@ describe('AccountPanel', () => {
 
     expect(host.querySelector('tb-avatar img')?.getAttribute('src')).toBe('/api/public/avatars/a');
     expect(TestBed.inject(AuthService).user()?.avatar).toBe('/api/public/avatars/a');
-    expect(buttonByText(host, 'Сменить фото')).toBeTruthy();
+    expect(buttonByText(host, 'Сменить')).toBeTruthy();
+    expect(host.textContent).toContain('JPEG, PNG или WebP');
 
     buttonByText(host, 'Убрать фото').click();
     backend.expectOne({ method: 'DELETE', url: '/api/me/avatar' }).flush(STUDENT);
@@ -263,21 +280,27 @@ describe('AccountPanel', () => {
     expect(hostElement(fixture).textContent).toContain('Администратор');
     expect(hostElement(fixture).querySelector('#account-name')).toBeNull();
     expect(hostElement(fixture).querySelector('#account-own-name')).toBeNull();
-    expect(() => buttonByText(hostElement(fixture), 'Загрузить фото')).toThrow();
+    expect(() => buttonByText(hostElement(fixture), 'Загрузить')).toThrow();
   });
 
   it('keeps the name when saving it fails', async () => {
     const host = hostElement(fixture);
-    typeInto(requireElement(host, '#account-name', HTMLInputElement), 'Мария');
-    await fixture.whenStable();
-    fixture.componentInstance.rename();
+    const field = requireElement(host, '#account-name', HTMLInputElement);
+    await commit(field, 'Мария');
     fixture.componentInstance.rename();
     backend
       .expectOne({ method: 'PUT', url: '/api/teacher/profile' })
       .flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
 
-    expect(requireElement(host, '#account-name', HTMLInputElement).value).toBe('Мария');
+    expect(field.value).toBe('Мария');
+  });
+
+  it('puts the saved name back when the field is emptied', async () => {
+    const field = requireElement(hostElement(fixture), '#account-name', HTMLInputElement);
+    await commit(field, '  ');
+    backend.expectNone('/api/teacher/profile');
+    expect(field.value).toBe('Анна Сергеевна');
   });
 
   it('changes the password and keeps the new session', async () => {
@@ -293,7 +316,7 @@ describe('AccountPanel', () => {
 
     expect(TestBed.inject(AuthService).accessToken()).toBe('after-change');
     expect(messages.add).toHaveBeenCalledWith(expect.objectContaining({ severity: 'success' }));
-    expect(requireElement(hostElement(fixture), '#current', HTMLInputElement).value).toBe('');
+    expect(document.body.querySelector('#current')).toBeNull();
   });
 
   it('shows why the password was not changed', async () => {
@@ -307,33 +330,31 @@ describe('AccountPanel', () => {
       );
     await fixture.whenStable();
 
-    expect(hostElement(fixture).textContent).toContain('Текущий пароль указан неверно');
+    expect(document.body.textContent).toContain('Текущий пароль указан неверно');
   });
 
   it('does not submit mismatching passwords', async () => {
     await change('old-password', 'new-password', 'other-password');
 
-    expect(hostElement(fixture).textContent).toContain('Пароли не совпадают');
+    expect(document.body.textContent).toContain('Пароли не совпадают');
     backend.expectNone('/api/me/password');
   });
 
   it('switches the theme in the appearance section', async () => {
-    const host = hostElement(fixture);
-    expect(buttonByText(host, 'Как в системе').getAttribute('aria-pressed')).toBe('true');
-
-    buttonByText(host, 'Тёмная').click();
+    [...hostElement(fixture).querySelectorAll<HTMLElement>('p-togglebutton')]
+      .find((item) => item.textContent.includes('Тёмная'))
+      ?.click();
     await fixture.whenStable();
 
     expect(TestBed.inject(ThemeMode).choice()).toBe('dark');
-    expect(buttonByText(host, 'Тёмная').getAttribute('aria-pressed')).toBe('true');
     TestBed.inject(ThemeMode).choose('system');
     localStorage.clear();
   });
 
-  it('switches the language and reloads the page (ADR-0035)', () => {
+  it('switches the language and reloads the page (ADR-0035)', async () => {
     const reload = vi.spyOn(pageReload, 'now').mockImplementation(() => undefined);
 
-    buttonByText(hostElement(fixture), 'English').click();
+    await pick('account-language', 'en');
 
     expect(localStorage.getItem(LANGUAGE_KEY)).toBe('en');
     expect(reload).toHaveBeenCalledOnce();
@@ -341,7 +362,7 @@ describe('AccountPanel', () => {
     forgetLanguage();
   });
 
-  it('signs out at the end of the page', async () => {
+  it('signs out from the sign-in section', async () => {
     TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
     vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
 

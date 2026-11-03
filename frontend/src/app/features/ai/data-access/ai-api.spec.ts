@@ -62,6 +62,7 @@ describe('AiApi', () => {
 
   it('calls the assistant endpoints', () => {
     api.status().subscribe();
+    api.status(true).subscribe();
     const brief = {
       prompt: 'Дроби',
       title: null,
@@ -82,7 +83,9 @@ describe('AiApi', () => {
     api.updateSystemPrompt('REVIEW_DRAFT', 'Строго', 1).subscribe();
     api.resetSystemPrompt('REVIEW_DRAFT').subscribe();
 
-    backend.expectOne('/api/teacher/ai/status');
+    const [loud, quiet] = backend.match('/api/teacher/ai/status');
+    expect(loud?.request.context.get(SKIP_ERROR_TOAST)).toBe(false);
+    expect(quiet?.request.context.get(SKIP_ERROR_TOAST)).toBe(true);
     const draft = backend.expectOne('/api/teacher/ai/homework-draft');
     expect(draft.request.body).toEqual(brief);
     expect(backend.expectOne('/api/teacher/ai/lesson-summary').request.body).toEqual({

@@ -550,27 +550,52 @@ the `tb-material-grid` of `tb-material-card`s (§10).
 
 ## Settings (teacher)
 
-`/teacher/settings[/:category]` (`features/settings/settings-categories.ts`), list-detail with
-`medium="two"`: the categories as a list of tonal two-line rows (40 px tonal icon circle, name,
-«what it holds»; the chosen one secondary-container with an emphasized name and the icon circle on
-the surface; group outer corners 16 px) in the fixed pane, the chosen category beside it as a stack
-of sections (from expanded `/teacher/settings` shows «Мой аккаунт»). A form changed and not saved
-asks «Отменить изменения?» before another category or page opens (design-system «Dialogs»).
+`/teacher/settings[/:category]` (`features/settings/settings-categories.ts`; sketches `Main`,
+`Portal`, `Lessons`, `Messengers`, `Ai`, `Data`, `PhoneSettings`, `TabletSettings`, `Changes`),
+list-detail with `medium="two"`: six categories as a list of tonal two-line rows (40 px tonal icon
+circle, name, and the category's **state** as the second line — «Telegram работает», «Копия сегодня
+в 03:00», «Подключён · 12 % лимита»; until it loads, «what it holds»; the chosen one
+secondary-container with an emphasized name and the icon circle on the surface; group outer corners
+16 px) in the fixed pane, the chosen category beside it as a stack of outlined
+`.p-card.tb-section-card` cards (from expanded `/teacher/settings` shows «Мой аккаунт»). On a phone
+the list leads with the account as a lead row above the other categories; medium is the two-pane
+`TabletSettings`.
 
-- Categories: «Мой аккаунт» (`account`: account, «Оформление» with theme and language, «Выйти»; also
-  the rail's «Аккаунт»), «Портал» (`portal`),
-  «Расписание и календарь» (`calendar`:
-  time zone, Google Calendar, calendar feed), «Звонки» (`calls`), «Уведомления и мессенджеры»
-  (`messengers`, icon `notifications`: failed deliveries first with a count badge on the item, then
-  «Уведомления на устройствах» (web push of this device), bots, own messengers, bot abilities,
-  students' messengers, what to send), «Оплаты» (`payments`: default price), «ИИ-помощник» (`ai`:
-  model, usage, prompt library, system prompts), «Данные» (`data`).
-- Old addresses redirect: `?open=<fold>`, `?google=` (→ calendar), `?drive=` (→ data),
+Saving ([design-system «Fields»](design-system.md)): every field and switch saves on change and
+answers with a short snackbar; there is no «Отменить изменения?» guard. The one exception is
+«Портал» (below).
+
+- Categories: «Мой аккаунт» (`account`), «Портал» (`portal`), «Занятия» (`lessons`), «Мессенджеры»
+  (`messengers`, a count badge of failed deliveries on the row), «ИИ-помощник» (`ai`), «Данные»
+  (`data`).
+- Old addresses redirect: `calendar`, `calls`, `payments` → `lessons`; `?open=<fold>` (`portal`,
+  `calendar`, `meetings`, `deliveries`, `ai`, `data`), `?google=` (→ lessons), `?drive=` (→ data),
   `/teacher/account`, `/teacher/calls`, `/teacher/ai`, the messenger tabs of «Уведомления».
-- **«Портал»:** three tonal sections — Identity (name, logo), Appearance (base and custom colour,
-  nine schemes with samples, contrast), Preview; from a 48 em container Identity and Appearance
-  stack on the left and Preview spans both rows on the right (*ours*). The preview follows the
-  draft; an explicit save applies it. Help opens `teacher/appearance`.
+- **«Мой аккаунт»:** the same `tb-account-panel` as the student's (`identity/account`; below):
+  «Профиль» (photo, «Имя»), «Вход» (login, «Сменить…» password in a dialog, «Выйти»), «Оформление»
+  (theme and language as selects), «Уведомления» with the teacher's extra row «Действия учителя в
+  боте». Reached also from the rail's «Аккаунт».
+- **«Портал»:** four outlined cards — «Название и логотип», «Цвет портала», «Тонкая настройка»
+  (open: nine schemes with samples, four contrast levels as a segmented button, own colour; the
+  header folds it and shows «Схема … · контраст …»), «Предпросмотр» (follows the draft); from a 48
+  em container the first two stack on the left and the preview spans both rows on the right
+  (*ours*). The only category with an explicit save: while the draft differs from the saved state a
+  floating bar «Отменить» / «Сохранить» appears and leaving asks «Отменить изменения?». Help opens
+  `teacher/appearance`.
+- **«Занятия»:** «Время и цена» (portal time zone — read-only, set by the administrator; «Цена
+  занятия по умолчанию», saved on change), «Звонки» (built-in calls on/off, external link per
+  student, «Открывать Телемост в приложении» on this device), «Google Календарь», «Подписка на
+  календарь».
+- **«Мессенджеры»:** the failed-deliveries alert first (folds open with the list), «Боты» (one row
+  per messenger, «Подключить» opens the wizard), «Что умеет бот» folded, «Ученики» as «5 из 7» with
+  the not connected and «Отправить ссылку», «Кто где» → `/teacher/students`. The messengers of one
+  student are on the student card (`/teacher/students/:studentId`), «Написать всем» (the old
+  «Сообщение ученикам») on «Ученики».
+- **«ИИ-помощник»:** model, usage by feature, «Последние запросы» with tokens and «Показать ещё»,
+  «Мои промты», «Системные промты» open (edit in place, «Вернуть стандартный»).
+- **«Данные»:** «Резервные копии» (the last copy first, «Все N копий», «Создать сейчас», per-copy
+  download button and «⋮» with restore / delete / «Отправить в Google Диск»), «Google Диск»,
+  «Опасные действия» (restore from a copy and «Очистить портал»; both ask the password in a dialog).
 
 ## Student cabinet
 
@@ -630,17 +655,27 @@ asks «Отменить изменения?» before another category or page op
   key shows.
 - **Payments:** tonal balance / charged / paid / price figures and the journal with filter chips,
   receipts in their rows.
-- **«Мой аккаунт»** (`/cabinet/account`, from «Аккаунт» in the rail / ☰): account,
-  «Оформление» (theme, language), «Мессенджеры», «Уведомления на устройствах»
-  (web push, ADR-0051), «Что присылать в мессенджеры и на устройства», «Выйти» last, in one
-  stack; the «connect» card and reminder lead here.
-- **Notifications on devices** (`tb-push-devices-card`, student «Мой аккаунт» and teacher account
-  category): «Включить уведомления на этом устройстве» only while this browser is not subscribed
-  (a click, the permission prompt needs a gesture), the list of the user's devices (browser · system,
-  «это устройство», date, «уведомления не доходят») with «Отключить»; a message instead of the
-  button for an iPhone tab («Добавьте на экран Домой»), a blocked site or an unsupported browser.
-  The home pages (teacher and student) offer the same in `tb-push-onboarding-card` («Включить» /
-  «Не сейчас», remembered on the device) at the end of the lead column.
+- **«Мой аккаунт»** (`/cabinet/account`, from «Аккаунт» in the rail / ☰; sketches `StudentAccount`,
+  `StudentTablet`, `StudentPhone`, `PhoneConnect`): outlined `tb-section-card` cards at the full
+  width of the page — «Профиль» (photo, «Как к вам обращаться»), «Вход» (login, «Сменить…» password
+  in a dialog, «Выйти»), «Оформление» (theme and language as selects) and «Уведомления»
+  (`notifications/account/notifications-section.ts`): «Куда присылать» is one list of the user's
+  messengers and this device («Подключить» per row, a switch once connected, unlink), «Что
+  присылать» — topic switches and «Тихие часы» («С» / «До»); a student without a messenger first
+  sees an alert that leads to «Подключить». Everything saves on change («Изменения сохраняются
+  сразу»); the home page's connect card and reminder lead here. «Подключить» opens the
+  `link-code-view` — «Открыть Telegram», the code with copy, «Ждём подключения…» — in a bottom sheet
+  on compact and a dialog above. Compact: a list of rows — the profile row and «Тема и язык» open
+  sub-pages, «Уведомления» between them, «Выйти» ends the list. Medium: the profile, «Уведомления»,
+  then «Вход» and «Оформление» as a pair. The teacher's category is the same panel plus «Действия
+  учителя в боте».
+- **Notifications on devices:** this device is a row of «Куда присылать» («Это устройство»):
+  «Подключить» only while this browser is not subscribed (a click, the permission prompt needs a
+  gesture), a switch once it is; the user's other devices are rows with a switch (browser · system,
+  date, «уведомления не доходят»). A message instead of «Подключить» for an iPhone tab («Добавьте на
+  экран Домой»), a blocked site or an unsupported browser. The home pages (teacher and student)
+  offer the same in `tb-push-onboarding-card` («Включить» / «Не сейчас», remembered on the device)
+  at the end of the lead column.
 
 ## Admin
 

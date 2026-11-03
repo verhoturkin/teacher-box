@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { buttonByText, hostElement, readableText } from '@testing/dom';
+import { buttonByText, hostElement, menuItemByText, readableText } from '@testing/dom';
 import { channelSetup } from '@testing/notification-fixtures';
 import { ChannelSetup } from '../data-access/notifications.models';
 import { BotsPanel } from './bots-panel';
@@ -64,7 +64,10 @@ describe('BotsPanel', () => {
     expect(text).toContain('ВКонтакте бот из настроек сервера · ваш аккаунт не подключён');
     expect(text).toContain('Работает');
     expect(text).toContain('MAX не подключён');
-    expect(() => buttonByText(hostElement(fixture), 'Отключить бота ВКонтакте')).toThrow();
+    buttonByText(hostElement(fixture), 'Действия с ботом ВКонтакте').click();
+    await fixture.whenStable();
+    expect(menuItemByText('Настроить')).toBeTruthy();
+    expect(() => menuItemByText('Отключить')).toThrow();
   });
 
   it('opens the wizard and keeps its result', async () => {
@@ -95,7 +98,11 @@ describe('BotsPanel', () => {
     ]);
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(readableText(hostElement(fixture))).toContain('Проверить');
+    buttonByText(hostElement(fixture), 'Действия с ботом MAX').click();
+    await fixture.whenStable();
+    menuItemByText('Проверить').click();
+    await fixture.whenStable();
+    expect(readableText(document.body)).toContain('Подключение MAX');
   });
 
   it('removes a bot after confirmation', async () => {
@@ -103,7 +110,9 @@ describe('BotsPanel', () => {
     const confirmation = fixture.debugElement.injector.get(ConfirmationService);
     const confirm = vi.spyOn(confirmation, 'confirm');
 
-    buttonByText(hostElement(fixture), 'Отключить бота Telegram').click();
+    buttonByText(hostElement(fixture), 'Действия с ботом Telegram').click();
+    await fixture.whenStable();
+    menuItemByText('Отключить').click();
     const options = confirm.mock.calls[0]?.[0];
     options?.accept?.();
     await fixture.whenStable();

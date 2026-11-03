@@ -52,7 +52,7 @@ Initial setup opens the first time you sign in. Apart from replacing a generated
 - A home or office network address works only within that network. Students need an address they can reach over the internet.
 - An HTTP address sends passwords without encryption. Ask the server administrator to enable HTTPS.
 
-To change details later, use “Settings” → “Portal” for the name, logo and colours, “My account” for your name and photo, and “Settings” → “Payments” for the default price. Contact the portal administrator to change the public address.
+To change details later, use “Settings” → “Portal” for the name, logo and colours, “My account” for your name and photo, and “Settings” → “Lessons” for the default lesson price. Contact the portal administrator to change the public address.
 `,
   },
   students: {
@@ -203,7 +203,7 @@ A group member’s advance notice that they cannot attend is approved automatica
     title: 'Calls',
     summary: 'Run video lessons in the portal with permanent student and group rooms',
     body: `
-Each student and group has a permanent call room. Calls run in the browser without installing an app. Check availability under “Settings” → “Calls”; room links appear in student and group details.
+Each student and group has a permanent call room. Calls run in the browser without installing an app. Check availability under “Settings” → “Lessons” → “Calls”; room links appear in student and group details.
 
 ## Join a call
 
@@ -240,7 +240,7 @@ Open “Students”, select the student or group, then open “Profile” → �
 
 ## Open a meeting
 
-Choose “Start lesson” in the lesson details. On Windows, Telemost can open in its app. Use the arrow beside the button to choose “Open in browser” instead. This preference is saved on your computer and can be changed under “Settings” → “Calls” → “Video meetings”.
+Choose “Start lesson” in the lesson details. On Windows, Telemost can open in its app. Use the arrow beside the button to choose “Open in browser” instead. This preference is saved on your computer and can be changed under “Settings” → “Lessons” → “Calls” with the “Open Telemost in the app” switch.
 
 You can override the permanent link for a single lesson in its details.
 `,
@@ -424,13 +424,13 @@ Select “Questions” under “What to prepare” to draft quiz questions. Revi
 
 ## Reuse prompts and draft feedback
 
-Open “Prompts” to find saved instructions. “Save as prompt” adds your current instructions to the library. Rename, edit or delete entries under “Settings” → “AI assistant” → “Prompt library”, or use “Manage prompts”.
+Open “Prompts” to find saved instructions. “Save as prompt” adds your current instructions to the library. Rename, edit or delete entries under “Settings” → “AI assistant” → “My prompts”, or use “Manage prompts”.
 
 When reviewing a submission, “AI draft” suggests feedback, a grade and whether to accept it or request revisions. Check the suggestion before inserting it. Lesson summaries also offer AI drafts in the lesson details.
 
 ## Customise system prompts
 
-Open “Settings” → “AI assistant” → “System prompts”. Edit the instructions for assignment or review drafts to set the tone, language and structure you prefer. Saved overrides are marked “Custom” and apply to future drafts.
+Open “Settings” → “AI assistant”; the system prompts are open on the page. Edit the instructions for assignment or review drafts to set the tone, language and structure you prefer. Saved overrides are marked “Custom” and apply to future drafts.
 
 The portal handles the response format and sends assignment and student response content separately. “Restore default” removes your custom instructions.
 
@@ -498,23 +498,23 @@ Close the panel with ×, Esc or the bell. On smaller screens it also closes when
 
 ## Connect messaging apps
 
-Open “Settings” → “Notifications and messengers” → “Messenger bots” and choose “Connect” beside Telegram, VK or MAX. The wizard walks you through creating a bot, checks the connection and sends a test message.
+Open “Settings” → “Messengers” → “Bots” and choose “Connect” beside Telegram, VK or MAX. The wizard walks you through creating a bot, checks the connection and sends a test message.
 
-Choose the app your students use; one is enough. Students connect their own accounts under “My account”. The “Students’ messengers” card shows connections and failed deliveries. Send a reminder to selected students or everyone who has not connected an app.
+Choose the app your students use; one is enough. Students connect their own accounts under “My account”. The “Students” block in “Settings” → “Messengers” shows how many have connected (for example, 5 of 7), who has not and any failed deliveries; “Who uses what” opens the student list. “Send link” reminds a student who has not connected. Each student’s messengers are also on their details page.
 
 ## Message students
 
-Choose “Create” → “Message”, or open the bell → “Sent” → “Message students”. Write your message and choose all students, individual students or groups. The message form opens over your current page and the result appears in Sent.
+Choose “Message all” on the Students page, “Create” → “Message”, or open the bell → “Sent” → “Message students”. Write your message and choose all students, individual students or groups. The message form opens over your current page and the result appears in Sent.
 
 ## Notification preferences
 
-All notifications appear in the portal. In “Notification preferences”, choose which topics also reach your devices and messaging apps. During quiet hours, those deliveries wait until quiet hours end.
+All notifications appear in the portal. Under “My account” → “Notifications” → “What to send”, choose which topics also reach your devices and messaging apps and set “Quiet hours” (From and To). During quiet hours, those deliveries wait until they end. Changes save immediately.
 
 New server notifications and bot replies use each recipient’s account language. Existing notifications keep their original text.
 
 ## Device notifications
 
-Under “Device notifications”, choose “Turn on notifications on this device” and allow browser notifications. Enable this separately on each device and browser. These notifications work even when the portal is closed and can be used alongside messaging apps. “Turn off” removes a device.
+Under “My account” → “Notifications” → “Where to send”, choose “Connect” on the “This device” row and allow browser notifications. Enable this separately on each device and browser. These notifications work even when the portal is closed and can be used alongside messaging apps. Turning a device’s switch off removes it.
 
 On iPhone and iPad, add the portal to the Home Screen first using Share → Add to Home Screen, then open it from that icon. HTTPS and a supported browser are required. The portal explains when notifications are unavailable.
 
@@ -550,7 +550,7 @@ Notification buttons open the relevant portal page or lesson. Where link buttons
 
 ## Disable teacher actions
 
-If someone else can access your messaging account, turn off “Allow teacher actions in the bot” under “Settings” → “Notifications and messengers” → “What the bot can do”. You will still receive notifications.
+If someone else can access your messaging account, turn off “Teacher actions in the bot” under “My account” → “Notifications”. You will still receive notifications.
 
 VK communities need “Bot features” enabled for buttons to work.
 `,
@@ -561,7 +561,7 @@ VK communities need “Bot features” enabled for buttons to work.
     body: `
 ## Calendar subscriptions
 
-Open “Settings” → “Schedule and calendar” → “Calendar subscription” and choose “Get subscription link”. Add the link as a subscription in your phone or computer’s calendar app. Lessons update automatically.
+Open “Settings” → “Lessons” → “Calendar subscription” and choose “Get subscription link”. Add the link as a subscription in your phone or computer’s calendar app. Lessons update automatically.
 
 Keep this link private: anyone with it can view the schedule. Generate a new link if it has been shared accidentally; the previous one stops working.
 
@@ -569,7 +569,7 @@ Students can create their own subscription links, which include only their lesso
 
 ## Google Calendar
 
-Open “Settings” → “Schedule and calendar” → “Google Calendar” and connect your account. Portal lessons appear in a separate calendar in Google Calendar. The portal also shows when you are busy with other Google Calendar events so you can avoid scheduling conflicts.
+Open “Settings” → “Lessons” → “Google Calendar” and connect your account. Portal lessons appear in a separate calendar in Google Calendar. The portal also shows when you are busy with other Google Calendar events so you can avoid scheduling conflicts.
 `,
   },
   settings: {
@@ -578,16 +578,14 @@ Open “Settings” → “Schedule and calendar” → “Google Calendar” an
     body: `
 Open Settings from the sidebar or the ☰ menu on a phone. Select a category to open it beside the list; on a phone, use the back arrow to return. Each category has its own address and can be bookmarked.
 
-- **My account:** your photo, display name, password, theme and language. You can also open it by selecting your name in navigation.
-- **Portal:** name, logo and appearance. See [Appearance](/teacher/help/appearance).
-- **Schedule and calendar:** portal time zone, Google Calendar and subscriptions. See [Calendars](/teacher/help/calendars).
-- **Calls:** built-in [calls](/teacher/help/calls) and [external video meetings](/teacher/help/meetings).
-- **Notifications and messengers:** device notifications, bots, account connections, student connections and notification preferences. Failed deliveries appear first when present; the administrator can retry them. See [Notifications and bots](/teacher/help/notifications).
-- **Payments:** default lesson price for new students and groups. See [Payments](/teacher/help/billing).
-- **AI assistant:** model, monthly usage, recent requests, prompt library and system prompts. See [AI assistant](/teacher/help/ai).
-- **Data:** scheduled and manual backups, downloads, restoration, Google Drive storage and full reset. See [Backups](/teacher/help/backups).
+- **My account:** Profile (photo, name), Sign-in (username, password, sign out), Appearance (theme and language) and Notifications (where and what to send, quiet hours). Changes save immediately. You can also open it by selecting your name in navigation.
+- **Portal:** name and logo, portal colour, and fine tuning (scheme, contrast) with a preview. See [Appearance](/teacher/help/appearance).
+- **Lessons:** time zone and the default lesson price for new students and groups (see [Payments](/teacher/help/billing)), [calls](/teacher/help/calls) and [external video meetings](/teacher/help/meetings), Google Calendar and the calendar subscription (see [Calendars](/teacher/help/calendars)).
+- **Messengers:** bots, what the bot can do and students’ connections (for example, 5 of 7). Failed deliveries appear first when present; the administrator can retry them. See [Notifications and bots](/teacher/help/notifications).
+- **AI assistant:** model, usage by feature, recent requests, my prompts and system prompts. See [AI assistant](/teacher/help/ai).
+- **Data:** scheduled and manual backups, downloads, restoration, Google Drive storage, and the danger zone for restoring a backup or clearing the portal. See [Backups](/teacher/help/backups).
 
-The portal asks before you leave settings with unsaved changes. File size and type are checked as soon as you select a file.
+Settings save as soon as you change a field or switch. The exception is Portal: a bar with Discard and Save appears at the bottom, and the portal asks before you leave with unsaved changes. File size and type are checked as soon as you select a file.
 
 The portal address is entered during initial setup. Contact the administrator to change it later.
 `,
@@ -598,12 +596,12 @@ The portal address is entered during initial setup. Contact the administrator to
     body: `
 ## Portal branding
 
-Open “Settings” → “Portal” to change the name, logo and appearance. Preview shows your choices before saving; on a wide screen it appears beside the settings.
+Open “Settings” → “Portal” to change the name, logo and colour; scheme and contrast are under “Fine tuning”. Save from the bar at the bottom. Preview shows your choices before saving; on a wide screen it appears beside the settings.
 
 - **Colour:** choose a base colour or “Custom colour”. Use the swatch to open the colour picker, or enter a HEX code such as #0f766e. Buttons, links and highlights use shades of this colour. The portal adjusts shades for readable contrast and warns if a colour needs a large adjustment or resembles delete buttons.
 - **Colour scheme:** choose a style from the gallery, from Original to Monochrome.
 - **Contrast:** choose Lower, Standard, Higher or Maximum. Text remains readable at every level.
-- **Preview:** check the light and dark themes. Save applies the appearance to everyone; Cancel restores the saved values.
+- **Preview:** check the light and dark themes. Save applies the appearance to everyone; Discard restores the saved values.
 - **Logo:** upload a PNG, JPEG, WebP or SVG up to 1 MB. It appears in navigation, on sign-in and in the browser tab. Use the bin to restore the default icon. Logo changes apply immediately.
 
 ## Personal theme and language
@@ -677,9 +675,9 @@ The portal creates a backup of its current state, restarts and shows the result 
 
 ## Full reset
 
-“Settings” → “Data” → “Full reset” removes students, groups, lessons, payments, assignments, notifications, connections and portal details. Teacher and administrator accounts, their passwords, existing backups and the backup connection to Google Drive are kept.
+“Settings” → “Data” → “Danger zone” → “Clear the portal” removes students, groups, lessons, payments, assignments, notifications, connections and portal details. Teacher and administrator accounts, their passwords, existing backups and the backup connection to Google Drive are kept.
 
-Choose “Reset all data…”, then enter your password and RESET. A backup is created first, so you can recover the data if needed. Initial setup opens again afterwards.
+Choose “Clear…”, then enter your password and RESET. A backup is created first, so you can recover the data if needed. Initial setup opens again afterwards.
 
 If asked to remove a leftover Google Calendar, delete the portal calendar in Google Calendar manually.
 `,
@@ -701,7 +699,7 @@ Check that the account is active. If needed, send a reset link from “Students�
 Restore a [backup](/teacher/help/backups) from “Settings” → “Data” → “Backups”.
 
 **Messaging app notifications are not arriving.**
-Check the bot connection under “Settings” → “Notifications and messengers”. The student must also connect their own messaging account. Check Failed deliveries for rejected messages.
+Check the bot connection under “Settings” → “Messengers”. The student must also connect their own messaging account. Check the failed deliveries block for rejected messages.
 
 **I recorded the wrong lesson outcome.**
 Open the lesson and select the active outcome again to clear it and reverse the charge. For a group, use “Clear outcome” in the ⋮ menu.

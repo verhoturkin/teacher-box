@@ -5,6 +5,8 @@ import type { ru } from './ru';
 export const en: Translation<typeof ru> = {
   common: {
     cancel: 'Cancel',
+    today: 'today',
+    yesterday: 'yesterday',
     close: 'Close',
     save: 'Save',
     delete: 'Delete',

@@ -50,7 +50,7 @@ describe('SystemPromptsCard', () => {
     const text = readableText(host);
     expect(text).toContain('Черновик задания Ты помогаешь репетитору готовить домашние задания.');
     expect(text).toContain('Черновик проверки Изменён Проверяй строго');
-    expect(text.match(/Изменён/g)).toHaveLength(1);
+    expect(text.match(/Изменён(?!н)/g)).toHaveLength(1);
   });
 
   it('saves the rewritten standard prompt', async () => {
@@ -122,7 +122,7 @@ describe('SystemPromptsCard', () => {
     await fixture.whenStable();
 
     expect(card.visible()).toBe(false);
-    expect(readableText(host)).not.toContain('Изменён');
+    expect(readableText(host)).not.toMatch(/Изменён(?!н)/);
     expect(readableText(host)).toContain('Ты помогаешь репетитору проверять домашние работы.');
   });
 

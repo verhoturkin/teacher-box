@@ -1,98 +1,134 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Card } from 'primeng/card';
-import { ToggleSwitch } from 'primeng/toggleswitch';
+import { NgTemplateOutlet } from '@angular/common';
+import { Tag } from 'primeng/tag';
+import { injectMobile } from '@core/layout/mobile';
+import { SHARED_T } from '@shared/i18n/texts';
+import { TbDialog } from '@shared/ui/dialog/dialog';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { BotAbilities } from '../data-access/notifications.models';
 import { T } from '../i18n/texts';
 
-/** Teacher: what the bots can do for students and for the teacher; managing the portal through the bot. */
+/**
+ * Teacher: what the bots can do for students and for the teacher, folded in the card of the bots (sketch
+ * Messengers); allowing teacher actions is in «Мой аккаунт».
+ */
 @Component({
   selector: 'tb-bot-abilities-panel',
-  imports: [FormsModule, Card, ToggleSwitch],
+  imports: [NgTemplateOutlet, Tag, TbDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { style: 'display: block' },
   template: `
-    <p-card [header]="t.title">
+    <ul class="tb-list">
+      <li>
+        <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-smart_toy"></i></span>
+        <div class="tb-list__text">
+          <button
+            type="button"
+            class="tb-list__title tb-list__link"
+            aria-controls="tb-bot-abilities"
+            [attr.aria-expanded]="open()"
+            (click)="open.set(!open())"
+          >
+            {{ t.title }}
+          </button>
+          <span class="tb-list__supporting">{{ t.summary }}</span>
+        </div>
+        <div class="tb-list__trail" aria-hidden="true">
+          @if (mobile()) {
+            <i class="tb-i tb-i-chevron_right tb-muted"></i>
+          } @else {
+            <i
+              class="tb-i"
+              [class.tb-i-expand_more]="!open()"
+              [class.tb-i-expand_less]="open()"
+            ></i>
+          }
+        </div>
+      </li>
+    </ul>
+    @if (mobile()) {
+      <!-- compact (sketch PhoneMessengers): the row opens its own screen -->
+      <tb-dialog kind="form" [(visible)]="open" [headline]="t.title" [cancelLabel]="c.close">
+        <div class="tb-bot-abilities"><ng-container *ngTemplateOutlet="body" /></div>
+      </tb-dialog>
+    } @else {
+      <div id="tb-bot-abilities" class="tb-bot-abilities" [hidden]="!open()">
+        <ng-container *ngTemplateOutlet="body" />
+      </div>
+    }
+    <ng-template #body>
       <p class="tb-muted">{{ t.about }}</p>
       @if (abilities(); as bot) {
-        <div class="tb-bot-abilities">
-          <div>
-            <h3 class="tb-subtitle">{{ t.students }}</h3>
-            @if (bot.studentMenu.length === 0) {
-              <p class="tb-muted">{{ t.onlyNotifications }}</p>
-            } @else {
-              <ul>
-                @for (item of bot.studentMenu; track item) {
-                  <li>{{ item }}</li>
-                }
-              </ul>
-            }
-          </div>
-          <div>
-            <h3 class="tb-subtitle">{{ t.you }}</h3>
-            @if (bot.teacherMenu.length === 0) {
-              <p class="tb-muted">{{ t.onlyNotifications }}</p>
-            } @else {
-              <ul>
-                @for (item of bot.teacherMenu; track item) {
-                  <li>{{ item }}</li>
-                }
-              </ul>
-            }
-          </div>
+        <ul class="tb-list">
+          <li>
+            <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-school"></i></span>
+            <div class="tb-list__text">
+              <span class="tb-list__title">{{ t.students }}</span>
+              <span class="tb-list__supporting">{{ menu(bot.studentMenu) }}</span>
+            </div>
+          </li>
+          <li>
+            <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-person"></i></span>
+            <div class="tb-list__text">
+              <span class="tb-list__title">{{ t.you }}</span>
+              <span class="tb-list__supporting">{{ menu(bot.teacherMenu) }}</span>
+            </div>
+          </li>
+        </ul>
+        <h3 class="tb-section-label">{{ t.commandsTitle }}</h3>
+        <div class="tb-bot-commands">
+          @for (command of t.commands; track command) {
+            <p-tag [value]="command" severity="secondary" />
+          }
         </div>
-        <label class="tb-switch" for="bot-teacher-actions">
-          <p-toggleswitch
-            inputId="bot-teacher-actions"
-            [ngModel]="bot.teacherActions"
-            (ngModelChange)="setTeacherActions($event)"
-            [disabled]="pending()"
-          />
-          {{ t.teacherActions }}
-        </label>
-        <small class="tb-muted">{{ t.teacherActionsHint }}</small>
       }
-    </p-card>
+    </ng-template>
   `,
   styles: `
-    .tb-bot-abilities {
+    .tb-list__link {
+      border: 0;
+      padding: 0;
+      background: none;
+      color: inherit;
+      text-align: start;
+      cursor: pointer;
+    }
+
+    .tb-bot-abilities:not([hidden]) {
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-4);
-      margin-bottom: var(--tb-space-4);
+      padding: var(--tb-space-4) var(--tb-space-4) 0;
 
-      ul {
+      p {
         margin: 0;
-        padding-inline-start: var(--tb-space-5);
       }
+    }
+
+    .tb-bot-commands {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--tb-space-2);
     }
   `,
 })
 export class BotAbilitiesPanel implements OnInit {
   protected readonly t = T.abilities;
+  protected readonly c = SHARED_T.common;
+  protected readonly mobile = injectMobile();
   private readonly api = inject(NotificationsApi);
 
   protected readonly abilities = signal<BotAbilities | null>(null);
-  protected readonly pending = signal(false);
+  protected readonly open = signal(false);
+
+  /** The menu in a line, or that the bot only notifies. */
+  protected menu(items: readonly string[]): string {
+    return items.length === 0 ? this.t.onlyNotifications : items.join(', ');
+  }
 
   ngOnInit(): void {
     this.api.botAbilities().subscribe((abilities) => {
       this.abilities.set(abilities);
-    });
-  }
-
-  setTeacherActions(enabled: boolean): void {
-    this.pending.set(true);
-    this.api.setTeacherActions(enabled).subscribe({
-      next: (abilities) => {
-        this.pending.set(false);
-        this.abilities.set(abilities);
-      },
-      error: () => {
-        this.pending.set(false);
-        // The switch goes back: the saved value has not changed.
-        this.abilities.update((abilities) => (abilities === null ? null : { ...abilities }));
-      },
     });
   }
 }

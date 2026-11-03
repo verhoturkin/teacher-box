@@ -1,4 +1,5 @@
 import { locale } from '@core/i18n/language';
+import { SHARED_T } from '@shared/i18n/texts';
 /**
  * Calendar dates (`yyyy-MM-dd`) exchanged with the backend. Conversions use local date parts so
  * that a date picked in the UI never shifts because of the time zone.
@@ -36,4 +37,24 @@ export function monthLabel(yearMonth: string): string {
     month: 'long',
     year: 'numeric',
   });
+}
+
+/**
+ * «сегодня, 10:42», «вчера, 21:03», «31 октября, 16:20»: a moment of the log for people; `capital` starts
+ * the line with a capital letter (a title of a row).
+ */
+export function dayTime(iso: string, capital = false): string {
+  const date = new Date(iso);
+  const time = date.toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' });
+  const days = Math.round(
+    (new Date().setHours(0, 0, 0, 0) - new Date(date).setHours(0, 0, 0, 0)) / 86_400_000,
+  );
+  const day =
+    days === 0
+      ? SHARED_T.common.today
+      : days === 1
+        ? SHARED_T.common.yesterday
+        : date.toLocaleDateString(locale(), { day: 'numeric', month: 'long' });
+  const text = `${day}, ${time}`;
+  return capital ? text.charAt(0).toUpperCase() + text.slice(1) : text;
 }

@@ -124,14 +124,17 @@ export const en: Translation<typeof ru> = {
     left: (name: string) => `${name} left the call`,
   },
   settings: {
-    title: 'Video meetings',
-    on: 'Portal calls are enabled. Every student and group has a room. Use “Start lesson” in the schedule or open the room link on the student or group’s card.',
+    title: 'Portal calls',
+    works: 'Working',
+    on: 'On: each lesson has a “Start lesson” button',
     unreachable:
       'Calls are enabled, but the call server is not responding. Contact the portal administrator.',
-    off: 'Portal calls have not been configured. Contact the portal administrator to enable them.',
-    external:
-      'To use an external video service such as Telemost or Zoom, add a permanent link under “Video meeting” on the student or group’s card in “Students”.',
-    openInApp: 'Open Telemost meetings in the app on this computer',
+    off: 'Not set up',
+    external: 'Your own call link',
+    externalHint: 'Telemost, Zoom or another service, set on the student or group’s card',
+    openInApp: 'Open Telemost in the app',
+    thisDevice: 'On this device',
+    admin: 'Only the portal administrator can turn portal calls on or off.',
   },
   join: {
     other: 'Other ways to open the meeting',

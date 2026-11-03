@@ -190,11 +190,11 @@ const STEPS: readonly Step[] = [
                 {{ t.messengersText }}
               </li>
               <li>
-                <a routerLink="/teacher/settings/calendar">{{ t.meetings }}</a>
+                <a routerLink="/teacher/settings/lessons">{{ t.meetings }}</a>
                 {{ t.meetingsText }}
               </li>
               <li>
-                <a routerLink="/teacher/settings/calendar">{{ t.google }}</a>
+                <a routerLink="/teacher/settings/lessons">{{ t.google }}</a>
                 {{ t.googleText }}
               </li>
               <li>

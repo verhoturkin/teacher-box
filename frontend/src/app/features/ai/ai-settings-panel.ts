@@ -1,15 +1,8 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { locale } from '@core/i18n/language';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { ProgressBar } from 'primeng/progressbar';
 import { Tag } from 'primeng/tag';
 import { AiApi } from './data-access/ai-api';
 import {
@@ -19,63 +12,52 @@ import {
   AiStatus,
   UsageReport,
 } from './data-access/ai.models';
+import { dayTime } from '@shared/dates/iso-date';
 import { EmptyState } from '@shared/ui/empty-state';
-import { ProgressLabel } from '@shared/ui/progress-label.directive';
-import { monthLabel } from '@shared/dates/iso-date';
 import { T } from './i18n/texts';
 import { PromptLibraryCard } from './prompt-library-card';
 import { SystemPromptsCard } from './system-prompts-card';
 
 export const FEATURE_LABELS: Record<AiFeature, string> = T.features;
 
-/** The icon of a request in the log: a homework draft or a review draft. */
+/** The icon of a request in the log: the kind of draft. */
 const FEATURE_ICONS: Record<AiFeature, string> = {
-  HOMEWORK_DRAFT: 'tb-i tb-i-edit_document',
+  HOMEWORK_DRAFT: 'tb-i tb-i-assignment',
   REVIEW_DRAFT: 'tb-i tb-i-rate_review',
+  LESSON_SUMMARY: 'tb-i tb-i-summarize',
+  QUIZ_DRAFT: 'tb-i tb-i-quiz',
 };
 
-/** Names of `TEACHERBOX_AI_PROVIDER` values. */
-export const PROVIDER_NAMES: Readonly<Record<string, string>> = {
-  anthropic: 'Anthropic (Claude)',
-  gemini: 'Google Gemini',
-  openrouter: 'OpenRouter',
-  deepseek: 'DeepSeek',
-  'openai-compatible': T.openAiCompatible,
-};
+type TagSeverity = 'success' | 'danger' | 'secondary';
 
-const STATUS_LABELS: Record<
-  AiRequestStatus,
-  { label: string; severity: 'success' | 'danger' | 'warn' }
-> = {
+const STATUS_LABELS: Record<AiRequestStatus, { label: string; severity: TagSeverity }> = {
   SUCCEEDED: { label: T.statuses.SUCCEEDED, severity: 'success' },
   FAILED: { label: T.statuses.FAILED, severity: 'danger' },
-  REFUSED: { label: T.statuses.REFUSED, severity: 'warn' },
+  REFUSED: { label: T.statuses.REFUSED, severity: 'secondary' },
 };
 
+/** The bar's segments: the feature that used more takes the primary colour, the next its light pair. */
+const SEGMENT_COLORS = ['var(--p-md-primary)', 'var(--p-md-inverse-primary)'];
+
+interface UsagePart {
+  readonly feature: AiFeature;
+  readonly label: string;
+  readonly percent: number;
+  readonly color: string;
+}
+
 /**
- * The settings category «ИИ-помощник» (redesign spec §10.3): whether the assistant is configured, how many
- * tokens it used this month, the library of prompts (the editor's «Промты» menu leads here) and the system
- * prompts.
+ * The settings category «ИИ-помощник» (sketch Ai): the model with the month's usage by feature, the log
+ * of recent requests, the library of prompts (the editor's «Промты» menu leads here) and the system prompts.
  */
 @Component({
   selector: 'tb-ai-settings-panel',
-  imports: [
-    DatePipe,
-    DecimalPipe,
-    Button,
-    Card,
-    ProgressBar,
-    Tag,
-    EmptyState,
-    ProgressLabel,
-    PromptLibraryCard,
-    SystemPromptsCard,
-  ],
+  imports: [DecimalPipe, Button, Card, Tag, EmptyState, PromptLibraryCard, SystemPromptsCard],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (status(); as status) {
       @if (!status.enabled) {
-        <p-card>
+        <p-card styleClass="tb-section-card">
           <tb-empty-state
             icon="tb-i-auto_awesome"
             [title]="t.notConfigured"
@@ -83,105 +65,178 @@ const STATUS_LABELS: Record<
           />
         </p-card>
       } @else {
-        <div class="tb-stack">
-          <p-card>
-            <div class="tb-stat">
-              <span class="tb-muted">{{ t.model }}</span>
-              <span class="tb-stat__value">{{ status.model }}</span>
-              <small class="tb-muted">{{ providerName(status.provider) }}</small>
-            </div>
-          </p-card>
-          @if (report(); as report) {
-            <p-card [header]="t.usageIn(monthName(report.month))">
-              <p>
-                {{ t.tokens((report.usedTokens | number) ?? '') }}
-                @if (report.monthlyTokenLimit > 0) {
-                  {{ t.ofLimit((report.monthlyTokenLimit | number) ?? '') }}
-                } @else {
-                  {{ t.noLimit }}
-                }
-              </p>
-              @if (report.monthlyTokenLimit > 0) {
-                <p-progressbar
-                  [value]="percent()"
-                  [showValue]="false"
-                  styleClass="tb-usage-bar"
-                  [tbProgressLabel]="t.used"
-                />
-              }
-              <ul class="tb-usage-features">
-                @for (feature of report.features; track feature.feature) {
-                  <li>
-                    {{ featureLabels[feature.feature] }}: {{ t.requestCount(feature.requests) }},
-                    {{ t.tokenCount(feature.inputTokens + feature.outputTokens) }}
-                  </li>
-                }
+        <div class="tb-ai">
+          <div class="tb-ai__stack">
+            <p-card [header]="t.modelAndUsage" styleClass="tb-section-card tb-section-card--flow">
+              <ul class="tb-list">
+                <li>
+                  <span class="tb-list__lead" aria-hidden="true"
+                    ><i class="tb-i tb-i-auto_awesome"></i
+                  ></span>
+                  <div class="tb-list__text">
+                    <span class="tb-list__title">{{ status.model }}</span>
+                    <span class="tb-list__supporting">{{ t.byAdmin }}</span>
+                  </div>
+                  <div class="tb-list__trail">
+                    <p-tag [value]="t.working" severity="success" />
+                  </div>
+                </li>
               </ul>
-            </p-card>
-            <p-card [header]="t.recent">
-              @if (recent().length === 0) {
-                <tb-empty-state [compact]="true" icon="tb-i-auto_awesome" [title]="t.noRequests" />
-              } @else {
-                <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.recent">
-                  @for (row of recent(); track $index) {
-                    <li>
-                      <span class="tb-list__lead" aria-hidden="true"
-                        ><i [class]="featureIcons[row.feature]"></i
-                      ></span>
-                      <div class="tb-list__text">
-                        <span class="tb-list__title tb-usage-title"
-                          >{{ featureLabels[row.feature] }}
-                          <p-tag
-                            [value]="statusLabel(row).label"
-                            [severity]="statusLabel(row).severity"
-                        /></span>
-                        <span class="tb-list__supporting">
-                          {{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }} · {{ row.model }} ·
-                          {{ t.seconds((row.durationMs / 1000 | number: '1.0-1') ?? '') }}
-                        </span>
-                        @if (row.error) {
-                          <small class="tb-negative tb-usage-error">{{ row.error }}</small>
-                        }
-                      </div>
-                      <div class="tb-list__trail tb-list__trail--amount">
-                        <span class="tb-list__amount">{{
-                          t.tokenCount(row.inputTokens + row.outputTokens)
-                        }}</span>
-                      </div>
-                    </li>
-                  }
-                </ul>
-                @if (moreRecent()) {
-                  <p-button
-                    [label]="t.showMore"
-                    [text]="true"
-                    [loading]="loadingMore()"
-                    (onClick)="showMore(report.month)"
-                  />
+              @if (report(); as report) {
+                @if (report.monthlyTokenLimit > 0) {
+                  <p class="tb-ai__usage">
+                    <strong class="tb-ai__percent">{{ percent(report.usedTokens) }} %</strong>
+                    <span class="tb-muted">{{
+                      t.ofMonthLimit(
+                        (report.usedTokens | number) ?? '',
+                        (report.monthlyTokenLimit | number) ?? '',
+                        resetDay(report.month)
+                      )
+                    }}</span>
+                  </p>
+                  <div class="tb-ai__bar" role="img" [attr.aria-label]="t.used">
+                    @for (part of parts(report); track part.feature) {
+                      <i [style.width.%]="part.percent" [style.background]="part.color"></i>
+                    }
+                  </div>
+                  <ul class="tb-ai__legend">
+                    @for (part of parts(report); track part.feature) {
+                      <li>
+                        <i [style.background]="part.color"></i>{{ part.label }} · {{ part.percent }}
+                        %
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="tb-ai__usage">
+                    <strong class="tb-ai__percent">{{ report.usedTokens | number }}</strong>
+                    <span class="tb-muted">{{ t.tokensNoLimit }}</span>
+                  </p>
                 }
               }
             </p-card>
-          }
-          <tb-prompt-library-card />
-          <tb-system-prompts-card />
+            @if (report(); as report) {
+              <p-card
+                [header]="t.recent(monthName(report.month))"
+                styleClass="tb-section-card tb-section-card--flow"
+              >
+                @if (recent().length === 0) {
+                  <tb-empty-state
+                    [compact]="true"
+                    icon="tb-i-auto_awesome"
+                    [title]="t.noRequests"
+                  />
+                } @else {
+                  <ul class="tb-list" [attr.aria-label]="t.recent(monthName(report.month))">
+                    @for (row of recent(); track $index) {
+                      <li>
+                        <span class="tb-list__lead" aria-hidden="true"
+                          ><i [class]="featureIcons[row.feature]"></i
+                        ></span>
+                        <div class="tb-list__text">
+                          <span class="tb-list__title">{{ featureLabel(row.feature) }}</span>
+                          <span class="tb-list__supporting">
+                            {{ when(row.createdAt) }} ·
+                            {{ t.inOut(row.inputTokens, row.outputTokens) }} ·
+                            {{ t.seconds((row.durationMs / 1000 | number: '1.0-0') ?? '') }}
+                          </span>
+                          @if (row.error) {
+                            <small class="tb-negative tb-ai__error">{{ row.error }}</small>
+                          }
+                        </div>
+                        <div class="tb-list__trail">
+                          <p-tag
+                            [value]="statusOf(row).label"
+                            [severity]="statusOf(row).severity"
+                          />
+                        </div>
+                      </li>
+                    }
+                  </ul>
+                  @if (moreRecent()) {
+                    <p-button
+                      [label]="t.showMore"
+                      [text]="true"
+                      [loading]="loadingMore()"
+                      (onClick)="showMore(report.month)"
+                    />
+                  }
+                }
+              </p-card>
+            }
+          </div>
+          <div class="tb-ai__stack">
+            <tb-prompt-library-card />
+            <tb-system-prompts-card />
+          </div>
         </div>
       }
     }
   `,
   styles: `
-    .tb-usage-features {
-      margin: var(--tb-space-4) 0 0;
-      padding-left: var(--tb-space-5);
+    /* the sketch Ai: usage and requests beside the prompts while they fit */
+    .tb-ai {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 22.5rem), 1fr));
+      align-items: start;
+      gap: var(--tb-space-4);
     }
 
-    .tb-usage-title {
-      display: inline-flex;
+    .tb-ai__stack {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-4);
+      min-width: 0;
+    }
+
+    .tb-ai__usage {
+      display: flex;
       flex-wrap: wrap;
-      align-items: center;
+      align-items: baseline;
       gap: var(--tb-space-2);
     }
 
-    .tb-usage-error {
+    /* our decision: the share of the limit is the card's headline number, M3 headline small */
+    .tb-ai__percent {
+      font: var(--tb-type-headline-s);
+    }
+
+    /* a 6 dp track, one segment per feature (the sketch's bar) */
+    .tb-ai__bar {
+      display: flex;
+      height: 6px;
+      overflow: hidden;
+      border-radius: 3px;
+      background: var(--p-md-outline-variant);
+
+      > i {
+        display: block;
+      }
+    }
+
+    .tb-ai__legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--tb-space-2) var(--tb-space-4);
+      padding: 0;
+      list-style: none;
+      font: var(--tb-type-body-m);
+
+      > li {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--tb-space-2);
+      }
+
+      i {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 5px;
+      }
+    }
+
+    .tb-ai__error {
       display: block;
       margin-top: var(--tb-space-1);
       overflow-wrap: anywhere;
@@ -192,22 +247,14 @@ export class AiSettingsPanel implements OnInit {
   protected readonly t = T.usage;
   private readonly api = inject(AiApi);
 
-  protected readonly featureLabels = FEATURE_LABELS;
   protected readonly featureIcons = FEATURE_ICONS;
-  protected readonly monthName = monthLabel;
+  protected readonly when = dayTime;
   protected readonly status = signal<AiStatus | null>(null);
   protected readonly report = signal<UsageReport | null>(null);
   /** Requests shown in the log: the first page of the report and those added by «Показать ещё». */
   protected readonly recent = signal<AiRequestLog[]>([]);
   protected readonly moreRecent = signal(false);
   protected readonly loadingMore = signal(false);
-  protected readonly percent = computed(() => {
-    const report = this.report();
-    if (report === null || report.monthlyTokenLimit === 0) {
-      return 0;
-    }
-    return Math.min(100, Math.round((report.usedTokens / report.monthlyTokenLimit) * 100));
-  });
 
   ngOnInit(): void {
     this.api.status().subscribe((status) => {
@@ -239,14 +286,46 @@ export class AiSettingsPanel implements OnInit {
     });
   }
 
-  protected providerName(provider: string | null): string {
-    return provider === null ? '' : (PROVIDER_NAMES[provider] ?? provider);
+  /** «Черновик задания»: a request is one draft, the usage legend counts them in the plural. */
+  protected featureLabel(feature: AiFeature): string {
+    return T.systemPrompts.features[feature];
   }
 
-  protected statusLabel(row: AiRequestLog): {
-    label: string;
-    severity: 'success' | 'danger' | 'warn';
-  } {
+  protected statusOf(row: AiRequestLog): { label: string; severity: TagSeverity } {
     return STATUS_LABELS[row.status];
+  }
+
+  protected percent(tokens: number): number {
+    const limit = this.report()?.monthlyTokenLimit ?? 0;
+    return limit === 0 ? 0 : Math.min(100, Math.round((tokens / limit) * 100));
+  }
+
+  /** «ноябрь»: the month of the report in words. */
+  protected monthName(yearMonth: string): string {
+    const [year = 0, month = 1] = yearMonth.split('-').map(Number);
+    return new Date(year, month - 1, 1).toLocaleDateString(locale(), { month: 'long' });
+  }
+
+  /** «1 декабря»: the day after the report's month, when the limit starts over. */
+  protected resetDay(yearMonth: string): string {
+    const [year = 0, month = 1] = yearMonth.split('-').map(Number);
+    return new Date(year, month, 1).toLocaleDateString(locale(), { day: 'numeric', month: 'long' });
+  }
+
+  /** The features of the month as segments of the bar, the biggest first, by the share of the limit. */
+  protected parts(report: UsageReport): UsagePart[] {
+    return report.features
+      .map((feature) => ({
+        feature: feature.feature,
+        tokens: feature.inputTokens + feature.outputTokens,
+      }))
+      .filter((feature) => feature.tokens > 0)
+      .sort((a, b) => b.tokens - a.tokens)
+      .map((feature, index) => ({
+        feature: feature.feature,
+        label: FEATURE_LABELS[feature.feature],
+        percent: this.percent(feature.tokens),
+        color: SEGMENT_COLORS[index % SEGMENT_COLORS.length] ?? 'var(--p-md-primary)',
+      }));
   }
 }

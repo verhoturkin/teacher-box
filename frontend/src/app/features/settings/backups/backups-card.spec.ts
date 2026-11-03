@@ -101,16 +101,35 @@ describe('BackupsCard', () => {
     const host = await render();
 
     const text = readableText(host);
-    expect(text).toContain('перед сбросом · 2,5 МБ');
-    expect(text).toContain('по расписанию · 2,5 МБ');
+    expect(text).toContain('Перед сбросом · 2,5 МБ');
+    expect(text).toContain('По расписанию · 2,5 МБ');
     expect(host.querySelectorAll('li')).toHaveLength(3);
     expect(text).not.toContain('Скачать копию может только учитель');
+  });
+
+  it('puts the latest copy first and folds the older ones in «Все N копий»', async () => {
+    const copies = [1, 2, 3, 4].map((day) => ({
+      ...SCHEDULED,
+      name: `teacherbox-2026092${String(day)}.zip`,
+      createdAt: `2026-09-2${String(day)}T00:30:00Z`,
+    }));
+    const host = await render('teacher', copies);
+
+    expect(readableText(host)).toContain('Последняя копия — 24 сентября');
+    expect(host.querySelectorAll('li')).toHaveLength(3);
+    expect(host.querySelector('li')?.textContent).toContain('24 сентября');
+    buttonByText(host, 'Все 4 копии').click();
+    await fixture.whenStable();
+    expect(host.querySelectorAll('li')).toHaveLength(4);
+    buttonByText(host, 'Свернуть').click();
+    await fixture.whenStable();
+    expect(host.querySelectorAll('li')).toHaveLength(3);
   });
 
   it('creates, downloads and deletes backups for the teacher', async () => {
     const host = await render();
 
-    buttonByText(host, 'Создать копию сейчас').click();
+    buttonByText(host, 'Создать сейчас').click();
     backend.expectOne({ method: 'POST', url: '/api/teacher/backups' }).flush(SCHEDULED);
     backend.expectOne('/api/teacher/backups').flush([SCHEDULED]);
     expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
@@ -120,7 +139,8 @@ describe('BackupsCard', () => {
     actions.click();
     await fixture.whenStable();
     expect(actions.getAttribute('aria-expanded')).toBe('true');
-    menuItemByText('Скачать').click();
+    actions.click();
+    buttonByText(host, `Скачать копию ${SCHEDULED.name}`).click();
     backend.expectOne(`/api/teacher/backups/${SCHEDULED.name}`).flush(new Blob(['zip']));
     expect(saved).toEqual([SCHEDULED.name]);
 
@@ -149,25 +169,25 @@ describe('BackupsCard', () => {
       .flush(null, { status: 500, statusText: 'Error' });
     await fixture.whenStable();
 
-    expect(buttonByText(host, 'Создать копию сейчас').disabled).toBe(false);
+    expect(buttonByText(host, 'Создать сейчас').disabled).toBe(false);
   });
 
   it('lets the administrator create and restore, but not download or delete', async () => {
     const host = await render('admin');
 
     expect(readableText(host)).toContain('Скачать копию может только учитель');
-    buttonByText(host, 'Создать копию сейчас').click();
+    buttonByText(host, 'Создать сейчас').click();
     backend.expectOne({ method: 'POST', url: '/api/admin/backups' }).flush(SCHEDULED);
     backend.expectOne('/api/admin/backups').flush([SCHEDULED]);
     await fixture.whenStable();
 
     buttonByText(host, `Действия: ${SCHEDULED.name}`).click();
     await fixture.whenStable();
-    expect(() => menuItemByText('Скачать')).toThrow();
+    expect(() => buttonByText(host, `Скачать копию ${SCHEDULED.name}`)).toThrow();
     expect(() => menuItemByText('Удалить')).toThrow();
     menuItemByText('Восстановить').click();
     await fixture.whenStable();
-    expect(bodyText()).toContain('Восстановление из копии');
+    expect(bodyText()).toContain('Восстановить из копии?');
     expect(bodyText()).toContain('Все данные портала заменятся данными из копии');
   });
 
@@ -190,8 +210,9 @@ describe('BackupsCard', () => {
       await fixture.whenStable();
       const host = hostElement(fixture);
 
-      expect(readableText(host)).toContain('по расписанию · 2,5 МБ · в Google Диске');
-      expect(readableText(host)).not.toContain('перед сбросом · 2,5 МБ · в Google Диске');
+      expect(host.querySelectorAll('p-tag')).toHaveLength(1);
+      expect(host.querySelector('p-tag')?.closest('li')?.textContent).toContain('По расписанию');
+      expect(readableText(host)).toContain('в Диске');
       expect([...drive.local()]).toEqual([BEFORE_RESET.name, SCHEDULED.name]);
 
       buttonByText(host, `Действия: ${BEFORE_RESET.name}`).click();
@@ -207,7 +228,7 @@ describe('BackupsCard', () => {
       backend.expectOne(`/api/${area}/backups/google`).flush(DRIVE);
       backend.expectOne(`/api/${area}/backups/google/files`).flush([]);
 
-      buttonByText(host, 'Создать копию сейчас').click();
+      buttonByText(host, 'Создать сейчас').click();
       backend.expectOne({ method: 'POST', url: `/api/${area}/backups` }).flush(SCHEDULED);
       backend.expectOne(`/api/${area}/backups`).flush([SCHEDULED]);
       backend.expectOne(`/api/${area}/backups/google`).flush({ ...DRIVE, connected: false });

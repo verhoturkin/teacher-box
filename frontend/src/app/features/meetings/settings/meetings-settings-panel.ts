@@ -1,10 +1,9 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
+import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { quietContext } from '@core/http/api-error.interceptor';
-import { HelpButton } from '@features/help/parts';
 import { MeetingsApi } from '../data-access/meetings-api';
 import { CallsStatus } from '../data-access/meetings.models';
 import { MeetingPreferences } from '../telemost';
@@ -16,38 +15,54 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-meetings-settings-panel',
-  imports: [HelpButton, FormsModule, Card, Message, ToggleSwitch],
+  imports: [FormsModule, Message, Tag, ToggleSwitch],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card id="meetings">
-      <ng-template #title>
-        <div class="tb-card-title">
-          <span class="tb-card-title__text"
-            >{{ t.title }} <tb-help-button topic="teacher/calls"
-          /></span>
-        </div>
-      </ng-template>
-      @switch (calls()) {
-        @case ('OK') {
-          <p>{{ t.on }}</p>
+    <div id="meetings" class="tb-tiles">
+      <div class="tb-tile">
+        <i class="tb-i tb-i-video_call tb-tile__icon" aria-hidden="true"></i>
+        <span class="tb-tile__text">
+          <b>{{ t.title }}</b>
+          @switch (calls()) {
+            @case ('OK') {
+              <span>{{ t.on }}</span>
+            }
+            @case ('OFF') {
+              <span>{{ t.off }}</span>
+            }
+          }
+        </span>
+        @if (calls() === 'OK') {
+          <p-tag severity="success" [value]="t.works" />
         }
-        @case ('UNREACHABLE') {
-          <p-message severity="warn" styleClass="tb-form-message">{{ t.unreachable }}</p-message>
-        }
-        @case ('OFF') {
-          <p>{{ t.off }}</p>
-        }
-      }
-      <p>{{ t.external }}</p>
-      <label class="tb-switch" for="meetings-open-in-app">
+      </div>
+      <div class="tb-tile">
+        <i class="tb-i tb-i-link tb-tile__icon" aria-hidden="true"></i>
+        <span class="tb-tile__text">
+          <b>{{ t.external }}</b>
+          <span>{{ t.externalHint }}</span>
+        </span>
+      </div>
+      <label class="tb-tile" for="meetings-open-in-app">
+        <i class="tb-i tb-i-open_in_new tb-tile__icon" aria-hidden="true"></i>
+        <span class="tb-tile__text">
+          <b>{{ t.openInApp }}</b>
+          <span>{{ t.thisDevice }}</span>
+        </span>
         <p-toggleswitch
           inputId="meetings-open-in-app"
           [ngModel]="openInApp()"
           (ngModelChange)="setOpenInApp($event)"
         />
-        {{ t.openInApp }}
       </label>
-    </p-card>
+    </div>
+    @if (calls() === 'UNREACHABLE') {
+      <p-message severity="warn" styleClass="tb-form-message">{{ t.unreachable }}</p-message>
+    } @else {
+      <p-message severity="info" icon="tb-i tb-i-info" styleClass="tb-form-message">{{
+        t.admin
+      }}</p-message>
+    }
   `,
 })
 export class MeetingsSettingsPanel implements OnInit {

@@ -30,7 +30,7 @@ import { T } from '../i18n/texts';
   imports: [DatePipe, Button, Card, InputText, Tooltip, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card [header]="t.title">
+    <p-card [header]="t.title" styleClass="tb-section-card">
       <tb-load-state [state]="state" [what]="t.what" [compact]="true" (retry)="load()">
         @if (feed(); as feed) {
           @if (url(); as link) {

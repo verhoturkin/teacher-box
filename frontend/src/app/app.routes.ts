@@ -230,8 +230,8 @@ export const routes: Routes = [
         path: 'billing/students/:studentId',
         redirectTo: '/teacher/students/:studentId?tab=payments',
       },
-      // the rooms are in the cards and the lessons; «Звонки» is a category of the settings (234.2)
-      { path: 'calls', redirectTo: 'settings/calls' },
+      // the rooms are in the cards and the lessons; calls are in «Занятия» of the settings (357.1)
+      { path: 'calls', redirectTo: 'settings/lessons' },
       {
         // `/teacher/settings[/:category]`: list-detail of the categories (redesign spec §10.3)
         path: 'settings',

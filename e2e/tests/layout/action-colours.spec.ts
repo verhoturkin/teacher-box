@@ -63,10 +63,10 @@ test('a dialog submits with the portal colour, like the main action of the page'
   await expect(dialog).toBeHidden();
 });
 
-test('a section save is neutral tonal', async ({ page }) => {
+test('a section action is neutral tonal', async ({ page }) => {
   await signIn(page);
-  await page.goto('/teacher/account');
-  const save = page.locator('main').getByRole('button', { name: 'Сохранить' }).first();
+  await page.goto('/teacher/settings/data');
+  const save = page.locator('main').getByRole('button', { name: 'Создать сейчас' }).first();
   await expect(save).toHaveClass(/p-button-secondary/);
   await expect(save).not.toHaveClass(/p-button-text/);
   expect(await background(page, 'main .p-button-secondary:not(.p-button-text)')).not.toBe(
@@ -78,7 +78,7 @@ test('a green portal colour gets no warning', async ({ page }) => {
   await signIn(page);
   await page.goto('/teacher/settings?open=portal');
   const card = page.locator('#portal');
-  const green = card.getByRole('radio', { name: 'Изумрудный' });
+  const green = card.getByRole('radio', { name: 'Изумруд' });
   await green.click();
   await expect(green).toHaveAttribute('aria-checked', 'true');
   await expect(card.locator('p-message')).toHaveCount(0);

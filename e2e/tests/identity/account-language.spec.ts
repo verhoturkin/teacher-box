@@ -32,7 +32,8 @@ test('the language chosen in the interface goes to the account', async ({ page, 
   await expect.poll(() => accountLanguage(request)).toBe('en');
 
   await page.goto('/teacher/settings/account');
-  await page.getByRole('button', { name: 'Русский' }).click();
+  await page.locator('#account-language').click();
+  await page.getByRole('option', { name: 'Русский' }).click();
   await expect.poll(() => accountLanguage(request)).toBe('ru');
   await page.goto('/teacher');
   await expect(page.getByRole('region', { name: 'Сегодня', exact: true })).toBeVisible();

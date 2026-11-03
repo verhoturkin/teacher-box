@@ -1,34 +1,36 @@
 import type { Translation } from '@core/i18n/language';
-import { countOf } from '@shared/text/plural';
 import type { ru } from './ru';
 
 export const en: Translation<typeof ru> = {
   features: {
     HOMEWORK_DRAFT: 'Assignment drafts',
     REVIEW_DRAFT: 'Review drafts',
+    LESSON_SUMMARY: 'Lesson summaries',
+    QUIZ_DRAFT: 'Quiz drafts',
   },
-  openAiCompatible: 'OpenAI-compatible API',
   statuses: {
     SUCCEEDED: 'Completed',
     FAILED: 'Error',
     REFUSED: 'Declined by model',
   },
   usage: {
+    modelAndUsage: 'Model and usage',
+    byAdmin: 'Set up by the portal administrator',
+    working: 'Working',
+    ofMonthLimit: (used: string, limit: string, resets: string) =>
+      `of the monthly limit · ${used} of ${limit} tokens · resets on ${resets}`,
+    tokensNoLimit: 'tokens this month, no limit',
+    recent: (month: string) => `Recent requests · ${month}`,
+    noRequests: 'No requests this month',
+    showMore: 'Show more',
+    inOut: (input: number, output: number) =>
+      `${input.toLocaleString('en-GB')} → ${output.toLocaleString('en-GB')} tokens`,
+    seconds: (seconds: string) => `${seconds} s`,
     notConfigured: 'The AI assistant is not set up',
     notConfiguredHint:
       'Ask the portal administrator to enable the AI assistant for assignment drafts and feedback.',
     model: 'Model',
-    usageIn: (month: string) => `Usage for ${month}`,
-    tokens: (used: string) => `Tokens: ${used}`,
-    ofLimit: (limit: string) => `of ${limit}`,
-    noLimit: '(no limit)',
     used: 'Tokens used this month',
-    requestCount: (count: number) => countOf(count, 'request', 'requests', 'requests'),
-    tokenCount: (count: number) => countOf(count, 'token', 'tokens', 'tokens'),
-    recent: 'Recent requests',
-    noRequests: 'No requests this month',
-    showMore: 'Show more',
-    seconds: (seconds: string) => `${seconds} s`,
   },
   panel: {
     paneTask: 'Assignment text',
@@ -100,7 +102,12 @@ export const en: Translation<typeof ru> = {
     },
   },
   library: {
-    title: 'Prompt library',
+    create: 'New',
+    hint: 'Ready-made requests to the assistant — they appear as buttons in the “Write with AI” window.',
+    actions: (title: string) => `Actions for prompt “${title}”`,
+    editItem: 'Edit…',
+    deleteItem: 'Delete…',
+    title: 'My prompts',
     empty: 'No prompts yet',
     emptyHint: 'Save a prompt in the assignment editor to reuse it here.',
     edit: (title: string) => `Edit the prompt “${title}”`,
@@ -116,13 +123,16 @@ export const en: Translation<typeof ru> = {
     failed: 'Could not save the prompt',
   },
   systemPrompts: {
+    summary: 'For advanced users — how the assistant writes tasks and reviews',
     more: 'More actions',
     title: 'System prompts',
-    hint: 'Set the tone, language and structure of AI drafts. You can customise these instructions.',
     features: {
       HOMEWORK_DRAFT: 'Assignment draft',
       REVIEW_DRAFT: 'Review draft',
+      LESSON_SUMMARY: 'Lesson summary',
+      QUIZ_DRAFT: 'Quiz draft',
     },
+    resetHint: 'A changed prompt can be restored to the standard one in the edit window.',
     custom: 'Custom',
     edit: (name: string) => `Edit the system prompt “${name}”`,
     text: 'Text',

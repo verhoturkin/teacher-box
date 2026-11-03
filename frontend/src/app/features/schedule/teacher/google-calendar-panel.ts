@@ -78,7 +78,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card id="google">
+    <p-card id="google" styleClass="tb-section-card tb-section-card--flow">
       <ng-template #title>
         <div class="tb-card-title">
           <span class="tb-card-title__text"
@@ -94,13 +94,16 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
       @if (status(); as status) {
         @switch (status.status) {
           @case ('CONNECTED') {
-            <div class="tb-google-state">
-              <p-tag [value]="t.connected" severity="success" />
-              <span class="tb-muted">{{
-                t.since((status.connectedAt | date: 'dd.MM.yyyy HH:mm') ?? '')
-              }}</span>
+            <div class="tb-tiles tb-google-state">
+              <div class="tb-tile">
+                <i class="tb-i tb-i-sync tb-tile__icon" aria-hidden="true"></i>
+                <span class="tb-tile__text">
+                  <b>{{ t.about }}</b>
+                  <span>{{ t.since((status.connectedAt | date: 'dd.MM.yyyy HH:mm') ?? '') }}</span>
+                </span>
+                <p-tag [value]="t.connected" severity="success" />
+              </div>
             </div>
-            <p>{{ t.about }}</p>
             @if (status.lastSyncAt !== null) {
               <small class="tb-muted">{{
                 t.lastSync((status.lastSyncAt | date: 'dd.MM.yyyy HH:mm') ?? '')
@@ -239,9 +242,6 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
   `,
   styles: `
     .tb-google-state {
-      display: flex;
-      align-items: center;
-      gap: var(--tb-space-3);
       margin-bottom: var(--tb-space-3);
     }
 
