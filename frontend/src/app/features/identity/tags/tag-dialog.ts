@@ -111,11 +111,12 @@ function hasValues(control: AbstractControl<readonly TagValueInput[]>): Validati
           @if (form.controls.values.touched && form.controls.values.invalid) {
             <small class="tb-field__error" role="alert">{{ t.valuesRequired }}</small>
           }
+        </div>
+        <div class="tb-field">
+          <label for="tag-new-value">{{ t.newValue }}</label>
           <input
             pInputText
             id="tag-new-value"
-            [attr.aria-label]="t.newValue"
-            [placeholder]="t.newValue"
             autocomplete="off"
             maxlength="40"
             #draft
