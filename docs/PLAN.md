@@ -19,6 +19,25 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
+## v0.45.2 — portal colour saved in place
+
+Goals: «Портал» saves its colour with a button under the colour choice instead of a floating
+bar, and the preview shows the dark theme with the same elements as the light one. Sketch: canvas
+https://claude.ai/artifact/L3wuTYeXnspJ9AGwHRD6kx, version 39, board `Portal` (and the rule on
+`Changes`). The sketch takes priority; depart from it only for a gross M3 violation and name it.
+
+### Stage 361 — Portal save and dark preview
+
+- [ ] **361.1 F** `settings/portal-settings-card.ts`: drop the floating save bar; under «Свой
+  цвет» in «Цвет портала» a row «Цвет изменён — ученики увидят его после сохранения» with
+  «Отменить» (text) and «Сохранить» (filled), shown while the draft differs (the
+  «Отменить изменения?» guard stays). The preview has two panes, light and dark, each with the
+  same elements (header with logo and name, «Ближайшее занятие» with «Подключиться», «Работы на
+  проверку · 2» with «Открыть»), both following the draft. Update `docs/screens.md` «Портал»,
+  `docs/design-system.md` if it names the floating bar, help articles (ru, en) and the E2E
+  settings suite.
+- [ ] **361.2** Release 0.45.2 (skill `release`).
+
 ## Repository maintenance
 
 ### Stage 336 — GitHub releases and README screenshots
