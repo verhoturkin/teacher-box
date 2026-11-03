@@ -58,7 +58,7 @@ import { T } from '../i18n/texts';
                 <span class="tb-list__supporting">{{ t.notConnected }}</span>
               }
             </div>
-            <div class="tb-list__trail">
+            <div class="tb-list__trail" [class.tb-list__trail--inline]="!bot.configured">
               @if (bot.configured) {
                 @let tag = tags[bot.connection.connection];
                 <p-tag [value]="tag.value" [severity]="tag.severity" />

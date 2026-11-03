@@ -1,5 +1,9 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { Tag } from 'primeng/tag';
+import { injectMobile } from '@core/layout/mobile';
+import { SHARED_T } from '@shared/i18n/texts';
+import { TbDialog } from '@shared/ui/dialog/dialog';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { BotAbilities } from '../data-access/notifications.models';
 import { T } from '../i18n/texts';
@@ -10,7 +14,7 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-bot-abilities-panel',
-  imports: [Tag],
+  imports: [NgTemplateOutlet, Tag, TbDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display: block' },
   template: `
@@ -30,11 +34,29 @@ import { T } from '../i18n/texts';
           <span class="tb-list__supporting">{{ t.summary }}</span>
         </div>
         <div class="tb-list__trail" aria-hidden="true">
-          <i class="tb-i" [class.tb-i-expand_more]="!open()" [class.tb-i-expand_less]="open()"></i>
+          @if (mobile()) {
+            <i class="tb-i tb-i-chevron_right tb-muted"></i>
+          } @else {
+            <i
+              class="tb-i"
+              [class.tb-i-expand_more]="!open()"
+              [class.tb-i-expand_less]="open()"
+            ></i>
+          }
         </div>
       </li>
     </ul>
-    <div id="tb-bot-abilities" class="tb-bot-abilities" [hidden]="!open()">
+    @if (mobile()) {
+      <!-- compact (sketch PhoneMessengers): the row opens its own screen -->
+      <tb-dialog kind="form" [(visible)]="open" [headline]="t.title" [cancelLabel]="c.close">
+        <div class="tb-bot-abilities"><ng-container *ngTemplateOutlet="body" /></div>
+      </tb-dialog>
+    } @else {
+      <div id="tb-bot-abilities" class="tb-bot-abilities" [hidden]="!open()">
+        <ng-container *ngTemplateOutlet="body" />
+      </div>
+    }
+    <ng-template #body>
       <p class="tb-muted">{{ t.about }}</p>
       @if (abilities(); as bot) {
         <ul class="tb-list">
@@ -60,7 +82,7 @@ import { T } from '../i18n/texts';
           }
         </div>
       }
-    </div>
+    </ng-template>
   `,
   styles: `
     .tb-list__link {
@@ -92,6 +114,8 @@ import { T } from '../i18n/texts';
 })
 export class BotAbilitiesPanel implements OnInit {
   protected readonly t = T.abilities;
+  protected readonly c = SHARED_T.common;
+  protected readonly mobile = injectMobile();
   private readonly api = inject(NotificationsApi);
 
   protected readonly abilities = signal<BotAbilities | null>(null);

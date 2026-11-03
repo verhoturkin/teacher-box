@@ -46,17 +46,21 @@ function reached(student: StudentMessengers): boolean {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card [header]="t.title" styleClass="tb-section-card tb-section-card--flow">
+    <p-card [header]="header()" styleClass="tb-section-card tb-section-card--flow">
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         @if (students(); as students) {
           @if (students.length === 0) {
             <tb-empty-state icon="tb-i-group" [title]="t.empty" />
           } @else {
             <div class="tb-reach-body">
-              <p class="tb-reach">
-                <strong class="tb-reach__count">{{ t.count(ok().length, students.length) }}</strong>
-                <span class="tb-muted">{{ t.countHint }}</span>
-              </p>
+              @if (!mobile()) {
+                <p class="tb-reach">
+                  <strong class="tb-reach__count">{{
+                    t.count(ok().length, students.length)
+                  }}</strong>
+                  <span class="tb-muted">{{ t.countHint }}</span>
+                </p>
+              }
               <p-progressbar
                 [value]="(100 * ok().length) / students.length"
                 [showValue]="false"
@@ -116,10 +120,30 @@ function reached(student: StudentMessengers): boolean {
                     />
                   }
                 </span>
-                <a pButton class="tb-reach__where" [text]="true" routerLink="/teacher/students">
-                  <span pButtonLabel>{{ t.whoWhere }}</span>
-                </a>
+                @if (!mobile()) {
+                  <a pButton class="tb-reach__where" [text]="true" routerLink="/teacher/students">
+                    <span pButtonLabel>{{ t.whoWhere }}</span>
+                  </a>
+                }
               </div>
+              @if (mobile()) {
+                <!-- sketch PhoneMessengers: «Кто где подключён» is a row of the list -->
+                <ul class="tb-list">
+                  <li>
+                    <span class="tb-list__lead" aria-hidden="true"
+                      ><i class="tb-i tb-i-group"></i
+                    ></span>
+                    <div class="tb-list__text">
+                      <a class="tb-list__title tb-reach__row" routerLink="/teacher/students">{{
+                        t.whoWhereRow
+                      }}</a>
+                    </div>
+                    <div class="tb-list__trail" aria-hidden="true">
+                      <i class="tb-i tb-i-chevron_right tb-muted"></i>
+                    </div>
+                  </li>
+                </ul>
+              }
             </div>
           }
         }
@@ -169,6 +193,11 @@ function reached(student: StudentMessengers): boolean {
       gap: var(--tb-space-1);
     }
 
+    .tb-reach__row {
+      color: inherit;
+      text-decoration: none;
+    }
+
     .tb-reach__where {
       margin-inline-start: auto;
     }
@@ -190,6 +219,10 @@ export class StudentMessengersPanel implements OnInit {
   );
 
   protected readonly state = new LoadState();
+  protected readonly header = computed(() => {
+    const total = this.students()?.length ?? 0;
+    return this.mobile() && total > 0 ? this.t.phoneTitle(this.ok().length, total) : this.t.title;
+  });
 
   ngOnInit(): void {
     this.load();

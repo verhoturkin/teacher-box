@@ -122,6 +122,8 @@ export const en: Translation<typeof ru> = {
     alertText:
       'hear about rescheduled lessons and marked work straight away, without opening the portal.',
     connectTo: (name: string) => `Connect ${name}`,
+    moreMessenger: 'Another messaging app',
+    teacherAlways: 'Teacher’s messages are always sent.',
   },
   preferences: {
     teacherMessages: 'Teacher’s messages',
@@ -250,5 +252,8 @@ export const en: Translation<typeof ru> = {
     sendLinkTo: (name: string) => `Send link to ${name}`,
     sent: 'Connection link sent to the student’s account',
     whoWhere: 'Who uses what',
+    whoWhereRow: 'Who uses what',
+    phoneTitle: (connected: number, total: number) =>
+      `Students · ${String(connected)} of ${String(total)} connected`,
   },
 };

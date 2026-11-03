@@ -12,13 +12,15 @@ import {
 import { FormsModule, NgModel } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { MenuItem } from 'primeng/api';
+import { Menu } from 'primeng/menu';
 import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import { Subscription, interval, switchMap } from 'rxjs';
 import { describeError } from '@core/http/error-messages';
-import { injectMobile } from '@core/layout/mobile';
+import { injectMobile, injectWindowSize } from '@core/layout/mobile';
 import { WebPush } from '@core/push/web-push';
 import type { PushDevice } from '@core/push/web-push';
 import { Snackbar } from '@core/snackbar/snackbar';
@@ -70,6 +72,7 @@ function shortTime(time: string): string {
     Button,
     Card,
     LinkCodeView,
+    Menu,
     Message,
     NgTemplateOutlet,
     Select,
@@ -107,55 +110,57 @@ function shortTime(time: string): string {
       <h3 class="tb-section-label">{{ t.where }}</h3>
       <ul class="tb-list">
         @for (channel of channels() ?? []; track channel.channel) {
-          <li>
-            <span class="tb-list__lead" aria-hidden="true"
-              ><i [class]="icons[channel.channel]"></i
-            ></span>
-            <div class="tb-list__text">
-              <label
-                class="tb-list__title"
-                [attr.for]="channel.linked ? 'notify-channel-' + channel.channel : null"
-                >{{ names[channel.channel] }}</label
-              >
-              @if (channel.linked) {
-                <span class="tb-list__supporting">
-                  {{ channel.displayName ?? tc.linked }},
-                  {{ tc.since((channel.linkedAt | date: 'dd.MM.yyyy') ?? '') }}
-                  @if (!channel.enabled) {
-                    · {{ tc.paused }}
-                  }
-                </span>
-              } @else {
-                <span class="tb-list__supporting">{{ tc.notLinked }}</span>
-              }
-            </div>
-            <div class="tb-list__trail">
-              @if (channel.linked) {
-                <p-button
-                  icon="tb-i tb-i-link_off"
-                  [text]="true"
-                  [rounded]="true"
-                  severity="secondary"
-                  [pTooltip]="tc.unlink(names[channel.channel])"
-                  [ariaLabel]="tc.unlink(names[channel.channel])"
-                  [loading]="busy.is('unlink-' + channel.channel)"
-                  (onClick)="unlink(channel.channel)"
-                />
-                <p-toggleswitch
-                  [inputId]="'notify-channel-' + channel.channel"
-                  #enabled="ngModel"
-                  [ngModel]="channel.enabled"
-                  (ngModelChange)="setEnabled(channel.channel, $event, enabled)"
-                />
-              } @else {
-                <p-button
-                  [label]="tc.connect"
-                  severity="secondary"
-                  (onClick)="connect(channel.channel)"
-                />
-              }
-            </div>
-          </li>
+          @if (!medium() || channel.linked || teacher()) {
+            <li>
+              <span class="tb-list__lead" aria-hidden="true"
+                ><i [class]="icons[channel.channel]"></i
+              ></span>
+              <div class="tb-list__text">
+                <label
+                  class="tb-list__title"
+                  [attr.for]="channel.linked ? 'notify-channel-' + channel.channel : null"
+                  >{{ names[channel.channel] }}</label
+                >
+                @if (channel.linked) {
+                  <span class="tb-list__supporting">
+                    {{ channel.displayName ?? tc.linked }},
+                    {{ tc.since((channel.linkedAt | date: 'dd.MM.yyyy') ?? '') }}
+                    @if (!channel.enabled) {
+                      · {{ tc.paused }}
+                    }
+                  </span>
+                } @else {
+                  <span class="tb-list__supporting">{{ tc.notLinked }}</span>
+                }
+              </div>
+              <div class="tb-list__trail" [class.tb-list__trail--inline]="!channel.linked">
+                @if (channel.linked) {
+                  <p-button
+                    icon="tb-i tb-i-link_off"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="secondary"
+                    [pTooltip]="tc.unlink(names[channel.channel])"
+                    [ariaLabel]="tc.unlink(names[channel.channel])"
+                    [loading]="busy.is('unlink-' + channel.channel)"
+                    (onClick)="unlink(channel.channel)"
+                  />
+                  <p-toggleswitch
+                    [inputId]="'notify-channel-' + channel.channel"
+                    #enabled="ngModel"
+                    [ngModel]="channel.enabled"
+                    (ngModelChange)="setEnabled(channel.channel, $event, enabled)"
+                  />
+                } @else {
+                  <p-button
+                    [label]="tc.connect"
+                    severity="secondary"
+                    (onClick)="connect(channel.channel)"
+                  />
+                }
+              </div>
+            </li>
+          }
         }
         @if (push.devices() !== null) {
           <li>
@@ -225,6 +230,17 @@ function shortTime(time: string): string {
           }
         }
       </ul>
+      @if (medium() && unlinked().length > 0 && !teacher()) {
+        <div>
+          <p-button
+            [label]="t.moreMessenger"
+            icon="tb-i tb-i-add"
+            [text]="true"
+            (onClick)="messengers.toggle($event)"
+          />
+          <p-menu #messengers [model]="unlinkedItems()" [popup]="true" appendTo="body" />
+        </div>
+      }
       @if (!push.enabledHere()) {
         @if (push.needsHomeScreen) {
           <p-message severity="info" styleClass="tb-form-message">{{ tp.homeScreen }}</p-message>
@@ -239,84 +255,147 @@ function shortTime(time: string): string {
 
       @if (preferences(); as saved) {
         <h3 class="tb-section-label">{{ t.what }}</h3>
-        <ul class="tb-list">
-          @for (topic of topics(); track topic.topic) {
+        @if (medium()) {
+          <!-- medium (sketch StudentTablet): the topics are filter chips, the pressed ones are sent -->
+          <div class="tb-notify__chips" role="group" [attr.aria-label]="t.what">
+            @for (topic of topics(); track topic.topic) {
+              <button
+                type="button"
+                class="tb-notify__chip"
+                [class.tb-notify__chip--on]="!saved.mutedTopics.includes(topic.topic)"
+                [attr.aria-pressed]="!saved.mutedTopics.includes(topic.topic)"
+                [title]="topic.hint"
+                (click)="setTopic(topic.topic, saved.mutedTopics.includes(topic.topic))"
+              >
+                @if (!saved.mutedTopics.includes(topic.topic)) {
+                  <i class="tb-i tb-i-check" aria-hidden="true"></i>
+                }
+                {{ topic.label }}
+              </button>
+            }
+          </div>
+          @if (!teacher()) {
+            <p class="tb-muted tb-notify__always">{{ t.teacherAlways }}</p>
+          }
+        } @else {
+          <ul class="tb-list">
+            @for (topic of topics(); track topic.topic) {
+              <li>
+                <div class="tb-list__text">
+                  <label class="tb-list__title" [for]="'notify-topic-' + topic.topic">{{
+                    topic.label
+                  }}</label>
+                  @if (!mobile()) {
+                    <span class="tb-list__supporting">{{ topic.hint }}</span>
+                  }
+                </div>
+                <div class="tb-list__trail">
+                  <p-toggleswitch
+                    [inputId]="'notify-topic-' + topic.topic"
+                    [ngModel]="!saved.mutedTopics.includes(topic.topic)"
+                    (ngModelChange)="setTopic(topic.topic, $event)"
+                  />
+                </div>
+              </li>
+            }
+            @if (!teacher()) {
+              <li>
+                <div class="tb-list__text">
+                  <span class="tb-list__title">{{ tr.teacherMessages }}</span>
+                  <span class="tb-list__supporting">{{ tr.always }}</span>
+                </div>
+                <div class="tb-list__trail">
+                  <i class="tb-i tb-i-lock tb-muted" aria-hidden="true"></i>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+
+        @if (mobile()) {
+          <!-- compact (sketch StudentPhone): «Тихие часы» is a row that opens its own screen -->
+          <ul class="tb-list">
             <li>
+              <span class="tb-list__lead" aria-hidden="true"
+                ><i class="tb-i tb-i-bedtime"></i
+              ></span>
               <div class="tb-list__text">
-                <label class="tb-list__title" [for]="'notify-topic-' + topic.topic">{{
-                  topic.label
-                }}</label>
-                <span class="tb-list__supporting">{{ topic.hint }}</span>
+                <button
+                  type="button"
+                  class="tb-list__title tb-notify__row"
+                  (click)="quietScreen.set(true)"
+                >
+                  {{ t.quiet }}
+                </button>
+                <span class="tb-list__supporting">{{ quietSummary(saved) }}</span>
+              </div>
+              <div class="tb-list__trail" aria-hidden="true">
+                <i class="tb-i tb-i-chevron_right tb-muted"></i>
+              </div>
+            </li>
+          </ul>
+        } @else {
+          <ng-container *ngTemplateOutlet="quietBlock" />
+        }
+        <ng-template #quietBlock>
+          <ul class="tb-list">
+            <li>
+              <span class="tb-list__lead" aria-hidden="true"
+                ><i class="tb-i tb-i-bedtime"></i
+              ></span>
+              <div class="tb-list__text">
+                <label class="tb-list__title" for="notify-quiet">{{ t.quiet }}</label>
+                <span class="tb-list__supporting">{{
+                  saved.quietFrom === null
+                    ? t.quietOff
+                    : t.quietOn(short(saved.quietFrom), short(saved.quietTo ?? ''))
+                }}</span>
               </div>
               <div class="tb-list__trail">
                 <p-toggleswitch
-                  [inputId]="'notify-topic-' + topic.topic"
-                  [ngModel]="!saved.mutedTopics.includes(topic.topic)"
-                  (ngModelChange)="setTopic(topic.topic, $event)"
+                  inputId="notify-quiet"
+                  [ngModel]="saved.quietFrom !== null"
+                  (ngModelChange)="setQuiet($event)"
                 />
               </div>
             </li>
-          }
-          @if (!teacher()) {
-            <li>
-              <div class="tb-list__text">
-                <span class="tb-list__title">{{ tr.teacherMessages }}</span>
-                <span class="tb-list__supporting">{{ tr.always }}</span>
+          </ul>
+          @if (saved.quietFrom !== null) {
+            <div class="tb-notify__times">
+              <div class="tb-field">
+                <label for="quiet-from">{{ tr.from }}</label>
+                <p-select
+                  inputId="quiet-from"
+                  [options]="times"
+                  appendTo="body"
+                  [ngModel]="short(saved.quietFrom)"
+                  (onChange)="setQuietTime('quietFrom', $event.value)"
+                />
               </div>
-              <div class="tb-list__trail">
-                <i class="tb-i tb-i-lock tb-muted" aria-hidden="true"></i>
+              <div class="tb-field">
+                <label for="quiet-to">{{ tr.to }}</label>
+                <p-select
+                  inputId="quiet-to"
+                  [options]="times"
+                  appendTo="body"
+                  [ngModel]="short(saved.quietTo ?? '')"
+                  (onChange)="setQuietTime('quietTo', $event.value)"
+                />
               </div>
-            </li>
+              <small class="tb-hint tb-notify__times-hint">{{
+                t.quietHint(short(saved.quietTo ?? ''))
+              }}</small>
+            </div>
           }
-        </ul>
-
-        <ul class="tb-list">
-          <li>
-            <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-bedtime"></i></span>
-            <div class="tb-list__text">
-              <label class="tb-list__title" for="notify-quiet">{{ t.quiet }}</label>
-              <span class="tb-list__supporting">{{
-                saved.quietFrom === null
-                  ? t.quietOff
-                  : t.quietOn(short(saved.quietFrom), short(saved.quietTo ?? ''))
-              }}</span>
-            </div>
-            <div class="tb-list__trail">
-              <p-toggleswitch
-                inputId="notify-quiet"
-                [ngModel]="saved.quietFrom !== null"
-                (ngModelChange)="setQuiet($event)"
-              />
-            </div>
-          </li>
-        </ul>
-        @if (saved.quietFrom !== null) {
-          <div class="tb-notify__times">
-            <div class="tb-field">
-              <label for="quiet-from">{{ tr.from }}</label>
-              <p-select
-                inputId="quiet-from"
-                [options]="times"
-                appendTo="body"
-                [ngModel]="short(saved.quietFrom)"
-                (onChange)="setQuietTime('quietFrom', $event.value)"
-              />
-            </div>
-            <div class="tb-field">
-              <label for="quiet-to">{{ tr.to }}</label>
-              <p-select
-                inputId="quiet-to"
-                [options]="times"
-                appendTo="body"
-                [ngModel]="short(saved.quietTo ?? '')"
-                (onChange)="setQuietTime('quietTo', $event.value)"
-              />
-            </div>
-            <small class="tb-hint tb-notify__times-hint">{{
-              t.quietHint(short(saved.quietTo ?? ''))
-            }}</small>
-          </div>
-        }
+        </ng-template>
+        <tb-dialog
+          kind="form"
+          [(visible)]="quietScreen"
+          [headline]="t.quiet"
+          [cancelLabel]="c.close"
+        >
+          <div class="tb-notify--flat"><ng-container *ngTemplateOutlet="quietBlock" /></div>
+        </tb-dialog>
         @if (abilities(); as bot) {
           <ul class="tb-list">
             <li>
@@ -400,6 +479,52 @@ function shortTime(time: string): string {
       gap: var(--tb-space-1) var(--tb-space-3);
     }
 
+    /* medium (sketch StudentTablet): the topics are M3 filter chips, many can be pressed */
+    .tb-notify__chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--tb-space-2);
+    }
+
+    .tb-notify__chip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--tb-space-2);
+      block-size: 2rem;
+      box-sizing: border-box;
+      padding: 0 var(--tb-space-4);
+      border: 1px solid var(--p-md-outline-variant);
+      border-radius: var(--tb-shape-sm);
+      background: transparent;
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-label-l);
+      cursor: pointer;
+
+      > .tb-i {
+        font-size: 1.125rem;
+      }
+    }
+
+    .tb-notify__chip--on {
+      padding-inline-start: var(--tb-space-2);
+      border-color: transparent;
+      background: var(--p-md-secondary-container);
+      color: var(--p-md-on-secondary-container);
+    }
+
+    .tb-notify__always {
+      margin: 0;
+    }
+
+    .tb-notify__row {
+      border: 0;
+      padding: 0;
+      background: none;
+      color: inherit;
+      text-align: start;
+      cursor: pointer;
+    }
+
     .tb-notify__times-hint {
       grid-column: 1 / -1;
       margin-inline: var(--tb-space-4);
@@ -416,6 +541,9 @@ export class NotificationsSection implements OnInit {
   protected readonly push = inject(WebPush);
   /** Compact: the blocks lie in the account's list without a card (sketch StudentPhone). */
   protected readonly mobile = injectMobile();
+  private readonly size = injectWindowSize();
+  protected readonly medium = computed(() => this.size() === 'medium');
+  protected readonly quietScreen = signal(false);
   private readonly api = inject(NotificationsApi);
   private readonly snackbar = inject(Snackbar);
   private watch: Subscription | null = null;
@@ -444,6 +572,18 @@ export class NotificationsSection implements OnInit {
       ? null
       : (channels[0]?.channel ?? null);
   });
+  protected readonly unlinked = computed(() =>
+    (this.channels() ?? []).filter((channel) => !channel.linked),
+  );
+  protected readonly unlinkedItems = computed<MenuItem[]>(() =>
+    this.unlinked().map((channel) => ({
+      label: CHANNEL_NAMES[channel.channel],
+      icon: CHANNEL_ICONS[channel.channel],
+      command: () => {
+        this.connect(channel.channel);
+      },
+    })),
+  );
   protected readonly thisDevice = computed(
     () => this.push.devices()?.find((device) => this.push.isThisDevice(device)) ?? null,
   );
@@ -475,6 +615,12 @@ export class NotificationsSection implements OnInit {
         this.abilities.set(abilities);
       });
     }
+  }
+
+  protected quietSummary(saved: NotificationPreferences): string {
+    return saved.quietFrom === null
+      ? this.t.quietOff
+      : this.t.quietOn(shortTime(saved.quietFrom), shortTime(saved.quietTo ?? ''));
   }
 
   protected name(device: PushDevice): string {

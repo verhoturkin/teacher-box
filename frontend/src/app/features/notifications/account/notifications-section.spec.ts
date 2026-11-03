@@ -1,8 +1,10 @@
 import { HttpTestingController } from '@angular/common/http/testing';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { SwPush } from '@angular/service-worker';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
+import { BREAKPOINT_QUERIES, WindowSize } from '@core/layout/mobile';
 import { PUSH_DEVICE_KEY, PushDevice } from '@core/push/web-push';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
@@ -28,6 +30,7 @@ interface Setup {
   teacher?: boolean;
   push?: boolean;
   permission?: string;
+  size?: WindowSize;
 }
 
 describe('QUIET_TIMES', () => {
@@ -49,15 +52,27 @@ describe('NotificationsSection', () => {
     vi.stubGlobal('Notification', { permission: setup.permission ?? 'default' });
     TestBed.configureTestingModule({
       imports: [NotificationsSection],
-      providers: testProviders({
-        provide: SwPush,
-        useValue: {
-          isEnabled: setup.push ?? true,
-          subscription,
-          requestSubscription,
-          unsubscribe: () => Promise.resolve(),
+      providers: testProviders(
+        {
+          provide: BreakpointObserver,
+          useValue: {
+            observe: (query: string) =>
+              of({
+                matches: query === BREAKPOINT_QUERIES[setup.size ?? 'expanded'],
+                breakpoints: {},
+              }),
+          },
         },
-      }),
+        {
+          provide: SwPush,
+          useValue: {
+            isEnabled: setup.push ?? true,
+            subscription,
+            requestSubscription,
+            unsubscribe: () => Promise.resolve(),
+          },
+        },
+      ),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(NotificationsSection);
@@ -374,6 +389,45 @@ describe('NotificationsSection', () => {
         .flush(null, { status: 500, statusText: 'Error' });
       await fixture.whenStable();
       expect(toggle('notify-teacher-actions').checked).toBe(false);
+    });
+  });
+
+  describe('by window size', () => {
+    it('shows the topics as filter chips on medium and mutes one on a click', async () => {
+      await render({ size: 'medium', channels: [channel({ channel: 'VK', linked: false })] });
+      const chips = [
+        ...hostElement(fixture).querySelectorAll<HTMLButtonElement>('.tb-notify__chip'),
+      ];
+      expect(chips.map((chip) => chip.getAttribute('aria-pressed'))).toEqual(
+        chips.map(() => 'true'),
+      );
+      expect(text()).toContain('Сообщения учителя приходят всегда.');
+
+      chips[0]?.click();
+      await fixture.whenStable();
+      const request = backend.expectOne({
+        method: 'PUT',
+        url: '/api/me/notifications/preferences',
+      });
+      expect(request.request.body).toEqual(preferences({ mutedTopics: ['SCHEDULE'] }));
+      request.flush(preferences({ mutedTopics: ['SCHEDULE'] }));
+      await fixture.whenStable();
+      expect(chips[0]?.getAttribute('aria-pressed')).toBe('false');
+    });
+
+    it('offers «Ещё мессенджер» for the messengers not connected yet on medium', async () => {
+      await render({ size: 'medium', channels: [channel({ channel: 'VK', linked: false })] });
+      expect(text()).toContain('Ещё мессенджер');
+      expect(text()).not.toContain('Не подключён');
+    });
+
+    it('opens «Тихие часы» as its own screen on a phone', async () => {
+      await render({ size: 'compact' });
+      expect(hostElement(fixture).querySelector('#notify-quiet')).toBeNull();
+      buttonByText(hostElement(fixture), 'Тихие часы').click();
+      await fixture.whenStable();
+      expect(document.body.textContent).toContain('Не присылать ночью');
+      expect(document.body.querySelector('#notify-quiet')).not.toBeNull();
     });
   });
 });

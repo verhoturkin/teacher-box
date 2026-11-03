@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { BotAbilities } from '../data-access/notifications.models';
 import { BotAbilitiesPanel } from './bot-abilities-panel';
-import { testProviders } from '@testing/setup';
+import { screenWidth, testProviders } from '@testing/setup';
 
 function abilities(overrides: Partial<BotAbilities> = {}): BotAbilities {
   return {
@@ -57,5 +57,24 @@ describe('BotAbilitiesPanel', () => {
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain('Ученикам Пока только уведомления.');
+  });
+
+  it('on a phone opens its own screen instead of unfolding', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [BotAbilitiesPanel],
+      providers: [...testProviders(), screenWidth(390)],
+    });
+    backend = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(BotAbilitiesPanel);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/notifications/bot').flush(abilities());
+    await fixture.whenStable();
+
+    buttonByText(hostElement(fixture), 'Что умеет бот').click();
+    await fixture.whenStable();
+
+    expect(readableText(document.body)).toContain('Вам Сегодня');
+    expect(hostElement(fixture).querySelector('#tb-bot-abilities')).toBeNull();
   });
 });

@@ -1797,12 +1797,16 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
 /*
  * In a narrow list (a phone) the trailing buttons go under the row, across its whole width, so two
  * buttons fit in one line even on a 360 px phone (ADR-0021); an amount or a status stays on the
- * right. The buttons start at the left edge: the first of them stands still from row to row, so a
+ * right (`tb-list__trail--inline` keeps one button beside the text: «Подключить», sketches
+ * PhoneMessengers and StudentPhone). The buttons start at the left edge: the first of them stands still from row to row, so a
  * button with a changing label («Отменить» / «Не приду») keeps its own width.
  */
 @container (max-width: 26rem) {
   .tb-list
-    > li:has(> .tb-list__trail:not(.tb-list__trail--icons) :is(p-button, tb-join-lesson-button)) {
+    > li:has(
+      > .tb-list__trail:not(.tb-list__trail--icons, .tb-list__trail--inline)
+        :is(p-button, tb-join-lesson-button)
+    ) {
     grid-template-areas: 'lead text text' 'trail trail trail';
 
     > .tb-list__trail {
@@ -1864,7 +1868,10 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
 
   @container (max-width: 26rem) {
     .tb-list.tb-list--no-phone-lead
-      > li:has(> .tb-list__trail:not(.tb-list__trail--icons) :is(p-button, tb-join-lesson-button)) {
+      > li:has(
+        > .tb-list__trail:not(.tb-list__trail--icons, .tb-list__trail--inline)
+          :is(p-button, tb-join-lesson-button)
+      ) {
       grid-template-areas: 'text text' 'trail trail';
     }
 
@@ -1888,7 +1895,10 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
 
 @container (max-width: 26rem) {
   .tb-list.tb-list--no-lead
-    > li:has(> .tb-list__trail:not(.tb-list__trail--icons) :is(p-button, tb-join-lesson-button)) {
+    > li:has(
+      > .tb-list__trail:not(.tb-list__trail--icons, .tb-list__trail--inline)
+        :is(p-button, tb-join-lesson-button)
+    ) {
     grid-template-areas: 'text text' 'trail trail';
   }
 }

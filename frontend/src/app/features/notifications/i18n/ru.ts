@@ -117,6 +117,8 @@ export const ru = {
     alertTitle: 'Подключите мессенджер —',
     alertText: 'узнаете о переносе урока и проверенной работе сразу, без захода в портал.',
     connectTo: (name: string) => `Подключить ${name}`,
+    moreMessenger: 'Ещё мессенджер',
+    teacherAlways: 'Сообщения учителя приходят всегда.',
   },
   preferences: {
     teacherMessages: 'Сообщения учителя',
@@ -249,5 +251,8 @@ export const ru = {
     sendLinkTo: (name: string) => `Отправить ссылку: ${name}`,
     sent: 'Ссылка на подключение отправлена в личный кабинет',
     whoWhere: 'Кто где',
+    whoWhereRow: 'Кто где подключён',
+    phoneTitle: (connected: number, total: number) =>
+      `Ученики · ${String(connected)} из ${String(total)} подключены`,
   },
 };

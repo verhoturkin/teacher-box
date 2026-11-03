@@ -101,8 +101,19 @@ priority; depart from it only for a gross M3 violation and name it.
 - [x] **358.1** `docs/screens.md` «Settings (teacher)» and student «Мой аккаунт»,
   `docs/design-system.md` (autosave rule), `docs/glossary.md`, help articles (ru, en), wiki pages
   that name settings categories, E2E suites under `e2e/tests/` that open the old categories.
-- [ ] **358.2** Check every board of the sketches against the running app (teacher and student,
-  expanded / medium / compact); fix the gaps or list them here as decisions.
+- [x] **358.2** Check every board of the sketches against the running app (teacher and student,
+  expanded / medium / compact); fix the gaps or list them here as decisions. Fixed: the topics as
+  filter chips and «Ещё мессенджер» on medium (`StudentTablet`); «Тихие часы» as its own screen,
+  topic rows without hints, «Подключить» beside the text on compact (`StudentPhone`,
+  `PhoneMessengers`, `tb-list__trail--inline`); «Что умеет бот» as its own screen, «Кто где
+  подключён» as a row and «Ученики · 5 из 7 подключены» as the label on compact. Decisions left:
+  the compact app bar says «Аккаунт» (the nav label) and the bottom bar has no «Ещё» tab, as the
+  shell is shared; «Пароль · Изменён …» has no date in the backend, so no subtitle; the
+  «Подключите мессенджер» alert and the Telegram rows need a configured bot, covered by tests
+  only; «ИИ-помощник» was not checked live (the dev backend has no assistant); the push
+  «unsupported» message is clipped over plain HTTP (production uses HTTPS). Not re-opened in
+  the browser: «Портал», «Занятия», «Данные» and the `Details` dialogs (built and checked in
+  357.4–357.7). No sketch departs from M3 grossly.
 
 ### Stage 359 — Release
 

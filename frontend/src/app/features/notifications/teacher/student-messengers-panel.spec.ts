@@ -136,4 +136,12 @@ describe('StudentMessengersPanel', () => {
 
     expect(messages.add).not.toHaveBeenCalled();
   });
+
+  it('on a phone counts the connected in the title and links «Кто где подключён» as a row', async () => {
+    await render([silent], 390);
+
+    const text = readableText(hostElement(fixture));
+    expect(text).toContain('Ученики · 0 из 1 подключены');
+    expect(text).toContain('Кто где подключён');
+  });
 });
