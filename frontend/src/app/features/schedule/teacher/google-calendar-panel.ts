@@ -78,7 +78,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card id="google">
+    <p-card id="google" styleClass="tb-section-card tb-section-card--flow">
       <ng-template #title>
         <div class="tb-card-title">
           <span class="tb-card-title__text"

@@ -4,7 +4,6 @@ import { Message } from 'primeng/message';
 import { Tag } from 'primeng/tag';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { quietContext } from '@core/http/api-error.interceptor';
-import { HelpButton } from '@features/help/parts';
 import { MeetingsApi } from '../data-access/meetings-api';
 import { CallsStatus } from '../data-access/meetings.models';
 import { MeetingPreferences } from '../telemost';
@@ -16,14 +15,14 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-meetings-settings-panel',
-  imports: [HelpButton, FormsModule, Message, Tag, ToggleSwitch],
+  imports: [FormsModule, Message, Tag, ToggleSwitch],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div id="meetings" class="tb-tiles">
       <div class="tb-tile">
         <i class="tb-i tb-i-video_call tb-tile__icon" aria-hidden="true"></i>
         <span class="tb-tile__text">
-          <b>{{ t.title }} <tb-help-button topic="teacher/calls" /></b>
+          <b>{{ t.title }}</b>
           @switch (calls()) {
             @case ('OK') {
               <span>{{ t.on }}</span>
@@ -40,12 +39,15 @@ import { T } from '../i18n/texts';
       <div class="tb-tile">
         <i class="tb-i tb-i-link tb-tile__icon" aria-hidden="true"></i>
         <span class="tb-tile__text">
-          <span>{{ t.external }}</span>
+          <b>{{ t.external }}</b>
+          <span>{{ t.externalHint }}</span>
         </span>
       </div>
       <label class="tb-tile" for="meetings-open-in-app">
+        <i class="tb-i tb-i-open_in_new tb-tile__icon" aria-hidden="true"></i>
         <span class="tb-tile__text">
           <b>{{ t.openInApp }}</b>
+          <span>{{ t.thisDevice }}</span>
         </span>
         <p-toggleswitch
           inputId="meetings-open-in-app"
@@ -56,6 +58,10 @@ import { T } from '../i18n/texts';
     </div>
     @if (calls() === 'UNREACHABLE') {
       <p-message severity="warn" styleClass="tb-form-message">{{ t.unreachable }}</p-message>
+    } @else {
+      <p-message severity="info" icon="tb-i tb-i-info" styleClass="tb-form-message">{{
+        t.admin
+      }}</p-message>
     }
   `,
 })

@@ -594,6 +594,58 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
   }
 }
 
+/*
+ * A settings section card (`tb-section-card--flow`, the settings sketches Main…Messengers): every block of
+ * the card — text, label, list, field, buttons — stands 12 px apart, as in the sketch's card; the blocks
+ * bring no margins of their own. Ours: the homework cards keep their own spacing.
+ */
+.p-card.tb-section-card.tb-section-card--flow > .p-card-body > .p-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-3);
+
+  > * {
+    margin: 0;
+  }
+
+  /* a field with its hint and a lone button keep their own width */
+  > p-button {
+    align-self: flex-start;
+  }
+}
+
+/*
+ * Compact (sketches StudentPhone, PhoneMessengers): the settings sections lie on the pane without a card,
+ * the section's title reads as the label of its block.
+ */
+@media (width < 37.5em) {
+  .p-card.tb-section-card.tb-section-card--flow {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+
+    > .p-card-body {
+      padding: 0;
+    }
+
+    .p-card-title {
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-label-m-emphasized);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+  }
+}
+
+/* A label over a block of a section card («Куда присылать», «Тема»): M3 label medium, upper case (ours) */
+.tb-section-label {
+  margin: var(--tb-space-1) 0 0;
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-label-m-emphasized);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 /* The filled variant of the section card («Итого», sketch 28): M3 filled card, surface-container-low */
 .p-card.tb-section-card.tb-section-card--filled {
   border-color: transparent;

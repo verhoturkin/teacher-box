@@ -32,9 +32,7 @@ describe('DefaultPriceCard', () => {
       'default-price-input',
     );
     expect(requireElement(host, 'input', HTMLInputElement).value).toContain('1');
-    expect(readableText(host)).toContain(
-      'Цену каждого ученика меняют на вкладке «Профиль» его карточки',
-    );
+    expect(readableText(host)).toContain('Для новых учеников и групп.');
 
     fixture.componentInstance.form.setValue({ price: 1800 });
     fixture.componentInstance.save();

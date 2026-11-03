@@ -203,7 +203,7 @@ test('the payments category holds the price for new students, the AI page is a c
 }) => {
   await signIn(page);
   await page.goto('/teacher/settings/payments');
-  await expect(page.locator('#default-price')).toContainText('Цена для новых учеников');
+  await expect(page.locator('#default-price')).toContainText('Цена занятия по умолчанию');
 
   // 234.4: the payments page no longer holds the price
   await page.goto('/teacher/billing');

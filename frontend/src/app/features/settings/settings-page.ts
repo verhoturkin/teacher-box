@@ -93,9 +93,13 @@ import { T } from './i18n/texts';
           />
         } @else {
           <tb-page-header tbPaneHeader [title]="t.title">
-            @if (!compact() && !medium() && current().id !== 'portal') {
+            @if (!compact() && !medium()) {
               <span help class="tb-settings__saved">
-                <i class="tb-i tb-i-cloud_done" aria-hidden="true"></i>{{ t.savedAtOnce }}
+                @if (current().id === 'portal') {
+                  <i class="tb-i tb-i-visibility" aria-hidden="true"></i>{{ t.portalNote }}
+                } @else {
+                  <i class="tb-i tb-i-cloud_done" aria-hidden="true"></i>{{ t.savedAtOnce }}
+                }
               </span>
             }
             <tb-help-button help topic="teacher/settings" />
@@ -142,7 +146,10 @@ import { T } from './i18n/texts';
             @if (user(); as user) {
               <ul class="tb-settings__list">
                 <li>
-                  <a class="tb-settings__item" routerLink="/teacher/settings/account">
+                  <a
+                    class="tb-settings__item tb-settings__current"
+                    routerLink="/teacher/settings/account"
+                  >
                     <tb-avatar [name]="user.displayName" [photo]="user.avatar" />
                     <span class="tb-settings__text">
                       <span class="tb-settings__title">{{ user.displayName }}</span>
@@ -153,7 +160,7 @@ import { T } from './i18n/texts';
                 </li>
               </ul>
             }
-            <h2 class="tb-settings__group">{{ t.portal }}</h2>
+            <h2 class="tb-section-label tb-settings__group">{{ t.portal }}</h2>
             <ul class="tb-settings__list">
               @for (item of portalItems; track item.id) {
                 <li>
@@ -195,11 +202,13 @@ import { T } from './i18n/texts';
         @case ('lessons') {
           <div class="tb-settings__lessons">
             <div class="tb-stack">
-              <p-card [header]="t.timeAndPrice">
+              <p-card [header]="t.timeAndPrice" styleClass="tb-section-card tb-section-card--flow">
                 <tb-time-zone-card />
                 <tb-default-price-card />
               </p-card>
-              <p-card [header]="t.calls"><tb-meetings-settings-panel /></p-card>
+              <p-card [header]="t.calls" styleClass="tb-section-card tb-section-card--flow"
+                ><tb-meetings-settings-panel
+              /></p-card>
             </div>
             <div class="tb-stack">
               <tb-google-calendar-panel />
@@ -403,11 +412,9 @@ import { T } from './i18n/texts';
       gap: var(--tb-space-4);
     }
 
-    /* the label of the portal's group on a phone */
+    /* the label of the portal's group on a phone (sketch PhoneSettings: the account row leads, tonal) */
     .tb-settings__group {
       margin: var(--tb-space-4) 0 var(--tb-space-2);
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-label-l);
     }
   `,
 })

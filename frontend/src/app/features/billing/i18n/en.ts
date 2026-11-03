@@ -102,8 +102,8 @@ export const en: Translation<typeof ru> = {
     paymentSaved: 'Payment saved',
   },
   defaultPrice: {
-    label: 'Price for new students',
-    hint: 'Change an individual student’s price on the Profile tab of their details',
+    label: 'Default lesson price',
+    hint: 'Applies to new students and groups. Set a student’s own price on their details.',
     edit: 'Change the price for new students',
     what: 'the price for new students',
     saved: 'This price will apply to new students and groups',

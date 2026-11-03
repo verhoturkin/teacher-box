@@ -98,10 +98,11 @@ describe('AccountPanel', () => {
     expect(requireElement(hostElement(fixture), '#account-name', HTMLInputElement).value).toBe(
       'Анна Сергеевна',
     );
-    expect(text).toContain('Учитель');
-    expect(buttonByText(hostElement(fixture), 'Загрузить фото')).toBeTruthy();
+    expect(text).toContain('Фото');
+    expect(text).toContain('Пока нет');
+    expect(buttonByText(hostElement(fixture), 'Загрузить')).toBeTruthy();
     expect(hostElement(fixture).querySelector('tb-avatar')?.getAttribute('style')).toContain(
-      '6rem',
+      '2.5rem',
     );
     expect(text).toContain('teacher');
   });
@@ -144,7 +145,7 @@ describe('AccountPanel', () => {
     const field = requireElement(host, '#account-own-name', HTMLInputElement);
     expect(field.value).toBe('Ника');
     expect(host.textContent).toContain('Учитель видит вас как «Вероника Петрова»');
-    expect(host.querySelector('.tb-account__role')?.textContent).toBe('Ученик');
+    expect(host.textContent).toContain('Как к вам обращаться');
 
     await commit(field, ' Ника ');
     backend.expectNone('/api/me/profile');
@@ -217,7 +218,8 @@ describe('AccountPanel', () => {
 
     expect(host.querySelector('tb-avatar img')?.getAttribute('src')).toBe('/api/public/avatars/a');
     expect(TestBed.inject(AuthService).user()?.avatar).toBe('/api/public/avatars/a');
-    expect(buttonByText(host, 'Сменить фото')).toBeTruthy();
+    expect(buttonByText(host, 'Сменить')).toBeTruthy();
+    expect(host.textContent).toContain('JPEG, PNG или WebP');
 
     buttonByText(host, 'Убрать фото').click();
     backend.expectOne({ method: 'DELETE', url: '/api/me/avatar' }).flush(STUDENT);
@@ -278,7 +280,7 @@ describe('AccountPanel', () => {
     expect(hostElement(fixture).textContent).toContain('Администратор');
     expect(hostElement(fixture).querySelector('#account-name')).toBeNull();
     expect(hostElement(fixture).querySelector('#account-own-name')).toBeNull();
-    expect(() => buttonByText(hostElement(fixture), 'Загрузить фото')).toThrow();
+    expect(() => buttonByText(hostElement(fixture), 'Загрузить')).toThrow();
   });
 
   it('keeps the name when saving it fails', async () => {
@@ -339,7 +341,10 @@ describe('AccountPanel', () => {
   });
 
   it('switches the theme in the appearance section', async () => {
-    await pick('account-theme', 'dark');
+    [...hostElement(fixture).querySelectorAll<HTMLElement>('p-togglebutton')]
+      .find((item) => item.textContent.includes('Тёмная'))
+      ?.click();
+    await fixture.whenStable();
 
     expect(TestBed.inject(ThemeMode).choice()).toBe('dark');
     TestBed.inject(ThemeMode).choose('system');

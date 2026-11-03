@@ -83,7 +83,7 @@ AI usage by feature, «Последние запросы» with tokens and «С�
 account at full width, and a new board `Details` (dialogs and opened states). The sketch takes
 priority; depart from it only for a gross M3 violation and name it.
 
-- [ ] **357.6 F** Rebuild to the boards, with `.p-card.tb-section-card` (`styles.scss`, the homework
+- [x] **357.6 F** Rebuild to the boards, with `.p-card.tb-section-card` (`styles.scss`, the homework
   editor's outlined card) for every group and missing styles taken from homework first: «Мой
   аккаунт» teacher and student at every width (`Main`, `StudentAccount`, `StudentTablet`,
   `StudentPhone`; quiet-hours fields; student at full width), the settings list (`PhoneSettings`,

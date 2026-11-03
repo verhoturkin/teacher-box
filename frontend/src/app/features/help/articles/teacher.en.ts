@@ -52,7 +52,7 @@ Initial setup opens the first time you sign in. Apart from replacing a generated
 - A home or office network address works only within that network. Students need an address they can reach over the internet.
 - An HTTP address sends passwords without encryption. Ask the server administrator to enable HTTPS.
 
-To change details later, use “Settings” → “Portal” for the name, logo and colours, “My account” for your name and photo, and “Settings” → “Payments” for the default price. Contact the portal administrator to change the public address.
+To change details later, use “Settings” → “Portal” for the name, logo and colours, “My account” for your name and photo, and “Settings” → “Lessons” for the default lesson price. Contact the portal administrator to change the public address.
 `,
   },
   students: {
@@ -240,7 +240,7 @@ Open “Students”, select the student or group, then open “Profile” → �
 
 ## Open a meeting
 
-Choose “Start lesson” in the lesson details. On Windows, Telemost can open in its app. Use the arrow beside the button to choose “Open in browser” instead. This preference is saved on your computer and can be changed under “Settings” → “Calls” → “Video meetings”.
+Choose “Start lesson” in the lesson details. On Windows, Telemost can open in its app. Use the arrow beside the button to choose “Open in browser” instead. This preference is saved on your computer and can be changed under “Settings” → “Lessons” → “Calls” with the “Open Telemost in the app” switch.
 
 You can override the permanent link for a single lesson in its details.
 `,

@@ -26,11 +26,11 @@ export const en: Translation<typeof ru> = {
     start: 'Open the bot and press “Start” to connect your account automatically.',
     open: (name: string) => `Open ${name}`,
     copyCode: 'Copy the code',
-    orCode: 'Or send this code to the bot:',
+    orCode: 'or send this code to the bot',
     sendCode: 'Send this code',
     toBot: (name: string) => `to the ${name} bot`,
     privately: 'in a private message:',
-    validUntil: (time: string) => `Code valid until ${time}. Waiting for you to connect…`,
+    validUntil: (time: string) => `Waiting for you to connect… The code is valid until ${time}.`,
   },
   list: {
     open: 'Open',
@@ -113,7 +113,9 @@ export const en: Translation<typeof ru> = {
     thisDevice: 'This device',
     quiet: 'Quiet hours',
     quietOff: 'Pause notifications at night',
-    quietOn: (from: string, to: string) => `${from} to ${to}, delivered after ${to}`,
+    quietOn: (from: string, to: string) => `${from} to ${to}`,
+    quietHint: (to: string) =>
+      `Messages sent during these hours arrive at ${to}. They appear in the portal straight away.`,
     teacherActions: 'Teacher actions in the bot',
     teacherActionsHint: 'Mark lessons and record payments from the messaging app',
     alertTitle: 'Connect a messaging app:',
@@ -122,7 +124,6 @@ export const en: Translation<typeof ru> = {
     connectTo: (name: string) => `Connect ${name}`,
   },
   preferences: {
-    messages: 'Messages',
     teacherMessages: 'Teacher’s messages',
     always: 'Always sent',
     from: 'From',

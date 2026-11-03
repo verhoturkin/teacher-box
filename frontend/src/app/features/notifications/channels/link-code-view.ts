@@ -25,7 +25,7 @@ import { T } from '../i18n/texts';
           <i class="tb-i tb-i-open_in_new" aria-hidden="true"></i>
           <span>{{ t.open(name()) }}</span>
         </a>
-        <p class="tb-muted">{{ t.orCode }}</p>
+        <p class="tb-link-code__or">{{ t.orCode }}</p>
       } @else {
         <p>
           {{ t.sendCode }}
@@ -66,10 +66,30 @@ import { T } from '../i18n/texts';
       }
     }
 
+    /* sketch PhoneConnect: the bot's button across the sheet, a divider with «или отправьте боту код» */
     .tb-link-code__open {
       display: inline-flex;
+      align-self: stretch;
+      justify-content: center;
       gap: var(--tb-space-2);
       text-decoration: none;
+    }
+
+    .tb-link-code__or {
+      display: flex;
+      align-self: stretch;
+      align-items: center;
+      gap: var(--tb-space-3);
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-body-s);
+
+      &::before,
+      &::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--p-md-outline-variant);
+      }
     }
 
     .tb-link-code__value {
@@ -78,7 +98,7 @@ import { T } from '../i18n/texts';
       align-self: stretch;
       gap: var(--tb-space-2);
       padding: var(--tb-space-1) var(--tb-space-1) var(--tb-space-1) var(--tb-space-4);
-      border-radius: var(--tb-shape-md);
+      border-radius: var(--tb-shape-lg);
       background: var(--p-md-surface-container-highest);
       color: var(--p-md-on-surface);
       font-family: var(--tb-font-mono);

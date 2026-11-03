@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -18,6 +18,7 @@ import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import { Subscription, interval, switchMap } from 'rxjs';
 import { describeError } from '@core/http/error-messages';
+import { injectMobile } from '@core/layout/mobile';
 import { WebPush } from '@core/push/web-push';
 import type { PushDevice } from '@core/push/web-push';
 import { Snackbar } from '@core/snackbar/snackbar';
@@ -70,6 +71,7 @@ function shortTime(time: string): string {
     Card,
     LinkCodeView,
     Message,
+    NgTemplateOutlet,
     Select,
     TbDialog,
     ToggleSwitch,
@@ -89,10 +91,20 @@ function shortTime(time: string): string {
         </p-message>
       </div>
     }
-    <p-card [header]="t.title" styleClass="tb-notify">
-      <p class="tb-muted">{{ t.about }}</p>
+    @if (mobile()) {
+      <div class="tb-notify tb-notify--flat"><ng-container *ngTemplateOutlet="body" /></div>
+    } @else {
+      <p-card [header]="t.title" styleClass="tb-notify tb-section-card tb-section-card--flow">
+        <ng-container *ngTemplateOutlet="body" />
+      </p-card>
+    }
 
-      <h3 class="tb-subtitle">{{ t.where }}</h3>
+    <ng-template #body>
+      @if (!mobile()) {
+        <p class="tb-muted">{{ t.about }}</p>
+      }
+
+      <h3 class="tb-section-label">{{ t.where }}</h3>
       <ul class="tb-list">
         @for (channel of channels() ?? []; track channel.channel) {
           <li>
@@ -226,7 +238,7 @@ function shortTime(time: string): string {
       }
 
       @if (preferences(); as saved) {
-        <h3 class="tb-subtitle">{{ t.what }}</h3>
+        <h3 class="tb-section-label">{{ t.what }}</h3>
         <ul class="tb-list">
           @for (topic of topics(); track topic.topic) {
             <li>
@@ -245,18 +257,20 @@ function shortTime(time: string): string {
               </div>
             </li>
           }
-          <li>
-            <div class="tb-list__text">
-              <span class="tb-list__title">{{ teacher() ? tr.messages : tr.teacherMessages }}</span>
-              <span class="tb-list__supporting">{{ tr.always }}</span>
-            </div>
-            <div class="tb-list__trail">
-              <i class="tb-i tb-i-lock tb-muted" aria-hidden="true"></i>
-            </div>
-          </li>
+          @if (!teacher()) {
+            <li>
+              <div class="tb-list__text">
+                <span class="tb-list__title">{{ tr.teacherMessages }}</span>
+                <span class="tb-list__supporting">{{ tr.always }}</span>
+              </div>
+              <div class="tb-list__trail">
+                <i class="tb-i tb-i-lock tb-muted" aria-hidden="true"></i>
+              </div>
+            </li>
+          }
         </ul>
 
-        <ul class="tb-list tb-notify__more">
+        <ul class="tb-list">
           <li>
             <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-bedtime"></i></span>
             <div class="tb-list__text">
@@ -275,27 +289,6 @@ function shortTime(time: string): string {
               />
             </div>
           </li>
-          @if (abilities(); as bot) {
-            <li>
-              <span class="tb-list__lead" aria-hidden="true"
-                ><i class="tb-i tb-i-smart_toy"></i
-              ></span>
-              <div class="tb-list__text">
-                <label class="tb-list__title" for="notify-teacher-actions">{{
-                  t.teacherActions
-                }}</label>
-                <span class="tb-list__supporting">{{ t.teacherActionsHint }}</span>
-              </div>
-              <div class="tb-list__trail">
-                <p-toggleswitch
-                  inputId="notify-teacher-actions"
-                  #actions="ngModel"
-                  [ngModel]="bot.teacherActions"
-                  (ngModelChange)="setTeacherActions($event, actions)"
-                />
-              </div>
-            </li>
-          }
         </ul>
         @if (saved.quietFrom !== null) {
           <div class="tb-notify__times">
@@ -319,10 +312,36 @@ function shortTime(time: string): string {
                 (onChange)="setQuietTime('quietTo', $event.value)"
               />
             </div>
+            <small class="tb-hint tb-notify__times-hint">{{
+              t.quietHint(short(saved.quietTo ?? ''))
+            }}</small>
           </div>
         }
+        @if (abilities(); as bot) {
+          <ul class="tb-list">
+            <li>
+              <span class="tb-list__lead" aria-hidden="true"
+                ><i class="tb-i tb-i-smart_toy"></i
+              ></span>
+              <div class="tb-list__text">
+                <label class="tb-list__title" for="notify-teacher-actions">{{
+                  t.teacherActions
+                }}</label>
+                <span class="tb-list__supporting">{{ t.teacherActionsHint }}</span>
+              </div>
+              <div class="tb-list__trail">
+                <p-toggleswitch
+                  inputId="notify-teacher-actions"
+                  #actions="ngModel"
+                  [ngModel]="bot.teacherActions"
+                  (ngModelChange)="setTeacherActions($event, actions)"
+                />
+              </div>
+            </li>
+          </ul>
+        }
       }
-    </p-card>
+    </ng-template>
 
     <tb-dialog
       kind="sheet"
@@ -363,19 +382,27 @@ function shortTime(time: string): string {
       display: none;
     }
 
-    .tb-subtitle:first-of-type {
-      margin-top: var(--tb-space-4);
-    }
-
-    .tb-notify__more {
-      margin-top: var(--tb-space-4);
-    }
-
-    .tb-notify__times {
+    /* the phone (sketch StudentPhone): the blocks stand in the list of the account, without a card */
+    .tb-notify--flat {
       display: flex;
-      flex-wrap: wrap;
-      gap: var(--tb-space-2);
-      margin-top: var(--tb-space-3);
+      flex-direction: column;
+      gap: var(--tb-space-3);
+
+      > * {
+        margin: 0;
+      }
+    }
+
+    /* «С» and «До» share the row (the sketches), the hint under both */
+    .tb-notify__times {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--tb-space-1) var(--tb-space-3);
+    }
+
+    .tb-notify__times-hint {
+      grid-column: 1 / -1;
+      margin-inline: var(--tb-space-4);
     }
   `,
 })
@@ -387,6 +414,8 @@ export class NotificationsSection implements OnInit {
   protected readonly tr = T.preferences;
   protected readonly busy = new Busy();
   protected readonly push = inject(WebPush);
+  /** Compact: the blocks lie in the account's list without a card (sketch StudentPhone). */
+  protected readonly mobile = injectMobile();
   private readonly api = inject(NotificationsApi);
   private readonly snackbar = inject(Snackbar);
   private watch: Subscription | null = null;

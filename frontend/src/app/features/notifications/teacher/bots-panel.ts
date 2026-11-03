@@ -29,7 +29,7 @@ import { T } from '../i18n/texts';
   imports: [Button, Card, Menu, Tag, BotWizardDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card [header]="t.title">
+    <p-card [header]="t.title" styleClass="tb-section-card tb-section-card--flow">
       <p class="tb-muted">{{ t.about }}</p>
       <ul class="tb-list tb-bots">
         @for (bot of bots(); track bot.channel) {
@@ -97,10 +97,6 @@ import { T } from '../i18n/texts';
     />
   `,
   styles: `
-    .tb-bots {
-      margin-block: var(--tb-space-4);
-    }
-
     .tb-bot__error {
       color: var(--p-md-error);
     }

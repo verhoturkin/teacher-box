@@ -32,6 +32,7 @@ describe('AccountPage', () => {
     expect(host.querySelector('tb-account-panel')).not.toBeNull();
     // the administrator has no messengers
     expect(host.querySelector('tb-notifications-section')).toBeNull();
+    expect(host.querySelector('tb-help-button')).toBeNull();
     backend.verify();
   });
 
@@ -55,6 +56,8 @@ describe('AccountPage', () => {
     backend.expectOne('/api/me/notifications/preferences').flush(preferences());
 
     expect(host.querySelector('tb-account-panel tb-notifications-section')).not.toBeNull();
+    expect(host.querySelector('tb-help-button[topic="cabinet/login"]')).not.toBeNull();
+    expect(host.textContent).toContain('Изменения сохраняются сразу');
     backend.verify();
   });
 });

@@ -46,78 +46,80 @@ function reached(student: StudentMessengers): boolean {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card [header]="t.title">
+    <p-card [header]="t.title" styleClass="tb-section-card tb-section-card--flow">
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
         @if (students(); as students) {
           @if (students.length === 0) {
             <tb-empty-state icon="tb-i-group" [title]="t.empty" />
           } @else {
-            <p class="tb-reach">
-              <strong class="tb-reach__count">{{ t.count(ok().length, students.length) }}</strong>
-              <span class="tb-muted">{{ t.countHint }}</span>
-            </p>
-            <p-progressbar
-              [value]="(100 * ok().length) / students.length"
-              [showValue]="false"
-              [attr.aria-label]="t.progress(ok().length, students.length)"
-            />
-            @if (missing().length > 0) {
-              <h3 class="tb-subtitle">{{ t.missing }}</h3>
-              <ul class="tb-list tb-list--no-phone-lead">
-                @for (row of missing(); track row.studentId) {
-                  <li>
+            <div class="tb-reach-body">
+              <p class="tb-reach">
+                <strong class="tb-reach__count">{{ t.count(ok().length, students.length) }}</strong>
+                <span class="tb-muted">{{ t.countHint }}</span>
+              </p>
+              <p-progressbar
+                [value]="(100 * ok().length) / students.length"
+                [showValue]="false"
+                [attr.aria-label]="t.progress(ok().length, students.length)"
+              />
+              @if (missing().length > 0) {
+                <h3 class="tb-section-label">{{ t.missing }}</h3>
+                <ul class="tb-list tb-list--no-phone-lead">
+                  @for (row of missing(); track row.studentId) {
+                    <li>
+                      <tb-avatar
+                        class="tb-list__lead"
+                        [attr.data-tb-label]="colors.studentLabel(row.studentId)"
+                        [name]="row.displayName"
+                        [photo]="row.avatar"
+                      />
+                      <div class="tb-list__text">
+                        <span class="tb-list__title">{{ row.displayName }}</span>
+                        <span class="tb-list__supporting">{{ why(row) }}</span>
+                      </div>
+                      <div class="tb-list__trail">
+                        @if (mobile()) {
+                          <p-button
+                            icon="tb-i tb-i-share"
+                            [text]="true"
+                            [rounded]="true"
+                            [ariaLabel]="t.sendLinkTo(row.displayName)"
+                            [loading]="pending() === row.studentId"
+                            (onClick)="sendLink(row.studentId)"
+                          />
+                        } @else {
+                          <p-button
+                            [label]="t.sendLink"
+                            icon="tb-i tb-i-share"
+                            severity="secondary"
+                            [loading]="pending() === row.studentId"
+                            (onClick)="sendLink(row.studentId)"
+                          />
+                        }
+                      </div>
+                    </li>
+                  }
+                </ul>
+              }
+              <div class="tb-reach__ok">
+                @if (ok().length > 0) {
+                  <h3 class="tb-section-label">{{ t.connected }}</h3>
+                }
+                <span class="tb-reach__avatars">
+                  @for (row of ok(); track row.studentId) {
                     <tb-avatar
-                      class="tb-list__lead"
+                      size="2rem"
                       [attr.data-tb-label]="colors.studentLabel(row.studentId)"
+                      [attr.title]="row.displayName"
                       [name]="row.displayName"
                       [photo]="row.avatar"
                     />
-                    <div class="tb-list__text">
-                      <span class="tb-list__title">{{ row.displayName }}</span>
-                      <span class="tb-list__supporting">{{ why(row) }}</span>
-                    </div>
-                    <div class="tb-list__trail">
-                      @if (mobile()) {
-                        <p-button
-                          icon="tb-i tb-i-share"
-                          [text]="true"
-                          [rounded]="true"
-                          [ariaLabel]="t.sendLinkTo(row.displayName)"
-                          [loading]="pending() === row.studentId"
-                          (onClick)="sendLink(row.studentId)"
-                        />
-                      } @else {
-                        <p-button
-                          [label]="t.sendLink"
-                          icon="tb-i tb-i-share"
-                          severity="secondary"
-                          [loading]="pending() === row.studentId"
-                          (onClick)="sendLink(row.studentId)"
-                        />
-                      }
-                    </div>
-                  </li>
-                }
-              </ul>
-            }
-            <div class="tb-reach__ok">
-              @if (ok().length > 0) {
-                <h3 class="tb-subtitle">{{ t.connected }}</h3>
-              }
-              <span class="tb-reach__avatars">
-                @for (row of ok(); track row.studentId) {
-                  <tb-avatar
-                    size="2rem"
-                    [attr.data-tb-label]="colors.studentLabel(row.studentId)"
-                    [attr.title]="row.displayName"
-                    [name]="row.displayName"
-                    [photo]="row.avatar"
-                  />
-                }
-              </span>
-              <a pButton class="tb-reach__where" [text]="true" routerLink="/teacher/students">
-                <span pButtonLabel>{{ t.whoWhere }}</span>
-              </a>
+                  }
+                </span>
+                <a pButton class="tb-reach__where" [text]="true" routerLink="/teacher/students">
+                  <span pButtonLabel>{{ t.whoWhere }}</span>
+                </a>
+              </div>
             </div>
           }
         }
@@ -125,12 +127,22 @@ function reached(student: StudentMessengers): boolean {
     </p-card>
   `,
   styles: `
+    /* the blocks of the card 12 px apart, as the other settings cards (sketch Messengers) */
+    .tb-reach-body {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-3);
+
+      > * {
+        margin: 0;
+      }
+    }
+
     .tb-reach {
       display: flex;
       flex-wrap: wrap;
       align-items: baseline;
       gap: var(--tb-space-2);
-      margin: 0 0 var(--tb-space-3);
     }
 
     /* our decision: the count is the card's headline number, M3 headline small */
@@ -144,8 +156,9 @@ function reached(student: StudentMessengers): boolean {
       align-items: center;
       gap: var(--tb-space-1);
 
-      .tb-subtitle {
+      .tb-section-label {
         flex-basis: 100%;
+        margin: 0 0 var(--tb-space-2);
       }
     }
 

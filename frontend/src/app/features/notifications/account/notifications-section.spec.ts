@@ -320,7 +320,7 @@ describe('NotificationsSection', () => {
       on.flush(preferences({ quietFrom: '22:00:00', quietTo: '08:00:00' }));
       fixture.detectChanges();
       await fixture.whenStable();
-      expect(text()).toContain('С 22:00 до 08:00 — придут после 08:00');
+      expect(text()).toContain('С 22:00 до 08:00');
 
       fixture.debugElement
         .query(By.css('p-select[inputId="quiet-from"]'))

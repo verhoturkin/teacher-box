@@ -19,10 +19,10 @@ To change a password you know, select your name at the bottom of the sidebar, th
 
 ## Update your photo and name
 
-Select your name to open “My account”.
+Select your name to open “My account”. Your photo and name are under “Profile”; on a phone or tablet, select the row with your name.
 
-- **Photo:** choose “Upload photo” and select a JPEG, PNG or WebP image. The portal crops it to a square and resizes it. Your teacher sees it alongside your name throughout the portal. Use the bin button to remove it.
-- **Name:** enter the display name you want to use in the portal. Your teacher will still see the name they entered for you. Leave this field blank and save to use that name again.
+- **Photo:** in the “Photo” row, choose “Upload” and select a JPEG, PNG or WebP image. The portal crops it to a square and resizes it. Your teacher sees it alongside your name throughout the portal. Use the bin button to remove it.
+- **Name (“What should we call you?”):** enter the display name you want to use in the portal. Your teacher will still see the name they entered for you. Leave this field blank and save to use that name again.
 `,
   },
   schedule: {
