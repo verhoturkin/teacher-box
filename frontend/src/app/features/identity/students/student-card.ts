@@ -37,6 +37,7 @@ import { CARD_TABS, CardTab, DEFAULT_TAB, cardTab, showTab } from './card-tabs';
 import { StudentRow } from './roster';
 import { STATUS_LABELS, STATUS_SEVERITIES } from './student-status';
 import { StudentProfileTab } from './student-profile-tab';
+import { StudentTagsTab } from './student-tags-tab';
 import { Student } from '../data-access/identity.models';
 
 /**
@@ -64,6 +65,7 @@ import { Student } from '../data-access/identity.models';
     StudentLessonsTab,
     StudentPaymentsTab,
     StudentProfileTab,
+    StudentTagsTab,
     StudentTasksCard,
     StudentTasksTab,
     Tab,
@@ -162,6 +164,11 @@ import { Student } from '../data-access/identity.models';
             />
           }
         </p-tabpanel>
+        <p-tabpanel value="tags">
+          @if (tab() === 'tags') {
+            <tb-student-tags-tab [student]="row.student" (saved)="tagsSaved.emit($event)" />
+          }
+        </p-tabpanel>
         <p-tabpanel value="profile">
           @if (tab() === 'profile') {
             <tb-student-profile-tab
@@ -250,6 +257,8 @@ export class StudentCard {
   readonly changed = output();
   /** Профиль saved the student's data. */
   readonly saved = output<Student>();
+  /** Теги saved the tag values of the student (quietly: the select shows the choice). */
+  readonly tagsSaved = output<Student>();
   /** Profile asks for a new invitation link. */
   readonly invite = output();
   readonly deactivate = output();

@@ -4,7 +4,14 @@ import { ActivatedRoute, Router } from '@angular/router';
  * The tabs of a student's card (redesign spec §8), named in the address as `?tab=`; Обзор is the default and
  * is left out of the address.
  */
-export const CARD_TABS = ['overview', 'lessons', 'homework', 'payments', 'profile'] as const;
+export const CARD_TABS = [
+  'overview',
+  'lessons',
+  'homework',
+  'payments',
+  'tags',
+  'profile',
+] as const;
 
 export type CardTab = (typeof CARD_TABS)[number];
 

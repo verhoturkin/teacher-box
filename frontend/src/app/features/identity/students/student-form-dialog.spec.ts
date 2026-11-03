@@ -81,6 +81,7 @@ describe('StudentFormDialog', () => {
         login: null,
         createdAt: '2026-09-01T10:00:00Z',
         version: 0,
+        tags: {},
         pendingInvite: { purpose: 'ACTIVATION', expiresAt: '2026-10-01T10:00:00Z' },
       },
       invite: { token: 't', purpose: 'ACTIVATION', expiresAt: '2026-10-01T10:00:00Z' },

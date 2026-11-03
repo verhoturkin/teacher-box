@@ -16,6 +16,7 @@ export function aStudent(overrides: Partial<Student> = {}): Student {
     createdAt: '2026-09-01T10:00:00Z',
     version: 0,
     pendingInvite: null,
+    tags: {},
     ...overrides,
   };
 }

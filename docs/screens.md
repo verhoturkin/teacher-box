@@ -194,7 +194,14 @@ active on both, `NavItem.alsoActive`).
   ones; the total hidden on compact), the search, filter chips «Все · Группы · Отключённые»
   («Отключённые» — students without access and archived groups; the chip is kept in the address as
   `?filter=`; an old `?filter=debtors|noMessenger` opens «Все»). The debt stays in the row
-  trail. From
+  trail. Tags are not shown in rows or in the card header. When a tag exists, a menu filter chip
+  «Теги» ends the chips (hidden without tags; sketch `Main`, `States`): its menu lists the tags,
+  each with its values and the number of current students («B1 · 3»); a value in force is kept as
+  `?tag=<valueId>`, unselects «Все» and shows the chip as «Уровень: B1» (a tag name over 12
+  characters is cut to its first word), hides the groups (they have no tags) and, when nobody has
+  the value, shows «Нет учеников с тегом …» with «Сбросить фильтр». On a phone the chip in force
+  leads the row with a «×» that clears it (*ours*: the row scrolls sideways, a filter in force must
+  not hide behind the scroll). From
   expanded the header, search and chips stay and only the list scrolls. Students by name, then
   groups (group icon in the lead). A row (`tb-list--clamp`): avatar / icon; the name links to the
   card; supporting «nearest lesson · аванс N» (a group: «N участников» — the count, not the names,
@@ -230,7 +237,14 @@ active on both, `NavItem.alsoActive`).
   the student's own attendance), «Что прошли» (Markdown), «Что дальше» and the old read-only
   «Заметка для себя» (written before 0.41.0) when filled; «Задания» — all, open first, then accepted
   with the grade (20 + «Показать ещё»); «Оплаты» — four tonal tiles (balance, charged, paid, price)
-  and the ledger «История» (`tb-ledger-list`); «Профиль» — «Данные ученика» (name *, e-mail, phone,
+  and the ledger «История» (`tb-ledger-list`); «Теги» (`StudentTagsTab`, sketch `Main`,
+  `PhoneTags`; the tab is always there) — one `tb-tile` row per tag: the lead `auto_awesome` on
+  tertiary container for a tag the AI takes, `sell` on secondary container otherwise, the name with
+  «Учитывает ИИ» / «Только для фильтра в списке», an outlined select («Не задан» first) saved on
+  choosing (the whole set goes in one `PUT …/tags`; a failure puts the old value back); beside it
+  the card «Что увидит ИИ» with the chips of the AI tags the student has; the text link «Настроить
+  теги» leads to the settings category «Ученики». Without tags the tab is an empty state «Тегов
+  пока нет» with «Создать теги»; «Профиль» — «Данные ученика» (name *, e-mail, phone,
   note, default topic, colour; tonal «Сохранить», enabled when something differs, and «Отмена» shown
   only then), «Цена занятия» (`tb-student-price-card`, the one place to change it), «Видеовстреча»
   (`tb-room-panel`, saved at once), «Вход в кабинет» (login, link validity, «Новое приглашение» /

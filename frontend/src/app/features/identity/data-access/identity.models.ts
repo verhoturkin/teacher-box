@@ -23,6 +23,8 @@ export interface Student {
   readonly createdAt: string;
   readonly version: number;
   readonly pendingInvite: PendingInvite | null;
+  /** The teacher's tags on the student: the value id by the tag id (teacher-only; `{}` — none). */
+  readonly tags: Readonly<Record<string, string>>;
 }
 
 export interface PendingInvite {

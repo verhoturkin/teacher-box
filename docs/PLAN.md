@@ -61,7 +61,7 @@ sends the context of the recipients with the request, as it does for the lesson 
   «Занятия»): card «Теги учеников» with the list, the tag dialog (name, values as chips with drag
   order, «Учитывать в ИИ» switch, delete), templates CEFR / «Класс» / «Цель» on the empty state
   (sketch `Tags`). Phone and tablet follow the existing settings list → detail.
-- [ ] **362.5 F** Student card tab «Теги» between «Оплаты» and «Профиль»
+- [x] **362.5 F** Student card tab «Теги» between «Оплаты» and «Профиль»
   (`identity/students/card-tabs.ts` `CARD_TABS`, `?tab=tags`; the group card gets none): one M3 list
   row per tag — lead `auto_awesome` on tertiary container for AI tags, `sell` otherwise — with an
   outlined select («Не задан» first), saved on change; «Что увидит ИИ» beside it; «Настроить теги»

@@ -47,6 +47,11 @@ export class IdentityApi {
     return this.http.post<Student>(`/api/teacher/students/${id}/reactivate`, null);
   }
 
+  /** The whole set of a student's tag values: a tag missing or `null` is cleared. */
+  setStudentTags(id: string, tags: Readonly<Record<string, string | null>>): Observable<Student> {
+    return this.http.put<Student>(`/api/teacher/students/${id}/tags`, tags);
+  }
+
   /** @param context `quietContext()` when the page shows a failed load itself (ADR-0025) */
   listGroups(context?: HttpContext): Observable<StudentGroup[]> {
     return this.http.get<StudentGroup[]>('/api/teacher/groups', { context });
