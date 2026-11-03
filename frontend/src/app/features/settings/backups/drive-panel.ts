@@ -69,7 +69,7 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card id="drive">
+    <p-card id="drive" styleClass="tb-section-card">
       <ng-template #title>
         <div class="tb-card-title">
           <span class="tb-card-title__text"

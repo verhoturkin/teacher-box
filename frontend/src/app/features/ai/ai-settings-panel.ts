@@ -35,7 +35,7 @@ export const FEATURE_LABELS: Record<AiFeature, string> = T.features;
   template: `
     @if (status(); as status) {
       @if (!status.enabled) {
-        <p-card>
+        <p-card styleClass="tb-section-card">
           <tb-empty-state
             icon="tb-i-auto_awesome"
             [title]="t.notConfigured"
@@ -44,7 +44,7 @@ export const FEATURE_LABELS: Record<AiFeature, string> = T.features;
         </p-card>
       } @else {
         <div class="tb-ai">
-          <p-card [header]="t.model">
+          <p-card [header]="t.model" styleClass="tb-section-card">
             <ul class="tb-list">
               <li>
                 <span class="tb-list__lead" aria-hidden="true"
