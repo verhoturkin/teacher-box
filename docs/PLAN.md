@@ -75,6 +75,27 @@ sketch disagrees with it.
   prompts folded) and «Данные» (`Data`, `settings/backups/*`, `reset-card.ts`: copies with the last
   one first and «Все N копий», Google Drive, «Опасные действия» card with restore and reset).
 
+Review of 356–357.5 (2026-11-03): no section used the sketches' outlined cards, and «Портал» was far
+from its board. The sketches were then detailed (version 36 of the canvas): quiet-hours fields «С» /
+«До», «Тонкая настройка» open (nine schemes with samples, four contrast levels, own colour), real
+calls in «Занятия» (built-in calls, own link per student, Telemost in the app; no Telemost rooms),
+AI usage by feature, «Последние запросы» with tokens and «Системные промты» open, the student
+account at full width, and a new board `Details` (dialogs and opened states). The sketch takes
+priority; depart from it only for a gross M3 violation and name it.
+
+- [ ] **357.6 F** Rebuild to the boards, with `.p-card.tb-section-card` (`styles.scss`, the homework
+  editor's outlined card) for every group and missing styles taken from homework first: «Мой
+  аккаунт» teacher and student at every width (`Main`, `StudentAccount`, `StudentTablet`,
+  `StudentPhone`; quiet-hours fields; student at full width), the settings list (`PhoneSettings`,
+  `TabletSettings`), «Портал» (`Portal` with «Тонкая настройка» open), «Занятия» (`Lessons`, real
+  calls via `meetings/settings/meetings-settings-panel.ts`), «Мессенджеры» (`Messengers`,
+  `PhoneMessengers`), the connect sheet (`PhoneConnect`).
+- [ ] **357.7 F** «ИИ-помощник» (`Ai`: usage by feature, «Последние запросы» with tokens and «Показать
+  ещё» — `UsageReport.recent`, `AiApi.requests`, dropped in 357.5 — and «Системные промты» open,
+  `ai/system-prompts-card.ts`), «Данные» (`Data`) and board `Details`: «Сменить пароль»
+  (`change-password-form.ts`), restore and reset dialogs with the password, the failed deliveries
+  opened, «Что умеет бот» opened, «Мессенджеры» of the student card, «Написать всем».
+
 ### Stage 358 — Docs and check
 
 - [ ] **358.1** `docs/screens.md` «Settings (teacher)» and student «Мой аккаунт»,
