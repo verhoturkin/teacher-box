@@ -577,11 +577,12 @@ answers with a short snackbar; there is no «Отменить изменения
   боте». Reached also from the rail's «Аккаунт».
 - **«Портал»:** four outlined cards — «Название и логотип», «Цвет портала», «Тонкая настройка»
   (open: nine schemes with samples, four contrast levels as a segmented button, own colour; the
-  header folds it and shows «Схема … · контраст …»), «Предпросмотр» (follows the draft); from a 48
-  em container the first two stack on the left and the preview spans both rows on the right
-  (*ours*). The only category with an explicit save: while the draft differs from the saved state a
-  floating bar «Отменить» / «Сохранить» appears and leaving asks «Отменить изменения?». Help opens
-  `teacher/appearance`.
+  header folds it and shows «Схема … · контраст …»), «Предпросмотр» (a light and a dark pane with the
+  same elements, both follow the draft); from a 48 em container the first two stack on the left
+  and the preview spans both rows on the right (*ours*). The only category with an explicit save:
+  while the draft differs from the saved state a row under «Свой цвет» in «Цвет портала» says what
+  changed, with «Отменить» (text) and «Сохранить» (filled), and leaving asks «Отменить
+  изменения?». Help opens `teacher/appearance`.
 - **«Занятия»:** «Время и цена» (portal time zone — read-only, set by the administrator; «Цена
   занятия по умолчанию», saved on change), «Звонки» (built-in calls on/off, external link per
   student, «Открывать Телемост в приложении» on this device), «Google Календарь», «Подписка на

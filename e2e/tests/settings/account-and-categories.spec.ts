@@ -59,6 +59,8 @@ test('portal gallery previews appearance locally and persists named preferences'
       scheme: string;
     };
     expect(unsaved.scheme).toBe(previous.scheme);
+    // 361.1: the save row stands under the colour, not in a floating bar
+    await expect(page.getByRole('status').filter({ hasText: 'ученики увидят' })).toBeVisible();
     await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
     await expect(page.getByText('Настройки портала сохранены')).toBeVisible();
     await page.reload();

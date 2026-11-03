@@ -28,7 +28,7 @@ https://claude.ai/artifact/L3wuTYeXnspJ9AGwHRD6kx, version 39, board `Portal` (a
 
 ### Stage 361 — Portal save and dark preview
 
-- [ ] **361.1 F** `settings/portal-settings-card.ts`: drop the floating save bar; under «Свой
+- [x] **361.1 F** `settings/portal-settings-card.ts`: drop the floating save bar; under «Свой
   цвет» in «Цвет портала» a row «Цвет изменён — ученики увидят его после сохранения» with
   «Отменить» (text) and «Сохранить» (filled), shown while the draft differs (the
   «Отменить изменения?» guard stays). The preview has two panes, light and dark, each with the
