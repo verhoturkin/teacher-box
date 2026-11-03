@@ -95,19 +95,35 @@ function shortTime(time: string): string {
       </div>
     }
     @if (mobile()) {
-      <div class="tb-notify tb-notify--flat"><ng-container *ngTemplateOutlet="body" /></div>
-    } @else {
+      <div class="tb-notify tb-notify--flat">
+        <ng-container *ngTemplateOutlet="whereBody" />
+        <ng-container *ngTemplateOutlet="whatBody" />
+      </div>
+    } @else if (medium()) {
       <p-card [header]="t.title" styleClass="tb-notify tb-section-card tb-section-card--flow">
-        <ng-container *ngTemplateOutlet="body" />
+        <ng-container *ngTemplateOutlet="whereBody" />
+        <ng-container *ngTemplateOutlet="whatBody" />
       </p-card>
+    } @else {
+      <!-- wide (sketches Main, StudentAccount): «Куда присылать» and «Что присылать» are two cards, one grid cell each -->
+      <p-card [header]="t.whereTitle" styleClass="tb-notify tb-section-card tb-section-card--flow">
+        <ng-container *ngTemplateOutlet="whereBody" />
+      </p-card>
+      @if (preferences() !== null) {
+        <p-card [header]="t.what" styleClass="tb-notify tb-section-card tb-section-card--flow">
+          <ng-container *ngTemplateOutlet="whatBody" />
+        </p-card>
+      }
     }
 
-    <ng-template #body>
+    <ng-template #whereBody>
       @if (!mobile()) {
         <p class="tb-muted">{{ t.about }}</p>
       }
 
-      <h3 class="tb-section-label">{{ t.where }}</h3>
+      @if (!wide()) {
+        <h3 class="tb-section-label">{{ t.where }}</h3>
+      }
       <ul class="tb-list">
         @for (channel of channels() ?? []; track channel.channel) {
           @if (!medium() || channel.linked || teacher()) {
@@ -182,7 +198,7 @@ function shortTime(time: string): string {
                 }
               </span>
             </div>
-            <div class="tb-list__trail">
+            <div class="tb-list__trail" [class.tb-list__trail--inline]="thisDevice() === null">
               @if (thisDevice(); as device) {
                 <p-toggleswitch
                   inputId="notify-this-device"
@@ -252,9 +268,13 @@ function shortTime(time: string): string {
           <p-message severity="warn" styleClass="tb-form-message">{{ tp.denied }}</p-message>
         }
       }
+    </ng-template>
 
+    <ng-template #whatBody>
       @if (preferences(); as saved) {
-        <h3 class="tb-section-label">{{ t.what }}</h3>
+        @if (!wide()) {
+          <h3 class="tb-section-label">{{ t.what }}</h3>
+        }
         @if (medium()) {
           <!-- medium (sketch StudentTablet): the topics are filter chips, the pressed ones are sent -->
           <div class="tb-notify__chips" role="group" [attr.aria-label]="t.what">
@@ -543,6 +563,8 @@ export class NotificationsSection implements OnInit {
   protected readonly mobile = injectMobile();
   private readonly size = injectWindowSize();
   protected readonly medium = computed(() => this.size() === 'medium');
+  /** Wide: «Куда присылать» and «Что присылать» are two cards; below, one card or a flat list. */
+  protected readonly wide = computed(() => !this.mobile() && !this.medium());
   protected readonly quietScreen = signal(false);
   private readonly api = inject(NotificationsApi);
   private readonly snackbar = inject(Snackbar);

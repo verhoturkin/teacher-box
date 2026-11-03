@@ -107,6 +107,7 @@ export const en: Translation<typeof ru> = {
   },
   section: {
     title: 'Notifications',
+    whereTitle: 'Where to send notifications',
     about: 'Everything appears in the portal. Choose where else to receive it.',
     where: 'Where to send',
     what: 'What to send',

@@ -28,7 +28,7 @@ only for a gross M3 violation and name it.
 
 ### Stage 360 — Review fixes
 
-- [ ] **360.1 F** «Мой аккаунт» on wide windows (teacher and student): the cards share the width
+- [x] **360.1 F** «Мой аккаунт» on wide windows (teacher and student): the cards share the width
   evenly (auto-fit grid from 360 px, each card stretches to its column, no empty half at 1920+);
   «Уведомления» splits into two cards «Куда присылать уведомления» and «Что присылать» so the
   three columns match (`identity/account/account-panel.ts`,

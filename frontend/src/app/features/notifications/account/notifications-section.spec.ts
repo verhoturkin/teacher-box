@@ -122,6 +122,19 @@ describe('NotificationsSection', () => {
   });
 
   describe('where to send', () => {
+    it('is two cards on a wide window and one below', async () => {
+      await render();
+      const titles = (): string[] =>
+        Array.from(hostElement(fixture).querySelectorAll('.p-card-title'), (title) =>
+          title.textContent.trim(),
+        );
+      expect(titles()).toEqual(['Куда присылать уведомления', 'Что присылать']);
+      fixture.destroy();
+      TestBed.resetTestingModule();
+      await render({ size: 'medium' });
+      expect(titles()).toEqual(['Уведомления']);
+    });
+
     it('lists the messengers and the devices in one list', async () => {
       localStorage.setItem(PUSH_DEVICE_KEY, 'd1');
       subscription.next({});
