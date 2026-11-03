@@ -18,3 +18,9 @@ export async function startSession(page: Page, login: string, password: string):
   await page.goto('/');
   await expect(page).not.toHaveURL(/\/login/);
 }
+
+/** Closes the open recipient picker: Escape goes to its filter, where the overlay listens, and the overlay must be gone. */
+export async function closePicker(page: Page): Promise<void> {
+  await page.getByRole('searchbox', { name: 'Поиск учеников и групп' }).press('Escape');
+  await expect(page.getByRole('searchbox', { name: 'Поиск учеников и групп' })).toBeHidden();
+}

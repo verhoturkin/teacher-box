@@ -1,4 +1,4 @@
-import { startSession, bearer, bearer as teacher } from '../support/session';
+import { startSession, bearer, bearer as teacher, closePicker } from '../support/session';
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 import { create } from '../support/create';
 
@@ -138,7 +138,7 @@ test('the teacher creates a board for a student and a group, draws and returns',
   await page.getByRole('option', { name: `Ученик: ${VERA}`, exact: true }).click();
   await page.locator('.p-multiselect-filter').fill(GROUP);
   await page.getByRole('option', { name: `Группа: ${GROUP}`, exact: true }).click();
-  await page.keyboard.press('Escape');
+  await closePicker(page);
   await dialog.getByRole('button', { name: 'Создать' }).click();
 
   // 0.26.0: the board is a card of the feed of «Материалы»

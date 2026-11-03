@@ -1,3 +1,4 @@
+import { closePicker } from '../support/session';
 import { type Browser, type Page, expect, test } from '@playwright/test';
 import { create } from '../support/create';
 import { laterThisWeek, saveLesson } from '../support/this-week';
@@ -106,7 +107,7 @@ test('the teacher gives homework and the student hands it in', async ({ page, br
   await page.locator('#editor-text').fill(`${HOMEWORK_TITLE}\n1. Сложите 1/2 и 1/3`);
   await page.getByRole('button', { name: 'Ученик или группа' }).click();
   await page.getByRole('option', { name: STUDENT_NAME }).click();
-  await page.keyboard.press('Escape');
+  await closePicker(page);
   await page.getByRole('button', { name: 'Выдать', exact: true }).click();
   // «Выдать» returns to the list it was opened from
   await expect(page).toHaveURL(/\/teacher\/homework$/);

@@ -1,4 +1,4 @@
-import { startSession } from '../support/session';
+import { startSession, closePicker } from '../support/session';
 import { type APIRequestContext, expect, test } from '@playwright/test';
 import { create } from '../support/create';
 
@@ -121,7 +121,7 @@ test('combined grants, bounded material cards and the final preview survive imme
   await dialog.locator('tb-member-picker p-multiselect').click();
   await page.getByRole('option', { name: `Ученик: ${name}`, exact: true }).click();
   await page.getByRole('option', { name: `Группа: ${groupName}`, exact: true }).click();
-  await page.keyboard.press('Escape');
+  await closePicker(page);
   await dialog.getByRole('button', { name: 'Создать', exact: true }).click();
   const card = page.locator('tb-material-card').filter({ hasText: name }).first();
   await expect(card).toContainText(groupName);

@@ -1,4 +1,4 @@
-import { bearer, startSession } from '../support/session';
+import { bearer, startSession, closePicker } from '../support/session';
 import { type Browser, expect, test } from '@playwright/test';
 
 /**
@@ -38,7 +38,7 @@ test('an assignment is made in the editor and «Выдать» returns to the li
   await expect(page).toHaveURL(/\/teacher\/homework\/new$/);
   await page.getByRole('button', { name: 'Ученик или группа' }).click();
   await page.getByRole('option', { name: STUDENT }).click();
-  await page.keyboard.press('Escape');
+  await closePicker(page);
   await page.locator('#editor-text').fill(`${TITLE}\nРешите три примера`);
   await page.getByRole('button', { name: 'Без срока' }).click();
   await page.getByRole('button', { name: 'Выдать', exact: true }).click();
