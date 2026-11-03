@@ -20,10 +20,12 @@ import { SystemPromptsCard } from './system-prompts-card';
 
 export const FEATURE_LABELS: Record<AiFeature, string> = T.features;
 
-/** The icon of a request in the log: a homework draft or a review draft. */
+/** The icon of a request in the log: the kind of draft. */
 const FEATURE_ICONS: Record<AiFeature, string> = {
   HOMEWORK_DRAFT: 'tb-i tb-i-assignment',
   REVIEW_DRAFT: 'tb-i tb-i-rate_review',
+  LESSON_SUMMARY: 'tb-i tb-i-summarize',
+  QUIZ_DRAFT: 'tb-i tb-i-quiz',
 };
 
 type TagSeverity = 'success' | 'danger' | 'secondary';

@@ -308,9 +308,7 @@ describe('SettingsPage', () => {
     buttonByText(host, 'Показать').click();
     await fixture.whenStable();
     text = readableText(host);
-    expect(text).toMatch(
-      /Мария · Telegram 24 сентября, \d\d:\d\d · Telegram 403: Forbidden: bot was blocked by the user/,
-    );
+    expect(text).toMatch(/Мария · Telegram 24 сентября, \d\d:\d\d · бот заблокирован/);
     expect(text).toMatch(/Вы · MAX 24 сентября, \d\d:\d\d/);
     buttonByText(host, 'Скрыть').click();
     await fixture.whenStable();

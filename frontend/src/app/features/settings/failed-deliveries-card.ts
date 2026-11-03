@@ -28,8 +28,10 @@ const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
         <div class="tb-deliveries__alert">
           <span class="tb-deliveries__text">
             <strong>{{ t.notDeliveredTitle(deliveries().length) }}</strong>
-            {{ last.recipientName ?? t.you }} · {{ messengerName(last) }} ·
-            {{ when(last.createdAt) }}
+            @if (!open()) {
+              {{ last.recipientName ?? t.you }} · {{ messengerName(last) }} ·
+              {{ when(last.createdAt) }}
+            }
           </span>
           <p-button
             [label]="open() ? t.hideDeliveries : t.showDeliveries"
@@ -57,7 +59,7 @@ const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
                   >{{ row.recipientName ?? t.you }} · {{ messengerName(row) }}</span
                 >
                 <span class="tb-list__supporting tb-deliveries__reason"
-                  >{{ when(row.createdAt, true) }}{{ row.error ? ' · ' + row.error : '' }}</span
+                  >{{ when(row.createdAt, true) }}{{ reason(row) }}</span
                 >
               </div>
             </li>
@@ -96,6 +98,14 @@ export class FailedDeliveriesCard {
 
   protected readonly open = signal(false);
   protected readonly when = dayTime;
+
+  /** The reason in plain words (sketch Details): a blocked bot says so, the rest shows the messenger's answer. */
+  protected reason(row: FailedDelivery): string {
+    if (row.error === null) {
+      return '';
+    }
+    return ' · ' + (/block/i.test(row.error) ? this.t.botBlocked : row.error);
+  }
 
   protected messengerName(row: FailedDelivery): string {
     return MESSENGERS.find((messenger) => messenger.type === row.channel)?.name ?? row.channel;

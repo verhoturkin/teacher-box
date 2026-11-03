@@ -10,8 +10,8 @@ export const CHANNEL_NAMES: Record<ChannelType, string> = SHARED_T.messengers;
 
 export const CHANNEL_ICONS: Record<ChannelType, string> = {
   TELEGRAM: 'tb-i tb-i-send',
-  VK: 'tb-i tb-i-forum',
-  MAX: 'tb-i tb-i-chat',
+  VK: 'tb-i tb-i-chat',
+  MAX: 'tb-i tb-i-forum',
 };
 
 /** Whether the bot link already carries the code (otherwise the user sends the code manually). */

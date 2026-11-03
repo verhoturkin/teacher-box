@@ -223,6 +223,8 @@ export class SystemPromptsCard implements OnInit {
   protected readonly icons: Record<AiFeature, string> = {
     HOMEWORK_DRAFT: 'tb-i-assignment',
     REVIEW_DRAFT: 'tb-i-rate_review',
+    LESSON_SUMMARY: 'tb-i-summarize',
+    QUIZ_DRAFT: 'tb-i-quiz',
   };
   protected readonly open = signal(true);
   protected readonly prompts = signal<readonly SystemPrompt[]>([]);

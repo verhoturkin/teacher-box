@@ -110,10 +110,18 @@ priority; depart from it only for a gross M3 violation and name it.
   the compact app bar says «Аккаунт» (the nav label) and the bottom bar has no «Ещё» tab, as the
   shell is shared; «Пароль · Изменён …» has no date in the backend, so no subtitle; the
   «Подключите мессенджер» alert and the Telegram rows need a configured bot, covered by tests
-  only; «ИИ-помощник» was not checked live (the dev backend has no assistant); the push
-  «unsupported» message is clipped over plain HTTP (production uses HTTPS). Not re-opened in
-  the browser: «Портал», «Занятия», «Данные» and the `Details` dialogs (built and checked in
-  357.4–357.7). No sketch departs from M3 grossly.
+  only. Second pass, all boards in the browser: «Портал», «Занятия», «Мессенджеры» (wide),
+  «Данные», the restore and password dialogs, «Написать всем», `TabletSettings`, `PhoneConnect`
+  match; «ИИ-помощник» was checked with stubbed `status` and `usage`. Fixed: the calendar card
+  is «Подписка на календарь» for both roles; the opened failed deliveries drop the last-failure
+  line and name a blocked bot in plain words; «Мессенджеры» of the student card list every
+  messenger with «Не подключён»; the connect sheet is «Подключить …»; VK and MAX icons as in the
+  sketches; the AI prompts and usage know lesson summaries and quiz drafts (the backend sends
+  four features, the screen showed «undefined» for two). Left: the order of the cards on
+  `TabletSettings` (calls last) differs from `Lessons`, which the app follows; the student
+  card's «Связь» card also holds the meeting link, so its title stays; the failed-delivery
+  rows have no per-row action icons and no topic, the data has neither. No sketch departs from
+  M3 grossly.
 
 ### Stage 359 — Release
 

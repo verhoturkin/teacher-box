@@ -37,6 +37,7 @@ export const en: Translation<typeof ru> = {
       `${countOf(count, 'notification', 'notifications', 'notifications')} not delivered.`,
     showDeliveries: 'Show',
     hideDeliveries: 'Hide',
+    botBlocked: 'bot blocked',
     you: 'You',
     ai: 'AI assistant',
     aiSummary: 'Model, usage, prompts',

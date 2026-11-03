@@ -173,7 +173,7 @@ test('the lessons category holds time, price, calls, Google Calendar and the sub
   await expect(page.locator('#default-price')).toContainText('Цена занятия по умолчанию');
   await expect(page.locator('#meetings')).toBeVisible();
   await expect(page.locator('#google')).toBeVisible();
-  await expect(page.locator('tb-calendar-feed-panel')).toContainText('Календарь на телефоне');
+  await expect(page.locator('tb-calendar-feed-panel')).toContainText('Подписка на календарь');
 
   // 234.2: the schedule no longer holds the subscription
   await page.goto('/teacher/schedule');

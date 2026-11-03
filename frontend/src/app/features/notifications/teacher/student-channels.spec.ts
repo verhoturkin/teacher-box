@@ -45,6 +45,7 @@ describe('StudentChannels', () => {
     expect(rows()).toEqual([
       `Telegram с ${formatDate('2026-09-01T10:00:00Z', 'd MMMM', 'en-US')}`,
       'ВКонтакте уведомления на паузе',
+      'MAX Не подключён',
       'Не доставлено: 2 Сообщения за 30 дней, которые мессенджер не принял',
     ]);
   });
@@ -52,7 +53,7 @@ describe('StudentChannels', () => {
   it('reminds a student without a messenger to connect one', async () => {
     await render(studentMessengers());
     const success = vi.spyOn(TestBed.inject(Snackbar), 'success');
-    expect(rows()[0]).toContain('Мессенджер не подключён');
+    expect(rows()).toEqual(['Telegram Не подключён', 'ВКонтакте Не подключён', 'MAX Не подключён']);
 
     buttonByText(hostElement(fixture), 'Отправить ссылку на подключение').click();
     const request = backend.expectOne('/api/teacher/notifications/remind-connect');

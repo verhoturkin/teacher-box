@@ -5,6 +5,8 @@ export const en: Translation<typeof ru> = {
   features: {
     HOMEWORK_DRAFT: 'Assignment drafts',
     REVIEW_DRAFT: 'Review drafts',
+    LESSON_SUMMARY: 'Lesson summaries',
+    QUIZ_DRAFT: 'Quiz drafts',
   },
   statuses: {
     SUCCEEDED: 'Completed',
@@ -127,6 +129,8 @@ export const en: Translation<typeof ru> = {
     features: {
       HOMEWORK_DRAFT: 'Assignment draft',
       REVIEW_DRAFT: 'Review draft',
+      LESSON_SUMMARY: 'Lesson summary',
+      QUIZ_DRAFT: 'Quiz draft',
     },
     resetHint: 'A changed prompt can be restored to the standard one in the edit window.',
     custom: 'Custom',

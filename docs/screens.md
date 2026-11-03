@@ -585,7 +585,7 @@ answers with a short snackbar; there is no «Отменить изменения
 - **«Занятия»:** «Время и цена» (portal time zone — read-only, set by the administrator; «Цена
   занятия по умолчанию», saved on change), «Звонки» (built-in calls on/off, external link per
   student, «Открывать Телемост в приложении» on this device), «Google Календарь», «Подписка на
-  календарь» («Календарь на телефоне»).
+  календарь».
 - **«Мессенджеры»:** the failed-deliveries alert first (folds open with the list), «Боты» (one row
   per messenger, «Подключить» opens the wizard), «Что умеет бот» folded, «Ученики» as «5 из 7» with
   the not connected and «Отправить ссылку», «Кто где» → `/teacher/students`. The messengers of one

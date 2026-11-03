@@ -3,6 +3,8 @@ export const ru = {
   features: {
     HOMEWORK_DRAFT: 'Черновики заданий',
     REVIEW_DRAFT: 'Черновики проверки',
+    LESSON_SUMMARY: 'Итоги урока',
+    QUIZ_DRAFT: 'Черновики тестов',
   },
   statuses: {
     SUCCEEDED: 'Готово',
@@ -125,6 +127,8 @@ export const ru = {
     features: {
       HOMEWORK_DRAFT: 'Черновик задания',
       REVIEW_DRAFT: 'Черновик проверки',
+      LESSON_SUMMARY: 'Итоги урока',
+      QUIZ_DRAFT: 'Черновик теста',
     },
     resetHint: 'Изменённый промт можно вернуть к исходному в окне правки.',
     custom: 'Изменён',
