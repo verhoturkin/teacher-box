@@ -178,7 +178,7 @@ Open a notification, mark it as read, or choose “Mark all as read”. On a pho
 
 ## Connect a messaging app
 
-Select your name → “Messengers” → “Connect” beside the app you use. You can also use the connection card on your home page. Open the bot chat and press “Start”, or send the code shown in the portal.
+Select your name → “Notifications” → “Where to send” → “Connect” beside the app you use. You can also use the connection card on your home page. Open the bot chat and press “Start”, or send the code shown in the portal.
 
 The bot uses your account language. Notifications include an “Open” button for the relevant portal page or a “Join” button for a lesson. If the messaging app cannot display a link button, the link appears as text.
 
@@ -198,7 +198,7 @@ The bot asks for confirmation before sending a request. Choose “Cancel” or s
 
 You can receive lesson reminders, new assignments and teacher messages on your phone or computer even when the portal is closed. You can use these alongside messaging app notifications.
 
-Select your name → “Device notifications” → “Turn on notifications on this device”, then allow notifications in your browser. Enable them separately on each device and browser. Choose “Turn off” in the device list to remove one.
+Select your name → “Notifications” → “Where to send” → “This device” → “Connect”, then allow notifications in your browser. Enable them separately on each device and browser. Turn a device’s switch off to remove it.
 
 On iPhone and iPad, first add the portal to your Home Screen using Share → Add to Home Screen, then open it from that icon. Device notifications require HTTPS. The portal explains if your browser does not support them.
 
@@ -206,7 +206,7 @@ Notifications pass through Google, Mozilla or Apple services. Their content is e
 
 ## Turn notifications off
 
-Send /stop to the bot or disconnect the app in “My account”. You can also choose notification topics and quiet hours there.
+Send /stop to the bot or disconnect the app in “My account”. You can also choose notification topics (“What to send”) and quiet hours there; changes save immediately.
 `,
   },
   appearance: {

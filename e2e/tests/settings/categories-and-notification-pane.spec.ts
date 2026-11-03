@@ -2,7 +2,7 @@ import { startSession, bearer } from '../support/session';
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 
 /**
- * Version 0.22.0, settings and the bell: the settings are list-detail with eight categories (the list and the
+ * Version 0.22.0, settings and the bell: the settings are list-detail with six categories (the list and the
  * category side by side on a wide screen, one at a time on a phone); the notifications are the bell's side
  * sheet — the third pane on extra-large, the whole screen on a phone; the old addresses of the Calls, AI,
  * account and Notifications pages and the settings' `?open=` lead to their new place; the student's messengers
@@ -15,16 +15,7 @@ const LOGIN = `bell-${RUN}`;
 const PASSWORD = 'student-pass-1';
 const PHONE = { width: 390, height: 844 };
 const WIDE = { width: 1920, height: 1080 };
-const CATEGORIES = [
-  'Мой аккаунт',
-  'Портал',
-  'Расписание и календарь',
-  'Звонки',
-  'Уведомления и мессенджеры',
-  'Оплаты',
-  'ИИ-помощник',
-  'Данные',
-];
+const CATEGORIES = ['Мой аккаунт', 'Портал', 'Занятия', 'Мессенджеры', 'ИИ-помощник', 'Данные'];
 
 async function signIn(page: Page, login: string, password: string): Promise<void> {
   await startSession(page, login, password);
@@ -84,9 +75,9 @@ test('the settings list the eight categories beside the chosen one at 1920, one 
   // the first category is open beside the list
   await expect(page.getByRole('region', { name: 'Мой аккаунт' })).toBeVisible();
 
-  await list.getByRole('link', { name: /Оплаты/ }).click();
-  await expect(page).toHaveURL(/\/teacher\/settings\/payments$/);
-  await expect(page.getByRole('region', { name: 'Оплаты' })).toBeVisible();
+  await list.getByRole('link', { name: /Занятия/ }).click();
+  await expect(page).toHaveURL(/\/teacher\/settings\/lessons$/);
+  await expect(page.getByRole('region', { name: 'Занятия' })).toBeVisible();
   await expect(list).toBeVisible();
 
   await page.setViewportSize(PHONE);
@@ -105,11 +96,11 @@ test('the old addresses lead to the settings categories and the bell', async ({ 
   await page.setViewportSize(WIDE);
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   const redirects: readonly (readonly [string, RegExp])[] = [
-    ['/teacher/calls', /\/teacher\/settings\/calls$/],
+    ['/teacher/calls', /\/teacher\/settings\/lessons$/],
     ['/teacher/ai', /\/teacher\/settings\/ai$/],
     ['/teacher/account', /\/teacher\/settings\/account$/],
     ['/teacher/settings?open=data', /\/teacher\/settings\/data$/],
-    ['/teacher/settings?open=meetings', /\/teacher\/settings\/calls$/],
+    ['/teacher/settings?open=meetings', /\/teacher\/settings\/lessons$/],
     ['/teacher/settings?open=portal', /\/teacher\/settings\/portal$/],
     ['/teacher/notifications?open=messengers', /\/teacher\/settings\/messengers$/],
   ];
@@ -196,6 +187,6 @@ test('the student: the old notifications address opens the bell, the messengers 
   await page.keyboard.press('Escape');
 
   await page.goto('/cabinet/account');
-  await expect(page.locator('tb-channels-panel')).toBeVisible();
-  await expect(page.getByText('Что присылать в мессенджеры')).toBeVisible();
+  await expect(page.locator('tb-notifications-section')).toContainText('Куда присылать');
+  await expect(page.locator('tb-notifications-section')).toContainText('Что присылать');
 });

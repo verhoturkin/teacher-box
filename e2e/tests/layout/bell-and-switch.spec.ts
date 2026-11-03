@@ -23,7 +23,7 @@ test('the bell is a 40 px icon button of the notifications sheet', async ({ page
 
 test('a switch has a 24 px handle when on and 16 px when off', async ({ page }) => {
   await signIn(page);
-  await page.goto('/teacher/settings/calls');
+  await page.goto('/teacher/settings/lessons');
   const handles = page.locator('.p-toggleswitch-handle');
   await expect(handles.first()).toBeVisible();
   const sizes = await handles.evaluateAll((all) =>

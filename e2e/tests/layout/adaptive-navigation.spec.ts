@@ -158,7 +158,7 @@ test('messages are a snackbar at the bottom and buttons follow the portal color'
   const current = await name.inputValue();
   const rename = async (value: string): Promise<void> => {
     await name.fill(value);
-    await page.getByRole('button', { name: 'Сохранить', exact: true }).first().click();
+    await name.press('Tab'); // 356.1: the name saves on change
     const snackbar = page.locator('.p-toast-message', { hasText: 'Имя сохранено' }).last();
     await expect(snackbar).toBeVisible();
     const box = await snackbar.boundingBox();

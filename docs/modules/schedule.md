@@ -132,7 +132,7 @@ opens the same attendance dialog as the calendar directly on the home page.
 agenda with week/day navigation and week/month switches, lesson bottom sheet on compact (16 px between details and actions) and centered
 `tb-dialog` on medium and wider screens, matching the teacher), `ui/` (lesson actions, `lesson-card.ts`), `home/` widgets,
 `schedule-labels.ts`. The teacher's time zone, `teacher/google-calendar-panel.ts` and `ui/calendar-feed-panel.ts` sit in
-the settings category «Расписание и календарь» (`/teacher/settings/calendar`, 0.22.0), not on the schedule page. A new lesson gets the default topic of the chosen student or group
+the settings category «Занятия» (`/teacher/settings/lessons`, 357.2; `calendar` redirects), not on the schedule page. A new lesson gets the default topic of the chosen student or group
 (`teacher/lesson-owner.ts` `followDefaultTopic`, 0.13.0) as its title unless the teacher typed
 one; until 334.2 the form has only the title field and keeps the lesson's topic unchanged.
 Dragging a lesson in the teacher's calendar (`ui/schedule-calendar.ts`) does not save it: the lesson

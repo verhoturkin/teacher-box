@@ -27,7 +27,7 @@ test('the teacher connects a Telegram bot step by step', async ({ page, request 
 
   // 0.22.0: the bots are in the category «Мессенджеры» of the settings
   await page.goto('/teacher/settings');
-  await page.getByRole('link', { name: /^Уведомления и мессенджеры/ }).click();
+  await page.getByRole('link', { name: /^Мессенджеры/ }).click();
   await expect(page).toHaveURL(/\/teacher\/settings\/messengers$/);
   const bots = page.locator('tb-bots-panel');
   await bots
@@ -74,5 +74,7 @@ test('the teacher connects a Telegram bot step by step', async ({ page, request 
   await expect(bots.locator('li.tb-bot').filter({ hasText: 'Telegram' })).toContainText(
     '@teacherbox_e2e_bot',
   );
-  await expect(page.locator('tb-channels-panel').getByText('@e2e_teacher')).toBeVisible();
+  // 356.2: the teacher's own connection is a row of «Куда присылать» in «Мой аккаунт»
+  await page.goto('/teacher/settings/account');
+  await expect(page.locator('tb-notifications-section').getByText('@e2e_teacher')).toBeVisible();
 });

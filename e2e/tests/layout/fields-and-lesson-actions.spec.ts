@@ -156,7 +156,13 @@ for (const theme of ['Светлая тема', 'Тёмная тема']) {
     }) => {
       await signIn(page, 'teacher', TEACHER_PASSWORD, width);
       await page.goto('/teacher/settings/account');
-      await page.getByRole('button', { name: theme.split(' ')[0], exact: true }).click();
+      // 356.3: on a phone the theme is on the sub-page «Тема и язык»
+      const choice = theme.split(' ')[0] ?? '';
+      if (width < 600) {
+        await page.getByRole('button', { name: /Тема и язык/ }).click();
+        await page.locator('#account-theme').click();
+        await page.getByRole('option', { name: choice, exact: true }).click();
+      } else await page.getByRole('button', { name: choice, exact: true }).click();
       await page.goto('/teacher/students');
       if (width < 600)
         await page.getByRole('button', { name: 'Добавить ученика', exact: true }).click();

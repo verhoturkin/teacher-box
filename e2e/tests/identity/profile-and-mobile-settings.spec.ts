@@ -63,8 +63,9 @@ test('a student sets a photo and an own name; the teacher keeps the name they ga
   await expect(student.getByText('Фото сохранено')).toBeVisible();
   await expect(student.locator('a[aria-label^="Аккаунт"] tb-avatar img')).toBeVisible();
 
+  // 356.1: the name saves on change
   await student.locator('#account-own-name').fill(OWN_NAME);
-  await student.getByRole('button', { name: 'Сохранить' }).first().click();
+  await student.locator('#account-own-name').blur();
   await expect(student.getByText('Имя сохранено')).toBeVisible();
   // the name is in the accessible name of the rail's «Аккаунт»
   await expect(student.locator('a[aria-label^="Аккаунт"]')).toHaveAttribute(
@@ -73,7 +74,7 @@ test('a student sets a photo and an own name; the teacher keeps the name they ga
   );
   // 0.40.1: the item shows the name; «Выйти» is the last of the student's account page
   await expect(student.locator('a[aria-label^="Аккаунт"]')).toContainText(OWN_NAME);
-  await expect(student.locator('tb-account-panel > .tb-stack > :last-child')).toHaveText(/Выйти/);
+  await expect(student.getByRole('button', { name: 'Выйти' })).toBeVisible();
   await expect(student.getByText(`Учитель видит вас как «${STUDENT}»`)).toBeVisible();
 
   const teacher = await (await browser.newContext()).newPage();
@@ -96,21 +97,19 @@ test('the teacher settings on a phone: backups menu and a full-screen reset dial
   await expect(page.locator('.tb-shell__title')).toHaveText('Настройки');
 
   const backups = page.locator('#backups');
-  const pane = page.locator('tb-pane').filter({ has: backups });
-  await pane
-    .locator('.tb-pane__header')
-    .getByRole('button', { name: 'Создать копию сейчас', exact: true })
-    .click();
+  await backups.getByRole('button', { name: 'Создать сейчас', exact: true }).click();
   await expect(page.getByText(/^Копия .+ создана$/)).toBeVisible({ timeout: 30_000 });
   const actions = backups.getByRole('button', { name: /^Действия: / }).first();
   await actions.click();
   await expect(actions).toHaveAttribute('aria-expanded', 'true');
-  for (const item of ['Восстановить…', 'Скачать', 'Удалить…']) {
+  for (const item of ['Восстановить…', 'Удалить…']) {
     await expect(page.getByRole('menuitem', { name: item })).toBeVisible();
   }
   await page.keyboard.press('Escape');
+  // 357.5: the copy downloads from its own button
+  await expect(backups.getByRole('button', { name: /^Скачать копию / }).first()).toBeVisible();
 
-  await page.getByRole('button', { name: 'Сбросить все данные…' }).click();
+  await page.getByRole('button', { name: 'Очистить…' }).click();
   const dialog = page.getByRole('dialog', { name: 'Сбросить все данные?' });
   await expect(dialog).toBeVisible();
   // full screen once the opening animation is over

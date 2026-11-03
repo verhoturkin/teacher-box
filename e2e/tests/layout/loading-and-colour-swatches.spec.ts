@@ -69,29 +69,29 @@ test('the check on every portal colour swatch is readable', async ({ page }) => 
       return 0.2126 * linear(red) + 0.7152 * linear(green) + 0.0722 * linear(blue);
     };
     return elements
-      .filter((element) => element.classList.contains('tb-accent'))
-      .filter((element) => !element.classList.contains('tb-accent--own'))
+      .filter((element) => element.classList.contains('tb-swatch'))
+      .filter((element) => element.querySelector('.tb-swatch__dot--own') === null)
       .map((element) => {
-        const style = getComputedStyle(element);
+        const style = getComputedStyle(element.querySelector('.tb-swatch__dot') ?? element);
         const [light, dark] = [luminance(style.backgroundColor), luminance(style.color)].sort(
           (a, b) => b - a,
         );
         return {
-          name: element.getAttribute('aria-label'),
+          name: (element.textContent ?? '').trim(),
           ratio: ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05),
         };
       });
   });
   expect(ratios.map(({ name }) => name).filter((name) => name !== 'Текущий цвет')).toEqual([
     'Индиго',
-    'Классический синий',
-    'Барвинковый',
-    'Изумрудный',
-    'Малиновый',
-    'Персиковый',
+    'Синий',
+    'Барвинок',
+    'Изумруд',
+    'Малина',
+    'Персик',
     'Мокко',
-    'Золотистый',
-    'Облачный',
+    'Золото',
+    'Облако',
   ]);
   for (const { name, ratio } of ratios) {
     expect(ratio, name ?? '').toBeGreaterThanOrEqual(4.5);

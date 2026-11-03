@@ -56,7 +56,7 @@ test('the administrator makes a backup', async ({ page }) => {
       response.request().method() === 'POST' &&
       new URL(response.url()).pathname === '/api/admin/backups',
   );
-  await page.getByRole('button', { name: 'Создать копию сейчас' }).click();
+  await page.getByRole('button', { name: 'Создать сейчас' }).click();
   const response = await created;
   expect(response.ok()).toBe(true);
   const backup = (await response.json()) as { name: string };
@@ -76,7 +76,7 @@ test('the administrator makes a backup', async ({ page }) => {
 test('the full reset deletes the data and opens the first setup', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.goto('/teacher/settings?open=data');
-  await page.getByRole('button', { name: 'Сбросить все данные…' }).click();
+  await page.getByRole('button', { name: 'Очистить…' }).click();
   const dialog = page.getByRole('dialog', { name: 'Сбросить все данные?' });
   await dialog.locator('#reset-password').fill(TEACHER_PASSWORD);
   await dialog.locator('#reset-word').fill('СБРОСИТЬ');

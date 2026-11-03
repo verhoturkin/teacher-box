@@ -51,9 +51,9 @@ list, choice in `localStorage`), components `call-host` (in `app.ts`), `call-pre
 `call-self` (own camera of a one-to-one call), layout in `call-layout.ts`, moving
 between corners in `call-corner.ts` (mini window and own camera, each remembered in `localStorage`); `index.ts` exports `CallHost` (root `@defer`) and
 `CALL_ROUTES` (`/call/:ownerId`, `openCallGuard`; 0.22.0: no «Звонки» section — `/teacher/calls` redirects to the
-settings category «Звонки», `/teacher/settings/calls`) — never import them from `parts.ts` in the root, it pulls the
+settings category «Занятия», `/teacher/settings/lessons`) — never import them from `parts.ts` in the root, it pulls the
 help articles into the first load (0.15.3: no call card on the student's home — the student joins from the lesson). `rooms/` (`room-panel.ts` — the card «Видеовстреча» on the Профиль tab of a student's or a group's card, saved at
-once), `settings/` (`meetings-settings-panel.ts`: calls status and device setting, the category «Звонки» of the settings), `ui/` (start-lesson split button), `telemost.ts` (app/browser opening); embedded
+once), `settings/` (`meetings-settings-panel.ts`: calls status and device setting, the «Звонки» block of the category «Занятия»), `ui/` (start-lesson split button), `telemost.ts` (app/browser opening); embedded
 via `parts.ts`.
 
 ### Sound quality

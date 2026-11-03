@@ -63,7 +63,7 @@ screens and wrapping on compact screens, matching the teacher's payments overvie
 `student-price-card.ts` on the Profile tab; monthly report; the payment dialog takes an
 optional receipt), `student/` (own payments: a surface pane with balance, charged, paid and lesson-price figures; history filter chips for all operations, payments and charges), `ledger/` (the receipt opens from its payment row; the teacher
 attaches, replaces and removes it from the «📎» menu), `home/` (finance widgets), `settings/default-price-card.ts`
-(the settings category «Оплаты», `/teacher/settings/payments`), `billing-labels.ts`.
+(«Время и цена» of the settings category «Занятия», `/teacher/settings/lessons`, saved on change), `billing-labels.ts`.
 
 On compact screens the teacher's month controls and «Отчёт за месяц» link wrap within the pane.
 The report's month picker fits the available width; figure amounts wrap inside their tiles.

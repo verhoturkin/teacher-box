@@ -98,7 +98,7 @@ priority; depart from it only for a gross M3 violation and name it.
 
 ### Stage 358 — Docs and check
 
-- [ ] **358.1** `docs/screens.md` «Settings (teacher)» and student «Мой аккаунт»,
+- [x] **358.1** `docs/screens.md` «Settings (teacher)» and student «Мой аккаунт»,
   `docs/design-system.md` (autosave rule), `docs/glossary.md`, help articles (ru, en), wiki pages
   that name settings categories, E2E suites under `e2e/tests/` that open the old categories.
 - [ ] **358.2** Check every board of the sketches against the running app (teacher and student,

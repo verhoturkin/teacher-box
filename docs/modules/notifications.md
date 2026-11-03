@@ -114,19 +114,18 @@ the teacher's tabs «Входящие» / «Отправленные», the stud
 the active tab's content scrolls inside the sheet on desktop and compact screens; `/teacher/notifications` leads to
 `/teacher?notifications=inbox`, the old `?open=` / `?tab=` messenger addresses to `/teacher/settings/messengers`;
 `/cabinet/notifications` to `/cabinet?notifications=inbox`), `teacher/messengers-settings-panel.ts`
-= the settings category «Уведомления и мессенджеры» (device notifications after the failed
-deliveries, bots, own messengers, bot abilities, students' messengers, what to send), `inbox/` (unread notifications on top; «Прочитанные» folded by default, loaded when
-opened, each part with its own «Показать ещё»; a notification marked read moves there; `notification-list.ts`), `channels/`, `preferences/` (the student's are on «Мой аккаунт», `/cabinet/account`, 235.2), `teacher/` (broadcast —
+= the settings category «Мессенджеры» (failed deliveries, bots, bot abilities, students as
+«5 из 7»; the user's own messengers and what to send moved to «Мой аккаунт», 356.2), `inbox/` (unread notifications on top; «Прочитанные» folded by default, loaded when
+opened, each part with its own «Показать ещё»; a notification marked read moves there; `notification-list.ts`), `account/` (the «Уведомления» section of «Мой аккаунт» for both roles), `channels/` (the connect code view), `teacher/` (broadcast —
 `new-message-dialog.ts` is the frame's dialog of a new message through `NEW_MESSAGE_DIALOG`, opened by «Создать ›
 Сообщение» on any page and by «Написать ученикам», 235.3; bot wizard), `student/` (`connect-messenger-card.ts` on the student's home → «Мой аккаунт»; the «connect» reminder
 `remindToConnect` links there too), `notification-labels.ts`; the bell in the top bar (`core/notifications`) opens the sheet.
 
 Web push in the interface (0.38.0, ADR-0051): `core/push/web-push.ts` (`WebPush` on `SwPush`: the
 public key, subscribe, unsubscribe, the user's devices; the permission is asked only from a click,
-and an iPhone tab that is not on the Home Screen gets the hint instead), `push/push-devices-card.ts`
-(«Уведомления на устройствах» in the teacher's «Уведомления и мессенджеры» and on the student's
-«Мой аккаунт»: «Включить уведомления
-на этом устройстве», the list with «Отключить») and `push/push-onboarding-card.ts` (a card on the
+and an iPhone tab that is not on the Home Screen gets the hint instead), `account/notifications-section.ts`
+(«Уведомления» of «Мой аккаунт», teacher and student: «Куда присылать» — messengers and devices,
+«Это устройство» → «Подключить», a switch per device — and «Что присылать» with quiet hours, 356.2) and `push/push-onboarding-card.ts` (a card on the
 home that a click turns into the permission prompt; «Не сейчас» hides it on this device). Without
 HTTPS or a service worker (a dev build) `supported` is false and the card only explains it. The
 service worker itself, the update snackbar and the offline page «Нет связи» are in ADR-0051; nginx
