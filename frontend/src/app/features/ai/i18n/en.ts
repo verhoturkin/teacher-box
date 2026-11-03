@@ -6,13 +6,24 @@ export const en: Translation<typeof ru> = {
     HOMEWORK_DRAFT: 'Assignment drafts',
     REVIEW_DRAFT: 'Review drafts',
   },
+  statuses: {
+    SUCCEEDED: 'Completed',
+    FAILED: 'Error',
+    REFUSED: 'Declined by model',
+  },
   usage: {
+    modelAndUsage: 'Model and usage',
     byAdmin: 'Set up by the portal administrator',
     working: 'Working',
-    ofMonthLimit: 'of the monthly limit',
-    resets: 'resets on',
+    ofMonthLimit: (used: string, limit: string, resets: string) =>
+      `of the monthly limit · ${used} of ${limit} tokens · resets on ${resets}`,
     tokensNoLimit: 'tokens this month, no limit',
-    mostly: (list: string) => `Mostly ${list}.`,
+    recent: (month: string) => `Recent requests · ${month}`,
+    noRequests: 'No requests this month',
+    showMore: 'Show more',
+    inOut: (input: number, output: number) =>
+      `${input.toLocaleString('en-GB')} → ${output.toLocaleString('en-GB')} tokens`,
+    seconds: (seconds: string) => `${seconds} s`,
     notConfigured: 'The AI assistant is not set up',
     notConfiguredHint:
       'Ask the portal administrator to enable the AI assistant for assignment drafts and feedback.',
@@ -113,11 +124,11 @@ export const en: Translation<typeof ru> = {
     summary: 'For advanced users — how the assistant writes tasks and reviews',
     more: 'More actions',
     title: 'System prompts',
-    hint: 'Set the tone, language and structure of AI drafts. You can customise these instructions.',
     features: {
       HOMEWORK_DRAFT: 'Assignment draft',
       REVIEW_DRAFT: 'Review draft',
     },
+    resetHint: 'A changed prompt can be restored to the standard one in the edit window.',
     custom: 'Custom',
     edit: (name: string) => `Edit the system prompt “${name}”`,
     text: 'Text',

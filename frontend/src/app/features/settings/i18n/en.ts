@@ -37,10 +37,6 @@ export const en: Translation<typeof ru> = {
       `${countOf(count, 'notification', 'notifications', 'notifications')} not delivered.`,
     showDeliveries: 'Show',
     hideDeliveries: 'Hide',
-    when: 'When',
-    to: 'To',
-    where: 'Where',
-    error: 'Error',
     you: 'You',
     ai: 'AI assistant',
     aiSummary: 'Model, usage, prompts',
@@ -209,7 +205,9 @@ export const en: Translation<typeof ru> = {
       'To recover a lost installation, connect the new portal to the same Google Drive account, download a backup to the server, then restore it.',
   },
   restore: {
-    title: 'Restore backup',
+    title: 'Restore from a backup?',
+    chooseCopy: 'Backup',
+    passwordHint: 'Your password is needed for dangerous actions',
     replaceBefore: 'All portal data will be replaced with the backup from',
     replaceAfter: '. Everything added later (students, lessons, payments, homework) will be lost.',
     beforeRestore:
@@ -243,6 +241,7 @@ export const en: Translation<typeof ru> = {
     header: 'Reset all data?',
     warning:
       'All students, lessons, payments and assignments will be deleted. A backup will be kept in “Backups”.',
+    passwordHint: 'Your password is needed for dangerous actions',
     password: 'Your password',
     word: 'RESET',
     typeWord: (word: string) => `Type “${word}”`,

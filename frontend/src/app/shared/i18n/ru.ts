@@ -8,6 +8,8 @@ function characters(count: number): string {
 export const ru = {
   common: {
     cancel: 'Отмена',
+    today: 'сегодня',
+    yesterday: 'вчера',
     close: 'Закрыть',
     save: 'Сохранить',
     delete: 'Удалить',

@@ -6,6 +6,7 @@ import {
   computed,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
@@ -351,9 +352,15 @@ const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
       kind="form"
       [(visible)]="passwordDialog"
       [headline]="t.changePassword"
-      [cancelLabel]="c.close"
+      [confirmLabel]="cp.change"
+      formId="change-password-form"
+      [pending]="passwordForm()?.pending() ?? false"
     >
-      <tb-change-password-form [tonal]="true" [narrow]="false" (changed)="passwordChanged()" />
+      <tb-change-password-form
+        formId="change-password-form"
+        [narrow]="false"
+        (changed)="passwordChanged()"
+      />
     </tb-dialog>
   `,
   styles: `
@@ -451,6 +458,8 @@ export class AccountPanel implements OnInit {
       `${this.themes.find((theme) => theme.value === this.theme.choice())?.label ?? ''} · ${this.languages.find((lang) => lang.value === this.currentLanguage)?.label ?? ''}`,
   );
   protected readonly passwordDialog = signal(false);
+  protected readonly passwordForm = viewChild(ChangePasswordForm);
+  protected readonly cp = T.changePassword;
 
   readonly nameForm = new FormGroup({
     name: new FormControl('', {

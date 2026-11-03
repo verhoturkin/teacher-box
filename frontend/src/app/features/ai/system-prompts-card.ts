@@ -16,6 +16,7 @@ import {
 } from '@angular/forms';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
+import { Card } from 'primeng/card';
 import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
 import { Textarea } from 'primeng/textarea';
@@ -25,7 +26,7 @@ import { DialogHeaderActions, TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { FieldErrors } from '@shared/ui/field-errors';
 import { AiApi } from './data-access/ai-api';
-import { SystemPrompt } from './data-access/ai.models';
+import { AiFeature, SystemPrompt } from './data-access/ai.models';
 import { T } from './i18n/texts';
 
 /** The longest system prompt, as on the backend (`SystemPrompts.MAX_TEXT`). */
@@ -45,6 +46,7 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
   imports: [
     ReactiveFormsModule,
     Button,
+    Card,
     DialogHeaderActions,
     Menu,
     TbDialog,
@@ -54,54 +56,60 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ul class="tb-list">
-      <li>
-        <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-code"></i></span>
-        <div class="tb-list__text">
-          <button
-            type="button"
-            class="tb-list__title tb-fold-link"
-            aria-controls="system-prompts"
-            [attr.aria-expanded]="open()"
-            (click)="open.set(!open())"
-          >
-            {{ t.title }}
-          </button>
-          <span class="tb-list__supporting">{{ t.summary }}</span>
-        </div>
-        <div class="tb-list__trail" aria-hidden="true">
-          <i class="tb-i" [class.tb-i-expand_more]="!open()" [class.tb-i-expand_less]="open()"></i>
-        </div>
-      </li>
-    </ul>
-    <div id="system-prompts" [hidden]="!open()">
-      <p class="tb-hint">{{ t.hint }}</p>
-      <ul class="tb-list tb-list--no-phone-lead">
-        @for (prompt of prompts(); track prompt.feature) {
-          <li>
-            <div class="tb-list__text">
-              <span class="tb-list__title">
-                {{ t.features[prompt.feature] }}
-                @if (prompt.custom) {
-                  <p-tag [value]="t.custom" severity="info" />
-                }
-              </span>
-              <span class="tb-system-prompt-text">{{ prompt.text }}</span>
-            </div>
-            <div class="tb-list__trail tb-list__trail--icons">
-              <p-button
-                icon="tb-i tb-i-edit"
-                [text]="true"
-                [rounded]="true"
-                severity="secondary"
-                [ariaLabel]="t.edit(t.features[prompt.feature])"
-                (onClick)="edit(prompt)"
-              />
-            </div>
-          </li>
-        }
-      </ul>
-    </div>
+    <p-card styleClass="tb-section-card tb-section-card--flow">
+      <ng-template #title>
+        <button
+          type="button"
+          class="tb-fold"
+          aria-controls="system-prompts"
+          [attr.aria-expanded]="open()"
+          (click)="open.set(!open())"
+        >
+          <span class="tb-fold__text">
+            <span class="tb-fold__title">{{ t.title }}</span>
+            <span class="tb-fold__summary">{{ t.summary }}</span>
+          </span>
+          <i
+            class="tb-i tb-muted"
+            aria-hidden="true"
+            [class.tb-i-expand_more]="!open()"
+            [class.tb-i-expand_less]="open()"
+          ></i>
+        </button>
+      </ng-template>
+      <div id="system-prompts" class="tb-system-prompts" [hidden]="!open()">
+        <p class="tb-muted">{{ t.textHint }}</p>
+        <ul class="tb-list">
+          @for (prompt of prompts(); track prompt.feature) {
+            <li>
+              <span class="tb-list__lead" aria-hidden="true"
+                ><i class="tb-i" [class]="icons[prompt.feature]"></i
+              ></span>
+              <div class="tb-list__text">
+                <span class="tb-list__title">
+                  {{ t.features[prompt.feature] }}
+                  @if (prompt.custom) {
+                    <p-tag [value]="t.custom" severity="info" />
+                  }
+                </span>
+                <span class="tb-system-prompt-text">{{ prompt.text }}</span>
+              </div>
+              <div class="tb-list__trail tb-list__trail--icons">
+                <p-button
+                  icon="tb-i tb-i-edit"
+                  [text]="true"
+                  [rounded]="true"
+                  severity="secondary"
+                  [ariaLabel]="t.edit(t.features[prompt.feature])"
+                  (onClick)="edit(prompt)"
+                />
+              </div>
+            </li>
+          }
+        </ul>
+        <small class="tb-hint">{{ t.resetHint }}</small>
+      </div>
+    </p-card>
 
     <tb-dialog
       kind="form"
@@ -151,13 +159,44 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
     </tb-dialog>
   `,
   styles: `
-    .tb-fold-link {
+    /* the title of the card is the fold button: the sketch Ai «Системные промты» */
+    .tb-fold {
+      display: flex;
+      align-items: center;
+      gap: var(--tb-space-3);
+      width: 100%;
       border: 0;
       padding: 0;
       background: none;
       color: inherit;
+      font: inherit;
       text-align: start;
       cursor: pointer;
+    }
+
+    .tb-fold__text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .tb-fold__title,
+    .tb-fold__summary {
+      display: block;
+    }
+
+    .tb-fold__summary {
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-body-m);
+    }
+
+    .tb-system-prompts {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-3);
+
+      > * {
+        margin: 0;
+      }
     }
 
     .tb-list__title {
@@ -170,7 +209,7 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
     .tb-system-prompt-text {
       display: -webkit-box;
       overflow: hidden;
-      -webkit-line-clamp: 3;
+      -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
     }
   `,
@@ -181,7 +220,11 @@ export class SystemPromptsCard implements OnInit {
   private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
 
-  protected readonly open = signal(false);
+  protected readonly icons: Record<AiFeature, string> = {
+    HOMEWORK_DRAFT: 'tb-i-assignment',
+    REVIEW_DRAFT: 'tb-i-rate_review',
+  };
+  protected readonly open = signal(true);
   protected readonly prompts = signal<readonly SystemPrompt[]>([]);
   readonly editing = signal<SystemPrompt | null>(null);
   protected readonly header = computed(() => {

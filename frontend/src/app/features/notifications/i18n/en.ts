@@ -134,8 +134,9 @@ export const en: Translation<typeof ru> = {
   abilities: {
     title: 'What the bot can do',
     summary: 'Notifications and the /menu for students',
-    about:
-      'Send /menu to see available actions, or use the buttons under a message. Commands: /menu — show menu; /cancel — cancel an action; /help — help; /stop — stop notifications.',
+    about: 'Send /menu to see available actions, or use the buttons under a message.',
+    commandsTitle: 'Commands',
+    commands: ['/menu — menu', '/cancel — cancel', '/help — help', '/stop — turn off'],
     students: 'For students',
     you: 'For you',
     onlyNotifications: 'Notifications only.',
@@ -227,7 +228,7 @@ export const en: Translation<typeof ru> = {
     paused: 'notifications paused',
     none: 'No messenger connected',
     noneHint: 'Notifications reach the student’s account only',
-    remind: 'Remind',
+    remind: 'Send the connection link',
     reminded: 'Reminder sent',
     failed: (count: number) => `Not delivered: ${String(count)}`,
     failedHint: 'Messages rejected by the messaging service in the last 30 days',

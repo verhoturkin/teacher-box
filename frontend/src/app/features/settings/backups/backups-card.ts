@@ -1,5 +1,4 @@
 import { PaneHeader } from '@shared/ui/panes';
-import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -23,6 +22,7 @@ import { FileSaver } from '@shared/files/file-saver';
 import { formatFileSize } from '@shared/files/file-size';
 import { HelpButton } from '@features/help/parts';
 import type { HelpTopic } from '@features/help/parts';
+import { dayTime } from '@shared/dates/iso-date';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { BackupInfo, BackupKind } from '../data-access/settings.models';
 import { BackupsApi, BackupsArea } from './backups-api';
@@ -57,7 +57,6 @@ const KIND_ICONS: Readonly<Record<BackupKind, string>> = {
   imports: [
     PaneHeader,
     EmptyState,
-    DatePipe,
     Button,
     Card,
     HelpButton,
@@ -94,9 +93,7 @@ const KIND_ICONS: Readonly<Record<BackupKind, string>> = {
           <tb-empty-state icon="tb-i-database" [title]="t.empty" />
         } @else {
           <p-message severity="info" icon="tb-i tb-i-verified" styleClass="tb-form-message">
-            <strong>{{
-              t.latest((backups()[0]?.createdAt | date: 'dd.MM.yyyy HH:mm') ?? '')
-            }}</strong>
+            <strong>{{ t.latest(when(backups()[0]?.createdAt ?? '')) }}</strong>
             {{ t.about }}
             @if (isAdmin()) {
               {{ t.teacherOnly }}
@@ -109,9 +106,7 @@ const KIND_ICONS: Readonly<Record<BackupKind, string>> = {
                   ><i class="tb-i" [class]="'tb-i-' + icon(backup)"></i
                 ></span>
                 <div class="tb-list__text">
-                  <span class="tb-list__title">{{
-                    backup.createdAt | date: 'dd.MM.yyyy HH:mm'
-                  }}</span>
+                  <span class="tb-list__title">{{ when(backup.createdAt, true) }}</span>
                   <span class="tb-list__supporting">{{ details(backup) }}</span>
                 </div>
                 <div class="tb-list__trail tb-list__trail--icons">
@@ -187,6 +182,7 @@ export class BackupsCard implements OnInit {
     this.isAdmin() ? 'admin/backups' : 'teacher/backups',
   );
   protected readonly RECENT = RECENT;
+  protected readonly when = dayTime;
   /** The newest copy first, as the sketch Data shows them. */
   protected readonly backups = signal<BackupInfo[]>([]);
   protected readonly all = signal(false);
@@ -227,7 +223,8 @@ export class BackupsCard implements OnInit {
   protected details(backup: BackupInfo): string {
     const parts = [formatFileSize(backup.size)];
     if (backup.kind !== null) {
-      parts.unshift(KINDS[backup.kind]);
+      const kind = KINDS[backup.kind];
+      parts.unshift(kind.charAt(0).toUpperCase() + kind.slice(1));
     }
     return parts.join(' · ');
   }

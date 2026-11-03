@@ -4,13 +4,24 @@ export const ru = {
     HOMEWORK_DRAFT: 'Черновики заданий',
     REVIEW_DRAFT: 'Черновики проверки',
   },
+  statuses: {
+    SUCCEEDED: 'Готово',
+    FAILED: 'Ошибка',
+    REFUSED: 'Отказ модели',
+  },
   usage: {
+    modelAndUsage: 'Модель и расход',
     byAdmin: 'Подключает администратор портала',
     working: 'Работает',
-    ofMonthLimit: 'месячного лимита',
-    resets: 'обнулится',
+    ofMonthLimit: (used: string, limit: string, resets: string) =>
+      `месячного лимита · ${used} из ${limit} токенов · обнулится ${resets}`,
     tokensNoLimit: 'токенов за месяц, без лимита',
-    mostly: (list: string) => `Больше всего — ${list}.`,
+    recent: (month: string) => `Последние запросы · ${month}`,
+    noRequests: 'Запросов в этом месяце не было',
+    showMore: 'Показать ещё',
+    inOut: (input: number, output: number) =>
+      `${input.toLocaleString('ru-RU')} → ${output.toLocaleString('ru-RU')} токенов`,
+    seconds: (seconds: string) => `${seconds} с`,
     notConfigured: 'ИИ-помощник не настроен',
     notConfiguredHint:
       'Это настраивает администратор портала. Чтобы получать черновики заданий и проверок, попросите его подключить ИИ-помощника.',
@@ -111,11 +122,11 @@ export const ru = {
     summary: 'Для опытных — как помощник пишет задания и отзывы',
     more: 'Другие действия',
     title: 'Системные промты',
-    hint: 'Правила, по которым ИИ готовит черновики: тон, язык, оформление. Их можно переписать под себя.',
     features: {
       HOMEWORK_DRAFT: 'Черновик задания',
       REVIEW_DRAFT: 'Черновик проверки',
     },
+    resetHint: 'Изменённый промт можно вернуть к исходному в окне правки.',
     custom: 'Изменён',
     edit: (name: string) => `Изменить системный промт «${name}»`,
     text: 'Текст',

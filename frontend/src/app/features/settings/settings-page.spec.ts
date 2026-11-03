@@ -308,8 +308,10 @@ describe('SettingsPage', () => {
     buttonByText(host, 'Показать').click();
     await fixture.whenStable();
     text = readableText(host);
-    expect(text).toContain('Мария Telegram Telegram 403: Forbidden: bot was blocked by the user');
-    expect(text).toContain('Вы MAX —');
+    expect(text).toMatch(
+      /Мария · Telegram 24 сентября, \d\d:\d\d · Telegram 403: Forbidden: bot was blocked by the user/,
+    );
+    expect(text).toMatch(/Вы · MAX 24 сентября, \d\d:\d\d/);
     buttonByText(host, 'Скрыть').click();
     await fixture.whenStable();
     expect(readableText(host)).not.toContain('403: Forbidden');
@@ -324,7 +326,7 @@ describe('SettingsPage', () => {
     const text = readableText(host);
     expect(host.querySelector('#deliveries')).toBeNull();
     expect(text).toContain('Мессенджеры Боты не подключены');
-    expect(host.querySelector('p-tag')).toBeNull();
+    expect(host.querySelector('.tb-list__trail p-tag')).toBeNull();
   });
 
   describe('leaving a form not saved', () => {

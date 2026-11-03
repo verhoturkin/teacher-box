@@ -76,7 +76,7 @@ describe('AccountPanel', () => {
     typeInto(requireElement(dialog, '#next', HTMLInputElement), next);
     typeInto(requireElement(dialog, '#confirm', HTMLInputElement), confirm);
     await fixture.whenStable();
-    buttonByText(dialog, 'Сменить пароль').click();
+    requireElement(dialog, 'button[form="change-password-form"]', HTMLButtonElement).click();
     await fixture.whenStable();
   }
 

@@ -101,8 +101,8 @@ describe('BackupsCard', () => {
     const host = await render();
 
     const text = readableText(host);
-    expect(text).toContain('перед сбросом · 2,5 МБ');
-    expect(text).toContain('по расписанию · 2,5 МБ');
+    expect(text).toContain('Перед сбросом · 2,5 МБ');
+    expect(text).toContain('По расписанию · 2,5 МБ');
     expect(host.querySelectorAll('li')).toHaveLength(3);
     expect(text).not.toContain('Скачать копию может только учитель');
   });
@@ -115,9 +115,9 @@ describe('BackupsCard', () => {
     }));
     const host = await render('teacher', copies);
 
-    expect(readableText(host)).toContain('Последняя копия — 24.09.2026');
+    expect(readableText(host)).toContain('Последняя копия — 24 сентября');
     expect(host.querySelectorAll('li')).toHaveLength(3);
-    expect(host.querySelector('li')?.textContent).toContain('24.09.2026');
+    expect(host.querySelector('li')?.textContent).toContain('24 сентября');
     buttonByText(host, 'Все 4 копии').click();
     await fixture.whenStable();
     expect(host.querySelectorAll('li')).toHaveLength(4);
@@ -187,7 +187,7 @@ describe('BackupsCard', () => {
     expect(() => menuItemByText('Удалить')).toThrow();
     menuItemByText('Восстановить').click();
     await fixture.whenStable();
-    expect(bodyText()).toContain('Восстановление из копии');
+    expect(bodyText()).toContain('Восстановить из копии?');
     expect(bodyText()).toContain('Все данные портала заменятся данными из копии');
   });
 
@@ -211,7 +211,7 @@ describe('BackupsCard', () => {
       const host = hostElement(fixture);
 
       expect(host.querySelectorAll('p-tag')).toHaveLength(1);
-      expect(host.querySelector('p-tag')?.closest('li')?.textContent).toContain('по расписанию');
+      expect(host.querySelector('p-tag')?.closest('li')?.textContent).toContain('По расписанию');
       expect(readableText(host)).toContain('в Диске');
       expect([...drive.local()]).toEqual([BEFORE_RESET.name, SCHEDULED.name]);
 

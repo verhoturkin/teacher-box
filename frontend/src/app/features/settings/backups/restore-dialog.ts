@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -9,8 +8,16 @@ import {
   model,
   signal,
 } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Message } from 'primeng/message';
+import { Select } from 'primeng/select';
+import { dayTime } from '@shared/dates/iso-date';
 import { Password } from 'primeng/password';
 import { AuthService } from '@core/auth/auth.service';
 import { describeError } from '@core/http/error-messages';
@@ -33,8 +40,9 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
   selector: 'tb-restore-dialog',
   imports: [
     ReactiveFormsModule,
-    DatePipe,
+    FormsModule,
     TbDialog,
+    Select,
     Message,
     Password,
     PasswordToggle,
@@ -59,12 +67,23 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
       @if (backup(); as backup) {
         @switch (stage()) {
           @case ('confirm') {
-            <p>
-              {{ t.replaceBefore }}
-              <strong>{{ backup.createdAt | date: 'dd.MM.yyyy HH:mm' }}</strong
-              >{{ t.replaceAfter }}
-            </p>
-            <p class="tb-muted">{{ t.beforeRestore }}</p>
+            @if (choices().length > 1) {
+              <p-select
+                [options]="choices()"
+                [ngModel]="backup"
+                (ngModelChange)="choose($event)"
+                [fluid]="true"
+                optionLabel="name"
+                [ariaLabel]="t.chooseCopy"
+              >
+                <ng-template #selectedItem let-choice>{{ choiceLabel(choice) }}</ng-template>
+                <ng-template #item let-choice>{{ choiceLabel(choice) }}</ng-template>
+              </p-select>
+            }
+            <p-message severity="error" icon="tb-i tb-i-warning" styleClass="tb-form-message">
+              {{ t.replaceBefore }} <strong>{{ when(backup.createdAt) }}</strong
+              >{{ t.replaceAfter }} {{ t.beforeRestore }}
+            </p-message>
             <form
               tbFieldErrors
               id="restore-form"
@@ -85,6 +104,7 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
                   <ng-template #showicon><tb-password-toggle /></ng-template>
                   <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
                 </p-password>
+                <small class="tb-hint">{{ t.passwordHint }}</small>
               </div>
             </form>
           }
@@ -130,7 +150,10 @@ export class RestoreDialog {
   private readonly pollMs = inject(RESTART_POLL_MS);
 
   readonly visible = model(false);
-  readonly backup = input<BackupInfo | null>(null);
+  readonly backup = model<BackupInfo | null>(null);
+  /** The copies to choose from; the select is shown when there are several. */
+  readonly choices = input<BackupInfo[]>([]);
+  protected readonly when = dayTime;
   readonly area = input<BackupsArea>('teacher');
 
   protected readonly stage = signal<Stage>('confirm');
@@ -174,6 +197,14 @@ export class RestoreDialog {
     inject(DestroyRef).onDestroy(() => {
       this.stopPolling();
     });
+  }
+
+  protected choose(backup: BackupInfo): void {
+    this.backup.set(backup);
+  }
+
+  protected choiceLabel(backup: BackupInfo): string {
+    return `${dayTime(backup.createdAt, true)}${backup.kind === null ? '' : ' · ' + T.backups.kinds[backup.kind]}`;
   }
 
   /** After closing: the next backup starts from the warning with an empty password. */

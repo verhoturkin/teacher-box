@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
 import { HelpButton } from '@features/help/parts';
 import { Portal } from '@core/portal/portal';
@@ -41,6 +42,7 @@ function isWord(value: string): boolean {
     TbDialog,
     HelpButton,
     InputText,
+    Message,
     Password,
     PasswordToggle,
     FieldErrors,
@@ -90,7 +92,12 @@ function isWord(value: string): boolean {
         </li>
       </ul>
     </p-card>
-    <tb-restore-dialog [(visible)]="restoring" [backup]="newest()" area="teacher" />
+    <tb-restore-dialog
+      [(visible)]="restoring"
+      [(backup)]="newest"
+      [choices]="copies()"
+      area="teacher"
+    />
     <tb-dialog
       kind="form"
       [(visible)]="visible"
@@ -102,8 +109,9 @@ function isWord(value: string): boolean {
       [error]="submit.error()"
       [dirty]="submit.dirty()"
     >
-      <p>{{ t.warning }}</p>
-      <p class="tb-muted">{{ t.stays }}</p>
+      <p-message severity="error" icon="tb-i tb-i-warning" styleClass="tb-form-message">
+        {{ t.warning }} {{ t.stays }}
+      </p-message>
       <form
         tbFieldErrors
         id="reset-form"
@@ -124,6 +132,7 @@ function isWord(value: string): boolean {
             <ng-template #showicon><tb-password-toggle /></ng-template>
             <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
           </p-password>
+          <small class="tb-hint">{{ t.passwordHint }}</small>
         </div>
         <div class="tb-field">
           <label for="reset-word">{{ t.typeWord(word) }}</label>
@@ -146,6 +155,7 @@ export class ResetCard {
   protected readonly restoring = signal(false);
   protected readonly finding = signal(false);
   protected readonly newest = signal<BackupInfo | null>(null);
+  protected readonly copies = signal<BackupInfo[]>([]);
 
   readonly form = new FormGroup({
     password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -177,6 +187,7 @@ export class ResetCard {
           this.snackbar.notice(T.backups.empty);
           return;
         }
+        this.copies.set([...backups].sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
         this.newest.set(newest);
         this.restoring.set(true);
       },

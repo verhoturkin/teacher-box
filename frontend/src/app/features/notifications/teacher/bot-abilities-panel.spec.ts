@@ -46,7 +46,7 @@ describe('BotAbilitiesPanel', () => {
     expect(body?.hidden).toBe(false);
 
     const text = readableText(hostElement(fixture));
-    expect(text).toContain('Ученикам Расписание Оплаты');
+    expect(text).toContain('Ученикам Расписание, Оплаты');
     expect(text).toContain('Вам Сегодня');
   });
 

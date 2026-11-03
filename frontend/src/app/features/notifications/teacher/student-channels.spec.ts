@@ -43,8 +43,8 @@ describe('StudentChannels', () => {
     );
 
     expect(rows()).toEqual([
-      `Telegram подключён с ${formatDate('2026-09-01T10:00:00Z', 'dd.MM.yyyy', 'en-US')}`,
-      'ВКонтакте подключён уведомления на паузе',
+      `Telegram с ${formatDate('2026-09-01T10:00:00Z', 'd MMMM', 'en-US')}`,
+      'ВКонтакте уведомления на паузе',
       'Не доставлено: 2 Сообщения за 30 дней, которые мессенджер не принял',
     ]);
   });
@@ -54,7 +54,7 @@ describe('StudentChannels', () => {
     const success = vi.spyOn(TestBed.inject(Snackbar), 'success');
     expect(rows()[0]).toContain('Мессенджер не подключён');
 
-    buttonByText(hostElement(fixture), 'Напомнить').click();
+    buttonByText(hostElement(fixture), 'Отправить ссылку на подключение').click();
     const request = backend.expectOne('/api/teacher/notifications/remind-connect');
     expect(request.request.body).toEqual({ studentIds: ['s-1'] });
     request.flush({ recipients: 1 });
@@ -66,12 +66,14 @@ describe('StudentChannels', () => {
   it('stops waiting when the reminder fails', async () => {
     await render(studentMessengers());
 
-    buttonByText(hostElement(fixture), 'Напомнить').click();
+    buttonByText(hostElement(fixture), 'Отправить ссылку на подключение').click();
     backend
       .expectOne('/api/teacher/notifications/remind-connect')
       .flush(null, { status: 500, statusText: 'Server Error' });
     await fixture.whenStable();
 
-    expect(buttonByText(hostElement(fixture), 'Напомнить').disabled).toBe(false);
+    expect(buttonByText(hostElement(fixture), 'Отправить ссылку на подключение').disabled).toBe(
+      false,
+    );
   });
 });

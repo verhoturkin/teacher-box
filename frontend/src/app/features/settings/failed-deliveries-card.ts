@@ -1,9 +1,8 @@
-import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
-import { TableModule } from 'primeng/table';
-import { RowType } from '@shared/ui/row-type.directive';
+import { Avatar } from '@shared/ui/avatar';
+import { dayTime } from '@shared/dates/iso-date';
 import { SHARED_T } from '@shared/i18n/texts';
 import { FailedDelivery, MessengerType } from './data-access/settings.models';
 import { T } from './i18n/texts';
@@ -20,7 +19,7 @@ const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
  */
 @Component({
   selector: 'tb-failed-deliveries-card',
-  imports: [Button, DatePipe, Message, TableModule, RowType],
+  imports: [Avatar, Button, Message],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display: block' },
   template: `
@@ -30,7 +29,7 @@ const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
           <span class="tb-deliveries__text">
             <strong>{{ t.notDeliveredTitle(deliveries().length) }}</strong>
             {{ last.recipientName ?? t.you }} · {{ messengerName(last) }} ·
-            {{ last.createdAt | date: 'dd.MM HH:mm' }}
+            {{ when(last.createdAt) }}
           </span>
           <p-button
             [label]="open() ? t.hideDeliveries : t.showDeliveries"
@@ -43,30 +42,27 @@ const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
         </div>
       </p-message>
       @if (open()) {
-        <p-table
+        <ul
           id="tb-deliveries-list"
-          [value]="deliveries()"
-          styleClass="tb-cards tb-deliveries__table"
+          class="tb-list tb-deliveries__list"
+          [attr.aria-label]="t.notDeliveredTitle(deliveries().length)"
         >
-          <ng-template #header>
-            <tr>
-              <th>{{ t.when }}</th>
-              <th>{{ t.to }}</th>
-              <th>{{ t.where }}</th>
-              <th>{{ t.error }}</th>
-            </tr>
-          </ng-template>
-          <ng-template #body let-row [tbRowType]="deliveries()">
-            <tr>
-              <td [attr.data-label]="t.when">{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-              <td [attr.data-label]="t.to">{{ row.recipientName ?? t.you }}</td>
-              <td [attr.data-label]="t.where">{{ messengerName(row) }}</td>
-              <td [attr.data-label]="t.error" class="tb-error-cell tb-cell-wide">
-                {{ row.error ?? '—' }}
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+          @for (row of deliveries(); track $index) {
+            <li>
+              <span class="tb-list__lead" aria-hidden="true">
+                <tb-avatar [name]="row.recipientName ?? t.you" size="2rem" />
+              </span>
+              <div class="tb-list__text">
+                <span class="tb-list__title"
+                  >{{ row.recipientName ?? t.you }} · {{ messengerName(row) }}</span
+                >
+                <span class="tb-list__supporting tb-deliveries__reason"
+                  >{{ when(row.createdAt, true) }}{{ row.error ? ' · ' + row.error : '' }}</span
+                >
+              </div>
+            </li>
+          }
+        </ul>
       }
     }
   `,
@@ -83,11 +79,11 @@ const MESSENGERS: { readonly type: MessengerType; readonly name: string }[] = [
       min-width: 12rem;
     }
 
-    :host ::ng-deep .tb-deliveries__table {
+    .tb-deliveries__list {
       margin-top: var(--tb-space-3);
     }
 
-    .tb-error-cell {
+    .tb-deliveries__reason {
       overflow-wrap: anywhere;
     }
   `,
@@ -99,6 +95,7 @@ export class FailedDeliveriesCard {
   readonly deliveries = input.required<FailedDelivery[]>();
 
   protected readonly open = signal(false);
+  protected readonly when = dayTime;
 
   protected messengerName(row: FailedDelivery): string {
     return MESSENGERS.find((messenger) => messenger.type === row.channel)?.name ?? row.channel;

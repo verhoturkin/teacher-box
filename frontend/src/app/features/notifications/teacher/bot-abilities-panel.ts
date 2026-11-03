@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { Tag } from 'primeng/tag';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { BotAbilities } from '../data-access/notifications.models';
 import { T } from '../i18n/texts';
@@ -9,6 +10,7 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-bot-abilities-panel',
+  imports: [Tag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display: block' },
   template: `
@@ -35,28 +37,26 @@ import { T } from '../i18n/texts';
     <div id="tb-bot-abilities" class="tb-bot-abilities" [hidden]="!open()">
       <p class="tb-muted">{{ t.about }}</p>
       @if (abilities(); as bot) {
-        <div>
-          <h3 class="tb-subtitle">{{ t.students }}</h3>
-          @if (bot.studentMenu.length === 0) {
-            <p class="tb-muted">{{ t.onlyNotifications }}</p>
-          } @else {
-            <ul>
-              @for (item of bot.studentMenu; track item) {
-                <li>{{ item }}</li>
-              }
-            </ul>
-          }
-        </div>
-        <div>
-          <h3 class="tb-subtitle">{{ t.you }}</h3>
-          @if (bot.teacherMenu.length === 0) {
-            <p class="tb-muted">{{ t.onlyNotifications }}</p>
-          } @else {
-            <ul>
-              @for (item of bot.teacherMenu; track item) {
-                <li>{{ item }}</li>
-              }
-            </ul>
+        <ul class="tb-list">
+          <li>
+            <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-school"></i></span>
+            <div class="tb-list__text">
+              <span class="tb-list__title">{{ t.students }}</span>
+              <span class="tb-list__supporting">{{ menu(bot.studentMenu) }}</span>
+            </div>
+          </li>
+          <li>
+            <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-person"></i></span>
+            <div class="tb-list__text">
+              <span class="tb-list__title">{{ t.you }}</span>
+              <span class="tb-list__supporting">{{ menu(bot.teacherMenu) }}</span>
+            </div>
+          </li>
+        </ul>
+        <h3 class="tb-section-label">{{ t.commandsTitle }}</h3>
+        <div class="tb-bot-commands">
+          @for (command of t.commands; track command) {
+            <p-tag [value]="command" severity="secondary" />
           }
         </div>
       }
@@ -81,11 +81,12 @@ import { T } from '../i18n/texts';
       p {
         margin: 0;
       }
+    }
 
-      ul {
-        margin: 0;
-        padding-inline-start: var(--tb-space-5);
-      }
+    .tb-bot-commands {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--tb-space-2);
     }
   `,
 })
@@ -95,6 +96,11 @@ export class BotAbilitiesPanel implements OnInit {
 
   protected readonly abilities = signal<BotAbilities | null>(null);
   protected readonly open = signal(false);
+
+  /** The menu in a line, or that the bot only notifies. */
+  protected menu(items: readonly string[]): string {
+    return items.length === 0 ? this.t.onlyNotifications : items.join(', ');
+  }
 
   ngOnInit(): void {
     this.api.botAbilities().subscribe((abilities) => {

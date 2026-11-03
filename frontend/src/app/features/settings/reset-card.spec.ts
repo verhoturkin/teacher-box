@@ -62,8 +62,8 @@ describe('ResetCard', () => {
     ]);
     await fixture.whenStable();
 
-    expect(bodyText()).toContain('Восстановление из копии');
-    expect(bodyText()).toContain('25.09.2026');
+    expect(bodyText()).toContain('Восстановить из копии?');
+    expect(bodyText()).toContain('25 сентября');
   });
 
   it('says when there is nothing to restore from', async () => {

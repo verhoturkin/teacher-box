@@ -28,6 +28,7 @@ import { T } from '../i18n/texts';
     <form
       tbFieldErrors
       class="tb-form"
+      [attr.id]="formId()"
       [class.tb-form--narrow]="narrow()"
       [formGroup]="form"
       (ngSubmit)="submit(formDirective)"
@@ -82,14 +83,16 @@ import { T } from '../i18n/texts';
       @if (error(); as message) {
         <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
       }
-      <div class="tb-form-actions">
-        <p-button
-          type="submit"
-          [label]="submitLabel()"
-          [severity]="tonal() ? 'secondary' : 'primary'"
-          [loading]="pending()"
-        />
-      </div>
+      @if (formId() === null) {
+        <div class="tb-form-actions">
+          <p-button
+            type="submit"
+            [label]="submitLabel()"
+            [severity]="tonal() ? 'secondary' : 'primary'"
+            [loading]="pending()"
+          />
+        </div>
+      }
       <small class="tb-hint">{{ t.othersSignedOut }}</small>
     </form>
   `,
@@ -103,12 +106,14 @@ export class ChangePasswordForm {
   readonly submitLabel = input(T.changePassword.submit);
   /** A section of a page (the account) rather than the main step (the first setup): tonal. */
   readonly tonal = input(false);
+  /** In a dialog: the dialog's own button submits the form with this id, the form shows none. */
+  readonly formId = input<string | null>(null);
   /** A readable width in a wide card (the first setup); in a card of its own size (the account) — its width. */
   readonly narrow = input(true);
   /** The password has been changed. */
   readonly changed = output();
 
-  protected readonly pending = signal(false);
+  readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
   protected readonly form = inject(NonNullableFormBuilder).group(

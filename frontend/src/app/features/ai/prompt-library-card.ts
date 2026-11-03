@@ -52,7 +52,7 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card id="prompt-library" styleClass="tb-section-card">
+    <p-card id="prompt-library" styleClass="tb-section-card tb-section-card--flow">
       <ng-template #title>
         <div class="tb-card-title">
           <span class="tb-card-title__text">{{ t.title }}</span>
@@ -100,7 +100,6 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
           }
         </ul>
       }
-      <ng-content />
     </p-card>
     <p-menu
       #menu

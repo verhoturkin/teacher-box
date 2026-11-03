@@ -26,6 +26,12 @@ import { T } from '../i18n/texts';
   imports: [Button, DatePipe, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display: block' },
+  styles: `
+    .tb-student-channels__remind {
+      display: block;
+      margin-top: var(--tb-space-3);
+    }
+  `,
   template: `
     <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
       @if (messengers(); as messengers) {
@@ -36,12 +42,15 @@ import { T } from '../i18n/texts';
                 ><i [class]="icons[channel.channel]"></i
               ></span>
               <div class="tb-list__text">
-                <span class="tb-list__title">{{ t.connected(names[channel.channel]) }}</span>
+                <span class="tb-list__title">{{ names[channel.channel] }}</span>
                 <span class="tb-list__supporting">
+                  @if (channel.displayName) {
+                    {{ channel.displayName }} ·
+                  }
                   @if (!channel.enabled) {
                     {{ t.paused }}
                   } @else if (channel.linkedAt !== null) {
-                    {{ t.since((channel.linkedAt | date: 'dd.MM.yyyy') ?? '') }}
+                    {{ t.since((channel.linkedAt | date: 'd MMMM') ?? '') }}
                   }
                 </span>
               </div>
@@ -54,15 +63,6 @@ import { T } from '../i18n/texts';
               <div class="tb-list__text">
                 <span class="tb-list__title">{{ t.none }}</span>
                 <span class="tb-list__supporting">{{ t.noneHint }}</span>
-              </div>
-              <div class="tb-list__trail">
-                <p-button
-                  [label]="t.remind"
-                  severity="secondary"
-                  [text]="true"
-                  [loading]="pending()"
-                  (onClick)="remind(messengers.studentId)"
-                />
               </div>
             </li>
           }
@@ -78,6 +78,14 @@ import { T } from '../i18n/texts';
             </li>
           }
         </ul>
+        <p-button
+          class="tb-student-channels__remind"
+          [label]="t.remind"
+          icon="tb-i tb-i-share"
+          severity="secondary"
+          [loading]="pending()"
+          (onClick)="remind(messengers.studentId)"
+        />
       }
     </tb-load-state>
   `,

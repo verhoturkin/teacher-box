@@ -90,7 +90,7 @@ priority; depart from it only for a gross M3 violation and name it.
   `TabletSettings`), «Портал» (`Portal` with «Тонкая настройка» open), «Занятия» (`Lessons`, real
   calls via `meetings/settings/meetings-settings-panel.ts`), «Мессенджеры» (`Messengers`,
   `PhoneMessengers`), the connect sheet (`PhoneConnect`).
-- [ ] **357.7 F** «ИИ-помощник» (`Ai`: usage by feature, «Последние запросы» with tokens and «Показать
+- [x] **357.7 F** «ИИ-помощник» (`Ai`: usage by feature, «Последние запросы» with tokens and «Показать
   ещё» — `UsageReport.recent`, `AiApi.requests`, dropped in 357.5 — and «Системные промты» open,
   `ai/system-prompts-card.ts`), «Данные» (`Data`) and board `Details`: «Сменить пароль»
   (`change-password-form.ts`), restore and reset dialogs with the password, the failed deliveries
