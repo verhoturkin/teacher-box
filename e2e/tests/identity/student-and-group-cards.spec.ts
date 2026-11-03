@@ -77,6 +77,7 @@ test('a student opens from the list beside it, with the header and the tabs', as
     'Занятия',
     'Задания',
     'Оплаты',
+    'Теги',
     'Профиль',
   ]);
   await page.getByRole('tab', { name: 'Задания' }).click();
