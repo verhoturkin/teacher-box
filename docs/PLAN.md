@@ -27,6 +27,60 @@ don't read them unless the task needs history.
   students column follows it instead of sitting at the far edge with empty space between
   (`homework/teacher/assignment-page.ts`).
 
+### Stage 362 — student tags for the AI
+
+Goals: the teacher defines tags (a name and an ordered list of values: «Уровень английского» A1–C2,
+«Класс» 1–11) and sets one value per tag on each student. Tags are the teacher's only: students,
+bots and the administrator never see them. Tags marked «Учитывать в ИИ» go to the homework, quiz and
+review drafts as defaults that the teacher's own request overrides. Sketches: canvas «Ученики —
+эскизы» (list, card tab, phone, elements), canvas «Настройки и аккаунт» board 16 (`Tags`), canvas
+«Задания» boards 13 and 22 (`AiEditor`, `PhoneAi`). Out of scope: tags on groups, a history of
+values, per-value hints for the AI.
+
+New ADR-0055 «Теги учеников»: tags live in `identity`; `ai` keeps no dependency on it — the frontend
+sends the context of the recipients with the request, as it does for the lesson summary.
+
+- [ ] **362.1 B** Tag definitions in `identity`: migration `V3__student_tags.sql` (`tags`: id, name
+  1–60, `use_in_ai`, position, version; `tag_values`: id, tag id, label 1–40, position;
+  `student_tags`: student id, tag id, value id, one row per tag); `StudentTagService` with CRUD and
+  reorder, optimistic locking, removing a used value clears it from students (the answer says how
+  many); REST `/api/teacher/tags` (list, create, `PUT`, `DELETE`); in `IdentityDataReset`.
+  Controller tests first: the teacher only, a student and the administrator get 403. ADR-0055 and
+  `docs/modules/identity.md` in the same commit.
+- [ ] **362.2 B** Values on a student: `PUT /api/teacher/students/{id}/tags` `{tagId →
+  valueId|null}` (`StudentAdminController`), tags in the teacher's `StudentView`, a `tag` filter on
+  the student list; never in `/api/me`, the student's views or `identity::api.StudentSummary` (test:
+  a student reading their own profile sees no tags).
+- [ ] **362.3 B** AI context: `context` — up to 10 `{name ≤ 60, value ≤ 120}` pairs — in the
+  `homework-draft`, `quiz-draft` and `review-draft` requests (`AiViews`, `AiAssistant`); the user
+  prompts (`homework-draft.user.v4`, `quiz-draft.user.v2`, `review-draft.user.v2`) put it between
+  `<students>` tags as data with the rule «defaults; the teacher's request wins» — in the user
+  prompt, so a rewritten system prompt keeps it. Several values of one tag go as «7 · 8».
+  `ai.requests` stores no context. `docs/modules/ai.md`.
+- [ ] **362.4 F** Settings category «Ученики» (`settings/settings-categories.ts` 6 → 7, after
+  «Занятия»): card «Теги учеников» with the list, the tag dialog (name, values as chips with drag
+  order, «Учитывать в ИИ» switch, delete), templates CEFR / «Класс» / «Цель» on the empty state
+  (sketch `Tags`). Phone and tablet follow the existing settings list → detail.
+- [ ] **362.5 F** Student card tab «Теги» between «Оплаты» and «Профиль»
+  (`identity/students/card-tabs.ts` `CARD_TABS`, `?tab=tags`; the group card gets none): one M3 list
+  row per tag — lead `auto_awesome` on tertiary container for AI tags, `sell` otherwise — with an
+  outlined select («Не задан» first), saved on change; «Что увидит ИИ» beside it; «Настроить теги»
+  link; empty state «Тегов пока нет» → «Создать теги» (the tab is always there). The list rows stay
+  as they are — no tags in the row or the card header. The list gets one filter chip «Теги» with a
+  menu tag → value (student counts), showing «Уровень: B1» when set, hidden while no tag exists,
+  kept as `?tag=<valueId>`; it hides groups; on the phone the set chip goes first with «×»
+  (`roster.ts`, `students-page.ts`). Canvas «Ученики — эскизы».
+- [ ] **362.6 F** «Учитываю об учениках» chips in `ai/homework-ai-panel.ts` (homework and quiz
+  modes) and the review draft in `homework/teacher/review-form.ts`: built from the recipients' AI
+  tags, each chip removable for this request, a mixed value shown in the warning tone with «у 4 — 7,
+  у 2 — 8» and a menu to pick one value; the phone sheet shows the chips in one scrolling row
+  (sketches `AiEditor`, `PhoneAi`). `docs/screens.md`, `docs/design-system.md` if a new pattern
+  appears.
+- [ ] **362.7** User docs and help: `docs/wiki/AI-assistant.md` (how tags shape drafts) and a short
+  «Теги учеников» section in the students' help article in Russian and English; glossary terms
+  «тег», «значение тега» in `docs/glossary.md`; E2E in `e2e/tests/` — the teacher creates a tag,
+  sets it on a student, the student's cabinet shows no tag.
+
 ## Repository maintenance
 
 ### Stage 336 — GitHub releases and README screenshots
