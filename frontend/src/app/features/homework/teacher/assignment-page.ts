@@ -502,8 +502,10 @@ const FOLD_LINES = 3;
       gap: var(--tb-space-6);
     }
 
+    /* the task column stops at a readable measure and the students follow it, so a very wide window
+       leaves the free space at the end rather than between the two (our decision) */
     .tb-asg__task {
-      flex: 1 1 0;
+      flex: 0 1 48rem;
       min-width: 0;
       display: flex;
       flex-direction: column;
