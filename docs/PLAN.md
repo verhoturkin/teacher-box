@@ -57,7 +57,7 @@ sends the context of the recipients with the request, as it does for the lesson 
   `<students>` tags as data with the rule «defaults; the teacher's request wins» — in the user
   prompt, so a rewritten system prompt keeps it. Several values of one tag go as «7 · 8».
   `ai.requests` stores no context. `docs/modules/ai.md`.
-- [ ] **362.4 F** Settings category «Ученики» (`settings/settings-categories.ts` 6 → 7, after
+- [x] **362.4 F** Settings category «Ученики» (`settings/settings-categories.ts` 6 → 7, after
   «Занятия»): card «Теги учеников» with the list, the tag dialog (name, values as chips with drag
   order, «Учитывать в ИИ» switch, delete), templates CEFR / «Класс» / «Цель» on the empty state
   (sketch `Tags`). Phone and tablet follow the existing settings list → detail.

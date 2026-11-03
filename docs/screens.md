@@ -553,7 +553,7 @@ the `tb-material-grid` of `tb-material-card`s (§10).
 
 `/teacher/settings[/:category]` (`features/settings/settings-categories.ts`; sketches `Main`,
 `Portal`, `Lessons`, `Messengers`, `Ai`, `Data`, `PhoneSettings`, `TabletSettings`, `Changes`),
-list-detail with `medium="two"`: six categories as a list of tonal two-line rows (40 px tonal icon
+list-detail with `medium="two"`: seven categories as a list of tonal two-line rows (40 px tonal icon
 circle, name, and the category's **state** as the second line — «Telegram работает», «Копия сегодня
 в 03:00», «Подключён · 12 % лимита»; until it loads, «what it holds»; the chosen one
 secondary-container with an emphasized name and the icon circle on the surface; group outer corners
@@ -566,9 +566,9 @@ Saving ([design-system «Fields»](design-system.md)): every field and switch sa
 answers with a short snackbar; there is no «Отменить изменения?» guard. The one exception is
 «Портал» (below).
 
-- Categories: «Мой аккаунт» (`account`), «Портал» (`portal`), «Занятия» (`lessons`), «Мессенджеры»
-  (`messengers`, a count badge of failed deliveries on the row), «ИИ-помощник» (`ai`), «Данные»
-  (`data`).
+- Categories: «Мой аккаунт» (`account`), «Портал» (`portal`), «Занятия» (`lessons`), «Ученики»
+  (`students`), «Мессенджеры» (`messengers`, a count badge of failed deliveries on the row),
+  «ИИ-помощник» (`ai`), «Данные» (`data`).
 - Old addresses redirect: `calendar`, `calls`, `payments` → `lessons`; `?open=<fold>` (`portal`,
   `calendar`, `meetings`, `deliveries`, `ai`, `data`), `?google=` (→ lessons), `?drive=` (→ data),
   `/teacher/account`, `/teacher/calls`, `/teacher/ai`, the messenger tabs of «Уведомления».
@@ -588,6 +588,17 @@ answers with a short snackbar; there is no «Отменить изменения
   занятия по умолчанию», saved on change), «Звонки» (built-in calls on/off, external link per
   student, «Открывать Телемост в приложении» on this device), «Google Календарь», «Подписка на
   календарь».
+- **«Ученики»:** one card «Теги учеников» (`identity/tags/tags-panel.ts`, ADR-0055, sketch `Tags`):
+  the teacher-only tags as segmented M3 list tiles — drag handle (the arrow keys move too), tonal
+  `sell` circle, name, the first six values as tags («ещё N»), a tertiary «ИИ» mark for tags the AI
+  uses, an edit icon; «+ Тег» under the list. Without tags the empty state offers the templates
+  «Уровень CEFR · A1–C2», «Класс · 1–11», «Цель · ОГЭ, ЕГЭ» (one click creates the tag with the AI
+  switch on) and a dashed «Свой тег». The dialog (`tb-tag-dialog`, form kind): name, values as
+  input chips with a drag handle and an entry field (Enter adds, duplicates ignored), the
+  «Учитывать в ИИ» tile with a switch (tertiary icon); on an existing tag a note that removed
+  values are cleared for students and a red text «Удалить тег» (confirmation). A save or delete
+  that cleared values says for how many students in the snackbar. The sketch's per-tag student
+  counts are not shown: the API does not return them.
 - **«Мессенджеры»:** the failed-deliveries alert first (folds open with the list), «Боты» (one row
   per messenger, «Подключить» opens the wizard), «Что умеет бот» folded, «Ученики» as «5 из 7» with
   the not connected and «Отправить ссылку», «Кто где» → `/teacher/students`. The messengers of one

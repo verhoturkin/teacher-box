@@ -103,3 +103,30 @@ export interface GroupInput {
   /** The colour in the teacher's lists; `null`: none. */
   readonly color: LabelColor | null;
 }
+
+/** Mirrors `Tag` of the backend (ADR-0055): a teacher's student tag with its ordered values. */
+export interface StudentTag {
+  readonly id: string;
+  readonly name: string;
+  /** The tag shapes the AI drafts for the student. */
+  readonly useInAi: boolean;
+  readonly values: readonly TagValue[];
+  readonly version: number;
+}
+
+export interface TagValue {
+  readonly id: string;
+  readonly label: string;
+}
+
+/** A value on save: a kept one has its `id`, a new one only the label. */
+export interface TagValueInput {
+  readonly id?: string;
+  readonly label: string;
+}
+
+/** Answer of a tag change: how many students lost a removed value. */
+export interface TagChanged {
+  readonly tag: StudentTag;
+  readonly clearedStudents: number;
+}

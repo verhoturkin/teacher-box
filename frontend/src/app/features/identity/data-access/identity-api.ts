@@ -12,6 +12,9 @@ import {
   Student,
   StudentGroup,
   StudentProfileInput,
+  StudentTag,
+  TagChanged,
+  TagValueInput,
 } from './identity.models';
 
 /** HTTP client of the identity module. */
@@ -110,5 +113,31 @@ export class IdentityApi {
       { currentPassword, newPassword },
       { context: new HttpContext().set(SKIP_ERROR_TOAST, true) },
     );
+  }
+
+  /** @param context `quietContext()` when the page shows a failed load itself (ADR-0025) */
+  listTags(context?: HttpContext): Observable<StudentTag[]> {
+    return this.http.get<StudentTag[]>('/api/teacher/tags', { context });
+  }
+
+  createTag(name: string, useInAi: boolean, values: readonly string[]): Observable<StudentTag> {
+    return this.http.post<StudentTag>('/api/teacher/tags', { name, useInAi, values });
+  }
+
+  updateTag(
+    id: string,
+    tag: { name: string; useInAi: boolean; values: readonly TagValueInput[] },
+    version: number,
+  ): Observable<TagChanged> {
+    return this.http.put<TagChanged>(`/api/teacher/tags/${id}`, { ...tag, version });
+  }
+
+  reorderTags(ids: readonly string[]): Observable<StudentTag[]> {
+    return this.http.put<StudentTag[]>('/api/teacher/tags/order', { ids });
+  }
+
+  /** @returns how many students lost the tag's value */
+  deleteTag(id: string): Observable<{ clearedStudents: number }> {
+    return this.http.delete<{ clearedStudents: number }>(`/api/teacher/tags/${id}`);
   }
 }

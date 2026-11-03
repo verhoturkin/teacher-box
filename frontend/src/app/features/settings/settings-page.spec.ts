@@ -81,6 +81,9 @@ describe('SettingsPage', () => {
         });
         backend.expectOne('/api/teacher/meetings/calls').flush({ status: 'OFF', rooms: [] });
         break;
+      case 'students':
+        backend.expectOne('/api/teacher/tags').flush([]);
+        break;
       case 'messengers':
         backend.expectOne('/api/teacher/notifications/channels').flush([channelSetup()]);
         backend
@@ -157,13 +160,14 @@ describe('SettingsPage', () => {
     fixture.destroy();
   });
 
-  it('lists the six categories with their states, the failed deliveries counted', async () => {
+  it('lists the seven categories with their states, the failed deliveries counted', async () => {
     const host = await render(1200, undefined, 'account');
 
     const list = readableText(requireElement(host, 'nav', HTMLElement));
     expect(list).toContain('Мой аккаунт Профиль, уведомления, вход');
     expect(list).toContain('Портал Название, логотип, цвет');
     expect(list).toContain('Занятия Пояс, цена, календарь, звонки');
+    expect(list).toContain('Ученики Теги: уровень, класс, формат');
     expect(list).toContain('Мессенджеры Telegram работает 2');
     expect(list).toContain('ИИ-помощник Подключён · 0 % лимита');
     expect(list).toContain('Данные Копия 25 сентября');
@@ -175,6 +179,7 @@ describe('SettingsPage', () => {
       '/teacher/settings/account',
       '/teacher/settings/portal',
       '/teacher/settings/lessons',
+      '/teacher/settings/students',
       '/teacher/settings/messengers',
       '/teacher/settings/ai',
       '/teacher/settings/data',
@@ -230,7 +235,7 @@ describe('SettingsPage', () => {
     expect(portal).toContain('Оформление портала Название, логотип, цвет');
     expect(portal).toContain('Мессенджеры 2 не доставлено 2');
     expect(portal).not.toContain('Мой аккаунт');
-    expect(host.querySelectorAll('nav .tb-i-chevron_right')).toHaveLength(6);
+    expect(host.querySelectorAll('nav .tb-i-chevron_right')).toHaveLength(7);
     expect(current(host)).toBeUndefined();
     expect(host.querySelector('tb-account-panel')).toBeNull();
     expect(TestBed.inject(PageDetail).value()).toBeNull();
