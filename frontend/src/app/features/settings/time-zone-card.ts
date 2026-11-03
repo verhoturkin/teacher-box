@@ -13,6 +13,7 @@ import { T } from './i18n/texts';
   selector: 'tb-time-zone-card',
   imports: [Message, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'tb-flow' },
   template: `
     <tb-load-state [state]="state" [what]="t.timeZoneWhat" [compact]="true" (retry)="load()">
       @if (zone(); as zone) {

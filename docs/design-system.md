@@ -561,8 +561,8 @@ action — «Изменить» next to «Проверить N работ» (hom
   (leaving a text field, Enter, a switch or select at once) and answers with a short snackbar (the
   page says «Изменения сохраняются сразу» once); such a page has no «Сохранить» and no «Отменить
   изменения?» guard. The one exception is a group whose change is visible to everyone and needs a
-  look first («Портал»): it keeps a draft and a floating bar «Отменить» / «Сохранить» while the
-  draft differs from the saved state. Groups are outlined `.p-card.tb-section-card` cards.
+  look first («Портал»): it keeps a draft and, while the draft differs from the saved state, a row «Отменить» / «Сохранить»
+  under the colour choice (no floating bar). Groups are outlined `.p-card.tb-section-card` cards.
 - **Member field** `tb-member-picker` (`identity/parts`): a grouped multiselect with one search,
   Students / Groups sections, removable typed chips and clearing (**M3**: checkboxes for related
   choices, input chips for chosen entities). *Ours:* both kinds in one dropdown, the type before the

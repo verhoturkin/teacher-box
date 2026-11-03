@@ -585,7 +585,7 @@ Open Settings from the sidebar or the ☰ menu on a phone. Select a category to 
 - **AI assistant:** model, usage by feature, recent requests, my prompts and system prompts. See [AI assistant](/teacher/help/ai).
 - **Data:** scheduled and manual backups, downloads, restoration, Google Drive storage, and the danger zone for restoring a backup or clearing the portal. See [Backups](/teacher/help/backups).
 
-Settings save as soon as you change a field or switch. The exception is Portal: a bar with Discard and Save appears at the bottom, and the portal asks before you leave with unsaved changes. File size and type are checked as soon as you select a file.
+Settings save as soon as you change a field or switch. The exception is Portal: a row with Discard and Save appears under the colour choice, and the portal asks before you leave with unsaved changes. File size and type are checked as soon as you select a file.
 
 The portal address is entered during initial setup. Contact the administrator to change it later.
 `,
@@ -596,12 +596,12 @@ The portal address is entered during initial setup. Contact the administrator to
     body: `
 ## Portal branding
 
-Open “Settings” → “Portal” to change the name, logo and colour; scheme and contrast are under “Fine tuning”. Save from the bar at the bottom. Preview shows your choices before saving; on a wide screen it appears beside the settings.
+Open “Settings” → “Portal” to change the name, logo and colour; scheme and contrast are under “Fine tuning”. Save from the row that appears under the colour choice. Preview shows your choices before saving; on a wide screen it appears beside the settings.
 
 - **Colour:** choose a base colour or “Custom colour”. Use the swatch to open the colour picker, or enter a HEX code such as #0f766e. Buttons, links and highlights use shades of this colour. The portal adjusts shades for readable contrast and warns if a colour needs a large adjustment or resembles delete buttons.
 - **Colour scheme:** choose a style from the gallery, from Original to Monochrome.
 - **Contrast:** choose Lower, Standard, Higher or Maximum. Text remains readable at every level.
-- **Preview:** check the light and dark themes. Save applies the appearance to everyone; Discard restores the saved values.
+- **Preview:** see the light and dark themes side by side. Save applies the appearance to everyone; Discard restores the saved values.
 - **Logo:** upload a PNG, JPEG, WebP or SVG up to 1 MB. It appears in navigation, on sign-in and in the browser tab. Use the bin to restore the default icon. Logo changes apply immediately.
 
 ## Personal theme and language
