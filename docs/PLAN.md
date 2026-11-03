@@ -80,6 +80,21 @@ sends the context of the recipients with the request, as it does for the lesson 
   «Теги учеников» section in the students' help article in Russian and English; glossary terms
   «тег», «значение тега» in `docs/glossary.md`; E2E in `e2e/tests/` — the teacher creates a tag,
   sets it on a student, the student's cabinet shows no tag.
+- [x] **362.8 B** Free-text tags («Интересы: футбол, Minecraft», «Цель: ЕГЭ»): migration
+  `V4__free_text_tags.sql` — `tags.kind` (`LIST` | `TEXT`, existing rows `LIST`),
+  `student_tags.text` (1–120) with `value_id` nullable and exactly one of them set. A `TEXT` tag
+  has no values; changing the kind of a used tag is refused (409). `PUT
+  /api/teacher/students/{id}/tags` keeps its map: for a `TEXT` tag the string is the text
+  (trimmed, blank clears), for a `LIST` tag the value id; `StudentView.tags` the same. The
+  `?tag=` list filter stays for list values only. ADR-0055 and `docs/modules/identity.md`
+  updated.
+- [ ] **362.9 F** Free-text tags in the UI: kind switch «Список значений / Свободный текст» in the
+  tag dialog (locked once the tag is used), template «Интересы» (text); on the card tab an outlined
+  text field instead of the select, saved on blur and Enter; the list filter menu lists only list
+  tags; «Учитываю об учениках» chips take the text as the value, recipients with different texts
+  get the mixed chip, «all values» only while the joined value fits 120 characters. Help (Russian
+  and English), `docs/wiki/AI-assistant.md`, `docs/screens.md`, E2E step in
+  `e2e/tests/identity/student-tags.spec.ts`.
 
 ## Repository maintenance
 

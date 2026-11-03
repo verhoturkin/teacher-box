@@ -5,7 +5,9 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -72,38 +74,48 @@ public class StudentAdminService {
     public List<StudentView> list(@Nullable UUID tagValue) {
         Instant now = clock.instant();
         List<User> all = users.findStudents();
-        Map<UUID, Map<UUID, UUID>> values = tags.findStudentTags(all.stream().map(User::id).toList());
+        Map<UUID, Map<UUID, String>> values = tags.findStudentTags(all.stream().map(User::id).toList());
+        Set<UUID> textTags = tags.findAll().stream().filter(tag -> tag.kind() == Tag.Kind.TEXT).map(Tag::id)
+                .collect(Collectors.toSet());
         return all.stream()
-                .filter(student -> tagValue == null
-                        || values.getOrDefault(student.id(), Map.of()).containsValue(tagValue))
+                .filter(student -> tagValue == null || values.getOrDefault(student.id(), Map.of()).entrySet().stream()
+                        .anyMatch(entry -> !textTags.contains(entry.getKey())
+                                && entry.getValue().equals(tagValue.toString())))
                 .map(student -> StudentView.of(student, invites.findUsableByUser(student.id(), now).orElse(null),
                         values.getOrDefault(student.id(), Map.of())))
                 .toList();
     }
 
     /**
-     * Sets the student's tag values: the map is the whole set (tag id to value id); a {@code null} value or a
-     * missing tag is cleared.
+     * Sets the student's tag values: the map is the whole set (tag id to value id for a list tag, to text for a
+     * text tag); a {@code null} or blank value or a missing tag is cleared.
      *
-     * @throws IllegalArgumentException if a tag is unknown or a value is not of its tag
+     * @throws IllegalArgumentException if a tag is unknown, a value is not of its tag or a text is over 120 characters
      */
     @Transactional
-    public StudentView setTags(UUID studentId, Map<UUID, @Nullable UUID> requested) {
+    public StudentView setTags(UUID studentId, Map<UUID, @Nullable String> requested) {
         User student = load(studentId);
         Map<UUID, Tag> byId = new HashMap<>();
         tags.findAll().forEach(tag -> byId.put(tag.id(), tag));
-        Map<UUID, UUID> kept = new HashMap<>();
-        requested.forEach((tagId, valueId) -> {
-            if (valueId == null) {
+        Map<UUID, String> kept = new HashMap<>();
+        Map<UUID, Tag.Kind> kinds = new HashMap<>();
+        requested.forEach((tagId, raw) -> {
+            Tag tag = byId.get(tagId);
+            if (tag == null) {
+                throw new IllegalArgumentException("Unknown tag");
+            }
+            String value = raw == null ? "" : raw.strip();
+            if (value.isEmpty()) {
                 return;
             }
-            Tag tag = byId.get(tagId);
-            if (tag == null || tag.values().stream().noneMatch(value -> value.id().equals(valueId))) {
+            if (tag.kind() == Tag.Kind.TEXT ? value.length() > Tag.MAX_TEXT_LENGTH
+                    : tag.values().stream().noneMatch(v -> v.id().toString().equals(value))) {
                 throw new IllegalArgumentException("The value does not belong to the tag");
             }
-            kept.put(tagId, valueId);
+            kept.put(tagId, value);
+            kinds.put(tagId, tag.kind());
         });
-        tags.replaceStudentTags(studentId, kept);
+        tags.replaceStudentTags(studentId, kinds, kept);
         return view(student, clock.instant());
     }
 

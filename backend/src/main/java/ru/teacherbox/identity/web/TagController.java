@@ -29,8 +29,9 @@ class TagController {
 
     record CreateTagRequest(
             @NotBlank @Size(max = Tag.MAX_NAME_LENGTH) String name,
+            Tag.@Nullable Kind kind,
             @NotNull Boolean useInAi,
-            @NotNull @Size(min = 1, max = Tag.MAX_VALUES) List<@NotBlank @Size(max = Tag.MAX_LABEL_LENGTH) String> values) {
+            @NotNull @Size(max = Tag.MAX_VALUES) List<@NotBlank @Size(max = Tag.MAX_LABEL_LENGTH) String> values) {
     }
 
     record ValueRequest(@Nullable UUID id, @NotBlank @Size(max = Tag.MAX_LABEL_LENGTH) String label) {
@@ -38,8 +39,9 @@ class TagController {
 
     record UpdateTagRequest(
             @NotBlank @Size(max = Tag.MAX_NAME_LENGTH) String name,
+            Tag.@Nullable Kind kind,
             @NotNull Boolean useInAi,
-            @NotNull @Size(min = 1, max = Tag.MAX_VALUES) List<@NotNull @Valid ValueRequest> values,
+            @NotNull @Size(max = Tag.MAX_VALUES) List<@NotNull @Valid ValueRequest> values,
             @NotNull Long version) {
     }
 
@@ -63,7 +65,7 @@ class TagController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     Tag create(@Valid @RequestBody CreateTagRequest request) {
-        return tags.create(request.name(), request.useInAi(), request.values());
+        return tags.create(request.name(), request.kind() == null ? Tag.Kind.LIST : request.kind(), request.useInAi(), request.values());
     }
 
     @PutMapping("/order")
@@ -73,7 +75,7 @@ class TagController {
 
     @PutMapping("/{id}")
     Changed update(@PathVariable UUID id, @Valid @RequestBody UpdateTagRequest request) {
-        return tags.update(id, request.name(), request.useInAi(),
+        return tags.update(id, request.name(), request.kind(), request.useInAi(),
                 request.values().stream().map(value -> new ValueInput(value.id(), value.label())).toList(),
                 request.version());
     }

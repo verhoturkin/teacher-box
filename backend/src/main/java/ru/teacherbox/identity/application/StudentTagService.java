@@ -12,6 +12,7 @@ import ru.teacherbox.identity.domain.Tag;
 import ru.teacherbox.identity.persistence.TagRepository;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.error.NotFoundException;
 
 /** The teacher's student tags (ADR-0055); teacher-only data, never offered to students or other modules. */
@@ -38,12 +39,13 @@ public class StudentTagService {
     }
 
     @Transactional
-    public Tag create(String name, boolean useInAi, List<String> labels) {
+    public Tag create(String name, Tag.Kind kind, boolean useInAi, List<String> labels) {
+        requireValuesFit(kind, labels.size());
         List<Tag> all = tags.findAll();
         if (all.size() >= Tag.MAX_TAGS) {
             throw new BusinessRuleException("tag.limit", "No more than 30 tags");
         }
-        Tag tag = new Tag(Ids.newId(), name, useInAi,
+        Tag tag = new Tag(Ids.newId(), name, kind, useInAi,
                 labels.stream().map(label -> new Tag.Value(Ids.newId(), label)).toList(), 0);
         requireUniqueName(all, tag);
         tags.insert(tag);
@@ -57,11 +59,17 @@ public class StudentTagService {
      * @throws OptimisticLockingFailureException if the tag was changed after {@code expectedVersion}
      */
     @Transactional
-    public Changed update(UUID tagId, String name, boolean useInAi, List<ValueInput> values, long expectedVersion) {
+    public Changed update(UUID tagId, String name, Tag.@Nullable Kind requestedKind, boolean useInAi,
+            List<ValueInput> values, long expectedVersion) {
         List<Tag> all = tags.findAll();
         Tag current = find(all, tagId);
         if (current.version() != expectedVersion) {
             throw new OptimisticLockingFailureException("Tag " + tagId + " was modified");
+        }
+        Tag.Kind kind = requestedKind == null ? current.kind() : requestedKind;
+        requireValuesFit(kind, values.size());
+        if (kind != current.kind() && tags.isUsed(tagId)) {
+            throw new ConflictException("tag.kind-used", "The kind of a tag set on students cannot be changed");
         }
         Set<UUID> known = new HashSet<>(current.values().stream().map(Tag.Value::id).toList());
         List<Tag.Value> next = values.stream().map(value -> {
@@ -71,10 +79,10 @@ public class StudentTagService {
             }
             return new Tag.Value(id == null ? Ids.newId() : id, value.label());
         }).toList();
-        Tag tag = new Tag(tagId, name, useInAi, next, expectedVersion);
+        Tag tag = new Tag(tagId, name, kind, useInAi, next, expectedVersion);
         requireUniqueName(all, tag);
         int cleared = tags.update(tag);
-        return new Changed(new Tag(tagId, tag.name(), useInAi, tag.values(), expectedVersion + 1), cleared);
+        return new Changed(new Tag(tagId, tag.name(), kind, useInAi, tag.values(), expectedVersion + 1), cleared);
     }
 
     /** @return how many students had a value of the tag */
@@ -93,6 +101,13 @@ public class StudentTagService {
         }
         tags.reorder(ids);
         return tags.findAll();
+    }
+
+    /** A text tag takes no values and a list tag at least one (bad request, unlike the domain's range checks). */
+    private static void requireValuesFit(Tag.Kind kind, int count) {
+        if ((kind == Tag.Kind.TEXT) != (count == 0)) {
+            throw new IllegalArgumentException("A text tag has no values, a list tag at least one");
+        }
     }
 
     private static Tag find(List<Tag> all, UUID tagId) {

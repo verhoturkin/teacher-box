@@ -185,6 +185,41 @@ class TagIntegrationTests {
                 .hasStatus(HttpStatus.NOT_FOUND);
     }
 
+    @Test
+    void textTagsHaveNoValuesAndTheirKindIsLockedOnceUsed() {
+        assertThat(get()).hasStatusOk();
+        MvcTestResult created = create("{\"name\":\"Интересы\",\"kind\":\"TEXT\",\"useInAi\":true,\"values\":[]}");
+        assertThat(created).hasStatus(HttpStatus.CREATED).bodyJson().satisfies(json -> {
+            assertThat(json).extractingPath("$.kind").isEqualTo("TEXT");
+            assertThat(json).extractingPath("$.values").asArray().isEmpty();
+        });
+        UUID interests = id(created);
+        assertThat(create("{\"name\":\"Цель\",\"kind\":\"TEXT\",\"useInAi\":true,\"values\":[\"ЕГЭ\"]}"))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(create("{\"name\":\"Класс\",\"useInAi\":true,\"values\":[\"1\"]}")).hasStatus(HttpStatus.CREATED)
+                .bodyJson().extractingPath("$.kind").isEqualTo("LIST");
+        assertThat(create("{\"name\":\"Пусто\",\"kind\":\"LIST\",\"useInAi\":true,\"values\":[]}"))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+
+        // unused: the kind may change; used: 409
+        assertThat(put("/api/teacher/tags/" + interests,
+                "{\"name\":\"Интересы\",\"kind\":\"LIST\",\"useInAi\":true,\"values\":[{\"label\":\"a\"}],\"version\":0}"))
+                .hasStatusOk().bodyJson().extractingPath("$.tag.kind").isEqualTo("LIST");
+        assertThat(put("/api/teacher/tags/" + interests,
+                "{\"name\":\"Интересы\",\"kind\":\"TEXT\",\"useInAi\":true,\"values\":[],\"version\":1}"))
+                .hasStatusOk();
+        UUID ann = student("Анна");
+        jdbc.sql("insert into identity.student_tags (student_id, tag_id, text) values (:s, :t, 'футбол')")
+                .param("s", ann).param("t", interests).update();
+        assertThat(put("/api/teacher/tags/" + interests,
+                "{\"name\":\"Интересы\",\"kind\":\"LIST\",\"useInAi\":true,\"values\":[{\"label\":\"a\"}],\"version\":2}"))
+                .hasStatus(HttpStatus.CONFLICT).bodyJson().extractingPath("$.code").isEqualTo("tag.kind-used");
+        assertThat(put("/api/teacher/tags/" + interests,
+                "{\"name\":\"Увлечения\",\"useInAi\":true,\"values\":[],\"version\":2}"))
+                .hasStatusOk().bodyJson().extractingPath("$.tag.kind").isEqualTo("TEXT");
+        assertThat(studentTags()).isEqualTo(1);
+    }
+
     private UUID student(String name) {
         return students.create(Profile.named(name)).student().id();
     }

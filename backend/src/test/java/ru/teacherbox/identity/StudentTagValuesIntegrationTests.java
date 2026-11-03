@@ -57,8 +57,8 @@ class StudentTagValuesIntegrationTests {
         jdbc.sql("delete from identity.student_tags").update();
         jdbc.sql("delete from identity.tag_values").update();
         jdbc.sql("delete from identity.tags").update();
-        level = tags.create("Уровень", true, List.of("A1", "A2"));
-        grade = tags.create("Класс", false, List.of("7", "8"));
+        level = tags.create("Уровень", Tag.Kind.LIST, true, List.of("A1", "A2"));
+        grade = tags.create("Класс", Tag.Kind.LIST, false, List.of("7", "8"));
     }
 
     @Test
@@ -136,6 +136,31 @@ class StudentTagValuesIntegrationTests {
 
         assertThat(mvc.get().uri("/api/me").header(HttpHeaders.AUTHORIZATION, bearer)).hasStatusOk()
                 .bodyText().doesNotContain("tags");
+    }
+
+    @Test
+    void setsTextTagsTrimmedAndKeepsThemOutOfTheValueFilter() {
+        Tag interests = tags.create("Интересы", Tag.Kind.TEXT, true, List.of());
+        UUID ann = students.create(Profile.named("Аня")).student().id();
+        UUID a1 = level.values().get(0).id();
+        String uri = "/api/teacher/students?tag=";
+
+        assertThat(put(ann, "{\"" + interests.id() + "\":\"  футбол, Minecraft \",\"" + level.id() + "\":\"" + a1 + "\"}"))
+                .hasStatusOk().bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.tags['" + interests.id() + "']").isEqualTo("футбол, Minecraft");
+                    assertThat(json).extractingPath("$.tags['" + level.id() + "']").isEqualTo(a1.toString());
+                });
+        assertThat(get("/api/teacher/students?tag=" + a1)).bodyJson().extractingPath("$[*].id").asArray()
+                .containsExactly(ann.toString());
+        assertThat(get(uri + "футбол, Minecraft")).hasStatus(HttpStatus.BAD_REQUEST);
+
+        assertThat(put(ann, "{\"" + interests.id() + "\":\"   \"}")).hasStatusOk().bodyJson()
+                .extractingPath("$.tags").asMap().isEmpty();
+        assertThat(put(ann, "{\"" + interests.id() + "\":\"" + "x".repeat(121) + "\"}"))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(put(ann, "{\"" + interests.id() + "\":\"" + "x".repeat(120) + "\"}")).hasStatusOk();
+        assertThat(put(ann, "{\"" + interests.id() + "\":null}")).hasStatusOk().bodyJson()
+                .extractingPath("$.tags").asMap().isEmpty();
     }
 
     private MvcTestResult put(UUID student, String json) {

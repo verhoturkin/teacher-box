@@ -15,7 +15,7 @@ import ru.teacherbox.identity.domain.User;
  * the student's photo.
  *
  * @param avatar address of the photo; {@code null}: none
- * @param tags tag id to value id set by the teacher (ADR-0055); teacher-only, empty when none
+ * @param tags tag id to value id (list tag) or text (text tag) set by the teacher (ADR-0055); teacher-only, empty when none
  */
 public record StudentView(
         UUID id,
@@ -31,13 +31,13 @@ public record StudentView(
         Instant createdAt,
         long version,
         @Nullable PendingInvite pendingInvite,
-        Map<UUID, UUID> tags) {
+        Map<UUID, String> tags) {
 
     /** Invitation that has been issued and can still be used. */
     public record PendingInvite(InvitePurpose purpose, Instant expiresAt) {
     }
 
-    static StudentView of(User user, @Nullable Invite pendingInvite, Map<UUID, UUID> tags) {
+    static StudentView of(User user, @Nullable Invite pendingInvite, Map<UUID, String> tags) {
         return new StudentView(user.id(), user.profile().displayName(), AccountService.avatarUrl(user.avatar()),
                 user.profile().email(), user.profile().phone(), user.profile().note(), user.profile().defaultTopic(), user.profile().color(), user.status(),
                 user.login(),

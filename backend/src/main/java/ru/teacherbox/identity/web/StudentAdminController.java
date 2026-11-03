@@ -85,7 +85,7 @@ class StudentAdminController {
 
     /** The body is the whole set: tag id to value id; {@code null} or a missing tag clears it. */
     @PutMapping("/{id}/tags")
-    StudentView setTags(@PathVariable UUID id, @RequestBody Map<UUID, @Nullable UUID> tags) {
+    StudentView setTags(@PathVariable UUID id, @RequestBody Map<UUID, @Nullable String> tags) {
         return students.setTags(id, tags);
     }
 
