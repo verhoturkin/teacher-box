@@ -24,6 +24,8 @@ export const ru = {
     timeZoneAdmin: 'Поменять его может администратор портала.',
     otherZone: (zone: string) =>
       `На этом устройстве другой часовой пояс (${zone}): время в портале показано по часовому поясу портала.`,
+    students: 'Ученики',
+    studentsSummary: 'Теги: уровень, класс, формат',
     messengers: 'Мессенджеры',
     messengersSummary: 'Боты и ученики',
     notDelivered: (count: number) => `${String(count)} не доставлено`,

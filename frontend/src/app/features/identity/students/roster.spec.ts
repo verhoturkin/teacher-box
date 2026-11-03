@@ -47,6 +47,13 @@ describe('roster', () => {
     expect(names('deactivated')).toEqual(['Олег', 'Летняя школа']);
   });
 
+  it('keeps only the students with a tag value, groups never', () => {
+    const tagged = aStudent({ id: 't', displayName: 'Тимур', tags: { level: 'b1' } });
+    const rows = rosterRows(data({ students: [MARIA, tagged], groups: [OGE] }), NOW);
+    expect(filterRows(rows, 'all', '', 'b1').map((row) => row.name)).toEqual(['Тимур']);
+    expect(filterRows(rows, 'all', '', null)).toHaveLength(3);
+  });
+
   it('filters by the name within a chip', () => {
     expect(names('all', '  МАР ')).toEqual(['Мария']);
     expect(names('deactivated', 'шк')).toEqual(['Летняя школа']);

@@ -1,4 +1,4 @@
-import { Student, StudentGroup } from '@features/identity/data-access/identity.models';
+import { Student, StudentGroup, StudentTag } from '@features/identity/data-access/identity.models';
 
 /** A student as the teacher sees it, with overridable fields. */
 export function aStudent(overrides: Partial<Student> = {}): Student {
@@ -16,11 +16,27 @@ export function aStudent(overrides: Partial<Student> = {}): Student {
     createdAt: '2026-09-01T10:00:00Z',
     version: 0,
     pendingInvite: null,
+    tags: {},
     ...overrides,
   };
 }
 
 /** A current group of students, with overridable fields. */
+export function aTag(overrides: Partial<StudentTag> = {}): StudentTag {
+  return {
+    id: 'tag-1',
+    kind: 'LIST',
+    name: 'Уровень',
+    useInAi: true,
+    values: [
+      { id: 'v-1', label: 'A1' },
+      { id: 'v-2', label: 'A2' },
+    ],
+    version: 0,
+    ...overrides,
+  };
+}
+
 export function aGroup(overrides: Partial<StudentGroup> = {}): StudentGroup {
   return {
     id: 'group-1',

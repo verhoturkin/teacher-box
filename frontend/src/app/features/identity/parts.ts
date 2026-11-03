@@ -8,7 +8,15 @@ export { ChangePasswordForm } from './account/change-password-form';
 export { ChipColors } from './colors/chip-colors';
 export { TeacherColors } from './colors/teacher-colors';
 export { IdentityApi } from './data-access/identity-api';
+export { TagsPanel } from './tags/tags-panel';
 export { MemberPicker } from './groups/member-picker';
 export type { MemberSelection, MemberPickerOption } from './groups/member-picker';
 export { memberRecipients } from './groups/member-recipients';
-export type { StudentGroup } from './data-access/identity.models';
+export type {
+  StudentGroup,
+  StudentTag,
+  TagChanged,
+  TagValue,
+  TagKind,
+  TagValueInput,
+} from './data-access/identity.models';

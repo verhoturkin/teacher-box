@@ -21,8 +21,9 @@ function backup(createdAt: string): BackupInfo {
 }
 
 describe('settings categories', () => {
-  it('knows six categories; the merged ones lead to «Занятия»', () => {
+  it('knows seven categories; the merged ones lead to «Занятия»', () => {
     expect(isCategory('lessons')).toBe(true);
+    expect(isCategory('students')).toBe(true);
     expect(isCategory('calendar')).toBe(false);
     expect(['calendar', 'calls', 'payments'].map(mergedCategory)).toEqual([
       'lessons',

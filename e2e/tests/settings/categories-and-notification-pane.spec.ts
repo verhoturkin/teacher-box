@@ -15,7 +15,15 @@ const LOGIN = `bell-${RUN}`;
 const PASSWORD = 'student-pass-1';
 const PHONE = { width: 390, height: 844 };
 const WIDE = { width: 1920, height: 1080 };
-const CATEGORIES = ['Мой аккаунт', 'Портал', 'Занятия', 'Мессенджеры', 'ИИ-помощник', 'Данные'];
+const CATEGORIES = [
+  'Мой аккаунт',
+  'Портал',
+  'Занятия',
+  'Ученики',
+  'Мессенджеры',
+  'ИИ-помощник',
+  'Данные',
+];
 
 async function signIn(page: Page, login: string, password: string): Promise<void> {
   await startSession(page, login, password);

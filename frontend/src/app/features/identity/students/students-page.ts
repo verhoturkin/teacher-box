@@ -37,7 +37,7 @@ import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { Busy } from '@shared/ui/busy';
 import { Confirm } from '@shared/ui/confirm';
 import { EmptyState } from '@shared/ui/empty-state';
-import { FilterChip, FilterChips } from '@shared/ui/filter-chips';
+import { FilterChip, FilterChips, FilterMenuChip } from '@shared/ui/filter-chips';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
@@ -50,6 +50,7 @@ import {
   IssuedInvite,
   Student,
   StudentGroup,
+  StudentTag,
 } from '../data-access/identity.models';
 import { GroupCard } from '../groups/group-card';
 import { GroupFormDialog } from '../groups/group-form-dialog';
@@ -74,6 +75,11 @@ import { INVITE_PURPOSE_LABELS, STATUS_LABELS, STATUS_SEVERITIES } from './stude
 /** How far ahead the list looks for the nearest lesson of each row. */
 const LESSON_DAYS = 28;
 const DAY_MS = 86_400_000;
+
+/** The short name of a tag on the chip: «Уровень английского» → «Уровень». */
+function shortName(name: string): string {
+  return name.length > 12 ? (name.split(' ')[0] ?? name) : name;
+}
 
 /** What the list takes from the other features; `null` — that read failed, the list goes without it. */
 interface Extras {
@@ -170,7 +176,8 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
               <tb-filter-chips
                 [label]="t.filters"
                 [chips]="chips()"
-                [value]="filter()"
+                [value]="chipValue()"
+                [menu]="tagChip()"
                 (valueChange)="setFilter($event)"
               />
             </div>
@@ -233,6 +240,19 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
               <tb-empty-state icon="tb-i-person_add" [title]="t.emptyTitle" [hint]="t.emptyHint" />
             } @else if (filter() === 'groups' && groups().length === 0) {
               <tb-empty-state icon="tb-i-group" [title]="tg.emptyTitle" [hint]="tg.emptyHint" />
+            } @else if (tagFilter(); as active) {
+              <tb-empty-state
+                icon="tb-i-search"
+                [title]="t.tagNotFoundTitle(active.tag.name, active.value.label)"
+                [hint]="t.tagNotFoundHint"
+              >
+                <p-button
+                  [label]="t.resetFilter"
+                  severity="secondary"
+                  [text]="true"
+                  (onClick)="setTag(null)"
+                />
+              </tb-empty-state>
             } @else {
               <tb-empty-state
                 icon="tb-i-search"
@@ -287,6 +307,7 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
                 [busy]="busy.is(row.id)"
                 (changed)="loadExtras()"
                 (saved)="onUpdated($event)"
+                (tagsSaved)="replaceStudent($event)"
                 (invite)="reissueInvite(row.student)"
                 (deactivate)="confirmDeactivate(row.student)"
                 (reactivate)="reactivate(row.student)"
@@ -405,6 +426,28 @@ export class StudentsPage implements OnInit {
     readQuery(this.route, 'filter', ROSTER_FILTERS) ?? 'all',
   );
 
+  /** The tags of the teacher (the chip «Теги»); none — no chip. */
+  protected readonly tags = signal<readonly StudentTag[]>([]);
+  /** The value of the tag filter, kept in the address as `?tag=`; `null` — no tag filter. */
+  protected readonly tagValue = signal<string | null>(
+    this.route.snapshot.queryParamMap.get('tag') ?? null,
+  );
+  /** The tag filter in force with its tag and value; `null` — none, or the value is not known. */
+  protected readonly tagFilter = computed(() => {
+    const id = this.tagValue();
+    for (const tag of this.tags()) {
+      const value = tag.values.find((item) => item.id === id);
+      if (value !== undefined) {
+        return { tag, value };
+      }
+    }
+    return null;
+  });
+  /** A tag filter takes the place of the chips: none of them is chosen while it is in force. */
+  protected readonly chipValue = computed<RosterFilter | 'tag'>(() =>
+    this.tagValue() === null ? this.filter() : 'tag',
+  );
+
   protected readonly rows = computed(() => {
     const extras = this.extras();
     return rosterRows(
@@ -419,7 +462,7 @@ export class StudentsPage implements OnInit {
     );
   });
   protected readonly visibleRows = computed(() =>
-    filterRows(this.rows(), this.filter(), this.query()),
+    filterRows(this.rows(), this.filter(), this.query(), this.tagValue()),
   );
   protected readonly chips = computed<FilterChip<RosterFilter>[]>(() => {
     const chips = this.t.chips;
@@ -428,6 +471,42 @@ export class StudentsPage implements OnInit {
       { value: 'groups', label: chips.groups },
       { value: 'deactivated', label: chips.deactivated },
     ];
+  });
+  /** «Теги» over the list: tag → value with the number of students; on a phone the one in force leads with «×». */
+  protected readonly tagChip = computed<FilterMenuChip | null>(() => {
+    const tags = this.tags();
+    if (tags.length === 0) {
+      return null;
+    }
+    const active = this.tagFilter();
+    const current = this.students().filter((student) => student.status !== 'DEACTIVATED');
+    const items: MenuItem[] = tags.map((tag) => ({
+      label: tag.name,
+      icon: tag.useInAi ? 'tb-i tb-i-auto_awesome' : 'tb-i tb-i-sell',
+      items: tag.values.map((value) => ({
+        label: `${value.label} · ${String(current.filter((student) => student.tags[tag.id] === value.id).length)}`,
+        command: () => {
+          this.setTag(value.id);
+        },
+      })),
+    }));
+    const mobile = this.mobile();
+    return {
+      label:
+        active === null
+          ? this.t.tagChip
+          : this.t.tagChipSet(shortName(active.tag.name), active.value.label),
+      icon: 'sell',
+      selected: active !== null,
+      items,
+      first: mobile && active !== null,
+      clear: mobile
+        ? () => {
+            this.setTag(null);
+          }
+        : undefined,
+      clearLabel: this.t.tagFilterClear,
+    };
   });
   /** «8 учеников · 2 группы»: the current ones. */
   protected readonly summary = computed(() => {
@@ -501,6 +580,13 @@ export class StudentsPage implements OnInit {
         this.students.set(students);
         this.groups.set(groups);
       });
+    // without the tags (a failed read) the chip is simply missing, the list works; text tags filter nothing
+    orNull(this.api.listTags(quietContext())).subscribe((tags) => {
+      this.tags.set((tags ?? []).filter((tag) => tag.kind === 'LIST'));
+      if (tags !== null && this.tagValue() !== null && this.tagFilter() === null) {
+        this.setTag(null);
+      }
+    });
   }
 
   /** Balances, messengers and lessons: without them the rows only lose their supporting details. */
@@ -644,9 +730,20 @@ export class StudentsPage implements OnInit {
   }
 
   /** The chip is kept in the address (`?filter=`), so «Назад» from a card and a reload bring it back. */
-  protected setFilter(filter: RosterFilter): void {
+  protected setFilter(filter: RosterFilter | 'tag'): void {
+    if (filter === 'tag') {
+      return;
+    }
     this.filter.set(filter);
-    writeQuery(this.router, this.route, { filter: filter === 'all' ? null : filter });
+    this.tagValue.set(null);
+    writeQuery(this.router, this.route, { filter: filter === 'all' ? null : filter, tag: null });
+  }
+
+  /** A tag value chosen (`?tag=`): it replaces the chips, groups have no tags and drop out; `null` — back to Все. */
+  protected setTag(valueId: string | null): void {
+    this.tagValue.set(valueId);
+    this.filter.set('all');
+    writeQuery(this.router, this.route, { filter: null, tag: valueId });
   }
 
   protected onUpdated(student: Student): void {
@@ -748,7 +845,7 @@ export class StudentsPage implements OnInit {
     this.inviteVisible.set(true);
   }
 
-  private replaceStudent(saved: Student): void {
+  protected replaceStudent(saved: Student): void {
     this.students.update((students) =>
       students.map((student) => (student.id === saved.id ? saved : student)),
     );

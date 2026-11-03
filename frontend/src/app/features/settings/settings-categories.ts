@@ -6,10 +6,18 @@ import { BackupInfo, MessengerStatus, NotificationsStatus } from './data-access/
 import { T } from './i18n/texts';
 
 /**
- * The categories of the settings in the order of the list (sketch `Changes`: 8 → 6); the address is
+ * The categories of the settings in the order of the list (sketch `Changes`: 8 → 6 → 7); the address is
  * `/teacher/settings/<category>`.
  */
-export const CATEGORIES = ['account', 'portal', 'lessons', 'messengers', 'ai', 'data'] as const;
+export const CATEGORIES = [
+  'account',
+  'portal',
+  'lessons',
+  'students',
+  'messengers',
+  'ai',
+  'data',
+] as const;
 export type SettingsCategory = (typeof CATEGORIES)[number];
 
 export function isCategory(value: unknown): value is SettingsCategory {
@@ -52,6 +60,7 @@ export const CATEGORY_ITEMS: readonly CategoryItem[] = [
   FIRST_CATEGORY,
   { id: 'portal', icon: 'tb-i-palette', title: t.portal, summary: t.portalSummary },
   { id: 'lessons', icon: 'tb-i-event', title: t.lessons, summary: t.lessonsSummary },
+  { id: 'students', icon: 'tb-i-sell', title: t.students, summary: t.studentsSummary },
   { id: 'messengers', icon: 'tb-i-forum', title: t.messengers, summary: t.messengersSummary },
   { id: 'ai', icon: 'tb-i-auto_awesome', title: t.ai, summary: t.aiSummary },
   { id: 'data', icon: 'tb-i-database', title: t.data, summary: t.dataSummary },

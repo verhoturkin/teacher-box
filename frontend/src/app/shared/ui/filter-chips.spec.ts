@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { hostElement, readableText } from '@testing/dom';
 import { testProviders } from '@testing/setup';
-import { FilterChip, FilterChips, fitChips } from './filter-chips';
+import { FilterChip, FilterChips, FilterMenuChip, fitChips } from './filter-chips';
 
 type Kind = 'all' | 'debtors' | 'off';
 
@@ -189,6 +189,46 @@ class MenuHost {
     ],
   });
 }
+
+@Component({
+  selector: 'tb-leading-menu-host',
+  imports: [FilterChips],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `<tb-filter-chips label="Фильтр" [chips]="chips" [menu]="menu" [(value)]="value" />`,
+})
+class LeadingMenuHost {
+  readonly chips: FilterChip<string>[] = [{ value: 'all', label: 'Все' }];
+  readonly value = signal('all');
+  readonly cleared = signal(false);
+  readonly menu: FilterMenuChip = {
+    label: 'Уровень: B1',
+    icon: 'sell',
+    selected: true,
+    first: true,
+    items: [],
+    clear: () => {
+      this.cleared.set(true);
+    },
+    clearLabel: 'Сбросить',
+  };
+}
+
+describe('FilterChips with a leading menu chip', () => {
+  it('puts the chip first with its icon and a «×» that clears it', async () => {
+    const fixture = TestBed.createComponent(LeadingMenuHost);
+    const host = hostElement(fixture);
+    await fixture.whenStable();
+
+    expect(host.querySelector('.tb-filter-chip-group')).toBe(
+      host.querySelector('tb-filter-chips')?.firstElementChild,
+    );
+    expect(host.querySelector('.tb-filter-chip--menu .tb-i-sell')).not.toBeNull();
+    const clear = host.querySelector<HTMLButtonElement>('.tb-filter-chip--clear');
+    expect(clear?.getAttribute('aria-label')).toBe('Сбросить');
+    clear?.click();
+    expect(fixture.componentInstance.cleared()).toBe(true);
+  });
+});
 
 describe('FilterChips with a menu chip', () => {
   it('opens a menu from the trailing chip and shows a choice in force as selected', async () => {

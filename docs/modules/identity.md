@@ -1,8 +1,10 @@
 # identity
 
-Auth of the teacher, students and admin; student groups. Depends on: `shared`. Schema `identity`.
+Auth of the teacher, students and admin; student groups and tags. Depends on: `shared`.
+Schema `identity`.
 ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrator-and-diagnostics.md) admin,
-[0011](../adr/0011-groups-and-group-lessons.md) groups.
+[0011](../adr/0011-groups-and-group-lessons.md) groups,
+[0055](../adr/0055-student-tags.md) student tags.
 
 ## Rules
 
@@ -40,6 +42,18 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
   browser saves to the account (`PUT /api/me/language`, also open to the administrator); returned in `/api/me`
   and the session user. Other modules write notifications, bot messages and calendars in it
   (`UserDirectory.language`).
+- **Student tags (0.46.0, ADR-0055)** — the teacher's tags (`domain.Tag`): a name (1–60, unique
+  ignoring case), the «Учитывать в ИИ» flag (`useInAi`) and 1–50 ordered values (labels 1–40, unique
+  within the tag); at most 30 tags in the teacher's order. A student has at most one value per tag
+  (`student_tags`). Changing a tag (optimistic locking by `version`) keeps values sent with their
+  `id`, adds those without one and removes the rest — a removed value is cleared from its students
+  and the answer says how many (`clearedStudents`); deleting a tag clears it from everyone. Tags are
+  teacher-only: never in `/api/me`, admin answers, bots or `identity::api`; `ai` gets the
+  recipients' AI tags from the frontend with each draft request. The teacher's `StudentView` carries
+  `tags` (tag id → value id, or the text of a text tag); `StudentAdminService.setTags` replaces a
+  student's whole set. A tag has a `kind` (362.8): `LIST` (above) or `TEXT` — no values, a student
+  gets free text of 1–120 characters (`student_tags.text`, exactly one of `value_id`/`text` is set).
+  The kind of a tag set on any student cannot change (409 `tag.kind-used`).
 - Implements `shared.security.PasswordConfirmation`.
 
 ## Contract (`identity::api`)
@@ -53,14 +67,29 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
 ## Data
 
 `users` (+ `own_name`, `avatar_key`, `avatar_type`, `language`, `color`), `invites`, `refresh_tokens`, `student_groups`,
-`group_members`. Housekeeping job removes expired tokens/invites (`IdentityHousekeeping`). Photo files are removed
-with the rest of the files by the full reset.
+`group_members`, `tags`, `tag_values`, `student_tags`. Housekeeping job removes expired tokens/invites
+(`IdentityHousekeeping`). Photo files are removed with the rest of the files by the full reset.
 
 ## REST
 
 `/api/auth/**` (login, logout, refresh, invites), `/api/me` (+ `/password`, `/language`, `/profile` — a student's own name,
 `/avatar` PUT multipart / DELETE), `/api/public/avatars/{key}`, `/api/teacher/students/**`,
-`/api/teacher/groups/**`, `/api/teacher/profile`.
+`/api/teacher/groups/**`, `/api/teacher/profile`, `/api/teacher/tags`.
+
+Tags: `GET /api/teacher/tags` → `[{id, name, kind, useInAi, values: [{id, label}], version}]` in order
+(`kind`: `LIST` | `TEXT`; a `TEXT` tag has `values: []`);
+`POST` `{name, kind?, useInAi, values: [label]}` (`kind` defaults to `LIST`; values for a `TEXT` tag,
+none for a `LIST` tag → 400) → 201 tag; `PUT /{id}` `{name, kind?, useInAi, values: [{id?,
+label}], version}` (missing `kind` keeps it) → `{tag, clearedStudents}` (409 `concurrent.modification` or
+`tag.kind-used`, 422 `tag.value-unknown`); `PUT /order` `{ids}` (every tag once, else 422 `tag.order-invalid`) → the
+list; `DELETE /{id}` → `{clearedStudents}`. Other codes: `tag.not-found`, `tag.name-taken`,
+`tag.value-duplicate`, `tag.limit`.
+
+Values on a student: `PUT /api/teacher/students/{id}/tags` with `{tagId: valueId | text | null}` — the
+whole set (a null, blank or missing tag is cleared; a text is trimmed, over 120 → 400) — answers the `StudentView`; 400 `request.invalid` for
+an unknown tag, a value of another tag or a too long text, 404 `student.not-found`. `StudentView.tags` is
+`{tagId: valueId | text}` (`{}` when none); `GET /api/teacher/students?tag=<valueId>` keeps only
+students with that list value (text tags are not filtered).
 
 ## Frontend
 

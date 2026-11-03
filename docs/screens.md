@@ -194,7 +194,15 @@ active on both, `NavItem.alsoActive`).
   ones; the total hidden on compact), the search, filter chips «Все · Группы · Отключённые»
   («Отключённые» — students without access and archived groups; the chip is kept in the address as
   `?filter=`; an old `?filter=debtors|noMessenger` opens «Все»). The debt stays in the row
-  trail. From
+  trail. Tags are not shown in rows or in the card header. When a list tag exists, a menu filter
+  chip «Теги» ends the chips (hidden without list tags; sketch `Main`, `States`): its menu lists
+  the list tags (free-text tags filter nothing),
+  each with its values and the number of current students («B1 · 3»); a value in force is kept as
+  `?tag=<valueId>`, unselects «Все» and shows the chip as «Уровень: B1» (a tag name over 12
+  characters is cut to its first word), hides the groups (they have no tags) and, when nobody has
+  the value, shows «Нет учеников с тегом …» with «Сбросить фильтр». On a phone the chip in force
+  leads the row with a «×» that clears it (*ours*: the row scrolls sideways, a filter in force must
+  not hide behind the scroll). From
   expanded the header, search and chips stay and only the list scrolls. Students by name, then
   groups (group icon in the lead). A row (`tb-list--clamp`): avatar / icon; the name links to the
   card; supporting «nearest lesson · аванс N» (a group: «N участников» — the count, not the names,
@@ -230,7 +238,16 @@ active on both, `NavItem.alsoActive`).
   the student's own attendance), «Что прошли» (Markdown), «Что дальше» and the old read-only
   «Заметка для себя» (written before 0.41.0) when filled; «Задания» — all, open first, then accepted
   with the grade (20 + «Показать ещё»); «Оплаты» — four tonal tiles (balance, charged, paid, price)
-  and the ledger «История» (`tb-ledger-list`); «Профиль» — «Данные ученика» (name *, e-mail, phone,
+  and the ledger «История» (`tb-ledger-list`); «Теги» (`StudentTagsTab`, sketch `Main`,
+  `PhoneTags`; the tab is always there) — one `tb-tile` row per tag: the lead `auto_awesome` on
+  tertiary container for a tag the AI takes, `sell` on secondary container otherwise, the name with
+  «Учитывает ИИ» / «Только для фильтра в списке» («Заметка для вас» for a free-text tag), an
+  outlined select («Не задан» first) saved on choosing, or for a free-text tag a filled field
+  «Текст» (max 120, 16 rem) saved on blur and Enter, blank clears (the whole set goes in one
+  `PUT …/tags`; a failure puts the old value back); beside it
+  the card «Что увидит ИИ» with the chips of the AI tags the student has; the text link «Настроить
+  теги» leads to the settings category «Ученики». Without tags the tab is an empty state «Тегов
+  пока нет» with «Создать теги»; «Профиль» — «Данные ученика» (name *, e-mail, phone,
   note, default topic, colour; tonal «Сохранить», enabled when something differs, and «Отмена» shown
   only then), «Цена занятия» (`tb-student-price-card`, the one place to change it), «Видеовстреча»
   (`tb-room-panel`, saved at once), «Вход в кабинет» (login, link validity, «Новое приглашение» /
@@ -356,7 +373,8 @@ page of its own with «back» (`tb-page-header [back]`) to the list — no list 
   beside the work, «Проверка» and «×»; the rail collapses to 96 dp (`RailState`). Below large
   (sketch 15) the same form under the answer as a bordered block «Проверка» (its accept button
   «Принять и дальше» while the queue goes on). The form: the AI draft (tertiary tag «Черновик ИИ»,
-  «Вставить»), «Комментарий», quick phrases as assist chips («Молодец!», «Аккуратнее с
+  «Вставить»; before it, the student's «Учитываю об учениках» chips as in the AI pane of the
+  editor, sent with the review draft), «Комментарий», quick phrases as assist chips («Молодец!», «Аккуратнее с
   орфографией», «Повтори правило»), «Оценка» as single-select filter chips «3 · 4 · 5 · <quiz score>
   · Без оценки» (a grade set before is a chip of its own), «На доработку» tonal with ↺ + «Принять»
   filled, «После этого откроется: <student>» and «На доску». *Ours:* «На доработку» stays tonal,
@@ -478,6 +496,18 @@ field at every width; the AI never changes text without Insert / Replace; its st
 the pane. The recipients, deadline and materials parts are `ui/recipients-field.ts`,
 `ui/due-chips.ts`, `ui/material-chips.ts`.
 
+**«Учитываю об учениках»** (362.6, sketches 13, 22; `ai/student-context.ts`): under the request,
+input chips «<tag>: <value>» of the recipients' tags marked «Учитывать в ИИ» that have a value
+(the students it is given to and the ones being chosen); they go with the homework and quiz
+draft requests as `context`. «×» leaves a tag out of this editor's requests; the student's tag
+stays. Recipients with different values give a warning-tone chip «Класс: 7 · 8» and the hint
+«у 4 — 7, у 2 — 8»; its label opens a menu — one value («7 — у 4») or «Все: 7 · 8». A free-text
+tag (362.9) takes the texts as its values in the recipients' order; «Все» is offered only while
+the joined value fits 120 characters, otherwise the chip shows the most common text until the
+teacher picks one. The hint ends
+with «Если в просьбе сказано иначе, ИИ следует просьбе.» The phone sheet keeps the chips in one
+scrolling row. No tag to send — no block.
+
 **Sections column** (on «Задание» from expanded width, hidden beside the AI pane): `tb-section-nav`
 «Разделы задания» (design-system §10) lists «Текст», «Видео · N», «Доска» and «Тест · N» — the
 one in view highlighted, a click scrolls to it. Under a divider the group «Добавить» (354.1,
@@ -553,7 +583,7 @@ the `tb-material-grid` of `tb-material-card`s (§10).
 
 `/teacher/settings[/:category]` (`features/settings/settings-categories.ts`; sketches `Main`,
 `Portal`, `Lessons`, `Messengers`, `Ai`, `Data`, `PhoneSettings`, `TabletSettings`, `Changes`),
-list-detail with `medium="two"`: six categories as a list of tonal two-line rows (40 px tonal icon
+list-detail with `medium="two"`: seven categories as a list of tonal two-line rows (40 px tonal icon
 circle, name, and the category's **state** as the second line — «Telegram работает», «Копия сегодня
 в 03:00», «Подключён · 12 % лимита»; until it loads, «what it holds»; the chosen one
 secondary-container with an emphasized name and the icon circle on the surface; group outer corners
@@ -566,9 +596,9 @@ Saving ([design-system «Fields»](design-system.md)): every field and switch sa
 answers with a short snackbar; there is no «Отменить изменения?» guard. The one exception is
 «Портал» (below).
 
-- Categories: «Мой аккаунт» (`account`), «Портал» (`portal`), «Занятия» (`lessons`), «Мессенджеры»
-  (`messengers`, a count badge of failed deliveries on the row), «ИИ-помощник» (`ai`), «Данные»
-  (`data`).
+- Categories: «Мой аккаунт» (`account`), «Портал» (`portal`), «Занятия» (`lessons`), «Ученики»
+  (`students`), «Мессенджеры» (`messengers`, a count badge of failed deliveries on the row),
+  «ИИ-помощник» (`ai`), «Данные» (`data`).
 - Old addresses redirect: `calendar`, `calls`, `payments` → `lessons`; `?open=<fold>` (`portal`,
   `calendar`, `meetings`, `deliveries`, `ai`, `data`), `?google=` (→ lessons), `?drive=` (→ data),
   `/teacher/account`, `/teacher/calls`, `/teacher/ai`, the messenger tabs of «Уведомления».
@@ -588,6 +618,23 @@ answers with a short snackbar; there is no «Отменить изменения
   занятия по умолчанию», saved on change), «Звонки» (built-in calls on/off, external link per
   student, «Открывать Телемост в приложении» on this device), «Google Календарь», «Подписка на
   календарь».
+- **«Ученики»:** one card «Теги учеников» (`identity/tags/tags-panel.ts`, ADR-0055, sketch `Tags`):
+  the teacher-only tags as segmented M3 list tiles — drag handle (the arrow keys move too), tonal
+  `sell` circle, name, the first six values as tags («ещё N»), a tertiary «ИИ» mark for tags the AI
+  uses, an edit icon; «+ Тег» under the list. Without tags the empty state offers the templates
+  «Уровень CEFR · A1–C2», «Класс · 1–11», «Цель · ОГЭ, ЕГЭ», «Интересы · текст» (one click
+  creates the tag with the AI switch on) and a dashed «Свой тег»; a free-text tile reads
+  «Свободный текст» instead of values. The dialog (`tb-tag-dialog`, form kind): name, the kind
+  «Список значений · Свободный текст» (segmented buttons with a header, as the board dialog; its
+  hint explains the kind, and on a tag a student has it is locked with «…его тип не изменить» —
+  the dialog reads the students on open; a 409 `tag.kind-used` shows in the dialog), for a list
+  tag values as input chips with a drag handle and an entry field (Enter adds, duplicates
+  ignored), the
+  «Учитывать в ИИ» tile with a switch (tertiary icon); on an existing list tag a note that
+  removed values are cleared for students; on an existing tag a red text «Удалить тег»
+  (confirmation). A save or delete
+  that cleared values says for how many students in the snackbar. The sketch's per-tag student
+  counts are not shown: the API does not return them.
 - **«Мессенджеры»:** the failed-deliveries alert first (folds open with the list), «Боты» (one row
   per messenger, «Подключить» opens the wizard), «Что умеет бот» folded, «Ученики» as «5 из 7» with
   the not connected and «Отправить ссылку», «Кто где» → `/teacher/students`. The messengers of one

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Prompts are versioned resources of the module ({@code classpath:ai/prompts/<name>.txt}, e.g.
- * {@code homework-draft.user.v3}); the system ones are defaults the teacher may rewrite ({@link SystemPrompts}).
+ * {@code homework-draft.user.v4}); the system ones are defaults the teacher may rewrite ({@link SystemPrompts}).
  * Placeholders look like <code>{{name}}</code>.
  */
 @Component

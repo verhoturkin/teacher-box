@@ -2,8 +2,13 @@ package ru.teacherbox.identity.application;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
@@ -16,9 +21,11 @@ import ru.teacherbox.identity.domain.AccountStatus;
 import ru.teacherbox.identity.domain.Invite;
 import ru.teacherbox.identity.domain.InvitePurpose;
 import ru.teacherbox.identity.domain.Profile;
+import ru.teacherbox.identity.domain.Tag;
 import ru.teacherbox.identity.domain.User;
 import ru.teacherbox.identity.persistence.InviteRepository;
 import ru.teacherbox.identity.persistence.RefreshTokenRepository;
+import ru.teacherbox.identity.persistence.TagRepository;
 import ru.teacherbox.identity.persistence.UserRepository;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;
@@ -35,16 +42,18 @@ public class StudentAdminService {
     private final UserRepository users;
     private final InviteRepository invites;
     private final RefreshTokenRepository refreshTokens;
+    private final TagRepository tags;
     private final GroupService groups;
     private final ApplicationEventPublisher events;
     private final IdentityProperties properties;
     private final Clock clock;
 
     public StudentAdminService(UserRepository users, InviteRepository invites, RefreshTokenRepository refreshTokens,
-            GroupService groups, ApplicationEventPublisher events, IdentityProperties properties, Clock clock) {
+            TagRepository tags, GroupService groups, ApplicationEventPublisher events, IdentityProperties properties, Clock clock) {
         this.users = users;
         this.invites = invites;
         this.refreshTokens = refreshTokens;
+        this.tags = tags;
         this.groups = groups;
         this.events = events;
         this.properties = properties;
@@ -62,9 +71,52 @@ public class StudentAdminService {
     }
 
     @Transactional(readOnly = true)
-    public List<StudentView> list() {
+    public List<StudentView> list(@Nullable UUID tagValue) {
         Instant now = clock.instant();
-        return users.findStudents().stream().map(student -> view(student, now)).toList();
+        List<User> all = users.findStudents();
+        Map<UUID, Map<UUID, String>> values = tags.findStudentTags(all.stream().map(User::id).toList());
+        Set<UUID> textTags = tags.findAll().stream().filter(tag -> tag.kind() == Tag.Kind.TEXT).map(Tag::id)
+                .collect(Collectors.toSet());
+        return all.stream()
+                .filter(student -> tagValue == null || values.getOrDefault(student.id(), Map.of()).entrySet().stream()
+                        .anyMatch(entry -> !textTags.contains(entry.getKey())
+                                && entry.getValue().equals(tagValue.toString())))
+                .map(student -> StudentView.of(student, invites.findUsableByUser(student.id(), now).orElse(null),
+                        values.getOrDefault(student.id(), Map.of())))
+                .toList();
+    }
+
+    /**
+     * Sets the student's tag values: the map is the whole set (tag id to value id for a list tag, to text for a
+     * text tag); a {@code null} or blank value or a missing tag is cleared.
+     *
+     * @throws IllegalArgumentException if a tag is unknown, a value is not of its tag or a text is over 120 characters
+     */
+    @Transactional
+    public StudentView setTags(UUID studentId, Map<UUID, @Nullable String> requested) {
+        User student = load(studentId);
+        Map<UUID, Tag> byId = new HashMap<>();
+        tags.findAll().forEach(tag -> byId.put(tag.id(), tag));
+        Map<UUID, String> kept = new HashMap<>();
+        Map<UUID, Tag.Kind> kinds = new HashMap<>();
+        requested.forEach((tagId, raw) -> {
+            Tag tag = byId.get(tagId);
+            if (tag == null) {
+                throw new IllegalArgumentException("Unknown tag");
+            }
+            String value = raw == null ? "" : raw.strip();
+            if (value.isEmpty()) {
+                return;
+            }
+            if (tag.kind() == Tag.Kind.TEXT ? value.length() > Tag.MAX_TEXT_LENGTH
+                    : tag.values().stream().noneMatch(v -> v.id().toString().equals(value))) {
+                throw new IllegalArgumentException("The value does not belong to the tag");
+            }
+            kept.put(tagId, value);
+            kinds.put(tagId, tag.kind());
+        });
+        tags.replaceStudentTags(studentId, kinds, kept);
+        return view(student, clock.instant());
     }
 
     @Transactional(readOnly = true)
@@ -142,6 +194,7 @@ public class StudentAdminService {
     }
 
     private StudentView view(User student, Instant now) {
-        return StudentView.of(student, invites.findUsableByUser(student.id(), now).orElse(null));
+        return StudentView.of(student, invites.findUsableByUser(student.id(), now).orElse(null),
+                tags.findStudentTags(List.of(student.id())).getOrDefault(student.id(), Map.of()));
     }
 }

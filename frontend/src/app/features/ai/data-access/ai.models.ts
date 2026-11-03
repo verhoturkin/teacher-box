@@ -42,6 +42,14 @@ export interface HomeworkBrief {
   /** What the teacher already called the assignment. */
   readonly title: string | null;
   readonly sources: readonly DraftSource[];
+  /** What the AI takes into account about the recipients (their AI tags); the request wins. */
+  readonly context?: readonly ContextItem[];
+}
+
+/** A tag of the recipients for the AI: «Класс» — «7 · 8» (several values joined). */
+export interface ContextItem {
+  readonly name: string;
+  readonly value: string;
 }
 
 export interface HomeworkDraft {
@@ -103,6 +111,7 @@ export interface ReviewBrief {
   readonly title: string;
   readonly description: string | null;
   readonly answer: string;
+  readonly context?: readonly ContextItem[];
 }
 
 /** What the teacher knows about a lesson; at least one of `topic` and `words` is filled. */

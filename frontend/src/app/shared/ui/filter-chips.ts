@@ -11,6 +11,7 @@ import {
   model,
   signal,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
 import { SHARED_T } from '../i18n/texts';
@@ -28,6 +29,13 @@ export interface FilterMenuChip {
   readonly label: string;
   readonly selected: boolean;
   readonly items: MenuItem[];
+  /** An icon (a name without `tb-i-`) before the label. */
+  readonly icon?: string;
+  /** The chip leads the row (a phone: the filter in force is never behind the scroll). */
+  readonly first?: boolean;
+  /** A selected chip gets a «×» that calls it; `clearLabel` names it. */
+  readonly clear?: () => void;
+  readonly clearLabel?: string;
 }
 
 /**
@@ -82,7 +90,7 @@ export function fitChips(
  */
 @Component({
   selector: 'tb-filter-chips',
-  imports: [Menu],
+  imports: [Menu, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'tb-filter-chips',
@@ -92,6 +100,47 @@ export function fitChips(
     '[attr.aria-label]': 'label()',
   },
   template: `
+    <ng-template #menuChip let-extra>
+      <span class="tb-filter-chip-group">
+        <button
+          type="button"
+          class="tb-filter-chip tb-filter-chip--menu"
+          [class.tb-filter-chip--selected]="extra.selected"
+          [class.tb-filter-chip--grouped]="extra.selected && extra.clear"
+          aria-haspopup="menu"
+          [attr.aria-expanded]="extraOpen() ? 'true' : 'false'"
+          (click)="extraMenu.toggle($event)"
+        >
+          @if (extra.icon) {
+            <i class="tb-i" [class]="'tb-i-' + extra.icon" aria-hidden="true"></i>
+          }
+          <span>{{ extra.label }}</span>
+          <i class="tb-i tb-i-arrow_drop_down" aria-hidden="true"></i>
+        </button>
+        @if (extra.selected && extra.clear) {
+          <button
+            type="button"
+            class="tb-filter-chip tb-filter-chip--selected tb-filter-chip--clear"
+            [attr.aria-label]="extra.clearLabel"
+            (click)="extra.clear()"
+          >
+            <i class="tb-i tb-i-close" aria-hidden="true"></i>
+          </button>
+        }
+        <p-menu
+          #extraMenu
+          [model]="extra.items"
+          [popup]="true"
+          appendTo="body"
+          (onShow)="extraOpen.set(true)"
+          (onHide)="extraOpen.set(false)"
+        />
+      </span>
+    </ng-template>
+    @let more = menu();
+    @if (more?.first) {
+      <ng-container [ngTemplateOutlet]="menuChip" [ngTemplateOutletContext]="{ $implicit: more }" />
+    }
     @for (chip of chips(); track chip.value; let index = $index) {
       <button
         type="button"
@@ -111,26 +160,8 @@ export function fitChips(
         }
       </button>
     }
-    @if (menu(); as extra) {
-      <button
-        type="button"
-        class="tb-filter-chip tb-filter-chip--menu"
-        [class.tb-filter-chip--selected]="extra.selected"
-        aria-haspopup="menu"
-        [attr.aria-expanded]="extraOpen() ? 'true' : 'false'"
-        (click)="extraMenu.toggle($event)"
-      >
-        <span>{{ extra.label }}</span>
-        <i class="tb-i tb-i-arrow_drop_down" aria-hidden="true"></i>
-      </button>
-      <p-menu
-        #extraMenu
-        [model]="extra.items"
-        [popup]="true"
-        appendTo="body"
-        (onShow)="extraOpen.set(true)"
-        (onHide)="extraOpen.set(false)"
-      />
+    @if (more && !more.first) {
+      <ng-container [ngTemplateOutlet]="menuChip" [ngTemplateOutletContext]="{ $implicit: more }" />
     }
     @if (oneRow()) {
       <button
@@ -242,6 +273,23 @@ export function fitChips(
     /* a menu chip has no check, only the trailing arrow (M3 dropdown chip) */
     .tb-filter-chip--menu {
       padding-inline: var(--tb-space-4) var(--tb-space-2);
+    }
+
+    /* the «×» of a selected menu chip sits against it as one chip (our decision) */
+    .tb-filter-chip-group {
+      display: inline-flex;
+      flex: none;
+    }
+
+    .tb-filter-chip--grouped {
+      border-start-end-radius: 0;
+      border-end-end-radius: 0;
+    }
+
+    .tb-filter-chip--clear {
+      padding-inline: var(--tb-space-1);
+      border-start-start-radius: 0;
+      border-end-start-radius: 0;
     }
 
     /* «Ещё N»: a trailing arrow, so less padding on that side; a fixed least width keeps the measure stable */

@@ -152,6 +152,8 @@ export const en: Translation<typeof ru> = {
       'profile.phone-invalid': 'The phone number is too long',
       'profile.note-invalid': 'The note is too long',
       'student.not-found': 'Student not found',
+      'tag.kind-used':
+        'This tag is already set for some students. Clear it for them first, then change the type',
       'account.deactivated': 'Restore the student’s access first',
       'group.not-found': 'Group not found',
       'group.name-invalid': 'The group name must be 1 to 100 characters long',

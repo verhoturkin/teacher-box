@@ -20,6 +20,7 @@ import { AiApi, AiSettingsPanel } from '@features/ai/parts';
 import { Card } from 'primeng/card';
 import { DefaultPriceCard } from '@features/billing/parts';
 import { AccountPanel } from '@features/identity';
+import { TagsPanel } from '@features/identity/parts';
 import { MeetingsSettingsPanel } from '@features/meetings/parts';
 import { MessengersSettingsPanel } from '@features/notifications/parts';
 import { CalendarFeedPanel, GoogleCalendarPanel } from '@features/schedule/parts';
@@ -50,7 +51,7 @@ import { PageHeader } from '@shared/ui/page-header';
 import { T } from './i18n/texts';
 
 /**
- * The teacher's settings in six categories (sketches Main, TabletSettings, PhoneSettings): from medium the
+ * The teacher's settings in seven categories (sketches Main, TabletSettings, PhoneSettings): from medium the
  * list of the categories with their states and the chosen one (`/teacher/settings/:category`) beside it in
  * one pane; on compact `/teacher/settings` is the list (the account leads) and a category has «back» to it.
  */
@@ -65,6 +66,7 @@ import { T } from './i18n/texts';
     Panes,
     Pane,
     AccountPanel,
+    TagsPanel,
     Card,
     TimeZoneCard,
     GoogleCalendarPanel,
@@ -214,6 +216,11 @@ import { T } from './i18n/texts';
               <tb-google-calendar-panel />
               <tb-calendar-feed-panel />
             </div>
+          </div>
+        }
+        @case ('students') {
+          <div class="tb-stack">
+            <tb-tags-panel />
           </div>
         }
         @case ('messengers') {

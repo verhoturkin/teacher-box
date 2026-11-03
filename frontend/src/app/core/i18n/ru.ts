@@ -152,6 +152,7 @@ export const ru = {
       'profile.phone-invalid': 'Слишком длинный номер телефона',
       'profile.note-invalid': 'Слишком длинная заметка',
       'student.not-found': 'Ученик не найден',
+      'tag.kind-used': 'Тег уже задан ученикам. Снимите его у них, тогда тип можно будет изменить',
       'account.deactivated': 'Сначала верните ученику доступ',
       'group.not-found': 'Группа не найдена',
       'group.name-invalid': 'Название группы должно содержать от 1 до 100 символов',

@@ -18,6 +18,7 @@ import { Student } from '../data-access/identity.models';
 import { StudentRow } from './roster';
 import { StudentCard, channelNames } from './student-card';
 import { StudentProfileTab } from './student-profile-tab';
+import { StudentTagsTab } from './student-tags-tab';
 
 /** What the cards of Обзор read: answered by their own specs. */
 const OVERVIEW_READS =
@@ -131,7 +132,7 @@ describe('StudentCard', () => {
     const tabs = Array.from(host.querySelectorAll('[role="tab"]')).map((tab) =>
       tab.textContent.trim(),
     );
-    expect(tabs).toEqual(['Обзор', 'Занятия', 'Задания', 'Оплаты', 'Профиль']);
+    expect(tabs).toEqual(['Обзор', 'Занятия', 'Задания', 'Оплаты', 'Теги', 'Профиль']);
     for (const part of [
       'tb-student-lessons-card',
       'tb-student-tasks-card',
@@ -187,6 +188,19 @@ describe('StudentCard', () => {
 
     part(StudentPaymentsTab).changed.emit();
     expect(changed).toHaveBeenCalledTimes(2);
+  });
+
+  it('passes the tags Теги saved to the page', async () => {
+    await render(row());
+    fixture.componentRef.setInput('tab', 'tags');
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/tags').flush([]);
+    const tagsSaved = vi.fn();
+    fixture.componentInstance.tagsSaved.subscribe(tagsSaved);
+
+    const student = aStudent({ tags: { t: 'v' } });
+    part(StudentTagsTab).saved.emit(student);
+    expect(tagsSaved).toHaveBeenCalledWith(student);
   });
 
   it('passes what Профиль saved and asks for to the page', async () => {

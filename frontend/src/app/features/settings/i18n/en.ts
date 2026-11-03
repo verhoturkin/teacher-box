@@ -25,6 +25,8 @@ export const en: Translation<typeof ru> = {
     timeZoneAdmin: 'The portal administrator can change it.',
     otherZone: (zone: string) =>
       `This device uses a different time zone (${zone}). The portal displays times in its own time zone.`,
+    students: 'Students',
+    studentsSummary: 'Tags: level, year, format',
     messengers: 'Messengers',
     messengersSummary: 'Bots and students',
     notDelivered: (count: number) => `${String(count)} not delivered`,

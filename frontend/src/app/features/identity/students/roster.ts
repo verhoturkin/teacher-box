@@ -117,15 +117,24 @@ export function matchesFilter(row: RosterRow, filter: RosterFilter): boolean {
   }
 }
 
-/** The rows of the chip whose name has the query. */
+/** Whether the row is a student with the tag value; a group has no tags. */
+function hasTagValue(row: RosterRow, valueId: string): boolean {
+  return row.kind === 'student' && Object.values(row.student.tags).includes(valueId);
+}
+
+/** The rows of the chip whose name has the query; `valueId` — only the students with that tag value. */
 export function filterRows(
   rows: readonly RosterRow[],
   filter: RosterFilter,
   query: string,
+  valueId: string | null = null,
 ): RosterRow[] {
   const text = query.trim().toLocaleLowerCase('ru');
   return rows.filter(
-    (row) => matchesFilter(row, filter) && row.name.toLocaleLowerCase('ru').includes(text),
+    (row) =>
+      matchesFilter(row, filter) &&
+      row.name.toLocaleLowerCase('ru').includes(text) &&
+      (valueId === null || hasTagValue(row, valueId)),
   );
 }
 

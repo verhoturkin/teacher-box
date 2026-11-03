@@ -15,14 +15,14 @@ import {
   requireElement,
   typeInto,
 } from '@testing/dom';
-import { aGroup, aStudent } from '@testing/identity-fixtures';
+import { aGroup, aStudent, aTag } from '@testing/identity-fixtures';
 import { channel, studentMessengers } from '@testing/notification-fixtures';
 import { scheduledLesson } from '@testing/schedule-fixtures';
 import { screenWidth, testProviders } from '@testing/setup';
 import { NewMessageState } from '@core/notifications/new-message';
 import { PageDetail } from '@core/routing/page-detail';
 import type { ScheduledLesson } from '@features/schedule/parts';
-import { Student, StudentGroup } from '../data-access/identity.models';
+import { Student, StudentGroup, StudentTag } from '../data-access/identity.models';
 import { GroupFormDialog } from '../groups/group-form-dialog';
 import { StudentFormDialog } from './student-form-dialog';
 import { StudentCard } from './student-card';
@@ -148,9 +148,11 @@ describe('StudentsPage', () => {
     students: Student[],
     groups: StudentGroup[] = [],
     extras: Extras = {},
+    tags: StudentTag[] = [],
   ): Promise<void> {
     backend.expectOne('/api/teacher/students').flush(students);
     backend.expectOne('/api/teacher/groups').flush(groups);
+    backend.expectOne('/api/teacher/tags').flush(tags);
     flushExtras(students, extras);
     await fixture.whenStable();
   }
@@ -376,6 +378,7 @@ describe('StudentsPage', () => {
       const groups = backend.expectOne('/api/teacher/groups');
       backend.expectOne('/api/teacher/students').flush(null, { status: 500, statusText: 'Error' });
       expect(groups.cancelled).toBe(true);
+      backend.expectOne('/api/teacher/tags').flush([]);
       flushExtras([]);
       await fixture.whenStable();
 
@@ -385,8 +388,120 @@ describe('StudentsPage', () => {
       buttonByText(host, 'Повторить').click();
       backend.expectOne('/api/teacher/students').flush([]);
       backend.expectOne('/api/teacher/groups').flush([]);
+      backend.expectOne('/api/teacher/tags').flush([]);
       await fixture.whenStable();
       expect(host.textContent).toContain('Учеников пока нет');
+    });
+  });
+
+  describe('tag filter', () => {
+    const LEVEL = aTag({
+      id: 't',
+      name: 'Уровень английского',
+      values: [
+        { id: 'a1', label: 'A1' },
+        { id: 'b1', label: 'B1' },
+      ],
+    });
+    const TAGGED = aStudent({ id: 'm', displayName: 'Мария', tags: { t: 'b1' } });
+    const PLAIN = aStudent({ id: 'p', displayName: 'Павел' });
+
+    async function open(url: string, ...providers: Provider[]): Promise<void> {
+      TestBed.configureTestingModule({
+        imports: [StudentsPage],
+        providers: testProviders(...providers),
+      });
+      await TestBed.inject(Router).navigateByUrl(url);
+      backend = TestBed.inject(HttpTestingController);
+      fixture = TestBed.createComponent(StudentsPage);
+      host = hostElement(fixture);
+      await fixture.whenStable();
+    }
+
+    function menuChip(): HTMLButtonElement | null {
+      return host.querySelector('.tb-filter-chip--menu');
+    }
+
+    function pick(label: string): void {
+      const item = Array.from(
+        document.body.querySelectorAll<HTMLAnchorElement>('.p-menu a.p-menu-item-link'),
+      ).find((link) => link.textContent.trim().startsWith(label));
+      if (item === undefined) {
+        throw new Error(`No item «${label}»`);
+      }
+      item.click();
+    }
+
+    it('has no chip while there are no list tags', async () => {
+      await create();
+      await load([TAGGED], [], {}, [aTag({ id: 'hobby', kind: 'TEXT', values: [] })]);
+      expect(menuChip()).toBeNull();
+    });
+
+    it('filters by a value with the counts in the menu, keeps it in the address and drops it', async () => {
+      await open('/');
+      await load([TAGGED, PLAIN], [OGE], {}, [LEVEL]);
+      expect(menuChip()?.textContent).toContain('Теги');
+
+      menuChip()?.click();
+      await fixture.whenStable();
+      const menu = document.body.querySelector('.p-menu')?.textContent ?? '';
+      expect(menu).toContain('Уровень английского');
+      expect(menu).toContain('A1 · 0');
+      expect(menu).toContain('B1 · 1');
+      pick('B1');
+      await fixture.whenStable();
+
+      expect(rows()).toEqual(['М Мария нет занятий']);
+      expect(menuChip()?.textContent).toContain('Уровень: B1');
+      expect(menuChip()?.classList).toContain('tb-filter-chip--selected');
+      expect(TestBed.inject(Router).url).toContain('tag=b1');
+      expect(chip('Все').getAttribute('aria-pressed')).toBe('false');
+
+      await choose('Все');
+      expect(rows()).toHaveLength(3);
+      expect(TestBed.inject(Router).url).not.toContain('tag=');
+    });
+
+    it('starts from the address and says what is missing when nobody has the value', async () => {
+      await open('/?tag=a1');
+      await load([TAGGED, PLAIN], [OGE], {}, [LEVEL]);
+      expect(menuChip()?.textContent).toContain('Уровень: A1');
+      expect(rows()).toEqual([]);
+      expect(host.textContent).toContain('Нет учеников с тегом «Уровень английского: A1»');
+
+      buttonByText(host, 'Сбросить фильтр').click();
+      await fixture.whenStable();
+      expect(rows()).toHaveLength(3);
+    });
+
+    it('forgets a value of the address that no tag has', async () => {
+      await open('/?tag=gone');
+      await load([TAGGED], [], {}, [LEVEL]);
+      expect(rows()).toEqual(['М Мария нет занятий']);
+      expect(TestBed.inject(Router).url).not.toContain('tag=');
+    });
+
+    it('leads the row with the chosen value and clears it with «×» on a phone', async () => {
+      await open('/?tag=b1', screenWidth(390));
+      await load([TAGGED, PLAIN], [], {}, [LEVEL]);
+      const first = host.querySelector('tb-filter-chips')?.firstElementChild;
+      expect(first?.textContent).toContain('Уровень: B1');
+      host.querySelector<HTMLButtonElement>('.tb-filter-chip--clear')?.click();
+      await fixture.whenStable();
+      expect(rows()).toHaveLength(2);
+    });
+
+    it('takes the tags the card saved', async () => {
+      await open('/');
+      await load([TAGGED, PLAIN], [], {}, [LEVEL]);
+      await openCard('Павел');
+      const card = fixture.debugElement.query(By.directive(StudentCard)).injector.get(StudentCard);
+      card.tagsSaved.emit({ ...PLAIN, tags: { t: 'b1' } });
+      await fixture.whenStable();
+      menuChip()?.click();
+      await fixture.whenStable();
+      expect(document.body.querySelector('.p-menu')?.textContent).toContain('B1 · 2');
     });
   });
 
