@@ -12,8 +12,9 @@ import ru.teacherbox.shared.reset.DataReset;
 @Component
 class IdentityDataReset implements DataReset {
 
-    private static final List<String> TABLES = List.of("identity.group_members", "identity.student_groups",
-            "identity.invites", "identity.refresh_tokens", "identity.users");
+    private static final List<String> TABLES = List.of("identity.student_tags", "identity.tag_values",
+            "identity.tags", "identity.group_members", "identity.student_groups", "identity.invites",
+            "identity.refresh_tokens", "identity.users");
 
     private final JdbcClient jdbc;
 
@@ -28,6 +29,9 @@ class IdentityDataReset implements DataReset {
 
     @Override
     public void erase() {
+        jdbc.sql("delete from identity.student_tags").update();
+        jdbc.sql("delete from identity.tag_values").update();
+        jdbc.sql("delete from identity.tags").update();
         jdbc.sql("delete from identity.group_members").update();
         jdbc.sql("delete from identity.student_groups").update();
         jdbc.sql("delete from identity.invites").update();

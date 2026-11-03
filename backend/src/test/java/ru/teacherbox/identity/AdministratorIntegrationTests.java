@@ -58,6 +58,11 @@ class AdministratorIntegrationTests {
                 .hasStatusOk();
         assertThat(mvc.get().uri("/api/teacher/students").header(HttpHeaders.AUTHORIZATION, admin.bearer()))
                 .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.get().uri("/api/teacher/tags").header(HttpHeaders.AUTHORIZATION, admin.bearer()))
+                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.put().uri("/api/teacher/tags/order").header(HttpHeaders.AUTHORIZATION, admin.bearer())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"ids\":[]}"))
+                .hasStatus(HttpStatus.FORBIDDEN);
         assertThat(mvc.get().uri("/api/me/notifications").header(HttpHeaders.AUTHORIZATION, admin.bearer()))
                 .hasStatus(HttpStatus.FORBIDDEN);
     }

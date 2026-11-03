@@ -40,7 +40,7 @@ values, per-value hints for the AI.
 New ADR-0055 «Теги учеников»: tags live in `identity`; `ai` keeps no dependency on it — the frontend
 sends the context of the recipients with the request, as it does for the lesson summary.
 
-- [ ] **362.1 B** Tag definitions in `identity`: migration `V3__student_tags.sql` (`tags`: id, name
+- [x] **362.1 B** Tag definitions in `identity`: migration `V3__student_tags.sql` (`tags`: id, name
   1–60, `use_in_ai`, position, version; `tag_values`: id, tag id, label 1–40, position;
   `student_tags`: student id, tag id, value id, one row per tag); `StudentTagService` with CRUD and
   reorder, optimistic locking, removing a used value clears it from students (the answer says how
