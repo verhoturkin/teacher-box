@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.identity.application.IssuedInvite;
@@ -61,8 +63,8 @@ class StudentAdminController {
     }
 
     @GetMapping
-    List<StudentView> list() {
-        return students.list();
+    List<StudentView> list(@RequestParam(required = false) @Nullable UUID tag) {
+        return students.list(tag);
     }
 
     @PostMapping
@@ -79,6 +81,12 @@ class StudentAdminController {
     @PutMapping("/{id}")
     StudentView update(@PathVariable UUID id, @Valid @RequestBody UpdateStudentRequest request) {
         return students.update(id, request.profile(), request.version());
+    }
+
+    /** The body is the whole set: tag id to value id; {@code null} or a missing tag clears it. */
+    @PutMapping("/{id}/tags")
+    StudentView setTags(@PathVariable UUID id, @RequestBody Map<UUID, @Nullable UUID> tags) {
+        return students.setTags(id, tags);
     }
 
     @PostMapping("/{id}/invite")

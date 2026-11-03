@@ -1,6 +1,7 @@
 package ru.teacherbox.identity.persistence;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +89,30 @@ public class TagRepository {
             jdbc.sql("update identity.tags set position = :position where id = :id")
                     .param("id", ids.get(position)).param("position", position).update();
         }
+    }
+
+    /** Tag id to value id of each given student; students without values are absent. */
+    public Map<UUID, Map<UUID, UUID>> findStudentTags(Collection<UUID> studentIds) {
+        Map<UUID, Map<UUID, UUID>> result = new HashMap<>();
+        if (studentIds.isEmpty()) {
+            return result;
+        }
+        jdbc.sql("select student_id, tag_id, value_id from identity.student_tags where student_id in (:ids)")
+                .param("ids", studentIds)
+                .query((rs, rowNum) -> {
+                    result.computeIfAbsent(rs.getObject("student_id", UUID.class), key -> new HashMap<>())
+                            .put(rs.getObject("tag_id", UUID.class), rs.getObject("value_id", UUID.class));
+                    return 0;
+                }).list();
+        return result;
+    }
+
+    /** Replaces all values of a student with the given tag id to value id pairs. */
+    public void replaceStudentTags(UUID studentId, Map<UUID, UUID> values) {
+        jdbc.sql("delete from identity.student_tags where student_id = :id").param("id", studentId).update();
+        values.forEach((tagId, valueId) -> jdbc.sql(
+                "insert into identity.student_tags (student_id, tag_id, value_id) values (:s, :t, :v)")
+                .param("s", studentId).param("t", tagId).param("v", valueId).update());
     }
 
     private void saveValues(Tag tag) {

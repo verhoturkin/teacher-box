@@ -47,7 +47,7 @@ sends the context of the recipients with the request, as it does for the lesson 
   many); REST `/api/teacher/tags` (list, create, `PUT`, `DELETE`); in `IdentityDataReset`.
   Controller tests first: the teacher only, a student and the administrator get 403. ADR-0055 and
   `docs/modules/identity.md` in the same commit.
-- [ ] **362.2 B** Values on a student: `PUT /api/teacher/students/{id}/tags` `{tagId →
+- [x] **362.2 B** Values on a student: `PUT /api/teacher/students/{id}/tags` `{tagId →
   valueId|null}` (`StudentAdminController`), tags in the teacher's `StudentView`, a `tag` filter on
   the student list; never in `/api/me`, the student's views or `identity::api.StudentSummary` (test:
   a student reading their own profile sees no tags).

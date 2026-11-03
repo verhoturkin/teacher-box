@@ -1,6 +1,7 @@
 package ru.teacherbox.identity.application;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.identity.domain.AccountStatus;
@@ -14,6 +15,7 @@ import ru.teacherbox.identity.domain.User;
  * the student's photo.
  *
  * @param avatar address of the photo; {@code null}: none
+ * @param tags tag id to value id set by the teacher (ADR-0055); teacher-only, empty when none
  */
 public record StudentView(
         UUID id,
@@ -28,17 +30,19 @@ public record StudentView(
         @Nullable String login,
         Instant createdAt,
         long version,
-        @Nullable PendingInvite pendingInvite) {
+        @Nullable PendingInvite pendingInvite,
+        Map<UUID, UUID> tags) {
 
     /** Invitation that has been issued and can still be used. */
     public record PendingInvite(InvitePurpose purpose, Instant expiresAt) {
     }
 
-    static StudentView of(User user, @Nullable Invite pendingInvite) {
+    static StudentView of(User user, @Nullable Invite pendingInvite, Map<UUID, UUID> tags) {
         return new StudentView(user.id(), user.profile().displayName(), AccountService.avatarUrl(user.avatar()),
                 user.profile().email(), user.profile().phone(), user.profile().note(), user.profile().defaultTopic(), user.profile().color(), user.status(),
                 user.login(),
                 user.createdAt(), user.version(),
-                pendingInvite == null ? null : new PendingInvite(pendingInvite.purpose(), pendingInvite.expiresAt()));
+                pendingInvite == null ? null : new PendingInvite(pendingInvite.purpose(), pendingInvite.expiresAt()),
+                Map.copyOf(tags));
     }
 }

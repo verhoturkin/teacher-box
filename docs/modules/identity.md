@@ -49,7 +49,8 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
   `id`, adds those without one and removes the rest — a removed value is cleared from its students
   and the answer says how many (`clearedStudents`); deleting a tag clears it from everyone. Tags are
   teacher-only: never in `/api/me`, admin answers, bots or `identity::api`; `ai` gets the
-  recipients' AI tags from the frontend with each draft request.
+  recipients' AI tags from the frontend with each draft request. The teacher's `StudentView` carries
+  `tags` (tag id → value id); `StudentAdminService.setTags` replaces a student's whole set.
 - Implements `shared.security.PasswordConfirmation`.
 
 ## Contract (`identity::api`)
@@ -78,6 +79,12 @@ label}], version}` → `{tag, clearedStudents}` (409 `concurrent.modification`, 
 `tag.value-unknown`); `PUT /order` `{ids}` (every tag once, else 422 `tag.order-invalid`) → the
 list; `DELETE /{id}` → `{clearedStudents}`. Other codes: `tag.not-found`, `tag.name-taken`,
 `tag.value-duplicate`, `tag.limit`.
+
+Values on a student: `PUT /api/teacher/students/{id}/tags` with `{tagId: valueId | null}` — the
+whole set (a null or missing tag is cleared) — answers the `StudentView`; 400 `request.invalid` for
+an unknown tag or a value of another tag, 404 `student.not-found`. `StudentView.tags` is
+`{tagId: valueId}` (`{}` when none); `GET /api/teacher/students?tag=<valueId>` keeps only students
+with that value.
 
 ## Frontend
 
