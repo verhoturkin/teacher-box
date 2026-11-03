@@ -622,6 +622,17 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
 }
 
 /*
+ * A panel that lives inside a section card and has several blocks of its own (tiles, then an alert):
+ * its host takes the card's 12 px gap, so the blocks do not touch (`host: { class: 'tb-flow' }`).
+ */
+.tb-flow,
+.tb-flow > tb-load-state {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-3);
+}
+
+/*
  * Compact (sketches StudentPhone, PhoneMessengers): the settings sections lie on the pane without a card,
  * the section's title reads as the label of its block.
  */

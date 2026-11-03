@@ -36,7 +36,7 @@ https://claude.ai/artifact/L3wuTYeXnspJ9AGwHRD6kx, version 39, board `Portal` (a
   проверку · 2» with «Открыть»), both following the draft. Update `docs/screens.md` «Портал»,
   `docs/design-system.md` if it names the floating bar, help articles (ru, en) and the E2E
   settings suite.
-- [ ] **361.2 F** «Звонки» in «Занятия»: the admin alert touches the list above it, because
+- [x] **361.2 F** «Звонки» in «Занятия»: the admin alert touches the list above it, because
   `meetings/settings/meetings-settings-panel.ts` puts the tiles and the `p-message` inside its own
   host, outside the card's 12 px gap from 360.2. Fix the gap for panels nested in a
   `.tb-section-card` in the shared styles, then check every settings card and dialog for the
