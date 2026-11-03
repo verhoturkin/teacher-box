@@ -1,4 +1,4 @@
-import { startSession } from '../support/session';
+import { startSession, closePicker } from '../support/session';
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 import { create } from '../support/create';
 import { laterThisWeek } from '../support/this-week';
@@ -285,7 +285,7 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
   await page.locator('#board-url').fill('https://app.holst.so/board/e2e');
   await page.locator('tb-member-picker:has(#board-members) p-multiselect').click();
   await page.getByRole('option', { name: ANNA }).click();
-  await page.keyboard.press('Escape');
+  await closePicker(page);
   await dialog.getByRole('button', { name: 'Создать' }).click();
   await expect(page.getByRole('link', { name: /Алгебра/ })).toHaveAttribute(
     'href',

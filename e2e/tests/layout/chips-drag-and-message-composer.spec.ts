@@ -1,4 +1,4 @@
-import { startSession, bearer } from '../support/session';
+import { startSession, bearer, closePicker } from '../support/session';
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 import { create } from '../support/create';
 import { todayThereAt } from '../support/this-week';
@@ -120,7 +120,7 @@ test('a chosen student chip is removed with «×»', async ({ page }) => {
   const dialog = page.getByRole('dialog', { name: 'Сообщение ученикам' });
   await dialog.locator('p-multiselect').click();
   await page.getByRole('option', { name: STUDENT }).click();
-  await page.keyboard.press('Escape');
+  await closePicker(page);
 
   const chipIcon = dialog.locator('.p-chip svg[data-p-icon="times-circle"]');
   await expect(chipIcon).toBeVisible();
@@ -161,7 +161,7 @@ test('«Создать › Сообщение» writes from any page; the open �
   await expect(page).toHaveURL(/\/teacher\/students$/);
   await dialog.locator('p-multiselect').click();
   await page.getByRole('option', { name: STUDENT }).click();
-  await page.keyboard.press('Escape');
+  await closePicker(page);
   const subject = `Перенос ${RUN}`;
   await dialog.getByLabel('Тема').fill(subject);
   await dialog.getByRole('button', { name: 'Отправить' }).click();
