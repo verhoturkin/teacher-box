@@ -32,6 +32,7 @@ import ru.teacherbox.ai.application.AiViews.LessonSummaryDraft;
 import ru.teacherbox.ai.application.AiViews.QuizDraft;
 import ru.teacherbox.ai.application.AiViews.ReviewBrief;
 import ru.teacherbox.ai.application.AiViews.ReviewDraft;
+import ru.teacherbox.ai.application.AiViews.StudentNote;
 import ru.teacherbox.ai.application.AiViews.UsageReport;
 import ru.teacherbox.ai.application.DraftSources;
 import ru.teacherbox.ai.domain.SavedPrompt;
@@ -81,21 +82,31 @@ class TeacherAiController {
         }
     }
 
+    /** A student tag marked «Учитывать в ИИ» with its value(s), e.g. «Класс» — «7 · 8» (ADR-0055). */
+    record ContextRequest(@NotBlank @Size(max = 60) String name, @NotBlank @Size(max = 120) String value) {
+    }
+
     /**
      * @param title   what the teacher already called the assignment
      * @param sources textbook pages, files and video transcripts of the assignment to base the draft on
+     * @param context tags of the recipients: defaults the teacher's request overrides
      */
     record HomeworkDraftRequest(
             @NotBlank @Size(max = SavedPrompt.MAX_TEXT) String prompt,
             @Size(max = 200) @Nullable String title,
-            @Size(max = DraftSources.MAX_SOURCES) @Nullable List<@Valid @NotNull SourceRequest> sources) {
+            @Size(max = DraftSources.MAX_SOURCES) @Nullable List<@Valid @NotNull SourceRequest> sources,
+            @Size(max = MAX_CONTEXT) @Nullable List<@Valid @NotNull ContextRequest> context) {
     }
 
+    /** @param context tags of the student whose work it is */
     record ReviewDraftRequest(
             @NotBlank @Size(max = 200) String title,
             @Size(max = 20_000) @Nullable String description,
-            @NotBlank @Size(max = 20_000) String answer) {
+            @NotBlank @Size(max = 20_000) String answer,
+            @Size(max = MAX_CONTEXT) @Nullable List<@Valid @NotNull ContextRequest> context) {
     }
+
+    private static final int MAX_CONTEXT = 10;
 
     /** At least one of the topic and the words must say something; the titles are those of the lesson's assignments. */
     record LessonSummaryRequest(
@@ -164,7 +175,12 @@ class TeacherAiController {
             sources.stream().map(SourceRequest::toSource).forEach(all::add);
         }
         all.addAll(uploads);
-        return new HomeworkBrief(request.prompt(), request.title(), all);
+        return new HomeworkBrief(request.prompt(), request.title(), all, notes(request.context()));
+    }
+
+    private static List<StudentNote> notes(@Nullable List<ContextRequest> context) {
+        return context == null ? List.of()
+                : context.stream().map(note -> new StudentNote(note.name(), note.value())).toList();
     }
 
     private static DraftSources.Source upload(MultipartFile file) {
@@ -177,7 +193,8 @@ class TeacherAiController {
 
     @PostMapping("/review-draft")
     ReviewDraft reviewDraft(@Valid @RequestBody ReviewDraftRequest request) {
-        return assistant.reviewDraft(new ReviewBrief(request.title(), request.description(), request.answer()));
+        return assistant.reviewDraft(new ReviewBrief(request.title(), request.description(), request.answer(),
+                notes(request.context())));
     }
 
     @PostMapping("/lesson-summary")

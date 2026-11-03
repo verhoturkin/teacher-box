@@ -94,7 +94,7 @@ class AssistantIntegrationTests {
         assertThat(request).isNotNull();
         assertThat(request.system()).contains("репетитору", "пронумерованный список", "Markdown").doesNotContain("{{");
         assertThat(request.prompt()).contains("написал учитель: Дроби",
-                "<request>\nДроби, 5 класс, 4 задачи\n</request>");
+                "<request>\nДроби, 5 класс, 4 задачи\n</request>").doesNotContain("<students>");
         assertThat(request.schemaName()).isEqualTo("homework_draft");
         assertThat(request.schema()).extractingByKey("required").isEqualTo(java.util.List.of("title", "description"));
         assertThat(request.schema()).containsEntry("additionalProperties", false);
@@ -196,6 +196,30 @@ class AssistantIntegrationTests {
                 .multipart().file(new MockMultipartFile("brief", "", MediaType.APPLICATION_JSON_VALUE,
                         "{\"prompt\": \" \"}".getBytes(StandardCharsets.UTF_8))))
                 .as("the brief is checked like the JSON request").hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void studentTagsGoAsDefaultsTheTeacherOverrides() {
+        llm.answer("{\"title\": \"Т\", \"description\": \"О\"}", 1, 1);
+        llm.answer("{\"comment\": \"Хорошо\", \"grade\": null, \"accept\": true}", 1, 1);
+        llm.answer("{\"questions\": []}", 1, 1);
+        String context = """
+                "context": [{"name": "Уровень английского", "value": "B1"}, {"name": "Класс", "value": "7 · 8"}]
+                """;
+
+        assertThat(post("/api/teacher/ai/homework-draft", """
+                {"prompt": "Present Simple", %s}""".formatted(context))).hasStatusOk();
+        assertThat(llm.lastRequest().prompt())
+                .startsWith("Об учениках")
+                .contains("следуй учителю", "<students>\nУровень английского: B1\nКласс: 7 · 8\n</students>",
+                        "<request>\nPresent Simple\n</request>");
+        assertThat(post("/api/teacher/ai/review-draft", """
+                {"title": "Т", "answer": "О", %s}""".formatted(context))).hasStatusOk();
+        assertThat(llm.lastRequest().prompt()).contains("<students>\nУровень английского: B1", "<answer>\nО\n</answer>");
+        assertThat(post("/api/teacher/ai/quiz-draft", """
+                {"prompt": "Present Simple", %s}""".formatted(context)))
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
+        assertThat(llm.lastRequest().prompt()).contains("Класс: 7 · 8\n</students>");
     }
 
     @Test
@@ -445,6 +469,20 @@ class AssistantIntegrationTests {
         assertThat(post("/api/teacher/ai/homework-draft", "{\"title\": \"Дроби\"}"))
                 .hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(post("/api/teacher/ai/review-draft", "{\"title\": \"Дроби\", \"answer\": \"\"}"))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+        String eleven = java.util.stream.IntStream.range(0, 11)
+                .mapToObj(i -> "{\"name\": \"Тег " + i + "\", \"value\": \"x\"}")
+                .collect(java.util.stream.Collectors.joining(", "));
+        assertThat(post("/api/teacher/ai/homework-draft", "{\"prompt\": \"Д\", \"context\": [" + eleven + "]}"))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(post("/api/teacher/ai/quiz-draft",
+                "{\"prompt\": \"Д\", \"context\": [{\"name\": \"" + "я".repeat(61) + "\", \"value\": \"x\"}]}"))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(post("/api/teacher/ai/review-draft", "{\"title\": \"Д\", \"answer\": \"О\", \"context\": "
+                + "[{\"name\": \"Класс\", \"value\": \"" + "7".repeat(121) + "\"}]}"))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(post("/api/teacher/ai/review-draft",
+                "{\"title\": \"Д\", \"answer\": \"О\", \"context\": [{\"name\": \" \", \"value\": \"x\"}]}"))
                 .hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(llm.lastRequest()).isNull();
     }

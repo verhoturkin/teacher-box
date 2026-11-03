@@ -38,7 +38,8 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
   `quiz-draft.system.v1`, `review-draft.system.v1`, `lesson-summary.system.v1`). The teacher's text goes to the model as is (no placeholders). Optimistic locking — the
   default prompt has version 0; in the UI (0.34.0) «Вернуть стандартный» is in the «⋮» of the edit dialog's header; `DELETE` returns to the default; in the full reset. The user prompts (`*.user.*`,
   with `<request>` / `<answer>`) stay resources.
-- Homework draft (`POST homework-draft` `{prompt ≤ 4000, title?, sources?}`, prompts `homework-draft.*.v3`): always
+- Homework draft (`POST homework-draft` `{prompt ≤ 4000, title?, sources?, context?}`, prompts
+  `homework-draft.system.v4`, `homework-draft.user.v4`): always
   `{title, description}` — a Markdown text with numbered tasks; no kinds and no HTML pages since 0.14.1
   ([ADR-0041](../adr/0041-homework-without-kinds-board-link.md)).
 - Sources of a draft ([ADR-0039](../adr/0039-ai-reads-homework-sources.md), `DraftSources`): `sources` — up to 5 of
@@ -57,12 +58,24 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
   blocks; OpenAI-compatible — `image_url` data URIs, a PDF drawn page by page by `PdfPictures` (PDFBox, 100 dpi). The
   prompt names them; `ai.requests` keeps no names.
 - Quiz questions draft (`POST quiz-draft`, JSON or `multipart/form-data` as the homework draft, the same request and
-  `sources`, prompts `quiz-draft.*.v1`, 0.39.0, [ADR-0052](../adr/0052-auto-checked-quizzes.md)): `{questions: [...]}`
+  `sources`, prompts `quiz-draft.system.v1`, `quiz-draft.user.v2`, 0.39.0, [ADR-0052](../adr/0052-auto-checked-quizzes.md)): `{questions: [...]}`
   with the six types. `ai` does not know `homework` internals: every draft goes through the facade
   `homework::api.QuizDrafts`, which applies the same rules as saving (limits, ids, a correct option) and drops what
   fails; a draft with no valid question is an empty list. The answer is never saved: the editor shows it with the key
   and the teacher appends it to the questions or replaces them, then saves the assignment. The enum value
   `QUIZ_DRAFT` is allowed in `system_prompts` by migration `V3__quiz_draft_feature.sql`.
+- Review draft (`POST review-draft` `{title ≤ 200, description ≤ 20000?, answer ≤ 20000, context?}` →
+  `{comment, grade?, accept}`, prompts `review-draft.system.v1`, `review-draft.user.v2`): the answer goes between
+  `<answer>` tags as data.
+- Student context ([ADR-0055](../adr/0055-student-tags.md), stage 362): `context` — up to 10
+  `{name ≤ 60, value ≤ 120}` (both non-blank; 400 beyond the limits) in `homework-draft`, `quiz-draft`
+  (also in the `brief` part of `multipart/form-data`) and `review-draft`. The frontend collects the
+  recipients' tags marked «Учитывать в ИИ» and joins several values of one tag as «7 · 8»; `ai` does
+  not depend on `identity`. `AiAssistant` renders the pairs as `name: value` lines through
+  `student-context.v1` into the `{{students}}` placeholder at the top of the user prompt: between
+  `<students>` tags, as data, with the rule «defaults; the teacher's request wins». The rule lives in
+  the user prompt, so a rewritten system prompt keeps it. No context — no block. `ai.requests` keeps
+  no context.
 - Lesson summary draft (`POST lesson-summary` `{topic ≤ 200?, words ≤ 2000?, assignmentTitles[≤ 20]?}` → `{summary}`,
   prompts `lesson-summary.*.v1`, since 0.37.0): a short Markdown «Что прошли» from the topic, the titles of the
   assignments given at the lesson and the teacher's words (between `<words>` tags, data only); at least the topic or the

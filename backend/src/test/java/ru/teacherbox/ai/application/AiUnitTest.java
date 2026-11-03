@@ -31,7 +31,7 @@ class AiUnitTest {
                 mock(ru.teacherbox.homework.api.QuizDrafts.class));
 
         assertThatThrownBy(() -> assistant.homeworkDraft(
-                new HomeworkBrief("Дроби", null, java.util.List.of())))
+                new HomeworkBrief("Дроби", null, java.util.List.of(), java.util.List.of())))
                 .isInstanceOfSatisfying(BusinessRuleException.class,
                         e -> assertThat(e.code()).isEqualTo("ai.disabled"));
         assertThatThrownBy(() -> assistant.lessonSummary(
@@ -65,17 +65,18 @@ class AiUnitTest {
 
     @Test
     void rendersVersionedPrompts() {
-        String prompt = prompts.render("homework-draft.user.v3",
-                Map.of("title", "—", "sources", "—", "prompt", "Дроби $1"));
+        String prompt = prompts.render("homework-draft.user.v4",
+                Map.of("title", "—", "sources", "—", "prompt", "Дроби $1", "students", ""));
 
-        assertThat(prompt).startsWith("Название, которое уже написал учитель: —").contains("Дроби $1");
+        assertThat(prompt).startsWith("Название, которое уже написал учитель: —").contains("Дроби $1")
+                .doesNotContain("students");
         assertThat(prompts.render("review-draft.system.v1", Map.of())).contains("<answer>");
         assertThat(prompts.render("lesson-summary.system.v1", Map.of())).contains("<words>");
         assertThat(prompts.render("lesson-summary.user.v1",
                 Map.of("topic", "Дроби", "assignments", "— Задача 1", "words", "решали примеры")))
                 .contains("Дроби", "— Задача 1", "<words>\nрешали примеры\n</words>");
-        assertThatThrownBy(() -> prompts.render("homework-draft.user.v3", Map.of("sources", "x")))
-                .hasMessageContaining("{{title}}");
+        assertThatThrownBy(() -> prompts.render("homework-draft.user.v4", Map.of("sources", "x")))
+                .hasMessageContaining("{{students}}");
         assertThatThrownBy(() -> prompts.render("missing.v1", Map.of()))
                 .hasMessageContaining("Prompt not found");
     }

@@ -13,6 +13,7 @@ import ru.teacherbox.ai.application.AiViews.HomeworkDraft;
 import ru.teacherbox.ai.application.AiViews.LessonSummaryBrief;
 import ru.teacherbox.ai.application.AiViews.LessonSummaryDraft;
 import ru.teacherbox.ai.application.AiViews.ReviewBrief;
+import ru.teacherbox.ai.application.AiViews.StudentNote;
 import ru.teacherbox.ai.application.AiViews.QuizDraft;
 import ru.teacherbox.ai.application.AiViews.ReviewDraft;
 import ru.teacherbox.ai.domain.AiFeature;
@@ -29,10 +30,11 @@ import tools.jackson.databind.json.JsonMapper;
 @Service
 public class AiAssistant {
 
-    static final String HOMEWORK_PROMPT = "homework-draft.user.v3";
-    static final String REVIEW_PROMPT = "review-draft.user.v1";
+    static final String HOMEWORK_PROMPT = "homework-draft.user.v4";
+    static final String REVIEW_PROMPT = "review-draft.user.v2";
     static final String LESSON_SUMMARY_PROMPT = "lesson-summary.user.v1";
-    static final String QUIZ_PROMPT = "quiz-draft.user.v1";
+    static final String QUIZ_PROMPT = "quiz-draft.user.v2";
+    static final String STUDENTS_PROMPT = "student-context.v1";
     static final int MAX_TITLE = 200;
 
     static final Map<String, Object> HOMEWORK_SCHEMA = object(
@@ -102,7 +104,8 @@ public class AiAssistant {
                 "title", orDash(brief.title()),
                 "sources", materials.isEmpty() ? "—"
                         : materials.stream().map(LlmSource::name).collect(Collectors.joining("; ")),
-                "prompt", brief.prompt().strip());
+                "prompt", brief.prompt().strip(),
+                "students", students(brief.context()));
         LlmRequest request = new LlmRequest(
                 systemPrompts.text(AiFeature.HOMEWORK_DRAFT),
                 prompts.render(HOMEWORK_PROMPT, values),
@@ -126,7 +129,8 @@ public class AiAssistant {
         Map<String, String> values = Map.of(
                 "sources", materials.isEmpty() ? "—"
                         : materials.stream().map(LlmSource::name).collect(Collectors.joining("; ")),
-                "prompt", brief.prompt().strip());
+                "prompt", brief.prompt().strip(),
+                "students", students(brief.context()));
         LlmRequest request = new LlmRequest(systemPrompts.text(AiFeature.QUIZ_DRAFT),
                 prompts.render(QUIZ_PROMPT, values), "quiz_draft", QUIZ_SCHEMA, materials);
         return call(AiFeature.QUIZ_DRAFT, request, QuizAnswer.class, answer -> {
@@ -140,7 +144,8 @@ public class AiAssistant {
         Map<String, String> values = Map.of(
                 "title", brief.title().strip(),
                 "description", orDash(brief.description()),
-                "answer", brief.answer().strip());
+                "answer", brief.answer().strip(),
+                "students", students(brief.context()));
         LlmRequest request = new LlmRequest(systemPrompts.text(AiFeature.REVIEW_DRAFT),
                 prompts.render(REVIEW_PROMPT, values), "review_draft", REVIEW_SCHEMA);
         return call(AiFeature.REVIEW_DRAFT, request, ReviewAnswer.class, answer -> {
@@ -151,6 +156,13 @@ public class AiAssistant {
             String grade = answer.grade() == null || answer.grade().isBlank() ? null : answer.grade().strip();
             return new ReviewDraft(comment, grade, answer.accept());
         });
+    }
+
+    /** The {@code <students>} block of a user prompt with its rule «defaults; the teacher wins»; empty without notes. */
+    private String students(List<StudentNote> context) {
+        return context.isEmpty() ? "" : prompts.render(STUDENTS_PROMPT, Map.of("pairs", context.stream()
+                .map(note -> note.name().strip() + ": " + note.value().strip())
+                .collect(Collectors.joining("\n"))));
     }
 
     /** A draft of «Что прошли» from the topic, the assignments and the teacher's short words. */

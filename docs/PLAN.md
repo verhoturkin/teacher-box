@@ -51,7 +51,7 @@ sends the context of the recipients with the request, as it does for the lesson 
   valueId|null}` (`StudentAdminController`), tags in the teacher's `StudentView`, a `tag` filter on
   the student list; never in `/api/me`, the student's views or `identity::api.StudentSummary` (test:
   a student reading their own profile sees no tags).
-- [ ] **362.3 B** AI context: `context` — up to 10 `{name ≤ 60, value ≤ 120}` pairs — in the
+- [x] **362.3 B** AI context: `context` — up to 10 `{name ≤ 60, value ≤ 120}` pairs — in the
   `homework-draft`, `quiz-draft` and `review-draft` requests (`AiViews`, `AiAssistant`); the user
   prompts (`homework-draft.user.v4`, `quiz-draft.user.v2`, `review-draft.user.v2`) put it between
   `<students>` tags as data with the rule «defaults; the teacher's request wins» — in the user

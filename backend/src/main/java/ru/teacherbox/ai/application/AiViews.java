@@ -21,12 +21,24 @@ public final class AiViews {
      *
      * @param title   what the teacher already called the assignment, if anything
      * @param sources textbook pages and files of the assignment to base the draft on (ADR-0039)
+     * @param context what the teacher noted about the recipients (ADR-0055)
      */
-    public record HomeworkBrief(String prompt, @Nullable String title, List<DraftSources.Source> sources) {
+    public record HomeworkBrief(String prompt, @Nullable String title, List<DraftSources.Source> sources,
+            List<StudentNote> context) {
 
         public HomeworkBrief {
             sources = List.copyOf(sources);
+            context = List.copyOf(context);
         }
+    }
+
+    /**
+     * A student tag the frontend sends as a default of a draft (ADR-0055); several values of one tag come joined.
+     *
+     * @param name  the tag, e.g. «Уровень английского»
+     * @param value its value, e.g. «B1» or «7 · 8»
+     */
+    public record StudentNote(String name, String value) {
     }
 
     /** A draft of the questions of an assignment, valid by the rules of a quiz, for the question editor. */
@@ -37,8 +49,12 @@ public final class AiViews {
     public record HomeworkDraft(String title, String description) {
     }
 
-    /** Texts of the task and the student's answer; the frontend sends them explicitly. */
-    public record ReviewBrief(String title, @Nullable String description, String answer) {
+    /** Texts of the task and the student's answer and the student's tags; the frontend sends them explicitly. */
+    public record ReviewBrief(String title, @Nullable String description, String answer, List<StudentNote> context) {
+
+        public ReviewBrief {
+            context = List.copyOf(context);
+        }
     }
 
     /**

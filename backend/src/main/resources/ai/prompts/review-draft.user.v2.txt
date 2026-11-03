@@ -1,0 +1,10 @@
+{{students}}
+
+Задание: {{title}}
+
+Условие:
+{{description}}
+
+<answer>
+{{answer}}
+</answer>
