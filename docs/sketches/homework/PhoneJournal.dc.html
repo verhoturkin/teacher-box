@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Телефон — по ученикам</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.ph{width:390px;height:844px;overflow:hidden;font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#FBF8FF;display:flex;flex-direction:column}
+.iconbtn{width:48px;height:48px;border-radius:24px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center}
+.chip{height:32px;border-radius:8px;border:1px solid #C6C5D0;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:0 16px;font:500 14px 'Roboto Flex',sans-serif;color:#45464F;white-space:nowrap}
+.g{display:grid;grid-template-columns:96px repeat(4,minmax(0,1fr));gap:6px;align-items:center}
+.h{font-size:11px;font-weight:600;color:#45464F;line-height:1.25}
+.who{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.av{width:32px;height:32px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:0 0 32px}
+.c{height:44px;border-radius:10px;border:0;display:flex;align-items:center;justify-content:center}
+.s-ok{background:#C8F0CF;color:#0B3A1A}.s-rev{background:#FFE08D;color:#3D2E00}.s-late{background:#FFDAD6;color:#410002}.s-wait{background:#F5F2FA;color:#45464F}.s-none{background:transparent;color:#C6C5D0;border:1px dashed #C6C5D0}
+.leg{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#45464F}
+.nav{height:80px;flex:0 0 80px;background:#EFEDF4;display:flex;justify-content:space-around;align-items:center}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#45464F;text-decoration:none}
+.ni span.pill{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.ni.on span.pill{background:#DEE1F9;color:#171B2C}
+</style>
+</helmet>
+<div class="ph">
+  <header style="height:64px;display:flex;align-items:center;padding:0 4px 0 16px">
+    <h1 style="margin:0;font-size:22px;font-weight:400;flex:1">Задания</h1>
+    <button class="iconbtn" aria-label="Вид: списком"><span class="ic">view_list</span></button>
+  </header>
+  <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:12px;padding:0 16px">
+    <div style="display:flex;align-items:center;gap:4px">
+      <button class="iconbtn" style="width:40px;height:40px" aria-label="Предыдущая неделя"><span class="ic">chevron_left</span></button>
+      <span style="font-size:16px;font-weight:500;flex:1;text-align:center">27.10 — 02.11</span>
+      <button class="iconbtn" style="width:40px;height:40px" aria-label="Следующая неделя"><span class="ic">chevron_right</span></button>
+      <button class="chip">B1<span class="ic" style="font-size:18px">arrow_drop_down</span></button>
+    </div>
+    <div class="g">
+      <span></span>
+      <span class="h">Present Perf.<br>чт 30</span><span class="h">Reading<br>пн 27</span><span class="h">Эссе<br>сб 01</span><span class="h">Глаголы<br>ср 05</span>
+    </div>
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+      <div class="g">
+        <span class="who"><span class="av" style="background:{{r.bg}};color:{{r.fg}}">{{r.ini}}</span>{{r.name}}</span>
+        <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="4"><button class="c {{x.cls}}" aria-label="{{x.lbl}}"><span class="ic" style="font-size:22px">{{x.i}}</span></button></sc-for>
+      </div>
+    </sc-for>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px">
+      <span class="leg"><span class="ic" style="font-size:16px;color:#3E8E55">check_circle</span>принято</span>
+      <span class="leg"><span class="ic" style="font-size:16px;color:#7A5900">rate_review</span>проверить</span>
+      <span class="leg"><span class="ic" style="font-size:16px;color:#BA1A1A">error</span>просрочено / доработка</span>
+      <span class="leg"><span class="ic" style="font-size:16px">schedule</span>ждём</span>
+    </div>
+    <div style="background:#F5F2FA;border-radius:16px;padding:12px 14px;font-size:14px;display:flex;gap:10px;align-items:center"><span class="ic" style="color:#4459A9">touch_app</span>Касание клетки — проверка или «Выдать ещё»</div>
+  </div>
+  <nav class="nav" aria-label="Разделы">
+    <a class="ni" href="#"><span class="pill"><span class="ic">home</span></span>Главная</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">calendar_month</span></span>Расписание</a>
+    <a class="ni on" href="#"><span class="pill"><span class="ic" style="font-variation-settings:'FILL' 1">assignment</span></span>Задания</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">group</span></span>Ученики</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">menu</span></span>Ещё</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ok = { cls: 's-ok', i: 'check_circle', lbl: 'Принято' };
+    const rev = { cls: 's-rev', i: 'rate_review', lbl: 'Проверить' };
+    const late = { cls: 's-late', i: 'error', lbl: 'Просрочено' };
+    const wait = { cls: 's-wait', i: 'schedule', lbl: 'Ждём' };
+    const none = { cls: 's-none', i: 'add', lbl: 'Не выдано' };
+    return { rows: [
+      { ini: 'АС', name: 'Анна', bg: '#DCE1FF', fg: '#001550', cells: [rev, ok, rev, wait] },
+      { ini: 'ИП', name: 'Илья', bg: '#FFD7F3', fg: '#390035', cells: [ok, late, rev, wait] },
+      { ini: 'МК', name: 'Мария', bg: '#C8F0CF', fg: '#0B3A1A', cells: [late, none, ok, wait] },
+      { ini: 'ДО', name: 'Дмитрий', bg: '#FFE08D', fg: '#3D2E00', cells: [rev, none, wait, wait] }
+    ] };
+  }
+}
+</script>
+</body>
+</html>

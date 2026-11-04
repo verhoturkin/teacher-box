@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ИИ — новое подключение</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.stage{width:1440px;height:1000px;box-sizing:border-box;font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#9A99A3;padding:48px;display:flex;gap:48px;justify-content:center;align-items:flex-start}
+.dlg{width:560px;background:#FBF8FF;border-radius:28px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;box-shadow:0 4px 8px 3px rgba(0,0,0,.15),0 1px 3px rgba(0,0,0,.3)}
+.dlg h2{margin:0;font-size:24px;font-weight:400;line-height:32px}
+.step{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F}
+.muted{color:#45464F}
+.kinds{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kind{display:flex;align-items:center;gap:12px;border:1px solid #C6C5D0;border-radius:16px;padding:12px;background:transparent;font:inherit;color:inherit;text-align:left;min-height:64px}
+.kind.on{background:#DEE1F9;border-color:#DEE1F9}
+.kind .ic{font-size:24px;color:#4459A9}
+.kind b{display:block;font-weight:500;font-size:14px}.kind small{display:block;font-size:12px;color:#45464F}
+.field{background:#E3E1E9;border-radius:4px 4px 0 0;border-bottom:1px solid #767680;padding:8px 16px;min-height:56px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;width:100%}
+.field label{font-size:12px;color:#45464F}
+.field input{border:0;background:transparent;font:16px 'Roboto Flex',sans-serif;color:#1B1B21;padding:0;width:100%}
+.field.err{border-bottom:2px solid #BA1A1A}.field.err label{color:#BA1A1A}
+.hint{font-size:12px;color:#45464F;margin:4px 16px 0}.hint.err{color:#BA1A1A}
+.fold{display:flex;align-items:center;gap:8px;border:0;background:transparent;padding:0;font:500 14px 'Roboto Flex',sans-serif;color:#4459A9}
+.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+.btn{height:40px;border-radius:20px;border:0;padding:0 24px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap}
+.btn .ic{font-size:20px}
+.filled{background:#4459A9;color:#fff}.textbtn{background:transparent;color:#4459A9;padding:0 12px}
+.search{height:48px;border-radius:24px;background:#E3E1E9;display:flex;align-items:center;gap:12px;padding:0 16px;color:#45464F;font-size:16px}
+.list{display:flex;flex-direction:column;gap:2px;border-radius:16px;overflow:hidden}
+.list>:not(.tile){display:contents}
+.tile{display:flex;align-items:center;gap:16px;min-height:56px;padding:8px 16px;background:#F5F2FA;box-sizing:border-box;font-size:14px}
+.tile .t{flex:1;min-width:0}.tile .t b{display:block;font-weight:500;font-size:16px}.tile .t span{display:block;color:#45464F}
+.check{width:18px;height:18px;border-radius:2px;border:2px solid #45464F;box-sizing:border-box;display:inline-flex;flex:0 0 18px}
+.check.on{background:#4459A9;border-color:#4459A9;color:#fff;align-items:center;justify-content:center}
+.check.on .ic{font-size:16px}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap}
+.t-ok{background:#C8F0CF;color:#0B3A1A}.t-pri{background:#DCE1FF;color:#001550}
+.ok{display:flex;gap:8px;align-items:center;border-radius:16px;padding:12px 16px;background:#C8F0CF;color:#0B3A1A;font-size:14px}
+.cap{font-size:13px;color:#1B1B21;background:#FBF8FF;border-radius:12px;padding:8px 12px;position:absolute}
+</style>
+</helmet>
+<div class="stage">
+  <section class="dlg" role="dialog" aria-labelledby="d1">
+    <span class="step">Шаг 1 из 2 · Подключение</span>
+    <h2 id="d1">Новое подключение</h2>
+    <span class="muted" style="font-size:14px">Где взять ключ — в справке у каждого провайдера.</span>
+    <div class="kinds" role="radiogroup" aria-label="Провайдер">
+      <sc-for list="{{kinds}}" as="k" hint-placeholder-count="5">
+        <button class="{{k.cls}}" role="radio" aria-checked="{{k.on}}"><span class="ic">{{k.icon}}</span><span><b>{{k.name}}</b><small>{{k.sub}}</small></span></button>
+      </sc-for>
+    </div>
+    <div><div class="field"><label for="nm">Название</label><input id="nm" value="OpenRouter"></div><div class="hint">Как подключение называется в списке. Можно оставить как есть.</div></div>
+    <div><div class="field err"><label for="key">API-ключ</label><input id="key" type="password" value="sk-or-v1-xxxxxxxxxxxx"></div><div class="hint err">Ключ не подошёл: OpenRouter ответил «401 — неверный ключ».</div></div>
+    <button class="fold" aria-expanded="true"><span class="ic">expand_less</span>Дополнительно</button>
+    <div><div class="field"><label for="url">Адрес API</label><input id="url" value="https://openrouter.ai/api/v1"></div><div class="hint">Менять только для своего сервера или зеркала.</div></div>
+    <div><div class="field"><label for="px">Прокси</label><input id="px" value="socks5://host.docker.internal:1080"></div><div class="hint">Если провайдер недоступен из сети сервера. Пусто — напрямую.</div></div>
+    <div class="actions"><button class="btn textbtn">Отмена</button><button class="btn filled">Проверить и продолжить</button></div>
+  </section>
+
+  <section class="dlg" role="dialog" aria-labelledby="d2">
+    <span class="step">Шаг 2 из 2 · Модели</span>
+    <h2 id="d2">Модели OpenRouter</h2>
+    <div class="ok"><span class="ic">check_circle</span>Ключ работает. Провайдер предлагает 312 моделей.</div>
+    <div class="search" role="search"><span class="ic">search</span>deepseek</div>
+    <div class="list">
+      <sc-for list="{{models}}" as="m" hint-placeholder-count="4">
+        <label class="tile">
+          <span class="{{m.cls}}" aria-hidden="true"><sc-if value="{{m.on}}" hint-placeholder-val="{{true}}"><span class="ic">check</span></sc-if></span>
+          <span class="t"><b>{{m.name}}</b><span>{{m.id}}</span></span>
+          <sc-if value="{{m.def}}" hint-placeholder-val="{{false}}"><span class="tag t-pri">По умолчанию</span></sc-if>
+        </label>
+      </sc-for>
+    </div>
+    <button class="fold"><span class="ic">add</span>Добавить модель вручную</button>
+    <span class="muted" style="font-size:13px">Отмеченные модели появятся в окне «Написать с ИИ». Модель по умолчанию меняется в списке подключений.</span>
+    <div class="actions"><button class="btn textbtn">Назад</button><button class="btn filled">Сохранить · 2 модели</button></div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const k = (icon, name, sub, on) => ({ icon, name, sub, on, cls: on ? 'kind on' : 'kind' });
+    const m = (name, id, on, def) => ({ name, id, on, def, cls: on ? 'check on' : 'check' });
+    return {
+      kinds: [
+        k('auto_awesome', 'Anthropic', 'Claude', false),
+        k('diamond', 'Gemini', 'Ключ из Google AI Studio', false),
+        k('hub', 'OpenRouter', 'Модели многих компаний', true),
+        k('water', 'DeepSeek', 'platform.deepseek.com', false),
+        k('dns', 'OpenAI-совместимый', 'OpenAI, Ollama, LM Studio, vLLM', false)
+      ],
+      models: [
+        m('DeepSeek V4', 'deepseek/deepseek-v4', true, false),
+        m('DeepSeek V4 Pro', 'deepseek/deepseek-v4-pro', true, false),
+        m('DeepSeek Flash', 'deepseek/deepseek-flash', false, false),
+        m('DeepSeek R2', 'deepseek/deepseek-r2', false, false)
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

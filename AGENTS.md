@@ -46,7 +46,7 @@ ready images in GHCR ([ADR-0032](docs/adr/0032-ready-images-and-installer.md)).
 ## 3. Repository layout
 
 ```
-docs/          PLAN.md, design-system.md, screens.md, glossary.md, operations.md, modules/, adr/, archive/, wiki/ (user guides)
+docs/          PLAN.md, design-system.md, screens.md, glossary.md, operations.md, modules/, adr/, archive/, wiki/ (user guides), sketches/ (design boards the plan names)
 backend/       Spring Boot app — src/main/java/ru/teacherbox/{shared,platform,<modules>}
 frontend/      Angular app — src/app/{core,shared,features/<module>}
 docker/        Dockerfile (targets backend, frontend), nginx

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Типы вопросов</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FBF8FF}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.page{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#FBF8FF;padding:32px;box-sizing:border-box;min-height:1240px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-content:start}
+.card{background:#fff;border:1px solid #E3E1E9;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.hd{display:flex;align-items:center;gap:8px}
+.hd b{flex:1;font-size:16px}
+.fl{font-size:12px;font-weight:600;color:#45464F;display:block;margin-bottom:6px}
+.field{background:#E3E1E9;border-radius:4px 4px 0 0;border-bottom:1px solid #767680;padding:10px 12px;font-size:14px;padding-left:16px;padding-right:16px}
+.opt{display:flex;align-items:center;gap:8px;background:#F5F2FA;border-radius:12px;padding:4px 4px 4px 8px;font-size:14px;min-height:48px;box-sizing:border-box}
+.opt.right{background:#C8F0CF;color:#0B3A1A}
+.opt .txt{flex:1;background:#FBF8FF;border-radius:6px;padding:7px 9px;color:#1B1B21}
+.mark{width:18px;height:18px;flex:0 0 18px;box-sizing:border-box;border:2px solid #45464F}
+.r{border-radius:9px}.r.on{border-color:#1F6B37;background:radial-gradient(#1F6B37 0 4px,transparent 5px)}
+.c{border-radius:4px}.c.on{border-color:#1F6B37;background:#1F6B37;position:relative}
+.c.on::after{content:'';position:absolute;left:4px;top:0;width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.x{width:32px;height:32px;border-radius:16px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center}
+.add{align-self:flex-start;height:32px;border:0;background:transparent;color:#4459A9;font:500 14px 'Roboto Flex',sans-serif;display:flex;align-items:center;gap:4px;padding:0}
+.chip{height:32px;border-radius:8px;background:#C8F0CF;color:#0B3A1A;display:inline-flex;align-items:center;gap:4px;padding:0 4px 0 10px;font:500 14px 'Roboto Flex',sans-serif}
+.hint{font-size:12px;color:#45464F;background:#F5F2FA;border-radius:10px;padding:8px 10px;display:flex;gap:6px;align-items:flex-start}
+.err{font-size:12px;color:#410002;background:#FFDAD6;border-radius:10px;padding:8px 10px;display:flex;gap:6px;align-items:center}
+.pair{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr) 32px;gap:6px;align-items:center}
+.pair span.c2{background:#F5F2FA;border-radius:8px;padding:8px 10px;font-size:14px}
+.num{display:flex;gap:12px}
+.num div{flex:1}
+.muted{color:#45464F}
+.foot{display:flex;align-items:center;gap:8px;border-top:1px solid #E3E1E9;padding-top:10px;font-size:13px;color:#45464F}
+</style>
+</helmet>
+<div class="page">
+  <h1 style="grid-column:1/-1;margin:0 0 4px;font-size:28px;font-weight:500">Как выглядит редактор каждого типа вопроса</h1>
+
+  <section class="card" aria-label="Один ответ">
+    <div class="hd"><span class="ic" style="color:#4459A9">radio_button_checked</span><b>Один ответ</b><span class="muted" style="font-size:12px">1 балл</span></div>
+    <div class="field">Вторая форма глагола <b>bring</b></div>
+    <span class="fl">Варианты · отметьте верный</span>
+    <div class="opt"><span class="mark r"></span><span class="txt">brang</span><button class="x" aria-label="Убрать вариант 1"><span class="ic" style="font-size:18px">close</span></button></div>
+    <div class="opt right"><span class="mark r on"></span><span class="txt">brought</span><button class="x" aria-label="Убрать вариант 2"><span class="ic" style="font-size:18px">close</span></button></div>
+    <div class="opt"><span class="mark r"></span><span class="txt">bringed</span><button class="x" aria-label="Убрать вариант 3"><span class="ic" style="font-size:18px">close</span></button></div>
+    <button class="add"><span class="ic" style="font-size:18px">add</span>Добавить вариант</button>
+    <div class="foot"><span class="ic" style="font-size:18px">info</span>Не меньше двух вариантов, ровно один верный</div>
+  </section>
+
+  <section class="card" aria-label="Несколько ответов">
+    <div class="hd"><span class="ic" style="color:#4459A9">check_box</span><b>Несколько ответов</b><span class="muted" style="font-size:12px">2 балла</span></div>
+    <div class="field">Отметьте неправильные глаголы</div>
+    <span class="fl">Варианты · отметьте все верные</span>
+    <div class="opt right"><span class="mark c on"></span><span class="txt">go</span><button class="x" aria-label="Убрать вариант 1"><span class="ic" style="font-size:18px">close</span></button></div>
+    <div class="opt"><span class="mark c"></span><span class="txt">play</span><button class="x" aria-label="Убрать вариант 2"><span class="ic" style="font-size:18px">close</span></button></div>
+    <div class="opt right"><span class="mark c on"></span><span class="txt">teach</span><button class="x" aria-label="Убрать вариант 3"><span class="ic" style="font-size:18px">close</span></button></div>
+    <div class="opt"><span class="mark c"></span><span class="txt">walk</span><button class="x" aria-label="Убрать вариант 4"><span class="ic" style="font-size:18px">close</span></button></div>
+    <button class="add"><span class="ic" style="font-size:18px">add</span>Добавить вариант</button>
+    <div class="foot"><span class="ic" style="font-size:18px">info</span>Балл — только если отмечены все верные и ни одного лишнего</div>
+  </section>
+
+  <section class="card" aria-label="Короткий ответ">
+    <div class="hd"><span class="ic" style="color:#4459A9">short_text</span><b>Короткий ответ</b><span class="muted" style="font-size:12px">2 балла</span></div>
+    <div class="field">Напишите три формы глагола <b>teach</b> через дефис</div>
+    <span class="fl">Принимаемые ответы</span>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <span class="chip">teach-taught-taught<button class="x" style="width:24px;height:24px" aria-label="Убрать ответ 1"><span class="ic" style="font-size:16px">close</span></button></span>
+      <span class="chip">teach – taught – taught<button class="x" style="width:24px;height:24px" aria-label="Убрать ответ 2"><span class="ic" style="font-size:16px">close</span></button></span>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center"><div class="field" style="flex:1;color:#45464F">Ещё вариант ответа + Enter</div></div>
+    <div class="hint"><span class="ic" style="font-size:16px">info</span>Регистр, ё/е и лишние пробелы не важны: «Teach-Taught-Taught» тоже засчитается</div>
+  </section>
+
+  <section class="card" aria-label="Число">
+    <div class="hd"><span class="ic" style="color:#4459A9">pin</span><b>Число</b><span class="muted" style="font-size:12px">1 балл</span></div>
+    <div class="field">Сколько неправильных глаголов в строках 41–60?</div>
+    <div class="num">
+      <div><span class="fl">Ответ</span><div class="field" style="margin-top:6px;font-weight:600">20</div></div>
+      <div><span class="fl">Допуск, ±</span><div class="field" style="margin-top:6px">0</div></div>
+    </div>
+    <div class="hint"><span class="ic" style="font-size:16px">info</span>Допуск 0 — засчитается только 20; с допуском 1 — от 19 до 21. Дробные — через точку или запятую</div>
+  </section>
+
+  <section class="card" aria-label="Соответствие">
+    <div class="hd"><span class="ic" style="color:#4459A9">compare_arrows</span><b>Соответствие</b><span class="muted" style="font-size:12px">2 балла</span></div>
+    <div class="field">Соедините глагол и его третью форму</div>
+    <div class="pair"><span class="fl">Слева</span><span></span><span class="fl">Справа — верная пара</span><span></span></div>
+    <div class="pair"><span class="c2">choose</span><span class="ic muted" style="font-size:18px">arrow_forward</span><span class="c2">chosen</span><button class="x" aria-label="Убрать пару 1"><span class="ic" style="font-size:18px">close</span></button></div>
+    <div class="pair"><span class="c2">fly</span><span class="ic muted" style="font-size:18px">arrow_forward</span><span class="c2">flown</span><button class="x" aria-label="Убрать пару 2"><span class="ic" style="font-size:18px">close</span></button></div>
+    <div class="pair"><span class="c2">lend</span><span class="ic muted" style="font-size:18px">arrow_forward</span><span class="c2">lent</span><button class="x" aria-label="Убрать пару 3"><span class="ic" style="font-size:18px">close</span></button></div>
+    <button class="add"><span class="ic" style="font-size:18px">add</span>Добавить пару</button>
+    <div class="hint"><span class="ic" style="font-size:16px">shuffle</span>Ученик увидит правый столбец в случайном порядке</div>
+  </section>
+
+  <section class="card" aria-label="Порядок">
+    <div class="hd"><span class="ic" style="color:#4459A9">format_list_numbered</span><b>Порядок</b><span class="muted" style="font-size:12px">1 балл</span></div>
+    <div class="field">Расставьте слова в правильном порядке</div>
+    <span class="fl">Элементы в верном порядке · перетащите</span>
+    <div class="opt"><span class="ic muted" style="font-size:20px">drag_indicator</span><b style="width:14px">1</b><span class="txt">I</span><button class="x" aria-label="Убрать элемент 1"><span class="ic" style="font-size:18px">close</span></button></div>
+    <div class="opt"><span class="ic muted" style="font-size:20px">drag_indicator</span><b style="width:14px">2</b><span class="txt">have never</span><button class="x" aria-label="Убрать элемент 2"><span class="ic" style="font-size:18px">close</span></button></div>
+    <div class="opt" style="box-shadow:0 3px 8px rgba(0,0,0,.18);background:#DEE1F9"><span class="ic" style="font-size:20px">drag_indicator</span><b style="width:14px">3</b><span class="txt">been</span><button class="x" aria-label="Убрать элемент 3"><span class="ic" style="font-size:18px">close</span></button></div>
+    <div class="opt"><span class="ic muted" style="font-size:20px">drag_indicator</span><b style="width:14px">4</b><span class="txt">to Paris</span><button class="x" aria-label="Убрать элемент 4"><span class="ic" style="font-size:18px">close</span></button></div>
+    <button class="add"><span class="ic" style="font-size:18px">add</span>Добавить элемент</button>
+    <div class="hint"><span class="ic" style="font-size:16px">shuffle</span>Ученик увидит элементы перемешанными</div>
+  </section>
+
+  <h2 style="grid-column:1/-1;margin:12px 0 0;font-size:20px;font-weight:500">Общее для всех типов</h2>
+  <section class="card" style="grid-column:span 2" aria-label="Смена типа и пояснение">
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <div style="flex:1 1 260px;display:flex;flex-direction:column;gap:8px">
+        <b>Смена типа без потери текста</b>
+        <div class="hint"><span class="ic" style="font-size:16px">swap_horiz</span>«Один ответ» ⇄ «Несколько ответов» сохраняют варианты. Из вариантов в «Порядок» — варианты становятся элементами. В остальных случаях портал спросит: «Варианты пропадут. Сменить тип?»</div>
+      </div>
+      <div style="flex:1 1 260px;display:flex;flex-direction:column;gap:8px">
+        <b>Пояснение и баллы</b>
+        <div class="hint"><span class="ic" style="font-size:16px">lightbulb</span>Пояснение свёрнуто строкой «+ Пояснение к ответу», пока его нет. Баллы — степпер 1–100, по умолчанию 1.</div>
+      </div>
+    </div>
+  </section>
+  <section class="card" aria-label="Ошибки">
+    <b>Ошибки показываются у поля</b>
+    <div class="err"><span class="ic" style="font-size:18px">error</span>Отметьте верный вариант</div>
+    <div class="err"><span class="ic" style="font-size:18px">error</span>Нужно не меньше двух пар с обеими частями</div>
+    <div class="muted" style="font-size:12px">В списке вопросов у такого вопроса красный значок</div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

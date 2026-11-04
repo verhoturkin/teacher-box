@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Проверка работы</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.app{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;min-height:960px;display:flex;flex-wrap:wrap;gap:24px;padding:24px 24px 24px 0;box-sizing:border-box}
+.rail{width:96px;flex:0 0 96px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#45464F;text-decoration:none}
+.ni span.pill{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.ni.on span.pill{background:#DEE1F9;color:#171B2C}
+.pane{background:#FBF8FF;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.btn{height:40px;border-radius:20px;border:0;padding:0 16px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap;justify-content:center}
+.filled{background:#4459A9;color:#fff}
+.tonal{background:#DEE1F9;color:#171B2C}
+.danger{background:#FFDAD6;color:#410002}
+.textbtn{background:transparent;color:#4459A9;padding:0 12px}
+.iconbtn{width:40px;height:40px;border-radius:20px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.chip{height:32px;border-radius:8px;border:1px solid #C6C5D0;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:0 16px;font:500 14px 'Roboto Flex',sans-serif;color:#45464F;white-space:nowrap}
+.chip.sel{background:#DEE1F9;border-color:#DEE1F9;color:#171B2C;padding-left:8px}
+.label{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F}
+.av{width:40px;height:40px;border-radius:20px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;background:#DCE1FF;color:#001550}
+.block{background:#F5F2FA;border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.photo{height:150px;border-radius:12px;background:#E3E1E9;display:flex;align-items:center;justify-content:center;color:#45464F}
+.wq{display:flex;gap:10px;align-items:flex-start;font-size:14px;background:#FBF8FF;border-radius:12px;padding:10px 12px}
+.muted{color:#45464F}
+</style>
+</helmet>
+<div class="app">
+  <nav class="rail" aria-label="Разделы">
+    <a class="ni" href="#"><span class="pill"><span class="ic">home</span></span>Главная</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">calendar_month</span></span>Расписание</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">group</span></span>Ученики</a>
+    <a class="ni on" href="#"><span class="pill"><span class="ic" style="font-variation-settings:'FILL' 1">assignment</span></span>Задания</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">payments</span></span>Оплаты</a>
+  </nav>
+
+  <main class="pane" style="flex:999 1 560px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <a class="iconbtn" href="Assignment.dc.html" aria-label="К заданию"><span class="ic">arrow_back</span></a>
+      <span class="av">АС</span>
+      <div style="flex:1;min-width:0">
+        <h1 style="margin:0;font-size:22px;font-weight:500">Анна Смирнова</h1>
+        <div class="muted" style="font-size:14px">Present Perfect — упражнения 4–7 · сдано сегодня, 09:12 · вовремя</div>
+      </div>
+      <span class="muted" style="font-size:13px">1 из 2 на проверке</span>
+      <button class="iconbtn" aria-label="Предыдущая работа"><span class="ic">chevron_left</span></button>
+      <button class="iconbtn" aria-label="Следующая работа"><span class="ic">chevron_right</span></button>
+    </div>
+
+    <div class="block">
+      <span class="label">Ответ</span>
+      <div style="font-size:16px;line-height:1.6">4. Tom has already finished his project.<br>5. I haven’t seen this film yet.<br>6. I chose «already» because the action is complete before now…</div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+        <div class="photo"><span class="ic">image</span>&nbsp;тетрадь, стр. 1</div>
+        <div class="photo"><span class="ic">image</span>&nbsp;тетрадь, стр. 2</div>
+        <div class="photo" style="flex-direction:column;gap:8px"><span class="ic" style="font-size:32px;color:#4459A9">play_circle</span><span style="font-size:13px">чтение упр. 7 · 1:42</span></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div style="display:flex;align-items:center;gap:8px"><span class="label" style="flex:1">Тест · 8 из 10</span><span class="muted" style="font-size:13px">лучшая из 2 попыток</span></div>
+      <div class="wq"><span class="ic" style="color:#BA1A1A">cancel</span><div style="flex:1"><b>№3</b> She has ___ (write) three letters<div class="muted">ответ: <s>wrote</s> · ключ: <b style="color:#0B3A1A">written</b></div></div><button class="btn tonal" style="height:32px">Засчитать</button></div>
+      <div class="wq"><span class="ic" style="color:#BA1A1A">cancel</span><div style="flex:1"><b>№6</b> Have you ___ (be) to London?<div class="muted">ответ: <s>was</s> · ключ: <b style="color:#0B3A1A">been</b></div></div><button class="btn tonal" style="height:32px">Засчитать</button></div>
+      <button class="btn textbtn" style="align-self:flex-start;height:32px">Показать верные (8)</button>
+    </div>
+  </main>
+
+  <aside class="pane" style="flex:0 1 400px;background:#F5F2FA" aria-label="Проверка">
+    <h2 style="margin:0;font-size:20px;font-weight:600">Проверка</h2>
+    <div style="background:#fff;border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:8px;font-size:12px;font-weight:600;background:#FFD7F3;color:#390035">Черновик ИИ</span><span style="flex:1"></span><button class="btn textbtn" style="height:32px">Вставить</button></div>
+      <div style="font-size:14px;line-height:1.5">Отлично объяснила выбор already! Обрати внимание на третью форму: written, been.</div>
+    </div>
+    <div>
+      <label class="label" for="cm">Комментарий</label>
+      <div id="cm" style="margin-top:6px;background:#E3E1E9;border-radius:12px 12px 4px 4px;border-bottom:2px solid #4459A9;min-height:110px;padding:12px 14px;font-size:15px">Молодец! Повтори третью форму неправильных глаголов.</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="chip">Молодец!</button><button class="chip">Аккуратнее с орфографией</button><button class="chip">Повтори правило</button>
+    </div>
+    <div>
+      <span class="label">Оценка</span>
+      <div style="display:flex;gap:6px;margin-top:6px">
+        <button class="chip">3</button><button class="chip sel">4</button><button class="chip">5</button><button class="chip">8 из 10</button><button class="chip">Без оценки</button>
+      </div>
+    </div>
+    <span style="flex:1"></span>
+    <div style="display:flex;gap:8px">
+      <button class="btn danger" style="flex:1;justify-content:center"><span class="ic" style="font-size:20px">replay</span>На доработку</button>
+      <button class="btn filled" style="flex:1;justify-content:center"><span class="ic" style="font-size:20px">check</span>Принять</button>
+    </div>
+    <div class="muted" style="font-size:13px;text-align:center">После этого откроется: Дмитрий Орлов</div>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

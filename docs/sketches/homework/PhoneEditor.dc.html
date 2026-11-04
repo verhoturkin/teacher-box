@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Телефон — полный редактор</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.ph{width:390px;height:844px;overflow:hidden;position:relative;font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#FBF8FF;display:flex;flex-direction:column}
+.iconbtn{width:48px;height:48px;border-radius:24px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center}
+.tabs{display:flex;border-bottom:1px solid #C6C5D0}
+.tabs button{flex:1;height:48px;border:0;background:transparent;font:500 14px 'Roboto Flex',sans-serif;color:#45464F;position:relative}
+.tabs button.on{color:#4459A9}
+.tabs button.on::after{content:'';position:absolute;left:20%;right:20%;bottom:0;height:3px;border-radius:3px 3px 0 0;background:#4459A9}
+.q{background:#F5F2FA;border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:center;gap:8px;font-size:14px;background:#FBF8FF;border-radius:12px;padding:4px 4px 4px 8px;min-height:48px;box-sizing:border-box}
+.chip{height:32px;border-radius:8px;border:1px solid #C6C5D0;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:0 16px;font:500 14px 'Roboto Flex',sans-serif;color:#45464F;white-space:nowrap}
+.muted{color:#45464F}
+.dock{position:absolute;left:0;right:0;bottom:0;background:#F5F2FA;padding:12px 16px 16px;display:flex;gap:8px;border-radius:28px 28px 0 0}
+.btn{height:40px;border-radius:20px;border:0;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap}
+</style>
+</helmet>
+<div class="ph">
+  <header style="height:64px;display:flex;align-items:center;padding:0 8px 0 4px">
+    <button class="iconbtn" aria-label="Закрыть"><span class="ic">close</span></button>
+    <h1 style="margin:0;font-size:20px;font-weight:400;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Глаголы, часть 3</h1>
+    <button style="height:40px;border-radius:20px;border:0;background:#4459A9;color:#fff;font:500 14px 'Roboto Flex',sans-serif;padding:0 18px">Выдать</button>
+  </header>
+  <nav class="tabs" role="tablist" aria-label="Разделы задания">
+    <button role="tab" aria-selected="false">Задание</button>
+    <button role="tab" aria-selected="true" class="on">Вопросы · 6</button>
+    <button role="tab" aria-selected="false">Настройки</button>
+  </nav>
+  <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:10px;padding:12px 16px 96px">
+    <div class="q">
+      <div style="display:flex;align-items:center;gap:6px"><b>1</b><button class="chip">Один ответ<span class="ic" style="font-size:16px">arrow_drop_down</span></button><span style="flex:1"></span><span class="muted" style="font-size:12px">1 балл</span><button class="iconbtn" style="width:36px;height:36px" aria-label="Ещё"><span class="ic" style="font-size:20px">more_vert</span></button></div>
+      <div style="font-size:15px">Вторая форма глагола <b>bring</b></div>
+      <label class="opt"><input type="radio" name="p1"> brang</label>
+      <label class="opt" style="background:#C8F0CF;color:#0B3A1A"><input type="radio" name="p1" checked> brought<span style="flex:1"></span><span style="font-size:11px;font-weight:600">верный</span></label>
+      <label class="opt"><input type="radio" name="p1"> bringed</label>
+      <button style="align-self:flex-start;height:32px;border:0;background:transparent;color:#4459A9;font:500 14px 'Roboto Flex',sans-serif;padding:0">+ Вариант</button>
+    </div>
+    <sc-for list="{{rest}}" as="r" hint-placeholder-count="4">
+      <a class="q" href="QuizPhone.dc.html" style="flex-direction:row;align-items:center;gap:10px;padding:10px 14px;text-decoration:none;color:inherit"><b style="width:16px">{{r.n}}</b><span style="flex:1;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{r.t}}</span><span class="muted" style="font-size:12px">{{r.k}}</span><span class="ic muted" style="font-size:20px">chevron_right</span></a>
+    </sc-for>
+  </div>
+  <div class="dock">
+    <button class="btn" style="flex:1;background:#DEE1F9;color:#171B2C"><span class="ic" style="font-size:20px">add</span>Вопрос</button>
+    <a href="PhoneAi.dc.html" class="btn" style="flex:1;background:#FFD7F3;color:#390035;text-decoration:none"><span class="ic" style="font-size:20px">auto_awesome</span>С ИИ</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { rest: [
+      { n: 2, t: 'Три формы глагола teach', k: 'Короткий' },
+      { n: 3, t: 'She has ___ (write) three letters', k: 'Пропуск' },
+      { n: 4, t: 'Past Simple от go', k: 'Короткий' },
+      { n: 5, t: 'Выберите неправильные глаголы', k: 'Несколько' },
+      { n: 6, t: 'We have ___ (buy) a new car', k: 'Пропуск' }
+    ] };
+  }
+}
+</script>
+</body>
+</html>

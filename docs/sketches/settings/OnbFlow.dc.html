@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Первый вход — переходы</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+.page{width:1440px;height:960px;font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:24px}
+.pane{background:#FBF8FF;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+svg text{font-family:'Roboto Flex',system-ui,sans-serif}
+h2{margin:0;font-size:22px;font-weight:500}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:#45464F;align-items:center}
+.sw{display:inline-block;width:28px;height:16px;border-radius:5px;vertical-align:-3px;margin-right:6px}
+table{border-collapse:collapse;font-size:13px;width:100%}
+th,td{text-align:left;padding:8px;border-bottom:1px solid #E3E1E9;vertical-align:top;line-height:1.45}
+th{font-size:12px;color:#45464F;font-weight:600}
+</style>
+</helmet>
+<div class="page">
+  <section class="pane" aria-label="Шаги мастера">
+    <h2>Мастер первого входа</h2>
+    <div class="legend">
+      <span><span class="sw" style="background:#EFEDF4;border:1px solid #C6C5D0"></span>шаг мастера</span>
+      <span><span class="sw" style="background:#FBF8FF;border:1px dashed #767680"></span>только иногда</span>
+      <span><span class="sw" style="background:#DEE1F9"></span>портал после мастера</span>
+      <span>Номера — эскизы на этом холсте</span>
+    </div>
+    <svg viewBox="0 0 1360 380" width="100%" role="img" aria-label="Переходы мастера первого входа" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#45464F"/></marker></defs>
+<path d="M200 98 L250 98" stroke="#45464F" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<path d="M430 98 L480 98" stroke="#45464F" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<path d="M660 98 L710 98" stroke="#45464F" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<path d="M890 98 L940 98" stroke="#45464F" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<path d="M1120 98 L1170 98" stroke="#45464F" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<path d="M110 136 Q300 230 560 136" stroke="#45464F" stroke-width="1.5" fill="none" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+<path d="M1030 136 L1030 250" stroke="#45464F" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<path d="M1260 136 L1260 250" stroke="#45464F" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<path d="M1120 290 L1170 290" stroke="#45464F" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<rect x="20" y="60" width="180" height="76" rx="16" fill="#FBF8FF" stroke="#767680" stroke-dasharray="5 4"/><text x="36" y="91" font-size="16" font-weight="600" fill="#1B1B21">Пароль</text><text x="36" y="116" font-size="13" fill="#45464F">если выдан порталом</text>
+<rect x="250" y="60" width="180" height="76" rx="16" fill="#EFEDF4" stroke="#C6C5D0"/><text x="266" y="91" font-size="16" font-weight="600" fill="#1B1B21">Вы и портал</text><text x="266" y="116" font-size="13" fill="#45464F">эскиз 21</text>
+<rect x="480" y="60" width="180" height="76" rx="16" fill="#EFEDF4" stroke="#C6C5D0"/><text x="496" y="91" font-size="16" font-weight="600" fill="#1B1B21">Время и оплата</text><text x="496" y="116" font-size="13" fill="#45464F">22 · 25</text>
+<rect x="710" y="60" width="180" height="76" rx="16" fill="#EFEDF4" stroke="#C6C5D0"/><text x="726" y="91" font-size="16" font-weight="600" fill="#1B1B21">Правила</text><text x="726" y="116" font-size="13" fill="#45464F">23</text>
+<rect x="940" y="60" width="180" height="76" rx="16" fill="#EFEDF4" stroke="#C6C5D0"/><text x="956" y="91" font-size="16" font-weight="600" fill="#1B1B21">Готово</text><text x="956" y="116" font-size="13" fill="#45464F">24</text>
+<rect x="1170" y="60" width="180" height="76" rx="16" fill="#DEE1F9" stroke="#DEE1F9"/><text x="1186" y="91" font-size="16" font-weight="600" fill="#171B2C">Сегодня</text><text x="1186" y="116" font-size="13" fill="#45464F">«С чего начать»</text>
+<rect x="940" y="252" width="180" height="76" rx="16" fill="#DEE1F9" stroke="#DEE1F9"/><text x="956" y="283" font-size="16" font-weight="600" fill="#171B2C">Настройки</text><text x="956" y="308" font-size="13" fill="#45464F">Мессенджеры, ИИ…</text>
+<rect x="1170" y="252" width="180" height="76" rx="16" fill="#DEE1F9" stroke="#DEE1F9"/><text x="1186" y="283" font-size="16" font-weight="600" fill="#171B2C">Новый ученик</text><text x="1186" y="308" font-size="13" fill="#45464F">приглашение</text>
+<rect x="250" y="190" width="200" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="350" y="205" font-size="12" text-anchor="middle" fill="#1B1B21">пароль задан в .env — шага нет</text>
+<rect x="400" y="28" width="380" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="590" y="43" font-size="12" text-anchor="middle" fill="#1B1B21">«Далее» сохраняет · «Пропустить» оставляет значения по умолчанию</text>
+<rect x="1040" y="180" width="110" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="1095" y="195" font-size="12" text-anchor="middle" fill="#1B1B21">карточка шага</text>
+<rect x="1080" y="300" width="80" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="1120" y="315" font-size="12" text-anchor="middle" fill="#1B1B21">из списка</text>
+    </svg>
+  </section>
+
+  <section class="pane" aria-label="Что спрашивает каждый шаг">
+    <h2>Что спрашивает каждый шаг — и что стоит по умолчанию</h2>
+    <table>
+      <tr><th>Шаг</th><th>Поля</th><th>По умолчанию</th><th>Потом меняется в</th></tr>
+      <tr><td>Пароль</td><td>текущий (из журнала), новый, повтор</td><td>—</td><td>Мой аккаунт › Вход</td></tr>
+      <tr><td>Вы и портал</td><td>ваше имя, фото, название портала, адрес портала</td><td>«Учитель», без фото, «Teacher Box», адрес из домена или из адресной строки</td><td>Мой аккаунт, Портал</td></tr>
+      <tr><td>Время и оплата</td><td>часовой пояс, валюта, длительность занятия, цена</td><td>пояс браузера, рубль, 60 мин, без цены</td><td>Занятия › Время и цена</td></tr>
+      <tr><td>Правила</td><td>поздняя отмена, напоминания о занятии, напоминание о сроке задания, серии вперёд</td><td>24 ч; за 24 ч и за 1 ч; за 24 ч; 12 недель</td><td>Занятия › Правила</td></tr>
+      <tr><td>Готово</td><td>ученик, мессенджер, ИИ, Google Календарь — карточками с состоянием</td><td>—</td><td>«С чего начать» на главной</td></tr>
+    </table>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

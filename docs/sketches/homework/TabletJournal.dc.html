@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Планшет — по ученикам</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.tab{width:768px;height:1024px;overflow:hidden;font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;display:flex}
+.rail{width:80px;flex:0 0 80px;display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:16px}
+.fab{width:56px;height:56px;border-radius:16px;background:#DCE1FF;color:#001550;border:0;display:flex;align-items:center;justify-content:center;margin-bottom:12px;text-decoration:none}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#45464F;text-decoration:none}
+.ni span.pill{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.ni.on span.pill{background:#DEE1F9;color:#171B2C}
+.pane{flex:1;min-width:0;background:#FBF8FF;border-radius:28px;margin:16px 16px 16px 0;padding:16px 20px;display:flex;flex-direction:column;gap:14px;overflow:hidden}
+.iconbtn{width:40px;height:40px;border-radius:20px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.chip{height:32px;border-radius:8px;border:1px solid #C6C5D0;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:0 16px;font:500 14px 'Roboto Flex',sans-serif;color:#45464F;white-space:nowrap}
+.chip.sel{background:#DEE1F9;border-color:#DEE1F9;padding-left:8px;color:#171B2C}
+.g{display:grid;grid-template-columns:150px repeat(5,minmax(0,1fr));gap:6px;align-items:center}
+.h{font-size:12px;font-weight:600;color:#45464F;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;min-width:0}
+.av{width:32px;height:32px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:0 0 32px}
+.c{height:48px;border-radius:12px;border:0;display:flex;align-items:center;justify-content:center;gap:4px;font:500 12px 'Roboto Flex',sans-serif;text-decoration:none}
+.s-ok{background:#C8F0CF;color:#0B3A1A}.s-rev{background:#FFE08D;color:#3D2E00}.s-late{background:#FFDAD6;color:#410002}.s-wait{background:#F5F2FA;color:#45464F}.s-none{background:transparent;color:#C6C5D0;border:1px dashed #C6C5D0}
+.leg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#45464F}
+.muted{color:#45464F}
+</style>
+</helmet>
+<div class="tab">
+  <nav class="rail" aria-label="Разделы">
+    <a class="fab" href="TabletEditor.dc.html" aria-label="Новое задание"><span class="ic">edit</span></a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">home</span></span>Главная</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">calendar_month</span></span>Расписание</a>
+    <a class="ni on" href="#"><span class="pill"><span class="ic" style="font-variation-settings:'FILL' 1">assignment</span></span>Задания</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">group</span></span>Ученики</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">payments</span></span>Оплаты</a>
+  </nav>
+  <main class="pane">
+    <div style="display:flex;align-items:center;gap:4px">
+      <h1 style="margin:0;font-size:28px;font-weight:500;flex:1">Задания</h1>
+      <a class="iconbtn" href="TabletList.dc.html" aria-label="Вид: списком"><span class="ic">view_list</span></a>
+      <button class="iconbtn" aria-label="Справка"><span class="ic">help</span></button>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+      <button class="iconbtn" aria-label="Предыдущая неделя"><span class="ic">chevron_left</span></button>
+      <span style="font-size:16px;font-weight:500">27.10 — 02.11</span>
+      <button class="iconbtn" aria-label="Следующая неделя"><span class="ic">chevron_right</span></button>
+      <span style="flex:1"></span>
+      <button class="chip sel"><span class="ic" style="font-size:18px">groups</span>Группа B1<span class="ic" style="font-size:18px">arrow_drop_down</span></button>
+    </div>
+
+    <div class="g" style="margin-top:4px">
+      <span class="h">4 ученика</span>
+      <sc-for list="{{cols}}" as="c" hint-placeholder-count="5"><span class="h" title="{{c.full}}">{{c.t}}<br><span style="font-weight:400">{{c.d}}</span></span></sc-for>
+    </div>
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+      <div class="g">
+        <span class="who"><span class="av" style="background:{{r.bg}};color:{{r.fg}}">{{r.ini}}</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{r.name}}</span></span>
+        <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="5"><a class="c {{x.cls}}" href="{{x.href}}" aria-label="{{r.name}}: {{x.lbl}}"><span class="ic" style="font-size:20px">{{x.i}}</span>{{x.v}}</a></sc-for>
+      </div>
+    </sc-for>
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <span class="leg"><span class="ic" style="font-size:18px;color:#3E8E55">check_circle</span>принято, оценка</span>
+      <span class="leg"><span class="ic" style="font-size:18px;color:#7A5900">rate_review</span>проверить</span>
+      <span class="leg"><span class="ic" style="font-size:18px;color:#BA1A1A">error</span>просрочено</span>
+      <span class="leg"><span class="ic" style="font-size:18px">schedule</span>ждём</span>
+      <span class="leg"><span class="ic" style="font-size:18px;color:#C6C5D0">add</span>не выдано</span>
+    </div>
+
+    <div style="background:#F5F2FA;border-radius:16px;padding:12px 16px;font-size:14px;line-height:1.5;display:flex;gap:12px;align-items:flex-start">
+      <span class="ic" style="color:#4459A9">touch_app</span>
+      <span>Касание клетки: «проверить» — проверка этой работы и дальше по очереди; «принято», «ждём», «просрочено» — открытое задание; «не выдано» — окно «Выдать ещё» с этим учеником.</span>
+    </div>
+    <div class="muted" style="font-size:13px;line-height:1.5">Пять заданий недели помещаются без прокрутки; больше — колонки листаются вбок, колонка учеников закреплена. Названия заданий обрезаются, полное — в подсказке.</div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":768,"height":1024}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ok = v => ({ cls: 's-ok', i: 'check_circle', v, lbl: 'Принято, ' + v, href: 'TabletAssignment.dc.html' });
+    const rev = { cls: 's-rev', i: 'rate_review', v: '', lbl: 'Проверить', href: 'ReviewTablet.dc.html' };
+    const late = { cls: 's-late', i: 'error', v: '', lbl: 'Просрочено', href: 'TabletAssignment.dc.html' };
+    const wait = { cls: 's-wait', i: 'schedule', v: '', lbl: 'Ждём', href: 'TabletAssignment.dc.html' };
+    const none = { cls: 's-none', i: 'add', v: '', lbl: 'Не выдано — выдать', href: '#' };
+    return {
+      cols: [
+        { t: 'Reading', d: 'пн 27', full: 'Reading: The Lost City' },
+        { t: 'Present Perf.', d: 'чт 30', full: 'Present Perfect — упражнения 4–7' },
+        { t: 'Разбор', d: 'пт 31', full: 'Разбор ошибок урока 24.10' },
+        { t: 'Эссе', d: 'сб 01', full: 'Эссе: My summer holidays' },
+        { t: 'Глаголы', d: 'ср 05', full: 'Неправильные глаголы, часть 3' }
+      ],
+      rows: [
+        { ini: 'АС', name: 'Анна Смирнова', bg: '#DCE1FF', fg: '#001550', cells: [ok('5'), rev, ok('4'), rev, wait] },
+        { ini: 'ИП', name: 'Илья Петров', bg: '#FFD7F3', fg: '#390035', cells: [late, ok('4'), none, rev, wait] },
+        { ini: 'МК', name: 'Мария Ковалёва', bg: '#C8F0CF', fg: '#0B3A1A', cells: [ok('5'), late, ok('5'), none, wait] },
+        { ini: 'ДО', name: 'Дмитрий Орлов', bg: '#FFE08D', fg: '#3D2E00', cells: [none, rev, wait, wait, wait] }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

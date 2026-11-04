@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Планшет — открытое задание</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.tab{width:768px;height:1024px;overflow:hidden;font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;display:flex}
+.rail{width:80px;flex:0 0 80px;display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:24px}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#45464F;text-decoration:none}
+.ni span.pill{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.ni.on span.pill{background:#DEE1F9;color:#171B2C}
+.pane{flex:1;min-width:0;background:#FBF8FF;border-radius:28px;margin:16px 16px 16px 0;padding:12px 20px 20px;display:flex;flex-direction:column;gap:14px;overflow:hidden}
+.btn{height:40px;border-radius:20px;border:0;padding:0 16px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap;justify-content:center}
+.filled{background:#4459A9;color:#fff}.tonal{background:#DEE1F9;color:#171B2C}
+.iconbtn{width:40px;height:40px;border-radius:20px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.label{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap}
+.t-warn{background:#FFE08D;color:#3D2E00}.t-ok{background:#C8F0CF;color:#0B3A1A}.t-err{background:#FFDAD6;color:#410002}
+.av{width:40px;height:40px;border-radius:20px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex:0 0 40px}
+.st{background:#EFEDF4;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.fold{background:#F5F2FA;border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:14px}
+.muted{color:#45464F}
+</style>
+</helmet>
+<div class="tab">
+  <nav class="rail" aria-label="Разделы">
+    <a class="ni" href="#"><span class="pill"><span class="ic">home</span></span>Главная</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">calendar_month</span></span>Расписание</a>
+    <a class="ni on" href="#"><span class="pill"><span class="ic" style="font-variation-settings:'FILL' 1">assignment</span></span>Задания</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">group</span></span>Ученики</a>
+  </nav>
+  <main class="pane">
+    <div style="display:flex;align-items:center;gap:4px">
+      <a class="iconbtn" href="TabletList.dc.html" aria-label="К списку"><span class="ic">arrow_back</span></a>
+      <span style="flex:1"></span>
+      <button class="iconbtn" aria-label="Изменить"><span class="ic">edit</span></button>
+      <button class="iconbtn" aria-label="Ещё"><span class="ic">more_vert</span></button>
+    </div>
+    <div>
+      <h1 style="margin:0;font-size:26px;font-weight:500">Present Perfect — упражнения 4–7</h1>
+      <div class="muted" style="font-size:14px;margin-top:4px">Группа B1 · 4 ученика · до чт, 30.10, 16:00</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span class="tag t-ok">Принято 1</span><span class="tag t-warn">Проверить 2</span><span class="tag t-err">На доработке 1</span>
+      <span style="flex:1"></span>
+      <a class="btn filled" style="text-decoration:none" href="ReviewTablet.dc.html"><span class="ic" style="font-size:20px">rate_review</span>Проверить 2 работы</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+      <sc-for list="{{students}}" as="s" hint-placeholder-count="4">
+        <div class="st">
+          <div style="display:flex;align-items:center;gap:10px"><span class="av" style="background:{{s.bg}};color:{{s.fg}}">{{s.ini}}</span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:15px">{{s.name}}</div><div class="muted" style="font-size:12px">{{s.when}}</div></div></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="tag {{s.cls}}">{{s.status}}</span><span style="flex:1"></span><button class="btn {{s.btnCls}}" style="height:32px;padding:0 14px">{{s.action}}</button></div>
+        </div>
+      </sc-for>
+    </div>
+    <button class="btn" style="background:transparent;color:#4459A9;padding:0 4px;align-self:flex-start"><span class="ic" style="font-size:20px">person_add</span>Выдать ещё</button>
+    <div class="fold"><span class="ic" style="color:#4459A9">description</span><span style="flex:1">Задание и материалы · учебник, 1 файл, тест</span><span class="ic muted">expand_more</span></div>
+    <div class="fold"><span class="ic" style="color:#BA1A1A">bar_chart</span><span style="flex:1">Ошибки по вопросам · чаще всего №3 (3 из 4)</span><span class="ic muted">expand_more</span></div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":768,"height":1024}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      students: [
+        { ini: 'АС', name: 'Анна Смирнова', bg: '#DCE1FF', fg: '#001550', when: 'сдано сегодня · тест 8/10', status: 'Проверить', cls: 't-warn', action: 'Проверить', btnCls: 'filled' },
+        { ini: 'ДО', name: 'Дмитрий Орлов', bg: '#FFE08D', fg: '#3D2E00', when: 'сдано вчера · тест 9/10', status: 'Проверить', cls: 't-warn', action: 'Проверить', btnCls: 'filled' },
+        { ini: 'ИП', name: 'Илья Петров', bg: '#FFD7F3', fg: '#390035', when: 'оценка 4', status: 'Принято', cls: 't-ok', action: 'Открыть', btnCls: 'tonal' },
+        { ini: 'МК', name: 'Мария Ковалёва', bg: '#C8F0CF', fg: '#0B3A1A', when: 'вернули 28.10', status: 'На доработке', cls: 't-err', action: 'Напомнить', btnCls: 'tonal' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

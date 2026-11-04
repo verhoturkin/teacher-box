@@ -29,7 +29,10 @@ overrides but become editable in the administrator's settings without a restart.
 what Docker Compose or a locked-out recovery needs.
 
 Sketches — take the interface from them (each F substep names its boards; the board number is in its
-title on the canvas, the file name in brackets):
+title on the canvas, the file name in brackets). Copies are in the repository:
+[`docs/sketches/settings/`](sketches/settings/) and [`docs/sketches/homework/`](sketches/homework/)
+— board `AiProviderDialog` is `docs/sketches/settings/AiProviderDialog.dc.html`; see
+[`docs/sketches/README.md`](sketches/README.md).
 
 | Canvas | Boards | Used by |
 |---|---|---|

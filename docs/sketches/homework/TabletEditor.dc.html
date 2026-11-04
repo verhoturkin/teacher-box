@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Планшет — редактор с ИИ</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.tab{width:768px;height:1024px;overflow:hidden;position:relative;font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;display:flex}
+.rail{width:80px;flex:0 0 80px}
+.pane{flex:1;min-width:0;background:#FBF8FF;border-radius:28px;margin:16px 16px 16px 0;padding:12px 20px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+.btn{height:40px;border-radius:20px;border:0;padding:0 16px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap;justify-content:center}
+.filled{background:#4459A9;color:#fff}.tonal{background:#DEE1F9;color:#171B2C}.ai{background:#390035;color:#fff}
+.textbtn{background:transparent;color:#4459A9;padding:0 12px}
+.iconbtn{width:40px;height:40px;border-radius:20px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center}
+.card{background:#fff;border-radius:16px;padding:12px 14px;border:1px solid #E3E1E9;font-size:14px}
+.scrim{position:absolute;inset:0;background:rgba(27,27,33,.32)}
+.drawer{position:absolute;top:0;right:0;bottom:0;width:400px;background:#F5F2FA;border-radius:28px 0 0 28px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:-4px 0 16px rgba(0,0,0,.18)}
+.seg{display:flex;border:1px solid #767680;border-radius:20px;overflow:hidden;height:40px}
+.seg button{flex:1;border:0;background:transparent;font:500 14px 'Roboto Flex',sans-serif;color:#1B1B21}
+.seg button+button{border-left:1px solid #767680}
+.seg button.on{background:#DEE1F9;color:#171B2C}
+.chip{height:32px;border-radius:8px;border:1px solid #C6C5D0;background:transparent;display:inline-flex;align-items:center;padding:0 16px;font:500 14px 'Roboto Flex',sans-serif;color:#45464F;gap:8px;white-space:nowrap}
+.label{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F}
+.muted{color:#45464F}
+.pick{height:40px;border-radius:8px;border:1px solid #767680;background:transparent;display:inline-flex;align-items:center;gap:6px;padding:0 6px 0 10px;font:500 14px 'Roboto Flex',sans-serif;color:#1B1B21;white-space:nowrap}
+.pick .ic{font-size:18px}
+.pick.open{background:#FFD7F3;border-color:#FFD7F3;color:#390035}
+.mmenu{position:absolute;background:#F5F2FA;border-radius:16px;padding:8px 0;box-shadow:0 2px 6px 2px rgba(0,0,0,.15),0 1px 2px rgba(0,0,0,.3);z-index:3;width:300px}
+.mh{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F;padding:8px 16px 4px}
+.mi{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 16px;font-size:14px}
+.mi.sel{background:#DEE1F9}
+.mi .t{flex:1}.mi small{display:block;font-size:12px;color:#45464F}
+.mi>.ic{font-size:20px;color:#45464F;width:20px}
+.msep{height:1px;background:#C6C5D0;margin:8px 0}
+.mtag{display:inline-flex;align-items:center;height:20px;padding:0 6px;border-radius:6px;font-size:11px;font-weight:600;background:#DCE1FF;color:#001550}
+.mtag.err{background:#FFDAD6;color:#410002}
+</style>
+</helmet>
+<div class="tab">
+  <div class="rail" aria-hidden="true"></div>
+  <main class="pane" aria-label="Редактор задания">
+    <div style="display:flex;align-items:center;gap:4px">
+      <button class="iconbtn" aria-label="Закрыть редактор"><span class="ic">close</span></button>
+      <h1 style="margin:0;font-size:20px;font-weight:500;flex:1">Новое задание</h1>
+      <button class="btn" style="background:#FFD7F3;color:#390035" aria-expanded="true"><span class="ic" style="font-size:20px">auto_awesome</span>ИИ</button>
+      <button class="btn filled">Выдать</button>
+    </div>
+    <div class="card">Кому: Группа B1 · срок: чт 30.10</div>
+    <div class="card" style="min-height:200px;color:#45464F">Текст задания…</div>
+    <div class="card">Материалы · Вопросы · Видео</div>
+  </main>
+  <div class="scrim" aria-hidden="true"></div>
+  <aside class="drawer" role="dialog" aria-label="ИИ-помощник">
+    <div style="display:flex;align-items:center;gap:8px"><span class="ic" style="color:#390035">auto_awesome</span><h2 style="margin:0;font-size:20px;font-weight:600;flex:1">ИИ-помощник</h2><button class="iconbtn" aria-label="Закрыть"><span class="ic">close</span></button></div>
+    <div class="seg" role="group" aria-label="Что готовить"><button class="on">Текст задания</button><button>Вопросы теста</button></div>
+    <div><span class="label">Что нужно</span><div style="margin-top:6px;background:#FBF8FF;border:1px solid #767680;border-radius:12px;padding:10px 12px;font-size:15px">Упражнения на already / yet, 6 предложений</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="chip">Упражнения</button><button class="chip">Эссе</button><button class="chip">По учебнику</button><button class="chip">Мои запросы</button></div></div>
+    <div class="muted" style="font-size:13px">Учтёт: уровень B1 · учебник, с. 42–43</div>
+    <div style="background:#fff;border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;border:1px solid #E3E1E9">
+      <span style="align-self:flex-start;display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:8px;font-size:12px;font-weight:600;background:#FFD7F3;color:#390035">Черновик ИИ</span>
+      <div style="font-size:14px;line-height:1.5"><b>Present Perfect: already и yet</b><br>1. I ___ (already / finish) my homework.<br>2. ___ you ___ (see) the film yet?<br><span class="muted">…ещё 4</span></div>
+      <div style="display:flex;gap:8px"><button class="btn filled" style="height:36px">Вставить</button><button class="btn tonal" style="height:36px">Ещё вариант</button></div>
+    </div>
+    <span style="flex:1"></span>
+    <div style="display:flex;gap:8px;align-items:center"><button class="pick" aria-haspopup="menu" aria-label="Модель: Claude Sonnet 5"><span class="ic">memory</span>Sonnet 5<span class="ic">arrow_drop_down</span></button><span style="flex:1"></span><button class="btn ai"><span class="ic" style="font-size:20px">auto_awesome</span>Сгенерировать</button></div>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":768,"height":1024}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

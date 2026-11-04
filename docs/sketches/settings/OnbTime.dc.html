@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Мастер — время и оплата</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.app{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;min-height:960px;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:12px;height:64px;padding:0 24px}
+.logo{width:40px;height:40px;border-radius:12px;background:#4459A9;color:#fff;display:inline-flex;align-items:center;justify-content:center}
+.pane{flex:1;background:#FBF8FF;border-radius:28px;margin:0 24px 24px;padding:32px;display:grid;grid-template-columns:minmax(220px,280px) minmax(0,1.2fr) minmax(300px,1fr);gap:32px;align-items:start}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.steps li{display:flex;align-items:center;gap:12px;min-height:56px;padding:0 16px;border-radius:28px;font-size:14px;font-weight:500;color:#45464F}
+.steps .n{width:28px;height:28px;border-radius:14px;border:1px solid #767680;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 28px;box-sizing:border-box}
+.steps .done .n{background:#4459A9;border-color:#4459A9;color:#fff}.steps .done .n .ic{font-size:18px}
+.steps .cur{background:#DEE1F9;color:#171B2C}.steps .cur .n{background:#171B2C;border-color:#171B2C;color:#fff}
+.main{display:flex;flex-direction:column;gap:20px;min-width:0}
+.main h1{margin:0;font-size:36px;font-weight:500;line-height:44px}
+.lead{margin:0;font-size:16px;line-height:24px;color:#45464F}
+.card{background:#fff;border:1px solid #E3E1E9;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.card h2{margin:0;font-size:16px;font-weight:600}
+.field{background:#E3E1E9;border-radius:4px 4px 0 0;border-bottom:1px solid #767680;padding:8px 16px;min-height:56px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;width:100%;position:relative}
+.field label{font-size:12px;color:#45464F}
+.field input{border:0;background:transparent;font:16px 'Roboto Flex',sans-serif;color:#1B1B21;padding:0;width:100%}
+.field .ic.end{position:absolute;right:12px;top:16px;color:#45464F}
+.hint{font-size:12px;color:#45464F;margin:4px 16px 0;display:flex;gap:4px;align-items:center}
+.hint .ic{font-size:16px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{height:40px;border-radius:20px;border:0;padding:0 24px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap;justify-content:center}
+.btn .ic{font-size:20px}
+.filled{background:#4459A9;color:#fff}.textbtn{background:transparent;color:#4459A9;padding:0 12px}
+.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.aside{display:flex;flex-direction:column;gap:12px;min-width:0}
+.cap{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F}
+.preview{background:#EFEDF4;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.lesson{display:flex;gap:16px;align-items:center;background:#fff;border-radius:16px;padding:12px 16px}
+.time{width:72px;height:72px;border-radius:16px;background:#4459A9;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:0 0 72px}
+.time small{font-size:12px;font-weight:500}.time b{font-size:24px;font-weight:600}
+.alert{border-radius:16px;padding:12px 16px;display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:1.5}
+.a-info{background:#DCE1FF;color:#001550}
+.muted{color:#45464F}
+</style>
+</helmet>
+<div class="app">
+  <header class="top">
+    <span class="logo" aria-hidden="true"><span class="ic">school</span></span>
+    <b style="font-size:16px;font-weight:500;flex:1">Первый вход</b>
+    <span class="muted" style="font-size:14px">Шаг 2 из 4</span>
+    <button class="btn textbtn"><span class="ic">logout</span>Выйти</button>
+  </header>
+  <main class="pane">
+    <ol class="steps" aria-label="Шаги">
+      <sc-for list="{{steps}}" as="s" hint-placeholder-count="4">
+        <li class="{{s.cls}}" aria-current="{{s.cur}}"><span class="n"><sc-if value="{{s.done}}" hint-placeholder-val="{{false}}"><span class="ic">check</span></sc-if><sc-if value="{{s.todo}}" hint-placeholder-val="{{true}}">{{s.n}}</sc-if></span>{{s.title}}</li>
+      </sc-for>
+    </ol>
+
+    <section class="main" aria-labelledby="h">
+      <h1 id="h">Время и оплата</h1>
+      <p class="lead">По этому времени строится расписание и считаются месячные отчёты.</p>
+      <section class="card">
+        <h2>Время</h2>
+        <div><div class="field"><label for="tz">Часовой пояс</label><input id="tz" value="Москва (UTC+3)"><span class="ic end">arrow_drop_down</span></div><div class="hint"><span class="ic">devices</span>Как на этом устройстве. Ученики из других поясов видят время по-своему.</div></div>
+        <div><div class="field"><label for="dur">Длительность занятия</label><input id="dur" value="60 мин"><span class="ic end">arrow_drop_down</span></div><div class="hint">Подставляется в новое занятие; у каждого можно поменять.</div></div>
+      </section>
+      <section class="card">
+        <h2>Оплата</h2>
+        <div class="two">
+          <div><div class="field"><label for="cur">Валюта</label><input id="cur" value="₽ · рубль"><span class="ic end">arrow_drop_down</span></div></div>
+          <div><div class="field"><label for="pr">Цена занятия</label><input id="pr" value="1 500"></div></div>
+        </div>
+        <div class="hint" style="margin-top:-4px"><span class="ic">info</span>Валюту можно сменить, пока нет ни одной оплаты. Цену — в любой момент и отдельно для ученика.</div>
+      </section>
+      <div class="actions"><button class="btn textbtn"><span class="ic">arrow_back</span>Назад</button><span style="flex:1"></span><button class="btn textbtn">Пропустить</button><button class="btn filled">Далее<span class="ic">arrow_forward</span></button></div>
+    </section>
+
+    <aside class="aside" aria-label="Пример">
+      <span class="cap">Так будет в расписании</span>
+      <div class="preview">
+        <div class="lesson">
+          <span class="time"><small>чт, 6.11</small><b>18:00</b></span>
+          <span style="flex:1"><b style="display:block;font-size:16px;font-weight:500">Аня Смирнова</b><span class="muted" style="font-size:14px">18:00–19:00 · 1 500 ₽</span></span>
+        </div>
+        <div class="lesson">
+          <span class="time" style="background:#DEE1F9;color:#171B2C"><small>месяц</small><b>₽</b></span>
+          <span style="flex:1"><b style="display:block;font-size:16px;font-weight:500">Отчёт за ноябрь</b><span class="muted" style="font-size:14px">с 1 по 30 ноября по московскому времени</span></span>
+        </div>
+      </div>
+      <div class="alert a-info"><span class="ic">schedule</span><span>Сменили пояс позже — назначенные занятия остаются в своё время, меняется только то, как оно показано.</span></div>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const cur = 2;
+    const titles = ['Вы и портал', 'Время и оплата', 'Правила', 'Готово'];
+    const steps = titles.map((title, i) => {
+      const n = i + 1;
+      return { n, title, done: n < cur, todo: n >= cur, cur: n === cur ? 'step' : 'false', cls: n < cur ? 'done' : n === cur ? 'cur' : '' };
+    });
+    return { steps };
+  }
+}
+</script>
+</body>
+</html>

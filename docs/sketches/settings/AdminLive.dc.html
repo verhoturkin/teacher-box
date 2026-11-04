@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Администратор — настройки портала</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+a{color:#4459A9}a:hover{color:#2B4190}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.app{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;min-height:960px;display:flex;flex-wrap:wrap}
+.rail{width:96px;flex:0 0 96px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 0}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#45464F;text-decoration:none}
+.pill{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.ni.on{color:#1B1B21}.ni.on .pill{background:#DEE1F9;color:#171B2C}
+.pane{flex:999 1 560px;min-width:0;background:#FBF8FF;border-radius:28px;margin:24px 24px 24px 0;padding:24px;display:flex;flex-direction:column;gap:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:#fff;border:1px solid #E3E1E9;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.card h2{margin:0;font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px}
+.card h2 .ic{font-size:20px;color:#4459A9}
+.muted{color:#45464F}
+.field{background:#E3E1E9;border-radius:4px 4px 0 0;border-bottom:1px solid #767680;padding:8px 16px;min-height:56px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;width:100%}
+.field label{font-size:12px;color:#45464F}
+.field input{border:0;background:transparent;font:16px 'Roboto Flex',sans-serif;color:#1B1B21;padding:0;width:100%}
+.field.lock{background:#EFEDF4;border-bottom-color:#C6C5D0}
+.hint{font-size:12px;color:#45464F;margin:4px 16px 0;display:flex;gap:4px;align-items:center}
+.hint .ic{font-size:16px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{display:flex;align-items:center;gap:16px;min-height:56px;padding:12px 16px;background:#F5F2FA;border-radius:16px;font-size:14px}
+.tile .t{flex:1;min-width:0}.tile .t b{display:block;font-weight:500;font-size:16px}
+.sw{width:52px;height:32px;border-radius:16px;background:#4459A9;border:2px solid #4459A9;box-sizing:border-box;position:relative;flex:0 0 52px;padding:0}
+.sw::after{content:'';position:absolute;width:24px;height:24px;border-radius:12px;background:#fff;left:22px;top:2px}
+.iconbtn{width:40px;height:40px;border-radius:20px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center}
+.alert{border-radius:16px;padding:12px 16px;display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:1.5}
+.a-warn{background:#FFE08D;color:#3D2E00}
+code{font:13px ui-monospace,Consolas,monospace}
+table{border-collapse:collapse;width:100%;font-size:14px}
+td{padding:10px 8px;border-bottom:1px solid #E3E1E9;vertical-align:top}
+td:last-child{text-align:right;color:#45464F;white-space:nowrap}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap}
+.t-wait{background:#F5F2FA;color:#45464F}
+</style>
+</helmet>
+<div class="app">
+  <nav class="rail" aria-label="Разделы администратора">
+    <a class="ni" href="#"><span class="pill"><span class="ic">monitor_heart</span></span>Состояние</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">receipt_long</span></span>Журнал</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">hub</span></span>Связи</a>
+    <a class="ni on" href="#"><span class="pill"><span class="ic" style="font-variation-settings:'FILL' 1">tune</span></span>Настройки</a>
+  </nav>
+  <main class="pane">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <h1 style="margin:0;font-size:32px;font-weight:500">Настройки портала</h1>
+      <span class="muted" style="font-size:14px;flex:1;display:flex;align-items:center;gap:6px"><span class="ic" style="font-size:18px">bolt</span>Применяются сразу, без перезапуска</span>
+      <button class="iconbtn" aria-label="Справка"><span class="ic">help</span></button>
+    </div>
+
+    <div class="alert a-warn" role="status"><span class="ic">info</span><span style="flex:1"><b>В .env остались переменные, которые портал больше не читает:</b> <code>TEACHERBOX_TIMEZONE</code>, <code>TEACHERBOX_AI_API_KEY</code>. Их значения перенесены в настройки учителя при обновлении — удалите строки из .env.</span></div>
+
+    <div class="grid">
+      <div class="stack">
+        <section class="card">
+          <h2><span class="ic">attach_file</span>Файлы в заданиях</h2>
+          <div class="two">
+            <div><div class="field"><label for="fs">Размер одного файла, до</label><input id="fs" value="20 МБ"></div><div class="hint">Не больше 25 МБ</div></div>
+            <div><div class="field"><label for="fc">Файлов за раз, до</label><input id="fc" value="10"></div></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2><span class="ic">lan</span>Сеть и прокси</h2>
+          <span class="muted" style="font-size:14px">http://host:port или socks5://host:port. Пусто — напрямую.</span>
+          <div><div class="field"><label for="p1">Прокси для YouTube (субтитры)</label><input id="p1" value=""></div></div>
+          <div><div class="field"><label for="p2">Прокси для Google (Календарь, Диск)</label><input id="p2" value=""></div></div>
+          <div><div class="field lock"><label for="p3">Прокси для Telegram</label><input id="p3" value="socks5://host.docker.internal:1080" readonly></div><div class="hint"><span class="ic">lock</span>Задано в .env — меняется только там</div></div>
+          <div><div class="field"><label for="p4">Адрес Bot API Telegram</label><input id="p4" value="https://api.telegram.org"></div></div>
+          <div><div class="field"><label for="p5">Прокси для ИИ по умолчанию</label><input id="p5" value=""></div><div class="hint">Учитель может задать свой прокси у подключения</div></div>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section class="card">
+          <h2><span class="ic">login</span>Вход и сессии</h2>
+          <div class="two">
+            <div class="field"><label for="s1">Сессия без входа</label><input id="s1" value="30 дней"></div>
+            <div class="field"><label for="s2">Приглашение действует</label><input id="s2" value="7 дней"></div>
+            <div class="field"><label for="s3">Неудачных входов до блокировки</label><input id="s3" value="5"></div>
+            <div class="field"><label for="s4">Блокировка на</label><input id="s4" value="15 мин"></div>
+            <div class="field"><label for="s5">Запросов входа с адреса</label><input id="s5" value="30"></div>
+            <div class="field"><label for="s6">за</label><input id="s6" value="1 мин"></div>
+          </div>
+          <div class="hint">Новые значения действуют со следующего входа; открытые сессии не прерываются.</div>
+        </section>
+      </div>
+
+      <div class="stack">
+
+        <section class="card">
+          <h2><span class="ic">backup</span>Резервные копии</h2>
+          <div class="tile"><span class="t"><b>Копия портала каждый день</b><span class="muted">База и файлы, в часовом поясе учителя</span></span><button class="sw" role="switch" aria-checked="true" aria-label="Копия портала каждый день"></button></div>
+          <div class="two"><div class="field"><label for="b1">Время</label><input id="b1" value="03:30"></div><div class="field"><label for="b2">Хранить дней</label><input id="b2" value="14"></div></div>
+          <div class="tile"><span class="t"><b>Копии досок каждый день</b><span class="muted">Только изменённые доски</span></span><button class="sw" role="switch" aria-checked="true" aria-label="Копии досок каждый день"></button></div>
+          <div class="two"><div class="field"><label for="b3">Время</label><input id="b3" value="03:00"></div><div class="field"><label for="b4">Копий каждой доски</label><input id="b4" value="7"></div></div>
+        </section>
+
+        <section class="card">
+          <h2><span class="ic">description</span>Только в .env</h2>
+          <span class="muted" style="font-size:14px">Их читает Docker до запуска портала или они нужны, когда в портал не войти. Меняются в .env, затем <code>teacherbox restart</code>.</span>
+          <table>
+            <tr><td>Домен и HTTPS</td><td>school.example.ru</td></tr>
+            <tr><td>Звонки (LiveKit)</td><td>включены</td></tr>
+            <tr><td>Память и процессор</td><td>1 ГБ · 2 ядра</td></tr>
+            <tr><td>Пароль учителя, сброс доступа</td><td><span class="tag t-wait">скрыто</span></td></tr>
+            <tr><td>Журналы</td><td>текст</td></tr>
+          </table>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Переходы между экранами</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+.page{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;padding:24px;box-sizing:border-box;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.pane{background:#FBF8FF;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.full{grid-column:1/-1}
+svg text{font-family:'Roboto Flex',system-ui,sans-serif}
+h2{margin:0;font-size:22px;font-weight:500}
+h3{margin:8px 0 0;font-size:16px;font-weight:600}
+p,li{font-size:14px;line-height:1.55;margin:0}
+ul,ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.muted{color:#45464F}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:#45464F;align-items:center}
+.sw{display:inline-block;width:28px;height:16px;border-radius:5px;vertical-align:-3px;margin-right:6px}
+table{border-collapse:collapse;font-size:13px;width:100%}
+th,td{text-align:left;padding:8px;border-bottom:1px solid #E3E1E9;vertical-align:top;line-height:1.45}
+th{font-size:12px;color:#45464F;font-weight:600}
+code{font:12px ui-monospace,Consolas,monospace;color:#2B4190}
+.n{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:20px;padding:0 4px;border-radius:6px;background:#DEE1F9;color:#171B2C;font-size:12px;font-weight:600}
+</style>
+</helmet>
+<div class="page">
+
+  <section class="pane full" aria-label="Учитель">
+    <h2>Учитель</h2>
+    <div class="legend">
+      <span><span class="sw" style="background:#EFEDF4;border:1px solid #C6C5D0"></span>страница (свой адрес)</span>
+      <span><span class="sw" style="background:#FBF8FF;border:1px dashed #767680"></span>окно поверх страницы</span>
+      <span><span class="sw" style="background:#FFD7F3"></span>панель ИИ</span>
+      <span><span class="sw" style="background:#FFDAD6"></span>состояние с ошибкой</span>
+      <span>Номера — эскизы: компьютер · планшет · телефон</span>
+    </div>
+    <svg viewBox="0 0 1520 920" width="100%" role="img" aria-label="Переходы учителя" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#45464F"/></marker></defs>
+<path d="M324 349 Q460 349 596 349" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M596 327 Q460 327 324 327" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M190 296 Q190 208 190 120" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M170 120 Q170 208 170 296" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M324 338 Q735 -92 1146 338" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M324 112 Q735 208 1146 304" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M270 120 Q460 208 650 296" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M884 349 Q1015 349 1146 349" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M1146 327 Q1015 327 884 327" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M1340 376 C1350 436,1420 436,1400 380" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M263 388 Q453 476 642 564" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M657 548 Q467 460 278 372" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M730 640 Q730 728 730 816" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M750 816 Q750 728 750 640" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M884 609 Q1015 609 1146 609" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M1146 587 Q1015 587 884 587" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M1290 640 Q1290 728 1290 816" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M1201 640 Q1015 728 829 816" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M750 556 Q750 468 750 380" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M730 380 Q730 468 730 556" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="40" y="40" width="280" height="76" rx="16" fill="#EFEDF4" stroke="#C6C5D0"/><text x="56" y="71" font-size="16" font-weight="600" fill="#1B1B21">«По ученикам»</text><text x="56" y="96" font-size="13" fill="#45464F">2 · 35 · 20</text>
+<rect x="40" y="300" width="280" height="76" rx="16" fill="#EFEDF4" stroke="#C6C5D0"/><text x="56" y="331" font-size="16" font-weight="600" fill="#1B1B21">Список заданий</text><text x="56" y="356" font-size="13" fill="#45464F">эскизы 1 · 17 · 5</text>
+<rect x="600" y="300" width="280" height="76" rx="16" fill="#EFEDF4" stroke="#C6C5D0"/><text x="616" y="331" font-size="16" font-weight="600" fill="#1B1B21">Открытое задание</text><text x="616" y="356" font-size="13" fill="#45464F">4 · 18 · 7</text>
+<rect x="1150" y="300" width="280" height="76" rx="16" fill="#EFEDF4" stroke="#C6C5D0"/><text x="1166" y="331" font-size="16" font-weight="600" fill="#1B1B21">Проверка работы</text><text x="1166" y="356" font-size="13" fill="#45464F">14 · 15 · 16</text>
+<rect x="600" y="560" width="280" height="76" rx="16" fill="#EFEDF4" stroke="#C6C5D0"/><text x="616" y="591" font-size="16" font-weight="600" fill="#1B1B21">Редактор: «Задание»</text><text x="616" y="616" font-size="13" fill="#45464F">11 · 19 · 21 · новое и правка</text>
+<rect x="1150" y="560" width="280" height="76" rx="16" fill="#EFEDF4" stroke="#C6C5D0"/><text x="1166" y="591" font-size="16" font-weight="600" fill="#1B1B21">Редактор: «Тест»</text><text x="1166" y="616" font-size="13" fill="#45464F">28 · 29 · 21 → 31, 32</text>
+<rect x="600" y="820" width="280" height="76" rx="16" fill="#FFD7F3" stroke="#FFD7F3"/><text x="616" y="851" font-size="16" font-weight="600" fill="#390035">ИИ в редакторе</text><text x="616" y="876" font-size="13" fill="#45464F">13 · 19 · 22</text>
+<rect x="1150" y="820" width="280" height="76" rx="16" fill="#FFDAD6" stroke="#FFDAD6"/><text x="1166" y="851" font-size="16" font-weight="600" fill="#410002">Тест: ошибки, блокировка</text><text x="1166" y="876" font-size="13" fill="#45464F">30</text>
+<rect x="433" y="355" width="54" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="460" y="370" font-size="12" text-anchor="middle" fill="#1B1B21">строка</text>
+<rect x="427" y="299" width="67" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="460" y="314" font-size="12" text-anchor="middle" fill="#1B1B21">К списку</text>
+<rect x="196" y="197" width="87" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="240" y="212" font-size="12" text-anchor="middle" fill="#1B1B21">По ученикам</text>
+<rect x="103" y="197" width="60" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="133" y="212" font-size="12" text-anchor="middle" fill="#1B1B21">Списком</text>
+<rect x="655" y="112" width="159" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="735" y="127" font-size="12" text-anchor="middle" fill="#1B1B21">Проверить · все подряд</text>
+<rect x="682" y="197" width="106" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="735" y="212" font-size="12" text-anchor="middle" fill="#1B1B21">ячейка «сдано»</text>
+<rect x="397" y="197" width="126" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="460" y="212" font-size="12" text-anchor="middle" fill="#1B1B21">ячейка «не сдано»</text>
+<rect x="952" y="355" width="126" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="1015" y="370" font-size="12" text-anchor="middle" fill="#1B1B21">Проверить N работ</text>
+<rect x="939" y="299" width="153" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="1015" y="314" font-size="12" text-anchor="middle" fill="#1B1B21">Назад · очередь пуста</text>
+<rect x="1315" y="423" width="120" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="1375" y="438" font-size="12" text-anchor="middle" fill="#1B1B21">Принять → дальше</text>
+<rect x="387" y="499" width="100" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="437" y="514" font-size="12" text-anchor="middle" fill="#1B1B21">Новое задание</text>
+<rect x="430" y="414" width="106" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="483" y="429" font-size="12" text-anchor="middle" fill="#1B1B21">Выдать · Назад</text>
+<rect x="696" y="717" width="27" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="710" y="732" font-size="12" text-anchor="middle" fill="#1B1B21">ИИ</text>
+<rect x="756" y="717" width="133" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="823" y="732" font-size="12" text-anchor="middle" fill="#1B1B21">Добавить выбранные</text>
+<rect x="962" y="615" width="106" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="1015" y="630" font-size="12" text-anchor="middle" fill="#1B1B21">вкладка «Тест»</text>
+<rect x="952" y="559" width="126" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="1015" y="574" font-size="12" text-anchor="middle" fill="#1B1B21">вкладка «Задание»</text>
+<rect x="1227" y="717" width="126" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="1290" y="732" font-size="12" text-anchor="middle" fill="#1B1B21">Выдать с ошибками</text>
+<rect x="995" y="717" width="40" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="1015" y="732" font-size="12" text-anchor="middle" fill="#1B1B21">С ИИ</text>
+<rect x="756" y="457" width="126" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="820" y="472" font-size="12" text-anchor="middle" fill="#1B1B21">Сохранить · Назад</text>
+<rect x="657" y="457" width="67" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="690" y="472" font-size="12" text-anchor="middle" fill="#1B1B21">Изменить</text>
+</svg>
+  </section>
+
+  <section class="pane full" aria-label="Ученик">
+    <h2>Ученик</h2>
+    <svg viewBox="0 0 1520 470" width="100%" role="img" aria-label="Переходы ученика" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#45464F"/></marker></defs>
+<path d="M740 120 Q740 208 740 296" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M324 349 Q460 349 596 349" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M596 327 Q460 327 324 327" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M884 349 Q1015 349 1146 349" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M1146 327 Q1015 327 884 327" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<path d="M790 376 C800 436,870 436,850 380" fill="none" stroke="#45464F" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="600" y="40" width="280" height="76" rx="16" fill="#FBF8FF" stroke="#C6C5D0" stroke-dasharray="2 4"/><text x="616" y="71" font-size="16" font-weight="600" fill="#45464F">Уведомление</text><text x="616" y="96" font-size="13" fill="#45464F">колокольчик, Telegram, VK</text>
+<rect x="40" y="300" width="280" height="76" rx="16" fill="#EFEDF4" stroke="#C6C5D0"/><text x="56" y="331" font-size="16" font-weight="600" fill="#1B1B21">Мои задания</text><text x="56" y="356" font-size="13" fill="#45464F">8 · 24 · 37 · 9</text>
+<rect x="600" y="300" width="280" height="76" rx="16" fill="#EFEDF4" stroke="#C6C5D0"/><text x="616" y="331" font-size="16" font-weight="600" fill="#1B1B21">Задание: сдача и результат</text><text x="616" y="356" font-size="13" fill="#45464F">8 · 24 · 25 · 10 · 27 · 38</text>
+<rect x="1150" y="300" width="280" height="76" rx="16" fill="#FBF8FF" stroke="#767680" stroke-dasharray="6 4"/><text x="1166" y="331" font-size="16" font-weight="600" fill="#1B1B21">Прохождение теста</text><text x="1166" y="356" font-size="13" fill="#45464F">23 · 26</text>
+<rect x="677" y="197" width="126" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="740" y="212" font-size="12" text-anchor="middle" fill="#1B1B21">Новое · Проверено</text>
+<rect x="433" y="355" width="54" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="460" y="370" font-size="12" text-anchor="middle" fill="#1B1B21">строка</text>
+<rect x="404" y="299" width="113" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="460" y="314" font-size="12" text-anchor="middle" fill="#1B1B21">Назад (телефон)</text>
+<rect x="972" y="355" width="87" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="1015" y="370" font-size="12" text-anchor="middle" fill="#1B1B21">Начать тест</text>
+<rect x="952" y="299" width="126" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="1015" y="314" font-size="12" text-anchor="middle" fill="#1B1B21">Выйти · Завершить</text>
+<rect x="755" y="423" width="139" height="22" rx="6" fill="#FBF8FF" stroke="#E3E1E9"/><text x="825" y="438" font-size="12" text-anchor="middle" fill="#1B1B21">Сдать · Сдать снова</text>
+</svg>
+  </section>
+
+  <section class="pane full" aria-label="Адреса и ширины">
+    <h2>Один экран на разных ширинах</h2>
+    <table>
+      <thead><tr><th>Экран</th><th>Адрес</th><th>Компьютер ≥ 840</th><th>Планшет 600–839</th><th>Телефон &lt; 600</th></tr></thead>
+      <tbody>
+        <tr><td>Список</td><td><code>/teacher/homework</code></td><td><span class="n">1</span> таблица во всю ширину, полоса «Ждут проверки»</td><td><span class="n">17</span> строки-плитки, проверка — две карточки</td><td><span class="n">5</span> список по группам сроков, карточки проверки листаются вбок</td></tr>
+        <tr><td>По ученикам</td><td><code>?view=journal</code></td><td><span class="n">2</span> журнал недели</td><td><span class="n">35</span> пять заданий недели, клетки 48 px с оценкой</td><td><span class="n">20</span> журнал, неделя листается</td></tr>
+        <tr><td>Открытое задание</td><td><code>/teacher/homework/:id</code></td><td><span class="n">4</span> ученики плиткой в две колонки + сводка справа</td><td><span class="n">18</span> плитки в две колонки, сводка под ними</td><td><span class="n">7</span> вкладки «Ученики · Задание · Ошибки», «Проверить N работ» внизу</td></tr>
+        <tr><td>Проверка</td><td><code>/teacher/homework/tasks/:taskId</code></td><td><span class="n">14</span> ответ слева, шторка проверки справа</td><td><span class="n">15</span> форма под ответом</td><td><span class="n">16</span> ответ, панель решения внизу, комментарий — шторка</td></tr>
+        <tr><td>Редактор</td><td><code>/teacher/homework/new</code>, <code>/:id/edit</code> — и создание, и правка</td><td><span class="n">11</span> «Задание», <span class="n">28</span> «Тест»; ИИ — панель справа <span class="n">13</span></td><td><span class="n">19</span> одна колонка, ИИ — выезжающая панель</td><td><span class="n">21</span> вкладки «Задание · Вопросы · Настройки», вопрос — <span class="n">31</span>, тип — шторка <span class="n">32</span>, ИИ — <span class="n">22</span></td></tr>
+        <tr><td>Ученик: задание и результат</td><td><code>/cabinet/homework</code>, <code>/:taskId</code></td><td><span class="n">8</span> / <span class="n">24</span> список и задание рядом; результат — то же задание после проверки</td><td><span class="n">37</span> → <span class="n">25</span> две страницы с рейкой</td><td><span class="n">9</span> → <span class="n">10</span> / <span class="n">27</span> / <span class="n">38</span> отдельные страницы</td></tr>
+        <tr><td>Ученик: тест</td><td>окно поверх задания</td><td><span class="n">23</span> во весь экран</td><td>как <span class="n">23</span></td><td><span class="n">26</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="pane" aria-label="Правила">
+    <h2>Правила переходов</h2>
+    <h3>Назад</h3>
+    <ul>
+      <li>«Назад» возвращает туда, откуда пришли. В эскизах ссылка ведёт на один экран, в портале — по истории.</li>
+      <li>Фильтры и вид списка («Активные», «Кому», <code>?view=journal</code>, неделя) живут в адресе и не теряются при возврате.</li>
+      <li>Системная кнопка «Назад» на телефоне закрывает шторку, потом окно, потом страницу.</li>
+    </ul>
+    <h3>Создание</h3>
+    <ul>
+      <li>Одна форма вместо двух: «Новое задание» открывает редактор <span class="n">11</span> (<code>/teacher/homework/new</code>). Новое задание показывает только «Кому», текст, «Срок» и чипы материалов; пустые разделы скрыты — это и есть прежнее быстрое окно, но без второй копии формы.</li>
+      <li>Черновик появляется с первого введённого символа и дальше сохраняется сам; уйти без текста — ничего не создаётся.</li>
+      <li>«Выдать» → туда, откуда открыли редактор (список или задание), снэкбар «Задание выдано · Открыть».</li>
+      <li>Отдельного окна быстрого создания нет — его эскизы убраны. На телефоне ИИ в редакторе — нижняя шторка <span class="n">22</span>.</li>
+      <li>Настройка видео — диалог поверх редактора <span class="n">39</span>, на телефоне — во весь экран <span class="n">40</span>; «Готово» возвращает к плиткам.</li>
+    </ul>
+    <h3>Редактор</h3>
+    <ul>
+      <li>Две вкладки: «Задание» <span class="n">11</span> и «Тест» <span class="n">28</span>. Вопросы и настройки теста — только на «Тест», на «Задание» — сводка и «Открыть тест».</li>
+      <li>Черновик сохраняется сам («сохранено · 11:14»), кнопки «Сохранить черновик» нет; выход ничего не спрашивает.</li>
+      <li>С ошибками в вопросах «Выдать» оставляет в редакторе, плашка <span class="n">30</span>.</li>
+      <li>ИИ — панель рядом с формой, из которой его вызвали; на вкладке «Тест» он пишет вопросы, на «Задание» — текст.</li>
+    </ul>
+    <h3>Проверка</h3>
+    <ul>
+      <li>Любая «Проверить» открывает очередь работ, начиная с выбранной: с полосы списка — все ждущие, из задания — его работы. «Принять» и «На доработку» открывают следующую.</li>
+      <li>Очередь кончилась → «Назад» туда, откуда начали, снэкбар «Все работы проверены».</li>
+    </ul>
+    <h3>Ученик</h3>
+    <ul>
+      <li>Результат проверки — не отдельный экран, а то же задание в состоянии «Принято» или «На доработку», рядом со списком.</li>
+      <li>Уведомление открывает задание сразу. «Выйти из теста» ничего не спрашивает; «Завершить тест» переспрашивает, если есть пропуски.</li>
+    </ul>
+  </section>
+
+  <section class="pane" aria-label="Проблемы">
+    <h2>Найденные проблемы и что сделано</h2>
+    <ol>
+      <li><b>Вопросы правились в двух местах</b> — в редакторе <span class="n">11</span> и в конструкторе <span class="n">28</span>, а настройки теста там различались (переключатель против трёх вариантов). <i>Сделано:</i> у редактора вкладки «Задание · Тест»; в <span class="n">11</span> — сводка теста и «Открыть тест», «Как проходит тест» только в <span class="n">28</span>. Эскизы 11, 13.</li>
+      <li><b>Круговой путь «во весь экран ⇄ свернуть».</b> Быстрое окно не показывает вопросы, поэтому «Свернуть» прятало часть задания. <i>Сделано:</i> «Свернуть» убрано, путь в одну сторону. Эскизы 11, 13.</li>
+      <li><b>Две модели сохранения в одном редакторе:</b> «сохранено · 11:02» и кнопка «Сохранить черновик». <i>Сделано:</i> редактор сохраняет сам, кнопки нет. Эскизы 11, 13.</li>
+      <li><b>«Назад» вёл на заранее заданный экран</b> (28 → 11, 16 → 7). <i>Сделано:</i> «Назад» из редактора и теста ведёт к заданию; правило «откуда пришли» для проверки. Эскиз 28.</li>
+      <li><b>Не было сказано, где окажешься после «Выдать».</b> <i>Решение:</i> редактор возвращает туда, откуда открыт.</li>
+      <li><b>«Проверить» и «Проверить все подряд» вели себя по-разному</b> (одна работа и очередь). <i>Решение:</i> всегда очередь, начиная с выбранной работы; одна логика «Дальше».</li>
+      <li><b>Результат у ученика был отдельной страницей</b> без списка <span class="n">24</span>, хотя адрес тот же, что у задания. <i>Сделано:</i> в <span class="n">24</span> список слева, как в <span class="n">8</span>; стрелка «К заданиям» убрана.</li>
+      <li><b>Прототип не кликался по схеме.</b> <i>Сделано:</i> ссылки «Во весь экран», «Тест с вопросами», «Написать с ИИ», «Проверить», «Начать тест», «Следующее задание», строки вопросов на телефоне <span class="n">21</span> → <span class="n">31</span>.</li>
+    </ol>
+    <h3>Дорисовано</h3>
+    <ul>
+      <li>Планшет: журнал «По ученикам» <span class="n">35</span>; «Новое задание» сразу открывает редактор <span class="n">19</span>, ИИ — в выезжающей панели.</li>
+      <li>Ученик на планшете: список заданий <span class="n">37</span>, «К заданиям» из <span class="n">25</span> ведёт в него.</li>
+      <li>Ученик на телефоне, «Принято» <span class="n">38</span>: оценка, комментарий, ошибки теста и «Следующее» в нижней панели.</li>
+    </ul>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3300}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Мастер — готово</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.app{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;min-height:960px;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:12px;height:64px;padding:0 24px}
+.logo{width:40px;height:40px;border-radius:12px;background:#4459A9;color:#fff;display:inline-flex;align-items:center;justify-content:center}
+.pane{flex:1;background:#FBF8FF;border-radius:28px;margin:0 24px 24px;padding:32px;display:grid;grid-template-columns:minmax(220px,280px) minmax(0,1.2fr) minmax(300px,1fr);gap:32px;align-items:start}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.steps li{display:flex;align-items:center;gap:12px;min-height:56px;padding:0 16px;border-radius:28px;font-size:14px;font-weight:500;color:#45464F}
+.steps .n{width:28px;height:28px;border-radius:14px;border:1px solid #767680;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 28px;box-sizing:border-box}
+.steps .done .n{background:#4459A9;border-color:#4459A9;color:#fff}.steps .done .n .ic{font-size:18px}
+.steps .cur{background:#DEE1F9;color:#171B2C}.steps .cur .n{background:#171B2C;border-color:#171B2C;color:#fff}
+.main{display:flex;flex-direction:column;gap:20px;min-width:0}
+.main h1{margin:0;font-size:36px;font-weight:500;line-height:44px}
+.lead{margin:0;font-size:16px;line-height:24px;color:#45464F}
+.next{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.nc{background:#fff;border:1px solid #E3E1E9;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:8px;text-decoration:none;color:inherit}
+.nc.hero{background:#DEE1F9;border-color:#DEE1F9}
+.nc .ib{width:48px;height:48px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;background:#F5F2FA;color:#4459A9}
+.nc.hero .ib{background:#4459A9;color:#fff}
+.nc b{font-size:16px;font-weight:600}
+.nc span.d{font-size:14px;color:#45464F;line-height:1.45}
+.btn{height:40px;border-radius:20px;border:0;padding:0 24px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap;justify-content:center;text-decoration:none}
+.btn .ic{font-size:20px}
+.filled{background:#4459A9;color:#fff}.textbtn{background:transparent;color:#4459A9;padding:0 12px}.tonal{background:#FBF8FF;color:#171B2C}
+.big{height:56px;border-radius:28px;padding:0 28px;font-size:16px}
+.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.aside{display:flex;flex-direction:column;gap:12px;min-width:0}
+.cap{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F}
+.list{display:flex;flex-direction:column;gap:2px;border-radius:16px;overflow:hidden}
+.list>:not(.tile){display:contents}
+.tile{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 16px;background:#F5F2FA;font-size:14px}
+.tile .t{flex:1;min-width:0}.tile .t b{display:block;font-weight:500;font-size:14px;color:#45464F}.tile .t span{display:block;font-size:16px}
+.iconbtn{width:40px;height:40px;border-radius:20px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center}
+.muted{color:#45464F}
+</style>
+</helmet>
+<div class="app">
+  <header class="top">
+    <span class="logo" aria-hidden="true"><span class="ic">school</span></span>
+    <b style="font-size:16px;font-weight:500;flex:1">Первый вход</b>
+    <span class="muted" style="font-size:14px">Шаг 4 из 4</span>
+  </header>
+  <main class="pane">
+    <ol class="steps" aria-label="Шаги">
+      <sc-for list="{{steps}}" as="s" hint-placeholder-count="4">
+        <li class="{{s.cls}}" aria-current="{{s.cur}}"><span class="n"><sc-if value="{{s.done}}" hint-placeholder-val="{{true}}"><span class="ic">check</span></sc-if><sc-if value="{{s.todo}}" hint-placeholder-val="{{false}}">{{s.n}}</sc-if></span>{{s.title}}</li>
+      </sc-for>
+    </ol>
+
+    <section class="main" aria-labelledby="h">
+      <h1 id="h">Портал готов</h1>
+      <p class="lead">Дальше — по желанию. Всё это ждёт вас и в «С чего начать» на главной.</p>
+      <div class="next">
+        <a class="nc hero" href="#"><span class="ib"><span class="ic">person_add</span></span><b>Добавить первого ученика</b><span class="d">Получите ссылку-приглашение и отправьте её ученику.</span></a>
+        <a class="nc" href="Messengers.dc.html"><span class="ib"><span class="ic">forum</span></span><b>Подключить мессенджер</b><span class="d">Telegram, ВКонтакте или MAX — напоминания и оплаты в чате.</span></a>
+        <a class="nc" href="Ai.dc.html"><span class="ib"><span class="ic">auto_awesome</span></span><b>Подключить ИИ-помощника</b><span class="d">Черновики заданий, тестов и проверки. Нужен ключ провайдера.</span></a>
+        <a class="nc" href="Lessons.dc.html"><span class="ib"><span class="ic">event</span></span><b>Google Календарь</b><span class="d">Занятия сами появятся в вашем календаре.</span></a>
+      </div>
+      <div class="actions"><button class="btn textbtn"><span class="ic">arrow_back</span>Назад</button><span style="flex:1"></span><button class="btn filled big">Перейти в портал<span class="ic">arrow_forward</span></button></div>
+    </section>
+
+    <aside class="aside" aria-label="Что настроено">
+      <span class="cap">Что вы настроили</span>
+      <div class="list">
+        <sc-for list="{{summary}}" as="r" hint-placeholder-count="6">
+          <div class="tile"><span class="t"><b>{{r.k}}</b><span>{{r.v}}</span></span><button class="iconbtn" aria-label="Изменить: {{r.k}}"><span class="ic">edit</span></button></div>
+        </sc-for>
+      </div>
+      <span class="muted" style="font-size:13px">Меняется в «Настройки › Занятия» и «Портал».</span>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const titles = ['Вы и портал', 'Время и оплата', 'Правила', 'Готово'];
+    const steps = titles.map((title, i) => {
+      const n = i + 1, last = n === 4;
+      return { n, title, done: !last, todo: last, cur: last ? 'step' : 'false', cls: last ? 'cur' : 'done' };
+    });
+    return {
+      steps,
+      summary: [
+        { k: 'Портал', v: 'Английский с Еленой · school.example.ru' },
+        { k: 'Часовой пояс', v: 'Москва (UTC+3)' },
+        { k: 'Занятие', v: '60 мин · 1 500 ₽' },
+        { k: 'Поздняя отмена', v: 'меньше чем за 24 ч' },
+        { k: 'Напоминания', v: 'за 24 ч и за 1 ч' },
+        { k: 'Срок задания', v: 'напомнить за 24 ч' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

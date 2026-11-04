@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Телефон — задания</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.ph{width:390px;height:844px;overflow:hidden;position:relative;font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#FBF8FF;display:flex;flex-direction:column}
+.top{height:64px;display:flex;align-items:center;gap:4px;padding:0 4px 0 16px;flex:0 0 64px}
+.iconbtn{width:48px;height:48px;border-radius:24px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center}
+.chip{height:32px;border-radius:8px;border:1px solid #C6C5D0;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:0 16px;font:500 14px 'Roboto Flex',sans-serif;color:#45464F;white-space:nowrap}
+.chip.sel{background:#DEE1F9;border-color:#DEE1F9;color:#171B2C;padding-left:8px}
+.label{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap}
+.t-warn{background:#FFE08D;color:#3D2E00}
+.t-ok{background:#C8F0CF;color:#0B3A1A}
+.t-pri{background:#DCE1FF;color:#001550}
+.t-err{background:#FFDAD6;color:#410002}
+.av{width:40px;height:40px;border-radius:20px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex:0 0 40px}
+.rv{flex:0 0 240px;background:#F5F2FA;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.bar{height:6px;border-radius:3px;background:#E3E1E9;display:flex;overflow:hidden;width:72px}
+.muted{color:#45464F}
+.nav{height:80px;flex:0 0 80px;background:#EFEDF4;display:flex;justify-content:space-around;align-items:center}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#45464F;text-decoration:none}
+.ni span.pill{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.ni.on span.pill{background:#DEE1F9;color:#171B2C}
+.efab{position:absolute;right:16px;bottom:96px;height:56px;border-radius:16px;border:0;background:#DCE1FF;color:#001550;display:flex;align-items:center;gap:10px;padding:0 20px 0 16px;font:500 16px 'Roboto Flex',sans-serif;box-shadow:0 3px 8px rgba(0,0,0,.18)}
+.list{display:flex;flex-direction:column;gap:2px;border-radius:16px;overflow:hidden}.list>:not(.tile){display:contents}.tile{display:flex;align-items:center;gap:16px;min-height:56px;padding:12px 16px;box-sizing:border-box;background:#EFEDF4;border-radius:4px;text-decoration:none;color:inherit;font-size:14px}.tile.on{background:#DEE1F9}.tile .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+</helmet>
+<div class="ph">
+  <header class="top">
+    <h1 style="margin:0;font-size:22px;font-weight:400;flex:1">Задания</h1>
+    <button class="iconbtn" aria-label="Поиск"><span class="ic">search</span></button>
+    <button class="iconbtn" aria-label="Вид: по ученикам"><span class="ic">grid_view</span></button>
+    <button class="iconbtn" aria-label="Справка"><span class="ic">help</span></button>
+  </header>
+
+  <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:14px;padding:0 0 16px">
+    <div style="display:flex;gap:8px;padding:0 16px;overflow:hidden">
+      <button class="chip sel"><span class="ic" style="font-size:18px">check</span>Активные 12</button>
+      <button class="chip">Черновики 2</button>
+      <button class="chip">Готовые</button>
+      <button class="chip">Кому: все<span class="ic" style="font-size:18px">arrow_drop_down</span></button>
+    </div>
+
+    <section style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;padding:0 16px"><span class="label" style="flex:1">Ждут проверки · 3</span><a href="#" style="font-size:14px;font-weight:500;color:#4459A9;text-decoration:none">Все</a></div>
+      <div style="display:flex;gap:10px;padding:0 16px;overflow:hidden">
+        <sc-for list="{{rv}}" as="r" hint-placeholder-count="2">
+          <article class="rv">
+            <div style="display:flex;gap:10px;align-items:center">
+              <span class="av" style="background:{{r.bg}};color:{{r.fg}}">{{r.ini}}</span>
+              <div style="min-width:0"><div style="font-weight:600;font-size:14px">{{r.who}}</div><div class="muted" style="font-size:12px">{{r.when}}</div></div>
+            </div>
+            <div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{r.task}}</div>
+            <a style="text-decoration:none;height:36px;border-radius:18px;border:0;background:#DEE1F9;color:#171B2C;font:500 14px 'Roboto Flex',sans-serif" href="ReviewPhone.dc.html">Проверить</a>
+          </article>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="display:flex;flex-direction:column;gap:6px;padding:0 16px">
+      <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+        <span class="label" style="margin-top:6px;color:{{g.color}}">{{g.name}}</span>
+        <div class="list"><sc-for list="{{g.items}}" as="it" hint-placeholder-count="2">
+          <a class="tile" href="MobileAssignment.dc.html">
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:500;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{it.title}}</div>
+              <div class="muted" style="font-size:13px;margin-top:2px">{{it.who}} · {{it.due}}</div>
+              <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+                <div class="bar"><span style="width:{{it.ok}};background:#3E8E55"></span><span style="width:{{it.rev}};background:#E0A800"></span></div>
+                <span class="muted" style="font-size:12px">{{it.done}}</span>
+              </div>
+            </div>
+            <span class="tag {{it.cls}}">{{it.tag}}</span>
+          </a>
+        </sc-for></div>
+      </sc-for>
+    </section>
+  </div>
+
+  <a class="efab" href="PhoneEditor.dc.html" style="text-decoration:none"><span class="ic">edit</span>Новое</a>
+
+  <nav class="nav" aria-label="Разделы">
+    <a class="ni" href="#"><span class="pill"><span class="ic">home</span></span>Главная</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">calendar_month</span></span>Расписание</a>
+    <a class="ni on" href="#"><span class="pill"><span class="ic" style="font-variation-settings:'FILL' 1">assignment</span></span>Задания</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">group</span></span>Ученики</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">menu</span></span>Ещё</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      rv: [
+        { ini: 'АС', who: 'Анна Смирнова', when: 'сегодня, 09:12', task: 'Present Perfect — упр. 4–7', bg: '#DCE1FF', fg: '#001550' },
+        { ini: 'ИП', who: 'Илья Петров', when: 'вчера, 22:40', task: 'Эссе: My summer holidays', bg: '#FFD7F3', fg: '#390035' }
+      ],
+      groups: [
+        { name: 'Просрочено · 1', color: '#BA1A1A', items: [
+          { title: 'Reading: The Lost City', who: 'Илья Петров', due: 'пн 27.10', ok: '0%', rev: '0%', done: '0 из 1', tag: 'Не сдано', cls: 't-err' }
+        ]},
+        { name: 'На этой неделе · 3', color: '#45464F', items: [
+          { title: 'Present Perfect — упражнения 4–7', who: 'Группа B1', due: 'чт 30.10', ok: '25%', rev: '50%', done: '3 из 4', tag: 'Проверить 2', cls: 't-warn' },
+          { title: 'Разбор ошибок урока 24.10', who: 'Мария Ковалёва', due: 'пт 31.10', ok: '100%', rev: '0%', done: '1 из 1', tag: 'Принято', cls: 't-ok' },
+          { title: 'Эссе: My summer holidays', who: 'Илья, Анна', due: 'сб 01.11', ok: '0%', rev: '50%', done: '1 из 2', tag: 'Проверить 1', cls: 't-warn' }
+        ]}
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

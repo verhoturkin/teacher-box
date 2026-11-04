@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Планшет — задания</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.tab{width:768px;height:1024px;overflow:hidden;font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;display:flex}
+.rail{width:80px;flex:0 0 80px;display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:16px}
+.fab{width:56px;height:56px;border-radius:16px;background:#DCE1FF;color:#001550;border:0;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#45464F;text-decoration:none}
+.ni span.pill{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.ni.on span.pill{background:#DEE1F9;color:#171B2C}
+.pane{flex:1;min-width:0;background:#FBF8FF;border-radius:28px;margin:16px 16px 16px 0;padding:16px 20px;display:flex;flex-direction:column;gap:14px;overflow:hidden}
+.iconbtn{width:40px;height:40px;border-radius:20px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center}
+.chip{height:32px;border-radius:8px;border:1px solid #C6C5D0;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:0 16px;font:500 14px 'Roboto Flex',sans-serif;color:#45464F;white-space:nowrap}
+.chip.sel{background:#DEE1F9;border-color:#DEE1F9;padding-left:8px;color:#171B2C}
+.label{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap}
+.t-warn{background:#FFE08D;color:#3D2E00}.t-ok{background:#C8F0CF;color:#0B3A1A}.t-pri{background:#DCE1FF;color:#001550}.t-err{background:#FFDAD6;color:#410002}
+.av{width:40px;height:40px;border-radius:20px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex:0 0 40px}
+.rv{background:#F5F2FA;border-radius:16px;padding:12px;display:flex;align-items:center;gap:10px}
+.bar{height:6px;border-radius:3px;background:#E3E1E9;display:flex;overflow:hidden;width:96px}
+.muted{color:#45464F}
+.list{display:flex;flex-direction:column;gap:2px;border-radius:16px;overflow:hidden}.list>:not(.tile){display:contents}.tile{display:flex;align-items:center;gap:16px;min-height:56px;padding:12px 16px;box-sizing:border-box;background:#EFEDF4;border-radius:4px;text-decoration:none;color:inherit;font-size:14px}.tile.on{background:#DEE1F9}.tile .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+</helmet>
+<div class="tab">
+  <nav class="rail" aria-label="Разделы">
+    <a class="fab" href="TabletEditor.dc.html" style="text-decoration:none" aria-label="Новое задание"><span class="ic">edit</span></a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">home</span></span>Главная</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">calendar_month</span></span>Расписание</a>
+    <a class="ni on" href="#"><span class="pill"><span class="ic" style="font-variation-settings:'FILL' 1">assignment</span></span>Задания</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">group</span></span>Ученики</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">payments</span></span>Оплаты</a>
+  </nav>
+  <main class="pane">
+    <div style="display:flex;align-items:center;gap:4px">
+      <h1 style="margin:0;font-size:28px;font-weight:500;flex:1">Задания</h1>
+      <button class="iconbtn" aria-label="Поиск"><span class="ic">search</span></button>
+      <a class="iconbtn" href="TabletJournal.dc.html" style="text-decoration:none" aria-label="Вид: по ученикам"><span class="ic">grid_view</span></a>
+      <button class="iconbtn" aria-label="Справка"><span class="ic">help</span></button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="chip sel"><span class="ic" style="font-size:18px">check</span>Активные 12</button><button class="chip">Черновики 2</button><button class="chip">Готовые</button><button class="chip">Кому: все<span class="ic" style="font-size:18px">arrow_drop_down</span></button>
+    </div>
+    <div style="display:flex;align-items:center"><span class="label" style="flex:1">Ждут проверки · 3</span><a href="ReviewTablet.dc.html" style="font-size:14px;font-weight:500;color:#4459A9;text-decoration:none">Проверить все подряд</a></div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+      <sc-for list="{{rv}}" as="r" hint-placeholder-count="2">
+        <div class="rv"><span class="av" style="background:{{r.bg}};color:{{r.fg}}">{{r.ini}}</span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px">{{r.who}}</div><div class="muted" style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{r.task}}</div></div><button style="height:36px;border-radius:18px;border:0;background:#DEE1F9;color:#171B2C;font:500 14px 'Roboto Flex',sans-serif;padding:0 14px">Проверить</button></div>
+      </sc-for>
+    </div>
+    <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+      <span class="label" style="margin-top:4px;color:{{g.color}}">{{g.name}}</span>
+      <div class="list"><sc-for list="{{g.items}}" as="it" hint-placeholder-count="2">
+        <a class="tile" href="TabletAssignment.dc.html">
+          <span class="ic" style="color:#4459A9">{{it.icon}}</span>
+          <div style="flex:1;min-width:0"><div style="font-weight:500;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{it.title}}</div><div class="muted" style="font-size:14px">{{it.who}} · {{it.due}}</div></div>
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><div class="bar"><span style="width:{{it.ok}};background:#3E8E55"></span><span style="width:{{it.rev}};background:#E0A800"></span></div><span class="muted" style="font-size:12px">{{it.done}}</span></div>
+          <span class="tag {{it.cls}}">{{it.tag}}</span>
+        </a>
+      </sc-for></div>
+    </sc-for>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":768,"height":1024}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      rv: [
+        { ini: 'АС', who: 'Анна Смирнова', task: 'Present Perfect, упр. 4–7', bg: '#DCE1FF', fg: '#001550' },
+        { ini: 'ИП', who: 'Илья Петров', task: 'Эссе: My summer holidays', bg: '#FFD7F3', fg: '#390035' }
+      ],
+      groups: [
+        { name: 'Просрочено · 1', color: '#BA1A1A', items: [
+          { icon: 'description', title: 'Reading: The Lost City', who: 'Илья Петров', due: 'пн 27.10', ok: '0%', rev: '0%', done: '0 из 1', tag: 'Не сдано', cls: 't-err' }
+        ]},
+        { name: 'На этой неделе · 3', color: '#45464F', items: [
+          { icon: 'description', title: 'Present Perfect — упражнения 4–7', who: 'Группа B1', due: 'чт 30.10', ok: '25%', rev: '50%', done: '3 из 4', tag: 'Проверить 2', cls: 't-warn' },
+          { icon: 'co_present', title: 'Разбор ошибок урока 24.10', who: 'Мария Ковалёва', due: 'пт 31.10', ok: '100%', rev: '0%', done: '1 из 1', tag: 'Принято', cls: 't-ok' },
+          { icon: 'description', title: 'Эссе: My summer holidays', who: 'Илья, Анна', due: 'сб 01.11', ok: '0%', rev: '50%', done: '1 из 2', tag: 'Проверить 1', cls: 't-warn' }
+        ]},
+        { name: 'Позже · 2', color: '#45464F', items: [
+          { icon: 'quiz', title: 'Неправильные глаголы, часть 3', who: 'Группа A2', due: 'ср 05.11', ok: '0%', rev: '0%', done: '0 из 6', tag: 'Выдано', cls: 't-pri' },
+          { icon: 'description', title: 'Listening: podcast episode 12', who: 'Анна Смирнова', due: 'пт 07.11', ok: '0%', rev: '0%', done: '0 из 1', tag: 'Выдано', cls: 't-pri' }
+        ]}
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Телефон — ИИ в шторке</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.ph{width:390px;height:844px;overflow:hidden;position:relative;font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#FBF8FF}
+.scrim{position:absolute;inset:0;background:rgba(27,27,33,.32)}
+.sheet{position:absolute;left:0;right:0;bottom:0;top:96px;background:#F5F2FA;border-radius:28px 28px 0 0;padding:8px 16px 20px;display:flex;flex-direction:column;gap:12px}
+.seg{display:flex;border:1px solid #767680;border-radius:20px;overflow:hidden;height:40px}
+.seg button{flex:1;border:0;background:transparent;font:500 14px 'Roboto Flex',sans-serif;color:#1B1B21}
+.seg button+button{border-left:1px solid #767680}
+.seg button.on{background:#DEE1F9;color:#171B2C}
+.chip{height:32px;border-radius:8px;border:1px solid #C6C5D0;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:0 16px;font:500 14px 'Roboto Flex',sans-serif;color:#45464F;white-space:nowrap}
+.chip.sel{background:#DEE1F9;border-color:#DEE1F9;padding-left:8px;color:#171B2C}
+.dq{background:#fff;border:1px solid #E3E1E9;border-radius:14px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.dq input{width:18px;height:18px;margin-top:1px;accent-color:#4459A9}
+.key{display:inline-flex;height:22px;align-items:center;padding:0 6px;border-radius:6px;font-size:12px;font-weight:600;background:#C8F0CF;color:#0B3A1A}
+.muted{color:#45464F}
+.pick{height:40px;border-radius:8px;border:1px solid #767680;background:transparent;display:inline-flex;align-items:center;gap:6px;padding:0 6px 0 10px;font:500 14px 'Roboto Flex',sans-serif;color:#1B1B21;white-space:nowrap}
+.pick .ic{font-size:18px}
+.pick.open{background:#FFD7F3;border-color:#FFD7F3;color:#390035}
+.mmenu{position:absolute;background:#F5F2FA;border-radius:16px;padding:8px 0;box-shadow:0 2px 6px 2px rgba(0,0,0,.15),0 1px 2px rgba(0,0,0,.3);z-index:3;width:300px}
+.mh{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F;padding:8px 16px 4px}
+.mi{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 16px;font-size:14px}
+.mi.sel{background:#DEE1F9}
+.mi .t{flex:1}.mi small{display:block;font-size:12px;color:#45464F}
+.mi>.ic{font-size:20px;color:#45464F;width:20px}
+.msep{height:1px;background:#C6C5D0;margin:8px 0}
+.mtag{display:inline-flex;align-items:center;height:20px;padding:0 6px;border-radius:6px;font-size:11px;font-weight:600;background:#DCE1FF;color:#001550}
+.mtag.err{background:#FFDAD6;color:#410002}
+.btn{height:40px;border-radius:20px;border:0;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap}
+</style>
+</helmet>
+<div class="ph">
+  <div style="padding:20px 16px;font-size:20px" aria-hidden="true">Глаголы, часть 3</div>
+  <div class="scrim" aria-hidden="true"></div>
+  <section class="sheet" role="dialog" aria-label="ИИ-помощник">
+    <div style="width:32px;height:4px;border-radius:2px;background:#767680;align-self:center;margin:6px 0" aria-hidden="true"></div>
+    <div style="display:flex;align-items:center;gap:8px"><span class="ic" style="color:#390035">auto_awesome</span><h2 style="margin:0;font-size:20px;font-weight:600;flex:1">ИИ-помощник</h2></div>
+    <div class="seg" role="group" aria-label="Что готовить"><button>Текст</button><button class="on">Вопросы</button></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="chip sel"><span class="ic" style="font-size:16px">check</span>4 вопроса</button>
+      <button class="chip sel"><span class="ic" style="font-size:16px">check</span>Один ответ</button>
+      <button class="chip sel"><span class="ic" style="font-size:16px">check</span>Пропуск</button>
+      <button class="chip">Короткий</button>
+    </div>
+    <div style="background:#FBF8FF;border:1px solid #767680;border-radius:12px;padding:10px 12px;font-size:15px">Только строки 41–60, без повторов</div>
+    <div style="display:flex;gap:6px;overflow-x:auto" aria-label="Учитываю об учениках">
+      <span class="chip" style="color:#1B1B21;padding:0 12px 0 8px"><span class="ic" style="font-size:16px;color:#4459A9">sell</span>A2<span class="ic" style="font-size:16px">close</span></span>
+      <span class="chip" style="color:#1B1B21;padding:0 12px 0 8px;border-color:#B98A00;background:#FFF4D6"><span class="ic" style="font-size:16px;color:#7A5900">sell</span>Класс 7 · 8<span class="ic" style="font-size:16px">close</span></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px"><span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:8px;font-size:12px;font-weight:600;background:#FFD7F3;color:#390035">Черновик ИИ</span><span class="muted" style="font-size:12px">учтены учебник, 6 вопросов и уровень A2</span></div>
+    <label class="dq"><input type="checkbox" checked><span style="flex:1">Третья форма <b>choose</b> <span class="key">chosen</span></span></label>
+    <label class="dq"><input type="checkbox" checked><span style="flex:1">Past Simple от <b>fly</b> <span class="key">flew</span></span></label>
+    <label class="dq"><input type="checkbox" checked><span style="flex:1">They have ___ (forget) the keys <span class="key">forgotten</span></span></label>
+    <label class="dq" style="background:#FBF8FF"><input type="checkbox"><span style="flex:1" class="muted">Вторая форма <b>bring</b> — похож на №1</span></label>
+    <span style="flex:1"></span>
+    <div style="display:flex;gap:8px">
+      <button class="pick" aria-haspopup="menu" aria-label="Модель: Claude Opus 5"><span class="ic">memory</span>Opus 5<span class="ic">arrow_drop_down</span></button>
+      <button class="btn" style="flex:0 0 48px;padding:0;background:#DEE1F9;color:#171B2C" aria-label="Сгенерировать заново"><span class="ic">refresh</span></button>
+      <button class="btn" style="flex:1;background:#4459A9;color:#fff"><span class="ic" style="font-size:20px">playlist_add</span>Добавить 3</button>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

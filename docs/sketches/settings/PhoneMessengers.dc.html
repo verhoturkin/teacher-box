@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Учитель, телефон — мессенджеры</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.ph{width:390px;height:844px;overflow:hidden;position:relative;font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#FBF8FF;display:flex;flex-direction:column}
+.top{height:64px;display:flex;align-items:center;gap:4px;padding:0 4px;flex:0 0 64px}
+.iconbtn{width:48px;height:48px;border-radius:24px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.label{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F}
+.muted{color:#45464F}
+.list{display:flex;flex-direction:column;gap:2px;border-radius:16px;overflow:hidden}
+.list>:not(.tile){display:contents}
+.tile{display:flex;align-items:center;gap:16px;min-height:56px;padding:12px 16px;background:#F5F2FA;box-sizing:border-box;border-radius:4px;font-size:14px;color:inherit;text-decoration:none}
+.tile .t{flex:1;min-width:0}.tile .t b{display:block;font-weight:500;font-size:16px}.tile .t .muted{display:block}
+.av{width:40px;height:40px;border-radius:20px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex:0 0 40px;background:#DEE1F9;color:#171B2C}
+.btn{height:40px;border-radius:20px;border:0;padding:0 16px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap;justify-content:center;text-decoration:none}
+.tonal{background:#DEE1F9;color:#171B2C}.textbtn{background:transparent;color:#4459A9;padding:0 12px}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap}
+.t-ok{background:#C8F0CF;color:#0B3A1A}
+.alert{border-radius:16px;padding:12px 16px;display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:1.5}
+.a-err{background:#FFDAD6;color:#410002}
+.bar{height:6px;border-radius:3px;background:#E3E1E9;display:flex;overflow:hidden}
+.bar i{display:block}
+</style>
+</helmet>
+<div class="ph">
+  <header class="top">
+    <a class="iconbtn" href="PhoneSettings.dc.html" aria-label="Назад"><span class="ic">arrow_back</span></a>
+    <h1 style="margin:0;font-size:22px;font-weight:400;flex:1">Мессенджеры</h1>
+    <button class="iconbtn" aria-label="Справка"><span class="ic">help</span></button>
+  </header>
+
+  <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:10px;padding:0 16px 16px">
+    <div class="alert a-err" role="alert" style="align-items:center;padding-right:4px">
+      <span class="ic">error</span>
+      <span style="flex:1;min-width:0"><b style="font-weight:600">2 не доставлено.</b> Илья заблокировал бота</span>
+      <button class="btn textbtn" style="color:#410002">Показать</button>
+    </div>
+
+    <span class="label" style="margin-top:6px">Боты</span>
+    <div class="list">
+      <div class="tile"><span class="av"><span class="ic">send</span></span><span class="t"><b>Telegram</b><span class="muted">@english_elena_bot</span></span><span class="tag t-ok">Работает</span></div>
+      <div class="tile"><span class="av"><span class="ic">chat</span></span><span class="t"><b>ВКонтакте</b><span class="muted">Не подключён</span></span><a class="btn tonal" href="PhoneConnect.dc.html">Подключить</a></div>
+      <div class="tile"><span class="av"><span class="ic">forum</span></span><span class="t"><b>MAX</b><span class="muted">Не подключён</span></span><a class="btn tonal" href="PhoneConnect.dc.html">Подключить</a></div>
+    </div>
+
+    <span class="label" style="margin-top:6px">Ученики · 5 из 7 подключены</span>
+    <div class="bar" aria-label="Подключены 5 из 7"><i style="width:71%;background:#4459A9"></i></div>
+    <div class="list">
+      <div class="tile"><span class="av" style="background:#FFD7F3;color:#390035">ИП</span><span class="t"><b>Илья Петров</b><span class="muted">Заблокировал бота</span></span><button class="iconbtn" aria-label="Отправить ссылку Илье"><span class="ic" style="color:#4459A9">share</span></button></div>
+      <div class="tile"><span class="av" style="background:#FFE08D;color:#3D2E00">ДО</span><span class="t"><b>Дмитрий Орлов</b><span class="muted">Ещё не подключался</span></span><button class="iconbtn" aria-label="Отправить ссылку Дмитрию"><span class="ic" style="color:#4459A9">share</span></button></div>
+      <a class="tile" href="#"><span class="av"><span class="ic">group</span></span><span class="t"><b>Кто где подключён</b></span><span class="ic muted">chevron_right</span></a>
+    </div>
+
+    <div class="list" style="margin-top:6px">
+      <a class="tile" href="#"><span class="av"><span class="ic">smart_toy</span></span><span class="t"><b>Что умеет бот</b><span class="muted">Уведомления и меню /menu</span></span><span class="ic muted">chevron_right</span></a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

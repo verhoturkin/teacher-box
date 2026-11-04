@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Было и стало</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.page{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#FBF8FF;padding:48px;display:flex;flex-direction:column;gap:32px;box-sizing:border-box;width:1440px;min-height:1400px}
+h2{margin:0;font-size:24px;font-weight:500}
+.page{background:#FBF8FF}
+.tbl{width:100%;border-collapse:separate;border-spacing:0 4px}
+.tbl th{text-align:left;font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F;padding:4px 16px}
+.tbl{border-spacing:0 2px}
+.tbl td{background:#F5F2FA;padding:12px 16px;font-size:16px;vertical-align:middle;height:56px;box-sizing:border-box}
+.tbl td:first-child{border-radius:4px 0 0 4px}.tbl td:last-child{border-radius:0 4px 4px 0}
+.tbl tbody tr:first-child td:first-child{border-top-left-radius:16px}.tbl tbody tr:first-child td:last-child{border-top-right-radius:16px}
+.tbl tbody tr:last-child td:first-child{border-bottom-left-radius:16px}.tbl tbody tr:last-child td:last-child{border-bottom-right-radius:16px}
+.old{color:#45464F}
+.new{display:inline-flex;align-items:center;gap:12px;font-weight:500}
+.new .ci{width:40px;height:40px;border-radius:20px;background:#DEE1F9;color:#171B2C;display:inline-flex;align-items:center;justify-content:center;flex:0 0 40px}
+.rules{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.rule{background:#fff;border:1px solid #E3E1E9;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.rule b{font-size:16px;font-weight:600}
+.rule span{font-size:14px;line-height:1.45;color:#45464F}
+.big{display:flex;gap:24px;align-items:center}
+.num{font-size:57px;font-weight:400;line-height:1}
+</style>
+</helmet>
+<div class="page">
+  <div class="big">
+    <div><span class="num" style="color:#767680">8</span><div style="font-size:14px;color:#45464F">разделов было</div></div>
+    <span class="ic" style="font-size:40px;color:#4459A9">arrow_forward</span>
+    <div><span class="num" style="color:#4459A9">6</span><div style="font-size:14px;color:#45464F">разделов стало</div></div>
+    <span style="width:1px;height:64px;background:#C6C5D0;margin:0 16px"></span>
+    <div style="font-size:18px;max-width:720px;line-height:1.45">Личное — в «Моём аккаунте», одинаковом у учителя и ученика. Общее для портала — в остальных разделах. Всё, кроме оформления портала, сохраняется сразу.</div>
+  </div>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <h2>Куда переехала каждая настройка</h2>
+    <table class="tbl">
+      <thead><tr><th style="width:42%">Было</th><th style="width:22%">Стало</th><th>Почему</th></tr></thead>
+      <tbody>
+        <sc-for list="{{moves}}" as="m" hint-placeholder-count="12">
+          <tr>
+            <td class="old">{{m.old}}</td>
+            <td><span class="new"><span class="ci"><span class="ic" style="font-size:18px">{{m.icon}}</span></span>{{m.to}}</span></td>
+            <td style="font-size:14px;color:#45464F">{{m.why}}</td>
+          </tr>
+        </sc-for>
+      </tbody>
+    </table>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <h2>Правила раздела</h2>
+    <div class="rules">
+      <sc-for list="{{rules}}" as="r" hint-placeholder-count="6">
+        <div class="rule"><span class="ic" style="color:#4459A9">{{r.icon}}</span><b>{{r.title}}</b><span>{{r.text}}</span></div>
+      </sc-for>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const A = ['badge', 'Мой аккаунт'], P = ['palette', 'Портал'], L = ['event', 'Занятия'], M = ['forum', 'Мессенджеры'], I = ['auto_awesome', 'ИИ-помощник'], D = ['database', 'Данные'], S = ['group', 'Карточка ученика'];
+    const mv = (old, [icon, to], why) => ({ old, icon, to, why });
+    return {
+      moves: [
+        mv('Мой аккаунт: имя, фото, пароль, тема, язык, выход', A, 'Без изменений, но тем же экраном, что у ученика'),
+        mv('Уведомления и мессенджеры → Уведомления на устройствах', A, 'Это настройка моего телефона, а не портала'),
+        mv('Уведомления и мессенджеры → Что присылать, тихие часы', A, 'Личный выбор; у ученика то же самое'),
+        mv('Уведомления и мессенджеры → свой мессенджер, «Действия учителя в боте»', A, 'Все «куда присылать мне» — в одном списке'),
+        mv('Портал: название, логотип, цвет, схема, контраст', P, 'Схема и контраст свёрнуты в «Тонкую настройку»'),
+        mv('Расписание и календарь: часовой пояс, Google, подписка', L, 'Всё про занятия — в одном месте'),
+        mv('Звонки: встроенные звонки, своя ссылка, Телемост в приложении', L, 'Раздел из одной карточки слит с «Занятиями»'),
+        mv('Оплаты: цена по умолчанию', L, 'Раздел из одного поля; цена — свойство занятия'),
+        mv('Уведомления и мессенджеры → боты, что умеет бот, ученики', M, 'Остались только общие для портала вещи'),
+        mv('Уведомления и мессенджеры → мессенджеры каждого ученика', S, 'В разделе — сводка «5 из 7» и кто не подключился'),
+        mv('Уведомления и мессенджеры → Сообщение ученикам', S, 'Это действие, а не настройка: «Ученики» → «Написать всем»'),
+        mv('ИИ-помощник: модель, расход, последние запросы, библиотека, системные промты', I, 'Системные промты свёрнуты — «для опытных»'),
+        mv('Данные: копии, Google Диск, восстановление, сброс', D, 'Опасные действия собраны в отдельную карточку')
+      ],
+      rules: [
+        { icon: 'cloud_done', title: 'Сохраняется сразу', text: 'Переключатели, списки и поля сохраняются при изменении — без кнопки и вопроса «Отменить изменения?». Короткое «Сохранено» внизу.' },
+        { icon: 'visibility', title: 'Кроме оформления портала', text: 'Цвет и логотип видят все ученики, поэтому сначала предпросмотр в светлой и тёмной теме, затем «Сохранить» под выбором цвета.' },
+        { icon: 'monitor_heart', title: 'Состояние в списке', text: 'Под названием раздела — его состояние: «Telegram работает», «Копия сегодня в 03:00», число сбоев. Не нужно открывать, чтобы проверить.' },
+        { icon: 'unfold_less', title: 'Редкое свёрнуто', text: 'Схема и контраст, системные промты, «Что умеет бот», полный список копий открываются по нажатию.' },
+        { icon: 'devices', title: 'Один аккаунт на двоих', text: 'Учитель и ученик видят одни и те же блоки: Профиль, Вход, Уведомления, Оформление. У учителя на одну строку больше.' },
+        { icon: 'view_column', title: 'Широкий экран без пустот', text: 'Карточки делят ширину поровну: сетка auto-fit от 360 px, карточка растягивается на свою колонку. В аккаунте «Куда присылать» и «Что присылать» — отдельные карточки, поэтому три колонки одной высоты.' },
+        { icon: 'smartphone', title: 'Телефон — список и экран', text: 'Сверху карточка «Мой аккаунт», ниже разделы портала. Раздел открывается отдельным экраном со стрелкой «Назад».' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

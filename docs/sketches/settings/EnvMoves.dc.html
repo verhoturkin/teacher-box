@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Что ушло из .env</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+.page{width:1440px;height:1400px;box-sizing:border-box;font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;padding:24px;display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:start}
+.pane{background:#FBF8FF;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:12px;min-width:0}
+h2{margin:0;font-size:22px;font-weight:500}
+p{margin:0;font-size:14px;line-height:1.5;color:#45464F}
+table{border-collapse:collapse;font-size:13px;width:100%}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid #E3E1E9;vertical-align:top;line-height:1.4}
+th{font-size:12px;color:#45464F;font-weight:600}
+code{font:12px ui-monospace,Consolas,monospace;color:#2B4190}
+.tag{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap}
+.t-ok{background:#C8F0CF;color:#0B3A1A}.t-pri{background:#DCE1FF;color:#001550}.t-wait{background:#E3E1E9;color:#1B1B21}.t-ai{background:#FFD7F3;color:#390035}
+.side{display:flex;flex-direction:column;gap:24px}
+</style>
+</helmet>
+<div class="page">
+  <section class="pane" aria-label="Настройки учителя">
+    <h2>Учитель — только в портале</h2>
+    <p>Из .env читаются один раз — при первом запуске новой версии, чтобы перенести старое значение. Дальше переменная не действует.</p>
+    <table>
+      <tr><th>Было в .env</th><th>Где теперь</th><th>Мастер</th></tr>
+      <sc-for list="{{teacher}}" as="r" hint-placeholder-count="14">
+        <tr><td><code>{{r.env}}</code></td><td>{{r.where}}</td><td><span class="tag {{r.cls}}">{{r.step}}</span></td></tr>
+      </sc-for>
+    </table>
+  </section>
+
+  <div class="side">
+    <section class="pane" aria-label="Настройки администратора">
+      <h2>Администратор — в портале, сразу</h2>
+      <p>Можно оставить в .env — тогда поле в портале заблокировано.</p>
+      <table>
+        <tr><th>Переменные</th><th>Раздел</th></tr>
+        <sc-for list="{{admin}}" as="r" hint-placeholder-count="5">
+          <tr><td><code>{{r.env}}</code></td><td>{{r.where}}</td></tr>
+        </sc-for>
+      </table>
+    </section>
+
+    <section class="pane" aria-label="Только в .env">
+      <h2>Остаются только в .env</h2>
+      <table>
+        <tr><th>Переменные</th><th>Почему</th></tr>
+        <sc-for list="{{env}}" as="r" hint-placeholder-count="5">
+          <tr><td><code>{{r.env}}</code></td><td>{{r.why}}</td></tr>
+        </sc-for>
+      </table>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const t = (env, where, step) => ({ env, where, step, cls: step === '—' ? 't-wait' : 't-pri' });
+    const a = (env, where) => ({ env, where });
+    const e = (env, why) => ({ env, why });
+    return {
+      teacher: [
+        t('TIMEZONE', 'Занятия › Время и цена', 'Время и оплата'),
+        t('BILLING_CURRENCY', 'Занятия › Время и цена (до первой оплаты)', 'Время и оплата'),
+        t('BILLING_DEFAULT_LESSON_DURATION + SCHEDULE_DEFAULT_DURATION', 'Занятия › Время и цена — одна длительность', 'Время и оплата'),
+        t('SCHEDULE_LATE_CANCELLATION', 'Занятия › Правила', 'Правила'),
+        t('SCHEDULE_REMINDERS', 'Занятия › Правила', 'Правила'),
+        t('SCHEDULE_HORIZON', 'Занятия › Правила', 'Правила'),
+        t('HOMEWORK_DUE_SOON_WINDOW', 'Занятия › Правила', 'Правила'),
+        t('PUBLIC_URL', 'Портал › Адрес (по умолчанию из домена)', 'Вы и портал'),
+        t('IDENTITY_TEACHER_NAME', 'Мой аккаунт › Профиль', 'Вы и портал'),
+        t('NOTIFICATIONS_TELEGRAM_BOT_TOKEN, VK_TOKEN, VK_GROUP_ID, MAX_TOKEN', 'Мессенджеры', '—'),
+        t('SCHEDULE_GOOGLE_CLIENT_ID / SECRET', 'Занятия › Google Календарь', '—'),
+        t('BACKUP_GOOGLE_CLIENT_ID / SECRET', 'Данные › Google Диск', '—'),
+        t('AI_PROVIDER, API_KEY, MODEL, BASE_URL', 'ИИ-помощник › Подключения', '—'),
+        t('AI_EFFORT, FALLBACKS, MAX_TOKENS, TIMEOUT', 'ИИ-помощник › модель › Дополнительно', '—'),
+        t('AI_MONTHLY_TOKEN_LIMIT', 'ИИ-помощник › Расход', '—')
+      ],
+      admin: [
+        a('HOMEWORK_MAX_FILE_SIZE, MAX_FILES_PER_UPLOAD', 'Файлы в заданиях'),
+        a('*_PROXY, TELEGRAM_API_URL', 'Сеть и прокси'),
+        a('IDENTITY_*_TTL, MAX_FAILED_LOGINS, LOCK_DURATION, AUTH_RATE_LIMIT_*', 'Вход и сессии'),
+        a('BACKUP_CRON, BACKUP_KEEP_DAYS, BOARDS_BACKUP_*', 'Резервные копии'),
+        a('MAX_ATTEMPTS, LINK_CODE_TTL, WEBPUSH_SUBJECT', 'Уведомления')
+      ],
+      env: [
+        e('DOMAIN, COMPOSE_PROFILES, HTTP_PORT, VERSION', 'Читает Docker до запуска'),
+        e('MEMORY_LIMIT, CPU_LIMIT, JAVA_TOOL_OPTIONS', 'Лимиты контейнера'),
+        e('LIVEKIT_*, MEETINGS_LIVEKIT_*', 'Общие с контейнером LiveKit'),
+        e('IDENTITY_TEACHER_LOGIN / PASSWORD / RESET_PASSWORD, ADMIN_*', 'Вход, когда в портал не попасть'),
+        e('SECURITY_JWT_SECRET, BACKUP_RESTART, LOGGING_*', 'Нужны до старта')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
