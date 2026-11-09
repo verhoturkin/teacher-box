@@ -81,7 +81,9 @@ file of the assignment's materials — name, type, size, content; another assign
 ## Data
 
 `assignments`, `tasks`, `submissions`, `attachments`, `assignment_textbooks` (assignment, textbook, pages),
-`assignment_videos` (position, url, provider, video ID, start, title, transcript, shown).
+`assignment_videos` (position, url, provider, video ID, start, title, transcript, shown), `settings`
+(one row, ADR-0056: `due_soon_window` — filled once from `.env` by `HomeworkSettingsImport`, read
+from 363.4).
 
 Quizzes ([ADR-0052](../adr/0052-auto-checked-quizzes.md), `domain/quiz/`): `assignment_questions` (position, type,
 text, `options` and `answer` as JSON by type, points, explanation), `quiz_attempts` (task, start, submit, score),

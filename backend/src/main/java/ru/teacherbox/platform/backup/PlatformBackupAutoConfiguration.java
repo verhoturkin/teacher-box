@@ -23,6 +23,7 @@ import ru.teacherbox.platform.core.PlatformCoreAutoConfiguration;
 import ru.teacherbox.platform.core.PlatformProperties;
 import ru.teacherbox.platform.backup.drive.CloudBackupService;
 import ru.teacherbox.platform.backup.drive.DriveApi;
+import ru.teacherbox.platform.backup.drive.DriveClientImport;
 import ru.teacherbox.platform.backup.drive.DriveConnectionStore;
 import ru.teacherbox.platform.backup.drive.DriveIntegrationCheck;
 import ru.teacherbox.shared.backup.BackupExclusions;
@@ -93,11 +94,19 @@ public class PlatformBackupAutoConfiguration {
     }
 
     @Bean
-    CloudBackupService cloudBackupService(DriveApi api, PlatformProperties platform, JsonMapper json,
-            BackupService backups, BackupProperties properties, Portal portal, Clock clock) {
-        return new CloudBackupService(api,
-                new DriveConnectionStore(platform.dataDir().resolve("google-drive.json"), json), backups, properties,
-                portal, clock, Executors.newSingleThreadExecutor(Thread.ofVirtual().name("google-drive").factory()));
+    DriveConnectionStore driveConnectionStore(PlatformProperties platform, JsonMapper json) {
+        return new DriveConnectionStore(platform.dataDir().resolve("google-drive.json"), json);
+    }
+
+    @Bean
+    DriveClientImport driveClientImport(DriveConnectionStore store) {
+        return new DriveClientImport(store);
+    }
+
+    @Bean
+    CloudBackupService cloudBackupService(DriveApi api, DriveConnectionStore store, BackupService backups,
+            BackupProperties properties, Portal portal, Clock clock) {
+        return new CloudBackupService(api, store, backups, properties, portal, clock, Executors.newSingleThreadExecutor(Thread.ofVirtual().name("google-drive").factory()));
     }
 
     @Bean

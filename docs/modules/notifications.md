@@ -90,7 +90,8 @@ No `api` package: nothing depends on `notifications`.
 
 `inbox`, `deliveries`, `preferences`, `channel_settings`, `channel_links`, `link_codes`, `broadcasts`,
 `chat_dialogs`, `chat_buttons`, `chat_settings`, `webpush_keys` (the VAPID pair, one row, 0.38.0),
-`push_subscriptions` (the devices that get web push, 0.38.0).
+`push_subscriptions` (the devices that get web push, 0.38.0). `ChannelSettingsImport` copies the
+`.env` bot tokens into `channel_settings` once (ADR-0056), unless the teacher entered that bot.
 `NotificationsHousekeeping` cleans old records.
 
 ## REST

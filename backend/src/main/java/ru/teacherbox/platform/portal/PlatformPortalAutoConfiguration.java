@@ -29,6 +29,11 @@ public class PlatformPortalAutoConfiguration {
     }
 
     @Bean
+    PortalSettingsImport portalSettingsImport(JdbcClient jdbc, Clock clock) {
+        return new PortalSettingsImport(jdbc, clock);
+    }
+
+    @Bean
     PortalService portalService(JdbcClient jdbc, PortalProperties properties, FileStorage files, Clock clock) {
         return new PortalService(new PortalSettingsRepository(jdbc), properties, files, clock);
     }

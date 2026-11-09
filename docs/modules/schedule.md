@@ -68,7 +68,9 @@ Repeat events aggregate notifications; generation itself does not notify per occ
 ## Data
 
 `repeat_rules`, `repeat_exceptions`, `lessons`, `lesson_participants`, `change_requests`, `lesson_notes`, `reminders_sent`, `feeds`,
-`off_times`, `google_connection`, `google_events`, `google_oauth_states`.
+`off_times`, `google_connection`, `google_events`, `google_oauth_states`, `settings` (one row,
+ADR-0056: default duration in minutes, late cancellation, reminders, horizon — ISO-8601, empty =
+default; filled once from `.env` by `ScheduleSettingsImport`, read from 363.4).
 
 Lesson summary (0.37.0): `lessons.summary` (4000, Markdown, shown to the participants), `next_plan` (1000) and
 `summary_updated_at`; `lesson_notes (lesson_id, student_id, note, updated_at)` — the teacher's private note per

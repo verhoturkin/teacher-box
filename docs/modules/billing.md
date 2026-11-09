@@ -33,7 +33,8 @@ Events only: `LessonRecorded`, `LessonCancelled`, `PaymentRecorded`, `PaymentVoi
 ## Data
 
 `student_accounts`, `lessons`, `payments` (+ receipt), `pending_receipts`, `group_prices`, `settings` (default
-lesson price).
+lesson price; `currency` — filled once from `.env` by `BillingSettingsImport`, ADR-0056, read from
+363.4).
 
 ## REST and bot
 

@@ -97,13 +97,26 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   `ADMIN` with a restart (values saved in the file keep applying) until 363.8 makes them read-only
   `ENV_ONLY`; the admin page still shows its «restart by hand» step after a live-only save until
   363.8._
-- [ ] **363.2 B** One-time import: `platform.settings.EnvImport` runs before the modules start
+- [x] **363.2 B** One-time import: `platform.settings.EnvImport` runs before the modules start
   reading; for each teacher setting with no stored row it copies the value from the environment or
   `SettingsFile` through the module's `api` facade (`ScheduleSettingsFacade`,
   `BillingSettingsFacade`, `HomeworkSettingsFacade`, `ChannelSettings`, `PortalService`,
   `AiProviders`), logs the name only, and adds a diagnostics warning «переменная больше не читается
   — удалите её из .env». Test per module: an upgraded instance keeps its values; a second start
   ignores a changed variable.
+  _Done: `platform` knows no business module, so instead of facades the modules provide the SPI
+  `shared.settings.TeacherSettingsImport` (values as `shared.settings.OldSettings`); `EnvImport`
+  runs while the beans are created and marks the variables in
+  `<data>/config/imported-settings.properties` (outside the database: a reset or a restore does
+  not import again). Minimal storage for the later substeps, written only by the import so far:
+  `platform.portal_settings.time_zone` (363.3 reads it), `billing.settings.currency`,
+  `schedule.settings` (duration, late cancellation, reminders, horizon) and `homework.settings`
+  (due-soon window) — 363.4 adds the readers, `PUT` and validation on these tables instead of new
+  `schedule_settings` / `homework_settings` ones; the Google clients and bot tokens go to the
+  existing rows. The warning is a log line on every start (in the diagnostics archive) beside the
+  admin `moved` list of 363.1. Moved: the AI variables → 364.1 (its provider tables take them
+  through the same SPI; until then they are not marked), `IDENTITY_TEACHER_NAME` → 363.5 (the
+  name is in the account since its creation; nothing to import)._
 - [ ] **363.3 B** Time zone in the database: `InstanceTimeZone` backed by `platform.portal`
   (`portal_settings.time_zone`, migration), read per call; the seven classes that keep `ZoneId zone`
   in a field (`HomeworkSummaryService`, `NotificationService`, `LessonEvents`,
@@ -158,7 +171,9 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   url, proxy, position, version) and `models` (id, provider id, model id 1–120, label 1–60, effort,
   fallbacks, max tokens, timeout, position), `ai_settings` (default model id, monthly token limit);
   `ai.requests` gets `model_id`. `LlmClient` becomes `LlmClients.forModel(modelId)` — a client per
-  provider, cached, dropped on change. In `AiDataReset` and the backup.
+  provider, cached, dropped on change. In `AiDataReset` and the backup. The `AI_*` variables except
+  the proxy become a provider and its model once through `shared.settings.TeacherSettingsImport`
+  (moved from 363.2; `EnvImport` has not marked them).
 - [ ] **364.2 B** REST `/api/teacher/ai/providers` (list, create with a check request, `PUT`,
   `DELETE` — refused while it holds the default model) and `/models` under a provider (add, change,
   remove, reorder, `GET …/available` — the provider's own model list where its API has one, else

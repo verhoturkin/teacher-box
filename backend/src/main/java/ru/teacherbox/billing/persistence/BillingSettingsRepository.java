@@ -35,4 +35,23 @@ public class BillingSettingsRepository {
                 .param("now", now)
                 .update();
     }
+
+    /** The currency code; empty until it is set. */
+    public Optional<String> currency() {
+        return jdbc.sql("select currency from billing.settings where id = 1")
+                .query((rs, row) -> Optional.ofNullable(rs.getString("currency")))
+                .single();
+    }
+
+    /** Sets the currency unless it is set already; {@code false} if it was. */
+    public boolean saveCurrencyIfMissing(String code, Instant now) {
+        return jdbc.sql("""
+                update billing.settings
+                set currency = :code, updated_at = :now, version = version + 1
+                where id = 1 and currency is null
+                """)
+                .param("code", code)
+                .param("now", now)
+                .update() == 1;
+    }
 }

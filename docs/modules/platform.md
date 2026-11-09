@@ -63,6 +63,21 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   `backups`…): the page folds by section (`tb-fold-card`, open ones in `?open=`). Sections, titles,
   hints and value problems come in the language of the request (`Accept-Language`, `Wording` pairs
   `ru`/`en`, `SettingKind.problem(…, Language)`; 0.11.1, ADR-0036).
+  `EnvImport` (ADR-0056) takes the teacher's old values once: while the beans are created (after
+  the migrations, before any `SmartInitializingSingleton`, runner, job or request) it hands each
+  SPI bean `shared.settings.TeacherSettingsImport` the values of its variables still set
+  (`SettingsFile` wins over `.env`; an empty value is passed on — `REMINDERS=` means none) as
+  `OldSettings`; the module stores each one unless it keeps its own and skips invalid ones. The
+  variables are written to `<data>/config/imported-settings.properties` and never read again — a
+  new instance marks them on its first start; a variable no bean takes yet is left for the version
+  that adds the bean; a failed bean is retried next start. Every start logs a warning (name only)
+  for each teacher's variable still set: «no longer read — remove it from .env». Takers so far:
+  `platform` (`PortalSettingsImport` → `portal_settings.address`, `.time_zone`;
+  `DriveClientImport` → the Drive client), `billing` (currency → `billing.settings.currency`),
+  `schedule` (lesson rules → `schedule.settings`, the schedule's duration over billing's; Google
+  client), `homework` (due-soon window → `homework.settings`), `notifications` (bot tokens →
+  `channel_settings`, no bot name until it starts). The AI variables wait for 364.1, the teacher's
+  name is in the account since its creation.
 - `admin/` — logs search and temporary log levels, status (version, uptime, memory, disk, DB, health),
   incomplete Modulith events with resubmit (completed ones are deleted nightly after 7 days,
   `EventPublications.purgeCompleted`), integration checks (`IntegrationCheck` beans; names and answers in
