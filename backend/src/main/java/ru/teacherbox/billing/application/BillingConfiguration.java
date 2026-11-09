@@ -1,6 +1,5 @@
 package ru.teacherbox.billing.application;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.flyway.autoconfigure.FlywayMigrationInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,7 +8,6 @@ import ru.teacherbox.shared.persistence.MigrationConnection;
 import ru.teacherbox.shared.persistence.ModuleMigrations;
 
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(BillingProperties.class)
 class BillingConfiguration {
 
     @Bean
@@ -18,7 +16,7 @@ class BillingConfiguration {
     }
 
     @Bean
-    BillingCurrency billingCurrency(BillingProperties properties) {
-        return new BillingCurrency(properties.currency());
+    BillingCurrency billingCurrency(BillingCurrencySetting setting) {
+        return new BillingCurrency(setting::current);
     }
 }

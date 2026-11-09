@@ -31,7 +31,6 @@ export function overview(students: StudentBalance[]): BillingOverview {
   return {
     currency: 'RUB',
     defaultLessonPrice: 150_000,
-    defaultLessonDuration: 60,
     totalDebt: students.filter((s) => s.balance < 0).reduce((sum, s) => sum - s.balance, 0),
     totalPrepaid: students.filter((s) => s.balance > 0).reduce((sum, s) => sum + s.balance, 0),
     students,

@@ -58,7 +58,6 @@ export interface StudentBalance extends BillingStudent {
 export interface BillingOverview {
   readonly currency: string;
   readonly defaultLessonPrice: number;
-  readonly defaultLessonDuration: number;
   readonly totalDebt: number;
   readonly totalPrepaid: number;
   readonly students: StudentBalance[];

@@ -63,17 +63,17 @@ public class ScheduleQueries {
     private final RepeatRuleRepository series;
     private final ChangeRequestRepository requests;
     private final ScheduleDirectory directory;
-    private final ScheduleProperties properties;
+    private final LessonRulesService rules;
     private final InstanceTimeZone timeZone;
     private final Clock clock;
 
     public ScheduleQueries(LessonRepository lessons, RepeatRuleRepository series, ChangeRequestRepository requests,
-            ScheduleDirectory directory, ScheduleProperties properties, InstanceTimeZone timeZone, Clock clock) {
+            ScheduleDirectory directory, LessonRulesService rules, InstanceTimeZone timeZone, Clock clock) {
         this.lessons = lessons;
         this.series = series;
         this.requests = requests;
         this.directory = directory;
-        this.properties = properties;
+        this.rules = rules;
         this.timeZone = timeZone;
         this.clock = clock;
     }
@@ -287,9 +287,10 @@ public class ScheduleQueries {
     }
 
     public ScheduleSettings settings() {
-        return new ScheduleSettings(zone().getId(), properties.defaultDuration(),
-                properties.lateCancellation().toMinutes(),
-                properties.reminders().stream().map(Duration::toMinutes).toList());
+        LessonRules current = rules.current();
+        return new ScheduleSettings(zone().getId(), current.defaultDurationMinutes(),
+                current.lateCancellation().toMinutes(),
+                current.reminders().stream().map(Duration::toMinutes).toList());
     }
 
     private List<LessonView> views(List<Lesson> found) {
@@ -297,7 +298,7 @@ public class ScheduleQueries {
         Map<UUID, List<ChangeRequest>> pending = requests.findPendingForLessons(found.stream().map(Lesson::id).toList())
                 .stream()
                 .collect(Collectors.groupingBy(ChangeRequest::lessonId));
-        Duration late = properties.lateCancellation();
+        Duration late = rules.current().lateCancellation();
         return found.stream()
                 .map(lesson -> LessonView.of(lesson, names, pending.getOrDefault(lesson.id(), List.of()).stream()
                         .map(request -> RequestView.of(request, lesson, names, late))
@@ -317,9 +318,9 @@ public class ScheduleQueries {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         ScheduleNames names = directory.names(students, groups);
+        Duration late = rules.current().lateCancellation();
         return found.stream()
-                .map(request -> RequestView.of(request, byId.get(request.lessonId()), names,
-                        properties.lateCancellation()))
+                .map(request -> RequestView.of(request, byId.get(request.lessonId()), names, late))
                 .toList();
     }
 

@@ -13,7 +13,9 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
   teacher changes it in the portal, ADR-0056). The UI gets the zone from
   `GET /api/me/schedule/settings`.
 - **Repetition:** Once or every 1–4 weeks, configured in the lesson form, with optional inclusive end date.
-  `OccurrenceGeneration` extends the 84-day rolling horizon (`TEACHERBOX_SCHEDULE_HORIZON`) nightly.
+  `OccurrenceGeneration` extends the rolling horizon (the teacher's lesson rules, 12 weeks by
+  default) nightly; a shorter horizon removes no lessons, a longer one fills series up on the next
+  run.
   Only-this edits preserve the immutable original occurrence date and mark an exception. This-and-following
   uses that original date as its boundary, ends the old rule and replaces untouched future occurrences.
   Completed, charged, cancelled and individually edited lessons remain. Once keeps the selected lesson
@@ -37,14 +39,21 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
 - **Student requests:** move (with proposed time) or cancel; the teacher approves or declines in one dialog:
   a connected toggle «Согласовать | Отклонить» (default approve) and one confirm button that follows it (primary / red); the new time of a move and
   «Засчитать как пропуск» show only for an approval, a busy time asks «Всё равно перенести». Cancelling later
-  than `TEACHERBOX_SCHEDULE_LATE_CANCELLATION` (24 h) is marked late — the teacher decides if it counts as missed.
+  than the late cancellation window (lesson rules, 24 h by default) is marked late — the teacher
+  decides if it counts as missed.
   In a group lesson an early «Не приду» is accepted at once (excused); a move moves it for everyone. A teacher
   edit of a lesson with an open request makes it `OUTDATED`.
 - **Availability:** the student sees the teacher's busy time without names (lessons, Google busy, off-time)
   and cannot ask to move onto it; the teacher may override. Off-time (`off_times`): one-off ranges or weekly
   windows, periods computed on the fly.
-- **Reminders:** every 5 min `LessonReminders` publishes `LessonStartingSoon` for intervals
-  `TEACHERBOX_SCHEDULE_REMINDERS` (`24h,1h`), only the nearest if several are due; reset on reschedule.
+- **Reminders:** every 5 min `LessonReminders` publishes `LessonStartingSoon` for the reminder
+  intervals of the lesson rules (24 h and 1 h by default), only the nearest if several are due;
+  reset on reschedule.
+- **Lesson rules** (ADR-0056, `LessonRulesService`, read per call): default duration, late
+  cancellation, reminders, horizon. `GET/PUT /api/teacher/schedule/settings`
+  (`defaultDurationMinutes` 15–480, `lateCancellationMinutes` 0 – 7 d, `reminderMinutes` ≤ 3 of
+  15 min – 7 d, `horizonWeeks` 4–26; otherwise 422 `schedule.settings-*-invalid`). Values imported
+  from the old variables keep the old limits until the teacher changes them.
 - **ICS feed:** `/api/public/schedule/<token>.ics` (256-bit token, hash stored, shown once): the teacher's feed
   has all lessons with names, a student's — own lessons (incl. group ones, group name instead of names).
   Written in the language of the feed's owner (0.11.1, ADR-0036: `CalendarTexts`); Google events — in the
@@ -72,7 +81,7 @@ Repeat events aggregate notifications; generation itself does not notify per occ
 `repeat_rules`, `repeat_exceptions`, `lessons`, `lesson_participants`, `change_requests`, `lesson_notes`, `reminders_sent`, `feeds`,
 `off_times`, `google_connection`, `google_events`, `google_oauth_states`, `settings` (one row,
 ADR-0056: default duration in minutes, late cancellation, reminders, horizon — ISO-8601, empty =
-default; filled once from `.env` by `ScheduleSettingsImport`, read from 363.4).
+default; filled once from `.env` by `ScheduleSettingsImport`, read by `LessonRulesService`).
 
 Lesson summary (0.37.0): `lessons.summary` (4000, Markdown, shown to the participants), `next_plan` (1000) and
 `summary_updated_at`; `lesson_notes (lesson_id, student_id, note, updated_at)` — the teacher's private note per
@@ -90,7 +99,7 @@ Calendar lists, ICS and Google carry none of these fields.
 
 `/api/teacher/schedule/**` (lessons, requests, unmarked, summary — besides today's counters it has
 `weekConducted` and `weekMissed`, lessons marked as held / missed in the current Monday–Sunday week of the instance
-time zone, for the Today page (239.1); `off-times`, `google`;
+time zone, for the Today page (239.1); `off-times`, `google`, `settings` (lesson rules);
 `GET lessons?from&to` takes `studentId` — the student's lessons, group lessons included — or `groupId` for the
 student card (237.1); both at once → `schedule.filter-invalid`, an unknown id → an empty list),
 `/api/me/schedule/**` (lessons, requests, busy, feed, settings, summary), public ICS feed and Google callback.

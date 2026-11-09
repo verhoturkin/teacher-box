@@ -46,7 +46,6 @@ class ReportsIntegrationTests {
                 .bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$.currency").isEqualTo("RUB");
                     assertThat(json).extractingPath("$.defaultLessonPrice").isEqualTo(150_000);
-                    assertThat(json).extractingPath("$.defaultLessonDuration").isEqualTo(60);
                     assertThat(json).extractingPath(row(debtor, "balance")).asArray().containsExactly(-150_000);
                     assertThat(json).extractingPath(row(debtor, "lastLessonDate")).asArray()
                             .containsExactly("2026-09-01");

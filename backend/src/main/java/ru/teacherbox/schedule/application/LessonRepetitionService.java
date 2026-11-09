@@ -45,20 +45,20 @@ public class LessonRepetitionService {
     private final ScheduleDirectory directory;
     private final LessonRepository lessons;
     private final RepeatRuleRepository rules;
-    private final ScheduleProperties properties;
+    private final LessonRulesService lessonRules;
     private final ApplicationEventPublisher events;
     private final Clock clock;
     private final InstanceTimeZone timeZone;
 
     public LessonRepetitionService(ScheduleService schedule, ScheduleQueries queries, LessonRepository lessons,
-            RepeatRuleRepository rules, ScheduleProperties properties, ApplicationEventPublisher events,
+            RepeatRuleRepository rules, LessonRulesService lessonRules, ApplicationEventPublisher events,
             Clock clock, InstanceTimeZone timeZone, ScheduleDirectory directory) {
         this.schedule = schedule;
         this.directory = directory;
         this.queries = queries;
         this.lessons = lessons;
+        this.lessonRules = lessonRules;
         this.rules = rules;
-        this.properties = properties;
         this.events = events;
         this.clock = clock;
         this.timeZone = timeZone;
@@ -163,7 +163,7 @@ public class LessonRepetitionService {
         for (Lesson preserved : protectedLessons) lessons.suppress(created.id(), occurrence(preserved));
         LocalDate today = LocalDate.ofInstant(clock.instant(), zone());
         LocalDate from = date.isBefore(today) ? today : date;
-        LocalDate horizon = today.plusDays(properties.horizonDays());
+        LocalDate horizon = today.plusDays(lessonRules.current().horizonDays());
         for (LocalDate occurrence : created.datesBetween(from, horizon)) {
             if (lessons.existsForSeriesDate(created.id(), occurrence)) continue;
             var starts = created.startOn(occurrence, zone());

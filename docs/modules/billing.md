@@ -6,7 +6,13 @@ schedule), [0011](../adr/0011-groups-and-group-lessons.md) (group prices), [0014
 
 ## Rules
 
-- Money — `long` minor units + instance currency `TEACHERBOX_BILLING_CURRENCY`; balance = payments − charges.
+- Money — `long` minor units + instance currency (`BillingCurrencySetting`, RUB by default,
+  ADR-0056); balance = payments − charges. `GET/PUT /api/teacher/billing/currency`
+  (`{currency, locked}`): an ISO 4217 code with minor units (else 422 `billing.currency-invalid`);
+  refused with 409 `billing.currency-locked` once a charge or a payment exists.
+- A lesson recorded by hand without a duration takes the length of the student's last lesson (the
+  schedule's lessons bring theirs in `LessonCompleted`), else 60 minutes; billing has no duration
+  setting of its own.
 - **Charges come from `schedule`:** `LessonCompleted` (conducted / missed-and-paid, per participant with its
   `completionId`) → a charge at the student's price, or the group's price for a group lesson; the
   `completionId` is remembered so redelivery does not double-charge. `LessonCompletionRevoked` cancels the charge
@@ -33,8 +39,8 @@ Events only: `LessonRecorded`, `LessonCancelled`, `PaymentRecorded`, `PaymentVoi
 ## Data
 
 `student_accounts`, `lessons`, `payments` (+ receipt), `pending_receipts`, `group_prices`, `settings` (default
-lesson price; `currency` — filled once from `.env` by `BillingSettingsImport`, ADR-0056, read from
-363.4).
+lesson price; `currency` — filled once from `.env` by `BillingSettingsImport`, ADR-0056, kept in
+memory by `BillingCurrencySetting` between changes, forgotten by the full reset).
 
 ## REST and bot
 

@@ -70,13 +70,13 @@ public class ScheduleService {
     private final ScheduleQueries queries;
     private final LessonEvents lessonEvents;
     private final ApplicationEventPublisher events;
-    private final ScheduleProperties properties;
+    private final LessonRulesService rules;
     private final InstanceTimeZone timeZone;
     private final Clock clock;
 
     public ScheduleService(LessonRepository lessons, RepeatRuleRepository series, ChangeRequestRepository requests,
             ScheduleDirectory directory, ScheduleQueries queries, LessonEvents lessonEvents,
-            ApplicationEventPublisher events, ScheduleProperties properties, InstanceTimeZone timeZone, Clock clock) {
+            ApplicationEventPublisher events, LessonRulesService rules, InstanceTimeZone timeZone, Clock clock) {
         this.lessons = lessons;
         this.series = series;
         this.requests = requests;
@@ -84,7 +84,7 @@ public class ScheduleService {
         this.queries = queries;
         this.lessonEvents = lessonEvents;
         this.events = events;
-        this.properties = properties;
+        this.rules = rules;
         this.timeZone = timeZone;
         this.clock = clock;
     }
@@ -95,7 +95,7 @@ public class ScheduleService {
     }
 
     LessonView plan(PlanLesson command, boolean notify) {
-        int duration = command.durationMinutes() == null ? properties.defaultDuration() : command.durationMinutes();
+        int duration = command.durationMinutes() == null ? rules.current().defaultDurationMinutes() : command.durationMinutes();
         Instant now = clock.instant();
         UUID groupId = owner(command.studentId(), command.groupId());
         Lesson lesson;
@@ -257,7 +257,7 @@ public class ScheduleService {
     public int generateOccurrences() {
         Instant now = clock.instant();
         LocalDate today = LocalDate.ofInstant(now, zone());
-        LocalDate until = today.plusDays(properties.horizonDays());
+        LocalDate until = today.plusDays(rules.current().horizonDays());
         int created = 0;
         for (RepeatRule active : series.findActive(today)) {
             if (!active.generatedUntil().isBefore(until) || !active.continuesAfter(active.generatedUntil())) {

@@ -48,13 +48,13 @@ public class ChangeRequestService {
     private final ScheduleQueries queries;
     private final LessonEvents lessonEvents;
     private final ApplicationEventPublisher events;
-    private final ScheduleProperties properties;
+    private final LessonRulesService rules;
     private final TeacherAvailability availability;
     private final Clock clock;
 
     public ChangeRequestService(ChangeRequestRepository requests, LessonRepository lessons,
             ScheduleDirectory directory, ScheduleQueries queries, LessonEvents lessonEvents,
-            ApplicationEventPublisher events, ScheduleProperties properties, TeacherAvailability availability,
+            ApplicationEventPublisher events, LessonRulesService rules, TeacherAvailability availability,
             Clock clock) {
         this.requests = requests;
         this.lessons = lessons;
@@ -62,7 +62,7 @@ public class ChangeRequestService {
         this.queries = queries;
         this.lessonEvents = lessonEvents;
         this.events = events;
-        this.properties = properties;
+        this.rules = rules;
         this.availability = availability;
         this.clock = clock;
     }
@@ -88,7 +88,7 @@ public class ChangeRequestService {
         if (proposed != null) {
             availability.requireFree(proposed, proposed.plus(Duration.ofMinutes(lesson.durationMinutes())), lesson.id());
         }
-        boolean late = ScheduleViews.isLate(kind, lesson.startsAt(), now, properties.lateCancellation());
+        boolean late = ScheduleViews.isLate(kind, lesson.startsAt(), now, rules.current().lateCancellation());
         boolean accepted = lesson.isGroup() && kind == ChangeKind.CANCEL && !late;
         if (accepted) {
             lesson.excuse(studentId, null, now);
@@ -195,7 +195,7 @@ public class ChangeRequestService {
     private RequestView view(ChangeRequest request, Lesson lesson) {
         ScheduleNames names = directory.names(List.of(request.studentId()),
                 lesson.groupId() == null ? List.of() : List.of(lesson.groupId()));
-        return RequestView.of(request, lesson, names, properties.lateCancellation());
+        return RequestView.of(request, lesson, names, rules.current().lateCancellation());
     }
 
     private ChangeRequest findRequest(UUID requestId) {

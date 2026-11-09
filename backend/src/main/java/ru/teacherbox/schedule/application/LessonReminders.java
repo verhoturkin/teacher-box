@@ -23,15 +23,15 @@ public class LessonReminders {
     private final LessonRepository lessons;
     private final ScheduleDirectory directory;
     private final ApplicationEventPublisher events;
-    private final ScheduleProperties properties;
+    private final LessonRulesService rules;
     private final Clock clock;
 
     public LessonReminders(LessonRepository lessons, ScheduleDirectory directory, ApplicationEventPublisher events,
-            ScheduleProperties properties, Clock clock) {
+            LessonRulesService rules, Clock clock) {
         this.lessons = lessons;
         this.directory = directory;
         this.events = events;
-        this.properties = properties;
+        this.rules = rules;
         this.clock = clock;
     }
 
@@ -39,7 +39,7 @@ public class LessonReminders {
     @Scheduled(fixedDelayString = "${teacherbox.schedule.reminder-interval:PT5M}", initialDelayString = "PT1M")
     @Transactional
     public int sendReminders() {
-        List<Duration> advances = properties.reminders();
+        List<Duration> advances = rules.current().reminders();
         if (advances.isEmpty()) {
             return 0;
         }

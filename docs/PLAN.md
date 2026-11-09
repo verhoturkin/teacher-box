@@ -133,7 +133,7 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   schedules them, reading the zone and the cron per computed run and rescheduling on
   `SettingsChanged` (`TEACHERBOX_TIMEZONE` or the job's cron variable). No `GET` of its own: the
   zone is read from `GET /api/me/schedule/settings`._
-- [ ] **363.4 B** Lesson rules in `schedule`: table `schedule_settings` (default duration, late
+- [x] **363.4 B** Lesson rules in `schedule`: table `schedule_settings` (default duration, late
   cancellation, reminders as a list of durations, horizon) replaces `ScheduleProperties` for these
   fields; `GET/PUT /api/teacher/schedule/settings` (`ScheduleQueries.settings`, validation: duration
   15–480 min, reminders ≤ 3 of 15 min – 7 d, horizon 4–26 weeks); a shorter horizon removes no
@@ -141,6 +141,15 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   `BILLING_DEFAULT_LESSON_DURATION` and takes the duration from the lesson events it already gets.
   Currency: `billing_settings.currency`, `PUT` refused (409) once a charge or payment exists.
   Homework: `homework_settings.due_soon_window` (1–72 h), read by `DueSoonReminder` per run.
+  _Done on the tables of 363.2 (`schedule.settings`, `billing.settings.currency`,
+  `homework.settings`), no new migration: `schedule.application.LessonRulesService` (per call; the
+  `ScheduleProperties` rule fields removed, Google stays) and `TeacherLessonRulesController`
+  (minutes and `horizonWeeks`, late cancellation 0 – 7 d — our limit); `BillingProperties` removed,
+  `BillingCurrency` reads `BillingCurrencySetting` (cached, forgotten on reset), `GET/PUT
+  /api/teacher/billing/currency` with `locked`; a hand-recorded lesson without a duration takes the
+  student's last lesson length, else 60, and the overview lost `defaultLessonDuration`;
+  `homework.application.DueSoonWindow`, `GET/PUT /api/teacher/homework/settings`
+  (`dueSoonMinutes`). Imported values outside the new limits are read as they are until changed._
 - [ ] **363.5 B** The rest of the teacher's settings lose their variables: portal address (the
   `TEACHERBOX_DOMAIN` default stays), teacher name, messenger tokens, Google Calendar and Drive
   clients — `fromEnvironment` and «Эта переменная главнее» go away from `ChannelSettingsService`,

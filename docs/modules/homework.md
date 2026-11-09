@@ -37,8 +37,10 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   track the video does not have — `video.captions-none`; errors
   `video.not-youtube`, `video.captions-none`, `video.captions-failed` (422). Proxy
   `TEACHERBOX_HOMEWORK_YOUTUBE_PROXY`. CSP `frame-src`: `youtube-nocookie.com`, `rutube.ru`, `vkvideo.ru`.
-- Due date; `DueSoonReminder` publishes `HomeworkDueSoon` once per unfinished task within
-  `TEACHERBOX_HOMEWORK_DUE_SOON_WINDOW`.
+- Due date; `DueSoonReminder` publishes `HomeworkDueSoon` once per unfinished task within the
+  teacher's window (`DueSoonWindow`, read per run, 24 h by default, ADR-0056):
+  `GET/PUT /api/teacher/homework/settings` (`dueSoonMinutes` 60–4320, else 422
+  `homework.settings-due-soon-invalid`).
 - Attachments of assignments and submissions — `FileStorage` namespace `homework`, limits
   `TEACHERBOX_HOMEWORK_MAX_FILE_SIZE`, `MAX_FILES_PER_UPLOAD` (`FilePolicy`).
 - Review queue for the teacher; AI drafts are produced by the `ai` module from texts the frontend passes — `homework`
@@ -83,7 +85,7 @@ file of the assignment's materials — name, type, size, content; another assign
 `assignments`, `tasks`, `submissions`, `attachments`, `assignment_textbooks` (assignment, textbook, pages),
 `assignment_videos` (position, url, provider, video ID, start, title, transcript, shown), `settings`
 (one row, ADR-0056: `due_soon_window` — filled once from `.env` by `HomeworkSettingsImport`, read
-from 363.4).
+by `DueSoonWindow`).
 
 Quizzes ([ADR-0052](../adr/0052-auto-checked-quizzes.md), `domain/quiz/`): `assignment_questions` (position, type,
 text, `options` and `answer` as JSON by type, points, explanation), `quiz_attempts` (task, start, submit, score),

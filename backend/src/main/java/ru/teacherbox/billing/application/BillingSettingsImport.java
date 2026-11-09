@@ -18,10 +18,12 @@ public class BillingSettingsImport implements TeacherSettingsImport {
     static final String CURRENCY = "TEACHERBOX_BILLING_CURRENCY";
 
     private final BillingSettingsRepository settings;
+    private final BillingCurrencySetting currency;
     private final Clock clock;
 
-    public BillingSettingsImport(BillingSettingsRepository settings, Clock clock) {
+    public BillingSettingsImport(BillingSettingsRepository settings, BillingCurrencySetting currency, Clock clock) {
         this.settings = settings;
+        this.currency = currency;
         this.clock = clock;
     }
 
@@ -32,9 +34,11 @@ public class BillingSettingsImport implements TeacherSettingsImport {
 
     @Override
     public Set<String> importFrom(OldSettings values) {
-        return values.value(CURRENCY, Currency.class)
-                .filter(currency -> settings.saveCurrencyIfMissing(currency.getCurrencyCode(), clock.instant()))
-                .map(currency -> Set.of(CURRENCY))
+        Set<String> stored = values.value(CURRENCY, Currency.class)
+                .filter(code -> settings.saveCurrencyIfMissing(code.getCurrencyCode(), clock.instant()))
+                .map(code -> Set.of(CURRENCY))
                 .orElse(Set.of());
+        currency.forget();
+        return stored;
     }
 }

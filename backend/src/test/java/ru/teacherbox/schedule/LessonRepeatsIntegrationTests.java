@@ -3,33 +3,50 @@ package ru.teacherbox.schedule;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jayway.jsonpath.JsonPath;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
+import ru.teacherbox.schedule.application.LessonRules;
+import ru.teacherbox.schedule.application.LessonRulesService;
 import ru.teacherbox.schedule.application.ScheduleService;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
 
 @ScheduleIntegrationTest
-@TestPropertySource(properties = "teacherbox.schedule.horizon=84d")
 class LessonRepeatsIntegrationTests {
     @Autowired MockMvcTester mvc;
     @Autowired FakeUserDirectory directory;
     @Autowired MutableClock clock;
     @Autowired JdbcClient jdbc;
     @Autowired ScheduleService schedule;
+    @Autowired LessonRulesService rules;
+    @Autowired TestLessonRules testRules;
+
+    @BeforeEach
+    void twelveWeeksAhead() {
+        LessonRules test = TestLessonRules.RULES;
+        rules.change(new LessonRules(test.defaultDurationMinutes(), test.lateCancellation(), test.reminders(),
+                Duration.ofDays(84)));
+    }
+
+    @AfterEach
+    void backToTheTestRules() {
+        testRules.restore();
+    }
 
     @Test
     void convertsAnExistingLessonToEverySupportedIntervalWithoutChangingItsIdentity() throws Exception {

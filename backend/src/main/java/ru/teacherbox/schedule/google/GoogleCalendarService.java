@@ -23,6 +23,7 @@ import ru.teacherbox.schedule.application.CalendarTexts;
 import ru.teacherbox.schedule.api.GoogleCalendarDisconnected;
 import ru.teacherbox.schedule.application.ScheduleDirectory;
 import ru.teacherbox.schedule.application.ScheduleNames;
+import ru.teacherbox.schedule.application.LessonRulesService;
 import ru.teacherbox.schedule.application.ScheduleProperties;
 import ru.teacherbox.schedule.domain.FeedTokens;
 import ru.teacherbox.schedule.domain.GoogleConnection;
@@ -89,6 +90,7 @@ public class GoogleCalendarService {
     private final ScheduleDirectory directory;
     private final ApplicationEventPublisher events;
     private final ScheduleProperties properties;
+    private final LessonRulesService rules;
     private final Portal portal;
     private final InstanceTimeZone timeZone;
     private final Clock clock;
@@ -96,13 +98,14 @@ public class GoogleCalendarService {
 
     public GoogleCalendarService(GoogleApi api, GoogleRepository repository, LessonRepository lessons,
             ScheduleDirectory directory, ApplicationEventPublisher events, ScheduleProperties properties,
-            Portal portal, InstanceTimeZone timeZone, Clock clock) {
+            LessonRulesService rules, Portal portal, InstanceTimeZone timeZone, Clock clock) {
         this.api = api;
         this.repository = repository;
         this.lessons = lessons;
         this.directory = directory;
         this.events = events;
         this.properties = properties;
+        this.rules = rules;
         this.portal = portal;
         this.timeZone = timeZone;
         this.clock = clock;
@@ -247,7 +250,7 @@ public class GoogleCalendarService {
             String token = token(connection);
             Map<UUID, Long> synced = repository.syncedVersions();
             List<Lesson> window = lessons.findStartingBetween(now.minus(SYNC_PAST),
-                    now.plus(properties.horizon()).plus(Duration.ofDays(1)));
+                    now.plus(rules.current().horizon()).plus(Duration.ofDays(1)));
             List<Lesson> pending = new ArrayList<>();
             for (Lesson lesson : window) {
                 Long version = synced.get(lesson.id());

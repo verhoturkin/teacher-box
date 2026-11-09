@@ -1,7 +1,6 @@
 package ru.teacherbox.schedule.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -12,18 +11,12 @@ import ru.teacherbox.schedule.api.ChangeKind;
 class SchedulePropertiesTest {
 
     @Test
-    void sortsRemindersAndValidates() {
-        ScheduleProperties properties = new ScheduleProperties(60, Duration.ofDays(84), Duration.ofHours(24),
-                List.of(Duration.ofHours(1), Duration.ofHours(24), Duration.ofHours(1)), google());
+    void lessonRulesSortRemindersWithoutRepeats() {
+        LessonRules rules = new LessonRules(60, Duration.ofHours(24),
+                List.of(Duration.ofHours(24), Duration.ofHours(1), Duration.ofHours(24)), Duration.ofDays(84));
 
-        assertThat(properties.reminders()).containsExactly(Duration.ofHours(1), Duration.ofHours(24));
-        assertThat(properties.horizonDays()).isEqualTo(84);
-        assertThatThrownBy(() -> new ScheduleProperties(0, Duration.ofDays(84), Duration.ZERO, List.of(), google()))
-                .hasMessageContaining("DEFAULT_DURATION");
-        assertThatThrownBy(() -> new ScheduleProperties(60, Duration.ofDays(3), Duration.ZERO, List.of(), google()))
-                .hasMessageContaining("HORIZON");
-        assertThatThrownBy(() -> new ScheduleProperties(60, Duration.ofDays(84), Duration.ZERO,
-                List.of(Duration.ZERO), google())).hasMessageContaining("REMINDERS");
+        assertThat(rules.reminders()).containsExactly(Duration.ofHours(1), Duration.ofHours(24));
+        assertThat(rules.horizonDays()).isEqualTo(84);
     }
 
     @Test

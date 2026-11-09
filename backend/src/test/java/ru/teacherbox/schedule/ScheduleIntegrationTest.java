@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.test.context.TestPropertySource;
+import ru.teacherbox.schedule.application.LessonRulesService;
 import ru.teacherbox.testing.FakeMeetingRooms;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
@@ -26,10 +27,7 @@ import ru.teacherbox.testing.MutableClock;
 @AutoConfigureMockMvc
 @Import(ScheduleIntegrationTest.Beans.class)
 @TestPropertySource(properties = {
-        "teacherbox.timezone=Europe/Moscow",
-        "teacherbox.schedule.reminders=24h,1h",
-        "teacherbox.schedule.late-cancellation=24h",
-        "teacherbox.schedule.horizon=28d"
+        "teacherbox.timezone=Europe/Moscow"
 })
 public @interface ScheduleIntegrationTest {
 
@@ -49,6 +47,11 @@ public @interface ScheduleIntegrationTest {
         @Bean
         FakeStudentGroups studentGroups() {
             return new FakeStudentGroups();
+        }
+
+        @Bean
+        TestLessonRules testLessonRules(LessonRulesService rules) {
+            return new TestLessonRules(rules);
         }
 
         @Bean

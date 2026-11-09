@@ -7,6 +7,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import ru.teacherbox.billing.application.BillingCurrencySetting;
 import ru.teacherbox.billing.application.BillingSettingsImport;
 import ru.teacherbox.billing.persistence.BillingSettingsRepository;
 import ru.teacherbox.shared.settings.OldSettings;
@@ -24,9 +25,13 @@ class SettingsImportIntegrationTests {
     @Autowired
     JdbcClient jdbc;
 
+    @Autowired
+    BillingCurrencySetting currency;
+
     @AfterEach
     void noCurrency() {
         jdbc.sql("update billing.settings set currency = null where id = 1").update();
+        currency.forget();
     }
 
     @Test

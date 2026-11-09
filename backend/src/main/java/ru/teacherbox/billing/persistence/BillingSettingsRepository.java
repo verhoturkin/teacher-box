@@ -43,6 +43,17 @@ public class BillingSettingsRepository {
                 .single();
     }
 
+    public void saveCurrency(String code, Instant now) {
+        jdbc.sql("""
+                update billing.settings
+                set currency = :code, updated_at = :now, version = version + 1
+                where id = 1
+                """)
+                .param("code", code)
+                .param("now", now)
+                .update();
+    }
+
     /** Sets the currency unless it is set already; {@code false} if it was. */
     public boolean saveCurrencyIfMissing(String code, Instant now) {
         return jdbc.sql("""
