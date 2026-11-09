@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import ru.teacherbox.identity.domain.User;
 import ru.teacherbox.identity.persistence.RefreshTokenRepository;
 import ru.teacherbox.identity.persistence.UserRepository;
 import ru.teacherbox.shared.error.UnauthorizedException;
+import ru.teacherbox.shared.settings.LiveProperties;
 
 /** Sign-in, token refresh and sign-out (ADR-0003). */
 @Service
@@ -27,18 +29,19 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokens;
     private final SessionIssuer sessionIssuer;
     private final PasswordEncoder passwordEncoder;
-    private final IdentityProperties properties;
+    /** Read on every use: the administrator changes the lifetimes and lock rules without a restart (ADR-0056). */
+    private final LiveProperties<IdentityProperties> properties;
     private final Clock clock;
     /** Hash compared against when the login is unknown, so that response time does not reveal it. */
     private final String dummyHash;
 
     public AuthService(UserRepository users, RefreshTokenRepository refreshTokens, SessionIssuer sessionIssuer,
-            PasswordEncoder passwordEncoder, IdentityProperties properties, Clock clock) {
+            PasswordEncoder passwordEncoder, Environment environment, Clock clock) {
         this.users = users;
         this.refreshTokens = refreshTokens;
         this.sessionIssuer = sessionIssuer;
         this.passwordEncoder = passwordEncoder;
-        this.properties = properties;
+        this.properties = new LiveProperties<>(environment, IdentityProperties.class);
         this.clock = clock;
         this.dummyHash = passwordEncoder.encode("dummy-password-for-timing");
     }
@@ -63,7 +66,7 @@ public class AuthService {
         }
         String hash = user.passwordHash();
         if (hash == null || !passwordEncoder.matches(password, hash)) {
-            user.recordFailedLogin(properties.loginPolicy(), now);
+            user.recordFailedLogin(properties.get().loginPolicy(), now);
             users.update(user);
             throw invalidCredentials();
         }
@@ -88,7 +91,7 @@ public class AuthService {
         if (token.isExpired(now)) {
             throw invalidRefresh();
         }
-        if (token.isRevoked() && !token.wasJustRotated(properties.refreshReuseGrace(), now)) {
+        if (token.isRevoked() && !token.wasJustRotated(properties.get().refreshReuseGrace(), now)) {
             if (token.replacedBy() != null) {
                 log.warn("Reuse of rotated refresh token detected, revoking session family {}", token.familyId());
                 refreshTokens.revokeFamily(token.familyId(), now);

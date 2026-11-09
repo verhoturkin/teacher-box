@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.notifications.application.MessengerChannelFactory.Credentials;
@@ -21,6 +22,7 @@ import ru.teacherbox.notifications.persistence.ChannelSettingsRepository;
 import ru.teacherbox.notifications.persistence.ChannelSettingsRepository.ChannelSettings;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.settings.SettingsChanged;
 
 /**
  * Bots of the messengers: the teacher enters the token in the settings page (ADR-0056). A token is checked with the messenger before it is saved, and the new
@@ -107,6 +109,31 @@ public class ChannelSettingsService implements SmartInitializingSingleton {
         use(channel);
         log.info("{} bot {} is configured in the settings", type, botName);
         return setup(type);
+    }
+
+    /**
+     * The administrator changed a messenger's address or proxy (ADR-0056): its bot starts anew with them, as
+     * after a new token. A bot that cannot start keeps its settings and reports the error in the log.
+     */
+    @EventListener
+    public void settingsChanged(SettingsChanged changed) {
+        for (MessengerChannelFactory factory : factories.values()) {
+            ChannelType type = factory.type();
+            if (factory.settings().stream().noneMatch(changed.names()::contains)) {
+                continue;
+            }
+            settings.find(type).ifPresent(saved -> {
+                try {
+                    use(factory.create(credentials(saved)));
+                    log.info("{} bot is started anew with the changed settings", type);
+                } catch (RuntimeException e) {
+                    channels.remove(type);
+                    health.reset(type);
+                    polling.ifAvailable(running -> running.restart(type));
+                    log.warn("{} bot does not start with the changed settings: {}", type, e.getMessage());
+                }
+            });
+        }
     }
 
     /** Stops the bot configured in the settings page. */

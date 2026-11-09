@@ -40,12 +40,14 @@ public class AdminSettingsService {
     }
 
     /**
-     * @param value the value; always {@code null} for a secret and for a setting that is not set
-     * @param set   the setting has a non-empty value (the only thing shown about a secret)
+     * @param value    the value; always {@code null} for a secret and for a setting that is not set
+     * @param set      the setting has a non-empty value (the only thing shown about a secret)
+     * @param schedule a {@link SettingKind#CRON} in force as «вкл/выкл + время»; {@code null} for other kinds
+     *                 and for a cron that is not a daily one at a fixed time (the interface shows the cron)
      */
     public record SettingView(String name, String section, String group, String title, String hint, SettingKind kind,
             List<String> choices, boolean secret, Access access, Owner owner, boolean live, Source source,
-            @Nullable String value, boolean set) {
+            @Nullable String value, boolean set, @Nullable DailySchedule schedule) {
     }
 
     /**
@@ -203,6 +205,14 @@ public class AdminSettingsService {
         return new SettingView(setting.name(), setting.section(), setting.group().in(language),
                 setting.title().in(language), setting.hint().in(language), setting.kind(),
                 setting.choices(), setting.secret(), setting.access(), setting.owner(), setting.live(), source,
-                setting.secret() ? null : value, set);
+                setting.secret() ? null : value, set, schedule(setting, set ? value : null));
+    }
+
+    private static @Nullable DailySchedule schedule(SettingDefinition setting, @Nullable String value) {
+        if (setting.kind() != SettingKind.CRON) {
+            return null;
+        }
+        String cron = value != null ? value : SettingsCatalog.defaultCron(setting.name()).orElse(null);
+        return cron == null ? null : DailySchedule.of(cron).orElse(null);
     }
 }

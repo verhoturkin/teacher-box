@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -13,6 +14,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
@@ -27,6 +29,7 @@ import ru.teacherbox.notifications.persistence.ChannelLinkRepository;
 import ru.teacherbox.notifications.persistence.ChannelSettingsRepository;
 import ru.teacherbox.notifications.persistence.ChannelSettingsRepository.ChannelSettings;
 import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.settings.SettingsChanged;
 
 class ChannelSettingsServiceTest {
 
@@ -45,6 +48,9 @@ class ChannelSettingsServiceTest {
     ChannelSettingsServiceTest() {
         when(telegram.type()).thenReturn(ChannelType.TELEGRAM);
         when(max.type()).thenReturn(ChannelType.MAX);
+        when(telegram.settings()).thenReturn(Set.of("TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY",
+                "TEACHERBOX_NOTIFICATIONS_TELEGRAM_API_URL"));
+        when(max.settings()).thenReturn(Set.of());
         when(telegram.create(any())).thenReturn(new FakeMessengerChannel(ChannelType.TELEGRAM));
         when(max.create(any())).thenReturn(new FakeMessengerChannel(ChannelType.MAX));
         when(users.teacherId()).thenReturn(UUID.randomUUID());
@@ -82,6 +88,35 @@ class ChannelSettingsServiceTest {
         assertThat(channels.available()).isEmpty();
         verify(polling).restart(ChannelType.TELEGRAM);
         verify(polling).restart(ChannelType.MAX);
+    }
+
+    @Test
+    void aChangedAddressOrProxyStartsTheBotAnew() {
+        when(settings.find(ChannelType.TELEGRAM)).thenReturn(Optional.of(
+                new ChannelSettings(ChannelType.TELEGRAM, "db-token", null, "@school_bot", CLOCK.instant())));
+        when(settings.find(ChannelType.MAX)).thenReturn(Optional.of(
+                new ChannelSettings(ChannelType.MAX, "max-token", null, "@max_bot", CLOCK.instant())));
+
+        service.settingsChanged(new SettingsChanged(Set.of("TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS")));
+        verify(telegram, never()).create(any());
+        verify(max, never()).create(any());
+
+        service.settingsChanged(new SettingsChanged(Set.of("TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY")));
+        verify(telegram).create(new Credentials("db-token", null));
+        verify(max, never()).create(any());
+        verify(polling).restart(ChannelType.TELEGRAM);
+        assertThat(channels.isAvailable(ChannelType.TELEGRAM)).isTrue();
+
+        // a proxy the bot cannot start with stops it; the token stays saved
+        when(telegram.create(any())).thenThrow(new IllegalStateException("TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY: bad"));
+        service.settingsChanged(new SettingsChanged(Set.of("TEACHERBOX_NOTIFICATIONS_TELEGRAM_API_URL")));
+        assertThat(channels.isAvailable(ChannelType.TELEGRAM)).isFalse();
+        verify(settings, never()).delete(any());
+
+        // no bot saved: nothing to start
+        when(settings.find(ChannelType.TELEGRAM)).thenReturn(Optional.empty());
+        service.settingsChanged(new SettingsChanged(Set.of("TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY")));
+        verify(telegram, times(2)).create(any());
     }
 
     @Test

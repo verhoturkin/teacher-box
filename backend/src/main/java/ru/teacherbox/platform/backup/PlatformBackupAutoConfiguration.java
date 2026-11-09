@@ -3,6 +3,8 @@ package ru.teacherbox.platform.backup;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.concurrent.Executors;
+import java.util.function.Supplier;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -14,6 +16,7 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.client.RestClient;
@@ -27,7 +30,7 @@ import ru.teacherbox.platform.backup.drive.DriveConnectionStore;
 import ru.teacherbox.platform.backup.drive.DriveIntegrationCheck;
 import ru.teacherbox.shared.backup.BackupExclusions;
 import ru.teacherbox.shared.http.OutboundHttp;
-import ru.teacherbox.shared.http.OutboundProxy;
+import ru.teacherbox.shared.settings.LiveProperties;
 import ru.teacherbox.shared.portal.Portal;
 import ru.teacherbox.shared.reset.DataReset;
 import ru.teacherbox.shared.security.PasswordConfirmation;
@@ -40,18 +43,19 @@ import ru.teacherbox.shared.time.ZonedJob;
 @EnableConfigurationProperties(BackupProperties.class)
 public class PlatformBackupAutoConfiguration {
 
-    private static final Logger log = LoggerFactory.getLogger(PlatformBackupAutoConfiguration.class);
+    private static final String DRIVE_PROXY = "TEACHERBOX_BACKUP_GOOGLE_PROXY";
     private static final Duration DRIVE_CONNECT_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration DRIVE_READ_TIMEOUT = Duration.ofSeconds(30);
     /** Until Google answers an upload or starts a download: the whole file goes first. */
     private static final Duration DRIVE_TRANSFER_TIMEOUT = Duration.ofHours(2);
 
     @Bean
-    BackupService backupService(JdbcClient jdbc, PlatformProperties platform, BackupProperties properties,
+    BackupService backupService(JdbcClient jdbc, PlatformProperties platform, Environment environment,
             InstanceTimeZone timeZone, ObjectProvider<BuildProperties> build, Clock clock,
             ObjectProvider<BackupExclusions> exclusions, ApplicationEventPublisher events) {
         BuildProperties info = build.getIfAvailable();
-        return new BackupService(jdbc, platform.dataDir(), properties, timeZone,
+        return new BackupService(jdbc, platform.dataDir(), new LiveProperties<>(environment, BackupProperties.class),
+                timeZone,
                 info == null ? null : info.getVersion(), clock, () -> exclusions.orderedStream().toList(), events);
     }
 
@@ -76,19 +80,16 @@ public class PlatformBackupAutoConfiguration {
         return new ResetService(backups, restores, resets, transactions, jdbc, platform.dataDir());
     }
 
+    /** The proxy is read on every request: the administrator changes it without a restart (ADR-0056). */
     @Bean
-    DriveApi driveApi(RestClient.Builder builder, BackupProperties properties) {
+    DriveApi driveApi(RestClient.Builder builder, BackupProperties properties, Environment environment) {
         BackupProperties.Google google = properties.google();
-        OutboundProxy proxy = OutboundProxy.setting("TEACHERBOX_BACKUP_GOOGLE_PROXY", google.proxy());
-        if (proxy != null) {
-            log.info("Google Drive is reached through the proxy {}", proxy);
-        }
-        RestClient.Builder http = builder.clone()
-                .requestFactory(OutboundHttp.requestFactory(DRIVE_CONNECT_TIMEOUT, DRIVE_READ_TIMEOUT, proxy));
-        RestClient files = builder.clone()
-                .requestFactory(OutboundHttp.streamingRequestFactory(DRIVE_CONNECT_TIMEOUT, DRIVE_TRANSFER_TIMEOUT,
-                        proxy))
-                .build();
+        LiveProperties<BackupProperties> live = new LiveProperties<>(environment, BackupProperties.class);
+        Supplier<@Nullable String> proxy = () -> live.get().google().proxy();
+        RestClient.Builder http = builder.clone().requestFactory(OutboundHttp.liveRequestFactory(DRIVE_PROXY, proxy,
+                DRIVE_CONNECT_TIMEOUT, DRIVE_READ_TIMEOUT));
+        RestClient files = builder.clone().requestFactory(OutboundHttp.liveStreamingRequestFactory(DRIVE_PROXY, proxy,
+                DRIVE_CONNECT_TIMEOUT, DRIVE_TRANSFER_TIMEOUT)).build();
         return new DriveApi(http.clone().baseUrl(google.oauthUrl()).build(), http.clone().baseUrl(google.apiUrl()).build(),
                 files, google.authorizationUrl(), google.apiUrl(), google.uploadUrl());
     }
@@ -105,8 +106,9 @@ public class PlatformBackupAutoConfiguration {
 
     @Bean
     CloudBackupService cloudBackupService(DriveApi api, DriveConnectionStore store, BackupService backups,
-            BackupProperties properties, Portal portal, Clock clock) {
-        return new CloudBackupService(api, store, backups, properties, portal, clock, Executors.newSingleThreadExecutor(Thread.ofVirtual().name("google-drive").factory()));
+            Environment environment, Portal portal, Clock clock) {
+        return new CloudBackupService(api, store, backups, new LiveProperties<>(environment, BackupProperties.class),
+                portal, clock, Executors.newSingleThreadExecutor(Thread.ofVirtual().name("google-drive").factory()));
     }
 
     @Bean

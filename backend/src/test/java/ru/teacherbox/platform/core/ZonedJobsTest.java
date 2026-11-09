@@ -95,6 +95,17 @@ class ZonedJobsTest {
     }
 
     @Test
+    void aDashSwitchesTheJobOffAndAnEmptyCronMeansTheDefault() {
+        Trigger backupTrigger = triggers(2).getFirst();
+        environment.setProperty("teacherbox.backup.cron", "-");
+        assertThat(backupTrigger.nextExecution(new SimpleTriggerContext(Clock.fixed(NOON, ZoneOffset.UTC)))).isNull();
+
+        environment.setProperty("teacherbox.backup.cron", " ");
+        assertThat(jobs.cron(backup)).isEqualTo("0 30 3 * * *");
+        assertThat(next(backupTrigger)).isEqualTo(Instant.parse("2026-09-02T00:30:00Z"));
+    }
+
+    @Test
     void runsTheJob() {
         ArgumentCaptor<Runnable> task = ArgumentCaptor.forClass(Runnable.class);
         verify(scheduler, times(2)).schedule(task.capture(), any(Trigger.class));

@@ -1,13 +1,14 @@
 package ru.teacherbox.platform.backup;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.UncheckedIOException;
 import java.io.IOException;
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
 class ScheduledBackupTest {
@@ -25,7 +26,8 @@ class ScheduledBackupTest {
     }
 
     @Test
-    void rejectsKeepingNoBackups() {
-        assertThatThrownBy(() -> new BackupProperties("-", 0, false, null)).isInstanceOf(IllegalArgumentException.class);
+    void keepsBackupsForADayAtLeast() {
+        assertThat(new BackupProperties("-", 0, false, null).retention()).isEqualTo(Duration.ofDays(1));
+        assertThat(new BackupProperties("-", 9, false, null).retention()).isEqualTo(Duration.ofDays(9));
     }
 }

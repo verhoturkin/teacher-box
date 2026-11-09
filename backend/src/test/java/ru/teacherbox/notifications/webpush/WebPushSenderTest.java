@@ -143,7 +143,8 @@ class WebPushSenderTest {
     }
 
     private WebPushSender sender(String subject, boolean httpsOnly) {
-        return new WebPushSender(keys, portal, new NotificationsProperties(8, Duration.ofMinutes(15), null, null, null,
-                new NotificationsProperties.WebPush(subject)), HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build(), httpsOnly);
+        NotificationsProperties properties = new NotificationsProperties(8, Duration.ofMinutes(15), null, null, null,
+                new NotificationsProperties.WebPush(subject));
+        return new WebPushSender(keys, portal, () -> properties, HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build(), httpsOnly);
     }
 }

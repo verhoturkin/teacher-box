@@ -164,13 +164,25 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   the read-only branches and texts (the real settings UI is 363.7; the `m3-expressive` skill was not
   available, no layout changed). Catalog hints no longer say a variable wins. Wiki lines that
   offered the variables updated (FAQ, Admin, Messengers, Schedule); the rest of the wiki — 363.9._
-- [ ] **363.6 B** Live administrator settings: upload limits (`HomeworkProperties` read per upload;
+- [x] **363.6 B** Live administrator settings: upload limits (`HomeworkProperties` read per upload;
   the multipart ceiling of 25 MB / 30 MB stays fixed and bounds the value), proxies (the HTTP client
   factories build the client per request or rebuild on `SettingsChanged`), Telegram API address and
   proxy (restart the bot as a token change does), session TTLs and lock rules (read per sign-in),
   rate limit (the filter reads its bucket settings per period), backup schedules and retention (via
   the `SchedulingConfigurer` of 363.3). Backup schedule in the interface as «вкл/выкл + время» that
   writes the cron; the variable still takes any cron.
+  _Done: live are the homework limits (`AttachmentService.limits()`, a file bounded by
+  `HomeworkProperties.FILE_SIZE_CEILING` 25 MB), the YouTube, Google Calendar and Drive proxies
+  (`shared.http.OutboundHttp.liveRequestFactory`: the proxy read per request, the factory rebuilt
+  when it changes), the Telegram address and proxy (`MessengerChannelFactory.settings()`; on
+  `SettingsChanged` `ChannelSettingsService` starts the saved bot anew, a bot that cannot start
+  stops, its token stays), the web push contact, the `IDENTITY_*_TTL` / lock rules (per sign-in),
+  the rate limit (per request), `BACKUP_CRON` / `BOARDS_BACKUP_CRON` (`ZonedJobs` now take `-` as
+  off and an empty value as the default) and `BACKUP_KEEP_DAYS` (below 1 keeps a day instead of
+  failing the start). Backend of «вкл/выкл + время»: `platform.settings.DailySchedule` and
+  `schedule` in the admin view of a `CRON` setting (`null` for a cron that is not daily at a fixed
+  time); the switch and time picker are 363.8. Dropped: `AI_PROXY` → 364.1 (its per-provider clients
+  are rebuilt on change; the Anthropic SDK client takes the proxy only when built)._
 - [ ] **363.7 F** Settings «Занятия» (`settings/settings-categories.ts`, `time-zone-card.ts` →
   editable): «Время и цена» — time zone select (browser zone first), currency select locked with a
   hint after the first payment, default duration, price; new card «Правила» — late cancellation,

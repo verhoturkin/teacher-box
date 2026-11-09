@@ -30,6 +30,8 @@ import ru.teacherbox.shared.time.ZonedJob;
 public class ZonedJobs implements SchedulingConfigurer {
 
     private static final Logger log = LoggerFactory.getLogger(ZonedJobs.class);
+    /** The cron that switches a job off, as for {@code @Scheduled}. */
+    static final String DISABLED = "-";
 
     private final List<ZonedJob> jobs;
     private final ObjectProvider<InstanceTimeZone> timeZone;
@@ -55,12 +57,16 @@ public class ZonedJobs implements SchedulingConfigurer {
         }
     }
 
-    /** The trigger of a job: its cron in the zone in force at the moment the next run is computed. */
+    /**
+     * The trigger of a job: its cron in the zone in force at the moment the next run is computed;
+     * {@value #DISABLED} — no run until the cron changes again.
+     */
     Trigger trigger(ZonedJob job) {
         return new Trigger() {
             @Override
             public @Nullable Instant nextExecution(TriggerContext context) {
-                return new CronTrigger(cron(job), zone()).nextExecution(context);
+                String cron = cron(job);
+                return DISABLED.equals(cron) ? null : new CronTrigger(cron, zone()).nextExecution(context);
             }
 
             @Override
@@ -70,8 +76,10 @@ public class ZonedJobs implements SchedulingConfigurer {
         };
     }
 
+    /** The job's cron in force; an empty setting means the default. */
     String cron(ZonedJob job) {
-        return environment.getProperty(job.cronProperty(), job.defaultCron());
+        String cron = environment.getProperty(job.cronProperty(), "").strip();
+        return cron.isEmpty() ? job.defaultCron() : cron;
     }
 
     private ZoneId zone() {

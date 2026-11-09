@@ -177,7 +177,7 @@ class AdminSettingsIntegrationTest {
 
         // a live and a restart setting together: the live one at once, a restart for the other
         assertThat(change("{\"password\":\"admin-password\",\"values\":{"
-                + "\"TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS\":null,\"TEACHERBOX_BACKUP_KEEP_DAYS\":\"9\"}}"))
+                + "\"TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS\":null,\"LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY\":\"9\"}}"))
                 .hasStatusOk().bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$.applied").asArray()
                             .containsExactly("TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS");
@@ -185,7 +185,7 @@ class AdminSettingsIntegrationTest {
                 });
         verify(restarter).restartSoon();
         assertThat(maxAttempts()).as("back to .env and the default").isEqualTo(8);
-        assertThat(environment.getProperty("teacherbox.backup.keep-days")).as("only after a restart").isNotEqualTo("9");
+        assertThat(environment.getProperty("logging.logback.rollingpolicy.max-history")).as("only after a restart").isNotEqualTo("9");
         assertThat(mvc.get().uri("/api/admin/settings").with(TestUsers.admin(ADMIN))).hasStatusOk().bodyJson()
                 .extractingPath("$.restartNeeded").isEqualTo(true);
     }
@@ -234,28 +234,28 @@ class AdminSettingsIntegrationTest {
         verify(restarter, never()).restartSoon();
 
         assertThat(change("{\"password\":\"admin-password\",\"values\":"
-                + "{\"TEACHERBOX_BACKUP_KEEP_DAYS\":\" 14 \",\"TEACHERBOX_AI_PROXY\":\"http://proxy:3128\"}}"))
+                + "{\"LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY\":\" 14 \",\"TEACHERBOX_AI_PROXY\":\"http://proxy:3128\"}}"))
                 .hasStatusOk().bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$.changed").asArray()
-                            .containsExactly("TEACHERBOX_AI_PROXY", "TEACHERBOX_BACKUP_KEEP_DAYS");
+                            .containsExactly("TEACHERBOX_AI_PROXY", "LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY");
                     assertThat(json).extractingPath("$.applied").asArray().isEmpty();
                     assertThat(json).extractingPath("$.restarting").isEqualTo(true);
                 });
         verify(restarter).restartSoon();
         assertThat(Files.readString(platform.dataDir().resolve(SettingsFile.LOCATION)))
-                .contains("TEACHERBOX_BACKUP_KEEP_DAYS=14");
+                .contains("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY=14");
         clearInvocations(restarter);
 
-        assertThat(change("{\"password\":\"admin-password\",\"values\":{\"TEACHERBOX_BACKUP_KEEP_DAYS\":\"14\"}}"))
+        assertThat(change("{\"password\":\"admin-password\",\"values\":{\"LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY\":\"14\"}}"))
                 .as("nothing changes: no restart")
                 .hasStatusOk().bodyJson().extractingPath("$.restarting").isEqualTo(false);
         verify(restarter, never()).restartSoon();
 
-        assertThat(change("{\"password\":\"admin-password\",\"values\":{\"TEACHERBOX_BACKUP_KEEP_DAYS\":null}}"))
+        assertThat(change("{\"password\":\"admin-password\",\"values\":{\"LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY\":null}}"))
                 .hasStatusOk().bodyJson().extractingPath("$.changed").asArray()
-                .containsExactly("TEACHERBOX_BACKUP_KEEP_DAYS");
+                .containsExactly("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY");
         assertThat(mvc.get().uri("/api/admin/settings").with(TestUsers.admin(ADMIN))).hasStatusOk().bodyJson()
-                .extractingPath("$.settings[?(@.name == 'TEACHERBOX_BACKUP_KEEP_DAYS')].source").asArray()
+                .extractingPath("$.settings[?(@.name == 'LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY')].source").asArray()
                 .doesNotContain("ADMIN");
     }
 

@@ -55,14 +55,15 @@ public class BackupService {
     private final JdbcClient jdbc;
     private final Path dataDir;
     private final Path backupDir;
-    private final BackupProperties properties;
+    /** Read on every use: the administrator changes the days kept without a restart (ADR-0056). */
+    private final Supplier<BackupProperties> properties;
     private final InstanceTimeZone timeZone;
     private final @Nullable String appVersion;
     private final Clock clock;
     private final Supplier<List<BackupExclusions>> exclusions;
     private final ApplicationEventPublisher events;
 
-    public BackupService(JdbcClient jdbc, Path dataDir, BackupProperties properties, InstanceTimeZone timeZone,
+    public BackupService(JdbcClient jdbc, Path dataDir, Supplier<BackupProperties> properties, InstanceTimeZone timeZone,
             @Nullable String appVersion, Clock clock, Supplier<List<BackupExclusions>> exclusions,
             ApplicationEventPublisher events) {
         this.jdbc = jdbc;
@@ -278,7 +279,7 @@ public class BackupService {
 
     /** Backups of every kind live {@link BackupProperties#keepDays()} days. */
     private void deleteExpired(Instant now) throws IOException {
-        Instant oldest = now.minus(properties.retention());
+        Instant oldest = now.minus(properties.get().retention());
         for (BackupInfo backup : list()) {
             if (backup.createdAt().isBefore(oldest)) {
                 Files.deleteIfExists(backupDir.resolve(backup.name()));

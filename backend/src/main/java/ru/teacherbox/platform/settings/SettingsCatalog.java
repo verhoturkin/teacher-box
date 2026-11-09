@@ -19,6 +19,7 @@ import static ru.teacherbox.platform.settings.SettingKind.URL;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import ru.teacherbox.platform.settings.SettingDefinition.Access;
@@ -55,8 +56,25 @@ public final class SettingsCatalog {
      * {@code shared.settings.LiveProperties} on every call (ADR-0056).
      */
     static final Set<String> LIVE = Set.of(
+            "TEACHERBOX_HOMEWORK_MAX_FILE_SIZE", "TEACHERBOX_HOMEWORK_MAX_FILES_PER_UPLOAD",
+            "TEACHERBOX_HOMEWORK_YOUTUBE_PROXY", "TEACHERBOX_SCHEDULE_GOOGLE_PROXY",
+            "TEACHERBOX_BOARDS_BACKUP_CRON", "TEACHERBOX_BOARDS_BACKUP_KEEP",
+            "TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY", "TEACHERBOX_NOTIFICATIONS_TELEGRAM_API_URL",
             "TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS", "TEACHERBOX_NOTIFICATIONS_LINK_CODE_TTL",
-            "TEACHERBOX_BOARDS_BACKUP_KEEP");
+            "TEACHERBOX_NOTIFICATIONS_WEBPUSH_SUBJECT",
+            "TEACHERBOX_IDENTITY_ACCESS_TOKEN_TTL", "TEACHERBOX_IDENTITY_REFRESH_TOKEN_TTL",
+            "TEACHERBOX_IDENTITY_INVITE_TTL", "TEACHERBOX_IDENTITY_MAX_FAILED_LOGINS",
+            "TEACHERBOX_IDENTITY_LOCK_DURATION",
+            "TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_REQUESTS", "TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_PERIOD",
+            "TEACHERBOX_BACKUP_CRON", "TEACHERBOX_BACKUP_KEEP_DAYS", "TEACHERBOX_BACKUP_GOOGLE_PROXY");
+
+    /**
+     * The crons in force when their variable is not set, as the jobs ({@code shared.time.ZonedJob}) define
+     * them: the interface shows the schedule of an unset setting by them.
+     */
+    static final Map<String, String> DEFAULT_CRONS = Map.of(
+            "TEACHERBOX_BACKUP_CRON", "0 30 3 * * *",
+            "TEACHERBOX_BOARDS_BACKUP_CRON", "0 0 3 * * *");
     private static final List<SettingDefinition> ALL = build();
 
     private SettingsCatalog() {
@@ -65,6 +83,11 @@ public final class SettingsCatalog {
     /** By section as in {@code .env.example}; what cannot be changed here comes last. */
     public static List<SettingDefinition> all() {
         return ALL;
+    }
+
+    /** The cron of a {@link SettingKind#CRON} setting when it is not set. */
+    public static Optional<String> defaultCron(String name) {
+        return Optional.ofNullable(DEFAULT_CRONS.get(name));
     }
 
     public static Optional<SettingDefinition> find(String name) {

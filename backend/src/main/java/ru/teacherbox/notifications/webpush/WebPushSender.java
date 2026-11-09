@@ -6,13 +6,16 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.notifications.application.NotificationsProperties;
 import ru.teacherbox.shared.portal.Portal;
+import ru.teacherbox.shared.settings.LiveProperties;
 
 /** Hands an encrypted message to the push service of a device (RFC 8030) with the VAPID proof (RFC 8292). */
 @Component
@@ -39,18 +42,19 @@ public class WebPushSender {
 
     private final VapidKeyStore keys;
     private final Portal portal;
-    private final NotificationsProperties properties;
+    /** Read on every message: the administrator changes the contact without a restart (ADR-0056). */
+    private final Supplier<NotificationsProperties> properties;
     private final HttpClient client;
     private final boolean httpsOnly;
 
     @Autowired
-    WebPushSender(VapidKeyStore keys, Portal portal, NotificationsProperties properties) {
-        this(keys, portal, properties, HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1)
+    WebPushSender(VapidKeyStore keys, Portal portal, Environment environment) {
+        this(keys, portal, new LiveProperties<>(environment, NotificationsProperties.class), HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1)
                 .connectTimeout(Duration.ofSeconds(10)).build(), true);
     }
 
     /** For tests: a local server speaks plain HTTP. */
-    WebPushSender(VapidKeyStore keys, Portal portal, NotificationsProperties properties, HttpClient client,
+    WebPushSender(VapidKeyStore keys, Portal portal, Supplier<NotificationsProperties> properties, HttpClient client,
             boolean httpsOnly) {
         this.keys = keys;
         this.portal = portal;
@@ -112,7 +116,7 @@ public class WebPushSender {
     }
 
     private @Nullable String subject() {
-        String configured = properties.webpush().subject();
+        String configured = properties.get().webpush().subject();
         return configured != null && !configured.isBlank() ? configured : portal.address().orElse(null);
     }
 }

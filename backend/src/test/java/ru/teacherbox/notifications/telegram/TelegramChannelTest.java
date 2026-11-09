@@ -18,10 +18,12 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.Objects;
 import ru.teacherbox.notifications.application.MessengerChannelFactory.Credentials;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.env.MapPropertySource;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.http.HttpMethod;
@@ -223,6 +225,8 @@ class TelegramChannelTest {
         runner.run(context -> {
             TelegramChannelFactory factory = context.getBean(TelegramChannelFactory.class);
             assertThat(factory.type()).isEqualTo(ChannelType.TELEGRAM);
+            assertThat(factory.settings()).containsExactlyInAnyOrder("TEACHERBOX_NOTIFICATIONS_TELEGRAM_API_URL",
+                    "TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY");
             assertThatThrownBy(() -> factory.create(new Credentials(" ", null)))
                     .isInstanceOf(IllegalArgumentException.class);
             assertThat(factory.create(new Credentials("123:ABC", null))).isInstanceOf(TelegramChannel.class);
@@ -259,9 +263,15 @@ class TelegramChannelTest {
         } finally {
             proxy.stop(0);
         }
-        runner.withPropertyValues("teacherbox.notifications.telegram.proxy=socks5://vpn")
-                .run(context -> assertThat(context).hasFailed().getFailure()
-                        .hasStackTraceContaining("TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY"));
+        // the administrator changes the proxy in the running portal (ADR-0056): the next bot reads it
+        runner.run(context -> {
+            TelegramChannelFactory factory = context.getBean(TelegramChannelFactory.class);
+            context.getEnvironment().getPropertySources().addFirst(new MapPropertySource("live",
+                    Map.of("teacherbox.notifications.telegram.proxy", "socks5://vpn")));
+            assertThatThrownBy(() -> factory.create(new Credentials("123:ABC", null)))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY");
+        });
     }
 
     @EnableConfigurationProperties(NotificationsProperties.class)

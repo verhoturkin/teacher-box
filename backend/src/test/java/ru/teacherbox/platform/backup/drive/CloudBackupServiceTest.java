@@ -286,7 +286,7 @@ class CloudBackupServiceTest {
     @Test
     void closingStopsTheBackgroundWork() {
         ExecutorService executor = mock(ExecutorService.class);
-        new CloudBackupService(api, store, backups, properties(google()), portal, clock, executor).close();
+        new CloudBackupService(api, store, backups, () -> properties(google()), portal, clock, executor).close();
         drive.close();
 
         verify(executor).shutdownNow();
@@ -303,7 +303,7 @@ class CloudBackupServiceTest {
     }
 
     private CloudBackupService service(BackupProperties.Google google) {
-        return new CloudBackupService(api, store, backups, properties(google), portal, clock, Runnable::run);
+        return new CloudBackupService(api, store, backups, () -> properties(google), portal, clock, Runnable::run);
     }
 
     private static BackupProperties properties(BackupProperties.Google google) {

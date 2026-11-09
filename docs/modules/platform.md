@@ -68,8 +68,17 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   `AdminSettingsService` replaces the in-force values in the `teacherboxAdminSettings` property
   source, publishes `shared.settings.SettingsChanged(names)` and answers `applied`; only the other
   changes restart the portal. Live consumers read through `shared.settings.LiveProperties` (binds
-  their `@ConfigurationProperties` record on every call): so far the notifications delivery attempts
-  and link code lifetime and the boards' daily copies kept. Each setting has a `section` key (`ai`,
+  their `@ConfigurationProperties` record on every call): homework upload limits (a file is bounded
+  by 25 MB, the request ceiling), session lifetimes and lock rules (per sign-in), the sign-in rate
+  limit (`AuthRateLimitFilter` reads it per request), the web push contact, delivery attempts, link
+  code lifetime, backup and board copies kept. Proxies (YouTube, Google Calendar, Google Drive) go
+  through `OutboundHttp.liveRequestFactory`, which reads the proxy per request and rebuilds the
+  request factory when it changes; the Telegram address and proxy start the saved bot anew
+  (`MessengerChannelFactory.settings()`). The backup crons are `ZonedJob`s (`-` switches a job off,
+  an empty value means the default); the view gives a `CRON` setting `schedule` — `DailySchedule`
+  «вкл/выкл + время» (`0 M H * * *` or `-`, by `SettingsCatalog.DEFAULT_CRONS` when unset; `null`
+  for any other cron). The AI proxy waits for 364.1 (its clients are rebuilt per provider). Each
+  setting has a `section` key (`ai`,
   `backups`…): the page folds by section (`tb-fold-card`, open ones in `?open=`). Sections, titles,
   hints and value problems come in the language of the request (`Accept-Language`, `Wording` pairs
   `ru`/`en`, `SettingKind.problem(…, Language)`; 0.11.1, ADR-0036).

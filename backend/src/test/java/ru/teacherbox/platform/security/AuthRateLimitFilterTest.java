@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -16,7 +17,7 @@ class AuthRateLimitFilterTest {
 
     private final MutableClock clock = new MutableClock(Instant.parse("2026-09-25T10:00:00Z"));
     private final AuthRateLimitFilter filter = new AuthRateLimitFilter(
-            new PlatformSecurityProperties.AuthRateLimit(2, Duration.ofMinutes(1)), clock);
+            () -> new PlatformSecurityProperties.AuthRateLimit(2, Duration.ofMinutes(1)), clock);
 
     @Test
     void limitsSignInsPerAddressWithinTheWindow() throws Exception {
@@ -47,13 +48,30 @@ class AuthRateLimitFilterTest {
     @Test
     void zeroDisablesTheLimit() throws Exception {
         AuthRateLimitFilter disabled = new AuthRateLimitFilter(
-                new PlatformSecurityProperties.AuthRateLimit(0, Duration.ofMinutes(1)), clock);
+                () -> new PlatformSecurityProperties.AuthRateLimit(0, Duration.ofMinutes(1)), clock);
 
         for (int i = 0; i < 5; i++) {
             MockHttpServletResponse response = new MockHttpServletResponse();
             disabled.doFilter(request("/api/auth/login", "10.0.0.4"), response, new MockFilterChain());
             assertThat(response.getStatus()).isEqualTo(200);
         }
+    }
+
+    @Test
+    void theLimitInForceIsReadOnEveryRequest() throws Exception {
+        AtomicReference<PlatformSecurityProperties.AuthRateLimit> limit = new AtomicReference<>(
+                new PlatformSecurityProperties.AuthRateLimit(0, Duration.ofMinutes(1)));
+        AuthRateLimitFilter live = new AuthRateLimitFilter(limit::get, clock);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        live.doFilter(request("/api/auth/login", "10.0.0.5"), response, new MockFilterChain());
+        assertThat(response.getStatus()).as("off").isEqualTo(200);
+
+        limit.set(new PlatformSecurityProperties.AuthRateLimit(1, Duration.ofMinutes(5)));
+        live.doFilter(request("/api/auth/login", "10.0.0.5"), new MockHttpServletResponse(), new MockFilterChain());
+        MockHttpServletResponse limited = new MockHttpServletResponse();
+        live.doFilter(request("/api/auth/login", "10.0.0.5"), limited, new MockFilterChain());
+        assertThat(limited.getStatus()).as("the administrator's new limit").isEqualTo(429);
+        assertThat(limited.getHeader("Retry-After")).as("the new period").isEqualTo("300");
     }
 
     @Test
