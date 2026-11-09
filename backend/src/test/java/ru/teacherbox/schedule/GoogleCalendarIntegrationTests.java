@@ -34,11 +34,15 @@ import ru.teacherbox.schedule.google.GoogleApi;
 import ru.teacherbox.schedule.google.GoogleAuthException;
 import ru.teacherbox.schedule.google.GoogleCalendarService;
 import ru.teacherbox.schedule.google.GoogleException;
+import org.springframework.test.context.TestPropertySource;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
 
 /** Connecting the teacher's Google Calendar and syncing lessons into it (Google itself is mocked). */
 @ScheduleIntegrationTest
+// the old variables are no longer read (ADR-0056): the client is the teacher's setting
+@TestPropertySource(properties = {"teacherbox.schedule.google.client-id=env-id",
+        "teacherbox.schedule.google.client-secret=env-secret"})
 class GoogleCalendarIntegrationTests extends ScheduleHttpTestSupport {
 
     private static final String ORIGIN = "https://school.example.com";
@@ -78,7 +82,7 @@ class GoogleCalendarIntegrationTests extends ScheduleHttpTestSupport {
                 .bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$.clientConfigured").isEqualTo(true);
                     assertThat(json).extractingPath("$.clientId").isEqualTo("id-1");
-                    assertThat(json).extractingPath("$.clientFromEnvironment").isEqualTo(false);
+                    assertThat(json).doesNotHavePath("$.clientFromEnvironment");
                 });
 
         String state = authorize(true);

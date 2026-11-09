@@ -14,8 +14,7 @@ import ru.teacherbox.notifications.domain.ChannelType;
 import ru.teacherbox.shared.http.OutboundProxy;
 
 /**
- * Telegram bots: the token from {@code TEACHERBOX_NOTIFICATIONS_TELEGRAM_BOT_TOKEN} or the settings
- * page; requests go through {@code TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY} if it is set.
+ * Telegram bots: the token from the settings page; requests go through {@code TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY} if it is set.
  */
 @Component
 class TelegramChannelFactory implements MessengerChannelFactory {
@@ -38,12 +37,6 @@ class TelegramChannelFactory implements MessengerChannelFactory {
     @Override
     public ChannelType type() {
         return ChannelType.TELEGRAM;
-    }
-
-    @Override
-    public @Nullable Credentials fromEnvironment() {
-        String token = telegram.botToken();
-        return StringUtils.hasText(token) ? new Credentials(token.strip(), null) : null;
     }
 
     @Override

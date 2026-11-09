@@ -94,11 +94,9 @@ export interface BotAbilities {
 /** A messenger bot of the instance, as the teacher sees it (mirrors `ChannelSetup`). */
 export interface ChannelSetup {
   readonly channel: ChannelType;
-  /** A bot is set in the environment or in the settings page. */
+  /** A bot is set in the settings page. */
   readonly configured: boolean;
-  /** Set by environment variables: cannot be changed in the interface. */
-  readonly fromEnvironment: boolean;
-  /** The bot's name, e.g. `@school_bot` (unknown for bots from the environment). */
+  /** The bot's name, e.g. `@school_bot` (unknown for a bot moved from the server settings). */
   readonly botName: string | null;
   /** VK community id. */
   readonly groupId: number | null;

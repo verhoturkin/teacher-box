@@ -70,7 +70,6 @@ describe('SettingsPage', () => {
         backend.expectOne('/api/teacher/billing/overview').flush(overview([]));
         backend.expectOne('/api/teacher/schedule/google').flush({
           clientConfigured: false,
-          clientFromEnvironment: false,
           clientId: null,
           status: 'NOT_CONNECTED',
           busyEnabled: false,
@@ -97,7 +96,6 @@ describe('SettingsPage', () => {
       case 'data':
         backend.expectOne('/api/teacher/backups/google').flush({
           clientConfigured: false,
-          clientFromEnvironment: false,
           clientId: null,
           connected: false,
           account: null,

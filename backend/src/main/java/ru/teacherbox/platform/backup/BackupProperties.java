@@ -34,10 +34,8 @@ public record BackupProperties(
     }
 
     /**
-     * Google Drive ({@code TEACHERBOX_BACKUP_GOOGLE_*}).
+     * Google Drive ({@code TEACHERBOX_BACKUP_GOOGLE_*}); the OAuth client is the teacher's setting, entered in the interface (ADR-0056).
      *
-     * @param clientId         OAuth client; takes precedence over the one entered in the interface
-     * @param clientSecret     its secret
      * @param proxy            proxy for Google ({@code http://host:port} or {@code socks5://host:port})
      * @param authorizationUrl Google's consent page
      * @param oauthUrl         base address of the token and revoke endpoints
@@ -45,17 +43,10 @@ public record BackupProperties(
      * @param uploadUrl        base address of the Drive uploads
      */
     public record Google(
-            @Nullable String clientId,
-            @Nullable String clientSecret,
             @Nullable String proxy,
             @DefaultValue("https://accounts.google.com/o/oauth2/v2/auth") String authorizationUrl,
             @DefaultValue("https://oauth2.googleapis.com") String oauthUrl,
             @DefaultValue("https://www.googleapis.com/drive/v3") String apiUrl,
             @DefaultValue("https://www.googleapis.com/upload/drive/v3") String uploadUrl) {
-
-        /** Both client settings come from the environment. */
-        public boolean clientFromEnvironment() {
-            return clientId != null && !clientId.isBlank() && clientSecret != null && !clientSecret.isBlank();
-        }
     }
 }

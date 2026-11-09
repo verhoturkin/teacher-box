@@ -28,7 +28,7 @@ class AdminDriveController {
     @GetMapping
     DriveStatus status() {
         DriveStatus status = drive.status();
-        return new DriveStatus(status.clientConfigured(), status.clientFromEnvironment(), null,
+        return new DriveStatus(status.clientConfigured(), null,
                 status.connected(), null, status.connectedAt(), status.lastUploadAt(),
                 status.lastUploadName(), null, status.running(), status.callbackPath());
     }

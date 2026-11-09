@@ -112,7 +112,7 @@ class AdminBootstrapTest {
 
     private void run(String login, @Nullable String password) {
         IdentityProperties properties = new IdentityProperties(
-                new IdentityProperties.Teacher("teacher", null, "Учитель", false),
+                new IdentityProperties.Teacher("teacher", null, false),
                 new IdentityProperties.Admin(login, password), Duration.ofMinutes(15), Duration.ofDays(30),
                 Duration.ofSeconds(20), Duration.ofDays(7), 5, Duration.ofMinutes(15));
         new AdminBootstrap(users, encoder, properties, clock).run(new DefaultApplicationArguments());

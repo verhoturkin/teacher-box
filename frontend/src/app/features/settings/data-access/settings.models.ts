@@ -25,8 +25,6 @@ export interface DriveRunning {
 /** Mirrors `DriveStatus` of the backend (ADR-0037). */
 export interface DriveStatus {
   readonly clientConfigured: boolean;
-  /** The OAuth client comes from environment variables and cannot be changed here. */
-  readonly clientFromEnvironment: boolean;
   readonly clientId: string | null;
   readonly connected: boolean;
   /** Address of the Google account. */

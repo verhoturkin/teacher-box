@@ -15,8 +15,8 @@ import ru.teacherbox.shared.portal.Portal;
 import ru.teacherbox.shared.portal.PortalAddress;
 
 /**
- * The name, the address, the color and the logo of the portal: from the settings, the address
- * variable takes precedence.
+ * The name, the address, the color and the logo of the portal: from the settings (ADR-0056); with no
+ * address entered, {@code https://<TEACHERBOX_DOMAIN>} when the domain is set.
  */
 public class PortalService implements Portal {
 
@@ -27,13 +27,12 @@ public class PortalService implements Portal {
     public static final String LOGO_PATH = "/api/public/portal/logo";
 
     /**
-     * @param address                the address links are built from
-     * @param addressFromEnvironment the address comes from {@code TEACHERBOX_PUBLIC_URL} and cannot be changed
-     * @param setupCompleted         the teacher finished or skipped the first setup
-     * @param accent                 the PrimeNG palette of the portal, e.g. {@code indigo}, or the own color {@code #rrggbb}
-     * @param logo                   address of the logo (changes with every new logo); {@code null}: none
+     * @param address        the address links are built from
+     * @param setupCompleted the teacher finished or skipped the first setup
+     * @param accent         the PrimeNG palette of the portal, e.g. {@code indigo}, or the own color {@code #rrggbb}
+     * @param logo           address of the logo (changes with every new logo); {@code null}: none
      */
-    public record View(String name, @Nullable String address, boolean addressFromEnvironment,
+    public record View(String name, @Nullable String address,
             boolean setupCompleted, String accent, @Nullable String logo, String scheme, String contrast) {
     }
 
@@ -62,7 +61,7 @@ public class PortalService implements Portal {
 
     @Override
     public Optional<String> address() {
-        return Optional.ofNullable(properties.address()).or(() -> Optional.ofNullable(repository.load().address()));
+        return Optional.ofNullable(address(repository.load()));
     }
 
     public View view() {
@@ -150,14 +149,16 @@ public class PortalService implements Portal {
     }
 
     private View view(PortalSettings settings) {
-        String fromEnvironment = properties.address();
         PortalAccent accent = settings.accent() == null ? PortalAccent.DEFAULT : settings.accent();
         PortalSettings.Logo logo = settings.logo();
         return new View(settings.name() == null ? DEFAULT_NAME : settings.name(),
-                fromEnvironment != null ? fromEnvironment : settings.address(), fromEnvironment != null,
-                settings.setupCompletedAt() != null, accent.value(),
+                address(settings), settings.setupCompletedAt() != null, accent.value(),
                 logo == null ? null : LOGO_PATH + "?v=" + HexFormat.of().toHexDigits(logo.key().hashCode()),
                 settings.scheme(), settings.contrast());
+    }
+
+    private @Nullable String address(PortalSettings settings) {
+        return settings.address() != null ? settings.address() : properties.defaultAddress();
     }
 
     private static @Nullable String normalize(@Nullable String address) {

@@ -42,6 +42,8 @@ class BotSettingsIntegrationTests {
     @DynamicPropertySource
     static void maxApi(DynamicPropertyRegistry registry) {
         registry.add("teacherbox.notifications.max.api-url", () -> "http://127.0.0.1:" + MAX.getAddress().getPort());
+        // the old variable is no longer read (ADR-0056): the bot is the teacher's setting
+        registry.add("teacherbox.notifications.max.token", () -> "env-token");
     }
 
     @AfterAll
@@ -84,7 +86,7 @@ class BotSettingsIntegrationTests {
                 .hasStatusOk()
                 .bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$.configured").isEqualTo(true);
-                    assertThat(json).extractingPath("$.fromEnvironment").isEqualTo(false);
+                    assertThat(json).doesNotHavePath("$.fromEnvironment");
                     assertThat(json).extractingPath("$.botName").isEqualTo("@school_bot");
                 });
 

@@ -141,13 +141,11 @@ export class BotsPanel implements OnInit {
         },
       },
     ];
-    if (!bot.fromEnvironment) {
-      items.push({
-        label: this.t.removeItem,
-        icon: 'tb-i tb-i-delete',
-        command: () => void this.confirmRemove(bot.channel),
-      });
-    }
+    items.push({
+      label: this.t.removeItem,
+      icon: 'tb-i tb-i-delete',
+      command: () => void this.confirmRemove(bot.channel),
+    });
     this.menuItems.set(items);
     this.menu().toggle(event);
   }

@@ -153,14 +153,12 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                   [loading]="pending()"
                   (onClick)="connect()"
                 />
-                @if (!status.clientFromEnvironment) {
-                  <p-button
-                    [label]="t.editClient"
-                    severity="secondary"
-                    [text]="true"
-                    (onClick)="editingClient.set(true)"
-                  />
-                }
+                <p-button
+                  [label]="t.editClient"
+                  severity="secondary"
+                  [text]="true"
+                  (onClick)="editingClient.set(true)"
+                />
               </div>
             } @else {
               <ol class="tb-google-steps">

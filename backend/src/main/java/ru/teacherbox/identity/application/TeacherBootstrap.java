@@ -18,12 +18,15 @@ import ru.teacherbox.shared.Ids;
 
 /**
  * Creates the teacher account on first start ("one instance = one teacher"). If no password is
- * configured, a random one is generated and written to the log once.
+ * configured, a random one is generated and written to the log once. The name is the teacher's setting
+ * (ADR-0056): the account starts as «Учитель», the teacher changes it in the first setup or the account.
  */
 @Component
 class TeacherBootstrap implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(TeacherBootstrap.class);
+    /** The name of a new teacher account. */
+    static final String DEFAULT_NAME = "Учитель";
 
     private final UserRepository users;
     private final PasswordEncoder passwordEncoder;
@@ -56,7 +59,7 @@ class TeacherBootstrap implements ApplicationRunner {
         }
         Instant now = clock.instant();
         User teacher = User.newTeacher(Ids.newId(), config.login(), passwordEncoder.encode(password),
-                Profile.named(config.name()), now);
+                Profile.named(DEFAULT_NAME), now);
         if (generated) {
             teacher.requirePasswordChange();
         }

@@ -91,10 +91,6 @@ export const ru = {
   portalAddress: {
     label: 'Адрес портала',
     asInBrowser: 'Как в браузере',
-    fromServer:
-      'Адрес задан в настройках сервера (TEACHERBOX_PUBLIC_URL) — поменять его можно там.',
-    fromAdministrator:
-      'Адрес задан администратором портала — чтобы его поменять, попросите администратора.',
     hint: 'По этому адресу ученики открывают портал. С него начинаются ссылки-приглашения, ссылки в сообщениях ботов и подписка на календарь.',
     invalid: 'Нужен адрес вида https://school.example.com — без пути после адреса.',
     local:
@@ -209,8 +205,6 @@ export const ru = {
       'notification.no-recipients': 'Нет учеников, которым можно отправить сообщение',
       'notifications.channel-unavailable': 'Этот мессенджер не настроен на сервере',
       'notifications.channel-not-linked': 'Мессенджер не подключён',
-      'notifications.channel-from-environment':
-        'Этот бот задан администратором портала — чтобы изменить его, попросите администратора',
       'notifications.channel-check-failed':
         'Мессенджер не принял токен. Проверьте его и попробуйте снова',
       'notifications.test-failed': 'Не удалось отправить тестовое сообщение',
@@ -223,7 +217,6 @@ export const ru = {
       'backup.exists': 'Эта копия уже есть на сервере',
       'backup.google-not-connected': 'Google Диск не подключён',
       'backup.google-client-missing': 'Сначала укажите Client ID и Client secret',
-      'backup.google-client-from-environment': 'OAuth-клиент Google задан администратором портала',
       'backup.google-origin-invalid': 'Не удалось определить адрес портала',
       'portal.logo-invalid': 'Логотип должен быть картинкой PNG, JPEG, WebP или SVG',
       'portal.logo-too-large': 'Логотип больше 1 МБ',
@@ -290,8 +283,6 @@ export const ru = {
       'schedule.request-resolved': 'На запрос уже ответили',
       'schedule.students-only': 'Раздел доступен только ученикам',
       'schedule.google-client-missing': 'Сначала укажите Client ID и Client secret',
-      'schedule.google-client-from-environment':
-        'OAuth-клиент Google задан администратором портала',
       'schedule.google-origin-invalid': 'Не удалось определить адрес портала',
       'meetings.link-invalid': 'Ссылка должна начинаться с http:// или https://',
       'meetings.room-not-found': 'Такой комнаты уже нет',

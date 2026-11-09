@@ -59,15 +59,4 @@ describe('PortalAddressField', () => {
 
     expect(readableText(hostElement(fixture))).toContain('Это адрес домашней сети');
   });
-
-  it('is read-only when the server sets the address', async () => {
-    control.setValue('https://school.example.com');
-    fixture.componentRef.setInput('fromEnvironment', true);
-    await fixture.whenStable();
-
-    const host = hostElement(fixture);
-    expect(requireElement(host, '#portal-address', HTMLInputElement).readOnly).toBe(true);
-    expect(readableText(host)).toContain('попросите администратора');
-    expect(host.querySelector('p-button')).toBeNull();
-  });
 });

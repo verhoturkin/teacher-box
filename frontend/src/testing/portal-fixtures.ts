@@ -10,7 +10,6 @@ export function portalSettings(overrides: Partial<PortalSettings> = {}): PortalS
     address: null,
     accent: 'indigo',
     logo: null,
-    addressFromEnvironment: false,
     setupCompleted: true,
     ...overrides,
   };

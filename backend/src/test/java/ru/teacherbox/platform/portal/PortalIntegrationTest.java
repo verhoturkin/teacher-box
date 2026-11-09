@@ -213,7 +213,7 @@ class PortalIntegrationTest {
                 .hasStatusOk().bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$.name").isEqualTo("Английский с Марией");
                     assertThat(json).extractingPath("$.address").isEqualTo("https://school.example.com");
-                    assertThat(json).extractingPath("$.addressFromEnvironment").isEqualTo(false);
+                    assertThat(json).doesNotHavePath("$.addressFromEnvironment");
                 });
 
         assertThat(portal.name()).isEqualTo("Английский с Марией");

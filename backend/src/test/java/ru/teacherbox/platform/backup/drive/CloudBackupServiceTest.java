@@ -58,7 +58,7 @@ class CloudBackupServiceTest {
     @BeforeEach
     void setUp() {
         store = new DriveConnectionStore(dir.resolve("google-drive.json"), JsonMapper.builder().build());
-        drive = service(google(null, null));
+        drive = service(google());
         when(portal.name()).thenReturn("Школа");
         when(portal.link(anyString())).thenReturn(Optional.empty());
         when(api.authorizationUrl(anyString(), anyString(), anyString()))
@@ -87,7 +87,6 @@ class CloudBackupServiceTest {
         assertThat(status.connected()).isTrue();
         assertThat(status.account()).isEqualTo("teacher@example.com");
         assertThat(status.clientId()).isEqualTo("id");
-        assertThat(status.clientFromEnvironment()).isFalse();
         assertThat(status.connectedAt()).isEqualTo(clock.instant());
         assertThat(store.load().folderId()).isEqualTo("folder-1");
     }
@@ -128,16 +127,6 @@ class CloudBackupServiceTest {
         assertThatThrownBy(() -> drive.authorize("ftp://school")).isInstanceOf(BusinessRuleException.class);
         assertThatThrownBy(() -> drive.authorize("not an address")).isInstanceOf(BusinessRuleException.class);
         assertThatThrownBy(() -> drive.authorize("https:")).isInstanceOf(BusinessRuleException.class);
-    }
-
-    @Test
-    void theClientFromTheEnvironmentWins() {
-        CloudBackupService fromEnvironment = service(google(" env-id ", "env-secret"));
-
-        assertThat(fromEnvironment.status().clientId()).isEqualTo("env-id");
-        assertThat(fromEnvironment.status().clientFromEnvironment()).isTrue();
-        assertThatThrownBy(() -> fromEnvironment.saveClient("id", "secret")).isInstanceOf(BusinessRuleException.class)
-                .hasMessageContaining("environment");
     }
 
     @Test
@@ -297,7 +286,7 @@ class CloudBackupServiceTest {
     @Test
     void closingStopsTheBackgroundWork() {
         ExecutorService executor = mock(ExecutorService.class);
-        new CloudBackupService(api, store, backups, properties(google(null, null)), portal, clock, executor).close();
+        new CloudBackupService(api, store, backups, properties(google()), portal, clock, executor).close();
         drive.close();
 
         verify(executor).shutdownNow();
@@ -321,8 +310,8 @@ class CloudBackupServiceTest {
         return new BackupProperties("-", 14, false, google);
     }
 
-    private static BackupProperties.Google google(String clientId, String clientSecret) {
-        return new BackupProperties.Google(clientId, clientSecret, null, "https://consent", "https://oauth",
+    private static BackupProperties.Google google() {
+        return new BackupProperties.Google(null, "https://consent", "https://oauth",
                 "https://api", "https://upload");
     }
 

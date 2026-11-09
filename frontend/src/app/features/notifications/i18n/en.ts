@@ -148,7 +148,7 @@ export const en: Translation<typeof ru> = {
     title: 'Bots',
     about:
       'Send notifications to yourself and your students through Telegram, VK or MAX bots. Set up the messaging app your students use.',
-    fromServer: 'configured on the server',
+    fromServer: 'moved from the server settings',
     notLinked: 'your account is not connected',
     telegramBlocked:
       'If Telegram is blocked in the server’s network, ask the administrator to set a proxy in its settings.',
@@ -185,8 +185,6 @@ export const en: Translation<typeof ru> = {
     maxCopy: 'Copy the bot token.',
     created: 'Bot created — continue',
     step2: 'Paste the token',
-    fromEnvironment:
-      'This bot is configured by the portal administrator. Contact them to change its token.',
     replace: (name: string) =>
       `${name} is already connected. To replace it, enter another bot’s token.`,
     vkKeyLabel: 'Community access token',

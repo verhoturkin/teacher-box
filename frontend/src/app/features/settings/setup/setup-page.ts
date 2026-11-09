@@ -137,7 +137,6 @@ const STEPS: readonly Step[] = [
               <tb-portal-address-field
                 inputId="setup-address"
                 [control]="address.controls.address"
-                [fromEnvironment]="settings()?.addressFromEnvironment ?? false"
               />
               @if (timeZone(); as zone) {
                 <p class="tb-muted">{{ t.timeZone(zone) }}</p>

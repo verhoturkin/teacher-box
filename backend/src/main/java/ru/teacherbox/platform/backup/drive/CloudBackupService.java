@@ -49,14 +49,12 @@ public class CloudBackupService implements AutoCloseable {
     }
 
     /**
-     * @param clientFromEnvironment the OAuth client comes from environment variables and cannot be changed here
-     * @param lastError             why the last upload or download failed, or why the connection was lost
-     * @param running               what runs in the background now
-     * @param callbackPath          path of the redirect URI to register in Google Cloud
+     * @param lastError    why the last upload or download failed, or why the connection was lost
+     * @param running      what runs in the background now
+     * @param callbackPath path of the redirect URI to register in Google Cloud
      */
     public record DriveStatus(
             boolean clientConfigured,
-            boolean clientFromEnvironment,
             @Nullable String clientId,
             boolean connected,
             @Nullable String account,
@@ -115,18 +113,13 @@ public class CloudBackupService implements AutoCloseable {
     public DriveStatus status() {
         DriveConnection connection = store.load();
         DriveApi.Client client = client(connection);
-        return new DriveStatus(client != null, properties.google().clientFromEnvironment(),
-                client == null ? null : client.id(), connection.isConnected(), connection.account(),
+        return new DriveStatus(client != null, client == null ? null : client.id(), connection.isConnected(), connection.account(),
                 connection.connectedAt(), connection.lastUploadAt(), connection.lastUploadName(),
                 connection.lastError(), running, CALLBACK_PATH);
     }
 
     /** Stores the OAuth client entered in the interface. */
     public void saveClient(String clientId, String clientSecret) {
-        if (properties.google().clientFromEnvironment()) {
-            throw new BusinessRuleException("backup.google-client-from-environment",
-                    "The Google client is set by environment variables");
-        }
         String id = clientId.strip();
         String secret = clientSecret.strip();
         if (id.isEmpty() || secret.isEmpty()) {
@@ -377,12 +370,8 @@ public class CloudBackupService implements AutoCloseable {
         return connection;
     }
 
-    private DriveApi.@Nullable Client client(DriveConnection connection) {
-        BackupProperties.Google google = properties.google();
-        if (google.clientFromEnvironment()) {
-            return new DriveApi.Client(String.valueOf(google.clientId()).strip(),
-                    String.valueOf(google.clientSecret()).strip());
-        }
+    /** The client entered in the interface (ADR-0056). */
+    private static DriveApi.@Nullable Client client(DriveConnection connection) {
         String id = connection.clientId();
         String secret = connection.clientSecret();
         return id == null || secret == null ? null : new DriveApi.Client(id, secret);

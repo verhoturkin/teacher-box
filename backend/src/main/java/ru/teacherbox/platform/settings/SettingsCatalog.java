@@ -76,8 +76,8 @@ public final class SettingsCatalog {
 
         b.group("portal", w("Портал", "Portal"))
                 .add("TEACHERBOX_PUBLIC_URL", w("Адрес портала", "Portal address"), ADDRESS,
-                        w("Все ссылки портала начинаются с него. Если задан, важнее адреса из «Настройки» → «Портал».",
-                                "Base URL for portal links. Overrides the URL in “Settings” → “Portal”."))
+                        w("Теперь задаётся в «Настройки» → «Портал»; без него ссылки начинаются с https://<домен портала>.",
+                                "Now set in “Settings” → “Portal”. Until it is set, links start with https://<portal domain>."))
                 .add("TEACHERBOX_TIMEZONE", w("Часовой пояс учителя", "Teacher's time zone"), TIME_ZONE,
                         w("По нему считаются даты занятий и отчёты за месяц, например Europe/Moscow.",
                                 "Time zone used for lesson dates and monthly reports, such as Europe/Moscow."));
@@ -115,8 +115,7 @@ public final class SettingsCatalog {
                                 "Enter comma-separated durations, such as 24h,1h. Leave blank to disable reminders."))
                 .add("TEACHERBOX_SCHEDULE_GOOGLE_CLIENT_ID",
                         w("Google: идентификатор клиента OAuth", "Google: OAuth client ID"), TEXT,
-                        w("Можно ввести и в «Настройках» учителя; эта переменная важнее.",
-                                "Also available in the teacher's Settings. This variable takes precedence."))
+                        w("Теперь вводится в «Настройках» учителя.", "Now entered in the teacher's Settings."))
                 .secret("TEACHERBOX_SCHEDULE_GOOGLE_CLIENT_SECRET",
                         w("Google: секрет клиента OAuth", "Google: OAuth client secret"))
                 .add("TEACHERBOX_SCHEDULE_GOOGLE_PROXY", w("Google: прокси", "Google: proxy"), PROXY,
@@ -217,8 +216,8 @@ public final class SettingsCatalog {
                                 "Use true in Docker. With false, restart the portal manually after restoring."))
                 .add("TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID",
                         w("Google Диск: идентификатор клиента OAuth", "Google Drive: OAuth client ID"), TEXT,
-                        w("Копии в Google Диске учителя. Можно ввести и в «Настройках» учителя; эта переменная важнее.",
-                                "Save backups to the teacher's Google Drive. Also available in the teacher's Settings. This variable takes precedence."))
+                        w("Копии в Google Диске учителя. Теперь вводится в «Настройках» учителя.",
+                                "Backups in the teacher's Google Drive. Now entered in the teacher's Settings."))
                 .secret("TEACHERBOX_BACKUP_GOOGLE_CLIENT_SECRET",
                         w("Google Диск: секрет клиента OAuth", "Google Drive: OAuth client secret"))
                 .add("TEACHERBOX_BACKUP_GOOGLE_PROXY", w("Google Диск: прокси", "Google Drive: proxy"), PROXY,

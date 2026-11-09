@@ -45,7 +45,6 @@ class ChannelSettingsServiceTest {
     ChannelSettingsServiceTest() {
         when(telegram.type()).thenReturn(ChannelType.TELEGRAM);
         when(max.type()).thenReturn(ChannelType.MAX);
-        when(telegram.fromEnvironment()).thenReturn(new Credentials("env-token", null));
         when(telegram.create(any())).thenReturn(new FakeMessengerChannel(ChannelType.TELEGRAM));
         when(max.create(any())).thenReturn(new FakeMessengerChannel(ChannelType.MAX));
         when(users.teacherId()).thenReturn(UUID.randomUUID());
@@ -58,31 +57,42 @@ class ChannelSettingsServiceTest {
     }
 
     @Test
-    void startsBotsFromTheEnvironmentAndTheSettings() {
+    void startsOnlyTheBotsOfTheSettings() {
+        when(settings.find(ChannelType.TELEGRAM)).thenReturn(Optional.empty());
         when(settings.find(ChannelType.MAX)).thenReturn(Optional.of(
                 new ChannelSettings(ChannelType.MAX, "db-token", null, "@max_bot", CLOCK.instant())));
 
         service.afterSingletonsInstantiated();
 
-        assertThat(channels.available()).containsExactly(ChannelType.TELEGRAM, ChannelType.MAX);
-        verify(telegram).create(new Credentials("env-token", null));
+        assertThat(channels.available()).containsExactly(ChannelType.MAX);
         verify(max).create(new Credentials("db-token", null));
-        verify(settings, never()).find(ChannelType.TELEGRAM);
+        verify(telegram, never()).create(any());
+        assertThat(service.setups()).filteredOn(setup -> setup.channel() == ChannelType.TELEGRAM)
+                .singleElement()
+                .satisfies(setup -> assertThat(setup.configured()).isFalse());
     }
 
     @Test
-    void botsFromTheEnvironmentCannotBeChangedHere() {
-        assertThatThrownBy(() -> service.save(ChannelType.TELEGRAM, "token", null))
-                .isInstanceOfSatisfying(BusinessRuleException.class,
-                        e -> assertThat(e.code()).isEqualTo("notifications.channel-from-environment"));
-        assertThatThrownBy(() -> service.remove(ChannelType.TELEGRAM)).isInstanceOf(BusinessRuleException.class);
-        assertThat(service.setups()).filteredOn(setup -> setup.channel() == ChannelType.TELEGRAM)
-                .singleElement()
-                .satisfies(setup -> {
-                    assertThat(setup.configured()).isTrue();
-                    assertThat(setup.fromEnvironment()).isTrue();
-                    assertThat(setup.botName()).isNull();
-                });
+    void aFullResetStopsEveryBot() {
+        channels.put(new FakeMessengerChannel(ChannelType.TELEGRAM));
+        channels.put(new FakeMessengerChannel(ChannelType.MAX));
+
+        service.stopConfigured();
+
+        assertThat(channels.available()).isEmpty();
+        verify(polling).restart(ChannelType.TELEGRAM);
+        verify(polling).restart(ChannelType.MAX);
+    }
+
+    @Test
+    void theTeacherRemovesABot() {
+        channels.put(new FakeMessengerChannel(ChannelType.TELEGRAM));
+
+        service.remove(ChannelType.TELEGRAM);
+
+        verify(settings).delete(ChannelType.TELEGRAM);
+        assertThat(channels.isAvailable(ChannelType.TELEGRAM)).isFalse();
+        assertThatThrownBy(() -> service.remove(ChannelType.VK)).isInstanceOf(BusinessRuleException.class);
     }
 
     @Test

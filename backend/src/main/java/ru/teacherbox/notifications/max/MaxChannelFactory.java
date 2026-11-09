@@ -1,6 +1,5 @@
 package ru.teacherbox.notifications.max;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
@@ -10,7 +9,7 @@ import ru.teacherbox.notifications.application.MessengerHttp;
 import ru.teacherbox.notifications.application.NotificationsProperties;
 import ru.teacherbox.notifications.domain.ChannelType;
 
-/** MAX bots: the token from {@code TEACHERBOX_NOTIFICATIONS_MAX_TOKEN} or the settings page. */
+/** MAX bots: the token from the settings page. */
 @Component
 class MaxChannelFactory implements MessengerChannelFactory {
 
@@ -25,12 +24,6 @@ class MaxChannelFactory implements MessengerChannelFactory {
     @Override
     public ChannelType type() {
         return ChannelType.MAX;
-    }
-
-    @Override
-    public @Nullable Credentials fromEnvironment() {
-        String token = max.token();
-        return StringUtils.hasText(token) ? new Credentials(token.strip(), null) : null;
     }
 
     @Override

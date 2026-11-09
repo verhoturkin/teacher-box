@@ -181,8 +181,6 @@ export type GoogleStatus = 'NOT_CONNECTED' | 'CONNECTED' | 'NEEDS_RECONNECT';
 /** Mirrors `GoogleStatusView` of the backend. */
 export interface GoogleCalendarStatus {
   readonly clientConfigured: boolean;
-  /** The OAuth client is set by environment variables and cannot be changed in the UI. */
-  readonly clientFromEnvironment: boolean;
   readonly clientId: string | null;
   readonly status: GoogleStatus;
   readonly busyEnabled: boolean;

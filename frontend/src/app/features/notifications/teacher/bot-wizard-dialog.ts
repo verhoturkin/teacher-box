@@ -147,11 +147,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
             <span class="tb-wizard__number">2</span>
             <span>{{ t.step2 }}</span>
           </button>
-          @if (step() === 2 && bot()?.fromEnvironment === true) {
-            <div class="tb-wizard__body">
-              <p class="tb-muted">{{ t.fromEnvironment }}</p>
-            </div>
-          } @else if (step() === 2) {
+          @if (step() === 2) {
             <form
               tbFieldErrors
               class="tb-wizard__body tb-form"

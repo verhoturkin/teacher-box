@@ -93,8 +93,6 @@ export const en: Translation<typeof ru> = {
   portalAddress: {
     label: 'Portal address',
     asInBrowser: 'Use current address',
-    fromServer: 'Change this address in the server settings (TEACHERBOX_PUBLIC_URL).',
-    fromAdministrator: 'Contact the portal administrator to change this address.',
     hint: 'Students use this address to access the portal. It is also used in invitation links, bot messages and calendar subscriptions.',
     invalid: 'Enter a base URL such as https://school.example.com, without a path.',
     local:
@@ -210,8 +208,6 @@ export const en: Translation<typeof ru> = {
       'notification.no-recipients': 'There are no students to send the message to',
       'notifications.channel-unavailable': 'This messenger is not set up on the server',
       'notifications.channel-not-linked': 'The messenger is not connected',
-      'notifications.channel-from-environment':
-        'This bot is set by the portal administrator — ask the administrator to change it',
       'notifications.channel-check-failed':
         'The messenger did not accept the token. Check it and try again',
       'notifications.test-failed': 'The test message could not be sent',
@@ -224,8 +220,6 @@ export const en: Translation<typeof ru> = {
       'backup.exists': 'This backup is already on the server',
       'backup.google-not-connected': 'Google Drive is not connected',
       'backup.google-client-missing': 'Enter the Client ID and the Client secret first',
-      'backup.google-client-from-environment':
-        'The Google OAuth client is set by the portal administrator',
       'backup.google-origin-invalid': 'The portal address could not be determined',
       'portal.logo-invalid': 'The logo must be a PNG, JPEG, WebP or SVG picture',
       'portal.logo-too-large': 'The logo is larger than 1 MB',
@@ -295,8 +289,6 @@ export const en: Translation<typeof ru> = {
       'schedule.request-resolved': 'The request has already been answered',
       'schedule.students-only': 'This section is for students only',
       'schedule.google-client-missing': 'Enter the Client ID and the Client secret first',
-      'schedule.google-client-from-environment':
-        'The Google OAuth client is set by the portal administrator',
       'schedule.google-origin-invalid': 'The portal address could not be determined',
       'meetings.link-invalid': 'The link must start with http:// or https://',
       'meetings.room-not-found': 'This room no longer exists',

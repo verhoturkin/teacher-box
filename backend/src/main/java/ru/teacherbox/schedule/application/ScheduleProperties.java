@@ -16,8 +16,8 @@ public record ScheduleProperties(
         @DefaultValue Google google) {
 
     /**
-     * OAuth client of the teacher's Google Cloud project. The client id and secret can also be
-     * entered in the settings page; these variables take precedence.
+     * Google APIs. The OAuth client of the teacher's Google Cloud project is the teacher's setting, entered
+     * in the settings page and kept in {@code schedule.google_connection} (ADR-0056).
      *
      * @param proxy            {@code http://host:port} or {@code socks5://host:port} for Google APIs
      * @param authorizationUrl Google's OAuth consent page
@@ -25,16 +25,9 @@ public record ScheduleProperties(
      * @param apiUrl           base address of the Calendar API
      */
     public record Google(
-            @Nullable String clientId,
-            @Nullable String clientSecret,
             @Nullable String proxy,
             @DefaultValue("https://accounts.google.com/o/oauth2/v2/auth") String authorizationUrl,
             @DefaultValue("https://oauth2.googleapis.com") String oauthUrl,
             @DefaultValue("https://www.googleapis.com/calendar/v3") String apiUrl) {
-
-        /** Both client settings come from the environment. */
-        public boolean clientFromEnvironment() {
-            return clientId != null && !clientId.isBlank() && clientSecret != null && !clientSecret.isBlank();
-        }
     }
 }

@@ -16,9 +16,6 @@ public interface MessengerChannelFactory {
 
     ChannelType type();
 
-    /** Settings from environment variables, which take precedence over the settings page. */
-    @Nullable Credentials fromEnvironment();
-
     /**
      * Creates the adapter; no request is made to the messenger yet.
      *

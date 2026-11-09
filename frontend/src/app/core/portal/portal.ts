@@ -26,8 +26,6 @@ export interface PortalInfo {
 
 /** The portal as the teacher and the administrator see it in the settings. */
 export interface PortalSettings extends PortalInfo {
-  /** The address comes from `TEACHERBOX_PUBLIC_URL` on the server and cannot be changed here. */
-  readonly addressFromEnvironment: boolean;
   /** The teacher finished or skipped the first setup. */
   readonly setupCompleted: boolean;
 }

@@ -9,7 +9,6 @@ const NAME = 'teacherbox-20261012-033000-000.zip';
 
 const STATUS: DriveStatus = {
   clientConfigured: true,
-  clientFromEnvironment: false,
   clientId: 'id',
   connected: true,
   account: null,

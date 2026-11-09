@@ -28,16 +28,4 @@ class SchedulePropertiesTest {
         assertThat(ScheduleViews.isLate(ChangeKind.CANCEL, lesson, lesson.minus(Duration.ofHours(24)), policy)).isFalse();
         assertThat(ScheduleViews.isLate(ChangeKind.RESCHEDULE, lesson, lesson.minusSeconds(60), policy)).isFalse();
     }
-
-    @Test
-    void googleClientComesFromTheEnvironmentOnlyWhenComplete() {
-        assertThat(google().clientFromEnvironment()).isFalse();
-        assertThat(new ScheduleProperties.Google("id", " ", null, "a", "o", "c").clientFromEnvironment()).isFalse();
-        assertThat(new ScheduleProperties.Google("id", "secret", null, "a", "o", "c").clientFromEnvironment()).isTrue();
-    }
-
-    private static ScheduleProperties.Google google() {
-        return new ScheduleProperties.Google(null, null, null, "https://accounts.google.com/o/oauth2/v2/auth",
-                "https://oauth2.googleapis.com", "https://www.googleapis.com/calendar/v3");
-    }
 }

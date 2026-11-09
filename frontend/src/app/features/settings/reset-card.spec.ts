@@ -117,7 +117,6 @@ describe('ResetCard', () => {
     backend.expectOne('/api/teacher/portal').flush({
       name: 'Teacher Box',
       address: null,
-      addressFromEnvironment: false,
       setupCompleted: false,
     });
     expect(await setup).toBe(false);

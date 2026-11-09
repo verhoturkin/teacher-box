@@ -24,7 +24,6 @@ import ru.teacherbox.schedule.api.GoogleCalendarDisconnected;
 import ru.teacherbox.schedule.application.ScheduleDirectory;
 import ru.teacherbox.schedule.application.ScheduleNames;
 import ru.teacherbox.schedule.application.LessonRulesService;
-import ru.teacherbox.schedule.application.ScheduleProperties;
 import ru.teacherbox.schedule.domain.FeedTokens;
 import ru.teacherbox.schedule.domain.GoogleConnection;
 import ru.teacherbox.schedule.domain.GoogleStatus;
@@ -56,12 +55,10 @@ public class GoogleCalendarService {
     private static final Logger log = LoggerFactory.getLogger(GoogleCalendarService.class);
 
     /**
-     * @param clientFromEnvironment the OAuth client comes from environment variables and cannot be changed here
-     * @param callbackPath          path of the redirect URI to register in Google Cloud
+     * @param callbackPath path of the redirect URI to register in Google Cloud
      */
     public record GoogleStatusView(
             boolean clientConfigured,
-            boolean clientFromEnvironment,
             @Nullable String clientId,
             GoogleStatus status,
             boolean busyEnabled,
@@ -89,7 +86,6 @@ public class GoogleCalendarService {
     private final LessonRepository lessons;
     private final ScheduleDirectory directory;
     private final ApplicationEventPublisher events;
-    private final ScheduleProperties properties;
     private final LessonRulesService rules;
     private final Portal portal;
     private final InstanceTimeZone timeZone;
@@ -97,14 +93,13 @@ public class GoogleCalendarService {
     private volatile @Nullable AccessToken accessToken;
 
     public GoogleCalendarService(GoogleApi api, GoogleRepository repository, LessonRepository lessons,
-            ScheduleDirectory directory, ApplicationEventPublisher events, ScheduleProperties properties,
+            ScheduleDirectory directory, ApplicationEventPublisher events,
             LessonRulesService rules, Portal portal, InstanceTimeZone timeZone, Clock clock) {
         this.api = api;
         this.repository = repository;
         this.lessons = lessons;
         this.directory = directory;
         this.events = events;
-        this.properties = properties;
         this.rules = rules;
         this.portal = portal;
         this.timeZone = timeZone;
@@ -114,17 +109,13 @@ public class GoogleCalendarService {
     public GoogleStatusView status() {
         GoogleConnection connection = connection();
         GoogleApi.Client client = client(connection);
-        return new GoogleStatusView(client != null, properties.google().clientFromEnvironment(),
+        return new GoogleStatusView(client != null,
                 client == null ? null : client.id(), connection.status(), connection.busyEnabled(),
                 connection.lastError(), connection.lastSyncAt(), connection.connectedAt(), CALLBACK_PATH);
     }
 
     /** Stores the OAuth client entered in the settings. */
     public void saveClient(String clientId, String clientSecret) {
-        if (properties.google().clientFromEnvironment()) {
-            throw new BusinessRuleException("schedule.google-client-from-environment",
-                    "The Google client is set by environment variables");
-        }
         String id = clientId.strip();
         String secret = clientSecret.strip();
         if (id.isEmpty() || secret.isEmpty()) {
@@ -395,12 +386,8 @@ public class GoogleCalendarService {
         return repository.connection().orElseGet(() -> GoogleConnection.none(clock.instant()));
     }
 
-    /** The client from the environment, or the one entered in the settings. */
-    private GoogleApi.@Nullable Client client(GoogleConnection connection) {
-        ScheduleProperties.Google google = properties.google();
-        if (google.clientFromEnvironment() && google.clientId() != null && google.clientSecret() != null) {
-            return new GoogleApi.Client(google.clientId().strip(), google.clientSecret().strip());
-        }
+    /** The client entered in the settings (ADR-0056). */
+    private static GoogleApi.@Nullable Client client(GoogleConnection connection) {
         return connection.clientId() == null || connection.clientSecret() == null ? null
                 : new GoogleApi.Client(connection.clientId(), connection.clientSecret());
     }

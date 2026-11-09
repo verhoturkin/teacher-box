@@ -215,7 +215,7 @@ class TelegramChannelTest {
     }
 
     @Test
-    void factoryReadsTheEnvironment() {
+    void factoryChecksTheToken() {
         ApplicationContextRunner runner = new ApplicationContextRunner()
                 .withUserConfiguration(PropertiesConfiguration.class, TelegramChannelFactory.class)
                 .withBean(RestClient.Builder.class, RestClient::builder);
@@ -223,14 +223,10 @@ class TelegramChannelTest {
         runner.run(context -> {
             TelegramChannelFactory factory = context.getBean(TelegramChannelFactory.class);
             assertThat(factory.type()).isEqualTo(ChannelType.TELEGRAM);
-            assertThat(factory.fromEnvironment()).isNull();
             assertThatThrownBy(() -> factory.create(new Credentials(" ", null)))
                     .isInstanceOf(IllegalArgumentException.class);
             assertThat(factory.create(new Credentials("123:ABC", null))).isInstanceOf(TelegramChannel.class);
         });
-        runner.withPropertyValues("teacherbox.notifications.telegram.bot-token= 123:ABC ")
-                .run(context -> assertThat(context.getBean(TelegramChannelFactory.class).fromEnvironment())
-                        .isEqualTo(new Credentials("123:ABC", null)));
     }
 
     @Test
@@ -250,14 +246,13 @@ class TelegramChannelTest {
         ApplicationContextRunner runner = new ApplicationContextRunner()
                 .withUserConfiguration(PropertiesConfiguration.class, TelegramChannelFactory.class)
                 .withBean(RestClient.Builder.class, RestClient::builder)
-                .withPropertyValues("teacherbox.notifications.telegram.bot-token=123:ABC",
-                        "teacherbox.notifications.telegram.api-url=http://api.telegram.test");
+                .withPropertyValues("teacherbox.notifications.telegram.api-url=http://api.telegram.test");
         try {
             runner.withPropertyValues("teacherbox.notifications.telegram.proxy=http://127.0.0.1:"
                             + proxy.getAddress().getPort())
                     .run(context -> {
                         TelegramChannelFactory factory = context.getBean(TelegramChannelFactory.class);
-                        factory.create(Objects.requireNonNull(factory.fromEnvironment())).send("42", "Привет");
+                        factory.create(new Credentials("123:ABC", null)).send("42", "Привет");
 
                         assertThat(uri.get()).isEqualTo("http://api.telegram.test/bot123:ABC/sendMessage");
                     });

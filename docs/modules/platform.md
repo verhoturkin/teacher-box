@@ -24,8 +24,8 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   run is computed, and on `SettingsChanged` naming `TEACHERBOX_TIMEZONE` or the job's cron variable
   the waiting run is cancelled and computed anew. `@Scheduled` stays only for fixed delays.
 - `storage/` — `FileStorage` implementation (`/data/files/<module>/`).
-- `portal/` — `shared.portal.Portal` implementation: name, address (`TEACHERBOX_PUBLIC_URL` wins), source colour,
-  M3 scheme, named contrast, logo
+- `portal/` — `shared.portal.Portal` implementation: name, address (the teacher's; default
+  `https://<TEACHERBOX_DOMAIN>`), source colour, M3 scheme, named contrast, logo
   (`/api/public/portal`, `/api/public/portal/logo`, `/api/public/portal/manifest.webmanifest` — the web app manifest:
   the portal's name, its logo before the default icons `/icons/icon-{192,512,maskable-512}.png`, `theme_color` /
   `background_color` from `?theme=&background=` (`#rrggbb`, else the default `#efecf8`), `id` and `start_url` `/`), first-run setup flag (`/api/teacher/portal/setup`).
@@ -52,7 +52,7 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   and `POST …/files/{id}/download`: technical backup management only, with no archive download to the device,
   OAuth management, account address, client ID or detailed connection errors. The admin backups page reuses
   `DrivePanel` with a page-scoped `DriveStore`; restored cloud copies refresh the server list.
-  OAuth client — `TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID|_SECRET` or entered by the teacher; proxy
+  OAuth client — entered by the teacher (the old variables imported once, ADR-0056); proxy
   `TEACHERBOX_BACKUP_GOOGLE_PROXY`. REST (teacher): `GET|DELETE /api/teacher/backups/google`, `PUT …/client`,
   `POST …/authorize` (`{origin}` → consent URL), `GET …/files`, `POST …/files/{id}/download` (202, the copy is
   adopted as a backup via `BackupService.adopt` after the archive check), `POST …/uploads/{name}` (202); redirect

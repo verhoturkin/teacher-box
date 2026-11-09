@@ -24,7 +24,6 @@ const BEFORE_RESET: BackupInfo = {
 };
 const DRIVE: DriveStatus = {
   clientConfigured: true,
-  clientFromEnvironment: false,
   clientId: 'id',
   connected: true,
   account: 'teacher@example.com',

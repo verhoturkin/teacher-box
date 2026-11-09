@@ -150,10 +150,20 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   student's last lesson length, else 60, and the overview lost `defaultLessonDuration`;
   `homework.application.DueSoonWindow`, `GET/PUT /api/teacher/homework/settings`
   (`dueSoonMinutes`). Imported values outside the new limits are read as they are until changed._
-- [ ] **363.5 B** The rest of the teacher's settings lose their variables: portal address (the
+- [x] **363.5 B** The rest of the teacher's settings lose their variables: portal address (the
   `TEACHERBOX_DOMAIN` default stays), teacher name, messenger tokens, Google Calendar and Drive
   clients — `fromEnvironment` and «Эта переменная главнее» go away from `ChannelSettingsService`,
   `PortalService`, the Google client services and their views; `SettingsCatalog` keeps them out.
+  _Done: `PortalProperties` holds only `domain` (`TEACHERBOX_DOMAIN`), the default
+  `https://<domain>` while no address is stored; `compose.yaml` passes the domain instead of
+  deriving `TEACHERBOX_PUBLIC_URL`. The bot tokens left `NotificationsProperties` and
+  `MessengerChannelFactory.fromEnvironment`; a full reset stops every bot. The Google client ids
+  left `ScheduleProperties` and `BackupProperties`. `IdentityProperties.Teacher.name` is gone: a
+  new account is «Учитель» (no import, as noted in 363.2). The views lost `fromEnvironment`,
+  `clientFromEnvironment`, `addressFromEnvironment` and their error codes; the frontend only drops
+  the read-only branches and texts (the real settings UI is 363.7; the `m3-expressive` skill was not
+  available, no layout changed). Catalog hints no longer say a variable wins. Wiki lines that
+  offered the variables updated (FAQ, Admin, Messengers, Schedule); the rest of the wiki — 363.9._
 - [ ] **363.6 B** Live administrator settings: upload limits (`HomeworkProperties` read per upload;
   the multipart ceiling of 25 MB / 30 MB stays fixed and bounds the value), proxies (the HTTP client
   factories build the client per request or rebuild on `SettingsChanged`), Telegram API address and

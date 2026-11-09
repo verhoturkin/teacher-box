@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Portal } from '@core/portal/portal';
-import { buttonByText, hostElement, readableText, requireElement, typeInto } from '@testing/dom';
+import { buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
 import { portalSettings } from '@testing/portal-fixtures';
 import { PortalAddressCard } from './portal-address-card';
 import { testProviders } from '@testing/setup';
@@ -61,14 +61,5 @@ describe('PortalAddressCard', () => {
 
     expect(requireElement(host, '#portal-address', HTMLInputElement).value).toBe('http://nas');
     expect(buttonByText(host, 'Сохранить адрес').disabled).toBe(false);
-  });
-
-  it('only shows an address set on the server', async () => {
-    const host = await render(
-      portalSettings({ address: 'https://school.example.com', addressFromEnvironment: true }),
-    );
-
-    expect(readableText(host)).toContain('TEACHERBOX_PUBLIC_URL');
-    expect(host.querySelector('button[type="submit"]')).toBeNull();
   });
 });

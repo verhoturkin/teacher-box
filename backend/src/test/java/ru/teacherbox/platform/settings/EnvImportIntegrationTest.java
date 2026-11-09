@@ -26,7 +26,7 @@ import ru.teacherbox.shared.settings.TeacherSettingsImport;
 @SpringBootTest
 class EnvImportIntegrationTest {
 
-    /** Taken by the version that adds their module's import: AI providers (364.1), the name (363.5). */
+    /** Not imported here: the AI providers (364.1); the name, which the account has kept since its creation. */
     private static final Set<String> LATER = Set.of("TEACHERBOX_AI_PROVIDER", "TEACHERBOX_AI_API_KEY",
             "TEACHERBOX_AI_MODEL", "TEACHERBOX_AI_BASE_URL", "TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT", "TEACHERBOX_AI_EFFORT",
             "TEACHERBOX_AI_FALLBACKS", "TEACHERBOX_AI_MAX_TOKENS", "TEACHERBOX_AI_TIMEOUT",

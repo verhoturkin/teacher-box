@@ -33,14 +33,12 @@ public record IdentityProperties(
     /**
      * @param login         teacher login ({@code TEACHERBOX_IDENTITY_TEACHER_LOGIN})
      * @param password      initial password; generated and logged once when empty
-     * @param name          display name
      * @param resetPassword when {@code true}, the password is reset to {@code password} on start
      *                      (account recovery)
      */
     public record Teacher(
             @DefaultValue("teacher") String login,
             @Nullable String password,
-            @DefaultValue("Учитель") String name,
             @DefaultValue("false") boolean resetPassword) {
     }
 
