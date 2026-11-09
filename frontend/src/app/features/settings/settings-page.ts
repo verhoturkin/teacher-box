@@ -18,7 +18,6 @@ import { UnsavedChanges } from '@core/routing/unsaved-changes';
 import { HelpButton } from '@features/help/parts';
 import { AiApi, AiSettingsPanel } from '@features/ai/parts';
 import { Card } from 'primeng/card';
-import { DefaultPriceCard } from '@features/billing/parts';
 import { AccountPanel } from '@features/identity';
 import { TagsPanel } from '@features/identity/parts';
 import { MeetingsSettingsPanel } from '@features/meetings/parts';
@@ -34,7 +33,7 @@ import { DrivePanel } from './backups/drive-panel';
 import { SettingsApi } from './data-access/settings-api';
 import { PortalSettingsCard } from './portal-settings-card';
 import { ResetCard } from './reset-card';
-import { TimeZoneCard } from './time-zone-card';
+import { LessonSettings } from './lesson-settings';
 import { FailedDeliveriesCard } from './failed-deliveries-card';
 import { FailedDelivery, NotificationsStatus } from './data-access/settings.models';
 import {
@@ -68,13 +67,12 @@ import { T } from './i18n/texts';
     AccountPanel,
     TagsPanel,
     Card,
-    TimeZoneCard,
+    LessonSettings,
     GoogleCalendarPanel,
     CalendarFeedPanel,
     MeetingsSettingsPanel,
     MessengersSettingsPanel,
     FailedDeliveriesCard,
-    DefaultPriceCard,
     AiSettingsPanel,
     PortalSettingsCard,
     BackupsCard,
@@ -203,16 +201,11 @@ import { T } from './i18n/texts';
         }
         @case ('lessons') {
           <div class="tb-settings__lessons">
+            <tb-lesson-settings />
             <div class="tb-stack">
-              <p-card [header]="t.timeAndPrice" styleClass="tb-section-card tb-section-card--flow">
-                <tb-time-zone-card />
-                <tb-default-price-card />
-              </p-card>
               <p-card [header]="t.calls" styleClass="tb-section-card tb-section-card--flow"
                 ><tb-meetings-settings-panel
               /></p-card>
-            </div>
-            <div class="tb-stack">
               <tb-google-calendar-panel />
               <tb-calendar-feed-panel />
             </div>

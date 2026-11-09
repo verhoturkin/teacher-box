@@ -111,6 +111,18 @@ export interface ScheduleSettings {
   readonly reminderMinutes: number[];
 }
 
+/** Mirrors `TeacherLessonRulesController.LessonRulesView` (and its request). */
+export interface LessonRules {
+  /** 15–480. */
+  readonly defaultDurationMinutes: number;
+  /** 0 – 7 days. */
+  readonly lateCancellationMinutes: number;
+  /** At most 3, each 15 minutes – 7 days; empty: no reminders. */
+  readonly reminderMinutes: readonly number[];
+  /** 4–26. */
+  readonly horizonWeeks: number;
+}
+
 /** Mirrors `FeedView` of the backend. */
 export interface CalendarFeed {
   readonly enabled: boolean;

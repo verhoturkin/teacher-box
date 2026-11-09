@@ -11,6 +11,11 @@ import { Appearance } from '@core/theme/appearance';
 export class SettingsApi {
   private readonly http = inject(HttpClient);
 
+  /** The teacher's time zone (a region, e.g. `Asia/Yekaterinburg`); read with the schedule settings. */
+  changeTimeZone(timeZone: string): Observable<{ timeZone: string }> {
+    return this.http.put<{ timeZone: string }>('/api/teacher/settings/time-zone', { timeZone });
+  }
+
   portal(): Observable<PortalSettings> {
     return this.http.get<PortalSettings>('/api/teacher/portal');
   }

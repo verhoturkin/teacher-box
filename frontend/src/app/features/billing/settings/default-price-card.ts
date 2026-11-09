@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputNumber } from 'primeng/inputnumber';
 import { toMajorUnits, toMinorUnits } from '@shared/money/money';
@@ -22,7 +22,7 @@ import { locale } from '@core/i18n/language';
     <tb-load-state [state]="state" [what]="t.what" [compact]="true" (retry)="load()">
       <form id="default-price" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
         <div class="tb-field">
-          <label for="default-price-input">{{ t.label }}</label>
+          <label for="default-price-input">{{ short() ? t.shortLabel : t.label }}</label>
           <p-inputnumber
             inputId="default-price-input"
             formControlName="price"
@@ -34,7 +34,9 @@ import { locale } from '@core/i18n/language';
             [fluid]="true"
             (onBlur)="save()"
           />
-          <small class="tb-hint">{{ t.hint }}</small>
+          @if (!short()) {
+            <small class="tb-hint">{{ t.hint }}</small>
+          }
         </div>
       </form>
     </tb-load-state>
@@ -52,6 +54,9 @@ export class DefaultPriceCard implements OnInit {
   protected readonly state = new LoadState();
   private pending = false;
 
+  /** Beside another field that shares its hint (sketch Lessons): the short label, no hint. */
+  readonly short = input(false);
+
   readonly form = new FormGroup({
     price: new FormControl<number | null>(null, [Validators.required, Validators.min(0)]),
   });
@@ -60,7 +65,8 @@ export class DefaultPriceCard implements OnInit {
     this.load();
   }
 
-  protected load(): void {
+  /** Also after the currency changed: the price is shown in the new one. */
+  load(): void {
     this.api
       .overview(quietContext())
       .pipe(this.state.track())

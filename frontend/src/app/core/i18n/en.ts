@@ -226,6 +226,16 @@ export const en: Translation<typeof ru> = {
       'portal.accent-invalid': 'There is no such colour',
       'portal.address-invalid':
         'Enter a base URL such as https://school.example.com, without a path',
+      'portal.time-zone-invalid': 'That time zone doesn’t exist',
+      'billing.currency-invalid': 'That currency doesn’t exist',
+      'billing.currency-locked': 'Charges or payments have been recorded, so the currency is fixed',
+      'schedule.settings-duration-invalid': 'A lesson must last between 15 and 480 minutes',
+      'schedule.settings-late-cancellation-invalid':
+        'The late cancellation window can be up to 7 days',
+      'schedule.settings-reminders-invalid':
+        'Up to three reminders, each between 15 minutes and 7 days before',
+      'schedule.settings-horizon-invalid': 'Repeating lessons can be created 4–26 weeks ahead',
+      'homework.settings-due-soon-invalid': 'The deadline reminder must be 1–72 hours before',
       'auth.rate-limited': 'Too many sign-in attempts. Wait a minute and try again',
       // ai
       'ai.disabled': 'The AI assistant is not set up on the server',

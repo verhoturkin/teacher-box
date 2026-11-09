@@ -1,6 +1,7 @@
 import {
   CalendarFeed,
   ChangeRequest,
+  LessonRules,
   MyScheduleSummary,
   OffTime,
   ScheduleSettings,
@@ -125,6 +126,16 @@ export function scheduleSettings(overrides: Partial<ScheduleSettings> = {}): Sch
     defaultDurationMinutes: 60,
     lateCancellationMinutes: 1440,
     reminderMinutes: [60, 1440],
+    ...overrides,
+  };
+}
+
+export function lessonRules(overrides: Partial<LessonRules> = {}): LessonRules {
+  return {
+    defaultDurationMinutes: 60,
+    lateCancellationMinutes: 1440,
+    reminderMinutes: [1440, 60],
+    horizonWeeks: 12,
     ...overrides,
   };
 }

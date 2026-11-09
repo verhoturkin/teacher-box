@@ -183,13 +183,20 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   `schedule` in the admin view of a `CRON` setting (`null` for a cron that is not daily at a fixed
   time); the switch and time picker are 363.8. Dropped: `AI_PROXY` → 364.1 (its per-provider clients
   are rebuilt on change; the Anthropic SDK client takes the proxy only when built)._
-- [ ] **363.7 F** Settings «Занятия» (`settings/settings-categories.ts`, `time-zone-card.ts` →
+- [x] **363.7 F** Settings «Занятия» (`settings/settings-categories.ts`, `time-zone-card.ts` →
   editable): «Время и цена» — time zone select (browser zone first), currency select locked with a
   hint after the first payment, default duration, price; new card «Правила» — late cancellation,
   reminders as input chips (24 ч, 1 ч, «+»), the homework due-soon reminder, «Создавать занятия
   серий на N недель вперёд». Saved on change like the other cards. Sketches: «Настройки и аккаунт»
   board 3 `Lessons` (two card columns beside the category list); phone and tablet as boards 10
   `PhoneSettings` and 13 `TabletSettings`.
+  _Done: `settings/lesson-settings.ts` holds both cards (one `PUT` of the lesson rules carries the
+  duration, late cancellation, reminders and horizon), `time-zone-card.ts` removed; the API
+  methods are in `ScheduleApi`, `BillingApi`, `HomeworkApi` and `SettingsApi`. Zones show as
+  «Europe/Moscow (UTC+3)» (the browser has no localised zone names); currencies are every ISO code
+  the browser knows. The server error codes got messages. The `m3-expressive` skill was not
+  available: built from the design system and the sketches. The device-zone note of the old card
+  was dropped (the sketch has none)._
 - [ ] **363.8 F** Administrator settings (`features/admin`): sections «Файлы», «Сеть и прокси»,
   «Вход и сессии», «Резервные копии»; a live value saves without the restart banner; the restart
   banner only for `.env`-only rows that the administrator cannot change here anyway (shown read-only

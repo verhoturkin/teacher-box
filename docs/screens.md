@@ -614,10 +614,19 @@ answers with a short snackbar; there is no «Отменить изменения
   while the draft differs from the saved state a row under «Свой цвет» in «Цвет портала» says what
   changed, with «Отменить» (text) and «Сохранить» (filled), and leaving asks «Отменить
   изменения?». Help opens `teacher/appearance`.
-- **«Занятия»:** «Время и цена» (portal time zone — read-only, set by the administrator; «Цена
-  занятия по умолчанию», saved on change), «Звонки» (built-in calls on/off, external link per
-  student, «Открывать Телемост в приложении» on this device), «Google Календарь», «Подписка на
-  календарь».
+- **«Занятия»** (sketch `Lessons`; `settings/lesson-settings.ts`): two card columns — left
+  «Время и цена» and «Правила», right «Звонки», «Google Календарь», «Подписка на календарь»; one
+  column below two 22 rem columns. «Время и цена»: «Часовой пояс» (a select with search, the
+  device's zone first, «Europe/Moscow (UTC+3)» — region and current offset, *ours*: the browser
+  has no localised zone names), «Валюта» (a select of the ISO currencies by name with the sign,
+  «Российский рубль, ₽»; disabled with a `lock` hint once a charge or payment exists), «Длительность
+  занятия» and «Цена занятия» side by side with one shared hint. «Правила»: «Поздняя отмена — меньше
+  чем за» (hours), «Напоминать ученикам о занятии» as input chips «За 24 ч», «За 1 ч» (longest
+  first, «×» removes) and a dashed assist chip «Добавить» that opens a menu of 15 min – 7 days
+  (hidden at three), «Напоминать о сроке задания за» (hours), «Создавать занятия с повтором вперёд
+  на» (weeks). Selects and chips save at once, numbers on leaving the field or Enter; a refused
+  value goes back to the saved one. «Звонки» (built-in calls on/off, external link per student,
+  «Открывать Телемост в приложении» on this device).
 - **«Ученики»:** one card «Теги учеников» (`identity/tags/tags-panel.ts`, ADR-0055, sketch `Tags`):
   the teacher-only tags as segmented M3 list tiles — drag handle (the arrow keys move too), tonal
   `sell` circle, name, the first six values as tags («ещё N»), a tertiary «ИИ» mark for tags the AI

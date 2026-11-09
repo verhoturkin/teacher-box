@@ -101,6 +101,23 @@ describe('ScheduleApi', () => {
     request.flush(null);
   });
 
+  it('reads and changes the lesson rules', () => {
+    const rules = {
+      defaultDurationMinutes: 60,
+      lateCancellationMinutes: 0,
+      reminderMinutes: [],
+      horizonWeeks: 4,
+    };
+    api.lessonRules().subscribe();
+    api.changeLessonRules(rules).subscribe();
+
+    expect(
+      backend.expectOne({ method: 'GET', url: '/api/teacher/schedule/settings' }),
+    ).toBeTruthy();
+    const change = backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/settings' });
+    expect(change.request.body).toEqual(rules);
+  });
+
   it('calls the personal area endpoints', () => {
     api.settings().subscribe();
     api.myLessons('2026-10-01', '2026-11-01').subscribe();

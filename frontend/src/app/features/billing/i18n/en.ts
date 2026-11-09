@@ -103,6 +103,7 @@ export const en: Translation<typeof ru> = {
   },
   defaultPrice: {
     label: 'Default lesson price',
+    shortLabel: 'Lesson price',
     hint: 'Applies to new students and groups. Set a student’s own price on their details.',
     edit: 'Change the price for new students',
     what: 'the price for new students',

@@ -7,10 +7,10 @@ import { PageDetail } from '@core/routing/page-detail';
 import { UnsavedChanges } from '@core/routing/unsaved-changes';
 import { buttonByText, hostElement, readableText, requireElement, typeInto } from '@testing/dom';
 import { aiStatus, systemPrompt, usageReport } from '@testing/ai-fixtures';
-import { overview } from '@testing/billing-fixtures';
+import { currencySetting, overview } from '@testing/billing-fixtures';
 import { portalSettings } from '@testing/portal-fixtures';
 import { channelSetup, studentMessengers } from '@testing/notification-fixtures';
-import { calendarFeed, scheduleSettings } from '@testing/schedule-fixtures';
+import { calendarFeed, lessonRules, scheduleSettings } from '@testing/schedule-fixtures';
 import { screenWidth, testProviders } from '@testing/setup';
 import { BackupInfo, NotificationsStatus } from './data-access/settings.models';
 import { SettingsPage } from './settings-page';
@@ -66,6 +66,9 @@ describe('SettingsPage', () => {
         break;
       case 'lessons':
         backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
+        backend.expectOne('/api/teacher/schedule/settings').flush(lessonRules());
+        backend.expectOne('/api/teacher/billing/currency').flush(currencySetting());
+        backend.expectOne('/api/teacher/homework/settings').flush({ dueSoonMinutes: 1440 });
         backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
         backend.expectOne('/api/teacher/billing/overview').flush(overview([]));
         backend.expectOne('/api/teacher/schedule/google').flush({
@@ -164,7 +167,7 @@ describe('SettingsPage', () => {
     const list = readableText(requireElement(host, 'nav', HTMLElement));
     expect(list).toContain('Мой аккаунт Профиль, уведомления, вход');
     expect(list).toContain('Портал Название, логотип, цвет');
-    expect(list).toContain('Занятия Пояс, цена, календарь, звонки');
+    expect(list).toContain('Занятия Пояс, цена, правила, календарь');
     expect(list).toContain('Ученики Теги: уровень, класс, формат');
     expect(list).toContain('Мессенджеры Telegram работает 2');
     expect(list).toContain('ИИ-помощник Подключён · 0 % лимита');

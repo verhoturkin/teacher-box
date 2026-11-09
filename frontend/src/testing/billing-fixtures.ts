@@ -1,6 +1,7 @@
 import {
   BillingOverview,
   BillingSummary,
+  CurrencySetting,
   Lesson,
   MonthlyReport,
   MyBillingSummary,
@@ -10,6 +11,10 @@ import {
   StudentBalance,
   StudentLedger,
 } from '@features/billing/data-access/billing.models';
+
+export function currencySetting(overrides: Partial<CurrencySetting> = {}): CurrencySetting {
+  return { currency: 'RUB', locked: false, ...overrides };
+}
 
 export function studentBalance(overrides: Partial<StudentBalance> = {}): StudentBalance {
   return {

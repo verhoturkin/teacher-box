@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 import {
   BillingOverview,
   BillingSummary,
+  CurrencySetting,
   GroupPrice,
   GroupPrices,
   Lesson,
@@ -21,6 +22,18 @@ import { quietContext } from '@core/http/api-error.interceptor';
 @Injectable({ providedIn: 'root' })
 export class BillingApi {
   private readonly http = inject(HttpClient);
+
+  /** The instance currency; the load is quiet (its card shows a failure itself). */
+  currency(): Observable<CurrencySetting> {
+    return this.http.get<CurrencySetting>('/api/teacher/billing/currency', {
+      context: quietContext(),
+    });
+  }
+
+  /** Refused (409 `billing.currency-locked`) once a charge or a payment exists. */
+  changeCurrency(currency: string): Observable<CurrencySetting> {
+    return this.http.put<CurrencySetting>('/api/teacher/billing/currency', { currency });
+  }
 
   /** Price of students and groups added from now on (minor units). */
   changeDefaultPrice(lessonPrice: number): Observable<number> {
