@@ -20,16 +20,43 @@ import static ru.teacherbox.platform.settings.SettingKind.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import ru.teacherbox.platform.settings.SettingDefinition.Access;
+import ru.teacherbox.platform.settings.SettingDefinition.Owner;
 
 /**
- * Every variable of {@code .env.example} with its section and description (ADR-0016), in each language of
- * the interface (ADR-0036).
+ * Every variable the portal reads with its section and description (ADR-0016), in each language of the
+ * interface (ADR-0036). The teacher's settings (ADR-0056) stay here so that an old value can be imported
+ * and the administrator sees which variables are no longer theirs; the rest are {@code .env.example}.
  */
 public final class SettingsCatalog {
 
     /** No hint. */
     private static final Wording NONE = new Wording("", "");
+
+    /** The teacher's settings: they move into the portal (ADR-0056). */
+    static final Set<String> TEACHER = Set.of(
+            "TEACHERBOX_PUBLIC_URL", "TEACHERBOX_TIMEZONE",
+            "TEACHERBOX_BILLING_CURRENCY", "TEACHERBOX_BILLING_DEFAULT_LESSON_DURATION",
+            "TEACHERBOX_HOMEWORK_DUE_SOON_WINDOW",
+            "TEACHERBOX_SCHEDULE_DEFAULT_DURATION", "TEACHERBOX_SCHEDULE_HORIZON",
+            "TEACHERBOX_SCHEDULE_LATE_CANCELLATION", "TEACHERBOX_SCHEDULE_REMINDERS",
+            "TEACHERBOX_SCHEDULE_GOOGLE_CLIENT_ID", "TEACHERBOX_SCHEDULE_GOOGLE_CLIENT_SECRET",
+            "TEACHERBOX_NOTIFICATIONS_TELEGRAM_BOT_TOKEN", "TEACHERBOX_NOTIFICATIONS_VK_TOKEN",
+            "TEACHERBOX_NOTIFICATIONS_VK_GROUP_ID", "TEACHERBOX_NOTIFICATIONS_MAX_TOKEN",
+            "TEACHERBOX_AI_PROVIDER", "TEACHERBOX_AI_API_KEY", "TEACHERBOX_AI_MODEL", "TEACHERBOX_AI_BASE_URL",
+            "TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT", "TEACHERBOX_AI_EFFORT", "TEACHERBOX_AI_FALLBACKS",
+            "TEACHERBOX_AI_MAX_TOKENS", "TEACHERBOX_AI_TIMEOUT",
+            "TEACHERBOX_IDENTITY_TEACHER_NAME",
+            "TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID", "TEACHERBOX_BACKUP_GOOGLE_CLIENT_SECRET");
+
+    /**
+     * The administrator's settings that apply at once: their consumers read them through
+     * {@code shared.settings.LiveProperties} on every call (ADR-0056).
+     */
+    static final Set<String> LIVE = Set.of(
+            "TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS", "TEACHERBOX_NOTIFICATIONS_LINK_CODE_TTL",
+            "TEACHERBOX_BOARDS_BACKUP_KEEP");
     private static final List<SettingDefinition> ALL = build();
 
     private SettingsCatalog() {
@@ -213,7 +240,7 @@ public final class SettingsCatalog {
         b.group("accounts", w("Учётные записи", "Accounts"))
                 .account("TEACHERBOX_IDENTITY_TEACHER_LOGIN", w("Логин учителя", "Teacher username"), false)
                 .account("TEACHERBOX_IDENTITY_TEACHER_PASSWORD", w("Пароль учителя", "Teacher's password"), true)
-                .account("TEACHERBOX_IDENTITY_TEACHER_NAME", w("Имя учителя", "Teacher's name"), false)
+                .add("TEACHERBOX_IDENTITY_TEACHER_NAME", w("Имя учителя", "Teacher's name"), TEXT, NONE)
                 .account("TEACHERBOX_IDENTITY_TEACHER_RESET_PASSWORD",
                         w("Сброс пароля учителя", "Teacher's password reset"), false)
                 .account("TEACHERBOX_IDENTITY_ADMIN_LOGIN", w("Логин администратора", "Administrator username"), false)
@@ -295,7 +322,10 @@ public final class SettingsCatalog {
 
         private Builder put(String name, Wording title, Wording hint, SettingKind kind, List<String> choices,
                 boolean secret, Access access) {
-            settings.add(new SettingDefinition(name, section, group, title, hint, kind, choices, secret, access));
+            Owner owner = access != Access.EDITABLE ? Owner.ENV_ONLY
+                    : TEACHER.contains(name) ? Owner.TEACHER : Owner.ADMIN;
+            settings.add(new SettingDefinition(name, section, group, title, hint, kind, choices, secret, access,
+                    owner, LIVE.contains(name)));
             return this;
         }
     }

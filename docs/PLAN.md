@@ -82,7 +82,7 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
 
 ### Stage 363 — teacher settings out of `.env`
 
-- [ ] **363.1 B** Live settings mechanism (ADR-0056): `SettingDefinition` gets `owner` (`TEACHER` |
+- [x] **363.1 B** Live settings mechanism (ADR-0056): `SettingDefinition` gets `owner` (`TEACHER` |
   `ADMIN` | `ENV_ONLY`) and `live`; `AdminSettingsService.save` applies `live` values at once — it
   replaces them in the `teacherboxAdminSettings` property source and publishes
   `shared.settings.SettingsChanged(names)` — and asks for a restart only for the rest. Consumers
@@ -90,6 +90,13 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   Teacher settings vanish from `/api/admin/settings` and `.env.example`; the administrator sees a
   read-only «Перенесено в настройки учителя» list while such a variable is still set. Controller
   tests first (teacher 403, administrator 200, a live value is in force without a restart).
+  _Done: `owner`/`live`, `moved` list, `applied` in the answer, `shared.settings.LiveProperties`;
+  live so far — `NOTIFICATIONS_MAX_ATTEMPTS`, `NOTIFICATIONS_LINK_CODE_TTL`, `BOARDS_BACKUP_KEEP`;
+  ADR-0056 written (363.9 completes it). Left: the other administrator settings become live in
+  363.6; `SECURITY_JWT_SECRET`, `BACKUP_RESTART`, `LOGGING_*`, `MEETINGS_LIVEKIT_API_URL` stay
+  `ADMIN` with a restart (values saved in the file keep applying) until 363.8 makes them read-only
+  `ENV_ONLY`; the admin page still shows its «restart by hand» step after a live-only save until
+  363.8._
 - [ ] **363.2 B** One-time import: `platform.settings.EnvImport` runs before the modules start
   reading; for each teacher setting with no stored row it copies the value from the environment or
   `SettingsFile` through the module's `api` facade (`ScheduleSettingsFacade`,

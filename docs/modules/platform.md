@@ -4,7 +4,8 @@ Infrastructure: security, HTTP errors, migrations bootstrap, file storage, backu
 portal settings, admin sections and diagnostics. Depends on: `shared`; knows no business module
 (it collects SPI beans). Schema `platform`. ADRs: [0002](../adr/0002-embedded-database.md),
 [0004](../adr/0004-delivery-variants.md), [0010](../adr/0010-administrator-and-diagnostics.md),
-[0014](../adr/0014-portal-settings-reset-and-restore.md), [0016](../adr/0016-admin-settings.md). Operations
+[0014](../adr/0014-portal-settings-reset-and-restore.md), [0016](../adr/0016-admin-settings.md),
+[0056](../adr/0056-teacher-settings-in-the-portal.md). Operations
 guide for people — [`docs/operations.md`](../operations.md) (Russian).
 
 ## Parts
@@ -47,12 +48,21 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   adopted as a backup via `BackupService.adopt` after the archive check), `POST …/uploads/{name}` (202); redirect
   `/api/public/backups/google/callback` → `/teacher/settings?drive=connected|denied|expired|failed#backups`.
   `DriveIntegrationCheck` for the administrator (no account address).
-- `settings/` — admin settings (`/api/admin/settings`): `SettingsCatalog` mirrors `.env.example` (test),
-  values in `<data>/config/settings.properties` loaded first by `AdminSettingsLoader`; secrets write-only;
-  Compose variables and accounts read-only; change confirmed by password, then restart. Each setting has a
-  `section` key (`ai`, `backups`…): the page folds by section (`tb-fold-card`, open ones in `?open=`).
-  Sections, titles, hints and value problems come in the language of the request (`Accept-Language`,
-  `Wording` pairs `ru`/`en`, `SettingKind.problem(…, Language)`; 0.11.1, ADR-0036).
+- `settings/` — admin settings (`/api/admin/settings`): `SettingsCatalog` mirrors `.env.example`
+  (test) except the teacher's settings; values in `<data>/config/settings.properties` loaded first
+  by `AdminSettingsLoader`; secrets write-only; Compose variables and accounts read-only; change
+  confirmed by password. Each `SettingDefinition` has an `owner` (ADR-0056): `TEACHER` settings are
+  not in the administrator's list (refused with `settings.teacher`) — the view's `moved` list names
+  those whose variable is still set (in `.env` or saved in the file before; values never shown);
+  `ADMIN` ones are editable; `ENV_ONLY` ones read-only. A `live` setting applies at once:
+  `AdminSettingsService` replaces the in-force values in the `teacherboxAdminSettings` property
+  source, publishes `shared.settings.SettingsChanged(names)` and answers `applied`; only the other
+  changes restart the portal. Live consumers read through `shared.settings.LiveProperties` (binds
+  their `@ConfigurationProperties` record on every call): so far the notifications delivery attempts
+  and link code lifetime and the boards' daily copies kept. Each setting has a `section` key (`ai`,
+  `backups`…): the page folds by section (`tb-fold-card`, open ones in `?open=`). Sections, titles,
+  hints and value problems come in the language of the request (`Accept-Language`, `Wording` pairs
+  `ru`/`en`, `SettingKind.problem(…, Language)`; 0.11.1, ADR-0036).
 - `admin/` — logs search and temporary log levels, status (version, uptime, memory, disk, DB, health),
   incomplete Modulith events with resubmit (completed ones are deleted nightly after 7 days,
   `EventPublications.purgeCompleted`), integration checks (`IntegrationCheck` beans; names and answers in

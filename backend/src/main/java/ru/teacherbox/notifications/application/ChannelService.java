@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.identity.api.UserDirectory;
@@ -22,6 +23,7 @@ import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.settings.LiveProperties;
 
 /**
  * Connecting messenger accounts: the user gets a one-time code in the portal and sends it to the bot
@@ -36,17 +38,18 @@ public class ChannelService {
     private final ChannelLinkRepository links;
     private final LinkCodeRepository codes;
     private final DeliveryRepository deliveries;
-    private final NotificationsProperties properties;
+    /** Read on every use: the administrator changes the code lifetime without a restart (ADR-0056). */
+    private final LiveProperties<NotificationsProperties> properties;
     private final UserDirectory users;
     private final Clock clock;
 
     public ChannelService(MessengerChannels channels, ChannelLinkRepository links, LinkCodeRepository codes,
-            DeliveryRepository deliveries, NotificationsProperties properties, UserDirectory users, Clock clock) {
+            DeliveryRepository deliveries, Environment environment, UserDirectory users, Clock clock) {
         this.channels = channels;
         this.links = links;
         this.codes = codes;
         this.deliveries = deliveries;
-        this.properties = properties;
+        this.properties = new LiveProperties<>(environment, NotificationsProperties.class);
         this.users = users;
         this.clock = clock;
     }
@@ -71,7 +74,7 @@ public class ChannelService {
                 .orElseThrow(() -> new BusinessRuleException("notifications.channel-unavailable",
                         "Messenger " + type + " is not configured"));
         Instant now = clock.instant();
-        Instant expiresAt = now.plus(properties.linkCodeTtl());
+        Instant expiresAt = now.plus(properties.get().linkCodeTtl());
         String code = LinkCodes.generate();
         codes.deleteStale(recipientId, type, now);
         codes.insert(new LinkCode(LinkCodes.hash(code), recipientId, type, now, expiresAt, null));

@@ -34,6 +34,7 @@ Each business module is a direct subpackage of `ru.teacherbox` ([ADR-0001](../do
 | Password confirmation for dangerous actions | `shared.security.PasswordConfirmation` (implemented by `identity`) |
 | Absolute links (messages, invites, calendars, OAuth redirects) | `shared.portal.Portal.link(...)` — never the request address ([ADR-0014](../docs/adr/0014-portal-settings-reset-and-restore.md)) |
 | Outbound HTTP | `RestClient` from `shared.http.OutboundHttp` (HTTP/1.1, buffered body, proxy); per-integration proxy `TEACHERBOX_<MODULE>_..._PROXY` parsed by `OutboundProxy.setting`; Russian services go direct ([ADR-0009](../docs/adr/0009-external-integrations.md)) |
+| A setting the administrator changes without a restart (ADR-0056) | read it on every call through `shared.settings.LiveProperties` (never keep it in a field) and mark it `live` in `SettingsCatalog`; what is built from it (a client, a schedule) rebuilds on `shared.settings.SettingsChanged` |
 | Full reset | SPI `shared.reset.DataReset` — **every new table goes into the module's `tables()` and `erase()`**, or `ResetIntegrationTest` fails |
 | Admin / bot audit | `shared.diagnostics.AuditLog` (no personal data) |
 | External service health | SPI `shared.diagnostics.IntegrationCheck` (collected by `platform`) |

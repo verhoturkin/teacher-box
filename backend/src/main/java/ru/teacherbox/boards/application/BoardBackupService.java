@@ -12,6 +12,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.boards.domain.BackupKind;
@@ -27,6 +28,7 @@ import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.shared.files.FileStorage;
 import ru.teacherbox.shared.security.CurrentUser;
+import ru.teacherbox.shared.settings.LiveProperties;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -51,17 +53,18 @@ public class BoardBackupService {
     private final BoardService boards;
     private final SceneRepository scenes;
     private final FileStorage storage;
-    private final BoardsProperties properties;
+    /** Read on every use: the administrator changes the copies kept without a restart (ADR-0056). */
+    private final LiveProperties<BoardsProperties> properties;
     private final JsonMapper json;
     private final Clock clock;
     private final ApplicationEventPublisher events;
 
     public BoardBackupService(BoardService boards, SceneRepository scenes, FileStorage storage,
-            BoardsProperties properties, JsonMapper json, Clock clock, ApplicationEventPublisher events) {
+            Environment environment, JsonMapper json, Clock clock, ApplicationEventPublisher events) {
         this.boards = boards;
         this.scenes = scenes;
         this.storage = storage;
-        this.properties = properties;
+        this.properties = new LiveProperties<>(environment, BoardsProperties.class);
         this.json = json;
         this.clock = clock;
         this.events = events;
@@ -124,7 +127,7 @@ public class BoardBackupService {
             copy(scene(boardId), BackupKind.DAILY);
             List<BoardBackup> daily = scenes.findBackups(boardId).stream()
                     .filter(backup -> backup.kind() == BackupKind.DAILY).toList();
-            daily.stream().skip(Math.max(properties.backupKeep(), 1))
+            daily.stream().skip(Math.max(properties.get().backupKeep(), 1))
                     .forEach(old -> scenes.deleteBackup(boardId, old.id()));
             collectGarbage(boardId);
         }
