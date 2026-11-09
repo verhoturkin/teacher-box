@@ -64,7 +64,7 @@ public class ScheduleQueries {
     private final ChangeRequestRepository requests;
     private final ScheduleDirectory directory;
     private final ScheduleProperties properties;
-    private final ZoneId zone;
+    private final InstanceTimeZone timeZone;
     private final Clock clock;
 
     public ScheduleQueries(LessonRepository lessons, RepeatRuleRepository series, ChangeRequestRepository requests,
@@ -74,7 +74,7 @@ public class ScheduleQueries {
         this.requests = requests;
         this.directory = directory;
         this.properties = properties;
-        this.zone = timeZone.zoneId();
+        this.timeZone = timeZone;
         this.clock = clock;
     }
 
@@ -156,12 +156,12 @@ public class ScheduleQueries {
 
     /** The teacher's view of what is ahead of a student (group lessons included): series grouped. */
     public UpcomingLessons studentUpcoming(UUID studentId) {
-        LocalDate today = LocalDate.ofInstant(clock.instant(), zone);
+        LocalDate today = LocalDate.ofInstant(clock.instant(), zone());
         return upcoming(lessons.findStartingBetween(studentId, start(today), start(today.plusDays(MAX_RANGE_DAYS))));
     }
 
     public UpcomingLessons groupUpcoming(UUID groupId) {
-        LocalDate today = LocalDate.ofInstant(clock.instant(), zone);
+        LocalDate today = LocalDate.ofInstant(clock.instant(), zone());
         return upcoming(lessons.findStartingBetweenOfGroup(groupId, start(today),
                 start(today.plusDays(MAX_RANGE_DAYS))));
     }
@@ -246,7 +246,7 @@ public class ScheduleQueries {
 
     public ScheduleSummary summary() {
         Instant now = clock.instant();
-        LocalDate today = LocalDate.ofInstant(now, zone);
+        LocalDate today = LocalDate.ofInstant(now, zone());
         List<LessonView> week = lessons(today, today.plusDays(WEEK_DAYS));
         Instant tomorrow = start(today.plusDays(1));
         List<LessonView> upcoming = week.stream()
@@ -272,7 +272,7 @@ public class ScheduleQueries {
 
     public MyScheduleSummary studentSummary(UUID studentId) {
         Instant now = clock.instant();
-        LocalDate today = LocalDate.ofInstant(now, zone);
+        LocalDate today = LocalDate.ofInstant(now, zone());
         LessonView next = lessons.findNextScheduled(studentId, now)
                 .map(lesson -> views(List.of(lesson)).getFirst().forStudent(studentId))
                 .orElse(null);
@@ -287,7 +287,7 @@ public class ScheduleQueries {
     }
 
     public ScheduleSettings settings() {
-        return new ScheduleSettings(zone.getId(), properties.defaultDuration(),
+        return new ScheduleSettings(zone().getId(), properties.defaultDuration(),
                 properties.lateCancellation().toMinutes(),
                 properties.reminders().stream().map(Duration::toMinutes).toList());
     }
@@ -336,10 +336,15 @@ public class ScheduleQueries {
     }
 
     private Instant start(LocalDate day) {
-        return day.atStartOfDay(zone).toInstant();
+        return day.atStartOfDay(zone()).toInstant();
     }
 
     private static NotFoundException lessonNotFound() {
         return new NotFoundException("schedule.lesson-not-found", "Lesson not found");
+    }
+
+    /** The instance time zone, read per call: the teacher may change it at any time. */
+    private ZoneId zone() {
+        return timeZone.zoneId();
     }
 }

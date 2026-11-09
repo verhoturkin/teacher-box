@@ -117,7 +117,7 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   admin `moved` list of 363.1. Moved: the AI variables → 364.1 (its provider tables take them
   through the same SPI; until then they are not marked), `IDENTITY_TEACHER_NAME` → 363.5 (the
   name is in the account since its creation; nothing to import)._
-- [ ] **363.3 B** Time zone in the database: `InstanceTimeZone` backed by `platform.portal`
+- [x] **363.3 B** Time zone in the database: `InstanceTimeZone` backed by `platform.portal`
   (`portal_settings.time_zone`, migration), read per call; the seven classes that keep `ZoneId zone`
   in a field (`HomeworkSummaryService`, `NotificationService`, `LessonEvents`,
   `LessonRepetitionService`, …) read it per call; the `@Scheduled(zone = "${teacherbox.timezone}")`
@@ -126,6 +126,13 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   `SchedulingConfigurer` that re-registers triggers on `SettingsChanged` (also needed by 363.6 for
   the backup crons). `PUT /api/teacher/settings/time-zone`; changing it shifts no stored `Instant`.
   Tests: a job fires by the new zone after the change.
+  _Done: `InstanceTimeZone` is a class over a supplier (`platform.portal.PortalTimeZone`, empty or
+  unknown → `Europe/Moscow`; `PlatformProperties.timezone` removed); the column came with 363.2
+  (`V3`), so no new migration. The ten classes with a `ZoneId` field read it per call. The cron jobs
+  implement the SPI `shared.time.ZonedJob` (cron property + default) and `platform.core.ZonedJobs`
+  schedules them, reading the zone and the cron per computed run and rescheduling on
+  `SettingsChanged` (`TEACHERBOX_TIMEZONE` or the job's cron variable). No `GET` of its own: the
+  zone is read from `GET /api/me/schedule/settings`._
 - [ ] **363.4 B** Lesson rules in `schedule`: table `schedule_settings` (default duration, late
   cancellation, reminders as a list of durations, horizon) replaces `ScheduleProperties` for these
   fields; `GET/PUT /api/teacher/schedule/settings` (`ScheduleQueries.settings`, validation: duration

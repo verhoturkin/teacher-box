@@ -18,12 +18,22 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
 - `core/` — auto-configuration, `Clock` (UTC), `teacherbox.*` platform properties, `shared.persistence.MigrationConnection`
   (module migrations run on one connection outside the pool, open until shutdown: H2 compiles `check (x in (…))`
   against the session that altered the table, and a pooled session is closed by the pool sooner or later).
+  `ZonedJobs` (a `SchedulingConfigurer`, ADR-0056) schedules every SPI bean `shared.time.ZonedJob`
+  (nightly housekeeping of `identity`, `notifications`, `billing`, events; board copies, series
+  extension, backups) by its cron property in the instance time zone; both are read when the next
+  run is computed, and on `SettingsChanged` naming `TEACHERBOX_TIMEZONE` or the job's cron variable
+  the waiting run is cancelled and computed anew. `@Scheduled` stays only for fixed delays.
 - `storage/` — `FileStorage` implementation (`/data/files/<module>/`).
 - `portal/` — `shared.portal.Portal` implementation: name, address (`TEACHERBOX_PUBLIC_URL` wins), source colour,
   M3 scheme, named contrast, logo
   (`/api/public/portal`, `/api/public/portal/logo`, `/api/public/portal/manifest.webmanifest` — the web app manifest:
   the portal's name, its logo before the default icons `/icons/icon-{192,512,maskable-512}.png`, `theme_color` /
   `background_color` from `?theme=&background=` (`#rrggbb`, else the default `#efecf8`), `id` and `start_url` `/`), first-run setup flag (`/api/teacher/portal/setup`).
+  `PortalTimeZone` keeps the teacher's time zone in `portal_settings.time_zone` (ADR-0056): the bean
+  `shared.time.InstanceTimeZone` reads it on every call (empty or unknown — `Europe/Moscow`),
+  `PUT /api/teacher/settings/time-zone` (`TEACHER` only; a region of the time zone database, else
+  422 `portal.time-zone-invalid`) stores it and publishes `SettingsChanged(TEACHERBOX_TIMEZONE)`.
+  Stored instants do not move; dates, reminders and jobs follow the new zone at once.
   Address changes by admin are audited.
 - `backup/` — scheduled backups (`TEACHERBOX_BACKUP_CRON`; backups of every kind older than
   `TEACHERBOX_BACKUP_KEEP_DAYS`, 14 by default, are deleted after a new one), download, restore via restart (check

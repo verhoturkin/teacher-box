@@ -5,18 +5,18 @@ import java.time.Duration;
 import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.notifications.persistence.ChatRepository;
 import ru.teacherbox.notifications.persistence.DeliveryRepository;
 import ru.teacherbox.notifications.persistence.PushSubscriptionRepository;
+import ru.teacherbox.shared.time.ZonedJob;
 
 /**
  * Nightly removal of old finished deliveries, expired buttons and dialogs of the bots and web push devices that
  * stopped answering (the inbox is kept).
  */
 @Component
-public class NotificationsHousekeeping {
+public class NotificationsHousekeeping implements ZonedJob {
 
     static final Duration DELIVERY_RETENTION = Duration.ofDays(90);
     /** A chat's dialog (and the account chosen in it) is forgotten after this idle time. */
@@ -38,9 +38,23 @@ public class NotificationsHousekeeping {
         this.clock = clock;
     }
 
-    @Scheduled(cron = "${teacherbox.notifications.housekeeping-cron:0 20 4 * * *}",
-            zone = "${teacherbox.timezone:Europe/Moscow}")
-    void run() {
+    @Override
+    public String name() {
+        return "notifications-housekeeping";
+    }
+
+    @Override
+    public String cronProperty() {
+        return "teacherbox.notifications.housekeeping-cron";
+    }
+
+    @Override
+    public String defaultCron() {
+        return "0 20 4 * * *";
+    }
+
+    @Override
+    public void run() {
         purge(clock.instant());
     }
 

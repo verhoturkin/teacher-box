@@ -26,12 +26,12 @@ import ru.teacherbox.shared.time.InstanceTimeZone;
 public class OffTimeService {
 
     private final OffTimeRepository offTimes;
-    private final ZoneId zone;
+    private final InstanceTimeZone timeZone;
     private final Clock clock;
 
     public OffTimeService(OffTimeRepository offTimes, InstanceTimeZone timeZone, Clock clock) {
         this.offTimes = offTimes;
-        this.zone = timeZone.zoneId();
+        this.timeZone = timeZone;
         this.clock = clock;
     }
 
@@ -39,7 +39,7 @@ public class OffTimeService {
     @Transactional(readOnly = true)
     public List<OffTimeView> current() {
         Instant now = clock.instant();
-        return offTimes.findCurrent(now, LocalDate.ofInstant(now, zone)).stream().map(OffTimeView::of).toList();
+        return offTimes.findCurrent(now, LocalDate.ofInstant(now, zone())).stream().map(OffTimeView::of).toList();
     }
 
     @Transactional
@@ -71,7 +71,7 @@ public class OffTimeService {
             throw new BusinessRuleException("schedule.range-invalid", "The period must be up to 62 days long");
         }
         return overlapping(from, to).stream()
-                .flatMap(offTime -> offTime.between(from, to, zone).stream()
+                .flatMap(offTime -> offTime.between(from, to, zone()).stream()
                         .map(occurrence -> new OffTimePeriod(offTime.id(), occurrence.start(), occurrence.end(),
                                 offTime.note())))
                 .sorted(Comparator.comparing(OffTimePeriod::start))
@@ -81,17 +81,22 @@ public class OffTimeService {
     /** When the teacher does not work in {@code [from, to)}: the periods only. */
     List<BusyTime> busy(Instant from, Instant to) {
         return overlapping(from, to).stream()
-                .flatMap(offTime -> offTime.between(from, to, zone).stream())
+                .flatMap(offTime -> offTime.between(from, to, zone()).stream())
                 .map(occurrence -> new BusyTime(occurrence.start(), occurrence.end()))
                 .toList();
     }
 
     private List<OffTime> overlapping(Instant from, Instant to) {
-        return offTimes.findOverlapping(from, to, LocalDate.ofInstant(from, zone).minusDays(1),
-                LocalDate.ofInstant(to, zone));
+        return offTimes.findOverlapping(from, to, LocalDate.ofInstant(from, zone()).minusDays(1),
+                LocalDate.ofInstant(to, zone()));
     }
 
     private static NotFoundException notFound(UUID offTimeId) {
         return new NotFoundException("schedule.off-time-not-found", "Off time not found");
+    }
+
+    /** The instance time zone, read per call: the teacher may change it at any time. */
+    private ZoneId zone() {
+        return timeZone.zoneId();
     }
 }

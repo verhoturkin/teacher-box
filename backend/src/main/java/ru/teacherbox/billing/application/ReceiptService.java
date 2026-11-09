@@ -14,7 +14,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -27,6 +26,7 @@ import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.shared.files.FileStorage;
 import ru.teacherbox.shared.files.StoredFile;
+import ru.teacherbox.shared.time.ZonedJob;
 
 /**
  * Receipts of payments: the teacher attaches, replaces and removes them; the teacher and the student of the
@@ -34,7 +34,7 @@ import ru.teacherbox.shared.files.StoredFile;
  * ones older than a day are removed.
  */
 @Service
-public class ReceiptService {
+public class ReceiptService implements ZonedJob {
 
     static final Duration PENDING_TTL = Duration.ofDays(1);
     private static final Logger log = LoggerFactory.getLogger(ReceiptService.class);
@@ -125,9 +125,23 @@ public class ReceiptService {
         return PaymentView.of(payment);
     }
 
-    @Scheduled(cron = "${teacherbox.billing.housekeeping-cron:0 25 4 * * *}",
-            zone = "${teacherbox.timezone:Europe/Moscow}")
-    void run() {
+    @Override
+    public String name() {
+        return "receipt-housekeeping";
+    }
+
+    @Override
+    public String cronProperty() {
+        return "teacherbox.billing.housekeeping-cron";
+    }
+
+    @Override
+    public String defaultCron() {
+        return "0 25 4 * * *";
+    }
+
+    @Override
+    public void run() {
         purgePending(clock.instant());
     }
 

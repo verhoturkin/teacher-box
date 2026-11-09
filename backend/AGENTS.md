@@ -53,7 +53,9 @@ types (`JwtEncoder`, `PasswordEncoder`, `Clock`, `FileStorage`, `CurrentUser`).
 - Java 25: `record` for DTOs/events/value objects, `sealed` for closed hierarchies, pattern matching in
   `switch`. No Lombok. Constructor injection only, `private final` fields, no field `@Autowired`.
 - `@NullMarked` (JSpecify) in every package's `package-info.java`; nullable — explicit `@Nullable`.
-- Time — `Instant` (UTC) from the injected `Clock`; teacher time zone — `TEACHERBOX_TIMEZONE`.
+- Time — `Instant` (UTC) from the injected `Clock`; teacher time zone —
+  `shared.time.InstanceTimeZone` (read `zoneId()` per call, never keep it in a field); a cron job
+  in that zone — SPI `shared.time.ZonedJob`, not `@Scheduled(zone = …)`.
 - DB — `JdbcClient` with explicit SQL; table names schema-prefixed (`billing.payments`), unquoted; mutable
   tables have `version` (optimistic locking `UPDATE ... WHERE id = ? AND version = ?`). No SQL, FKs or JOINs to
   other schemas; only UUIDs cross module boundaries.

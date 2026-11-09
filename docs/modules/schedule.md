@@ -9,7 +9,9 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
 ## Rules
 
 - **Time:** a lesson stores its start as `Instant`; its repeat rule stores weekday, local time and dates in
-  `TEACHERBOX_TIMEZONE` (DST does not shift lessons). The UI gets the zone from `GET /api/me/schedule/settings`.
+  the instance time zone (DST does not shift lessons; `InstanceTimeZone`, read per call — the
+  teacher changes it in the portal, ADR-0056). The UI gets the zone from
+  `GET /api/me/schedule/settings`.
 - **Repetition:** Once or every 1–4 weeks, configured in the lesson form, with optional inclusive end date.
   `OccurrenceGeneration` extends the 84-day rolling horizon (`TEACHERBOX_SCHEDULE_HORIZON`) nightly.
   Only-this edits preserve the immutable original occurrence date and mark an exception. This-and-following

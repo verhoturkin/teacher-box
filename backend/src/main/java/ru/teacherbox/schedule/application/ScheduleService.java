@@ -71,7 +71,7 @@ public class ScheduleService {
     private final LessonEvents lessonEvents;
     private final ApplicationEventPublisher events;
     private final ScheduleProperties properties;
-    private final ZoneId zone;
+    private final InstanceTimeZone timeZone;
     private final Clock clock;
 
     public ScheduleService(LessonRepository lessons, RepeatRuleRepository series, ChangeRequestRepository requests,
@@ -85,7 +85,7 @@ public class ScheduleService {
         this.lessonEvents = lessonEvents;
         this.events = events;
         this.properties = properties;
-        this.zone = timeZone.zoneId();
+        this.timeZone = timeZone;
         this.clock = clock;
     }
 
@@ -256,7 +256,7 @@ public class ScheduleService {
     @Transactional
     public int generateOccurrences() {
         Instant now = clock.instant();
-        LocalDate today = LocalDate.ofInstant(now, zone);
+        LocalDate today = LocalDate.ofInstant(now, zone());
         LocalDate until = today.plusDays(properties.horizonDays());
         int created = 0;
         for (RepeatRule active : series.findActive(today)) {
@@ -292,7 +292,7 @@ public class ScheduleService {
     @Transactional
     public void stopGroup(UUID groupId) {
         Instant now = clock.instant();
-        LocalDate tomorrow = LocalDate.ofInstant(now, zone).plusDays(1);
+        LocalDate tomorrow = LocalDate.ofInstant(now, zone()).plusDays(1);
         for (RepeatRule active : series.findActive(tomorrow)) {
             if (groupId.equals(active.groupId())) {
                 stop(active, tomorrow, false);
@@ -333,7 +333,7 @@ public class ScheduleService {
             if (lessons.existsForSeriesDate(source.id(), date)) {
                 continue;
             }
-            Instant start = source.startOn(date, zone);
+            Instant start = source.startOn(date, zone());
             lessons.insert(groupId == null
                     ? Lesson.plan(Ids.newId(), required(source.studentId()), source.id(), date, start,
                             source.durationMinutes(), source.title(), source.meetingUrl(), now)
@@ -396,4 +396,9 @@ public class ScheduleService {
     }
 
 
+
+    /** The instance time zone, read per call: the teacher may change it at any time. */
+    private ZoneId zone() {
+        return timeZone.zoneId();
+    }
 }

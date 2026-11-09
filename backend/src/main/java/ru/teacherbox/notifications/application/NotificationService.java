@@ -72,7 +72,7 @@ public class NotificationService {
     private final ChatEngine chat;
     private final KeyboardCodec keyboards;
     private final Portal portal;
-    private final ZoneId zone;
+    private final InstanceTimeZone timeZone;
     private final Clock clock;
 
     public NotificationService(InboxRepository inbox, ChannelLinkRepository links, DeliveryRepository deliveries,
@@ -87,7 +87,7 @@ public class NotificationService {
         this.preferences = preferences;
         this.pushSubscriptions = pushSubscriptions;
         this.broadcasts = broadcasts;
-        this.zone = timeZone.zoneId();
+        this.timeZone = timeZone;
         this.users = users;
         this.chat = chat;
         this.keyboards = keyboards;
@@ -135,7 +135,7 @@ public class NotificationService {
         if (mayUseMessengers(recipientId) && settings.sendsToMessengers(kind)) {
             String text = truncate(notification.messengerText(join == null ? notification.body() : join.body()));
             List<OutgoingButton> linkButtons = linkButtons(recipientId, link, join);
-            Instant notBefore = settings.deliverAt(now, zone);
+            Instant notBefore = settings.deliverAt(now, zone());
             for (ChannelLink channelLink : links.findByRecipient(recipientId)) {
                 if (channelLink.enabled() && channels.isAvailable(channelLink.channel())) {
                     List<List<OutgoingButton>> rows = new ArrayList<>();
@@ -326,5 +326,10 @@ public class NotificationService {
 
     private static String truncate(String text) {
         return text.length() <= MAX_MESSENGER_TEXT ? text : text.substring(0, MAX_MESSENGER_TEXT - 1) + "…";
+    }
+
+    /** The instance time zone, read per call: the teacher may change it at any time. */
+    private ZoneId zone() {
+        return timeZone.zoneId();
     }
 }

@@ -17,6 +17,7 @@ import org.springframework.boot.health.actuate.endpoint.CompositeHealthDescripto
 import org.springframework.boot.health.actuate.endpoint.HealthDescriptor;
 import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
 import org.springframework.boot.info.BuildProperties;
+import ru.teacherbox.shared.time.InstanceTimeZone;
 
 /** Technical state of the instance for the administrator: no data of users. */
 public class SystemStatus {
@@ -51,12 +52,12 @@ public class SystemStatus {
 
     private final Path dataDir;
     private final LogFiles logs;
-    private final String timeZone;
+    private final InstanceTimeZone timeZone;
     private final ObjectProvider<BuildProperties> build;
     private final ObjectProvider<HealthEndpoint> health;
     private final Clock clock;
 
-    public SystemStatus(Path dataDir, LogFiles logs, String timeZone, ObjectProvider<BuildProperties> build,
+    public SystemStatus(Path dataDir, LogFiles logs, InstanceTimeZone timeZone, ObjectProvider<BuildProperties> build,
             ObjectProvider<HealthEndpoint> health, Clock clock) {
         this.dataDir = dataDir;
         this.logs = logs;
@@ -89,7 +90,7 @@ public class SystemStatus {
                 now.minus(Duration.ofMillis(uptime)),
                 uptime / 1_000,
                 Runtime.version().toString(),
-                timeZone,
+                timeZone.zoneId().getId(),
                 dataDir.toAbsolutePath().normalize().toString(),
                 runtime.totalMemory() - runtime.freeMemory(),
                 runtime.maxMemory(),

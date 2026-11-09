@@ -27,11 +27,11 @@ import ru.teacherbox.shared.time.InstanceTimeZone;
 class LessonEvents {
 
     private final ApplicationEventPublisher events;
-    private final ZoneId zone;
+    private final InstanceTimeZone timeZone;
 
     LessonEvents(ApplicationEventPublisher events, InstanceTimeZone timeZone) {
         this.events = events;
-        this.zone = timeZone.zoneId();
+        this.timeZone = timeZone;
     }
 
     void scheduled(Lesson lesson, Instant now) {
@@ -91,6 +91,11 @@ class LessonEvents {
 
     void completed(Lesson lesson, UUID studentId, UUID completionId, boolean missed, Instant now) {
         events.publishEvent(new LessonCompleted(completionId, lesson.id(), studentId, lesson.groupId(),
-                LocalDate.ofInstant(lesson.startsAt(), zone), lesson.durationMinutes(), lesson.title(), missed, now));
+                LocalDate.ofInstant(lesson.startsAt(), zone()), lesson.durationMinutes(), lesson.title(), missed, now));
+    }
+
+    /** The instance time zone, read per call: the teacher may change it at any time. */
+    private ZoneId zone() {
+        return timeZone.zoneId();
     }
 }

@@ -1,9 +1,7 @@
 package ru.teacherbox.platform.portal;
 
 import java.time.Clock;
-import java.time.DateTimeException;
 import java.time.ZoneId;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -36,7 +34,7 @@ public class PortalSettingsImport implements TeacherSettingsImport {
         values.text(ADDRESS).flatMap(PortalAddress::parse)
                 .filter(address -> store("address", address))
                 .ifPresent(address -> stored.add(ADDRESS));
-        values.text(TIME_ZONE).flatMap(PortalSettingsImport::zone)
+        values.text(TIME_ZONE).flatMap(PortalTimeZone::parse).map(ZoneId::getId)
                 .filter(zone -> store("time_zone", zone))
                 .ifPresent(zone -> stored.add(TIME_ZONE));
         return stored;
@@ -50,11 +48,4 @@ public class PortalSettingsImport implements TeacherSettingsImport {
                 .update() == 1;
     }
 
-    private static Optional<String> zone(String id) {
-        try {
-            return Optional.of(ZoneId.of(id).getId());
-        } catch (DateTimeException e) {
-            return Optional.empty();
-        }
-    }
 }

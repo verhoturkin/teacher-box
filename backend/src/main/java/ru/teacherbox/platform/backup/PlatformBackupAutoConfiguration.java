@@ -15,7 +15,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.json.JsonMapper;
@@ -33,6 +32,7 @@ import ru.teacherbox.shared.portal.Portal;
 import ru.teacherbox.shared.reset.DataReset;
 import ru.teacherbox.shared.security.PasswordConfirmation;
 import ru.teacherbox.shared.time.InstanceTimeZone;
+import ru.teacherbox.shared.time.ZonedJob;
 
 /** Backups in {@code <data-dir>/backups} on a schedule and on demand, their copies in Google Drive. */
 @AutoConfiguration(after = PlatformCoreAutoConfiguration.class,
@@ -120,7 +120,7 @@ public class PlatformBackupAutoConfiguration {
     }
 
     /** Runs only when scheduling is enabled ({@code teacherbox.scheduling.enabled}). */
-    static class ScheduledBackup {
+    static class ScheduledBackup implements ZonedJob {
 
         private static final Logger log = LoggerFactory.getLogger(ScheduledBackup.class);
 
@@ -130,8 +130,23 @@ public class PlatformBackupAutoConfiguration {
             this.backups = backups;
         }
 
-        @Scheduled(cron = "${teacherbox.backup.cron:0 30 3 * * *}", zone = "${teacherbox.timezone:Europe/Moscow}")
-        void run() {
+        @Override
+        public String name() {
+            return "backup";
+        }
+
+        @Override
+        public String cronProperty() {
+            return "teacherbox.backup.cron";
+        }
+
+        @Override
+        public String defaultCron() {
+            return "0 30 3 * * *";
+        }
+
+        @Override
+        public void run() {
             try {
                 backups.create(BackupKind.SCHEDULED);
             } catch (RuntimeException e) {

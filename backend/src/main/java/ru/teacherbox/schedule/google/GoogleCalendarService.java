@@ -90,7 +90,7 @@ public class GoogleCalendarService {
     private final ApplicationEventPublisher events;
     private final ScheduleProperties properties;
     private final Portal portal;
-    private final ZoneId zone;
+    private final InstanceTimeZone timeZone;
     private final Clock clock;
     private volatile @Nullable AccessToken accessToken;
 
@@ -104,7 +104,7 @@ public class GoogleCalendarService {
         this.events = events;
         this.properties = properties;
         this.portal = portal;
-        this.zone = timeZone.zoneId();
+        this.timeZone = timeZone;
         this.clock = clock;
     }
 
@@ -171,7 +171,7 @@ public class GoogleCalendarService {
             String calendarId = connection.calendarId() != null
                     && api.calendarExists(tokens.accessToken(), connection.calendarId())
                     ? connection.calendarId()
-                    : api.createCalendar(tokens.accessToken(), portal.name(), zone.getId());
+                    : api.createCalendar(tokens.accessToken(), portal.name(), zone().getId());
             Instant now = clock.instant();
             repository.forgetAll();
             repository.save(connection.connected(tokens.refreshToken(), calendarId, pending.busy(), now));
@@ -359,8 +359,8 @@ public class GoogleCalendarService {
         if (!description.isEmpty()) {
             event.put("description", String.join("\n", description));
         }
-        event.put("start", Map.of("dateTime", lesson.startsAt().toString(), "timeZone", zone.getId()));
-        event.put("end", Map.of("dateTime", lesson.endsAt().toString(), "timeZone", zone.getId()));
+        event.put("start", Map.of("dateTime", lesson.startsAt().toString(), "timeZone", zone().getId()));
+        event.put("end", Map.of("dateTime", lesson.endsAt().toString(), "timeZone", zone().getId()));
         event.put("status", "confirmed");
         return event;
     }
@@ -423,5 +423,10 @@ public class GoogleCalendarService {
         } catch (URISyntaxException e) {
             throw new BusinessRuleException("schedule.google-origin-invalid", "Unexpected portal address");
         }
+    }
+
+    /** The instance time zone, read per call: the teacher may change it at any time. */
+    private ZoneId zone() {
+        return timeZone.zoneId();
     }
 }
