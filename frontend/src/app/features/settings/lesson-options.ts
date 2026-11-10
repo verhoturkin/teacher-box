@@ -39,6 +39,11 @@ export const REMINDER_CHOICES: readonly number[] = [
   7 * DAY,
 ];
 
+/** The time zone of this device. */
+export function deviceZone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
 /** «UTC+3», «UTC−3:30», «UTC» — the offset of a zone now. */
 function offset(zone: string): string {
   const name = new Intl.DateTimeFormat('en-GB', { timeZone: zone, timeZoneName: 'shortOffset' })

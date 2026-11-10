@@ -697,6 +697,45 @@ answers with a short snackbar; there is no «Отменить изменения
   download button and «⋮» with restore / delete / «Отправить в Google Диск»), «Google Диск»,
   «Опасные действия» (restore from a copy and «Очистить портал»; both ask the password in a dialog).
 
+## First-run setup (teacher)
+
+`/teacher/setup` (`features/settings/setup/setup-page.ts`, ADR-0014; sketches `OnbFlow`,
+`OnbPortal`, `OnbTime`, `OnbRules`, `OnbDone`, `OnbPhone`) is a full-screen page outside the
+shell: no rail and no bottom bar. `setupGuard` sends the teacher here while the generated password
+is in force and leads the home page here until the setup is finished.
+
+- **Frame.** Expanded and wider: a 64 px top bar (portal logo, «Первый вход», «Шаг N из M», «?»,
+  «Выйти») over one surface pane (28 px corners, 32 px inside). From large the pane has three
+  columns: a vertical stepper (56 px rows, the current one secondary-container, done steps with a
+  check), the form, and the example column; on expanded the example goes under the form. Compact
+  and medium (`OnbPhone`): the window is the surface, the top bar holds «Назад» (icon), «Шаг N из
+  M» and «Пропустить», a 4 px linear progress under it, one column, and «Далее» fills a
+  `tb-bottom-actions` bar pinned at the bottom.
+- **Steps.** «Пароль» (only while `passwordChangeRequired`; the password form saves it and moves
+  on) → «Вы и портал» → «Время и оплата» → «Правила» → «Готово». Each step is a heading, a lead
+  line and `tb-section-card` cards built from the **Settings field components** (one component per
+  setting: `tb-teacher-name-field`, `tb-profile-photo`, `tb-portal-name-field`,
+  `tb-portal-address-field` with «Проверить», `tb-time-zone-field`, `tb-duration-field`,
+  `tb-currency-field`, `tb-price-field`, `tb-late-cancellation-field`, `tb-reminders-field`,
+  `tb-due-soon-field`, `tb-horizon-field`). Every field is prefilled: the saved value, the time
+  zone of the device and the address the portal is open at.
+- **Actions.** «Назад» (text, never back to «Пароль»), «Пропустить» (text; «Пропустить — настрою
+  позже» on the first step) and «Далее» (filled). «Далее» saves only what changed and moves on;
+  «Пропустить» puts the step back to the saved values and moves on without saving. A step that
+  cannot be saved stays open.
+- **Examples.** «Вы и портал»: «Так увидит ученик» — the sign-in card with the portal's name and
+  the invitation message with the teacher's name and address. «Время и оплата»: «Так будет в
+  расписании» — a lesson next Thursday at 18:00 with the length and price, the month report in the
+  chosen zone, and a note that a later zone change keeps booked lessons. «Правила»: «Как это
+  работает» — one example per rule on a sample week (lesson Thursday 10:00, deadline Friday
+  18:00), following the fields as they change.
+- **«Готово».** «Портал готов»: four cards in two columns (the first secondary-container) —
+  «Добавить первого ученика» (state: how many students), «Подключить мессенджер» (the Settings
+  state line), «Подключить ИИ-помощника» (the AI state), «Google Календарь» («Подключён» /
+  «Нужно подключить заново»). A card or «Перейти в портал» marks the setup done and opens its page.
+  The example column is «Что вы настроили»: rows of the saved values, each with «Изменить» back to
+  its step.
+
 ## Student cabinet
 
 - **Home** (`student-home.ts`): a feed in `tb-panes`, header «Привет, <имя>» with «Следующее занятие

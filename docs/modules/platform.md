@@ -124,6 +124,11 @@ Backups and settings file live in the data directory, not in the DB.
 
 `features/admin/` (logs, status, events, integrations, backups, settings, diagnostics — `/admin/**`),
 `features/settings/` (teacher settings: portal cards, setup wizard, backups with the Google Drive panel `backups/drive-panel.ts` and `DriveStore`, reset), `core/portal`.
+The setup wizard (`settings/setup/setup-page.ts`, route `/teacher/setup` outside the shell) is
+built from the Settings field components (`settings/fields/`, `billing` `PriceField`, `identity`
+`TeacherNameField` and `ProfilePhoto`, `core/portal` `PortalAddressField`); it saves through the
+same endpoints as Settings and calls `POST /api/teacher/portal/setup` on «Готово»
+([screens.md](../screens.md#first-run-setup-teacher)).
 Portal settings have three separate filled cards: Identity (name and logo), Appearance (base-colour
 swatches, popup custom colour picker with HEX input, nine-scheme gallery and named contrast choices), and
 Preview. At a container width of at least 48 em, Identity and Appearance occupy the left column and Preview

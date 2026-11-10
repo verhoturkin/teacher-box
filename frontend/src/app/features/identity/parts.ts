@@ -5,6 +5,8 @@
  * Pages are loaded lazily through index.ts; keeping them apart keeps them out of other features' bundles.
  */
 export { ChangePasswordForm } from './account/change-password-form';
+export { ProfilePhoto } from './account/profile-photo';
+export { TEACHER_NAME_VALIDATORS, TeacherNameField } from './account/teacher-name-field';
 export { ChipColors } from './colors/chip-colors';
 export { TeacherColors } from './colors/teacher-colors';
 export { IdentityApi } from './data-access/identity-api';
@@ -13,6 +15,7 @@ export { MemberPicker } from './groups/member-picker';
 export type { MemberSelection, MemberPickerOption } from './groups/member-picker';
 export { memberRecipients } from './groups/member-recipients';
 export type {
+  Account,
   StudentGroup,
   StudentTag,
   TagChanged,

@@ -146,16 +146,18 @@ export const routes: Routes = [
     loadComponent: () => import('@features/boards').then((m) => m.BoardPage),
   },
   {
+    // The first setup takes the whole screen, no rail (ADR-0014, sketch OnbFlow).
+    path: 'teacher/setup',
+    title: N.setup,
+    canActivate: [roleGuard('TEACHER'), loadTeacherColors],
+    loadComponent: () => import('@features/settings').then((m) => m.SetupPage),
+  },
+  {
     path: 'teacher',
     canActivate: [roleGuard('TEACHER'), loadTeacherColors],
     canActivateChild: [setupGuard],
     loadComponent: () => import('@core/layout/teacher-layout').then((m) => m.TeacherLayout),
     children: [
-      {
-        path: 'setup',
-        title: N.setup,
-        loadComponent: () => import('@features/settings').then((m) => m.SetupPage),
-      },
       {
         path: '',
         title: NAV.today,

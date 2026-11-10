@@ -357,8 +357,8 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   Settings page, removal. Checks: JDK 25 (Temurin) installed; Docker has no daemon here, so
   `scripts/e2e.sh` did not run — the backend (`spring-boot:run`) and `ng serve` ran by hand with the
   mock, and `providers`, `diagnostics`, `operations/settings-and-restart` all passed (7 + 1 + 6).
-  Backend untouched, `verify.sh backend` not run; `verify.sh docs` and `frontend` (lint, 90 % test gates,
-  build) passed. The picker in the editor is covered by unit tests only, not by E2E._
+  Backend untouched, `verify.sh backend` not run; `verify.sh docs` and `frontend` (lint, 90 % test
+  gates, build) passed. The picker in the editor is covered by unit tests only, not by E2E._
 
 ### Stage 365 — first-run wizard redesign
 
@@ -369,7 +369,7 @@ vertical stepper on expanded widths, a linear progress with «Шаг 2 из 4» 
 default, so «Далее» on each step is a valid setup. Expanded widths use three columns: steps · form
 · «как увидит ученик» / examples.
 
-- [ ] **365.1 F** Steps: «Пароль» (only while `passwordChangeRequired`) → «Вы и портал» (your name,
+- [x] **365.1 F** Steps: «Пароль» (only while `passwordChangeRequired`) → «Вы и портал» (your name,
   photo optional, portal name, portal address with «Проверить» — prefilled from `TEACHERBOX_DOMAIN`
   or the browser's origin) → «Время и оплата» (time zone with the browser's zone suggested,
   currency, default duration, price) → «Правила» (late cancellation, lesson reminders, the homework
@@ -380,6 +380,31 @@ default, so «Далее» on each step is a valid setup. Expanded widths use th
   Sketches: «Настройки и аккаунт» board 20 `OnbFlow` (steps, transitions, defaults table), 21
   `OnbPortal`, 22 `OnbTime`, 23 `OnbRules`, 24 `OnbDone`, 25 `OnbPhone` (compact: top bar with
   «Шаг 2 из 4», linear progress, «Далее» pinned at the bottom).
+  _Done: `/teacher/setup` left the shell (own route, full screen); the step count includes
+  «Пароль» when it is shown («Шаг 1 из 5»). One component per setting, used by both Settings and
+  the wizard: `settings/fields/` (`TimeZoneField`, `CurrencyField`, `DurationField`,
+  `LateCancellationField`, `RemindersField`, `DueSoonField`, `HorizonField`, `PortalNameField`),
+  `billing` `PriceField` (inside `DefaultPriceCard`), `identity` `TeacherNameField` and
+  `ProfilePhoto` (out of `AccountPanel`); a field only edits its control and the host saves —
+  Settings on change, the wizard on «Далее». «Пропустить» goes to the next step and puts the step
+  back to the server's values (sketch OnbFlow), not to the end of the wizard; the setup is marked
+  done on «Готово» («Перейти в портал» or a card). «Проверить» is frontend-only (our decision: the
+  page may only connect to its own origin, so it loads `/icons/icon-192.png` from the address as
+  an image, 8 s); it replaces «Как в браузере» in the wizard; its texts are in
+  `core/portal/portal-address-check-texts.ts`, not `CORE_T`, and the two-line hint styles are a
+  component stylesheet (`shared/ui/support-hint.scss`): the initial bundle is at its 1.2 MB
+  budget. The rule examples stand in the
+  example column (below the form on compact) rather than under each field, as the sketch has
+  them, on a sample week. Deviations from the sketches: «Проверить» is tonal and «Перейти в
+  портал» 40 dp (design system: outlined only beside a header action, one button height); medium
+  uses the compact layout; the example column goes under the form from expanded to large and
+  stands as the third column from large (75em). A filled field has one support area, so the hint
+  lines of a field are one `small.tb-support-lines`. No backend change. Left for 365.2: the home
+  queue; for 365.3: help `teacher/setup` (still describes the old steps), wiki `Install`, E2E
+  `first-run.spec.ts` (`reset-and-restore.spec.ts` was moved to the new steps but not run here:
+  no Docker daemon). Checked by hand against the real backend (JDK 25) and `ng serve` with
+  Playwright at 1440 and 390 px: every step, «Назад» / «Далее» / «Пропустить», «Проверить»,
+  then Settings show the chosen zone and price._
 - [ ] **365.2 F** The home queue's «С чего начать» (`home/todo-queue.ts`) drops «Цена занятия»
   (asked in the wizard) and adds «Подключить ИИ» after «Мессенджер»; finished steps of the wizard
   are not repeated there. Sketch: board 24 `OnbDone` (the same four next steps).

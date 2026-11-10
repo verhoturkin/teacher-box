@@ -83,11 +83,14 @@ test('the full reset deletes the data and opens the first setup', async ({ page 
   await dialog.getByRole('button', { name: 'Сбросить', exact: true }).click();
 
   await expect(page).toHaveURL(/\/teacher\/setup$/);
-  await expect(page.getByRole('heading', { name: 'Первоначальная настройка' })).toBeVisible();
-  await expect(page.locator('.tb-side-nav__brand')).toContainText('Teacher Box');
-  await page.getByRole('button', { name: 'Далее' }).click();
-  await expect(page.getByRole('heading', { name: 'Адрес портала' })).toBeVisible();
-  await page.getByRole('button', { name: 'Пропустить настройку' }).click();
+  await expect(page.getByRole('heading', { name: 'Вы и портал' })).toBeVisible();
+  await expect(page.locator('.tb-setup__login')).toContainText('Teacher Box');
+  await page.getByRole('button', { name: 'Пропустить — настрою позже' }).click();
+  await expect(page.getByRole('heading', { name: 'Время и оплата' })).toBeVisible();
+  await page.getByRole('button', { name: 'Пропустить', exact: true }).click();
+  await page.getByRole('button', { name: 'Пропустить', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Портал готов' })).toBeVisible();
+  await page.getByRole('button', { name: 'Перейти в портал' }).click();
   await expect(page).toHaveURL(/\/teacher$/);
 
   await page.goto('/teacher/students');

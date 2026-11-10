@@ -17,7 +17,6 @@ import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { SelectButton } from 'primeng/selectbutton';
 import { DEFAULT_PORTAL_NAME, Portal, PortalSettings } from '@core/portal/portal';
-import { MAX_PORTAL_NAME_LENGTH } from '@core/portal/portal-address';
 import { guardUnsaved } from '@core/routing/unsaved-changes';
 import { PortalLogo } from '@core/portal/portal-logo';
 import { Tooltip } from 'primeng/tooltip';
@@ -36,7 +35,9 @@ import { SettingsApi } from './data-access/settings-api';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
+import { MAX_PORTAL_NAME_LENGTH } from '@core/portal/portal-address';
 import { T } from './i18n/texts';
+import { PortalNameField } from './fields/portal-name-field';
 import { SHARED_T } from '@shared/i18n/texts';
 import {
   BASE_COLORS,
@@ -69,6 +70,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     PortalLogo,
     FieldErrors,
     NgTemplateOutlet,
+    PortalNameField,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -82,18 +84,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
               styleClass="tb-section-card tb-section-card--flow"
               class="tb-portal-identity"
             >
-              <div class="tb-field">
-                <label for="portal-name">{{ t.name }}</label>
-                <input
-                  pInputText
-                  id="portal-name"
-                  formControlName="name"
-                  [placeholder]="defaultName"
-                  [maxlength]="maxNameLength"
-                  autocomplete="off"
-                />
-                <small class="tb-hint">{{ t.nameHint }}</small>
-              </div>
+              <tb-portal-name-field [control]="form.controls.name" />
               <input
                 #logoFile
                 type="file"
@@ -657,7 +648,6 @@ export class PortalSettingsCard implements OnInit {
   private readonly snackbar = inject(Snackbar);
 
   protected readonly defaultName = DEFAULT_PORTAL_NAME;
-  protected readonly maxNameLength = MAX_PORTAL_NAME_LENGTH;
   protected readonly settings = signal<PortalSettings | null>(null);
   protected readonly pending = signal(false);
   protected readonly uploading = signal(false);

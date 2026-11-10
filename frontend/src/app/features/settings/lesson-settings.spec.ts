@@ -66,6 +66,13 @@ describe('LessonSettings', () => {
     fixture.componentInstance.form.controls[name].setValue(value);
   }
 
+  /** Enter in the field of a setting. */
+  function enter(host: HTMLElement, field: string): void {
+    host
+      .querySelector(`${field} p-inputnumber`)
+      ?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  }
+
   /** «×» of a reminder chip (its label keeps the number and the unit together with a no-break space). */
   function removeButton(host: HTMLElement, label: string): HTMLButtonElement {
     const button = Array.from(host.querySelectorAll<HTMLButtonElement>('button[aria-label]')).find(
@@ -96,8 +103,8 @@ describe('LessonSettings', () => {
     expect(text).toContain('За 1 ч');
     expect(text).toContain('До трёх напоминаний.');
     const form = fixture.componentInstance.form.value;
-    expect(form).toEqual({ duration: 60, late: 24, dueSoon: 24, horizon: 12 });
-    const zones = fixture.debugElement.query(By.css('p-select[inputId="time-zone-input"]'));
+    expect(form).toMatchObject({ duration: 60, late: 24, dueSoon: 24, horizon: 12 });
+    const zones = fixture.debugElement.query(By.css('tb-time-zone-field p-select'));
     const options = zoneValues(zones.injector.get(Select).options);
     expect(options[0]).toBe(device);
     expect(options).toContain('Europe/Moscow');
@@ -106,32 +113,32 @@ describe('LessonSettings', () => {
 
   it('saves a new time zone at once and keeps the old one when it is refused', async () => {
     await render();
-    await emit('p-select[inputId="time-zone-input"]', 'onChange', 'Asia/Yekaterinburg');
+    await emit('tb-time-zone-field p-select', 'onChange', 'Asia/Yekaterinburg');
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/settings/time-zone' });
     expect(request.request.body).toEqual({ timeZone: 'Asia/Yekaterinburg' });
     request.flush({ timeZone: 'Asia/Yekaterinburg' });
     await fixture.whenStable();
 
-    await emit('p-select[inputId="time-zone-input"]', 'onChange', 'Asia/Tokyo');
+    await emit('tb-time-zone-field p-select', 'onChange', 'Asia/Tokyo');
     backend
       .expectOne('/api/teacher/settings/time-zone')
       .flush({ code: 'portal.time-zone-invalid' }, { status: 422, statusText: 'Invalid' });
     await fixture.whenStable();
-    const zones = fixture.debugElement.query(By.css('p-select[inputId="time-zone-input"]'));
+    const zones = fixture.debugElement.query(By.css('tb-time-zone-field p-select'));
     expect(zoneValues(zones.injector.get(Select).options)[1]).toBe('Asia/Yekaterinburg');
   });
 
   it('changes the currency, shows the price in it and reads the setting again after a refusal', async () => {
     await render();
-    await emit('p-select[inputId="currency-input"]', 'onChange', 'RUB');
-    await emit('p-select[inputId="currency-input"]', 'onChange', 'EUR');
+    await emit('tb-currency-field p-select', 'onChange', 'RUB');
+    await emit('tb-currency-field p-select', 'onChange', 'EUR');
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/billing/currency' });
     expect(request.request.body).toEqual({ currency: 'EUR' });
     request.flush(currencySetting({ currency: 'EUR' }));
     backend.expectOne('/api/teacher/billing/overview').flush(overview([]));
     await fixture.whenStable();
 
-    await emit('p-select[inputId="currency-input"]', 'onChange', 'USD');
+    await emit('tb-currency-field p-select', 'onChange', 'USD');
     backend
       .expectOne({ method: 'PUT', url: '/api/teacher/billing/currency' })
       .flush({ code: 'billing.currency-locked' }, { status: 409, statusText: 'Conflict' });
@@ -144,22 +151,22 @@ describe('LessonSettings', () => {
 
   it('locks the currency with a hint once a charge or a payment is recorded', async () => {
     const host = await render(true);
-    const select = fixture.debugElement.query(By.css('p-select[inputId="currency-input"]'));
+    const select = fixture.debugElement.query(By.css('tb-currency-field p-select'));
     expect(select.injector.get(Select).$disabled()).toBe(true);
     expect(readableText(host)).toContain('Уже есть начисления или оплаты — валюту сменить нельзя.');
-    expect(host.querySelector('.tb-lesson-settings__locked .tb-i-lock')).not.toBeNull();
+    expect(host.querySelector('.tb-hint--icon .tb-i-lock')).not.toBeNull();
   });
 
   it('saves a changed length, late cancellation and horizon on leaving the field', async () => {
     await render();
-    await emit('p-inputnumber[inputId="duration-input"]', 'onBlur');
+    await emit('tb-duration-field p-inputnumber', 'onBlur');
     setNumber('duration', 90);
-    await emit('p-inputnumber[inputId="duration-input"]', 'onBlur');
+    await emit('tb-duration-field p-inputnumber', 'onBlur');
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/settings' });
     expect(request.request.body).toEqual(lessonRules({ defaultDurationMinutes: 90 }));
     // a change made meanwhile follows the first
     setNumber('late', 12);
-    await emit('p-inputnumber[inputId="late-input"]', 'onBlur');
+    await emit('tb-late-cancellation-field p-inputnumber', 'onBlur');
     request.flush(lessonRules({ defaultDurationMinutes: 90 }));
     await fixture.whenStable();
     const second = backend.expectOne('/api/teacher/schedule/settings');
@@ -170,12 +177,12 @@ describe('LessonSettings', () => {
     await fixture.whenStable();
 
     setNumber('horizon', 30);
-    await emit('p-inputnumber[inputId="horizon-input"]', 'onBlur');
+    await emit('tb-horizon-field p-inputnumber', 'onBlur');
     backend
       .expectOne('/api/teacher/schedule/settings')
       .flush({ code: 'schedule.settings-horizon-invalid' }, { status: 422, statusText: 'Invalid' });
     await fixture.whenStable();
-    expect(fixture.componentInstance.form.value).toEqual({
+    expect(fixture.componentInstance.form.value).toMatchObject({
       duration: 90,
       late: 12,
       dueSoon: 24,
@@ -186,10 +193,10 @@ describe('LessonSettings', () => {
   it('puts the saved value back into an emptied field', async () => {
     await render();
     setNumber('duration', null);
-    await emit('p-inputnumber[inputId="duration-input"]', 'onBlur');
+    await emit('tb-duration-field p-inputnumber', 'onBlur');
     setNumber('dueSoon', null);
-    await emit('p-inputnumber[inputId="due-soon-input"]', 'onBlur');
-    expect(fixture.componentInstance.form.value).toEqual({
+    await emit('tb-due-soon-field p-inputnumber', 'onBlur');
+    expect(fixture.componentInstance.form.value).toMatchObject({
       duration: 60,
       late: 24,
       dueSoon: 24,
@@ -197,22 +204,34 @@ describe('LessonSettings', () => {
     });
   });
 
-  it('saves the length on Enter and the rule fields on Enter in their card', async () => {
+  it('saves a number field on Enter', async () => {
     const host = await render();
     setNumber('duration', 45);
-    host.querySelector('form')?.dispatchEvent(new Event('submit'));
+    enter(host, 'tb-duration-field');
     backend
       .expectOne('/api/teacher/schedule/settings')
       .flush(lessonRules({ defaultDurationMinutes: 45 }));
     await fixture.whenStable();
 
     setNumber('horizon', 8);
-    host
-      .querySelector('#lesson-rules')
-      ?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    enter(host, 'tb-horizon-field');
     backend
       .expectOne('/api/teacher/schedule/settings')
       .flush(lessonRules({ defaultDurationMinutes: 45, horizonWeeks: 8 }));
+    await fixture.whenStable();
+
+    setNumber('late', 2);
+    enter(host, 'tb-late-cancellation-field');
+    backend
+      .expectOne('/api/teacher/schedule/settings')
+      .flush(
+        lessonRules({ defaultDurationMinutes: 45, horizonWeeks: 8, lateCancellationMinutes: 120 }),
+      );
+    await fixture.whenStable();
+
+    setNumber('dueSoon', 2);
+    enter(host, 'tb-due-soon-field');
+    backend.expectOne('/api/teacher/homework/settings').flush({ dueSoonMinutes: 120 });
     await fixture.whenStable();
   });
 
@@ -256,16 +275,16 @@ describe('LessonSettings', () => {
 
   it('saves the homework deadline reminder in hours as minutes', async () => {
     await render();
-    await emit('p-inputnumber[inputId="due-soon-input"]', 'onBlur');
+    await emit('tb-due-soon-field p-inputnumber', 'onBlur');
     setNumber('dueSoon', 6);
-    await emit('p-inputnumber[inputId="due-soon-input"]', 'onBlur');
+    await emit('tb-due-soon-field p-inputnumber', 'onBlur');
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/homework/settings' });
     expect(request.request.body).toEqual({ dueSoonMinutes: 360 });
     request.flush({ dueSoonMinutes: 360 });
     await fixture.whenStable();
 
     setNumber('dueSoon', 100);
-    await emit('p-inputnumber[inputId="due-soon-input"]', 'onBlur');
+    await emit('tb-due-soon-field p-inputnumber', 'onBlur');
     backend
       .expectOne('/api/teacher/homework/settings')
       .flush({ code: 'homework.settings-due-soon-invalid' }, { status: 422, statusText: 'No' });
