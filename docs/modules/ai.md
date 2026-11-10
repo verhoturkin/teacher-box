@@ -127,7 +127,8 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
   `LESSON_SUMMARY` is allowed in `system_prompts` by migration `V2__lesson_summary_feature.sql`.
 - Tests: Anthropic adapter against a local HTTP server (SDK uses OkHttp); OpenAI-compatible — `MockRestServiceServer`.
   Module tests run on `FakeProvider` (an OpenAI-compatible row whose adapter returns
-  `FakeLlmClient`).
+  `FakeLlmClient`). E2E (`e2e/tests/ai/providers.spec.ts`) runs against `e2e/ai-mock`, an
+  OpenAI-compatible server in the E2E compose file, added as the instance's connection by REST.
 
 ## Data, REST
 

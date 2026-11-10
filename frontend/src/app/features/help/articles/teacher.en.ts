@@ -467,6 +467,16 @@ You connect the AI yourself: “Settings” → “AI assistant” → “Connec
 Drafts are written by the default model, which is marked in the list. To change it, select another model’s radio button or choose “Make default” from its “⋮” menu, where you can also rename or delete it. The monthly token limit is shared by all connections; 0 means no limit. The usage bar shows how much each model used. If AI buttons are missing, no default model is selected.
 
 With more than one model, a button with the model’s name sits next to “Generate” (next to “AI draft” when reviewing work, and next to “Generate draft” in a lesson summary). Its menu lists the models by connection: choose the one that should write the draft. This device remembers your choice everywhere the AI writes; another computer or phone still uses the default model. You cannot choose a model whose connection has an error until it works again. If the chosen model is deleted, drafts go back to the default model.
+
+Which connection to pick. One is enough: add the provider whose key you already have. A second is
+worth it when different jobs suit different models — say, a stronger one for marking work and a
+quick one for assignment drafts — or as a fallback provider if one has an outage. OpenRouter gives
+you many companies’ models behind one key; your own server (Ollama, for instance) needs no key and
+sends no text out of your network.
+
+Each connection can have its own proxy. If one provider cannot be reached from the server’s network
+(Gemini from Russia, say), set a proxy for that connection only under “Advanced”; the others connect
+directly. A connection with no proxy of its own uses the administrator’s shared proxy.
 `,
   },
   billing: {

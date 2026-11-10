@@ -48,6 +48,20 @@ services:
       - "${E2E_LIVEKIT_TCP_PORT:-7881}:${E2E_LIVEKIT_TCP_PORT:-7881}/tcp"
       - "${E2E_LIVEKIT_UDP_PORT:-7882}:${E2E_LIVEKIT_UDP_PORT:-7882}/udp"
 
+  # An OpenAI-compatible provider for e2e/tests/ai/providers.spec.ts (the teacher adds it as a connection).
+  ai-mock:
+    image: node:22-alpine
+    command: ["node", "/mock/server.mjs"]
+    volumes:
+      - ./e2e/ai-mock:/mock:ro
+    ports:
+      - "${E2E_AI_PORT:-8110}:8098"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8098/health"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
   telegram:
     image: node:22-alpine
     command: ["node", "/mock/server.mjs"]

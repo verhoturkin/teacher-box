@@ -343,9 +343,22 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   downloaded JDK 25 was not allowed to run), so the browser check used a mocked API. Help
   «Подключения и модели» and the wiki `AI-assistant` got a paragraph; the full pass, the E2E of
   the switch against the fake provider and the ADR-0057 note stay in 364.6._
-- [ ] **364.6** Wiki `docs/wiki/AI-assistant.md` (several connections, which to pick, proxy per
+- [x] **364.6** Wiki `docs/wiki/AI-assistant.md` (several connections, which to pick, proxy per
   connection), help in Russian and English, glossary «подключение», «модель по умолчанию»,
   `docs/modules/ai.md`, ADR-0057, E2E `e2e/tests/ai/providers.spec.ts` against the fake provider.
+  _Done: wiki sections «Какое подключение выбрать» and «Прокси у каждого подключения»; help
+  «Подключения и модели» (ru, en) got the same two paragraphs, written separately; glossary rows
+  «Подключение ИИ» and «Модель по умолчанию»; `ai.md` and ADR-0057 (the `modelId` / 409 contract,
+  the choice kept on the device, the E2E). There was no fake provider in the E2E instance: added
+  `e2e/ai-mock` (an OpenAI-compatible Node server, service `ai-mock` in `e2e/compose.e2e.yaml`,
+  `E2E_AI_PORT` / `E2E_AI_URL` in `scripts/e2e.sh`, 8110 + shard). `providers.spec.ts` (7 tests): a
+  wrong key fails the check, connect + two models, the administrator sees no key, a draft by the
+  default model and by a named one, 409 for an unknown model, usage split by model and the
+  Settings page, removal. Checks: JDK 25 (Temurin) installed; Docker has no daemon here, so
+  `scripts/e2e.sh` did not run — the backend (`spring-boot:run`) and `ng serve` ran by hand with the
+  mock, and `providers`, `diagnostics`, `operations/settings-and-restart` all passed (7 + 1 + 6).
+  Backend untouched, `verify.sh backend` not run; `verify.sh docs` and `frontend` (lint, 90 % test gates,
+  build) passed. The picker in the editor is covered by unit tests only, not by E2E._
 
 ### Stage 365 — first-run wizard redesign
 
