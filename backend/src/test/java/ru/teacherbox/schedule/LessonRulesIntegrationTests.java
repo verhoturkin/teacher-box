@@ -71,7 +71,7 @@ class LessonRulesIntegrationTests extends ScheduleHttpTestSupport {
     void aLongerHorizonFillsSeriesUpOnTheNextRunAndAShorterOneRemovesNothing()
             throws UnsupportedEncodingException {
         UUID student = directory.addStudent("Серия вперёд");
-        Instant start = Slots.next(clock);
+        Instant start = Slots.seriesStart(clock, 2);
         String body = post("/api/teacher/schedule/lessons", """
                 {"studentId":"%s","startsAt":"%s","repeatWeeks":1,"allowOverlap":true}
                 """.formatted(student, start)).getResponse().getContentAsString();
