@@ -117,7 +117,7 @@ class AdminSettingsIntegrationTest {
             assertThat(json).extractingPath("$.settings[?(@.name == 'TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS')].live")
                     .asArray().containsExactly(true);
             assertThat(json).extractingPath("$.settings[?(@.name == 'TEACHERBOX_AI_PROXY')].live").asArray()
-                    .containsExactly(false);
+                    .containsExactly(true);
         });
         assertThat(settings.getResponse().getContentAsString()).doesNotContain("sk-secret");
         assertThat(settings).bodyJson().satisfies(json -> {
@@ -181,9 +181,14 @@ class AdminSettingsIntegrationTest {
                             .asArray().containsExactly("3");
                 });
 
-        // a live and a restart setting together: the live one at once, a restart for the other
+        // a live and a restart setting together: the live one at once, a restart for the other — every editable
+        // setting is live (ADR-0056), so the other one is a value only .env keeps now, saved before and removed
+        SettingsFile file = new SettingsFile(platform.dataDir());
+        Map<String, String> saved = new java.util.HashMap<>(file.read());
+        saved.put("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY", "9");
+        file.write(saved);
         assertThat(change("{\"password\":\"admin-password\",\"values\":{"
-                + "\"TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS\":null,\"TEACHERBOX_AI_PROXY\":\"http://proxy:3128\"}}"))
+                + "\"TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS\":null,\"LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY\":null}}"))
                 .hasStatusOk().bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$.applied").asArray()
                             .containsExactly("TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS");
@@ -191,9 +196,6 @@ class AdminSettingsIntegrationTest {
                 });
         verify(restarter).restartSoon();
         assertThat(maxAttempts()).as("back to .env and the default").isEqualTo(8);
-        assertThat(environment.getProperty("teacherbox.ai.proxy")).as("only after a restart").isNotEqualTo("http://proxy:3128");
-        assertThat(mvc.get().uri("/api/admin/settings").with(TestUsers.admin(ADMIN))).hasStatusOk().bodyJson()
-                .extractingPath("$.restartNeeded").isEqualTo(true);
     }
 
     private int maxAttempts() {
@@ -206,7 +208,7 @@ class AdminSettingsIntegrationTest {
                 .with(TestUsers.admin(ADMIN)))
                 .hasStatusOk().bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$.settings[?(@.name == 'TEACHERBOX_AI_PROXY')].title").asArray()
-                            .containsExactly("Proxy");
+                            .containsExactly("Default proxy");
                     assertThat(json).extractingPath("$.settings[?(@.name == 'TEACHERBOX_AI_PROXY')].group").asArray()
                             .containsExactly("AI assistant");
                 });
@@ -249,13 +251,13 @@ class AdminSettingsIntegrationTest {
                 .hasStatusOk().bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$.changed").asArray()
                             .containsExactly("TEACHERBOX_AI_PROXY");
-                    assertThat(json).extractingPath("$.applied").asArray().isEmpty();
-                    assertThat(json).extractingPath("$.restarting").isEqualTo(true);
+                    assertThat(json).extractingPath("$.applied").asArray().containsExactly("TEACHERBOX_AI_PROXY");
+                    assertThat(json).extractingPath("$.restarting").isEqualTo(false);
                 });
-        verify(restarter).restartSoon();
+        verify(restarter, never()).restartSoon();
+        assertThat(environment.getProperty("teacherbox.ai.proxy")).as("live (ADR-0057)").isEqualTo("http://proxy:3128");
         assertThat(Files.readString(platform.dataDir().resolve(SettingsFile.LOCATION)))
                 .contains("TEACHERBOX_AI_PROXY=http\\://proxy\\:3128");
-        clearInvocations(restarter);
 
         assertThat(change("{\"password\":\"admin-password\",\"values\":{\"TEACHERBOX_AI_PROXY\":\"http://proxy:3128\"}}"))
                 .as("nothing changes: no restart")

@@ -16,11 +16,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import ru.teacherbox.ai.AiFixtures;
+import ru.teacherbox.ai.application.LlmClient;
 import ru.teacherbox.ai.application.LlmException;
 import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
 import ru.teacherbox.ai.application.LlmSource;
+import ru.teacherbox.ai.domain.AiProvider;
+import ru.teacherbox.ai.domain.ProviderKind;
+import ru.teacherbox.shared.http.OutboundProxy;
 import ru.teacherbox.shared.i18n.Language;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -243,25 +247,16 @@ class AnthropicLlmClientTest {
     @Test
     void goesThroughTheConfiguredProxy() {
         respond(200, message("end_turn", "{\"type\": \"text\", \"text\": \"{}\"}"));
-        ApplicationContextRunner runner = new ApplicationContextRunner()
-                .withUserConfiguration(AnthropicConfigurationTest.PropertiesConfiguration.class,
-                        AnthropicConfiguration.class)
-                .withPropertyValues("teacherbox.ai.provider=anthropic", "teacherbox.ai.api-key=test-key",
-                        "teacherbox.ai.base-url=http://api.anthropic.test",
-                        "teacherbox.ai.proxy=http://127.0.0.1:" + server.getAddress().getPort());
+        AiProvider provider = AiFixtures.provider(ProviderKind.ANTHROPIC, "test-key", "http://api.anthropic.test");
 
-        runner.run(context -> {
-            LlmResponse response = context.getBean(AnthropicLlmClient.class).complete(REQUEST);
+        LlmClient client = new AnthropicAdapter().create(provider, AiFixtures.model(provider, "claude-opus-5"),
+                OutboundProxy.parse("http://127.0.0.1:" + server.getAddress().getPort()));
+        LlmResponse response = client.complete(REQUEST);
 
-            assertThat(response.text()).isEqualTo("{}");
-            assertThat(uri.get()).as("the proxy gets the full target address")
-                    .isEqualTo("http://api.anthropic.test/v1/messages");
-            assertThat(apiKey.get()).isEqualTo("test-key");
-        });
-        runner.withPropertyValues("teacherbox.ai.proxy=socks5://user:secret@vpn:1080")
-                .run(context -> assertThat(context).hasFailed().getFailure()
-                        .hasRootCauseMessage("Proxies with a login and password are not supported; "
-                                + "use a proxy without authentication that listens on a private address"));
+        assertThat(response.text()).isEqualTo("{}");
+        assertThat(uri.get()).as("the proxy gets the full target address")
+                .isEqualTo("http://api.anthropic.test/v1/messages");
+        assertThat(apiKey.get()).isEqualTo("test-key");
     }
 
     private AnthropicLlmClient client(OutputConfig.Effort effort, boolean fallbacks) {

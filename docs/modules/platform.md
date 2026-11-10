@@ -61,7 +61,7 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
 - `settings/` — admin settings (`/api/admin/settings`): `SettingsCatalog` holds every setting;
   `.env.example`
   lists only the `ENV_ONLY` ones (deployment, LiveKit, accounts, security, logs — a test compares
-  them) and the AI proxy until stage 364; values in `<data>/config/settings.properties` loaded first
+  them); values in `<data>/config/settings.properties` loaded first
   by `AdminSettingsLoader`; secrets write-only; Compose variables and accounts read-only; change
   confirmed by password. Each `SettingDefinition` has an `owner` (ADR-0056): `TEACHER` settings are
   not in the administrator's list (refused with `settings.teacher`) — the view's `moved` list names
@@ -81,7 +81,8 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   (`MessengerChannelFactory.settings()`). The backup crons are `ZonedJob`s (`-` switches a job off,
   an empty value means the default); the view gives a `CRON` setting `schedule` — `DailySchedule`
   «вкл/выкл + время» (`0 M H * * *` or `-`, by `SettingsCatalog.DEFAULT_CRONS` when unset; `null`
-  for any other cron). The AI proxy waits for 364.1 (its clients are rebuilt per provider). Each
+  for any other cron). The default AI proxy is live too (364.1: `ai.LlmClients` builds a provider's
+  clients anew when the proxy in force changes). Each
   setting has a `section` key (`ai`, `backups`…); the page groups the settings into its own cards
   by name (`admin/settings/settings-page.ts`, 363.8). Sections, titles,
   hints and value problems come in the language of the request (`Accept-Language`, `Wording` pairs
@@ -99,7 +100,8 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   `DriveClientImport` → the Drive client), `billing` (currency → `billing.settings.currency`),
   `schedule` (lesson rules → `schedule.settings`, the schedule's duration over billing's; Google
   client), `homework` (due-soon window → `homework.settings`), `notifications` (bot tokens →
-  `channel_settings`, no bot name until it starts). The AI variables wait for 364.1, the teacher's
+  `channel_settings`, no bot name until it starts), `ai` (the `AI_*` variables except the proxy →
+  the first provider and its model, the default one, and the monthly limit; 364.1); the teacher's
   name is in the account since its creation.
 - `admin/` — logs search and temporary log levels, status (version, uptime, memory, disk, DB, health),
   incomplete Modulith events with resubmit (completed ones are deleted nightly after 7 days,

@@ -67,7 +67,8 @@ public final class SettingsCatalog {
             "TEACHERBOX_IDENTITY_INVITE_TTL", "TEACHERBOX_IDENTITY_MAX_FAILED_LOGINS",
             "TEACHERBOX_IDENTITY_LOCK_DURATION",
             "TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_REQUESTS", "TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_PERIOD",
-            "TEACHERBOX_BACKUP_CRON", "TEACHERBOX_BACKUP_KEEP_DAYS", "TEACHERBOX_BACKUP_GOOGLE_PROXY");
+            "TEACHERBOX_BACKUP_CRON", "TEACHERBOX_BACKUP_KEEP_DAYS", "TEACHERBOX_BACKUP_GOOGLE_PROXY",
+            "TEACHERBOX_AI_PROXY");
 
     /**
      * The crons in force when their variable is not set, as the jobs ({@code shared.time.ZonedJob}) define
@@ -183,28 +184,24 @@ public final class SettingsCatalog {
                         TEXT, w("mailto:адрес или https-адрес; пусто — адрес портала.",
                                 "Enter a mailto: or HTTPS URL. Leave blank to use the portal URL."));
 
+        // the connections are the teacher's since ADR-0057; the rows stay for the import and the «moved» list
+        Wording moved = w("Теперь задаётся в «Настройки» → «ИИ-помощник».", "Now set in “Settings” → “AI assistant”.");
         b.group("ai", w("ИИ-помощник", "AI assistant"))
-                .choice("TEACHERBOX_AI_PROVIDER", w("Сервис ИИ", "AI service"),
-                        w("Пусто — ИИ выключен.", "Leave blank to disable AI."),
-                        List.of("anthropic", "gemini", "openrouter", "deepseek", "openai-compatible"))
+                .add("TEACHERBOX_AI_PROVIDER", w("Сервис ИИ", "AI service"), TEXT, moved)
                 .secret("TEACHERBOX_AI_API_KEY", w("Ключ API", "API key"))
-                .add("TEACHERBOX_AI_MODEL", w("Модель", "Model"), TEXT,
-                        w("Пусто — модель сервиса по умолчанию.", "Leave blank to use the provider's default model."))
-                .add("TEACHERBOX_AI_BASE_URL", w("Адрес API", "API URL"), URL,
-                        w("Для openai-compatible обязателен.", "Required for openai-compatible."))
-                .add("TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT", w("Токенов в месяц", "Tokens per month"), NUMBER,
-                        w("0 — без ограничения.", "Use 0 for no limit."))
-                .add("TEACHERBOX_AI_PROXY", w("Прокси", "Proxy"), PROXY,
-                        w("Сервисы ИИ недоступны из России напрямую.", "AI services can't be reached from Russia directly."))
-                .choice("TEACHERBOX_AI_EFFORT", w("Усилие (только Anthropic)", "Effort (Anthropic only)"),
-                        w("Пусто — по умолчанию модели.", "Leave blank to use the model's default."),
-                        List.of("low", "medium", "high", "xhigh", "max"))
+                .add("TEACHERBOX_AI_MODEL", w("Модель", "Model"), TEXT, moved)
+                .add("TEACHERBOX_AI_BASE_URL", w("Адрес API", "API URL"), URL, moved)
+                .add("TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT", w("Токенов в месяц", "Tokens per month"), NUMBER, moved)
+                .add("TEACHERBOX_AI_PROXY", w("Прокси по умолчанию", "Default proxy"), PROXY,
+                        w("Для подключений ИИ без своего прокси: сервисы ИИ недоступны из России напрямую.",
+                                "Used by AI connections without their own proxy. AI services can't be reached "
+                                        + "from Russia directly."))
+                .add("TEACHERBOX_AI_EFFORT", w("Усилие (только Anthropic)", "Effort (Anthropic only)"), TEXT, moved)
                 .add("TEACHERBOX_AI_FALLBACKS",
                         w("Запасная модель при отказе (только Anthropic)", "Use a fallback model on refusal (Anthropic only)"),
-                        BOOLEAN, NONE)
-                .add("TEACHERBOX_AI_MAX_TOKENS", w("Токенов в ответе", "Maximum response tokens"), NUMBER, NONE)
-                .add("TEACHERBOX_AI_TIMEOUT", w("Время ожидания ответа", "Response timeout"), DURATION,
-                        w("Например 120s.", "E.g. 120s."));
+                        BOOLEAN, moved)
+                .add("TEACHERBOX_AI_MAX_TOKENS", w("Токенов в ответе", "Maximum response tokens"), NUMBER, moved)
+                .add("TEACHERBOX_AI_TIMEOUT", w("Время ожидания ответа", "Response timeout"), DURATION, moved);
 
         b.group("sessions", w("Сеансы и вход", "Sessions and sign-in"))
                 .add("TEACHERBOX_IDENTITY_ACCESS_TOKEN_TTL", w("Токен доступа действует", "Access token lifetime"),
@@ -316,10 +313,6 @@ public final class SettingsCatalog {
 
         Builder add(String name, Wording title, SettingKind kind, Wording hint) {
             return put(name, title, hint, kind, List.of(), false, EDITABLE);
-        }
-
-        Builder choice(String name, Wording title, Wording hint, List<String> choices) {
-            return put(name, title, hint, CHOICE, choices, false, EDITABLE);
         }
 
         Builder secret(String name, Wording title) {

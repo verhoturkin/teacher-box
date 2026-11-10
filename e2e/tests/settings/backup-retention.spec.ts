@@ -19,9 +19,7 @@ test('the administrator sees how many days backups are kept', async ({ page }) =
 
   const days = page.locator('#setting-TEACHERBOX_BACKUP_KEEP_DAYS');
   await expect(days).toBeVisible();
-  await expect(page.locator('.tb-setting').filter({ has: days })).toContainText(
-    'Хранить дней',
-  );
+  await expect(page.locator('.tb-setting').filter({ has: days })).toContainText('Хранить дней');
 });
 
 test('the teacher reads that backups are kept two weeks', async ({ page }) => {

@@ -239,9 +239,7 @@ test('the teacher gives the portal an own color', async ({ page }) => {
   await expect(page.getByText('Настройки портала сохранены')).toBeVisible();
 });
 
-test('the administrator changes a live setting without a restart, a restart one with it', async ({
-  page,
-}) => {
+test('the administrator changes live settings without a restart', async ({ page }) => {
   test.setTimeout(240_000);
   await signIn(page, 'admin', ADMIN_PASSWORD);
   await page.goto('/admin/settings');
@@ -257,16 +255,14 @@ test('the administrator changes a live setting without a restart, a restart one 
   await expect(keep).toHaveValue('9');
   await expect(page.locator('.tb-setting').filter({ has: keep })).toContainText('задано здесь');
 
-  // the AI proxy still applies after a restart (364.1 makes it live)
+  // the default AI proxy is live too since 364.1: the clients are built anew with it
   const proxy = page.locator('#setting-TEACHERBOX_AI_PROXY');
   await proxy.fill('http://proxy.invalid:3128');
   await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
+  await expect(dialog).toContainText('перезапуск не нужен');
   await dialog.locator('#settings-password').fill(ADMIN_PASSWORD);
   await dialog.getByRole('button', { name: 'Сохранить', exact: true }).click();
-  await expect(dialog).toContainText('Портал перезапускается');
-  await expect(dialog).toContainText('Портал перезапущен, настройки применены', {
-    timeout: 180_000,
-  });
-  await dialog.getByRole('button', { name: 'Готово' }).click();
+  await expect(page.getByText('Настройки сохранены и уже действуют')).toBeVisible();
+  await expect(dialog).toBeHidden();
   await expect(proxy).toHaveValue('http://proxy.invalid:3128');
 });

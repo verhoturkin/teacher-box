@@ -104,7 +104,7 @@ export const en: Translation<typeof ru> = {
     thisMonth: 'this month',
     tokens: (count: number) => countOf(count, 'token', 'tokens', 'tokens'),
     ofLimit: (limit: string) => `of ${limit}`,
-    aiOff: 'The AI assistant is not set up (TEACHERBOX_AI_PROVIDER).',
+    aiOff: 'The AI assistant isn’t set up yet. The teacher adds a connection in Settings.',
     noRequests: 'No requests this month',
     showMore: 'Show more',
     when: 'When',

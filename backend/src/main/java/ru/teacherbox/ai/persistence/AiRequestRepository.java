@@ -28,15 +28,16 @@ public class AiRequestRepository {
 
     public void insert(AiRequest request) {
         jdbc.sql("""
-                insert into ai.requests (id, feature, provider, model, status, input_tokens, output_tokens,
+                insert into ai.requests (id, feature, provider, model, model_id, status, input_tokens, output_tokens,
                     duration_ms, error, created_at)
-                values (:id, :feature, :provider, :model, :status, :inputTokens, :outputTokens, :durationMs,
+                values (:id, :feature, :provider, :model, :modelId, :status, :inputTokens, :outputTokens, :durationMs,
                     :error, :createdAt)
                 """)
                 .param("id", request.id())
                 .param("feature", request.feature().name())
                 .param("provider", request.provider())
                 .param("model", request.model())
+                .param("modelId", request.modelId())
                 .param("status", request.status().name())
                 .param("inputTokens", request.inputTokens())
                 .param("outputTokens", request.outputTokens())
@@ -84,7 +85,8 @@ public class AiRequestRepository {
     /** Requests in {@code [from, to)}, newest first, skipping the first {@code offset}. */
     public List<AiRequest> findRecent(Instant from, Instant to, int offset, int limit) {
         return jdbc.sql("""
-                select id, feature, provider, model, status, input_tokens, output_tokens, duration_ms, error, created_at
+                select id, feature, provider, model, model_id, status, input_tokens, output_tokens, duration_ms,
+                    error, created_at
                 from ai.requests
                 where created_at >= :from and created_at < :to
                 order by created_at desc, id desc
@@ -104,6 +106,7 @@ public class AiRequestRepository {
                 AiFeature.valueOf(rs.getString("feature")),
                 rs.getString("provider"),
                 rs.getString("model"),
+                rs.getObject("model_id", UUID.class),
                 RequestStatus.valueOf(rs.getString("status")),
                 rs.getLong("input_tokens"),
                 rs.getLong("output_tokens"),

@@ -41,7 +41,9 @@ test('the administrator searches the log and checks the instance', async ({ page
     .getByRole('link', { name: 'Интеграции' })
     .click();
   await expect(page.getByText('Google Календарь')).toBeVisible();
-  await expect(page.getByText('Провайдер не выбран (TEACHERBOX_AI_PROVIDER)')).toBeVisible();
+  await expect(
+    page.getByText('Нет подключения: учитель добавляет его в «Настройках» → «ИИ-помощник»'),
+  ).toBeVisible();
 
   await page.goto('/teacher');
   await expect(page).toHaveURL(/\/admin\/status$/);

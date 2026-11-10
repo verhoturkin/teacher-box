@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -14,7 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
-import ru.teacherbox.ai.application.AiProperties;
 import ru.teacherbox.ai.application.DraftSources;
 import ru.teacherbox.ai.application.LlmClient;
 import ru.teacherbox.ai.application.LlmException;
@@ -22,6 +22,7 @@ import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
 import ru.teacherbox.ai.application.LlmSource;
 import ru.teacherbox.ai.application.PdfPictures;
+import ru.teacherbox.ai.domain.ProviderKind;
 import ru.teacherbox.shared.http.OutboundHttp;
 import ru.teacherbox.shared.http.OutboundProxy;
 import ru.teacherbox.shared.i18n.Language;
@@ -59,7 +60,7 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
 
     /** @param http client with the API base URL and authorization already configured */
     public OpenAiCompatibleLlmClient(RestClient http, String model) {
-        this(http, AiProperties.OPENAI_COMPATIBLE, model);
+        this(http, ProviderKind.OPENAI_COMPATIBLE.id(), model);
     }
 
     /** @param provider id of the provider for the usage log, e.g. {@code gemini} */
@@ -88,19 +89,19 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
     }
 
     /**
-     * Client of a {@code /chat/completions} API: the key as a bearer token, the provider timeout
-     * and the AI proxy. Also used for Gemini and OpenRouter, whose APIs are OpenAI-compatible.
+     * Client of a {@code /chat/completions} API: the key as a bearer token, the model's timeout and the proxy
+     * in force. Also used for Gemini, OpenRouter and DeepSeek, whose APIs are OpenAI-compatible.
+     *
+     * @param apiKey {@code null} for a local server that needs none
+     * @param proxy  {@code null} for direct calls
      */
-    public static RestClient http(RestClient.Builder builder, AiProperties properties, String baseUrl) {
-        OutboundProxy proxy = properties.outboundProxy();
-        if (proxy != null) {
-            log.info("The AI provider is reached through the proxy {}", proxy);
-        }
+    public static RestClient http(RestClient.Builder builder, String baseUrl, @Nullable String apiKey,
+            Duration timeout, @Nullable OutboundProxy proxy) {
         RestClient.Builder http = builder.clone()
                 .baseUrl(baseUrl.strip().replaceAll("/+$", ""))
-                .requestFactory(OutboundHttp.requestFactory(CONNECT_TIMEOUT, properties.timeout(), proxy));
-        if (AiProperties.hasText(properties.apiKey())) {
-            http.defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + properties.apiKey().strip());
+                .requestFactory(OutboundHttp.requestFactory(CONNECT_TIMEOUT, timeout, proxy));
+        if (apiKey != null && !apiKey.isBlank()) {
+            http.defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey.strip());
         }
         return http.build();
     }

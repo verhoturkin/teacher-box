@@ -11,14 +11,16 @@ import org.springframework.context.annotation.Import;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import ru.teacherbox.ai.persistence.ProviderRepository;
 import ru.teacherbox.homework.api.AssignmentFiles;
 import ru.teacherbox.homework.api.QuizDrafts;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.textbooks.api.Textbooks;
 
 /**
- * AI module bootstrapped alone with a scripted {@link FakeLlmClient} instead of a real provider; the facades it reads
- * sources through are mocks.
+ * AI module bootstrapped alone with a scripted {@link FakeLlmClient} instead of a real provider: the fake provider
+ * ({@link FakeProvider}) is the only one, its model the default, the limit 100 000 tokens; the facades it reads sources
+ * through are mocks.
  * All test classes using this annotation share one context and database.
  */
 @Target(ElementType.TYPE)
@@ -28,7 +30,6 @@ import ru.teacherbox.textbooks.api.Textbooks;
 @Import(AiIntegrationTest.Beans.class)
 @MockitoBean(types = {Textbooks.class, AssignmentFiles.class, QuizDrafts.class})
 @TestPropertySource(properties = {
-        "teacherbox.ai.monthly-token-limit=100000",
         "teacherbox.timezone=Europe/Moscow"
 })
 public @interface AiIntegrationTest {
@@ -39,6 +40,11 @@ public @interface AiIntegrationTest {
         @Bean
         FakeLlmClient llmClient() {
             return new FakeLlmClient();
+        }
+
+        @Bean
+        FakeProvider fakeProvider(FakeLlmClient llm, ProviderRepository providers) {
+            return new FakeProvider(llm, providers);
         }
 
         @Bean

@@ -26,11 +26,8 @@ import ru.teacherbox.shared.settings.TeacherSettingsImport;
 @SpringBootTest
 class EnvImportIntegrationTest {
 
-    /** Not imported here: the AI providers (364.1); the name, which the account has kept since its creation. */
-    private static final Set<String> LATER = Set.of("TEACHERBOX_AI_PROVIDER", "TEACHERBOX_AI_API_KEY",
-            "TEACHERBOX_AI_MODEL", "TEACHERBOX_AI_BASE_URL", "TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT", "TEACHERBOX_AI_EFFORT",
-            "TEACHERBOX_AI_FALLBACKS", "TEACHERBOX_AI_MAX_TOKENS", "TEACHERBOX_AI_TIMEOUT",
-            "TEACHERBOX_IDENTITY_TEACHER_NAME");
+    /** Not imported: the name, which the account has kept since its creation. */
+    private static final Set<String> LATER = Set.of("TEACHERBOX_IDENTITY_TEACHER_NAME");
 
     @Autowired
     EnvImport envImport;
@@ -56,6 +53,8 @@ class EnvImportIntegrationTest {
         jdbc.sql("delete from schedule.settings").update();
         jdbc.sql("delete from homework.settings").update();
         jdbc.sql("delete from notifications.channel_settings").update();
+        jdbc.sql("delete from ai.settings").update();
+        jdbc.sql("delete from ai.providers").update();
     }
 
     @Test
@@ -80,26 +79,34 @@ class EnvImportIntegrationTest {
         // the version before the import: nothing was imported
         Files.delete(platform.dataDir().resolve(EnvImport.LOCATION));
         SettingsFile file = new SettingsFile(platform.dataDir());
-        file.write(Map.of("TEACHERBOX_PUBLIC_URL", "https://school.example.com",
-                "TEACHERBOX_TIMEZONE", "Asia/Yekaterinburg",
-                "TEACHERBOX_BILLING_CURRENCY", "EUR",
-                "TEACHERBOX_SCHEDULE_REMINDERS", "2h",
-                "TEACHERBOX_HOMEWORK_DUE_SOON_WINDOW", "12h",
-                "TEACHERBOX_NOTIFICATIONS_MAX_TOKEN", "max-token",
-                "TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID", "drive-client",
-                "TEACHERBOX_BACKUP_GOOGLE_CLIENT_SECRET", "drive-secret"));
+        file.write(Map.ofEntries(
+                Map.entry("TEACHERBOX_PUBLIC_URL", "https://school.example.com"),
+                Map.entry("TEACHERBOX_TIMEZONE", "Asia/Yekaterinburg"),
+                Map.entry("TEACHERBOX_BILLING_CURRENCY", "EUR"),
+                Map.entry("TEACHERBOX_SCHEDULE_REMINDERS", "2h"),
+                Map.entry("TEACHERBOX_HOMEWORK_DUE_SOON_WINDOW", "12h"),
+                Map.entry("TEACHERBOX_NOTIFICATIONS_MAX_TOKEN", "max-token"),
+                Map.entry("TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID", "drive-client"),
+                Map.entry("TEACHERBOX_BACKUP_GOOGLE_CLIENT_SECRET", "drive-secret"),
+                Map.entry("TEACHERBOX_AI_PROVIDER", "deepseek"),
+                Map.entry("TEACHERBOX_AI_API_KEY", "sk-deepseek"),
+                Map.entry("TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT", "300000")));
 
         envImport.run();
 
         assertImported();
 
-        file.write(Map.of("TEACHERBOX_TIMEZONE", "Europe/Kaliningrad", "TEACHERBOX_SCHEDULE_REMINDERS", "3h"));
+        file.write(Map.of("TEACHERBOX_TIMEZONE", "Europe/Kaliningrad", "TEACHERBOX_SCHEDULE_REMINDERS", "3h",
+                "TEACHERBOX_AI_PROVIDER", "gemini", "TEACHERBOX_AI_API_KEY", "AIza"));
         jdbc.sql("update platform.portal_settings set time_zone = null where id = 1").update();
         jdbc.sql("delete from schedule.settings").update();
+        jdbc.sql("delete from ai.settings").update();
+        jdbc.sql("delete from ai.providers").update();
         envImport.run();
 
         assertThat(text("select time_zone from platform.portal_settings")).isNull();
         assertThat(jdbc.sql("select count(*) from schedule.settings").query(Long.class).single()).isZero();
+        assertThat(jdbc.sql("select count(*) from ai.providers").query(Long.class).single()).isZero();
     }
 
     private void assertImported() {
@@ -112,6 +119,9 @@ class EnvImportIntegrationTest {
                 .isEqualTo("max-token");
         assertThat(drive.load().clientId()).isEqualTo("drive-client");
         assertThat(drive.load().clientSecret()).isEqualTo("drive-secret");
+        assertThat(text("select kind || ' ' || api_key from ai.providers")).isEqualTo("deepseek sk-deepseek");
+        assertThat(text("select model_id from ai.models")).isEqualTo("deepseek-flash");
+        assertThat(text("select monthly_token_limit from ai.settings")).isEqualTo("300000");
     }
 
     private @Nullable String text(String sql) {

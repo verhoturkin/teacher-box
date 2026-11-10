@@ -1,19 +1,17 @@
 package ru.teacherbox.ai.application;
 
 import java.util.List;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.shared.diagnostics.IntegrationCheck;
 import ru.teacherbox.shared.i18n.Language;
 
-/** Asks the AI provider about the configured model; no tokens are spent. */
+/** Asks the provider of the default model about it (ADR-0057); no tokens are spent. */
 @Component
 class AiIntegrationCheck implements IntegrationCheck {
 
+    private final LlmClients llm;
 
-    private final ObjectProvider<LlmClient> llm;
-
-    AiIntegrationCheck(ObjectProvider<LlmClient> llm) {
+    AiIntegrationCheck(LlmClients llm) {
         this.llm = llm;
     }
 
@@ -22,11 +20,11 @@ class AiIntegrationCheck implements IntegrationCheck {
         // in the language of the administrator's page (ADR-0036)
         Language language = Language.current();
         String title = language == Language.RU ? "ИИ" : "AI";
-        LlmClient client = llm.getIfAvailable();
+        LlmClient client = llm.forDefault().map(LlmClients.ModelClient::client).orElse(null);
         if (client == null) {
             return List.of(IntegrationStatus.notConfigured(title, language == Language.RU
-                    ? "Провайдер не выбран (TEACHERBOX_AI_PROVIDER)"
-                    : "No provider chosen (TEACHERBOX_AI_PROVIDER)"));
+                    ? "Нет подключения: учитель добавляет его в «Настройках» → «ИИ-помощник»"
+                    : "No connection: the teacher adds one in Settings → AI assistant"));
         }
         String name = title + " (" + client.provider() + ")";
         long started = System.nanoTime();

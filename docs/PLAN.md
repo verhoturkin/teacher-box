@@ -235,7 +235,7 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
 
 ### Stage 364 — several AI providers and models
 
-- [ ] **364.1 B** Schema (ADR-0057): migration `ai/V5__providers.sql` — `providers` (id, kind
+- [x] **364.1 B** Schema (ADR-0057): migration `ai/V5__providers.sql` — `providers` (id, kind
   `anthropic` | `gemini` | `openrouter` | `deepseek` | `openai-compatible`, name 1–60, api key, base
   url, proxy, position, version) and `models` (id, provider id, model id 1–120, label 1–60, effort,
   fallbacks, max tokens, timeout, position), `ai_settings` (default model id, monthly token limit);
@@ -243,6 +243,25 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   provider, cached, dropped on change. In `AiDataReset` and the backup. The `AI_*` variables except
   the proxy become a provider and its model once through `shared.settings.TeacherSettingsImport`
   (moved from 363.2; `EnvImport` has not marked them).
+  _Done: the migration is `ai/V4__providers.sql` (the next free number) and the settings table is
+  `ai.settings` like `billing.settings`; `models` go with their provider, a removed default model
+  becomes `null`; `ai.requests.model_id`. Domain `ProviderKind` (the kinds' defaults left
+  `AiProperties`, which keeps only the proxy), `AiProvider`, `AiModel`, `AiSettings`;
+  `persistence.ProviderRepository` (inserts, versioned updates, deletes, settings — for 364.2).
+  The conditional `*Configuration` beans became `LlmAdapter` beans; `LlmClients.forModel` /
+  `forDefault` keep the clients per provider and build them anew when the provider's or the
+  model's version or the proxy in force changes (no explicit drop call needed by 364.2); a provider
+  that cannot be called answers every call with the reason instead of failing the start.
+  `AiAssistant`, `AiUsage` (limit from `ai.settings`, `model_id` logged) and `AiIntegrationCheck`
+  use the default model. `AiSettingsImport` imports the `AI_*` variables (provider + default model
+  + limit). `TEACHERBOX_AI_PROXY` is a live `ADMIN` setting (the provider's own proxy, else it), so
+  the 363.8 restart dialog no longer shows for it — every editable administrator setting is live
+  now; the AI block left `.env.example`, the AI teacher rows stay in the catalog only for the import
+  and the «moved» list (hints point to «ИИ-помощник»). The backup is a dump of the whole database:
+  the new tables are in it without a change; `AiDataReset` erases them. Wiki `AI-assistant`
+  (variables read once until 364.4), `Update`, `Proxy`, `Admin`; E2E `settings-and-restart` (the AI
+  proxy saves without a restart) and `diagnostics` (new «no connection» text) updated, not run
+  here. The admin integrations page's «not set up» text no longer names the variable._
 - [ ] **364.2 B** REST `/api/teacher/ai/providers` (list, create with a check request, `PUT`,
   `DELETE` — refused while it holds the default model) and `/models` under a provider (add, change,
   remove, reorder, `GET …/available` — the provider's own model list where its API has one, else

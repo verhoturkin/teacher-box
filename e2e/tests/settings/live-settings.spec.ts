@@ -68,7 +68,10 @@ test('reminders and the time zone change without a restart', async ({ page, requ
     expect((await adminSettings(request)).startedAt).toBe(started);
   } finally {
     await request.put('/api/teacher/schedule/settings', { headers, data: rules });
-    await request.put('/api/teacher/settings/time-zone', { headers, data: { timeZone: zoneBefore } });
+    await request.put('/api/teacher/settings/time-zone', {
+      headers,
+      data: { timeZone: zoneBefore },
+    });
   }
 });
 

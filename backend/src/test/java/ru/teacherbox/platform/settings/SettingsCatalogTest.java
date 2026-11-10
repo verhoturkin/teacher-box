@@ -15,9 +15,8 @@ import ru.teacherbox.platform.settings.SettingDefinition.Owner;
 import ru.teacherbox.shared.i18n.Language;
 
 /**
- * {@code .env.example} holds only what the portal cannot set itself (ADR-0056): the {@code ENV_ONLY} settings,
- * plus the AI proxy until the AI providers move to the portal (stage 364). The teacher's and the
- * administrator's settings live in the portal.
+ * {@code .env.example} holds only what the portal cannot set itself (ADR-0056): the {@code ENV_ONLY} settings.
+ * The teacher's and the administrator's settings live in the portal.
  */
 class SettingsCatalogTest {
 
@@ -30,8 +29,7 @@ class SettingsCatalogTest {
         List<String> variables = matcher.results().map(result -> result.group(1)).toList();
 
         assertThat(SettingsCatalog.all()).extracting(SettingDefinition::name).doesNotHaveDuplicates();
-        assertThat(SettingsCatalog.all()).filteredOn(setting -> setting.owner() == Owner.ENV_ONLY
-                        || setting.name().equals("TEACHERBOX_AI_PROXY"))
+        assertThat(SettingsCatalog.all()).filteredOn(setting -> setting.owner() == Owner.ENV_ONLY)
                 .extracting(SettingDefinition::name)
                 .containsExactlyInAnyOrderElementsOf(variables);
     }
@@ -92,7 +90,8 @@ class SettingsCatalogTest {
                 .allMatch(setting -> setting.access() == Access.ACCOUNT);
         assertThat(SettingsCatalog.find("TEACHERBOX_HTTP_PORT")).get()
                 .extracting(SettingDefinition::access).isEqualTo(Access.DOCKER);
-        assertThat(SettingsCatalog.find("TEACHERBOX_AI_PROXY")).get().matches(SettingDefinition::editable);
+        assertThat(SettingsCatalog.find("TEACHERBOX_AI_PROXY")).get()
+                .matches(setting -> setting.editable() && setting.live() && setting.owner() == Owner.ADMIN);
         assertThat(SettingsCatalog.find("TEACHERBOX_AI_MODEL")).get().matches(setting -> !setting.editable());
         assertThat(SettingsCatalog.find("NOPE")).isEmpty();
         // one key per section, and a key never names two sections

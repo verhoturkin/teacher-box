@@ -8,30 +8,49 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 
 ## Rules
 
-- SPI `LlmClient`; adapters: `anthropic/` (official Java SDK, structured outputs, server-side fallbacks —
-  `TEACHERBOX_AI_FALLBACKS`), `openai/` (OpenAI-compatible `/chat/completions` on `RestClient`, JSON Schema in
-  `response_format`), `gemini/` (Gemini API key via the OpenAI-compatible endpoint; needs `TEACHERBOX_AI_PROXY`
-  from Russia), `openrouter/` (since 0.14.3: the OpenAI-compatible client with `https://openrouter.ai/api/v1`,
-  default model `openrouter/auto`, `provider.require_parameters: true` in the body so the JSON schema is never
-  silently ignored, title header `X-OpenRouter-Title: Teacher Box` and no referer — it would publish the portal's
-  address in OpenRouter's rankings), `deepseek/` (since 0.14.3: `https://api.deepseek.com`, default model
-  `deepseek-flash`, answer format `JSON_OBJECT`).
+- Providers and models ([ADR-0057](../adr/0057-several-ai-providers.md), since 364.1):
+  `ai.providers` (kind, name 1–60, API key, base URL, proxy, position, version), `ai.models` (model id 1–120 unique
+  per provider, label 1–60, effort, fallbacks, max tokens, timeout, position, version; removed with
+  their provider) and `ai.settings` (one row: default model, monthly token limit; a removed default
+  model becomes `null` — AI off). `LlmClients.forModel(id)` / `forDefault()` give a `ModelClient`
+  (provider, model, `LlmClient`); clients are kept per provider and built anew when the provider's
+  or the model's version or the proxy in force changes. A provider that cannot be called (no key, no
+  address, a bad proxy) gets a client whose calls fail with the reason. The existing endpoints use
+  the default model until 364.3.
+- SPI `LlmAdapter` per `ProviderKind` builds the clients: `anthropic/` (official Java SDK,
+  structured outputs, server-side fallbacks per model), `openai/` (OpenAI-compatible
+  `/chat/completions` on `RestClient`, JSON Schema in `response_format`; the provider's base URL is
+  required), `gemini/` (Gemini API key via the OpenAI-compatible endpoint; needs a proxy from
+  Russia), `openrouter/` (the OpenAI-compatible client with `https://openrouter.ai/api/v1`, default
+  model `openrouter/auto`, `provider.require_parameters: true` in the body so the JSON schema is
+  never silently ignored, title header `X-OpenRouter-Title: Teacher Box` and no referer — it would
+  publish the portal's address in OpenRouter's rankings), `deepseek/` (`https://api.deepseek.com`,
+  default model `deepseek-flash`, answer format `JSON_OBJECT`). Defaults of each kind (model,
+  address, whether a key is required) are in `ProviderKind`.
 - Answer format (`OpenAiCompatibleLlmClient.AnswerFormat`): `JSON_SCHEMA` — `response_format: json_schema`;
   `JSON_OBJECT` — `response_format: json_object` and the schema appended to the system prompt (DeepSeek takes no
   schema). A `JSON_SCHEMA` client switches to `JSON_OBJECT` for good after a 400 that names `response_format`.
-- Configured by `TEACHERBOX_AI_*` (provider, model, key, base URL, effort, max tokens, timeout, proxy). Not
-  configured → module off, UI hides AI features.
+- Proxy: the provider's own, else the administrator's live default `TEACHERBOX_AI_PROXY`
+  (`AiProperties`, read through `LiveProperties` per request; ADR-0056). No default model → module
+  off, UI hides AI features.
+- The `TEACHERBOX_AI_*` variables except the proxy are imported once by `AiSettingsImport`
+  (`shared.settings.TeacherSettingsImport`): the provider (named after its kind) with one model —
+  the given one or the kind's default, labelled by its id — as the default model, and the monthly
+  limit. Nothing is imported while a provider exists; an incomplete configuration is left out.
 - Responses are always drafts the teacher edits. Refusals handled before reading the answer; output validated
   against the schema (tolerant of Markdown wrapping).
-- Monthly token limit (`TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT`, input + output, instance time zone): over the limit
-  requests are rejected before calling the provider.
-- `ai.requests` stores metadata only (feature, model, status, tokens, duration, error) — never texts.
+- Monthly token limit (`ai.settings.monthly_token_limit`, default 2 000 000, `0` = unlimited;
+  input + output for all models, instance time zone): over the limit requests are rejected before
+  calling the provider.
+- `ai.requests` stores metadata only (feature, provider kind, model, configured `model_id`,
+  status, tokens, duration, error) — never texts.
 - Request log by pages of 10 (since 0.14.6): `usage` returns the first page (`recent`, `moreRecent`), `GET requests`
   `?month&offset` the next ones (`RequestPage {items, hasMore}`), for the teacher and the administrator.
 - Prompt library (`PromptLibrary`, `ai.prompts`): the teacher's saved prompts — title 1–100, text 1–4000 (no kinds
   since 0.14.1, ADR-0041); listed by title, optimistic locking, in the full reset; kept whether the AI is configured
   or not.
-- Prompts are versioned module resources. `AiIntegrationCheck` checks the provider without spending tokens.
+- Prompts are versioned module resources. `AiIntegrationCheck` checks the default model's
+  provider without spending tokens.
 - System prompts (`SystemPrompts`, `ai.system_prompts`, [ADR-0043](../adr/0043-editable-system-prompts.md), since
   0.14.6): the teacher rewrites the system prompt of a feature (`HOMEWORK_DRAFT`, `QUIZ_DRAFT`, `REVIEW_DRAFT`, `LESSON_SUMMARY`; 1–10000 characters,
   `ai.system-prompt-invalid`); a feature without a row uses its resource (`homework-draft.system.v4`,
@@ -82,12 +101,15 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
   words must be non-blank. `ai` does not depend on `schedule`: the frontend sends the texts. The enum value
   `LESSON_SUMMARY` is allowed in `system_prompts` by migration `V2__lesson_summary_feature.sql`.
 - Tests: Anthropic adapter against a local HTTP server (SDK uses OkHttp); OpenAI-compatible — `MockRestServiceServer`.
+  Module tests run on `FakeProvider` (an OpenAI-compatible row whose adapter returns
+  `FakeLlmClient`).
 
 ## Data, REST
 
-`requests`, `prompts`, `system_prompts`. `/api/teacher/ai/**` (status, usage, requests, homework-draft, quiz-draft, review-draft, lesson-summary,
-`prompts` CRUD, `system-prompts` list / `PUT` / `DELETE` by feature), `/api/admin/ai/**`
-(status, usage, requests — metadata).
+`requests`, `prompts`, `system_prompts`, `providers`, `models`, `settings` (all in the full reset).
+`/api/teacher/ai/**` (status, usage, requests, homework-draft, quiz-draft, review-draft,
+lesson-summary, `prompts` CRUD, `system-prompts` list / `PUT` / `DELETE` by feature),
+`/api/admin/ai/**` (status, usage, requests — metadata).
 
 ## Frontend
 

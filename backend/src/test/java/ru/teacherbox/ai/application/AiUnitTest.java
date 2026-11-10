@@ -6,14 +6,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.support.StaticListableBeanFactory;
 import ru.teacherbox.ai.application.AiViews.HomeworkBrief;
 import ru.teacherbox.ai.domain.AiFeature;
+import ru.teacherbox.ai.domain.AiModel;
+import ru.teacherbox.ai.domain.AiProvider;
 import ru.teacherbox.ai.domain.AiRequest;
+import ru.teacherbox.ai.domain.AiSettings;
+import ru.teacherbox.ai.domain.ProviderKind;
 import ru.teacherbox.ai.domain.RequestStatus;
 import ru.teacherbox.ai.domain.TokenBudget;
 import ru.teacherbox.shared.error.BusinessRuleException;
@@ -26,8 +30,9 @@ class AiUnitTest {
     @Test
     void assistantIsOffWithoutProvider() {
         AiUsage usage = mock(AiUsage.class);
-        AiAssistant assistant = new AiAssistant(new StaticListableBeanFactory().getBeanProvider(LlmClient.class),
-                prompts, mock(SystemPrompts.class), usage, mock(DraftSources.class), JsonMapper.builder().build(),
+        LlmClients clients = mock(LlmClients.class);
+        when(clients.forDefault()).thenReturn(java.util.Optional.empty());
+        AiAssistant assistant = new AiAssistant(clients, prompts, mock(SystemPrompts.class), usage, mock(DraftSources.class), JsonMapper.builder().build(),
                 mock(ru.teacherbox.homework.api.QuizDrafts.class));
 
         assertThatThrownBy(() -> assistant.homeworkDraft(
@@ -47,8 +52,12 @@ class AiUnitTest {
                 mock(ru.teacherbox.ai.persistence.AiRequestRepository.class);
         when(repository.totalTokens(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(0L);
-        AiUsage usage = new AiUsage(repository, new StaticListableBeanFactory().getBeanProvider(LlmClient.class),
-                new AiProperties(null, null, null, null, null, true, 16000, java.time.Duration.ofSeconds(1), 0, null),
+        LlmClients clients = mock(LlmClients.class);
+        when(clients.forDefault()).thenReturn(java.util.Optional.empty());
+        ru.teacherbox.ai.persistence.ProviderRepository providers =
+                mock(ru.teacherbox.ai.persistence.ProviderRepository.class);
+        when(providers.settings()).thenReturn(new ru.teacherbox.ai.domain.AiSettings(null, 0, 1));
+        AiUsage usage = new AiUsage(repository, clients, providers,
                 new ru.teacherbox.shared.time.InstanceTimeZone(java.time.ZoneId.of("UTC")),
                 java.time.Clock.systemUTC());
 
@@ -82,16 +91,53 @@ class AiUnitTest {
     }
 
     @Test
-    void propertiesNormalizeTheProvider() {
-        assertThat(properties(null).providerId()).isEmpty();
-        assertThat(properties(" Anthropic ").providerId()).isEqualTo("anthropic");
-        assertThat(properties("GEMINI").providerId()).isEqualTo("gemini");
-        assertThat(properties("OpenRouter").providerId()).isEqualTo("openrouter");
-        assertThat(properties("DeepSeek").providerId()).isEqualTo("deepseek");
-        assertThatThrownBy(() -> properties("gemeni")).hasMessage(
-                "TEACHERBOX_AI_PROVIDER must be anthropic, gemini, openrouter, deepseek or openai-compatible, got gemeni");
-        assertThat(AiProperties.hasText(" ")).isFalse();
-        assertThat(AiProperties.hasText("x")).isTrue();
+    void providerKindsByTheirIds() {
+        assertThat(ProviderKind.of(null)).isEmpty();
+        assertThat(ProviderKind.of(" Anthropic ")).contains(ProviderKind.ANTHROPIC);
+        assertThat(ProviderKind.of("GEMINI")).contains(ProviderKind.GEMINI);
+        assertThat(ProviderKind.of("OpenAI-Compatible")).contains(ProviderKind.OPENAI_COMPATIBLE);
+        assertThat(ProviderKind.of("gemeni")).isEmpty();
+        assertThat(ProviderKind.OPENAI_COMPATIBLE.defaultModel()).isNull();
+        assertThat(ProviderKind.OPENAI_COMPATIBLE.keyRequired()).isFalse();
+        assertThat(ProviderKind.ANTHROPIC.defaultBaseUrl()).isNull();
+        assertThat(ProviderKind.ANTHROPIC.title()).isEqualTo("Anthropic");
+    }
+
+    @Test
+    void providersAndModelsKeepTheirLimits() {
+        UUID id = UUID.randomUUID();
+        AiProvider provider = new AiProvider(id, ProviderKind.GEMINI, " Gemini ", " ", " http://g/ ", "", 0, 0);
+        assertThat(provider.name()).isEqualTo("Gemini");
+        assertThat(provider.apiKey()).isNull();
+        assertThat(provider.proxy()).isNull();
+        assertThat(provider.address()).isEqualTo("http://g/");
+        assertThatThrownBy(() -> new AiProvider(id, ProviderKind.GEMINI, " ", null, null, null, 0, 0))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new AiProvider(id, ProviderKind.GEMINI, "x".repeat(61), null, null, null, 0, 0))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        Duration timeout = Duration.ofSeconds(30);
+        assertThat(new AiModel(id, id, " m ", " M ", " HIGH ", true, 1, timeout, 0, 0))
+                .satisfies(model -> assertThat(model.modelId()).isEqualTo("m"))
+                .satisfies(model -> assertThat(model.label()).isEqualTo("M"))
+                .satisfies(model -> assertThat(model.effort()).isEqualTo("high"));
+        assertThat(AiModel.effort(" ")).isNull();
+        assertThatThrownBy(() -> AiModel.effort("fast")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new AiModel(id, id, "", "M", null, true, 1, timeout, 0, 0))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new AiModel(id, id, "x".repeat(121), "M", null, true, 1, timeout, 0, 0))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new AiModel(id, id, "m", " ", null, true, 1, timeout, 0, 0))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new AiModel(id, id, "m", "x".repeat(61), null, true, 1, timeout, 0, 0))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new AiModel(id, id, "m", "M", null, true, 0, timeout, 0, 0))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new AiModel(id, id, "m", "M", null, true, 1, Duration.ZERO, 0, 0))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThat(AiModel.labelOf(" " + "a".repeat(70))).hasSize(60);
+        assertThat(AiModel.labelOf("gpt")).isEqualTo("gpt");
+        assertThatThrownBy(() -> new AiSettings(null, -1, 0)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -107,15 +153,11 @@ class AiUnitTest {
     @Test
     void requestLogEntry() {
         AiRequest request = new AiRequest(UUID.randomUUID(), AiFeature.REVIEW_DRAFT, "anthropic", "claude-opus-5",
-                RequestStatus.FAILED, 3, 4, 5, "e".repeat(1500), Instant.now());
+                null, RequestStatus.FAILED, 3, 4, 5, "e".repeat(1500), Instant.now());
 
         assertThat(request.totalTokens()).isEqualTo(7);
         assertThat(request.error()).hasSize(1000);
         assertThatThrownBy(() -> new AiRequest(UUID.randomUUID(), AiFeature.REVIEW_DRAFT, "a", "m",
-                RequestStatus.FAILED, -1, 0, 0, null, Instant.now())).isInstanceOf(IllegalArgumentException.class);
-    }
-
-    private static AiProperties properties(String provider) {
-        return new AiProperties(provider, null, null, null, null, true, 16000, java.time.Duration.ofSeconds(1), 0, null);
+                null, RequestStatus.FAILED, -1, 0, 0, null, Instant.now())).isInstanceOf(IllegalArgumentException.class);
     }
 }

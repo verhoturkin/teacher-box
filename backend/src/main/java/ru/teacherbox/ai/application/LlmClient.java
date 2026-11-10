@@ -3,12 +3,12 @@ package ru.teacherbox.ai.application;
 import ru.teacherbox.shared.i18n.Language;
 
 /**
- * A language model provider (SPI). A bean exists only when {@code TEACHERBOX_AI_PROVIDER} selects
- * the adapter; without it the AI features are switched off.
+ * A client of one model of a provider, built by its {@link LlmAdapter} and kept by {@link LlmClients}
+ * (ADR-0057).
  */
 public interface LlmClient {
 
-    /** Provider id for the usage log, e.g. {@code anthropic}. */
+    /** Provider kind for the usage log, e.g. {@code anthropic}. */
     String provider();
 
     /** Configured model id. */

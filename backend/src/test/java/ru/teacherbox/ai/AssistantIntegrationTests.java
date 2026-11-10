@@ -103,6 +103,7 @@ class AssistantIntegrationTests {
             assertThat(logged.status()).isEqualTo(RequestStatus.SUCCEEDED);
             assertThat(logged.provider()).isEqualTo("fake");
             assertThat(logged.model()).isEqualTo("fake-model-1");
+            assertThat(logged.modelId()).isEqualTo(FakeProvider.MODEL);
             assertThat(logged.totalTokens()).isEqualTo(500);
             assertThat(logged.error()).isNull();
         });
@@ -434,7 +435,7 @@ class AssistantIntegrationTests {
         Instant now = clock.instant();
         for (int i = 0; i < 12; i++) {
             requests.insert(new AiRequest(UUID.randomUUID(), AiFeature.HOMEWORK_DRAFT, "fake", "model-" + i,
-                    RequestStatus.SUCCEEDED, 1, 1, 10, null, now.minusSeconds(12 - i)));
+                    null, RequestStatus.SUCCEEDED, 1, 1, 10, null, now.minusSeconds(12 - i)));
         }
         String month = YearMonth.from(now.atZone(ZoneId.of("Europe/Moscow"))).toString();
 

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import ru.teacherbox.ai.application.AiViews.HomeworkBrief;
 import ru.teacherbox.ai.application.AiViews.HomeworkDraft;
@@ -78,7 +77,7 @@ public class AiAssistant {
     private record ReviewAnswer(@Nullable String comment, @Nullable String grade, @Nullable Boolean accept) {
     }
 
-    private final ObjectProvider<LlmClient> llm;
+    private final LlmClients llm;
     private final QuizDrafts quizDrafts;
     private final PromptTemplates prompts;
     private final SystemPrompts systemPrompts;
@@ -86,7 +85,7 @@ public class AiAssistant {
     private final DraftSources sources;
     private final JsonMapper json;
 
-    public AiAssistant(ObjectProvider<LlmClient> llm, PromptTemplates prompts, SystemPrompts systemPrompts,
+    public AiAssistant(LlmClients llm, PromptTemplates prompts, SystemPrompts systemPrompts,
             AiUsage usage, DraftSources sources, JsonMapper json, QuizDrafts quizDrafts) {
         this.quizDrafts = quizDrafts;
         this.llm = llm;
@@ -187,21 +186,19 @@ public class AiAssistant {
     }
 
     private <A, T> T call(AiFeature feature, LlmRequest request, Class<A> answerType, Converter<A, T> converter) {
-        LlmClient client = llm.getIfAvailable();
-        if (client == null) {
-            throw new BusinessRuleException("ai.disabled", "AI is not configured on this instance");
-        }
+        LlmClients.ModelClient client = llm.forDefault().orElseThrow(
+                () -> new BusinessRuleException("ai.disabled", "AI is not configured on this instance"));
         if (usage.budget().isExhausted()) {
             throw new BusinessRuleException("ai.limit-exceeded", "The monthly AI token limit is reached");
         }
         long started = System.nanoTime();
         LlmResponse response;
         try {
-            response = client.complete(request);
+            response = client.client().complete(request);
         } catch (LlmException e) {
             RequestStatus status = e.reason() == LlmException.Reason.REFUSED ? RequestStatus.REFUSED
                     : RequestStatus.FAILED;
-            usage.record(feature, client, client.model(), status, e.inputTokens(), e.outputTokens(), elapsed(started),
+            usage.record(feature, client, client.client().model(), status, e.inputTokens(), e.outputTokens(), elapsed(started),
                     e.getMessage());
             throw toDomain(e);
         }

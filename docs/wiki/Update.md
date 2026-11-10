@@ -48,10 +48,7 @@ docker compose up -d --remove-orphans
 | `NOTIFICATIONS_TELEGRAM_BOT_TOKEN`, `NOTIFICATIONS_VK_TOKEN`, `NOTIFICATIONS_VK_GROUP_ID`, `NOTIFICATIONS_MAX_TOKEN` | «Мессенджеры» |
 | `SCHEDULE_GOOGLE_CLIENT_ID`, `SCHEDULE_GOOGLE_CLIENT_SECRET` | «Занятия» → «Google Календарь» |
 | `BACKUP_GOOGLE_CLIENT_ID`, `BACKUP_GOOGLE_CLIENT_SECRET` | «Данные» → «Google Диск» |
-
-Переменные ИИ (`AI_*`) пока остаются в `.env` или в настройках администратора; их заменят
-подключения
-в настройках учителя в одной из следующих версий.
+| `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`, `AI_BASE_URL`, `AI_EFFORT`, `AI_FALLBACKS`, `AI_MAX_TOKENS`, `AI_TIMEOUT`, `AI_MONTHLY_TOKEN_LIMIT` | «ИИ-помощник»: первое подключение, его модель — основная |
 
 **Администратор — в портале, сразу.** Эти переменные по-прежнему можно оставить в `.env` — тогда они
 действуют, но значение, заданное в портале, важнее:

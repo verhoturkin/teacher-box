@@ -23,12 +23,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
-import ru.teacherbox.ai.application.AiProperties;
 import ru.teacherbox.ai.application.LlmClient;
 import ru.teacherbox.ai.application.LlmException;
 import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
 import ru.teacherbox.ai.application.LlmSource;
+import ru.teacherbox.ai.domain.ProviderKind;
 import ru.teacherbox.shared.i18n.Language;
 
 /**
@@ -58,7 +58,7 @@ public class AnthropicLlmClient implements LlmClient, AutoCloseable {
 
     @Override
     public String provider() {
-        return AiProperties.ANTHROPIC;
+        return ProviderKind.ANTHROPIC.id();
     }
 
     @Override
