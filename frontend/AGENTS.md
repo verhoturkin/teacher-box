@@ -21,6 +21,25 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
   (`index.ts`: pages for lazy routes) or `@features/<name>/parts` (`parts.ts`: widgets, panels, API, types —
   no pages, so they don't leak into other bundles). Shared code only from `core/` and `shared/`. Home widgets
   live in their features; `features/home` only assembles them.
+- **Feature directions** ([ADR-0058](../docs/adr/0058-frontend-feature-directions.md)): a feature
+  imports only the features of its row — the table in `eslint.config.js`, mirrored here. Tests and
+  `import type` count. `scripts/import-cycles.mjs` also fails on a cycle between features.
+
+  | Layer | Feature | May import |
+  |---|---|---|
+  | base | `help` | — |
+  | base | `identity` | `help` |
+  | business | `ai`, `boards`, `meetings`, `notifications` | base |
+  | business | `textbooks` | base, `boards` |
+  | business | `billing` | base, `notifications` |
+  | business | `homework` | base, `ai`, `boards`, `textbooks` |
+  | business | `schedule` | base, `ai`, `boards`, `homework`, `meetings` |
+  | composition | `admin`, `home`, `materials`, `settings` (`gallery` from stage 371) | base, any business feature; `admin` also `settings` |
+
+  Nothing imports a composition feature (except `admin` → `settings`). A new feature gets a row; a
+  new arrow changes the table in both places and must not close a cycle. A business feature that
+  needs data of a feature above it declares an input, and the route (`app.routes.ts`) or a
+  composition feature passes the data.
 - Lazy routes: `/teacher/**`, `/cabinet/**` (student), `/admin/**`, `/login`, `/invite/:token`.
 - HTTP models — `interface`/`type` in `features/<m>/data-access/*.models.ts`, 1:1 with backend DTOs.
 - Status → label/severity maps — `features/<m>/*-labels.ts`.

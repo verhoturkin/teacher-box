@@ -108,12 +108,15 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
 
 ### Stage 370 — frontend feature directions (F, ADR-0058)
 
-- [ ] 370.1 **F** ADR-0058 and the rule. Declare which feature may import which, in one table in
-  `frontend/eslint.config.js` (`featureBoundary`) mirrored in `frontend/AGENTS.md`: base features
-  (`identity`, `help`) import no business feature; business features import base ones and the
-  pairs the backend allows; composition features (`home`, `settings`, `materials`, the new
-  `students`) import any. `frontend/scripts/import-cycles.mjs` also fails on a cycle between
-  features. The rule starts as a list of today's violations that 370.2–370.3 empty.
+- [x] 370.1 **F** ADR-0058 and the rule. Declare which feature may import which, in one table in
+  `frontend/eslint.config.js` (`featureDirection`) mirrored in `frontend/AGENTS.md`: base features
+  (`help`, then `identity`) import no business feature; business features import base ones and
+  the pairs listed for them — by screen embedding, which is not the backend table (`billing` →
+  `notifications`, `homework` and `schedule` → `ai`); composition features (`home`, `settings`,
+  `materials`, `admin`, the new `students` and `account`) import any and are imported by none,
+  except `admin` → `settings`. Tests and `import type` count. `frontend/scripts/import-cycles.mjs`
+  also fails on a cycle between features. The rule starts as a list of today's violations
+  (`PENDING_DIRECTIONS`) that 370.2–370.3 empty.
 - [ ] 370.2 **F** Student and group cards leave `identity`. `features/identity/students/`
   (`students-page.ts`, `student-card.ts`, `student-profile-tab.ts`, `roster.ts`, `card-*.ts`) and
   `features/identity/groups/` (`group-card.ts`, `group-profile-tab.ts`, `group-members-tab.ts`)

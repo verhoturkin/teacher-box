@@ -53,10 +53,100 @@ function featureBoundary(feature) {
   };
 }
 
-const featureBoundaries = features.map((feature) => ({
-  files: [`src/app/features/${feature}/**/*.ts`],
-  rules: { 'no-restricted-imports': restrictImports(featureBoundary(feature)) },
-}));
+/**
+ * Feature directions (ADR-0058; mirrored in frontend/AGENTS.md): which features a feature may
+ * import. The table is the screen-embedding order of the frontend, not a copy of the backend one.
+ *
+ * - Base features know no business feature; `identity` may use `help`.
+ * - Business features import the base ones and the business features listed here.
+ * - Composition features assemble screens from base and business features; nothing imports them,
+ *   except the composition features listed here.
+ *
+ * A new feature gets a row; a new arrow must keep the graph acyclic (scripts/import-cycles.mjs).
+ */
+const BASE_FEATURES = { help: [], identity: ['help'] };
+const BUSINESS_FEATURES = {
+  ai: [],
+  boards: [],
+  meetings: [],
+  notifications: [],
+  textbooks: ['boards'],
+  billing: ['notifications'],
+  homework: ['ai', 'boards', 'textbooks'],
+  schedule: ['ai', 'boards', 'homework', 'meetings'],
+};
+const COMPOSITION_FEATURES = {
+  admin: ['settings'],
+  gallery: [],
+  home: [],
+  materials: [],
+  settings: [],
+};
+
+/**
+ * Violations known when the rule was introduced, emptied by stages 370.2–370.3: a file → the extra
+ * features it still imports. Never add to this list.
+ */
+const PENDING_DIRECTIONS = {
+  'identity/account/account-panel.ts': ['notifications'],
+  'identity/groups/group-card.ts': ['homework', 'meetings', 'notifications', 'schedule'],
+  'identity/groups/group-card.spec.ts': ['homework', 'notifications', 'schedule'],
+  'identity/groups/group-profile-tab.ts': ['billing', 'meetings'],
+  'identity/students/roster.ts': ['schedule'],
+  'identity/students/student-card.ts': [
+    'billing',
+    'homework',
+    'meetings',
+    'notifications',
+    'schedule',
+  ],
+  'identity/students/student-card.spec.ts': ['billing', 'notifications', 'schedule'],
+  'identity/students/student-profile-tab.ts': ['billing', 'meetings'],
+  'identity/students/students-page.ts': ['billing', 'notifications', 'schedule'],
+  'identity/students/students-page.spec.ts': ['schedule'],
+  'homework/teacher/assignment-editor-page.ts': ['schedule'],
+  'homework/teacher/next-lesson.ts': ['schedule'],
+};
+
+/** The features `feature` may import, by the table above. */
+function allowedFeatures(feature) {
+  const base = Object.keys(BASE_FEATURES);
+  if (feature in BASE_FEATURES) return BASE_FEATURES[feature];
+  if (feature in BUSINESS_FEATURES) return [...base, ...BUSINESS_FEATURES[feature]];
+  if (feature in COMPOSITION_FEATURES) {
+    return [...base, ...Object.keys(BUSINESS_FEATURES), ...COMPOSITION_FEATURES[feature]];
+  }
+  throw new Error(
+    `Feature "${feature}" has no row in the feature directions of eslint.config.js (ADR-0058).`,
+  );
+}
+
+/** Forbids every feature that `feature` may not import; `extra` — pending violations of one file. */
+function featureDirection(feature, extra = []) {
+  const allowed = [feature, ...allowedFeatures(feature), ...extra];
+  return {
+    regex: `^@features/(?!(?:${allowed.join('|')})(?:/|$))`,
+    message: `Feature "${feature}" may import only: ${allowedFeatures(feature).join(', ') || 'no other feature'} (ADR-0058, frontend/AGENTS.md).`,
+  };
+}
+
+/** Both feature rules of a file of `feature`. */
+function featureRules(feature, extra) {
+  return [featureBoundary(feature), featureDirection(feature, extra)];
+}
+
+const featureBoundaries = [
+  ...features.map((feature) => ({
+    files: [`src/app/features/${feature}/**/*.ts`],
+    rules: { 'no-restricted-imports': restrictImports(...featureRules(feature)) },
+  })),
+  ...Object.entries(PENDING_DIRECTIONS).map(([file, extra]) => ({
+    files: [`src/app/features/${file}`],
+    rules: {
+      'no-restricted-imports': restrictImports(...featureRules(file.split('/')[0], extra)),
+    },
+  })),
+];
 
 module.exports = defineConfig([
   { ignores: ['dist/', 'coverage/', '.angular/', 'node_modules/'] },
@@ -125,7 +215,7 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': [
         'error',
-        { patterns: [NO_DEEP_RELATIVE, NO_REACT, featureBoundary('meetings')] },
+        { patterns: [NO_DEEP_RELATIVE, NO_REACT, ...featureRules('meetings')] },
       ],
     },
   },
@@ -134,7 +224,7 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': [
         'error',
-        { patterns: [NO_DEEP_RELATIVE, featureBoundary('boards')] },
+        { patterns: [NO_DEEP_RELATIVE, ...featureRules('boards')] },
       ],
     },
   },
