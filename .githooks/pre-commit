@@ -17,9 +17,9 @@ while IFS= read -r file; do
     case "$file" in
         backend/*) backend=true ;;
         frontend/*) frontend=true ;;
-        docker/* | compose.yaml | compose.*.yaml | .dockerignore | .env.example | scripts/install.sh | scripts/teacherbox) docker=true ;;
+        docker/* | compose.yaml | compose.*.yaml | .dockerignore | .env.example | scripts/install.sh | scripts/teacherbox | scripts/agent-setup.sh) docker=true ;;
         e2e/*) e2e=true ;;
-        *.md | scripts/check-wiki.sh) docs=true ;;
+        *.md | scripts/check-wiki.sh | scripts/check-agents.sh | scripts/verify.sh | .claude/* | .agents/* | .codex/*) docs=true ;;
     esac
 done < <(git diff --cached --name-only --diff-filter=ACMRD)
 

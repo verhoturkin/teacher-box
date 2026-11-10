@@ -55,7 +55,7 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
   `scripts/verify.sh` writes `.verify-logs/<part>.ok` with the hash of the tree after a green part
   (`git write-tree` of the index plus the worktree diff); `.githooks/pre-commit` skips a part whose
   stamp matches the staged tree. A test of the stamp in `verify_installer`-style shell checks.
-- [ ] 366.3 **D** One source for agent configs. `scripts/check-agents.sh` (run by `verify.sh
+- [x] 366.3 **D** One source for agent configs. `scripts/check-agents.sh` (run by `verify.sh
   docs`): `.claude/skills/*` equals `.agents/skills/*`, `.claude/hooks/format.mjs` equals
   `.codex/hooks/format.mjs`, the `docs-sync` agent exists for both.
 - [ ] 366.4 **D** Shorter always-loaded rules. `AGENTS.md`: §10 keeps only what §5, §8 and §9 do

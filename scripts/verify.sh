@@ -9,7 +9,7 @@
 #                                # + the installer checks
 #   scripts/verify.sh installer  # shellcheck of the scripts, a dry run of install.sh (ADR-0032)
 #   scripts/verify.sh e2e        # the E2E tests compile (running them: scripts/e2e.sh)
-#   scripts/verify.sh docs       # links to the wiki pages (docs/wiki) are valid
+#   scripts/verify.sh docs       # wiki links are valid, agent configs are in sync, the stamp test
 #   scripts/verify.sh fresh <part>  # exit 0 if <part> passed on exactly the current tree (see below)
 #
 # A part that passes in full writes .verify-logs/<part>.ok with the fingerprint of the whole working tree
@@ -184,7 +184,7 @@ verify_docker() {
 
 shellcheck_scripts() {
     local scripts=(scripts/install.sh scripts/teacherbox scripts/verify.sh scripts/e2e.sh scripts/check-wiki.sh
-        scripts/publish-wiki.sh scripts/agent-setup.sh)
+        scripts/publish-wiki.sh scripts/agent-setup.sh scripts/check-agents.sh)
     if command -v shellcheck >/dev/null 2>&1; then
         shellcheck -x "${scripts[@]}"
     else
@@ -238,6 +238,7 @@ verify_e2e() {
 verify_docs() {
     step "docs"
     run docs-wiki-links "$ROOT" bash scripts/check-wiki.sh
+    run docs-agent-configs "$ROOT" bash scripts/check-agents.sh
     run docs-stamp-selftest "$ROOT" stamp_selftest
 }
 
