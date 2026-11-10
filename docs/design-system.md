@@ -12,7 +12,8 @@ skill holds the references). *Ours* — a decision of the portal where M3 publis
 we deviate; a deviation says so («*ours, against M3*»). Unmarked rules are project conventions.
 
 **Where it lives:** preset `core/theme/teacher-box-preset.ts`, colour scheme
-`core/theme/color-scheme.ts`, tokens and shared classes `src/styles.scss`, components `shared/ui/*`,
+`core/theme/color-scheme.ts`, tokens and shared classes `src/styles.scss` (an index of the parts in
+`src/styles/`: `_tokens`, `_fields`, `_lists`, `_dialogs`…), components `shared/ui/*`,
 breakpoints `core/layout/mobile.ts`. No other UI kits (Angular Material, Material Web); no
 primeicons. Minimum browsers: Chrome 119, Safari 17.2, Firefox 128 (`linear()`, `:has()`,
 `color-mix()`); older ones get no springs.
@@ -63,8 +64,9 @@ used icon classes disagree. E2E runs axe on the main screens and checks button r
     (no overshoot; colour, opacity): `--tb-spring-{fast,default,slow}-effects` (**M3**).
   - `--tb-spring-standard-fast-spatial` (standard scheme, 0.9 / 1400, barely overshoots) only for
     turns that must not bounce (the split-button chevron) and for leaving overlays.
-  - Overlays (`styles.scss` «Overlays on M3E springs») replace PrimeNG's cubic-bezier: they enter
-    with scale or position on a spatial spring and opacity on the effects spring of the same speed —
+  - Overlays (`styles/_motion.scss` «Overlays on M3E springs») replace PrimeNG's cubic-bezier:
+    they enter with scale or position on a spatial spring and opacity on the effects spring of
+    the same speed —
     dialogs default (scale from 0.93), menus, dropdowns and the date picker fast (0.93), the
     snackbar fast (0.8), side sheets slide in on default spatial; they leave without a bounce on the
     standard fast spring and fast effects. *Ours* (M3 publishes no choreography): the bottom sheet
@@ -197,7 +199,8 @@ for the active navigation item and checked states.
 - A glyph is a private code point with an empty alternative text: nothing shows before the font
   loads and screen readers skip it; the meaning is in the label or the tooltip.
 - **PrimeNG's own icons** are SVG components: `npm run icons` also writes our symbols as masks
-  (`core/theme/prime-icons.scss`, map `PRIME` in the script) and `styles.scss` masks the box —
+  (`core/theme/prime-icons.scss`, map `PRIME` in the script) and `styles/_icons.scss` masks the
+  box —
   select `arrow_drop_down` / `_up`, «×» of dialogs, drawers, toasts and chips `close`, date picker
   `calendar_month`, `chevron_left` / `_right`, number steps and time `keyboard_arrow_up` / `_down`,
   checkbox `check` / `remove`, paginator `first_page` / `chevron_*` / `last_page`, sorting
@@ -516,8 +519,8 @@ action — «Изменить» next to «Проверить N работ» (hom
 - **M3 filled text field, 56 px, is the only field style** (ADR-0050) for every control of a
   `.tb-field`: native `input` / `textarea` (`pInputText`, `pTextarea`), `p-select`, `p-multiselect`,
   `p-datepicker`, `p-inputnumber`, `p-password`, `p-autocomplete`, `tb-member-picker`. The rules are
-  the global `.tb-field` block of `styles.scss`; no feature picks a variant (**M3**: variants are
-  never mixed in one area). Not `.tb-field`, so not filled: the search field, `p-selectbutton`,
+  the global `.tb-field` block of `styles/_fields.scss`; no feature picks a variant (**M3**:
+  variants are never mixed in one area). Not `.tb-field`, so not filled: the search field, `p-selectbutton`,
   chips, checkboxes, toolbar controls outside forms.
 - **Markup:** the `label` first, then the control (or a `tb-copy-row` / `tb-inline` row whose first
   child is the control), then the optional supporting text. Every field has a visible label (filters

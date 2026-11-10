@@ -1,3 +1,7 @@
+import { HttpTestingController } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+import { MessageService } from 'primeng/api';
+import { FileSaver } from '@shared/files/file-saver';
 import {
   AssignmentDetails,
   AssignmentSummary,
@@ -10,6 +14,7 @@ import {
   Submission,
   TaskDetails,
 } from '@features/homework/data-access/homework.models';
+import { testProviders } from './setup';
 
 export function boundTextbook(overrides: Partial<BoundTextbook> = {}): BoundTextbook {
   return {
@@ -197,4 +202,38 @@ export function homeworkSummary(overrides: Partial<HomeworkSummary> = {}): Homew
     weekOnTime: 0,
     ...overrides,
   };
+}
+
+/** The students of the teacher's homework pages: the deactivated one is never offered. */
+export const HOMEWORK_STUDENTS = [
+  { id: 's-1', displayName: 'Анна', status: 'ACTIVE' },
+  { id: 's-2', displayName: 'Борис', status: 'ACTIVE' },
+  { id: 's-3', displayName: 'Вера', status: 'INVITED' },
+  { id: 's-4', displayName: 'Гена', status: 'DEACTIVATED' },
+].map((student) => ({
+  ...student,
+  avatar: null,
+  email: null,
+  phone: null,
+  note: null,
+  login: null,
+  createdAt: '2026-09-01T10:00:00Z',
+  version: 0,
+  pendingInvite: null,
+}));
+
+export const REVIEW_QUEUE_URL = '/api/teacher/homework/review-queue';
+export const ASSIGNMENTS_URL = '/api/teacher/homework/assignments';
+
+/** The test module of a teacher's homework page: the backend and the names of the files it saved. */
+export function configureHomework(): { backend: HttpTestingController; saved: string[] } {
+  TestBed.configureTestingModule({
+    providers: testProviders(),
+  });
+  const saved: string[] = [];
+  vi.spyOn(TestBed.inject(FileSaver), 'save').mockImplementation((_blob, filename) => {
+    saved.push(filename);
+  });
+  vi.spyOn(TestBed.inject(MessageService), 'add');
+  return { backend: TestBed.inject(HttpTestingController), saved };
 }

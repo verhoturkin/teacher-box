@@ -1,145 +1,25 @@
 import { Snackbar } from '@core/snackbar/snackbar';
-import { HttpClient } from '@angular/common/http';
-import { HttpTestingController, TestRequest } from '@angular/common/http/testing';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestRequest } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
 import { Location } from '@angular/common';
-import { Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { aiStatus } from '@testing/ai-fixtures';
 import { assignmentDetails, attachment, boundTextbook } from '@testing/homework-fixtures';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
-import { groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
-import { HomeworkAiState } from '@features/ai/parts';
-import { screenWidth, testProviders } from '@testing/setup';
 import { By } from '@angular/platform-browser';
 import { aBoard } from '@testing/boards-fixtures';
 import { ToBoardDialog } from '@features/boards/parts';
-import { AssignMoreDialog } from './assign-more-dialog';
+import { exactButton, lessonIn, useEditorHarness } from '@testing/homework-editor';
 import { AssignmentEditorPage } from './assignment-editor-page';
-import { UpcomingLesson } from './next-lesson';
 import { questionDraft } from './question-drafts';
 import { videoDraft } from './video-section';
 
-const STUDENTS = [
-  { id: 's-1', displayName: 'Анна', status: 'ACTIVE' },
-  { id: 's-2', displayName: 'Борис', status: 'ACTIVE' },
-  { id: 's-4', displayName: 'Гена', status: 'DEACTIVATED' },
-].map((student) => ({
-  ...student,
-  avatar: null,
-  email: null,
-  phone: null,
-  note: null,
-  login: null,
-  createdAt: '2026-09-01T10:00:00Z',
-  version: 0,
-  pendingInvite: null,
-}));
-
-const DAY = 24 * 60 * 60 * 1000;
-
-/** «Выдать» and not «Выдать и поместить на доску». */
-/** The tasks of the fixture with no quiz attempt: the questions stay editable. */
-const UNSTARTED = assignmentDetails().tasks.map((task) => ({
-  ...task,
-  quizScore: null,
-  quizMax: null,
-}));
-
-function exactButton(host: HTMLElement, text: string): HTMLButtonElement {
-  const button = [...host.querySelectorAll('button')].find(
-    (candidate) => candidate.textContent.trim() === text,
-  );
-  if (button === undefined) {
-    throw new Error(`Button "${text}" not found`);
-  }
-  return button;
-}
-
 describe('AssignmentEditorPage', () => {
-  let backend: HttpTestingController;
-  let navigate: ReturnType<typeof vi.spyOn>;
-  let navigateByUrl: ReturnType<typeof vi.spyOn>;
-  let fixture: ComponentFixture<AssignmentEditorPage>;
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({ providers: testProviders() });
-    backend = TestBed.inject(HttpTestingController);
-    navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    navigateByUrl = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
-    vi.spyOn(TestBed.inject(MessageService), 'add');
-  });
-
-  afterEach(() => {
-    fixture.destroy();
-    vi.restoreAllMocks();
-  });
-
-  /** The editor with the lessons its route gives it: here they come straight from the schedule's address. */
-  function createEditor(): ComponentFixture<AssignmentEditorPage> {
-    const http = TestBed.inject(HttpClient);
-    const editor = TestBed.createComponent(AssignmentEditorPage);
-    editor.componentRef.setInput('upcomingLessons', (from: string, to: string) =>
-      http.get<UpcomingLesson[]>('/api/teacher/schedule/lessons', { params: { from, to } }),
-    );
-    return editor;
-  }
-
-  function flushStatus(enabled: boolean): void {
-    for (const request of backend.match('/api/teacher/ai/status')) {
-      request.flush(aiStatus({ enabled }));
-    }
-  }
-
-  function flushGroups(): void {
-    for (const request of backend.match((r) => r.url.startsWith('/api/teacher/groups'))) {
-      request.flush([]);
-    }
-  }
-
-  async function create(lessons = [scheduledLesson()], ai = false) {
-    fixture = createEditor();
-    await fixture.whenStable();
-    backend.expectOne('/api/teacher/students').flush(STUDENTS);
-    backend.expectOne((request) => request.url === '/api/teacher/schedule/lessons').flush(lessons);
-    flushStatus(ai);
-    flushGroups();
-    await fixture.whenStable();
-    return { page: fixture.componentInstance, host: hostElement(fixture) };
-  }
-
-  async function edit(details = assignmentDetails()) {
-    fixture = createEditor();
-    fixture.componentRef.setInput('assignmentId', details.id);
-    await fixture.whenStable();
-    backend.expectOne(`/api/teacher/homework/assignments/${details.id}`).flush(details);
-    flushStatus(false);
-    await fixture.whenStable();
-    return { page: fixture.componentInstance, host: hostElement(fixture) };
-  }
-
-  /** The effects ran and an autosave with no delay went out. */
-  async function settle(): Promise<void> {
-    await fixture.whenStable();
-    await new Promise((resolve) => setTimeout(resolve));
-    await fixture.whenStable();
-  }
-
-  function lessonIn(days: number, studentId = 's-1') {
-    const starts = new Date(Date.now() + days * DAY);
-    starts.setSeconds(0, 0);
-    return scheduledLesson({
-      id: `l-${String(days)}`,
-      studentId,
-      participants: [{ studentId, studentName: null, studentAvatar: null, attendance: 'EXPECTED' }],
-      startsAt: starts.toISOString(),
-    });
-  }
+  const editor = useEditorHarness();
 
   it('creates written homework, adds its materials, then gives it out', async () => {
     const link = vi.spyOn(TestBed.inject(Snackbar), 'link');
     const next = lessonIn(2);
-    const { page, host } = await create([lessonIn(5), next, lessonIn(1, 's-9')]);
+    const { page, host } = await editor.create([lessonIn(5), next, lessonIn(1, 's-9')]);
 
     expect(readableText(host)).toContain('Новое задание');
     expect(readableText(host)).not.toContain('Тип задания');
@@ -147,16 +27,16 @@ describe('AssignmentEditorPage', () => {
       description: '## Дроби\nРешите **№1**',
       members: [{ kind: 'STUDENT', id: 's-1' }],
     });
-    await fixture.whenStable();
+    await editor.fixture.whenStable();
     expect(readableText(host)).toContain('К следующему занятию');
 
     page.newFiles.set([new File(['x'], 'условие.pdf')]);
     page.pickTextbook(boundTextbook({ textbookId: 'tb-1', pages: '1-2' }));
     page.pickTextbook(boundTextbook({ textbookId: 'tb-1', pages: '3' }));
-    await fixture.whenStable();
+    await editor.fixture.whenStable();
     exactButton(host, 'Выдать').click();
 
-    const created = backend.expectOne({
+    const created = editor.backend.expectOne({
       method: 'POST',
       url: '/api/teacher/homework/assignments',
     });
@@ -167,25 +47,27 @@ describe('AssignmentEditorPage', () => {
       videos: [],
     });
     created.flush(assignmentDetails({ id: 'a-9', tasks: [] }));
-    backend.expectOne('/api/teacher/homework/assignments/a-9/attachments').flush([attachment()]);
-    const bound = backend.expectOne('/api/teacher/homework/assignments/a-9/textbooks');
+    editor.backend
+      .expectOne('/api/teacher/homework/assignments/a-9/attachments')
+      .flush([attachment()]);
+    const bound = editor.backend.expectOne('/api/teacher/homework/assignments/a-9/textbooks');
     expect(bound.request.body).toEqual({ textbookId: 'tb-1', pages: '3' });
     bound.flush(assignmentDetails({ id: 'a-9' }));
-    const assigned = backend.expectOne('/api/teacher/homework/assignments/a-9/students');
+    const assigned = editor.backend.expectOne('/api/teacher/homework/assignments/a-9/students');
     expect(assigned.request.body).toEqual({ studentIds: ['s-1'] });
     assigned.flush(assignmentDetails({ id: 'a-9' }));
-    await fixture.whenStable();
+    await editor.fixture.whenStable();
 
     // back where the editor was opened (the list); «Открыть» of the snackbar leads to the assignment
-    expect(navigateByUrl).toHaveBeenCalledWith('/teacher/homework');
+    expect(editor.navigateByUrl).toHaveBeenCalledWith('/teacher/homework');
     expect(link).toHaveBeenCalledWith('Задание выдано', 'Открыть', expect.any(Function));
     link.mock.calls[0]?.[2]();
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-9']);
+    expect(editor.navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-9']);
     expect(page.canLeave()).toBe(true);
   });
 
   it('saves a new draft by itself with its students, then keeps updating it', async () => {
-    const { page, host } = await create([]);
+    const { page, host } = await editor.create([]);
     page.autosaveDelay = 0;
     expect(readableText(host)).not.toContain('Сохранить черновик');
     page.form.patchValue({
@@ -195,49 +77,52 @@ describe('AssignmentEditorPage', () => {
         { kind: 'STUDENT', id: 's-4' },
       ],
     });
-    await settle();
-    const created = backend.expectOne({ method: 'POST', url: '/api/teacher/homework/assignments' });
+    await editor.settle();
+    const created = editor.backend.expectOne({
+      method: 'POST',
+      url: '/api/teacher/homework/assignments',
+    });
     expect(created.request.body).not.toHaveProperty('questions');
     created.flush(assignmentDetails({ id: 'a-7', tasks: [], version: 0 }));
-    const kept = backend.expectOne('/api/teacher/homework/assignments/a-7/draft-students');
+    const kept = editor.backend.expectOne('/api/teacher/homework/assignments/a-7/draft-students');
     expect(kept.request.body).toEqual({ studentIds: ['s-2'] });
     kept.flush(assignmentDetails({ id: 'a-7', tasks: [], version: 0 }));
-    await settle();
+    await editor.settle();
 
-    backend.expectNone('/api/teacher/homework/assignments/a-7/students');
-    expect(navigate).not.toHaveBeenCalled();
+    editor.backend.expectNone('/api/teacher/homework/assignments/a-7/students');
+    expect(editor.navigate).not.toHaveBeenCalled();
     expect(TestBed.inject(Location).path()).toBe('/teacher/homework/a-7/edit');
     expect(readableText(host)).toMatch(/сохранено · \d\d:\d\d/);
     expect(host.querySelector('h1')?.textContent.trim()).toBe('Дроби');
 
     page.form.patchValue({ description: 'Дроби\nРешите' });
-    await settle();
-    const updated = backend.expectOne({
+    await editor.settle();
+    const updated = editor.backend.expectOne({
       method: 'PUT',
       url: '/api/teacher/homework/assignments/a-7',
     });
     expect(updated.request.body).toMatchObject({ description: 'Дроби\nРешите', version: 0 });
     updated.flush(assignmentDetails({ id: 'a-7', tasks: [], version: 1 }));
-    backend
+    editor.backend
       .expectOne('/api/teacher/homework/assignments/a-7/draft-students')
       .flush(assignmentDetails({ id: 'a-7', tasks: [], version: 1 }));
-    await settle();
-    backend.expectNone({ method: 'PUT', url: '/api/teacher/homework/assignments/a-7' });
+    await editor.settle();
+    editor.backend.expectNone({ method: 'PUT', url: '/api/teacher/homework/assignments/a-7' });
     expect(page.canLeave()).toBe(true);
   });
 
   it('saves nothing without a title and the rest when leaving', async () => {
-    const { page } = await create([]);
+    const { page } = await editor.create([]);
     page.autosaveDelay = 0;
     page.form.patchValue({ members: [{ kind: 'STUDENT', id: 's-1' }] });
-    await settle();
-    backend.expectNone({ method: 'POST', url: '/api/teacher/homework/assignments' });
+    await editor.settle();
+    editor.backend.expectNone({ method: 'POST', url: '/api/teacher/homework/assignments' });
 
     page.autosaveDelay = 60_000;
     page.form.patchValue({ description: 'Дроби' });
-    await fixture.whenStable();
+    await editor.fixture.whenStable();
     expect(page.canLeave()).toBe(true);
-    backend
+    editor.backend
       .expectOne({ method: 'POST', url: '/api/teacher/homework/assignments' })
       .flush(
         { status: 422, code: 'assignment.title-invalid' },
@@ -246,27 +131,27 @@ describe('AssignmentEditorPage', () => {
   });
 
   it('needs a text for the title and students to give out to', async () => {
-    const { page, host } = await create([]);
+    const { page, host } = await editor.create([]);
 
     page.save();
-    await fixture.whenStable();
+    await editor.fixture.whenStable();
     expect(readableText(host)).toContain('Напишите текст задания');
 
     page.form.patchValue({ description: '\n  \n**Дроби**' });
     page.save();
-    await fixture.whenStable();
+    await editor.fixture.whenStable();
     expect(readableText(host)).toContain('Выберите, кому выдать задание');
-    backend.expectNone('/api/teacher/homework/assignments');
+    editor.backend.expectNone('/api/teacher/homework/assignments');
   });
 
   it('derives the title from the first line: no marks, at most 200 characters', async () => {
-    const { page } = await create([]);
+    const { page } = await editor.create([]);
     page.form.patchValue({
       description: `\n- [**${'я'.repeat(250)}**](https://x.y)\nТекст`,
       members: [{ kind: 'STUDENT', id: 's-1' }],
     });
     page.save();
-    const created = backend.expectOne({
+    const created = editor.backend.expectOne({
       method: 'POST',
       url: '/api/teacher/homework/assignments',
     });
@@ -274,7 +159,7 @@ describe('AssignmentEditorPage', () => {
   });
 
   it('hides the empty sections and adds a video from the section menu', async () => {
-    const { page, host } = await create([]);
+    const { page, host } = await editor.create([]);
     expect(host.querySelector('h1')?.textContent.trim()).toBe('Новое задание');
     expect(host.querySelector('tb-textbook-list li')).toBeNull();
     expect(host.querySelector('tb-video-section')).toBeNull();
@@ -286,7 +171,7 @@ describe('AssignmentEditorPage', () => {
     const add = () => [...host.querySelectorAll<HTMLButtonElement>('.tb-section-nav__action')];
     expect(add().map((button) => button.textContent.trim())).toEqual(['Видео', 'Доску']);
     add()[0]?.click();
-    await fixture.whenStable();
+    await editor.fixture.whenStable();
     expect(host.querySelector('tb-video-section')).not.toBeNull();
     expect(page.videos()).toHaveLength(0);
     expect(document.activeElement?.id).toBe('video-link');
@@ -294,165 +179,42 @@ describe('AssignmentEditorPage', () => {
     page.pickTextbook(boundTextbook());
     page.newFiles.set([new File(['x'], 'условие.pdf')]);
     page.changeVideos(Array.from({ length: 5 }, () => videoDraft()));
-    await fixture.whenStable();
+    await editor.fixture.whenStable();
     expect(host.querySelector('tb-textbook-list li')).not.toBeNull();
     expect(add()[0]?.disabled).toBe(true);
   });
 
-  it('keeps «Видео» and «Доска» in the materials without the section menu', async () => {
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({ providers: testProviders(screenWidth(700)) });
-    backend = TestBed.inject(HttpTestingController);
-    const { host } = await create([]);
-    expect(host.querySelector('tb-section-nav')).toBeNull();
-    const materials = host.querySelector<HTMLElement>('tb-material-chips') ?? host;
-    buttonByText(materials, 'Видео').click();
-    await fixture.whenStable();
-    expect(host.querySelector('tb-video-section')).not.toBeNull();
-    buttonByText(materials, 'Доска').click();
-    backend.expectOne('/api/teacher/boards').flush([]);
-    await fixture.whenStable();
-    expect(document.body.textContent).toContain('Досок пока нет');
-  });
-
-  it('keeps the test on its own tab and sums it up on «Задание»', async () => {
-    const { page, host } = await create([], true);
-    const tabs = () =>
-      [...host.querySelectorAll('[role="tab"]')].map((tab) =>
-        tab.textContent.trim().replace(/\s+/g, ' '),
-      );
-    const state = fixture.debugElement.injector.get(HomeworkAiState);
-    expect(tabs()).toEqual(['Задание', 'Тест']);
-    expect(host.querySelector('#editor-quiz-summary')).toBeNull();
-
-    page.changeQuestions([
-      { ...questionDraft('NUMBER'), text: 'Сколько?', value: 1, points: 2 },
-      questionDraft('SHORT_TEXT'),
-      { ...questionDraft('MATCHING'), text: 'Пары' },
-      { ...questionDraft('ORDERING'), text: 'Порядок' },
-    ]);
-    page.changeAttempts(2);
-    await fixture.whenStable();
-    expect(tabs()).toEqual(['Задание', 'Тест · 4 вопроса']);
-    const summary = readableText(
-      host.querySelector<HTMLElement>('#editor-quiz-summary') ?? host,
-    ).replace(/\s+/g, ' ');
-    expect(summary).toContain('4 вопроса · 5 баллов · 2 попытки');
-    expect(summary).toContain('Сколько?');
-    expect(summary).toContain('Без текста');
-    expect(summary).not.toContain('Порядок');
-    expect(summary).toContain('…и ещё 1 вопрос');
-    expect(state.mode()).toBe('TASK');
-
-    buttonByText(host, 'Открыть тест').click();
-    await fixture.whenStable();
-    expect(host.querySelector('tb-question-section')).not.toBeNull();
-    expect(host.querySelector('tb-quiz-settings')).not.toBeNull();
-    expect(state.mode()).toBe('QUESTIONS');
-
-    page.choose('task');
-    await fixture.whenStable();
-    expect(TestBed.inject(Location).path()).not.toContain('tab=');
-    expect(host.querySelector('#editor-text')).not.toBeNull();
-  });
-
-  it('splits the test into «Вопросы» and «Настройки» on a phone', async () => {
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({ providers: testProviders(screenWidth(500)) });
-    backend = TestBed.inject(HttpTestingController);
-    fixture = createEditor();
-    fixture.componentRef.setInput('tab', 'settings');
-    await fixture.whenStable();
-    backend.expectOne('/api/teacher/students').flush(STUDENTS);
-    backend.expectOne((request) => request.url === '/api/teacher/schedule/lessons').flush([]);
-    flushStatus(false);
-    flushGroups();
-    await fixture.whenStable();
-    const host = hostElement(fixture);
-
-    expect([...host.querySelectorAll('[role="tab"]')].map((tab) => tab.textContent.trim())).toEqual(
-      ['Задание', 'Вопросы', 'Настройки'],
-    );
-    expect(host.querySelector('tb-quiz-settings')).not.toBeNull();
-    expect(host.querySelector('tb-question-section')).toBeNull();
-    fixture.componentInstance.choose('quiz');
-    await fixture.whenStable();
-    expect(host.querySelector('tb-question-section')).not.toBeNull();
-    expect(host.querySelector('tb-quiz-settings')).toBeNull();
-  });
-
   it('switches the text and its preview', async () => {
-    const { page, host } = await create();
+    const { page, host } = await editor.create();
     page.form.patchValue({ description: '**Жирный**' });
 
     expect(host.querySelector('#editor-text')).not.toBeNull();
     page.mode.setValue('preview');
-    await fixture.whenStable();
+    await editor.fixture.whenStable();
     expect(host.querySelector('#editor-text')).toBeNull();
     expect(host.querySelector('.tb-preview strong')?.textContent).toBe('Жирный');
     expect(readableText(host)).not.toContain('На доску');
   });
 
-  it('offers the next lesson of the chosen students', async () => {
-    const { page, host } = await create([
-      groupLesson({ startsAt: new Date(Date.now() + DAY).toISOString() }),
-    ]);
-    expect(readableText(host)).not.toContain('К следующему занятию');
-
-    page.form.patchValue({ members: [{ kind: 'STUDENT', id: 's-2' }] });
-    await fixture.whenStable();
-    expect(readableText(host)).toContain('К следующему занятию');
-    buttonByText(host, 'Без срока').click();
-    expect(page.canLeave()).toBe(true);
-  });
-
-  it('has no «к следующему занятию» when the route gives no lessons', async () => {
-    fixture = TestBed.createComponent(AssignmentEditorPage);
-    await fixture.whenStable();
-    backend.expectOne('/api/teacher/students').flush(STUDENTS);
-    backend.expectNone((request) => request.url === '/api/teacher/schedule/lessons');
-    flushStatus(false);
-    flushGroups();
-    fixture.componentInstance.form.patchValue({ members: [{ kind: 'STUDENT', id: 's-1' }] });
-    await fixture.whenStable();
-
-    expect(readableText(hostElement(fixture))).not.toContain('К следующему занятию');
-  });
-
-  it('works without the schedule', async () => {
-    fixture = createEditor();
-    await fixture.whenStable();
-    backend.expectOne('/api/teacher/students').flush(STUDENTS);
-    backend
-      .expectOne((request) => request.url === '/api/teacher/schedule/lessons')
-      .flush(null, { status: 500, statusText: 'Error' });
-    flushStatus(false);
-    flushGroups();
-    fixture.componentInstance.form.patchValue({ members: [{ kind: 'STUDENT', id: 's-1' }] });
-    await fixture.whenStable();
-
-    expect(readableText(hostElement(fixture))).not.toContain('К следующему занятию');
-  });
-
   it('gives the assignment out and puts it with its pages on a board of its students', async () => {
-    const { page, host } = await create([]);
+    const { page, host } = await editor.create([]);
     page.form.patchValue({ description: 'Дроби', members: [{ kind: 'STUDENT', id: 's-1' }] });
     page.pickTextbook(boundTextbook({ textbookId: 'tb-1', pages: '3' }));
-    await fixture.whenStable();
+    await editor.fixture.whenStable();
     exactButton(host, 'Доску').click();
-    backend.expectOne('/api/teacher/boards').flush([aBoard()]);
-    await fixture.whenStable();
+    editor.backend.expectOne('/api/teacher/boards').flush([aBoard()]);
+    await editor.fixture.whenStable();
     document.body.querySelector<HTMLElement>('.p-menu-item-link')?.click();
-    await fixture.whenStable();
+    await editor.fixture.whenStable();
     const board = readableText(host.querySelector<HTMLElement>('#editor-board') ?? host);
     expect(board).toContain('Алгебра');
     expect(board).toContain('когда вы его выдадите');
     expect(host.querySelector('.tb-section-nav__action:nth-child(2)')).toBeNull();
     exactButton(host, 'Выдать').click();
-    backend
+    editor.backend
       .expectOne({ method: 'POST', url: '/api/teacher/homework/assignments' })
       .flush(assignmentDetails({ id: 'a-9', tasks: [], attachments: [] }));
-    backend
+    editor.backend
       .expectOne('/api/teacher/homework/assignments/a-9/textbooks')
       .flush(assignmentDetails({ id: 'a-9' }));
     const saved = assignmentDetails({
@@ -461,13 +223,13 @@ describe('AssignmentEditorPage', () => {
       attachments: [],
       textbooks: [boundTextbook({ textbookId: 'tb-1', pages: '3' })],
     });
-    backend.expectOne('/api/teacher/homework/assignments/a-9/students').flush(saved);
-    await fixture.whenStable();
-    expect(navigate).not.toHaveBeenCalled();
+    editor.backend.expectOne('/api/teacher/homework/assignments/a-9/students').flush(saved);
+    await editor.fixture.whenStable();
+    expect(editor.navigate).not.toHaveBeenCalled();
 
-    backend.expectOne('/api/teacher/boards?studentId=s-1&studentId=s-2').flush([aBoard()]);
-    await fixture.whenStable();
-    const dialog = fixture.debugElement
+    editor.backend.expectOne('/api/teacher/boards?studentId=s-1&studentId=s-2').flush([aBoard()]);
+    await editor.fixture.whenStable();
+    const dialog = editor.fixture.debugElement
       .query(By.directive(ToBoardDialog))
       .injector.get(ToBoardDialog);
     expect(dialog.pictures()).toEqual(['/api/teacher/textbooks/tb-1/pages/3']);
@@ -475,7 +237,7 @@ describe('AssignmentEditorPage', () => {
 
     vi.spyOn(window, 'open').mockReturnValue(null);
     await dialog.place('text');
-    const placed = backend.expectOne({
+    const placed = editor.backend.expectOne({
       method: 'PUT',
       url: '/api/teacher/homework/assignments/a-9/board',
     });
@@ -486,261 +248,64 @@ describe('AssignmentEditorPage', () => {
     );
 
     dialog.visible.set(false);
-    await fixture.whenStable();
-    expect(navigateByUrl).toHaveBeenCalledWith('/teacher/homework');
+    await editor.fixture.whenStable();
+    expect(editor.navigateByUrl).toHaveBeenCalledWith('/teacher/homework');
     expect(page.canLeave()).toBe(true);
     localStorage.clear();
   });
 
-  it('shows what the backend refused and saves materials that made it', async () => {
-    const { page, host } = await create();
+  it('shows what the editor.backend refused and saves materials that made it', async () => {
+    const { page, host } = await editor.create();
     page.form.patchValue({ description: 'Дроби', members: [{ kind: 'STUDENT', id: 's-1' }] });
     page.save();
     page.save();
-    backend
+    editor.backend
       .expectOne({ method: 'POST', url: '/api/teacher/homework/assignments' })
       .flush(
         { status: 422, code: 'assignment.title-invalid' },
         { status: 422, statusText: 'Unprocessable' },
       );
-    await fixture.whenStable();
+    await editor.fixture.whenStable();
     expect(readableText(host)).toContain('Название задания — от 1 до 200 символов');
 
     page.newFiles.set([new File(['x'], 'virus.exe')]);
     page.save();
-    backend
+    editor.backend
       .expectOne({ method: 'POST', url: '/api/teacher/homework/assignments' })
       .flush(assignmentDetails({ id: 'a-8' }));
-    backend
+    editor.backend
       .expectOne('/api/teacher/homework/assignments/a-8/attachments')
       .flush(null, { status: 422, statusText: 'Unprocessable' });
-    backend
+    editor.backend
       .expectOne('/api/teacher/homework/assignments/a-8/students')
       .flush(assignmentDetails({ id: 'a-8' }));
-    await fixture.whenStable();
+    await editor.fixture.whenStable();
 
-    expect(navigateByUrl).toHaveBeenCalledWith('/teacher/homework');
+    expect(editor.navigateByUrl).toHaveBeenCalledWith('/teacher/homework');
     expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
       expect.objectContaining({ severity: 'error' }),
     );
   });
 
-  it('edits an assignment without its materials: they are on its page', async () => {
-    const details = assignmentDetails({
-      textbooks: [boundTextbook()],
-      attachments: [attachment()],
-    });
-    const { page, host } = await edit(details);
-    expect(host.querySelector('h1')?.textContent.trim()).toBe('Дроби');
-    expect(page.form.controls.description.value).toBe('Дроби\n\nРешить **№1-5**');
-    expect(host.querySelector('tb-recipients-field')).toBeNull();
-    expect(readableText(host)).not.toContain('Spotlight 5');
-    expect(readableText(host)).not.toContain('условие.pdf');
-    expect(readableText(host)).not.toContain('Учебник');
-    expect(host.querySelector('input[type="file"]')).toBeNull();
-
-    page.form.patchValue({ description: 'Дроби 2\nРешить' });
-    page.form.markAsDirty();
-    exactButton(host, 'Сохранить').click();
-    const put = backend.expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' });
-    expect(put.request.body).toMatchObject({
-      title: 'Дроби 2',
-      dueAt: '2026-09-10T15:00:00.000Z',
-      version: 0,
-    });
-    put.flush(assignmentDetails({ title: 'Дроби 2', version: 1 }));
-    await fixture.whenStable();
-
-    backend.expectNone('/api/teacher/homework/assignments/a-1/attachments');
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-1']);
-  });
-
-  it('shows the students of a draft as chips and keeps them as it saves itself', async () => {
-    const { page, host } = await edit(
-      assignmentDetails({ tasks: [], draftStudentIds: ['s-1'], attachments: [] }),
-    );
-    page.autosaveDelay = 0;
-    backend.expectOne('/api/teacher/students').flush(STUDENTS);
-    flushGroups();
-    await settle();
-    backend.expectNone({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' });
-
-    expect(page.form.controls.members.value).toEqual([{ kind: 'STUDENT', id: 's-1' }]);
-    expect(host.querySelector('tb-recipients-field')).not.toBeNull();
-    expect(readableText(host)).toContain('Анна');
-    expect(() => exactButton(host, 'Сохранить')).toThrow();
-
-    page.form.controls.members.setValue([{ kind: 'STUDENT', id: 's-2' }]);
-    await settle();
-    backend
-      .expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' })
-      .flush(assignmentDetails({ tasks: [], version: 1 }));
-    const kept = backend.expectOne('/api/teacher/homework/assignments/a-1/draft-students');
-    expect(kept.request.body).toEqual({ studentIds: ['s-2'] });
-    kept.flush(assignmentDetails({ tasks: [], version: 1 }));
-    await settle();
-    expect(navigate).not.toHaveBeenCalled();
-  });
-
-  it('leaves the students of a draft alone until the list of students is in', async () => {
-    const { page } = await edit(
-      assignmentDetails({ tasks: [], draftStudentIds: ['s-1'], attachments: [] }),
-    );
-    page.autosaveDelay = 0;
-    page.form.patchValue({ description: 'Дроби\nНовое' });
-    await settle();
-    backend
-      .expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' })
-      .flush(assignmentDetails({ tasks: [], version: 1 }));
-    backend.expectNone('/api/teacher/homework/assignments/a-1/draft-students');
-  });
-
-  it('gives a saved draft out and names the questions to fix', async () => {
-    const { host } = await edit(
-      assignmentDetails({ tasks: [], draftStudentIds: ['s-1'], attachments: [] }),
-    );
-    backend.expectOne('/api/teacher/students').flush(STUDENTS);
-    flushGroups();
-    await fixture.whenStable();
-
-    exactButton(host, 'Выдать').click();
-    backend
-      .expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' })
-      .flush(assignmentDetails({ tasks: [], version: 1 }));
-    backend.expectOne('/api/teacher/homework/assignments/a-1/students').flush(
-      {
-        status: 422,
-        code: 'homework.quiz-incomplete',
-        questions: [
-          { number: 2, code: 'homework.quiz-text-invalid' },
-          { number: 3, code: 'homework.quiz-no-correct' },
-        ],
-      },
-      { status: 422, statusText: 'Unprocessable' },
-    );
-    backend
-      .expectOne('/api/teacher/homework/assignments/a-1')
-      .flush(assignmentDetails({ tasks: [], version: 2 }));
-    await fixture.whenStable();
-    expect(readableText(host)).toContain('Задание не выдано: поправьте вопросы 2, 3');
-    expect(host.querySelector('tb-question-section')).not.toBeNull();
-
-    exactButton(host, 'Выдать').click();
-    const again = backend.expectOne({
-      method: 'PUT',
-      url: '/api/teacher/homework/assignments/a-1',
-    });
-    expect(again.request.body).toMatchObject({ version: 2 });
-    again.flush(assignmentDetails({ tasks: [], version: 3 }));
-    backend
-      .expectOne('/api/teacher/homework/assignments/a-1/students')
-      .flush(assignmentDetails({ version: 3 }));
-    await fixture.whenStable();
-    expect(TestBed.inject(MessageService).add).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'Задание выдано' }),
-    );
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-1']);
-  });
-
-  it('keeps the materials of a draft in the editor: picked ones save, saved ones go at once', async () => {
-    const { page, host } = await edit(
-      assignmentDetails({
-        tasks: [],
-        textbooks: [boundTextbook({ textbookId: 'tb-1' })],
-        attachments: [attachment()],
-      }),
-    );
-    page.autosaveDelay = 0;
-    expect(readableText(host)).toContain('Spotlight 5');
-    expect(readableText(host)).toContain('условие.pdf');
-
-    page.newFiles.set([new File(['x'], 'ещё.pdf')]);
-    await settle();
-    backend
-      .expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' })
-      .flush(assignmentDetails({ tasks: [], version: 1 }));
-    backend.expectOne('/api/teacher/homework/assignments/a-1/attachments').flush([attachment()]);
-    backend.expectOne('/api/teacher/homework/assignments/a-1').flush(
-      assignmentDetails({
-        tasks: [],
-        version: 1,
-        textbooks: [boundTextbook({ textbookId: 'tb-1' })],
-        attachments: [attachment(), attachment({ id: 'f-2', filename: 'ещё.pdf' })],
-      }),
-    );
-    await settle();
-    expect(page.newFiles()).toEqual([]);
-    expect(readableText(host)).toContain('ещё.pdf');
-
-    host.querySelector<HTMLButtonElement>('button[aria-label="Удалить файл ещё.pdf"]')?.click();
-    backend
-      .expectOne({
-        method: 'DELETE',
-        url: '/api/teacher/homework/assignments/a-1/attachments/f-2',
-      })
-      .flush(null);
-    await fixture.whenStable();
-    expect(readableText(host)).not.toContain('ещё.pdf');
-
-    host
-      .querySelector<HTMLButtonElement>('tb-textbook-list button[aria-label^="Убрать из задания"]')
-      ?.click();
-    backend
-      .expectOne({
-        method: 'DELETE',
-        url: '/api/teacher/homework/assignments/a-1/textbooks/tb-1',
-      })
-      .flush(assignmentDetails({ tasks: [], version: 1, textbooks: [], attachments: [] }));
-    await fixture.whenStable();
-    expect(host.querySelector('tb-textbook-list li')).toBeNull();
-  });
-
-  it('shows the students of an issued assignment read-only and gives it to more', async () => {
-    const { host } = await edit(assignmentDetails());
-
-    expect(host.querySelector('tb-recipients-field')).toBeNull();
-    expect(host.querySelector('tb-input-chip')?.textContent).toContain('Анна');
-    expect(host.querySelector('tb-input-chip button')).toBeNull();
-
-    buttonByText(host, 'Выдать ещё').click();
-    await fixture.whenStable();
-    const more = fixture.debugElement
-      .query(By.directive(AssignMoreDialog))
-      .injector.get(AssignMoreDialog);
-    expect(more.visible()).toBe(true);
-    const issued = assignmentDetails();
-    const first = issued.tasks[0];
-    if (first === undefined) {
-      throw new Error('no task in the fixture');
-    }
-    more.saved.emit({
-      ...issued,
-      version: 3,
-      tasks: [...issued.tasks, { ...first, taskId: 't-2', studentId: 's-2', studentName: 'Борис' }],
-    });
-    await fixture.whenStable();
-    expect(readableText(host)).toContain('Борис');
-  });
-
   it('lists the shown sections in a column and drops it beside the AI', async () => {
-    const { page, host } = await create([], true);
+    const { page, host } = await editor.create([], true);
     const labels = () =>
       [...host.querySelectorAll('tb-section-nav a')].map((item) => item.textContent.trim());
     expect(labels()).toEqual(['Текст']);
 
     page.changeQuestions([{ ...questionDraft('NUMBER'), text: 'Вопрос', value: 1 }]);
     page.changeVideos([...page.videos(), videoDraft()]);
-    await fixture.whenStable();
+    await editor.fixture.whenStable();
     expect(labels()).toEqual(['Текст', 'Видео · 1', 'Тест · 1']);
 
     exactButton(host, 'ИИ-помощник').click();
-    await fixture.whenStable();
+    await editor.fixture.whenStable();
     expect(host.querySelector('tb-section-nav')).toBeNull();
   });
 
   it('asks before leaving unsaved changes of an issued assignment', async () => {
-    const { page } = await edit();
-    const confirmation = fixture.debugElement.injector.get(ConfirmationService);
+    const { page } = await editor.edit();
+    const confirmation = editor.fixture.debugElement.injector.get(ConfirmationService);
     const answers: boolean[] = [true, false];
     vi.spyOn(confirmation, 'confirm').mockImplementation((request) => {
       if (answers.shift() === true) {
@@ -759,365 +324,19 @@ describe('AssignmentEditorPage', () => {
     await expect(page.canLeave()).resolves.toBe(false);
   });
 
-  it('puts an AI draft into the editor', async () => {
-    const { page, host } = await create([], true);
-    exactButton(host, 'ИИ-помощник').click();
-    await fixture.whenStable();
-
-    for (const request of backend.match('/api/teacher/ai/prompts')) {
-      request.flush([]);
-    }
-    const assistant = host.querySelector<HTMLElement>('tb-pane.tb-editor__ai tb-homework-ai-panel');
-    expect(assistant).not.toBeNull();
-    page.applyDraft({
-      draft: { title: 'Проценты', description: '1. Найдите 10%' },
-      mode: 'replace',
-    });
-    await fixture.whenStable();
-    expect(page.form.controls.description.value).toBe('Проценты\n\n1. Найдите 10%');
-    expect(page.mode.value).toBe('preview');
-    expect(host.querySelector('tb-pane.tb-editor__ai tb-homework-ai-panel')).toBe(assistant);
-
-    page.applyDraft({
-      draft: { title: 'Ещё', description: '2. Найдите 20%' },
-      mode: 'insert',
-    });
-    expect(page.form.controls.description.value).toBe(
-      'Проценты\n\n1. Найдите 10%\n\n2. Найдите 20%',
-    );
-  });
-
-  it('puts AI questions into the quiz: appended or replacing', async () => {
-    const { page } = await create([], true);
-    const drafted = (id: string) => ({
-      id,
-      type: 'NUMBER' as const,
-      text: `Вопрос ${id}`,
-      points: 1,
-      explanation: null,
-      options: [],
-      correct: [],
-      accepted: [],
-      value: 2,
-      tolerance: 0,
-      pairs: [],
-    });
-
-    page.applyQuestions({ questions: [drafted('a')], mode: 'append' });
-    page.applyQuestions({ questions: [drafted('b')], mode: 'append' });
-    expect(page.questions().map((question) => question.text)).toEqual(['Вопрос a', 'Вопрос b']);
-
-    page.applyQuestions({ questions: [drafted('c')], mode: 'replace' });
-    expect(page.questions().map((question) => question.text)).toEqual(['Вопрос c']);
-  });
-
-  it('preserves AI request, sources and draft when the supporting pane is closed', async () => {
-    const { page, host } = await create([], true);
-    const state = fixture.debugElement.injector.get(HomeworkAiState);
-    state.prompt.setValue('Create exercises');
-    state.chosen.set(new Set(['textbook-tb-1']));
-    state.draft.set({ title: 'Draft', description: 'Generated text' });
-    exactButton(host, 'ИИ-помощник').click();
-    await fixture.whenStable();
-    for (const request of backend.match('/api/teacher/ai/prompts')) request.flush([]);
-    expect(host.querySelector('tb-homework-ai-panel')).not.toBeNull();
-    exactButton(host, 'ИИ-помощник').click();
-    await fixture.whenStable();
-    expect(host.querySelector('tb-homework-ai-panel')).toBeNull();
-    exactButton(host, 'ИИ-помощник').click();
-    await fixture.whenStable();
-    for (const request of backend.match('/api/teacher/ai/prompts')) request.flush([]);
-    expect(state.prompt.value).toBe('Create exercises');
-    expect(state.chosen().has('textbook-tb-1')).toBe(true);
-    expect(readableText(host)).toContain('Generated text');
-    expect(page.form.controls.description.value).toBe('');
-  });
-
-  it('opens the compact AI assistant as a modal panel and preserves its request on close', async () => {
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({ providers: testProviders(screenWidth(500)) });
-    backend = TestBed.inject(HttpTestingController);
-    const { host } = await create([], true);
-    const state = fixture.debugElement.injector.get(HomeworkAiState);
-    state.prompt.setValue('Keep this request');
-    // a phone: an icon button, named by its label
-    host.querySelector<HTMLButtonElement>('button[aria-label="ИИ-помощник"]')?.click();
-    await fixture.whenStable();
-    expect(document.body.querySelector('[role="dialog"][aria-modal="true"]')).not.toBeNull();
-    const close = document.body.querySelector<HTMLButtonElement>(
-      'button[aria-label="Закрыть ИИ-помощника"]',
-    );
-    expect(close).not.toBeNull();
-    close?.click();
-    await fixture.whenStable();
-    expect(state.prompt.value).toBe('Keep this request');
-    for (const request of backend.match('/api/teacher/ai/prompts')) request.flush([]);
-  });
-
-  it('offers the assistant the textbooks and the saved files it can read', async () => {
-    const { page } = await edit(
-      assignmentDetails({
-        textbooks: [
-          boundTextbook(),
-          boundTextbook({ textbookId: 'w', title: 'Word', format: 'DOCUMENT' }),
-        ],
-        attachments: [
-          attachment(),
-          attachment({ id: 'z', filename: 'a.zip', contentType: 'application/zip' }),
-        ],
-      }),
-    );
-
-    expect(page.sourceOptions().map((option) => option.label)).toEqual([
-      'Spotlight 5, с. 12-14',
-      'условие.pdf',
-    ]);
-    expect(page.sourceOptions()[1]?.source).toEqual({
-      type: 'FILE',
-      id: 'f-1',
-      assignmentId: 'a-1',
-    });
-  });
-
-  it('edits the videos, saves them and offers their transcripts to the assistant', async () => {
-    const video = {
-      url: 'https://youtu.be/dQw4w9WgXcQ',
-      provider: 'YOUTUBE' as const,
-      videoId: 'dQw4w9WgXcQ',
-      startSeconds: null,
-      title: 'Present Simple',
-      transcript: '[0:05] We play',
-      transcriptShown: false,
-    };
-    const { page, host } = await edit(
-      assignmentDetails({
-        attachments: [],
-        videos: [video, { ...video, title: null, transcript: null }],
-      }),
-    );
-
-    expect(host.querySelector('tb-video-section img')).not.toBeNull();
-    expect(page.sourceOptions().map((option) => option.label)).toEqual(['Видео: Present Simple']);
-    expect(page.sourceOptions()[0]?.source).toEqual({
-      type: 'VIDEO',
-      title: 'Present Simple',
-      url: 'https://youtu.be/dQw4w9WgXcQ',
-      transcript: '[0:05] We play',
-    });
-    expect(page.canLeave()).toBe(true);
-
-    page.changeVideos(page.videos().slice(0, 1));
-    expect(page.canLeave()).not.toBe(true);
-    exactButton(host, 'Сохранить').click();
-    const put = backend.expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' });
-    expect(put.request.body).toMatchObject({
-      videos: [
-        {
-          url: 'https://youtu.be/dQw4w9WgXcQ',
-          title: 'Present Simple',
-          transcript: '[0:05] We play',
-          transcriptShown: false,
-        },
-      ],
-    });
-    put.flush(assignmentDetails({ version: 1 }));
-    await fixture.whenStable();
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-1']);
-  });
-
-  it('saves the questions and the quiz settings, sending nothing when the quiz is untouched', async () => {
-    const { page, host } = await edit(assignmentDetails({ attachments: [], tasks: UNSTARTED }));
-    exactButton(host, 'Сохранить').click();
-    const plain = backend.expectOne({
-      method: 'PUT',
-      url: '/api/teacher/homework/assignments/a-1',
-    });
-    expect(plain.request.body).not.toHaveProperty('questions');
-    expect(plain.request.body).not.toHaveProperty('quizReveal');
-    plain.flush(assignmentDetails({ version: 1 }));
-    await fixture.whenStable();
-
-    const again = await edit(assignmentDetails({ attachments: [], tasks: UNSTARTED }));
-    expect(again.page.canLeave()).toBe(true);
-    again.page.changeQuestions([
-      { ...questionDraft('NUMBER'), text: 'Сколько будет 2 + 2?', value: 4 },
-    ]);
-    again.page.changeReveal('NEVER');
-    again.page.changeAttempts(0);
-    expect(again.page.canLeave()).not.toBe(true);
-    exactButton(again.host, 'Сохранить').click();
-    const put = backend.expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' });
-    expect(put.request.body).toMatchObject({
-      questions: [{ type: 'NUMBER', text: 'Сколько будет 2 + 2?', value: 4, tolerance: 0 }],
-      quizReveal: 'NEVER',
-      quizAttempts: 0,
-    });
-    put.flush(assignmentDetails({ version: 1 }));
-    expect(page).toBeTruthy();
-  });
-
-  it('shows the saved questions and holds the save while a question is incomplete', async () => {
-    const { page, host } = await edit(
-      assignmentDetails({
-        attachments: [],
-        tasks: UNSTARTED,
-        questions: [
-          {
-            id: 'q-1',
-            type: 'SHORT_TEXT',
-            text: 'Столица России?',
-            points: 1,
-            explanation: null,
-            options: [],
-            correct: [],
-            accepted: ['Москва'],
-            value: null,
-            tolerance: null,
-            pairs: [],
-          },
-        ],
-        quizAttempts: null,
-      }),
-    );
-    page.choose('quiz');
-    await fixture.whenStable();
-    expect(host.querySelector<HTMLTextAreaElement>('#question-text-q-1')?.value).toBe(
-      'Столица России?',
-    );
-    expect(readableText(host)).toContain('Без огр.');
-
-    page.changeQuestions([...page.questions(), questionDraft('SINGLE_CHOICE')]);
-    exactButton(host, 'Сохранить').click();
-    await fixture.whenStable();
-    backend.expectNone({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' });
-    expect(readableText(host)).toContain('Напишите текст вопроса');
-  });
-
-  it('shows the test as the student sees it without saving the answers', async () => {
-    const { page, host } = await edit(
-      assignmentDetails({
-        attachments: [],
-        tasks: UNSTARTED,
-        questions: [
-          {
-            id: 'q-1',
-            type: 'SINGLE_CHOICE',
-            text: 'Столица России?',
-            points: 1,
-            explanation: null,
-            options: [
-              { id: 'o-1', text: 'Москва' },
-              { id: 'o-2', text: 'Казань' },
-            ],
-            correct: ['o-1'],
-            accepted: [],
-            value: null,
-            tolerance: null,
-            pairs: [],
-          },
-        ],
-      }),
-    );
-    expect(host.querySelector('button[aria-label="Как увидит ученик"]')).toBeNull();
-    page.choose('quiz');
-    await fixture.whenStable();
-    exactButton(host, 'Как увидит ученик').click();
-    await fixture.whenStable();
-
-    const text = readableText(document.body);
-    expect(text).toContain('Так тест увидит ученик · ответы не сохраняются');
-    expect(text).toContain('Вопрос 1 из 1');
-    document.body.querySelector<HTMLInputElement>('#o-o-1')?.click();
-    await fixture.whenStable();
-    exactButton(document.body, 'Завершить тест').click();
-    await fixture.whenStable();
-    backend.expectNone((request) => request.url.includes('/quiz'));
-    expect(document.body.querySelector('button[aria-label="Закрыть просмотр"]')).toBeNull();
-  });
-
-  it('locks the questions when a student has started the quiz and saves the rest', async () => {
-    const { page, host } = await edit(assignmentDetails({ attachments: [] }));
-    page.choose('quiz');
-    page.changeQuestions([{ ...questionDraft('NUMBER'), text: 'Вопрос', value: 1 }]);
-    await fixture.whenStable();
-    exactButton(host, 'Сохранить').click();
-    backend
-      .expectOne({ method: 'PUT', url: '/api/teacher/homework/assignments/a-1' })
-      .flush(
-        { status: 422, code: 'homework.quiz-started' },
-        { status: 422, statusText: 'Unprocessable' },
-      );
-    await fixture.whenStable();
-    expect(readableText(host)).toContain('Ученик уже начал тест: вопросы изменить нельзя');
-    expect(page.questions()).toEqual([]);
-
-    exactButton(host, 'Сохранить').click();
-    const retry = backend.expectOne({
-      method: 'PUT',
-      url: '/api/teacher/homework/assignments/a-1',
-    });
-    expect(retry.request.body).not.toHaveProperty('questions');
-    retry.flush(assignmentDetails({ version: 1 }));
-  });
-
-  it('locks a quiz a student finished and edits a copy of it on «Тест»', async () => {
-    const { page, host } = await edit(assignmentDetails({ attachments: [] }));
-    page.choose('quiz');
-    await fixture.whenStable();
-    expect(readableText(host)).toContain('Ученик уже начал тест');
-    exactButton(host, 'Создать копию для правок').click();
-    backend
-      .expectOne({ method: 'POST', url: '/api/teacher/homework/assignments/a-1/copy' })
-      .flush(assignmentDetails({ id: 'a-2', title: 'Копия', tasks: [] }));
-    expect(navigate).toHaveBeenCalledWith(['/teacher/homework', 'a-2', 'edit'], {
-      queryParams: { tab: 'quiz' },
-    });
-
-    fixture.componentRef.setInput('assignmentId', 'a-2');
-    await fixture.whenStable();
-    backend
-      .expectOne('/api/teacher/homework/assignments/a-2')
-      .flush(assignmentDetails({ id: 'a-2', tasks: [], draftStudentIds: [] }));
-    backend.expectOne('/api/teacher/students').flush(STUDENTS);
-    flushGroups();
-    await fixture.whenStable();
-    expect(readableText(host)).not.toContain('Ученик уже начал тест');
-  });
-
-  it('reports a copy that failed', async () => {
-    const { page, host } = await edit(assignmentDetails({ attachments: [] }));
-    page.choose('quiz');
-    await fixture.whenStable();
-    exactButton(host, 'Создать копию для правок').click();
-    backend
-      .expectOne({ method: 'POST', url: '/api/teacher/homework/assignments/a-1/copy' })
-      .flush({ status: 500 }, { status: 500, statusText: 'Error' });
-    await fixture.whenStable();
-    expect(navigate).not.toHaveBeenCalled();
-  });
-
-  it('offers the assistant the textbooks and readable files picked for a new assignment', async () => {
-    const { page } = await create();
-    page.pickTextbook(boundTextbook({ pages: null }));
-    const scan = new File(['png'], 'Скан.png', { type: 'image/png' });
-    page.newFiles.set([scan, new File(['zip'], 'a.zip', { type: 'application/zip' })]);
-    expect(page.sourceOptions().map((option) => option.label)).toEqual(['Spotlight 5', 'Скан.png']);
-    expect(page.sourceOptions()[1]?.source).toBe(scan);
-  });
-
   it('shows a failed load with «Повторить»', async () => {
-    fixture = createEditor();
-    fixture.componentRef.setInput('assignmentId', 'a-1');
-    await fixture.whenStable();
-    flushStatus(false);
-    backend
+    editor.fixture = TestBed.createComponent(AssignmentEditorPage);
+    editor.fixture.componentRef.setInput('assignmentId', 'a-1');
+    await editor.fixture.whenStable();
+    editor.flushStatus(false);
+    editor.backend
       .expectOne('/api/teacher/homework/assignments/a-1')
       .flush(null, { status: 500, statusText: 'Error' });
-    await fixture.whenStable();
+    await editor.fixture.whenStable();
 
-    expect(readableText(hostElement(fixture))).toContain('Не удалось загрузить задание');
-    buttonByText(hostElement(fixture), 'Повторить').click();
-    const retry: TestRequest = backend.expectOne('/api/teacher/homework/assignments/a-1');
+    expect(readableText(hostElement(editor.fixture))).toContain('Не удалось загрузить задание');
+    buttonByText(hostElement(editor.fixture), 'Повторить').click();
+    const retry: TestRequest = editor.backend.expectOne('/api/teacher/homework/assignments/a-1');
     retry.flush(assignmentDetails());
   });
 });

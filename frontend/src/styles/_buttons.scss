@@ -1,0 +1,190 @@
+/*
+ * M3 Expressive split button (ADR-0022): the action and a trailing part with the menu of other ways,
+ * 2 px apart; the inner corners are small, the outer ones round. The trailing part becomes round
+ * while its menu is open.
+ */
+.tb-split {
+  display: inline-flex;
+  gap: 2px;
+
+  /* the popup menu lives in <body>: its empty host takes no place, so no gap after the chevron */
+  > p-menu {
+    position: absolute;
+  }
+
+  .p-button.tb-split__main {
+    border-start-end-radius: var(--tb-shape-xs);
+    border-end-end-radius: var(--tb-shape-xs);
+  }
+
+  /* M3E SplitButtonSmall: 13 + the 22 px icon + 13 */
+  .p-button.tb-split__more {
+    box-sizing: border-box;
+    width: 3rem;
+    height: 2.5rem;
+    border-start-start-radius: var(--tb-shape-xs);
+    border-end-start-radius: var(--tb-shape-xs);
+
+    .p-button-icon {
+      font-size: 1.375rem;
+      transition: transform var(--tb-spring-standard-fast-spatial);
+    }
+  }
+
+  /*
+   * Pressed, only the inner corners morph, to 8 px (M3E; the size is ours, M3 publishes none for it);
+   * the outer ones stay round
+   */
+  .p-button.tb-split__main:not(:disabled):active {
+    border-radius: var(--tb-shape-full);
+    border-start-end-radius: var(--tb-shape-sm);
+    border-end-end-radius: var(--tb-shape-sm);
+  }
+
+  &:not(.tb-split--open) .p-button.tb-split__more:not(:disabled):active {
+    border-radius: var(--tb-shape-full);
+    border-start-start-radius: var(--tb-shape-sm);
+    border-end-start-radius: var(--tb-shape-sm);
+  }
+
+  /* open: the trailing part is round and its chevron turns inwards, on the standard scheme (no bounce) */
+  &.tb-split--open .p-button.tb-split__more {
+    border-radius: var(--tb-shape-full);
+
+    .p-button-icon {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+/*
+ * M3E medium button (ADR-0045): the one large button of the portal, «Начать урок» in the home hero.
+ * ButtonMedium: 56 dp high, full corners, pressed CornerMedium (12 dp), a 24 dp icon, 24 dp at the sides,
+ * 8 dp between the icon and the label. The label in Title Medium is our decision: M3 publishes no type
+ * role per button size.
+ */
+.p-button.tb-button-m {
+  box-sizing: border-box;
+  height: 3.5rem;
+  padding-block: 0;
+  padding-inline: var(--tb-space-6);
+  gap: var(--tb-space-2);
+  border-radius: var(--tb-shape-full);
+  font: var(--tb-type-title-m);
+  letter-spacing: var(--tb-tracking-title-m);
+
+  .p-button-label {
+    font: inherit;
+  }
+
+  .p-button-icon {
+    font-size: 1.5rem;
+  }
+
+  &:not(:disabled):active {
+    border-radius: var(--tb-shape-md);
+  }
+}
+
+/*
+ * M3E SplitButtonMedium: 56 dp, the inner corners 4 dp as in the small one, the trailing part
+ * 15 + the 26 dp chevron + 15. Pressed, the inner corners morph to 12 dp — our decision, the pressed
+ * corner of ButtonMedium (M3 publishes none for the split button).
+ */
+.tb-split.tb-split--m {
+  .p-button.tb-split__more {
+    box-sizing: border-box;
+    width: 3.5rem;
+    height: 3.5rem;
+
+    .p-button-icon {
+      font-size: 1.625rem;
+    }
+  }
+
+  .p-button.tb-split__main:not(:disabled):active {
+    border-radius: var(--tb-shape-full);
+    border-start-end-radius: var(--tb-shape-md);
+    border-end-end-radius: var(--tb-shape-md);
+  }
+
+  &:not(.tb-split--open) .p-button.tb-split__more:not(:disabled):active {
+    border-radius: var(--tb-shape-full);
+    border-start-start-radius: var(--tb-shape-md);
+    border-end-start-radius: var(--tb-shape-md);
+  }
+}
+
+/*
+ * M3 button groups (ADR-0022, ADR-0050). Standard (actions): an invisible container hugging the buttons,
+ * 12 dp apart (`ButtonGroupSmall.BetweenSpace`); each keeps its own full shape and colours, and a
+ * pressed one morphs by the common button rule (12 dp corners). The neighbours do not change width
+ * (our decision: the shape morph only).
+ */
+.tb-button-group {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--tb-space-3);
+}
+
+/*
+ * Connected (toggles only: the buttons 2 dp apart, the inner corners small, the outer ones round;
+ * pressed, a button squares as usual).
+ */
+.tb-button-group--connected {
+  gap: 2px;
+
+  > p-button:not(:last-child) .p-button {
+    border-start-end-radius: var(--tb-shape-sm);
+    border-end-end-radius: var(--tb-shape-sm);
+  }
+
+  > p-button:not(:first-child) .p-button {
+    border-start-start-radius: var(--tb-shape-sm);
+    border-end-start-radius: var(--tb-shape-sm);
+  }
+
+  /* pressed, the inner corners narrow to 4 px, the outer ones square as usual (M3E) */
+  > p-button:not(:last-child) .p-button:not(:disabled):active {
+    border-start-end-radius: var(--tb-shape-xs);
+    border-end-end-radius: var(--tb-shape-xs);
+  }
+
+  > p-button:not(:first-child) .p-button:not(:disabled):active {
+    border-start-start-radius: var(--tb-shape-xs);
+    border-end-start-radius: var(--tb-shape-xs);
+  }
+}
+
+/*
+ * The student's buttons of a lesson (tb-lesson-actions). In a row the requests stand next to each
+ * other; stacked (a phone) the meeting takes the whole width and the requests are a standard button
+ * group under it, two halves of the width.
+ */
+.tb-lesson-actions--stacked {
+  flex-direction: column;
+  gap: var(--tb-space-2);
+  width: 100%;
+
+  a.p-button,
+  tb-join-lesson-button .p-button {
+    width: 100%;
+  }
+
+  .tb-button-group {
+    display: flex;
+
+    /* equal halves whatever the labels: they don't grow from the content, 16 px sides fit 360 px */
+    > p-button {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    .p-button {
+      width: 100%;
+      min-width: 0;
+      padding-inline: var(--tb-space-4);
+    }
+  }
+}
