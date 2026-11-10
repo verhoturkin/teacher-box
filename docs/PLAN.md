@@ -83,7 +83,7 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
 
 ### Stage 368 — the largest pages (F)
 
-- [ ] 368.1 **F** `features/homework/teacher/assignment-editor-page.ts` (1795 lines): the page
+- [x] 368.1 **F** `features/homework/teacher/assignment-editor-page.ts` (1795 lines): the page
   keeps routing, loading and saving; each section of the form (recipients and dates, materials,
   questions, AI) is a component of its own with its inputs and outputs in
   `features/homework/teacher/editor/`. No behaviour or markup change: the existing specs pass
