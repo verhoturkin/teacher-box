@@ -2,8 +2,8 @@
 
 Loaded when working under `frontend/`. The root [`AGENTS.md`](../AGENTS.md) still applies. **UI rules —
 [`docs/design-system.md`](../docs/design-system.md)** (read the relevant section before touching templates or
-styles: `grep -n '^##' docs/design-system.md` for the outline, then Read with `offset`/`limit` — the file is
-~50 KB, never read it whole); UI wording — [`docs/glossary.md`](../docs/glossary.md) (grep the term). Module
+styles: `grep -n '^##' docs/design-system.md` for the outline, then Read with `offset`/`limit` — never
+read it whole); UI wording — [`docs/glossary.md`](../docs/glossary.md) (grep the term). Module
 facts — [`docs/modules/`](../docs/modules).
 
 ## Structure

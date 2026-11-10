@@ -44,21 +44,21 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
 
 ### Stage 366 — agent environment and rules (D)
 
-- [ ] 366.1 **D** Cloud sessions. `AGENTS.md` §12 becomes "local" and "cloud": what a cloud
+- [x] 366.1 **D** Cloud sessions. `AGENTS.md` §12 becomes "local" and "cloud": what a cloud
   container lacks (JDK 25, Docker, E2E runs) and what to do instead (run the parts that work, say
   what was not run). Add `scripts/agent-setup.sh` — idempotent: `git config core.hooksPath
   .githooks`, `npx -y npm@11 ci` in `frontend/` and `e2e/` when `node_modules` is missing; name it
   in §12 as the cloud environment's setup script. Fix `.codex/hooks.json`: no absolute
   `D:\Prog\…` path.
-- [ ] 366.2 **D** Fewer prompts and no double runs. `.claude/settings.json`: `permissions.allow`
+- [x] 366.2 **D** Fewer prompts and no double runs. `.claude/settings.json`: `permissions.allow`
   for `./mvnw`, `npm run lint|test|test:only|build`, `./scripts/verify.sh`, read-only `git`.
   `scripts/verify.sh` writes `.verify-logs/<part>.ok` with the hash of the tree after a green part
   (`git write-tree` of the index plus the worktree diff); `.githooks/pre-commit` skips a part whose
   stamp matches the staged tree. A test of the stamp in `verify_installer`-style shell checks.
-- [ ] 366.3 **D** One source for agent configs. `scripts/check-agents.sh` (run by `verify.sh
+- [x] 366.3 **D** One source for agent configs. `scripts/check-agents.sh` (run by `verify.sh
   docs`): `.claude/skills/*` equals `.agents/skills/*`, `.claude/hooks/format.mjs` equals
   `.codex/hooks/format.mjs`, the `docs-sync` agent exists for both.
-- [ ] 366.4 **D** Shorter always-loaded rules. `AGENTS.md`: §10 keeps only what §5, §8 and §9 do
+- [x] 366.4 **D** Shorter always-loaded rules. `AGENTS.md`: §10 keeps only what §5, §8 and §9 do
   not say; the module structure lives in `backend/AGENTS.md` only; §5 lists every `verify.sh`
   target (`docs`, `installer`). `frontend/AGENTS.md`: no file sizes in prose. Target: root file
   at most 14 KB with no rule lost.
