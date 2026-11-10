@@ -1,8 +1,10 @@
+import { HttpClient } from '@angular/common/http';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { AssignmentEditorPage } from '@features/homework/teacher/assignment-editor-page';
+import { UpcomingLesson } from '@features/homework/teacher/next-lesson';
 import { aiStatus } from './ai-fixtures';
 import { hostElement } from './dom';
 import { assignmentDetails } from './homework-fixtures';
@@ -77,9 +79,22 @@ export class EditorHarness {
     }
   }
 
+  /**
+   * The page as its route opens it: with the lessons ahead, which the route reads from the schedule
+   * (ADR-0058) — here straight from the schedule's address.
+   */
+  open(): ComponentFixture<AssignmentEditorPage> {
+    const http = TestBed.inject(HttpClient);
+    this.fixture = TestBed.createComponent(AssignmentEditorPage);
+    this.fixture.componentRef.setInput('upcomingLessons', (from: string, to: string) =>
+      http.get<UpcomingLesson[]>('/api/teacher/schedule/lessons', { params: { from, to } }),
+    );
+    return this.fixture;
+  }
+
   /** A new assignment with the students, these lessons ahead and the AI on or off. */
   async create(lessons = [scheduledLesson()], ai = false) {
-    this.fixture = TestBed.createComponent(AssignmentEditorPage);
+    this.open();
     await this.fixture.whenStable();
     this.backend.expectOne('/api/teacher/students').flush(EDITOR_STUDENTS);
     this.backend

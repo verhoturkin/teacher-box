@@ -42,7 +42,7 @@ and medium are two pages (boards 37 → 25). Only the panes scroll, never the wi
 
 ## Account
 
-`/cabinet/account` (`identity/account/account-page.ts` → `AccountPanel`): profile, sign-in,
+`/cabinet/account` (`account/account-page.ts` → `AccountPanel` of `identity`): profile, sign-in,
 appearance and notifications (`notifications/account/notifications-section.ts`). The teacher's
 account category is the same panel.
 

@@ -108,24 +108,31 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
 
 ### Stage 370 — frontend feature directions (F, ADR-0058)
 
-- [ ] 370.1 **F** ADR-0058 and the rule. Declare which feature may import which, in one table in
-  `frontend/eslint.config.js` (`featureBoundary`) mirrored in `frontend/AGENTS.md`: base features
-  (`identity`, `help`) import no business feature; business features import base ones and the
-  pairs the backend allows; composition features (`home`, `settings`, `materials`, the new
-  `students`) import any. `frontend/scripts/import-cycles.mjs` also fails on a cycle between
-  features. The rule starts as a list of today's violations that 370.2–370.3 empty.
-- [ ] 370.2 **F** Student and group cards leave `identity`. `features/identity/students/`
-  (`students-page.ts`, `student-card.ts`, `student-profile-tab.ts`, `roster.ts`, `card-*.ts`) and
-  `features/identity/groups/` (`group-card.ts`, `group-profile-tab.ts`, `group-members-tab.ts`)
-  move to a composition feature `features/students/`; `identity` keeps accounts, invites, login,
-  the directory API, pickers and tags. Routes `/teacher/students…` and their lazy chunks stay.
-  `identity/account/account-panel.ts` takes the notifications section through a projected slot or
-  moves with the account page to `settings`.
-- [ ] 370.3 **F** `homework` ↔ `schedule`: `homework/teacher/next-lesson.ts` and
+- [x] 370.1 **F** ADR-0058 and the rule. Declare which feature may import which, in one table in
+  `frontend/eslint.config.js` (`featureDirection`) mirrored in `frontend/AGENTS.md`: base features
+  (`help`, then `identity`) import no business feature; business features import base ones and
+  the pairs listed for them — by screen embedding, which is not the backend table (`billing` →
+  `notifications`, `homework` and `schedule` → `ai`); composition features (`home`, `settings`,
+  `materials`, `admin`, the new `students` and `account`) import any and are imported by none,
+  except `admin` → `settings`. Tests and `import type` count. `frontend/scripts/import-cycles.mjs`
+  also fails on a cycle between features. The rule starts as a list of today's violations
+  (`PENDING_DIRECTIONS`) that 370.2–370.3 empty.
+- [x] 370.2 **F** Student and group cards leave `identity`. `features/identity/students/` and
+  `features/identity/groups/` move whole to a composition feature `features/students/` (the page,
+  the roster, the cards and their tabs, the student, group and invite-link dialogs, with their
+  dictionary keys), except the recipients picker (`member-picker.ts`, `member-recipients.ts`);
+  `identity` keeps accounts, invites, login, the directory API, colours, pickers and tags. Routes
+  `/teacher/students…` and their lazy chunks stay. `identity/account/account-panel.ts` takes the
+  notifications section through a projected slot (`<ng-template tbAccountNotifications>`) and is
+  exported from `identity/parts`; the account page of a student and the administrator moves to a
+  composition feature `features/account/` (not to `settings`: a student would load the teacher's
+  settings chunk), and the settings page fills the slot itself.
+- [x] 370.3 **F** `homework` ↔ `schedule`: `homework/teacher/next-lesson.ts` and
   `schedule/teacher/lesson-summary-section.ts` import each other's parts. Keep one direction
   (`schedule` → `homework`, as the lesson owns its homework summary); the editor's "next lesson"
-  hint takes its data through an input or a small API type owned by `schedule/parts`' data layer
-  that needs no `homework` import. The violation list of 370.1 is empty.
+  hint declares what it reads (`UpcomingLesson`, `UpcomingLessons` in `next-lesson.ts`) and takes
+  it as the input `upcomingLessons`, resolved by the route `homework/new` in `app.routes.ts`,
+  which loads `ScheduleApi` lazily. The violation list of 370.1 is empty and removed.
 
 ### Stage 371 — design gallery (F, ADR-0059)
 

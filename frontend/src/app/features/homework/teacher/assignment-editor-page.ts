@@ -69,7 +69,6 @@ import {
   memberRecipients,
   IdentityApi,
 } from '@features/identity/parts';
-import { ScheduleApi, ScheduledLesson } from '@features/schedule/parts';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { Confirm } from '@shared/ui/confirm';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
@@ -99,7 +98,7 @@ import { titleOf } from './assignment-draft';
 import { assignmentBoard } from './assignment-board';
 import { AssignMoreDialog } from './assign-more-dialog';
 import { BindTextbookDialog } from './bind-textbook-dialog';
-import { NEXT_LESSON_DAYS, nextLessonStart } from './next-lesson';
+import { NEXT_LESSON_DAYS, UpcomingLesson, UpcomingLessons, nextLessonStart } from './next-lesson';
 import {
   MAX_QUESTIONS,
   QuestionDraft,
@@ -676,13 +675,14 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   private readonly api = inject(HomeworkApi);
   private readonly ai = inject(AiApi);
   private readonly identity = inject(IdentityApi);
-  private readonly schedule = inject(ScheduleApi);
   private readonly router = inject(Router);
   private readonly snackbar = inject(Snackbar);
   private readonly confirm = inject(Confirm);
 
   /** Route parameter of `/teacher/homework/:assignmentId/edit`; none — a new assignment. */
   readonly assignmentId = input<string>();
+  /** The schedule's lessons for «к следующему уроку», resolved by the route; none — no hint. */
+  readonly upcomingLessons = input<UpcomingLessons>();
 
   protected readonly isNew = computed(() => this.assignmentId() === undefined);
   protected readonly assignment = signal<AssignmentDetails | null>(null);
@@ -848,7 +848,7 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
     ...new Set([...this.givenTo(), ...this.recipients()]),
   ]);
   /** Lessons ahead, for the due date of a new assignment. */
-  private readonly lessons = signal<readonly ScheduledLesson[]>([]);
+  private readonly lessons = signal<readonly UpcomingLesson[]>([]);
   protected readonly nextLesson = computed(() =>
     this.isNew() ? nextLessonStart(this.lessons(), this.recipients(), new Date()) : null,
   );
@@ -989,7 +989,7 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
         today.getMonth(),
         today.getDate() + NEXT_LESSON_DAYS,
       );
-      this.schedule.lessons(toIsoDate(today), toIsoDate(until)).subscribe({
+      this.upcomingLessons()?.(toIsoDate(today), toIsoDate(until)).subscribe({
         next: (lessons) => {
           this.lessons.set(lessons);
         },

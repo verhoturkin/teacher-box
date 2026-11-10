@@ -4,8 +4,9 @@ import { injectWindowSize } from '@core/layout/mobile';
 import { HelpButton } from '@features/help/parts';
 import { PageHeader } from '@shared/ui/page-header';
 import { Pane, Panes } from '@shared/ui/panes';
-import { AccountPanel } from './account-panel';
-import { T } from '../i18n/texts';
+import { AccountNotifications, AccountPanel } from '@features/identity/parts';
+import { NotificationsSection } from '@features/notifications/parts';
+import { T } from './i18n/texts';
 
 /**
  * «Мой аккаунт» of a student and the administrator in one pane at full width (sketch StudentAccount);
@@ -13,7 +14,15 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-account-page',
-  imports: [AccountPanel, HelpButton, PageHeader, Pane, Panes],
+  imports: [
+    AccountNotifications,
+    AccountPanel,
+    HelpButton,
+    NotificationsSection,
+    PageHeader,
+    Pane,
+    Panes,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-panes>
@@ -28,7 +37,11 @@ import { T } from '../i18n/texts';
             <tb-help-button help topic="cabinet/login" />
           }
         </tb-page-header>
-        <tb-account-panel />
+        <tb-account-panel>
+          <ng-template tbAccountNotifications let-teacher>
+            <tb-notifications-section [teacher]="teacher" />
+          </ng-template>
+        </tb-account-panel>
       </tb-pane>
     </tb-panes>
   `,

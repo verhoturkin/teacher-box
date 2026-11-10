@@ -6,7 +6,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { aGroup, aStudent } from '@testing/identity-fixtures';
 import { testProviders } from '@testing/setup';
-import { StudentGroup } from '../data-access/identity.models';
+import { StudentGroup } from '@features/identity/parts';
 import { GroupMembersTab } from './group-members-tab';
 
 const OGE = aGroup({

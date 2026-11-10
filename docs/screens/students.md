@@ -1,6 +1,6 @@
 # Students and groups
 
-`features/identity/` (`StudentsPage`, `StudentCard`, `GroupCard`): list-detail of one route,
+`features/students/` (`StudentsPage`, `StudentCard`, `GroupCard`): list-detail of one route,
 `/teacher/students[/:studentId]` and `/teacher/groups/:groupId`; «Ученики» stays active on both
 (`NavItem.alsoActive`). Tags follow the canvas «Ученики — эскизы» (boards `Main`, `States`,
 `PhoneTags`; not copied to `docs/sketches/`) and settings board 16.

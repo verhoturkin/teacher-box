@@ -23,8 +23,21 @@ describe('AssignmentEditorPage: «Кому · Срок»', () => {
     expect(page.canLeave()).toBe(true);
   });
 
-  it('works without the schedule', async () => {
+  it('has no «к следующему занятию» when the route gives no lessons', async () => {
     editor.fixture = TestBed.createComponent(AssignmentEditorPage);
+    await editor.fixture.whenStable();
+    editor.backend.expectOne('/api/teacher/students').flush(EDITOR_STUDENTS);
+    editor.backend.expectNone((request) => request.url === '/api/teacher/schedule/lessons');
+    editor.flushStatus(false);
+    editor.flushGroups();
+    editor.fixture.componentInstance.form.patchValue({ members: [{ kind: 'STUDENT', id: 's-1' }] });
+    await editor.fixture.whenStable();
+
+    expect(readableText(hostElement(editor.fixture))).not.toContain('К следующему занятию');
+  });
+
+  it('works without the schedule', async () => {
+    editor.open();
     await editor.fixture.whenStable();
     editor.backend.expectOne('/api/teacher/students').flush(EDITOR_STUDENTS);
     editor.backend

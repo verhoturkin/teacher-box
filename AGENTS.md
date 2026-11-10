@@ -98,7 +98,10 @@ Only in [`backend/AGENTS.md`](backend/AGENTS.md).
    `Portal.link(...)`.
 6. **Frontend** mirrors the boundaries: a feature imports another only via `@features/<name>`
    (`index.ts`, pages) or `@features/<name>/parts` (`parts.ts`, widgets/API/types); shared code only
-   from `core/` and `shared/` (ESLint `no-restricted-imports`).
+   from `core/` and `shared/` (ESLint `no-restricted-imports`). Features depend on each other in
+   one direction — the table in `frontend/AGENTS.md`
+   ([ADR-0058](docs/adr/0058-frontend-feature-directions.md)); it follows screen embedding and is
+   not a copy of the table above.
 
 ### 4.3 Roles and access
 

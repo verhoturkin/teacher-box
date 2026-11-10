@@ -12,7 +12,6 @@ import {
   exactButton,
   useEditorHarness,
 } from '@testing/homework-editor';
-import { AssignmentEditorPage } from '../assignment-editor-page';
 import { questionDraft } from '../question-drafts';
 
 describe('AssignmentEditorPage: «Тест»', () => {
@@ -63,7 +62,7 @@ describe('AssignmentEditorPage: «Тест»', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({ providers: testProviders(screenWidth(500)) });
     editor.backend = TestBed.inject(HttpTestingController);
-    editor.fixture = TestBed.createComponent(AssignmentEditorPage);
+    editor.open();
     editor.fixture.componentRef.setInput('tab', 'settings');
     await editor.fixture.whenStable();
     editor.backend.expectOne('/api/teacher/students').flush(EDITOR_STUDENTS);

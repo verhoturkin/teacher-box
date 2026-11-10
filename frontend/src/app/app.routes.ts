@@ -11,6 +11,7 @@ import { guestGuard, redirectToHome, roleGuard } from '@core/auth/auth.guards';
 import { setupGuard } from '@core/portal/setup.guard';
 import { canLeaveGuard } from '@core/routing/can-leave.guard';
 import { CORE_T } from '@core/i18n/texts';
+import { defer, switchMap } from 'rxjs';
 
 /**
  * Opens the teacher's area and loads the colours of the students and groups for its lists in the background;
@@ -102,6 +103,26 @@ function adminSectionMatcher(page: string): UrlMatcher {
   };
 }
 
+/**
+ * The lessons ahead for the due date of a new assignment («к следующему уроку»): the editor of
+ * `homework` takes them as an input, because `homework` does not import `schedule` (ADR-0058).
+ * Resolves at once; the schedule's parts load when the editor asks for the lessons.
+ */
+const upcomingLessons = () => {
+  const injector = inject(Injector);
+  return (from: string, to: string) =>
+    defer(() => import('@features/schedule/parts')).pipe(
+      switchMap((parts) => injector.get(parts.ScheduleApi).lessons(from, to)),
+    );
+};
+
+/** Pages that several routes open: one loader each. */
+const assignmentEditorPage = () => import('@features/homework').then((m) => m.AssignmentEditorPage);
+const boardPage = () => import('@features/boards').then((m) => m.BoardPage);
+const notFoundPage = () => import('@core/pages/not-found').then((m) => m.NotFound);
+const accountPage = () => import('@features/account').then((m) => m.AccountPage);
+const helpPage = () => import('@features/help').then((m) => m.HelpPage);
+
 const N = CORE_T.titles;
 const NAV = CORE_T.nav;
 
@@ -135,7 +156,7 @@ export const routes: Routes = [
     canActivate: [roleGuard('TEACHER'), setupGuard],
     canDeactivate: [canLeaveGuard],
     data: { area: 'teacher' },
-    loadComponent: () => import('@features/boards').then((m) => m.BoardPage),
+    loadComponent: boardPage,
   },
   {
     path: 'cabinet/boards/:id',
@@ -143,7 +164,7 @@ export const routes: Routes = [
     canActivate: [roleGuard('STUDENT')],
     canDeactivate: [canLeaveGuard],
     data: { area: 'cabinet' },
-    loadComponent: () => import('@features/boards').then((m) => m.BoardPage),
+    loadComponent: boardPage,
   },
   {
     // The first setup takes the whole screen, no rail (ADR-0014, sketch OnbFlow).
@@ -166,7 +187,7 @@ export const routes: Routes = [
       {
         matcher: studentsMatcher,
         title: NAV.students,
-        loadComponent: () => import('@features/identity').then((m) => m.StudentsPage),
+        loadComponent: () => import('@features/students').then((m) => m.StudentsPage),
       },
       // the groups are rows of the students' list (237.2)
       { path: 'groups', redirectTo: 'students' },
@@ -188,13 +209,14 @@ export const routes: Routes = [
       {
         path: 'homework/new',
         title: N.newAssignment,
-        loadComponent: () => import('@features/homework').then((m) => m.AssignmentEditorPage),
+        loadComponent: assignmentEditorPage,
+        resolve: { upcomingLessons },
         canDeactivate: [canLeaveGuard],
       },
       {
         path: 'homework/:assignmentId/edit',
         title: N.editAssignment,
-        loadComponent: () => import('@features/homework').then((m) => m.AssignmentEditorPage),
+        loadComponent: assignmentEditorPage,
         canDeactivate: [canLeaveGuard],
       },
       {
@@ -239,20 +261,20 @@ export const routes: Routes = [
         path: 'help',
         title: N.help,
         data: { area: 'teacher' },
-        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+        loadComponent: helpPage,
       },
       {
         path: 'help/:topic',
         title: N.help,
         data: { area: 'teacher' },
-        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+        loadComponent: helpPage,
       },
       // the teacher's «Мой аккаунт» is a category of the settings (234.1)
       { path: 'account', redirectTo: 'settings/account' },
       {
         path: '**',
         title: N.notFound,
-        loadComponent: () => import('@core/pages/not-found').then((m) => m.NotFound),
+        loadComponent: notFoundPage,
       },
     ],
   },
@@ -299,23 +321,23 @@ export const routes: Routes = [
         path: 'help',
         title: N.help,
         data: { area: 'cabinet' },
-        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+        loadComponent: helpPage,
       },
       {
         path: 'help/:topic',
         title: N.help,
         data: { area: 'cabinet' },
-        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+        loadComponent: helpPage,
       },
       {
         path: 'account',
         title: N.account,
-        loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
+        loadComponent: accountPage,
       },
       {
         path: '**',
         title: N.notFound,
-        loadComponent: () => import('@core/pages/not-found').then((m) => m.NotFound),
+        loadComponent: notFoundPage,
       },
     ],
   },
@@ -360,23 +382,23 @@ export const routes: Routes = [
         path: 'help',
         title: N.help,
         data: { area: 'admin' },
-        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+        loadComponent: helpPage,
       },
       {
         path: 'help/:topic',
         title: N.help,
         data: { area: 'admin' },
-        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+        loadComponent: helpPage,
       },
       {
         path: 'account',
         title: N.account,
-        loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
+        loadComponent: accountPage,
       },
       {
         path: '**',
         title: N.notFound,
-        loadComponent: () => import('@core/pages/not-found').then((m) => m.NotFound),
+        loadComponent: notFoundPage,
       },
     ],
   },

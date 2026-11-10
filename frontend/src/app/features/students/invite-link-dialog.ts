@@ -14,8 +14,8 @@ import {
 import { InputText } from 'primeng/inputtext';
 import { Portal } from '@core/portal/portal';
 import { TbDialog } from '@shared/ui/dialog/dialog';
-import { IssuedInvite } from '../data-access/identity.models';
-import { T } from '../i18n/texts';
+import { IssuedInvite } from '@features/identity/parts';
+import { T } from './i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
 /** Shows an invitation link for the teacher to send to a student. */

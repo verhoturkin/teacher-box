@@ -31,14 +31,14 @@ import { labelKey } from '@core/theme/label-colors';
 import { SHARED_T } from '@shared/i18n/texts';
 import { formatMoney } from '@shared/money/money';
 import { Avatar } from '@shared/ui/avatar';
-import { T } from '../i18n/texts';
+import { T } from './i18n/texts';
 import { CardHead, HeaderTag } from './card-head';
 import { CARD_TABS, CardTab, DEFAULT_TAB, cardTab, showTab } from './card-tabs';
 import { StudentRow } from './roster';
 import { STATUS_LABELS, STATUS_SEVERITIES } from './student-status';
 import { StudentProfileTab } from './student-profile-tab';
 import { StudentTagsTab } from './student-tags-tab';
-import { Student } from '../data-access/identity.models';
+import { Student } from '@features/identity/parts';
 
 /**
  * The card of a student (redesign spec §8): the header — the 72 px avatar, the name, «с сентября 2025», the
