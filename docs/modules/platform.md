@@ -58,8 +58,10 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   adopted as a backup via `BackupService.adopt` after the archive check), `POST …/uploads/{name}` (202); redirect
   `/api/public/backups/google/callback` → `/teacher/settings?drive=connected|denied|expired|failed#backups`.
   `DriveIntegrationCheck` for the administrator (no account address).
-- `settings/` — admin settings (`/api/admin/settings`): `SettingsCatalog` mirrors `.env.example`
-  (test) except the teacher's settings; values in `<data>/config/settings.properties` loaded first
+- `settings/` — admin settings (`/api/admin/settings`): `SettingsCatalog` holds every setting;
+  `.env.example`
+  lists only the `ENV_ONLY` ones (deployment, LiveKit, accounts, security, logs — a test compares
+  them) and the AI proxy until stage 364; values in `<data>/config/settings.properties` loaded first
   by `AdminSettingsLoader`; secrets write-only; Compose variables and accounts read-only; change
   confirmed by password. Each `SettingDefinition` has an `owner` (ADR-0056): `TEACHER` settings are
   not in the administrator's list (refused with `settings.teacher`) — the view's `moved` list names

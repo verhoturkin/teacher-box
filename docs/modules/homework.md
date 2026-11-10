@@ -42,7 +42,10 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   `GET/PUT /api/teacher/homework/settings` (`dueSoonMinutes` 60–4320, else 422
   `homework.settings-due-soon-invalid`).
 - Attachments of assignments and submissions — `FileStorage` namespace `homework`, limits
-  `TEACHERBOX_HOMEWORK_MAX_FILE_SIZE`, `MAX_FILES_PER_UPLOAD` (`FilePolicy`).
+  `TEACHERBOX_HOMEWORK_MAX_FILE_SIZE`, `MAX_FILES_PER_UPLOAD` — administrator settings, live (read
+  on
+  every upload by `AttachmentService.limits()`, ADR-0056; a file never exceeds the 25 MB request
+  ceiling).
 - Review queue for the teacher; AI drafts are produced by the `ai` module from texts the frontend passes — `homework`
   does not know `ai`.
 - Textbooks ([ADR-0033](../adr/0033-textbooks.md)): the teacher binds a textbook to an assignment with pages

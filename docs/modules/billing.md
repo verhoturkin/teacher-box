@@ -26,8 +26,10 @@ schedule), [0011](../adr/0011-groups-and-group-lessons.md) (group prices), [0014
   `pending_receipts` until the payment is recorded with it (`ReceiptService.recordWithPending`, one
   transaction); pending ones older than a day are removed nightly.
 - Prices: default lesson price (set in the first-run wizard, stored in DB), per-student price, per-group price
-  (created on `GroupCreated` with the default price). Default lesson duration —
-  `TEACHERBOX_BILLING_DEFAULT_LESSON_DURATION`.
+  (created on `GroupCreated` with the default price). Billing keeps no default lesson
+  duration (ADR-0056): a charge takes the length from the lesson events; a hand-recorded lesson
+  without one
+  takes the student's last lesson length, else 60 minutes.
 - Monthly report per student in the instance time zone.
 
 ## Contract (`billing::api`)
