@@ -20,7 +20,7 @@ test('the administrator sees how many days backups are kept', async ({ page }) =
   const days = page.locator('#setting-TEACHERBOX_BACKUP_KEEP_DAYS');
   await expect(days).toBeVisible();
   await expect(page.locator('.tb-setting').filter({ has: days })).toContainText(
-    'Сколько дней хранить копии',
+    'Хранить дней',
   );
 });
 

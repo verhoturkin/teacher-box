@@ -224,15 +224,14 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   `e2e/tests/settings/live-settings.spec.ts` (change the reminders and the time zone, no restart; an
   old variable is imported once). The wiki table of moved variables follows board 19 `EnvMoves`.
   _Done: `.env.example` keeps the deployment, LiveKit, accounts, security and log blocks (plus the
-  AI
-  block until 364.1); `SettingsCatalogTest` now compares it with the `ENV_ONLY` settings. The
+  AI block until 364.1); `SettingsCatalogTest` now compares it with the `ENV_ONLY` settings. The
   installer no longer asks for or writes the time zone (`--timezone` removed). Wiki: new
-  `Settings`, the «Переменные, которые больше не читаются» tables of `Update` (board 19), `Install`,
-  `Messengers`, `Schedule`, `Backups`, `Proxy`; ADR-0056 got the deployment/import section; module
-  docs touched in `platform`, `schedule`, `billing`, `homework`, `notifications`. The help
-  articles of 363.7/363.8 already matched (no change). E2E spec `live-settings.spec.ts` was only
-  type-checked: no JDK 25 and no Docker daemon in this environment, so the backend tests (incl.
-  `SettingsCatalogTest`) and `e2e.sh` were not run._
+  `Settings`, the «Переменные, которые больше не читаются» tables of `Update` (board 19),
+  `Install`, `Messengers`, `Schedule`, `Backups`, `Proxy`; ADR-0056 got the deployment/import
+  section; module docs touched in `platform`, `schedule`, `billing`, `homework`, `notifications`.
+  The help articles of 363.7/363.8 already matched (no change). E2E spec `live-settings.spec.ts`
+  (reminders and time zone without a restart; `TEACHERBOX_PUBLIC_URL` imported once). Two stale
+  labels in the `settings` suites were updated to the 363.7/363.8 wording._
 
 ### Stage 364 — several AI providers and models
 

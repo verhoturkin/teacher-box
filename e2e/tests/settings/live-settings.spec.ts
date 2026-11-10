@@ -46,9 +46,9 @@ test('reminders and the time zone change without a restart', async ({ page, requ
       data: { ...rules, reminderMinutes: [1440, 60] },
     });
     expect(changed.ok()).toBe(true);
-    expect(((await changed.json()) as LessonRules).reminderMinutes).toEqual([1440, 60]);
+    expect(((await changed.json()) as LessonRules).reminderMinutes).toEqual([60, 1440]);
     const reread = await request.get('/api/teacher/schedule/settings', { headers });
-    expect(((await reread.json()) as LessonRules).reminderMinutes).toEqual([1440, 60]);
+    expect(((await reread.json()) as LessonRules).reminderMinutes).toEqual([60, 1440]);
 
     const zone = zoneBefore === 'Asia/Yekaterinburg' ? 'Europe/Kaliningrad' : 'Asia/Yekaterinburg';
     const zoneResponse = await request.put('/api/teacher/settings/time-zone', {

@@ -172,7 +172,7 @@ test('the lessons category holds time, price, calls, Google Calendar and the sub
   await page.goto('/teacher/settings/calendar');
   await expect(page).toHaveURL(/\/teacher\/settings\/lessons$/);
   await expect(page.locator('#time-zone')).toContainText('Часовой пояс');
-  await expect(page.locator('#default-price')).toContainText('Цена занятия по умолчанию');
+  await expect(page.locator('#default-price')).toContainText('Цена занятия');
   await expect(page.locator('#meetings')).toBeVisible();
   await expect(page.locator('#google')).toBeVisible();
   await expect(page.locator('tb-calendar-feed-panel')).toContainText('Подписка на календарь');
@@ -187,7 +187,7 @@ test('the price for new students is in «Занятия», the AI page is a cate
   await signIn(page);
   await page.goto('/teacher/settings/payments');
   await expect(page).toHaveURL(/\/teacher\/settings\/lessons$/);
-  await expect(page.locator('#default-price')).toContainText('Цена занятия по умолчанию');
+  await expect(page.locator('#default-price')).toContainText('Цена занятия');
 
   // 234.4: the payments page no longer holds the price
   await page.goto('/teacher/billing');
