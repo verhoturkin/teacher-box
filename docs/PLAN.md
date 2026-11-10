@@ -88,7 +88,7 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
   questions, AI) is a component of its own with its inputs and outputs in
   `features/homework/teacher/editor/`. No behaviour or markup change: the existing specs pass
   unchanged first, then `assignment-editor-page.spec.ts` is split by section.
-- [ ] 368.2 **F** `features/homework/teacher/teacher-pages.spec.ts` (1874 lines) is split into a
+- [x] 368.2 **F** `features/homework/teacher/teacher-pages.spec.ts` (1874 lines) is split into a
   spec per page beside its page; shared setup goes to `@testing/homework-fixtures`.
 - [ ] 368.3 **F** `features/settings/setup/setup-page.ts` (1572 lines): a component per wizard
   step in `features/settings/setup/steps/`, the page keeps the step order and the finish; specs
