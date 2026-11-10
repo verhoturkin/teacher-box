@@ -58,7 +58,7 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
 - [x] 366.3 **D** One source for agent configs. `scripts/check-agents.sh` (run by `verify.sh
   docs`): `.claude/skills/*` equals `.agents/skills/*`, `.claude/hooks/format.mjs` equals
   `.codex/hooks/format.mjs`, the `docs-sync` agent exists for both.
-- [ ] 366.4 **D** Shorter always-loaded rules. `AGENTS.md`: §10 keeps only what §5, §8 and §9 do
+- [x] 366.4 **D** Shorter always-loaded rules. `AGENTS.md`: §10 keeps only what §5, §8 and §9 do
   not say; the module structure lives in `backend/AGENTS.md` only; §5 lists every `verify.sh`
   target (`docs`, `installer`). `frontend/AGENTS.md`: no file sizes in prose. Target: root file
   at most 14 KB with no rule lost.

@@ -3,6 +3,13 @@
 Tests are organized by functionality, not by the release that introduced a regression.
 Add new checks to the relevant suite; retain cross-module workflows in `journeys/`.
 
+## Rules
+
+E2E regressions belong in functional suites under `tests/`, never in `version-X-Y-Z.spec.ts` files.
+Keep cross-module journeys intact; reuse `tests/support` for setup. Reset, restore and restart
+scenarios run in the final `operations` project. A release adds scenarios to the relevant suite
+instead of adding a version-specific spec.
+
 ## Running
 
 From the repository root (Git Bash on Windows):
