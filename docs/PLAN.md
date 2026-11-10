@@ -96,7 +96,7 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
 
 ### Stage 369 — screen docs describe decisions, not markup
 
-- [ ] 369.1 `docs/screens.md` (85 KB) becomes an index plus `docs/screens/<area>.md` (frame,
+- [x] 369.1 `docs/screens.md` (85 KB) becomes an index plus `docs/screens/<area>.md` (frame,
   notifications, today, schedule, students, homework, payments, materials, settings, cabinet,
   admin, call). Each screen keeps: route and files, what it is assembled from and why, transitions
   and states that are not obvious from the template, the sketch board it follows. Removed: button
