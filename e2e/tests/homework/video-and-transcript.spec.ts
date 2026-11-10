@@ -86,7 +86,7 @@ test('the teacher gives homework with a video and its transcript', async ({ page
 
 test('the administrator sees the proxy for YouTube captions', async ({ page }) => {
   await signIn(page, 'admin', ADMIN_PASSWORD);
-  await page.goto('/admin/settings/homework');
+  await page.goto('/admin/settings');
 
   await expect(page.locator('#setting-TEACHERBOX_HOMEWORK_YOUTUBE_PROXY')).toBeVisible();
 });

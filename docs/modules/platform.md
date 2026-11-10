@@ -64,7 +64,9 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   confirmed by password. Each `SettingDefinition` has an `owner` (ADR-0056): `TEACHER` settings are
   not in the administrator's list (refused with `settings.teacher`) — the view's `moved` list names
   those whose variable is still set (in `.env` or saved in the file before; values never shown);
-  `ADMIN` ones are editable; `ENV_ONLY` ones read-only. A `live` setting applies at once:
+  `ADMIN` ones are editable; `ENV_ONLY` ones read-only — access `DOCKER`, `ACCOUNT` or `ENV` (363.8:
+  the token secret, `BACKUP_RESTART`, `LOGGING_*`, the LiveKit address; a value saved in the file
+  before keeps applying and may only be removed with `null`). A `live` setting applies at once:
   `AdminSettingsService` replaces the in-force values in the `teacherboxAdminSettings` property
   source, publishes `shared.settings.SettingsChanged(names)` and answers `applied`; only the other
   changes restart the portal. Live consumers read through `shared.settings.LiveProperties` (binds
@@ -78,8 +80,8 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   an empty value means the default); the view gives a `CRON` setting `schedule` — `DailySchedule`
   «вкл/выкл + время» (`0 M H * * *` or `-`, by `SettingsCatalog.DEFAULT_CRONS` when unset; `null`
   for any other cron). The AI proxy waits for 364.1 (its clients are rebuilt per provider). Each
-  setting has a `section` key (`ai`,
-  `backups`…): the page folds by section (`tb-fold-card`, open ones in `?open=`). Sections, titles,
+  setting has a `section` key (`ai`, `backups`…); the page groups the settings into its own cards
+  by name (`admin/settings/settings-page.ts`, 363.8). Sections, titles,
   hints and value problems come in the language of the request (`Accept-Language`, `Wording` pairs
   `ru`/`en`, `SettingKind.problem(…, Language)`; 0.11.1, ADR-0036).
   `EnvImport` (ADR-0056) takes the teacher's old values once: while the beans are created (after

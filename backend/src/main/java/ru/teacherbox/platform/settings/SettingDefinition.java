@@ -29,7 +29,13 @@ public record SettingDefinition(String name, String section, Wording group, Word
          * An account: changing it here would give the administrator the teacher's account, i.e. the
          * students' data (ADR-0010), or lock them out; accounts are changed in «Мой аккаунт».
          */
-        ACCOUNT
+        ACCOUNT,
+        /**
+         * Only {@code .env} (ADR-0056): needed when the portal cannot be entered (the token secret, the restart
+         * after a restore) or read before it starts (the log, the LiveKit address beside its container). A
+         * value saved here before stays in force until the administrator removes it.
+         */
+        ENV
     }
 
     /** Whose setting it is (ADR-0056). */
@@ -61,10 +67,11 @@ public record SettingDefinition(String name, String section, Wording group, Word
     }
 
     /**
-     * {@link SettingsFile} may hold it: the administrator's settings and the teacher's ones saved there
-     * before ADR-0056 (they apply on start until the teacher's own setting replaces them).
+     * {@link SettingsFile} may hold it: the administrator's settings, the teacher's ones saved there before
+     * ADR-0056 (they apply on start until the teacher's own setting replaces them) and the {@link Access#ENV}
+     * ones saved before they became read-only (they apply until removed).
      */
     public boolean stored() {
-        return access == Access.EDITABLE;
+        return access == Access.EDITABLE || access == Access.ENV;
     }
 }

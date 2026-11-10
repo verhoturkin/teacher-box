@@ -147,16 +147,29 @@ export type SettingKind =
   | 'CURRENCY'
   | 'CHOICE';
 
-/** Who may change a setting: the administrator here, only `.env` (Docker) or «Мой аккаунт». */
-export type SettingAccess = 'EDITABLE' | 'DOCKER' | 'ACCOUNT';
+/**
+ * Who may change a setting: the administrator here, only `.env` (Docker reads it; or ADR-0056: needed when the
+ * portal cannot be entered, read before it starts) or «Мой аккаунт».
+ */
+export type SettingAccess = 'EDITABLE' | 'DOCKER' | 'ENV' | 'ACCOUNT';
+
+/** Mirrors `SettingDefinition.Owner` (ADR-0056); the teacher's settings never come here. */
+export type SettingOwner = 'ADMIN' | 'ENV_ONLY';
 
 /** Where the value in force comes from. */
 export type SettingSource = 'DEFAULT' | 'ENVIRONMENT' | 'ADMIN';
 
+/** Mirrors `DailySchedule`: a cron as «вкл/выкл + время». */
+export interface DailySchedule {
+  readonly enabled: boolean;
+  /** `HH:mm` in the teacher's time zone; `null` while off. */
+  readonly time: string | null;
+}
+
 /** Mirrors `AdminSettingsService.SettingView`: one setting of the portal (ADR-0016). */
 export interface AdminSetting {
   readonly name: string;
-  /** The key of the section, e.g. `ai`: opens it by a link (`?open=ai`). */
+  /** The key of the catalog section, e.g. `backups`. */
   readonly section: string;
   readonly group: string;
   readonly title: string;
@@ -166,14 +179,29 @@ export interface AdminSetting {
   /** A password, token or key: its value is never sent, only whether it is set. */
   readonly secret: boolean;
   readonly access: SettingAccess;
+  readonly owner: SettingOwner;
+  /** A change is in force at once, without a restart (ADR-0056). */
+  readonly live: boolean;
   readonly source: SettingSource;
   readonly value: string | null;
   readonly set: boolean;
+  /** A `CRON` in force as «вкл/выкл + время»; `null` for other kinds and for a cron of another form. */
+  readonly schedule: DailySchedule | null;
+}
+
+/** Mirrors `AdminSettingsService.MovedView`: a teacher's setting whose variable is still set. */
+export interface MovedSetting {
+  readonly name: string;
+  readonly group: string;
+  readonly title: string;
+  readonly source: SettingSource;
 }
 
 /** Mirrors `AdminSettingsService.SettingsView`. */
 export interface AdminSettings {
   readonly settings: readonly AdminSetting[];
+  /** «Перенесено в настройки учителя»: these variables are no longer read. */
+  readonly moved: readonly MovedSetting[];
   readonly restartEnabled: boolean;
   /** Saved values wait for a restart of the portal. */
   readonly restartNeeded: boolean;
@@ -184,5 +212,7 @@ export interface AdminSettings {
 /** Mirrors `AdminSettingsService.Changed`. */
 export interface SettingsChanged {
   readonly changed: readonly string[];
+  /** Those of them already in force (live). */
+  readonly applied: readonly string[];
   readonly restarting: boolean;
 }

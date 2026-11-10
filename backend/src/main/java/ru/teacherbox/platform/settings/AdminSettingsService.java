@@ -128,7 +128,8 @@ public class AdminSettingsService {
     /**
      * Saves the values: the live ones are in force at once, the portal restarts for the others.
      *
-     * @param values {@code null} value: back to {@code .env}; an empty one: not set, whatever {@code .env} says
+     * @param values {@code null} value: back to {@code .env} (also for a read-only setting saved here before);
+     *               an empty one: not set, whatever {@code .env} says
      */
     public synchronized Changed change(UUID adminId, String password, Map<String, @Nullable String> values) {
         PasswordConfirmation confirmation = passwords.getIfAvailable();
@@ -144,10 +145,11 @@ public class AdminSettingsService {
             if (setting.owner() == Owner.TEACHER) {
                 throw new BusinessRuleException("settings.teacher", name + " is the teacher's setting");
             }
-            if (!setting.editable()) {
+            String value = entry.getValue();
+            // a read-only one saved here before ADR-0056 may only be removed: then .env applies
+            if (!setting.editable() && !(value == null && setting.stored())) {
                 throw new BusinessRuleException("settings.read-only", name + " is changed only in .env");
             }
-            String value = entry.getValue();
             if (value == null) {
                 next.remove(name);
                 continue;

@@ -197,11 +197,26 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   the browser knows. The server error codes got messages. The `m3-expressive` skill was not
   available: built from the design system and the sketches. The device-zone note of the old card
   was dropped (the sketch has none)._
-- [ ] **363.8 F** Administrator settings (`features/admin`): sections «Файлы», «Сеть и прокси»,
+- [x] **363.8 F** Administrator settings (`features/admin`): sections «Файлы», «Сеть и прокси»,
   «Вход и сессии», «Резервные копии»; a live value saves without the restart banner; the restart
   banner only for `.env`-only rows that the administrator cannot change here anyway (shown read-only
   with their current value); «Перенесено в настройки учителя» list. Sketch: «Настройки и аккаунт»
   board 18 `AdminLive` (three columns on expanded widths, one on compact).
+  _Done: `admin/settings/settings-page.ts` is one pane of `tb-section-card` cards in three columns
+  (list-detail and `time-zones.ts` gone; `/admin/settings/:section` and `?open=` open the page);
+  cards «Файлы в заданиях», «Сеть и прокси», «Вход и сеансы» (not «сессии»: the glossary keeps that
+  word away; the catalog says «Сеансы и вход»), plus «Сообщения» for the delivery attempts, link
+  code and web push contact the sketch has no place for, «Другие настройки» for a setting no card
+  names, «Резервные копии» (switch + time picker writing `0 M H * * *` / `-`; another cron stays a
+  text field) and «Только в .env». Saving still asks for the password (ADR-0016), so the page keeps
+  one «Сохранить» instead of saving on change; a live-only save ends with a snackbar, the restart
+  dialog only when a change is not live (the AI proxy until 364.1). Backend: new access `ENV` (owner
+  `ENV_ONLY`) for `SECURITY_JWT_SECRET`, `BACKUP_RESTART`, `LOGGING_*`, `MEETINGS_LIVEKIT_API_URL`;
+  a value saved in the file before keeps applying, shown read-only, and may only be removed (`null`,
+  «Убрать сохранённое»). Values stay in the catalog format (`20MB`, `30d`), not the sketch's «20 МБ»
+  / «30 дней». E2E suites that used the old sections updated; the administrator's time zone test
+  removed (the zone is the teacher's since 363.3). The `m3-expressive` skill was not available:
+  built from the design system and the sketch._
 - [ ] **363.9** `.env.example` (only the deployment, LiveKit, accounts, security, logs blocks),
   `scripts/install.sh` asks nothing the wizard asks, `docs/wiki/` (Install, Update — «переменные,
   которые больше не читаются», Settings, Messengers, Google), help articles in Russian and English,

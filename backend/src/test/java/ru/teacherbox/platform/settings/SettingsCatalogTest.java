@@ -48,7 +48,16 @@ class SettingsCatalogTest {
                 .allMatch(SettingDefinition::stored)
                 .noneMatch(SettingDefinition::editable);
         assertThat(SettingsCatalog.all()).filteredOn(setting -> setting.owner() == Owner.ENV_ONLY)
+                .filteredOn(setting -> setting.access() != Access.ENV)
                 .noneMatch(SettingDefinition::stored);
+        // read-only since ADR-0056; a value saved before keeps applying until removed
+        assertThat(SettingsCatalog.all()).filteredOn(setting -> setting.access() == Access.ENV)
+                .allMatch(setting -> setting.owner() == Owner.ENV_ONLY && setting.stored() && !setting.editable())
+                .extracting(SettingDefinition::name)
+                .containsExactlyInAnyOrder("TEACHERBOX_SECURITY_JWT_SECRET", "TEACHERBOX_BACKUP_RESTART",
+                        "TEACHERBOX_MEETINGS_LIVEKIT_API_URL", "LOGGING_STRUCTURED_FORMAT_CONSOLE",
+                        "LOGGING_LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE", "LOGGING_LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP",
+                        "LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY");
     }
 
     @Test

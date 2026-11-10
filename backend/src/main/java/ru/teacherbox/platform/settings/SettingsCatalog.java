@@ -3,6 +3,7 @@ package ru.teacherbox.platform.settings;
 import static ru.teacherbox.platform.settings.SettingDefinition.Access.ACCOUNT;
 import static ru.teacherbox.platform.settings.SettingDefinition.Access.DOCKER;
 import static ru.teacherbox.platform.settings.SettingDefinition.Access.EDITABLE;
+import static ru.teacherbox.platform.settings.SettingDefinition.Access.ENV;
 import static ru.teacherbox.platform.settings.SettingKind.ADDRESS;
 import static ru.teacherbox.platform.settings.SettingKind.BOOLEAN;
 import static ru.teacherbox.platform.settings.SettingKind.CHOICE;
@@ -149,7 +150,7 @@ public final class SettingsCatalog {
                 .dockerSecret("TEACHERBOX_MEETINGS_LIVEKIT_API_KEY", w("LiveKit: ключ API", "LiveKit: API key"))
                 .dockerSecret("TEACHERBOX_MEETINGS_LIVEKIT_API_SECRET",
                         w("LiveKit: секрет API (не короче 32 символов)", "LiveKit: API secret (at least 32 characters)"))
-                .add("TEACHERBOX_MEETINGS_LIVEKIT_API_URL", w("LiveKit: адрес для портала", "LiveKit: server URL"),
+                .env("TEACHERBOX_MEETINGS_LIVEKIT_API_URL", w("LiveKit: адрес для портала", "LiveKit: server URL"),
                         URL, w("Браузеры всегда подключаются к <адрес портала>/livekit.",
                                 "Browsers always connect to <portal address>/livekit."));
 
@@ -217,7 +218,7 @@ public final class SettingsCatalog {
                 .add("TEACHERBOX_IDENTITY_LOCK_DURATION",
                         w("Блокировка после неудачных входов", "Sign-in lockout duration"), DURATION,
                         w("Например 15m.", "E.g. 15m."))
-                .secret("TEACHERBOX_SECURITY_JWT_SECRET", w("Секрет токенов доступа", "Access token secret"),
+                .envSecret("TEACHERBOX_SECURITY_JWT_SECRET", w("Секрет токенов доступа", "Access token secret"),
                         w("Не короче 32 символов; после смены всем нужно войти заново.",
                                 "At least 32 characters. Changing this signs everyone out."))
                 .add("TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_REQUESTS",
@@ -234,7 +235,7 @@ public final class SettingsCatalog {
                 .add("TEACHERBOX_BACKUP_KEEP_DAYS", w("Сколько дней хранить копии", "Days to keep backups"), NUMBER,
                         w("Более старые копии удаляются после новой — на сервере и в Google Диске; по умолчанию 14.",
                                 "After each backup, older backups are deleted from the server and Google Drive. Default: 14 days."))
-                .add("TEACHERBOX_BACKUP_RESTART", w("Перезапуск после восстановления", "Restart after restore"),
+                .env("TEACHERBOX_BACKUP_RESTART", w("Перезапуск после восстановления", "Restart after restore"),
                         BOOLEAN, w("true в Docker; false — перезапускать портал вручную.",
                                 "Use true in Docker. With false, restart the portal manually after restoring."))
                 .add("TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID",
@@ -247,16 +248,16 @@ public final class SettingsCatalog {
                         w("Если Google недоступен напрямую.", "If Google can't be reached directly."));
 
         b.group("log", w("Журнал", "Log"))
-                .choice("LOGGING_STRUCTURED_FORMAT_CONSOLE", w("Формат журнала в консоли", "Console log format"),
+                .envChoice("LOGGING_STRUCTURED_FORMAT_CONSOLE", w("Формат журнала в консоли", "Console log format"),
                         w("Пусто — обычный текст; JSON для сборщиков журналов.",
                                 "Leave blank for plain text. Select a JSON format when using a log collector."),
                         List.of("ecs", "logstash", "gelf"))
-                .add("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE", w("Размер файла журнала", "Log file size"),
+                .env("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE", w("Размер файла журнала", "Log file size"),
                         DATA_SIZE, w("Например 10MB.", "E.g. 10MB."))
-                .add("LOGGING_LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP",
+                .env("LOGGING_LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP",
                         w("Все файлы журнала не больше", "Maximum total log size"), DATA_SIZE,
                         w("Например 100MB.", "E.g. 100MB."))
-                .add("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY", w("Дней журнала хранить", "Log retention period (days)"),
+                .env("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY", w("Дней журнала хранить", "Log retention period (days)"),
                         NUMBER, NONE);
 
         b.group("accounts", w("Учётные записи", "Accounts"))
@@ -322,16 +323,25 @@ public final class SettingsCatalog {
         }
 
         Builder secret(String name, Wording title) {
-            return secret(name, title, NONE);
-        }
-
-        Builder secret(String name, Wording title, Wording hint) {
-            return put(name, title, hint, TEXT, List.of(), true, EDITABLE);
+            return put(name, title, NONE, TEXT, List.of(), true, EDITABLE);
         }
 
         /** A secret that Docker Compose also passes to another container: read-only in the UI. */
         Builder dockerSecret(String name, Wording title) {
             return put(name, title, DOCKER_ONLY, TEXT, List.of(), true, DOCKER);
+        }
+
+        /** Only in {@code .env} (ADR-0056): read-only here, with its own hint. */
+        Builder env(String name, Wording title, SettingKind kind, Wording hint) {
+            return put(name, title, hint, kind, List.of(), false, ENV);
+        }
+
+        Builder envChoice(String name, Wording title, Wording hint, List<String> choices) {
+            return put(name, title, hint, CHOICE, choices, false, ENV);
+        }
+
+        Builder envSecret(String name, Wording title, Wording hint) {
+            return put(name, title, hint, TEXT, List.of(), true, ENV);
         }
 
         Builder docker(String name, Wording title, SettingKind kind) {

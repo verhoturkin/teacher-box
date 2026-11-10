@@ -74,7 +74,7 @@ describe('app routes', { timeout: 20_000 }, () => {
     backend.match(() => true);
   });
 
-  it('keeps one page for an administration list and its sections, and opens the old fold address (247.2)', async () => {
+  it('keeps one page for an administration list and its sections, and opens the old settings addresses (247.2, 363.8)', async () => {
     auth.acceptSession(authResponse('ADMIN'));
     const backend = TestBed.inject(HttpTestingController);
 
@@ -86,16 +86,9 @@ describe('app routes', { timeout: 20_000 }, () => {
     expect(text()).toContain('не найден');
     backend.match(() => true);
 
+    // the settings are one page of cards (363.8): an old section address opens it
     await harness.navigateByUrl('/admin/settings/backups');
-    expect(TestBed.inject(Router).url).toBe('/admin/settings/backups');
-    backend.match(() => true);
-
-    await harness.navigateByUrl('/admin/settings?open=ai,backups');
-    expect(TestBed.inject(Router).url).toBe('/admin/settings/ai');
-    backend.match(() => true);
-
-    await harness.navigateByUrl('/admin/settings?open=');
-    expect(TestBed.inject(Router).url).toBe('/admin/settings?open=');
+    expect(TestBed.inject(Router).url).toBe('/admin/settings');
     backend.match(() => true);
   });
 

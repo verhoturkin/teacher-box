@@ -67,27 +67,29 @@ Find the public address in “Status” → “Portal address”. It is used for
   },
   settings: {
     title: 'Portal settings',
-    summary: 'Change server settings from the portal and apply them with a restart',
+    summary: 'Files, proxies, sign-in and backups, with no restart',
     body: `
-“Settings” groups the settings from .env by section. Each value shows its source: the default, .env or a value saved here. Choose a section on the left to edit it on the right. On a phone, open a section and use the back arrow to return to the list.
-
-The number beside a section shows its unsaved changes. Changes across all sections are saved together.
+“Settings” is laid out in cards: “Homework files”, “Network and proxies”, “Sign-in and sessions”, “Messages” and “Backups”. Each value shows its source: the default, .env or a value saved here.
 
 ## Apply changes
 
-1. Edit the values you need. Changed fields are marked. For a time zone, search for a city such as Moscow.
-2. Choose “Save and restart” and enter your administrator password.
-3. Wait for the portal to restart. It will be unavailable to everyone for about a minute.
+1. Edit the values you need. Changed fields are marked.
+2. Choose “Save” and enter your administrator password.
+3. Most settings take effect straight away. If a field says “Takes effect after the portal restarts”, the portal restarts on its own and is unavailable to everyone for about a minute.
 
-Values saved here override .env. Choose “Use .env value” to remove an override. Setting labels, hints, validation messages and integration check results use your interface language.
+Values saved here override .env. Choose “Use .env value” to remove an override.
 
-## Set up AI
+Portal and board backups run once a day. Use the switch to turn a backup on or off and pick its time, in the teacher’s time zone. If .env sets a different cron schedule, it is shown as it is and you can still change it.
 
-In “AI assistant”, choose a provider and enter its API key. For OpenRouter, use a key from openrouter.ai. The API URL is preset; leave the model blank for automatic selection or enter a model ID from openrouter.ai/models. For DeepSeek, use a key from platform.deepseek.com; the default model is deepseek-flash.
+New sign-in and lockout limits apply from the next sign-in; open sessions carry on.
 
-## Read-only and secret settings
+## Settings only in .env
 
-Saved passwords, tokens and keys are hidden. Enter a new value to replace one. Docker settings, such as ports, domain, version and resource limits, must be changed in .env. Account details are managed in “My account”.
+The “Only in .env” card shows the current values of settings you cannot change here: the domain, port and container resources, video calls, accounts, the access token secret, logging and the restart after a restore. Passwords and secrets are never shown, only whether they are set. To change one, run sudo teacherbox config on the server: it opens .env, and the portal restarts with the new values once you save. If one of these settings was saved in the portal earlier, choose “Remove saved value” to go back to the .env value.
+
+## Moved to the teacher’s settings
+
+The time zone, currency, lesson rules, portal address, bots and Google connections are now set by the teacher in their own “Settings”. If .env still contains their variables, the page lists them at the top. Their values have already been moved, so you can delete those lines from .env.
 
 ## If the portal will not start
 

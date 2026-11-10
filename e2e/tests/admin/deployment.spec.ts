@@ -56,13 +56,14 @@ test('TEACHERBOX_DOMAIN is a Docker setting the administrator only sees', async 
   });
 
   await signIn(page, 'admin', ADMIN_PASSWORD);
-  await page.goto('/admin/settings/docker');
-  const setting = page
+  await page.goto('/admin/settings');
+  const card = page.locator('#card-env');
+  const setting = card
     .locator('.tb-setting')
     .filter({ hasText: 'Домен портала для HTTPS (Caddy)' });
   await expect(setting).toBeVisible();
-  // Docker settings have no input: a box icon and the note above the group.
-  await expect(setting.locator('.tb-i-deployed_code')).toBeVisible();
-  await expect(setting.locator('input')).toHaveCount(0);
-  await expect(page.getByText('Docker Compose читает её до запуска портала').first()).toBeVisible();
+  // only in .env: the current value, no field, and how to change it
+  await expect(setting).toContainText('TEACHERBOX_DOMAIN');
+  await expect(card.locator('input')).toHaveCount(0);
+  await expect(card).toContainText('sudo teacherbox config');
 });

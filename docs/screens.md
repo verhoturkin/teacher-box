@@ -747,11 +747,27 @@ answers with a short snackbar; there is no «Отменить изменения
   фильтры» for period and level; «Логи» and «Ошибки» are list-detail (message, request code, stack
   trace; with nothing open the temporary log levels; «К списку» on compact); «События» is a wide
   page with resubmit of stuck events.
-- **«Интеграции»** and **«Настройки»** (`/admin/integrations[/:section]`,
-  `/admin/settings[/:section]`): list-detail with `tb-pane-nav` (two-line items, a tonal icon
-  circle, a badge with unsaved changes); headings and «Сохранить и перезапустить» in the persistent
-  pane heading; settings grouped by catalog sections and saved together; `?open=<section>`
-  redirects. «Мой аккаунт» (`/admin/account`, from the rail's «Аккаунт») has the account,
+- **«Интеграции»** (`/admin/integrations[/:section]`): list-detail with `tb-pane-nav` (two-line
+  items, a tonal icon circle); `?open=<section>` redirects.
+- **«Настройки портала»** (`/admin/settings`, sketch AdminLive; the old `/admin/settings/:section`
+  and `?open=` addresses open it): one pane, header «Настройки портала» with «?», the note «⚡
+  Применяются сразу, без перезапуска» and «Сохранить» (filled, persistent heading). Above the cards
+  a warning «Перенесено в настройки учителя» lists the teacher's variables still set (`code` —
+  section: title) and a warning while saved values wait for a restart. A card grid (a named
+  exception to one column, ADR-0021): `tb-section-card--flow` cards in three columns from expanded,
+  one below 22 rem each, in a fixed order — «Файлы в заданиях», «Сеть и прокси» (the proxy format
+  line on top) | «Вход и сеансы» (applies from the next sign-in), «Сообщения», «Другие настройки»
+  (an editable setting no card names) | «Резервные копии», «Только в .env». Cards hold filled
+  fields: short kinds (numbers, durations, sizes, yes/no) two in a row, the rest whole; under a
+  field its hint, «Применится после перезапуска портала» for a setting that is not live, and source
+  tag, «изменено», «Вернуть как в .env» once it differs from the default. A daily backup schedule is
+  a `tb-tile` with a switch («Копия портала каждый день» / «Копии досок каждый день») and, while on,
+  a time picker beside its retention field; any other cron stays a text field. «Только в .env» is a
+  segmented list without leads: title, variable name, the current value (secrets as a «задан / не
+  задан» tag) and «Убрать сохранённое» for a value saved before it became read-only; its line says
+  to change them with `sudo teacherbox config`. All edits are saved together with the password: live
+  only — a snackbar «Настройки сохранены и уже действуют»; otherwise the restart dialog.
+- «Мой аккаунт» (`/admin/account`, from the rail's «Аккаунт») has the account,
   «Оформление» and «Выйти». «Копии» is the teacher's backups section in a pane (rows: database
   icon, date + «kind · size», «⋮» «Восстановить…», «Скачать», «Удалить…»).
 
