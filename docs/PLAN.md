@@ -90,7 +90,7 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
   unchanged first, then `assignment-editor-page.spec.ts` is split by section.
 - [x] 368.2 **F** `features/homework/teacher/teacher-pages.spec.ts` (1874 lines) is split into a
   spec per page beside its page; shared setup goes to `@testing/homework-fixtures`.
-- [ ] 368.3 **F** `features/settings/setup/setup-page.ts` (1572 lines): a component per wizard
+- [x] 368.3 **F** `features/settings/setup/setup-page.ts` (1572 lines): a component per wizard
   step in `features/settings/setup/steps/`, the page keeps the step order and the finish; specs
   split the same way.
 
