@@ -44,7 +44,7 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
 
 ### Stage 366 — agent environment and rules (D)
 
-- [ ] 366.1 **D** Cloud sessions. `AGENTS.md` §12 becomes "local" and "cloud": what a cloud
+- [x] 366.1 **D** Cloud sessions. `AGENTS.md` §12 becomes "local" and "cloud": what a cloud
   container lacks (JDK 25, Docker, E2E runs) and what to do instead (run the parts that work, say
   what was not run). Add `scripts/agent-setup.sh` — idempotent: `git config core.hooksPath
   .githooks`, `npx -y npm@11 ci` in `frontend/` and `e2e/` when `node_modules` is missing; name it

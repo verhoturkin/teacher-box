@@ -245,10 +245,20 @@ Tests are written with (or before) the code. Never lower gates or lint rules to 
 
 ## 12. Developer environment
 
+**Local** (the teacher's machine):
+
 - Windows 11, PowerShell 5.1 (no `&&` — use `;` and `if ($?)`); Git Bash for `*.sh`.
-- JDK 25, Maven 3.9 (use `mvnw`), Node 22, npm 10 (install with `npx -y npm@11 ci|install` — ADR-0007), Docker
-  (daemon may be down — check `docker info`).
+- JDK 25, Maven 3.9 (use `mvnw`), Node 22, npm 10 (install with `npx -y npm@11 ci|install` —
+  ADR-0007), Docker (daemon may be down — check `docker info`).
 - Files: UTF-8 without BOM, LF (`.gitattributes`).
+
+**Cloud** (a Linux container; setup script `scripts/agent-setup.sh` — hooks path and `npm ci` in
+`frontend/` and `e2e/`):
+
+- It has no JDK 25, no running Docker daemon and cannot run E2E. Run the parts that work
+  (`./scripts/verify.sh frontend|docs|e2e`; shellcheck of the installer when available) and
+  say in the reply and the PR what was not run and why; never claim a green check you did not run.
+- Backend changes are verified by CI on the pull request; do not weaken a check to get green.
 
 ## 13. Up-to-date knowledge
 

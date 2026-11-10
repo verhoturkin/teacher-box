@@ -90,7 +90,7 @@ verify_docker() {
 
 shellcheck_scripts() {
     local scripts=(scripts/install.sh scripts/teacherbox scripts/verify.sh scripts/e2e.sh scripts/check-wiki.sh
-        scripts/publish-wiki.sh)
+        scripts/publish-wiki.sh scripts/agent-setup.sh)
     if command -v shellcheck >/dev/null 2>&1; then
         shellcheck -x "${scripts[@]}"
     else
