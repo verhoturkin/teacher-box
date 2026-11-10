@@ -1,8 +1,9 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, forkJoin, tap } from 'rxjs';
 import { LoadState } from '@shared/ui/load-state';
 import { AiApi } from './data-access/ai-api';
 import { AiModel, AiProvider, AiSettings } from './data-access/ai.models';
+import { AiModelChoice } from './model-choice';
 
 /**
  * The connections, their models, the default model and the limit that the cards of «ИИ-помощник»
@@ -17,6 +18,14 @@ export class AiSetup {
   readonly settings = signal<AiSettings | null>(null);
   /** Every model of every connection, in their order. */
   readonly models = computed(() => this.providers().flatMap((provider) => provider.models));
+
+  constructor() {
+    // the model pickers read the connections anew after the teacher was here
+    const choice = inject(AiModelChoice);
+    inject(DestroyRef).onDestroy(() => {
+      choice.invalidate();
+    });
+  }
 
   load(): void {
     forkJoin({ providers: this.api.providers(), settings: this.api.settings() })

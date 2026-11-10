@@ -44,6 +44,8 @@ export interface HomeworkBrief {
   readonly sources: readonly DraftSource[];
   /** What the AI takes into account about the recipients (their AI tags); the request wins. */
   readonly context?: readonly ContextItem[];
+  /** A configured model (ADR-0057); absent — the default one. */
+  readonly modelId?: string;
 }
 
 /** A tag of the recipients for the AI: «Класс» — «7 · 8» (several values joined). */
@@ -112,6 +114,8 @@ export interface ReviewBrief {
   readonly description: string | null;
   readonly answer: string;
   readonly context?: readonly ContextItem[];
+  /** A configured model (ADR-0057); absent — the default one. */
+  readonly modelId?: string;
 }
 
 /** What the teacher knows about a lesson; at least one of `topic` and `words` is filled. */
@@ -120,6 +124,8 @@ export interface LessonSummaryBrief {
   readonly words: string | null;
   /** Titles of the assignments given at the lesson. */
   readonly assignmentTitles: readonly string[];
+  /** A configured model (ADR-0057); absent — the default one. */
+  readonly modelId?: string;
 }
 
 export interface LessonSummaryDraft {

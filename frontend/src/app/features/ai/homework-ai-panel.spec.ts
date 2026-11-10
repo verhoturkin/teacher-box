@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
-import { savedPrompt } from '@testing/ai-fixtures';
+import { aiModel, aiProvider, answerModels, savedPrompt } from '@testing/ai-fixtures';
 import { aStudent, aTag } from '@testing/identity-fixtures';
 import {
   bodyText,
@@ -19,7 +19,7 @@ describe('HomeworkAiPanel', () => {
   let backend: HttpTestingController;
   let applied: AppliedDraft[];
 
-  async function render(prompts = [savedPrompt()]) {
+  async function render(prompts = [savedPrompt()], providers = [aiProvider()]) {
     TestBed.configureTestingModule({ imports: [HomeworkAiPanel], providers: testProviders() });
     backend = TestBed.inject(HttpTestingController);
     vi.spyOn(TestBed.inject(MessageService), 'add');
@@ -29,6 +29,7 @@ describe('HomeworkAiPanel', () => {
     fixture.componentInstance.applied.subscribe((draft) => applied.push(draft));
     await fixture.whenStable();
     backend.expectOne('/api/teacher/ai/prompts').flush(prompts);
+    answerModels(backend, providers);
     await fixture.whenStable();
     return { panel: fixture.componentInstance, host: hostElement(fixture) };
   }
@@ -343,12 +344,45 @@ describe('HomeworkAiPanel', () => {
     request.flush({ title: 'x', description: 'y' });
   });
 
+  it('writes the task and the questions with the model picked beside «Сгенерировать»', async () => {
+    localStorage.setItem('tb.ai.model', 'm-2');
+    const { panel, host } = await render(
+      [],
+      [
+        aiProvider({
+          models: [aiModel(), aiModel({ id: 'm-2', label: 'Sonnet', default: false })],
+        }),
+      ],
+    );
+    expect(host.querySelector('.tb-ai-panel__run .tb-model-pick')?.textContent).toContain('Sonnet');
+    panel.prompt.setValue('Задачи');
+    panel.generate();
+    const task = backend.expectOne('/api/teacher/ai/homework-draft');
+    expect(task.request.body).toMatchObject({ prompt: 'Задачи', modelId: 'm-2' });
+    task.flush({ title: 'x', description: 'y' });
+
+    fixture.componentRef.setInput('pane', true);
+    fixture.componentRef.setInput('compact', true);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/tags').flush([]);
+    backend.expectOne('/api/teacher/students').flush([]);
+    buttonByText(host, 'Вопросы теста').click();
+    await fixture.whenStable();
+    expect(host.querySelector('.tb-ai-pane__foot .tb-model-pick--short')).not.toBeNull();
+    panel.generate();
+    const questions = backend.expectOne('/api/teacher/ai/quiz-draft');
+    expect(questions.request.body).toMatchObject({ modelId: 'm-2' });
+    questions.flush({ questions: [] });
+    localStorage.removeItem('tb.ai.model');
+  });
+
   it('works without the library', async () => {
     TestBed.configureTestingModule({ imports: [HomeworkAiPanel], providers: testProviders() });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(HomeworkAiPanel);
     await fixture.whenStable();
     backend.expectOne('/api/teacher/ai/prompts').flush(null, { status: 500, statusText: 'Error' });
+    answerModels(backend);
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain('Сгенерировать');

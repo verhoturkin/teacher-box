@@ -1,3 +1,4 @@
+import { HttpTestingController } from '@angular/common/http/testing';
 import {
   AiModel,
   AiProvider,
@@ -117,4 +118,14 @@ export function aiProvider(overrides: Partial<AiProvider> = {}): AiProvider {
 
 export function aiSettings(overrides: Partial<AiSettings> = {}): AiSettings {
   return { defaultModelId: 'm-1', monthlyTokenLimit: 1_000_000, version: 1, ...overrides };
+}
+
+/** Answers the model pickers' read of the connections (`AiModelChoice`, once per test). */
+export function answerModels(
+  backend: HttpTestingController,
+  providers: readonly AiProvider[] = [aiProvider()],
+): void {
+  for (const request of backend.match('/api/teacher/ai/providers')) {
+    request.flush(providers);
+  }
 }

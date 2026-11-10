@@ -496,6 +496,21 @@ field at every width; the AI never changes text without Insert / Replace; its st
 the pane. The recipients, deadline and materials parts are `ui/recipients-field.ts`,
 `ui/due-chips.ts`, `ui/material-chips.ts`.
 
+**Model switch** (364.5, ADR-0057; sketches 13 `AiEditor`, 19 `TabletEditor`, 22 `PhoneAi`;
+`ai/ai-model-pick.ts`): a 40 dp outlined select «⌂ Claude Opus 5 ▾» (`memory` icon) just before
+«Сгенерировать» in the AI pane and the assignment bar, before «Черновик ИИ» in the review form
+and before «Составить» in the lesson summary. Its menu groups the models by connection (the
+connection's name as the group header, dividers between groups): the default model tagged «По
+умолчанию», the chosen one checked on secondary container, the models of a failed connection
+disabled with «Подключение не работает» and an «Ошибка» tag; «Настроить подключения» opens
+Settings › «ИИ-помощник». Open, the select takes the tertiary container of the AI action (*ours*,
+sketch). Hidden while there is one model or none. The choice is kept on the device
+(`AiModelChoice`, `localStorage`); picking the default model stores nothing, so the device follows
+the default when it changes; a removed model is forgotten (after a 409 `ai.model.unknown` the
+draft is asked again of the default model). On the
+phone sheet the label is cut with «…» at 7 rem (*ours*: the sketch's «Opus 5» shortening has no
+rule that works for every provider's names).
+
 **«Учитываю об учениках»** (362.6, sketches 13, 22; `ai/student-context.ts`): under the request,
 input chips «<tag>: <value>» of the recipients' tags marked «Учитывать в ИИ» that have a value
 (the students it is given to and the ones being chosen); they go with the homework and quiz

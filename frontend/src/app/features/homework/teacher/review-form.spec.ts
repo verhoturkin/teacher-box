@@ -1,6 +1,8 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { taskDetails } from '@testing/homework-fixtures';
+import { aiModel, aiProvider, answerModels } from '@testing/ai-fixtures';
+import { submission, taskDetails } from '@testing/homework-fixtures';
+import { AiModelChoice } from '@features/ai/parts';
 import { testProviders } from '@testing/setup';
 import { ReviewForm } from './review-form';
 
@@ -35,5 +37,26 @@ describe('ReviewForm', () => {
     expect(review.pending()).toBe(false);
     expect(saved).toHaveBeenCalledWith(task);
     backend.verify();
+  });
+  it('drafts a review with the model picked on this device', () => {
+    localStorage.setItem('tb.ai.model', 'm-2');
+    TestBed.configureTestingModule({ providers: testProviders() });
+    const review = TestBed.runInInjectionContext(() => new ReviewForm());
+    const backend = TestBed.inject(HttpTestingController);
+    backend.expectOne('/api/teacher/ai/status').flush({ enabled: true });
+    TestBed.inject(AiModelChoice).load();
+    answerModels(backend, [
+      aiProvider({ models: [aiModel(), aiModel({ id: 'm-2', default: false })] }),
+    ]);
+    const task = taskDetails({ submissions: [submission({ text: 'Ответ' })] });
+    const received = vi.fn();
+
+    review.draft(task, received);
+    const request = backend.expectOne('/api/teacher/ai/review-draft');
+    expect(request.request.body).toMatchObject({ answer: 'Ответ', modelId: 'm-2' });
+    request.flush({ comment: 'Хорошо', grade: '5', accept: true });
+    expect(received).toHaveBeenCalledWith({ comment: 'Хорошо', grade: '5', decision: 'ACCEPT' });
+    backend.verify();
+    localStorage.removeItem('tb.ai.model');
   });
 });

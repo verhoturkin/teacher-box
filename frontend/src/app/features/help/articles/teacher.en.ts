@@ -465,6 +465,8 @@ The AI settings show your model, tokens used this month and remaining allowance.
 You connect the AI yourself: “Settings” → “AI assistant” → “Connections” → “Add”. Pick a provider — Anthropic (Claude), Gemini, OpenRouter (many companies’ models with one key), DeepSeek or an OpenAI-compatible server such as your own Ollama — paste the API key and choose “Check and continue”. If the key is rejected, the provider’s reply appears under the field. In the second step, select the models you want (search helps with a long list) or add one by hand using its model ID. If the provider cannot be reached from the server’s network, set a proxy under “Advanced”.
 
 Drafts are written by the default model, which is marked in the list. To change it, select another model’s radio button or choose “Make default” from its “⋮” menu, where you can also rename or delete it. The monthly token limit is shared by all connections; 0 means no limit. The usage bar shows how much each model used. If AI buttons are missing, no default model is selected.
+
+With more than one model, a button with the model’s name sits next to “Generate” (next to “AI draft” when reviewing work, and next to “Generate draft” in a lesson summary). Its menu lists the models by connection: choose the one that should write the draft. This device remembers your choice everywhere the AI writes; another computer or phone still uses the default model. You cannot choose a model whose connection has an error until it works again. If the chosen model is deleted, drafts go back to the default model.
 `,
   },
   billing: {

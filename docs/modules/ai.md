@@ -154,6 +154,13 @@ the monthly limit, the request log with «Показать ещё»; `ai-setup.t
 default radio, `ai-provider-dialog.ts` — the two-step connection dialog, `ai-model-dialog.ts` — a
 model's change; 364.4) with `prompt-library-card.ts` (`#prompt-library`, the menu's link) and
 `system-prompts-card.ts` (both system prompts, «Изменён», a dialog with «Вернуть стандартный»); embedded via `parts.ts`.
+The model a draft is written with (364.5): `model-choice.ts` (`AiModelChoice`, root) reads the
+connections once (Settings make it read again on leaving), keeps the device's choice in
+`localStorage` (`tb.ai.model`; the default model is not stored) and sends it as `modelId` through
+`send(...)` — the homework, quiz, review and lesson summary drafts; a choice of a removed model,
+of a failed connection (passed over, kept) or answered with 409 `ai.model.unknown` (forgotten, the
+list read again, the request sent once more without `modelId`) falls back to the default.
+`ai-model-pick.ts` (`tb-ai-model-pick`) is the select beside the AI action, hidden with one model.
 
 The assignment editor uses a main authoring pane and an AI supporting pane (0.29.0 variant 1).
 From expanded width the AI is on the right; compact/medium use a modal right drawer with focus return.

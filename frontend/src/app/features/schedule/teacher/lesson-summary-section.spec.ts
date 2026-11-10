@@ -2,6 +2,8 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
+import { AiProvider } from '@features/ai/parts';
+import { aiModel, aiProvider, answerModels } from '@testing/ai-fixtures';
 import { assignmentSummary } from '@testing/homework-fixtures';
 import { at, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { testProviders } from '@testing/setup';
@@ -170,6 +172,14 @@ describe('LessonSummarySection', () => {
   describe('AI draft', () => {
     const draftButton = (): HTMLButtonElement => buttonByText(document.body, 'Черновик');
 
+    /** Opens the draft part; its model picker reads the connections. */
+    async function openDraft(providers?: readonly AiProvider[]): Promise<void> {
+      draftButton().click();
+      await fixture.whenStable();
+      answerModels(backend, providers);
+      await fixture.whenStable();
+    }
+
     it('is not offered while the AI feature is off', async () => {
       await open(scheduledLesson());
 
@@ -183,8 +193,7 @@ describe('LessonSummarySection', () => {
 
       it('drafts from the topic, the words and the assignments of the day, in place of the topic', async () => {
         await open(scheduledLesson({ topic: 'Past Simple' }));
-        draftButton().click();
-        await fixture.whenStable();
+        await openDraft();
         await type('#lesson-summary-words', 'ошибки в глаголах');
 
         await press('Составить');
@@ -221,8 +230,7 @@ describe('LessonSummarySection', () => {
 
       it('goes after the text already written and reads the assignments once', async () => {
         await open(scheduledLesson({ topic: 'Тема', summary: 'Было' }));
-        draftButton().click();
-        await fixture.whenStable();
+        await openDraft();
 
         for (const answer of ['Первый', 'Второй']) {
           await press(answer === 'Первый' ? 'Составить' : 'Ещё раз');
@@ -239,8 +247,7 @@ describe('LessonSummarySection', () => {
 
       it('asks for a topic or a few words first', async () => {
         await open(scheduledLesson({ topic: null }));
-        draftButton().click();
-        await fixture.whenStable();
+        await openDraft();
 
         expect(bodyText()).toContain('Укажите тему урока');
         expect(buttonByText(document.body, 'Составить').disabled).toBe(true);
@@ -250,8 +257,7 @@ describe('LessonSummarySection', () => {
 
       it('tells a failed draft next to the field and leaves the text alone', async () => {
         await open(scheduledLesson({ topic: 'Тема' }));
-        draftButton().click();
-        await fixture.whenStable();
+        await openDraft();
 
         await press('Составить');
         backend.expectOne(ASSIGNMENTS).error(new ProgressEvent('offline'));
@@ -261,6 +267,37 @@ describe('LessonSummarySection', () => {
 
         expect(bodyText()).toContain('Не удалось составить черновик');
         expect(field('#lesson-summary-text').value).toBe('Тема');
+      });
+
+      it('writes with the model picked beside «Составить», and with the default one once it is gone', async () => {
+        localStorage.setItem('tb.ai.model', 'm-2');
+        await open(scheduledLesson({ topic: 'Тема' }));
+        await openDraft([
+          aiProvider({
+            models: [aiModel(), aiModel({ id: 'm-2', label: 'Claude Sonnet 5', default: false })],
+          }),
+        ]);
+        expect(
+          requireElement(document.body, '.tb-model-pick', HTMLButtonElement).textContent,
+        ).toContain('Claude Sonnet 5');
+
+        await press('Составить');
+        backend.expectOne(ASSIGNMENTS).flush([]);
+        await fixture.whenStable();
+        backend
+          .expectOne(DRAFT)
+          .flush(
+            { status: 409, code: 'ai.model.unknown', defaultModelId: 'm-1' },
+            { status: 409, statusText: 'Conflict' },
+          );
+        await fixture.whenStable();
+        expect(localStorage.getItem('tb.ai.model')).toBeNull();
+        answerModels(backend, [aiProvider()]);
+        const retry = backend.expectOne(DRAFT);
+        expect(retry.request.body).not.toHaveProperty('modelId', 'm-2');
+        retry.flush({ summary: 'Готово' });
+        await fixture.whenStable();
+        expect(field('#lesson-summary-text').value).toBe('Готово');
       });
     });
   });

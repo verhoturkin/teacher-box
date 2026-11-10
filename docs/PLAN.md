@@ -316,7 +316,7 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   («Подключён · N % лимита», not the sketch's «2 подключения»); the help got a «Подключения и
   модели» section, the full help and wiki pass stays in 364.6. Wiki `AI-assistant`: the teacher
   connects the AI in Settings, the variables are only the one-time import._
-- [ ] **364.5 F** Model switch where the AI writes (`ai/homework-ai-panel.ts`,
+- [x] **364.5 F** Model switch where the AI writes (`ai/homework-ai-panel.ts`,
   `homework/teacher/review-form.ts`, the lesson summary): a compact select chip «Claude Opus 5 ▾»
   next to «Сгенерировать», models grouped by provider, the default marked; the choice is remembered
   per device and reset when that model is removed; hidden when there is one model. Sketches: «Задания —
@@ -324,6 +324,25 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   connection, the default tagged, a broken connection disabled, «Настроить подключения»), board 19
   `TabletEditor` (the side sheet), board 22 `PhoneAi` (a short label «Opus 5» in the bottom
   sheet).
+  _Done: `ai/model-choice.ts` (`AiModelChoice`, root) reads `GET /providers` once and again after
+  the settings category is left (`AiSetup` invalidates it on destroy); the device's choice is
+  `localStorage` `tb.ai.model`, the default model is not stored (the device follows a changed
+  default), a removed model is forgotten on load, one of a failed connection is passed over but
+  kept. `send(...)` adds `modelId` to the homework, quiz, review and lesson summary requests
+  (optional `modelId` in the brief types); on a 409 `ai.model.unknown` it forgets the choice,
+  reads the list again and sends the request once more without `modelId` (no new error message:
+  the initial bundle is at its 1.2 MB budget). `ai/ai-model-pick.ts` — a 40 dp outlined select
+  with `memory` before the AI action in the AI pane and bar, the review form and the lesson
+  summary; the menu is a `p-menu` with a group per connection, the default tagged, the chosen one
+  `tb-menu-item--selected`, a failed connection's models disabled with «Подключение не работает»,
+  «Настроить подключения» after a divider at the end of the last group (a grouped `p-menu` takes
+  every top item for a group header). Deviations: the phone label is cut with «…» at 7 rem
+  instead of the sketch's «Opus 5» (no shortening rule fits every provider's names); the items are
+  `menuitem`, not `menuitemradio` (`p-menu` has no role option) — the opener names the model in
+  force; the drop-down arrow turns instead of a second icon. Not run here: the backend (the
+  downloaded JDK 25 was not allowed to run), so the browser check used a mocked API. Help
+  «Подключения и модели» and the wiki `AI-assistant` got a paragraph; the full pass, the E2E of
+  the switch against the fake provider and the ADR-0057 note stay in 364.6._
 - [ ] **364.6** Wiki `docs/wiki/AI-assistant.md` (several connections, which to pick, proxy per
   connection), help in Russian and English, glossary «подключение», «модель по умолчанию»,
   `docs/modules/ai.md`, ADR-0057, E2E `e2e/tests/ai/providers.spec.ts` against the fake provider.

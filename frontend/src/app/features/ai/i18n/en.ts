@@ -218,6 +218,12 @@ export const en: Translation<typeof ru> = {
       ORDERING: 'Ordering',
     },
   },
+  modelPick: {
+    label: (model: string) => `Model: ${model}`,
+    menu: 'Model',
+    broken: 'The connection is not working',
+    manage: 'Set up connections',
+  },
   library: {
     create: 'New',
     hint: 'Ready-made requests to the assistant — they appear as buttons in the “Write with AI” window.',
