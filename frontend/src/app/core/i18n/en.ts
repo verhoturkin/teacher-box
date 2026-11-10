@@ -252,6 +252,14 @@ export const en: Translation<typeof ru> = {
       'ai.prompt-title-invalid': 'Prompt titles must be between 1 and 100 characters',
       'ai.prompt-text-invalid': 'Prompts must be between 1 and 4000 characters',
       'ai.system-prompt-invalid': 'System prompts must be between 1 and 10,000 characters',
+      'ai.provider.holds-default':
+        'This connection holds the default model. Make another model the default first',
+      'ai.provider.key-required': 'This provider needs an API key',
+      'ai.provider.address-required': 'Enter the API address of your server',
+      'ai.provider.not-found': 'The connection is not found — it may have been deleted',
+      'ai.provider.unavailable': 'The provider did not respond. Check the key, address and proxy',
+      'ai.model.duplicate': 'This connection already has this model',
+      'ai.model.not-found': 'The model is not found — it may have been deleted',
       // schedule
       'schedule.student-not-found': 'The student could not be found or their account is disabled',
       'schedule.lesson-not-found': 'Lesson not found',

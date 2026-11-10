@@ -4,11 +4,19 @@ import { Observable, catchError, map, of, shareReplay } from 'rxjs';
 import { SKIP_ERROR_TOAST, quietContext } from '@core/http/api-error.interceptor';
 import {
   AiFeature,
+  AiModel,
+  AiProvider,
+  AiSettings,
   AiStatus,
+  AvailableModel,
+  CheckResult,
+  ConnectionChange,
+  ConnectionInput,
   HomeworkBrief,
   HomeworkDraft,
   LessonSummaryBrief,
   LessonSummaryDraft,
+  ModelInput,
   PromptInput,
   QuizDraft,
   RequestPage,
@@ -21,6 +29,7 @@ import {
 
 const PROMPTS = '/api/teacher/ai/prompts';
 const SYSTEM_PROMPTS = '/api/teacher/ai/system-prompts';
+const PROVIDERS = '/api/teacher/ai/providers';
 
 /** HTTP client of the AI module (teacher only). */
 @Injectable({ providedIn: 'root' })
@@ -134,5 +143,65 @@ export class AiApi {
   requests(month: string, offset: number): Observable<RequestPage> {
     const params = new HttpParams().set('month', month).set('offset', offset);
     return this.http.get<RequestPage>('/api/teacher/ai/requests', { params });
+  }
+
+  /** The connections in their order, each with its models (ADR-0057). */
+  providers(): Observable<AiProvider[]> {
+    return this.http.get<AiProvider[]>(PROVIDERS, { context: quietContext() });
+  }
+
+  /** Checks a connection before it is saved and lists its models; the dialog shows the answer. */
+  checkConnection(input: ConnectionInput): Observable<CheckResult> {
+    return this.http.post<CheckResult>(`${PROVIDERS}/check`, input, { context: quietContext() });
+  }
+
+  /** Saves a connection; the answer carries the state of its check. */
+  createProvider(input: ConnectionInput): Observable<AiProvider> {
+    return this.http.post<AiProvider>(PROVIDERS, input, { context: quietContext() });
+  }
+
+  updateProvider(id: string, change: ConnectionChange): Observable<AiProvider> {
+    return this.http.put<AiProvider>(`${PROVIDERS}/${id}`, change, { context: quietContext() });
+  }
+
+  recheckProvider(id: string): Observable<AiProvider> {
+    return this.http.post<AiProvider>(`${PROVIDERS}/${id}/check`, null);
+  }
+
+  /** Refused (409) while the connection holds the default model. */
+  deleteProvider(id: string): Observable<unknown> {
+    return this.http.delete(`${PROVIDERS}/${id}`);
+  }
+
+  /** The models the provider offers; empty when its API keeps no list. */
+  availableModels(providerId: string): Observable<AvailableModel[]> {
+    return this.http.get<AvailableModel[]>(`${PROVIDERS}/${providerId}/models/available`, {
+      context: quietContext(),
+    });
+  }
+
+  addModel(providerId: string, input: ModelInput): Observable<AiModel> {
+    return this.http.post<AiModel>(`${PROVIDERS}/${providerId}/models`, input, {
+      context: quietContext(),
+    });
+  }
+
+  updateModel(providerId: string, modelId: string, input: ModelInput): Observable<AiModel> {
+    return this.http.put<AiModel>(`${PROVIDERS}/${providerId}/models/${modelId}`, input, {
+      context: quietContext(),
+    });
+  }
+
+  deleteModel(providerId: string, modelId: string): Observable<unknown> {
+    return this.http.delete(`${PROVIDERS}/${providerId}/models/${modelId}`);
+  }
+
+  /** The default model and the monthly limit. */
+  settings(): Observable<AiSettings> {
+    return this.http.get<AiSettings>('/api/teacher/ai/settings', { context: quietContext() });
+  }
+
+  saveSettings(settings: AiSettings): Observable<AiSettings> {
+    return this.http.put<AiSettings>('/api/teacher/ai/settings', settings);
   }
 }

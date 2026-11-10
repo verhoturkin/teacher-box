@@ -293,7 +293,7 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   names; they do not overwrite the teacher's check state (`AdminAiController` already lists the
   states since 364.2). Frontend untouched: its types ignore the new optional fields until
   364.4/364.5._
-- [ ] **364.4 F** Settings «ИИ-помощник» (`features/ai`, sketches `Ai`, `AiProviderDialog`): card
+- [x] **364.4 F** Settings «ИИ-помощник» (`features/ai`, sketches `Ai`, `AiProviderDialog`): card
   «Подключения» — one `tb-list` row per provider (kind icon, name, «N моделей», state tag «Работает»
   / «Ошибка ключа»), its models nested as rows with a radio «По умолчанию»; «Добавить подключение»
   opens `AiProviderDialog`: kind as a selectable card grid, then key, address (shown for
@@ -304,6 +304,18 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   dialog is full-screen on the phone. Sketches: «Настройки и аккаунт» board 5 `Ai` (connections
   with nested models, usage, limit) and board 17 `AiProviderDialog` (both dialog steps, the key
   error and the check result).
+  _Done: `ai/ai-setup.ts` (connections + settings shared by the cards), `ai-connections-card.ts`,
+  `ai-provider-dialog.ts` (a new connection is checked by `POST /providers/check` and saved with its
+  ticked models on step 2; a saved one — step 1 without the kind grid, or step 2 from «Добавить
+  модель»), `ai-model-dialog.ts`; the usage card «Расход за <месяц>» takes the bar and the legend
+  from `UsageReport.models` and holds the limit field (`PUT /settings`). The «not set up by the
+  administrator» card is gone: without connections «Подключения» offers to add one. Changed: the
+  failed tag reads «Ошибка» with the provider's answer under the name (a failure is not always the
+  key); a connection holding the default model is deleted only when no other model exists (the AI
+  is turned off first). Not changed: the category's state line still comes from `/status`
+  («Подключён · N % лимита», not the sketch's «2 подключения»); the help got a «Подключения и
+  модели» section, the full help and wiki pass stays in 364.6. Wiki `AI-assistant`: the teacher
+  connects the AI in Settings, the variables are only the one-time import._
 - [ ] **364.5 F** Model switch where the AI writes (`ai/homework-ai-panel.ts`,
   `homework/teacher/review-form.ts`, the lesson summary): a compact select chip «Claude Opus 5 ▾»
   next to «Сгенерировать», models grouped by provider, the default marked; the choice is remembered

@@ -194,10 +194,10 @@ test('the price for new students is in «Занятия», the AI page is a cate
   await expect(page.locator('tb-billing-overview-page')).toBeVisible();
   await expect(page.locator('#default-price')).toHaveCount(0);
 
-  // the instance has no AI service: the category says so
+  // the instance has no AI connection: the category offers to add one
   await page.goto('/teacher/ai');
   await expect(page).toHaveURL(/\/teacher\/settings\/ai$/);
-  await expect(page.locator('tb-ai-settings-panel')).toContainText('ИИ-помощник не настроен');
+  await expect(page.locator('tb-ai-settings-panel')).toContainText('Подключений пока нет');
   await expect(page.getByRole('navigation', { name: 'Разделы' })).not.toContainText('ИИ-помощник');
 });
 

@@ -460,7 +460,11 @@ The portal handles the response format and sends assignment and student response
 
 The AI settings show your model, tokens used this month and remaining allowance. Recent requests show the result, time, model, token count and any error. The latest ten appear first; choose “Show more” for other requests this month. Once the monthly allowance is exhausted, AI actions become unavailable until the next month.
 
-The portal administrator configures the provider, such as Claude, Gemini, DeepSeek, OpenRouter or another supported service. Ask them to enable AI if the assistant is unavailable.
+## Connections and models
+
+You connect the AI yourself: “Settings” → “AI assistant” → “Connections” → “Add”. Pick a provider — Anthropic (Claude), Gemini, OpenRouter (many companies’ models with one key), DeepSeek or an OpenAI-compatible server such as your own Ollama — paste the API key and choose “Check and continue”. If the key is rejected, the provider’s reply appears under the field. In the second step, select the models you want (search helps with a long list) or add one by hand using its model ID. If the provider cannot be reached from the server’s network, set a proxy under “Advanced”.
+
+Drafts are written by the default model, which is marked in the list. To change it, select another model’s radio button or choose “Make default” from its “⋮” menu, where you can also rename or delete it. The monthly token limit is shared by all connections; 0 means no limit. The usage bar shows how much each model used. If AI buttons are missing, no default model is selected.
 `,
   },
   billing: {
@@ -604,7 +608,7 @@ Open Settings from the sidebar or the ☰ menu on a phone. Select a category to 
 - **Portal:** name and logo, portal colour, and fine tuning (scheme, contrast) with a preview. See [Appearance](/teacher/help/appearance).
 - **Lessons:** under “Time and price”, the time zone (used for lesson times, reminders and monthly reports; lessons already booked keep their time), the currency (fixed once the first charge or payment is recorded), and the length and price for new lessons, students and groups (see [Payments](/teacher/help/billing)). Under “Rules”, when a cancellation counts as late, up to three lesson reminders for students (“Add” to choose when, “×” to remove one), how many hours before a homework deadline to remind students, and how many weeks ahead to create repeating lessons. Each field saves as soon as you leave it or press Enter. Also [calls](/teacher/help/calls) and [external video meetings](/teacher/help/meetings), Google Calendar and the calendar subscription (see [Calendars](/teacher/help/calendars)).
 - **Messengers:** bots, what the bot can do and students’ connections (for example, 5 of 7). Failed deliveries appear first when present; the administrator can retry them. See [Notifications and bots](/teacher/help/notifications).
-- **AI assistant:** model, usage by feature, recent requests, my prompts and system prompts. See [AI assistant](/teacher/help/ai).
+- **AI assistant:** connections and models, usage by model and the limit, recent requests, my prompts and system prompts. See [AI assistant](/teacher/help/ai).
 - **Data:** scheduled and manual backups, downloads, restoration, Google Drive storage, and the danger zone for restoring a backup or clearing the portal. See [Backups](/teacher/help/backups).
 
 Settings save as soon as you change a field or switch. The exception is Portal: a row with Discard and Save appears under the colour choice, and the portal asks before you leave with unsaved changes. File size and type are checked as soon as you select a file.

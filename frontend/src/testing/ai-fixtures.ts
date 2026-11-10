@@ -1,4 +1,7 @@
 import {
+  AiModel,
+  AiProvider,
+  AiSettings,
   AiStatus,
   SavedPrompt,
   SystemPrompt,
@@ -48,6 +51,7 @@ export function usageReport(overrides: Partial<UsageReport> = {}): UsageReport {
         createdAt: '2026-09-24T09:00:00Z',
       },
     ],
+    models: [],
     moreRecent: false,
     ...overrides,
   };
@@ -74,4 +78,43 @@ export function systemPrompt(overrides: Partial<SystemPrompt> = {}): SystemPromp
     version: 0,
     ...overrides,
   };
+}
+
+export function aiModel(overrides: Partial<AiModel> = {}): AiModel {
+  return {
+    id: 'm-1',
+    modelId: 'claude-opus-5',
+    label: 'Claude Opus 5',
+    effort: null,
+    fallbacks: true,
+    maxTokens: 16_000,
+    timeoutSeconds: 120,
+    position: 0,
+    version: 0,
+    default: true,
+    ...overrides,
+  };
+}
+
+export function aiProvider(overrides: Partial<AiProvider> = {}): AiProvider {
+  return {
+    id: 'pr-1',
+    kind: 'anthropic',
+    name: 'Anthropic',
+    keySet: true,
+    keyEnding: 'a7f2',
+    baseUrl: null,
+    address: null,
+    proxy: null,
+    position: 0,
+    version: 0,
+    state: 'OK',
+    stateDetail: null,
+    models: [aiModel()],
+    ...overrides,
+  };
+}
+
+export function aiSettings(overrides: Partial<AiSettings> = {}): AiSettings {
+  return { defaultModelId: 'm-1', monthlyTokenLimit: 1_000_000, version: 1, ...overrides };
 }

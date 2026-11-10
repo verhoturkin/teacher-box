@@ -151,12 +151,28 @@ export interface AiRequestLog {
   readonly createdAt: string;
 }
 
+/** Mirrors `ModelUsage`: one model's usage in the month (ADR-0057). */
+export interface ModelUsage {
+  /** `null` for requests logged before models had ids. */
+  readonly modelId: string | null;
+  readonly label: string;
+  /** The provider kind, e.g. `anthropic`. */
+  readonly provider: string;
+  /** The model is no longer among the connections. */
+  readonly removed: boolean;
+  readonly requests: number;
+  readonly inputTokens: number;
+  readonly outputTokens: number;
+}
+
 export interface UsageReport {
   /** `yyyy-MM`. */
   readonly month: string;
   readonly usedTokens: number;
   readonly monthlyTokenLimit: number;
   readonly features: FeatureUsage[];
+  /** The configured models in their order, then the removed ones; only those used in the month. */
+  readonly models: ModelUsage[];
   /** The newest requests of the month, the first page of 10. */
   readonly recent: AiRequestLog[];
   /** Whether the month has older requests than `recent`. */
@@ -167,4 +183,99 @@ export interface UsageReport {
 export interface RequestPage {
   readonly items: AiRequestLog[];
   readonly hasMore: boolean;
+}
+
+/** The API a connection speaks (ADR-0057). */
+export type ProviderKind = 'anthropic' | 'gemini' | 'openrouter' | 'deepseek' | 'openai-compatible';
+
+/** The state of a connection's last check: `UNCHECKED` since a restart or a change. */
+export type ProviderState = 'UNCHECKED' | 'OK' | 'FAILED';
+
+/** Mirrors `ModelView`. */
+export interface AiModel {
+  readonly id: string;
+  readonly modelId: string;
+  readonly label: string;
+  /** Anthropic effort (`low` … `max`); `null` — the model's default. */
+  readonly effort: string | null;
+  readonly fallbacks: boolean;
+  readonly maxTokens: number;
+  readonly timeoutSeconds: number;
+  readonly position: number;
+  readonly version: number;
+  /** The model of a request that names none. */
+  readonly default: boolean;
+}
+
+/** Mirrors `ProviderView`: a connection; the key is write-only. */
+export interface AiProvider {
+  readonly id: string;
+  readonly kind: ProviderKind;
+  readonly name: string;
+  readonly keySet: boolean;
+  /** The key's last 4 characters; `null` without a key or for a short one. */
+  readonly keyEnding: string | null;
+  /** The address the teacher gave; `null` — the kind's own. */
+  readonly baseUrl: string | null;
+  /** The address in use. */
+  readonly address: string | null;
+  readonly proxy: string | null;
+  readonly position: number;
+  readonly version: number;
+  readonly state: ProviderState;
+  /** The provider's answer when the check failed. */
+  readonly stateDetail: string | null;
+  readonly models: AiModel[];
+}
+
+/** A model the provider offers (`added` — already among the connection's models). */
+export interface AvailableModel {
+  readonly modelId: string;
+  readonly label: string;
+  readonly added: boolean;
+}
+
+/** Mirrors `CheckResult`: the check of a connection not saved yet. */
+export interface CheckResult {
+  readonly state: ProviderState;
+  readonly detail: string | null;
+  readonly models: AvailableModel[];
+}
+
+/** A new connection; blank `name` — the kind's name. */
+export interface ConnectionInput {
+  readonly kind: ProviderKind;
+  readonly name: string | null;
+  readonly apiKey: string | null;
+  readonly baseUrl: string | null;
+  readonly proxy: string | null;
+}
+
+/** A change of a saved connection; blank `apiKey` keeps the key, `removeKey` removes it. */
+export interface ConnectionChange {
+  readonly name: string;
+  readonly apiKey: string | null;
+  readonly removeKey: boolean;
+  readonly baseUrl: string | null;
+  readonly proxy: string | null;
+  readonly version: number;
+}
+
+/** A model to add or change; blank `label` — from the model id. */
+export interface ModelInput {
+  readonly modelId: string;
+  readonly label: string | null;
+  readonly effort: string | null;
+  readonly fallbacks: boolean;
+  readonly maxTokens: number;
+  readonly timeoutSeconds: number;
+  /** Required for a change. */
+  readonly version?: number;
+}
+
+/** Mirrors `SettingsView`: the default model (`null` — the AI is off) and the limit (0 — none). */
+export interface AiSettings {
+  readonly defaultModelId: string | null;
+  readonly monthlyTokenLimit: number;
+  readonly version: number;
 }

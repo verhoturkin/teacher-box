@@ -6,7 +6,7 @@ import { AuthService } from '@core/auth/auth.service';
 import { PageDetail } from '@core/routing/page-detail';
 import { UnsavedChanges } from '@core/routing/unsaved-changes';
 import { buttonByText, hostElement, readableText, requireElement, typeInto } from '@testing/dom';
-import { aiStatus, systemPrompt, usageReport } from '@testing/ai-fixtures';
+import { aiProvider, aiSettings, aiStatus, systemPrompt, usageReport } from '@testing/ai-fixtures';
 import { currencySetting, overview } from '@testing/billing-fixtures';
 import { portalSettings } from '@testing/portal-fixtures';
 import { channelSetup, studentMessengers } from '@testing/notification-fixtures';
@@ -94,6 +94,8 @@ describe('SettingsPage', () => {
         backend.expectOne('/api/teacher/notifications/students').flush([studentMessengers()]);
         break;
       case 'ai':
+        backend.expectOne('/api/teacher/ai/providers').flush([aiProvider()]);
+        backend.expectOne('/api/teacher/ai/settings').flush(aiSettings());
         backend.expectOne('/api/teacher/ai/usage').flush(usageReport());
         break;
       case 'data':
@@ -280,7 +282,7 @@ describe('SettingsPage', () => {
     expect(TestBed.inject(PageDetail).value()).toBe('Занятия');
   });
 
-  it('shows the model, the usage and the prompts in the AI assistant', async () => {
+  it('shows the connections, the usage and the prompts in the AI assistant', async () => {
     const host = await render(1200, 'ai');
     for (const request of backend.match('/api/teacher/ai/prompts')) {
       request.flush([]);
@@ -291,7 +293,8 @@ describe('SettingsPage', () => {
     await fixture.whenStable();
 
     const text = readableText(host);
-    expect(text).toContain('Модель');
+    expect(text).toContain('Подключения');
+    expect(text).toContain('Claude Opus 5');
     expect(host.querySelector('#prompt-library')).not.toBeNull();
     expect(host.querySelector('#system-prompts')).not.toBeNull();
     expect(host.querySelector('tb-ai-settings-panel tb-page-header')).toBeNull();

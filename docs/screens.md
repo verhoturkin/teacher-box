@@ -649,8 +649,35 @@ answers with a short snackbar; there is no «Отменить изменения
   the not connected and «Отправить ссылку», «Кто где» → `/teacher/students`. The messengers of one
   student are on the student card (`/teacher/students/:studentId`), «Написать всем» (the old
   «Сообщение ученикам») on «Ученики».
-- **«ИИ-помощник»:** model, usage by feature, «Последние запросы» with tokens and «Показать ещё»,
-  «Мои промты», «Системные промты» open (edit in place, «Вернуть стандартный»).
+- **«ИИ-помощник»** (sketch `Ai`, ADR-0057; `ai/ai-settings-panel.ts`): two card columns. Left:
+  «Подключения» (`ai/ai-connections-card.ts`) — one segmented list per connection: the head row
+  (surface container) with the kind icon, the name, «N моделей · ключ …a7f2 · напрямую / через
+  прокси», the check tag «Работает» / «Ошибка» (the provider's answer under the name) / «Не
+  проверено» and «⋮» («Изменить…», «Проверить снова», «Удалить…»); its models as rows with a radio
+  in the lead column (one group: the default model), the label, the id (when the label differs)
+  and the effort, a primary tag «По умолчанию» and «⋮» («Сделать основной», «Изменить…» — the
+  model dialog: name, id, under «Дополнительно» effort and fallbacks for Anthropic, answer length
+  and timeout — «Удалить…»); a last row with the text button «Добавить модель». The card's tonal
+  «Добавить» opens `AiProviderDialog`; without connections an empty state with «Добавить
+  подключение». A connection holding the default model is deleted only when no other model could
+  be the default (then the AI is turned off first); otherwise a snackbar asks to pick another
+  default. «Расход за <месяц>» — the share of the limit, the bar and legend split by model
+  (removed ones «(удалена)»; without a limit — shares of the month's tokens), «Лимит в месяц,
+  токенов» saved on leaving the field or Enter. «Последние запросы» with the model, tokens and
+  «Показать ещё». Right: «Мои промты», «Системные промты» open (edit in place, «Вернуть
+  стандартный»).
+- **`AiProviderDialog`** (sketch `AiProviderDialog`; `ai/ai-provider-dialog.ts`, `form` kind:
+  full screen on a phone): overline «Шаг 1 из 2 · Подключение»; the provider as a grid of
+  selectable cards (radio inputs, two columns, one on a phone; chosen — secondary container;
+  *ours*: M3 publishes no selectable card), «Название», «API-ключ» (a password field; a failed
+  check shows «Не получилось: <провайдер> ответил «…»» under it and stays on step 1), the address
+  (shown for OpenAI-compatible, required; for the others under «Дополнительно» with the kind's
+  address as placeholder) and «Прокси»; «Проверить и продолжить». Step 2 «Модели <name>»: a
+  success message with the number offered, the search, a checklist (at most 50 rows, «И ещё N —
+  уточните поиск»; already added ones checked and disabled), «Добавить модель вручную» (an id
+  field + «Добавить»; open at once when the provider lists none), footer «Назад» · «Сохранить · N
+  моделей». A saved connection opens at step 1 without the kind grid («Сохранить»; a blank key
+  keeps it, «Удалить ключ» for OpenAI-compatible) or at step 2 from «Добавить модель».
 - **«Данные»:** «Резервные копии» (the last copy first, «Все N копий», «Создать сейчас», per-copy
   download button and «⋮» with restore / delete / «Отправить в Google Диск»), «Google Диск»,
   «Опасные действия» (restore from a copy and «Очистить портал»; both ask the password in a dialog).

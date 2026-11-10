@@ -247,6 +247,14 @@ export const ru = {
       'ai.prompt-title-invalid': 'Название промта — от 1 до 100 символов',
       'ai.prompt-text-invalid': 'Текст промта — от 1 до 4000 символов',
       'ai.system-prompt-invalid': 'Системный промт — от 1 до 10 000 символов',
+      'ai.provider.holds-default':
+        'В этом подключении модель по умолчанию: сначала сделайте основной другую модель',
+      'ai.provider.key-required': 'Для этого провайдера нужен API-ключ',
+      'ai.provider.address-required': 'Укажите адрес API своего сервера',
+      'ai.provider.not-found': 'Подключение не найдено — возможно, его уже удалили',
+      'ai.provider.unavailable': 'Провайдер не ответил. Проверьте ключ, адрес и прокси',
+      'ai.model.duplicate': 'Эта модель уже есть в подключении',
+      'ai.model.not-found': 'Модель не найдена — возможно, её уже удалили',
       // schedule
       'schedule.student-not-found': 'Ученик не найден или отключён',
       'schedule.lesson-not-found': 'Занятие не найдено',

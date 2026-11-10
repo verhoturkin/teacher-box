@@ -145,7 +145,14 @@ limit, versioned), `/api/admin/ai/**` (status, usage, requests — metadata; `pr
 
 ## Frontend
 
-`features/ai/`: `homework-ai-panel.ts` (the editor's assistant bar over the text: request, «Промты» menu — search, «Сохранить запрос как промт», link to the library; «Опереться на» popover; draft with «Заменить» / «Вставить в конец» / «Отбросить», «Ещё раз»), `ai-settings-panel.ts` = the settings category «ИИ-помощник» (`/teacher/settings/ai`, `/teacher/ai` redirects; usage, the request log with «Показать ещё») with `prompt-library-card.ts` (`#prompt-library`, the menu's link) and
+`features/ai/`: `homework-ai-panel.ts` (the editor's assistant bar over the text: request, «Промты»
+menu — search, «Сохранить запрос как промт», link to the library; «Опереться на» popover; draft with
+«Заменить» / «Вставить в конец» / «Отбросить», «Ещё раз»), `ai-settings-panel.ts` = the settings
+category «ИИ-помощник» (`/teacher/settings/ai`, `/teacher/ai` redirects; usage split by model with
+the monthly limit, the request log with «Показать ещё»; `ai-setup.ts` holds the connections and
+`/settings` the cards share, `ai-connections-card.ts` — connections with nested models and the
+default radio, `ai-provider-dialog.ts` — the two-step connection dialog, `ai-model-dialog.ts` — a
+model's change; 364.4) with `prompt-library-card.ts` (`#prompt-library`, the menu's link) and
 `system-prompts-card.ts` (both system prompts, «Изменён», a dialog with «Вернуть стандартный»); embedded via `parts.ts`.
 
 The assignment editor uses a main authoring pane and an AI supporting pane (0.29.0 variant 1).
