@@ -96,14 +96,14 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
 
 ### Stage 369 — screen docs describe decisions, not markup
 
-- [ ] 369.1 `docs/screens.md` (85 KB) becomes an index plus `docs/screens/<area>.md` (frame,
+- [x] 369.1 `docs/screens.md` (85 KB) becomes an index plus `docs/screens/<area>.md` (frame,
   notifications, today, schedule, students, homework, payments, materials, settings, cabinet,
   admin, call). Each screen keeps: route and files, what it is assembled from and why, transitions
   and states that are not obvious from the template, the sketch board it follows. Removed: button
   labels, icon names, sizes and colours the template, the dictionaries or `design-system.md`
   already hold, stage numbers and notes on what was removed. Target: at most 35 KB in total.
   `AGENTS.md` §2 and `frontend/AGENTS.md` keep pointing at `docs/screens.md`.
-- [ ] 369.2 `docs/wiki/Features.md` against the Russian help articles: where both explain the same
+- [x] 369.2 `docs/wiki/Features.md` against the Russian help articles: where both explain the same
   action, the wiki keeps the overview and links the in-app help; no duplicated step lists.
 
 ### Stage 370 — frontend feature directions (F, ADR-0058)
