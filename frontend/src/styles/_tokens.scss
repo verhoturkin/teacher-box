@@ -1,0 +1,216 @@
+/*
+ * Design tokens (ADR-0015, ADR-0017 Material Design 3, ADR-0019 Material 3 Expressive): spacing on
+ * a 4 px grid (--tb-space-N = N x 4 px), the M3 type scale, shape, elevation, state layers and
+ * motion (springs), the width of the content, the height of the bars. They are the one source: the
+ * PrimeNG preset (core/theme) refers to them by var(). Colors are the roles of the preset
+ * (--p-md-*), so that components and PrimeNG widgets match.
+ */
+:root {
+  --tb-space-1: 0.25rem;
+  --tb-space-2: 0.5rem;
+  --tb-space-3: 0.75rem;
+  --tb-space-4: 1rem;
+  --tb-space-5: 1.25rem;
+  --tb-space-6: 1.5rem;
+  --tb-space-7: 1.75rem;
+  --tb-space-8: 2rem;
+  --tb-space-16: 4rem;
+  --tb-content-max: 1440px;
+  --tb-content-narrow: 56rem;
+  /* The frame in px: a larger font grows the text, not the bars (ADR-0024). The top bar is the M3 small
+     top app bar (64 dp) on compact and the 80 px top strip over the panes from medium (ours, spec §3.2) */
+  --tb-header-height: 64px;
+
+  @media (width >= 37.5em) {
+    --tb-header-height: 80px;
+  }
+  --tb-bottom-nav-height: 64px;
+
+  /* Icons (ADR-0046): the size with its optical size; 20 in buttons, 18 in chips */
+  --tb-icon-size: 1.5rem;
+  --tb-icon-opsz: 24;
+  --tb-icon-fill: 0;
+  --tb-icon-grade: 0;
+
+  /* Type scale: `font: var(--tb-type-title-l)` */
+  --tb-font:
+    'Google Sans Variable', 'Google Sans', system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue',
+    Arial, sans-serif;
+  --tb-type-display-s: 400 2.25rem/2.75rem var(--tb-font);
+  --tb-type-headline-l: 400 2rem/2.5rem var(--tb-font);
+  --tb-type-headline-s: 400 1.5rem/2rem var(--tb-font);
+  --tb-type-title-l: 400 1.375rem/1.75rem var(--tb-font);
+  --tb-type-title-m: 500 1rem/1.5rem var(--tb-font);
+  --tb-type-title-s: 500 0.875rem/1.25rem var(--tb-font);
+  --tb-type-body-l: 400 1rem/1.5rem var(--tb-font);
+  --tb-type-body-m: 400 0.875rem/1.25rem var(--tb-font);
+  --tb-type-body-s: 400 0.75rem/1rem var(--tb-font);
+  --tb-type-label-l: 500 0.875rem/1.25rem var(--tb-font);
+  --tb-type-label-m: 500 0.75rem/1rem var(--tb-font);
+  --tb-type-label-s: 500 0.6875rem/1rem var(--tb-font);
+  /*
+   * Emphasized roles (M3 Expressive): the same size and line, heavier — display, headline and title large
+   * 500, title medium / small and labels Bold 700 (ADR-0044). They mark the exception: titles of pages, cards
+   * and dialogs, the hero time, the active navigation label
+   */
+  --tb-type-display-s-emphasized: 500 2.25rem/2.75rem var(--tb-font);
+  --tb-type-headline-l-emphasized: 500 2rem/2.5rem var(--tb-font);
+  --tb-type-headline-m-emphasized: 500 1.75rem/2.25rem var(--tb-font);
+  --tb-type-headline-s-emphasized: 500 1.5rem/2rem var(--tb-font);
+  --tb-type-title-l-emphasized: 500 1.375rem/1.75rem var(--tb-font);
+  --tb-type-title-m-emphasized: 700 1rem/1.5rem var(--tb-font);
+  --tb-type-title-s-emphasized: 700 0.875rem/1.25rem var(--tb-font);
+  --tb-type-label-l-emphasized: 700 0.875rem/1.25rem var(--tb-font);
+  --tb-type-label-m-emphasized: 700 0.75rem/1rem var(--tb-font);
+  --tb-type-label-s-emphasized: 700 0.6875rem/1rem var(--tb-font);
+  /*
+   * The tracking of the roles of M3 (the `font` shorthand has none): use it next to `font`; display,
+   * headline and title large have none, the emphasized roles keep the tracking of their baseline
+   */
+  --tb-tracking-body-l: 0.03125rem;
+  --tb-tracking-body-m: 0.015625rem;
+  --tb-tracking-body-s: 0.025rem;
+  --tb-tracking-label-m: 0.03125rem;
+  --tb-tracking-label-s: 0.03125rem;
+  --tb-tracking-title-m: 0.009375rem;
+  --tb-tracking-title-s: 0.00625rem;
+  --tb-tracking-label-l: 0.00625rem;
+  --tb-font-mono:
+    ui-monospace, 'Roboto Mono', 'Cascadia Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  /* Shape scale */
+  --tb-shape-xs: 4px;
+  --tb-shape-sm: 8px;
+  --tb-shape-md: 12px;
+  --tb-shape-lg: 16px;
+  --tb-shape-lg-plus: 20px;
+  --tb-shape-xl: 28px;
+  --tb-shape-xl-plus: 32px;
+  --tb-shape-2xl: 48px;
+  --tb-shape-full: 999px;
+  /* A 40 px button: half its height, so that pressing it can morph the corners (Expressive) */
+  --tb-shape-button: 1.25rem;
+
+  /* Cards, dialogs, dropdowns (§2 Surfaces) — the preset's content background as a role */
+  --tb-card: var(--p-md-surface-container-lowest);
+  /* Portal decision: one stronger tonal step against a surface pane, without changing text contrast. */
+  --tb-list-item: var(--p-md-surface-container);
+  /* M3 list: the group CornerLarge, the items CornerExtraSmall; a container nests it smaller (201.1) */
+  --tb-list-outer: var(--tb-shape-lg);
+  --tb-list-inner: var(--tb-shape-xs);
+
+  /* Elevation: surfaces differ by tone; shadows only for floating elements */
+  --tb-elevation-1: 0 1px 2px rgb(0 0 0 / 30%), 0 1px 3px 1px rgb(0 0 0 / 15%);
+  --tb-elevation-2: 0 1px 2px rgb(0 0 0 / 30%), 0 2px 6px 2px rgb(0 0 0 / 15%);
+  --tb-elevation-3: 0 1px 3px rgb(0 0 0 / 30%), 0 4px 8px 3px rgb(0 0 0 / 15%);
+  --tb-elevation-4: 0 2px 3px rgb(0 0 0 / 30%), 0 6px 10px 4px rgb(0 0 0 / 15%);
+
+  /* State layers: the color of the content over the element */
+  --tb-state-hover: 8%;
+  --tb-state-focus: 10%;
+  --tb-state-pressed: 10%;
+  /* disabled: the container 12 %, the content 38 % */
+  --tb-state-disabled: 12%;
+  --tb-state-disabled-content: 38%;
+
+  /*
+   * Springs of M3 Expressive (damping / stiffness): spatial ones overshoot and are for position,
+   * size and shape, effects ones do not and are for color and opacity. Each token is a duration
+   * with the precomputed curve: `transition: border-radius var(--tb-spring-fast-spatial)`.
+   * A curve samples the damped spring until it stays within 0.001 of 1 (32 steps).
+   */
+  /* 0.6 / 800 */
+  /* prettier-ignore */
+  --tb-spring-fast-spatial: 380ms
+    linear(
+      0, 0.049, 0.169, 0.325, 0.492, 0.65, 0.787, 0.899, 0.983, 1.041, 1.075, 1.092, 1.094, 1.087,
+      1.075, 1.059, 1.044, 1.029, 1.017, 1.007, 1, 0.995, 0.992, 0.991, 0.991, 0.992, 0.993,
+      0.995, 0.996, 0.998, 0.999, 1, 1
+    );
+  /* 0.8 / 380 */
+  /* prettier-ignore */
+  --tb-spring-default-spatial: 430ms
+    linear(
+      0, 0.03, 0.104, 0.203, 0.312, 0.423, 0.528, 0.623, 0.707, 0.778, 0.838, 0.886, 0.924, 0.953,
+      0.975, 0.991, 1.001, 1.008, 1.013, 1.015, 1.015, 1.015, 1.013, 1.012, 1.01, 1.009, 1.007,
+      1.006, 1.004, 1.003, 1.002, 1.002, 1
+    );
+  /* 0.8 / 200 */
+  /* prettier-ignore */
+  --tb-spring-slow-spatial: 600ms
+    linear(
+      0, 0.03, 0.106, 0.206, 0.317, 0.428, 0.533, 0.629, 0.713, 0.784, 0.843, 0.89, 0.927, 0.956,
+      0.977, 0.992, 1.003, 1.009, 1.013, 1.015, 1.015, 1.014, 1.013, 1.012, 1.01, 1.008, 1.007,
+      1.005, 1.004, 1.003, 1.002, 1.002, 1
+    );
+  /* Standard scheme 0.9 / 1400 (no bounce): turns that must not overshoot, the split button's chevron */
+  /* prettier-ignore */
+  --tb-spring-standard-fast-spatial: 230ms
+    linear(
+      0, 0.031, 0.105, 0.202, 0.307, 0.411, 0.509, 0.597, 0.675, 0.741, 0.796, 0.842, 0.879, 0.909,
+      0.933, 0.951, 0.965, 0.976, 0.984, 0.99, 0.994, 0.997, 0.999, 1, 1.001, 1.001, 1.001, 1.002,
+      1.001, 1.001, 1.001, 1.001, 1
+    );
+  /*
+   * Critically damped (1 / 3800): the curve of the effects springs. Its shape does not depend on the
+   * stiffness, only its duration does (∝ 1/√stiffness), so all three share it.
+   */
+  /* prettier-ignore */
+  --tb-spring-effects-curve: linear(
+    0, 0.099, 0.286, 0.472, 0.625, 0.742, 0.826, 0.885, 0.924, 0.951, 0.968, 0.98, 0.987, 0.992,
+    0.995, 0.997, 1
+  );
+  /* 1 / 3800 */
+  --tb-spring-fast-effects: 140ms var(--tb-spring-effects-curve);
+  /* 1 / 1600 */
+  --tb-spring-default-effects: 220ms var(--tb-spring-effects-curve);
+  /* 1 / 800 */
+  --tb-spring-slow-effects: 310ms var(--tb-spring-effects-curve);
+}
+
+:root {
+  color-scheme: light;
+  font: var(--tb-type-body-l);
+  -webkit-font-smoothing: antialiased;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* A pressed element shows its own state layer, not the mobile browser's blue fill */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The page is the surface container; cards lie on it (ADR-0017) */
+body {
+  background: var(--p-md-surface-container);
+  color: var(--p-md-on-surface);
+  letter-spacing: var(--tb-tracking-body-l);
+}
+
+/* A phone (the sketches): a page of panes lies right on the window, so the window and the top bar take the surface
+   tone and the pane is not a card on a darker background (ours: the bottom bar keeps the container tone) */
+@media (width < 37.5em) {
+  body:has(tb-panes) {
+    background: var(--p-md-surface);
+  }
+
+  body:has(tb-panes) .tb-shell__header.tb-shell__header {
+    background: var(--p-md-surface);
+  }
+}
+
+/* The roles of the type that PrimeNG sets by size and weight only (no line height): ADR-0019 */
+.p-card-title {
+  font: var(--tb-type-title-l-emphasized);
+}
+
+/* The modal side sheet is `surface container low`: its rows are one tone darker to show (light theme;
+   the dark theme's rows are already `container high`) */
+:root:not(.tb-dark) .tb-side-sheet {
+  --tb-list-item: var(--p-md-surface-container);
+}

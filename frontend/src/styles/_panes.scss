@@ -1,0 +1,502 @@
+/*
+ * Key figures of a section (Today: the month, the week): one tonal block, a grid of two columns, each figure an
+ * overline (Label Small, upper case) over the figure in Headline Small; a wide figure takes both columns.
+ * Ours: the block is `surface-container-low` with the 16 px corner of a list group.
+ */
+.tb-figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--tb-space-4) var(--tb-space-4);
+  margin: 0;
+  padding: var(--tb-space-4);
+  border-radius: var(--tb-shape-lg);
+  background: var(--tb-list-item);
+}
+
+.tb-figure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-1);
+  min-width: 0;
+  margin: 0;
+}
+
+.tb-figure--wide {
+  grid-column: 1 / -1;
+}
+
+.tb-figure__label {
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-label-s);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tb-figure__value {
+  margin: 0;
+  font: var(--tb-type-headline-s);
+}
+
+/* The student filter of the payments journal sits among the chips: a chip's height and corner (ours) */
+.p-select.tb-ops__student {
+  min-width: 9rem;
+  height: 2rem;
+  border-color: var(--p-md-outline-variant);
+  border-radius: var(--tb-shape-sm);
+  background: transparent;
+
+  .p-select-label {
+    padding-block: 0;
+    align-self: center;
+    font: var(--tb-type-label-l);
+  }
+}
+
+/*
+ * Scrollbars inside rounded shapes (panes, dialogs, sheets): the scrolling area lies inside its
+ * clipped, rounded container, the scrollbar is thin, its track stays 16 px away from the corners and the thumb is
+ * a rounded outline-variant bar. Ours (M3 does not publish scrollbars). Firefox has no track margin: it
+ * gets the thin standard bar, which the clipped corner already hides.
+ */
+/* The pane header owns the fixed gap before scrolling content. Trim the projected heading's
+ * trailing margin so it does not duplicate that gap (also for a title/search/filter wrapper).
+ */
+.tb-pane__header > :last-child,
+.tb-pane__header > [tbPaneHeader]:last-child > :last-child {
+  margin-block-end: 0;
+}
+
+.tb-pane__scroll,
+.tb-notifications-scroll,
+.tb-roster__scroll,
+.tb-search__panel,
+.p-dialog-content,
+.p-drawer-content,
+.p-select-list-container,
+.p-multiselect-list-container,
+.p-autocomplete-list-container,
+.p-treeselect-tree-container,
+.p-menu,
+textarea.p-textarea {
+  &::-webkit-scrollbar {
+    width: 0.75rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    margin-block: var(--tb-space-4);
+    background: transparent;
+  }
+
+  /* the corner (and a textarea's resize handle) shows the surface, not the browser's white */
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: var(--tb-shape-full);
+    background: var(--p-md-outline-variant) padding-box;
+
+    &:hover {
+      background: var(--p-md-outline) padding-box;
+    }
+  }
+}
+
+/* the resize handle of a textarea: two diagonal strokes in outline, on the surface of the field */
+textarea.p-textarea::-webkit-resizer {
+  background: linear-gradient(
+    135deg,
+    transparent 0 55%,
+    var(--p-md-outline) 55% 65%,
+    transparent 65% 77%,
+    var(--p-md-outline) 77% 87%,
+    transparent 87%
+  );
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .tb-pane__scroll,
+  .tb-notifications-scroll,
+  .tb-roster__scroll,
+  .tb-search__panel,
+  .p-dialog-content,
+  .p-drawer-content,
+  .p-select-list-container,
+  .p-multiselect-list-container,
+  .p-autocomplete-list-container,
+  .p-treeselect-tree-container,
+  .p-menu,
+  textarea.p-textarea {
+    scrollbar-color: var(--p-md-outline-variant) transparent;
+    scrollbar-width: thin;
+  }
+}
+
+/*
+ * No wrapping card inside a pane (redesign sketches, ADR-0048): the title of a section stands right on the
+ * pane's surface (Title Medium emphasized) and tonal rows or blocks lie under it. The filled hero card of the
+ * Today page (`tb-hero`) is the one container left. A list on the pane keeps the 16 px outer corner of the M3
+ * list (M3: the corner of a group on the page); ours: a 12 px gap between the title and its content.
+ */
+tb-pane .p-card:not(.tb-hero, .tb-section-card),
+.tb-notifications-pane .p-card,
+.tb-side-sheet .p-card {
+  background: transparent;
+  border-radius: 0;
+  color: inherit;
+
+  /* the body sets the nested corner of a card (20 − 20 = 4 px): without the card the list keeps the large corner */
+  > .p-card-body {
+    --tb-list-outer: var(--tb-shape-lg);
+    gap: var(--tb-space-3);
+    padding: 0;
+  }
+
+  /* separate lists or blocks of one section keep 8 px between them (they are groups of their own) */
+  > .p-card-body > .p-card-content {
+    display: grid;
+    gap: var(--tb-space-2);
+  }
+
+  .p-card-title {
+    font: var(--tb-type-title-m-emphasized);
+  }
+}
+
+/*
+ * A section card of a form on a pane (the assignment editor, sketch Elements): an M3 outlined card —
+ * `surface-container-lowest`, 1 dp outline-variant, 20 dp corners (M3 large-increased), 20 dp inside,
+ * 12 px between the title (Title Medium emphasized) and the content. Ours: the cards stand 16 px apart.
+ */
+.p-card.tb-section-card {
+  border: 1px solid var(--p-md-outline-variant);
+  border-radius: var(--tb-shape-lg-plus);
+  background: var(--p-md-surface-container-lowest);
+  color: var(--p-md-on-surface);
+  box-shadow: none;
+
+  > .p-card-body {
+    gap: var(--tb-space-3);
+    padding: var(--tb-space-5);
+  }
+
+  .p-card-title {
+    font: var(--tb-type-title-m-emphasized);
+  }
+}
+
+/*
+ * The phone bottom action bar (sketch Elements «Панель действий телефона»): sticks to the bottom of the
+ * page, `surface-container-low` (M3 bottom sheet surface), 28 dp top corners, 12 / 16 px inside; the
+ * buttons are the usual 40 dp ones.
+ */
+.tb-bottom-actions {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1;
+  display: flex;
+  gap: var(--tb-space-2);
+  align-items: center;
+  padding: var(--tb-space-3) var(--tb-space-4);
+  border-radius: var(--tb-shape-xl) var(--tb-shape-xl) 0 0;
+  background: var(--p-md-surface-container-low);
+
+  > .p-button:only-child {
+    flex: 1;
+  }
+}
+
+/* above the navigation bar, which stays fixed at the window's bottom */
+.tb-shell__content--nav .tb-bottom-actions {
+  inset-block-end: calc(var(--tb-bottom-nav-height) + env(safe-area-inset-bottom));
+}
+
+/*
+ * An AI action that is not the surface's primary one («С ИИ», «Составить с ИИ»; sketches 28, 30): a tonal
+ * button in the tertiary container (M3: tertiary is the contrasting accent; design-system §11).
+ */
+.p-button.tb-button-ai {
+  border-color: var(--p-md-tertiary-container);
+  background: var(--p-md-tertiary-container);
+  color: var(--p-md-on-tertiary-container);
+
+  &:not(:disabled):hover {
+    border-color: var(--p-md-tertiary-container);
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-tertiary-container) 8%,
+      var(--p-md-tertiary-container)
+    );
+    color: var(--p-md-on-tertiary-container);
+  }
+}
+
+/*
+ * The filled tertiary button: the action of a tertiary note («Создать копию для правок», sketch 30) —
+ * `on-tertiary-container` with `tertiary-container` text, as the filled AI actions (design-system §11).
+ */
+.p-button.tb-button-tertiary {
+  border-color: var(--p-md-on-tertiary-container);
+  background: var(--p-md-on-tertiary-container);
+  color: var(--p-md-tertiary-container);
+
+  &:not(:disabled):hover {
+    border-color: var(--p-md-on-tertiary-container);
+    background: color-mix(
+      in srgb,
+      var(--p-md-tertiary-container) 8%,
+      var(--p-md-on-tertiary-container)
+    );
+    color: var(--p-md-tertiary-container);
+  }
+}
+
+/*
+ * A settings section card (`tb-section-card--flow`, the settings sketches Main…Messengers): every block of
+ * the card — text, label, list, field, buttons — stands 12 px apart, as in the sketch's card; the blocks
+ * bring no margins of their own. Ours: the homework cards keep their own spacing.
+ */
+.p-card.tb-section-card.tb-section-card--flow > .p-card-body > .p-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-3);
+
+  > * {
+    margin: 0;
+  }
+
+  /* a field with its hint and a lone button keep their own width */
+  > p-button {
+    align-self: flex-start;
+  }
+
+  /* the blocks of a loaded section stand 12 px apart as well */
+  > tb-load-state {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tb-space-3);
+  }
+}
+
+/*
+ * A panel that lives inside a section card and has several blocks of its own (tiles, then an alert):
+ * its host takes the card's 12 px gap, so the blocks do not touch (`host: { class: 'tb-flow' }`).
+ */
+.tb-flow,
+.tb-flow > tb-load-state {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-3);
+}
+
+/*
+ * Compact (sketches StudentPhone, PhoneMessengers): the settings sections lie on the pane without a card,
+ * the section's title reads as the label of its block.
+ */
+@media (width < 37.5em) {
+  .p-card.tb-section-card.tb-section-card--flow {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+
+    > .p-card-body {
+      padding: 0;
+    }
+
+    .p-card-title {
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-label-m-emphasized);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+  }
+}
+
+/*
+ * An alert in a dialog stands 16 px from the field or text above and below it (ours: the dialog
+ * content has no gap of its own); the first and the last child keep the dialog's own padding.
+ */
+.tb-d__content > p-message {
+  display: block;
+  margin-block: var(--tb-space-4);
+
+  &:first-child {
+    margin-block-start: 0;
+  }
+
+  &:last-child {
+    margin-block-end: 0;
+  }
+}
+
+/* A label over a block of a section card («Куда присылать», «Тема»): M3 label medium, upper case (ours) */
+.tb-section-label {
+  margin: var(--tb-space-1) 0 0;
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-label-m-emphasized);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* The filled variant of the section card («Итого», sketch 28): M3 filled card, surface-container-low */
+.p-card.tb-section-card.tb-section-card--filled {
+  border-color: transparent;
+  background: var(--p-md-surface-container-low);
+}
+
+/*
+ * A drag handle of a row that reorders (the quiz outline, options; ours — M3 has no handle component):
+ * a 40 dp icon button with `drag_indicator`; the arrow keys move the row too, so it is a button.
+ */
+.tb-drag-handle {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border: 0;
+  border-radius: var(--tb-shape-full);
+  background: transparent;
+  color: var(--p-md-on-surface-variant);
+  cursor: grab;
+
+  &:hover {
+    background: color-mix(in srgb, currentcolor 8%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--p-md-primary);
+    outline-offset: -2px;
+  }
+
+  .tb-i {
+    font-size: 1.25rem;
+  }
+}
+
+/*
+ * The points stepper (sketch 28, board 33; ours — M3 publishes no stepper): «− N +» in one 40 dp pill with a
+ * 1 dp outline, 40 dp icon buttons; the field is a spinbutton, so the arrow keys change it.
+ */
+/* `.p-dialog.tb-d--full .p-inputnumber` stretches fields: the stepper keeps its size */
+.p-inputnumber.tb-stepper,
+.p-dialog.tb-d.tb-d--full .p-inputnumber.tb-stepper {
+  display: inline-flex;
+  flex: none;
+  inline-size: auto;
+  block-size: 2.5rem;
+  border: 1px solid var(--p-md-outline);
+  border-radius: var(--tb-shape-full);
+  overflow: hidden;
+
+  .p-inputnumber-input {
+    flex: none;
+    inline-size: 3rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .p-inputnumber-button {
+    inline-size: 2.5rem;
+    border: 0;
+    background: transparent;
+    color: var(--p-md-on-surface-variant);
+  }
+}
+
+/* A menu item with supporting text (the question types; M3 Expressive vertical menu: supporting text) */
+.p-menu .tb-type-item {
+  align-items: flex-start;
+  gap: var(--tb-space-3);
+
+  .tb-i {
+    color: var(--p-md-primary);
+  }
+}
+
+.tb-type-item__text {
+  display: grid;
+
+  small {
+    font: var(--tb-type-body-s);
+    color: var(--p-md-on-surface-variant);
+  }
+}
+
+.p-dialog .p-dialog-title {
+  font: var(--tb-type-headline-s-emphasized);
+}
+
+.p-drawer .p-drawer-title {
+  font: var(--tb-type-title-l-emphasized);
+}
+
+.p-tooltip .p-tooltip-text {
+  font: var(--tb-type-body-s);
+  letter-spacing: var(--tb-tracking-body-s);
+}
+
+.p-menu .p-menu-item-label,
+.p-select-overlay .p-select-option,
+.p-multiselect-overlay .p-multiselect-option {
+  font: var(--tb-type-label-l);
+  letter-spacing: var(--tb-tracking-label-l);
+}
+
+/* The weekdays of the date picker are Body Large, not bold */
+.p-datepicker .p-datepicker-weekday {
+  font: var(--tb-type-body-l);
+}
+
+small,
+.tb-hint {
+  font: var(--tb-type-body-s);
+  letter-spacing: var(--tb-tracking-body-s);
+}
+
+:root.tb-dark {
+  color-scheme: dark;
+  /* light glyphs on a dark surface look bolder: grade −25 thins icons only (the text stays at grade 0) */
+  --tb-icon-grade: -25;
+  --tb-card: var(--p-md-surface-container);
+  --tb-list-item: var(--p-md-surface-container-high);
+
+  body {
+    background: var(--p-md-surface);
+  }
+}
+
+/* Fields: Body Large with its line height, 56 px high (ADR-0022; PrimeNG's styles come later) */
+input.p-inputtext,
+/* A text field grows only downwards: dragging its corner never takes it out of the card */
+textarea.p-textarea {
+  max-width: 100%;
+  line-height: 1.5rem;
+  resize: vertical;
+}
+
+/* Buttons: Label Large (M3), 40 px high */
+.p-button {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  letter-spacing: 0.00625rem;
+}
+
+/* Less motion when the system asks for it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

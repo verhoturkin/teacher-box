@@ -1,0 +1,425 @@
+@use 'sass:list';
+@use 'mixins' as *;
+
+/*
+ * M3 filled text field (ADR-0022, ADR-0050): the only field style of the portal. Every control of a
+ * `.tb-field` — `input`, `textarea`, `p-select`, `p-multiselect`, `p-datepicker`, `p-inputnumber`,
+ * `p-password`, `p-autocomplete` — is a surface container highest with the top corners of 4 dp, 56 dp
+ * high; the label lies inside (Body Large while the field is empty and unfocused, Body Small 8 dp
+ * from the top otherwise), the 1 dp active indicator at the bottom (2 dp in primary in focus) is an
+ * inset shadow, so nothing shifts. The supporting text is 4 dp below. A control in a `tb-copy-row` /
+ * `tb-inline` row with its buttons works the same way. Geometry and roles:
+ * m3.material.io/components/text-fields/specs. Our decisions (not in M3): the indicator is
+ * on-surface (on-surface-variant is too weak on a dialog), a composite control has no error icon
+ * (its arrow is the trailing icon), a field with a header of its own (`tb-field__header`) keeps the
+ * label above it.
+ */
+$field-native: 'input.p-inputtext', 'textarea.p-textarea';
+$field-hosts:
+  'p-select.p-select', 'p-multiselect.p-multiselect', 'p-datepicker.p-datepicker',
+  'p-inputnumber.p-inputnumber', 'p-password.p-password', 'p-autocomplete.p-autocomplete';
+$field-controls: list.join($field-native, $field-hosts, comma);
+$field-prime:
+  inputtext, textarea, select, multiselect, datepicker, inputnumber, password, autocomplete;
+$field-state-active: ':is(:focus-within, :has(.p-focus, .p-inputwrapper-focus))';
+$field-state-filled: ':is(.p-filled, .p-inputwrapper-filled, .p-select-label:not(.p-placeholder, .p-select-label-empty), .p-multiselect-label:not(.p-placeholder, .p-multiselect-label-empty))';
+$field-state-off: ':is(:disabled, .p-disabled)';
+$field-state-wrong: ":is([aria-invalid='true'], .p-invalid)";
+
+/* the controls of a field, alone or in a row with buttons, relative to the field (for :has) */
+@function field-rel($tail: '', $list: $field-controls) {
+  $out: ();
+  @each $head in ('> ', '> :is(.tb-copy-row, .tb-inline) > ', '> tb-member-picker > ') {
+    @each $control in $list {
+      $out: list.append($out, '#{$head}#{$control}#{$tail}', comma);
+    }
+  }
+  @return $out;
+}
+
+@function field-abs($tail: '', $list: $field-controls) {
+  $out: ();
+  @each $selector in field-rel($tail, $list) {
+    $out: list.append($out, '.tb-field #{$selector}', comma);
+  }
+  @return $out;
+}
+
+$field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-member-picker)), :has(> label:first-child + :is(.tb-copy-row, .tb-inline) > :first-child:is(input, p-select, p-inputnumber, p-datepicker, p-password)))';
+
+#{$field} {
+  --tb-filled-background: var(--p-md-surface-container-highest);
+  --tb-filled-indicator: var(--p-md-on-surface);
+  --tb-filled-indicator-width: 1px;
+  --tb-filled-shadow: inset 0 calc(-1 * var(--tb-filled-indicator-width)) 0
+    var(--tb-filled-indicator);
+  display: grid;
+  grid-template-areas: 'control' 'support';
+  row-gap: 0;
+  position: relative;
+
+  /* PrimeNG paints its own border and fill: the field paints them (the roles are the same) */
+  @each $component in $field-prime {
+    --p-#{$component}-background: var(--tb-filled-background);
+    --p-#{$component}-filled-background: var(--tb-filled-background);
+    --p-#{$component}-filled-hover-background: var(--tb-filled-background);
+    --p-#{$component}-filled-focus-background: var(--tb-filled-background);
+    --p-#{$component}-disabled-background: var(--tb-filled-background);
+    --p-#{$component}-border-color: transparent;
+    --p-#{$component}-hover-border-color: transparent;
+    --p-#{$component}-focus-border-color: transparent;
+    --p-#{$component}-invalid-border-color: transparent;
+    --p-#{$component}-shadow: var(--tb-filled-shadow);
+    --p-#{$component}-focus-ring-color: transparent;
+    --p-#{$component}-focus-ring-shadow: var(--tb-filled-shadow);
+    --p-#{$component}-disabled-color: color-mix(in srgb, var(--p-md-on-surface) 38%, transparent);
+  }
+  /* the date picker of the preset draws one outline around the input and its button */
+  --p-form-field-border-color: transparent;
+  --p-form-field-hover-border-color: transparent;
+  --p-form-field-focus-border-color: transparent;
+
+  > label:first-child {
+    grid-area: control;
+    align-self: start;
+    justify-self: start;
+    position: relative;
+    z-index: 2;
+    box-sizing: border-box;
+    max-width: calc(100% - 2rem);
+    overflow: hidden;
+    margin: var(--tb-space-2) var(--tb-space-4) 0;
+    padding: 0;
+    background: transparent;
+    color: var(--p-md-on-surface-variant);
+    font: var(--tb-type-body-s);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+    transition:
+      margin-top var(--tb-spring-fast-effects),
+      font-size var(--tb-spring-fast-effects),
+      line-height var(--tb-spring-fast-effects),
+      color var(--tb-spring-fast-effects);
+  }
+
+  /* the label of a textarea has the container fill behind it, so scrolled text never runs under it */
+  &:has(> textarea) > label:first-child {
+    overflow: visible;
+    width: calc(100% - 2rem);
+
+    &::before {
+      content: '';
+      position: absolute;
+      z-index: -1;
+      inset: calc(-1 * var(--tb-space-2)) calc(-1 * var(--tb-space-4)) 0;
+      border-radius: var(--tb-shape-xs) var(--tb-shape-xs) 0 0;
+      background: var(--tb-filled-background);
+    }
+  }
+
+  > :is(.tb-copy-row, .tb-inline, tb-member-picker) {
+    grid-area: control;
+  }
+
+  > :is(.tb-hint, small, .tb-field__error) {
+    grid-area: support;
+    margin-top: var(--tb-space-1);
+    padding-inline: var(--tb-space-4);
+  }
+}
+
+/* the native controls: the surface is the element, the label lies in its 24 dp top padding */
+#{field-abs('', $field-native)} {
+  grid-area: control;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 3.5rem;
+  padding: 1.5rem var(--tb-space-4) var(--tb-space-2);
+  border: 0;
+  border-radius: var(--tb-shape-xs) var(--tb-shape-xs) 0 0;
+  outline: none;
+  background: var(--tb-filled-background);
+  box-shadow: var(--tb-filled-shadow);
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-body-l);
+  caret-color: var(--p-md-primary);
+  transition: box-shadow var(--tb-spring-fast-effects);
+}
+
+#{field-abs('', 'input.p-inputtext')} {
+  height: 3.5rem;
+}
+
+/* a field with a header of its own keeps its label above: the control is a plain filled surface */
+.tb-field:has(> .tb-field__header + :is(#{$field-native})) {
+  --tb-filled-background: var(--p-md-surface-container-highest);
+  --tb-filled-indicator: var(--p-md-on-surface);
+  --tb-filled-indicator-width: 1px;
+  --tb-filled-shadow: inset 0 calc(-1 * var(--tb-filled-indicator-width)) 0
+    var(--tb-filled-indicator);
+  &:focus-within {
+    --tb-filled-indicator: var(--p-md-primary);
+    --tb-filled-indicator-width: 2px;
+  }
+  /* PrimeNG's own border, fill and focus ring give way to the field's */
+  @each $component in (inputtext, textarea) {
+    --p-#{$component}-background: var(--tb-filled-background);
+    --p-#{$component}-filled-background: var(--tb-filled-background);
+    --p-#{$component}-filled-hover-background: var(--tb-filled-background);
+    --p-#{$component}-filled-focus-background: var(--tb-filled-background);
+    --p-#{$component}-disabled-background: var(--tb-filled-background);
+    --p-#{$component}-border-color: transparent;
+    --p-#{$component}-hover-border-color: transparent;
+    --p-#{$component}-focus-border-color: transparent;
+    --p-#{$component}-invalid-border-color: transparent;
+    --p-#{$component}-shadow: var(--tb-filled-shadow);
+    --p-#{$component}-focus-ring-color: transparent;
+    --p-#{$component}-focus-ring-shadow: var(--tb-filled-shadow);
+  }
+  > :is(input, textarea) {
+    padding-top: var(--tb-space-4);
+  }
+}
+
+/* the composite controls: the host is the surface, its text parts keep the label's 24 dp */
+#{field-abs('', $field-hosts)} {
+  grid-area: control;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 3.5rem;
+  border: 0;
+  border-radius: var(--tb-shape-xs) var(--tb-shape-xs) 0 0;
+  outline: none;
+  background: var(--tb-filled-background);
+  box-shadow: var(--tb-filled-shadow);
+  color: var(--p-md-on-surface);
+  transition: box-shadow var(--tb-spring-fast-effects);
+}
+
+#{field-abs(' :is(.p-select-label, .p-multiselect-label)', $field-hosts)} {
+  padding: 1.5rem var(--tb-space-4) var(--tb-space-2);
+  font: var(--tb-type-body-l);
+}
+
+#{field-abs(' input', $field-hosts)} {
+  min-width: 0;
+  min-height: 3.5rem;
+  padding: 1.5rem var(--tb-space-4) var(--tb-space-2);
+  border: 0;
+  border-radius: var(--tb-shape-xs) var(--tb-shape-xs) 0 0;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-body-l);
+}
+
+#{field-abs(' :is(.p-select-dropdown, .p-multiselect-dropdown, .p-datepicker-dropdown, .p-autocomplete-dropdown)', $field-hosts)} {
+  border: 0;
+  background: transparent;
+  color: var(--p-md-on-surface-variant);
+}
+
+/* hover: the state layer over the container */
+#{$field}:has(#{field-rel(':hover:not(:disabled, .p-disabled)')}):not(#{$field-state-active}) {
+  --tb-filled-background: color-mix(
+    in srgb,
+    var(--p-md-on-surface) var(--tb-state-hover),
+    var(--p-md-surface-container-highest)
+  );
+}
+
+/* the label lies in the field while it is empty and unfocused, the placeholder waits for the focus */
+#{$field}:not(#{$field-state-active}):not(:has(#{$field-state-filled})) {
+  > label:first-child {
+    margin-top: var(--tb-space-4);
+    font: var(--tb-type-body-l);
+  }
+  &:has(> textarea) > label:first-child::before {
+    background: transparent;
+  }
+  ::placeholder,
+  .p-placeholder {
+    color: transparent;
+  }
+}
+
+/* focus: primary, the indicator is 2 dp */
+#{$field}#{$field-state-active} {
+  --tb-filled-indicator: var(--p-md-primary);
+  --tb-filled-indicator-width: 2px;
+  > label:first-child {
+    color: var(--p-md-primary);
+  }
+}
+
+/* error: the roles of error, the icon at the end of a native control */
+#{$field}:has(#{$field-state-wrong}) {
+  --tb-filled-indicator: var(--p-md-error);
+  > label:first-child {
+    color: var(--p-md-error);
+  }
+  > :is(input, textarea) {
+    caret-color: var(--p-md-error);
+  }
+}
+
+#{$field}:has(> :is(input.p-inputtext, textarea.p-textarea)#{$field-state-wrong}) {
+  > :is(input, textarea) {
+    padding-inline-end: calc(1.5rem + var(--tb-space-3) + var(--tb-space-4));
+  }
+  &::before {
+    @include glyph('tb-i-error');
+    @include icon-font;
+    grid-area: control;
+    align-self: start;
+    justify-self: end;
+    z-index: 2;
+    margin: var(--tb-space-4) var(--tb-space-3) 0 0;
+    color: var(--p-md-error);
+    pointer-events: none;
+  }
+}
+
+/* disabled: the container 4 %, the content and the indicator 38 % */
+#{$field}:has(#{field-rel($field-state-off)}) {
+  --tb-filled-background: color-mix(in srgb, var(--p-md-on-surface) 4%, transparent);
+  --tb-filled-indicator: color-mix(in srgb, var(--p-md-on-surface) 38%, transparent);
+  --tb-filled-indicator-width: 1px;
+  > label:first-child {
+    color: color-mix(in srgb, var(--p-md-on-surface) 38%, transparent);
+  }
+  #{field-rel($field-state-off)} {
+    opacity: 1;
+    color: color-mix(in srgb, var(--p-md-on-surface) 38%, transparent);
+  }
+}
+
+/*
+ * The error of a field (M3 supporting text, ADR-0024): Body Small in the error color under the
+ * field; it takes the place of the hint. A required field has «*» after its label.
+ */
+.tb-field__error {
+  color: var(--p-md-error);
+  font: var(--tb-type-body-s);
+}
+
+.tb-field:has(> .tb-field__error) > :is(.tb-hint, small:not(.tb-field__error)) {
+  display: none;
+}
+
+.tb-field--required > label:first-child::after {
+  content: ' *';
+}
+
+/*
+ * M3 Expressive search bar (ADR-0022): a search field is a filled pill without an outline, the
+ * magnifier at its start, «×» at its end while there is text (`tb-search-field`); no ring in focus.
+ */
+.p-iconfield:has(> .tb-i-search, > .p-inputicon.tb-i-search) > .p-inputtext {
+  border-color: transparent;
+  border-radius: var(--tb-shape-full);
+  background: var(--p-md-surface-container-high);
+  /* 4 + 48 + 4: the magnifier is centred in the round start, the text after it (M3 docked search) */
+  padding-inline-start: 3.5rem;
+
+  &:enabled:hover {
+    border-color: transparent;
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface) var(--tb-state-hover),
+      var(--p-md-surface-container-high)
+    );
+  }
+
+  /* M3 search bar: no outline in focus either — the caret and the focus state layer show it */
+  &:enabled:focus {
+    border-color: transparent;
+    outline: none;
+    box-shadow: none;
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface) var(--tb-state-focus),
+      var(--p-md-surface-container-high)
+    );
+  }
+}
+
+.p-iconfield:has(> .tb-i-search, > .p-inputicon.tb-i-search) > .p-inputicon {
+  inset-inline-start: 1.25rem;
+  /*
+   * PrimeNG centres the icon for its 16 px size (`margin-top: -8px`); our magnifier is 24 px
+   * (--tb-icon-size, ADR-0046), so with the stock margin it sits 4 px low — centre by its own
+   * height instead, like the «×» button of `tb-search-field` does.
+   */
+  margin-top: 0;
+  transform: translateY(-50%);
+}
+
+/* The same 4 px in dropdown filters: PrimeNG's `search` SVG is masked to our 24 px (Icons, §1) */
+.p-iconfield > .p-inputicon:has(> svg[data-p-icon='search']) {
+  margin-top: 0;
+  transform: translateY(-50%);
+}
+
+/*
+ * A dropdown list is never wider than the screen (ADR-0022): a long name breaks between words
+ * instead of widening the list and the page on a phone.
+ */
+.p-select-overlay,
+.p-multiselect-overlay,
+.p-autocomplete-overlay {
+  max-width: calc(100vw - 2rem);
+}
+
+.p-select-option,
+.p-multiselect-option,
+.p-autocomplete-option {
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+/*
+ * The items of a dropdown list are shaped like menu items (ADR-0022): 4 px, the first and the last 12 px on
+ * the outer side, the selected one 12 px. Here, not in the preset: the list's own style comes later.
+ */
+.p-select-list > :first-child > .p-select-option,
+.p-multiselect-list > :first-child > .p-multiselect-option {
+  border-start-start-radius: var(--tb-shape-md);
+  border-start-end-radius: var(--tb-shape-md);
+}
+
+.p-select-list > :last-child > .p-select-option,
+.p-multiselect-list > :last-child > .p-multiselect-option {
+  border-end-start-radius: var(--tb-shape-md);
+  border-end-end-radius: var(--tb-shape-md);
+}
+
+.p-select-overlay .p-select-option.p-select-option-selected,
+.p-multiselect-overlay .p-multiselect-option.p-multiselect-option-selected {
+  border-radius: var(--tb-shape-md);
+}
+
+/* The filter of a dropdown list is the search bar too, a size smaller (48 px) */
+.p-select-overlay .p-select-filter,
+.p-multiselect-overlay .p-multiselect-filter {
+  padding-block: var(--tb-space-3);
+  border-color: transparent;
+  border-radius: var(--tb-shape-full);
+  background: var(--p-md-surface-container-high);
+
+  /* M3 search bar: no outline in focus either — the caret and the focus state layer show it */
+  &:enabled:focus {
+    border-color: transparent;
+    outline: none;
+    box-shadow: none;
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface) var(--tb-state-focus),
+      var(--p-md-surface-container-high)
+    );
+  }
+}

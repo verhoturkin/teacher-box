@@ -1,0 +1,331 @@
+/*
+ * Key figures: one card under another, 2 px apart, like the tiles of a list (ADR-0020, ADR-0021) —
+ * the name on the left, the figure on the right, its details under them.
+ */
+.tb-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--tb-space-4);
+
+  .p-card {
+    border-radius: var(--tb-list-inner);
+  }
+
+  > :first-child:is(.p-card),
+  > :first-child .p-card {
+    border-start-start-radius: var(--tb-list-outer);
+    border-start-end-radius: var(--tb-list-outer);
+  }
+
+  > :last-child:is(.p-card),
+  > :last-child .p-card {
+    border-end-start-radius: var(--tb-list-outer);
+    border-end-end-radius: var(--tb-list-outer);
+  }
+
+  .p-card-body {
+    padding-block: var(--tb-space-4);
+  }
+
+  .tb-stat {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--tb-space-4);
+
+    > :first-child {
+      font: var(--tb-type-body-l);
+    }
+
+    > :not(:first-child, .tb-stat__value, .tb-copy-row) {
+      grid-column: 1 / -1;
+    }
+
+    > .tb-copy-row {
+      grid-column: 2;
+      justify-content: flex-end;
+    }
+  }
+
+  .tb-stat__value {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--tb-space-1);
+    text-align: right;
+  }
+}
+
+.tb-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-1);
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-label-l);
+
+  /* the details of a figure: Body Small, not the Label Large the browser would shrink */
+  small {
+    font: var(--tb-type-body-s);
+  }
+}
+
+.tb-stat__value {
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-headline-s);
+}
+
+/* A status tag keeps its text on one line (ADR-0018) */
+.p-tag {
+  white-space: nowrap;
+}
+
+/* Money */
+.tb-amount,
+.p-datatable .tb-amount {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* A column title may take two lines on a tablet; the amounts under it stay whole */
+.p-datatable th.tb-amount {
+  white-space: normal;
+}
+
+.tb-negative {
+  color: var(--p-md-error);
+}
+
+.tb-positive {
+  color: var(--p-md-success);
+}
+
+/* Muted data (a voided payment, a cancelled lesson) is on-surface-variant, not transparent (ADR-0023) */
+.tb-inactive td,
+.tb-list > li.tb-inactive :is(.tb-ledger__operation, .tb-ledger__amount) {
+  color: var(--p-md-on-surface-variant);
+  text-decoration: line-through;
+}
+
+.tb-link {
+  color: var(--p-md-primary);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.tb-inline {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-2);
+}
+
+/* «Выдать ещё ученикам»: the students, a group and the button; one under another on a phone */
+.tb-assign {
+  display: flex;
+  margin-top: var(--tb-space-4);
+
+  .p-multiselect {
+    min-width: 16rem;
+  }
+
+  @media (width < 37.5em) {
+    flex-direction: column;
+    align-items: stretch;
+
+    .p-multiselect,
+    .p-select,
+    p-button .p-button {
+      width: 100%;
+      min-width: 0;
+    }
+  }
+}
+
+.tb-subtitle {
+  margin: var(--tb-space-5) 0 var(--tb-space-2);
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-title-m);
+}
+
+.tb-field__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tb-space-4);
+}
+
+.tb-pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.tb-link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--p-md-primary);
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Homework */
+.tb-submission {
+  padding: var(--tb-space-3) 0;
+  border-bottom: 1px solid var(--p-md-outline-variant);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.tb-submission--old {
+  color: var(--p-md-on-surface-variant);
+}
+
+.tb-preview {
+  min-height: 12rem;
+  padding: var(--tb-space-3) var(--tb-space-4);
+  border: 1px solid var(--p-md-outline-variant);
+  border-radius: var(--tb-shape-xs);
+}
+
+.tb-markdown {
+  overflow-wrap: break-word;
+
+  h1,
+  h2 {
+    margin: var(--tb-space-6) 0 var(--tb-space-3);
+    font: var(--tb-type-title-l);
+  }
+
+  h3,
+  h4 {
+    margin: var(--tb-space-5) 0 var(--tb-space-2);
+    font: var(--tb-type-title-m);
+  }
+
+  strong {
+    font-weight: 500;
+  }
+
+  :first-child {
+    margin-top: 0;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  pre {
+    overflow-x: auto;
+    padding: var(--tb-space-3);
+    background: var(--p-md-surface-container);
+    border-radius: var(--tb-shape-sm);
+  }
+}
+
+/*
+ * «Начать урок» across the width of a narrow container (the home hero on a phone): a link or a button
+ * stretches; of a split button the main part takes the width, the arrow keeps its own.
+ */
+@container (max-width: 30rem) {
+  tb-join-lesson-button.tb-join-wide {
+    display: grid;
+
+    > .p-button,
+    > p-button .p-button,
+    .tb-split > p-button:first-child .p-button {
+      width: 100%;
+    }
+
+    .tb-split {
+      display: flex;
+
+      > p-button:first-child {
+        flex: 1;
+      }
+    }
+  }
+}
+
+/* The main card of a page (the nearest lesson): the primary container (M3 filled card) */
+.p-card.tb-hero {
+  background: var(--p-md-primary-container);
+  color: var(--p-md-on-primary-container);
+
+  /* the container is the portal color itself (ADR-0034): only its own text role is readable on it */
+  .tb-muted,
+  .tb-hint,
+  a:not(.p-button, .tb-board-chip),
+  .p-button-text {
+    color: var(--p-md-on-primary-container);
+  }
+
+  /* links, not the buttons and chips that are links («Начать урок» on the phone, boards) */
+  a:not(.p-button, .tb-board-chip) {
+    text-decoration: underline;
+  }
+}
+
+/*
+ * The boards of a lesson as M3 assist chips (`tb-board-links` of the teacher, `tb-my-board-links` of the
+ * student) in the colour of the text around them (on the hero: on-primary-container)
+ */
+.tb-board-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-2);
+}
+
+.tb-board-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  min-height: 2rem;
+  padding-inline: var(--tb-space-3);
+  border-radius: var(--tb-shape-sm);
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  color: inherit;
+  font: var(--tb-type-label-l);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+
+  &:hover {
+    background: color-mix(in srgb, currentColor 20%, transparent);
+  }
+}
+
+.tb-widget-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tb-space-3);
+  margin-top: var(--tb-space-3);
+
+  /* a text button («Скрыть», «Понятно») ends at the edge of the card, like the links of the footers */
+  > p-button:last-child .p-button-text {
+    margin-inline-end: calc(-1 * var(--tb-space-3));
+    padding-inline: var(--tb-space-3);
+  }
+}
+
+.tb-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

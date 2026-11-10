@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { en } from './i18n/en';
-import { ADMIN_ARTICLES as ADMIN_EN } from './articles/admin.en';
-import { STUDENT_ARTICLES as STUDENT_EN } from './articles/student.en';
-import { TEACHER_ARTICLES as TEACHER_EN } from './articles/teacher.en';
-import { ADMIN_ARTICLES } from './articles/admin.ru';
-import { STUDENT_ARTICLES } from './articles/student.ru';
-import { TEACHER_ARTICLES } from './articles/teacher.ru';
+import { ADMIN_ARTICLES as ADMIN_EN } from './articles/admin/en';
+import { STUDENT_ARTICLES as STUDENT_EN } from './articles/student/en';
+import { TEACHER_ARTICLES as TEACHER_EN } from './articles/teacher/en';
+import { ADMIN_ARTICLES } from './articles/admin/ru';
+import { STUDENT_ARTICLES } from './articles/student/ru';
+import { TEACHER_ARTICLES } from './articles/teacher/ru';
 import { HelpLibrary, searchArticles, searchable } from './help-library';
 import { HelpArticleText } from './help.models';
 import { HELP_TITLES, HELP_TOPICS, HelpArea, helpUrl, isHelpArea } from './help-topics';

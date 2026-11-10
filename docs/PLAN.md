@@ -65,19 +65,19 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
 
 ### Stage 367 — smaller files that every interface change touches (F)
 
-- [ ] 367.1 **F** `frontend/src/styles.scss` (5081 lines) becomes an index of `@use` partials in
+- [x] 367.1 **F** `frontend/src/styles.scss` (5081 lines) becomes an index of `@use` partials in
   `frontend/src/styles/` named after the design-system parts (`_tokens`, `_colour`, `_typography`,
   `_frame`, `_buttons`, `_fields`, `_lists`, `_dialogs`, `_states`, …), the cascade order kept.
   Proof: the built CSS of `npm run build` before and after is byte-identical apart from the hash
   in the file name. `docs/design-system.md` «Where it lives» and `core/theme/design-rules.spec.ts`
   follow the new paths.
-- [ ] 367.2 **F** Help articles: `features/help/articles/{teacher,student,admin}.{ru,en}.ts`
+- [x] 367.2 **F** Help articles: `features/help/articles/{teacher,student,admin}.{ru,en}.ts`
   become folders with one file per topic (`articles/teacher/ru/first-steps.ts`, …) and an index
   that keeps `TEACHER_ARTICLES` and the other exports as they are; no source line longer than 200
   characters (long strings split with template literals or array joins, the rendered text
   unchanged — a spec compares every article with its text before the split). `frontend/AGENTS.md`
   and the `release` skill (both copies) name the new paths.
-- [ ] 367.3 **D** `CHANGELOG.md` keeps the releases of the current minor series and the previous
+- [x] 367.3 **D** `CHANGELOG.md` keeps the releases of the current minor series and the previous
   one; older entries move to `docs/archive/changelog/<year>.md`, linked from the bottom. The
   `release` skill (both copies) says where old entries are.
 
