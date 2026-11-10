@@ -50,7 +50,7 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
   .githooks`, `npx -y npm@11 ci` in `frontend/` and `e2e/` when `node_modules` is missing; name it
   in §12 as the cloud environment's setup script. Fix `.codex/hooks.json`: no absolute
   `D:\Prog\…` path.
-- [ ] 366.2 **D** Fewer prompts and no double runs. `.claude/settings.json`: `permissions.allow`
+- [x] 366.2 **D** Fewer prompts and no double runs. `.claude/settings.json`: `permissions.allow`
   for `./mvnw`, `npm run lint|test|test:only|build`, `./scripts/verify.sh`, read-only `git`.
   `scripts/verify.sh` writes `.verify-logs/<part>.ok` with the hash of the tree after a green part
   (`git write-tree` of the index plus the worktree diff); `.githooks/pre-commit` skips a part whose

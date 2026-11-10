@@ -23,18 +23,18 @@ while IFS= read -r file; do
     esac
 done < <(git diff --cached --name-only --diff-filter=ACMRD)
 
-if [ "$docs" = true ]; then
-    "$ROOT/scripts/verify.sh" docs
-fi
-if [ "$backend" = true ]; then
-    "$ROOT/scripts/verify.sh" backend
-fi
-if [ "$frontend" = true ]; then
-    "$ROOT/scripts/verify.sh" frontend
-fi
-if [ "$docker" = true ]; then
-    "$ROOT/scripts/verify.sh" docker
-fi
-if [ "$e2e" = true ]; then
-    "$ROOT/scripts/verify.sh" e2e
-fi
+# A part that already passed on exactly this working tree (stamp from scripts/verify.sh) is not run again;
+# any change, a failed or partly skipped run leaves no matching stamp.
+run_part() {
+    if "$ROOT/scripts/verify.sh" fresh "$1"; then
+        echo "==> $1: already verified on this tree, skipped"
+    else
+        "$ROOT/scripts/verify.sh" "$1"
+    fi
+}
+
+for part in docs backend frontend docker e2e; do
+    if [ "${!part}" = true ]; then
+        run_part "$part"
+    fi
+done
