@@ -63,7 +63,9 @@ under the queue, the lead spans both rows), otherwise 1; an empty stack is hidde
   / «Пропуск» as a standard group, «Отметить» for a group), student requests («Ответить»), works to
   review («Проверить»), debts («Открыть»). A row: a 40 px tonal icon circle (a debt — error
   container), what is to do, «who · detail», the action tonal. The first-run steps («С чего
-  начать», progress, «Скрыть») close the list until done or hidden; nothing to do — a compact empty
+  начать», progress, «Скрыть») close the list until done or hidden: add a student, connect a
+  messenger, connect the AI assistant (`GET /api/teacher/ai/status` → `enabled`), schedule a lesson
+  — the lesson price is asked in the setup wizard, not here, and a finished step is not shown; nothing to do — a compact empty
   state. Compact (*ours*): a row is one line with a chevron; one action runs it, two (an unmarked
   lesson) open a `tb-dialog kind="sheet"` with both.
 - **«Занятия сегодня»**: time (Label Large, tabular figures), who, status tag; the nearest

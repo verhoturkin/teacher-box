@@ -405,9 +405,13 @@ default, so «Далее» on each step is a valid setup. Expanded widths use th
   no Docker daemon). Checked by hand against the real backend (JDK 25) and `ng serve` with
   Playwright at 1440 and 390 px: every step, «Назад» / «Далее» / «Пропустить», «Проверить»,
   then Settings show the chosen zone and price._
-- [ ] **365.2 F** The home queue's «С чего начать» (`home/todo-queue.ts`) drops «Цена занятия»
+- [x] **365.2 F** The home queue's «С чего начать» (`home/todo-queue.ts`) drops «Цена занятия»
   (asked in the wizard) and adds «Подключить ИИ» after «Мессенджер»; finished steps of the wizard
   are not repeated there. Sketch: board 24 `OnbDone` (the same four next steps).
+  _Done: `todo-queue.ts` steps are student → messenger → AI → first lesson (price step and
+  `SetupProgress.priceSet` removed); AI state comes from `AiApi.enabled$`
+  (`/api/teacher/ai/status`), fetched by the queue itself, so no new chunk and the steps stay
+  hidden until it answers; finished steps are filtered out as before._
 - [ ] **365.3** Help `teacher/setup` and `teacher/first-steps` in Russian and English, wiki
   `docs/wiki/Install.md` («первый вход»), `docs/screens.md` (wizard), E2E
   `e2e/tests/setup/first-run.spec.ts` (fresh instance: all steps with defaults, then Settings show

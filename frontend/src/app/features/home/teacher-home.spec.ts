@@ -54,6 +54,7 @@ describe('TeacherHome', () => {
       .expectOne('/api/teacher/notifications/summary')
       .flush(teacherNotificationsSummary({ students: 0, messengerConfigured: false }));
     fixture.detectChanges();
+    backend.expectOne('/api/teacher/ai/status').flush({ enabled: false });
     backend.expectOne('/api/teacher/schedule/unmarked').flush([scheduledLesson()]);
     backend.expectOne('/api/teacher/schedule/requests').flush([]);
     backend.expectOne('/api/teacher/homework/review-queue').flush([reviewQueueItem()]);
@@ -67,7 +68,7 @@ describe('TeacherHome', () => {
     expect(text).toContain('Следующее занятие');
     expect(text).toContain('Степени');
     expect(text).toContain('С чего начать');
-    expect(text).toContain('Сделано 1 из 4');
+    expect(text).toContain('Сделано 0 из 4');
     expect(text).toContain('Иван Петров');
     expect(text).toContain('Нужно сделать');
     expect(text).toContain('Проверьте работу');
@@ -115,6 +116,7 @@ describe('TeacherHome', () => {
     backend.expectOne('/api/teacher/homework/summary').flush(homeworkSummary());
     backend.expectOne('/api/teacher/notifications/summary').flush(teacherNotificationsSummary());
     fixture.detectChanges();
+    backend.expectOne('/api/teacher/ai/status').flush({ enabled: false });
     backend.expectOne('/api/teacher/schedule/unmarked').flush([]);
     backend.expectOne('/api/teacher/schedule/requests').flush([]);
     backend.expectOne('/api/teacher/homework/review-queue').flush([]);
