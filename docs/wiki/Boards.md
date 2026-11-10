@@ -38,7 +38,8 @@
 копией — вернуть можно и его. Доски, их копии и картинки входят в общую резервную копию портала.
 Когда делать ежедневные копии и сколько хранить — `TEACHERBOX_BOARDS_BACKUP_CRON` (по умолчанию в 3:00)
 и `TEACHERBOX_BOARDS_BACKUP_KEEP` (7) в
-[`.env.example`](https://github.com/verhoturkin/teacher-box/blob/main/.env.example).
+[`.env.example`](https://github.com/verhoturkin/teacher-box/blob/main/.env.example); администратор
+меняет их и в «Настройках» → «Доски», без перезапуска портала.
 
 ## «На доску»
 

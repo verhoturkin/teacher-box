@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ИИ в полном редакторе</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.app{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;min-height:960px;display:flex;flex-wrap:wrap;gap:24px;padding:24px 24px 24px 0;box-sizing:border-box}
+.rail{width:96px;flex:0 0 96px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:0}
+.fab{width:56px;height:56px;border-radius:16px;background:#DCE1FF;color:#001550;border:0;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#45464F;text-decoration:none}
+.ni span.pill{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.ni.on span.pill{background:#DEE1F9;color:#171B2C}
+.ni.on{color:#1B1B21}
+.pane{flex:1 1 480px;min-width:0;background:#FBF8FF;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:14px}
+.btn{height:40px;border-radius:20px;border:0;padding:0 16px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap;justify-content:center}
+.filled{background:#4459A9;color:#fff}
+.tonal{background:#DEE1F9;color:#171B2C}
+.ai-btn{background:#390035;color:#fff}
+.textbtn{background:transparent;color:#4459A9;padding:0 12px}
+.iconbtn{width:40px;height:40px;border-radius:20px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.chip{height:32px;border-radius:8px;border:1px solid #C6C5D0;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:0 16px;font:500 14px 'Roboto Flex',sans-serif;color:#45464F;white-space:nowrap}
+.chip.sel{background:#DEE1F9;border-color:#DEE1F9;color:#171B2C;padding-left:8px}
+.label{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F}
+.card{background:#fff;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px;border:1px solid #E3E1E9}
+.qrow{background:#F5F2FA;border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;font-size:14px}
+.qrow.new{background:#FFD7F3;color:#390035}
+.seg{display:flex;border:1px solid #767680;border-radius:20px;overflow:hidden;height:40px}
+.seg button{flex:1;border:0;background:transparent;font:500 14px 'Roboto Flex',sans-serif;color:#1B1B21;display:flex;align-items:center;justify-content:center;gap:6px}
+.seg button+button{border-left:1px solid #767680}
+.seg button.on{background:#DEE1F9;color:#171B2C}
+.src{display:flex;align-items:center;gap:10px;font-size:14px;background:#F5F2FA;border-radius:12px;padding:8px 12px}
+.dq{background:#fff;border:1px solid #E3E1E9;border-radius:16px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start}
+.dq input{width:18px;height:18px;margin-top:2px;accent-color:#4459A9;flex:0 0 18px}
+.key{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:600;background:#C8F0CF;color:#0B3A1A}
+.opt{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:6px;font-size:12px;background:#EFEDF4;color:#45464F}
+.muted{color:#45464F}
+.pick{height:40px;border-radius:8px;border:1px solid #767680;background:transparent;display:inline-flex;align-items:center;gap:6px;padding:0 6px 0 10px;font:500 14px 'Roboto Flex',sans-serif;color:#1B1B21;white-space:nowrap}
+.pick .ic{font-size:18px}
+.pick.open{background:#FFD7F3;border-color:#FFD7F3;color:#390035}
+.mmenu{position:absolute;background:#F5F2FA;border-radius:16px;padding:8px 0;box-shadow:0 2px 6px 2px rgba(0,0,0,.15),0 1px 2px rgba(0,0,0,.3);z-index:3;width:300px}
+.mh{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F;padding:8px 16px 4px}
+.mi{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 16px;font-size:14px}
+.mi.sel{background:#DEE1F9}
+.mi .t{flex:1}.mi small{display:block;font-size:12px;color:#45464F}
+.mi>.ic{font-size:20px;color:#45464F;width:20px}
+.msep{height:1px;background:#C6C5D0;margin:8px 0}
+.mtag{display:inline-flex;align-items:center;height:20px;padding:0 6px;border-radius:6px;font-size:11px;font-weight:600;background:#DCE1FF;color:#001550}
+.mtag.err{background:#FFDAD6;color:#410002}
+.step{display:inline-flex;align-items:center;border:1px solid #767680;border-radius:20px;height:40px}
+.step button{width:40px;height:38px;border:0;background:transparent;color:#45464F;display:flex;align-items:center;justify-content:center}
+.tabs{display:flex;gap:4px;border-bottom:1px solid #C6C5D0}
+.tabs a{height:48px;padding:0 16px;display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:#45464F;text-decoration:none;position:relative}
+.tabs a.on{color:#4459A9}
+.tabs a.on::after{content:'';position:absolute;left:12px;right:12px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:#4459A9}
+</style>
+</helmet>
+<div class="app">
+  <nav class="rail" aria-label="Разделы">
+    <button class="fab" aria-label="Новое задание"><span class="ic">edit</span></button>
+    <a class="ni" href="#"><span class="pill"><span class="ic">home</span></span>Главная</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">calendar_month</span></span>Расписание</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">group</span></span>Ученики</a>
+    <a class="ni on" href="#"><span class="pill"><span class="ic" style="font-variation-settings:'FILL' 1">assignment</span></span>Задания</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">payments</span></span>Оплаты</a>
+  </nav>
+
+  <main class="pane" aria-label="Редактор задания">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <a class="iconbtn" href="Assignment.dc.html" aria-label="Назад: к заданию"><span class="ic">arrow_back</span></a>
+      <h1 style="margin:0;font-size:22px;font-weight:500;flex:1 1 200px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Неправильные глаголы, часть 3</h1>
+      <span class="muted" style="font-size:12px">сохранено · 11:14</span>
+      <div style="display:inline-flex;gap:2px">
+        <button class="btn filled" style="border-radius:20px 4px 4px 20px"><span class="ic" style="font-size:20px">send</span>Выдать</button>
+        <button class="btn filled" style="border-radius:4px 20px 20px 4px;padding:0 10px" aria-label="Другие способы выдать"><span class="ic">arrow_drop_down</span></button>
+      </div>
+    </div>
+
+    <nav class="tabs" aria-label="Части задания">
+      <a href="Editor.dc.html"><span class="ic" style="font-size:20px">description</span>Задание</a>
+      <a href="QuizBuilder.dc.html" class="on" aria-current="page"><span class="ic" style="font-size:20px">quiz</span>Тест · 6 вопросов</a>
+    </nav>
+
+    <div class="card" style="flex-direction:row;align-items:center;gap:12px;flex-wrap:wrap">
+      <span class="ic" style="color:#4459A9">groups</span><span style="font-size:14px">Группа A2 · 6</span>
+      <span class="muted">·</span>
+      <span class="ic" style="color:#4459A9">event</span><span style="font-size:14px">до ср 05.11, 18:00</span>
+      <span style="flex:1"></span>
+      <button class="btn textbtn" style="height:32px">Изменить</button>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center"><b style="flex:1">Задание</b><span class="ic muted">expand_more</span></div>
+      <div class="muted" style="font-size:14px;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Повторите глаголы из таблицы на с. 112 (строки 41–60) и пройдите тест…</div>
+    </div>
+
+    <section class="card" style="flex:1">
+      <div style="display:flex;align-items:center;gap:8px">
+        <b style="flex:1">Вопросы</b><span class="muted" style="font-size:13px">6 + 4 новых · 12 баллов</span>
+      </div>
+      <div class="qrow"><b style="width:20px">1</b><span style="flex:1">Вторая форма глагола <b>bring</b></span><span class="muted" style="font-size:12px">Один ответ</span></div>
+      <div class="qrow"><b style="width:20px">2</b><span style="flex:1">Три формы глагола <b>teach</b></span><span class="muted" style="font-size:12px">Короткий ответ</span></div>
+      <div class="qrow"><b style="width:20px">3</b><span style="flex:1">She has ___ (write) three letters</span><span class="muted" style="font-size:12px">Пропуск</span></div>
+      <div class="muted" style="font-size:13px;padding-left:12px">…вопросы 4–6</div>
+      <div class="qrow new"><b style="width:20px">7</b><span style="flex:1">Третья форма глагола <b>choose</b></span><span style="font-size:12px;font-weight:600">ИИ · новый</span></div>
+      <div class="qrow new"><b style="width:20px">8</b><span style="flex:1">Past Simple от <b>fly</b></span><span style="font-size:12px;font-weight:600">ИИ · новый</span></div>
+      <div class="qrow new"><b style="width:20px">9</b><span style="flex:1">They have ___ (forget) the keys</span><span style="font-size:12px;font-weight:600">ИИ · новый</span></div>
+      <div class="qrow new"><b style="width:20px">10</b><span style="flex:1">Три формы глагола <b>lend</b></span><span style="font-size:12px;font-weight:600">ИИ · новый</span></div>
+      <div style="display:flex;gap:8px;align-items:center;background:#F5F2FA;border-radius:12px;padding:6px 6px 6px 14px;font-size:14px">
+        <span class="ic" style="font-size:20px;color:#3E8E55">check_circle</span><span style="flex:1">Добавлено 4 вопроса</span><button class="btn textbtn" style="height:32px">Отменить</button>
+      </div>
+    </section>
+  </main>
+
+  <aside class="pane" aria-label="Помощник ИИ" style="background:#F5F2FA;position:relative">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="ic" style="color:#390035">auto_awesome</span>
+      <h2 style="margin:0;font-size:20px;font-weight:600;flex:1">ИИ-помощник</h2>
+      <button class="iconbtn" aria-label="История запросов"><span class="ic">history</span></button>
+      <button class="iconbtn" aria-label="Скрыть панель"><span class="ic">right_panel_close</span></button>
+    </div>
+
+    <div class="seg" role="group" aria-label="Что готовить">
+      <button>Текст задания</button>
+      <button class="on"><span class="ic" style="font-size:18px">check</span>Вопросы теста</button>
+    </div>
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">
+      <div><span class="label">Сколько</span>
+        <div class="step" style="margin-top:6px"><button aria-label="Меньше"><span class="ic" style="font-size:20px">remove</span></button><span style="width:28px;text-align:center;font-weight:600">4</span><button aria-label="Больше"><span class="ic" style="font-size:20px">add</span></button></div>
+      </div>
+      <div style="flex:1 1 260px"><span class="label">Типы</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+          <button class="chip sel"><span class="ic" style="font-size:18px">check</span>Один ответ</button>
+          <button class="chip sel"><span class="ic" style="font-size:18px">check</span>Короткий ответ</button>
+          <button class="chip sel"><span class="ic" style="font-size:18px">check</span>Пропуск</button>
+          <button class="chip">Несколько ответов</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <label class="label" for="aip">Пожелания</label>
+      <div id="aip" style="margin-top:6px;background:#FBF8FF;border:1px solid #767680;border-radius:12px;padding:10px 14px;font-size:15px">Только глаголы из строк 41–60, без повторов уже добавленных</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:center;gap:6px"><span class="label" style="flex:1">Учитываю об учениках</span><button class="iconbtn" style="width:32px;height:32px" aria-label="Что это"><span class="ic" style="font-size:18px">info</span></button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="chip input" style="padding:0 4px 0 12px;color:#1B1B21"><span class="ic" style="font-size:18px;color:#4459A9">sell</span>Уровень английского: A2<button class="iconbtn" style="width:24px;height:24px" aria-label="Не учитывать уровень"><span class="ic" style="font-size:18px">close</span></button></span>
+        <span class="chip input" style="padding:0 4px 0 12px;color:#1B1B21;border-color:#B98A00;background:#FFF4D6"><span class="ic" style="font-size:18px;color:#7A5900">sell</span>Класс: 7 · 8<button class="iconbtn" style="width:24px;height:24px" aria-label="Не учитывать класс"><span class="ic" style="font-size:18px">close</span></button></span>
+      </div>
+      <span class="muted" style="font-size:12px;line-height:1.5">Класс у группы разный: у 4 учеников — 7, у 2 — 8. Нажмите на тег, чтобы выбрать одно значение. Если в пожеланиях сказано иначе, ИИ следует пожеланиям.</span>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <span class="src"><span class="ic" style="font-size:20px;color:#4459A9">description</span>Текст задания<span class="ic" style="font-size:18px;color:#3E8E55">check</span></span>
+      <span class="src"><span class="ic" style="font-size:20px;color:#4459A9">menu_book</span>Учебник, с. 112<span class="ic" style="font-size:18px;color:#3E8E55">check</span></span>
+      <span class="src"><span class="ic" style="font-size:20px;color:#4459A9">quiz</span>Уже есть 6 вопросов<span class="ic" style="font-size:18px;color:#3E8E55">check</span></span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:8px;font-size:12px;font-weight:600;background:#FFD7F3;color:#390035">Черновик ИИ</span>
+      <span class="muted" style="font-size:12px;flex:1">готово за 9 с</span>
+      <button class="btn tonal" style="height:36px"><span class="ic" style="font-size:18px">refresh</span>Заново</button>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;flex:1">
+      <label class="dq"><input type="checkbox" checked><div style="flex:1;display:flex;flex-direction:column;gap:6px"><span style="font-size:15px">Третья форма глагола <b>choose</b></span><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="opt">chose</span><span class="key">chosen</span><span class="opt">choosed</span><span class="opt">choose</span></div></div><span class="muted" style="font-size:12px">Один ответ</span></label>
+      <label class="dq"><input type="checkbox" checked><div style="flex:1;display:flex;flex-direction:column;gap:6px"><span style="font-size:15px">Past Simple от <b>fly</b></span><div style="display:flex;gap:6px"><span class="key">flew</span></div></div><span class="muted" style="font-size:12px">Короткий ответ</span></label>
+      <label class="dq"><input type="checkbox" checked><div style="flex:1;display:flex;flex-direction:column;gap:6px"><span style="font-size:15px">They have ___ (forget) the keys</span><div style="display:flex;gap:6px"><span class="key">forgotten</span></div></div><span class="muted" style="font-size:12px">Пропуск</span></label>
+      <label class="dq" style="opacity:1;background:#FBF8FF"><input type="checkbox"><div style="flex:1;display:flex;flex-direction:column;gap:6px"><span style="font-size:15px" class="muted">Вторая форма глагола <b>bring</b></span><span style="font-size:12px;color:#7A5900;display:flex;align-items:center;gap:4px"><span class="ic" style="font-size:16px">content_copy</span>Похож на вопрос 1 — снят</span></div><span class="muted" style="font-size:12px">Один ответ</span></label>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid #C6C5D0;padding-top:12px">
+      <button class="btn filled"><span class="ic" style="font-size:20px">playlist_add</span>Добавить выбранные · 3</button>
+      <button class="btn textbtn">Заменить все</button>
+      <span style="flex:1"></span>
+      <button class="pick open" aria-haspopup="menu" aria-expanded="true" aria-label="Модель: Claude Opus 5"><span class="ic">memory</span>Claude Opus 5<span class="ic">arrow_drop_up</span></button>
+      <button class="btn ai-btn"><span class="ic" style="font-size:20px">auto_awesome</span>Сгенерировать</button>
+    </div>
+    <div class="mmenu" role="menu" aria-label="Модель" style="right:24px;bottom:76px">
+      <div class="mh">Anthropic</div>
+      <div class="mi sel" role="menuitemradio" aria-checked="true"><span class="ic">check</span><span class="t">Claude Opus 5<small>Точнее, медленнее</small></span><span class="mtag">По умолчанию</span></div>
+      <div class="mi" role="menuitemradio" aria-checked="false"><span class="ic"></span><span class="t">Claude Sonnet 5<small>Быстрее и дешевле</small></span></div>
+      <div class="msep"></div>
+      <div class="mh">OpenRouter</div>
+      <div class="mi" role="menuitemradio" aria-checked="false" aria-disabled="true" style="color:#77767F"><span class="ic"></span><span class="t">DeepSeek V4<small>Подключение не работает</small></span><span class="mtag err">Ошибка</span></div>
+      <div class="msep"></div>
+      <div class="mi" role="menuitem"><span class="ic">settings</span><span class="t">Настроить подключения</span></div>
+    </div>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

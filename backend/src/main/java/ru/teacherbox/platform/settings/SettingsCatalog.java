@@ -3,6 +3,7 @@ package ru.teacherbox.platform.settings;
 import static ru.teacherbox.platform.settings.SettingDefinition.Access.ACCOUNT;
 import static ru.teacherbox.platform.settings.SettingDefinition.Access.DOCKER;
 import static ru.teacherbox.platform.settings.SettingDefinition.Access.EDITABLE;
+import static ru.teacherbox.platform.settings.SettingDefinition.Access.ENV;
 import static ru.teacherbox.platform.settings.SettingKind.ADDRESS;
 import static ru.teacherbox.platform.settings.SettingKind.BOOLEAN;
 import static ru.teacherbox.platform.settings.SettingKind.CHOICE;
@@ -19,17 +20,63 @@ import static ru.teacherbox.platform.settings.SettingKind.URL;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import ru.teacherbox.platform.settings.SettingDefinition.Access;
+import ru.teacherbox.platform.settings.SettingDefinition.Owner;
 
 /**
- * Every variable of {@code .env.example} with its section and description (ADR-0016), in each language of
- * the interface (ADR-0036).
+ * Every variable the portal reads with its section and description (ADR-0016), in each language of the
+ * interface (ADR-0036). The teacher's settings (ADR-0056) stay here so that an old value can be imported
+ * and the administrator sees which variables are no longer theirs; the rest are {@code .env.example}.
  */
 public final class SettingsCatalog {
 
     /** No hint. */
     private static final Wording NONE = new Wording("", "");
+
+    /** The teacher's settings: they move into the portal (ADR-0056). */
+    static final Set<String> TEACHER = Set.of(
+            "TEACHERBOX_PUBLIC_URL", "TEACHERBOX_TIMEZONE",
+            "TEACHERBOX_BILLING_CURRENCY", "TEACHERBOX_BILLING_DEFAULT_LESSON_DURATION",
+            "TEACHERBOX_HOMEWORK_DUE_SOON_WINDOW",
+            "TEACHERBOX_SCHEDULE_DEFAULT_DURATION", "TEACHERBOX_SCHEDULE_HORIZON",
+            "TEACHERBOX_SCHEDULE_LATE_CANCELLATION", "TEACHERBOX_SCHEDULE_REMINDERS",
+            "TEACHERBOX_SCHEDULE_GOOGLE_CLIENT_ID", "TEACHERBOX_SCHEDULE_GOOGLE_CLIENT_SECRET",
+            "TEACHERBOX_NOTIFICATIONS_TELEGRAM_BOT_TOKEN", "TEACHERBOX_NOTIFICATIONS_VK_TOKEN",
+            "TEACHERBOX_NOTIFICATIONS_VK_GROUP_ID", "TEACHERBOX_NOTIFICATIONS_MAX_TOKEN",
+            "TEACHERBOX_AI_PROVIDER", "TEACHERBOX_AI_API_KEY", "TEACHERBOX_AI_MODEL", "TEACHERBOX_AI_BASE_URL",
+            "TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT", "TEACHERBOX_AI_EFFORT", "TEACHERBOX_AI_FALLBACKS",
+            "TEACHERBOX_AI_MAX_TOKENS", "TEACHERBOX_AI_TIMEOUT",
+            "TEACHERBOX_IDENTITY_TEACHER_NAME",
+            "TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID", "TEACHERBOX_BACKUP_GOOGLE_CLIENT_SECRET");
+
+    /**
+     * The administrator's settings that apply at once: their consumers read them through
+     * {@code shared.settings.LiveProperties} on every call (ADR-0056).
+     */
+    static final Set<String> LIVE = Set.of(
+            "TEACHERBOX_HOMEWORK_MAX_FILE_SIZE", "TEACHERBOX_HOMEWORK_MAX_FILES_PER_UPLOAD",
+            "TEACHERBOX_HOMEWORK_YOUTUBE_PROXY", "TEACHERBOX_SCHEDULE_GOOGLE_PROXY",
+            "TEACHERBOX_BOARDS_BACKUP_CRON", "TEACHERBOX_BOARDS_BACKUP_KEEP",
+            "TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY", "TEACHERBOX_NOTIFICATIONS_TELEGRAM_API_URL",
+            "TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS", "TEACHERBOX_NOTIFICATIONS_LINK_CODE_TTL",
+            "TEACHERBOX_NOTIFICATIONS_WEBPUSH_SUBJECT",
+            "TEACHERBOX_IDENTITY_ACCESS_TOKEN_TTL", "TEACHERBOX_IDENTITY_REFRESH_TOKEN_TTL",
+            "TEACHERBOX_IDENTITY_INVITE_TTL", "TEACHERBOX_IDENTITY_MAX_FAILED_LOGINS",
+            "TEACHERBOX_IDENTITY_LOCK_DURATION",
+            "TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_REQUESTS", "TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_PERIOD",
+            "TEACHERBOX_BACKUP_CRON", "TEACHERBOX_BACKUP_KEEP_DAYS", "TEACHERBOX_BACKUP_GOOGLE_PROXY",
+            "TEACHERBOX_AI_PROXY");
+
+    /**
+     * The crons in force when their variable is not set, as the jobs ({@code shared.time.ZonedJob}) define
+     * them: the interface shows the schedule of an unset setting by them.
+     */
+    static final Map<String, String> DEFAULT_CRONS = Map.of(
+            "TEACHERBOX_BACKUP_CRON", "0 30 3 * * *",
+            "TEACHERBOX_BOARDS_BACKUP_CRON", "0 0 3 * * *");
     private static final List<SettingDefinition> ALL = build();
 
     private SettingsCatalog() {
@@ -38,6 +85,11 @@ public final class SettingsCatalog {
     /** By section as in {@code .env.example}; what cannot be changed here comes last. */
     public static List<SettingDefinition> all() {
         return ALL;
+    }
+
+    /** The cron of a {@link SettingKind#CRON} setting when it is not set. */
+    public static Optional<String> defaultCron(String name) {
+        return Optional.ofNullable(DEFAULT_CRONS.get(name));
     }
 
     public static Optional<SettingDefinition> find(String name) {
@@ -49,8 +101,8 @@ public final class SettingsCatalog {
 
         b.group("portal", w("Портал", "Portal"))
                 .add("TEACHERBOX_PUBLIC_URL", w("Адрес портала", "Portal address"), ADDRESS,
-                        w("Все ссылки портала начинаются с него. Если задан, важнее адреса из «Настройки» → «Портал».",
-                                "Base URL for portal links. Overrides the URL in “Settings” → “Portal”."))
+                        w("Теперь задаётся в «Настройки» → «Портал»; без него ссылки начинаются с https://<домен портала>.",
+                                "Now set in “Settings” → “Portal”. Until it is set, links start with https://<portal domain>."))
                 .add("TEACHERBOX_TIMEZONE", w("Часовой пояс учителя", "Teacher's time zone"), TIME_ZONE,
                         w("По нему считаются даты занятий и отчёты за месяц, например Europe/Moscow.",
                                 "Time zone used for lesson dates and monthly reports, such as Europe/Moscow."));
@@ -88,8 +140,7 @@ public final class SettingsCatalog {
                                 "Enter comma-separated durations, such as 24h,1h. Leave blank to disable reminders."))
                 .add("TEACHERBOX_SCHEDULE_GOOGLE_CLIENT_ID",
                         w("Google: идентификатор клиента OAuth", "Google: OAuth client ID"), TEXT,
-                        w("Можно ввести и в «Настройках» учителя; эта переменная важнее.",
-                                "Also available in the teacher's Settings. This variable takes precedence."))
+                        w("Теперь вводится в «Настройках» учителя.", "Now entered in the teacher's Settings."))
                 .secret("TEACHERBOX_SCHEDULE_GOOGLE_CLIENT_SECRET",
                         w("Google: секрет клиента OAuth", "Google: OAuth client secret"))
                 .add("TEACHERBOX_SCHEDULE_GOOGLE_PROXY", w("Google: прокси", "Google: proxy"), PROXY,
@@ -100,7 +151,7 @@ public final class SettingsCatalog {
                 .dockerSecret("TEACHERBOX_MEETINGS_LIVEKIT_API_KEY", w("LiveKit: ключ API", "LiveKit: API key"))
                 .dockerSecret("TEACHERBOX_MEETINGS_LIVEKIT_API_SECRET",
                         w("LiveKit: секрет API (не короче 32 символов)", "LiveKit: API secret (at least 32 characters)"))
-                .add("TEACHERBOX_MEETINGS_LIVEKIT_API_URL", w("LiveKit: адрес для портала", "LiveKit: server URL"),
+                .env("TEACHERBOX_MEETINGS_LIVEKIT_API_URL", w("LiveKit: адрес для портала", "LiveKit: server URL"),
                         URL, w("Браузеры всегда подключаются к <адрес портала>/livekit.",
                                 "Browsers always connect to <portal address>/livekit."));
 
@@ -133,28 +184,24 @@ public final class SettingsCatalog {
                         TEXT, w("mailto:адрес или https-адрес; пусто — адрес портала.",
                                 "Enter a mailto: or HTTPS URL. Leave blank to use the portal URL."));
 
+        // the connections are the teacher's since ADR-0057; the rows stay for the import and the «moved» list
+        Wording moved = w("Теперь задаётся в «Настройки» → «ИИ-помощник».", "Now set in “Settings” → “AI assistant”.");
         b.group("ai", w("ИИ-помощник", "AI assistant"))
-                .choice("TEACHERBOX_AI_PROVIDER", w("Сервис ИИ", "AI service"),
-                        w("Пусто — ИИ выключен.", "Leave blank to disable AI."),
-                        List.of("anthropic", "gemini", "openrouter", "deepseek", "openai-compatible"))
+                .add("TEACHERBOX_AI_PROVIDER", w("Сервис ИИ", "AI service"), TEXT, moved)
                 .secret("TEACHERBOX_AI_API_KEY", w("Ключ API", "API key"))
-                .add("TEACHERBOX_AI_MODEL", w("Модель", "Model"), TEXT,
-                        w("Пусто — модель сервиса по умолчанию.", "Leave blank to use the provider's default model."))
-                .add("TEACHERBOX_AI_BASE_URL", w("Адрес API", "API URL"), URL,
-                        w("Для openai-compatible обязателен.", "Required for openai-compatible."))
-                .add("TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT", w("Токенов в месяц", "Tokens per month"), NUMBER,
-                        w("0 — без ограничения.", "Use 0 for no limit."))
-                .add("TEACHERBOX_AI_PROXY", w("Прокси", "Proxy"), PROXY,
-                        w("Сервисы ИИ недоступны из России напрямую.", "AI services can't be reached from Russia directly."))
-                .choice("TEACHERBOX_AI_EFFORT", w("Усилие (только Anthropic)", "Effort (Anthropic only)"),
-                        w("Пусто — по умолчанию модели.", "Leave blank to use the model's default."),
-                        List.of("low", "medium", "high", "xhigh", "max"))
+                .add("TEACHERBOX_AI_MODEL", w("Модель", "Model"), TEXT, moved)
+                .add("TEACHERBOX_AI_BASE_URL", w("Адрес API", "API URL"), URL, moved)
+                .add("TEACHERBOX_AI_MONTHLY_TOKEN_LIMIT", w("Токенов в месяц", "Tokens per month"), NUMBER, moved)
+                .add("TEACHERBOX_AI_PROXY", w("Прокси по умолчанию", "Default proxy"), PROXY,
+                        w("Для подключений ИИ без своего прокси: сервисы ИИ недоступны из России напрямую.",
+                                "Used by AI connections without their own proxy. AI services can't be reached "
+                                        + "from Russia directly."))
+                .add("TEACHERBOX_AI_EFFORT", w("Усилие (только Anthropic)", "Effort (Anthropic only)"), TEXT, moved)
                 .add("TEACHERBOX_AI_FALLBACKS",
                         w("Запасная модель при отказе (только Anthropic)", "Use a fallback model on refusal (Anthropic only)"),
-                        BOOLEAN, NONE)
-                .add("TEACHERBOX_AI_MAX_TOKENS", w("Токенов в ответе", "Maximum response tokens"), NUMBER, NONE)
-                .add("TEACHERBOX_AI_TIMEOUT", w("Время ожидания ответа", "Response timeout"), DURATION,
-                        w("Например 120s.", "E.g. 120s."));
+                        BOOLEAN, moved)
+                .add("TEACHERBOX_AI_MAX_TOKENS", w("Токенов в ответе", "Maximum response tokens"), NUMBER, moved)
+                .add("TEACHERBOX_AI_TIMEOUT", w("Время ожидания ответа", "Response timeout"), DURATION, moved);
 
         b.group("sessions", w("Сеансы и вход", "Sessions and sign-in"))
                 .add("TEACHERBOX_IDENTITY_ACCESS_TOKEN_TTL", w("Токен доступа действует", "Access token lifetime"),
@@ -168,7 +215,7 @@ public final class SettingsCatalog {
                 .add("TEACHERBOX_IDENTITY_LOCK_DURATION",
                         w("Блокировка после неудачных входов", "Sign-in lockout duration"), DURATION,
                         w("Например 15m.", "E.g. 15m."))
-                .secret("TEACHERBOX_SECURITY_JWT_SECRET", w("Секрет токенов доступа", "Access token secret"),
+                .envSecret("TEACHERBOX_SECURITY_JWT_SECRET", w("Секрет токенов доступа", "Access token secret"),
                         w("Не короче 32 символов; после смены всем нужно войти заново.",
                                 "At least 32 characters. Changing this signs everyone out."))
                 .add("TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_REQUESTS",
@@ -185,35 +232,35 @@ public final class SettingsCatalog {
                 .add("TEACHERBOX_BACKUP_KEEP_DAYS", w("Сколько дней хранить копии", "Days to keep backups"), NUMBER,
                         w("Более старые копии удаляются после новой — на сервере и в Google Диске; по умолчанию 14.",
                                 "After each backup, older backups are deleted from the server and Google Drive. Default: 14 days."))
-                .add("TEACHERBOX_BACKUP_RESTART", w("Перезапуск после восстановления", "Restart after restore"),
+                .env("TEACHERBOX_BACKUP_RESTART", w("Перезапуск после восстановления", "Restart after restore"),
                         BOOLEAN, w("true в Docker; false — перезапускать портал вручную.",
                                 "Use true in Docker. With false, restart the portal manually after restoring."))
                 .add("TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID",
                         w("Google Диск: идентификатор клиента OAuth", "Google Drive: OAuth client ID"), TEXT,
-                        w("Копии в Google Диске учителя. Можно ввести и в «Настройках» учителя; эта переменная важнее.",
-                                "Save backups to the teacher's Google Drive. Also available in the teacher's Settings. This variable takes precedence."))
+                        w("Копии в Google Диске учителя. Теперь вводится в «Настройках» учителя.",
+                                "Backups in the teacher's Google Drive. Now entered in the teacher's Settings."))
                 .secret("TEACHERBOX_BACKUP_GOOGLE_CLIENT_SECRET",
                         w("Google Диск: секрет клиента OAuth", "Google Drive: OAuth client secret"))
                 .add("TEACHERBOX_BACKUP_GOOGLE_PROXY", w("Google Диск: прокси", "Google Drive: proxy"), PROXY,
                         w("Если Google недоступен напрямую.", "If Google can't be reached directly."));
 
         b.group("log", w("Журнал", "Log"))
-                .choice("LOGGING_STRUCTURED_FORMAT_CONSOLE", w("Формат журнала в консоли", "Console log format"),
+                .envChoice("LOGGING_STRUCTURED_FORMAT_CONSOLE", w("Формат журнала в консоли", "Console log format"),
                         w("Пусто — обычный текст; JSON для сборщиков журналов.",
                                 "Leave blank for plain text. Select a JSON format when using a log collector."),
                         List.of("ecs", "logstash", "gelf"))
-                .add("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE", w("Размер файла журнала", "Log file size"),
+                .env("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE", w("Размер файла журнала", "Log file size"),
                         DATA_SIZE, w("Например 10MB.", "E.g. 10MB."))
-                .add("LOGGING_LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP",
+                .env("LOGGING_LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP",
                         w("Все файлы журнала не больше", "Maximum total log size"), DATA_SIZE,
                         w("Например 100MB.", "E.g. 100MB."))
-                .add("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY", w("Дней журнала хранить", "Log retention period (days)"),
+                .env("LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY", w("Дней журнала хранить", "Log retention period (days)"),
                         NUMBER, NONE);
 
         b.group("accounts", w("Учётные записи", "Accounts"))
                 .account("TEACHERBOX_IDENTITY_TEACHER_LOGIN", w("Логин учителя", "Teacher username"), false)
                 .account("TEACHERBOX_IDENTITY_TEACHER_PASSWORD", w("Пароль учителя", "Teacher's password"), true)
-                .account("TEACHERBOX_IDENTITY_TEACHER_NAME", w("Имя учителя", "Teacher's name"), false)
+                .add("TEACHERBOX_IDENTITY_TEACHER_NAME", w("Имя учителя", "Teacher's name"), TEXT, NONE)
                 .account("TEACHERBOX_IDENTITY_TEACHER_RESET_PASSWORD",
                         w("Сброс пароля учителя", "Teacher's password reset"), false)
                 .account("TEACHERBOX_IDENTITY_ADMIN_LOGIN", w("Логин администратора", "Administrator username"), false)
@@ -268,21 +315,26 @@ public final class SettingsCatalog {
             return put(name, title, hint, kind, List.of(), false, EDITABLE);
         }
 
-        Builder choice(String name, Wording title, Wording hint, List<String> choices) {
-            return put(name, title, hint, CHOICE, choices, false, EDITABLE);
-        }
-
         Builder secret(String name, Wording title) {
-            return secret(name, title, NONE);
-        }
-
-        Builder secret(String name, Wording title, Wording hint) {
-            return put(name, title, hint, TEXT, List.of(), true, EDITABLE);
+            return put(name, title, NONE, TEXT, List.of(), true, EDITABLE);
         }
 
         /** A secret that Docker Compose also passes to another container: read-only in the UI. */
         Builder dockerSecret(String name, Wording title) {
             return put(name, title, DOCKER_ONLY, TEXT, List.of(), true, DOCKER);
+        }
+
+        /** Only in {@code .env} (ADR-0056): read-only here, with its own hint. */
+        Builder env(String name, Wording title, SettingKind kind, Wording hint) {
+            return put(name, title, hint, kind, List.of(), false, ENV);
+        }
+
+        Builder envChoice(String name, Wording title, Wording hint, List<String> choices) {
+            return put(name, title, hint, CHOICE, choices, false, ENV);
+        }
+
+        Builder envSecret(String name, Wording title, Wording hint) {
+            return put(name, title, hint, TEXT, List.of(), true, ENV);
         }
 
         Builder docker(String name, Wording title, SettingKind kind) {
@@ -295,7 +347,10 @@ public final class SettingsCatalog {
 
         private Builder put(String name, Wording title, Wording hint, SettingKind kind, List<String> choices,
                 boolean secret, Access access) {
-            settings.add(new SettingDefinition(name, section, group, title, hint, kind, choices, secret, access));
+            Owner owner = access != Access.EDITABLE ? Owner.ENV_ONLY
+                    : TEACHER.contains(name) ? Owner.TEACHER : Owner.ADMIN;
+            settings.add(new SettingDefinition(name, section, group, title, hint, kind, choices, secret, access,
+                    owner, LIVE.contains(name)));
             return this;
         }
     }

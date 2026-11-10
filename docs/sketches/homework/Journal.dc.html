@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Задания — по ученикам</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+a{color:#4459A9}a:hover{color:#2B4190}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.app{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;min-height:960px;display:flex;flex-wrap:wrap}
+.rail{width:96px;flex:0 0 96px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 0}
+.fab{width:56px;height:56px;border-radius:16px;background:#DCE1FF;color:#001550;border:0;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#45464F;text-decoration:none}
+.ni span.pill{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.ni.on span.pill{background:#DEE1F9;color:#171B2C}
+.ni.on{color:#1B1B21}
+.pane{flex:999 1 560px;min-width:0;background:#FBF8FF;border-radius:28px;margin:24px 24px 24px 0;padding:24px;display:flex;flex-direction:column;gap:20px}
+.btn{height:40px;border-radius:20px;border:0;padding:0 16px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap;justify-content:center}
+.filled{background:#4459A9;color:#fff}
+.tonal{background:#DEE1F9;color:#171B2C}
+.iconbtn{width:40px;height:40px;border-radius:20px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center}
+.seg{display:inline-flex;border:1px solid #767680;border-radius:20px;overflow:hidden;height:40px}
+.seg button{border:0;background:transparent;font:500 14px 'Roboto Flex',sans-serif;color:#1B1B21;padding:0 16px;display:flex;align-items:center;gap:6px}
+.seg button+button{border-left:1px solid #767680}
+.seg button.on{background:#DEE1F9;color:#171B2C}
+.select{height:40px;border-radius:8px;border:1px solid #767680;display:flex;align-items:center;gap:8px;padding:0 8px 0 12px;font:14px 'Roboto Flex',sans-serif;color:#1B1B21;background:transparent}
+.av{width:40px;height:40px;border-radius:20px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex:0 0 40px}
+.grid{width:100%;border-collapse:separate;border-spacing:6px}
+.grid th{font-size:12px;font-weight:600;color:#45464F;text-align:left;padding:4px 8px;vertical-align:bottom}
+.grid td{padding:0}
+.who{background:#EFEDF4;border-radius:16px;padding:8px 12px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;white-space:nowrap}
+.cell{height:52px;border-radius:12px;display:flex;align-items:center;gap:6px;padding:0 12px;font-size:13px;font-weight:600;border:0;width:100%;text-align:left;font-family:inherit}
+.s-ok{background:#C8F0CF;color:#0B3A1A}
+.s-rev{background:#FFE08D;color:#3D2E00}
+.s-late{background:#FFDAD6;color:#410002}
+.s-wait{background:#F5F2FA;color:#45464F;font-weight:500}
+.s-none{background:transparent;color:#C6C5D0;font-weight:400}
+.muted{color:#45464F}
+.leg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#45464F}
+.dot{width:12px;height:12px;border-radius:4px;display:inline-block}
+</style>
+</helmet>
+<div class="app">
+  <nav class="rail" aria-label="Разделы">
+    <button class="fab" aria-label="Новое задание"><span class="ic">edit</span></button>
+    <a class="ni" href="#"><span class="pill"><span class="ic">home</span></span>Главная</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">calendar_month</span></span>Расписание</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">group</span></span>Ученики</a>
+    <a class="ni on" href="#"><span class="pill"><span class="ic" style="font-variation-settings:'FILL' 1">assignment</span></span>Задания</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">payments</span></span>Оплаты</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">co_present</span></span>Доски</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">menu_book</span></span>Учебники</a>
+  </nav>
+
+  <main class="pane">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <h1 style="margin:0;font-size:32px;font-weight:500;flex:1 1 auto">Задания</h1>
+      <div class="seg" role="group" aria-label="Вид">
+        <button><span class="ic" style="font-size:18px">view_list</span>Списком</button>
+        <button class="on"><span class="ic" style="font-size:18px">grid_view</span>По ученикам</button>
+      </div>
+      <button class="btn filled"><span class="ic" style="font-size:20px">add</span>Новое задание</button>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <button class="iconbtn" aria-label="Предыдущая неделя"><span class="ic">chevron_left</span></button>
+      <span style="font-size:22px;font-weight:500">27 октября — 2 ноября</span>
+      <button class="iconbtn" aria-label="Следующая неделя"><span class="ic">chevron_right</span></button>
+      <button class="select">Группа B1<span class="ic">arrow_drop_down</span></button>
+      <span style="flex:1"></span>
+      <span class="leg"><span class="dot" style="background:#C8F0CF"></span>Принято</span>
+      <span class="leg"><span class="dot" style="background:#FFE08D"></span>Ждёт проверки</span>
+      <span class="leg"><span class="dot" style="background:#FFDAD6"></span>Просрочено / на доработке</span>
+      <span class="leg"><span class="dot" style="background:#F5F2FA;border:1px solid #C6C5D0"></span>Ещё не сдано</span>
+    </div>
+
+    <div style="overflow-x:auto">
+      <table class="grid">
+        <thead>
+          <tr>
+            <th style="width:220px">Ученик</th>
+            <sc-for list="{{cols}}" as="c" hint-placeholder-count="5">
+              <th><a href="Assignment.dc.html" style="color:#1B1B21;text-decoration:none;font-size:14px;font-weight:600;display:block">{{c.title}}</a><span style="font-weight:400">до {{c.due}}</span></th>
+            </sc-for>
+            <th style="width:110px">За неделю</th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{students}}" as="s" hint-placeholder-count="4">
+            <tr>
+              <td><div class="who"><span class="av" style="background:{{s.bg}};color:{{s.fg}}">{{s.ini}}</span>{{s.name}}</div></td>
+              <sc-for list="{{s.cells}}" as="x" hint-placeholder-count="5">
+                <td><button class="cell {{x.cls}}"><span class="ic" style="font-size:18px">{{x.i}}</span>{{x.t}}</button></td>
+              </sc-for>
+              <td style="font-size:14px;padding-left:8px"><b>{{s.sum}}</b><div class="muted" style="font-size:12px">сдано</div></td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background:#F5F2FA;border-radius:16px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px">
+      <span class="ic" style="color:#4459A9">touch_app</span>
+      <span>Клик по жёлтой клетке открывает проверку этой работы; по пустой — «Выдать ещё ученику»; по заголовку столбца — само задание.</span>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ok = (t) => ({ cls: 's-ok', i: 'check_circle', t });
+    const rev = (t) => ({ cls: 's-rev', i: 'rate_review', t });
+    const late = (t) => ({ cls: 's-late', i: 'error', t });
+    const wait = { cls: 's-wait', i: 'schedule', t: 'ждём' };
+    const none = { cls: 's-none', i: 'add', t: 'не выдано' };
+    return {
+      cols: [
+        { title: 'Present Perfect, упр. 4–7', due: 'чт 30.10' },
+        { title: 'Reading: The Lost City', due: 'пн 27.10' },
+        { title: 'Эссе: My summer holidays', due: 'сб 01.11' },
+        { title: 'Неправильные глаголы, ч. 3', due: 'ср 05.11' },
+        { title: 'Listening: podcast 12', due: 'пт 07.11' }
+      ],
+      students: [
+        { ini: 'АС', name: 'Анна Смирнова', bg: '#DCE1FF', fg: '#001550', sum: '3 из 4', cells: [rev('8/10 · проверить'), ok('Принято · 5'), rev('проверить'), wait, ok('Принято')] },
+        { ini: 'ИП', name: 'Илья Петров', bg: '#FFD7F3', fg: '#390035', sum: '1 из 4', cells: [ok('Принято · 4'), late('просрочено 2 дн.'), rev('проверить'), wait, none] },
+        { ini: 'МК', name: 'Мария Ковалёва', bg: '#C8F0CF', fg: '#0B3A1A', sum: '2 из 3', cells: [late('на доработке'), none, ok('Принято · 5'), wait, none] },
+        { ini: 'ДО', name: 'Дмитрий Орлов', bg: '#FFE08D', fg: '#3D2E00', sum: '1 из 3', cells: [rev('9/10 · проверить'), none, wait, wait, none] }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

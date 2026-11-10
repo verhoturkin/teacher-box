@@ -70,13 +70,13 @@ public class ScheduleService {
     private final ScheduleQueries queries;
     private final LessonEvents lessonEvents;
     private final ApplicationEventPublisher events;
-    private final ScheduleProperties properties;
-    private final ZoneId zone;
+    private final LessonRulesService rules;
+    private final InstanceTimeZone timeZone;
     private final Clock clock;
 
     public ScheduleService(LessonRepository lessons, RepeatRuleRepository series, ChangeRequestRepository requests,
             ScheduleDirectory directory, ScheduleQueries queries, LessonEvents lessonEvents,
-            ApplicationEventPublisher events, ScheduleProperties properties, InstanceTimeZone timeZone, Clock clock) {
+            ApplicationEventPublisher events, LessonRulesService rules, InstanceTimeZone timeZone, Clock clock) {
         this.lessons = lessons;
         this.series = series;
         this.requests = requests;
@@ -84,8 +84,8 @@ public class ScheduleService {
         this.queries = queries;
         this.lessonEvents = lessonEvents;
         this.events = events;
-        this.properties = properties;
-        this.zone = timeZone.zoneId();
+        this.rules = rules;
+        this.timeZone = timeZone;
         this.clock = clock;
     }
 
@@ -95,7 +95,7 @@ public class ScheduleService {
     }
 
     LessonView plan(PlanLesson command, boolean notify) {
-        int duration = command.durationMinutes() == null ? properties.defaultDuration() : command.durationMinutes();
+        int duration = command.durationMinutes() == null ? rules.current().defaultDurationMinutes() : command.durationMinutes();
         Instant now = clock.instant();
         UUID groupId = owner(command.studentId(), command.groupId());
         Lesson lesson;
@@ -256,8 +256,8 @@ public class ScheduleService {
     @Transactional
     public int generateOccurrences() {
         Instant now = clock.instant();
-        LocalDate today = LocalDate.ofInstant(now, zone);
-        LocalDate until = today.plusDays(properties.horizonDays());
+        LocalDate today = LocalDate.ofInstant(now, zone());
+        LocalDate until = today.plusDays(rules.current().horizonDays());
         int created = 0;
         for (RepeatRule active : series.findActive(today)) {
             if (!active.generatedUntil().isBefore(until) || !active.continuesAfter(active.generatedUntil())) {
@@ -292,7 +292,7 @@ public class ScheduleService {
     @Transactional
     public void stopGroup(UUID groupId) {
         Instant now = clock.instant();
-        LocalDate tomorrow = LocalDate.ofInstant(now, zone).plusDays(1);
+        LocalDate tomorrow = LocalDate.ofInstant(now, zone()).plusDays(1);
         for (RepeatRule active : series.findActive(tomorrow)) {
             if (groupId.equals(active.groupId())) {
                 stop(active, tomorrow, false);
@@ -333,7 +333,7 @@ public class ScheduleService {
             if (lessons.existsForSeriesDate(source.id(), date)) {
                 continue;
             }
-            Instant start = source.startOn(date, zone);
+            Instant start = source.startOn(date, zone());
             lessons.insert(groupId == null
                     ? Lesson.plan(Ids.newId(), required(source.studentId()), source.id(), date, start,
                             source.durationMinutes(), source.title(), source.meetingUrl(), now)
@@ -396,4 +396,9 @@ public class ScheduleService {
     }
 
 
+
+    /** The instance time zone, read per call: the teacher may change it at any time. */
+    private ZoneId zone() {
+        return timeZone.zoneId();
+    }
 }

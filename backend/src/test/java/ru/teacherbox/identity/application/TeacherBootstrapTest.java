@@ -36,13 +36,13 @@ class TeacherBootstrapTest {
     void createsTeacherWithGeneratedPassword() {
         when(users.findTeacher()).thenReturn(Optional.empty());
 
-        bootstrap(new IdentityProperties.Teacher("Admin", null, "Анна", false)).run(new DefaultApplicationArguments());
+        bootstrap(new IdentityProperties.Teacher("Admin", null, false)).run(new DefaultApplicationArguments());
 
         ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
         verify(users).insert(saved.capture());
         assertThat(saved.getValue().login()).isEqualTo("admin");
         assertThat(saved.getValue().isTeacher()).isTrue();
-        assertThat(saved.getValue().profile().displayName()).isEqualTo("Анна");
+        assertThat(saved.getValue().profile().displayName()).isEqualTo(TeacherBootstrap.DEFAULT_NAME);
         assertThat(saved.getValue().passwordHash()).startsWith("{bcrypt}");
         assertThat(saved.getValue().passwordChangeRequired()).as("the password is in the server log").isTrue();
     }
@@ -51,7 +51,7 @@ class TeacherBootstrapTest {
     void createsTeacherWithConfiguredPassword() {
         when(users.findTeacher()).thenReturn(Optional.empty());
 
-        bootstrap(new IdentityProperties.Teacher("teacher", "configured-pass", "T", false))
+        bootstrap(new IdentityProperties.Teacher("teacher", "configured-pass", false))
                 .run(new DefaultApplicationArguments());
 
         ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
@@ -66,7 +66,7 @@ class TeacherBootstrapTest {
     void rejectsWeakConfiguredPassword() {
         when(users.findTeacher()).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> bootstrap(new IdentityProperties.Teacher("teacher", "weak", "T", false))
+        assertThatThrownBy(() -> bootstrap(new IdentityProperties.Teacher("teacher", "weak", false))
                 .run(new DefaultApplicationArguments()))
                 .isInstanceOf(BusinessRuleException.class);
     }
@@ -76,7 +76,7 @@ class TeacherBootstrapTest {
         User teacher = existingTeacher();
         when(users.findTeacher()).thenReturn(Optional.of(teacher));
 
-        bootstrap(new IdentityProperties.Teacher("teacher", "other-password", "T", false))
+        bootstrap(new IdentityProperties.Teacher("teacher", "other-password", false))
                 .run(new DefaultApplicationArguments());
 
         verify(users, never()).insert(any());
@@ -88,7 +88,7 @@ class TeacherBootstrapTest {
         User teacher = existingTeacher();
         when(users.findTeacher()).thenReturn(Optional.of(teacher));
 
-        bootstrap(new IdentityProperties.Teacher("teacher", "recovered-pass", "T", true))
+        bootstrap(new IdentityProperties.Teacher("teacher", "recovered-pass", true))
                 .run(new DefaultApplicationArguments());
 
         verify(users).update(teacher);
@@ -101,7 +101,7 @@ class TeacherBootstrapTest {
     void resetWithoutPasswordDoesNothing() {
         when(users.findTeacher()).thenReturn(Optional.of(existingTeacher()));
 
-        bootstrap(new IdentityProperties.Teacher("teacher", " ", "T", true)).run(new DefaultApplicationArguments());
+        bootstrap(new IdentityProperties.Teacher("teacher", " ", true)).run(new DefaultApplicationArguments());
 
         verify(users, never()).update(any());
     }

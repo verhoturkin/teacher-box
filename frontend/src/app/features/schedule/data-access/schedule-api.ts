@@ -13,6 +13,7 @@ import {
   EditLessonRequest,
   GoogleCalendarStatus,
   HistoryEntry,
+  LessonRules,
   LessonOutcome,
   MyScheduleSummary,
   OffTime,
@@ -40,6 +41,16 @@ export class ScheduleApi {
 
   settings(): Observable<ScheduleSettings> {
     return this.http.get<ScheduleSettings>('/api/me/schedule/settings', QUIET);
+  }
+
+  /** The teacher's lesson rules; the load is quiet (its card shows a failure itself). */
+  lessonRules(): Observable<LessonRules> {
+    return this.http.get<LessonRules>('/api/teacher/schedule/settings', QUIET);
+  }
+
+  /** All the rules at once; 422 `schedule.settings-*-invalid` outside the limits. */
+  changeLessonRules(rules: LessonRules): Observable<LessonRules> {
+    return this.http.put<LessonRules>('/api/teacher/schedule/settings', rules);
   }
 
   /**

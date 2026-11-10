@@ -4,12 +4,18 @@ import java.time.Instant;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
-/** One call to the language model (metadata only, no texts). */
+/**
+ * One call to the language model (metadata only, no texts).
+ *
+ * @param model   the model id the provider answered with
+ * @param modelId the configured model (ADR-0057); {@code null} for requests before it
+ */
 public record AiRequest(
         UUID id,
         AiFeature feature,
         String provider,
         String model,
+        @Nullable UUID modelId,
         RequestStatus status,
         long inputTokens,
         long outputTokens,

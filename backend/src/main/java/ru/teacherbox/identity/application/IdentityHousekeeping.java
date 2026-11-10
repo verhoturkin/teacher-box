@@ -5,15 +5,15 @@ import java.time.Duration;
 import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.identity.persistence.InviteRepository;
 import ru.teacherbox.identity.persistence.RefreshTokenRepository;
+import ru.teacherbox.shared.time.ZonedJob;
 
 /** Nightly removal of expired refresh tokens and old invitations. */
 @Component
-public class IdentityHousekeeping {
+public class IdentityHousekeeping implements ZonedJob {
 
     /** Expired tokens are kept a little longer so that a late reuse is still reported as such. */
     static final Duration TOKEN_RETENTION = Duration.ofDays(1);
@@ -30,9 +30,23 @@ public class IdentityHousekeeping {
         this.clock = clock;
     }
 
-    @Scheduled(cron = "${teacherbox.identity.housekeeping-cron:0 15 4 * * *}",
-            zone = "${teacherbox.timezone:Europe/Moscow}")
-    void run() {
+    @Override
+    public String name() {
+        return "identity-housekeeping";
+    }
+
+    @Override
+    public String cronProperty() {
+        return "teacherbox.identity.housekeeping-cron";
+    }
+
+    @Override
+    public String defaultCron() {
+        return "0 15 4 * * *";
+    }
+
+    @Override
+    public void run() {
         purge(clock.instant());
     }
 

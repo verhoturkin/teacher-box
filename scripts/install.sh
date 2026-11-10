@@ -4,13 +4,13 @@
 #
 #   curl -fsSL https://raw.githubusercontent.com/verhoturkin/teacher-box/main/scripts/install.sh | sudo bash
 #
-# Asks for the domain, the time zone and whether to enable calls; writes .env (secrets generated), downloads
+# Asks for the domain and whether to enable calls (the time zone and the rest are set in the portal's wizard);
+# writes .env (secrets generated), downloads
 # compose.yaml into /opt/teacher-box, installs the "teacherbox" command, starts the portal and prints the address,
 # the login and the password. Run it again to update an existing installation (.env is kept).
 #
 # Options (all optional; without a terminal or with --yes the defaults are used):
 #   --domain NAME      domain for HTTPS through the built-in Caddy (empty: plain HTTP on port 8080)
-#   --timezone ZONE    time zone of the teacher (default Europe/Moscow)
 #   --port PORT        host port of the portal (default 8080; with a domain only on 127.0.0.1)
 #   --calls | --no-calls   built-in calls (LiveKit), on by default
 #   --version TAG      image version (default latest)
@@ -32,7 +32,6 @@ ref=main
 source_dir=""
 domain=""
 domain_set=false
-timezone=""
 port=""
 calls=""
 version=""
@@ -58,7 +57,6 @@ usage() {
 while [ $# -gt 0 ]; do
     case "$1" in
         --domain) domain="${2:-}"; domain_set=true; shift ;;
-        --timezone) timezone="${2:-}"; shift ;;
         --port) port="${2:-}"; shift ;;
         --calls) calls=yes ;;
         --no-calls) calls=no ;;
@@ -199,16 +197,12 @@ else
     domain="${domain#http://}"
     domain="${domain#https://}"
     domain="${domain%%/*}"
-    if [ -z "$timezone" ]; then
-        timezone="$(ask "Часовой пояс" "Europe/Moscow")"
-    fi
     if [ -z "$calls" ]; then
         if confirm "Включить звонки в портале (нужны открытые UDP-порты)?" y; then calls=yes; else calls=no; fi
     fi
 
     get .env.example "$env_file"
     chmod 600 "$env_file"
-    set_env "$env_file" TEACHERBOX_TIMEZONE "$timezone"
     profiles=""
     if [ -n "$domain" ]; then
         set_env "$env_file" TEACHERBOX_DOMAIN "$domain"
@@ -224,7 +218,7 @@ else
     fi
     [ -n "$profiles" ] && set_env "$env_file" COMPOSE_PROFILES "$profiles"
     [ -n "$version" ] && set_env "$env_file" TEACHERBOX_VERSION "$version"
-    say "Настройки записаны в $env_file (пароль учителя создаст портал при первом запуске)."
+    say "Настройки записаны в $env_file (пароль учителя создаст портал при первом запуске; часовой пояс и остальное — мастер в портале)."
 fi
 
 # The "teacherbox" command knows where the installation is and where updates come from.

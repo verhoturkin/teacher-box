@@ -87,19 +87,18 @@ test('student payments show figures and filter the history', async ({ page }) =>
   );
 });
 
-test('administrator settings scroll fields while save and headings stay visible', async ({
+test('administrator settings scroll the cards while the save button stays visible', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 700 });
   await signIn(page, 'admin', ADMIN_PASSWORD);
-  await page.goto('/admin/settings/notifications');
+  await page.goto('/admin/settings');
   const scroll = page.locator('tb-pane').last().locator('.tb-pane__scroll');
   await expect(scroll.locator('.tb-setting').first()).toBeVisible();
   await scroll.evaluate((element) => {
     element.scrollTop = element.scrollHeight;
   });
-  await expect(page.getByRole('button', { name: 'Сохранить и перезапустить' })).toBeVisible();
-  await expect(page.locator('tb-pane').last().locator('.tb-pane__header h2')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Сохранить', exact: true })).toBeVisible();
   expect(await scroll.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
 });
 

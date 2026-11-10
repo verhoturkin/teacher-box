@@ -34,6 +34,8 @@ import { T } from './i18n/texts';
 import { SearchField } from '@shared/ui/search-field';
 import { AssistChip } from '@shared/ui/assist-chip';
 import { Segment, SegmentGroup } from '@shared/ui/segment-group';
+import { AiModelPick } from './ai-model-pick';
+import { AiModelChoice } from './model-choice';
 import { AiContextChips, StudentContext } from './student-context';
 
 /** A draft the teacher took: it replaces the assignment's content or goes after its text. */
@@ -91,6 +93,7 @@ export class HomeworkAiState {
     AssistChip,
     SegmentGroup,
     AiContextChips,
+    AiModelPick,
     FormsModule,
     ReactiveFormsModule,
     RouterLink,
@@ -324,22 +327,25 @@ export class HomeworkAiState {
 
         <footer class="tb-ai-pane__foot">
           <small class="tb-hint tb-ai-pane__grow">{{ t.onlyOnInsert }}</small>
-          <button
-            type="button"
-            class="tb-ai-pane__generate"
-            [disabled]="pending()"
-            [attr.aria-busy]="pending()"
-            (click)="generate()"
-          >
-            <i
-              class="tb-i"
-              [class.tb-i-auto_awesome]="!pending()"
-              [class.tb-i-progress_activity]="pending()"
-              [class.tb-ai-pane__spin]="pending()"
-              aria-hidden="true"
-            ></i
-            >{{ pending() ? t.generating : t.generate }}
-          </button>
+          <span class="tb-ai-pane__run">
+            <tb-ai-model-pick [short]="compact()" />
+            <button
+              type="button"
+              class="tb-ai-pane__generate"
+              [disabled]="pending()"
+              [attr.aria-busy]="pending()"
+              (click)="generate()"
+            >
+              <i
+                class="tb-i"
+                [class.tb-i-auto_awesome]="!pending()"
+                [class.tb-i-progress_activity]="pending()"
+                [class.tb-ai-pane__spin]="pending()"
+                aria-hidden="true"
+              ></i
+              >{{ pending() ? t.generating : t.generate }}
+            </button>
+          </span>
         </footer>
       </section>
     } @else {
@@ -385,13 +391,16 @@ export class HomeworkAiState {
               (onClick)="sourcePicker.toggle($event)"
             />
           }
-          <p-button
-            class="tb-ai-panel__generate"
-            [label]="pending() ? t.generating : shown() === null ? t.generate : t.again"
-            [icon]="shown() === null ? 'tb-i tb-i-auto_awesome' : 'tb-i tb-i-refresh'"
-            [loading]="pending()"
-            (onClick)="generate()"
-          />
+          <span class="tb-ai-panel__run">
+            <tb-ai-model-pick />
+            <p-button
+              class="tb-ai-panel__generate"
+              [label]="pending() ? t.generating : shown() === null ? t.generate : t.again"
+              [icon]="shown() === null ? 'tb-i tb-i-auto_awesome' : 'tb-i tb-i-refresh'"
+              [loading]="pending()"
+              (onClick)="generate()"
+            />
+          </span>
         </div>
 
         <p-popover #sourcePicker [ariaLabel]="t.sources">
@@ -556,7 +565,10 @@ export class HomeworkAiState {
       padding-left: var(--tb-space-6);
     }
 
-    .tb-ai-panel__generate {
+    .tb-ai-panel__run {
+      display: flex;
+      gap: var(--tb-space-2);
+      align-items: center;
       margin-left: auto;
     }
 
@@ -808,6 +820,14 @@ export class HomeworkAiState {
       margin-top: auto;
     }
 
+    /* the model and the AI action stay together at the end of the row */
+    .tb-ai-pane__run {
+      display: flex;
+      gap: var(--tb-space-2);
+      align-items: center;
+      margin-inline-start: auto;
+    }
+
     /* the AI action takes the tertiary role (sketch AiDraft), not the primary one */
     /* the working state of the button: the indicator turns (not with reduced motion) */
     .tb-ai-pane__spin {
@@ -854,6 +874,7 @@ export class HomeworkAiState {
 export class HomeworkAiPanel implements OnInit {
   protected readonly t = T.panel;
   private readonly api = inject(AiApi);
+  private readonly model = inject(AiModelChoice);
   private readonly snackbar = inject(Snackbar);
   private readonly menu = viewChild<Popover>('prompts');
 
@@ -979,23 +1000,27 @@ export class HomeworkAiPanel implements OnInit {
       this.error.set(describeError(error, T.panel.failed));
     };
     if (this.mode() === 'TASK') {
-      this.api.homeworkDraft(brief, files).subscribe({
-        next: (draft) => {
-          this.pending.set(false);
-          this.history.update((variants) => [...variants, draft]);
-          this.variant.set(this.history().length - 1);
-          this.draft.set(draft);
-        },
-        error: failed,
-      });
+      this.model
+        .send((modelId) => this.api.homeworkDraft({ ...brief, modelId }, files))
+        .subscribe({
+          next: (draft) => {
+            this.pending.set(false);
+            this.history.update((variants) => [...variants, draft]);
+            this.variant.set(this.history().length - 1);
+            this.draft.set(draft);
+          },
+          error: failed,
+        });
     } else {
-      this.api.quizDraft(brief, files).subscribe({
-        next: ({ questions }) => {
-          this.pending.set(false);
-          this.questions.set(questions);
-        },
-        error: failed,
-      });
+      this.model
+        .send((modelId) => this.api.quizDraft({ ...brief, modelId }, files))
+        .subscribe({
+          next: ({ questions }) => {
+            this.pending.set(false);
+            this.questions.set(questions);
+          },
+          error: failed,
+        });
     }
   }
 

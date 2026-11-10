@@ -1,5 +1,6 @@
 package ru.teacherbox.platform.backup.drive;
 
+import java.util.function.Supplier;
 import java.net.URI;
 import java.security.SecureRandom;
 import java.time.Clock;
@@ -49,14 +50,12 @@ public class CloudBackupService implements AutoCloseable {
     }
 
     /**
-     * @param clientFromEnvironment the OAuth client comes from environment variables and cannot be changed here
-     * @param lastError             why the last upload or download failed, or why the connection was lost
-     * @param running               what runs in the background now
-     * @param callbackPath          path of the redirect URI to register in Google Cloud
+     * @param lastError    why the last upload or download failed, or why the connection was lost
+     * @param running      what runs in the background now
+     * @param callbackPath path of the redirect URI to register in Google Cloud
      */
     public record DriveStatus(
             boolean clientConfigured,
-            boolean clientFromEnvironment,
             @Nullable String clientId,
             boolean connected,
             @Nullable String account,
@@ -91,7 +90,8 @@ public class CloudBackupService implements AutoCloseable {
     private final DriveApi api;
     private final DriveConnectionStore store;
     private final BackupService backups;
-    private final BackupProperties properties;
+    /** Read on every use: the administrator changes the days kept without a restart (ADR-0056). */
+    private final Supplier<BackupProperties> properties;
     private final Portal portal;
     private final Clock clock;
     private final Executor executor;
@@ -102,7 +102,7 @@ public class CloudBackupService implements AutoCloseable {
 
     /** @param executor runs uploads and downloads one at a time */
     public CloudBackupService(DriveApi api, DriveConnectionStore store, BackupService backups,
-            BackupProperties properties, Portal portal, Clock clock, Executor executor) {
+            Supplier<BackupProperties> properties, Portal portal, Clock clock, Executor executor) {
         this.api = api;
         this.store = store;
         this.backups = backups;
@@ -115,18 +115,13 @@ public class CloudBackupService implements AutoCloseable {
     public DriveStatus status() {
         DriveConnection connection = store.load();
         DriveApi.Client client = client(connection);
-        return new DriveStatus(client != null, properties.google().clientFromEnvironment(),
-                client == null ? null : client.id(), connection.isConnected(), connection.account(),
+        return new DriveStatus(client != null, client == null ? null : client.id(), connection.isConnected(), connection.account(),
                 connection.connectedAt(), connection.lastUploadAt(), connection.lastUploadName(),
                 connection.lastError(), running, CALLBACK_PATH);
     }
 
     /** Stores the OAuth client entered in the interface. */
     public void saveClient(String clientId, String clientSecret) {
-        if (properties.google().clientFromEnvironment()) {
-            throw new BusinessRuleException("backup.google-client-from-environment",
-                    "The Google client is set by environment variables");
-        }
         String id = clientId.strip();
         String secret = clientSecret.strip();
         if (id.isEmpty() || secret.isEmpty()) {
@@ -306,7 +301,7 @@ public class CloudBackupService implements AutoCloseable {
 
     /** Backups older than {@link BackupProperties#keepDays()} are deleted from the folder. */
     private void rotate(DriveConnection connection, String folderId) {
-        Instant oldest = clock.instant().minus(properties.retention());
+        Instant oldest = clock.instant().minus(properties.get().retention());
         List<DriveApi.DriveFile> old = withToken(connection, token -> api.list(token, folderId)).stream()
                 .filter(file -> BackupService.isBackupName(file.name()))
                 .filter(file -> file.createdAt() != null && file.createdAt().isBefore(oldest))
@@ -377,12 +372,8 @@ public class CloudBackupService implements AutoCloseable {
         return connection;
     }
 
-    private DriveApi.@Nullable Client client(DriveConnection connection) {
-        BackupProperties.Google google = properties.google();
-        if (google.clientFromEnvironment()) {
-            return new DriveApi.Client(String.valueOf(google.clientId()).strip(),
-                    String.valueOf(google.clientSecret()).strip());
-        }
+    /** The client entered in the interface (ADR-0056). */
+    private static DriveApi.@Nullable Client client(DriveConnection connection) {
         String id = connection.clientId();
         String secret = connection.clientSecret();
         return id == null || secret == null ? null : new DriveApi.Client(id, secret);

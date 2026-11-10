@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -29,26 +30,27 @@ class AuthRateLimitFilter extends OncePerRequestFilter {
     private record Window(Instant start, int requests) {
     }
 
-    private final int limit;
-    private final Duration period;
+    /** Read on every request: the administrator changes the limit without a restart (ADR-0056). */
+    private final Supplier<PlatformSecurityProperties.AuthRateLimit> settings;
     private final Clock clock;
     private final Map<String, Window> windows = new ConcurrentHashMap<>();
 
-    AuthRateLimitFilter(PlatformSecurityProperties.AuthRateLimit settings, Clock clock) {
-        this.limit = settings.requests();
-        this.period = settings.period();
+    AuthRateLimitFilter(Supplier<PlatformSecurityProperties.AuthRateLimit> settings, Clock clock) {
+        this.settings = settings;
         this.clock = clock;
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return limit <= 0 || !"POST".equals(request.getMethod())
+        return settings.get().requests() <= 0 || !"POST".equals(request.getMethod())
                 || !request.getRequestURI().startsWith(PATH_PREFIX);
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
+        PlatformSecurityProperties.AuthRateLimit limit = settings.get();
+        Duration period = limit.period();
         Instant now = clock.instant();
         Window window = windows.compute(request.getRemoteAddr(), (address, current) ->
                 current == null || !now.isBefore(current.start().plus(period))
@@ -57,7 +59,7 @@ class AuthRateLimitFilter extends OncePerRequestFilter {
         if (windows.size() > CLEANUP_THRESHOLD) {
             windows.values().removeIf(old -> !now.isBefore(old.start().plus(period)));
         }
-        if (window.requests() > limit) {
+        if (window.requests() > limit.requests()) {
             long retryAfter = Math.max(1, Duration.between(now, window.start().plus(period)).toSeconds());
             response.setHeader(HttpHeaders.RETRY_AFTER, Long.toString(retryAfter));
             ProblemSecurityHandlers.write(response, HttpStatus.TOO_MANY_REQUESTS, "auth.rate-limited",

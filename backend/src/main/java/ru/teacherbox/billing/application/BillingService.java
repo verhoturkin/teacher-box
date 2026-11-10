@@ -35,10 +35,14 @@ import ru.teacherbox.shared.money.Money;
 public class BillingService {
 
     /** Reason of a charge cancelled because its outcome in the schedule was changed. */
+    /** Length of a lesson recorded by hand when neither it nor an earlier lesson of the student gives one. */
+    public static final int DEFAULT_DURATION = 60;
+
     static final String SCHEDULE_CHANGED = "Итог занятия изменён в расписании";
 
     /**
-     * @param durationMinutes defaults to the configured lesson duration
+     * @param durationMinutes defaults to the student's last lesson (its length came from the schedule), else
+     *                        {@link BillingService#DEFAULT_DURATION}
      * @param price           minor units; defaults to the student's lesson price
      */
     public record RecordLesson(UUID studentId, LocalDate date, @Nullable Integer durationMinutes,
@@ -56,14 +60,13 @@ public class BillingService {
     private final GroupPriceService groupPrices;
     private final UserDirectory directory;
     private final ApplicationEventPublisher events;
-    private final BillingProperties properties;
     private final DefaultLessonPrice defaultLessonPrice;
     private final BillingCurrency currency;
     private final Clock clock;
 
     public BillingService(StudentAccountRepository accounts, LessonRepository lessons, PaymentRepository payments,
             BalanceQueries balances, GroupPriceService groupPrices, UserDirectory directory,
-            ApplicationEventPublisher events, BillingProperties properties, DefaultLessonPrice defaultLessonPrice,
+            ApplicationEventPublisher events, DefaultLessonPrice defaultLessonPrice,
             BillingCurrency currency, Clock clock) {
         this.accounts = accounts;
         this.lessons = lessons;
@@ -72,7 +75,6 @@ public class BillingService {
         this.groupPrices = groupPrices;
         this.directory = directory;
         this.events = events;
-        this.properties = properties;
         this.defaultLessonPrice = defaultLessonPrice;
         this.currency = currency;
         this.clock = clock;
@@ -83,9 +85,8 @@ public class BillingService {
         StudentAccount account = accountOf(command.studentId());
         Instant now = clock.instant();
         Money price = command.price() == null ? account.lessonPrice() : currency.of(command.price());
-        int duration = command.durationMinutes() == null
-                ? properties.defaultLessonDuration()
-                : command.durationMinutes();
+        Integer given = command.durationMinutes();
+        int duration = given == null ? lessons.lastDuration(command.studentId()).orElse(DEFAULT_DURATION) : given;
         Lesson lesson = Lesson.record(Ids.newId(), command.studentId(), command.date(), duration, price,
                 command.topic(), command.status(), now);
         insert(lesson, null, now);

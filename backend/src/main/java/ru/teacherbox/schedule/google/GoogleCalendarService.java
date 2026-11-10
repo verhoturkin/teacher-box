@@ -23,7 +23,7 @@ import ru.teacherbox.schedule.application.CalendarTexts;
 import ru.teacherbox.schedule.api.GoogleCalendarDisconnected;
 import ru.teacherbox.schedule.application.ScheduleDirectory;
 import ru.teacherbox.schedule.application.ScheduleNames;
-import ru.teacherbox.schedule.application.ScheduleProperties;
+import ru.teacherbox.schedule.application.LessonRulesService;
 import ru.teacherbox.schedule.domain.FeedTokens;
 import ru.teacherbox.schedule.domain.GoogleConnection;
 import ru.teacherbox.schedule.domain.GoogleStatus;
@@ -55,12 +55,10 @@ public class GoogleCalendarService {
     private static final Logger log = LoggerFactory.getLogger(GoogleCalendarService.class);
 
     /**
-     * @param clientFromEnvironment the OAuth client comes from environment variables and cannot be changed here
-     * @param callbackPath          path of the redirect URI to register in Google Cloud
+     * @param callbackPath path of the redirect URI to register in Google Cloud
      */
     public record GoogleStatusView(
             boolean clientConfigured,
-            boolean clientFromEnvironment,
             @Nullable String clientId,
             GoogleStatus status,
             boolean busyEnabled,
@@ -88,40 +86,36 @@ public class GoogleCalendarService {
     private final LessonRepository lessons;
     private final ScheduleDirectory directory;
     private final ApplicationEventPublisher events;
-    private final ScheduleProperties properties;
+    private final LessonRulesService rules;
     private final Portal portal;
-    private final ZoneId zone;
+    private final InstanceTimeZone timeZone;
     private final Clock clock;
     private volatile @Nullable AccessToken accessToken;
 
     public GoogleCalendarService(GoogleApi api, GoogleRepository repository, LessonRepository lessons,
-            ScheduleDirectory directory, ApplicationEventPublisher events, ScheduleProperties properties,
-            Portal portal, InstanceTimeZone timeZone, Clock clock) {
+            ScheduleDirectory directory, ApplicationEventPublisher events,
+            LessonRulesService rules, Portal portal, InstanceTimeZone timeZone, Clock clock) {
         this.api = api;
         this.repository = repository;
         this.lessons = lessons;
         this.directory = directory;
         this.events = events;
-        this.properties = properties;
+        this.rules = rules;
         this.portal = portal;
-        this.zone = timeZone.zoneId();
+        this.timeZone = timeZone;
         this.clock = clock;
     }
 
     public GoogleStatusView status() {
         GoogleConnection connection = connection();
         GoogleApi.Client client = client(connection);
-        return new GoogleStatusView(client != null, properties.google().clientFromEnvironment(),
+        return new GoogleStatusView(client != null,
                 client == null ? null : client.id(), connection.status(), connection.busyEnabled(),
                 connection.lastError(), connection.lastSyncAt(), connection.connectedAt(), CALLBACK_PATH);
     }
 
     /** Stores the OAuth client entered in the settings. */
     public void saveClient(String clientId, String clientSecret) {
-        if (properties.google().clientFromEnvironment()) {
-            throw new BusinessRuleException("schedule.google-client-from-environment",
-                    "The Google client is set by environment variables");
-        }
         String id = clientId.strip();
         String secret = clientSecret.strip();
         if (id.isEmpty() || secret.isEmpty()) {
@@ -171,7 +165,7 @@ public class GoogleCalendarService {
             String calendarId = connection.calendarId() != null
                     && api.calendarExists(tokens.accessToken(), connection.calendarId())
                     ? connection.calendarId()
-                    : api.createCalendar(tokens.accessToken(), portal.name(), zone.getId());
+                    : api.createCalendar(tokens.accessToken(), portal.name(), zone().getId());
             Instant now = clock.instant();
             repository.forgetAll();
             repository.save(connection.connected(tokens.refreshToken(), calendarId, pending.busy(), now));
@@ -247,7 +241,7 @@ public class GoogleCalendarService {
             String token = token(connection);
             Map<UUID, Long> synced = repository.syncedVersions();
             List<Lesson> window = lessons.findStartingBetween(now.minus(SYNC_PAST),
-                    now.plus(properties.horizon()).plus(Duration.ofDays(1)));
+                    now.plus(rules.current().horizon()).plus(Duration.ofDays(1)));
             List<Lesson> pending = new ArrayList<>();
             for (Lesson lesson : window) {
                 Long version = synced.get(lesson.id());
@@ -359,8 +353,8 @@ public class GoogleCalendarService {
         if (!description.isEmpty()) {
             event.put("description", String.join("\n", description));
         }
-        event.put("start", Map.of("dateTime", lesson.startsAt().toString(), "timeZone", zone.getId()));
-        event.put("end", Map.of("dateTime", lesson.endsAt().toString(), "timeZone", zone.getId()));
+        event.put("start", Map.of("dateTime", lesson.startsAt().toString(), "timeZone", zone().getId()));
+        event.put("end", Map.of("dateTime", lesson.endsAt().toString(), "timeZone", zone().getId()));
         event.put("status", "confirmed");
         return event;
     }
@@ -392,12 +386,8 @@ public class GoogleCalendarService {
         return repository.connection().orElseGet(() -> GoogleConnection.none(clock.instant()));
     }
 
-    /** The client from the environment, or the one entered in the settings. */
-    private GoogleApi.@Nullable Client client(GoogleConnection connection) {
-        ScheduleProperties.Google google = properties.google();
-        if (google.clientFromEnvironment() && google.clientId() != null && google.clientSecret() != null) {
-            return new GoogleApi.Client(google.clientId().strip(), google.clientSecret().strip());
-        }
+    /** The client entered in the settings (ADR-0056). */
+    private static GoogleApi.@Nullable Client client(GoogleConnection connection) {
         return connection.clientId() == null || connection.clientSecret() == null ? null
                 : new GoogleApi.Client(connection.clientId(), connection.clientSecret());
     }
@@ -423,5 +413,10 @@ public class GoogleCalendarService {
         } catch (URISyntaxException e) {
             throw new BusinessRuleException("schedule.google-origin-invalid", "Unexpected portal address");
         }
+    }
+
+    /** The instance time zone, read per call: the teacher may change it at any time. */
+    private ZoneId zone() {
+        return timeZone.zoneId();
     }
 }

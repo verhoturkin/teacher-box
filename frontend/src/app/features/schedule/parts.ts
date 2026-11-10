@@ -7,6 +7,7 @@ export { LessonMarkUndo } from './data-access/lesson-mark-undo';
 export { STATUS_LABELS, formatLessonStart, lessonWith, requestKindLabel } from './schedule-labels';
 export type {
   ChangeRequest,
+  LessonRules,
   MyScheduleSummary,
   ScheduleSummary,
   ScheduledLesson,

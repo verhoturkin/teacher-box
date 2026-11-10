@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Видео в задании</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.page{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;padding:24px;box-sizing:border-box;min-height:1240px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:24px;align-items:start}
+.pane{background:#FBF8FF;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.scrim{background:rgba(27,27,33,.32);border-radius:28px;padding:48px 32px;display:flex;flex-direction:column;align-items:center;gap:16px;min-width:0}
+.dialog{background:#EAE7EF;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px;width:100%;max-width:560px;box-sizing:border-box;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.cap{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F}
+.muted{color:#45464F}
+.note{font-size:13px;line-height:1.5;color:#45464F}
+.hint{font-size:12px;color:#45464F;margin:4px 16px 0;line-height:1.4}
+.field{background:#E3E1E9;border-radius:4px 4px 0 0;border-bottom:1px solid #767680;padding:8px 16px;min-height:56px;box-sizing:border-box;display:flex;align-items:center;gap:12px}
+.field .in{flex:1;min-width:0;display:flex;flex-direction:column}
+.field small{font-size:12px;color:#45464F}
+.field span.v{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.field.focus{border-bottom:2px solid #4459A9}.field.focus small{color:#4459A9}
+.field.err{border-bottom:2px solid #BA1A1A}.field.err small{color:#BA1A1A}
+.btn{height:40px;border-radius:20px;border:0;padding:0 16px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap;justify-content:center;text-decoration:none}
+.btn .ic{font-size:20px}
+.filled{background:#4459A9;color:#fff}.tonal{background:#DEE1F9;color:#171B2C}.textbtn{background:transparent;color:#4459A9;padding:0 12px}.danger{background:transparent;color:#BA1A1A;padding:0 12px}
+.iconbtn{width:40px;height:40px;border-radius:20px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center;flex:0 0 40px}
+.assist{height:32px;border-radius:8px;border:1px solid #C6C5D0;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:0 16px 0 8px;font:500 14px 'Roboto Flex',sans-serif;color:#1B1B21}
+.assist .ic{font-size:18px;color:#4459A9}
+.card{background:#fff;border:1px solid #E3E1E9;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.list{display:flex;flex-direction:column;gap:2px;border-radius:16px;overflow:hidden}
+.vt{display:flex;align-items:center;gap:16px;padding:12px 8px 12px 12px;background:#EFEDF4;border-radius:4px}
+.vt.on{background:#DEE1F9}
+.thumb{width:128px;height:72px;border-radius:8px;color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 128px;position:relative}
+.thumb small{position:absolute;right:4px;bottom:4px;font-size:11px;background:rgba(0,0,0,.65);border-radius:4px;padding:0 4px}
+.thumb.sm{width:96px;height:54px;flex-basis:96px}
+.g1{background:linear-gradient(135deg,#3A3F5C,#6B5A7E)}.g2{background:linear-gradient(135deg,#1E5A4E,#5E8B6E)}.g3{background:linear-gradient(135deg,#6B4B2E,#A9825A)}
+.vt .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.vt .t b{font-size:16px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 8px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap}
+.tag .ic{font-size:16px}
+.t-ok{background:#C8F0CF;color:#0B3A1A}.t-none{background:#FBF8FF;color:#45464F;border:1px solid #C6C5D0}.t-pri{background:#DCE1FF;color:#001550}
+.player{aspect-ratio:16/9;border-radius:16px;color:#fff;display:flex;align-items:center;justify-content:center;position:relative}
+.play{width:64px;height:64px;border-radius:32px;background:rgba(255,255,255,.92);color:#2F3350;display:flex;align-items:center;justify-content:center}
+.switch{width:52px;height:32px;border-radius:16px;background:#4459A9;position:relative;flex:0 0 52px}
+.switch::after{content:'';position:absolute;right:4px;top:4px;width:24px;height:24px;border-radius:12px;background:#fff}
+.ts{display:flex;gap:12px;font-size:14px;line-height:1.5}
+.ts a{font:500 13px ui-monospace,Consolas,monospace;color:#4459A9;text-decoration:none;flex:0 0 40px;padding-top:1px}
+.menu{position:absolute;left:0;top:44px;z-index:2;width:290px;background:#F5F2FA;border-radius:16px;padding:8px 0;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.mi{display:flex;align-items:center;gap:12px;padding:10px 16px;font-size:14px}
+.mi .ic{font-size:20px;color:#45464F}
+.alert{border-radius:16px;padding:12px 16px;display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.45}
+</style>
+</helmet>
+<div class="page">
+
+  <!-- 2. Editor card -->
+  <section class="pane" aria-label="Карточка «Видео» в редакторе">
+    <span class="cap">Редактор — карточка «Видео»</span>
+    <section class="card">
+      <div style="display:flex;align-items:center;gap:8px">
+        <h2 style="margin:0;font-size:18px;font-weight:600;flex:1">Видео</h2>
+        <span class="muted" style="font-size:13px">3 из 5</span>
+      </div>
+      <div class="list">
+        <div class="vt on">
+          <span class="thumb g1"><span class="ic" style="font-size:32px">play_arrow</span><small>6:12</small></span>
+          <span class="t"><b>Present Perfect explained</b><span class="muted" style="font-size:13px">YouTube · с 0:45</span><span style="display:flex;gap:6px;flex-wrap:wrap"><span class="tag t-ok"><span class="ic">subtitles</span>Расшифровка</span><span class="tag t-pri"><span class="ic">visibility</span>видит ученик</span></span></span>
+          <button class="iconbtn" aria-label="Настроить видео: Present Perfect explained"><span class="ic">tune</span></button>
+        </div>
+        <div class="vt">
+          <span class="thumb g2"><span class="ic" style="font-size:32px">play_arrow</span><small>12:40</small></span>
+          <span class="t"><b>Неправильные глаголы: 100 самых частых</b><span class="muted" style="font-size:13px">Rutube</span><span style="display:flex;gap:6px"><span class="tag t-none">Без расшифровки</span></span></span>
+          <button class="iconbtn" aria-label="Настроить видео: Неправильные глаголы"><span class="ic">tune</span></button>
+        </div>
+        <div class="vt">
+          <span class="thumb g3"><span class="ic" style="font-size:32px">play_arrow</span><small>3:05</small></span>
+          <span class="t"><b>Видео 3</b><span class="muted" style="font-size:13px">VK Видео</span><span style="display:flex;gap:6px"><span class="tag t-none">Без расшифровки</span></span></span>
+          <button class="iconbtn" aria-label="Настроить видео: Видео 3"><span class="ic">tune</span></button>
+        </div>
+      </div>
+      <div>
+        <div class="field"><span class="ic muted">add_link</span><span class="in"><span class="v muted">Вставьте ссылку на видео</span></span></div>
+        <div class="hint">YouTube, Rutube и VK Видео играют прямо в задании, другие ссылки откроются в новой вкладке.</div>
+      </div>
+      <div class="note">Перетаскиванием плитки меняют порядок — в нём ученик увидит видео.</div>
+    </section>
+    <span class="cap" style="margin-top:8px">Ссылки, которые не подходят</span>
+    <div>
+      <div class="field err"><span class="ic" style="color:#BA1A1A">link</span><span class="in"><small>Ссылка на видео</small><span class="v">youtu.be/abc</span></span><span class="ic" style="color:#BA1A1A">error</span></div>
+      <div class="hint" style="color:#BA1A1A">Ссылка должна начинаться с http:// или https://</div>
+    </div>
+    <div class="list"><div class="vt" style="padding:8px"><span class="thumb sm" style="background:#E3E1E9;color:#45464F"><span class="ic">open_in_new</span></span><span class="t"><b style="font-size:14px">lingvo.example/lesson-12</b><span class="muted" style="font-size:12px">Плеера нет — ученик откроет по ссылке</span></span></div></div>
+    <div class="note">Пятое видео — поле ссылки скрывается, в заголовке карточки «5 из 5».</div>
+    <div class="note">Плитка — то, что нужно в 9 случаях из 10: превью, название, откуда видео и есть ли расшифровка. Название с YouTube подставляется само; без него — «Видео 3». Всё остальное — по «Настроить» в диалоге поверх редактора; редактор под ним не сдвигается.</div>
+    <div class="note"><b>Было:</b> у каждого видео сразу открыты плеер, три поля, две кнопки субтитров и переключатель — карточка с тремя видео занимала два экрана.</div>
+  </section>
+
+  <!-- 3. Dialog over the editor -->
+  <div class="scrim">
+  <span class="cap" style="color:#1B1B21;align-self:flex-start">Диалог поверх редактора</span>
+  <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="vdlg">
+    <div style="display:flex;align-items:center;gap:8px">
+      <h2 id="vdlg" style="margin:0;font-size:24px;font-weight:400;flex:1">Видео 1 из 3</h2>
+      <button class="iconbtn" aria-label="Предыдущее видео"><span class="ic">chevron_left</span></button>
+      <button class="iconbtn" aria-label="Следующее видео"><span class="ic">chevron_right</span></button>
+    </div>
+    <div class="player g1"><span class="play"><span class="ic" style="font-size:36px;font-variation-settings:'FILL' 1">play_arrow</span></span><span style="position:absolute;left:10px;bottom:8px;font-size:12px;background:rgba(0,0,0,.6);border-radius:4px;padding:1px 6px">с 0:45 — из ссылки</span></div>
+    <div class="field"><span class="in"><small>Название</small><span class="v">Present Perfect explained</span></span></div>
+
+    <div style="display:flex;align-items:center;gap:8px">
+      <b style="font-size:16px;font-weight:600;flex:1">Расшифровка</b>
+      <span class="muted" style="font-size:12px">YouTube · английский, авто</span>
+    </div>
+    <div style="position:relative;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="assist" style="background:#DEE1F9;border-color:#DEE1F9" aria-expanded="true"><span class="ic">closed_caption</span>Субтитры YouTube<span class="ic" style="font-size:18px;color:#171B2C">arrow_drop_up</span></button>
+      <button class="assist"><span class="ic">upload_file</span>Из файла</button>
+      <button class="assist"><span class="ic">edit</span>Править текст</button>
+      <div class="menu" role="menu" aria-label="Субтитры на каком языке взять?">
+        <div class="mi" style="font-size:12px;color:#45464F;padding:4px 16px">Заменит текущую расшифровку</div>
+        <div class="mi" style="background:#DEE1F9"><span class="ic" style="color:#171B2C">check</span><span style="flex:1">Английский<br><span class="muted" style="font-size:12px">от автора видео</span></span></div>
+        <div class="mi"><span class="ic" style="visibility:hidden">check</span><span style="flex:1">Английский<br><span class="muted" style="font-size:12px">автоматические</span></span></div>
+        <div class="mi"><span class="ic" style="visibility:hidden">check</span><span style="flex:1">Русский<br><span class="muted" style="font-size:12px">от автора видео</span></span></div>
+      </div>
+    </div>
+    <div style="background:#F5F2FA;border-radius:16px;padding:12px 16px;display:flex;flex-direction:column;gap:8px">
+      <div class="ts"><a href="#">0:00</a><span>Today we're looking at the present perfect…</span></div>
+      <div class="ts"><a href="#">0:31</a><span>We use it for experiences, when the time isn't important.</span></div>
+      <div class="ts"><a href="#">1:02</a><span>Have you ever been to London? — Yes, I have.</span></div>
+      <span class="muted" style="font-size:12px">…ещё 38 строк · время — переход в плеере</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;font-size:15px"><span style="flex:1">Показывать расшифровку ученику<br><span class="muted" style="font-size:12px">ИИ опирается на неё в любом случае</span></span><span class="switch" role="switch" aria-checked="true" aria-label="Показывать расшифровку ученику"></span></div>
+    <div style="display:flex;align-items:center;gap:8px;padding-top:8px">
+      <button class="btn danger"><span class="ic">delete</span>Убрать видео</button>
+      <span style="flex:1"></span>
+      <button class="btn textbtn">Готово</button>
+    </div>
+  </section>
+  <div class="note" style="color:#1B1B21;max-width:560px">Изменения сохраняются сразу, как и всё в редакторе: «Готово» и Esc просто закрывают окно. Стрелки в заголовке листают видео задания, не закрывая диалог. Одна дорожка — берётся сразу, без меню. Нет субтитров — «Не удалось получить субтитры» под кнопкой и подсказка про файл .srt / .vtt. У Rutube и VK кнопки «Субтитры YouTube» нет.</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -172,7 +172,7 @@ test('the lessons category holds time, price, calls, Google Calendar and the sub
   await page.goto('/teacher/settings/calendar');
   await expect(page).toHaveURL(/\/teacher\/settings\/lessons$/);
   await expect(page.locator('#time-zone')).toContainText('Часовой пояс');
-  await expect(page.locator('#default-price')).toContainText('Цена занятия по умолчанию');
+  await expect(page.locator('#default-price')).toContainText('Цена занятия');
   await expect(page.locator('#meetings')).toBeVisible();
   await expect(page.locator('#google')).toBeVisible();
   await expect(page.locator('tb-calendar-feed-panel')).toContainText('Подписка на календарь');
@@ -187,17 +187,17 @@ test('the price for new students is in «Занятия», the AI page is a cate
   await signIn(page);
   await page.goto('/teacher/settings/payments');
   await expect(page).toHaveURL(/\/teacher\/settings\/lessons$/);
-  await expect(page.locator('#default-price')).toContainText('Цена занятия по умолчанию');
+  await expect(page.locator('#default-price')).toContainText('Цена занятия');
 
   // 234.4: the payments page no longer holds the price
   await page.goto('/teacher/billing');
   await expect(page.locator('tb-billing-overview-page')).toBeVisible();
   await expect(page.locator('#default-price')).toHaveCount(0);
 
-  // the instance has no AI service: the category says so
+  // the instance has no AI connection: the category offers to add one
   await page.goto('/teacher/ai');
   await expect(page).toHaveURL(/\/teacher\/settings\/ai$/);
-  await expect(page.locator('tb-ai-settings-panel')).toContainText('ИИ-помощник не настроен');
+  await expect(page.locator('tb-ai-settings-panel')).toContainText('Подключений пока нет');
   await expect(page.getByRole('navigation', { name: 'Разделы' })).not.toContainText('ИИ-помощник');
 });
 

@@ -19,15 +19,15 @@ public class DueSoonReminder {
     private final TaskRepository tasks;
     private final AssignmentRepository assignments;
     private final ApplicationEventPublisher events;
-    private final HomeworkProperties properties;
+    private final DueSoonWindow window;
     private final Clock clock;
 
     public DueSoonReminder(TaskRepository tasks, AssignmentRepository assignments, ApplicationEventPublisher events,
-            HomeworkProperties properties, Clock clock) {
+            DueSoonWindow window, Clock clock) {
         this.tasks = tasks;
         this.assignments = assignments;
         this.events = events;
-        this.properties = properties;
+        this.window = window;
         this.clock = clock;
     }
 
@@ -37,7 +37,7 @@ public class DueSoonReminder {
     public int sendReminders() {
         Instant now = clock.instant();
         int sent = 0;
-        for (HomeworkTask task : tasks.findDueWithoutReminder(now, now.plus(properties.dueSoonWindow()))) {
+        for (HomeworkTask task : tasks.findDueWithoutReminder(now, now.plus(window.current()))) {
             Assignment assignment = assignments.findById(task.assignmentId()).orElse(null);
             if (assignment == null || assignment.dueAt() == null) {
                 continue;

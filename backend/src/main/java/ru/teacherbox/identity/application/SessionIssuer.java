@@ -3,6 +3,7 @@ package ru.teacherbox.identity.application;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
+import org.springframework.core.env.Environment;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -15,6 +16,7 @@ import ru.teacherbox.identity.persistence.RefreshTokenRepository;
 import ru.teacherbox.identity.persistence.UserRepository;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.security.JwtClaims;
+import ru.teacherbox.shared.settings.LiveProperties;
 
 /** Issues access tokens (JWT) together with a stored refresh token. */
 @Component
@@ -29,15 +31,16 @@ class SessionIssuer {
     private final JwtEncoder jwtEncoder;
     private final RefreshTokenRepository refreshTokens;
     private final UserRepository users;
-    private final IdentityProperties properties;
+    /** Read on every use: the administrator changes the lifetimes and lock rules without a restart (ADR-0056). */
+    private final LiveProperties<IdentityProperties> properties;
     private final Clock clock;
 
     SessionIssuer(JwtEncoder jwtEncoder, RefreshTokenRepository refreshTokens, UserRepository users,
-            IdentityProperties properties, Clock clock) {
+            Environment environment, Clock clock) {
         this.jwtEncoder = jwtEncoder;
         this.refreshTokens = refreshTokens;
         this.users = users;
-        this.properties = properties;
+        this.properties = new LiveProperties<>(environment, IdentityProperties.class);
         this.clock = clock;
     }
 
@@ -53,7 +56,7 @@ class SessionIssuer {
 
     private IssuedSession issue(User user, UUID familyId) {
         Instant now = clock.instant();
-        Instant accessExpiresAt = now.plus(properties.accessTokenTtl());
+        Instant accessExpiresAt = now.plus(properties.get().accessTokenTtl());
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer(ISSUER)
                 .subject(user.id().toString())
@@ -68,7 +71,7 @@ class SessionIssuer {
 
         String rawRefreshToken = SecureTokens.generate();
         RefreshToken refreshToken = RefreshToken.issue(Ids.newId(), user.id(), familyId,
-                SecureTokens.hash(rawRefreshToken), now, properties.refreshTokenTtl());
+                SecureTokens.hash(rawRefreshToken), now, properties.get().refreshTokenTtl());
         refreshTokens.insert(refreshToken);
 
         Session session = new Session(accessToken, accessExpiresAt, rawRefreshToken, refreshToken.expiresAt(),

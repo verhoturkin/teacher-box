@@ -21,7 +21,6 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = {
         "teacherbox.identity.teacher.login=teacher",
         "teacherbox.identity.teacher.password=" + IdentityTestSupport.TEACHER_PASSWORD,
-        "teacherbox.identity.teacher.name=Анна Сергеевна",
         "teacherbox.identity.max-failed-logins=3"
 })
 public @interface IdentityIntegrationTest {

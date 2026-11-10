@@ -16,7 +16,7 @@ import { Button, ButtonDirective, ButtonIcon } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
 import { Textarea } from 'primeng/textarea';
 import { Snackbar } from '@core/snackbar/snackbar';
-import { AiContextChips } from '@features/ai/parts';
+import { AiContextChips, AiModelPick } from '@features/ai/parts';
 import { ToBoardDialog } from '@features/boards/parts';
 import { SHARED_T } from '@shared/i18n/texts';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
@@ -56,6 +56,7 @@ export interface NextWork {
     FilterChips,
     ToBoardDialog,
     AiContextChips,
+    AiModelPick,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class.tb-sheet--inline]': 'inline()' },
@@ -190,7 +191,8 @@ export interface NextWork {
           </section>
         } @else if (aiAvailable()) {
           <tb-ai-context-chips [state]="context" [students]="student()" [row]="compact()" />
-          <div>
+          <div class="tb-sheet__ask">
+            <tb-ai-model-pick [short]="compact()" />
             <p-button
               [label]="t.askAi"
               icon="tb-i tb-i-auto_awesome"
@@ -238,6 +240,14 @@ export interface NextWork {
     />
   `,
   styles: `
+    /* the model beside the AI action, as in the assignment editor (sketch AiEditor) */
+    .tb-sheet__ask {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--tb-space-2);
+      align-items: center;
+    }
+
     :host {
       display: flex;
       flex-direction: column;

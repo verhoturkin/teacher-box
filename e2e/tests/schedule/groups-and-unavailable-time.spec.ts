@@ -9,7 +9,6 @@ import { laterThisWeek, saveLesson } from '../support/this-week';
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
-const ADMIN_PASSWORD = process.env['E2E_ADMIN_PASSWORD'] ?? 'e2e-admin-pass';
 const BASE_URL = process.env['E2E_BASE_URL'] ?? 'http://localhost:8091';
 const RUN = Date.now().toString(36);
 const STUDENT = `Вера ${RUN}`;
@@ -152,19 +151,4 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
   await student.locator('#request-start').pressSequentially(dateTime(freeDay, 12, 5));
   await expect(request).not.toContainText('В это время учитель занят');
   await student.context().close();
-});
-
-test('the administrator chooses the time zone from the list', async ({ page }) => {
-  await signIn(page, 'admin', ADMIN_PASSWORD);
-  await page.goto('/admin/settings/portal');
-  const setting = page
-    .locator('.tb-setting')
-    .filter({ has: page.locator('#setting-TEACHERBOX_TIMEZONE') });
-  await setting.locator('p-select').click();
-  await page.locator('.p-select-overlay input').fill('Moscow');
-  await page.getByRole('option', { name: 'Europe/Moscow (UTC+03:00)' }).click();
-
-  await expect(setting).toContainText('Europe/Moscow (UTC+03:00)');
-  await expect(setting).toContainText('изменено');
-  await expect(page.getByRole('button', { name: /Сохранить и перезапустить$/ })).toBeEnabled();
 });

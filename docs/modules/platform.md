@@ -4,7 +4,8 @@ Infrastructure: security, HTTP errors, migrations bootstrap, file storage, backu
 portal settings, admin sections and diagnostics. Depends on: `shared`; knows no business module
 (it collects SPI beans). Schema `platform`. ADRs: [0002](../adr/0002-embedded-database.md),
 [0004](../adr/0004-delivery-variants.md), [0010](../adr/0010-administrator-and-diagnostics.md),
-[0014](../adr/0014-portal-settings-reset-and-restore.md), [0016](../adr/0016-admin-settings.md). Operations
+[0014](../adr/0014-portal-settings-reset-and-restore.md), [0016](../adr/0016-admin-settings.md),
+[0056](../adr/0056-teacher-settings-in-the-portal.md). Operations
 guide for people — [`docs/operations.md`](../operations.md) (Russian).
 
 ## Parts
@@ -17,12 +18,22 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
 - `core/` — auto-configuration, `Clock` (UTC), `teacherbox.*` platform properties, `shared.persistence.MigrationConnection`
   (module migrations run on one connection outside the pool, open until shutdown: H2 compiles `check (x in (…))`
   against the session that altered the table, and a pooled session is closed by the pool sooner or later).
+  `ZonedJobs` (a `SchedulingConfigurer`, ADR-0056) schedules every SPI bean `shared.time.ZonedJob`
+  (nightly housekeeping of `identity`, `notifications`, `billing`, events; board copies, series
+  extension, backups) by its cron property in the instance time zone; both are read when the next
+  run is computed, and on `SettingsChanged` naming `TEACHERBOX_TIMEZONE` or the job's cron variable
+  the waiting run is cancelled and computed anew. `@Scheduled` stays only for fixed delays.
 - `storage/` — `FileStorage` implementation (`/data/files/<module>/`).
-- `portal/` — `shared.portal.Portal` implementation: name, address (`TEACHERBOX_PUBLIC_URL` wins), source colour,
-  M3 scheme, named contrast, logo
+- `portal/` — `shared.portal.Portal` implementation: name, address (the teacher's; default
+  `https://<TEACHERBOX_DOMAIN>`), source colour, M3 scheme, named contrast, logo
   (`/api/public/portal`, `/api/public/portal/logo`, `/api/public/portal/manifest.webmanifest` — the web app manifest:
   the portal's name, its logo before the default icons `/icons/icon-{192,512,maskable-512}.png`, `theme_color` /
   `background_color` from `?theme=&background=` (`#rrggbb`, else the default `#efecf8`), `id` and `start_url` `/`), first-run setup flag (`/api/teacher/portal/setup`).
+  `PortalTimeZone` keeps the teacher's time zone in `portal_settings.time_zone` (ADR-0056): the bean
+  `shared.time.InstanceTimeZone` reads it on every call (empty or unknown — `Europe/Moscow`),
+  `PUT /api/teacher/settings/time-zone` (`TEACHER` only; a region of the time zone database, else
+  422 `portal.time-zone-invalid`) stores it and publishes `SettingsChanged(TEACHERBOX_TIMEZONE)`.
+  Stored instants do not move; dates, reminders and jobs follow the new zone at once.
   Address changes by admin are audited.
 - `backup/` — scheduled backups (`TEACHERBOX_BACKUP_CRON`; backups of every kind older than
   `TEACHERBOX_BACKUP_KEEP_DAYS`, 14 by default, are deleted after a new one), download, restore via restart (check
@@ -41,18 +52,57 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   and `POST …/files/{id}/download`: technical backup management only, with no archive download to the device,
   OAuth management, account address, client ID or detailed connection errors. The admin backups page reuses
   `DrivePanel` with a page-scoped `DriveStore`; restored cloud copies refresh the server list.
-  OAuth client — `TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID|_SECRET` or entered by the teacher; proxy
+  OAuth client — entered by the teacher (the old variables imported once, ADR-0056); proxy
   `TEACHERBOX_BACKUP_GOOGLE_PROXY`. REST (teacher): `GET|DELETE /api/teacher/backups/google`, `PUT …/client`,
   `POST …/authorize` (`{origin}` → consent URL), `GET …/files`, `POST …/files/{id}/download` (202, the copy is
   adopted as a backup via `BackupService.adopt` after the archive check), `POST …/uploads/{name}` (202); redirect
   `/api/public/backups/google/callback` → `/teacher/settings?drive=connected|denied|expired|failed#backups`.
   `DriveIntegrationCheck` for the administrator (no account address).
-- `settings/` — admin settings (`/api/admin/settings`): `SettingsCatalog` mirrors `.env.example` (test),
-  values in `<data>/config/settings.properties` loaded first by `AdminSettingsLoader`; secrets write-only;
-  Compose variables and accounts read-only; change confirmed by password, then restart. Each setting has a
-  `section` key (`ai`, `backups`…): the page folds by section (`tb-fold-card`, open ones in `?open=`).
-  Sections, titles, hints and value problems come in the language of the request (`Accept-Language`,
-  `Wording` pairs `ru`/`en`, `SettingKind.problem(…, Language)`; 0.11.1, ADR-0036).
+- `settings/` — admin settings (`/api/admin/settings`): `SettingsCatalog` holds every setting;
+  `.env.example`
+  lists only the `ENV_ONLY` ones (deployment, LiveKit, accounts, security, logs — a test compares
+  them); values in `<data>/config/settings.properties` loaded first
+  by `AdminSettingsLoader`; secrets write-only; Compose variables and accounts read-only; change
+  confirmed by password. Each `SettingDefinition` has an `owner` (ADR-0056): `TEACHER` settings are
+  not in the administrator's list (refused with `settings.teacher`) — the view's `moved` list names
+  those whose variable is still set (in `.env` or saved in the file before; values never shown);
+  `ADMIN` ones are editable; `ENV_ONLY` ones read-only — access `DOCKER`, `ACCOUNT` or `ENV` (363.8:
+  the token secret, `BACKUP_RESTART`, `LOGGING_*`, the LiveKit address; a value saved in the file
+  before keeps applying and may only be removed with `null`). A `live` setting applies at once:
+  `AdminSettingsService` replaces the in-force values in the `teacherboxAdminSettings` property
+  source, publishes `shared.settings.SettingsChanged(names)` and answers `applied`; only the other
+  changes restart the portal. Live consumers read through `shared.settings.LiveProperties` (binds
+  their `@ConfigurationProperties` record on every call): homework upload limits (a file is bounded
+  by 25 MB, the request ceiling), session lifetimes and lock rules (per sign-in), the sign-in rate
+  limit (`AuthRateLimitFilter` reads it per request), the web push contact, delivery attempts, link
+  code lifetime, backup and board copies kept. Proxies (YouTube, Google Calendar, Google Drive) go
+  through `OutboundHttp.liveRequestFactory`, which reads the proxy per request and rebuilds the
+  request factory when it changes; the Telegram address and proxy start the saved bot anew
+  (`MessengerChannelFactory.settings()`). The backup crons are `ZonedJob`s (`-` switches a job off,
+  an empty value means the default); the view gives a `CRON` setting `schedule` — `DailySchedule`
+  «вкл/выкл + время» (`0 M H * * *` or `-`, by `SettingsCatalog.DEFAULT_CRONS` when unset; `null`
+  for any other cron). The default AI proxy is live too (364.1: `ai.LlmClients` builds a provider's
+  clients anew when the proxy in force changes). Each
+  setting has a `section` key (`ai`, `backups`…); the page groups the settings into its own cards
+  by name (`admin/settings/settings-page.ts`, 363.8). Sections, titles,
+  hints and value problems come in the language of the request (`Accept-Language`, `Wording` pairs
+  `ru`/`en`, `SettingKind.problem(…, Language)`; 0.11.1, ADR-0036).
+  `EnvImport` (ADR-0056) takes the teacher's old values once: while the beans are created (after
+  the migrations, before any `SmartInitializingSingleton`, runner, job or request) it hands each
+  SPI bean `shared.settings.TeacherSettingsImport` the values of its variables still set
+  (`SettingsFile` wins over `.env`; an empty value is passed on — `REMINDERS=` means none) as
+  `OldSettings`; the module stores each one unless it keeps its own and skips invalid ones. The
+  variables are written to `<data>/config/imported-settings.properties` and never read again — a
+  new instance marks them on its first start; a variable no bean takes yet is left for the version
+  that adds the bean; a failed bean is retried next start. Every start logs a warning (name only)
+  for each teacher's variable still set: «no longer read — remove it from .env». Takers so far:
+  `platform` (`PortalSettingsImport` → `portal_settings.address`, `.time_zone`;
+  `DriveClientImport` → the Drive client), `billing` (currency → `billing.settings.currency`),
+  `schedule` (lesson rules → `schedule.settings`, the schedule's duration over billing's; Google
+  client), `homework` (due-soon window → `homework.settings`), `notifications` (bot tokens →
+  `channel_settings`, no bot name until it starts), `ai` (the `AI_*` variables except the proxy →
+  the first provider and its model, the default one, and the monthly limit; 364.1); the teacher's
+  name is in the account since its creation.
 - `admin/` — logs search and temporary log levels, status (version, uptime, memory, disk, DB, health),
   incomplete Modulith events with resubmit (completed ones are deleted nightly after 7 days,
   `EventPublications.purgeCompleted`), integration checks (`IntegrationCheck` beans; names and answers in
@@ -74,6 +124,11 @@ Backups and settings file live in the data directory, not in the DB.
 
 `features/admin/` (logs, status, events, integrations, backups, settings, diagnostics — `/admin/**`),
 `features/settings/` (teacher settings: portal cards, setup wizard, backups with the Google Drive panel `backups/drive-panel.ts` and `DriveStore`, reset), `core/portal`.
+The setup wizard (`settings/setup/setup-page.ts`, route `/teacher/setup` outside the shell) is
+built from the Settings field components (`settings/fields/`, `billing` `PriceField`, `identity`
+`TeacherNameField` and `ProfilePhoto`, `core/portal` `PortalAddressField`); it saves through the
+same endpoints as Settings and calls `POST /api/teacher/portal/setup` on «Готово»
+([screens.md](../screens.md#first-run-setup-teacher)).
 Portal settings have three separate filled cards: Identity (name and logo), Appearance (base-colour
 swatches, popup custom colour picker with HEX input, nine-scheme gallery and named contrast choices), and
 Preview. At a container width of at least 48 em, Identity and Appearance occupy the left column and Preview

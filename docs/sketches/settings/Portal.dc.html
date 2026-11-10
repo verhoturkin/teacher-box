@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Настройки — портал</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+a{color:#4459A9}a:hover{color:#2B4190}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.app{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;min-height:960px;display:flex;flex-wrap:wrap}
+.rail{width:96px;flex:0 0 96px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 0}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#45464F;text-decoration:none}
+.pill{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.ni.on{color:#1B1B21}.ni.on .pill{background:#DEE1F9;color:#171B2C}
+.pane{flex:999 1 560px;min-width:0;background:#FBF8FF;border-radius:28px;margin:24px 24px 24px 0;padding:24px 24px 96px;display:flex;flex-direction:column;gap:20px;position:relative}
+.cols{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+.cats{flex:1 1 280px;max-width:320px}
+.detail{flex:999 1 520px;min-width:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:16px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:#fff;border:1px solid #E3E1E9;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.card h2{margin:0;font-size:16px;font-weight:600}
+.label{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F;margin-top:4px}
+.muted{color:#45464F}
+.list{display:flex;flex-direction:column;gap:2px;border-radius:16px;overflow:hidden}
+.list>:not(.tile){display:contents}
+.tile{display:flex;align-items:center;gap:16px;min-height:56px;padding:12px 16px;background:#F5F2FA;box-sizing:border-box;border-radius:4px;font-size:14px;color:inherit;text-decoration:none}
+.tile.cur{background:#DEE1F9}
+.tile .t{flex:1;min-width:0}.tile .t b{display:block;font-weight:500;font-size:16px}.tile .t .muted{display:block}
+.av{width:40px;height:40px;border-radius:20px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex:0 0 40px;background:#DEE1F9;color:#171B2C}
+.tile.cur .av{background:#FBF8FF}
+.btn{height:40px;border-radius:20px;border:0;padding:0 16px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap;justify-content:center;text-decoration:none}
+.btn .ic{font-size:20px}
+.filled{background:#4459A9;color:#fff}.tonal{background:#DEE1F9;color:#171B2C}
+.textbtn{background:transparent;color:#4459A9;padding:0 12px}
+.iconbtn{width:40px;height:40px;border-radius:20px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap}
+.t-err{background:#FFDAD6;color:#410002}
+.field{background:#E3E1E9;border-radius:4px 4px 0 0;border-bottom:1px solid #767680;padding:8px 16px;min-height:56px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;width:100%}
+.field label{font-size:12px;color:#45464F}
+.field input{border:0;background:transparent;font:16px 'Roboto Flex',sans-serif;color:#1B1B21;padding:0;width:100%}
+.hint{font-size:12px;color:#45464F;margin:4px 16px 0}
+.swatches{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.swc{display:flex;flex-direction:column;align-items:center;gap:6px;font:12px 'Roboto Flex',sans-serif;color:#45464F;border:0;background:transparent;padding:0}
+.dot{width:40px;height:40px;border-radius:20px;display:flex;align-items:center;justify-content:center;color:#fff}
+.swc.on .dot{outline:3px solid #1B1B21;outline-offset:3px}
+.fold{display:flex;align-items:center;gap:12px;border:0;background:transparent;padding:0;font-family:inherit;color:inherit;width:100%}
+.schemes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.sch{display:flex;flex-direction:column;gap:6px;align-items:flex-start;border:1px solid #C6C5D0;border-radius:12px;padding:8px;background:transparent;font:500 13px 'Roboto Flex',sans-serif;color:#1B1B21;text-align:left}
+.sch.on{background:#DEE1F9;border-color:#DEE1F9;color:#171B2C}
+.smp{display:flex;gap:2px;width:100%;height:20px;border-radius:6px;overflow:hidden}.smp i{flex:1;display:block}
+.seg{display:flex;border:1px solid #767680;border-radius:20px;overflow:hidden;height:40px}
+.seg button{flex:1;border:0;background:transparent;font:500 14px 'Roboto Flex',sans-serif;color:#1B1B21;padding:0 8px;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+.seg button+button{border-left:1px solid #767680}
+.seg button.on{background:#DEE1F9;color:#171B2C}
+.alert{border-radius:16px;padding:12px 16px;display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:1.5}
+.a-info{background:#DCE1FF;color:#001550}
+.prev{border-radius:16px;overflow:hidden;border:1px solid #E3E1E9}
+.savebar{position:absolute;left:50%;transform:translateX(-50%);bottom:24px;background:#303036;color:#F2F0F7;border-radius:16px;padding:8px 8px 8px 20px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,.25);font-size:14px}
+.savebar .textbtn{color:#B7C4FF}
+</style>
+</helmet>
+<div class="app">
+  <nav class="rail" aria-label="Разделы">
+    <a class="ni" href="#"><span class="pill"><span class="ic">home</span></span>Главная</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">calendar_month</span></span>Расписание</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">group</span></span>Ученики</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">assignment</span></span>Задания</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">payments</span></span>Оплаты</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">co_present</span></span>Материалы</a>
+    <span style="flex:1"></span>
+    <a class="ni on" href="Main.dc.html"><span class="pill"><span class="ic" style="font-variation-settings:'FILL' 1">settings</span></span>Настройки</a>
+  </nav>
+
+  <main class="pane">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <h1 style="margin:0;font-size:32px;font-weight:500">Настройки</h1>
+      <span class="muted" style="font-size:14px;flex:1;display:flex;align-items:center;gap:6px"><span class="ic" style="font-size:18px">visibility</span>Оформление применится после «Сохранить»</span>
+      <button class="iconbtn" aria-label="Справка"><span class="ic">help</span></button>
+    </div>
+
+    <div class="cols">
+      <nav class="cats" aria-label="Разделы настроек">
+        <div class="list">
+          <sc-for list="{{cats}}" as="c" hint-placeholder-count="7">
+            <a class="{{c.cls}}" href="{{c.href}}">
+              <span class="av"><span class="ic">{{c.icon}}</span></span>
+              <span class="t"><b>{{c.title}}</b><span class="muted">{{c.sum}}</span></span>
+              <sc-if value="{{c.badge}}" hint-placeholder-val="{{false}}"><span class="tag t-err">{{c.badge}}</span></sc-if>
+            </a>
+          </sc-for>
+        </div>
+      </nav>
+
+      <div class="detail">
+        <div class="stack">
+          <section class="card">
+            <h2>Название и логотип</h2>
+            <div><div class="field"><label for="pn">Название</label><input id="pn" value="Английский с Еленой"></div><div class="hint">В шапке, во вкладке браузера, на странице входа и в календаре.</div></div>
+            <div class="list">
+              <div class="tile">
+                <span class="av" style="border-radius:12px;background:#4459A9;color:#fff">Ан</span>
+                <span class="t"><b>Логотип</b><span class="muted">PNG, JPEG, WebP или SVG до 1 МБ</span></span>
+                <button class="btn tonal"><span class="ic">upload</span>Загрузить</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>Цвет портала</h2>
+            <span class="muted" style="font-size:14px">Кнопки, ссылки и выделения — в этом цвете.</span>
+            <div class="swatches" role="radiogroup" aria-label="Цвет портала">
+              <sc-for list="{{colors}}" as="s" hint-placeholder-count="10">
+                <button class="{{s.cls}}" role="radio" aria-checked="{{s.on}}"><span class="dot" style="background:{{s.hex}}"><sc-if value="{{s.on}}" hint-placeholder-val="{{false}}"><span class="ic" style="font-size:20px">check</span></sc-if></span>{{s.name}}</button>
+              </sc-for>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="flex:1;min-width:0"><div class="field"><label for="own">Свой цвет, #rrggbb</label><input id="own" value="#4459A9"></div></div>
+              <span class="dot" style="background:#4459A9;flex:0 0 40px" aria-hidden="true"></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="muted" style="font-size:14px;flex:1;min-width:160px">Цвет изменён — ученики увидят его после сохранения</span>
+              <button class="btn textbtn">Отменить</button>
+              <button class="btn filled">Сохранить</button>
+            </div>
+          </section>
+
+          <section class="card">
+            <button class="fold" aria-expanded="true"><span style="flex:1;text-align:left"><b style="display:block;font-size:16px;font-weight:600">Тонкая настройка</b><span class="muted" style="font-size:14px">Схема «Мягкая» · контраст стандартный</span></span><span class="ic muted">expand_less</span></button>
+            <span class="label">Цветовая схема</span>
+            <div class="schemes" role="radiogroup" aria-label="Цветовая схема">
+              <sc-for list="{{schemes}}" as="c" hint-placeholder-count="9">
+                <button class="{{c.cls}}" role="radio" aria-checked="{{c.on}}">
+                  <span class="smp"><i style="background:{{c.a}}"></i><i style="background:{{c.b}}"></i><i style="background:{{c.c}}"></i></span>
+                  <span style="display:flex;align-items:center;gap:4px"><sc-if value="{{c.on}}" hint-placeholder-val="{{false}}"><span class="ic" style="font-size:16px">check</span></sc-if>{{c.name}}</span>
+                </button>
+              </sc-for>
+            </div>
+            <span class="label" style="margin-top:4px">Контраст</span>
+            <div class="seg" role="radiogroup" aria-label="Контраст">
+              <button role="radio" aria-checked="false">Пониженный</button>
+              <button class="on" role="radio" aria-checked="true"><span class="ic" style="font-size:18px">check</span>Стандартный</button>
+              <button role="radio" aria-checked="false">Повышенный</button>
+              <button role="radio" aria-checked="false">Максимальный</button>
+            </div>
+            <div class="hint" style="margin-top:0">Текст остаётся читаемым на любом уровне.</div>
+            <div class="alert a-info"><span class="ic">info</span><span>Чтобы текст читался, кнопки и ссылки будут темнее выбранного цвета (в тёмной теме — светлее), как на образцах.</span></div>
+          </section>
+        </div>
+
+        <section class="card">
+          <h2>Предпросмотр</h2>
+          <span class="muted" style="font-size:14px">Так портал увидят вы и ученики — в светлой и тёмной теме.</span>
+          <div class="prev" style="background:#FBF8FF">
+            <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#EFEDF4"><span style="width:24px;height:24px;border-radius:8px;background:#4459A9;color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">Ан</span><span style="font-weight:500">Английский с Еленой</span></div>
+            <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div style="background:#DCE1FF;color:#001550;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+                <span style="font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase">Ближайшее занятие · 15:00</span>
+                <span style="font-size:16px;font-weight:600">Анна Смирнова</span>
+                <span><span class="btn filled">Подключиться</span></span>
+              </div>
+              <div class="list">
+                <div class="tile"><span class="av"><span class="ic" style="font-size:20px">assignment</span></span><span class="t"><b>Работы на проверку · 2</b></span><a class="btn textbtn" href="#">Открыть</a></div>
+              </div>
+            </div>
+          </div>
+          <div class="prev" style="background:#121318;color:#E4E1E9;border-color:#46464F">
+            <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#1B1B21"><span style="width:24px;height:24px;border-radius:8px;background:#B7C4FF;color:#11296F;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">Ан</span><span style="font-weight:500">Английский с Еленой</span><span style="flex:1"></span><span class="ic" style="font-size:18px;color:#C6C5D0">dark_mode</span></div>
+            <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div style="background:#2B4190;color:#DCE1FF;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+                <span style="font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase">Ближайшее занятие · 15:00</span>
+                <span style="font-size:16px;font-weight:600">Анна Смирнова</span>
+                <span><span class="btn" style="background:#B7C4FF;color:#11296F">Подключиться</span></span>
+              </div>
+              <div class="list">
+                <div class="tile" style="background:#1F1F25;color:#E4E1E9"><span class="av" style="background:#424659;color:#DEE1F9"><span class="ic" style="font-size:20px">assignment</span></span><span class="t"><b>Работы на проверку · 2</b></span><a class="btn textbtn" href="#" style="color:#B7C4FF">Открыть</a></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const cur = 'Portal.dc.html';
+    const cats = [
+      { href: 'Main.dc.html', icon: 'badge', title: 'Мой аккаунт', sum: 'Профиль, уведомления, вход' },
+      { href: 'Portal.dc.html', icon: 'palette', title: 'Портал', sum: 'Название, логотип, цвет' },
+      { href: 'Lessons.dc.html', icon: 'event', title: 'Занятия', sum: 'Пояс, цена, правила, календарь' },
+      { href: 'Tags.dc.html', icon: 'sell', title: 'Ученики', sum: 'Теги: уровень, класс, формат' },
+      { href: 'Messengers.dc.html', icon: 'forum', title: 'Мессенджеры', sum: 'Telegram работает', badge: '2' },
+      { href: 'Ai.dc.html', icon: 'auto_awesome', title: 'ИИ-помощник', sum: '2 подключения · 34 % лимита' },
+      { href: 'Data.dc.html', icon: 'database', title: 'Данные', sum: 'Копия сегодня в 03:00' }
+    ].map(c => ({ badge: '', ...c, cls: c.href === cur ? 'tile cur' : 'tile' }));
+    const colors = [
+      ['Индиго', '#4459A9'], ['Синий', '#1F5FAF'], ['Барвинок', '#5B5BB0'], ['Изумруд', '#1F6B52'], ['Малина', '#9C2C6A'],
+      ['Персик', '#9A4A2E'], ['Мокко', '#6E5545'], ['Золото', '#7A5B00'], ['Облако', '#4E5F74'], ['Свой', '#5D5E67']
+    ].map(([name, hex], i) => ({ name, hex, on: i === 0, cls: i === 0 ? 'swc on' : 'swc' }));
+    const sc = (name, a, b, c, on) => ({ name, a, b, c, on: !!on, cls: on ? 'sch on' : 'sch' });
+    const schemes = [
+      sc('Исходная', '#4459A9', '#5B5D72', '#77536D'), sc('Мягкая', '#4459A9', '#DEE1F9', '#FFD7F3', 1), sc('Насыщенная', '#2F4CDB', '#B7C4FF', '#FF9FE0'),
+      sc('Выразительная', '#6A4FA0', '#FFB4A8', '#84D5C4'), sc('Сдержанная', '#5D5E6F', '#E3E1E9', '#C6C5D0'), sc('Монохромная', '#1B1B21', '#767680', '#E3E1E9'),
+      sc('По содержимому', '#3B5BA9', '#BBC6EA', '#A4C8FF'), sc('Радужная', '#4459A9', '#E0A800', '#3E8E55'), sc('Фруктовая', '#9C4146', '#4459A9', '#FFB59E')
+    ];
+    return {
+      schemes, cats, colors };
+  }
+}
+</script>
+</body>
+</html>

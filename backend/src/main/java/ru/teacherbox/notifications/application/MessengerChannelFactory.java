@@ -1,5 +1,6 @@
 package ru.teacherbox.notifications.application;
 
+import java.util.Set;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.notifications.domain.ChannelType;
 
@@ -16,8 +17,13 @@ public interface MessengerChannelFactory {
 
     ChannelType type();
 
-    /** Settings from environment variables, which take precedence over the settings page. */
-    @Nullable Credentials fromEnvironment();
+    /**
+     * The live administrator's settings {@link #create} reads, e.g. a proxy (ADR-0056): when one changes, the
+     * bot is created anew.
+     */
+    default Set<String> settings() {
+        return Set.of();
+    }
 
     /**
      * Creates the adapter; no request is made to the messenger yet.

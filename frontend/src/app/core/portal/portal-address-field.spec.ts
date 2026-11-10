@@ -59,15 +59,44 @@ describe('PortalAddressField', () => {
 
     expect(readableText(hostElement(fixture))).toContain('Это адрес домашней сети');
   });
+});
 
-  it('is read-only when the server sets the address', async () => {
-    control.setValue('https://school.example.com');
-    fixture.componentRef.setInput('fromEnvironment', true);
+describe('PortalAddressField with «Проверить»', () => {
+  let fixture: ComponentFixture<PortalAddressField>;
+  let control: FormControl<string>;
+
+  beforeEach(async () => {
+    TestBed.configureTestingModule({
+      imports: [PortalAddressField],
+      providers: [providePrimeNG()],
+    });
+    control = new FormControl(window.location.origin, { nonNullable: true });
+    fixture = TestBed.createComponent(PortalAddressField);
+    fixture.componentRef.setInput('control', control);
+    fixture.componentRef.setInput('checkable', true);
     await fixture.whenStable();
+  });
 
+  afterEach(() => {
+    fixture.destroy();
+  });
+
+  it('checks the address, shows the result and forgets it when the address changes', async () => {
     const host = hostElement(fixture);
-    expect(requireElement(host, '#portal-address', HTMLInputElement).readOnly).toBe(true);
-    expect(readableText(host)).toContain('попросите администратора');
-    expect(host.querySelector('p-button')).toBeNull();
+    expect(host.textContent).not.toContain('Как в браузере');
+    buttonByText(host, 'Проверить').click();
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(readableText(host)).toContain('Открывается — ссылки в приглашениях будут вести сюда.');
+    });
+
+    typeInto(requireElement(host, 'input', HTMLInputElement), 'school');
+    await fixture.whenStable();
+    expect(readableText(host)).not.toContain('Открывается');
+    buttonByText(host, 'Проверить').click();
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(readableText(host)).toContain('С этого устройства портал по этому адресу не открылся');
+    });
   });
 });

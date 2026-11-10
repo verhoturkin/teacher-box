@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.notifications.application.MessengerChannelFactory.Credentials;
@@ -21,10 +22,10 @@ import ru.teacherbox.notifications.persistence.ChannelSettingsRepository;
 import ru.teacherbox.notifications.persistence.ChannelSettingsRepository.ChannelSettings;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.settings.SettingsChanged;
 
 /**
- * Bots of the messengers: environment variables take precedence, otherwise the teacher enters the
- * token in the settings page. A token is checked with the messenger before it is saved, and the new
+ * Bots of the messengers: the teacher enters the token in the settings page (ADR-0056). A token is checked with the messenger before it is saved, and the new
  * bot starts working without restarting the portal.
  */
 @Service
@@ -35,14 +36,12 @@ public class ChannelSettingsService implements SmartInitializingSingleton {
     /**
      * A messenger as the teacher sets it up.
      *
-     * @param fromEnvironment the bot is set by environment variables and cannot be changed here
-     * @param botName         the bot's name when it was checked (not known for bots from the environment)
-     * @param teacherLinked   the teacher connected their own account
+     * @param botName       the bot's name when it was checked
+     * @param teacherLinked the teacher connected their own account
      */
     public record ChannelSetup(
             ChannelType channel,
             boolean configured,
-            boolean fromEnvironment,
             @Nullable String botName,
             @Nullable Long groupId,
             MessengerStatus connection,
@@ -75,12 +74,7 @@ public class ChannelSettingsService implements SmartInitializingSingleton {
     @Override
     public void afterSingletonsInstantiated() {
         for (MessengerChannelFactory factory : factories.values()) {
-            Credentials environment = factory.fromEnvironment();
-            if (environment != null) {
-                channels.put(factory.create(environment));
-            } else {
-                settings.find(factory.type()).ifPresent(saved -> channels.put(factory.create(credentials(saved))));
-            }
+            settings.find(factory.type()).ifPresent(saved -> channels.put(factory.create(credentials(saved))));
         }
     }
 
@@ -88,9 +82,8 @@ public class ChannelSettingsService implements SmartInitializingSingleton {
         List<ChannelLink> teacherLinks = links.findByRecipient(users.teacherId());
         return factories.values().stream().map(factory -> {
             ChannelType type = factory.type();
-            boolean fromEnvironment = factory.fromEnvironment() != null;
-            ChannelSettings saved = fromEnvironment ? null : settings.find(type).orElse(null);
-            return new ChannelSetup(type, fromEnvironment || saved != null, fromEnvironment,
+            ChannelSettings saved = settings.find(type).orElse(null);
+            return new ChannelSetup(type, saved != null,
                     saved == null ? null : saved.botName(), saved == null ? null : saved.groupId(),
                     health.status(type), teacherLinks.stream().anyMatch(link -> link.channel() == type));
         }).toList();
@@ -103,10 +96,6 @@ public class ChannelSettingsService implements SmartInitializingSingleton {
      */
     public ChannelSetup save(ChannelType type, String token, @Nullable Long groupId) {
         MessengerChannelFactory factory = factory(type);
-        if (factory.fromEnvironment() != null) {
-            throw new BusinessRuleException("notifications.channel-from-environment",
-                    "The bot is set by environment variables");
-        }
         Credentials credentials = new Credentials(token.strip(), groupId);
         MessengerChannel channel;
         String botName;
@@ -122,26 +111,46 @@ public class ChannelSettingsService implements SmartInitializingSingleton {
         return setup(type);
     }
 
+    /**
+     * The administrator changed a messenger's address or proxy (ADR-0056): its bot starts anew with them, as
+     * after a new token. A bot that cannot start keeps its settings and reports the error in the log.
+     */
+    @EventListener
+    public void settingsChanged(SettingsChanged changed) {
+        for (MessengerChannelFactory factory : factories.values()) {
+            ChannelType type = factory.type();
+            if (factory.settings().stream().noneMatch(changed.names()::contains)) {
+                continue;
+            }
+            settings.find(type).ifPresent(saved -> {
+                try {
+                    use(factory.create(credentials(saved)));
+                    log.info("{} bot is started anew with the changed settings", type);
+                } catch (RuntimeException e) {
+                    channels.remove(type);
+                    health.reset(type);
+                    polling.ifAvailable(running -> running.restart(type));
+                    log.warn("{} bot does not start with the changed settings: {}", type, e.getMessage());
+                }
+            });
+        }
+    }
+
     /** Stops the bot configured in the settings page. */
     public void remove(ChannelType type) {
-        if (factory(type).fromEnvironment() != null) {
-            throw new BusinessRuleException("notifications.channel-from-environment",
-                    "The bot is set by environment variables");
-        }
+        factory(type);
         settings.delete(type);
         channels.remove(type);
         health.reset(type);
         polling.ifAvailable(running -> running.restart(type));
     }
 
-    /** A full reset (ADR-0014): the bots configured in the settings stop; their settings are gone. */
+    /** A full reset (ADR-0014): every bot stops; their settings are gone. */
     public void stopConfigured() {
         for (MessengerChannelFactory factory : factories.values()) {
-            if (factory.fromEnvironment() == null) {
-                channels.remove(factory.type());
-                health.reset(factory.type());
-                polling.ifAvailable(running -> running.restart(factory.type()));
-            }
+            channels.remove(factory.type());
+            health.reset(factory.type());
+            polling.ifAvailable(running -> running.restart(factory.type()));
         }
     }
 

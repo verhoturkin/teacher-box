@@ -7,6 +7,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.ai.domain.AiFeature;
@@ -20,6 +21,16 @@ public class AiRequestRepository {
     public record FeatureTotals(long requests, long inputTokens, long outputTokens) {
     }
 
+    /**
+     * Totals of one model; requests logged before models had ids are grouped by the provider and the model they
+     * answered with.
+     *
+     * @param model a model id the provider answered with (the greatest, when it answered with several)
+     */
+    public record ModelTotals(@Nullable UUID modelId, String provider, String model, long requests, long inputTokens,
+            long outputTokens) {
+    }
+
     private final JdbcClient jdbc;
 
     public AiRequestRepository(JdbcClient jdbc) {
@@ -28,15 +39,16 @@ public class AiRequestRepository {
 
     public void insert(AiRequest request) {
         jdbc.sql("""
-                insert into ai.requests (id, feature, provider, model, status, input_tokens, output_tokens,
+                insert into ai.requests (id, feature, provider, model, model_id, status, input_tokens, output_tokens,
                     duration_ms, error, created_at)
-                values (:id, :feature, :provider, :model, :status, :inputTokens, :outputTokens, :durationMs,
+                values (:id, :feature, :provider, :model, :modelId, :status, :inputTokens, :outputTokens, :durationMs,
                     :error, :createdAt)
                 """)
                 .param("id", request.id())
                 .param("feature", request.feature().name())
                 .param("provider", request.provider())
                 .param("model", request.model())
+                .param("modelId", request.modelId())
                 .param("status", request.status().name())
                 .param("inputTokens", request.inputTokens())
                 .param("outputTokens", request.outputTokens())
@@ -76,6 +88,24 @@ public class AiRequestRepository {
         return totals;
     }
 
+    /** Totals per model of requests in {@code [from, to)}, most tokens first. */
+    public List<ModelTotals> totalsByModel(Instant from, Instant to) {
+        return jdbc.sql("""
+                select model_id, max(provider) as provider, max(model) as model, count(*) as requests,
+                    sum(input_tokens) as input_tokens, sum(output_tokens) as output_tokens
+                from ai.requests
+                where created_at >= :from and created_at < :to
+                group by model_id, case when model_id is null then provider || '/' || model end
+                order by sum(input_tokens + output_tokens) desc, max(model)
+                """)
+                .param("from", from)
+                .param("to", to)
+                .query((rs, row) -> new ModelTotals(rs.getObject("model_id", UUID.class), rs.getString("provider"),
+                        rs.getString("model"), rs.getLong("requests"), rs.getLong("input_tokens"),
+                        rs.getLong("output_tokens")))
+                .list();
+    }
+
     /** Requests in {@code [from, to)}, newest first. */
     public List<AiRequest> findRecent(Instant from, Instant to, int limit) {
         return findRecent(from, to, 0, limit);
@@ -84,7 +114,8 @@ public class AiRequestRepository {
     /** Requests in {@code [from, to)}, newest first, skipping the first {@code offset}. */
     public List<AiRequest> findRecent(Instant from, Instant to, int offset, int limit) {
         return jdbc.sql("""
-                select id, feature, provider, model, status, input_tokens, output_tokens, duration_ms, error, created_at
+                select id, feature, provider, model, model_id, status, input_tokens, output_tokens, duration_ms,
+                    error, created_at
                 from ai.requests
                 where created_at >= :from and created_at < :to
                 order by created_at desc, id desc
@@ -104,6 +135,7 @@ public class AiRequestRepository {
                 AiFeature.valueOf(rs.getString("feature")),
                 rs.getString("provider"),
                 rs.getString("model"),
+                rs.getObject("model_id", UUID.class),
                 RequestStatus.valueOf(rs.getString("status")),
                 rs.getLong("input_tokens"),
                 rs.getLong("output_tokens"),

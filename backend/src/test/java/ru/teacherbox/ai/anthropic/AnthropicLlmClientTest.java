@@ -16,11 +16,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import ru.teacherbox.ai.AiFixtures;
+import ru.teacherbox.ai.application.LlmClient;
 import ru.teacherbox.ai.application.LlmException;
 import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
 import ru.teacherbox.ai.application.LlmSource;
+import ru.teacherbox.ai.domain.AiProvider;
+import ru.teacherbox.ai.domain.ProviderKind;
+import ru.teacherbox.shared.http.OutboundProxy;
 import ru.teacherbox.shared.i18n.Language;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -228,6 +232,41 @@ class AnthropicLlmClientTest {
     }
 
     @Test
+    void listsEveryPageOfTheModelsApi() {
+        AtomicReference<Integer> status = new AtomicReference<>(200);
+        server.createContext("/v1/models", exchange -> {
+            boolean second = String.valueOf(exchange.getRequestURI().getQuery()).contains("after_id=claude-opus-5");
+            byte[] body = (status.get() != 200
+                    ? """
+                    {"type": "error", "error": {"type": "authentication_error", "message": "invalid x-api-key"}}
+                    """
+                    : second ? """
+                    {"data": [{"type": "model", "id": "claude-haiku-5", "display_name": "Claude Haiku 5",
+                     "created_at": "2026-01-01T00:00:00Z"}], "has_more": false, "first_id": "claude-haiku-5",
+                     "last_id": "claude-haiku-5"}
+                    """
+                    : """
+                    {"data": [{"type": "model", "id": "claude-opus-5", "display_name": "Claude Opus 5",
+                     "created_at": "2026-01-01T00:00:00Z"}], "has_more": true, "first_id": "claude-opus-5",
+                     "last_id": "claude-opus-5"}
+                    """).getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(status.get(), body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+
+        try (AnthropicLlmClient client = client(null, false)) {
+            assertThat(client.models()).containsExactly(new LlmClient.Listed("claude-opus-5", "Claude Opus 5"),
+                    new LlmClient.Listed("claude-haiku-5", "Claude Haiku 5"));
+
+            status.set(401);
+            assertThatThrownBy(client::models).isInstanceOfSatisfying(LlmException.class,
+                    e -> assertThat(e.getMessage()).contains("401"));
+        }
+    }
+
+    @Test
     void pingReportsNetworkErrors() throws IOException {
         int closedPort;
         try (ServerSocket socket = new ServerSocket(0)) {
@@ -237,31 +276,23 @@ class AnthropicLlmClientTest {
                 .apiKey("test-key").baseUrl("http://127.0.0.1:" + closedPort).maxRetries(0).build(),
                 "claude-opus-5", null, false, 16000)) {
             assertThatThrownBy(() -> client.ping(Language.RU)).isInstanceOf(LlmException.class);
+            assertThatThrownBy(client::models).isInstanceOf(LlmException.class);
         }
     }
 
     @Test
     void goesThroughTheConfiguredProxy() {
         respond(200, message("end_turn", "{\"type\": \"text\", \"text\": \"{}\"}"));
-        ApplicationContextRunner runner = new ApplicationContextRunner()
-                .withUserConfiguration(AnthropicConfigurationTest.PropertiesConfiguration.class,
-                        AnthropicConfiguration.class)
-                .withPropertyValues("teacherbox.ai.provider=anthropic", "teacherbox.ai.api-key=test-key",
-                        "teacherbox.ai.base-url=http://api.anthropic.test",
-                        "teacherbox.ai.proxy=http://127.0.0.1:" + server.getAddress().getPort());
+        AiProvider provider = AiFixtures.provider(ProviderKind.ANTHROPIC, "test-key", "http://api.anthropic.test");
 
-        runner.run(context -> {
-            LlmResponse response = context.getBean(AnthropicLlmClient.class).complete(REQUEST);
+        LlmClient client = new AnthropicAdapter().create(provider, AiFixtures.model(provider, "claude-opus-5"),
+                OutboundProxy.parse("http://127.0.0.1:" + server.getAddress().getPort()));
+        LlmResponse response = client.complete(REQUEST);
 
-            assertThat(response.text()).isEqualTo("{}");
-            assertThat(uri.get()).as("the proxy gets the full target address")
-                    .isEqualTo("http://api.anthropic.test/v1/messages");
-            assertThat(apiKey.get()).isEqualTo("test-key");
-        });
-        runner.withPropertyValues("teacherbox.ai.proxy=socks5://user:secret@vpn:1080")
-                .run(context -> assertThat(context).hasFailed().getFailure()
-                        .hasRootCauseMessage("Proxies with a login and password are not supported; "
-                                + "use a proxy without authentication that listens on a private address"));
+        assertThat(response.text()).isEqualTo("{}");
+        assertThat(uri.get()).as("the proxy gets the full target address")
+                .isEqualTo("http://api.anthropic.test/v1/messages");
+        assertThat(apiKey.get()).isEqualTo("test-key");
     }
 
     private AnthropicLlmClient client(OutputConfig.Effort effort, boolean fallbacks) {

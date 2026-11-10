@@ -191,14 +191,12 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
                 [loading]="pending()"
                 (onClick)="connect()"
               />
-              @if (!status.clientFromEnvironment) {
-                <p-button
-                  [label]="t.editClient"
-                  severity="secondary"
-                  [text]="true"
-                  (onClick)="editingClient.set(true)"
-                />
-              }
+              <p-button
+                [label]="t.editClient"
+                severity="secondary"
+                [text]="true"
+                (onClick)="editingClient.set(true)"
+              />
             </div>
           } @else {
             <p class="tb-muted">{{ t.setupIntro }}</p>

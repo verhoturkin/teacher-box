@@ -1,11 +1,11 @@
 package ru.teacherbox.boards.application;
 
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import ru.teacherbox.shared.time.ZonedJob;
 
 /** Daily copies of the changed boards ({@code TEACHERBOX_BOARDS_BACKUP_CRON}, instance time zone). */
 @Component
-class BoardBackupJob {
+class BoardBackupJob implements ZonedJob {
 
     private final BoardBackupService backups;
 
@@ -13,8 +13,23 @@ class BoardBackupJob {
         this.backups = backups;
     }
 
-    @Scheduled(cron = "${teacherbox.boards.backup-cron:0 0 3 * * *}", zone = "${teacherbox.timezone:Europe/Moscow}")
-    void run() {
+    @Override
+    public String name() {
+        return "board-backups";
+    }
+
+    @Override
+    public String cronProperty() {
+        return "teacherbox.boards.backup-cron";
+    }
+
+    @Override
+    public String defaultCron() {
+        return "0 0 3 * * *";
+    }
+
+    @Override
+    public void run() {
         backups.dailyCopies();
     }
 }

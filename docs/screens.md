@@ -63,7 +63,9 @@ under the queue, the lead spans both rows), otherwise 1; an empty stack is hidde
   / «Пропуск» as a standard group, «Отметить» for a group), student requests («Ответить»), works to
   review («Проверить»), debts («Открыть»). A row: a 40 px tonal icon circle (a debt — error
   container), what is to do, «who · detail», the action tonal. The first-run steps («С чего
-  начать», progress, «Скрыть») close the list until done or hidden; nothing to do — a compact empty
+  начать», progress, «Скрыть») close the list until done or hidden: add a student, connect a
+  messenger, connect the AI assistant (`GET /api/teacher/ai/status` → `enabled`), schedule a lesson
+  — the lesson price is asked in the setup wizard, not here, and a finished step is not shown; nothing to do — a compact empty
   state. Compact (*ours*): a row is one line with a chevron; one action runs it, two (an unmarked
   lesson) open a `tb-dialog kind="sheet"` with both.
 - **«Занятия сегодня»**: time (Label Large, tabular figures), who, status tag; the nearest
@@ -496,6 +498,21 @@ field at every width; the AI never changes text without Insert / Replace; its st
 the pane. The recipients, deadline and materials parts are `ui/recipients-field.ts`,
 `ui/due-chips.ts`, `ui/material-chips.ts`.
 
+**Model switch** (364.5, ADR-0057; sketches 13 `AiEditor`, 19 `TabletEditor`, 22 `PhoneAi`;
+`ai/ai-model-pick.ts`): a 40 dp outlined select «⌂ Claude Opus 5 ▾» (`memory` icon) just before
+«Сгенерировать» in the AI pane and the assignment bar, before «Черновик ИИ» in the review form
+and before «Составить» in the lesson summary. Its menu groups the models by connection (the
+connection's name as the group header, dividers between groups): the default model tagged «По
+умолчанию», the chosen one checked on secondary container, the models of a failed connection
+disabled with «Подключение не работает» and an «Ошибка» tag; «Настроить подключения» opens
+Settings › «ИИ-помощник». Open, the select takes the tertiary container of the AI action (*ours*,
+sketch). Hidden while there is one model or none. The choice is kept on the device
+(`AiModelChoice`, `localStorage`); picking the default model stores nothing, so the device follows
+the default when it changes; a removed model is forgotten (after a 409 `ai.model.unknown` the
+draft is asked again of the default model). On the
+phone sheet the label is cut with «…» at 7 rem (*ours*: the sketch's «Opus 5» shortening has no
+rule that works for every provider's names).
+
 **«Учитываю об учениках»** (362.6, sketches 13, 22; `ai/student-context.ts`): under the request,
 input chips «<tag>: <value>» of the recipients' tags marked «Учитывать в ИИ» that have a value
 (the students it is given to and the ones being chosen); they go with the homework and quiz
@@ -614,10 +631,19 @@ answers with a short snackbar; there is no «Отменить изменения
   while the draft differs from the saved state a row under «Свой цвет» in «Цвет портала» says what
   changed, with «Отменить» (text) and «Сохранить» (filled), and leaving asks «Отменить
   изменения?». Help opens `teacher/appearance`.
-- **«Занятия»:** «Время и цена» (portal time zone — read-only, set by the administrator; «Цена
-  занятия по умолчанию», saved on change), «Звонки» (built-in calls on/off, external link per
-  student, «Открывать Телемост в приложении» on this device), «Google Календарь», «Подписка на
-  календарь».
+- **«Занятия»** (sketch `Lessons`; `settings/lesson-settings.ts`): two card columns — left
+  «Время и цена» and «Правила», right «Звонки», «Google Календарь», «Подписка на календарь»; one
+  column below two 22 rem columns. «Время и цена»: «Часовой пояс» (a select with search, the
+  device's zone first, «Europe/Moscow (UTC+3)» — region and current offset, *ours*: the browser
+  has no localised zone names), «Валюта» (a select of the ISO currencies by name with the sign,
+  «Российский рубль, ₽»; disabled with a `lock` hint once a charge or payment exists), «Длительность
+  занятия» and «Цена занятия» side by side with one shared hint. «Правила»: «Поздняя отмена — меньше
+  чем за» (hours), «Напоминать ученикам о занятии» as input chips «За 24 ч», «За 1 ч» (longest
+  first, «×» removes) and a dashed assist chip «Добавить» that opens a menu of 15 min – 7 days
+  (hidden at three), «Напоминать о сроке задания за» (hours), «Создавать занятия с повтором вперёд
+  на» (weeks). Selects and chips save at once, numbers on leaving the field or Enter; a refused
+  value goes back to the saved one. «Звонки» (built-in calls on/off, external link per student,
+  «Открывать Телемост в приложении» on this device).
 - **«Ученики»:** one card «Теги учеников» (`identity/tags/tags-panel.ts`, ADR-0055, sketch `Tags`):
   the teacher-only tags as segmented M3 list tiles — drag handle (the arrow keys move too), tonal
   `sell` circle, name, the first six values as tags («ещё N»), a tertiary «ИИ» mark for tags the AI
@@ -640,11 +666,77 @@ answers with a short snackbar; there is no «Отменить изменения
   the not connected and «Отправить ссылку», «Кто где» → `/teacher/students`. The messengers of one
   student are on the student card (`/teacher/students/:studentId`), «Написать всем» (the old
   «Сообщение ученикам») on «Ученики».
-- **«ИИ-помощник»:** model, usage by feature, «Последние запросы» with tokens and «Показать ещё»,
-  «Мои промты», «Системные промты» open (edit in place, «Вернуть стандартный»).
+- **«ИИ-помощник»** (sketch `Ai`, ADR-0057; `ai/ai-settings-panel.ts`): two card columns. Left:
+  «Подключения» (`ai/ai-connections-card.ts`) — one segmented list per connection: the head row
+  (surface container) with the kind icon, the name, «N моделей · ключ …a7f2 · напрямую / через
+  прокси», the check tag «Работает» / «Ошибка» (the provider's answer under the name) / «Не
+  проверено» and «⋮» («Изменить…», «Проверить снова», «Удалить…»); its models as rows with a radio
+  in the lead column (one group: the default model), the label, the id (when the label differs)
+  and the effort, a primary tag «По умолчанию» and «⋮» («Сделать основной», «Изменить…» — the
+  model dialog: name, id, under «Дополнительно» effort and fallbacks for Anthropic, answer length
+  and timeout — «Удалить…»); a last row with the text button «Добавить модель». The card's tonal
+  «Добавить» opens `AiProviderDialog`; without connections an empty state with «Добавить
+  подключение». A connection holding the default model is deleted only when no other model could
+  be the default (then the AI is turned off first); otherwise a snackbar asks to pick another
+  default. «Расход за <месяц>» — the share of the limit, the bar and legend split by model
+  (removed ones «(удалена)»; without a limit — shares of the month's tokens), «Лимит в месяц,
+  токенов» saved on leaving the field or Enter. «Последние запросы» with the model, tokens and
+  «Показать ещё». Right: «Мои промты», «Системные промты» open (edit in place, «Вернуть
+  стандартный»).
+- **`AiProviderDialog`** (sketch `AiProviderDialog`; `ai/ai-provider-dialog.ts`, `form` kind:
+  full screen on a phone): overline «Шаг 1 из 2 · Подключение»; the provider as a grid of
+  selectable cards (radio inputs, two columns, one on a phone; chosen — secondary container;
+  *ours*: M3 publishes no selectable card), «Название», «API-ключ» (a password field; a failed
+  check shows «Не получилось: <провайдер> ответил «…»» under it and stays on step 1), the address
+  (shown for OpenAI-compatible, required; for the others under «Дополнительно» with the kind's
+  address as placeholder) and «Прокси»; «Проверить и продолжить». Step 2 «Модели <name>»: a
+  success message with the number offered, the search, a checklist (at most 50 rows, «И ещё N —
+  уточните поиск»; already added ones checked and disabled), «Добавить модель вручную» (an id
+  field + «Добавить»; open at once when the provider lists none), footer «Назад» · «Сохранить · N
+  моделей». A saved connection opens at step 1 without the kind grid («Сохранить»; a blank key
+  keeps it, «Удалить ключ» for OpenAI-compatible) or at step 2 from «Добавить модель».
 - **«Данные»:** «Резервные копии» (the last copy first, «Все N копий», «Создать сейчас», per-copy
   download button and «⋮» with restore / delete / «Отправить в Google Диск»), «Google Диск»,
   «Опасные действия» (restore from a copy and «Очистить портал»; both ask the password in a dialog).
+
+## First-run setup (teacher)
+
+`/teacher/setup` (`features/settings/setup/setup-page.ts`, ADR-0014; sketches `OnbFlow`,
+`OnbPortal`, `OnbTime`, `OnbRules`, `OnbDone`, `OnbPhone`) is a full-screen page outside the
+shell: no rail and no bottom bar. `setupGuard` sends the teacher here while the generated password
+is in force and leads the home page here until the setup is finished.
+
+- **Frame.** Expanded and wider: a 64 px top bar (portal logo, «Первый вход», «Шаг N из M», «?»,
+  «Выйти») over one surface pane (28 px corners, 32 px inside). From large the pane has three
+  columns: a vertical stepper (56 px rows, the current one secondary-container, done steps with a
+  check), the form, and the example column; on expanded the example goes under the form. Compact
+  and medium (`OnbPhone`): the window is the surface, the top bar holds «Назад» (icon), «Шаг N из
+  M» and «Пропустить», a 4 px linear progress under it, one column, and «Далее» fills a
+  `tb-bottom-actions` bar pinned at the bottom.
+- **Steps.** «Пароль» (only while `passwordChangeRequired`; the password form saves it and moves
+  on) → «Вы и портал» → «Время и оплата» → «Правила» → «Готово». Each step is a heading, a lead
+  line and `tb-section-card` cards built from the **Settings field components** (one component per
+  setting: `tb-teacher-name-field`, `tb-profile-photo`, `tb-portal-name-field`,
+  `tb-portal-address-field` with «Проверить», `tb-time-zone-field`, `tb-duration-field`,
+  `tb-currency-field`, `tb-price-field`, `tb-late-cancellation-field`, `tb-reminders-field`,
+  `tb-due-soon-field`, `tb-horizon-field`). Every field is prefilled: the saved value, the time
+  zone of the device and the address the portal is open at.
+- **Actions.** «Назад» (text, never back to «Пароль»), «Пропустить» (text; «Пропустить — настрою
+  позже» on the first step) and «Далее» (filled). «Далее» saves only what changed and moves on;
+  «Пропустить» puts the step back to the saved values and moves on without saving. A step that
+  cannot be saved stays open.
+- **Examples.** «Вы и портал»: «Так увидит ученик» — the sign-in card with the portal's name and
+  the invitation message with the teacher's name and address. «Время и оплата»: «Так будет в
+  расписании» — a lesson next Thursday at 18:00 with the length and price, the month report in the
+  chosen zone, and a note that a later zone change keeps booked lessons. «Правила»: «Как это
+  работает» — one example per rule on a sample week (lesson Thursday 10:00, deadline Friday
+  18:00), following the fields as they change.
+- **«Готово».** «Портал готов»: four cards in two columns (the first secondary-container) —
+  «Добавить первого ученика» (state: how many students), «Подключить мессенджер» (the Settings
+  state line), «Подключить ИИ-помощника» (the AI state), «Google Календарь» («Подключён» /
+  «Нужно подключить заново»). A card or «Перейти в портал» marks the setup done and opens its page.
+  The example column is «Что вы настроили»: rows of the saved values, each with «Изменить» back to
+  its step.
 
 ## Student cabinet
 
@@ -738,11 +830,27 @@ answers with a short snackbar; there is no «Отменить изменения
   фильтры» for period and level; «Логи» and «Ошибки» are list-detail (message, request code, stack
   trace; with nothing open the temporary log levels; «К списку» on compact); «События» is a wide
   page with resubmit of stuck events.
-- **«Интеграции»** and **«Настройки»** (`/admin/integrations[/:section]`,
-  `/admin/settings[/:section]`): list-detail with `tb-pane-nav` (two-line items, a tonal icon
-  circle, a badge with unsaved changes); headings and «Сохранить и перезапустить» in the persistent
-  pane heading; settings grouped by catalog sections and saved together; `?open=<section>`
-  redirects. «Мой аккаунт» (`/admin/account`, from the rail's «Аккаунт») has the account,
+- **«Интеграции»** (`/admin/integrations[/:section]`): list-detail with `tb-pane-nav` (two-line
+  items, a tonal icon circle); `?open=<section>` redirects.
+- **«Настройки портала»** (`/admin/settings`, sketch AdminLive; the old `/admin/settings/:section`
+  and `?open=` addresses open it): one pane, header «Настройки портала» with «?», the note «⚡
+  Применяются сразу, без перезапуска» and «Сохранить» (filled, persistent heading). Above the cards
+  a warning «Перенесено в настройки учителя» lists the teacher's variables still set (`code` —
+  section: title) and a warning while saved values wait for a restart. A card grid (a named
+  exception to one column, ADR-0021): `tb-section-card--flow` cards in three columns from expanded,
+  one below 22 rem each, in a fixed order — «Файлы в заданиях», «Сеть и прокси» (the proxy format
+  line on top) | «Вход и сеансы» (applies from the next sign-in), «Сообщения», «Другие настройки»
+  (an editable setting no card names) | «Резервные копии», «Только в .env». Cards hold filled
+  fields: short kinds (numbers, durations, sizes, yes/no) two in a row, the rest whole; under a
+  field its hint, «Применится после перезапуска портала» for a setting that is not live, and source
+  tag, «изменено», «Вернуть как в .env» once it differs from the default. A daily backup schedule is
+  a `tb-tile` with a switch («Копия портала каждый день» / «Копии досок каждый день») and, while on,
+  a time picker beside its retention field; any other cron stays a text field. «Только в .env» is a
+  segmented list without leads: title, variable name, the current value (secrets as a «задан / не
+  задан» tag) and «Убрать сохранённое» for a value saved before it became read-only; its line says
+  to change them with `sudo teacherbox config`. All edits are saved together with the password: live
+  only — a snackbar «Настройки сохранены и уже действуют»; otherwise the restart dialog.
+- «Мой аккаунт» (`/admin/account`, from the rail's «Аккаунт») has the account,
   «Оформление» and «Выйти». «Копии» is the teacher's backups section in a pane (rows: database
   icon, date + «kind · size», «⋮» «Восстановить…», «Скачать», «Удалить…»).
 

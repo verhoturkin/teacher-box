@@ -90,6 +90,15 @@ public class LessonRepository {
                 .list();
     }
 
+    /** The length of the student's latest lesson; empty before the first one. */
+    public Optional<Integer> lastDuration(UUID studentId) {
+        return jdbc.sql("select duration_minutes from billing.lessons where student_id = :studentId" + ORDER
+                        + " limit 1")
+                .param("studentId", studentId)
+                .query(Integer.class)
+                .optional();
+    }
+
     /** Lessons with a date in {@code [from, to]}, newest first. */
     public List<Lesson> findBetween(LocalDate from, LocalDate to) {
         return jdbc.sql(SELECT + " where lesson_date between :from and :to" + ORDER)

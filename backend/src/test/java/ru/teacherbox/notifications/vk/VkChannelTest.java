@@ -217,16 +217,14 @@ class VkChannelTest {
     }
 
     @Test
-    void factoryReadsTheEnvironment() {
+    void factoryChecksTheTokenAndTheCommunity() {
         ApplicationContextRunner runner = new ApplicationContextRunner()
                 .withUserConfiguration(PropertiesConfiguration.class, VkChannelFactory.class)
                 .withBean(RestClient.Builder.class, RestClient::builder);
 
-        runner.withPropertyValues("teacherbox.notifications.vk.token=", "teacherbox.notifications.vk.group-id=")
-                .run(context -> {
+        runner.run(context -> {
                     VkChannelFactory factory = context.getBean(VkChannelFactory.class);
                     assertThat(factory.type()).isEqualTo(ChannelType.VK);
-                    assertThat(factory.fromEnvironment()).isNull();
                     assertThat(factory.create(new Credentials("token", 1L))).isInstanceOf(VkChannel.class);
                     assertThatThrownBy(() -> factory.create(new Credentials("token", null)))
                             .isInstanceOf(IllegalArgumentException.class);
@@ -235,12 +233,6 @@ class VkChannelTest {
                     assertThatThrownBy(() -> factory.create(new Credentials("token", 0L)))
                             .isInstanceOf(IllegalArgumentException.class);
                 });
-        runner.withPropertyValues("teacherbox.notifications.vk.token=vk-token")
-                .run(context -> assertThatThrownBy(() -> context.getBean(VkChannelFactory.class).fromEnvironment())
-                        .hasMessageContaining("TEACHERBOX_NOTIFICATIONS_VK_GROUP_ID"));
-        runner.withPropertyValues("teacherbox.notifications.vk.token=vk-token", "teacherbox.notifications.vk.group-id=123")
-                .run(context -> assertThat(context.getBean(VkChannelFactory.class).fromEnvironment())
-                        .isEqualTo(new Credentials("vk-token", 123L)));
     }
 
     @EnableConfigurationProperties(NotificationsProperties.class)

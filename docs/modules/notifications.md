@@ -28,11 +28,14 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
   «Справка» button. A messenger that refuses link buttons (Telegram and a portal on a local address) gets the message
   again with «Открыть: https://…» in the text (`OutgoingMessage.linksInText`, in `DeliveryDispatcher` and
   `MessengerPolling`).
-- `DeliveryDispatcher` sends deliveries with backoff (30 s … 1 h, `TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS`);
+- `DeliveryDispatcher` sends deliveries with backoff (30 s … 1 h,
+  `TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS`, a live administrator setting);
   permanent errors (4xx except 429, VK "no access") fail at once. After a temporary failure the rest
   of that messenger's batch waits for the next run, so a hung API costs one read timeout per run.
   Deactivated students get inbox only.
-- Channels — SPI `MessengerChannel`: Telegram (Bot API, long polling, `TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY`),
+- Channels — SPI `MessengerChannel`: Telegram (Bot API, long polling; the token is the teacher's,
+  the proxy `TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY` and
+  address are live administrator settings: the saved bot restarts on change),
   VK (community messages), MAX (Bot API). Env tokens win over UI settings. HTTP/1.1 with `Content-Length`;
   tokens scrubbed from errors.
 - Polling (`MessengerPolling`): one virtual thread per messenger; a restart (settings saved) or a stop interrupts
@@ -90,7 +93,8 @@ No `api` package: nothing depends on `notifications`.
 
 `inbox`, `deliveries`, `preferences`, `channel_settings`, `channel_links`, `link_codes`, `broadcasts`,
 `chat_dialogs`, `chat_buttons`, `chat_settings`, `webpush_keys` (the VAPID pair, one row, 0.38.0),
-`push_subscriptions` (the devices that get web push, 0.38.0).
+`push_subscriptions` (the devices that get web push, 0.38.0). `ChannelSettingsImport` copies the
+`.env` bot tokens into `channel_settings` once (ADR-0056), unless the teacher entered that bot.
 `NotificationsHousekeeping` cleans old records.
 
 ## REST

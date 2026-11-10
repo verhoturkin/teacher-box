@@ -13,19 +13,21 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
-import ru.teacherbox.ai.application.AiProperties;
+import ru.teacherbox.ai.AiFixtures;
+import ru.teacherbox.ai.application.LlmClient;
 import ru.teacherbox.ai.application.LlmException;
 import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
 import ru.teacherbox.ai.application.LlmSource;
 import ru.teacherbox.ai.application.PdfPicturesTest;
+import ru.teacherbox.ai.domain.AiProvider;
+import ru.teacherbox.ai.domain.ProviderKind;
+import ru.teacherbox.shared.http.OutboundProxy;
 import ru.teacherbox.shared.i18n.Language;
 
 class OpenAiCompatibleLlmClientTest {
@@ -179,32 +181,16 @@ class OpenAiCompatibleLlmClientTest {
     }
 
     @Test
-    void configuration() {
-        ApplicationContextRunner runner = new ApplicationContextRunner()
-                .withUserConfiguration(PropertiesConfiguration.class, OpenAiCompatibleConfiguration.class)
-                .withBean(RestClient.Builder.class, RestClient::builder);
+    void adapterUsesTheProvidersAddressKeyAndModel() {
+        OpenAiCompatibleAdapter adapter = new OpenAiCompatibleAdapter(RestClient.builder());
+        AiProvider keyless = AiFixtures.provider(ProviderKind.OPENAI_COMPATIBLE, null, "http://x/v1/");
+        AiProvider keyed = AiFixtures.provider(ProviderKind.OPENAI_COMPATIBLE, "sk-test", "http://x/v1");
 
-        runner.run(context -> assertThat(context).doesNotHaveBean(OpenAiCompatibleLlmClient.class));
-        runner.withPropertyValues("teacherbox.ai.provider=openai-compatible", "teacherbox.ai.model=gpt")
-                .run(context -> assertThat(context).hasFailed().getFailure()
-                        .hasRootCauseMessage("TEACHERBOX_AI_BASE_URL is required for the openai-compatible provider"));
-        runner.withPropertyValues("teacherbox.ai.provider=openai-compatible", "teacherbox.ai.base-url=http://x/v1")
-                .run(context -> assertThat(context).hasFailed().getFailure()
-                        .hasRootCauseMessage("TEACHERBOX_AI_MODEL is required for the openai-compatible provider"));
-        runner.withPropertyValues("teacherbox.ai.provider=OpenAI-Compatible", "teacherbox.ai.base-url=http://x/v1/",
-                        "teacherbox.ai.model=llama3")
-                .run(context -> assertThat(context.getBean(OpenAiCompatibleLlmClient.class).model())
-                        .isEqualTo("llama3"));
-        runner.withPropertyValues("teacherbox.ai.provider=openai-compatible", "teacherbox.ai.base-url=http://x/v1",
-                        "teacherbox.ai.model=gpt", "teacherbox.ai.api-key=sk-test")
-                .run(context -> assertThat(context).hasSingleBean(OpenAiCompatibleLlmClient.class));
-        runner.withPropertyValues("teacherbox.ai.provider=openai-compatible", "teacherbox.ai.base-url=http://x/v1",
-                        "teacherbox.ai.model=gpt", "teacherbox.ai.proxy=socks5://vpn:1080")
-                .run(context -> assertThat(context).hasSingleBean(OpenAiCompatibleLlmClient.class));
-        runner.withPropertyValues("teacherbox.ai.provider=openai-compatible", "teacherbox.ai.base-url=http://x/v1",
-                        "teacherbox.ai.model=gpt", "teacherbox.ai.proxy=ftp://vpn:21")
-                .run(context -> assertThat(context).hasFailed().getFailure()
-                        .hasMessageContaining("TEACHERBOX_AI_PROXY: Unsupported proxy scheme 'ftp'"));
+        assertThat(adapter.kind()).isEqualTo(ProviderKind.OPENAI_COMPATIBLE);
+        assertThat(adapter.create(keyless, AiFixtures.model(keyless, "llama3"), null).model()).isEqualTo("llama3");
+        LlmClient client = adapter.create(keyed, AiFixtures.model(keyed, "gpt"), OutboundProxy.parse("socks5://vpn:1080"));
+        assertThat(client.provider()).isEqualTo("openai-compatible");
+        assertThat(client.model()).isEqualTo("gpt");
     }
 
     @Test
@@ -253,6 +239,30 @@ class OpenAiCompatibleLlmClientTest {
     }
 
     @Test
+    void listsTheProvidersModelsWithTheirNames() {
+        String models = "http://ollama:11434/v1/models";
+        server.expect(requestTo(models)).andExpect(method(HttpMethod.GET)).andRespond(withSuccess("""
+                {"data": [{"id": "openai/gpt-6", "name": "OpenAI: GPT-6"}, {"id": "qwen3:14b", "name": ""},
+                          {"name": "no id"}]}
+                """, MediaType.APPLICATION_JSON));
+        server.expect(requestTo(models)).andRespond(withStatus(HttpStatus.NOT_FOUND));
+        server.expect(requestTo(models)).andRespond(withSuccess("", MediaType.APPLICATION_JSON));
+        server.expect(requestTo(models)).andRespond(withStatus(HttpStatus.FORBIDDEN));
+        server.expect(requestTo(models)).andRespond(request -> {
+            throw new IOException("Connection refused");
+        });
+
+        assertThat(client.models()).containsExactly(new LlmClient.Listed("openai/gpt-6", "OpenAI: GPT-6"),
+                new LlmClient.Listed("qwen3:14b", null));
+        assertThat(client.models()).as("a server without a list").isEmpty();
+        assertThat(client.models()).isEmpty();
+        assertThatThrownBy(client::models).isInstanceOfSatisfying(LlmException.class,
+                e -> assertThat(e.getMessage()).startsWith("Provider 403"));
+        assertThatThrownBy(client::models).isInstanceOf(LlmException.class);
+        server.verify();
+    }
+
+    @Test
     void pingFindsGeminiModelsByTheirFullName() {
         OpenAiCompatibleLlmClient gemini = new OpenAiCompatibleLlmClient(builder.build(), "gemini", "gemini-3.8-flash");
         server.expect(requestTo("http://ollama:11434/v1/models")).andRespond(withSuccess("""
@@ -265,9 +275,5 @@ class OpenAiCompatibleLlmClientTest {
     private void assertReason(LlmException.Reason reason) {
         assertThatThrownBy(() -> client.complete(REQUEST))
                 .isInstanceOfSatisfying(LlmException.class, e -> assertThat(e.reason()).isEqualTo(reason));
-    }
-
-    @EnableConfigurationProperties(AiProperties.class)
-    static class PropertiesConfiguration {
     }
 }

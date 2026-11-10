@@ -90,29 +90,40 @@ class TeacherAiController {
      * @param title   what the teacher already called the assignment
      * @param sources textbook pages, files and video transcripts of the assignment to base the draft on
      * @param context tags of the recipients: defaults the teacher's request overrides
+     * @param modelId a configured model (ADR-0057), the default one when absent
      */
     record HomeworkDraftRequest(
             @NotBlank @Size(max = SavedPrompt.MAX_TEXT) String prompt,
             @Size(max = 200) @Nullable String title,
             @Size(max = DraftSources.MAX_SOURCES) @Nullable List<@Valid @NotNull SourceRequest> sources,
-            @Size(max = MAX_CONTEXT) @Nullable List<@Valid @NotNull ContextRequest> context) {
+            @Size(max = MAX_CONTEXT) @Nullable List<@Valid @NotNull ContextRequest> context,
+            @Nullable UUID modelId) {
     }
 
-    /** @param context tags of the student whose work it is */
+    /**
+     * @param context tags of the student whose work it is
+     * @param modelId a configured model, the default one when absent
+     */
     record ReviewDraftRequest(
             @NotBlank @Size(max = 200) String title,
             @Size(max = 20_000) @Nullable String description,
             @NotBlank @Size(max = 20_000) String answer,
-            @Size(max = MAX_CONTEXT) @Nullable List<@Valid @NotNull ContextRequest> context) {
+            @Size(max = MAX_CONTEXT) @Nullable List<@Valid @NotNull ContextRequest> context,
+            @Nullable UUID modelId) {
     }
 
     private static final int MAX_CONTEXT = 10;
 
-    /** At least one of the topic and the words must say something; the titles are those of the lesson's assignments. */
+    /**
+     * At least one of the topic and the words must say something; the titles are those of the lesson's assignments.
+     *
+     * @param modelId a configured model, the default one when absent
+     */
     record LessonSummaryRequest(
             @Size(max = 200) @Nullable String topic,
             @Size(max = 2_000) @Nullable String words,
-            @Size(max = 20) @Nullable List<@NotBlank @Size(max = 200) String> assignmentTitles) {
+            @Size(max = 20) @Nullable List<@NotBlank @Size(max = 200) String> assignmentTitles,
+            @Nullable UUID modelId) {
 
         @AssertTrue
         boolean isNotEmpty() {
@@ -175,7 +186,7 @@ class TeacherAiController {
             sources.stream().map(SourceRequest::toSource).forEach(all::add);
         }
         all.addAll(uploads);
-        return new HomeworkBrief(request.prompt(), request.title(), all, notes(request.context()));
+        return new HomeworkBrief(request.prompt(), request.title(), all, notes(request.context()), request.modelId());
     }
 
     private static List<StudentNote> notes(@Nullable List<ContextRequest> context) {
@@ -194,13 +205,13 @@ class TeacherAiController {
     @PostMapping("/review-draft")
     ReviewDraft reviewDraft(@Valid @RequestBody ReviewDraftRequest request) {
         return assistant.reviewDraft(new ReviewBrief(request.title(), request.description(), request.answer(),
-                notes(request.context())));
+                notes(request.context()), request.modelId()));
     }
 
     @PostMapping("/lesson-summary")
     LessonSummaryDraft lessonSummary(@Valid @RequestBody LessonSummaryRequest request) {
         return assistant.lessonSummary(new LessonSummaryBrief(request.topic(), request.words(),
-                request.assignmentTitles() == null ? List.of() : request.assignmentTitles()));
+                request.assignmentTitles() == null ? List.of() : request.assignmentTitles(), request.modelId()));
     }
 
     /** @param month {@code yyyy-MM}, the current month by default */

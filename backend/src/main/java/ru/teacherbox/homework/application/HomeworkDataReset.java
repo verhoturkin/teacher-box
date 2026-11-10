@@ -7,7 +7,7 @@ import ru.teacherbox.shared.reset.DataReset;
 
 /**
  * Full reset (ADR-0014): assignments with their videos and quizzes (questions, attempts, answers), tasks,
- * submissions and attachments (the files are deleted by the platform).
+ * submissions and attachments (the files are deleted by the platform), the settings.
  */
 @Component
 class HomeworkDataReset implements DataReset {
@@ -16,7 +16,7 @@ class HomeworkDataReset implements DataReset {
             "homework.assignment_questions", "homework.attachments", "homework.submissions",
             "homework.tasks", "homework.assignment_textbooks", "homework.assignment_videos",
             "homework.assignment_draft_students",
-            "homework.assignments");
+            "homework.assignments", "homework.settings");
 
     private final JdbcClient jdbc;
 
@@ -41,5 +41,6 @@ class HomeworkDataReset implements DataReset {
         jdbc.sql("delete from homework.assignment_textbooks").update();
         jdbc.sql("delete from homework.assignment_videos").update();
         jdbc.sql("delete from homework.assignments").update();
+        jdbc.sql("delete from homework.settings").update();
     }
 }

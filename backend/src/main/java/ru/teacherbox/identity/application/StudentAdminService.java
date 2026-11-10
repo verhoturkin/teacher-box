@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.core.env.Environment;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,7 @@ import ru.teacherbox.identity.persistence.UserRepository;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.settings.LiveProperties;
 
 /** Student management by the teacher. */
 @Service
@@ -45,18 +47,19 @@ public class StudentAdminService {
     private final TagRepository tags;
     private final GroupService groups;
     private final ApplicationEventPublisher events;
-    private final IdentityProperties properties;
+    /** Read on every use: the administrator changes the lifetimes and lock rules without a restart (ADR-0056). */
+    private final LiveProperties<IdentityProperties> properties;
     private final Clock clock;
 
     public StudentAdminService(UserRepository users, InviteRepository invites, RefreshTokenRepository refreshTokens,
-            TagRepository tags, GroupService groups, ApplicationEventPublisher events, IdentityProperties properties, Clock clock) {
+            TagRepository tags, GroupService groups, ApplicationEventPublisher events, Environment environment, Clock clock) {
         this.users = users;
         this.invites = invites;
         this.refreshTokens = refreshTokens;
         this.tags = tags;
         this.groups = groups;
         this.events = events;
-        this.properties = properties;
+        this.properties = new LiveProperties<>(environment, IdentityProperties.class);
         this.clock = clock;
     }
 
@@ -183,7 +186,7 @@ public class StudentAdminService {
         invites.revokeUnusedByUser(student.id(), now);
         String token = SecureTokens.generate();
         Invite invite = Invite.issue(Ids.newId(), student.id(), purpose, SecureTokens.hash(token), now,
-                properties.inviteTtl());
+                properties.get().inviteTtl());
         invites.insert(invite);
         return new IssuedInvite(token, purpose, invite.expiresAt());
     }

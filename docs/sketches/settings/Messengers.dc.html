@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Настройки — мессенджеры</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+a{color:#4459A9}a:hover{color:#2B4190}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.app{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;min-height:960px;display:flex;flex-wrap:wrap}
+.rail{width:96px;flex:0 0 96px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 0}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#45464F;text-decoration:none}
+.pill{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.ni.on{color:#1B1B21}.ni.on .pill{background:#DEE1F9;color:#171B2C}
+.pane{flex:999 1 560px;min-width:0;background:#FBF8FF;border-radius:28px;margin:24px 24px 24px 0;padding:24px;display:flex;flex-direction:column;gap:20px}
+.cols{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+.cats{flex:1 1 280px;max-width:320px}
+.detail{flex:999 1 520px;min-width:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:16px;align-items:start}
+.card{background:#fff;border:1px solid #E3E1E9;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.card h2{margin:0;font-size:16px;font-weight:600}
+.label{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F;margin-top:4px}
+.muted{color:#45464F}
+.list{display:flex;flex-direction:column;gap:2px;border-radius:16px;overflow:hidden}
+.list>:not(.tile){display:contents}
+.tile{display:flex;align-items:center;gap:16px;min-height:56px;padding:12px 16px;background:#F5F2FA;box-sizing:border-box;border-radius:4px;font-size:14px;color:inherit;text-decoration:none}
+.tile.cur{background:#DEE1F9}
+.tile .t{flex:1;min-width:0}.tile .t b{display:block;font-weight:500;font-size:16px}.tile .t .muted{display:block}
+.av{width:40px;height:40px;border-radius:20px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex:0 0 40px;background:#DEE1F9;color:#171B2C}
+.av.s32{width:32px;height:32px;border-radius:16px;flex-basis:32px;font-size:12px}
+.tile.cur .av{background:#FBF8FF}
+.btn{height:40px;border-radius:20px;border:0;padding:0 16px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap;justify-content:center;text-decoration:none}
+.btn .ic{font-size:20px}
+.tonal{background:#DEE1F9;color:#171B2C}.textbtn{background:transparent;color:#4459A9;padding:0 12px}
+.iconbtn{width:40px;height:40px;border-radius:20px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap}
+.t-ok{background:#C8F0CF;color:#0B3A1A}.t-err{background:#FFDAD6;color:#410002}
+.alert{border-radius:16px;padding:12px 16px;display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:1.5}
+.a-err{background:#FFDAD6;color:#410002}
+.bar{height:6px;border-radius:3px;background:#E3E1E9;display:flex;overflow:hidden}
+.bar i{display:block}
+</style>
+</helmet>
+<div class="app">
+  <nav class="rail" aria-label="Разделы">
+    <a class="ni" href="#"><span class="pill"><span class="ic">home</span></span>Главная</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">calendar_month</span></span>Расписание</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">group</span></span>Ученики</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">assignment</span></span>Задания</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">payments</span></span>Оплаты</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">co_present</span></span>Материалы</a>
+    <span style="flex:1"></span>
+    <a class="ni on" href="Main.dc.html"><span class="pill"><span class="ic" style="font-variation-settings:'FILL' 1">settings</span></span>Настройки</a>
+  </nav>
+
+  <main class="pane">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <h1 style="margin:0;font-size:32px;font-weight:500">Настройки</h1>
+      <span class="muted" style="font-size:14px;flex:1;display:flex;align-items:center;gap:6px"><span class="ic" style="font-size:18px">cloud_done</span>Изменения сохраняются сразу</span>
+      <button class="iconbtn" aria-label="Справка"><span class="ic">help</span></button>
+    </div>
+
+    <div class="cols">
+      <nav class="cats" aria-label="Разделы настроек">
+        <div class="list">
+          <sc-for list="{{cats}}" as="c" hint-placeholder-count="7">
+            <a class="{{c.cls}}" href="{{c.href}}">
+              <span class="av"><span class="ic">{{c.icon}}</span></span>
+              <span class="t"><b>{{c.title}}</b><span class="muted">{{c.sum}}</span></span>
+              <sc-if value="{{c.badge}}" hint-placeholder-val="{{false}}"><span class="tag t-err">{{c.badge}}</span></sc-if>
+            </a>
+          </sc-for>
+        </div>
+      </nav>
+
+      <div class="detail">
+        <div class="alert a-err" role="alert" style="grid-column:1/-1;align-items:center">
+          <span class="ic">error</span>
+          <span style="flex:1;min-width:0"><b style="font-weight:600">2 уведомления не доставлены.</b> Илья Петров заблокировал бота в Telegram · вчера, 18:40</span>
+          <button class="btn textbtn" style="color:#410002">Показать</button>
+        </div>
+
+        <section class="card">
+          <h2>Боты</h2>
+          <span class="muted" style="font-size:14px">Через ботов уведомления приходят вам и ученикам. Достаточно одного — там, где ваши ученики.</span>
+          <div class="list">
+            <sc-for list="{{bots}}" as="b" hint-placeholder-count="3">
+              <div class="tile">
+                <span class="av"><span class="ic">{{b.icon}}</span></span>
+                <span class="t"><b>{{b.name}}</b><span class="muted">{{b.state}}</span></span>
+                <sc-if value="{{b.ok}}" hint-placeholder-val="{{false}}"><span class="tag t-ok">Работает</span><button class="iconbtn" aria-label="Действия с ботом"><span class="ic">more_vert</span></button></sc-if>
+                <sc-if value="{{b.off}}" hint-placeholder-val="{{false}}"><a class="btn tonal" href="PhoneConnect.dc.html">Подключить</a></sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div class="list">
+            <button class="tile" aria-expanded="false" style="border:0;width:100%;text-align:left;font-family:inherit">
+              <span class="av"><span class="ic">smart_toy</span></span>
+              <span class="t"><b>Что умеет бот</b><span class="muted">Ученикам — уведомления и меню /menu</span></span>
+              <span class="ic muted">expand_more</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Ученики</h2>
+          <div style="display:flex;align-items:baseline;gap:8px"><b style="font-size:28px;font-weight:500">5 из 7</b><span class="muted" style="font-size:14px">получают уведомления в мессенджере</span></div>
+          <div class="bar" aria-label="Подключены 5 из 7"><i style="width:71%;background:#4459A9"></i></div>
+          <span class="label">Не подключились</span>
+          <div class="list">
+            <sc-for list="{{missing}}" as="s" hint-placeholder-count="2">
+              <div class="tile">
+                <span class="av" style="background:{{s.bg}};color:{{s.fg}}">{{s.ini}}</span>
+                <span class="t"><b>{{s.name}}</b><span class="muted">{{s.why}}</span></span>
+                <button class="btn tonal"><span class="ic">share</span>Отправить ссылку</button>
+              </div>
+            </sc-for>
+          </div>
+          <span class="label">Подключены</span>
+          <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+            <sc-for list="{{ok}}" as="s" hint-placeholder-count="5">
+              <span class="av s32" style="background:{{s.bg}};color:{{s.fg}}" title="{{s.name}}">{{s.ini}}</span>
+            </sc-for>
+            <span style="flex:1"></span>
+            <a class="btn textbtn" href="#">Кто где</a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const cur = 'Messengers.dc.html';
+    const cats = [
+      { href: 'Main.dc.html', icon: 'badge', title: 'Мой аккаунт', sum: 'Профиль, уведомления, вход' },
+      { href: 'Portal.dc.html', icon: 'palette', title: 'Портал', sum: 'Название, логотип, цвет' },
+      { href: 'Lessons.dc.html', icon: 'event', title: 'Занятия', sum: 'Пояс, цена, правила, календарь' },
+      { href: 'Tags.dc.html', icon: 'sell', title: 'Ученики', sum: 'Теги: уровень, класс, формат' },
+      { href: 'Messengers.dc.html', icon: 'forum', title: 'Мессенджеры', sum: 'Telegram работает', badge: '2' },
+      { href: 'Ai.dc.html', icon: 'auto_awesome', title: 'ИИ-помощник', sum: '2 подключения · 34 % лимита' },
+      { href: 'Data.dc.html', icon: 'database', title: 'Данные', sum: 'Копия сегодня в 03:00' }
+    ].map(c => ({ badge: '', ...c, cls: c.href === cur ? 'tile cur' : 'tile' }));
+    return {
+      cats,
+      bots: [
+        { icon: 'send', name: 'Telegram', state: '@english_elena_bot', ok: true, off: false },
+        { icon: 'chat', name: 'ВКонтакте', state: 'Не подключён', ok: false, off: true },
+        { icon: 'forum', name: 'MAX', state: 'Не подключён', ok: false, off: true }
+      ],
+      missing: [
+        { ini: 'ИП', name: 'Илья Петров', why: 'Заблокировал бота вчера', bg: '#FFD7F3', fg: '#390035' },
+        { ini: 'ДО', name: 'Дмитрий Орлов', why: 'Ещё не подключался', bg: '#FFE08D', fg: '#3D2E00' }
+      ],
+      ok: [
+        { ini: 'АС', name: 'Анна Смирнова', bg: '#DCE1FF', fg: '#001550' },
+        { ini: 'МК', name: 'Мария Ковалёва', bg: '#C8F0CF', fg: '#0B3A1A' },
+        { ini: 'ТЛ', name: 'Тимур Лебедев', bg: '#DEE1F9', fg: '#171B2C' },
+        { ini: 'ВН', name: 'Вера Носова', bg: '#FFD7F3', fg: '#390035' },
+        { ini: 'СК', name: 'Сергей Козлов', bg: '#FFE08D', fg: '#3D2E00' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Мастер — вы и портал</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.app{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;min-height:960px;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:12px;height:64px;padding:0 24px}
+.logo{width:40px;height:40px;border-radius:12px;background:#4459A9;color:#fff;display:inline-flex;align-items:center;justify-content:center}
+.pane{flex:1;background:#FBF8FF;border-radius:28px;margin:0 24px 24px;padding:32px;display:grid;grid-template-columns:minmax(220px,280px) minmax(0,1.2fr) minmax(300px,1fr);gap:32px;align-items:start}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.steps li{display:flex;align-items:center;gap:12px;min-height:56px;padding:0 16px;border-radius:28px;font-size:14px;font-weight:500;color:#45464F}
+.steps .n{width:28px;height:28px;border-radius:14px;border:1px solid #767680;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 28px;box-sizing:border-box}
+.steps .done .n{background:#4459A9;border-color:#4459A9;color:#fff}.steps .done .n .ic{font-size:18px}
+.steps .cur{background:#DEE1F9;color:#171B2C}.steps .cur .n{background:#171B2C;border-color:#171B2C;color:#fff}
+.main{display:flex;flex-direction:column;gap:20px;min-width:0}
+.main h1{margin:0;font-size:36px;font-weight:500;line-height:44px}
+.lead{margin:0;font-size:16px;line-height:24px;color:#45464F}
+.card{background:#fff;border:1px solid #E3E1E9;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.card h2{margin:0;font-size:16px;font-weight:600}
+.field{background:#E3E1E9;border-radius:4px 4px 0 0;border-bottom:1px solid #767680;padding:8px 16px;min-height:56px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;width:100%}
+.field label{font-size:12px;color:#45464F}
+.field input{border:0;background:transparent;font:16px 'Roboto Flex',sans-serif;color:#1B1B21;padding:0;width:100%}
+.hint{font-size:12px;color:#45464F;margin:4px 16px 0;display:flex;gap:4px;align-items:center}
+.hint .ic{font-size:16px}
+.hint.ok{color:#1F6B37}
+.row{display:flex;gap:8px;align-items:flex-start}
+.btn{height:40px;border-radius:20px;border:0;padding:0 24px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap;justify-content:center}
+.btn .ic{font-size:20px}
+.filled{background:#4459A9;color:#fff}.tonal{background:#DEE1F9;color:#171B2C}.textbtn{background:transparent;color:#4459A9;padding:0 12px}.outlined{background:transparent;border:1px solid #767680;color:#4459A9}
+.av{width:56px;height:56px;border-radius:28px;display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;background:#FFD7F3;color:#390035;flex:0 0 56px}
+.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.aside{display:flex;flex-direction:column;gap:12px;min-width:0}
+.cap{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F}
+.preview{background:#EFEDF4;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.login{width:100%;max-width:320px;background:#FBF8FF;border-radius:20px;padding:20px;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
+.bubble{align-self:stretch;background:#fff;border-radius:16px 16px 16px 4px;padding:12px 16px;font-size:14px;line-height:1.45}
+.muted{color:#45464F}
+</style>
+</helmet>
+<div class="app">
+  <header class="top">
+    <span class="logo" aria-hidden="true"><span class="ic">school</span></span>
+    <b style="font-size:16px;font-weight:500;flex:1">Первый вход</b>
+    <span class="muted" style="font-size:14px">Шаг 1 из 4</span>
+    <button class="btn textbtn"><span class="ic">logout</span>Выйти</button>
+  </header>
+  <main class="pane">
+    <ol class="steps" aria-label="Шаги">
+      <sc-for list="{{steps}}" as="s" hint-placeholder-count="5">
+        <li class="{{s.cls}}" aria-current="{{s.cur}}"><span class="n"><sc-if value="{{s.done}}" hint-placeholder-val="{{false}}"><span class="ic">check</span></sc-if><sc-if value="{{s.todo}}" hint-placeholder-val="{{true}}">{{s.n}}</sc-if></span>{{s.title}}</li>
+      </sc-for>
+    </ol>
+
+    <section class="main" aria-labelledby="h">
+      <h1 id="h">Вы и портал</h1>
+      <p class="lead">Как вас и портал увидят ученики. Всё можно поменять позже в настройках.</p>
+      <section class="card">
+        <h2>О вас</h2>
+        <div class="row" style="align-items:center;gap:16px"><span class="av">ЕВ</span><button class="btn tonal"><span class="ic">photo_camera</span>Добавить фото</button><span class="muted" style="font-size:13px">Можно позже</span></div>
+        <div><div class="field"><label for="nm">Ваше имя</label><input id="nm" value="Елена Викторовна"></div><div class="hint">Так к вам обращаются в портале и сообщениях бота.</div></div>
+      </section>
+      <section class="card">
+        <h2>Портал</h2>
+        <div><div class="field"><label for="pn">Название</label><input id="pn" value="Английский с Еленой"></div><div class="hint">На странице входа и во вкладке браузера.</div></div>
+        <div class="row"><div style="flex:1"><div class="field"><label for="ad">Адрес портала</label><input id="ad" value="https://school.example.ru"></div><div class="hint ok"><span class="ic">check_circle</span>Открывается — ссылки в приглашениях будут вести сюда.</div></div><button class="btn outlined" style="margin-top:8px">Проверить</button></div>
+      </section>
+      <div class="actions"><button class="btn textbtn">Пропустить — настрою позже</button><span style="flex:1"></span><button class="btn filled">Далее<span class="ic">arrow_forward</span></button></div>
+    </section>
+
+    <aside class="aside" aria-label="Как увидят ученики">
+      <span class="cap">Так увидит ученик</span>
+      <div class="preview">
+        <div class="login">
+          <span class="logo" aria-hidden="true"><span class="ic">school</span></span>
+          <b style="font-size:20px;font-weight:500">Английский с Еленой</b>
+          <span class="muted" style="font-size:14px">Вход для учеников</span>
+          <span style="height:40px;width:100%;border-radius:4px 4px 0 0;background:#E3E1E9"></span>
+          <span style="height:40px;width:100%;border-radius:4px 4px 0 0;background:#E3E1E9"></span>
+          <span class="btn filled" style="width:100%">Войти</span>
+        </div>
+        <div class="bubble"><b>Елена Викторовна</b> приглашает вас в «Английский с Еленой». Задайте логин и пароль: <span style="color:#4459A9">school.example.ru/invite/…</span></div>
+      </div>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const cur = 1;
+    const titles = ['Вы и портал', 'Время и оплата', 'Правила', 'Готово'];
+    const steps = titles.map((title, i) => {
+      const n = i + 1;
+      return { n, title, done: n < cur, todo: n >= cur, cur: n === cur ? 'step' : 'false', cls: n < cur ? 'done' : n === cur ? 'cur' : '' };
+    });
+    return { steps };
+  }
+}
+</script>
+</body>
+</html>

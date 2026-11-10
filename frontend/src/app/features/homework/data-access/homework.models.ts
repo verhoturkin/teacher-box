@@ -382,6 +382,12 @@ export interface MyHomeworkSummary {
   readonly upcoming: MyTask[];
 }
 
+/** Mirrors `TeacherHomeworkSettingsController.HomeworkSettingsView`. */
+export interface HomeworkSettings {
+  /** How long before the due date the student is reminded: 60–4320 (1–72 h). */
+  readonly dueSoonMinutes: number;
+}
+
 /** Mirrors `HomeworkLimitsController.Limits`: what the server takes in an upload. */
 export interface HomeworkLimits {
   /** Bytes. */

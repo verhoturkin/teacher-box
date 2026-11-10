@@ -50,7 +50,7 @@ describe('BotsPanel', () => {
       channelSetup({
         channel: 'VK',
         configured: true,
-        fromEnvironment: true,
+        botName: null,
         connection: { channel: 'VK', connection: 'OK', error: null, checkedAt: null },
       }),
       channelSetup({ channel: 'MAX' }),
@@ -61,13 +61,15 @@ describe('BotsPanel', () => {
     expect(text).toContain('Нет связи');
     expect(text).toContain('Connection timed out');
     expect(text).toContain('попросите администратора');
-    expect(text).toContain('ВКонтакте бот из настроек сервера · ваш аккаунт не подключён');
+    expect(text).toContain(
+      'ВКонтакте бот перенесён из настроек сервера · ваш аккаунт не подключён',
+    );
     expect(text).toContain('Работает');
     expect(text).toContain('MAX не подключён');
     buttonByText(hostElement(fixture), 'Действия с ботом ВКонтакте').click();
     await fixture.whenStable();
     expect(menuItemByText('Настроить')).toBeTruthy();
-    expect(() => menuItemByText('Отключить')).toThrow();
+    expect(menuItemByText('Отключить')).toBeTruthy();
   });
 
   it('opens the wizard and keeps its result', async () => {

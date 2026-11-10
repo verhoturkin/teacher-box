@@ -3,39 +3,56 @@ package ru.teacherbox.schedule;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jayway.jsonpath.JsonPath;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
+import ru.teacherbox.schedule.application.LessonRules;
+import ru.teacherbox.schedule.application.LessonRulesService;
 import ru.teacherbox.schedule.application.ScheduleService;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
 
 @ScheduleIntegrationTest
-@TestPropertySource(properties = "teacherbox.schedule.horizon=84d")
 class LessonRepeatsIntegrationTests {
     @Autowired MockMvcTester mvc;
     @Autowired FakeUserDirectory directory;
     @Autowired MutableClock clock;
     @Autowired JdbcClient jdbc;
     @Autowired ScheduleService schedule;
+    @Autowired LessonRulesService rules;
+    @Autowired TestLessonRules testRules;
+
+    @BeforeEach
+    void twelveWeeksAhead() {
+        LessonRules test = TestLessonRules.RULES;
+        rules.change(new LessonRules(test.defaultDurationMinutes(), test.lateCancellation(), test.reminders(),
+                Duration.ofDays(84)));
+    }
+
+    @AfterEach
+    void backToTheTestRules() {
+        testRules.restore();
+    }
 
     @Test
     void convertsAnExistingLessonToEverySupportedIntervalWithoutChangingItsIdentity() throws Exception {
         for (int weeks = 1; weeks <= 4; weeks++) {
             UUID student = directory.addStudent("Повтор " + weeks);
-            Instant start = clock.instant().plusSeconds(86400L * 2);
+            Instant start = Slots.seriesStart(clock, 2);
             String id = id(post("/lessons", input(student, start, 0)));
             MvcTestResult changed = put(id, edit(start, weeks, "ONLY", "Тема"));
             assertThat(changed).hasStatusOk().bodyJson().satisfies(json -> {
@@ -55,7 +72,7 @@ class LessonRepeatsIntegrationTests {
     @Test
     void followingScopePreservesAnIndividuallyEditedOccurrenceAndOnceKeepsTheSelectedLesson() throws Exception {
         UUID student = directory.addStudent("Исключения");
-        Instant start = clock.instant().plusSeconds(86400L * 2);
+        Instant start = Slots.seriesStart(clock, 2);
         String root = id(post("/lessons", input(student, start, 1)));
         List<Map<String, Object>> before = list(student, start);
         String protectedId = before.get(1).get("id").toString();
@@ -75,7 +92,7 @@ class LessonRepeatsIntegrationTests {
     @Test
     void aDeletedOccurrenceDoesNotRegenerateAndStaleClientVersionsFail() throws Exception {
         UUID student = directory.addStudent("Удаление");
-        Instant start = clock.instant().plusSeconds(86400L * 3);
+        Instant start = Slots.seriesStart(clock, 3);
         MvcTestResult created = post("/lessons", input(student, start, 1));
         String root = id(created);
         String rule = JsonPath.read(body(created), "$.seriesId");
@@ -96,7 +113,7 @@ class LessonRepeatsIntegrationTests {
     void followingCancelAndDeletePreserveChargedAndIndividuallyChangedLessons() throws Exception {
         for (String action : List.of("cancel", "delete")) {
             UUID student = directory.addStudent("Область " + action);
-            Instant start = clock.instant().plusSeconds(86400L * 2);
+            Instant start = Slots.seriesStart(clock, 2);
             String root = id(post("/lessons", input(student, start, 1)));
             List<Map<String, Object>> before = list(student, start);
             String charged = before.get(1).get("id").toString();
@@ -126,7 +143,7 @@ class LessonRepeatsIntegrationTests {
     @Test
     void repeatChangesRequireFollowingScopeAndRejectStaleRuleVersions() throws Exception {
         UUID student = directory.addStudent("Версия повтора");
-        Instant start = clock.instant().plusSeconds(86400L * 2);
+        Instant start = Slots.seriesStart(clock, 2);
         String root = id(post("/lessons", input(student, start, 1)));
         assertThat(put(root, edit(start, 2, "ONLY", "Область"))).hasStatus(HttpStatus.UNPROCESSABLE_ENTITY);
         assertThat(put(root, edit(start, 2, "FOLLOWING", "Версия").replace("\"scope\":", "\"repeatVersion\":-1,\"scope\":")))
@@ -145,7 +162,7 @@ class LessonRepeatsIntegrationTests {
     @Test
     void conflictsInLaterOccurrencesRollBackTheEntireRepeatAndEndDateIsInclusive() throws Exception {
         UUID student = directory.addStudent("Конфликт");
-        Instant start = clock.instant().plusSeconds(86400L * 2);
+        Instant start = Slots.seriesStart(clock, 2);
         id(post("/lessons", input(student, start.plusSeconds(86400L * 7), 0)));
         assertThat(post("/lessons", input(student, start, 1).replace("true", "false")))
                 .hasStatus(HttpStatus.CONFLICT);
@@ -160,7 +177,7 @@ class LessonRepeatsIntegrationTests {
     @Test
     void theTitleRepeatsButTheTopicStaysWithItsLesson() throws Exception {
         UUID student = directory.addStudent("Название");
-        Instant start = clock.instant().plusSeconds(86400L * 2);
+        Instant start = Slots.seriesStart(clock, 2);
         assertThat(post("/lessons", """
                 {"studentId":"%s","startsAt":"%s","durationMinutes":60,"repeatWeeks":1,"allowOverlap":true,
                  "title":"Английский","topic":"Времена"}

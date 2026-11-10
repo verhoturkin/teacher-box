@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Телефон — видео в задании</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.ph{width:390px;height:844px;overflow:hidden;position:relative;font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#FBF8FF;display:flex;flex-direction:column}
+.iconbtn{width:48px;height:48px;border-radius:24px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;flex:0 0 48px}
+.btn{height:40px;border-radius:20px;border:0;padding:0 16px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap;justify-content:center;text-decoration:none}
+.field{background:#E3E1E9;border-radius:4px 4px 0 0;border-bottom:1px solid #767680;padding:8px 16px;min-height:56px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center}
+.field small{font-size:12px;color:#45464F}
+.field span{font-size:16px}
+.player{aspect-ratio:16/9;background:linear-gradient(135deg,#3A3F5C,#6B5A7E);color:#fff;display:flex;align-items:center;justify-content:center;position:relative}
+.play{width:56px;height:56px;border-radius:28px;background:rgba(255,255,255,.92);color:#2F3350;display:flex;align-items:center;justify-content:center}
+.assist{height:32px;border-radius:8px;border:1px solid #C6C5D0;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:0 16px 0 8px;font:500 14px 'Roboto Flex',sans-serif;color:#1B1B21}
+.assist .ic{font-size:18px;color:#4459A9}
+.switch{width:52px;height:32px;border-radius:16px;background:#4459A9;position:relative;flex:0 0 52px}
+.switch::after{content:'';position:absolute;right:4px;top:4px;width:24px;height:24px;border-radius:12px;background:#fff}
+.ts{display:flex;gap:12px;font-size:14px;line-height:1.5}
+.ts a{font:500 13px ui-monospace,Consolas,monospace;color:#4459A9;text-decoration:none;flex:0 0 40px;padding-top:1px}
+.muted{color:#45464F}
+</style>
+</helmet>
+<div class="ph" role="dialog" aria-modal="true" aria-labelledby="vdlg">
+  <header style="height:64px;display:flex;align-items:center;padding:0 12px 0 4px">
+    <a class="iconbtn" href="PhoneEditor.dc.html" aria-label="Закрыть"><span class="ic">close</span></a>
+    <h1 id="vdlg" style="margin:0;font-size:22px;font-weight:400;flex:1">Видео 1 из 3</h1>
+    <a class="btn" href="PhoneEditor.dc.html" style="background:transparent;color:#4459A9;padding:0 12px">Готово</a>
+  </header>
+  <div class="player"><span class="play"><span class="ic" style="font-size:32px;font-variation-settings:'FILL' 1">play_arrow</span></span><span style="position:absolute;left:10px;bottom:8px;font-size:12px;background:rgba(0,0,0,.6);border-radius:4px;padding:1px 6px">YouTube · с 0:45</span></div>
+  <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:14px;padding:16px">
+    <div class="field"><small>Название</small><span>Present Perfect explained</span></div>
+    <div style="display:flex;align-items:center"><b style="flex:1;font-size:16px;font-weight:600">Расшифровка</b><span class="muted" style="font-size:12px">английский, авто</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="assist"><span class="ic">closed_caption</span>Субтитры YouTube</button>
+      <button class="assist"><span class="ic">upload_file</span>Из файла</button>
+      <button class="assist"><span class="ic">edit</span>Править</button>
+    </div>
+    <div style="background:#F5F2FA;border-radius:16px;padding:12px 16px;display:flex;flex-direction:column;gap:8px">
+      <div class="ts"><a href="#">0:00</a><span>Today we're looking at the present perfect…</span></div>
+      <div class="ts"><a href="#">0:31</a><span>We use it for experiences, when the time isn't important.</span></div>
+      <span class="muted" style="font-size:12px">…ещё 39 строк</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;font-size:15px"><span style="flex:1">Показывать расшифровку ученику</span><span class="switch" role="switch" aria-checked="true" aria-label="Показывать расшифровку ученику"></span></div>
+    <div style="display:flex;align-items:center">
+      <button class="btn" style="background:transparent;color:#BA1A1A;padding:0 12px"><span class="ic" style="font-size:20px">delete</span>Убрать видео</button>
+      <span style="flex:1"></span>
+      <button class="iconbtn" aria-label="Предыдущее видео"><span class="ic">chevron_left</span></button>
+      <button class="iconbtn" aria-label="Следующее видео"><span class="ic">chevron_right</span></button>
+    </div>
+  </div>
+  <div style="position:absolute;left:16px;right:16px;bottom:16px;font-size:12px;line-height:1.45;color:#45464F;text-align:center">На вкладке «Задание» видео — плитками, как в 39; касание плитки открывает этот диалог во весь экран; крестик и «Готово» возвращают к плиткам, изменения уже сохранены.</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

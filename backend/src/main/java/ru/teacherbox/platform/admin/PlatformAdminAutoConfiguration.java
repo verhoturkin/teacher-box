@@ -16,6 +16,8 @@ import org.springframework.modulith.events.core.EventPublicationRegistry;
 import ru.teacherbox.platform.core.PlatformCoreAutoConfiguration;
 import ru.teacherbox.platform.core.PlatformProperties;
 import ru.teacherbox.shared.diagnostics.IntegrationCheck;
+import ru.teacherbox.shared.time.InstanceTimeZone;
+import ru.teacherbox.shared.time.ZonedJob;
 import tools.jackson.databind.json.JsonMapper;
 
 /** The administrator's tools (ADR-0010); the REST API is in {@code platform.admin.web}. */
@@ -40,9 +42,9 @@ public class PlatformAdminAutoConfiguration {
     }
 
     @Bean
-    SystemStatus systemStatus(PlatformProperties platform, LogFiles files, ObjectProvider<BuildProperties> build,
-            ObjectProvider<HealthEndpoint> health, Clock clock) {
-        return new SystemStatus(platform.dataDir(), files, platform.timezone().getId(), build, health, clock);
+    SystemStatus systemStatus(PlatformProperties platform, InstanceTimeZone timeZone, LogFiles files,
+            ObjectProvider<BuildProperties> build, ObjectProvider<HealthEndpoint> health, Clock clock) {
+        return new SystemStatus(platform.dataDir(), files, timeZone, build, health, clock);
     }
 
     @Bean
@@ -50,6 +52,13 @@ public class PlatformAdminAutoConfiguration {
             ObjectProvider<IncompleteEventPublications> incomplete,
             ObjectProvider<CompletedEventPublications> completed) {
         return new EventPublications(registry, incomplete, completed);
+    }
+
+    /** Removes the processed events every night ({@link EventPublications#purgeCompleted()}). */
+    @Bean
+    ZonedJob eventsHousekeeping(EventPublications events) {
+        return ZonedJob.of("events-housekeeping", "teacherbox.platform.events-housekeeping-cron", "0 10 4 * * *",
+                events::purgeCompleted);
     }
 
     @Bean

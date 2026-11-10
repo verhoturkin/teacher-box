@@ -102,18 +102,6 @@ function adminSectionMatcher(page: string): UrlMatcher {
   };
 }
 
-/** The old `?open=ai,backups` of the admin settings (the open fold cards) → the first of them as the section. */
-const adminSettingsOpen: CanActivateFn = (route) => {
-  const { open } = route.queryParams as Record<string, string | undefined>;
-  const [section] = (open ?? '').split(',');
-  return (
-    route.params['section'] !== undefined ||
-    section === undefined ||
-    section === '' ||
-    inject(Router).createUrlTree(['/admin/settings', section])
-  );
-};
-
 const N = CORE_T.titles;
 const NAV = CORE_T.nav;
 
@@ -158,16 +146,18 @@ export const routes: Routes = [
     loadComponent: () => import('@features/boards').then((m) => m.BoardPage),
   },
   {
+    // The first setup takes the whole screen, no rail (ADR-0014, sketch OnbFlow).
+    path: 'teacher/setup',
+    title: N.setup,
+    canActivate: [roleGuard('TEACHER'), loadTeacherColors],
+    loadComponent: () => import('@features/settings').then((m) => m.SetupPage),
+  },
+  {
     path: 'teacher',
     canActivate: [roleGuard('TEACHER'), loadTeacherColors],
     canActivateChild: [setupGuard],
     loadComponent: () => import('@core/layout/teacher-layout').then((m) => m.TeacherLayout),
     children: [
-      {
-        path: 'setup',
-        title: N.setup,
-        loadComponent: () => import('@features/settings').then((m) => m.SetupPage),
-      },
       {
         path: '',
         title: NAV.today,
@@ -358,11 +348,12 @@ export const routes: Routes = [
         loadComponent: () => import('@features/admin').then((m) => m.BackupsPage),
       },
       {
-        matcher: adminSectionMatcher('settings'),
+        path: 'settings',
         title: NAV.settings,
-        canActivate: [adminSettingsOpen],
         loadComponent: () => import('@features/admin').then((m) => m.SettingsPage),
       },
+      // the sections of the old list-detail page and its fold cards (`?open=`) are cards of one page now (363.8)
+      { path: 'settings/:section', redirectTo: 'settings' },
       // the archive for the developer is collected on «Состояние»
       { path: 'diagnostics', pathMatch: 'full', redirectTo: 'status' },
       {

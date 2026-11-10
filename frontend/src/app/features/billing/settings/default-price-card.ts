@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { InputNumber } from 'primeng/inputnumber';
 import { toMajorUnits, toMinorUnits } from '@shared/money/money';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { LoadState } from '@shared/ui/load-state';
@@ -8,7 +7,7 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { BillingApi } from '../data-access/billing-api';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { T } from '../i18n/texts';
-import { locale } from '@core/i18n/language';
+import { PriceField } from './price-field';
 
 /**
  * The lesson price of new students and groups, a row of «Время и цена» in the settings category «Занятия»
@@ -16,32 +15,22 @@ import { locale } from '@core/i18n/language';
  */
 @Component({
   selector: 'tb-default-price-card',
-  imports: [ReactiveFormsModule, InputNumber, LoadStateView],
+  imports: [ReactiveFormsModule, LoadStateView, PriceField],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-load-state [state]="state" [what]="t.what" [compact]="true" (retry)="load()">
       <form id="default-price" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
-        <div class="tb-field">
-          <label for="default-price-input">{{ t.label }}</label>
-          <p-inputnumber
-            inputId="default-price-input"
-            formControlName="price"
-            mode="currency"
-            currencyDisplay="narrowSymbol"
-            [currency]="currency()"
-            [locale]="locale"
-            [min]="0"
-            [fluid]="true"
-            (onBlur)="save()"
-          />
-          <small class="tb-hint">{{ t.hint }}</small>
-        </div>
+        <tb-price-field
+          [control]="form.controls.price"
+          [currency]="currency()"
+          [short]="short()"
+          (committed)="save()"
+        />
       </form>
     </tb-load-state>
   `,
 })
 export class DefaultPriceCard implements OnInit {
-  protected readonly locale = locale();
   protected readonly t = T.defaultPrice;
   private readonly api = inject(BillingApi);
   private readonly snackbar = inject(Snackbar);
@@ -52,6 +41,9 @@ export class DefaultPriceCard implements OnInit {
   protected readonly state = new LoadState();
   private pending = false;
 
+  /** Beside another field that shares its hint (sketch Lessons): the short label, no hint. */
+  readonly short = input(false);
+
   readonly form = new FormGroup({
     price: new FormControl<number | null>(null, [Validators.required, Validators.min(0)]),
   });
@@ -60,7 +52,8 @@ export class DefaultPriceCard implements OnInit {
     this.load();
   }
 
-  protected load(): void {
+  /** Also after the currency changed: the price is shown in the new one. */
+  load(): void {
     this.api
       .overview(quietContext())
       .pipe(this.state.track())

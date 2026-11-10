@@ -11,7 +11,6 @@ import org.springframework.modulith.events.CompletedEventPublications;
 import org.springframework.modulith.events.IncompleteEventPublications;
 import org.springframework.modulith.events.core.EventPublicationRegistry;
 import org.springframework.modulith.events.core.TargetEventPublication;
-import org.springframework.scheduling.annotation.Scheduled;
 
 /**
  * Domain events that a listener has not processed yet (Event Publication Registry). Only the event type and
@@ -76,8 +75,6 @@ public class EventPublications {
     }
 
     /** Removes events that every listener processed more than {@link #COMPLETED_RETENTION} ago. */
-    @Scheduled(cron = "${teacherbox.platform.events-housekeeping-cron:0 10 4 * * *}",
-            zone = "${teacherbox.timezone:Europe/Moscow}")
     public void purgeCompleted() {
         completed.ifAvailable(events -> events.deletePublicationsOlderThan(COMPLETED_RETENTION));
     }

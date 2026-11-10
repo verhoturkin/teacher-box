@@ -61,4 +61,12 @@ describe('DefaultPriceCard', () => {
     fixture.componentInstance.save();
     backend.expectOne('/api/teacher/billing/default-price').flush({ lessonPrice: 90_000 });
   });
+
+  it('shows the short label without its hint beside a field that shares it', async () => {
+    fixture.componentRef.setInput('short', true);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+    expect(requireElement(host, 'label', HTMLLabelElement).textContent.trim()).toBe('Цена занятия');
+    expect(host.querySelector('.tb-hint')).toBeNull();
+  });
 });

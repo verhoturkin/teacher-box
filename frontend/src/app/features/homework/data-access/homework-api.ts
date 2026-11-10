@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, shareReplay } from 'rxjs';
 import {
+  HomeworkSettings,
   AssignmentDetails,
   AssignmentInput,
   AssignmentSummary,
@@ -258,6 +259,17 @@ export class HomeworkApi {
     return this.http.get<HomeworkSummary>('/api/teacher/homework/summary', {
       context: quietContext(),
     });
+  }
+
+  /** The teacher's homework settings; the load is quiet (its card shows a failure itself). */
+  settings(): Observable<HomeworkSettings> {
+    return this.http.get<HomeworkSettings>('/api/teacher/homework/settings', {
+      context: quietContext(),
+    });
+  }
+
+  changeSettings(settings: HomeworkSettings): Observable<HomeworkSettings> {
+    return this.http.put<HomeworkSettings>('/api/teacher/homework/settings', settings);
   }
 
   /** Asked once: the limits change only with the server settings. */

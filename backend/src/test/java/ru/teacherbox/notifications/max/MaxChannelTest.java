@@ -190,7 +190,7 @@ class MaxChannelTest {
     }
 
     @Test
-    void factoryReadsTheEnvironment() {
+    void factoryChecksTheToken() {
         ApplicationContextRunner runner = new ApplicationContextRunner()
                 .withUserConfiguration(PropertiesConfiguration.class, MaxChannelFactory.class)
                 .withBean(RestClient.Builder.class, RestClient::builder);
@@ -198,14 +198,10 @@ class MaxChannelTest {
         runner.run(context -> {
             MaxChannelFactory factory = context.getBean(MaxChannelFactory.class);
             assertThat(factory.type()).isEqualTo(ChannelType.MAX);
-            assertThat(factory.fromEnvironment()).isNull();
             assertThat(factory.create(new Credentials("token", null))).isInstanceOf(MaxChannel.class);
             assertThatThrownBy(() -> factory.create(new Credentials("", null)))
                     .isInstanceOf(IllegalArgumentException.class);
         });
-        runner.withPropertyValues("teacherbox.notifications.max.token=max-token")
-                .run(context -> assertThat(context.getBean(MaxChannelFactory.class).fromEnvironment())
-                        .isEqualTo(new Credentials("max-token", null)));
     }
 
     @EnableConfigurationProperties(NotificationsProperties.class)

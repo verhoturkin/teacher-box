@@ -25,12 +25,12 @@ class StudentLessons {
     static final int DAYS_AHEAD = 30;
 
     private final ScheduleQueries queries;
-    private final ZoneId zone;
+    private final InstanceTimeZone timeZone;
     private final Clock clock;
 
     StudentLessons(ScheduleQueries queries, InstanceTimeZone timeZone, Clock clock) {
         this.queries = queries;
-        this.zone = timeZone.zoneId();
+        this.timeZone = timeZone;
         this.clock = clock;
     }
 
@@ -39,11 +39,11 @@ class StudentLessons {
     }
 
     LocalDate today() {
-        return LocalDate.ofInstant(clock.instant(), zone);
+        return LocalDate.ofInstant(clock.instant(), zone());
     }
 
     ZoneId zone() {
-        return zone;
+        return timeZone.zoneId();
     }
 
     /** Planned lessons that have not ended yet, soonest first. */
@@ -71,7 +71,7 @@ class StudentLessons {
 
     /** «пн 29.09, 18:30–19:30 — группа «ОГЭ» — Дроби». */
     String describe(LessonView lesson, Language language) {
-        StringBuilder text = new StringBuilder(ChatText.range(lesson.startsAt(), lesson.endsAt(), zone, language));
+        StringBuilder text = new StringBuilder(ChatText.range(lesson.startsAt(), lesson.endsAt(), zone(), language));
         if (lesson.groupName() != null) {
             text.append(ScheduleChatTexts.of(language).inGroup(lesson.groupName()));
         }
@@ -83,7 +83,7 @@ class StudentLessons {
 
     /** «пн 29.09 18:30 · ОГЭ», for a button. */
     String label(LessonView lesson, Language language) {
-        String when = ChatText.shortDayTime(lesson.startsAt(), zone, language);
+        String when = ChatText.shortDayTime(lesson.startsAt(), zone(), language);
         return lesson.groupName() == null ? when : when + " · " + lesson.groupName();
     }
 

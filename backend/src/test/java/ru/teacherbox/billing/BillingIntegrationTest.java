@@ -10,7 +10,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.modulith.test.ApplicationModuleTest;
-import org.springframework.test.context.TestPropertySource;
 import ru.teacherbox.billing.application.DefaultLessonPrice;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
@@ -26,9 +25,6 @@ import ru.teacherbox.testing.MutableClock;
 @ApplicationModuleTest
 @AutoConfigureMockMvc
 @Import(BillingIntegrationTest.Beans.class)
-@TestPropertySource(properties = {
-        "teacherbox.billing.default-lesson-duration=60"
-})
 public @interface BillingIntegrationTest {
 
     @TestConfiguration

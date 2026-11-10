@@ -93,8 +93,6 @@ export const en: Translation<typeof ru> = {
   portalAddress: {
     label: 'Portal address',
     asInBrowser: 'Use current address',
-    fromServer: 'Change this address in the server settings (TEACHERBOX_PUBLIC_URL).',
-    fromAdministrator: 'Contact the portal administrator to change this address.',
     hint: 'Students use this address to access the portal. It is also used in invitation links, bot messages and calendar subscriptions.',
     invalid: 'Enter a base URL such as https://school.example.com, without a path.',
     local:
@@ -210,8 +208,6 @@ export const en: Translation<typeof ru> = {
       'notification.no-recipients': 'There are no students to send the message to',
       'notifications.channel-unavailable': 'This messenger is not set up on the server',
       'notifications.channel-not-linked': 'The messenger is not connected',
-      'notifications.channel-from-environment':
-        'This bot is set by the portal administrator — ask the administrator to change it',
       'notifications.channel-check-failed':
         'The messenger did not accept the token. Check it and try again',
       'notifications.test-failed': 'The test message could not be sent',
@@ -224,14 +220,22 @@ export const en: Translation<typeof ru> = {
       'backup.exists': 'This backup is already on the server',
       'backup.google-not-connected': 'Google Drive is not connected',
       'backup.google-client-missing': 'Enter the Client ID and the Client secret first',
-      'backup.google-client-from-environment':
-        'The Google OAuth client is set by the portal administrator',
       'backup.google-origin-invalid': 'The portal address could not be determined',
       'portal.logo-invalid': 'The logo must be a PNG, JPEG, WebP or SVG picture',
       'portal.logo-too-large': 'The logo is larger than 1 MB',
       'portal.accent-invalid': 'There is no such colour',
       'portal.address-invalid':
         'Enter a base URL such as https://school.example.com, without a path',
+      'portal.time-zone-invalid': 'That time zone doesn’t exist',
+      'billing.currency-invalid': 'That currency doesn’t exist',
+      'billing.currency-locked': 'Charges or payments have been recorded, so the currency is fixed',
+      'schedule.settings-duration-invalid': 'A lesson must last between 15 and 480 minutes',
+      'schedule.settings-late-cancellation-invalid':
+        'The late cancellation window can be up to 7 days',
+      'schedule.settings-reminders-invalid':
+        'Up to three reminders, each between 15 minutes and 7 days before',
+      'schedule.settings-horizon-invalid': 'Repeating lessons can be created 4–26 weeks ahead',
+      'homework.settings-due-soon-invalid': 'The deadline reminder must be 1–72 hours before',
       'auth.rate-limited': 'Too many sign-in attempts. Wait a minute and try again',
       // ai
       'ai.disabled': 'The AI assistant is not set up on the server',
@@ -248,6 +252,14 @@ export const en: Translation<typeof ru> = {
       'ai.prompt-title-invalid': 'Prompt titles must be between 1 and 100 characters',
       'ai.prompt-text-invalid': 'Prompts must be between 1 and 4000 characters',
       'ai.system-prompt-invalid': 'System prompts must be between 1 and 10,000 characters',
+      'ai.provider.holds-default':
+        'This connection holds the default model. Make another model the default first',
+      'ai.provider.key-required': 'This provider needs an API key',
+      'ai.provider.address-required': 'Enter the API address of your server',
+      'ai.provider.not-found': 'The connection is not found — it may have been deleted',
+      'ai.provider.unavailable': 'The provider did not respond. Check the key, address and proxy',
+      'ai.model.duplicate': 'This connection already has this model',
+      'ai.model.not-found': 'The model is not found — it may have been deleted',
       // schedule
       'schedule.student-not-found': 'The student could not be found or their account is disabled',
       'schedule.lesson-not-found': 'Lesson not found',
@@ -295,8 +307,6 @@ export const en: Translation<typeof ru> = {
       'schedule.request-resolved': 'The request has already been answered',
       'schedule.students-only': 'This section is for students only',
       'schedule.google-client-missing': 'Enter the Client ID and the Client secret first',
-      'schedule.google-client-from-environment':
-        'The Google OAuth client is set by the portal administrator',
       'schedule.google-origin-invalid': 'The portal address could not be determined',
       'meetings.link-invalid': 'The link must start with http:// or https://',
       'meetings.room-not-found': 'This room no longer exists',

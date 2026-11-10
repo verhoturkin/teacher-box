@@ -5,6 +5,7 @@
 export { HomeworkApi } from './data-access/homework-api';
 export type {
   AssignmentSummary,
+  HomeworkSettings,
   HomeworkSummary,
   MyHomeworkSummary,
   ReviewQueueItem,

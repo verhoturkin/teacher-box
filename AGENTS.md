@@ -46,7 +46,7 @@ ready images in GHCR ([ADR-0032](docs/adr/0032-ready-images-and-installer.md)).
 ## 3. Repository layout
 
 ```
-docs/          PLAN.md, design-system.md, screens.md, glossary.md, operations.md, modules/, adr/, archive/, wiki/ (user guides)
+docs/          PLAN.md, design-system.md, screens.md, glossary.md, operations.md, modules/, adr/, archive/, wiki/ (user guides), sketches/ (design boards the plan names)
 backend/       Spring Boot app — src/main/java/ru/teacherbox/{shared,platform,<modules>}
 frontend/      Angular app — src/app/{core,shared,features/<module>}
 docker/        Dockerfile (targets backend, frontend), nginx
@@ -159,8 +159,8 @@ printed tail first, then grep `.verify-logs/<step>.log` — don't read whole log
 - No secrets in the repo. Settings only via `TEACHERBOX_*` env vars; each new one → `.env.example`,
   `platform.settings.SettingsCatalog` ([ADR-0016](docs/adr/0016-admin-settings.md)), `docs/wiki/` user docs
   (README stays slim, skill `new-setting`).
-- Time in UTC (`Instant`); teacher time zone — `TEACHERBOX_TIMEZONE`. Money — `long` minor units + instance
-  currency, never `double`.
+- Time in UTC (`Instant`); teacher time zone — `shared.time.InstanceTimeZone`, read per call.
+  Money — `long` minor units + instance currency, never `double`.
 - An architecture change → a new ADR (row in `docs/adr/README.md`) and an update of the spec it changes.
 
 ### 6.2 Backend — [`backend/AGENTS.md`](backend/AGENTS.md)

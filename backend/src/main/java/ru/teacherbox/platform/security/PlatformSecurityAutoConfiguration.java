@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -31,6 +32,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import ru.teacherbox.platform.core.PlatformCoreAutoConfiguration;
 import ru.teacherbox.platform.core.PlatformProperties;
 import ru.teacherbox.shared.security.JwtClaims;
+import ru.teacherbox.shared.settings.LiveProperties;
 
 /**
  * Stateless API security based on HS256-signed access tokens.
@@ -89,8 +91,10 @@ public class PlatformSecurityAutoConfiguration {
             "camera=(self), microphone=(self), display-capture=(self), geolocation=()";
 
     @Bean
-    SecurityFilterChain apiSecurityFilterChain(HttpSecurity http, PlatformSecurityProperties properties, Clock clock)
+    SecurityFilterChain apiSecurityFilterChain(HttpSecurity http, Environment environment, Clock clock)
             throws Exception {
+        // read on every request: the administrator changes the limit without a restart (ADR-0056)
+        LiveProperties<PlatformSecurityProperties> live = new LiveProperties<>(environment, PlatformSecurityProperties.class);
         JwtGrantedAuthoritiesConverter authorities = new JwtGrantedAuthoritiesConverter();
         authorities.setAuthoritiesClaimName(JwtClaims.ROLE);
         authorities.setAuthorityPrefix("ROLE_");
@@ -126,7 +130,7 @@ public class PlatformSecurityAutoConfiguration {
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(ProblemSecurityHandlers.authenticationEntryPoint())
                         .accessDeniedHandler(ProblemSecurityHandlers.accessDeniedHandler()))
-                .addFilterBefore(new AuthRateLimitFilter(properties.authRateLimit(), clock),
+                .addFilterBefore(new AuthRateLimitFilter(() -> live.get().authRateLimit(), clock),
                         BearerTokenAuthenticationFilter.class)
                 .headers(headers -> headers
                         .contentSecurityPolicy(csp -> csp.policyDirectives(CONTENT_SECURITY_POLICY))

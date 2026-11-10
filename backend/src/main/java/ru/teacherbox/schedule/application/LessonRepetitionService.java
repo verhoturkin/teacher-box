@@ -45,23 +45,23 @@ public class LessonRepetitionService {
     private final ScheduleDirectory directory;
     private final LessonRepository lessons;
     private final RepeatRuleRepository rules;
-    private final ScheduleProperties properties;
+    private final LessonRulesService lessonRules;
     private final ApplicationEventPublisher events;
     private final Clock clock;
-    private final ZoneId zone;
+    private final InstanceTimeZone timeZone;
 
     public LessonRepetitionService(ScheduleService schedule, ScheduleQueries queries, LessonRepository lessons,
-            RepeatRuleRepository rules, ScheduleProperties properties, ApplicationEventPublisher events,
+            RepeatRuleRepository rules, LessonRulesService lessonRules, ApplicationEventPublisher events,
             Clock clock, InstanceTimeZone timeZone, ScheduleDirectory directory) {
         this.schedule = schedule;
         this.directory = directory;
         this.queries = queries;
         this.lessons = lessons;
+        this.lessonRules = lessonRules;
         this.rules = rules;
-        this.properties = properties;
         this.events = events;
         this.clock = clock;
-        this.zone = timeZone.zoneId();
+        this.timeZone = timeZone;
     }
 
     public LessonView plan(ScheduleService.PlanLesson command, Options options) {
@@ -151,9 +151,9 @@ public class LessonRepetitionService {
         else if (directory.currentGroup(groupId).memberIds().isEmpty()) {
             throw new BusinessRuleException("schedule.group-empty", "A repeating group lesson needs current members");
         }
-        LocalDate date = LocalDate.ofInstant(selected.startsAt(), zone);
+        LocalDate date = LocalDate.ofInstant(selected.startsAt(), zone());
         RepeatRule created = RepeatRule.create(Ids.newId(), selected.isGroup() ? null : selected.studentId(),
-                selected.groupId(), Set.of(date.getDayOfWeek()), LocalTime.ofInstant(selected.startsAt(), zone),
+                selected.groupId(), Set.of(date.getDayOfWeek()), LocalTime.ofInstant(selected.startsAt(), zone()),
                 selected.durationMinutes(), weeks, date, until, selected.title(), selected.meetingUrl(), clock.instant())
                 .continueFrom(occurrence(selected));
         rules.insert(created);
@@ -161,12 +161,12 @@ public class LessonRepetitionService {
         lessons.update(selected);
         for (LocalDate dateToSkip : suppressed) lessons.suppress(created.id(), dateToSkip);
         for (Lesson preserved : protectedLessons) lessons.suppress(created.id(), occurrence(preserved));
-        LocalDate today = LocalDate.ofInstant(clock.instant(), zone);
+        LocalDate today = LocalDate.ofInstant(clock.instant(), zone());
         LocalDate from = date.isBefore(today) ? today : date;
-        LocalDate horizon = today.plusDays(properties.horizonDays());
+        LocalDate horizon = today.plusDays(lessonRules.current().horizonDays());
         for (LocalDate occurrence : created.datesBetween(from, horizon)) {
             if (lessons.existsForSeriesDate(created.id(), occurrence)) continue;
-            var starts = created.startOn(occurrence, zone);
+            var starts = created.startOn(occurrence, zone());
             schedule.requireFree(starts, starts.plusSeconds(60L * created.durationMinutes()), selected.id(), allowOverlap);
         }
         schedule.generate(created, from, horizon, clock.instant());
@@ -192,7 +192,7 @@ public class LessonRepetitionService {
     }
 
     private LocalDate occurrence(Lesson lesson) {
-        return lesson.seriesDate() == null ? LocalDate.ofInstant(lesson.startsAt(), zone) : lesson.seriesDate();
+        return lesson.seriesDate() == null ? LocalDate.ofInstant(lesson.startsAt(), zone()) : lesson.seriesDate();
     }
 
     private @Nullable RepeatRule rule(Lesson lesson) {
@@ -208,5 +208,10 @@ public class LessonRepetitionService {
 
     private static void check(long actual, @Nullable Long expected) {
         if (expected != null && actual != expected) throw new OptimisticLockingFailureException("The lesson or its repetition was modified");
+    }
+
+    /** The instance time zone, read per call: the teacher may change it at any time. */
+    private ZoneId zone() {
+        return timeZone.zoneId();
     }
 }

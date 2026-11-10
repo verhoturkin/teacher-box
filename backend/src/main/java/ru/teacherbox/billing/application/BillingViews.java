@@ -95,7 +95,6 @@ public final class BillingViews {
     public record Overview(
             String currency,
             long defaultLessonPrice,
-            int defaultLessonDuration,
             long totalDebt,
             long totalPrepaid,
             List<StudentBalance> students) {

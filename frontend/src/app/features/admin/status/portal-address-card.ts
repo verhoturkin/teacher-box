@@ -27,16 +27,10 @@ import { T } from '../i18n/texts';
       </ng-template>
       @if (settings(); as settings) {
         <form class="tb-form" [formGroup]="form" (ngSubmit)="save()">
-          <tb-portal-address-field
-            [administrator]="true"
-            [control]="form.controls.address"
-            [fromEnvironment]="settings.addressFromEnvironment"
-          />
-          @if (!settings.addressFromEnvironment) {
-            <div class="tb-form-actions">
-              <p-button type="submit" [label]="t.save" severity="secondary" [loading]="pending()" />
-            </div>
-          }
+          <tb-portal-address-field [control]="form.controls.address" />
+          <div class="tb-form-actions">
+            <p-button type="submit" [label]="t.save" severity="secondary" [loading]="pending()" />
+          </div>
         </form>
       }
     </p-card>

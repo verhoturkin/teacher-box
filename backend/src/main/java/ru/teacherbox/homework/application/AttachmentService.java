@@ -7,8 +7,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.unit.DataSize;
 import ru.teacherbox.homework.domain.Attachment;
 import ru.teacherbox.homework.domain.AttachmentOwner;
 import ru.teacherbox.homework.domain.FilePolicy;
@@ -18,6 +20,7 @@ import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.shared.files.FileStorage;
 import ru.teacherbox.shared.files.StoredFile;
+import ru.teacherbox.shared.settings.LiveProperties;
 
 /** Files of assignments and submissions, stored in the {@value #NAMESPACE} storage namespace. */
 @Service
@@ -31,27 +34,35 @@ public class AttachmentService {
 
     private final AttachmentRepository attachments;
     private final FileStorage storage;
-    private final HomeworkProperties properties;
+    /** Read on every upload: the administrator changes the limits without a restart (ADR-0056). */
+    private final LiveProperties<HomeworkProperties> properties;
 
-    public AttachmentService(AttachmentRepository attachments, FileStorage storage, HomeworkProperties properties) {
+    public AttachmentService(AttachmentRepository attachments, FileStorage storage, Environment environment) {
         this.attachments = attachments;
         this.storage = storage;
-        this.properties = properties;
+        this.properties = new LiveProperties<>(environment, HomeworkProperties.class);
+    }
+
+    /** The limits in force now. */
+    public HomeworkProperties limits() {
+        return properties.get();
     }
 
     /** Validates and stores files; must run inside the transaction that creates the owner. */
     List<Attachment> store(AttachmentOwner ownerType, UUID ownerId, List<UploadedFile> files, Instant now) {
-        if (files.size() > properties.maxFilesPerUpload()) {
+        HomeworkProperties limits = properties.get();
+        DataSize maxFileSize = limits.fileSizeLimit();
+        if (files.size() > limits.maxFilesPerUpload()) {
             throw new BusinessRuleException("file.too-many",
-                    "No more than " + properties.maxFilesPerUpload() + " files at once");
+                    "No more than " + limits.maxFilesPerUpload() + " files at once");
         }
         List<Attachment> stored = new ArrayList<>();
         for (UploadedFile file : files) {
             String filename = FilePolicy.cleanFilename(file.filename());
             String contentType = FilePolicy.contentTypeOf(filename);
-            if (file.size() > properties.maxFileSize().toBytes()) {
+            if (file.size() > maxFileSize.toBytes()) {
                 throw new BusinessRuleException("file.too-large",
-                        "File is larger than " + properties.maxFileSize().toMegabytes() + " MB: " + filename);
+                        "File is larger than " + maxFileSize.toMegabytes() + " MB: " + filename);
             }
             StoredFile content = storeContent(file);
             Attachment attachment = new Attachment(Ids.newId(), ownerType, ownerId, content.key(), filename,

@@ -14,7 +14,6 @@ describe('TodoQueue', () => {
 
   const done: SetupProgress = {
     hasStudents: true,
-    priceSet: true,
     messengerConfigured: true,
     hasLessons: true,
   };
@@ -28,6 +27,7 @@ describe('TodoQueue', () => {
     } = {},
     debtors: { studentId: string; displayName: string; avatar: null; balance: number }[] = [],
     phone = false,
+    aiEnabled = true,
   ): Promise<void> {
     TestBed.configureTestingModule({
       imports: [TodoQueue],
@@ -38,6 +38,7 @@ describe('TodoQueue', () => {
     fixture.componentRef.setInput('progress', progress);
     fixture.componentRef.setInput('debtors', debtors);
     fixture.detectChanges();
+    backend.expectOne('/api/teacher/ai/status').flush({ enabled: aiEnabled });
     backend.expectOne('/api/teacher/schedule/unmarked').flush(sources.lessons ?? []);
     backend.expectOne('/api/teacher/schedule/requests').flush(sources.requests ?? []);
     backend.expectOne('/api/teacher/homework/review-queue').flush(sources.reviews ?? []);
@@ -175,12 +176,14 @@ describe('TodoQueue', () => {
   });
 
   it('shows the first-run steps left with progress, until hidden', async () => {
-    await render({ ...done, messengerConfigured: false, hasLessons: false });
+    await render({ ...done, messengerConfigured: false, hasLessons: false }, {}, [], false, false);
 
     const content = text();
     expect(content).toContain('С чего начать');
-    expect(content).toContain('Сделано 2 из 4');
+    expect(content).toContain('Сделано 1 из 4');
     expect(content).toContain('Подключите мессенджер');
+    expect(content).toContain('Подключите ИИ-помощника');
+    expect(content).not.toContain('стоимость занятия');
     expect(content).toContain('Запланируйте первое занятие');
     expect(content).not.toContain('Добавьте ученика');
     expect(content).not.toContain('Срочных дел нет');
@@ -192,8 +195,15 @@ describe('TodoQueue', () => {
     expect(localStorage.getItem(CHECKLIST_DISMISSED_KEY)).not.toBeNull();
   });
 
+  it('does not repeat the AI step once an assistant is connected', async () => {
+    await render({ ...done, hasLessons: false });
+
+    expect(text()).toContain('Сделано 3 из 4');
+    expect(text()).not.toContain('Подключите ИИ-помощника');
+  });
+
   it('keeps the steps hidden while something is unknown', async () => {
-    await render({ ...done, priceSet: null, hasLessons: false });
+    await render({ ...done, messengerConfigured: null, hasLessons: false });
 
     expect(text()).not.toContain('С чего начать');
   });

@@ -41,6 +41,8 @@ images once, shifts the ports per instance and writes logs and artifacts to `e2e
 
 - `identity/`, `schedule/`, `homework/`, `billing/`, `materials/`, `meetings/`,
   `notifications/`, `ai/`, `settings/` and `admin/` own their functional regressions.
+- `setup/` resets the instance and walks the first-run wizard, so it runs in the `operations`
+  project, after the ordinary suites.
 - `layout/` and `accessibility/` cover shared browser rendering, geometry, keyboard and contrast.
   These checks need a real browser even when their API data is stubbed.
 - `journeys/` keeps cross-module teacher/student workflows and their shared preparation together.

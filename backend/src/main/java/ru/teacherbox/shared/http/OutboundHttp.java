@@ -2,6 +2,7 @@ package ru.teacherbox.shared.http;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.client.BufferingClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -24,6 +25,25 @@ public final class OutboundHttp {
     public static ClientHttpRequestFactory requestFactory(Duration connectTimeout, Duration readTimeout,
             @Nullable OutboundProxy proxy) {
         return new BufferingClientHttpRequestFactory(streamingRequestFactory(connectTimeout, readTimeout, proxy));
+    }
+
+    /**
+     * Like {@link #requestFactory} but the proxy setting is read on every request (ADR-0056): a live
+     * {@code *_PROXY} setting the administrator changes is in force for the next call.
+     *
+     * @param name    the variable of the setting, e.g. {@code TEACHERBOX_HOMEWORK_YOUTUBE_PROXY}, for the logs
+     *                and the error of an invalid value
+     * @param setting its current value, e.g. read through {@code shared.settings.LiveProperties}
+     */
+    public static ClientHttpRequestFactory liveRequestFactory(String name, Supplier<@Nullable String> setting,
+            Duration connectTimeout, Duration readTimeout) {
+        return new LiveProxyRequestFactory(name, setting, connectTimeout, readTimeout, false);
+    }
+
+    /** Like {@link #liveRequestFactory} but bodies are streamed, as {@link #streamingRequestFactory} does. */
+    public static ClientHttpRequestFactory liveStreamingRequestFactory(String name,
+            Supplier<@Nullable String> setting, Duration connectTimeout, Duration readTimeout) {
+        return new LiveProxyRequestFactory(name, setting, connectTimeout, readTimeout, true);
     }
 
     /**

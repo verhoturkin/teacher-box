@@ -96,6 +96,17 @@ describe('HomeworkApi', () => {
     expect(backend.expectOne('/api/me/homework/attachments/f-1').request.responseType).toBe('blob');
   });
 
+  it('reads and changes the homework settings', () => {
+    api.settings().subscribe();
+    api.changeSettings({ dueSoonMinutes: 120 }).subscribe();
+
+    expect(
+      backend.expectOne({ method: 'GET', url: '/api/teacher/homework/settings' }),
+    ).toBeTruthy();
+    const change = backend.expectOne({ method: 'PUT', url: '/api/teacher/homework/settings' });
+    expect(change.request.body).toEqual({ dueSoonMinutes: 120 });
+  });
+
   it('asks for the upload limits once', () => {
     let limits: unknown;
     api.limits().subscribe();

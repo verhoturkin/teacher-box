@@ -91,10 +91,6 @@ export const ru = {
   portalAddress: {
     label: 'Адрес портала',
     asInBrowser: 'Как в браузере',
-    fromServer:
-      'Адрес задан в настройках сервера (TEACHERBOX_PUBLIC_URL) — поменять его можно там.',
-    fromAdministrator:
-      'Адрес задан администратором портала — чтобы его поменять, попросите администратора.',
     hint: 'По этому адресу ученики открывают портал. С него начинаются ссылки-приглашения, ссылки в сообщениях ботов и подписка на календарь.',
     invalid: 'Нужен адрес вида https://school.example.com — без пути после адреса.',
     local:
@@ -209,8 +205,6 @@ export const ru = {
       'notification.no-recipients': 'Нет учеников, которым можно отправить сообщение',
       'notifications.channel-unavailable': 'Этот мессенджер не настроен на сервере',
       'notifications.channel-not-linked': 'Мессенджер не подключён',
-      'notifications.channel-from-environment':
-        'Этот бот задан администратором портала — чтобы изменить его, попросите администратора',
       'notifications.channel-check-failed':
         'Мессенджер не принял токен. Проверьте его и попробуйте снова',
       'notifications.test-failed': 'Не удалось отправить тестовое сообщение',
@@ -223,13 +217,20 @@ export const ru = {
       'backup.exists': 'Эта копия уже есть на сервере',
       'backup.google-not-connected': 'Google Диск не подключён',
       'backup.google-client-missing': 'Сначала укажите Client ID и Client secret',
-      'backup.google-client-from-environment': 'OAuth-клиент Google задан администратором портала',
       'backup.google-origin-invalid': 'Не удалось определить адрес портала',
       'portal.logo-invalid': 'Логотип должен быть картинкой PNG, JPEG, WebP или SVG',
       'portal.logo-too-large': 'Логотип больше 1 МБ',
       'portal.accent-invalid': 'Такого цвета нет',
       'portal.address-invalid':
         'Нужен адрес вида https://school.example.com — без пути после адреса',
+      'portal.time-zone-invalid': 'Такого часового пояса нет',
+      'billing.currency-invalid': 'Такой валюты нет',
+      'billing.currency-locked': 'Уже есть начисления или оплаты — валюту сменить нельзя',
+      'schedule.settings-duration-invalid': 'Длительность занятия — от 15 до 480 минут',
+      'schedule.settings-late-cancellation-invalid': 'Поздняя отмена — не больше чем за 7 дней',
+      'schedule.settings-reminders-invalid': 'До трёх напоминаний, каждое — от 15 минут до 7 дней',
+      'schedule.settings-horizon-invalid': 'Занятия с повтором создаются на 4–26 недель вперёд',
+      'homework.settings-due-soon-invalid': 'Напоминание о сроке — за 1–72 часа',
       'auth.rate-limited': 'Слишком много попыток входа. Подождите минуту и попробуйте снова',
       // ai
       'ai.disabled': 'ИИ-помощник не настроен на сервере',
@@ -246,6 +247,14 @@ export const ru = {
       'ai.prompt-title-invalid': 'Название промта — от 1 до 100 символов',
       'ai.prompt-text-invalid': 'Текст промта — от 1 до 4000 символов',
       'ai.system-prompt-invalid': 'Системный промт — от 1 до 10 000 символов',
+      'ai.provider.holds-default':
+        'В этом подключении модель по умолчанию: сначала сделайте основной другую модель',
+      'ai.provider.key-required': 'Для этого провайдера нужен API-ключ',
+      'ai.provider.address-required': 'Укажите адрес API своего сервера',
+      'ai.provider.not-found': 'Подключение не найдено — возможно, его уже удалили',
+      'ai.provider.unavailable': 'Провайдер не ответил. Проверьте ключ, адрес и прокси',
+      'ai.model.duplicate': 'Эта модель уже есть в подключении',
+      'ai.model.not-found': 'Модель не найдена — возможно, её уже удалили',
       // schedule
       'schedule.student-not-found': 'Ученик не найден или отключён',
       'schedule.lesson-not-found': 'Занятие не найдено',
@@ -290,8 +299,6 @@ export const ru = {
       'schedule.request-resolved': 'На запрос уже ответили',
       'schedule.students-only': 'Раздел доступен только ученикам',
       'schedule.google-client-missing': 'Сначала укажите Client ID и Client secret',
-      'schedule.google-client-from-environment':
-        'OAuth-клиент Google задан администратором портала',
       'schedule.google-origin-invalid': 'Не удалось определить адрес портала',
       'meetings.link-invalid': 'Ссылка должна начинаться с http:// или https://',
       'meetings.room-not-found': 'Такой комнаты уже нет',

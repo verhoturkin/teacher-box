@@ -15,13 +15,11 @@ async function signIn(page: Page, login: string, password: string): Promise<void
 
 test('the administrator sees how many days backups are kept', async ({ page }) => {
   await signIn(page, 'admin', ADMIN_PASSWORD);
-  await page.goto('/admin/settings/backups');
+  await page.goto('/admin/settings');
 
   const days = page.locator('#setting-TEACHERBOX_BACKUP_KEEP_DAYS');
   await expect(days).toBeVisible();
-  await expect(page.locator('.tb-setting').filter({ has: days })).toContainText(
-    'Сколько дней хранить копии',
-  );
+  await expect(page.locator('.tb-setting').filter({ has: days })).toContainText('Хранить дней');
 });
 
 test('the teacher reads that backups are kept two weeks', async ({ page }) => {

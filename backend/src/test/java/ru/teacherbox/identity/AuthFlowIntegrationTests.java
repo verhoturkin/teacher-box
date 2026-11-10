@@ -46,7 +46,7 @@ class AuthFlowIntegrationTests {
                 .satisfies(json -> {
                     assertThat(json).extractingPath("$.expiresIn").isEqualTo(900);
                     assertThat(json).extractingPath("$.user.role").isEqualTo("TEACHER");
-                    assertThat(json).extractingPath("$.user.displayName").isEqualTo("Анна Сергеевна");
+                    assertThat(json).extractingPath("$.user.displayName").isEqualTo("Учитель");
                 });
         assertThat(result.getResponse().getHeader(HttpHeaders.SET_COOKIE))
                 .contains("tb_refresh=", "HttpOnly", "SameSite=Strict", "Path=/api/auth")

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Ученик, телефон — тест</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.ph{width:390px;height:844px;overflow:hidden;position:relative;font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#FBF8FF;display:flex;flex-direction:column}
+.iconbtn{width:48px;height:48px;border-radius:24px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.opt{display:flex;align-items:center;gap:12px;font-size:17px;background:#F5F2FA;border-radius:16px;padding:16px;border:2px solid transparent}
+.opt.on{background:#DEE1F9;border-color:#4459A9}
+.opt input{width:20px;height:20px;accent-color:#4459A9}
+.muted{color:#45464F}
+.dots{display:flex;gap:6px;justify-content:center}
+.dots span{width:8px;height:8px;border-radius:4px;background:#C6C5D0}
+.dots span.d{background:#9AA5D8}.dots span.c{background:#4459A9;width:20px}
+</style>
+</helmet>
+<div class="ph">
+  <header style="height:64px;display:flex;align-items:center;padding:0 16px 0 4px">
+    <a class="iconbtn" href="StudentMobileTask.dc.html" aria-label="Выйти из теста — ответы сохранятся"><span class="ic">close</span></a>
+    <span style="flex:1;font-size:16px">Вопрос 3 из 10</span>
+    <span class="muted" style="font-size:13px">попытка 1 из 2</span>
+  </header>
+  <div style="height:4px;background:#E3E1E9" role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" aria-label="Пройдено"><div style="width:30%;height:100%;background:#4459A9"></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;gap:16px;padding:24px 16px">
+    <div class="muted" style="font-size:13px">Один ответ</div>
+    <h1 style="margin:0;font-size:24px;font-weight:500;line-height:1.3">She has ___ three letters this morning.</h1>
+    <div style="display:flex;flex-direction:column;gap:10px" role="radiogroup" aria-label="Варианты">
+      <label class="opt"><input type="radio" name="pq">wrote</label>
+      <label class="opt on"><input type="radio" name="pq" checked>written</label>
+      <label class="opt"><input type="radio" name="pq">writed</label>
+      <label class="opt"><input type="radio" name="pq">write</label>
+    </div>
+  </div>
+  <div style="padding:12px 16px 24px;display:flex;flex-direction:column;gap:14px">
+    <div class="dots" aria-hidden="true"><span class="d"></span><span class="d"></span><span class="c"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div style="display:flex;gap:8px">
+      <button class="iconbtn" style="background:#DEE1F9;color:#171B2C;width:56px;height:56px;border-radius:28px" aria-label="Назад"><span class="ic">arrow_back</span></button>
+      <button style="flex:1;height:56px;border-radius:28px;border:0;background:#4459A9;color:#fff;font:500 16px 'Roboto Flex',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px">Дальше<span class="ic">arrow_forward</span></button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

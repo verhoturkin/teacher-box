@@ -1,5 +1,12 @@
 /** Mirrors `BillingViews` of the backend. Amounts are integers in minor units of `currency`. */
 
+/** Mirrors `BillingCurrencySetting.CurrencyView`: `locked` once a charge or a payment is recorded. */
+export interface CurrencySetting {
+  /** ISO 4217, e.g. `RUB`. */
+  readonly currency: string;
+  readonly locked: boolean;
+}
+
 export type LessonStatus = 'CONDUCTED' | 'MISSED' | 'CANCELLED';
 export type StudentStatus = 'INVITED' | 'ACTIVE' | 'DEACTIVATED';
 
@@ -58,7 +65,6 @@ export interface StudentBalance extends BillingStudent {
 export interface BillingOverview {
   readonly currency: string;
   readonly defaultLessonPrice: number;
-  readonly defaultLessonDuration: number;
   readonly totalDebt: number;
   readonly totalPrepaid: number;
   readonly students: StudentBalance[];

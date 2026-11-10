@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Ученик — мой аккаунт</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+a{color:#4459A9}a:hover{color:#2B4190}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.app{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;min-height:960px;display:flex;flex-wrap:wrap}
+.rail{width:96px;flex:0 0 96px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 0}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#45464F;text-decoration:none}
+.pill{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.ni.on{color:#1B1B21}.ni.on .pill{background:#DEE1F9;color:#171B2C}
+.pane{flex:999 1 560px;min-width:0;background:#FBF8FF;border-radius:28px;margin:24px 24px 24px 0;padding:24px;display:flex;flex-direction:column;gap:20px}
+.detail{width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:16px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:#fff;border:1px solid #E3E1E9;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.card h2{margin:0;font-size:16px;font-weight:600}
+.label{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F;margin-top:4px}
+.muted{color:#45464F}
+.list{display:flex;flex-direction:column;gap:2px;border-radius:16px;overflow:hidden}
+.list>:not(.tile){display:contents}
+.tile{display:flex;align-items:center;gap:16px;min-height:56px;padding:12px 16px;background:#F5F2FA;box-sizing:border-box;border-radius:4px;font-size:14px;color:inherit;text-decoration:none}
+.tile .t{flex:1;min-width:0}.tile .t b{display:block;font-weight:500;font-size:16px}.tile .t .muted{display:block}
+.av{width:40px;height:40px;border-radius:20px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex:0 0 40px;background:#DEE1F9;color:#171B2C}
+.btn{height:40px;border-radius:20px;border:0;padding:0 16px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap;justify-content:center;text-decoration:none}
+.btn .ic{font-size:20px}
+.filled{background:#4459A9;color:#fff}.tonal{background:#DEE1F9;color:#171B2C}.textbtn{background:transparent;color:#4459A9;padding:0 12px}
+.iconbtn{width:40px;height:40px;border-radius:20px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center}
+.field{background:#E3E1E9;border-radius:4px 4px 0 0;border-bottom:1px solid #767680;padding:8px 16px;min-height:56px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;width:100%}
+.field label{font-size:12px;color:#45464F}
+.field input{border:0;background:transparent;font:16px 'Roboto Flex',sans-serif;color:#1B1B21;padding:0;width:100%}
+.hint{font-size:12px;color:#45464F;margin:4px 16px 0}
+.select{height:40px;border-radius:8px;border:1px solid #767680;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:0 8px 0 12px;font:14px 'Roboto Flex',sans-serif;color:#1B1B21}
+.select .ic{font-size:18px}
+.seg{display:inline-flex;border:1px solid #767680;border-radius:20px;overflow:hidden;height:40px;align-self:flex-start}
+.seg button{border:0;background:transparent;display:flex;align-items:center;gap:6px;padding:0 16px;font:500 14px 'Roboto Flex',sans-serif;color:#1B1B21}
+.seg button+button{border-left:1px solid #767680}.seg button.on{background:#DEE1F9;color:#171B2C}.seg .ic{font-size:18px}
+.sw{width:52px;height:32px;border-radius:16px;background:#E3E1E9;border:2px solid #767680;box-sizing:border-box;position:relative;flex:0 0 52px;padding:0}
+.sw::after{content:'';position:absolute;width:16px;height:16px;border-radius:8px;background:#767680;left:6px;top:6px}
+.sw.on{background:#4459A9;border-color:#4459A9}.sw.on::after{width:24px;height:24px;border-radius:12px;background:#fff;left:22px;top:2px}
+.alert{border-radius:16px;padding:12px 16px;display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:1.5}
+.a-info{background:#DCE1FF;color:#001550}
+.qh{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+</style>
+</helmet>
+<div class="app">
+  <nav class="rail" aria-label="Разделы">
+    <a class="ni" href="#"><span class="pill"><span class="ic">home</span></span>Главная</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">calendar_month</span></span>Расписание</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">assignment</span></span>Задания</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">payments</span></span>Оплаты</a>
+    <a class="ni" href="#"><span class="pill"><span class="ic">co_present</span></span>Материалы</a>
+    <span style="flex:1"></span>
+    <a class="ni on" href="StudentAccount.dc.html"><span class="pill"><span class="ic" style="font-variation-settings:'FILL' 1">account_circle</span></span>Аккаунт</a>
+  </nav>
+
+  <main class="pane">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <h1 style="margin:0;font-size:32px;font-weight:500">Мой аккаунт</h1>
+      <span class="muted" style="font-size:14px;flex:1;display:flex;align-items:center;gap:6px"><span class="ic" style="font-size:18px">cloud_done</span>Изменения сохраняются сразу</span>
+      <button class="iconbtn" aria-label="Справка"><span class="ic">help</span></button>
+    </div>
+
+    <div class="alert a-info" style="box-sizing:border-box;align-items:center;flex-wrap:wrap">
+      <span class="ic">send</span>
+      <span style="flex:1 1 280px"><b style="font-weight:600">Подключите мессенджер</b> — узнаете о переносе урока и проверенной работе сразу, без захода в портал.</span>
+      <a class="btn filled" href="PhoneConnect.dc.html">Подключить Telegram</a>
+    </div>
+
+    <div class="detail">
+      <div class="stack">
+        <section class="card">
+          <h2>Профиль</h2>
+          <div class="list">
+            <div class="tile">
+              <span class="av">АС</span>
+              <span class="t"><b>Фото</b><span class="muted">Пока нет</span></span>
+              <button class="btn tonal"><span class="ic">photo_camera</span>Загрузить</button>
+            </div>
+          </div>
+          <div><div class="field"><label for="nm">Как к вам обращаться</label><input id="nm" value="Аня"></div><div class="hint">Учитель видит вас как «Анна Смирнова».</div></div>
+        </section>
+
+        <section class="card">
+          <h2>Вход</h2>
+          <div class="list">
+            <div class="tile"><span class="av"><span class="ic">person</span></span><span class="t"><b>Логин</b><span class="muted">anna.s</span></span></div>
+            <div class="tile"><span class="av"><span class="ic">key</span></span><span class="t"><b>Пароль</b><span class="muted">Задан при приглашении</span></span><button class="btn tonal">Сменить…</button></div>
+          </div>
+          <div><button class="btn textbtn"><span class="ic">logout</span>Выйти</button></div>
+        </section>
+
+        <section class="card">
+          <h2>Оформление</h2>
+          <span class="label">Тема</span>
+          <div class="seg" role="group" aria-label="Тема">
+            <button aria-pressed="false"><span class="ic">light_mode</span>Светлая</button>
+            <button aria-pressed="false"><span class="ic">dark_mode</span>Тёмная</button>
+            <button class="on" aria-pressed="true"><span class="ic">check</span>Как в системе</button>
+          </div>
+          <span class="label">Язык</span>
+          <div><button class="select" aria-haspopup="listbox"><span class="ic">translate</span>Русский<span class="ic">arrow_drop_down</span></button></div>
+        </section>
+      </div>
+
+      <section class="card">
+        <h2>Куда присылать уведомления</h2>
+        <span class="muted" style="font-size:14px">Все уведомления видны в портале. Здесь — куда их дублировать.</span>
+        <div class="list">
+          <sc-for list="{{where}}" as="w" hint-placeholder-count="3">
+            <div class="tile">
+              <span class="av"><span class="ic">{{w.icon}}</span></span>
+              <span class="t"><b>{{w.name}}</b><span class="muted">{{w.state}}</span></span>
+              <sc-if value="{{w.connect}}" hint-placeholder-val="{{false}}"><a class="btn tonal" href="PhoneConnect.dc.html">Подключить</a></sc-if>
+              <sc-if value="{{w.on}}" hint-placeholder-val="{{false}}"><button class="sw on" role="switch" aria-checked="true" aria-label="{{w.name}}"></button></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Что присылать</h2>
+        <div class="list">
+          <sc-for list="{{topics}}" as="tp" hint-placeholder-count="5">
+            <div class="tile">
+              <span class="t"><b>{{tp.name}}</b><span class="muted">{{tp.hint}}</span></span>
+              <button class="{{tp.cls}}" role="switch" aria-checked="{{tp.on}}" aria-label="{{tp.name}}"></button>
+            </div>
+          </sc-for>
+          <div class="tile"><span class="t"><b>Сообщения учителя</b><span class="muted">Приходят всегда</span></span><span class="ic muted" aria-hidden="true">lock</span></div>
+        </div>
+        <div class="list">
+          <div class="tile">
+            <span class="av"><span class="ic">bedtime</span></span>
+            <span class="t"><b>Тихие часы</b><span class="muted">Не присылать ночью</span></span>
+            <button class="sw on" role="switch" aria-checked="true" aria-label="Тихие часы"></button>
+          </div>
+        </div>
+        <div class="qh"><div class="field"><label for="qf">С</label><input id="qf" type="text" value="22:00"></div><div class="field"><label for="qt">До</label><input id="qt" type="text" value="08:00"></div></div>
+            <div class="hint" style="margin-top:-8px">Сообщения за это время придут в 08:00. В портале они видны сразу.</div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const sw = on => (on ? 'sw on' : 'sw');
+    return {
+      where: [
+        { icon: 'send', name: 'Telegram', state: 'Не подключён', on: false, connect: true },
+        { icon: 'chat', name: 'ВКонтакте', state: 'Не подключён', on: false, connect: true },
+        { icon: 'computer', name: 'Это устройство', state: 'Chrome · macOS', on: true, connect: false }
+      ],
+      topics: [
+        { name: 'Расписание', hint: 'Новые, перенесённые, отменённые занятия', on: true },
+        { name: 'Напоминания', hint: 'О скором занятии и сроке сдачи', on: true },
+        { name: 'Домашние задания', hint: 'Новое задание и проверка работы', on: true },
+        { name: 'Оплаты', hint: 'Проведённые занятия и оплаты', on: false },
+        { name: 'Итоги урока', hint: 'Что прошли и что дальше', on: true }
+      ].map(t => ({ ...t, cls: sw(t.on) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

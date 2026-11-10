@@ -3,7 +3,9 @@ package ru.teacherbox.schedule;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -17,15 +19,19 @@ import java.util.concurrent.atomic.AtomicReference;
  * hours in Moscow (see {@link #SERIES_HOURS}). Future slots march on by two hours with every call of
  * every test, so they reach those days, and a check of the teacher's time (a new lesson, a moved one)
  * would find a slot busy, depending on the hour the build runs. A future slot therefore takes its two
- * hours outside the hours of series tests on any day.
+ * hours outside the hours of series tests on any day, and a series test that has no fixed hour of its
+ * own starts its lessons at {@link #seriesStart}.
  */
 public final class Slots {
 
     private static final Duration GAP = Duration.ofHours(2);
+    private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
+    private static final LocalTime SERIES_EVENING = LocalTime.of(20, 30);
     /**
      * The hours (UTC) of the weekly lessons of series tests, with room for lessons of 90 minutes:
-     * 05:00–08:30, 09:30–11:00, 13:00–18:30 and 20:30–22:00 in Moscow (SeriesIntegrationTests,
-     * GroupLessonsIntegrationTests, GoogleCalendarIntegrationTests).
+     * 05:00–08:30, 09:30–11:00, 13:00–18:30 and 20:30–22:00 in Moscow (GroupLessonsIntegrationTests,
+     * GoogleCalendarIntegrationTests, UpcomingLessonsIntegrationTests, and {@link #seriesStart} for
+     * LessonRepeatsIntegrationTests and LessonRulesIntegrationTests).
      */
     static final List<Hours> SERIES_HOURS = List.of(
             new Hours(LocalTime.of(2, 0), LocalTime.of(5, 30)),
@@ -54,6 +60,16 @@ public final class Slots {
             Instant after = last.equals(Instant.MIN) ? candidate : last.plus(GAP);
             return awayFromSeries(candidate.isAfter(after) ? candidate : after);
         });
+    }
+
+    /**
+     * A start of a series that runs for weeks: 20:30 in Moscow, {@code days} days after the clock's date
+     * there. A series at the clock's own hour would take, weeks ahead, the hours future slots march into,
+     * so moves of other tests would find the teacher busy depending on the hour the build runs.
+     */
+    public static Instant seriesStart(Clock clock, int days) {
+        return LocalDate.ofInstant(clock.instant(), MOSCOW).plusDays(days).atTime(SERIES_EVENING)
+                .atZone(MOSCOW).toInstant();
     }
 
     /** The slot, or the first start after it whose two hours miss the hours of series tests. */

@@ -1,6 +1,7 @@
 package ru.teacherbox.platform.settings;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,9 +11,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import ru.teacherbox.platform.settings.SettingDefinition.Access;
+import ru.teacherbox.platform.settings.SettingDefinition.Owner;
 import ru.teacherbox.shared.i18n.Language;
 
-/** The catalog of the administrator's settings follows {@code .env.example} (ADR-0016). */
+/**
+ * {@code .env.example} holds only what the portal cannot set itself (ADR-0056): the {@code ENV_ONLY} settings.
+ * The teacher's and the administrator's settings live in the portal.
+ */
 class SettingsCatalogTest {
 
     private static final Pattern VARIABLE = Pattern.compile("^#?\\s*([A-Z][A-Z0-9_]+)=", Pattern.MULTILINE);
@@ -23,9 +28,53 @@ class SettingsCatalogTest {
         Matcher matcher = VARIABLE.matcher(example);
         List<String> variables = matcher.results().map(result -> result.group(1)).toList();
 
-        assertThat(SettingsCatalog.all()).extracting(SettingDefinition::name)
-                .doesNotHaveDuplicates()
+        assertThat(SettingsCatalog.all()).extracting(SettingDefinition::name).doesNotHaveDuplicates();
+        assertThat(SettingsCatalog.all()).filteredOn(setting -> setting.owner() == Owner.ENV_ONLY)
+                .extracting(SettingDefinition::name)
                 .containsExactlyInAnyOrderElementsOf(variables);
+    }
+
+    @Test
+    void theTeachersAndTheLiveSettingsAreInTheCatalog() {
+        assertThat(SettingsCatalog.all()).filteredOn(setting -> setting.owner() == Owner.TEACHER)
+                .extracting(SettingDefinition::name)
+                .containsExactlyInAnyOrderElementsOf(SettingsCatalog.TEACHER)
+                .contains("TEACHERBOX_TIMEZONE", "TEACHERBOX_IDENTITY_TEACHER_NAME", "TEACHERBOX_AI_API_KEY")
+                .doesNotContain("TEACHERBOX_AI_PROXY");
+        assertThat(SettingsCatalog.all()).filteredOn(SettingDefinition::live)
+                .extracting(SettingDefinition::name)
+                .containsExactlyInAnyOrderElementsOf(SettingsCatalog.LIVE);
+        assertThat(SettingsCatalog.all()).filteredOn(setting -> setting.owner() == Owner.TEACHER)
+                .allMatch(SettingDefinition::stored)
+                .noneMatch(SettingDefinition::editable);
+        assertThat(SettingsCatalog.all()).filteredOn(setting -> setting.owner() == Owner.ENV_ONLY)
+                .filteredOn(setting -> setting.access() != Access.ENV)
+                .noneMatch(SettingDefinition::stored);
+        // read-only since ADR-0056; a value saved before keeps applying until removed
+        assertThat(SettingsCatalog.all()).filteredOn(setting -> setting.access() == Access.ENV)
+                .allMatch(setting -> setting.owner() == Owner.ENV_ONLY && setting.stored() && !setting.editable())
+                .extracting(SettingDefinition::name)
+                .containsExactlyInAnyOrder("TEACHERBOX_SECURITY_JWT_SECRET", "TEACHERBOX_BACKUP_RESTART",
+                        "TEACHERBOX_MEETINGS_LIVEKIT_API_URL", "LOGGING_STRUCTURED_FORMAT_CONSOLE",
+                        "LOGGING_LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE", "LOGGING_LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP",
+                        "LOGGING_LOGBACK_ROLLINGPOLICY_MAX_HISTORY");
+    }
+
+    @Test
+    void aDefinitionKeepsItsOwnerConsistent() {
+        assertThatThrownBy(() -> definition(Access.DOCKER, Owner.ADMIN, false))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> definition(Access.EDITABLE, Owner.ENV_ONLY, false))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> definition(Access.EDITABLE, Owner.TEACHER, true))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThat(definition(Access.EDITABLE, Owner.ADMIN, true).editable()).isTrue();
+    }
+
+    private static SettingDefinition definition(Access access, Owner owner, boolean live) {
+        Wording text = new Wording("т", "t");
+        return new SettingDefinition("TEACHERBOX_X", "x", text, text, text, SettingKind.TEXT, List.of(), false,
+                access, owner, live);
     }
 
     @Test
@@ -36,11 +85,14 @@ class SettingsCatalogTest {
                 .isNotEmpty()
                 .allMatch(SettingDefinition::secret);
         assertThat(SettingsCatalog.all())
-                .filteredOn(setting -> setting.name().startsWith("TEACHERBOX_IDENTITY_TEACHER_"))
+                .filteredOn(setting -> setting.name().startsWith("TEACHERBOX_IDENTITY_TEACHER_")
+                        && !setting.name().equals("TEACHERBOX_IDENTITY_TEACHER_NAME"))
                 .allMatch(setting -> setting.access() == Access.ACCOUNT);
         assertThat(SettingsCatalog.find("TEACHERBOX_HTTP_PORT")).get()
                 .extracting(SettingDefinition::access).isEqualTo(Access.DOCKER);
-        assertThat(SettingsCatalog.find("TEACHERBOX_AI_MODEL")).get().matches(SettingDefinition::editable);
+        assertThat(SettingsCatalog.find("TEACHERBOX_AI_PROXY")).get()
+                .matches(setting -> setting.editable() && setting.live() && setting.owner() == Owner.ADMIN);
+        assertThat(SettingsCatalog.find("TEACHERBOX_AI_MODEL")).get().matches(setting -> !setting.editable());
         assertThat(SettingsCatalog.find("NOPE")).isEmpty();
         // one key per section, and a key never names two sections
         assertThat(SettingsCatalog.all().stream().map(setting -> setting.section() + "=" + setting.group()).distinct())

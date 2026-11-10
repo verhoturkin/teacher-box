@@ -15,7 +15,7 @@ import { Button } from 'primeng/button';
 import { Textarea } from 'primeng/textarea';
 import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
-import { AiApi } from '@features/ai/parts';
+import { AiApi, AiModelChoice, AiModelPick } from '@features/ai/parts';
 import { AssignmentSummary, HomeworkApi } from '@features/homework/parts';
 import { Busy } from '@shared/ui/busy';
 import { ScheduleApi } from '../data-access/schedule-api';
@@ -30,7 +30,7 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-lesson-summary',
-  imports: [FormsModule, Button, Textarea],
+  imports: [FormsModule, Button, Textarea, AiModelPick],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let item = lesson();
@@ -68,6 +68,7 @@ import { T } from '../i18n/texts';
               <small class="tb-hint">{{ t.draftNeedsInput }}</small>
             }
             <div class="tb-actions">
+              <tb-ai-model-pick />
               <p-button
                 [label]="drafted() ? t.draftAgain : t.draftRun"
                 [icon]="drafted() ? 'tb-i tb-i-refresh' : 'tb-i tb-i-auto_awesome'"
@@ -151,6 +152,7 @@ export class LessonSummarySection {
   private readonly api = inject(ScheduleApi);
   private readonly snackbar = inject(Snackbar);
   private readonly ai = inject(AiApi);
+  private readonly model = inject(AiModelChoice);
   private readonly homework = inject(HomeworkApi);
   protected readonly busy = new Busy();
 
@@ -195,11 +197,14 @@ export class LessonSummarySection {
     this.givenAt(lesson)
       .pipe(
         switchMap((titles) =>
-          this.ai.lessonSummary({
-            topic: this.blankToNull(lesson.topic ?? lesson.title ?? ''),
-            words: this.blankToNull(this.words()),
-            assignmentTitles: titles,
-          }),
+          this.model.send((modelId) =>
+            this.ai.lessonSummary({
+              topic: this.blankToNull(lesson.topic ?? lesson.title ?? ''),
+              words: this.blankToNull(this.words()),
+              assignmentTitles: titles,
+              modelId,
+            }),
+          ),
         ),
       )
       .subscribe({

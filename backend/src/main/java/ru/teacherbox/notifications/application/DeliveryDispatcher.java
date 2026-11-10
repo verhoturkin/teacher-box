@@ -6,12 +6,14 @@ import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.notifications.domain.ChannelType;
 import ru.teacherbox.notifications.domain.Delivery;
 import ru.teacherbox.notifications.domain.DeliveryStatus;
 import ru.teacherbox.notifications.persistence.DeliveryRepository;
+import ru.teacherbox.shared.settings.LiveProperties;
 
 /**
  * Sends pending deliveries to messengers and browsers (web push) (the outbox). Every delivery is saved right after its attempt;
@@ -26,16 +28,17 @@ public class DeliveryDispatcher {
 
     private final DeliveryRepository deliveries;
     private final MessengerChannels channels;
-    private final NotificationsProperties properties;
+    /** Read on every use: the administrator changes the attempts without a restart (ADR-0056). */
+    private final LiveProperties<NotificationsProperties> properties;
     private final KeyboardCodec keyboards;
     private final PushChannel push;
     private final Clock clock;
 
     public DeliveryDispatcher(DeliveryRepository deliveries, MessengerChannels channels,
-            NotificationsProperties properties, KeyboardCodec keyboards, PushChannel push, Clock clock) {
+            Environment environment, KeyboardCodec keyboards, PushChannel push, Clock clock) {
         this.deliveries = deliveries;
         this.channels = channels;
-        this.properties = properties;
+        this.properties = new LiveProperties<>(environment, NotificationsProperties.class);
         this.keyboards = keyboards;
         this.push = push;
         this.clock = clock;
@@ -85,11 +88,11 @@ public class DeliveryDispatcher {
                 delivery.abandon(String.valueOf(e.getMessage()));
                 return true;
             }
-            delivery.markFailed(String.valueOf(e.getMessage()), properties.maxAttempts(), clock.instant());
+            delivery.markFailed(String.valueOf(e.getMessage()), properties.get().maxAttempts(), clock.instant());
             return false;
         } catch (RuntimeException e) {
             log.warn("Delivery {} to {} failed", delivery.id(), delivery.channel(), e);
-            delivery.markFailed(e.getClass().getSimpleName(), properties.maxAttempts(), clock.instant());
+            delivery.markFailed(e.getClass().getSimpleName(), properties.get().maxAttempts(), clock.instant());
             return false;
         }
     }

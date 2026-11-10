@@ -56,7 +56,6 @@ export function channelSetup(overrides: Partial<ChannelSetup> = {}): ChannelSetu
   return {
     channel,
     configured: false,
-    fromEnvironment: false,
     botName: null,
     groupId: null,
     connection: { channel, connection: 'PENDING', error: null, checkedAt: null },

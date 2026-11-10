@@ -23,12 +23,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
-import ru.teacherbox.ai.application.AiProperties;
 import ru.teacherbox.ai.application.LlmClient;
 import ru.teacherbox.ai.application.LlmException;
 import ru.teacherbox.ai.application.LlmRequest;
 import ru.teacherbox.ai.application.LlmResponse;
 import ru.teacherbox.ai.application.LlmSource;
+import ru.teacherbox.ai.domain.ProviderKind;
 import ru.teacherbox.shared.i18n.Language;
 
 /**
@@ -58,7 +58,7 @@ public class AnthropicLlmClient implements LlmClient, AutoCloseable {
 
     @Override
     public String provider() {
-        return AiProperties.ANTHROPIC;
+        return ProviderKind.ANTHROPIC.id();
     }
 
     @Override
@@ -105,6 +105,22 @@ public class AnthropicLlmClient implements LlmClient, AutoCloseable {
                 case RU -> "Модель " + name + " доступна";
                 case EN -> "Model " + name + " is available";
             };
+        } catch (AnthropicServiceException e) {
+            throw new LlmException(LlmException.Reason.UNAVAILABLE,
+                    "Anthropic API " + e.statusCode() + ": " + e.getMessage());
+        } catch (AnthropicException e) {
+            throw new LlmException(LlmException.Reason.UNAVAILABLE, "Anthropic API: " + e.getMessage());
+        }
+    }
+
+    /** The Models API, every page: no tokens are spent. */
+    @Override
+    public List<Listed> models() {
+        try {
+            List<Listed> models = new ArrayList<>();
+            client.models().list().autoPager()
+                    .forEach(info -> models.add(new Listed(info.id(), info.displayName())));
+            return List.copyOf(models);
         } catch (AnthropicServiceException e) {
             throw new LlmException(LlmException.Reason.UNAVAILABLE,
                     "Anthropic API " + e.statusCode() + ": " + e.getMessage());

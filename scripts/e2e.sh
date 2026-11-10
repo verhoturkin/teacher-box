@@ -11,7 +11,7 @@
 # Extra arguments are passed to "playwright test" (not with E2E_SHARDS).
 #
 # One instance = one compose project, so shards never share data. The project, ports and LiveKit
-# media ports are configurable (E2E_PROJECT, E2E_PORT, E2E_TELEGRAM_PORT, E2E_LIVEKIT_TCP_PORT,
+# media ports are configurable (E2E_PROJECT, E2E_PORT, E2E_TELEGRAM_PORT, E2E_AI_PORT, E2E_LIVEKIT_TCP_PORT,
 # E2E_LIVEKIT_UDP_PORT); E2E_SHARDS shifts them per instance. E2E_NO_BUILD=1 starts the images that
 # are already built (CI builds them with a layer cache first).
 #
@@ -29,6 +29,8 @@ export E2E_PORT="${E2E_PORT:-8091}"
 export E2E_TEACHER_PASSWORD="${E2E_TEACHER_PASSWORD:-e2e-teacher-pass}"
 export E2E_ADMIN_PASSWORD="${E2E_ADMIN_PASSWORD:-e2e-admin-pass}"
 export E2E_TELEGRAM_PORT="${E2E_TELEGRAM_PORT:-8099}"
+export E2E_AI_PORT="${E2E_AI_PORT:-8110}"
+export E2E_AI_URL="${E2E_AI_URL:-http://localhost:${E2E_AI_PORT}}"
 export E2E_LIVEKIT_TCP_PORT="${E2E_LIVEKIT_TCP_PORT:-7881}"
 export E2E_LIVEKIT_UDP_PORT="${E2E_LIVEKIT_UDP_PORT:-7882}"
 export E2E_TELEGRAM_URL="${E2E_TELEGRAM_URL:-http://localhost:${E2E_TELEGRAM_PORT}}"
@@ -73,6 +75,7 @@ if [ "$#" -gt 0 ]; then
 fi
 base_port="$E2E_PORT"
 base_telegram="$E2E_TELEGRAM_PORT"
+base_ai="$E2E_AI_PORT"
 base_tcp="$E2E_LIVEKIT_TCP_PORT"
 base_udp="$E2E_LIVEKIT_UDP_PORT"
 base_project="$E2E_PROJECT"
@@ -102,6 +105,8 @@ for k in "${!names[@]}"; do
     export E2E_PROJECT="${base_project}-${names[$k]}"
     export E2E_PORT=$((base_port + k))
     export E2E_TELEGRAM_PORT=$((base_telegram + k))
+    export E2E_AI_PORT=$((base_ai + k))
+    export E2E_AI_URL="http://localhost:${E2E_AI_PORT}"
     export E2E_LIVEKIT_TCP_PORT=$((base_tcp + 10 * k))
     export E2E_LIVEKIT_UDP_PORT=$((base_udp + 10 * k))
     export E2E_TELEGRAM_URL="http://localhost:${E2E_TELEGRAM_PORT}"

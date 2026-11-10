@@ -19,7 +19,6 @@ const FILE: CloudBackup = { id: 'f1', name: NAME, size: 2_621_440, createdAt: nu
 function driveStatus(overrides: Partial<DriveStatus> = {}): DriveStatus {
   return {
     clientConfigured: false,
-    clientFromEnvironment: false,
     clientId: null,
     connected: false,
     account: null,
@@ -136,13 +135,11 @@ describe('DrivePanel', () => {
     expect(buttonByText(host, 'Подключить Google Диск').disabled).toBe(false);
   });
 
-  it('hides the client form when the client comes from the environment', async () => {
+  it('lets the teacher change a configured client', async () => {
     setUp();
-    const host = await render(
-      driveStatus({ clientConfigured: true, clientFromEnvironment: true, clientId: 'env' }),
-    );
+    const host = await render(driveStatus({ clientConfigured: true, clientId: 'id' }));
 
-    expect(() => buttonByText(host, 'Изменить OAuth-клиент')).toThrow();
+    expect(buttonByText(host, 'Изменить OAuth-клиент')).toBeTruthy();
   });
 
   it('shows the result of the redirect and a lost connection', async () => {

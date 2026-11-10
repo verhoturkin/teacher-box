@@ -5,21 +5,21 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import ru.teacherbox.shared.portal.PortalAddress;
 
 /**
- * The portal ({@code teacherbox.portal.*}).
+ * The portal ({@code teacherbox.portal.*}). The address is the teacher's setting (ADR-0056); the domain
+ * of the deployment only gives its default.
  *
- * @param address address of the portal ({@code TEACHERBOX_PUBLIC_URL}); when set, it takes precedence
- *                over the address entered in the interface
+ * @param domain the domain of the portal ({@code TEACHERBOX_DOMAIN}, the HTTPS certificate is issued for
+ *               it); while the teacher has entered no address, links start with {@code https://<domain>}
  */
 @ConfigurationProperties("teacherbox.portal")
-public record PortalProperties(@Nullable String address) {
+public record PortalProperties(@Nullable String domain) {
 
     public PortalProperties {
-        if (address != null && !address.isBlank()) {
-            address = PortalAddress.parse(address).orElseThrow(() -> new IllegalArgumentException(
-                    "TEACHERBOX_PUBLIC_URL must be the address of the portal without a path, e.g. "
-                            + "https://school.example.com"));
-        } else {
-            address = null;
-        }
+        domain = domain == null || domain.isBlank() ? null : domain.strip();
+    }
+
+    /** {@code https://<domain>}; {@code null} when the domain is not set or is not a host name. */
+    public @Nullable String defaultAddress() {
+        return domain == null ? null : PortalAddress.parse("https://" + domain).orElse(null);
     }
 }

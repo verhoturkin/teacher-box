@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Окна и раскрытые состояния</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.page0{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;padding:24px;box-sizing:border-box;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.pane{background:#FBF8FF;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.pane.wide{grid-column:span 2}
+.pane.full{grid-column:1/-1}
+h2{margin:0;font-size:16px;font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.spec{font-size:12px;color:#45464F;line-height:1.5}
+.spec code{font:12px ui-monospace,Consolas,monospace;color:#2B4190}
+.it{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.muted{color:#45464F}
+.label{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F}
+.btn{height:40px;border-radius:20px;border:0;padding:0 16px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap;justify-content:center}
+.btn .ic{font-size:20px}
+.filled{background:#4459A9;color:#fff}.tonal{background:#DEE1F9;color:#171B2C}.outlined{background:transparent;border:1px solid #767680;color:#4459A9}
+.textbtn{background:transparent;color:#4459A9;padding:0 12px}.danger{background:transparent;color:#BA1A1A;padding:0 12px}
+.ai{background:#FFD7F3;color:#390035}
+.iconbtn{width:40px;height:40px;border-radius:20px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center}
+.iconbtn.phone{width:48px;height:48px;border-radius:24px}
+.chip{height:32px;border-radius:8px;border:1px solid #C6C5D0;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:0 16px;font:500 14px 'Roboto Flex',sans-serif;color:#45464F;white-space:nowrap}
+.chip .ic{font-size:18px}
+.chip.sel{background:#DEE1F9;border-color:#DEE1F9;color:#171B2C;padding-left:8px}
+.chip.input{background:transparent;border-color:#C6C5D0;color:#1B1B21;padding:0 8px 0 4px}
+.chip.answer{background:#C8F0CF;border-color:#C8F0CF;color:#0B3A1A;padding:0 8px 0 12px}
+.assist{height:32px;border-radius:8px;border:1px solid #C6C5D0;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:0 16px 0 8px;font:500 14px 'Roboto Flex',sans-serif;color:#1B1B21}
+.assist .ic{font-size:18px;color:#4459A9}
+.assist.dashed{border-style:dashed}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap}
+.t-ok{background:#C8F0CF;color:#0B3A1A}.t-warn{background:#FFE08D;color:#3D2E00}.t-err{background:#FFDAD6;color:#410002}.t-pri{background:#DCE1FF;color:#001550}.t-wait{background:#F5F2FA;color:#45464F}
+.av{width:40px;height:40px;border-radius:20px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex:0 0 40px;background:#DEE1F9;color:#171B2C}
+.av.s24{width:24px;height:24px;border-radius:12px;flex-basis:24px;font-size:11px}
+.av.s32{width:32px;height:32px;border-radius:16px;flex-basis:32px;font-size:12px}
+.field{background:#E3E1E9;border-radius:4px 4px 0 0;border-bottom:1px solid #767680;padding:8px 16px;min-height:56px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;width:100%}
+.field small{font-size:12px;color:#45464F}
+.field span{font-size:16px}
+.field.focus{border-bottom:2px solid #4459A9}.field.focus small{color:#4459A9}
+.field.err{border-bottom:2px solid #BA1A1A}.field.err small{color:#BA1A1A}
+.hint{font-size:12px;color:#45464F;margin:4px 16px 0}.hint.err{color:#BA1A1A}
+.search{height:56px;border-radius:28px;background:#E3E1E9;display:flex;align-items:center;gap:12px;padding:0 20px;color:#45464F;font-size:16px;width:100%;box-sizing:border-box}
+.select{height:40px;border-radius:8px;border:1px solid #767680;display:inline-flex;align-items:center;gap:8px;padding:0 8px 0 12px;font:14px 'Roboto Flex',sans-serif;color:#1B1B21}
+.select .ic{font-size:18px}
+.seg{display:inline-flex;border:1px solid #767680;border-radius:20px;overflow:hidden;height:40px}
+.seg span{display:flex;align-items:center;gap:6px;padding:0 16px;font:500 14px 'Roboto Flex',sans-serif}
+.seg span+span{border-left:1px solid #767680}
+.seg .on{background:#DEE1F9;color:#171B2C}
+.seg .ic{font-size:18px}
+.step{display:inline-flex;align-items:center;border:1px solid #767680;border-radius:20px;height:40px}
+.step span.b{width:40px;height:38px;display:flex;align-items:center;justify-content:center;color:#45464F}
+.radio{width:20px;height:20px;border-radius:10px;border:2px solid #45464F;box-sizing:border-box;flex:0 0 20px;display:inline-block}
+.radio.on{border-color:#1F6B37;background:radial-gradient(#1F6B37 0 4px,transparent 5px)}
+.check{width:18px;height:18px;border-radius:2px;border:2px solid #45464F;box-sizing:border-box;display:inline-flex}
+.check.on{background:#4459A9;border-color:#4459A9;color:#fff;align-items:center;justify-content:center}
+.tile{display:flex;align-items:center;gap:16px;min-height:56px;padding:12px 16px;background:#F5F2FA;box-sizing:border-box;border-radius:4px;font-size:14px}
+.list{display:flex;flex-direction:column;gap:2px}
+.list .tile:first-child{border-radius:16px 16px 4px 4px}.list .tile:last-child{border-radius:4px 4px 16px 16px}
+.tile.cur{background:#DEE1F9}
+.tile .t{flex:1;min-width:0}.tile .t b{display:block;font-weight:500;font-size:16px}
+.opt{display:flex;align-items:center;gap:8px;background:#F5F2FA;border-radius:12px;padding:4px 4px 4px 8px;min-height:48px;box-sizing:border-box;font-size:15px}
+.opt.right{background:#C8F0CF;color:#0B3A1A}
+.opt .txt{flex:1}
+.card{background:#fff;border:1px solid #E3E1E9;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.alert{border-radius:16px;padding:12px 16px;display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:1.5}
+.a-err{background:#FFDAD6;color:#410002}.a-lock{background:#FFD7F3;color:#390035}.a-info{background:#DCE1FF;color:#001550}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#45464F}
+.pill{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.ni.on{color:#1B1B21}.ni.on .pill{background:#DEE1F9;color:#171B2C}
+.fab{width:56px;height:56px;border-radius:16px;background:#DCE1FF;color:#001550;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 6px rgba(0,0,0,.15)}
+.sheet{background:#F5F2FA;border-radius:28px 28px 0 0;padding:8px 0 16px;display:flex;flex-direction:column;width:100%;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.sheet .h{width:32px;height:4px;border-radius:2px;background:#767680;align-self:center;margin:6px 0 10px}
+.mi{display:flex;align-items:center;gap:16px;padding:12px 24px;font-size:16px}
+.mi .ic{color:#4459A9}
+.bar{height:6px;border-radius:3px;background:#E3E1E9;display:flex;overflow:hidden;width:120px}
+.bar i{display:block}
+.dq{background:#fff;border:1px solid #E3E1E9;border-radius:16px;padding:12px 16px;display:flex;gap:12px;align-items:flex-start;font-size:14px}
+table{border-collapse:collapse;font-size:13px;width:100%}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid #E3E1E9;vertical-align:top}
+th{font-size:12px;color:#45464F;font-weight:600}
+td code{font:12px ui-monospace,Consolas,monospace;color:#2B4190}
+
+.page{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;padding:24px;box-sizing:border-box;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;width:1440px}
+.dlg{background:#F0EDF5;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.dlg h3{margin:0;font-size:24px;font-weight:400}
+.acts{display:flex;justify-content:flex-end;gap:8px}
+.list .tile:only-child{border-radius:16px}
+.filledDanger{background:#BA1A1A;color:#fff}
+.cap{font-size:12px;color:#45464F;line-height:1.5}
+</style>
+</helmet>
+<div class="page">
+
+  <section class="pane" aria-label="Сменить пароль">
+    <span class="label">Мой аккаунт → Вход → «Сменить…»</span>
+    <div class="dlg" role="dialog" aria-labelledby="d1">
+      <h3 id="d1">Сменить пароль</h3>
+      <div class="field"><small>Текущий пароль</small><span>••••••••</span></div>
+      <div><div class="field focus"><small>Новый пароль</small><span>••••••••••</span></div><div class="hint">Не короче 8 символов</div></div>
+      <div class="field"><small>Ещё раз</small><span></span></div>
+      <div class="acts"><button class="btn textbtn">Отмена</button><button class="btn filled">Сменить</button></div>
+    </div>
+    <div class="cap">На телефоне — полноэкранное окно с «Сменить» справа в шапке. Другие устройства остаются в аккаунте.</div>
+  </section>
+
+  <section class="pane" aria-label="Восстановить из копии">
+    <span class="label">Данные → «Восстановить…»</span>
+    <div class="dlg" role="dialog" aria-labelledby="d2">
+      <h3 id="d2">Восстановить из копии?</h3>
+      <span class="select" style="width:100%;box-sizing:border-box"><span class="ic">backup</span><span style="flex:1">Сегодня, 03:00 · по расписанию</span><span class="ic">arrow_drop_down</span></span>
+      <div class="alert a-err"><span class="ic">warning</span><span>Всё, что изменилось после копии, пропадёт. Перед восстановлением портал сам сделает копию текущих данных.</span></div>
+      <div><div class="field"><small>Ваш пароль</small><span>••••••••</span></div><div class="hint">Для опасных действий нужен пароль</div></div>
+      <div class="acts"><button class="btn textbtn">Отмена</button><button class="btn filledDanger">Восстановить</button></div>
+    </div>
+    <div class="cap">«Очистить…» — то же окно без выбора копии, с текстом «Удалятся ученики, занятия, задания и оплаты».</div>
+  </section>
+
+  <section class="pane" aria-label="Не доставлено">
+    <span class="label">Мессенджеры → «Показать»</span>
+    <div class="alert a-err" style="align-items:center"><span class="ic">error</span><span style="flex:1"><b style="font-weight:600">2 уведомления не доставлены.</b></span><button class="btn textbtn" style="color:#410002">Скрыть</button></div>
+    <div class="list">
+      <div class="tile"><span class="av s32" style="background:#FFD7F3;color:#390035">ИП</span><span class="t"><b>Илья Петров · Telegram</b><span class="muted">Сегодня, 09:12 · Новое задание · бот заблокирован</span></span><button class="iconbtn" aria-label="Отправить ссылку на подключение"><span class="ic" style="color:#4459A9">share</span></button></div>
+      <div class="tile"><span class="av s32">Вы</span><span class="t"><b>Вы · ВКонтакте</b><span class="muted">Вчера, 18:40 · Оплата получена · бот не отвечает</span></span><button class="iconbtn" aria-label="Проверить бота"><span class="ic" style="color:#4459A9">refresh</span></button></div>
+    </div>
+    <div class="cap">Когда, кому, куда и причина — простыми словами, без кода ошибки.</div>
+  </section>
+
+  <section class="pane" aria-label="Что умеет бот">
+    <span class="label">Мессенджеры → «Что умеет бот», раскрыто</span>
+    <div class="card">
+      <button style="display:flex;align-items:center;gap:12px;border:0;background:transparent;padding:0;font-family:inherit;color:inherit;text-align:left"><span style="flex:1"><b style="display:block;font-size:16px;font-weight:600">Что умеет бот</b><span class="muted" style="font-size:14px">Ученикам — уведомления и меню /menu</span></span><span class="ic muted">expand_less</span></button>
+      <span style="font-size:14px;line-height:1.5">Кроме уведомлений, бот показывает меню действий: напишите ему /menu или нажмите кнопку под сообщением.</span>
+      <div class="list">
+        <div class="tile"><span class="av"><span class="ic">school</span></span><span class="t"><b>Ученикам</b><span class="muted">Меню /menu и уведомления</span></span></div>
+        <div class="tile"><span class="av"><span class="ic">person</span></span><span class="t"><b>Вам</b><span class="muted">Действия учителя — если включены в «Моём аккаунте»</span></span></div>
+      </div>
+      <span class="label">Команды</span>
+      <div class="row"><span class="tag t-wait">/menu — меню</span><span class="tag t-wait">/cancel — отменить</span><span class="tag t-wait">/help — подсказка</span><span class="tag t-wait">/stop — отключить</span></div>
+    </div>
+  </section>
+
+  <section class="pane" aria-label="Карточка ученика — мессенджеры">
+    <span class="label">Ученики → карточка → «Мессенджеры»</span>
+    <div class="card">
+      <h2>Мессенджеры</h2>
+      <div class="list">
+        <div class="tile"><span class="av"><span class="ic">send</span></span><span class="t"><b>Telegram</b><span class="muted">@ilya_p · с 12 сентября</span></span><span class="tag t-err">Бот заблокирован</span></div>
+        <div class="tile"><span class="av"><span class="ic">chat</span></span><span class="t"><b>ВКонтакте</b><span class="muted">Не подключён</span></span></div>
+      </div>
+      <div><button class="btn tonal"><span class="ic">share</span>Отправить ссылку на подключение</button></div>
+    </div>
+    <div class="cap">Учитель видит, куда доходят уведомления ученика, но не меняет его выбор.</div>
+  </section>
+
+  <section class="pane" aria-label="Написать всем">
+    <span class="label">Ученики → «Написать всем»</span>
+    <div class="dlg" role="dialog" aria-labelledby="d3">
+      <h3 id="d3">Сообщение ученикам</h3>
+      <div><div class="row" style="gap:8px"><span class="chip sel"><span class="ic">check</span>Группа «B1»</span><span class="chip input"><span class="av s24">АС</span>Анна Смирнова<span class="ic" style="font-size:18px">close</span></span><span class="assist"><span class="ic">add</span>Кому</span></div><div class="hint" style="margin-top:8px">Если никого не выбрать, сообщение получат все ученики.</div></div>
+      <div class="field"><small>Тема</small><span>Перенос занятий на праздниках</span></div>
+      <div class="field" style="min-height:112px;justify-content:flex-start"><small>Текст</small><span>4 ноября занятий не будет, перенесём на 6-е…</span></div>
+      <div class="acts"><button class="btn textbtn">Отмена</button><button class="btn filled"><span class="ic">send</span>Отправить</button></div>
+    </div>
+  </section>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

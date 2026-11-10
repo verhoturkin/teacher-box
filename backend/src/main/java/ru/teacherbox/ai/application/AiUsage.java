@@ -4,23 +4,33 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.YearMonth;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import ru.teacherbox.ai.application.AiViews.AiStatus;
 import ru.teacherbox.ai.application.AiViews.FeatureUsage;
+import ru.teacherbox.ai.application.AiViews.ModelUsage;
 import ru.teacherbox.ai.application.AiViews.RequestPage;
 import ru.teacherbox.ai.application.AiViews.RequestView;
 import ru.teacherbox.ai.application.AiViews.UsageReport;
+import ru.teacherbox.ai.application.LlmClients.ModelClient;
 import ru.teacherbox.ai.domain.AiFeature;
+import ru.teacherbox.ai.domain.AiModel;
+import ru.teacherbox.ai.domain.AiProvider;
 import ru.teacherbox.ai.domain.AiRequest;
 import ru.teacherbox.ai.domain.RequestStatus;
 import ru.teacherbox.ai.domain.TokenBudget;
 import ru.teacherbox.ai.persistence.AiRequestRepository;
 import ru.teacherbox.ai.persistence.AiRequestRepository.FeatureTotals;
+import ru.teacherbox.ai.persistence.AiRequestRepository.ModelTotals;
+import ru.teacherbox.ai.persistence.ProviderRepository;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 
@@ -32,16 +42,16 @@ public class AiUsage {
     public static final int PAGE_SIZE = 10;
 
     private final AiRequestRepository requests;
-    private final ObjectProvider<LlmClient> llm;
-    private final AiProperties properties;
+    private final LlmClients llm;
+    private final ProviderRepository providers;
     private final InstanceTimeZone timeZone;
     private final Clock clock;
 
-    public AiUsage(AiRequestRepository requests, ObjectProvider<LlmClient> llm, AiProperties properties,
+    public AiUsage(AiRequestRepository requests, LlmClients llm, ProviderRepository providers,
             InstanceTimeZone timeZone, Clock clock) {
         this.requests = requests;
         this.llm = llm;
-        this.properties = properties;
+        this.providers = providers;
         this.timeZone = timeZone;
         this.clock = clock;
     }
@@ -49,20 +59,26 @@ public class AiUsage {
     public TokenBudget budget() {
         YearMonth month = currentMonth();
         return new TokenBudget(requests.totalTokens(start(month), start(month.plusMonths(1))),
-                properties.monthlyTokenLimit());
+                monthlyTokenLimit());
+    }
+
+    /** One limit for all the models (ADR-0057). */
+    private long monthlyTokenLimit() {
+        return providers.settings().monthlyTokenLimit();
     }
 
     public AiStatus status() {
-        LlmClient client = llm.getIfAvailable();
+        LlmClient client = llm.forDefault().map(ModelClient::client).orElse(null);
         TokenBudget budget = budget();
         return new AiStatus(client != null, client == null ? null : client.provider(),
                 client == null ? null : client.model(), budget.used(), budget.limit(), budget.isExhausted());
     }
 
-    public void record(AiFeature feature, LlmClient client, String model, RequestStatus status, long inputTokens,
+    /** @param model the model id the provider answered with */
+    public void record(AiFeature feature, ModelClient client, String model, RequestStatus status, long inputTokens,
             long outputTokens, long durationMs, @Nullable String error) {
-        requests.insert(new AiRequest(Ids.newId(), feature, client.provider(), model, status, inputTokens,
-                outputTokens, durationMs, error, clock.instant()));
+        requests.insert(new AiRequest(Ids.newId(), feature, client.client().provider(), model, client.model().id(),
+                status, inputTokens, outputTokens, durationMs, error, clock.instant()));
     }
 
     /** @param month {@code null} for the current month */
@@ -78,8 +94,30 @@ public class AiUsage {
                 })
                 .toList();
         RequestPage recent = page(from, to, 0);
-        return new UsageReport(period.toString(), requests.totalTokens(from, to), properties.monthlyTokenLimit(),
-                features, recent.items(), recent.hasMore());
+        return new UsageReport(period.toString(), requests.totalTokens(from, to), monthlyTokenLimit(),
+                features, models(requests.totalsByModel(from, to)), recent.items(), recent.hasMore());
+    }
+
+    /** The configured models in their order with what they used, then the removed ones (most tokens first). */
+    private List<ModelUsage> models(List<ModelTotals> totals) {
+        Map<UUID, ModelTotals> byId = new HashMap<>();
+        totals.stream().filter(total -> total.modelId() != null).forEach(total -> byId.put(total.modelId(), total));
+        List<ModelUsage> models = new ArrayList<>();
+        Set<UUID> configured = new HashSet<>();
+        for (AiProvider provider : providers.providers()) {
+            for (AiModel model : providers.models(provider.id())) {
+                configured.add(model.id());
+                ModelTotals total = byId.get(model.id());
+                if (total != null) {
+                    models.add(new ModelUsage(model.id(), model.label(), provider.kind().id(), false,
+                            total.requests(), total.inputTokens(), total.outputTokens()));
+                }
+            }
+        }
+        totals.stream().filter(total -> total.modelId() == null || !configured.contains(total.modelId()))
+                .forEach(total -> models.add(new ModelUsage(total.modelId(), total.model(), total.provider(), true,
+                        total.requests(), total.inputTokens(), total.outputTokens())));
+        return models;
     }
 
     /**

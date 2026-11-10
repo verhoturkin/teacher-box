@@ -5,6 +5,7 @@
 export { BillingApi } from './data-access/billing-api';
 export type { BillingSummary, Debtor, MyBillingSummary } from './data-access/billing.models';
 export { DefaultPriceCard } from './settings/default-price-card';
+export { PriceField } from './settings/price-field';
 export { FinanceWidget } from './home/finance-widget';
 export { MyBalanceWidget } from './home/my-balance-widget';
 export { PaymentDialog } from './teacher/payment-dialog';

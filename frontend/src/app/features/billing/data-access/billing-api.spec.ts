@@ -97,6 +97,15 @@ describe('BillingApi', () => {
     expect(saved).toBe(200_000);
   });
 
+  it('reads and changes the currency', () => {
+    api.currency().subscribe();
+    api.changeCurrency('EUR').subscribe();
+
+    expect(backend.expectOne({ method: 'GET', url: '/api/teacher/billing/currency' })).toBeTruthy();
+    const change = backend.expectOne({ method: 'PUT', url: '/api/teacher/billing/currency' });
+    expect(change.request.body).toEqual({ currency: 'EUR' });
+  });
+
   it('changes the price of new students', () => {
     let saved = 0;
     api.changeDefaultPrice(180_000).subscribe((price) => {

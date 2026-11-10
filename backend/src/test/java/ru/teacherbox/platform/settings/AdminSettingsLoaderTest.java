@@ -49,6 +49,22 @@ class AdminSettingsLoaderTest {
     }
 
     @Test
+    void liveValuesReplaceTheOnesInForce() {
+        StandardEnvironment environment = environment(Map.of("TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS", "8"));
+        int sources = environment.getPropertySources().size();
+
+        AdminSettingsLoader.replace(environment, Map.of("TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS", "3"));
+        assertThat(environment.getProperty("teacherbox.notifications.max-attempts")).isEqualTo("3");
+        AdminSettingsLoader.replace(environment, Map.of("TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS", "4"));
+        assertThat(environment.getProperty("teacherbox.notifications.max-attempts")).isEqualTo("4");
+        assertThat(environment.getPropertySources().size()).isEqualTo(sources + 1);
+
+        AdminSettingsLoader.replace(environment, Map.of());
+        assertThat(environment.getProperty("teacherbox.notifications.max-attempts")).isEqualTo("8");
+        assertThat(environment.getPropertySources().size()).isEqualTo(sources);
+    }
+
+    @Test
     void withoutAFileNothingChanges() {
         StandardEnvironment environment = environment(Map.of("TEACHERBOX_AI_MODEL", "from-env"));
         int sources = environment.getPropertySources().size();

@@ -14,7 +14,6 @@ import { portalInfo } from '@testing/portal-fixtures';
 function googleStatus(overrides: Partial<GoogleCalendarStatus> = {}): GoogleCalendarStatus {
   return {
     clientConfigured: false,
-    clientFromEnvironment: false,
     clientId: null,
     status: 'NOT_CONNECTED',
     busyEnabled: false,
@@ -137,7 +136,6 @@ describe('GoogleCalendarPanel', () => {
     const host = await render(
       googleStatus({
         clientConfigured: true,
-        clientFromEnvironment: true,
         status: 'CONNECTED',
         busyEnabled: true,
         connectedAt: '2026-10-01T10:00:00Z',
@@ -166,9 +164,9 @@ describe('GoogleCalendarPanel', () => {
     backend.expectOne({ method: 'DELETE', url: '/api/teacher/schedule/google' }).flush(null);
     backend
       .expectOne('/api/teacher/schedule/google')
-      .flush(googleStatus({ clientConfigured: true, clientFromEnvironment: true }));
+      .flush(googleStatus({ clientConfigured: true }));
     await fixture.whenStable();
-    expect(readableText(host)).not.toContain('Изменить OAuth-клиент');
+    expect(readableText(host)).toContain('Изменить OAuth-клиент');
     expect(readableText(host)).not.toContain('Google Календарь подключён.');
   });
 

@@ -1,7 +1,7 @@
 import { computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { AiApi, StudentContext } from '@features/ai/parts';
+import { AiApi, AiModelChoice, StudentContext } from '@features/ai/parts';
 import { HomeworkApi } from '../data-access/homework-api';
 import { ReviewDecision, TaskDetails } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
@@ -16,6 +16,7 @@ export interface ReviewSuggestion {
 export class ReviewForm {
   private readonly api = inject(HomeworkApi);
   private readonly ai = inject(AiApi);
+  private readonly model = inject(AiModelChoice);
   readonly aiEnabled = toSignal(this.ai.enabled$, { initialValue: false });
   readonly pending = signal(false);
   readonly drafting = signal(false);
@@ -87,13 +88,16 @@ export class ReviewForm {
       return;
     }
     this.drafting.set(true);
-    this.ai
-      .reviewDraft({
-        title: task.assignment.title,
-        description: task.assignment.description,
-        answer,
-        context: this.context.context([task.studentId]),
-      })
+    this.model
+      .send((modelId) =>
+        this.ai.reviewDraft({
+          title: task.assignment.title,
+          description: task.assignment.description,
+          answer,
+          context: this.context.context([task.studentId]),
+          modelId,
+        }),
+      )
       .subscribe({
         next: (draft) => {
           this.drafting.set(false);

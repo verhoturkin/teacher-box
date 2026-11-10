@@ -150,7 +150,7 @@ describe('BotWizardDialog', () => {
   });
 
   it('continues a configured bot from connecting the account and can be skipped', async () => {
-    await open(channelSetup({ channel: 'MAX', configured: true, fromEnvironment: true }));
+    await open(channelSetup({ channel: 'MAX', configured: true }));
     expect(text()).toContain('Чтобы уведомления приходили и вам');
 
     fixture.componentInstance.go(4);
@@ -158,7 +158,7 @@ describe('BotWizardDialog', () => {
     expect(text()).toContain('Чтобы уведомления приходили и вам');
     fixture.componentInstance.go(2);
     await settle();
-    expect(text()).toContain('задан администратором портала');
+    expect(text()).toContain('уже подключён');
 
     fixture.componentInstance.go(3);
     await settle();

@@ -8,7 +8,6 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
 import {
   FormControl,
   FormGroup,
@@ -16,19 +15,15 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { from, switchMap } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Select } from 'primeng/select';
 import { SelectButton } from 'primeng/selectbutton';
-import { Tooltip } from 'primeng/tooltip';
 import { injectMobile, injectWindowSize } from '@core/layout/mobile';
 import { LANGUAGES, Language, chooseLanguage, language } from '@core/i18n/language';
 import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
 import { AuthService } from '@core/auth/auth.service';
-import { checkFiles } from '@shared/files/check-files';
-import { SquarePhoto } from '@shared/files/square-photo';
 import { Avatar } from '@shared/ui/avatar';
 import { Busy } from '@shared/ui/busy';
 import { TbDialog } from '@shared/ui/dialog/dialog';
@@ -36,6 +31,8 @@ import { IdentityApi } from '../data-access/identity-api';
 import { Account } from '../data-access/identity.models';
 import { Role } from '@core/auth/auth.models';
 import { ChangePasswordForm } from './change-password-form';
+import { ProfilePhoto } from './profile-photo';
+import { TEACHER_NAME_VALIDATORS, TeacherNameField } from './teacher-name-field';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
@@ -44,7 +41,6 @@ import { NotificationsSection } from '@features/notifications/parts';
 const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
 
 /** Pictures the browser can cut into a square; the size is not limited — the result is scaled down. */
-const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
 
 /**
  * Own account of the teacher, a student or the administrator in sections: «Профиль» (photo, name),
@@ -65,10 +61,11 @@ const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
     InputText,
     Select,
     SelectButton,
-    Tooltip,
     TbDialog,
     ChangePasswordForm,
     NotificationsSection,
+    ProfilePhoto,
+    TeacherNameField,
     NgTemplateOutlet,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -76,61 +73,21 @@ const AVATAR_POLICY = { extensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'] };
     <ng-template #profileCard>
       @if (account(); as account) {
         <p-card [header]="t.profile" styleClass="tb-section-card tb-section-card--flow">
-          <div class="tb-tiles">
-            <div class="tb-tile">
-              <tb-avatar [name]="account.displayName" [photo]="account.avatar" size="2.5rem" />
-              @if (hasPhoto()) {
-                <span class="tb-tile__text">
-                  <b>{{ t.photo }}</b>
-                  <span>{{ account.avatar === null ? t.noPhoto : t.photoTypes }}</span>
-                </span>
-                <input
-                  #photoFile
-                  type="file"
-                  class="tb-sr-only"
-                  accept="image/jpeg,image/png,image/webp"
-                  [attr.aria-label]="t.photoFile"
-                  (change)="uploadPhoto(photoFile)"
-                />
-                @if (account.avatar !== null) {
-                  <p-button
-                    icon="tb-i tb-i-delete"
-                    severity="danger"
-                    [text]="true"
-                    [rounded]="true"
-                    [pTooltip]="t.removePhoto"
-                    [ariaLabel]="t.removePhoto"
-                    [loading]="busy.is('remove-photo')"
-                    (onClick)="removePhoto()"
-                  />
-                }
-                <p-button
-                  [label]="account.avatar === null ? t.uploadPhoto : t.changePhoto"
-                  icon="tb-i tb-i-photo_camera"
-                  severity="secondary"
-                  [loading]="busy.is('photo')"
-                  (onClick)="photoFile.click()"
-                />
-              } @else {
+          @if (hasPhoto()) {
+            <tb-profile-photo [account]="account" (changed)="changed($event)" />
+          } @else {
+            <div class="tb-tiles">
+              <div class="tb-tile">
+                <tb-avatar [name]="account.displayName" [photo]="account.avatar" size="2.5rem" />
                 <span class="tb-tile__text">
                   <b class="tb-account__name">{{ account.displayName }}</b>
                   <span class="tb-account__role">{{ roleLabel() }}</span>
                 </span>
-              }
+              </div>
             </div>
-          </div>
+          }
           @if (isTeacher()) {
-            <div class="tb-field">
-              <label for="account-name">{{ t.name }}</label>
-              <input
-                pInputText
-                id="account-name"
-                [formControl]="nameForm.controls.name"
-                maxlength="100"
-                (change)="rename()"
-              />
-              <small class="tb-hint">{{ t.teacherNameHint }}</small>
-            </div>
+            <tb-teacher-name-field [control]="nameForm.controls.name" (committed)="rename()" />
           }
           @if (isStudent()) {
             <div class="tb-field">
@@ -437,7 +394,6 @@ export class AccountPanel implements OnInit {
   protected readonly chooseLanguage = chooseLanguage;
   private readonly api = inject(IdentityApi);
   private readonly auth = inject(AuthService);
-  private readonly squarePhoto = inject(SquarePhoto);
   private readonly snackbar = inject(Snackbar);
 
   protected readonly account = signal<Account | null>(null);
@@ -462,10 +418,7 @@ export class AccountPanel implements OnInit {
   protected readonly cp = T.changePassword;
 
   readonly nameForm = new FormGroup({
-    name: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(100), Validators.pattern(/\S/)],
-    }),
+    name: new FormControl('', { nonNullable: true, validators: TEACHER_NAME_VALIDATORS }),
   });
 
   /** A student's own name; empty — the name the teacher gave. */
@@ -521,43 +474,6 @@ export class AccountPanel implements OnInit {
     });
   }
 
-  /** The chosen picture is cut to a square and scaled down here, then sent. */
-  async uploadPhoto(input: HTMLInputElement): Promise<void> {
-    const file = input.files?.item(0) ?? null;
-    input.value = '';
-    if (file === null) {
-      return;
-    }
-    const { rejected } = await checkFiles([file], AVATAR_POLICY);
-    if (rejected[0] !== undefined) {
-      this.snackbar.error(rejected[0].message);
-      return;
-    }
-    this.busy
-      .guard(
-        'photo',
-        from(this.squarePhoto.from(file)).pipe(switchMap((photo) => this.api.changeAvatar(photo))),
-      )
-      .subscribe({
-        next: (account) => {
-          this.changed(account);
-          this.snackbar.success(T.account.photoSaved);
-        },
-        error: (error: unknown) => {
-          // a failed request already shows its error; a picture the browser cannot open does not
-          if (!(error instanceof HttpErrorResponse)) {
-            this.snackbar.error(T.account.photoUnreadable);
-          }
-        },
-      });
-  }
-
-  removePhoto(): void {
-    this.busy.guard('remove-photo', this.api.removeAvatar()).subscribe((account) => {
-      this.changed(account);
-    });
-  }
-
   /** Empty or the teacher's name: the student goes back to the name the teacher gave. */
   private ownNameToSave(): string {
     const name = this.ownNameForm.controls.name.value.trim();
@@ -578,7 +494,7 @@ export class AccountPanel implements OnInit {
     this.snackbar.success(T.account.passwordChanged);
   }
 
-  private changed(account: Account): void {
+  protected changed(account: Account): void {
     this.show(account);
     this.auth.profileChanged(account);
   }

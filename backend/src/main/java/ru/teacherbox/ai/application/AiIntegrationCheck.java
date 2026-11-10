@@ -1,20 +1,24 @@
 package ru.teacherbox.ai.application;
 
+import java.util.HashMap;
 import java.util.List;
-import org.springframework.beans.factory.ObjectProvider;
+import java.util.Map;
 import org.springframework.stereotype.Component;
+import ru.teacherbox.ai.application.AiProviders.Diagnosis;
 import ru.teacherbox.shared.diagnostics.IntegrationCheck;
 import ru.teacherbox.shared.i18n.Language;
 
-/** Asks the AI provider about the configured model; no tokens are spent. */
+/**
+ * Checks every AI connection of the teacher (ADR-0057), no tokens spent: one line per connection, named by its
+ * provider and numbered when several share it; names, keys and addresses stay hidden from the administrator.
+ */
 @Component
 class AiIntegrationCheck implements IntegrationCheck {
 
+    private final AiProviders providers;
 
-    private final ObjectProvider<LlmClient> llm;
-
-    AiIntegrationCheck(ObjectProvider<LlmClient> llm) {
-        this.llm = llm;
+    AiIntegrationCheck(AiProviders providers) {
+        this.providers = providers;
     }
 
     @Override
@@ -22,23 +26,22 @@ class AiIntegrationCheck implements IntegrationCheck {
         // in the language of the administrator's page (ADR-0036)
         Language language = Language.current();
         String title = language == Language.RU ? "ИИ" : "AI";
-        LlmClient client = llm.getIfAvailable();
-        if (client == null) {
+        List<Diagnosis> diagnoses = providers.diagnose(language);
+        if (diagnoses.isEmpty()) {
             return List.of(IntegrationStatus.notConfigured(title, language == Language.RU
-                    ? "Провайдер не выбран (TEACHERBOX_AI_PROVIDER)"
-                    : "No provider chosen (TEACHERBOX_AI_PROVIDER)"));
+                    ? "Нет подключения: учитель добавляет его в «Настройках» → «ИИ-помощник»"
+                    : "No connection: the teacher adds one in Settings → AI assistant"));
         }
-        String name = title + " (" + client.provider() + ")";
-        long started = System.nanoTime();
-        try {
-            String answer = client.ping(language);
-            return List.of(new IntegrationStatus(name, State.OK, answer, elapsed(started)));
-        } catch (LlmException e) {
-            return List.of(new IntegrationStatus(name, State.FAILED, String.valueOf(e.getMessage()), elapsed(started)));
-        }
-    }
-
-    private static long elapsed(long started) {
-        return (System.nanoTime() - started) / 1_000_000;
+        Map<String, Integer> seen = new HashMap<>();
+        return diagnoses.stream().map(diagnosis -> {
+            int number = seen.merge(diagnosis.provider(), 1, Integer::sum);
+            String name = title + " (" + diagnosis.provider() + (number > 1 ? ", " + number : "") + ")";
+            String detail = diagnosis.state() == AiProviders.State.OK && diagnosis.noModels()
+                    ? (language == Language.RU ? "Подключение отвечает, моделей в нём пока нет"
+                            : "The connection responds but has no models yet")
+                    : String.valueOf(diagnosis.detail());
+            return new IntegrationStatus(name, diagnosis.state() == AiProviders.State.OK ? State.OK : State.FAILED,
+                    detail, diagnosis.durationMs());
+        }).toList();
     }
 }

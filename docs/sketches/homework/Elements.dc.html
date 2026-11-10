@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Элементы эскизов</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EFEDF4}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.page{font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#EFEDF4;padding:24px;box-sizing:border-box;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.pane{background:#FBF8FF;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.pane.wide{grid-column:span 2}
+.pane.full{grid-column:1/-1}
+h2{margin:0;font-size:16px;font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.spec{font-size:12px;color:#45464F;line-height:1.5}
+.spec code{font:12px ui-monospace,Consolas,monospace;color:#2B4190}
+.it{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.muted{color:#45464F}
+.label{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#45464F}
+.btn{height:40px;border-radius:20px;border:0;padding:0 16px;display:inline-flex;align-items:center;gap:8px;font:500 14px 'Roboto Flex',sans-serif;white-space:nowrap;justify-content:center}
+.btn .ic{font-size:20px}
+.filled{background:#4459A9;color:#fff}.tonal{background:#DEE1F9;color:#171B2C}.outlined{background:transparent;border:1px solid #767680;color:#4459A9}
+.textbtn{background:transparent;color:#4459A9;padding:0 12px}.danger{background:transparent;color:#BA1A1A;padding:0 12px}
+.ai{background:#FFD7F3;color:#390035}
+.iconbtn{width:40px;height:40px;border-radius:20px;border:0;background:transparent;color:#45464F;display:inline-flex;align-items:center;justify-content:center}
+.iconbtn.phone{width:48px;height:48px;border-radius:24px}
+.chip{height:32px;border-radius:8px;border:1px solid #C6C5D0;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:0 16px;font:500 14px 'Roboto Flex',sans-serif;color:#45464F;white-space:nowrap}
+.chip .ic{font-size:18px}
+.chip.sel{background:#DEE1F9;border-color:#DEE1F9;color:#171B2C;padding-left:8px}
+.chip.input{background:transparent;border-color:#C6C5D0;color:#1B1B21;padding:0 8px 0 4px}
+.chip.answer{background:#C8F0CF;border-color:#C8F0CF;color:#0B3A1A;padding:0 8px 0 12px}
+.assist{height:32px;border-radius:8px;border:1px solid #C6C5D0;background:transparent;display:inline-flex;align-items:center;gap:8px;padding:0 16px 0 8px;font:500 14px 'Roboto Flex',sans-serif;color:#1B1B21}
+.assist .ic{font-size:18px;color:#4459A9}
+.assist.dashed{border-style:dashed}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap}
+.t-ok{background:#C8F0CF;color:#0B3A1A}.t-warn{background:#FFE08D;color:#3D2E00}.t-err{background:#FFDAD6;color:#410002}.t-pri{background:#DCE1FF;color:#001550}.t-wait{background:#F5F2FA;color:#45464F}
+.av{width:40px;height:40px;border-radius:20px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex:0 0 40px;background:#DEE1F9;color:#171B2C}
+.av.s24{width:24px;height:24px;border-radius:12px;flex-basis:24px;font-size:11px}
+.av.s32{width:32px;height:32px;border-radius:16px;flex-basis:32px;font-size:12px}
+.field{background:#E3E1E9;border-radius:4px 4px 0 0;border-bottom:1px solid #767680;padding:8px 16px;min-height:56px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;width:100%}
+.field small{font-size:12px;color:#45464F}
+.field span{font-size:16px}
+.field.focus{border-bottom:2px solid #4459A9}.field.focus small{color:#4459A9}
+.field.err{border-bottom:2px solid #BA1A1A}.field.err small{color:#BA1A1A}
+.hint{font-size:12px;color:#45464F;margin:4px 16px 0}.hint.err{color:#BA1A1A}
+.search{height:56px;border-radius:28px;background:#E3E1E9;display:flex;align-items:center;gap:12px;padding:0 20px;color:#45464F;font-size:16px;width:100%;box-sizing:border-box}
+.select{height:40px;border-radius:8px;border:1px solid #767680;display:inline-flex;align-items:center;gap:8px;padding:0 8px 0 12px;font:14px 'Roboto Flex',sans-serif;color:#1B1B21}
+.select .ic{font-size:18px}
+.seg{display:inline-flex;border:1px solid #767680;border-radius:20px;overflow:hidden;height:40px}
+.seg span{display:flex;align-items:center;gap:6px;padding:0 16px;font:500 14px 'Roboto Flex',sans-serif}
+.seg span+span{border-left:1px solid #767680}
+.seg .on{background:#DEE1F9;color:#171B2C}
+.seg .ic{font-size:18px}
+.step{display:inline-flex;align-items:center;border:1px solid #767680;border-radius:20px;height:40px}
+.step span.b{width:40px;height:38px;display:flex;align-items:center;justify-content:center;color:#45464F}
+.radio{width:20px;height:20px;border-radius:10px;border:2px solid #45464F;box-sizing:border-box;flex:0 0 20px;display:inline-block}
+.radio.on{border-color:#1F6B37;background:radial-gradient(#1F6B37 0 4px,transparent 5px)}
+.check{width:18px;height:18px;border-radius:2px;border:2px solid #45464F;box-sizing:border-box;display:inline-flex}
+.check.on{background:#4459A9;border-color:#4459A9;color:#fff;align-items:center;justify-content:center}
+.tile{display:flex;align-items:center;gap:16px;min-height:56px;padding:12px 16px;background:#F5F2FA;box-sizing:border-box;border-radius:4px;font-size:14px}
+.list{display:flex;flex-direction:column;gap:2px}
+.list .tile:first-child{border-radius:16px 16px 4px 4px}.list .tile:last-child{border-radius:4px 4px 16px 16px}
+.tile.cur{background:#DEE1F9}
+.tile .t{flex:1;min-width:0}.tile .t b{display:block;font-weight:500;font-size:16px}
+.opt{display:flex;align-items:center;gap:8px;background:#F5F2FA;border-radius:12px;padding:4px 4px 4px 8px;min-height:48px;box-sizing:border-box;font-size:15px}
+.opt.right{background:#C8F0CF;color:#0B3A1A}
+.opt .txt{flex:1}
+.card{background:#fff;border:1px solid #E3E1E9;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.alert{border-radius:16px;padding:12px 16px;display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:1.5}
+.a-err{background:#FFDAD6;color:#410002}.a-lock{background:#FFD7F3;color:#390035}.a-info{background:#DCE1FF;color:#001550}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#45464F}
+.pill{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.ni.on{color:#1B1B21}.ni.on .pill{background:#DEE1F9;color:#171B2C}
+.fab{width:56px;height:56px;border-radius:16px;background:#DCE1FF;color:#001550;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 6px rgba(0,0,0,.15)}
+.sheet{background:#F5F2FA;border-radius:28px 28px 0 0;padding:8px 0 16px;display:flex;flex-direction:column;width:100%;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.sheet .h{width:32px;height:4px;border-radius:2px;background:#767680;align-self:center;margin:6px 0 10px}
+.mi{display:flex;align-items:center;gap:16px;padding:12px 24px;font-size:16px}
+.mi .ic{color:#4459A9}
+.bar{height:6px;border-radius:3px;background:#E3E1E9;display:flex;overflow:hidden;width:120px}
+.bar i{display:block}
+.dq{background:#fff;border:1px solid #E3E1E9;border-radius:16px;padding:12px 16px;display:flex;gap:12px;align-items:flex-start;font-size:14px}
+table{border-collapse:collapse;font-size:13px;width:100%}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid #E3E1E9;vertical-align:top}
+th{font-size:12px;color:#45464F;font-weight:600}
+td code{font:12px ui-monospace,Consolas,monospace;color:#2B4190}
+</style>
+</helmet>
+<div class="page">
+
+  <section class="pane wide" aria-label="Кнопки">
+    <h2>Кнопки</h2>
+    <div class="row">
+      <button class="btn filled"><span class="ic">add</span>Создать</button>
+      <button class="btn tonal"><span class="ic">send</span>Выдать</button>
+      <button class="btn outlined"><span class="ic">edit</span>Изменить</button>
+      <button class="btn textbtn">Отмена</button>
+      <button class="btn danger"><span class="ic">delete</span>Удалить</button>
+      <button class="btn ai"><span class="ic">auto_awesome</span>Написать с ИИ</button>
+    </div>
+    <div class="row">
+      <span class="it"><button class="iconbtn" aria-label="Ещё"><span class="ic">more_vert</span></button><span class="spec">40 · комп., планшет</span></span>
+      <span class="it"><button class="iconbtn phone" aria-label="Назад"><span class="ic">arrow_back</span></button><span class="spec">48 · телефон</span></span>
+      <span class="it"><span class="fab"><span class="ic">add</span></span><span class="spec">FAB 56, угол 16</span></span>
+    </div>
+    <div class="spec">Все кнопки — 40 px, полное скругление, 16 px по бокам, иконка 20 px, Label Large (<code>.btn</code>; было 40/44/48 px с разными отступами). Один filled на странице. ИИ — tertiary container (<code>.ai</code>); тёмный <code>#390035</code> только на кнопке в блоке «тест заблокирован».</div>
+  </section>
+
+  <section class="pane" aria-label="Статусы">
+    <h2>Метки статусов</h2>
+    <div class="row">
+      <span class="tag t-ok">Принято</span><span class="tag t-warn">На проверке</span><span class="tag t-err">Просрочено</span><span class="tag t-pri">Новое</span><span class="tag t-wait">Не сдано</span>
+    </div>
+    <div class="row"><span class="bar" aria-label="Сдали 3 из 5"><i style="flex:2;background:#1F6B37"></i><i style="flex:1;background:#E5B700"></i><i style="flex:2"></i></span><span class="spec">полоса сдачи 6 px</span></div>
+    <div class="spec"><code>.tag</code> 24 px, угол 8, 12/600, без переноса — одна на телефоне и компьютере (было 22/11 на телефоне).</div>
+  </section>
+
+  <section class="pane wide" aria-label="Чипы">
+    <h2>Чипы</h2>
+    <div class="row">
+      <span class="chip sel"><span class="ic">check</span>Активные</span><span class="chip">Черновики</span><span class="chip">Готовые</span>
+      <span class="chip sel">Кому: Анна<span class="ic">arrow_drop_down</span></span>
+    </div>
+    <div class="row">
+      <span class="chip input"><span class="av s24">АК</span>Анна К.<span class="ic">close</span></span>
+      <span class="chip input"><span class="ic" style="color:#4459A9">group</span>9 «Б»<span class="ic">close</span></span>
+      <span class="assist dashed"><span class="ic">person_add</span>Ученик или группа</span>
+      <span class="assist"><span class="ic">attach_file</span>Файл</span>
+      <span class="assist"><span class="ic">menu_book</span>Учебник</span>
+      <span class="chip answer">written<span class="ic">close</span></span>
+    </div>
+    <div class="spec">Все 32 px, угол 8, контур outline-variant <code>#C6C5D0</code> (было <code>#767680</code> и 28 px на телефоне). Фильтр — <code>.chip</code>, выбранный — с галкой 18 px; ввода — <code>.chip.input</code> с аватаром 24; действие — <code>.assist</code> с иконкой primary, пунктир — «добавить»; принятый ответ теста — <code>.chip.answer</code>.</div>
+  </section>
+
+  <section class="pane" aria-label="Аватары">
+    <h2>Аватары</h2>
+    <div class="row"><span class="it"><span class="av s24">АК</span><span class="spec">24 · в чипе</span></span><span class="it"><span class="av s32">АК</span><span class="spec">32 · журнал на телефоне</span></span><span class="it"><span class="av">АК</span><span class="spec">40 · строка списка</span></span></div>
+    <div class="spec">Три размера вместо шести (24/28/32/36/40).</div>
+  </section>
+
+  <section class="pane" aria-label="Поля">
+    <h2>Поля</h2>
+    <div class="field"><small>Название</small><span>Глаголы, часть 3</span></div>
+    <div><div class="field focus"><small>Текст задания</small><span>Выучить формы неправильных…</span></div></div>
+    <div><div class="field err"><small>Вопрос</small><span></span></div><div class="hint err">Введите текст вопроса</div></div>
+    <div class="spec">Заполненное поле M3: верхние углы 4, низ прямой, 16 px по бокам, 56 px (<code>.field</code>, <code>.area</code>; было 10/12/16 px углы).</div>
+  </section>
+
+  <section class="pane" aria-label="Выбор">
+    <h2>Выбор и счётчики</h2>
+    <div class="search"><span class="ic">search</span>Поиск по заданиям</div>
+    <div class="row"><span class="select"><span class="ic">person</span>Кому: все<span class="ic">arrow_drop_down</span></span><span class="select"><span class="ic" style="color:#4459A9">radio_button_checked</span>Один ответ<span class="ic">arrow_drop_down</span></span></div>
+    <div class="row"><span class="seg"><span class="on"><span class="ic">check</span>Списком</span><span>По ученикам</span></span></div>
+    <div class="row"><span class="step"><span class="b"><span class="ic" style="font-size:20px">remove</span></span><span style="width:44px;text-align:center;font-size:14px"><b>2</b> б.</span><span class="b"><span class="ic" style="font-size:20px">add</span></span></span><span class="radio on"></span><span class="radio"></span><span class="check on"><span class="ic" style="font-size:16px">check</span></span><span class="check"></span></div>
+    <div class="spec">Поиск — 56 px пилюля (было 48). Выпадающий 40 px, угол 8 (<code>.select</code> = <code>.sel</code>). Сегменты с галкой у выбранного. Степпер 40 (было 36). Радио 20 (было 22).</div>
+  </section>
+
+  <section class="pane" aria-label="Подписи">
+    <h2>Подписи и тексты</h2>
+    <span class="label">Сегодня</span>
+    <div><span style="font-size:12px;font-weight:600;color:#45464F">Подпись поля над блоком</span></div>
+    <div class="spec">Надзаголовок раздела — <code>.label</code> 12/600, капс. Подпись над блоком без поля — <code>.lbl</code> = <code>.fl</code> 12/600, отступ 6. Вторичный текст — <code>.muted</code> <code>#45464F</code>. Ссылки — primary, наведение <code>#2B4190</code>.</div>
+    <div class="alert a-err" role="alert"><span class="ic">error</span>Задание не выдано: 2 вопроса нужно поправить</div>
+    <div class="alert a-lock"><span class="ic">lock</span>Ученик уже начал тест, поэтому вопросы изменить нельзя.</div>
+    <div class="alert a-info"><span class="ic">info</span>ИИ учтёт текст задания и привязанный учебник</div>
+    <div class="spec">Плашки — угол 16, 12/16 px: ошибка — error container, блокировка и ИИ — tertiary, справка — primary container.</div>
+  </section>
+
+  <section class="pane wide" aria-label="Строки">
+    <h2>Строки и варианты</h2>
+    <div class="list">
+      <div class="tile cur"><span class="av">АК</span><span class="t"><b>Анна Кузнецова</b><span class="muted">сдала вчера, 19:40</span></span><span class="tag t-warn">На проверке</span></div>
+      <div class="tile"><span class="av">ИП</span><span class="t"><b>Иван Петров</b><span class="muted">срок — завтра</span></span><span class="tag t-wait">Не сдано</span></div>
+      <div class="tile"><span class="av"><span class="ic" style="font-size:20px">quiz</span></span><span class="t"><b>Глаголы, часть 3</b><span class="muted">тест · 8 вопросов</span></span><button class="iconbtn" aria-label="Ещё"><span class="ic">more_vert</span></button></div>
+    </div>
+    <div class="spec">Строка списка (<code>tb-list</code>): плитки через 2 px, внутренние углы 4, внешние 16, ≥ 56 px, 12/16 px, ведущий круг 40, выбранная — secondary container. В эскизах — <code>.list</code> + <code>.tile</code> (было <code>.it</code>, <code>.row</code>, <code>.item</code>, <code>.ol</code> с углами 14–16 и разными отступами). Карточки учеников <code>.st</code> (угол 20, 16 px) и «Ждут проверки» <code>.rv</code> (угол 16, 12 px) остаются карточками — это разрешённые ленты.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div class="opt"><span class="ic muted" style="font-size:20px">drag_indicator</span><span class="radio"></span><span class="txt">wrote</span><button class="iconbtn" aria-label="Убрать"><span class="ic" style="font-size:20px">close</span></button></div>
+        <div class="opt right"><span class="ic" style="font-size:20px">drag_indicator</span><span class="radio on"></span><span class="txt">written</span><button class="iconbtn" aria-label="Убрать"><span class="ic" style="font-size:20px">close</span></button></div>
+      </div>
+      <div class="dq"><span class="check on"><span class="ic" style="font-size:16px">check</span></span><span><b style="font-weight:500">Past Simple от fly</b><br><span class="muted">Один ответ · 1 балл</span></span></div>
+    </div>
+    <div class="spec">Вариант ответа (<code>.opt</code>): ≥ 48 px, угол 12, верный — success container. Предложение ИИ (<code>.dq</code>): карточка 16 с флажком.</div>
+  </section>
+
+  <section class="pane" aria-label="Контейнеры">
+    <h2>Контейнеры</h2>
+    <div class="card"><b style="font-weight:600">Кому и срок</b><span class="muted" style="font-size:14px">Карточка раздела: угол 20, 20 px внутри, 12 между строками</span></div>
+    <div class="spec">Панель — surface, угол 28, 24 px внутри на компьютере (было 16–32). Карточка раздела <code>.card</code> — 20/20/12 (было 14–20). Окно — <code>#EFEDF4</code>.</div>
+  </section>
+
+  <section class="pane" aria-label="Навигация">
+    <h2>Навигация</h2>
+    <div class="row" style="gap:24px">
+      <span class="ni on"><span class="pill"><span class="ic">assignment</span></span>Задания</span>
+      <span class="ni"><span class="pill"><span class="ic">calendar_month</span></span>Расписание</span>
+      <span class="ni"><span class="pill"><span class="ic">group</span></span>Ученики</span>
+    </div>
+    <div class="spec">Пункт рейки и нижней панели один: пилюля 56×32, выбранный — secondary container. Рейка 96 (планшет 80), нижняя панель 80, верхняя панель телефона 64.</div>
+  </section>
+
+  <section class="pane" aria-label="Шторка">
+    <h2>Нижняя шторка</h2>
+    <div class="sheet"><span class="h"></span><span class="mi"><span class="ic">radio_button_checked</span>Один ответ</span><span class="mi"><span class="ic">check_box</span>Несколько ответов</span><span class="mi"><span class="ic" style="color:#390035">auto_awesome</span><span style="color:#390035">Составить с ИИ</span></span></div>
+    <div class="spec">surface-container-low, верх 28, ручка 32×4, пункт 16/24 px; затемнение <code>rgba(27,27,33,.32)</code>.</div>
+  </section>
+
+  <section class="pane" aria-label="Нижняя панель действий">
+    <h2>Панель действий телефона</h2>
+    <div style="background:#F5F2FA;border-radius:28px 28px 0 0;padding:12px 16px 16px;display:flex;gap:8px;align-items:center">
+      <button class="btn textbtn"><span class="ic">chevron_left</span>2</button><span style="flex:1;text-align:center;font-size:13px" class="muted">сохранено</span><button class="btn tonal">Вопрос 4<span class="ic">chevron_right</span></button>
+    </div>
+    <div class="spec"><code>.dock</code>: surface-container-low, верх 28, 12/16 px, кнопки 40. Сейчас четыре варианта с разными отступами и кнопками 48.</div>
+  </section>
+
+  <section class="pane full" aria-label="Сводка">
+    <h2>Что приведено к одному виду</h2>
+    <table>
+      <thead><tr><th>Элемент</th><th>Было в эскизах</th><th>Стало</th><th>Где в портале</th></tr></thead>
+      <tbody>
+        <tr><td>Кнопка</td><td>7 вариантов: 40/44/48 px, отступы 16–24</td><td>40 px, 16 по бокам</td><td>§8 <code>p-button</code></td></tr>
+        <tr><td>Кнопка-иконка</td><td>40 и 48 вперемешку</td><td>40, на телефоне 48</td><td>§8</td></tr>
+        <tr><td>Чип фильтра / ввода / действия</td><td>8 вариантов: 28/32 px, контур <code>#767680</code></td><td>32 px, контур <code>#C6C5D0</code></td><td>§10 <code>tb-filter-chips</code>, <code>tb-input-chip</code>, <code>tb-assist-chip</code></td></tr>
+        <tr><td>Метка</td><td>22/11 и 24/12</td><td>24 px, 12/600</td><td>§10 <code>p-tag</code></td></tr>
+        <tr><td>Аватар</td><td>24, 28, 32, 36, 40</td><td>24, 32, 40</td><td>§10 <code>tb-avatar</code></td></tr>
+        <tr><td>Поле</td><td>верх 10/12/16 px, отступы 12–16</td><td>верх 4 px, 16 по бокам</td><td>§9 <code>.tb-field</code></td></tr>
+        <tr><td>Поиск</td><td>48 px</td><td>56 px</td><td>§9 <code>tb-search-field</code></td></tr>
+        <tr><td>Степпер, радио</td><td>36/40 px; 20/22 px</td><td>40 px; 20 px</td><td>—</td></tr>
+        <tr><td>Карточка раздела</td><td>5 вариантов отступов 12–20</td><td>угол 20, 20 внутри, 12 между</td><td>§7 <code>tb-section-card</code></td></tr>
+        <tr><td>Панель (компьютер)</td><td>отступы 16–32</td><td>24</td><td>§7 <code>tb-pane</code></td></tr>
+        <tr><td>Строка списка</td><td><code>.it</code>, <code>.row</code>, <code>.item</code>, <code>.ol</code>: отдельные плашки, углы 14–16, отступы 8–14</td><td>плитки <code>.tile</code> в <code>.list</code>: 2 px, углы 4 / 16, ≥ 56 px, текст 16 / 14</td><td>§10 <code>tb-list</code></td></tr>
+        <tr><td>Карточка ученика, «Ждут проверки»</td><td>углы 16/20, отступы 12–16</td><td>ученик — 20 / 16 px; проверка — 16 / 12 px</td><td>screens.md</td></tr>
+        <tr><td>Вариант ответа в редакторе</td><td>углы 10/12, без мин. высоты</td><td>угол 12, ≥ 48 px, 4/4/4/8 px</td><td>—</td></tr>
+        <tr><td>Нижняя панель телефона</td><td>4 варианта, кнопки 48 px</td><td>верх 28, 12/16 px, кнопки 40</td><td>—</td></tr>
+      </tbody>
+    </table>
+    <div class="spec">Не приведено: таблица по срокам (эскиз 1) и журнал (2, 20) — у них своя сетка; варианты ответа ученика в тесте (23, 26) — крупнее нарочно, ≥ 56 px для пальца. Карточки раздела оставлены белыми с контуром, как в эскизах; в портале <code>tb-section-card</code> — surface-container-low без контура.</div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

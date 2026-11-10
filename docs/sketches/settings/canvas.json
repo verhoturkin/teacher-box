@@ -1,0 +1,282 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-01T12:00:00Z"
+ },
+ "title": "Настройки и аккаунт — эскизы",
+ "launch": {
+  "view": "canvas"
+ },
+ "pages": [],
+ "boards": {
+  "Main.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 1300,
+   "title": "1. Мой аккаунт (учитель) — профиль, вход, уведомления, оформление",
+   "expand": "fill"
+  },
+  "Portal.dc.html": {
+   "x": 1520,
+   "y": 0,
+   "w": 1440,
+   "h": 1300,
+   "title": "2. Портал — название, логотип, цвет; сохранение по кнопке",
+   "expand": "fill"
+  },
+  "Lessons.dc.html": {
+   "x": 3040,
+   "y": 0,
+   "w": 1440,
+   "h": 1300,
+   "title": "3. Занятия — пояс, валюта, цена, правила, календарь, звонки (всё меняет учитель)",
+   "expand": "fill"
+  },
+  "Messengers.dc.html": {
+   "x": 4560,
+   "y": 0,
+   "w": 1440,
+   "h": 960,
+   "title": "4. Мессенджеры — боты и подключение учеников",
+   "expand": "fill"
+  },
+  "Ai.dc.html": {
+   "x": 6080,
+   "y": 0,
+   "w": 1440,
+   "h": 1300,
+   "title": "5. ИИ-помощник — подключения и модели, расход, промты",
+   "expand": "fill"
+  },
+  "Data.dc.html": {
+   "x": 7600,
+   "y": 0,
+   "w": 1440,
+   "h": 1100,
+   "title": "6. Данные — копии, Google Диск, опасные действия",
+   "expand": "fill"
+  },
+  "StudentAccount.dc.html": {
+   "x": 0,
+   "y": 1800,
+   "w": 1440,
+   "h": 1300,
+   "title": "7. Ученик — «Мой аккаунт» тем же экраном",
+   "expand": "fill"
+  },
+  "StudentTablet.dc.html": {
+   "x": 1520,
+   "y": 1800,
+   "w": 768,
+   "h": 1024,
+   "title": "8. Ученик, планшет — аккаунт в одну колонку"
+  },
+  "StudentPhone.dc.html": {
+   "x": 2368,
+   "y": 1800,
+   "w": 390,
+   "h": 844,
+   "title": "9. Ученик, телефон — аккаунт"
+  },
+  "PhoneSettings.dc.html": {
+   "x": 0,
+   "y": 3600,
+   "w": 390,
+   "h": 844,
+   "title": "10. Учитель, телефон — список настроек"
+  },
+  "PhoneMessengers.dc.html": {
+   "x": 470,
+   "y": 3600,
+   "w": 390,
+   "h": 844,
+   "title": "11. Учитель, телефон — мессенджеры"
+  },
+  "PhoneConnect.dc.html": {
+   "x": 940,
+   "y": 3600,
+   "w": 390,
+   "h": 844,
+   "title": "12. Телефон — подключить мессенджер, шторка"
+  },
+  "TabletSettings.dc.html": {
+   "x": 1410,
+   "y": 3600,
+   "w": 768,
+   "h": 1024,
+   "title": "13. Учитель, планшет — список и раздел"
+  },
+  "Changes.dc.html": {
+   "x": 0,
+   "y": 5150,
+   "w": 1440,
+   "h": 1400,
+   "title": "14. Было → стало: куда переехала каждая настройка"
+  },
+  "Details.dc.html": {
+   "x": 1520,
+   "y": 5150,
+   "w": 1440,
+   "h": 1300,
+   "title": "15. Окна и раскрытые состояния — пароль, восстановление, сбои, бот, карточка ученика, рассылка",
+   "expand": "fill"
+  },
+  "Tags.dc.html": {
+   "x": 0,
+   "y": 6950,
+   "w": 1440,
+   "h": 1100,
+   "title": "16. Ученики — теги, их значения и «Учитывать в ИИ»",
+   "expand": "fill"
+  },
+  "AiProviderDialog.dc.html": {
+   "x": 0,
+   "y": 8600,
+   "w": 1440,
+   "h": 1000,
+   "title": "17. ИИ — новое подключение: провайдер и ключ → модели"
+  },
+  "AdminLive.dc.html": {
+   "x": 1520,
+   "y": 8600,
+   "w": 1440,
+   "h": 1300,
+   "title": "18. Администратор — настройки портала без перезапуска",
+   "expand": "fill"
+  },
+  "EnvMoves.dc.html": {
+   "x": 3040,
+   "y": 8600,
+   "w": 1440,
+   "h": 1400,
+   "title": "19. Что ушло из .env — и куда"
+  },
+  "OnbFlow.dc.html": {
+   "x": 0,
+   "y": 10520,
+   "w": 1440,
+   "h": 960,
+   "title": "20. Первый вход — шаги и переходы"
+  },
+  "OnbPortal.dc.html": {
+   "x": 1520,
+   "y": 10520,
+   "w": 1440,
+   "h": 960,
+   "title": "21. Шаг «Вы и портал»",
+   "expand": "fill"
+  },
+  "OnbTime.dc.html": {
+   "x": 3040,
+   "y": 10520,
+   "w": 1440,
+   "h": 960,
+   "title": "22. Шаг «Время и оплата»",
+   "expand": "fill"
+  },
+  "OnbRules.dc.html": {
+   "x": 4560,
+   "y": 10520,
+   "w": 1440,
+   "h": 960,
+   "title": "23. Шаг «Правила» — с примером под каждым",
+   "expand": "fill"
+  },
+  "OnbDone.dc.html": {
+   "x": 6080,
+   "y": 10520,
+   "w": 1440,
+   "h": 960,
+   "title": "24. «Готово» — что подключить дальше",
+   "expand": "fill"
+  },
+  "OnbPhone.dc.html": {
+   "x": 7600,
+   "y": 10520,
+   "w": 390,
+   "h": 844,
+   "title": "25. Телефон — шаг мастера"
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "Portal.dc.html",
+  "Lessons.dc.html",
+  "Messengers.dc.html",
+  "Ai.dc.html",
+  "Data.dc.html",
+  "StudentAccount.dc.html",
+  "StudentTablet.dc.html",
+  "StudentPhone.dc.html",
+  "PhoneSettings.dc.html",
+  "PhoneMessengers.dc.html",
+  "PhoneConnect.dc.html",
+  "TabletSettings.dc.html",
+  "Details.dc.html",
+  "Changes.dc.html",
+  "Tags.dc.html",
+  "AiProviderDialog.dc.html",
+  "AdminLive.dc.html",
+  "EnvMoves.dc.html",
+  "OnbFlow.dc.html",
+  "OnbPortal.dc.html",
+  "OnbTime.dc.html",
+  "OnbRules.dc.html",
+  "OnbDone.dc.html",
+  "OnbPhone.dc.html"
+ ],
+ "notes": {
+  "t1": {
+   "x": 0,
+   "y": -300,
+   "text": "Настройки учителя — шесть разделов вместо восьми",
+   "kind": "title1",
+   "maxW": 9040
+  },
+  "t2": {
+   "x": 0,
+   "y": 1500,
+   "text": "Мой аккаунт ученика",
+   "kind": "title1",
+   "maxW": 2758
+  },
+  "t3": {
+   "x": 0,
+   "y": 3300,
+   "text": "Телефон и планшет учителя",
+   "kind": "title1",
+   "maxW": 2178
+  },
+  "t4": {
+   "x": 0,
+   "y": 4850,
+   "text": "Что упростили",
+   "kind": "title1",
+   "maxW": 1440
+  },
+  "t5": {
+   "x": 0,
+   "y": 6650,
+   "text": "Теги учеников",
+   "kind": "title1",
+   "maxW": 1440
+  },
+  "t6": {
+   "x": 0,
+   "y": 8300,
+   "text": "Настройки без .env — ИИ-подключения и администратор",
+   "kind": "title1",
+   "maxW": 4480
+  },
+  "t7": {
+   "x": 0,
+   "y": 10220,
+   "text": "Первый вход учителя — новый мастер",
+   "kind": "title1",
+   "maxW": 7990
+  }
+ },
+ "designSystems": []
+}

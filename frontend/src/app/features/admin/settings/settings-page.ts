@@ -5,72 +5,123 @@ import {
   OnInit,
   computed,
   inject,
-  input,
   signal,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { DatePicker } from 'primeng/datepicker';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
 import { Tag } from 'primeng/tag';
+import { ToggleSwitch } from 'primeng/toggleswitch';
 import { describeError } from '@core/http/error-messages';
-import { HelpButton } from '@features/help/parts';
 import { problemCode, problemDetailText } from '@core/http/problem-detail';
+import { Snackbar } from '@core/snackbar/snackbar';
+import { HelpButton } from '@features/help/parts';
 import { RESTART_POLL_MS, RESTART_WAIT_MS } from '@shared/restart/restart-wait';
-import { AdminApi } from '../data-access/admin-api';
-import {
-  AdminSetting,
-  AdminSettings,
-  SettingKind,
-  SettingSource,
-} from '../data-access/admin.models';
-import { TimeZoneOption, timeZoneOptions } from './time-zones';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { PageHeader } from '@shared/ui/page-header';
-import { PaneNav, PaneNavItem } from '@shared/ui/pane-nav';
-import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
-import { pageDetail } from '@core/routing/page-detail';
-import { T } from '../i18n/texts';
+import { Pane, Panes } from '@shared/ui/panes';
 import { SHARED_T } from '@shared/i18n/texts';
+import { AdminApi } from '../data-access/admin-api';
+import {
+  AdminSetting,
+  AdminSettings,
+  DailySchedule,
+  SettingKind,
+  SettingSource,
+} from '../data-access/admin.models';
+import { T } from '../i18n/texts';
 
 type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'silent';
 
-interface Group {
-  /** The key in the address: `?open=ai,backups`. */
-  readonly section: string;
-  readonly name: string;
-  /** A line under the title: what the section is about. */
-  readonly summary: string;
-  readonly editable: readonly AdminSetting[];
-  /** Shown, not changed here: Docker and the accounts. */
-  readonly fixed: readonly AdminSetting[];
-  /** The hint shared by all of `fixed`: shown once above them, not in every row. */
-  readonly note: string | null;
+/** The cards of the editable settings (sketch AdminLive), in the reading order. */
+type CardKey = 'files' | 'network' | 'sessions' | 'messages' | 'other' | 'backups';
+
+/** Which card a setting goes to; an editable setting not named here goes to «Другие настройки». */
+const CARD_OF: Readonly<Record<string, CardKey>> = {
+  TEACHERBOX_HOMEWORK_MAX_FILE_SIZE: 'files',
+  TEACHERBOX_HOMEWORK_MAX_FILES_PER_UPLOAD: 'files',
+  TEACHERBOX_HOMEWORK_YOUTUBE_PROXY: 'network',
+  TEACHERBOX_SCHEDULE_GOOGLE_PROXY: 'network',
+  TEACHERBOX_BACKUP_GOOGLE_PROXY: 'network',
+  TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY: 'network',
+  TEACHERBOX_NOTIFICATIONS_TELEGRAM_API_URL: 'network',
+  TEACHERBOX_AI_PROXY: 'network',
+  TEACHERBOX_IDENTITY_ACCESS_TOKEN_TTL: 'sessions',
+  TEACHERBOX_IDENTITY_REFRESH_TOKEN_TTL: 'sessions',
+  TEACHERBOX_IDENTITY_INVITE_TTL: 'sessions',
+  TEACHERBOX_IDENTITY_MAX_FAILED_LOGINS: 'sessions',
+  TEACHERBOX_IDENTITY_LOCK_DURATION: 'sessions',
+  TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_REQUESTS: 'sessions',
+  TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_PERIOD: 'sessions',
+  TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS: 'messages',
+  TEACHERBOX_NOTIFICATIONS_LINK_CODE_TTL: 'messages',
+  TEACHERBOX_NOTIFICATIONS_WEBPUSH_SUBJECT: 'messages',
+  TEACHERBOX_BACKUP_CRON: 'backups',
+  TEACHERBOX_BACKUP_KEEP_DAYS: 'backups',
+  TEACHERBOX_BOARDS_BACKUP_CRON: 'backups',
+  TEACHERBOX_BOARDS_BACKUP_KEEP: 'backups',
+};
+
+/** Three columns on expanded widths (sketch AdminLive); «Только в .env» ends the last one. */
+const COLUMNS: readonly (readonly CardKey[])[] = [
+  ['files', 'network'],
+  ['sessions', 'messages', 'other'],
+  ['backups'],
+];
+
+const CARD_ICONS: Readonly<Record<CardKey, string>> = {
+  files: 'tb-i-attach_file',
+  network: 'tb-i-lan',
+  sessions: 'tb-i-login',
+  messages: 'tb-i-chat',
+  other: 'tb-i-tune',
+  backups: 'tb-i-backup',
+};
+
+const CARD_HINTS: Readonly<Partial<Record<CardKey, string>>> = {
+  network: T.settings.cards.networkHint,
+  sessions: T.settings.cards.sessionsHint,
+};
+
+/** Kinds whose values are short: two fields share a row of a card. */
+const SHORT_KINDS: ReadonlySet<SettingKind> = new Set<SettingKind>([
+  'NUMBER',
+  'DURATION',
+  'DATA_SIZE',
+  'BOOLEAN',
+]);
+
+/** The time a schedule switched on gets when it had none (the jobs' own defaults). */
+const DEFAULT_TIMES: Readonly<Record<string, string>> = {
+  TEACHERBOX_BACKUP_CRON: '03:30',
+  TEACHERBOX_BOARDS_BACKUP_CRON: '03:00',
+};
+const DEFAULT_TIME = '03:00';
+const OFF = '-';
+const DAILY = /^0 (\d{1,2}) (\d{1,2}) \* \* \*$/;
+
+const NAMED = Object.keys(CARD_OF);
+
+/** The order inside a card: as `CARD_OF` names them (the portal's backup before the boards'), others last. */
+function order(setting: AdminSetting): number {
+  const index = NAMED.indexOf(setting.name);
+  return index === -1 ? NAMED.length : index;
 }
 
-/** The line under a section's title, by its key; an unknown section names its first settings. */
-const SUMMARIES: Readonly<Record<string, string>> = T.settings.summaries;
-
-/** The icon of a section in the list; an unknown one gets the cog. */
-const SECTION_ICONS: Readonly<Record<string, string>> = {
-  portal: 'tb-i-palette',
-  billing: 'tb-i-account_balance_wallet',
-  homework: 'tb-i-badge',
-  schedule: 'tb-i-calendar_month',
-  meetings: 'tb-i-videocam',
-  boards: 'tb-i-palette',
-  notifications: 'tb-i-chat',
-  ai: 'tb-i-auto_awesome',
-  sessions: 'tb-i-lock',
-  backups: 'tb-i-database',
-  log: 'tb-i-list_alt',
-  accounts: 'tb-i-badge',
-  docker: 'tb-i-deployed_code',
-};
+interface SettingsCard {
+  readonly key: CardKey;
+  readonly name: string;
+  readonly icon: string;
+  readonly hint: string | null;
+  readonly settings: readonly AdminSetting[];
+}
 
 interface Option {
   readonly label: string;
@@ -87,222 +138,286 @@ const PLACEHOLDERS: Readonly<Partial<Record<SettingKind, string>>> = {
   ADDRESS: 'https://school.example.com',
   URL: 'https://…',
   PROXY: 'socks5://host:port',
-  TIME_ZONE: T.settings.placeholders.TIME_ZONE,
   CURRENCY: 'RUB',
   NUMBER: T.settings.placeholders.NUMBER,
 };
 
-/** A section: its fields, what cannot be changed here, the line under its title. */
-function toGroup(settings: readonly AdminSetting[]): Group {
-  const [first] = settings;
-  const editable = settings.filter((setting) => setting.access === 'EDITABLE');
-  const fixed = settings.filter((setting) => setting.access !== 'EDITABLE');
-  const notes = new Set(fixed.map((setting) => setting.hint));
-  const [note] = notes;
-  const section = first?.section ?? '';
-  return {
-    section,
-    name: first?.group ?? '',
-    summary:
-      SUMMARIES[section] ??
-      settings
-        .slice(0, 2)
-        .map((setting) => setting.title)
-        .join(', '),
-    editable,
-    fixed,
-    note: fixed.length > 1 && notes.size === 1 && note !== '' ? (note ?? null) : null,
-  };
+/** «вкл/выкл + время» of a cron the interface writes; `null` for any other cron. */
+function dailySchedule(cron: string): DailySchedule | null {
+  const value = cron.trim().replace(/\s+/g, ' ');
+  if (value === OFF) {
+    return { enabled: false, time: null };
+  }
+  const [, minute, hour] = DAILY.exec(value) ?? [];
+  if (minute === undefined || hour === undefined || Number(minute) > 59 || Number(hour) > 23) {
+    return null;
+  }
+  return { enabled: true, time: `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}` };
+}
+
+/** The cron of `HH:mm` every day. */
+function dailyCron(time: string): string {
+  const [hours = 0, minutes = 0] = time.split(':').map(Number);
+  return `0 ${String(minutes)} ${String(hours)} * * *`;
 }
 
 /**
- * The administrator's settings of the portal (ADR-0016): every variable of `.env` by section, where
- * its value comes from, changes that are more important than `.env` and a restart that applies them.
- * List-detail (247.2): the sections in the fixed pane, the chosen one (`/admin/settings/:section`) beside it;
- * on compact `/admin/settings` is the list and a section has «back» to it. The edits of all sections are saved
- * together.
+ * The administrator's settings of the portal (ADR-0016, ADR-0056; sketch AdminLive): the editable ones in cards
+ * by purpose — «Файлы в заданиях», «Сеть и прокси», «Вход и сеансы», «Сообщения», «Резервные копии» (the backup
+ * schedules as «вкл/выкл + время») — in three columns from expanded, one below; «Только в .env» lists what is
+ * changed only there, with its current value; «Перенесено в настройки учителя» names the teacher's variables
+ * still set. The edits are saved together with the password: live values are in force at once, a restart
+ * follows only when a change needs one.
  */
 @Component({
   selector: 'tb-admin-settings-page',
   imports: [
     FormsModule,
-    Button,
     NgTemplateOutlet,
+    Button,
+    Card,
+    DatePicker,
     Panes,
     Pane,
-    PaneNav,
     TbDialog,
     HelpButton,
     InputText,
     Message,
     Select,
     Tag,
+    ToggleSwitch,
     PageHeader,
     LoadStateView,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-panes medium="two">
-      @if (layout.list()) {
-        <tb-pane kind="fixed" [label]="t.sections">
-          <tb-page-header tbPaneHeader [title]="t.title">
-            <tb-help-button help topic="admin/settings" />
-            <ng-container [ngTemplateOutlet]="saveButton" />
-          </tb-page-header>
+    <tb-panes>
+      <tb-pane [label]="t.title">
+        <tb-page-header tbPaneHeader [title]="t.title">
+          <tb-help-button help topic="admin/settings" />
+          <span meta class="tb-admin-settings__live"
+            ><i class="tb-i tb-i-bolt" aria-hidden="true"></i>{{ t.live }}</span
+          >
+          <p-button
+            [label]="t.save"
+            icon="tb-i tb-i-save"
+            [disabled]="changes() === 0"
+            (onClick)="openConfirm()"
+          />
+        </tb-page-header>
+        <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
           <div class="tb-stack">
-            <p class="tb-hint">{{ t.about }}</p>
+            @if (settings()?.moved; as moved) {
+              @if (moved.length > 0) {
+                <p-message severity="warn" icon="tb-i tb-i-info" styleClass="tb-form-message">
+                  <div class="tb-admin-settings__moved">
+                    <b>{{ t.moved.title }}</b>
+                    <span>{{ t.moved.text }}</span>
+                    <ul>
+                      @for (setting of moved; track setting.name) {
+                        <li>
+                          <code>{{ setting.name }}</code> — {{ setting.group }}: {{ setting.title }}
+                          @if (setting.source === 'ADMIN') {
+                            ({{ t.moved.savedHere }})
+                          }
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                </p-message>
+              }
+            }
             @if (settings()?.restartNeeded) {
               <p-message severity="warn" styleClass="tb-form-message">{{
                 t.restartNeeded
               }}</p-message>
             }
-            <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
-              <tb-pane-nav
-                [items]="items()"
-                base="/admin/settings"
-                [current]="layout.detail() ? (currentGroup()?.section ?? null) : null"
-                [label]="t.sections"
-              />
-            </tb-load-state>
+            <div class="tb-admin-settings">
+              @for (column of columns(); track $index; let last = $last) {
+                <div class="tb-stack">
+                  @for (card of column; track card.key) {
+                    <p-card
+                      styleClass="tb-section-card tb-section-card--flow"
+                      [id]="'card-' + card.key"
+                    >
+                      <ng-template #title>
+                        <h2 class="tb-admin-settings__title">
+                          <i [class]="'tb-i ' + card.icon" aria-hidden="true"></i>{{ card.name }}
+                        </h2>
+                      </ng-template>
+                      @if (card.hint; as hint) {
+                        <p class="tb-hint">{{ hint }}</p>
+                      }
+                      <div class="tb-admin-settings__fields">
+                        @for (setting of card.settings; track setting.name) {
+                          @if (setting.kind === 'CRON' && scheduleOf(setting); as schedule) {
+                            <label
+                              class="tb-tile tb-admin-settings__wide tb-setting"
+                              [for]="'setting-' + setting.name"
+                            >
+                              <span class="tb-tile__text">
+                                <b>{{ scheduleTitle(setting) }}</b>
+                                <span>{{ scheduleHint(setting) }}</span>
+                              </span>
+                              <p-toggleswitch
+                                [inputId]="'setting-' + setting.name"
+                                [ngModel]="schedule.enabled"
+                                (ngModelChange)="toggle(setting, $event)"
+                              />
+                            </label>
+                            @if (schedule.time; as time) {
+                              <div class="tb-field">
+                                <label [for]="'setting-' + setting.name + '-time'">{{
+                                  t.time
+                                }}</label>
+                                <p-datepicker
+                                  [inputId]="'setting-' + setting.name + '-time'"
+                                  [ngModel]="timeDate(time)"
+                                  (ngModelChange)="setTime(setting, $event)"
+                                  [timeOnly]="true"
+                                  hourFormat="24"
+                                  [stepMinute]="5"
+                                  appendTo="body"
+                                  [fluid]="true"
+                                />
+                                @if (!setting.live) {
+                                  <small class="tb-hint tb-admin-settings__support">
+                                    <ng-container [ngTemplateOutlet]="restartNote" />
+                                  </small>
+                                }
+                                <ng-container
+                                  [ngTemplateOutlet]="meta"
+                                  [ngTemplateOutletContext]="{ $implicit: setting }"
+                                />
+                              </div>
+                            }
+                          } @else {
+                            <div
+                              class="tb-field tb-setting"
+                              [class.tb-admin-settings__wide]="!short(setting)"
+                            >
+                              <label [for]="'setting-' + setting.name">{{ label(setting) }}</label>
+                              @if (setting.kind === 'CHOICE' || setting.kind === 'BOOLEAN') {
+                                <p-select
+                                  [inputId]="'setting-' + setting.name"
+                                  [options]="options(setting)"
+                                  optionLabel="label"
+                                  optionValue="value"
+                                  [ngModel]="current(setting)"
+                                  (ngModelChange)="change(setting, $event)"
+                                  appendTo="body"
+                                />
+                              } @else {
+                                <input
+                                  pInputText
+                                  [id]="'setting-' + setting.name"
+                                  [type]="setting.secret ? 'password' : 'text'"
+                                  autocomplete="off"
+                                  [value]="current(setting)"
+                                  [placeholder]="placeholder(setting)"
+                                  (input)="type(setting, $event)"
+                                />
+                              }
+                              @if (
+                                setting.kind === 'CRON' || setting.hint !== '' || !setting.live
+                              ) {
+                                <!-- one supporting block: the field puts all its supporting text in one place -->
+                                <small class="tb-hint tb-admin-settings__support">
+                                  @if (setting.kind === 'CRON') {
+                                    <span>{{ t.customCron }}</span>
+                                  } @else if (setting.hint !== '') {
+                                    <span>{{ setting.hint }}</span>
+                                  }
+                                  @if (!setting.live) {
+                                    <ng-container [ngTemplateOutlet]="restartNote" />
+                                  }
+                                </small>
+                              }
+                              <ng-container
+                                [ngTemplateOutlet]="meta"
+                                [ngTemplateOutletContext]="{ $implicit: setting }"
+                              />
+                            </div>
+                          }
+                        }
+                      </div>
+                    </p-card>
+                  }
+                  @if (last && fixed().length > 0) {
+                    <p-card styleClass="tb-section-card tb-section-card--flow" id="card-env">
+                      <ng-template #title>
+                        <h2 class="tb-admin-settings__title">
+                          <i class="tb-i tb-i-description" aria-hidden="true"></i
+                          >{{ t.cards.envOnly }}
+                        </h2>
+                      </ng-template>
+                      <p class="tb-hint">{{ t.cards.envOnlyHint }}</p>
+                      <ul class="tb-list tb-list--no-lead">
+                        @for (setting of fixed(); track setting.name) {
+                          <li class="tb-setting">
+                            <div class="tb-list__text">
+                              <span class="tb-list__title">{{ setting.title }}</span>
+                              <span class="tb-list__supporting" [id]="'setting-' + setting.name">
+                                @if (setting.secret) {
+                                  <p-tag
+                                    [value]="setting.set ? t.secretSet : t.secretNotSet"
+                                    severity="secondary"
+                                  />
+                                } @else {
+                                  {{ shown(setting) }}
+                                }
+                              </span>
+                              <code class="tb-setting__name">{{ setting.name }}</code>
+                              @if (setting.source === 'ADMIN') {
+                                <p-button
+                                  class="tb-setting__revert"
+                                  [label]="edited(setting) ? t.edited : t.removeSaved"
+                                  severity="secondary"
+                                  [text]="true"
+                                  [disabled]="edited(setting)"
+                                  [ariaLabel]="t.removeSavedOf(setting.title)"
+                                  (onClick)="revert(setting)"
+                                />
+                              }
+                            </div>
+                          </li>
+                        }
+                      </ul>
+                    </p-card>
+                  }
+                </div>
+              }
+            </div>
           </div>
-        </tb-pane>
-      }
-      @if (layout.detail()) {
-        <tb-pane [label]="currentGroup()?.name ?? t.title">
-          <div tbPaneHeader>
-            @if (layout.single()) {
-              <tb-page-header
-                [title]="currentGroup()?.name ?? t.title"
-                back="/admin/settings"
-                [backLabel]="t.all"
-              >
-                <ng-container [ngTemplateOutlet]="saveButton" />
-              </tb-page-header>
-            } @else {
-              <h2 class="tb-settings__heading">{{ currentGroup()?.name }}</h2>
-            }
-            <p class="tb-hint tb-settings__summary">{{ currentGroup()?.summary }}</p>
-          </div>
-          @if (layout.single()) {
-            <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
-              <ng-container [ngTemplateOutlet]="detail" />
-            </tb-load-state>
-          } @else {
-            <ng-container [ngTemplateOutlet]="detail" />
-          }
-        </tb-pane>
-      }
+        </tb-load-state>
+      </tb-pane>
     </tb-panes>
 
-    <ng-template #saveButton>
-      <p-button
-        [label]="t.saveAndRestart"
-        icon="tb-i tb-i-save"
-        [disabled]="changes() === 0"
-        (onClick)="openConfirm()"
-      />
+    <ng-template #restartNote>
+      <span class="tb-admin-settings__note"
+        ><i class="tb-i tb-i-restart_alt" aria-hidden="true"></i>{{ t.afterRestart }}</span
+      >
     </ng-template>
 
-    <ng-template #detail>
-      @if (currentGroup(); as group) {
-        <div class="tb-settings">
-          @for (setting of group.editable; track setting.name) {
-            <div class="tb-field tb-setting">
-              <label [for]="'setting-' + setting.name">{{ setting.title }}</label>
-              @if (setting.kind === 'CHOICE' || setting.kind === 'BOOLEAN') {
-                <p-select
-                  [inputId]="'setting-' + setting.name"
-                  [options]="options(setting)"
-                  optionLabel="label"
-                  optionValue="value"
-                  [ngModel]="current(setting)"
-                  (ngModelChange)="change(setting, $event)"
-                  appendTo="body"
-                />
-              } @else if (setting.kind === 'TIME_ZONE') {
-                <p-select
-                  [inputId]="'setting-' + setting.name"
-                  [options]="timeZones()"
-                  optionLabel="label"
-                  optionValue="value"
-                  [filter]="true"
-                  filterBy="label"
-                  [filterPlaceholder]="t.zoneFilter"
-                  [placeholder]="placeholder(setting)"
-                  [ngModel]="current(setting)"
-                  (ngModelChange)="change(setting, $event)"
-                  appendTo="body"
-                />
-              } @else {
-                <input
-                  pInputText
-                  [id]="'setting-' + setting.name"
-                  [type]="setting.secret ? 'password' : 'text'"
-                  autocomplete="off"
-                  [value]="current(setting)"
-                  [placeholder]="placeholder(setting)"
-                  (input)="type(setting, $event)"
-                />
-              }
-              @if (setting.hint !== '') {
-                <small class="tb-hint">{{ setting.hint }}</small>
-              }
-              <div class="tb-setting__meta">
-                <code class="tb-setting__name">{{ setting.name }}</code>
-                <p-tag
-                  [value]="sources[setting.source]"
-                  [severity]="setting.source === 'ADMIN' ? 'info' : 'secondary'"
-                />
-                @if (edited(setting)) {
-                  <p-tag [value]="t.edited" severity="warn" />
-                }
-                @if (setting.source === 'ADMIN') {
-                  <p-button
-                    class="tb-setting__revert"
-                    [label]="t.revert"
-                    severity="secondary"
-                    [text]="true"
-                    [ariaLabel]="t.revertOf(setting.title)"
-                    (onClick)="revert(setting)"
-                  />
-                }
-              </div>
-            </div>
+    <ng-template #meta let-setting>
+      @if (setting.source !== 'DEFAULT' || edited(setting)) {
+        <div class="tb-setting__meta">
+          <p-tag
+            [value]="sources[sourceOf(setting)]"
+            [severity]="sourceOf(setting) === 'ADMIN' ? 'info' : 'secondary'"
+          />
+          @if (edited(setting)) {
+            <p-tag [value]="t.edited" severity="warn" />
           }
-          @if (group.fixed.length > 0) {
-            <!-- what cannot be changed here is data, not fields: a segmented list -->
-            @if (group.note; as note) {
-              <p class="tb-hint">{{ note }}</p>
-            }
-            <ul class="tb-list">
-              @for (setting of group.fixed; track setting.name) {
-                <li class="tb-setting">
-                  <span class="tb-list__lead" aria-hidden="true"
-                    ><i
-                      [class]="
-                        setting.access === 'DOCKER' ? 'tb-i tb-i-deployed_code' : 'tb-i tb-i-lock'
-                      "
-                    ></i
-                  ></span>
-                  <div class="tb-list__text">
-                    <span class="tb-list__title">{{ setting.title }}</span>
-                    <span class="tb-list__supporting" [id]="'setting-' + setting.name">{{
-                      shown(setting)
-                    }}</span>
-                    <code class="tb-setting__name">{{ setting.name }}</code>
-                    @if (setting.hint !== '' && group.note === null) {
-                      <small class="tb-hint">{{ setting.hint }}</small>
-                    }
-                  </div>
-                  <span class="tb-list__trail">
-                    <p-tag
-                      [value]="sources[setting.source]"
-                      [severity]="setting.source === 'ADMIN' ? 'info' : 'secondary'"
-                    />
-                  </span>
-                </li>
-              }
-            </ul>
+          @if (setting.source === 'ADMIN' && !reverted(setting)) {
+            <p-button
+              class="tb-setting__revert"
+              [label]="t.revert"
+              severity="secondary"
+              [text]="true"
+              [ariaLabel]="t.revertOf(setting.title)"
+              (onClick)="revert(setting)"
+            />
           }
         </div>
       }
@@ -323,7 +438,7 @@ function toGroup(settings: readonly AdminSetting[]): Group {
       @switch (stage()) {
         @case ('confirm') {
           <form id="settings-confirm" class="tb-form" (ngSubmit)="save()">
-            <p>{{ t.changes(changes()) }}</p>
+            <p>{{ needsRestart() ? t.changes(changes()) : t.changesLive(changes()) }}</p>
             <div class="tb-field">
               <label for="settings-password">{{ t.password }}</label>
               <input
@@ -353,20 +468,70 @@ function toGroup(settings: readonly AdminSetting[]): Group {
     </tb-dialog>
   `,
   styles: `
-    /* One setting under another (ADR-0021): the fields first, then what cannot be changed here */
-    .tb-settings {
+    /* Sketch AdminLive: three columns of cards on expanded widths, one below 22 rem each (as «Занятия») */
+    .tb-admin-settings {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+      gap: var(--tb-space-4);
+      align-items: start;
+    }
+
+    .tb-admin-settings__title {
+      display: flex;
+      align-items: center;
+      gap: var(--tb-space-2);
+      margin: 0;
+      font: inherit;
+
+      .tb-i {
+        color: var(--p-md-primary);
+        font-size: 1.25rem;
+      }
+    }
+
+    .tb-admin-settings__live {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--tb-space-1);
+    }
+
+    .tb-admin-settings__moved {
       display: flex;
       flex-direction: column;
-      gap: var(--tb-space-6);
+      gap: var(--tb-space-1);
+
+      ul {
+        margin: 0;
+        padding-inline-start: var(--tb-space-5);
+      }
     }
 
-    .tb-settings__heading {
-      margin: 0 0 var(--tb-space-2);
-      font: var(--tb-type-headline-s-emphasized);
+    /* Two short fields share a row (sketch: «Размер одного файла» · «Файлов за раз»); the rest take it whole */
+    .tb-admin-settings__fields {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
+      gap: var(--tb-space-3);
+      align-items: start;
     }
 
-    .tb-settings__summary {
-      margin: 0 0 var(--tb-space-6);
+    .tb-admin-settings__wide {
+      grid-column: 1 / -1;
+    }
+
+    .tb-admin-settings__support {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-1);
+    }
+
+    .tb-admin-settings__note {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--tb-space-1);
+
+      .tb-i {
+        font-size: 1rem;
+      }
     }
 
     .tb-setting__meta {
@@ -376,15 +541,15 @@ function toGroup(settings: readonly AdminSetting[]): Group {
       gap: var(--tb-space-2);
     }
 
-    .tb-setting__revert {
-      margin-inline-start: auto;
-    }
-
     .tb-setting__name {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
       font-family: var(--tb-font-mono);
       overflow-wrap: anywhere;
+    }
+
+    .tb-setting__revert {
+      align-self: flex-start;
     }
   `,
 })
@@ -392,51 +557,51 @@ export class SettingsPage implements OnInit {
   protected readonly c = SHARED_T.common;
   protected readonly t = T.settings;
   private readonly api = inject(AdminApi);
+  private readonly snackbar = inject(Snackbar);
   private readonly pollMs = inject(RESTART_POLL_MS);
 
   protected readonly sources = SOURCE_LABELS;
   protected readonly settings = signal<AdminSettings | null>(null);
   protected readonly state = new LoadState();
   /** Changed values by variable name; `null`: back to `.env`. */
-  protected readonly edits = signal<Readonly<Record<string, string | null>>>({});
+  readonly edits = signal<Readonly<Record<string, string | null>>>({});
   protected readonly changes = computed(() => Object.keys(this.edits()).length);
-  protected readonly groups = computed<Group[]>(() => {
-    const sections = new Map<string, AdminSetting[]>();
-    for (const setting of this.settings()?.settings ?? []) {
-      sections.set(setting.section, [...(sections.get(setting.section) ?? []), setting]);
-    }
-    return [...sections.values()].map((settings) => toGroup(settings));
+  /** A change that is not live: the portal restarts after the save. */
+  protected readonly needsRestart = computed(() => {
+    const edits = this.edits();
+    return (this.settings()?.settings ?? []).some(
+      (setting) => setting.name in edits && !setting.live,
+    );
   });
 
-  /** Route parameter: the chosen section; none — the list (beside it the first section). */
-  readonly section = input<string>();
-  protected readonly layout = injectListDetail(() => this.section() !== undefined, 'two');
-  protected readonly currentGroup = computed<Group | null>(() => {
-    const groups = this.groups();
-    return groups.find((group) => group.section === this.section()) ?? groups[0] ?? null;
-  });
-  protected readonly items = computed<PaneNavItem[]>(() =>
-    this.groups().map((group) => ({
-      id: group.section,
-      icon: SECTION_ICONS[group.section] ?? 'tb-i-settings',
-      title: group.name,
-      summary: group.summary,
-      badge: this.editedIn(group),
-    })),
+  /** What is changed only in `.env`: Docker, the accounts and the recovery settings. */
+  protected readonly fixed = computed(() =>
+    (this.settings()?.settings ?? []).filter((setting) => setting.access !== 'EDITABLE'),
   );
-
-  /** Known time zones, and the one in force if the browser does not know it (e.g. an old name). */
-  protected readonly timeZones = computed<TimeZoneOption[]>(() => {
-    const known = timeZoneOptions();
-    const unknown = (this.settings()?.settings ?? [])
-      .filter((setting) => setting.kind === 'TIME_ZONE' && setting.value !== null)
-      .map((setting) => setting.value ?? '')
-      .filter((value) => value !== '' && !known.some((zone) => zone.value === value));
-    return [
-      { label: T.settings.notSet, value: '' },
-      ...[...new Set(unknown)].map((value) => ({ label: value, value })),
-      ...known,
-    ];
+  protected readonly columns = computed<SettingsCard[][]>(() => {
+    const byCard = new Map<CardKey, AdminSetting[]>();
+    for (const setting of this.settings()?.settings ?? []) {
+      if (setting.access === 'EDITABLE') {
+        const key = CARD_OF[setting.name] ?? 'other';
+        byCard.set(key, [...(byCard.get(key) ?? []), setting]);
+      }
+    }
+    return COLUMNS.map((column) =>
+      column.flatMap((key) => {
+        const settings = [...(byCard.get(key) ?? [])].sort((a, b) => order(a) - order(b));
+        return settings.length === 0
+          ? []
+          : [
+              {
+                key,
+                name: T.settings.cards[key],
+                icon: CARD_ICONS[key],
+                hint: CARD_HINTS[key] ?? null,
+                settings,
+              },
+            ];
+      }),
+    );
   });
 
   protected readonly confirmVisible = signal(false);
@@ -445,12 +610,12 @@ export class SettingsPage implements OnInit {
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
+  private readonly times = new Map<string, Date>();
   private startedAt: string | null = null;
   private deadline = 0;
   private poll: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
-    pageDetail(() => (this.layout.detail() ? this.currentGroup()?.name : null));
     inject(DestroyRef).onDestroy(() => {
       this.stopPolling();
     });
@@ -469,15 +634,73 @@ export class SettingsPage implements OnInit {
     return setting.name in this.edits();
   }
 
-  /** Unsaved changes of a section: the badge of its item in the list. */
-  protected editedIn(group: Group): number {
-    return group.editable.filter((setting) => this.edited(setting)).length;
+  protected reverted(setting: AdminSetting): boolean {
+    const edits = this.edits();
+    return setting.name in edits && edits[setting.name] === null;
+  }
+
+  /** Where the value on screen comes from: an edit is the administrator's. */
+  protected sourceOf(setting: AdminSetting): SettingSource {
+    if (!this.edited(setting)) {
+      return setting.source;
+    }
+    return this.reverted(setting) ? 'ENVIRONMENT' : 'ADMIN';
+  }
+
+  /** Two short fields share a row only under a short label (sketch AdminLive): a long title gets the row. */
+  protected short(setting: AdminSetting): boolean {
+    return SHORT_KINDS.has(setting.kind) && setting.name in T.settings.labels;
+  }
+
+  protected label(setting: AdminSetting): string {
+    return T.settings.labels[setting.name] ?? setting.title;
+  }
+
+  /**
+   * The schedule on screen: the edited cron when it has that form, otherwise the one in force; `null` shows the
+   * cron itself (a custom one, or back to `.env` before the save).
+   */
+  protected scheduleOf(setting: AdminSetting): DailySchedule | null {
+    const edits = this.edits();
+    if (!(setting.name in edits)) {
+      return setting.schedule;
+    }
+    const value = edits[setting.name];
+    return value === null || value === undefined ? null : dailySchedule(value);
+  }
+
+  protected scheduleTitle(setting: AdminSetting): string {
+    return T.settings.schedules[setting.name]?.title ?? setting.title;
+  }
+
+  protected scheduleHint(setting: AdminSetting): string {
+    return T.settings.schedules[setting.name]?.hint ?? setting.hint;
+  }
+
+  toggle(setting: AdminSetting, enabled: boolean): void {
+    const time = setting.schedule?.time ?? DEFAULT_TIMES[setting.name] ?? DEFAULT_TIME;
+    this.change(setting, enabled ? dailyCron(time) : OFF);
+  }
+
+  /** The picker's value: one `Date` per time, so the picker is not given a new value on every check. */
+  protected timeDate(time: string): Date {
+    let date = this.times.get(time);
+    if (date === undefined) {
+      const [hours = 0, minutes = 0] = time.split(':').map(Number);
+      date = new Date();
+      date.setHours(hours, minutes, 0, 0);
+      this.times.set(time, date);
+    }
+    return date;
+  }
+
+  setTime(setting: AdminSetting, date: Date | null): void {
+    if (date instanceof Date) {
+      this.change(setting, dailyCron(`${String(date.getHours())}:${String(date.getMinutes())}`));
+    }
   }
 
   protected shown(setting: AdminSetting): string {
-    if (setting.secret) {
-      return setting.set ? T.settings.secretSet : T.settings.secretNotSet;
-    }
     return setting.value === null || setting.value === '' ? T.settings.notSet : setting.value;
   }
 
@@ -535,16 +758,22 @@ export class SettingsPage implements OnInit {
       next: (changed) => {
         this.pending.set(false);
         this.edits.set({});
-        if (!changed.restarting) {
-          this.stage.set('manual');
-          this.load();
+        if (changed.restarting) {
+          this.stage.set('restarting');
+          this.deadline = Date.now() + RESTART_WAIT_MS;
+          this.poll = setInterval(() => {
+            this.checkRestart();
+          }, this.pollMs);
           return;
         }
-        this.stage.set('restarting');
-        this.deadline = Date.now() + RESTART_WAIT_MS;
-        this.poll = setInterval(() => {
-          this.checkRestart();
-        }, this.pollMs);
+        this.load();
+        if (changed.changed.every((name) => changed.applied.includes(name))) {
+          // everything is live: in force already, nothing to wait for
+          this.confirmVisible.set(false);
+          this.snackbar.success(T.settings.saved);
+          return;
+        }
+        this.stage.set('manual');
       },
       error: (error: unknown) => {
         this.pending.set(false);

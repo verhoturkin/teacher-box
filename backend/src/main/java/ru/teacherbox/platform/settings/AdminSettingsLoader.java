@@ -36,11 +36,27 @@ public class AdminSettingsLoader implements ApplicationListener<ApplicationEnvir
 
     static void apply(ConfigurableEnvironment environment) {
         Path dataDir = Path.of(environment.getProperty("teacherbox.data-dir", "./data"));
-        Map<String, Object> values = new LinkedHashMap<>(new SettingsFile(dataDir).read());
+        Map<String, String> values = new SettingsFile(dataDir).read();
+        if (!values.isEmpty()) {
+            replace(environment, values);
+        }
+    }
+
+    /**
+     * Puts the values in force in the running portal (ADR-0056): what binds the properties on every call
+     * sees them at once; without values the environment and the defaults apply again.
+     */
+    static void replace(ConfigurableEnvironment environment, Map<String, String> values) {
         if (values.isEmpty()) {
+            environment.getPropertySources().remove(SOURCE);
             return;
         }
-        environment.getPropertySources().remove(SOURCE);
-        environment.getPropertySources().addFirst(new SystemEnvironmentPropertySource(SOURCE, values));
+        SystemEnvironmentPropertySource source = new SystemEnvironmentPropertySource(SOURCE,
+                new LinkedHashMap<>(values));
+        if (environment.getPropertySources().contains(SOURCE)) {
+            environment.getPropertySources().replace(SOURCE, source);
+        } else {
+            environment.getPropertySources().addFirst(source);
+        }
     }
 }

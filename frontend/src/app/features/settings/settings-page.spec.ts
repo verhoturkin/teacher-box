@@ -6,11 +6,11 @@ import { AuthService } from '@core/auth/auth.service';
 import { PageDetail } from '@core/routing/page-detail';
 import { UnsavedChanges } from '@core/routing/unsaved-changes';
 import { buttonByText, hostElement, readableText, requireElement, typeInto } from '@testing/dom';
-import { aiStatus, systemPrompt, usageReport } from '@testing/ai-fixtures';
-import { overview } from '@testing/billing-fixtures';
+import { aiProvider, aiSettings, aiStatus, systemPrompt, usageReport } from '@testing/ai-fixtures';
+import { currencySetting, overview } from '@testing/billing-fixtures';
 import { portalSettings } from '@testing/portal-fixtures';
 import { channelSetup, studentMessengers } from '@testing/notification-fixtures';
-import { calendarFeed, scheduleSettings } from '@testing/schedule-fixtures';
+import { calendarFeed, lessonRules, scheduleSettings } from '@testing/schedule-fixtures';
 import { screenWidth, testProviders } from '@testing/setup';
 import { BackupInfo, NotificationsStatus } from './data-access/settings.models';
 import { SettingsPage } from './settings-page';
@@ -66,11 +66,13 @@ describe('SettingsPage', () => {
         break;
       case 'lessons':
         backend.expectOne('/api/me/schedule/settings').flush(scheduleSettings());
+        backend.expectOne('/api/teacher/schedule/settings').flush(lessonRules());
+        backend.expectOne('/api/teacher/billing/currency').flush(currencySetting());
+        backend.expectOne('/api/teacher/homework/settings').flush({ dueSoonMinutes: 1440 });
         backend.expectOne('/api/me/schedule/feed').flush(calendarFeed());
         backend.expectOne('/api/teacher/billing/overview').flush(overview([]));
         backend.expectOne('/api/teacher/schedule/google').flush({
           clientConfigured: false,
-          clientFromEnvironment: false,
           clientId: null,
           status: 'NOT_CONNECTED',
           busyEnabled: false,
@@ -92,12 +94,13 @@ describe('SettingsPage', () => {
         backend.expectOne('/api/teacher/notifications/students').flush([studentMessengers()]);
         break;
       case 'ai':
+        backend.expectOne('/api/teacher/ai/providers').flush([aiProvider()]);
+        backend.expectOne('/api/teacher/ai/settings').flush(aiSettings());
         backend.expectOne('/api/teacher/ai/usage').flush(usageReport());
         break;
       case 'data':
         backend.expectOne('/api/teacher/backups/google').flush({
           clientConfigured: false,
-          clientFromEnvironment: false,
           clientId: null,
           connected: false,
           account: null,
@@ -166,7 +169,7 @@ describe('SettingsPage', () => {
     const list = readableText(requireElement(host, 'nav', HTMLElement));
     expect(list).toContain('Мой аккаунт Профиль, уведомления, вход');
     expect(list).toContain('Портал Название, логотип, цвет');
-    expect(list).toContain('Занятия Пояс, цена, календарь, звонки');
+    expect(list).toContain('Занятия Пояс, цена, правила, календарь');
     expect(list).toContain('Ученики Теги: уровень, класс, формат');
     expect(list).toContain('Мессенджеры Telegram работает 2');
     expect(list).toContain('ИИ-помощник Подключён · 0 % лимита');
@@ -279,7 +282,7 @@ describe('SettingsPage', () => {
     expect(TestBed.inject(PageDetail).value()).toBe('Занятия');
   });
 
-  it('shows the model, the usage and the prompts in the AI assistant', async () => {
+  it('shows the connections, the usage and the prompts in the AI assistant', async () => {
     const host = await render(1200, 'ai');
     for (const request of backend.match('/api/teacher/ai/prompts')) {
       request.flush([]);
@@ -290,7 +293,8 @@ describe('SettingsPage', () => {
     await fixture.whenStable();
 
     const text = readableText(host);
-    expect(text).toContain('Модель');
+    expect(text).toContain('Подключения');
+    expect(text).toContain('Claude Opus 5');
     expect(host.querySelector('#prompt-library')).not.toBeNull();
     expect(host.querySelector('#system-prompts')).not.toBeNull();
     expect(host.querySelector('tb-ai-settings-panel tb-page-header')).toBeNull();

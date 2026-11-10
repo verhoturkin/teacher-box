@@ -181,7 +181,6 @@ export class TeacherHome implements OnInit {
     const notifications = this.notifications();
     return {
       hasStudents: notifications === null ? null : notifications.students > 0,
-      priceSet: this.billing()?.priceSet ?? null,
       messengerConfigured: notifications?.messengerConfigured ?? null,
       hasLessons: this.schedule()?.hasLessons ?? null,
     };

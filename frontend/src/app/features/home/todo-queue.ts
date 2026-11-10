@@ -13,6 +13,7 @@ import { forkJoin } from 'rxjs';
 import { Button, ButtonDirective } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ProgressBar } from 'primeng/progressbar';
+import { AiApi } from '@features/ai/parts';
 import type { Debtor } from '@features/billing/parts';
 import { HomeworkApi } from '@features/homework/parts';
 import type { ReviewQueueItem } from '@features/homework/parts';
@@ -43,7 +44,6 @@ const PER_SOURCE = 5;
 /** Where the teacher is in setting up the portal (`null` while unknown). */
 export interface SetupProgress {
   readonly hasStudents: boolean | null;
-  readonly priceSet: boolean | null;
   readonly messengerConfigured: boolean | null;
   readonly hasLessons: boolean | null;
 }
@@ -318,6 +318,7 @@ export class TodoQueue implements OnInit {
   private readonly scheduleApi = inject(ScheduleApi);
   private readonly markUndo = inject(LessonMarkUndo);
   private readonly homeworkApi = inject(HomeworkApi);
+  private readonly aiApi = inject(AiApi);
   private readonly router = inject(Router);
   protected readonly busy = new Busy();
   protected readonly mobile = injectMobile();
@@ -336,6 +337,8 @@ export class TodoQueue implements OnInit {
   private readonly lessons = signal<readonly ScheduledLesson[]>([]);
   private readonly requests = signal<readonly ChangeRequest[]>([]);
   private readonly reviews = signal<readonly ReviewQueueItem[]>([]);
+  /** An AI connection works (`null` while unknown). */
+  private readonly aiConnected = signal<boolean | null>(null);
   private readonly dismissed = signal(isHintHidden(CHECKLIST_DISMISSED_KEY));
 
   private readonly all = computed((): Row[][] => [
@@ -392,16 +395,16 @@ export class TodoQueue implements OnInit {
         query: { create: 'student' },
       },
       {
-        done: progress.priceSet === true,
-        title: T.queue.price,
-        hint: T.queue.priceHint,
-        link: '/teacher/billing',
-      },
-      {
         done: progress.messengerConfigured === true,
         title: T.queue.messenger,
         hint: T.queue.messengerHint,
         link: '/teacher/settings/messengers',
+      },
+      {
+        done: this.aiConnected() === true,
+        title: T.queue.ai,
+        hint: T.queue.aiHint,
+        link: '/teacher/settings/ai',
       },
       {
         done: progress.hasLessons === true,
@@ -419,11 +422,15 @@ export class TodoQueue implements OnInit {
   );
   /** Shown once everything is known, until all steps are done or the teacher hides it. */
   protected readonly setupVisible = computed(() => {
-    const known = Object.values(this.progress()).every((value) => value !== null);
+    const known =
+      this.aiConnected() !== null && Object.values(this.progress()).every((v) => v !== null);
     return known && !this.dismissed() && this.doneCount() < this.steps().length;
   });
 
   ngOnInit(): void {
+    this.aiApi.enabled$.subscribe((enabled) => {
+      this.aiConnected.set(enabled);
+    });
     this.reload();
   }
 

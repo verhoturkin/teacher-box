@@ -31,16 +31,16 @@ public class FeedService {
     private final FeedRepository feeds;
     private final LessonRepository lessons;
     private final ScheduleDirectory directory;
-    private final ScheduleProperties properties;
+    private final LessonRulesService rules;
     private final Portal portal;
     private final Clock clock;
 
     public FeedService(FeedRepository feeds, LessonRepository lessons, ScheduleDirectory directory,
-            ScheduleProperties properties, Portal portal, Clock clock) {
+            LessonRulesService rules, Portal portal, Clock clock) {
         this.feeds = feeds;
         this.lessons = lessons;
         this.directory = directory;
-        this.properties = properties;
+        this.rules = rules;
         this.portal = portal;
         this.clock = clock;
     }
@@ -81,7 +81,7 @@ public class FeedService {
         }
         Instant now = clock.instant();
         Instant from = now.minus(PAST);
-        Instant to = now.plus(properties.horizon()).plus(FUTURE_MARGIN);
+        Instant to = now.plus(rules.current().horizon()).plus(FUTURE_MARGIN);
         UUID ownerId = owner.get();
         CalendarTexts texts = CalendarTexts.of(directory.language(ownerId));
         if (ownerId.equals(directory.teacherId())) {

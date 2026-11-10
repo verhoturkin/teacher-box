@@ -1,0 +1,21 @@
+/* supporting text of several lines in one element (a filled field has one support area) */
+.tb-support-lines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-1);
+
+  > :empty {
+    display: none;
+  }
+}
+
+/* a hint led by a 16 px icon («Как на этом устройстве», a locked currency) */
+.tb-hint--icon {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-space-1);
+
+  .tb-i {
+    font-size: 1rem;
+  }
+}

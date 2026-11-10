@@ -6,6 +6,10 @@
 «Субтитры YouTube» в задании выдаёт ошибку связи, укажите прокси и для неё —
 `TEACHERBOX_HOMEWORK_YOUTUBE_PROXY`:
 
+Администратор задаёт их в «Настройках» → «Сеть и прокси» или в `.env`; изменения действуют сразу,
+без перезапуска. `TEACHERBOX_AI_PROXY` — прокси по умолчанию для всех подключений ИИ, у которых нет
+своего прокси:
+
 ```ini
 TEACHERBOX_NOTIFICATIONS_TELEGRAM_PROXY=socks5://host.docker.internal:1080
 TEACHERBOX_AI_PROXY=socks5://host.docker.internal:1080
@@ -22,6 +26,7 @@ TEACHERBOX_HOMEWORK_YOUTUBE_PROXY=socks5://host.docker.internal:1080
   быть «Работает»; текст ошибки связи показан там же и в журнале. Администратор может проверить
   связь со всеми сервисами сразу: «Интеграции» → «Проверить».
 
-Без прокси на сервере можно указать свой адрес Bot API в
-`TEACHERBOX_NOTIFICATIONS_TELEGRAM_API_URL` — например, реверс-прокси к `api.telegram.org` на
+Без прокси на сервере можно указать свой адрес Bot API
+(`TEACHERBOX_NOTIFICATIONS_TELEGRAM_API_URL` или «Сеть и прокси») — например, реверс-прокси к
+`api.telegram.org` на
 своём зарубежном VPS (через него проходит токен бота, поэтому только на своём сервере).

@@ -1,6 +1,7 @@
 import {
   BillingOverview,
   BillingSummary,
+  CurrencySetting,
   Lesson,
   MonthlyReport,
   MyBillingSummary,
@@ -10,6 +11,10 @@ import {
   StudentBalance,
   StudentLedger,
 } from '@features/billing/data-access/billing.models';
+
+export function currencySetting(overrides: Partial<CurrencySetting> = {}): CurrencySetting {
+  return { currency: 'RUB', locked: false, ...overrides };
+}
 
 export function studentBalance(overrides: Partial<StudentBalance> = {}): StudentBalance {
   return {
@@ -31,7 +36,6 @@ export function overview(students: StudentBalance[]): BillingOverview {
   return {
     currency: 'RUB',
     defaultLessonPrice: 150_000,
-    defaultLessonDuration: 60,
     totalDebt: students.filter((s) => s.balance < 0).reduce((sum, s) => sum - s.balance, 0),
     totalPrepaid: students.filter((s) => s.balance > 0).reduce((sum, s) => sum + s.balance, 0),
     students,

@@ -58,7 +58,7 @@ public class HomeworkSummaryService {
     private final QuizService quiz;
     private final UserDirectory directory;
     private final StudentGroups groups;
-    private final ZoneId zone;
+    private final InstanceTimeZone timeZone;
     private final Clock clock;
 
     public HomeworkSummaryService(ReviewService reviews, StudentHomeworkService studentHomework, TaskRepository tasks,
@@ -71,7 +71,7 @@ public class HomeworkSummaryService {
         this.quiz = quiz;
         this.directory = directory;
         this.groups = groups;
-        this.zone = timeZone.zoneId();
+        this.timeZone = timeZone;
         this.clock = clock;
     }
 
@@ -85,9 +85,9 @@ public class HomeworkSummaryService {
                 .toList();
         long overdue = deadlines.stream().filter(now::isAfter).count();
         long dueSoon = deadlines.stream().filter(due -> !now.isAfter(due) && !due.isAfter(now.plus(DUE_SOON))).count();
-        LocalDate monday = LocalDate.ofInstant(now, zone).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        Instant from = monday.atStartOfDay(zone).toInstant();
-        Instant to = monday.plusDays(WEEK_DAYS).atStartOfDay(zone).toInstant();
+        LocalDate monday = LocalDate.ofInstant(now, zone()).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        Instant from = monday.atStartOfDay(zone()).toInstant();
+        Instant to = monday.plusDays(WEEK_DAYS).atStartOfDay(zone()).toInstant();
         List<WeekTask> week = tasks.findActiveBetween(from, to).stream()
                 .filter(task -> current.contains(task.studentId()))
                 .toList();
@@ -110,8 +110,8 @@ public class HomeworkSummaryService {
      */
     public Journal journal(LocalDate from, LocalDate to, @Nullable UUID who) {
         Instant now = clock.instant();
-        List<Assignment> columns = assignments.findDueBetween(from.atStartOfDay(zone).toInstant(),
-                to.plusDays(1).atStartOfDay(zone).toInstant());
+        List<Assignment> columns = assignments.findDueBetween(from.atStartOfDay(zone()).toInstant(),
+                to.plusDays(1).atStartOfDay(zone()).toInstant());
         Map<UUID, Map<UUID, HomeworkTask>> byStudent = new HashMap<>();
         List<HomeworkTask> all = columns.isEmpty() ? List.of()
                 : tasks.findByAssignments(columns.stream().map(Assignment::id).toList());
@@ -175,5 +175,10 @@ public class HomeworkSummaryService {
                         .sorted(Comparator.comparing(MyTask::dueAt, Comparator.nullsLast(Comparator.naturalOrder())))
                         .limit(UPCOMING)
                         .toList());
+    }
+
+    /** The instance time zone, read per call: the teacher may change it at any time. */
+    private ZoneId zone() {
+        return timeZone.zoneId();
     }
 }

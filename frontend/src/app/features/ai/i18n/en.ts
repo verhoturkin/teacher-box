@@ -1,22 +1,20 @@
 import type { Translation } from '@core/i18n/language';
 import type { ru } from './ru';
+import { plural } from '@shared/text/plural';
 
 export const en: Translation<typeof ru> = {
-  features: {
-    HOMEWORK_DRAFT: 'Assignment drafts',
-    REVIEW_DRAFT: 'Review drafts',
-    LESSON_SUMMARY: 'Lesson summaries',
-    QUIZ_DRAFT: 'Quiz drafts',
-  },
   statuses: {
     SUCCEEDED: 'Completed',
     FAILED: 'Error',
     REFUSED: 'Declined by model',
   },
   usage: {
-    modelAndUsage: 'Model and usage',
-    byAdmin: 'Set up by the portal administrator',
-    working: 'Working',
+    usageTitle: 'Usage',
+    usageOf: (month: string) => `Usage in ${month}`,
+    limit: 'Monthly limit, tokens',
+    limitHint: 'Shared by all connections. 0 means no limit.',
+    limitSaved: 'Limit saved',
+    removedModel: (label: string) => `${label} (removed)`,
     ofMonthLimit: (used: string, limit: string, resets: string) =>
       `of the monthly limit · ${used} of ${limit} tokens · resets on ${resets}`,
     tokensNoLimit: 'tokens this month, no limit',
@@ -26,11 +24,130 @@ export const en: Translation<typeof ru> = {
     inOut: (input: number, output: number) =>
       `${input.toLocaleString('en-GB')} → ${output.toLocaleString('en-GB')} tokens`,
     seconds: (seconds: string) => `${seconds} s`,
-    notConfigured: 'The AI assistant is not set up',
-    notConfiguredHint:
-      'Ask the portal administrator to enable the AI assistant for assignment drafts and feedback.',
-    model: 'Model',
     used: 'Tokens used this month',
+  },
+  kinds: {
+    anthropic: { name: 'Anthropic', sub: 'Claude' },
+    gemini: { name: 'Gemini', sub: 'Key from Google AI Studio' },
+    openrouter: { name: 'OpenRouter', sub: 'Models from many companies' },
+    deepseek: { name: 'DeepSeek', sub: 'platform.deepseek.com' },
+    'openai-compatible': { name: 'OpenAI-compatible', sub: 'OpenAI, Ollama, LM Studio, vLLM' },
+  },
+  connections: {
+    title: 'Connections',
+    add: 'Add',
+    hint: 'The default model writes every draft. You can pick another one in “Write with AI”.',
+    empty: 'No connections yet',
+    emptyHint:
+      'Add an Anthropic, Gemini, OpenRouter or DeepSeek key, or the address of your own server, and the AI will start writing drafts.',
+    addFirst: 'Add connection',
+    models: (count: number) => `${String(count)} ${plural(count, 'model', 'models', 'models')}`,
+    key: (ending: string) => `key …${ending}`,
+    keySet: 'key set',
+    noKey: 'no key',
+    direct: 'direct',
+    viaProxy: 'via proxy',
+    states: { OK: 'Working', FAILED: 'Error', UNCHECKED: 'Not checked' },
+    providerActions: (name: string) => `Actions for connection ${name}`,
+    modelActions: (label: string) => `Actions for model ${label}`,
+    defaultModel: 'Default',
+    makeDefault: 'Make default',
+    defaultSaved: (label: string) => `${label} now writes your drafts`,
+    addModel: 'Add model',
+    noModels: 'No models yet. Add at least one',
+    edit: 'Edit…',
+    recheck: 'Check again',
+    checked: 'The connection is working',
+    checkFailed: (detail: string) => `The connection is not working: ${detail}`,
+    delete: 'Delete…',
+    deleteHeader: 'Delete connection?',
+    deleteMessage: (name: string) =>
+      `The connection “${name}” and its models will be removed. Usage of past requests stays.`,
+    deleteDefault:
+      'This connection holds the default model. Make a model of another connection the default first.',
+    deleteAccept: 'Delete',
+    deleted: 'Connection deleted',
+    deleteModelHeader: 'Delete model?',
+    deleteModelMessage: (label: string) =>
+      `“${label}” will no longer be offered in “Write with AI”.`,
+    deleteDefaultModel: (label: string) =>
+      `“${label}” is the default model. The AI will not write drafts until you choose another one.`,
+    modelDeleted: 'Model deleted',
+    effort: (effort: string) => `effort: ${effort}`,
+  },
+  efforts: {
+    low: 'low',
+    medium: 'medium',
+    high: 'high',
+    xhigh: 'very high',
+    max: 'maximum',
+  },
+  providerDialog: {
+    step1: 'Step 1 of 2 · Connection',
+    step2: 'Step 2 of 2 · Models',
+    newTitle: 'New connection',
+    editTitle: (name: string) => `Connection ${name}`,
+    keyWhere: 'Help explains where to get a key for each provider.',
+    kind: 'Provider',
+    name: 'Name',
+    nameHint: 'How the connection appears in the list. You can keep it as it is.',
+    apiKey: 'API key',
+    apiKeyKept: (ending: string) => `A key is set (…${ending}). Leave blank to keep it.`,
+    apiKeyKeptShort: 'A key is set. Leave blank to keep it.',
+    apiKeyOptional: 'A local server may not need a key.',
+    removeKey: 'Remove key',
+    keyFailed: (name: string, detail: string) => `That didn’t work. ${name} replied: “${detail}”.`,
+    more: 'Advanced',
+    address: 'API address',
+    addressHint: 'Change it only for your own server or a mirror.',
+    addressRequired: 'Server address, e.g. http://host.docker.internal:11434/v1',
+    proxy: 'Proxy',
+    proxyHint:
+      'If the provider cannot be reached from the server’s network. Leave blank to connect directly.',
+    proxyInvalid: 'Use socks5://host:port or http://host:port',
+    checkAndContinue: 'Check and continue',
+    save: 'Save',
+    back: 'Back',
+    modelsTitle: (name: string) => `${name} models`,
+    works: (count: number) =>
+      count === 0
+        ? 'The connection is working. The provider does not list its models, so add one by hand.'
+        : `The connection is working. The provider offers ${String(count)} ${plural(count, 'model', 'models', 'models')}.`,
+    search: 'Find a model',
+    nothingFound: 'Nothing found',
+    moreFound: (count: number) => `${String(count)} more. Narrow your search`,
+    added: 'Already added',
+    addManually: 'Add a model by hand',
+    manualId: 'Model ID',
+    manualHint: 'As the provider writes it, e.g. claude-opus-5',
+    manualAdd: 'Add',
+    shownLater:
+      'Selected models will be offered in “Write with AI”. Change the default model in the list of connections.',
+    saveModels: (count: number) =>
+      count === 0
+        ? 'Save'
+        : `Save · ${String(count)} ${plural(count, 'model', 'models', 'models')}`,
+    failed: 'Could not save the connection',
+    saved: 'Connection saved',
+    modelsFailed: 'The connection is saved, but some models could not be added',
+  },
+  modelDialog: {
+    title: 'Model',
+    modelId: 'Model ID',
+    label: 'Name',
+    labelHint: 'How the model appears in the list and in “Write with AI”.',
+    more: 'Advanced',
+    effort: 'Effort',
+    effortDefault: 'Model default',
+    effortHint:
+      'How much the model thinks before answering: higher is more accurate but slower and costlier.',
+    fallbacks: 'Fallback models',
+    fallbacksHint: 'If the model declines a request, Anthropic passes it to another of its models.',
+    maxTokens: 'Answer length, tokens',
+    timeout: 'Wait for an answer, seconds',
+    save: 'Save',
+    saved: 'Model saved',
+    failed: 'Could not save the model',
   },
   panel: {
     paneTask: 'Assignment text',
@@ -100,6 +217,12 @@ export const en: Translation<typeof ru> = {
       MATCHING: 'Matching',
       ORDERING: 'Ordering',
     },
+  },
+  modelPick: {
+    label: (model: string) => `Model: ${model}`,
+    menu: 'Model',
+    broken: 'The connection is not working',
+    manage: 'Set up connections',
   },
   library: {
     create: 'New',

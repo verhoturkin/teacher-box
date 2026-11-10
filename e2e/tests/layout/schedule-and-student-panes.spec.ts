@@ -176,16 +176,16 @@ test('students are list rows with the status on the right, access in Profile, wo
   ).toBeLessThanOrEqual(0);
 });
 
-test('the settings of the administrator are one under another', async ({ page }) => {
+test('the settings of the administrator are three columns of cards', async ({ page }) => {
   await signIn(page, 1440, 'admin');
-  await page.goto('/admin/settings/sessions');
+  await page.goto('/admin/settings');
 
-  const fields = page.locator('.tb-setting');
-  await expect(fields.first()).toBeVisible();
-  const lefts = await fields.evaluateAll((items) =>
-    items.slice(0, 6).map((item) => Math.round(item.getBoundingClientRect().left)),
+  const cards = page.locator('#card-files, #card-sessions, #card-backups');
+  await expect(cards.first()).toBeVisible();
+  const lefts = await cards.evaluateAll((items) =>
+    items.map((item) => Math.round(item.getBoundingClientRect().left)),
   );
-  expect(new Set(lefts).size).toBe(1);
+  expect(new Set(lefts).size).toBe(3);
 
   await page.goto('/admin/status');
   await expect(page.locator('.tb-feed').first()).toBeVisible();

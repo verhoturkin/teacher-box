@@ -2,25 +2,36 @@ package ru.teacherbox.ai.web;
 
 import jakarta.validation.constraints.PositiveOrZero;
 import java.time.YearMonth;
+import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.teacherbox.ai.application.AiProviders;
+import ru.teacherbox.ai.application.AiProviders.AdminProviderView;
 import ru.teacherbox.ai.application.AiUsage;
 import ru.teacherbox.ai.application.AiViews.AiStatus;
 import ru.teacherbox.ai.application.AiViews.RequestPage;
 import ru.teacherbox.ai.application.AiViews.UsageReport;
 
-/** Administrator: the AI provider and the log of requests (metadata only, no texts; ADR-0010). */
+/** Administrator: the AI connections (no keys), the provider in use and the log of requests (metadata only, no texts; ADR-0010). */
 @RestController
 @RequestMapping("/api/admin/ai")
 class AdminAiController {
 
     private final AiUsage usage;
+    private final AiProviders providers;
 
-    AdminAiController(AiUsage usage) {
+    AdminAiController(AiUsage usage, AiProviders providers) {
         this.usage = usage;
+        this.providers = providers;
+    }
+
+    /** The teacher's connections: kinds, whether a key is set, the last check and the number of models; no keys. */
+    @GetMapping("/providers")
+    List<AdminProviderView> providers() {
+        return providers.adminList();
     }
 
     @GetMapping("/status")

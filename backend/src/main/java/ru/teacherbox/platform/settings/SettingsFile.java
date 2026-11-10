@@ -26,7 +26,10 @@ public final class SettingsFile {
         this.file = dataDir.resolve(LOCATION);
     }
 
-    /** The saved values of the settings the administrator may change; nothing if there is no file. */
+    /**
+     * The saved values of the settings the file may hold ({@link SettingDefinition#stored()}); nothing if
+     * there is no file.
+     */
     public Map<String, String> read() {
         Map<String, String> values = new TreeMap<>();
         if (!Files.isRegularFile(file)) {
@@ -39,7 +42,7 @@ public final class SettingsFile {
             throw new UncheckedIOException("Cannot read " + file, e);
         }
         for (String name : properties.stringPropertyNames()) {
-            if (SettingsCatalog.find(name).filter(SettingDefinition::editable).isPresent()) {
+            if (SettingsCatalog.find(name).filter(SettingDefinition::stored).isPresent()) {
                 values.put(name, properties.getProperty(name));
             }
         }

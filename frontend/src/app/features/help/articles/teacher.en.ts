@@ -9,14 +9,16 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
     body: `
 Teacher Box brings your students, schedule, assignments, payments and notifications together.
 
-The first time you sign in, [initial setup](/teacher/help/setup) takes you through your password, name, portal address and lesson price.
+The first time you sign in, [initial setup](/teacher/help/setup) takes you through your password, name, portal name and address, time zone, currency, lesson price and lesson rules.
 
 ## Your first four steps
 
 1. **Add a student.** Choose “Create” → “Student”, or “Students” → “Add student” on a phone. Send the invitation link by email or through a messaging app. The student uses it to choose a username and password.
-2. **Check the price.** Open the student’s “Profile” tab and set “Lesson price”. This determines how much is charged for their lessons.
-3. **Schedule a lesson.** Choose “Create” → “Lesson”. Set “Repeat” to once or every one to four weeks.
-4. **Connect a messaging app.** Open “Settings” → “Notifications and messengers” → “Connect”. The wizard helps you create a bot for Telegram, VK or MAX so you can receive reminders and student requests.
+2. **Connect a messaging app.** Open “Settings” → “Notifications and messengers” → “Connect”. The wizard helps you create a bot for Telegram, VK or MAX so you can receive reminders and student requests.
+3. **Connect the AI assistant** if you want it. It drafts assignments, quizzes and feedback, and you always edit the result. You need a key from an AI provider: “Settings” → “AI”.
+4. **Schedule a lesson.** Choose “Create” → “Lesson”. Set “Repeat” to once or every one to four weeks.
+
+You already chose the default lesson price during setup. To give one student a different price, open their “Profile” tab.
 
 The “Getting started” checklist under “To do” on your home page tracks these steps and hides completed ones.
 
@@ -36,15 +38,17 @@ Next: [Students and invitations](/teacher/help/students), [Schedule and requests
   },
   setup: {
     title: 'Initial setup',
-    summary: 'Choose your password, portal details and default lesson price',
+    summary: 'The first-sign-in wizard: your details, time and payment, lesson rules',
     body: `
-Initial setup opens the first time you sign in. Apart from replacing a generated password, you can skip the steps and return to them later in Settings.
+Initial setup opens the first time you sign in. Every step already has a sensible default, so you can simply select “Next” each time. You can change everything later in Settings.
 
-1. **Password:** replace the initial password if the portal generated it. That password was written to the server log, so you must choose your own.
-2. **About you:** enter the name students will see and a name for your portal. The portal name appears in navigation, browser tabs, the sign-in page and the calendar.
-3. **Address:** enter the public URL students will use, such as https://school.example.com. Invitations, bot links and calendar subscriptions use this address. “Use current address” copies the address you are using now.
-4. **Lessons:** set the default price for new students and groups. Individual prices can be changed later.
-5. **Finish:** review optional connections, including messaging apps, video meetings and Google Calendar.
+1. **Password:** this step appears only if the portal generated your first password, which was written to the server log. Choose your own; this step cannot be skipped.
+2. **You and your portal:** enter the name students will see, and a photo if you like. The portal name appears in navigation, browser tabs, the sign-in page and the calendar. The portal address is the one students use to open it, such as https://school.example.com. Invitations, bot links and calendar subscriptions start with it. The portal fills in the address you are using now, and “Check” tells you whether it can be reached.
+3. **Time and payment:** the time zone sets your schedule and monthly reports, and the portal suggests the one on your device. Then choose a currency, the usual lesson length and the default price for new students and groups. Individual prices can be changed later.
+4. **Rules:** late cancellation, lesson reminders, the reminder before an assignment is due, and how many weeks of a repeating lesson appear ahead. An example next to each rule shows what it does.
+5. **Done:** the portal suggests what to do next: add a student, connect a messaging app, the AI assistant or Google Calendar. “Go to the portal” opens your home page.
+
+“Back” returns to the previous step. “Next” saves the step. “Skip” leaves the step’s values as they were and moves on. If a step cannot be saved, it stays open.
 
 ## Address warnings
 
@@ -52,7 +56,14 @@ Initial setup opens the first time you sign in. Apart from replacing a generated
 - A home or office network address works only within that network. Students need an address they can reach over the internet.
 - An HTTP address sends passwords without encryption. Ask the server administrator to enable HTTPS.
 
-To change details later, use “Settings” → “Portal” for the name, logo and colours, “My account” for your name and photo, and “Settings” → “Lessons” for the default lesson price. Contact the portal administrator to change the public address.
+## Changing things later
+
+- Name, logo and colours: “Settings” → “Portal”.
+- Time zone, currency, price, lesson length and rules: “Settings” → “Lessons”.
+- Your name and photo: “My account”.
+- The public address: ask the portal administrator.
+
+Messaging apps, the AI assistant and Google Calendar are not part of the wizard. Connect them in Settings, or from “Getting started” on your home page.
 `,
   },
   students: {
@@ -460,7 +471,23 @@ The portal handles the response format and sends assignment and student response
 
 The AI settings show your model, tokens used this month and remaining allowance. Recent requests show the result, time, model, token count and any error. The latest ten appear first; choose “Show more” for other requests this month. Once the monthly allowance is exhausted, AI actions become unavailable until the next month.
 
-The portal administrator configures the provider, such as Claude, Gemini, DeepSeek, OpenRouter or another supported service. Ask them to enable AI if the assistant is unavailable.
+## Connections and models
+
+You connect the AI yourself: “Settings” → “AI assistant” → “Connections” → “Add”. Pick a provider — Anthropic (Claude), Gemini, OpenRouter (many companies’ models with one key), DeepSeek or an OpenAI-compatible server such as your own Ollama — paste the API key and choose “Check and continue”. If the key is rejected, the provider’s reply appears under the field. In the second step, select the models you want (search helps with a long list) or add one by hand using its model ID. If the provider cannot be reached from the server’s network, set a proxy under “Advanced”.
+
+Drafts are written by the default model, which is marked in the list. To change it, select another model’s radio button or choose “Make default” from its “⋮” menu, where you can also rename or delete it. The monthly token limit is shared by all connections; 0 means no limit. The usage bar shows how much each model used. If AI buttons are missing, no default model is selected.
+
+With more than one model, a button with the model’s name sits next to “Generate” (next to “AI draft” when reviewing work, and next to “Generate draft” in a lesson summary). Its menu lists the models by connection: choose the one that should write the draft. This device remembers your choice everywhere the AI writes; another computer or phone still uses the default model. You cannot choose a model whose connection has an error until it works again. If the chosen model is deleted, drafts go back to the default model.
+
+Which connection to pick. One is enough: add the provider whose key you already have. A second is
+worth it when different jobs suit different models — say, a stronger one for marking work and a
+quick one for assignment drafts — or as a fallback provider if one has an outage. OpenRouter gives
+you many companies’ models behind one key; your own server (Ollama, for instance) needs no key and
+sends no text out of your network.
+
+Each connection can have its own proxy. If one provider cannot be reached from the server’s network
+(Gemini from Russia, say), set a proxy for that connection only under “Advanced”; the others connect
+directly. A connection with no proxy of its own uses the administrator’s shared proxy.
 `,
   },
   billing: {
@@ -602,9 +629,9 @@ Open Settings from the sidebar or the ☰ menu on a phone. Select a category to 
 
 - **My account:** Profile (photo, name), Sign-in (username, password, sign out), Appearance (theme and language) and Notifications (where and what to send, quiet hours). Changes save immediately. You can also open it by selecting your name in navigation.
 - **Portal:** name and logo, portal colour, and fine tuning (scheme, contrast) with a preview. See [Appearance](/teacher/help/appearance).
-- **Lessons:** time zone and the default lesson price for new students and groups (see [Payments](/teacher/help/billing)), [calls](/teacher/help/calls) and [external video meetings](/teacher/help/meetings), Google Calendar and the calendar subscription (see [Calendars](/teacher/help/calendars)).
+- **Lessons:** under “Time and price”, the time zone (used for lesson times, reminders and monthly reports; lessons already booked keep their time), the currency (fixed once the first charge or payment is recorded), and the length and price for new lessons, students and groups (see [Payments](/teacher/help/billing)). Under “Rules”, when a cancellation counts as late, up to three lesson reminders for students (“Add” to choose when, “×” to remove one), how many hours before a homework deadline to remind students, and how many weeks ahead to create repeating lessons. Each field saves as soon as you leave it or press Enter. Also [calls](/teacher/help/calls) and [external video meetings](/teacher/help/meetings), Google Calendar and the calendar subscription (see [Calendars](/teacher/help/calendars)).
 - **Messengers:** bots, what the bot can do and students’ connections (for example, 5 of 7). Failed deliveries appear first when present; the administrator can retry them. See [Notifications and bots](/teacher/help/notifications).
-- **AI assistant:** model, usage by feature, recent requests, my prompts and system prompts. See [AI assistant](/teacher/help/ai).
+- **AI assistant:** connections and models, usage by model and the limit, recent requests, my prompts and system prompts. See [AI assistant](/teacher/help/ai).
 - **Data:** scheduled and manual backups, downloads, restoration, Google Drive storage, and the danger zone for restoring a backup or clearing the portal. See [Backups](/teacher/help/backups).
 
 Settings save as soon as you change a field or switch. The exception is Portal: a row with Discard and Save appears under the colour choice, and the portal asks before you leave with unsaved changes. File size and type are checked as soon as you select a file.

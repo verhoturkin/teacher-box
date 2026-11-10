@@ -38,11 +38,12 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: '**/operations/**',
+      testIgnore: ['**/operations/**', '**/setup/**'],
     },
     {
+      // setup/ resets the instance to see the first-run wizard, so it runs with the operations
       name: 'operations',
-      testMatch: '**/operations/**/*.spec.ts',
+      testMatch: ['**/operations/**/*.spec.ts', '**/setup/**/*.spec.ts'],
       dependencies: ['chromium'],
     },
   ],

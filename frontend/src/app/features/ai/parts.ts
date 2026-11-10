@@ -3,8 +3,10 @@
  * category «ИИ-помощник», data access and its types. The feature has no pages of its own.
  */
 export { AiApi } from './data-access/ai-api';
+export { AiModelPick } from './ai-model-pick';
+export { AiModelChoice } from './model-choice';
 export { AiSettingsPanel } from './ai-settings-panel';
 export { HomeworkAiPanel, HomeworkAiState } from './homework-ai-panel';
 export { AiContextChips, StudentContext } from './student-context';
 export type { AppliedDraft, AppliedQuestions } from './homework-ai-panel';
-export type { AiStatus, SourceOption } from './data-access/ai.models';
+export type { AiProvider, AiStatus, SourceOption } from './data-access/ai.models';

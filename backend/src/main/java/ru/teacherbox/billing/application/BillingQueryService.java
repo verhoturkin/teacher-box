@@ -64,14 +64,13 @@ public class BillingQueryService {
     private final BalanceQueries balances;
     private final UserDirectory directory;
     private final BillingService billingService;
-    private final BillingProperties properties;
     private final BillingCurrency currency;
     private final InstanceTimeZone timeZone;
     private final Clock clock;
 
     public BillingQueryService(StudentAccountRepository accounts, LessonRepository lessons,
             PaymentRepository payments, BalanceQueries balances, UserDirectory directory,
-            BillingService billingService, BillingProperties properties, BillingCurrency currency,
+            BillingService billingService, BillingCurrency currency,
             InstanceTimeZone timeZone, Clock clock) {
         this.accounts = accounts;
         this.lessons = lessons;
@@ -79,7 +78,6 @@ public class BillingQueryService {
         this.balances = balances;
         this.directory = directory;
         this.billingService = billingService;
-        this.properties = properties;
         this.currency = currency;
         this.timeZone = timeZone;
         this.clock = clock;
@@ -102,7 +100,7 @@ public class BillingQueryService {
 
         long debt = rows.stream().mapToLong(StudentBalance::balance).filter(b -> b < 0).map(Math::negateExact).sum();
         long prepaid = rows.stream().mapToLong(StudentBalance::balance).filter(b -> b > 0).sum();
-        return new Overview(currency.code(), defaultPrice, properties.defaultLessonDuration(), debt, prepaid, rows);
+        return new Overview(currency.code(), defaultPrice, debt, prepaid, rows);
     }
 
     /** @param requested the month to total; {@code null}: the current one */

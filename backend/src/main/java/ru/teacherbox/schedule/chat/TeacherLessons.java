@@ -21,17 +21,17 @@ import ru.teacherbox.shared.time.InstanceTimeZone;
 class TeacherLessons {
 
     private final ScheduleQueries queries;
-    private final ZoneId zone;
+    private final InstanceTimeZone timeZone;
     private final Clock clock;
 
     TeacherLessons(ScheduleQueries queries, InstanceTimeZone timeZone, Clock clock) {
         this.queries = queries;
-        this.zone = timeZone.zoneId();
+        this.timeZone = timeZone;
         this.clock = clock;
     }
 
     ZoneId zone() {
-        return zone;
+        return timeZone.zoneId();
     }
 
     Instant now() {
@@ -39,7 +39,7 @@ class TeacherLessons {
     }
 
     List<LessonView> today() {
-        LocalDate today = LocalDate.ofInstant(clock.instant(), zone);
+        LocalDate today = LocalDate.ofInstant(clock.instant(), zone());
         return queries.lessons(today, today.plusDays(1));
     }
 
@@ -73,13 +73,13 @@ class TeacherLessons {
 
     /** «пн 29.09, 18:30–19:30, Мария — Дроби». */
     String describe(LessonView lesson, Language language) {
-        String text = ChatText.range(lesson.startsAt(), lesson.endsAt(), zone, language) + ", " + who(lesson, language);
+        String text = ChatText.range(lesson.startsAt(), lesson.endsAt(), zone(), language) + ", " + who(lesson, language);
         return lesson.title() == null ? text : text + " — " + lesson.title();
     }
 
     /** «18:30 Мария», for a button. */
     String label(LessonView lesson, Language language) {
-        return ChatText.shortDayTime(lesson.startsAt(), zone, language) + " " + (lesson.groupName() != null
+        return ChatText.shortDayTime(lesson.startsAt(), zone(), language) + " " + (lesson.groupName() != null
                 ? lesson.groupName() : lesson.studentName() != null ? lesson.studentName() : "");
     }
 }

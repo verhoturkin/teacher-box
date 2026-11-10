@@ -2,7 +2,7 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
-import { aiStatus } from '@testing/ai-fixtures';
+import { aiModel, aiProvider, aiSettings, aiStatus } from '@testing/ai-fixtures';
 import { AiApi } from './ai-api';
 import { testProviders } from '@testing/setup';
 
@@ -119,5 +119,62 @@ describe('AiApi', () => {
         .request.body,
     ).toEqual({ text: 'Строго', version: 1 });
     backend.expectOne({ method: 'DELETE', url: '/api/teacher/ai/system-prompts/REVIEW_DRAFT' });
+  });
+
+  it('reaches the connections, their models and the settings', async () => {
+    const input = {
+      kind: 'anthropic' as const,
+      name: null,
+      apiKey: 'k',
+      baseUrl: null,
+      proxy: null,
+    };
+    const model = {
+      modelId: 'x',
+      label: null,
+      effort: null,
+      fallbacks: true,
+      maxTokens: 1,
+      timeoutSeconds: 1,
+    };
+    const calls: [Promise<unknown>, string, string][] = [
+      [firstValueFrom(api.providers()), 'GET', '/api/teacher/ai/providers'],
+      [firstValueFrom(api.checkConnection(input)), 'POST', '/api/teacher/ai/providers/check'],
+      [firstValueFrom(api.createProvider(input)), 'POST', '/api/teacher/ai/providers'],
+      [
+        firstValueFrom(
+          api.updateProvider('p', {
+            name: 'n',
+            apiKey: null,
+            removeKey: false,
+            baseUrl: null,
+            proxy: null,
+            version: 1,
+          }),
+        ),
+        'PUT',
+        '/api/teacher/ai/providers/p',
+      ],
+      [firstValueFrom(api.recheckProvider('p')), 'POST', '/api/teacher/ai/providers/p/check'],
+      [firstValueFrom(api.deleteProvider('p')), 'DELETE', '/api/teacher/ai/providers/p'],
+      [
+        firstValueFrom(api.availableModels('p')),
+        'GET',
+        '/api/teacher/ai/providers/p/models/available',
+      ],
+      [firstValueFrom(api.addModel('p', model)), 'POST', '/api/teacher/ai/providers/p/models'],
+      [
+        firstValueFrom(api.updateModel('p', 'm', { ...model, version: 2 })),
+        'PUT',
+        '/api/teacher/ai/providers/p/models/m',
+      ],
+      [firstValueFrom(api.deleteModel('p', 'm')), 'DELETE', '/api/teacher/ai/providers/p/models/m'],
+      [firstValueFrom(api.settings()), 'GET', '/api/teacher/ai/settings'],
+      [firstValueFrom(api.saveSettings(aiSettings())), 'PUT', '/api/teacher/ai/settings'],
+    ];
+    for (const [, method, url] of calls) {
+      backend.expectOne({ method, url }).flush(url.endsWith('models') ? aiModel() : aiProvider());
+    }
+    await Promise.all(calls.map(([call]) => call));
   });
 });
