@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { aStudent, aTag } from '@testing/identity-fixtures';
 import { hostElement, readableText } from '@testing/dom';
 import { testProviders } from '@testing/setup';
-import { Student } from '../data-access/identity.models';
+import { Student } from '@features/identity/parts';
 import { StudentTagsTab } from './student-tags-tab';
 
 const LEVEL = aTag({

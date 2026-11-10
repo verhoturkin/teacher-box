@@ -4,7 +4,7 @@ import { ledger } from '@testing/billing-fixtures';
 import { buttonByText, hostElement, readableText, requireElement, typeInto } from '@testing/dom';
 import { aStudent } from '@testing/identity-fixtures';
 import { testProviders } from '@testing/setup';
-import { Student } from '../data-access/identity.models';
+import { Student } from '@features/identity/parts';
 import { StudentProfileTab } from './student-profile-tab';
 
 const MARIA = aStudent({

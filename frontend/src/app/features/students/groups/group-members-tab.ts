@@ -21,11 +21,15 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { labelKey } from '@core/theme/label-colors';
 import { Avatar } from '@shared/ui/avatar';
 import { EmptyState } from '@shared/ui/empty-state';
-import { ChipColors } from '../colors/chip-colors';
-import { IdentityApi } from '../data-access/identity-api';
-import { GroupMember, Student, StudentGroup } from '../data-access/identity.models';
+import {
+  ChipColors,
+  GroupMember,
+  IdentityApi,
+  Student,
+  StudentGroup,
+} from '@features/identity/parts';
 import { T } from '../i18n/texts';
-import { STATUS_LABELS, STATUS_SEVERITIES } from '../students/student-status';
+import { STATUS_LABELS, STATUS_SEVERITIES } from '../student-status';
 import { groupInput } from './group-input';
 
 /**

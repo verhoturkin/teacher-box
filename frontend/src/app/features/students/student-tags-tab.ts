@@ -19,9 +19,8 @@ import { quietContext } from '@core/http/api-error.interceptor';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
-import { IdentityApi } from '../data-access/identity-api';
-import { Student, StudentTag } from '../data-access/identity.models';
-import { T } from '../i18n/texts';
+import { IdentityApi, Student, StudentTag } from '@features/identity/parts';
+import { T } from './i18n/texts';
 
 /** Where «Настроить теги» and «Создать теги» lead. */
 export const TAGS_SETTINGS = '/teacher/settings/students';

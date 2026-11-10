@@ -2,7 +2,7 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { aGroup, aStudent } from '@testing/identity-fixtures';
 import { bodyText, buttonByText } from '@testing/dom';
-import { StudentGroup } from '../data-access/identity.models';
+import { StudentGroup } from '@features/identity/parts';
 import { GroupFormDialog } from './group-form-dialog';
 import { testProviders } from '@testing/setup';
 

@@ -1,5 +1,5 @@
-import { AccountStatus, InvitePurpose } from '../data-access/identity.models';
-import { T } from '../i18n/texts';
+import { AccountStatus, InvitePurpose } from '@features/identity/parts';
+import { T } from './i18n/texts';
 
 export type TagSeverity = 'success' | 'warn' | 'secondary';
 

@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
-import { CreatedStudent } from '../data-access/identity.models';
+import { CreatedStudent } from '@features/identity/parts';
 import { StudentFormDialog } from './student-form-dialog';
 import { testProviders } from '@testing/setup';
 

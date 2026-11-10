@@ -12,7 +12,7 @@ facts — [`docs/modules/`](../docs/modules).
 src/app/
 ├── core/          # auth, http (errors, ProblemDetail), layout (shell, nav, mobile.ts), theme, a11y, snackbar, routing, i18n, portal
 ├── shared/        # ui/ (page-header, empty-state, load-state, fold-card, confirmation, field-errors…), dates, money, text, forms
-└── features/<m>/  # mirrors backend modules: data-access/ + teacher/ + student/ + home/ (+ admin, help, settings, home)
+└── features/<m>/  # mirrors backend modules: data-access/ + teacher/ + student/ + home/ (+ admin, help, settings, home, students, account)
 src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests only)
 ```
 
@@ -34,7 +34,7 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
   | business | `billing` | base, `notifications` |
   | business | `homework` | base, `ai`, `boards`, `textbooks` |
   | business | `schedule` | base, `ai`, `boards`, `homework`, `meetings` |
-  | composition | `admin`, `home`, `materials`, `settings` (`gallery` from stage 371) | base, any business feature; `admin` also `settings` |
+  | composition | `account`, `admin`, `home`, `materials`, `settings`, `students` (`gallery` from stage 371) | base, any business feature; `admin` also `settings` |
 
   Nothing imports a composition feature (except `admin` → `settings`). A new feature gets a row; a
   new arrow changes the table in both places and must not close a cycle. A business feature that

@@ -1,6 +1,6 @@
 import { locale } from '@core/i18n/language';
 import type { ScheduledLesson } from '@features/schedule/parts';
-import { Student, StudentGroup } from '../data-access/identity.models';
+import { Student, StudentGroup } from '@features/identity/parts';
 
 /** The chips over the list of students and groups (redesign spec §8). */
 export type RosterFilter = 'all' | 'groups' | 'deactivated';

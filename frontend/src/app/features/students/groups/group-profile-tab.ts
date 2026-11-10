@@ -26,9 +26,7 @@ import { describeError } from '@core/http/error-messages';
 import { LabelColor } from '@core/theme/label-colors';
 import { SHARED_T } from '@shared/i18n/texts';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
-import { LabelColorField } from '../colors/label-color-field';
-import { IdentityApi } from '../data-access/identity-api';
-import { StudentGroup } from '../data-access/identity.models';
+import { IdentityApi, LabelColorField, StudentGroup } from '@features/identity/parts';
 import { T } from '../i18n/texts';
 import { groupInput } from './group-input';
 

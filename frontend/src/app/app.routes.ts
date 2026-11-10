@@ -102,6 +102,10 @@ function adminSectionMatcher(page: string): UrlMatcher {
   };
 }
 
+/** Pages that several areas open: one loader each. */
+const accountPage = () => import('@features/account').then((m) => m.AccountPage);
+const helpPage = () => import('@features/help').then((m) => m.HelpPage);
+
 const N = CORE_T.titles;
 const NAV = CORE_T.nav;
 
@@ -166,7 +170,7 @@ export const routes: Routes = [
       {
         matcher: studentsMatcher,
         title: NAV.students,
-        loadComponent: () => import('@features/identity').then((m) => m.StudentsPage),
+        loadComponent: () => import('@features/students').then((m) => m.StudentsPage),
       },
       // the groups are rows of the students' list (237.2)
       { path: 'groups', redirectTo: 'students' },
@@ -239,13 +243,13 @@ export const routes: Routes = [
         path: 'help',
         title: N.help,
         data: { area: 'teacher' },
-        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+        loadComponent: helpPage,
       },
       {
         path: 'help/:topic',
         title: N.help,
         data: { area: 'teacher' },
-        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+        loadComponent: helpPage,
       },
       // the teacher's «Мой аккаунт» is a category of the settings (234.1)
       { path: 'account', redirectTo: 'settings/account' },
@@ -299,18 +303,18 @@ export const routes: Routes = [
         path: 'help',
         title: N.help,
         data: { area: 'cabinet' },
-        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+        loadComponent: helpPage,
       },
       {
         path: 'help/:topic',
         title: N.help,
         data: { area: 'cabinet' },
-        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+        loadComponent: helpPage,
       },
       {
         path: 'account',
         title: N.account,
-        loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
+        loadComponent: accountPage,
       },
       {
         path: '**',
@@ -360,18 +364,18 @@ export const routes: Routes = [
         path: 'help',
         title: N.help,
         data: { area: 'admin' },
-        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+        loadComponent: helpPage,
       },
       {
         path: 'help/:topic',
         title: N.help,
         data: { area: 'admin' },
-        loadComponent: () => import('@features/help').then((m) => m.HelpPage),
+        loadComponent: helpPage,
       },
       {
         path: 'account',
         title: N.account,
-        loadComponent: () => import('@features/identity').then((m) => m.AccountPage),
+        loadComponent: accountPage,
       },
       {
         path: '**',

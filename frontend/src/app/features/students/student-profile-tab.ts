@@ -28,10 +28,13 @@ import { describeError } from '@core/http/error-messages';
 import { LabelColor } from '@core/theme/label-colors';
 import { SHARED_T } from '@shared/i18n/texts';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
-import { LabelColorField } from '../colors/label-color-field';
-import { IdentityApi } from '../data-access/identity-api';
-import { Student, StudentProfileInput } from '../data-access/identity.models';
-import { T } from '../i18n/texts';
+import {
+  IdentityApi,
+  LabelColorField,
+  Student,
+  StudentProfileInput,
+} from '@features/identity/parts';
+import { T } from './i18n/texts';
 
 /** The profile of a student as the form holds it: empty strings for missing values. */
 interface ProfileValue {

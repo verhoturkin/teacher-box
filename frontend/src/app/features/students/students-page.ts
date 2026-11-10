@@ -43,18 +43,18 @@ import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
 import { SearchField } from '@shared/ui/search-field';
-import { TeacherColors } from '../colors/teacher-colors';
-import { IdentityApi } from '../data-access/identity-api';
 import {
   CreatedStudent,
+  IdentityApi,
   IssuedInvite,
   Student,
   StudentGroup,
   StudentTag,
-} from '../data-access/identity.models';
-import { GroupCard } from '../groups/group-card';
-import { GroupFormDialog } from '../groups/group-form-dialog';
-import { T } from '../i18n/texts';
+  TeacherColors,
+} from '@features/identity/parts';
+import { GroupCard } from './groups/group-card';
+import { GroupFormDialog } from './groups/group-form-dialog';
+import { T } from './i18n/texts';
 import { InviteLinkDialog } from './invite-link-dialog';
 import {
   GroupRow,

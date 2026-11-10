@@ -39,17 +39,10 @@ function featureOf(file) {
 }
 
 /**
- * Feature arrows known when the check was introduced, removed by stages 370.2–370.3 (the same
+ * Feature arrows known when the check was introduced, removed by stage 370.3 (the same
  * list as PENDING_DIRECTIONS in eslint.config.js). Never add to this list.
  */
-const PENDING = new Set([
-  'identity>billing',
-  'identity>homework',
-  'identity>meetings',
-  'identity>notifications',
-  'identity>schedule',
-  'homework>schedule',
-]);
+const PENDING = new Set(['homework>schedule']);
 
 const files = sources(APP);
 const graph = new Map();

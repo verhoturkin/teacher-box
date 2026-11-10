@@ -13,9 +13,7 @@ import { MultiSelect } from 'primeng/multiselect';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { FieldErrors } from '@shared/ui/field-errors';
-import { ChipColors } from '../colors/chip-colors';
-import { IdentityApi } from '../data-access/identity-api';
-import { Student, StudentGroup } from '../data-access/identity.models';
+import { ChipColors, IdentityApi, Student, StudentGroup } from '@features/identity/parts';
 import { T } from '../i18n/texts';
 
 /**

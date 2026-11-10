@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { buttonByText, hostElement, readableText, requireElement, typeInto } from '@testing/dom';
 import { aGroup } from '@testing/identity-fixtures';
 import { testProviders } from '@testing/setup';
-import { StudentGroup } from '../data-access/identity.models';
+import { StudentGroup } from '@features/identity/parts';
 import { GroupProfileTab } from './group-profile-tab';
 
 const OGE = aGroup({

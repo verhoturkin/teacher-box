@@ -27,10 +27,10 @@ import {
 import { injectMobile } from '@core/layout/mobile';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { labelKey } from '@core/theme/label-colors';
-import { Student, StudentGroup } from '../data-access/identity.models';
+import { Student, StudentGroup } from '@features/identity/parts';
 import { T } from '../i18n/texts';
-import { CardHead, HeaderTag } from '../students/card-head';
-import { DEFAULT_TAB, GROUP_TABS, GroupTab, groupTab, showTab } from '../students/card-tabs';
+import { CardHead, HeaderTag } from '../card-head';
+import { DEFAULT_TAB, GROUP_TABS, GroupTab, groupTab, showTab } from '../card-tabs';
 import { GroupMembersTab } from './group-members-tab';
 import { GroupProfileTab } from './group-profile-tab';
 

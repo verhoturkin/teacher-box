@@ -106,7 +106,18 @@ Existing paired selectors are migrated in plan steps 258.2–258.3.
 `features/identity/`: `login/`, `invite/`, `colors/` (0.20.0: `TeacherColors` — the colours of students and groups
 by id, loaded by the teacher area's guard in `app.routes.ts`, used by every teacher list; since 0.27.0 accents are on avatars and group icons, with a ring around photos, while row backgrounds retain portal surface roles; `tbChipColors` — paints the
 chips of a student / group multiselect; `tb-label-color-field` — the colour select of both dialogs),
-`students/` (0.23.0, list-detail: `students-page.ts` — students and groups in one list pane on `tb-panes` with the chips
+`groups/` (`member-picker.ts` and `member-recipients.ts`, above), `tags/`, `account/` («Мой аккаунт»:
+profile hero, password change; the teacher's name; the photo of the teacher or a student, a
+student's own name; `tb-account-panel` takes «Уведомления» of the notifications feature as a
+projected `<ng-template tbAccountNotifications>`, so `identity` imports no business feature —
+[ADR-0058](../adr/0058-frontend-feature-directions.md)). The page of a student and the
+administrator is the composition feature `features/account/`; the teacher's is a category of the
+settings.
+
+`features/students/` — the teacher's «Ученики», a composition feature that assembles the cards from
+the parts of other features (ADR-0058; `identity/students/` and `identity/groups/` before stage
+370), with its own dictionary: the root (0.23.0, list-detail: `students-page.ts` — students and
+groups in one list pane on `tb-panes` with the chips
 All · Groups · Debtors · No messenger · Disabled (`roster.ts`; balances from billing's overview, messengers from the
 notifications list read), routes `/teacher/students/:id` and `/teacher/groups/:id`; `student-card.ts` — header
 (`card-head.ts`, shared with the group) and tabs named by `?tab=` (`card-tabs.ts`): Overview, Lessons, Homework, Payments,
@@ -115,8 +126,6 @@ profile in place, with disable/reactivate access beside password change; the stu
 menu. `student-form-dialog.ts` only creates (name + contact) and opens the card; its text fields and the
 Profile tab's text fields are standard `.tb-field` filled fields (design system §9); invite link),
 `groups/` (`group-card.ts` — Overview, Lessons, Homework, Members, Profile; `group-form-dialog.ts` only creates;
-`group-picker.ts` — `tb-group-picker`, a multiselect of groups next to a students multiselect: a chosen
-group emits its current students (`picked`), a group taken off emits those in no other chosen group (`dropped`), the
-host adds / removes them; `selected` is a model the host clears), `account/` («Мой аккаунт»: profile hero, password change; the teacher's name; the photo of the teacher or a student, a student's own name). Avatars —
+`group-members-tab.ts`, `group-profile-tab.ts`). Avatars —
 `shared/ui/avatar.ts` (`tb-avatar`: photo or initials), photo preparation — `shared/files/square-photo.ts`. Auth state, guards and token refresh —
 `core/auth/`.

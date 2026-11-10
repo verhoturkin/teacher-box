@@ -14,7 +14,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { BroadcastDialog } from '@features/notifications/parts';
 import { LessonDialog } from '@features/schedule/parts';
 import { PaymentDialog, StudentPaymentsTab } from '@features/billing/parts';
-import { Student } from '../data-access/identity.models';
+import { Student } from '@features/identity/parts';
 import { StudentRow } from './roster';
 import { StudentCard, channelNames } from './student-card';
 import { StudentProfileTab } from './student-profile-tab';

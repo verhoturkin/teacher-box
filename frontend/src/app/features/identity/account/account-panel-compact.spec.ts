@@ -1,6 +1,5 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { preferences } from '@testing/notification-fixtures';
 import { buttonByText, hostElement } from '@testing/dom';
 import { phoneScreen, testProviders } from '@testing/setup';
 import { Account } from '../data-access/identity.models';
@@ -31,10 +30,6 @@ describe('AccountPanel on a phone', () => {
     fixture = TestBed.createComponent(AccountPanel);
     await fixture.whenStable();
     backend.expectOne('/api/me').flush(STUDENT);
-    await fixture.whenStable();
-    backend.expectOne('/api/me/channels').flush([]);
-    backend.expectOne('/api/me/push/subscriptions').flush([]);
-    backend.expectOne('/api/me/notifications/preferences').flush(preferences());
     await fixture.whenStable();
   });
 

@@ -5,9 +5,8 @@ import { SegmentGroup, Segment } from '@shared/ui/segment-group';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { FieldErrors } from '@shared/ui/field-errors';
-import { IdentityApi } from '../data-access/identity-api';
-import { CreatedStudent } from '../data-access/identity.models';
-import { T } from '../i18n/texts';
+import { CreatedStudent, IdentityApi } from '@features/identity/parts';
+import { T } from './i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
 /**

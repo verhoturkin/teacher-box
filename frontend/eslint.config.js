@@ -76,11 +76,13 @@ const BUSINESS_FEATURES = {
   schedule: ['ai', 'boards', 'homework', 'meetings'],
 };
 const COMPOSITION_FEATURES = {
+  account: [],
   admin: ['settings'],
   gallery: [],
   home: [],
   materials: [],
   settings: [],
+  students: [],
 };
 
 /**
@@ -88,22 +90,6 @@ const COMPOSITION_FEATURES = {
  * features it still imports. Never add to this list.
  */
 const PENDING_DIRECTIONS = {
-  'identity/account/account-panel.ts': ['notifications'],
-  'identity/groups/group-card.ts': ['homework', 'meetings', 'notifications', 'schedule'],
-  'identity/groups/group-card.spec.ts': ['homework', 'notifications', 'schedule'],
-  'identity/groups/group-profile-tab.ts': ['billing', 'meetings'],
-  'identity/students/roster.ts': ['schedule'],
-  'identity/students/student-card.ts': [
-    'billing',
-    'homework',
-    'meetings',
-    'notifications',
-    'schedule',
-  ],
-  'identity/students/student-card.spec.ts': ['billing', 'notifications', 'schedule'],
-  'identity/students/student-profile-tab.ts': ['billing', 'meetings'],
-  'identity/students/students-page.ts': ['billing', 'notifications', 'schedule'],
-  'identity/students/students-page.spec.ts': ['schedule'],
   'homework/teacher/assignment-editor-page.ts': ['schedule'],
   'homework/teacher/next-lesson.ts': ['schedule'],
 };

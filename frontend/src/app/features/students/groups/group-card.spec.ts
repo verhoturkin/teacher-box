@@ -13,7 +13,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { StudentTasksTab } from '@features/homework/parts';
 import { BroadcastDialog } from '@features/notifications/parts';
 import { LessonDialog, StudentLessonsTab } from '@features/schedule/parts';
-import { StudentGroup } from '../data-access/identity.models';
+import { StudentGroup } from '@features/identity/parts';
 import { GroupCard } from './group-card';
 import { GroupMembersTab } from './group-members-tab';
 import { GroupProfileTab } from './group-profile-tab';
