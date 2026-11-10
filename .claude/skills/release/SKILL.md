@@ -9,7 +9,7 @@ Do it as the last stage of the release section in `docs/PLAN.md`, in one commit
 `chore(release): X.Y.Z` (or as the plan's substeps say).
 
 1. **Help and user docs** (user-facing):
-   - Help articles, every language — `frontend/src/app/features/help/articles/{teacher,student,admin}.{ru,en}.ts`:
+   - Help articles, every language — `frontend/src/app/features/help/articles/{teacher,student,admin}/{ru,en}/<topic>.ts`:
      describe every user-visible change of the release; wording per `docs/glossary.md`.
    - **Wiki** (`docs/wiki/`, Russian) — check that the release's substeps updated every page they change for
      users: install, update, the `teacherbox` command, settings (`TEACHERBOX_*` with defaults), integrations,
@@ -22,8 +22,11 @@ Do it as the last stage of the release section in `docs/PLAN.md`, in one commit
    do not create version-specific specs. Compile check: `./scripts/verify.sh e2e`;
    full run `./scripts/e2e.sh` (needs Docker).
 3. **CHANGELOG.md** (Russian, Keep a Changelog): new `## [X.Y.Z] — YYYY-MM-DD` at the top with «Добавлено» /
-   «Изменено» / «Исправлено». Read only the top entry for the format — not the whole file. SemVer: data or
-   settings incompatibility → MAJOR, features → MINOR, fixes → PATCH.
+   «Изменено» / «Исправлено». Read only the top entry for the format — not the whole file. The file
+   keeps the releases of the current minor series and the previous one; when a release starts a new
+   minor series, move the older entries to `docs/archive/changelog/<year>.md` (by release year,
+   newest first); the link stays at the bottom of `CHANGELOG.md`. SemVer: data or settings
+   incompatibility → MAJOR, features → MINOR, fixes → PATCH.
 4. **Version** — `backend/pom.xml` `<version>`, `frontend/package.json` `version` and the root entries of
    `frontend/package-lock.json` (run `npx -y npm@11 install --package-lock-only` in `frontend/`).
 5. **Plan** — tick the stage; move the whole release section from `docs/PLAN.md` to

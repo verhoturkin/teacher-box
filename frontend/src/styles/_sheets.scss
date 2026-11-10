@@ -1,0 +1,262 @@
+/*
+ * M3 bottom sheet (ADR-0022): a drawer from the bottom of a phone's screen with the details and the
+ * actions of a row; the top corners extra large, the drag handle on top, as high as its content.
+ */
+.p-drawer.tb-sheet {
+  height: auto;
+  max-height: 90dvh;
+  border-start-start-radius: var(--tb-shape-xl);
+  border-start-end-radius: var(--tb-shape-xl);
+  padding-bottom: env(safe-area-inset-bottom);
+
+  &::before {
+    content: '';
+    align-self: center;
+    width: 2rem;
+    height: 4px;
+    margin-top: var(--tb-space-4);
+    border-radius: var(--tb-shape-full);
+    background: var(--p-md-on-surface-variant);
+    opacity: 0.4;
+  }
+
+  .p-drawer-header {
+    padding: var(--tb-space-3) var(--tb-space-6) var(--tb-space-2);
+  }
+
+  .p-drawer-title {
+    font: var(--tb-type-title-l-emphasized);
+  }
+
+  .p-drawer-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tb-space-4);
+    padding: 0 var(--tb-space-6) var(--tb-space-6);
+  }
+}
+
+/*
+ * M3 modal side sheet (the help): detached from the edges of the window with large corners, surface
+ * container low; the header is «←» (when there is a way back), the headline and «×». On a phone it
+ * takes the whole screen.
+ */
+.p-drawer.tb-side-sheet {
+  top: var(--tb-space-4);
+  right: var(--tb-space-4);
+  bottom: var(--tb-space-4);
+  width: min(42rem, calc(100vw - 2 * var(--tb-space-4)));
+  height: auto;
+  border: none;
+  border-radius: var(--tb-shape-lg);
+  background: var(--p-md-surface-container-low);
+  color: var(--p-md-on-surface);
+
+  .p-drawer-header {
+    gap: var(--tb-space-2);
+    padding: var(--tb-space-4) var(--tb-space-3) var(--tb-space-4) var(--tb-space-6);
+  }
+
+  .p-drawer-title {
+    font: var(--tb-type-title-l);
+  }
+
+  .p-drawer-content {
+    padding: 0 var(--tb-space-6) var(--tb-space-6);
+  }
+
+  @media (width < 37.5em) {
+    inset: 0;
+    width: 100vw;
+    border-radius: 0;
+  }
+}
+
+/* Notifications: a transparent compact scrim is a portal decision; the modal dismissal stays active. */
+@media (width < 37.5em) {
+  :root {
+    --tb-notifications-scrim: transparent;
+  }
+}
+
+/* Notifications: compact margins and top sheet corners are portal decisions using M3 shape tokens. */
+.p-drawer.tb-notifications-modal {
+  .p-drawer-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* no side padding: the content's own gutter keeps its scrollbar at the sheet's edge */
+  .p-drawer-content {
+    padding-inline: 0;
+  }
+
+  .p-card > .p-card-body {
+    padding: 0;
+  }
+
+  .p-drawer-header {
+    flex-wrap: nowrap;
+  }
+
+  .tb-notifications-modal__title {
+    flex: 1;
+    min-inline-size: 0;
+    font: var(--tb-type-title-l);
+  }
+
+  @media (width < 37.5em) {
+    top: var(--tb-space-2);
+    border-radius: var(--tb-shape-xl) var(--tb-shape-xl) 0 0;
+    box-shadow: none;
+    overflow: hidden;
+
+    .p-drawer-header {
+      padding-inline: var(--tb-space-4);
+    }
+  }
+}
+
+/* The bell's sheet (redesign spec §10.3): M3 side sheet at most 400 dp */
+.p-drawer.tb-side-sheet--narrow {
+  width: min(25rem, calc(100vw - 2 * var(--tb-space-4)));
+
+  @media (width < 37.5em) {
+    width: 100vw;
+  }
+}
+
+/*
+ * M3 primary tabs (every tab bar: the student's and the group's card, the schedule's side pane, the bell's
+ * sheet): no container, 48 dp high over a 1 dp outline-variant divider under the whole bar; the label in Title
+ * Small, primary when active, on-surface-variant otherwise; the active indicator is 3 dp of primary with 3 dp top
+ * corners under the label (as wide as the label). The tabs share the width of the bar equally and centre their
+ * label (M3 fixed tabs); each label is wrapped in `tb-tab-label`, which carries the indicator. The badge sits 4 dp
+ * after the label.
+ */
+.tb-tabs {
+  display: block;
+
+  .p-tablist {
+    background: transparent;
+  }
+
+  .p-tablist-tab-list {
+    position: relative;
+    border-bottom: 1px solid var(--p-md-outline-variant);
+    background: transparent;
+  }
+
+  .p-tab {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: var(--tb-space-1);
+    box-sizing: border-box;
+    min-height: 3rem;
+    margin: 0;
+    padding: 0 var(--tb-space-4);
+    border: none;
+    background: transparent;
+    color: var(--p-md-on-surface-variant);
+    font: var(--tb-type-title-s);
+    cursor: pointer;
+
+    &:hover {
+      background: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--p-md-secondary);
+      outline-offset: -2px;
+    }
+  }
+
+  /* the tabs keep the width of their label, from the start edge (M3 scrollable tabs, sketches 11, 21); a few
+     short labels share the width (M3 fixed tabs) */
+  &.tb-tabs--fixed .p-tab {
+    flex: 1 1 0;
+  }
+
+  .p-tab-active {
+    color: var(--p-md-primary);
+  }
+
+  /* the indicator is as wide as the label (M3 primary tabs): it is the ::after of the label, at the bottom of the tab,
+     with 3 dp top corners; the bar PrimeNG moves is not shown */
+  .p-tablist-active-bar {
+    display: none;
+  }
+
+  .tb-tab-label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    align-self: stretch;
+    gap: var(--tb-space-1);
+  }
+
+  .p-tab-active .tb-tab-label::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--p-md-primary);
+  }
+
+  .p-tablist-prev-button,
+  .p-tablist-next-button {
+    display: none;
+  }
+
+  .p-tabpanels {
+    padding: var(--tb-space-4) 0 0;
+    background: transparent;
+  }
+
+  .p-tabpanel:focus-visible {
+    outline: 2px solid var(--p-md-secondary);
+    outline-offset: 2px;
+  }
+}
+
+.tb-side-sheet__head {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--tb-space-1);
+  min-width: 0;
+
+  /* «←» stands in the padding: the headline keeps its line */
+  > p-button {
+    margin-inline-start: calc(-1 * var(--tb-space-3));
+  }
+}
+
+/*
+ * M3E modal expanded navigation rail (☰ on compact, shell.ts): on the start edge over a 32 % scrim,
+ * surface container, elevation level 2, 16 dp trailing corners (CornerLarge); 280 px like the expanded
+ * rail (ours, M3: 220–360 dp). The header holds the menu button that closes it, in line with the items.
+ */
+.p-drawer.tb-modal-rail {
+  width: min(280px, calc(100vw - var(--tb-space-16)));
+  height: 100%;
+  border: none;
+  border-radius: 0 var(--tb-shape-lg) var(--tb-shape-lg) 0;
+  background: var(--p-md-surface-container);
+  box-shadow: var(--tb-elevation-2);
+  color: var(--p-md-on-surface);
+
+  .p-drawer-header {
+    min-height: 56px;
+    padding: var(--tb-space-2) var(--tb-space-3) 0 var(--tb-space-4);
+  }
+
+  .p-drawer-content {
+    padding: 0 var(--tb-space-3) var(--tb-space-4);
+  }
+}

@@ -7,7 +7,6 @@ import { AuthService } from '@core/auth/auth.service';
 import { LANGUAGE_KEY, forgetLanguage, pageReload } from '@core/i18n/language';
 import { ThemeMode } from '@core/theme/theme-mode';
 import { authResponse } from '@testing/auth';
-import { preferences } from '@testing/notification-fixtures';
 import {
   aFile,
   buttonByText,
@@ -52,14 +51,6 @@ describe('AccountPanel', () => {
     fixture = TestBed.createComponent(AccountPanel);
     await fixture.whenStable();
     backend.expectOne('/api/me').flush(ACCOUNT);
-    await fixture.whenStable();
-    // «Уведомления» of the teacher (its own spec covers it)
-    backend.expectOne('/api/me/channels').flush([]);
-    backend.expectOne('/api/me/push/subscriptions').flush([]);
-    backend.expectOne('/api/me/notifications/preferences').flush(preferences());
-    backend
-      .expectOne('/api/teacher/notifications/bot')
-      .flush({ teacherActions: true, teacherMenu: [], studentMenu: [] });
     await fixture.whenStable();
   });
 

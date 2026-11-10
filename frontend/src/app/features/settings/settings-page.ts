@@ -18,10 +18,9 @@ import { UnsavedChanges } from '@core/routing/unsaved-changes';
 import { HelpButton } from '@features/help/parts';
 import { AiApi, AiSettingsPanel } from '@features/ai/parts';
 import { Card } from 'primeng/card';
-import { AccountPanel } from '@features/identity';
-import { TagsPanel } from '@features/identity/parts';
+import { AccountNotifications, AccountPanel, TagsPanel } from '@features/identity/parts';
 import { MeetingsSettingsPanel } from '@features/meetings/parts';
-import { MessengersSettingsPanel } from '@features/notifications/parts';
+import { MessengersSettingsPanel, NotificationsSection } from '@features/notifications/parts';
 import { CalendarFeedPanel, GoogleCalendarPanel } from '@features/schedule/parts';
 import { SHARED_T } from '@shared/i18n/texts';
 import { Confirm } from '@shared/ui/confirm';
@@ -64,7 +63,9 @@ import { T } from './i18n/texts';
     Avatar,
     Panes,
     Pane,
+    AccountNotifications,
     AccountPanel,
+    NotificationsSection,
     TagsPanel,
     Card,
     LessonSettings,
@@ -193,7 +194,11 @@ import { T } from './i18n/texts';
       @switch (current().id) {
         @case ('account') {
           <div class="tb-stack">
-            <tb-account-panel />
+            <tb-account-panel>
+              <ng-template tbAccountNotifications let-teacher>
+                <tb-notifications-section [teacher]="teacher" />
+              </ng-template>
+            </tb-account-panel>
           </div>
         }
         @case ('portal') {

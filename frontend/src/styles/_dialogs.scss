@@ -1,0 +1,307 @@
+/*
+ * Snackbar (M3, ADR-0024): at the bottom in the middle, above the bottom navigation on a phone and
+ * above the FAB of a page that has one. Body Medium on the inverse surface and «Закрыть».
+ */
+.p-toast.p-toast-bottom-center {
+  @media (width < 37.5em) {
+    bottom: calc(
+      var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-2)
+    ) !important;
+    width: calc(100vw - 2rem);
+  }
+}
+
+@media (width < 37.5em) {
+  body:has(p-button.tb-page-fab, tb-fab-menu) .p-toast.p-toast-bottom-center {
+    bottom: calc(
+      var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-4) + 3.5rem +
+        var(--tb-space-2)
+    ) !important;
+  }
+}
+
+.tb-snackbar {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-1);
+  min-height: 3rem;
+  padding: 0 var(--tb-space-1) 0 var(--tb-space-4);
+  color: var(--p-md-inverse-on-surface);
+  font: var(--tb-type-body-m);
+}
+
+.tb-snackbar__text {
+  flex: 1;
+  padding-block: var(--tb-space-3);
+  overflow-wrap: break-word;
+}
+
+.tb-snackbar__action {
+  flex: none;
+  min-height: 2.5rem;
+  padding: 0 var(--tb-space-3);
+  border: 0;
+  border-radius: var(--tb-shape-full);
+  background: none;
+  color: var(--p-md-inverse-primary);
+  font: var(--tb-type-label-l);
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in srgb, var(--p-md-inverse-primary) var(--tb-state-hover), transparent);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--p-md-inverse-primary);
+    outline-offset: 2px;
+  }
+}
+
+.tb-snackbar__close {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--tb-shape-full);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(
+      in srgb,
+      var(--p-md-inverse-on-surface) var(--tb-state-hover),
+      transparent
+    );
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--p-md-inverse-primary);
+    outline-offset: 2px;
+  }
+}
+
+/* Dialog buttons that do not fit in one row (e.g. the actions of a lesson) go on to the next one */
+.p-dialog-footer {
+  flex-wrap: wrap;
+}
+
+/*
+ * A dialog is surface-container-high (M3, ADR-0044): what is painted in the colour of the card inside it (the
+ * notch of a field's label) takes the dialog's, and its list tiles the lowest container, so they stand apart
+ * from it in both themes (the highest stays unused, as M3 asks of the surface of a dialog).
+ */
+.p-dialog {
+  --tb-card: var(--p-md-surface-container-high);
+  --tb-list-item: var(--p-md-surface-container-lowest);
+}
+
+/* A confirmation is up to 35 rem wide and never nearer than 1 rem to the edge of the screen. */
+.p-dialog.p-confirmdialog {
+  width: min(35rem, calc(100vw - 2rem));
+}
+
+/*
+ * `<tb-dialog>` (ADR-0050, shared/ui/dialog): the basic dialog is 28 dp corners, 24 dp padding, 16 dp
+ * headline -> body, 24 dp body -> actions, 8 dp between buttons (the preset has the paddings); the width
+ * is a parameter (`normal` 32 rem, `wide` 40 rem, an alert 32 rem at most 35); the compact `form` is the
+ * M3 full-screen dialog: a 56 dp header with the close button first and the filled confirm last; ours:
+ * 28 dp top corners and the 8 px top inset of the notifications sheet.
+ */
+.p-dialog-mask:has(> .tb-d--full) {
+  background: transparent;
+}
+
+/* the rail's width (shell.scss): on :root, so a dialog appended to the body can keep clear of it */
+:root {
+  --tb-rail-width: 96px;
+}
+
+:root:has(.tb-shell--wide) {
+  --tb-rail-width: 280px;
+}
+
+/* a `screen` dialog's content fills its height, so the content can keep its actions at the bottom */
+.p-dialog.tb-d--screen .p-dialog-content,
+.p-dialog.tb-d--screen .tb-d__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+/*
+ * ours, sketch 23: from medium a `screen` dialog (the student's test) is a pane in the frame — where the
+ * panes are, on the window's surface container; the rail and the top strip stay. Full screen on compact.
+ */
+@media (width >= 37.5em) {
+  .p-dialog-mask:has(> .tb-d--screen) {
+    inset: var(--tb-header-height) 0 0 var(--tb-rail-width) !important;
+    width: auto !important;
+    height: auto !important;
+    background: var(--p-md-surface-container) !important;
+  }
+
+  .p-dialog.tb-d.tb-d--full.tb-d--screen {
+    width: calc(100% - var(--tb-space-6)) !important;
+    max-width: none;
+    height: calc(100% - var(--tb-space-6));
+    max-height: none;
+    margin: 0 var(--tb-space-6) var(--tb-space-6) 0;
+    border-radius: var(--tb-shape-xl);
+    /* a pane, as the panes it stands in for */
+    background: var(--p-md-surface);
+    box-shadow: none;
+  }
+}
+
+.p-dialog.tb-d {
+  width: min(32rem, calc(100vw - 2rem));
+  border-radius: var(--tb-shape-xl);
+
+  &.tb-d--wide {
+    width: min(40rem, calc(100vw - 2rem));
+  }
+
+  .p-dialog-header {
+    align-items: center;
+  }
+
+  .tb-d__head {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--tb-space-2);
+    min-width: 0;
+  }
+
+  .tb-d__headline {
+    flex: 1;
+    min-width: 0;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .tb-d__actions {
+    display: inline-flex;
+    gap: var(--tb-space-1);
+  }
+
+  .tb-d__error {
+    width: 100%;
+    margin-block: 0 var(--tb-space-4);
+  }
+
+  &.tb-d--alert .tb-d__error {
+    margin-block: var(--tb-space-4) 0;
+  }
+
+  /* the question inside the footer (a dirty form, a confirmed action) takes the place of the buttons */
+  .p-dialog-footer:has(.tb-d__step) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  &.tb-d--full {
+    width: 100vw !important;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: auto 0 0;
+    border-radius: 0;
+
+    /* ours: rounded top like the notifications sheet, 8 px (+ the notch) below the screen's top */
+    @media (width < 37.5em) {
+      height: calc(100dvh - var(--tb-space-2) - env(safe-area-inset-top));
+      max-height: calc(100dvh - var(--tb-space-2) - env(safe-area-inset-top));
+      border-radius: var(--tb-shape-xl) var(--tb-shape-xl) 0 0;
+      box-shadow: none;
+    }
+
+    .p-dialog-header {
+      min-height: 3.5rem;
+      padding: 0 var(--tb-space-4) 0 var(--tb-space-1);
+
+      /*
+       * ours, under the 28 px corners (inner = outer − padding): the 40 px close button 8 px from the top and the
+       * start, the 34 px confirm button 12 px from the top and the end; 16 px down to the content
+       */
+      @media (width < 37.5em) {
+        padding: var(--tb-space-2) var(--tb-space-3) var(--tb-space-4) var(--tb-space-2);
+      }
+    }
+
+    .tb-d__headline {
+      overflow: hidden;
+      font: var(--tb-type-title-l);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .p-dialog-content {
+      flex: 1;
+      padding-bottom: calc(var(--tb-space-6) + env(safe-area-inset-bottom));
+    }
+
+    .tb-field > *,
+    .p-select,
+    .p-datepicker,
+    .p-inputnumber,
+    .p-multiselect,
+    .p-autocomplete {
+      width: 100%;
+    }
+  }
+}
+
+.p-drawer.tb-d--sheet .tb-d {
+  &__head {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--tb-space-2);
+  }
+
+  &__headline {
+    flex: 1;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &__error {
+    width: 100%;
+    margin-block: 0 var(--tb-space-4);
+  }
+}
+
+.tb-d__step {
+  display: block;
+}
+
+.tb-d__step-message {
+  margin: 0 0 var(--tb-space-6);
+}
+
+.tb-d__step-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--tb-space-2);
+}
+
+.tb-d__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--tb-space-2);
+  padding-top: var(--tb-space-4);
+
+  &:not(:has(button, a)) {
+    display: none;
+  }
+}

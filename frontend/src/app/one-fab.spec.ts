@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { BillingOverviewPage } from '@features/billing';
 import { TeacherHome } from '@features/home';
 import { AssignmentsPage } from '@features/homework';
-import { StudentsPage } from '@features/identity';
+import { StudentsPage } from '@features/students';
 import { MaterialsPage } from '@features/materials';
 import { SchedulePage } from '@features/schedule';
 import { hostElement } from '@testing/dom';

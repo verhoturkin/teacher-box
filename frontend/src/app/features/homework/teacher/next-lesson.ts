@@ -1,4 +1,18 @@
-import type { ScheduledLesson } from '@features/schedule/parts';
+import type { Observable } from 'rxjs';
+
+/** What the hint reads of a lesson: a part of the lesson the schedule returns. */
+export interface UpcomingLesson {
+  readonly startsAt: string;
+  readonly status: string;
+  readonly studentId: string | null;
+  readonly participants: readonly { readonly studentId: string }[];
+}
+
+/**
+ * Reads the lessons that start on days `[from, to)` (`yyyy-MM-dd`). The editor's route gives it
+ * (`app.routes.ts`): the lessons belong to the schedule, which homework does not import (ADR-0058).
+ */
+export type UpcomingLessons = (from: string, to: string) => Observable<readonly UpcomingLesson[]>;
 
 /** How far ahead the editor looks for the next lesson of the chosen students. */
 export const NEXT_LESSON_DAYS = 60;
@@ -8,7 +22,7 @@ export const NEXT_LESSON_DAYS = 60;
  * participant); `null` when none of them has one.
  */
 export function nextLessonStart(
-  lessons: readonly ScheduledLesson[],
+  lessons: readonly UpcomingLesson[],
   studentIds: readonly string[],
   now: Date,
 ): Date | null {

@@ -4,6 +4,7 @@ import {
   Component,
   OnInit,
   computed,
+  contentChild,
   inject,
   signal,
   viewChild,
@@ -30,13 +31,13 @@ import { TbDialog } from '@shared/ui/dialog/dialog';
 import { IdentityApi } from '../data-access/identity-api';
 import { Account } from '../data-access/identity.models';
 import { Role } from '@core/auth/auth.models';
+import { AccountNotifications } from './account-notifications';
 import { ChangePasswordForm } from './change-password-form';
 import { ProfilePhoto } from './profile-photo';
 import { TEACHER_NAME_VALIDATORS, TeacherNameField } from './teacher-name-field';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
-import { NotificationsSection } from '@features/notifications/parts';
 
 const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
 
@@ -48,7 +49,8 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
  * of the teacher and a student next to it. Fields save on change. The teacher renames themselves for
  * the students, a student chooses the name the portal calls them (the teacher keeps seeing the name
  * they gave). The content of «Мой аккаунт»: the page of a student and the administrator, the
- * category of the teacher's settings.
+ * category of the teacher's settings. «Уведомления» belong to another feature: the page projects
+ * them as `<ng-template tbAccountNotifications>`.
  */
 @Component({
   selector: 'tb-account-panel',
@@ -63,7 +65,6 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
     SelectButton,
     TbDialog,
     ChangePasswordForm,
-    NotificationsSection,
     ProfilePhoto,
     TeacherNameField,
     NgTemplateOutlet,
@@ -248,9 +249,7 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
             </button>
           </div>
         }
-        @if (hasPhoto()) {
-          <tb-notifications-section [teacher]="isTeacher()" />
-        }
+        <ng-container *ngTemplateOutlet="notifications(); context: { $implicit: isTeacher() }" />
         <div class="tb-tiles">
           <button type="button" class="tb-tile tb-account__row" (click)="page.set('look')">
             <span class="tb-tile__icon" aria-hidden="true"><i class="tb-i tb-i-contrast"></i></span>
@@ -287,9 +286,7 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
             </div>
           </div>
         }
-        @if (hasPhoto()) {
-          <tb-notifications-section [teacher]="isTeacher()" />
-        }
+        <ng-container *ngTemplateOutlet="notifications(); context: { $implicit: isTeacher() }" />
         <ng-container *ngTemplateOutlet="appearanceCard" />
         <ng-container *ngTemplateOutlet="signInCard" />
       </div>
@@ -300,9 +297,7 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
           <ng-container *ngTemplateOutlet="signInCard" />
           <ng-container *ngTemplateOutlet="appearanceCard" />
         </div>
-        @if (hasPhoto()) {
-          <tb-notifications-section [teacher]="isTeacher()" />
-        }
+        <ng-container *ngTemplateOutlet="notifications(); context: { $implicit: isTeacher() }" />
       </div>
     }
     <tb-dialog
@@ -401,6 +396,11 @@ export class AccountPanel implements OnInit {
   protected readonly isStudent = computed(() => this.account()?.role === 'STUDENT');
   /** A student and the teacher choose a photo and notifications; the administrator has neither. */
   protected readonly hasPhoto = computed(() => this.isStudent() || this.isTeacher());
+  private readonly slot = contentChild(AccountNotifications);
+  /** «Уведомления» the page projected, for the roles that have them. */
+  protected readonly notifications = computed(() =>
+    this.hasPhoto() ? (this.slot()?.template ?? null) : null,
+  );
   protected readonly roleLabel = computed(() => ROLE_LABELS[this.account()?.role ?? 'STUDENT']);
   protected readonly renaming = signal(false);
   /** Compact: the account is a list; the profile and the look open as sub-pages (sketch `StudentPhone`). */

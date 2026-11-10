@@ -44,88 +44,95 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
 
 ### Stage 366 — agent environment and rules (D)
 
-- [ ] 366.1 **D** Cloud sessions. `AGENTS.md` §12 becomes "local" and "cloud": what a cloud
+- [x] 366.1 **D** Cloud sessions. `AGENTS.md` §12 becomes "local" and "cloud": what a cloud
   container lacks (JDK 25, Docker, E2E runs) and what to do instead (run the parts that work, say
   what was not run). Add `scripts/agent-setup.sh` — idempotent: `git config core.hooksPath
   .githooks`, `npx -y npm@11 ci` in `frontend/` and `e2e/` when `node_modules` is missing; name it
   in §12 as the cloud environment's setup script. Fix `.codex/hooks.json`: no absolute
   `D:\Prog\…` path.
-- [ ] 366.2 **D** Fewer prompts and no double runs. `.claude/settings.json`: `permissions.allow`
+- [x] 366.2 **D** Fewer prompts and no double runs. `.claude/settings.json`: `permissions.allow`
   for `./mvnw`, `npm run lint|test|test:only|build`, `./scripts/verify.sh`, read-only `git`.
   `scripts/verify.sh` writes `.verify-logs/<part>.ok` with the hash of the tree after a green part
   (`git write-tree` of the index plus the worktree diff); `.githooks/pre-commit` skips a part whose
   stamp matches the staged tree. A test of the stamp in `verify_installer`-style shell checks.
-- [ ] 366.3 **D** One source for agent configs. `scripts/check-agents.sh` (run by `verify.sh
+- [x] 366.3 **D** One source for agent configs. `scripts/check-agents.sh` (run by `verify.sh
   docs`): `.claude/skills/*` equals `.agents/skills/*`, `.claude/hooks/format.mjs` equals
   `.codex/hooks/format.mjs`, the `docs-sync` agent exists for both.
-- [ ] 366.4 **D** Shorter always-loaded rules. `AGENTS.md`: §10 keeps only what §5, §8 and §9 do
+- [x] 366.4 **D** Shorter always-loaded rules. `AGENTS.md`: §10 keeps only what §5, §8 and §9 do
   not say; the module structure lives in `backend/AGENTS.md` only; §5 lists every `verify.sh`
   target (`docs`, `installer`). `frontend/AGENTS.md`: no file sizes in prose. Target: root file
   at most 14 KB with no rule lost.
 
 ### Stage 367 — smaller files that every interface change touches (F)
 
-- [ ] 367.1 **F** `frontend/src/styles.scss` (5081 lines) becomes an index of `@use` partials in
+- [x] 367.1 **F** `frontend/src/styles.scss` (5081 lines) becomes an index of `@use` partials in
   `frontend/src/styles/` named after the design-system parts (`_tokens`, `_colour`, `_typography`,
   `_frame`, `_buttons`, `_fields`, `_lists`, `_dialogs`, `_states`, …), the cascade order kept.
   Proof: the built CSS of `npm run build` before and after is byte-identical apart from the hash
   in the file name. `docs/design-system.md` «Where it lives» and `core/theme/design-rules.spec.ts`
   follow the new paths.
-- [ ] 367.2 **F** Help articles: `features/help/articles/{teacher,student,admin}.{ru,en}.ts`
+- [x] 367.2 **F** Help articles: `features/help/articles/{teacher,student,admin}.{ru,en}.ts`
   become folders with one file per topic (`articles/teacher/ru/first-steps.ts`, …) and an index
   that keeps `TEACHER_ARTICLES` and the other exports as they are; no source line longer than 200
   characters (long strings split with template literals or array joins, the rendered text
   unchanged — a spec compares every article with its text before the split). `frontend/AGENTS.md`
   and the `release` skill (both copies) name the new paths.
-- [ ] 367.3 **D** `CHANGELOG.md` keeps the releases of the current minor series and the previous
+- [x] 367.3 **D** `CHANGELOG.md` keeps the releases of the current minor series and the previous
   one; older entries move to `docs/archive/changelog/<year>.md`, linked from the bottom. The
   `release` skill (both copies) says where old entries are.
 
 ### Stage 368 — the largest pages (F)
 
-- [ ] 368.1 **F** `features/homework/teacher/assignment-editor-page.ts` (1795 lines): the page
+- [x] 368.1 **F** `features/homework/teacher/assignment-editor-page.ts` (1795 lines): the page
   keeps routing, loading and saving; each section of the form (recipients and dates, materials,
   questions, AI) is a component of its own with its inputs and outputs in
   `features/homework/teacher/editor/`. No behaviour or markup change: the existing specs pass
   unchanged first, then `assignment-editor-page.spec.ts` is split by section.
-- [ ] 368.2 **F** `features/homework/teacher/teacher-pages.spec.ts` (1874 lines) is split into a
+- [x] 368.2 **F** `features/homework/teacher/teacher-pages.spec.ts` (1874 lines) is split into a
   spec per page beside its page; shared setup goes to `@testing/homework-fixtures`.
-- [ ] 368.3 **F** `features/settings/setup/setup-page.ts` (1572 lines): a component per wizard
+- [x] 368.3 **F** `features/settings/setup/setup-page.ts` (1572 lines): a component per wizard
   step in `features/settings/setup/steps/`, the page keeps the step order and the finish; specs
   split the same way.
 
 ### Stage 369 — screen docs describe decisions, not markup
 
-- [ ] 369.1 `docs/screens.md` (85 KB) becomes an index plus `docs/screens/<area>.md` (frame,
+- [x] 369.1 `docs/screens.md` (85 KB) becomes an index plus `docs/screens/<area>.md` (frame,
   notifications, today, schedule, students, homework, payments, materials, settings, cabinet,
   admin, call). Each screen keeps: route and files, what it is assembled from and why, transitions
   and states that are not obvious from the template, the sketch board it follows. Removed: button
   labels, icon names, sizes and colours the template, the dictionaries or `design-system.md`
   already hold, stage numbers and notes on what was removed. Target: at most 35 KB in total.
   `AGENTS.md` §2 and `frontend/AGENTS.md` keep pointing at `docs/screens.md`.
-- [ ] 369.2 `docs/wiki/Features.md` against the Russian help articles: where both explain the same
+- [x] 369.2 `docs/wiki/Features.md` against the Russian help articles: where both explain the same
   action, the wiki keeps the overview and links the in-app help; no duplicated step lists.
 
 ### Stage 370 — frontend feature directions (F, ADR-0058)
 
-- [ ] 370.1 **F** ADR-0058 and the rule. Declare which feature may import which, in one table in
-  `frontend/eslint.config.js` (`featureBoundary`) mirrored in `frontend/AGENTS.md`: base features
-  (`identity`, `help`) import no business feature; business features import base ones and the
-  pairs the backend allows; composition features (`home`, `settings`, `materials`, the new
-  `students`) import any. `frontend/scripts/import-cycles.mjs` also fails on a cycle between
-  features. The rule starts as a list of today's violations that 370.2–370.3 empty.
-- [ ] 370.2 **F** Student and group cards leave `identity`. `features/identity/students/`
-  (`students-page.ts`, `student-card.ts`, `student-profile-tab.ts`, `roster.ts`, `card-*.ts`) and
-  `features/identity/groups/` (`group-card.ts`, `group-profile-tab.ts`, `group-members-tab.ts`)
-  move to a composition feature `features/students/`; `identity` keeps accounts, invites, login,
-  the directory API, pickers and tags. Routes `/teacher/students…` and their lazy chunks stay.
-  `identity/account/account-panel.ts` takes the notifications section through a projected slot or
-  moves with the account page to `settings`.
-- [ ] 370.3 **F** `homework` ↔ `schedule`: `homework/teacher/next-lesson.ts` and
+- [x] 370.1 **F** ADR-0058 and the rule. Declare which feature may import which, in one table in
+  `frontend/eslint.config.js` (`featureDirection`) mirrored in `frontend/AGENTS.md`: base features
+  (`help`, then `identity`) import no business feature; business features import base ones and
+  the pairs listed for them — by screen embedding, which is not the backend table (`billing` →
+  `notifications`, `homework` and `schedule` → `ai`); composition features (`home`, `settings`,
+  `materials`, `admin`, the new `students` and `account`) import any and are imported by none,
+  except `admin` → `settings`. Tests and `import type` count. `frontend/scripts/import-cycles.mjs`
+  also fails on a cycle between features. The rule starts as a list of today's violations
+  (`PENDING_DIRECTIONS`) that 370.2–370.3 empty.
+- [x] 370.2 **F** Student and group cards leave `identity`. `features/identity/students/` and
+  `features/identity/groups/` move whole to a composition feature `features/students/` (the page,
+  the roster, the cards and their tabs, the student, group and invite-link dialogs, with their
+  dictionary keys), except the recipients picker (`member-picker.ts`, `member-recipients.ts`);
+  `identity` keeps accounts, invites, login, the directory API, colours, pickers and tags. Routes
+  `/teacher/students…` and their lazy chunks stay. `identity/account/account-panel.ts` takes the
+  notifications section through a projected slot (`<ng-template tbAccountNotifications>`) and is
+  exported from `identity/parts`; the account page of a student and the administrator moves to a
+  composition feature `features/account/` (not to `settings`: a student would load the teacher's
+  settings chunk), and the settings page fills the slot itself.
+- [x] 370.3 **F** `homework` ↔ `schedule`: `homework/teacher/next-lesson.ts` and
   `schedule/teacher/lesson-summary-section.ts` import each other's parts. Keep one direction
   (`schedule` → `homework`, as the lesson owns its homework summary); the editor's "next lesson"
-  hint takes its data through an input or a small API type owned by `schedule/parts`' data layer
-  that needs no `homework` import. The violation list of 370.1 is empty.
+  hint declares what it reads (`UpcomingLesson`, `UpcomingLessons` in `next-lesson.ts`) and takes
+  it as the input `upcomingLessons`, resolved by the route `homework/new` in `app.routes.ts`,
+  which loads `ScheduleApi` lazily. The violation list of 370.1 is empty and removed.
 
 ### Stage 371 — design gallery (F, ADR-0059)
 

@@ -174,7 +174,8 @@ switch (its first line is the title — `titleOf`: Markdown stripped, at most 20
 a saved assignment loads its title on top when the text does not start with it; empty sections — textbooks, videos,
 questions, board — are hidden behind the assist chips, 340.2); students and groups (`tb-member-picker`: typed explicit selections resolve to a deduplicated snapshot of current available students; removing a group preserves explicit individual choices),
 the due date — the start of the earliest scheduled lesson of the chosen students within 60 days
-(`teacher/next-lesson.ts` over `ScheduleApi.lessons`) until the teacher sets it; textbooks and files only for a new
+(`teacher/next-lesson.ts` over the lessons the route gives as the input `upcomingLessons` —
+`homework` does not import `schedule`, ADR-0058) until the teacher sets it; textbooks and files only for a new
 assignment (0.14.2: a saved one changes them on its page); picked files — `ui/file-picker.ts`, the same `tb-list` cards
 as the saved ones, the name of a PDF or a picture opens it in a tab (0.14.5)
 (`BindTextbookDialog` without an assignment emits `picked`, checked by `parsePages`). A new assignment is created

@@ -1,0 +1,208 @@
+@use 'mixins' as *;
+
+/*
+ * Cells break between words; only codes and wide cells may break inside a word (ADR-0021).
+ */
+.p-datatable .p-datatable-tbody > tr > td,
+.p-datatable .p-datatable-tbody > tr > td :is(.tb-list__title, .tb-list__supporting) {
+  overflow-wrap: break-word;
+}
+
+/* only codes, addresses and wide cells (a path, an error) may break inside a word */
+.p-datatable .p-datatable-tbody > tr > td:is(.tb-cell-wide, .tb-mono) {
+  overflow-wrap: anywhere;
+}
+
+/*
+ * Tables with the class tb-cards keep their columns on a computer, but their rows are the tiles of a
+ * segmented list (ADR-0020): no lines between cells, rows 2 px apart, the first and the last cell
+ * round the tile.
+ */
+.p-datatable.tb-cards {
+  .p-datatable-table {
+    border-spacing: 0 2px;
+  }
+
+  .p-datatable-thead > tr > th {
+    border: 0;
+  }
+
+  .p-datatable-tbody > tr {
+    background: transparent;
+  }
+
+  /* a row is at least 56 px high (ADR-0020) */
+  .p-datatable-tbody > tr > td {
+    height: 3.5rem;
+    border: 0;
+    background: var(--tb-list-item);
+    transition: background var(--tb-spring-fast-effects);
+  }
+
+  .p-datatable-tbody > tr > td:first-child {
+    border-start-start-radius: var(--tb-list-inner);
+    border-end-start-radius: var(--tb-list-inner);
+  }
+
+  .p-datatable-tbody > tr > td:last-child {
+    border-start-end-radius: var(--tb-list-inner);
+    border-end-end-radius: var(--tb-list-inner);
+  }
+
+  .p-datatable-tbody > tr:first-child > td:first-child {
+    border-start-start-radius: var(--tb-list-outer);
+  }
+
+  .p-datatable-tbody > tr:first-child > td:last-child {
+    border-start-end-radius: var(--tb-list-outer);
+  }
+
+  .p-datatable-tbody > tr:last-child > td:first-child {
+    border-end-start-radius: var(--tb-list-outer);
+  }
+
+  .p-datatable-tbody > tr:last-child > td:last-child {
+    border-end-end-radius: var(--tb-list-outer);
+  }
+
+  .p-datatable-hoverable .p-datatable-tbody > tr:not(.p-datatable-row-selected):hover > td {
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface) var(--tb-state-hover),
+      var(--tb-list-item)
+    );
+  }
+
+  .p-datatable-tbody > tr.p-datatable-row-selected > td {
+    background: var(--p-md-secondary-container);
+    color: var(--p-md-on-secondary-container);
+  }
+
+  /* the empty message is not a tile */
+  .p-datatable-tbody > tr > td[colspan] {
+    background: none;
+  }
+}
+
+/*
+ * Tables with the class tb-cards become cards on phones (ADR-0015): every row is a card, every cell
+ * a line "column: value" (the label comes from data-label), the first cell is the title and the
+ * action buttons are at the bottom of the card.
+ */
+@media (width < 37.5em) {
+  /* Search fills the width of the toolbar */
+  .tb-toolbar > tb-search-field {
+    width: 100%;
+  }
+
+  /* Cards of a page take 16 px at the sides (M3 compact), so their titles line up with the lists' */
+  :where(.tb-stack) .p-card > .p-card-body {
+    padding-inline: var(--tb-space-4);
+  }
+
+  /*
+   * The card around a list keeps its frame; the tiles lie on it with less room (ADR-0020). A card with a
+   * search keeps that room when nothing is found too: its search does not move
+   */
+  .p-card:has(.p-datatable.tb-cards),
+  .p-card:has(.tb-list),
+  .p-card:has(tb-search-field) {
+    > .p-card-body {
+      padding-inline: var(--tb-space-3);
+    }
+  }
+
+  .p-datatable.tb-cards {
+    @include row-cards;
+  }
+}
+
+/* Tables on medium and expanded: narrower cell padding leaves room for the columns next to the rail */
+@media (37.5em <= width < 75em) {
+  .p-datatable .p-datatable-thead > tr > th,
+  .p-datatable .p-datatable-tbody > tr > td {
+    padding-inline: var(--tb-space-2);
+  }
+}
+
+/* A tooltip of several lines (e.g. the login and the note of a student): one line per fact */
+.tb-tooltip-lines .p-tooltip-text {
+  white-space: pre-line;
+}
+
+/* The week on a phone: the title fits in one line */
+.tb-calendar-title {
+  font: var(--tb-type-title-m);
+}
+
+/*
+ * The main action of a page header (class tb-page-fab) becomes the M3 extended FAB on a phone: the
+ * same button with its icon and label, fixed above the bottom navigation (ADR-0017, ADR-0018).
+ */
+@media (width < 37.5em) {
+  p-button.tb-page-fab {
+    position: fixed;
+    right: var(--tb-space-4);
+    bottom: calc(var(--tb-bottom-nav-height) + env(safe-area-inset-bottom) + var(--tb-space-4));
+    z-index: 900;
+
+    .p-button {
+      height: 3.5rem;
+      padding-inline: var(--tb-space-4) var(--tb-space-5);
+      gap: var(--tb-space-3);
+      border-color: var(--p-md-primary-container);
+      border-radius: var(--tb-shape-lg);
+      background: var(--p-md-primary-container);
+      color: var(--p-md-on-primary-container);
+      box-shadow: var(--tb-elevation-3);
+      animation: tb-fab-in var(--tb-spring-default-spatial) both;
+      /* M3E: the FAB moves on spatial springs (the corner morphs and the button shrinks while pressed), its colour on effects */
+      transition:
+        border-radius var(--tb-spring-fast-spatial),
+        transform var(--tb-spring-fast-spatial),
+        box-shadow var(--tb-spring-fast-effects),
+        background var(--tb-spring-fast-effects);
+
+      &:not(:disabled):active {
+        border-radius: var(--tb-shape-md);
+        transform: scale(0.96);
+      }
+
+      &:not(:disabled):hover {
+        border-color: var(--p-md-primary-container);
+        background: color-mix(
+          in srgb,
+          var(--p-md-on-primary-container) var(--tb-state-hover),
+          var(--p-md-primary-container)
+        );
+        color: var(--p-md-on-primary-container);
+      }
+
+      &:not(:disabled):active {
+        border-color: var(--p-md-primary-container);
+        background: color-mix(
+          in srgb,
+          var(--p-md-on-primary-container) var(--tb-state-pressed),
+          var(--p-md-primary-container)
+        );
+        color: var(--p-md-on-primary-container);
+      }
+
+      .p-button-icon {
+        font-size: 1.25rem;
+      }
+    }
+  }
+
+  @keyframes tb-fab-in {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+  }
+
+  /* The page keeps room at its end for the FAB (or the FAB menu of the home page) */
+  main.tb-shell__content--nav:has(.tb-page-fab, tb-fab-menu) {
+    padding-bottom: calc(10rem + env(safe-area-inset-bottom));
+  }
+}

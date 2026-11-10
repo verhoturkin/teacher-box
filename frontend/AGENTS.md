@@ -2,8 +2,8 @@
 
 Loaded when working under `frontend/`. The root [`AGENTS.md`](../AGENTS.md) still applies. **UI rules —
 [`docs/design-system.md`](../docs/design-system.md)** (read the relevant section before touching templates or
-styles: `grep -n '^##' docs/design-system.md` for the outline, then Read with `offset`/`limit` — the file is
-~50 KB, never read it whole); UI wording — [`docs/glossary.md`](../docs/glossary.md) (grep the term). Module
+styles: `grep -n '^##' docs/design-system.md` for the outline, then Read with `offset`/`limit` — never
+read it whole); UI wording — [`docs/glossary.md`](../docs/glossary.md) (grep the term). Module
 facts — [`docs/modules/`](../docs/modules).
 
 ## Structure
@@ -12,7 +12,7 @@ facts — [`docs/modules/`](../docs/modules).
 src/app/
 ├── core/          # auth, http (errors, ProblemDetail), layout (shell, nav, mobile.ts), theme, a11y, snackbar, routing, i18n, portal
 ├── shared/        # ui/ (page-header, empty-state, load-state, fold-card, confirmation, field-errors…), dates, money, text, forms
-└── features/<m>/  # mirrors backend modules: data-access/ + teacher/ + student/ + home/ (+ admin, help, settings, home)
+└── features/<m>/  # mirrors backend modules: data-access/ + teacher/ + student/ + home/ (+ admin, help, settings, home, students, account)
 src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests only)
 ```
 
@@ -21,6 +21,25 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
   (`index.ts`: pages for lazy routes) or `@features/<name>/parts` (`parts.ts`: widgets, panels, API, types —
   no pages, so they don't leak into other bundles). Shared code only from `core/` and `shared/`. Home widgets
   live in their features; `features/home` only assembles them.
+- **Feature directions** ([ADR-0058](../docs/adr/0058-frontend-feature-directions.md)): a feature
+  imports only the features of its row — the table in `eslint.config.js`, mirrored here. Tests and
+  `import type` count. `scripts/import-cycles.mjs` also fails on a cycle between features.
+
+  | Layer | Feature | May import |
+  |---|---|---|
+  | base | `help` | — |
+  | base | `identity` | `help` |
+  | business | `ai`, `boards`, `meetings`, `notifications` | base |
+  | business | `textbooks` | base, `boards` |
+  | business | `billing` | base, `notifications` |
+  | business | `homework` | base, `ai`, `boards`, `textbooks` |
+  | business | `schedule` | base, `ai`, `boards`, `homework`, `meetings` |
+  | composition | `account`, `admin`, `home`, `materials`, `settings`, `students` (`gallery` from stage 371) | base, any business feature; `admin` also `settings` |
+
+  Nothing imports a composition feature (except `admin` → `settings`). A new feature gets a row; a
+  new arrow changes the table in both places and must not close a cycle. A business feature that
+  needs data of a feature above it declares an input, and the route (`app.routes.ts`) or a
+  composition feature passes the data.
 - Lazy routes: `/teacher/**`, `/cabinet/**` (student), `/admin/**`, `/login`, `/invite/:token`.
 - HTTP models — `interface`/`type` in `features/<m>/data-access/*.models.ts`, 1:1 with backend DTOs.
 - Status → label/severity maps — `features/<m>/*-labels.ts`.
@@ -30,8 +49,8 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
   from the same intent, using natural Russian and British English. `Translation<typeof ru>` shares
   keys and parameter types, not wording or sentence structure. Review English copy on its own and
   keep action labels consistent with English help and server messages (`docs/glossary.md`).
-- User help — `features/help/articles/{teacher,student,admin}.{ru,en}.ts`; a UI change updates its article in every
-  language.
+- User help — `features/help/articles/{teacher,student,admin}/{ru,en}/<topic>.ts`; a UI change
+  updates its article in every language.
 
 ## Conventions
 
