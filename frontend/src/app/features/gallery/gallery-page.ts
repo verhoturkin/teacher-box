@@ -13,6 +13,7 @@ import { PageHeader } from '@shared/ui/page-header';
 import { SectionNav, SectionNavItem } from '@shared/ui/section-nav';
 import { Segment, SegmentGroup } from '@shared/ui/segment-group';
 import { GALLERY_SECTIONS } from './gallery-sections';
+import { MotionPlayback } from './motion-playback';
 
 type Theme = 'light' | 'dark';
 
@@ -30,6 +31,7 @@ export const SAMPLE_ROOT = 'frontend/src/app/features/gallery/';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: { class: 'tb-gallery' },
+  providers: [MotionPlayback],
   template: `
     <tb-page-header title="Design gallery">
       <span meta>Real components and tokens of docs/design-system.md; one sample = one file.</span>

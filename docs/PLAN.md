@@ -145,7 +145,7 @@ Styles of the gallery live in its components, not in `styles.scss`.
 - [x] 371.2 **F** Components: buttons (variants, sizes, FAB, segmented), fields (text, select,
   stepper, chips, errors), lists, tables and cards, dialogs, sheets and menus, states
   (`tb-load-state`, empty, snackbar, confirmation). Every `shared/ui/*` component has a sample.
-- [ ] 371.3 **F** Motion. A sample per `--tb-spring-*` token: the token name, the property it is
+- [x] 371.3 **F** Motion. A sample per `--tb-spring-*` token: the token name, the property it is
   for (spatial / effects), a "Replay" button and a "Reduce motion" switch; the page transitions
   and the dialog, sheet and menu openings of §11.
 - [ ] 371.4 **F** Checks and docs. A Vitest spec renders every sample; E2E `e2e/tests/layout/`

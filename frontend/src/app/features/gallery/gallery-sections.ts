@@ -40,6 +40,11 @@ import { LoadStateSample } from './states/load-state';
 import { EmptyStateSample } from './states/empty-state';
 import { FeedbackSample } from './states/feedback';
 import { ProgressSample } from './states/progress';
+import { SpatialSpringsSample } from './motion/spatial';
+import { EffectsSpringsSample } from './motion/effects';
+import { OverlayMotionSample } from './motion/overlays';
+import { PaneMotionSample } from './motion/panes';
+import { SheetMotionSample } from './motion/sheets';
 
 /** One sample: its file under `features/gallery/`, a short title and the component that renders it. */
 export interface GallerySample {
@@ -206,6 +211,23 @@ export const GALLERY_SECTIONS: readonly GallerySection[] = [
         component: FeedbackSample,
       },
       { path: 'states/progress.ts', title: 'Progress and busy actions', component: ProgressSample },
+    ],
+  },
+  {
+    id: 'motion',
+    part: '§1, §11',
+    title: 'Motion',
+    icon: 'tb-i-bolt',
+    samples: [
+      { path: 'motion/spatial.ts', title: 'Spatial springs', component: SpatialSpringsSample },
+      { path: 'motion/effects.ts', title: 'Effects springs', component: EffectsSpringsSample },
+      {
+        path: 'motion/overlays.ts',
+        title: 'Dialogs, menus, snackbar',
+        component: OverlayMotionSample,
+      },
+      { path: 'motion/sheets.ts', title: 'Side and bottom sheets', component: SheetMotionSample },
+      { path: 'motion/panes.ts', title: 'Panes of a page', component: PaneMotionSample },
     ],
   },
 ];
