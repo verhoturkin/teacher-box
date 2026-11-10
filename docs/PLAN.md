@@ -412,10 +412,24 @@ default, so «Далее» on each step is a valid setup. Expanded widths use th
   `SetupProgress.priceSet` removed); AI state comes from `AiApi.enabled$`
   (`/api/teacher/ai/status`), fetched by the queue itself, so no new chunk and the steps stay
   hidden until it answers; finished steps are filtered out as before._
-- [ ] **365.3** Help `teacher/setup` and `teacher/first-steps` in Russian and English, wiki
+- [x] **365.3** Help `teacher/setup` and `teacher/first-steps` in Russian and English, wiki
   `docs/wiki/Install.md` («первый вход»), `docs/screens.md` (wizard), E2E
   `e2e/tests/setup/first-run.spec.ts` (fresh instance: all steps with defaults, then Settings show
   the chosen values).
+  _Done: help `teacher/setup` describes the new steps (Пароль → Вы и портал → Время и оплата →
+  Правила → Готово, «Назад» / «Далее» / «Пропустить»); `first-steps` follows the home queue
+  (student → messenger → AI → first lesson, price no longer a step); wiki `Install` has a
+  «Первый вход» section. `docs/screens.md` already described the wizard and the queue (365.1,
+  365.2), unchanged. `setup/first-run.spec.ts` resets the instance through the API, takes every
+  step with «Далее», then checks the Settings zone and price; the global setup marks the setup
+  done, so the file runs in the `operations` project (`testMatch` of `setup/`, ignored by
+  `chromium`). Ran by hand without Docker: JDK 25 (Oracle tarball, the Temurin host is refused),
+  `spring-boot:run` on a fresh data dir with the e2e variables, `ng serve` on :4200 as the base
+  URL, ai-mock on :8110. `setup/first-run` passed; `reset-and-restore`: 3 of 4 passed (the wizard
+  part that 365.1 rewrote works); the restore test fails only because nothing restarts the
+  backend outside Docker, so after a manual restart the student was back. Home «С чего начать»
+  checked at 1440 and 390 px: without AI four steps («Сделано 0 из 4»), with the mock provider
+  connected the AI step is gone («Сделано 1 из 4»); no price step._
 
 ## Backlog
 

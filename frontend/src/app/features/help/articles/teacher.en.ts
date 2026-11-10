@@ -9,14 +9,16 @@ export const TEACHER_ARTICLES: Readonly<Record<TeacherTopic, HelpArticleText>> =
     body: `
 Teacher Box brings your students, schedule, assignments, payments and notifications together.
 
-The first time you sign in, [initial setup](/teacher/help/setup) takes you through your password, name, portal address and lesson price.
+The first time you sign in, [initial setup](/teacher/help/setup) takes you through your password, name, portal name and address, time zone, currency, lesson price and lesson rules.
 
 ## Your first four steps
 
 1. **Add a student.** Choose “Create” → “Student”, or “Students” → “Add student” on a phone. Send the invitation link by email or through a messaging app. The student uses it to choose a username and password.
-2. **Check the price.** Open the student’s “Profile” tab and set “Lesson price”. This determines how much is charged for their lessons.
-3. **Schedule a lesson.** Choose “Create” → “Lesson”. Set “Repeat” to once or every one to four weeks.
-4. **Connect a messaging app.** Open “Settings” → “Notifications and messengers” → “Connect”. The wizard helps you create a bot for Telegram, VK or MAX so you can receive reminders and student requests.
+2. **Connect a messaging app.** Open “Settings” → “Notifications and messengers” → “Connect”. The wizard helps you create a bot for Telegram, VK or MAX so you can receive reminders and student requests.
+3. **Connect the AI assistant** if you want it. It drafts assignments, quizzes and feedback, and you always edit the result. You need a key from an AI provider: “Settings” → “AI”.
+4. **Schedule a lesson.** Choose “Create” → “Lesson”. Set “Repeat” to once or every one to four weeks.
+
+You already chose the default lesson price during setup. To give one student a different price, open their “Profile” tab.
 
 The “Getting started” checklist under “To do” on your home page tracks these steps and hides completed ones.
 
@@ -36,15 +38,17 @@ Next: [Students and invitations](/teacher/help/students), [Schedule and requests
   },
   setup: {
     title: 'Initial setup',
-    summary: 'Choose your password, portal details and default lesson price',
+    summary: 'The first-sign-in wizard: your details, time and payment, lesson rules',
     body: `
-Initial setup opens the first time you sign in. Apart from replacing a generated password, you can skip the steps and return to them later in Settings.
+Initial setup opens the first time you sign in. Every step already has a sensible default, so you can simply select “Next” each time. You can change everything later in Settings.
 
-1. **Password:** replace the initial password if the portal generated it. That password was written to the server log, so you must choose your own.
-2. **About you:** enter the name students will see and a name for your portal. The portal name appears in navigation, browser tabs, the sign-in page and the calendar.
-3. **Address:** enter the public URL students will use, such as https://school.example.com. Invitations, bot links and calendar subscriptions use this address. “Use current address” copies the address you are using now.
-4. **Lessons:** set the default price for new students and groups. Individual prices can be changed later.
-5. **Finish:** review optional connections, including messaging apps, video meetings and Google Calendar.
+1. **Password:** this step appears only if the portal generated your first password, which was written to the server log. Choose your own; this step cannot be skipped.
+2. **You and your portal:** enter the name students will see, and a photo if you like. The portal name appears in navigation, browser tabs, the sign-in page and the calendar. The portal address is the one students use to open it, such as https://school.example.com. Invitations, bot links and calendar subscriptions start with it. The portal fills in the address you are using now, and “Check” tells you whether it can be reached.
+3. **Time and payment:** the time zone sets your schedule and monthly reports, and the portal suggests the one on your device. Then choose a currency, the usual lesson length and the default price for new students and groups. Individual prices can be changed later.
+4. **Rules:** late cancellation, lesson reminders, the reminder before an assignment is due, and how many weeks of a repeating lesson appear ahead. An example next to each rule shows what it does.
+5. **Done:** the portal suggests what to do next: add a student, connect a messaging app, the AI assistant or Google Calendar. “Go to the portal” opens your home page.
+
+“Back” returns to the previous step. “Next” saves the step. “Skip” leaves the step’s values as they were and moves on. If a step cannot be saved, it stays open.
 
 ## Address warnings
 
@@ -52,7 +56,14 @@ Initial setup opens the first time you sign in. Apart from replacing a generated
 - A home or office network address works only within that network. Students need an address they can reach over the internet.
 - An HTTP address sends passwords without encryption. Ask the server administrator to enable HTTPS.
 
-To change details later, use “Settings” → “Portal” for the name, logo and colours, “My account” for your name and photo, and “Settings” → “Lessons” for the default lesson price. Contact the portal administrator to change the public address.
+## Changing things later
+
+- Name, logo and colours: “Settings” → “Portal”.
+- Time zone, currency, price, lesson length and rules: “Settings” → “Lessons”.
+- Your name and photo: “My account”.
+- The public address: ask the portal administrator.
+
+Messaging apps, the AI assistant and Google Calendar are not part of the wizard. Connect them in Settings, or from “Getting started” on your home page.
 `,
   },
   students: {
