@@ -13,7 +13,10 @@ we deviate; a deviation says so («*ours, against M3*»). Unmarked rules are pro
 
 **Where it lives:** preset `core/theme/teacher-box-preset.ts`, colour scheme
 `core/theme/color-scheme.ts`, tokens and shared classes `src/styles.scss`, components `shared/ui/*`,
-breakpoints `core/layout/mobile.ts`. No other UI kits (Angular Material, Material Web); no
+breakpoints `core/layout/mobile.ts`. **Gallery** (ADR-0059): `npm start`, then `/gallery` — every
+part below links its section; a sample is one file `features/gallery/<section>/<sample>.ts` built
+from these components and tokens, with the class, component or token named beside it. Take a
+sample from there; this page keeps the rules. No other UI kits (Angular Material, Material Web); no
 primeicons. Minimum browsers: Chrome 119, Safari 17.2, Firefox 128 (`linear()`, `:has()`,
 `color-mix()`); older ones get no springs.
 
@@ -21,28 +24,34 @@ primeicons. Minimum browsers: Chrome 119, Safari 17.2, Firefox 128 (`linear()`, 
 `core/theme/` and `boards/`, `size="small"` buttons, outlined ones not written as
 `variant="outlined"`, and when the icon font and the
 used icon classes disagree. E2E runs axe on the main screens and checks button rules (§13).
+The gallery's specs render every sample and fail when a `shared/ui` component or directive has
+none.
 
 ## Part A — Foundations
 
 ## 1. Tokens
 
+Gallery: [`/gallery/tokens`](../frontend/src/app/features/gallery/tokens/) — shape, spacing,
+elevation with their values; springs —
+[`/gallery/motion`](../frontend/src/app/features/gallery/motion/).
+
 - **Spacing** — 4 px grid, `--tb-space-N` = N × 4 px. Component styles take spacing only from
   tokens; preset tokens reference `--tb-*`; no literal values in component styles.
 - **Shape** — radii only from this scale:
 
-  | Token | px | Use |
-  |---|---|---|
-  | `--tb-shape-xs` | 4 | tooltips, inner corners of split buttons and list tiles, field top corners |
-  | `--tb-shape-sm` | 8 | pressed button (**M3E** CornerSmall), chips, tags, inner corners of connected groups |
-  | `--tb-shape-md` | 12 | selected toggle, menu items |
-  | `--tb-shape-lg` | 16 | FAB, menus and dropdowns, outer corners of a list right on the page |
-  | `--tb-shape-lg-plus` | 20 | cards |
-  | `--tb-shape-xl` | 28 | dialogs, top of the bottom sheet, panes |
-  | `--tb-shape-xl-plus` | 32 | login and invite card |
-  | `--tb-shape-2xl` | 48 | loading indicator |
-  | `--tb-shape-full` | — | buttons, search fields, navigation indicator |
+  | Token | Use |
+  |---|---|
+  | `--tb-shape-xs` | tooltips, inner corners of split buttons and list tiles, field top corners |
+  | `--tb-shape-sm` | pressed button (**M3E** CornerSmall), chips, tags, inner corners of connected groups |
+  | `--tb-shape-md` | selected toggle, menu items |
+  | `--tb-shape-lg` | FAB, menus and dropdowns, outer corners of a list right on the page |
+  | `--tb-shape-lg-plus` | cards |
+  | `--tb-shape-xl` | dialogs, top of the bottom sheet, panes |
+  | `--tb-shape-xl-plus` | login and invite card |
+  | `--tb-shape-2xl` | loading indicator |
+  | `--tb-shape-full` | buttons, search fields, navigation indicator |
 
-  `--tb-shape-button` (20 px) is half a 40 px button.
+  `--tb-shape-button` is half a 40 px button.
 - **Nested corners** (**M3** optical roundness, ADR-0044): a child inside a padded container takes
   `inner = outer − padding`, never below `--tb-shape-xs`, written as `max(xs, calc(outer −
   padding))` beside the padding. Segmented lists and tile tables are the exception (stage 354,
@@ -80,6 +89,9 @@ used icon classes disagree. E2E runs axe on the main screens and checks button r
   96 / 280 px.
 
 ## 2. Colour
+
+Gallery: [`/gallery/colour`](../frontend/src/app/features/gallery/colour/) — every role in both
+themes, severities, the colours of students.
 
 - **Only roles `--p-md-*`** in styles. Never `--p-surface-N`, `--p-<colour>-N` palettes, Aura tokens
   (`--p-primary-color`, `--p-text-*`, `--p-content-*`, `--p-highlight-*`) or opacity for dimming:
@@ -164,12 +176,15 @@ used icon classes disagree. E2E runs axe on the main screens and checks button r
 
 ## 3. Typography
 
+Gallery: [`/gallery/typography`](../frontend/src/app/features/gallery/typography/) — every role
+with its value and tracking, Markdown.
+
 - Google Sans variable (400–700), bundled from `@fontsource-variable/google-sans` (no CDN);
   monospace `var(--tb-font-mono)`.
 - Roles with the shorthand `font: var(--tb-type-<role>)` plus
   `letter-spacing: var(--tb-tracking-<role>)` (display, headline and title large have none; an
   emphasized role takes its baseline's tracking). Page text is Body Large. The scale has Display S
-  (36/44) and Headline L (32/40) besides the roles below.
+  and Headline L besides the roles below.
 - Page title — Headline Medium emphasized (phone: Headline Small emphasized); card and pane section
   title — Title Large emphasized (on a pane Title Medium emphasized, §7); dialog title — Headline
   Small emphasized; subtitles — Title Medium; field labels, buttons, menu items, options — Label
@@ -183,6 +198,8 @@ used icon classes disagree. E2E runs axe on the main screens and checks button r
 - Dates, plurals and numbers — glossary (`CountPipe`, non-breaking space between number and unit).
 
 ## 4. Icons
+
+Gallery: [`/gallery/icons`](../frontend/src/app/features/gallery/icons/).
 
 Material Symbols Rounded (ADR-0046), weight 400, outlined (`'FILL' 0`); filled (`tb-i--filled`) only
 for the active navigation item and checked states.
@@ -359,6 +376,8 @@ for the active navigation item and checked states.
 
 ## 7. Panes and page anatomy
 
+Gallery: [`/gallery/frame`](../frontend/src/app/features/gallery/frame/).
+
 - **Panes** (`shared/ui/panes.ts`, **M3** canonical layouts): `tb-panes` holds `tb-pane`s of kind
   `fixed` (360 dp on expanded, 412 dp from large — **M3**), `flexible` (the rest, at least one) or
   `sheet` (standard side sheet ≤ 400 dp, surface-container-low — **M3**). A pane is a `surface`
@@ -437,6 +456,8 @@ for the active navigation item and checked states.
 
 ## 8. Buttons
 
+Gallery: [`/gallery/buttons`](../frontend/src/app/features/gallery/buttons/).
+
 Variant = **weight**, colour = **one accent** (ADR-0045): filled is primary (the portal colour),
 tonal is neutral secondary, red only destroys; green and amber are statuses, never buttons.
 40 px pill (icon button 40×40, 48 px target), Label Large, 16 px sides, 20 px icon (**M3E** small);
@@ -513,6 +534,9 @@ action — «Изменить» next to «Проверить N работ» (hom
 
 ## 9. Fields
 
+Gallery: [`/gallery/fields`](../frontend/src/app/features/gallery/fields/) (chips:
+`fields/chips.ts`).
+
 - **M3 filled text field, 56 px, is the only field style** (ADR-0050) for every control of a
   `.tb-field`: native `input` / `textarea` (`pInputText`, `pTextarea`), `p-select`, `p-multiselect`,
   `p-datepicker`, `p-inputnumber`, `p-password`, `p-autocomplete`, `tb-member-picker`. The rules are
@@ -573,6 +597,8 @@ action — «Изменить» next to «Проверить N работ» (hom
   group choice never becomes a broadcast to everyone.
 
 ## 10. Lists, tables, chips, cards
+
+Gallery: [`/gallery/lists`](../frontend/src/app/features/gallery/lists/).
 
 - **Every list of data in a card, pane or dialog is a segmented list** `ul.tb-list` (CSS subgrid:
   lead, text and trail columns shared by all rows, so buttons line up): tiles `--tb-list-item`, 2 px
@@ -665,6 +691,9 @@ action — «Изменить» next to «Проверить N работ» (hom
 
 ## 11. Dialogs, sheets, menus
 
+Gallery: [`/gallery/dialogs`](../frontend/src/app/features/gallery/dialogs/); their motion —
+[`/gallery/motion`](../frontend/src/app/features/gallery/motion/).
+
 **One dialog model** (ADR-0050). The author picks the **kind** by content; the window width only
 changes the container; content and markup are the same at every width. Every dialog goes through
 `<tb-dialog>` (`shared/ui/dialog`); no feature sets `p-dialog` attributes, widths or phone rules.
@@ -756,6 +785,8 @@ changes the container; content and markup are the same at every width. Every dia
   not clip them.
 
 ## 12. States and feedback
+
+Gallery: [`/gallery/states`](../frontend/src/app/features/gallery/states/).
 
 - **Loading states:** every section that loads data has three states via `LoadState`
   (`shared/ui/load-state.ts`, `track()`) and `tb-load-state`:

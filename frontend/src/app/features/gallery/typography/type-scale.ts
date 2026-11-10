@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { TokenValue } from '../token-value';
 
 /** A role and its tracking (display, headline and title large have none). */
 const ROLES = [
@@ -19,6 +20,7 @@ const ROLES = [
 /** §3 Type scale: `font: var(--tb-type-<role>)` with `letter-spacing: var(--tb-tracking-<role>)`. */
 @Component({
   selector: 'tb-gallery-type-scale',
+  imports: [TokenValue],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ul class="tb-gallery-cell type">
@@ -34,6 +36,7 @@ const ROLES = [
             Lesson at 14:00
           </p>
           <code class="tb-gallery-name">font: var(--tb-type-{{ item.role }})</code>
+          <span class="tb-gallery-name"> — {{ '--tb-type-' + item.role | tbTokenValue }}</span>
           @if (item.tracking) {
             <code class="tb-gallery-name"
               >; letter-spacing: var(--tb-tracking-{{ item.tracking }})</code

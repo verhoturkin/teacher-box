@@ -148,7 +148,7 @@ Styles of the gallery live in its components, not in `styles.scss`.
 - [x] 371.3 **F** Motion. A sample per `--tb-spring-*` token: the token name, the property it is
   for (spatial / effects), a "Replay" button and a "Reduce motion" switch; the page transitions
   and the dialog, sheet and menu openings of §11.
-- [ ] 371.4 **F** Checks and docs. A Vitest spec renders every sample; E2E `e2e/tests/layout/`
+- [x] 371.4 **F** Checks and docs. A Vitest spec renders every sample; E2E `e2e/tests/layout/`
   runs axe on the gallery — screenshots of it are not compared yet (fonts differ between
   machines; decide after a CI trial). `docs/design-system.md`: each part links its gallery
   section and loses the values the gallery shows; rules and the M3 / *ours* marks stay.

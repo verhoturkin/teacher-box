@@ -207,6 +207,8 @@ Tests are written with (or before) the code. Never lower gates or lint rules to 
 - [ ] New env vars in `.env.example`, `SettingsCatalog`, wiki user docs.
 - [ ] User-visible change → `docs/wiki/` pages updated (§6.1), help articles in every language.
 - [ ] Interface change → made with the `m3-expressive` skill (§6.3).
+- [ ] New shared component or variant → its sample in `frontend/src/app/features/gallery/` in the
+  same commit (ADR-0059).
 - [ ] Architecture change → ADR; changed behaviour → `docs/modules/<m>.md` /
   `docs/design-system.md` / `docs/screens.md` updated.
 - [ ] Checkbox in `docs/PLAN.md` ticked.
