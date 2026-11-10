@@ -85,15 +85,6 @@ const COMPOSITION_FEATURES = {
   students: [],
 };
 
-/**
- * Violations known when the rule was introduced, emptied by stages 370.2–370.3: a file → the extra
- * features it still imports. Never add to this list.
- */
-const PENDING_DIRECTIONS = {
-  'homework/teacher/assignment-editor-page.ts': ['schedule'],
-  'homework/teacher/next-lesson.ts': ['schedule'],
-};
-
 /** The features `feature` may import, by the table above. */
 function allowedFeatures(feature) {
   const base = Object.keys(BASE_FEATURES);
@@ -107,9 +98,9 @@ function allowedFeatures(feature) {
   );
 }
 
-/** Forbids every feature that `feature` may not import; `extra` — pending violations of one file. */
-function featureDirection(feature, extra = []) {
-  const allowed = [feature, ...allowedFeatures(feature), ...extra];
+/** Forbids every feature that `feature` may not import. */
+function featureDirection(feature) {
+  const allowed = [feature, ...allowedFeatures(feature)];
   return {
     regex: `^@features/(?!(?:${allowed.join('|')})(?:/|$))`,
     message: `Feature "${feature}" may import only: ${allowedFeatures(feature).join(', ') || 'no other feature'} (ADR-0058, frontend/AGENTS.md).`,
@@ -117,22 +108,14 @@ function featureDirection(feature, extra = []) {
 }
 
 /** Both feature rules of a file of `feature`. */
-function featureRules(feature, extra) {
-  return [featureBoundary(feature), featureDirection(feature, extra)];
+function featureRules(feature) {
+  return [featureBoundary(feature), featureDirection(feature)];
 }
 
-const featureBoundaries = [
-  ...features.map((feature) => ({
-    files: [`src/app/features/${feature}/**/*.ts`],
-    rules: { 'no-restricted-imports': restrictImports(...featureRules(feature)) },
-  })),
-  ...Object.entries(PENDING_DIRECTIONS).map(([file, extra]) => ({
-    files: [`src/app/features/${file}`],
-    rules: {
-      'no-restricted-imports': restrictImports(...featureRules(file.split('/')[0], extra)),
-    },
-  })),
-];
+const featureBoundaries = features.map((feature) => ({
+  files: [`src/app/features/${feature}/**/*.ts`],
+  rules: { 'no-restricted-imports': restrictImports(...featureRules(feature)) },
+}));
 
 module.exports = defineConfig([
   { ignores: ['dist/', 'coverage/', '.angular/', 'node_modules/'] },

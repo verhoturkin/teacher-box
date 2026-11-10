@@ -273,6 +273,15 @@ describe('app routes', { timeout: 20_000 }, () => {
     backend.expectOne('/api/teacher/homework/assignments/a-1');
     expect(title()).toBe('Задания — Teacher Box');
 
+    // a new assignment reads the lessons ahead through its route (ADR-0058)
+    await harness.navigateByUrl('/teacher/homework/new');
+    expect(title()).toBe('Новое задание — Teacher Box');
+    await vi.waitFor(() => {
+      const [lessons] = backend.match((r) => r.url === '/api/teacher/schedule/lessons');
+      expect(lessons?.request.params.has('from')).toBe(true);
+    });
+    backend.match(() => true);
+
     auth.acceptSession(authResponse('STUDENT'));
     await harness.navigateByUrl('/cabinet/homework');
     backend.expectOne('/api/me/homework');

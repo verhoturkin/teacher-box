@@ -38,12 +38,6 @@ function featureOf(file) {
   return area === 'features' ? feature : null;
 }
 
-/**
- * Feature arrows known when the check was introduced, removed by stage 370.3 (the same
- * list as PENDING_DIRECTIONS in eslint.config.js). Never add to this list.
- */
-const PENDING = new Set(['homework>schedule']);
-
 const files = sources(APP);
 const graph = new Map();
 const featureGraph = new Map();
@@ -59,9 +53,7 @@ for (const file of files) {
   featureGraph.set(feature, targets);
   for (const { target } of imports) {
     const other = featureOf(target);
-    if (other !== null && other !== feature && !PENDING.has(`${feature}>${other}`)) {
-      targets.add(other);
-    }
+    if (other !== null && other !== feature) targets.add(other);
   }
 }
 

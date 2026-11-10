@@ -1,4 +1,5 @@
 import { Snackbar } from '@core/snackbar/snackbar';
+import { HttpClient } from '@angular/common/http';
 import { HttpTestingController, TestRequest } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Location } from '@angular/common';
@@ -15,6 +16,7 @@ import { aBoard } from '@testing/boards-fixtures';
 import { ToBoardDialog } from '@features/boards/parts';
 import { AssignMoreDialog } from './assign-more-dialog';
 import { AssignmentEditorPage } from './assignment-editor-page';
+import { UpcomingLesson } from './next-lesson';
 import { questionDraft } from './question-drafts';
 import { videoDraft } from './video-section';
 
@@ -73,6 +75,16 @@ describe('AssignmentEditorPage', () => {
     vi.restoreAllMocks();
   });
 
+  /** The editor with the lessons its route gives it: here they come straight from the schedule's address. */
+  function createEditor(): ComponentFixture<AssignmentEditorPage> {
+    const http = TestBed.inject(HttpClient);
+    const editor = TestBed.createComponent(AssignmentEditorPage);
+    editor.componentRef.setInput('upcomingLessons', (from: string, to: string) =>
+      http.get<UpcomingLesson[]>('/api/teacher/schedule/lessons', { params: { from, to } }),
+    );
+    return editor;
+  }
+
   function flushStatus(enabled: boolean): void {
     for (const request of backend.match('/api/teacher/ai/status')) {
       request.flush(aiStatus({ enabled }));
@@ -86,7 +98,7 @@ describe('AssignmentEditorPage', () => {
   }
 
   async function create(lessons = [scheduledLesson()], ai = false) {
-    fixture = TestBed.createComponent(AssignmentEditorPage);
+    fixture = createEditor();
     await fixture.whenStable();
     backend.expectOne('/api/teacher/students').flush(STUDENTS);
     backend.expectOne((request) => request.url === '/api/teacher/schedule/lessons').flush(lessons);
@@ -97,7 +109,7 @@ describe('AssignmentEditorPage', () => {
   }
 
   async function edit(details = assignmentDetails()) {
-    fixture = TestBed.createComponent(AssignmentEditorPage);
+    fixture = createEditor();
     fixture.componentRef.setInput('assignmentId', details.id);
     await fixture.whenStable();
     backend.expectOne(`/api/teacher/homework/assignments/${details.id}`).flush(details);
@@ -348,7 +360,7 @@ describe('AssignmentEditorPage', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({ providers: testProviders(screenWidth(500)) });
     backend = TestBed.inject(HttpTestingController);
-    fixture = TestBed.createComponent(AssignmentEditorPage);
+    fixture = createEditor();
     fixture.componentRef.setInput('tab', 'settings');
     await fixture.whenStable();
     backend.expectOne('/api/teacher/students').flush(STUDENTS);
@@ -394,8 +406,21 @@ describe('AssignmentEditorPage', () => {
     expect(page.canLeave()).toBe(true);
   });
 
-  it('works without the schedule', async () => {
+  it('has no «к следующему занятию» when the route gives no lessons', async () => {
     fixture = TestBed.createComponent(AssignmentEditorPage);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/students').flush(STUDENTS);
+    backend.expectNone((request) => request.url === '/api/teacher/schedule/lessons');
+    flushStatus(false);
+    flushGroups();
+    fixture.componentInstance.form.patchValue({ members: [{ kind: 'STUDENT', id: 's-1' }] });
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).not.toContain('К следующему занятию');
+  });
+
+  it('works without the schedule', async () => {
+    fixture = createEditor();
     await fixture.whenStable();
     backend.expectOne('/api/teacher/students').flush(STUDENTS);
     backend
@@ -1081,7 +1106,7 @@ describe('AssignmentEditorPage', () => {
   });
 
   it('shows a failed load with «Повторить»', async () => {
-    fixture = TestBed.createComponent(AssignmentEditorPage);
+    fixture = createEditor();
     fixture.componentRef.setInput('assignmentId', 'a-1');
     await fixture.whenStable();
     flushStatus(false);

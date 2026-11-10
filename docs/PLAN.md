@@ -127,11 +127,12 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
   exported from `identity/parts`; the account page of a student and the administrator moves to a
   composition feature `features/account/` (not to `settings`: a student would load the teacher's
   settings chunk), and the settings page fills the slot itself.
-- [ ] 370.3 **F** `homework` ↔ `schedule`: `homework/teacher/next-lesson.ts` and
+- [x] 370.3 **F** `homework` ↔ `schedule`: `homework/teacher/next-lesson.ts` and
   `schedule/teacher/lesson-summary-section.ts` import each other's parts. Keep one direction
   (`schedule` → `homework`, as the lesson owns its homework summary); the editor's "next lesson"
-  hint takes its data through an input or a small API type owned by `schedule/parts`' data layer
-  that needs no `homework` import. The violation list of 370.1 is empty.
+  hint declares what it reads (`UpcomingLesson`, `UpcomingLessons` in `next-lesson.ts`) and takes
+  it as the input `upcomingLessons`, resolved by the route `homework/new` in `app.routes.ts`,
+  which loads `ScheduleApi` lazily. The violation list of 370.1 is empty and removed.
 
 ### Stage 371 — design gallery (F, ADR-0059)
 
