@@ -88,7 +88,7 @@ Only in [`backend/AGENTS.md`](backend/AGENTS.md).
    | `meetings`, `boards`, `textbooks` | `shared`, `identity::api` |
 
    Business modules never depend on `platform`; `platform` knows no business module (it collects SPI
-beans).
+   beans).
 3. **Data:** own schema per module (`platform` too), own Flyway migrations in
    `db/migration/<module>/` and history table. **Forbidden:** SQL to another schema, cross-schema
    FKs and JOINs (`SchemaIsolationTests`); only UUIDs cross module boundaries.
@@ -152,7 +152,7 @@ the whole tree) and the pre-commit hook skips a part with a matching stamp, so r
   GitHub wiki by hand.
 - No secrets in the repo. Settings only via `TEACHERBOX_*` env vars; each new one → `.env.example`,
   `platform.settings.SettingsCatalog` ([ADR-0016](docs/adr/0016-admin-settings.md)), wiki (skill
-`new-setting`).
+  `new-setting`).
 - Time in UTC (`Instant`); teacher time zone — `shared.time.InstanceTimeZone`, read per call.
   Money — `long` minor units + instance currency, never `double`.
 - An architecture change → a new ADR (row in `docs/adr/README.md`) and an update of the spec it
@@ -235,14 +235,14 @@ What §5 (commands), §8 (commits) and §9 (done) do not already say:
 - Windows 11, PowerShell 5.1 (no `&&` — use `;` and `if ($?)`); Git Bash for `*.sh`.
 - JDK 25, Maven 3.9 (use `mvnw`), Node 22, npm 10 (install with `npx -y npm@11 ci|install` —
   ADR-0007), Docker (daemon may be down — check `docker info`).
-- Files: UTF-8 without BOM, LF.
+- Files: UTF-8 no BOM, LF.
 
 **Cloud** (Linux container; setup script `scripts/agent-setup.sh` — hooks path, `npm ci` in
 `frontend/`, `e2e/`):
 
 - No JDK 25, no Docker daemon, no E2E runs. Run what works (`./scripts/verify.sh frontend|docs|e2e`,
   shellcheck when available); say in the reply and the PR what was not run and why; never claim an
-unrun check green. Backend is verified by CI on the pull request; never weaken a check to get green.
+  unrun check green. Backend is verified by CI on the pull request; never weaken a check to get green.
 
 ## 13. Up-to-date knowledge
 
