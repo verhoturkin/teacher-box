@@ -164,18 +164,7 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
     /** The list of models ({@code GET /models}): no tokens are spent. */
     @Override
     public String ping(Language language) {
-        JsonNode response;
-        try {
-            response = http.get().uri("/models").retrieve().body(JsonNode.class);
-        } catch (RestClientResponseException e) {
-            throw new LlmException(LlmException.Reason.UNAVAILABLE,
-                    "Provider " + e.getStatusCode().value() + ": " + describe(e));
-        } catch (RestClientException e) {
-            throw new LlmException(LlmException.Reason.UNAVAILABLE, "Provider: " + e.getMessage());
-        }
-        List<String> ids = response == null ? List.of() : response.path("data").valueStream()
-                .map(entry -> entry.path("id").asString(""))
-                .toList();
+        List<String> ids = list(false).stream().map(Listed::id).toList();
         boolean listed = ids.stream().anyMatch(id -> id.equals(model) || id.endsWith("/" + model));
         return switch (language) {
             case RU -> listed ? "Модель " + model + " доступна"
@@ -183,6 +172,38 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
             case EN -> listed ? "Model " + model + " is available"
                     : "The provider is responding, but " + model + " is not in its list of " + ids.size() + " available models.";
         };
+    }
+
+    /** {@code GET /models}; a server without that endpoint (404) keeps no list. */
+    @Override
+    public List<Listed> models() {
+        return list(true);
+    }
+
+    private List<Listed> list(boolean missingIsEmpty) {
+        JsonNode response;
+        try {
+            response = http.get().uri("/models").retrieve().body(JsonNode.class);
+        } catch (RestClientResponseException e) {
+            if (missingIsEmpty && e.getStatusCode().value() == 404) {
+                return List.of();
+            }
+            throw new LlmException(LlmException.Reason.UNAVAILABLE,
+                    "Provider " + e.getStatusCode().value() + ": " + describe(e));
+        } catch (RestClientException e) {
+            throw new LlmException(LlmException.Reason.UNAVAILABLE, "Provider: " + e.getMessage());
+        }
+        if (response == null) {
+            return List.of();
+        }
+        return response.path("data").valueStream()
+                .map(entry -> new Listed(entry.path("id").asString(""), blankToNull(entry.path("name").asString(""))))
+                .filter(listed -> !listed.id().isBlank())
+                .toList();
+    }
+
+    private static @Nullable String blankToNull(String value) {
+        return value.isBlank() ? null : value;
     }
 
     private Map<String, Object> body(LlmRequest request) {

@@ -1,5 +1,7 @@
 package ru.teacherbox.ai.application;
 
+import java.util.List;
+import org.jspecify.annotations.Nullable;
 import ru.teacherbox.shared.i18n.Language;
 
 /**
@@ -29,4 +31,21 @@ public interface LlmClient {
      * @throws LlmException if the provider is unreachable or rejects the request
      */
     String ping(Language language);
+
+    /**
+     * The models the provider offers, without spending tokens (the teacher picks them, ADR-0057).
+     *
+     * @return empty when the provider's API keeps no list: the teacher types the model id
+     * @throws LlmException if the provider is unreachable or rejects the key
+     */
+    List<Listed> models();
+
+    /**
+     * A model the provider offers.
+     *
+     * @param id   what a request names, e.g. {@code claude-opus-5}
+     * @param name the provider's display name; {@code null} when it gives none
+     */
+    record Listed(String id, @Nullable String name) {
+    }
 }

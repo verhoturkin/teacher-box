@@ -1,5 +1,6 @@
 package ru.teacherbox.ai.application;
 
+import java.time.Duration;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +44,9 @@ public class LlmClients implements DisposableBean {
     }
 
     private static final Logger log = LoggerFactory.getLogger(LlmClients.class);
+    private static final UUID PROBE_ID = new UUID(0, 0);
+    private static final String PROBE_MODEL = "probe";
+    private static final Duration PROBE_TIMEOUT = Duration.ofSeconds(30);
 
     private final ProviderRepository providers;
     private final Map<ProviderKind, LlmAdapter> adapters = new EnumMap<>(ProviderKind.class);
@@ -67,9 +72,28 @@ public class LlmClients implements DisposableBean {
                         .map(provider -> new ModelClient(provider, model, client(provider, model))));
     }
 
+    /**
+     * Calls a client of the provider as it is given — saved or not — that is kept nowhere and closed after the
+     * call: the check of a connection and its list of models (ADR-0057).
+     */
+    public <T> T probe(AiProvider provider, Function<LlmClient, T> call) {
+        String modelId = Objects.requireNonNullElse(provider.kind().defaultModel(), PROBE_MODEL);
+        AiModel model = new AiModel(PROBE_ID, provider.id(), modelId, AiModel.labelOf(modelId), null, true,
+                AiModel.DEFAULT_MAX_TOKENS, PROBE_TIMEOUT, 0, 0);
+        LlmClient client = build(provider, model, proxySetting(provider));
+        try {
+            return call.apply(client);
+        } finally {
+            close(client);
+        }
+    }
+
+    private String proxySetting(AiProvider provider) {
+        return Objects.requireNonNullElse(provider.proxy() != null ? provider.proxy() : properties.get().proxy(), "");
+    }
+
     private LlmClient client(AiProvider provider, AiModel model) {
-        String proxySetting = Objects.requireNonNullElse(
-                provider.proxy() != null ? provider.proxy() : properties.get().proxy(), "");
+        String proxySetting = proxySetting(provider);
         ProviderClients clients = cache.compute(provider.id(), (id, kept) ->
                 kept != null && kept.version() == provider.version() && kept.proxy().equals(proxySetting) ? kept
                         : drop(kept, provider.version(), proxySetting));
@@ -111,16 +135,18 @@ public class LlmClients implements DisposableBean {
 
     @Override
     public void destroy() {
-        cache.values().forEach(clients -> clients.models().values().forEach(built -> {
-            if (built.client() instanceof AutoCloseable closeable) {
-                try {
-                    closeable.close();
-                } catch (Exception e) {
-                    log.debug("An AI client did not close", e);
-                }
-            }
-        }));
+        cache.values().forEach(clients -> clients.models().values().forEach(built -> close(built.client())));
         cache.clear();
+    }
+
+    private static void close(LlmClient client) {
+        if (client instanceof AutoCloseable closeable) {
+            try {
+                closeable.close();
+            } catch (Exception e) {
+                log.debug("An AI client did not close", e);
+            }
+        }
     }
 
     /** A provider that cannot be called as it is configured: every call fails with the reason. */
@@ -143,6 +169,11 @@ public class LlmClients implements DisposableBean {
 
         @Override
         public String ping(Language language) {
+            throw new LlmException(LlmException.Reason.UNAVAILABLE, reason);
+        }
+
+        @Override
+        public List<Listed> models() {
             throw new LlmException(LlmException.Reason.UNAVAILABLE, reason);
         }
     }

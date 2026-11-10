@@ -232,6 +232,41 @@ class AnthropicLlmClientTest {
     }
 
     @Test
+    void listsEveryPageOfTheModelsApi() {
+        AtomicReference<Integer> status = new AtomicReference<>(200);
+        server.createContext("/v1/models", exchange -> {
+            boolean second = String.valueOf(exchange.getRequestURI().getQuery()).contains("after_id=claude-opus-5");
+            byte[] body = (status.get() != 200
+                    ? """
+                    {"type": "error", "error": {"type": "authentication_error", "message": "invalid x-api-key"}}
+                    """
+                    : second ? """
+                    {"data": [{"type": "model", "id": "claude-haiku-5", "display_name": "Claude Haiku 5",
+                     "created_at": "2026-01-01T00:00:00Z"}], "has_more": false, "first_id": "claude-haiku-5",
+                     "last_id": "claude-haiku-5"}
+                    """
+                    : """
+                    {"data": [{"type": "model", "id": "claude-opus-5", "display_name": "Claude Opus 5",
+                     "created_at": "2026-01-01T00:00:00Z"}], "has_more": true, "first_id": "claude-opus-5",
+                     "last_id": "claude-opus-5"}
+                    """).getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(status.get(), body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+
+        try (AnthropicLlmClient client = client(null, false)) {
+            assertThat(client.models()).containsExactly(new LlmClient.Listed("claude-opus-5", "Claude Opus 5"),
+                    new LlmClient.Listed("claude-haiku-5", "Claude Haiku 5"));
+
+            status.set(401);
+            assertThatThrownBy(client::models).isInstanceOfSatisfying(LlmException.class,
+                    e -> assertThat(e.getMessage()).contains("401"));
+        }
+    }
+
+    @Test
     void pingReportsNetworkErrors() throws IOException {
         int closedPort;
         try (ServerSocket socket = new ServerSocket(0)) {
@@ -241,6 +276,7 @@ class AnthropicLlmClientTest {
                 .apiKey("test-key").baseUrl("http://127.0.0.1:" + closedPort).maxRetries(0).build(),
                 "claude-opus-5", null, false, 16000)) {
             assertThatThrownBy(() -> client.ping(Language.RU)).isInstanceOf(LlmException.class);
+            assertThatThrownBy(client::models).isInstanceOf(LlmException.class);
         }
     }
 

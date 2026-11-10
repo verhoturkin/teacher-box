@@ -17,6 +17,17 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
   or the model's version or the proxy in force changes. A provider that cannot be called (no key, no
   address, a bad proxy) gets a client whose calls fail with the reason. The existing endpoints use
   the default model until 364.3.
+- Connections over REST (`application.AiProviders`, since 364.2): a new connection needs what its
+  kind needs (a key — `ai.provider.key-required`; an OpenAI-compatible address —
+  `ai.provider.address-required`; a usable proxy), its name defaults to the kind's. The key is
+  write-only: views carry `keySet` and `keyEnding` (last 4 characters, only for keys of 12+);
+  `PUT` keeps the key unless a new one or `removeKey` comes; the kind never changes. A check asks
+  the provider for its models (`LlmClient.models()`, no tokens; a probe client from
+  `LlmClients.probe`, kept nowhere and closed) when a connection is saved or on request; the last
+  result (`UNCHECKED` / `OK` / `FAILED` + the provider's message) is kept in memory for the
+  provider's version. A connection holding the default model is not deleted
+  (`ai.provider.holds-default`, 409); a model id is unique in its connection (`ai.model.duplicate`);
+  the first model added while there is no default one becomes the default.
 - SPI `LlmAdapter` per `ProviderKind` builds the clients: `anthropic/` (official Java SDK,
   structured outputs, server-side fallbacks per model), `openai/` (OpenAI-compatible
   `/chat/completions` on `RestClient`, JSON Schema in `response_format`; the provider's base URL is
@@ -108,8 +119,14 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 
 `requests`, `prompts`, `system_prompts`, `providers`, `models`, `settings` (all in the full reset).
 `/api/teacher/ai/**` (status, usage, requests, homework-draft, quiz-draft, review-draft,
-lesson-summary, `prompts` CRUD, `system-prompts` list / `PUT` / `DELETE` by feature),
-`/api/admin/ai/**` (status, usage, requests — metadata).
+lesson-summary, `prompts` CRUD, `system-prompts` list / `PUT` / `DELETE` by feature, `providers` —
+list, `POST /providers/check` (an unsaved connection: state and its models), `POST` (saved and
+checked, 201), `PUT /{id}`, `POST /{id}/check`, `DELETE /{id}`; `/providers/{id}/models` — `POST`,
+`PUT /{modelId}` (with `version`), `DELETE /{modelId}`, `PUT /order` (every model once), `GET
+/available` (the provider's list with `added`; empty when it keeps none; 422
+`ai.provider.unavailable`); `GET` / `PUT settings` — default model (`null` — AI off) and monthly
+limit, versioned), `/api/admin/ai/**` (status, usage, requests — metadata; `providers` — kind,
+`keySet`, check state, number of models; no keys, names, addresses or proxies).
 
 ## Frontend
 

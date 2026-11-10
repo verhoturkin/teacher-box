@@ -52,6 +52,16 @@ public final class FakeProvider implements LlmAdapter, Ordered, InitializingBean
         install();
     }
 
+    /** Removes every provider and model but the fake ones and stores those as the default again. */
+    public void reset() {
+        providers.providers().stream().filter(provider -> !provider.id().equals(PROVIDER))
+                .forEach(provider -> providers.deleteProvider(provider.id()));
+        providers.findProvider(PROVIDER).ifPresent(fake -> providers.models(PROVIDER).stream()
+                .filter(model -> !model.id().equals(MODEL))
+                .forEach(model -> providers.deleteModel(model.id())));
+        install();
+    }
+
     /** Stores the fake provider as the default one unless it is there. */
     public void install() {
         if (providers.findModel(MODEL).isEmpty()) {

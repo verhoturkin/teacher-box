@@ -262,12 +262,23 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   (variables read once until 364.4), `Update`, `Proxy`, `Admin`; E2E `settings-and-restart` (the AI
   proxy saves without a restart) and `diagnostics` (new «no connection» text) updated, not run
   here. The admin integrations page's «not set up» text no longer names the variable._
-- [ ] **364.2 B** REST `/api/teacher/ai/providers` (list, create with a check request, `PUT`,
+- [x] **364.2 B** REST `/api/teacher/ai/providers` (list, create with a check request, `PUT`,
   `DELETE` — refused while it holds the default model) and `/models` under a provider (add, change,
   remove, reorder, `GET …/available` — the provider's own model list where its API has one, else
   empty and the teacher types the id); `PUT /api/teacher/ai/settings` (default model, limit). The
   key is write-only: views say «задан» and the last 4 characters. Controller tests first: the
   teacher only; the administrator sees providers' kinds and states, never keys.
+  _Done: `application.AiProviders` + `web.TeacherAiProvidersController`; `GET
+  /api/admin/ai/providers` (kind, `keySet`, state, number of models — no keys, names, addresses or
+  proxies). The check is `POST /providers/check` for an unsaved connection and `POST
+  /providers/{id}/check`; creating and changing a connection check it too, and a failed check does
+  not stop the save (state `FAILED` with the provider's message, kept in memory per provider
+  version, `UNCHECKED` after a restart). The list of models is the new `LlmClient.models()` (Models
+  API for Anthropic, `GET /models` otherwise, 404 → empty) through a probe client
+  `LlmClients.probe`. `keyEnding` is shown only for keys of 12+ characters; `removeKey` clears a key
+  where the kind allows none. Added `GET /api/teacher/ai/settings`; the first model added with no
+  default becomes the default. Providers keep their creation order (no provider reorder endpoint —
+  not asked for)._
 - [ ] **364.3 B** Per-request model: `modelId` (optional) in the `homework-draft`, `quiz-draft`,
   `review-draft`, lesson summary requests (`AiViews`, `AiAssistant`); none — the default; an unknown
   or removed model → 409 with the default named. Usage (`AiUsage`) totals per model for the month;

@@ -100,6 +100,26 @@ class LlmClientsTest {
     }
 
     @Test
+    void aProbeIsKeptNowhereAndClosedAfterTheCall() {
+        AiProvider unsaved = AiFixtures.provider(ProviderKind.OPENAI_COMPATIBLE, "key", "http://new/v1",
+                "socks5://vpn:1080");
+        List<LlmClient> seen = new ArrayList<>();
+
+        List<LlmClient.Listed> listed = clients.probe(unsaved, client -> {
+            seen.add(client);
+            return client.models();
+        });
+        assertThat(listed).extracting(LlmClient.Listed::id).containsExactly("probe");
+        assertThat(((Recording.Client) seen.getFirst()).closed).isTrue();
+        assertThat(adapter.proxies).last().hasToString("socks5://vpn:1080");
+
+        AiProvider gemini = AiFixtures.provider(ProviderKind.GEMINI, "key", null);
+        assertThat(clients.probe(gemini, LlmClient::model)).as("the kind's model").isEqualTo("gemini-3.8-flash");
+        assertThatThrownBy(() -> clients.probe(AiFixtures.provider(ProviderKind.ANTHROPIC, null, null),
+                LlmClient::models)).hasMessage("The provider has no API key");
+    }
+
+    @Test
     void closesTheClientsItKeepsWhenThePortalStops() {
         Recording.Client built = (Recording.Client) client();
         AiProvider broken = AiFixtures.provider(ProviderKind.ANTHROPIC, null, null);
@@ -130,6 +150,7 @@ class LlmClientsTest {
                     assertThat(e).hasMessage(reason);
                 });
         assertThatThrownBy(() -> client.ping(Language.RU)).hasMessage(reason);
+        assertThatThrownBy(client::models).hasMessage(reason);
     }
 
     private LlmClient client() {
@@ -190,6 +211,11 @@ class LlmClientsTest {
             @Override
             public String ping(Language language) {
                 return "ok";
+            }
+
+            @Override
+            public List<Listed> models() {
+                return List.of(new Listed(model, null));
             }
 
             @Override

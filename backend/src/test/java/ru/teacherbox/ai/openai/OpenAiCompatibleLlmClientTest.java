@@ -239,6 +239,30 @@ class OpenAiCompatibleLlmClientTest {
     }
 
     @Test
+    void listsTheProvidersModelsWithTheirNames() {
+        String models = "http://ollama:11434/v1/models";
+        server.expect(requestTo(models)).andExpect(method(HttpMethod.GET)).andRespond(withSuccess("""
+                {"data": [{"id": "openai/gpt-6", "name": "OpenAI: GPT-6"}, {"id": "qwen3:14b", "name": ""},
+                          {"name": "no id"}]}
+                """, MediaType.APPLICATION_JSON));
+        server.expect(requestTo(models)).andRespond(withStatus(HttpStatus.NOT_FOUND));
+        server.expect(requestTo(models)).andRespond(withSuccess("", MediaType.APPLICATION_JSON));
+        server.expect(requestTo(models)).andRespond(withStatus(HttpStatus.FORBIDDEN));
+        server.expect(requestTo(models)).andRespond(request -> {
+            throw new IOException("Connection refused");
+        });
+
+        assertThat(client.models()).containsExactly(new LlmClient.Listed("openai/gpt-6", "OpenAI: GPT-6"),
+                new LlmClient.Listed("qwen3:14b", null));
+        assertThat(client.models()).as("a server without a list").isEmpty();
+        assertThat(client.models()).isEmpty();
+        assertThatThrownBy(client::models).isInstanceOfSatisfying(LlmException.class,
+                e -> assertThat(e.getMessage()).startsWith("Provider 403"));
+        assertThatThrownBy(client::models).isInstanceOf(LlmException.class);
+        server.verify();
+    }
+
+    @Test
     void pingFindsGeminiModelsByTheirFullName() {
         OpenAiCompatibleLlmClient gemini = new OpenAiCompatibleLlmClient(builder.build(), "gemini", "gemini-3.8-flash");
         server.expect(requestTo("http://ollama:11434/v1/models")).andRespond(withSuccess("""
