@@ -9,7 +9,14 @@
 #                                # + the installer checks
 #   scripts/verify.sh installer  # shellcheck of the scripts, a dry run of install.sh (ADR-0032)
 #   scripts/verify.sh e2e        # the E2E tests compile (running them: scripts/e2e.sh)
-#   scripts/verify.sh docs       # links to the wiki pages (docs/wiki) are valid
+#   scripts/verify.sh docs       # wiki links are valid, agent configs are in sync, the stamp test
+#   scripts/verify.sh fresh <part>  # exit 0 if <part> passed on exactly the current tree (see below)
+#
+# A part that passes in full writes .verify-logs/<part>.ok with the fingerprint of the whole working tree
+# (the tree of a temporary index after `git add -A`: tracked, modified and untracked, not ignored files).
+# The pre-commit hook skips a part whose stamp equals the current fingerprint. Any change to any file, a
+# part that failed or skipped a check (no docker, no shellcheck), or a tree that changed during the run
+# leaves no stamp, so an unverified tree is never let through.
 #
 # Each step writes its full output to .verify-logs/<step>.log and prints one line; a failed step prints
 # the end of its log. VERIFY_VERBOSE=1 streams the full output, VERIFY_TAIL=<n> sets how many lines of a
@@ -48,6 +55,91 @@ run() {
     exit "$status"
 }
 
+# Fingerprint of the working tree: the tree object of a copy of the index after `git add -A`.
+# Prints nothing and fails when it cannot be computed (then nothing is stamped and nothing is skipped).
+tree_fingerprint() {
+    local idx tmp out status=0
+    idx="${GIT_INDEX_FILE:-$(git -C "$ROOT" rev-parse --git-path index)}"
+    case "$idx" in /*) ;; *) idx="$ROOT/$idx" ;; esac
+    tmp="$(mktemp)" || return 1
+    cp "$idx" "$tmp" 2>/dev/null || : >"$tmp"
+    out="$(GIT_INDEX_FILE="$tmp" git -C "$ROOT" add -A >/dev/null 2>&1 &&
+        GIT_INDEX_FILE="$tmp" git -C "$ROOT" write-tree 2>/dev/null)" || status=1
+    rm -f "$tmp"
+    [ "$status" -eq 0 ] && [ -n "$out" ] || return 1
+    printf '%s\n' "$out"
+}
+
+stamp_file() { printf '%s/%s.ok' "$LOG_DIR" "$1"; }
+
+# stamp_fresh <part>: the part passed on exactly the current tree.
+stamp_fresh() {
+    local file fp
+    file="$(stamp_file "$1")"
+    [ -f "$file" ] || return 1
+    fp="$(tree_fingerprint)" || return 1
+    [ -n "$fp" ] && [ "$(cat "$file")" = "$fp" ]
+}
+
+# A step that could not run its checks calls skipped; such a part is not stamped.
+SKIPPED=0
+skipped() { SKIPPED=1; }
+
+# stamp_write <part> <fingerprint taken before the run>: only when the tree did not change during the run.
+stamp_write() {
+    local part="$1" before="$2" after
+    [ "$SKIPPED" -eq 0 ] && [ -n "$before" ] || return 0
+    after="$(tree_fingerprint)" || return 0
+    if [ "$after" = "$before" ]; then
+        printf '%s\n' "$after" >"$(stamp_file "$part")"
+    fi
+}
+
+# Checks the stamp logic in a throwaway repository: green run stamps, unchanged tree is fresh, any
+# change (tracked, untracked, staged) is not, a skipped or failed run leaves no stamp.
+stamp_selftest() {
+    local tmp
+    tmp="$(mktemp -d)"
+    (
+        set -e
+        ROOT="$tmp"
+        LOG_DIR="$tmp/.verify-logs"
+        mkdir -p "$LOG_DIR"
+        git init -q "$ROOT"
+        git -C "$ROOT" config user.email t@example.com
+        git -C "$ROOT" config user.name t
+        printf '.verify-logs/\nignored/\n' >"$ROOT/.gitignore"
+        echo a >"$ROOT/a.txt"
+        git -C "$ROOT" add -A
+        git -C "$ROOT" commit -q -m init
+        fail() { echo "stamp selftest: $*"; exit 1; }
+        stamp_fresh p && fail "fresh without a stamp"
+        before="$(tree_fingerprint)"
+        stamp_write p "$before"
+        stamp_fresh p || fail "not fresh after a green run"
+        mkdir -p "$ROOT/ignored" && echo x >"$ROOT/ignored/f" && : >"$ROOT/.verify-logs/other.log"
+        stamp_fresh p || fail "ignored files must not matter"
+        echo b >>"$ROOT/a.txt"
+        stamp_fresh p && fail "fresh after editing a tracked file"
+        git -C "$ROOT" checkout -q a.txt
+        stamp_fresh p || fail "reverting must restore the stamp"
+        echo n >"$ROOT/new.txt"
+        stamp_fresh p && fail "fresh after adding an untracked file"
+        git -C "$ROOT" add new.txt
+        stamp_fresh p && fail "fresh after staging a new file"
+        rm -f "$(stamp_file p)"
+        SKIPPED=1
+        stamp_write q "$(tree_fingerprint)"
+        [ ! -f "$(stamp_file q)" ] || fail "a skipped part was stamped"
+        SKIPPED=0
+        before="$(tree_fingerprint)"
+        echo c >>"$ROOT/a.txt"
+        stamp_write q "$before"
+        [ ! -f "$(stamp_file q)" ] || fail "stamped although the tree changed during the run"
+    ) || { rm -rf "$tmp"; return 1; }
+    rm -rf "$tmp"
+}
+
 npm_install() {
     # npm >= 11 is required (ADR-0007); npx fetches it when the local npm is older.
     if [ ! -d "$2/node_modules" ]; then
@@ -72,6 +164,7 @@ verify_docker() {
     step "docker"
     if ! command -v docker >/dev/null 2>&1; then
         echo "    docker CLI not found, skipping"
+        skipped
         return 0
     fi
     run docker-config "$ROOT" docker compose config --quiet
@@ -84,13 +177,14 @@ verify_docker() {
             ghcr.io/verhoturkin/teacher-box-frontend:latest nginx -t
     else
         echo "    docker daemon is not running, image build skipped"
+        skipped
     fi
     verify_installer
 }
 
 shellcheck_scripts() {
     local scripts=(scripts/install.sh scripts/teacherbox scripts/verify.sh scripts/e2e.sh scripts/check-wiki.sh
-        scripts/publish-wiki.sh)
+        scripts/publish-wiki.sh scripts/agent-setup.sh scripts/check-agents.sh)
     if command -v shellcheck >/dev/null 2>&1; then
         shellcheck -x "${scripts[@]}"
     else
@@ -130,6 +224,7 @@ verify_installer() {
         run installer-shellcheck "$ROOT" shellcheck_scripts
     else
         echo "    neither shellcheck nor a running docker daemon, shellcheck skipped"
+        skipped
     fi
     run installer-dry-run "$ROOT" installer_dry_run
 }
@@ -143,25 +238,36 @@ verify_e2e() {
 verify_docs() {
     step "docs"
     run docs-wiki-links "$ROOT" bash scripts/check-wiki.sh
+    run docs-agent-configs "$ROOT" bash scripts/check-agents.sh
+    run docs-stamp-selftest "$ROOT" stamp_selftest
+}
+
+# Runs the part and stamps it when it passed in full on the tree it started with.
+part() {
+    local name="$1" fp
+    rm -f "$(stamp_file "$name")"
+    fp="$(tree_fingerprint)" || fp=""
+    SKIPPED=0
+    "verify_$name"
+    stamp_write "$name" "$fp"
 }
 
 target="${1:-all}"
 case "$target" in
     all)
-        verify_docs
-        verify_backend
-        verify_frontend
-        verify_e2e
-        verify_docker
+        part docs
+        part backend
+        part frontend
+        part e2e
+        part docker
         ;;
-    docs) verify_docs ;;
-    backend) verify_backend ;;
-    frontend) verify_frontend ;;
-    docker) verify_docker ;;
-    installer) verify_installer ;;
-    e2e) verify_e2e ;;
+    docs | backend | frontend | docker | installer | e2e) part "$target" ;;
+    fresh)
+        stamp_fresh "${2:?usage: $0 fresh <part>}"
+        exit $?
+        ;;
     *)
-        echo "usage: $0 [all|docs|backend|frontend|docker|installer|e2e]" >&2
+        echo "usage: $0 [all|docs|backend|frontend|docker|installer|e2e|fresh <part>]" >&2
         exit 2
         ;;
 esac

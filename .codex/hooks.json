@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node 'D:\\Prog\\teacher-box\\.codex\\hooks\\format.mjs'",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/format.mjs\"",
             "timeout": 30
           }
         ]

@@ -1,0 +1,619 @@
+@use 'sass:list';
+
+/*
+ * A settings row inside a card (sketch Lessons): the tonal icon, the title with its state under it and
+ * a tag or lock at the end; rows of a card are 2 px apart, the card clips the outer corners.
+ */
+.tb-tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  border-radius: var(--tb-shape-lg);
+}
+
+.tb-tile {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-4);
+  min-block-size: 3.5rem;
+  box-sizing: border-box;
+  padding: var(--tb-space-3) var(--tb-space-4);
+  border-radius: var(--tb-shape-xs);
+  background: var(--tb-list-item);
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-body-m);
+  text-decoration: none;
+}
+
+.tb-tile__icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: var(--tb-shape-full);
+  background: var(--p-md-secondary-container);
+  color: var(--p-md-on-secondary-container);
+}
+
+.tb-tile__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-inline-size: 0;
+
+  b {
+    font: var(--tb-type-title-m);
+  }
+
+  span {
+    color: var(--p-md-on-surface-variant);
+  }
+}
+
+/*
+ * The title of a card (section): the title, the «?» of the help next to it and the actions of the
+ * section on the right (ADR-0018). Used in the #title template of p-card.
+ */
+.tb-card-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-1) var(--tb-space-2);
+}
+
+/* The «?» follows the last word of a long title instead of taking a line of its own */
+.tb-card-title__text {
+  min-width: 0;
+
+  tb-help-button {
+    vertical-align: middle;
+  }
+}
+
+.tb-card-title__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-2);
+  margin-left: auto;
+  font: var(--tb-type-body-m);
+}
+
+/* The buttons of a form in a section: at the end, under the fields (ADR-0018) */
+.tb-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--tb-space-2);
+
+  @media (width < 37.5em) {
+    > p-button,
+    > .p-button {
+      flex: 1 1 auto;
+    }
+
+    p-button .p-button {
+      width: 100%;
+    }
+  }
+}
+
+.tb-form-message {
+  width: 100%;
+}
+
+.tb-hint,
+.tb-muted {
+  color: var(--p-md-on-surface-variant);
+}
+
+.tb-error {
+  color: var(--p-md-error);
+}
+
+.tb-strong {
+  font-weight: 500;
+}
+
+/*
+ * A list in a card (ADR-0020): the segmented list of M3 Expressive — every row is a tile, 2 px
+ * apart, the outer corners of the group rounder than the inner ones. A row is the leading avatar or
+ * icon, the title with its supporting text and the trailing amount, status or actions.
+ * The rows share the columns of the list (subgrid): the text and the actions of every row start
+ * at the same place, so the buttons do not jump from row to row (ADR-0021).
+ */
+.tb-list {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 2px var(--tb-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  container-type: inline-size;
+
+  > li {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-areas: 'lead text trail';
+    grid-template-columns: subgrid;
+    align-items: center;
+    row-gap: var(--tb-space-1);
+    min-height: 3.5rem;
+    box-sizing: border-box;
+    padding: var(--tb-space-3) var(--tb-space-4);
+    border-radius: var(--tb-list-inner);
+    background: var(--tb-list-item);
+    transition: background var(--tb-spring-fast-effects);
+
+    &:first-child {
+      border-start-start-radius: var(--tb-list-outer);
+      border-start-end-radius: var(--tb-list-outer);
+    }
+
+    &:last-child {
+      border-end-start-radius: var(--tb-list-outer);
+      border-end-end-radius: var(--tb-list-outer);
+    }
+  }
+}
+
+/*
+ * A list whose rows differ much in their trailing content (`tb-list--own-trail`, the students: a debt,
+ * a status tag or nothing): every row has its own columns, so the right column is as wide as the
+ * content of its own row, and a row without `tb-list__trail` gives the whole width to the text.
+ */
+.tb-list.tb-list--own-trail > li {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  /* the list's own gap reaches a row only through a subgrid */
+  column-gap: var(--tb-space-4);
+
+  &:not(:has(> .tb-list__trail)) {
+    grid-template-areas: 'lead text text';
+  }
+}
+
+/*
+ * Segmented lists keep their own shape wherever they lie (stage 354): the group's outer corners are the
+ * 16 px of the M3 list in a card and a dialog too, the rows between keep 4 px, so the group reads as one
+ * (our decision: the list is a component with its own shape, not a surface nested in the card).
+ *
+ * Several lists that read as one (`tb-list-group`: the textbooks and the files of the materials) lie
+ * 2 px apart with no margins of their own; only the first row of the group and the last one take the
+ * outer corners. An empty list host (nothing to show) takes no room.
+ */
+.tb-list-group {
+  display: grid;
+  gap: 2px;
+
+  > :empty {
+    display: none;
+  }
+
+  > * > ul.tb-list {
+    margin: 0;
+  }
+
+  > :not(:empty) ~ :not(:empty) > .tb-list > li:first-child {
+    border-start-start-radius: var(--tb-list-inner);
+    border-start-end-radius: var(--tb-list-inner);
+  }
+
+  > :not(:empty):has(~ :not(:empty)) > .tb-list > li:last-child {
+    border-end-start-radius: var(--tb-list-inner);
+    border-end-end-radius: var(--tb-list-inner);
+  }
+}
+
+/*
+ * In a narrow list (a phone) the trailing buttons go under the row, across its whole width, so two
+ * buttons fit in one line even on a 360 px phone (ADR-0021); an amount or a status stays on the
+ * right (`tb-list__trail--inline` keeps one button beside the text: «Подключить», sketches
+ * PhoneMessengers and StudentPhone). The buttons start at the left edge: the first of them stands still from row to row, so a
+ * button with a changing label («Отменить» / «Не приду») keeps its own width.
+ */
+@container (max-width: 26rem) {
+  .tb-list
+    > li:has(
+      > .tb-list__trail:not(.tb-list__trail--icons, .tb-list__trail--inline)
+        :is(p-button, tb-join-lesson-button)
+    ) {
+    grid-template-areas: 'lead text text' 'trail trail trail';
+
+    > .tb-list__trail {
+      justify-content: flex-start;
+    }
+
+    p-button.tb-button-steady .p-button {
+      min-width: 0;
+    }
+
+    /* text buttons take the padding of M3 text buttons (12 px): «Подключиться» and «Отозвать» fit */
+    .p-button-text:not(.p-button-icon-only) {
+      padding-inline: var(--tb-space-3);
+    }
+  }
+}
+
+/*
+ * A trailing amount with an icon button (`tb-list__trail--amount`: a balance with «Записать оплату», a
+ * charge with «×»): in a narrow list the amount (`tb-list__amount`) goes under the text and the button
+ * stays on the right, so a long amount does not squeeze the name into a narrow column.
+ */
+@container (max-width: 26rem) {
+  .tb-list > li:has(> .tb-list__trail--amount) {
+    grid-template-areas: 'lead text trail' 'lead amount trail';
+
+    > .tb-list__trail--amount {
+      display: contents;
+
+      > .tb-list__amount {
+        grid-area: amount;
+        justify-self: start;
+      }
+
+      > :not(.tb-list__amount) {
+        grid-area: trail;
+      }
+    }
+  }
+}
+
+/*
+ * A list whose lead icon only decorates (a board, a task, a textbook…), `tb-list--no-phone-lead`: on a
+ * phone the icon goes away and the text takes its place, so the title gets the width. Avatars of
+ * people stay — such lists do not take the modifier.
+ */
+@media (width < 37.5em) {
+  .tb-list--no-phone-lead {
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    > li {
+      grid-template-areas: 'text trail';
+    }
+
+    .tb-list__lead {
+      display: none;
+    }
+  }
+
+  @container (max-width: 26rem) {
+    .tb-list.tb-list--no-phone-lead
+      > li:has(
+        > .tb-list__trail:not(.tb-list__trail--icons, .tb-list__trail--inline)
+          :is(p-button, tb-join-lesson-button)
+      ) {
+      grid-template-areas: 'text text' 'trail trail';
+    }
+
+    .tb-list.tb-list--no-phone-lead > li:has(> .tb-list__trail--amount) {
+      grid-template-areas: 'text trail' 'amount trail';
+    }
+  }
+}
+
+/*
+ * A list without lead icons at all (`tb-list--no-lead`, notifications): the text starts at the tile's edge
+ * on every screen.
+ */
+.tb-list--no-lead {
+  grid-template-columns: minmax(0, 1fr) auto;
+
+  > li {
+    grid-template-areas: 'text trail';
+  }
+}
+
+@container (max-width: 26rem) {
+  .tb-list.tb-list--no-lead
+    > li:has(
+      > .tb-list__trail:not(.tb-list__trail--icons, .tb-list__trail--inline)
+        :is(p-button, tb-join-lesson-button)
+    ) {
+    grid-template-areas: 'text text' 'trail trail';
+  }
+}
+
+/*
+ * A row that goes aside under the finger (`tbSwipe`, a notification on a phone): no transition while it
+ * follows the finger, a short slide back or out after it
+ */
+.tb-list > li.tb-swipe {
+  transition:
+    transform var(--tb-spring-fast-spatial),
+    opacity var(--tb-spring-fast-effects),
+    background var(--tb-spring-fast-effects);
+}
+
+.tb-list > li.tb-swipe--dragging {
+  transition: none;
+}
+
+/*
+ * A row that opens with its trailing button (`tb-list__stretched`, e.g. the chevron of a lesson on a
+ * phone): the button covers the whole row, other buttons of the row stay above it (ADR-0022)
+ */
+.tb-list > li:has(p-button.tb-list__stretched) {
+  position: relative;
+}
+
+p-button.tb-list__stretched .p-button {
+  position: static;
+
+  /* ::after belongs to PrimeNG (icon-only buttons) */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+}
+
+/*
+ * A row that opens with its title link (`tb-list__link`, a board): the link covers the whole row, so a tap
+ * anywhere on it opens the board; the row's trailing buttons («⋮») stay above it. The focus ring is the row's.
+ */
+.tb-list > li:has(> .tb-list__text .tb-list__link) {
+  position: relative;
+
+  > .tb-list__trail {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.tb-list__link {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--tb-list-inner);
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    &::before {
+      outline: 3px solid var(--p-md-secondary);
+      outline-offset: -3px;
+    }
+  }
+}
+
+/*
+ * Only rows that open or select as a whole get the hover state layer.
+ * Buttons and links inside static rows keep their own interaction states.
+ */
+.tb-list
+  > li:is(.tb-list__item--link, :has(.tb-list__link, .tb-list__stretched, > a, > button)):hover {
+  background: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-hover), var(--tb-list-item));
+}
+
+/* the name in a row is never underlined, the row's state layer shows what is under the pointer */
+.tb-list > li :is(.tb-list__title, .tb-list__link, a.tb-link):is(a, button),
+.tb-list > li :is(.tb-list__title, .tb-list__link, a.tb-link):is(a, button):hover {
+  text-decoration: none;
+}
+
+/* A row that opens as a whole */
+.tb-list > li.tb-list__item--link {
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(
+      in srgb,
+      var(--p-md-on-surface) var(--tb-state-hover),
+      var(--tb-list-item)
+    );
+  }
+}
+
+.tb-list__lead,
+.tb-avatar {
+  display: flex;
+  grid-area: lead;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--tb-shape-full);
+  background: var(--p-md-secondary-container);
+  color: var(--p-md-on-secondary-container);
+  font: var(--tb-type-title-m);
+
+  > .tb-i {
+    font-size: 1.125rem;
+  }
+}
+
+/*
+ * Colours of students and groups (core/theme/label-colors.ts): M3 static colours, four roles each.
+ * `data-tb-label="<colour>"` brings the roles of one colour as `--tb-label*`.
+ */
+@each $label in 'red', 'orange', 'yellow', 'lime', 'green', 'cyan', 'blue', 'violet', 'purple',
+  'pink'
+{
+  [data-tb-label='#{$label}'],
+  .tb-label--#{$label} {
+    --tb-label: var(--p-md-label-#{$label});
+    --tb-on-label: var(--p-md-on-label-#{$label});
+    --tb-label-container: var(--p-md-label-#{$label}-container);
+    --tb-on-label-container: var(--p-md-on-label-#{$label}-container);
+    --tb-label-surface-container-lowest: var(--p-md-label-#{$label}-surface-container-lowest);
+    --tb-label-surface-container-low: var(--p-md-label-#{$label}-surface-container-low);
+    --tb-label-surface-container-high: var(--p-md-label-#{$label}-surface-container-high);
+    --tb-on-label-surface: var(--p-md-on-label-#{$label}-surface);
+    --tb-on-label-surface-variant: var(--p-md-on-label-#{$label}-surface-variant);
+  }
+}
+
+/* Student and group colours mark the avatar or the group lead; list surfaces keep the portal roles.
+ * Our decision: photos keep a colour ring, so their student's colour remains visible too.
+ */
+:is(.tb-avatar, .tb-list__lead)[data-tb-label] {
+  background: var(--tb-label-container);
+  color: var(--tb-on-label-container);
+
+  &.tb-avatar--photo {
+    outline: 2px solid var(--tb-label);
+    outline-offset: -2px;
+  }
+}
+
+/*
+ * The row of the open detail in a list-detail (`tb-list__item--current`, the students): secondary-container
+ * and the emphasized title (M3: a selected list item), over the colour of a student or a group too.
+ */
+:root .tb-list > li.tb-list__item--current {
+  --tb-list-item: var(--p-md-secondary-container);
+  color: var(--p-md-on-secondary-container);
+
+  .tb-list__title {
+    color: var(--p-md-on-secondary-container);
+    /* M3 body large emphasized: the same size, weight 500 */
+    font-weight: 500;
+  }
+
+  .tb-list__supporting {
+    color: var(--p-md-on-secondary-container);
+  }
+
+  /* the icon or the avatar of the chosen row stands on the surface, as in the list of the settings */
+  > :is(.tb-list__lead, .tb-avatar):not([data-tb-label]) {
+    background: var(--p-md-surface);
+  }
+}
+
+/* A chip of a student or a group (multiselects): the container of the colour */
+.p-chip[data-tb-label] {
+  background: var(--tb-label-container);
+  color: var(--tb-on-label-container);
+
+  .p-chip-label,
+  .p-chip-remove-icon,
+  .p-icon {
+    color: inherit;
+  }
+}
+
+/* The colour in a list of colours: a 20 px circle; «Без цвета» is an empty outlined one */
+.tb-label-option {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: top;
+  gap: 0.75rem;
+}
+
+.tb-label-swatch {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid var(--p-md-outline);
+  border-radius: var(--tb-shape-full);
+
+  &[data-tb-label] {
+    border: 0;
+    background: var(--tb-label-container);
+  }
+}
+
+/* The lead of a row that needs attention (an unread notification, a debt) */
+.tb-list__lead--accent {
+  background: var(--p-md-primary-container);
+  color: var(--p-md-on-primary-container);
+}
+
+.tb-list__text {
+  display: flex;
+  grid-area: text;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tb-list__title {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-1) var(--tb-space-2);
+  color: var(--p-md-on-surface);
+  font: var(--tb-type-body-l);
+  overflow-wrap: break-word;
+}
+
+.tb-list__supporting {
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-body-m);
+  overflow-wrap: break-word;
+}
+
+/*
+ * A list pane whose rows keep a bounded height (`tb-list--clamp`: students, homework). M3: label and
+ * supporting text can wrap or be truncated, supporting text one to three lines. Ours: at most two lines
+ * each, cut with an ellipsis; the full text is in the detail beside the list. The title link's `::before`
+ * belongs to the row, so `overflow: hidden` does not cut the tap area.
+ */
+.tb-list--clamp :is(.tb-list__title, .tb-list__supporting) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.tb-list__trail {
+  display: flex;
+  grid-area: trail;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--tb-space-1);
+  font: var(--tb-type-title-m);
+  white-space: nowrap;
+}
+
+/* A person in a table cell: the avatar next to the name */
+.tb-person {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-space-3);
+}
+
+/* Lists */
+.tb-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tb-space-4);
+  margin-bottom: var(--tb-space-4);
+}
+
+/* Filters of a list are at the end of its toolbar, the search at the start (ADR-0018) */
+.tb-toolbar > .tb-switch {
+  margin-left: auto;
+}
+
+.tb-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  cursor: pointer;
+}
+
+/* The main column of a list (a name, a title) is not squeezed by the others from large (M3, 1200 px) */
+@media (width >= 75em) {
+  .tb-col-main {
+    min-width: 13rem;
+  }
+}
+
+.tb-actions-column {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}

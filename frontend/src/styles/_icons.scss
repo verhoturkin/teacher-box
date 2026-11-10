@@ -1,0 +1,94 @@
+@use '@fontsource-variable/google-sans/wght.css';
+@use 'sass:map';
+@use 'sass:string';
+@use '../app/core/theme/icons';
+@use '../app/core/theme/prime-icons';
+@use 'mixins' as *;
+
+/*
+ * Icons (ADR-0046): Material Symbols Rounded, `<i class="tb-i tb-i-<name>" aria-hidden="true">` or
+ * `icon="tb-i tb-i-<name>"` on p-button. The font is a subset of the used glyphs (`npm run icons` builds it
+ * and core/theme/icons.scss), and a glyph is a private code point: before the font loads nothing shows,
+ * never the icon's name. Weight 400; 24 px, 20 px in buttons (M3E), 18 px in chips; filled — `tb-i--filled`.
+ */
+@font-face {
+  font-family: 'Material Symbols Rounded';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('../app/core/theme/symbols.woff2') format('woff2');
+}
+
+.tb-i {
+  @include icon-font;
+  display: inline-block;
+  flex: none;
+  width: 1em;
+  height: 1em;
+  overflow: hidden;
+  user-select: none;
+}
+
+.tb-i--filled {
+  --tb-icon-fill: 1;
+}
+
+/*
+ * PrimeNG's own icons (the arrow of a select, «×» of a dialog, the date picker, the checkbox tick…) are
+ * SVG components: their paths hide and the outline of our symbol is the mask of the SVG box (ADR-0046).
+ */
+@each $icon, $mask in prime-icons.$prime-icons {
+  svg.p-icon[data-p-icon='#{$icon}'] {
+    width: var(--tb-icon-size);
+    height: var(--tb-icon-size);
+    background: currentColor;
+    mask: url('data:image/svg+xml,#{$mask}') center / contain no-repeat;
+
+    > * {
+      display: none;
+    }
+  }
+}
+
+/* The time of the date picker steps up and down like a number field, it opens no list */
+.p-datepicker-time-picker {
+  svg.p-icon[data-p-icon='chevron-up'] {
+    mask-image: url('data:image/svg+xml,#{map.get(prime-icons.$prime-icons, "angle-up")}');
+  }
+
+  svg.p-icon[data-p-icon='chevron-down'] {
+    mask-image: url('data:image/svg+xml,#{map.get(prime-icons.$prime-icons, "angle-down")}');
+  }
+}
+
+/* A chip is removed with «×» (M3 input chip): `times-circle` is the error sign of messages elsewhere */
+.p-chip svg.p-icon[data-p-icon='times-circle'] {
+  mask-image: url('data:image/svg+xml,#{map.get(prime-icons.$prime-icons, "times")}');
+}
+
+/* 24 px like ours (a field's trailing icon, «×» of a dialog); smaller where the box is small (M3) */
+.p-inputnumber-button {
+  --tb-icon-size: 1.25rem;
+}
+
+.p-checkbox-box,
+.p-datatable-sort-icon {
+  --tb-icon-size: 1.125rem;
+}
+
+/* Busy: `tb-i tb-i-progress_activity tb-i--spin` */
+.tb-i--spin {
+  animation: tb-icon-spin 1s linear infinite;
+}
+
+@keyframes tb-icon-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@each $name, $code in icons.$icons {
+  .tb-i-#{$name}::before {
+    @include glyph('tb-i-#{$name}');
+  }
+}

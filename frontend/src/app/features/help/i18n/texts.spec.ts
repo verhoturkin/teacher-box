@@ -1,7 +1,7 @@
 import { expectComplete } from '@testing/i18n';
-import { ADMIN_ARTICLES } from '../articles/admin.en';
-import { STUDENT_ARTICLES } from '../articles/student.en';
-import { TEACHER_ARTICLES } from '../articles/teacher.en';
+import { ADMIN_ARTICLES } from '../articles/admin/en';
+import { STUDENT_ARTICLES } from '../articles/student/en';
+import { TEACHER_ARTICLES } from '../articles/teacher/en';
 import { HELP_TOPICS, isHelpArea } from '../help-topics';
 import { HelpArticleText } from '../help.models';
 import { en } from './en';

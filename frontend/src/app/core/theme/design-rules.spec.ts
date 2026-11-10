@@ -82,6 +82,25 @@ describe('design rules', () => {
     expect(breaches(HEX_IN_STYLE, styled)).toEqual([]);
   });
 
+  it('keeps the global styles in `src/styles/`, all of them listed in `styles.scss`', () => {
+    const root = join(process.cwd(), 'src');
+    const parts = readdirSync(join(root, 'styles')).filter((name) => name.endsWith('.scss'));
+    const index = readFileSync(join(root, 'styles.scss'), 'utf8');
+    const listed = Array.from(index.matchAll(/^@use '\.\/styles\/([\w-]+)';$/gm), (m) => m[1]);
+    // `_mixins` emits no CSS and is pulled in by the parts that need it
+    expect([...listed].sort()).toEqual(
+      parts
+        .map((name) => name.slice(1, -'.scss'.length))
+        .filter((name) => name !== 'mixins')
+        .sort(),
+    );
+    const styles = parts.map((name) => ({
+      path: `styles/${name}`,
+      text: readFileSync(join(root, 'styles', name), 'utf8'),
+    }));
+    expect(breaches(HEX_IN_STYLE, styles)).toEqual([]);
+  });
+
   it('has no primeicons: icons are Material Symbols (ADR-0046)', () => {
     expect(breaches(PRIMEICONS)).toEqual([]);
   });

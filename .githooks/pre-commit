@@ -17,24 +17,24 @@ while IFS= read -r file; do
     case "$file" in
         backend/*) backend=true ;;
         frontend/*) frontend=true ;;
-        docker/* | compose.yaml | compose.*.yaml | .dockerignore | .env.example | scripts/install.sh | scripts/teacherbox) docker=true ;;
+        docker/* | compose.yaml | compose.*.yaml | .dockerignore | .env.example | scripts/install.sh | scripts/teacherbox | scripts/agent-setup.sh) docker=true ;;
         e2e/*) e2e=true ;;
-        *.md | scripts/check-wiki.sh) docs=true ;;
+        *.md | scripts/check-wiki.sh | scripts/check-agents.sh | scripts/verify.sh | .claude/* | .agents/* | .codex/*) docs=true ;;
     esac
 done < <(git diff --cached --name-only --diff-filter=ACMRD)
 
-if [ "$docs" = true ]; then
-    "$ROOT/scripts/verify.sh" docs
-fi
-if [ "$backend" = true ]; then
-    "$ROOT/scripts/verify.sh" backend
-fi
-if [ "$frontend" = true ]; then
-    "$ROOT/scripts/verify.sh" frontend
-fi
-if [ "$docker" = true ]; then
-    "$ROOT/scripts/verify.sh" docker
-fi
-if [ "$e2e" = true ]; then
-    "$ROOT/scripts/verify.sh" e2e
-fi
+# A part that already passed on exactly this working tree (stamp from scripts/verify.sh) is not run again;
+# any change, a failed or partly skipped run leaves no matching stamp.
+run_part() {
+    if "$ROOT/scripts/verify.sh" fresh "$1"; then
+        echo "==> $1: already verified on this tree, skipped"
+    else
+        "$ROOT/scripts/verify.sh" "$1"
+    fi
+}
+
+for part in docs backend frontend docker e2e; do
+    if [ "${!part}" = true ]; then
+        run_part "$part"
+    fi
+done
