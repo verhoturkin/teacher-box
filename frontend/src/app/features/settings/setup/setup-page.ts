@@ -8,56 +8,39 @@ import {
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Observable, catchError, concat, forkJoin, map, of, tap, toArray } from 'rxjs';
 import { Button } from 'primeng/button';
-import { Card } from 'primeng/card';
 import { ProgressBar } from 'primeng/progressbar';
 import { AuthService } from '@core/auth/auth.service';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { injectWindowSize } from '@core/layout/mobile';
-import { DEFAULT_PORTAL_NAME, Portal, PortalSettings } from '@core/portal/portal';
+import { Portal } from '@core/portal/portal';
 import { MAX_PORTAL_NAME_LENGTH, portalAddressValidator } from '@core/portal/portal-address';
-import { PortalAddressField } from '@core/portal/portal-address-field';
 import { PortalLogo } from '@core/portal/portal-logo';
 import { AiApi } from '@features/ai/parts';
-import { BillingApi, PriceField } from '@features/billing/parts';
+import { BillingApi } from '@features/billing/parts';
 import { HelpButton } from '@features/help/parts';
 import { HomeworkApi } from '@features/homework/parts';
-import {
-  Account,
-  ChangePasswordForm,
-  IdentityApi,
-  ProfilePhoto,
-  TEACHER_NAME_VALIDATORS,
-  TeacherNameField,
-} from '@features/identity/parts';
+import { Account, IdentityApi, TEACHER_NAME_VALIDATORS } from '@features/identity/parts';
 import { LessonRules, ScheduleApi } from '@features/schedule/parts';
-import { formatMoney, toMajorUnits, toMinorUnits } from '@shared/money/money';
-import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { toMajorUnits, toMinorUnits } from '@shared/money/money';
+import { revealErrors } from '@shared/ui/field-errors';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { ProgressLabel } from '@shared/ui/progress-label.directive';
-import { locale } from '@core/i18n/language';
 import { SettingsApi } from '../data-access/settings-api';
-import { CurrencyField } from '../fields/currency-field';
-import {
-  DueSoonField,
-  DurationField,
-  HorizonField,
-  LateCancellationField,
-} from '../fields/lesson-rule-fields';
-import { PortalNameField } from '../fields/portal-name-field';
-import { RemindersField } from '../fields/reminders-field';
-import { TimeZoneField } from '../fields/time-zone-field';
 import { T } from '../i18n/texts';
-import { deviceZone, spanLabel, zoneLabel } from '../lesson-options';
+import { deviceZone } from '../lesson-options';
 import { HOUR } from '../lesson-rules';
 import { aiState, messengersState } from '../settings-categories';
-import { dueSoonExample, horizonExample, lateExample, remindersExample } from './setup-examples';
-
-export type StepId = 'password' | 'portal' | 'time' | 'rules' | 'done';
+import { NextCardId, NextStates, SetupDonePreview, SetupDoneStep } from './steps/done-step';
+import { SetupPasswordStep } from './steps/password-step';
+import { SetupPortalPreview, SetupPortalStep } from './steps/portal-step';
+import { SetupRulesPreview, SetupRulesStep } from './steps/rules-step';
+import { Saved, StepId, nonEmpty } from './steps/setup-state';
+import { SetupTimePreview, SetupTimeStep } from './steps/time-step';
 
 interface Step {
   readonly id: StepId;
@@ -74,46 +57,6 @@ const STEPS: readonly Step[] = [
   { id: 'done', title: t.stepDone },
 ];
 
-/** What the teacher has set up so far, as the server keeps it (the start of «Пропустить»). */
-interface Saved {
-  readonly account: Account;
-  readonly portal: PortalSettings;
-  readonly zone: string;
-  readonly currency: string;
-  readonly locked: boolean;
-  /** Minor units. */
-  readonly price: number;
-  readonly rules: LessonRules;
-  readonly dueSoon: number;
-}
-
-/** A card of «Готово»: where it leads and its state once known. */
-interface NextCard {
-  readonly id: 'student' | 'messenger' | 'ai' | 'google';
-  readonly icon: string;
-  readonly title: string;
-  readonly text: string;
-  readonly link: string;
-  readonly query?: Readonly<Record<string, string>>;
-  readonly state: string | null;
-  readonly done: boolean;
-}
-
-/** A row of «Что вы настроили» and the step that changes it. */
-interface SummaryRow {
-  readonly label: string;
-  readonly value: string;
-  readonly step: StepId;
-}
-
-/** A sample lesson at 18:00 next Thursday on this device (sketch OnbTime). */
-function sampleLesson(now = new Date()): Date {
-  const lesson = new Date(now);
-  lesson.setDate(now.getDate() + ((4 - now.getDay() + 7) % 7 || 7));
-  lesson.setHours(18, 0, 0, 0);
-  return lesson;
-}
-
 /**
  * The teacher's first setup (ADR-0014, sketches OnbFlow…OnbPhone): full-screen, outside the shell. Steps:
  * the own password (only while the generated one is in force), «Вы и портал», «Время и оплата», «Правила»
@@ -126,28 +69,21 @@ function sampleLesson(now = new Date()): Date {
   selector: 'tb-setup-page',
   imports: [
     NgTemplateOutlet,
-    ReactiveFormsModule,
     Button,
-    Card,
     ProgressBar,
-    ChangePasswordForm,
-    CurrencyField,
-    DueSoonField,
-    DurationField,
-    FieldErrors,
     HelpButton,
-    HorizonField,
-    LateCancellationField,
     LoadStateView,
-    PortalAddressField,
     PortalLogo,
-    PortalNameField,
-    PriceField,
-    ProfilePhoto,
     ProgressLabel,
-    RemindersField,
-    TeacherNameField,
-    TimeZoneField,
+    SetupDonePreview,
+    SetupDoneStep,
+    SetupPasswordStep,
+    SetupPortalPreview,
+    SetupPortalStep,
+    SetupRulesPreview,
+    SetupRulesStep,
+    SetupTimePreview,
+    SetupTimeStep,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'tb-setup', '[class.tb-setup--compact]': 'compact()' },
@@ -221,144 +157,40 @@ function sampleLesson(now = new Date()): Date {
       <section class="tb-setup__main" aria-labelledby="setup-step-title">
         <h1 id="setup-step-title" class="tb-setup__heading">{{ heading() }}</h1>
         <tb-load-state [state]="state" [what]="t.whatWait" (retry)="load()">
+          <p class="tb-setup__lead">{{ lead() }}</p>
           @switch (current()) {
             @case ('password') {
-              <p class="tb-setup__lead">{{ t.passwordText }}</p>
-              <p-card styleClass="tb-section-card tb-section-card--flow">
-                <tb-change-password-form
-                  [currentLabel]="t.currentPassword"
-                  [submitLabel]="t.next"
-                  (changed)="passwordChanged()"
-                />
-              </p-card>
+              <tb-setup-password-step (changed)="passwordChanged()" />
             }
             @case ('portal') {
-              <p class="tb-setup__lead">{{ t.portalLead }}</p>
-              <form
-                tbFieldErrors
-                id="setup-portal"
-                class="tb-stack"
-                [formGroup]="portalForm"
-                (ngSubmit)="next()"
-              >
-                <button type="submit" class="tb-sr-only" tabindex="-1" aria-hidden="true"></button>
-                <p-card [header]="t.aboutYou" styleClass="tb-section-card tb-section-card--flow">
-                  @if (account(); as account) {
-                    <tb-profile-photo
-                      [account]="account"
-                      [hint]="t.photoLater"
-                      (changed)="photoChanged($event)"
-                    />
-                  }
-                  <tb-teacher-name-field
-                    inputId="setup-teacher-name"
-                    [label]="t.teacherName"
-                    [control]="portalForm.controls.teacherName"
-                  />
-                </p-card>
-                <p-card [header]="t.portalCard" styleClass="tb-section-card tb-section-card--flow">
-                  <tb-portal-name-field
-                    inputId="setup-portal-name"
-                    [control]="portalForm.controls.portalName"
-                  />
-                  <tb-portal-address-field
-                    inputId="setup-address"
-                    [checkable]="true"
-                    [control]="portalForm.controls.address"
-                  />
-                </p-card>
-              </form>
+              <tb-setup-portal-step
+                [form]="portalForm"
+                [account]="account()"
+                (submitted)="next()"
+                (photoChanged)="photoChanged($event)"
+              />
             }
             @case ('time') {
-              <p class="tb-setup__lead">{{ t.timeLead }}</p>
-              <form id="setup-time" class="tb-stack" [formGroup]="timeForm" (ngSubmit)="next()">
-                <button type="submit" class="tb-sr-only" tabindex="-1" aria-hidden="true"></button>
-                <p-card [header]="t.timeCard" styleClass="tb-section-card tb-section-card--flow">
-                  <tb-time-zone-field inputId="setup-zone" [control]="timeForm.controls.zone" />
-                  <tb-duration-field
-                    inputId="setup-duration"
-                    [hint]="true"
-                    [control]="timeForm.controls.duration"
-                  />
-                </p-card>
-                <p-card [header]="t.paymentCard" styleClass="tb-section-card tb-section-card--flow">
-                  <div class="tb-setup__two">
-                    <tb-currency-field
-                      inputId="setup-currency"
-                      [short]="true"
-                      [locked]="saved()?.locked ?? false"
-                      [control]="timeForm.controls.currency"
-                    />
-                    <tb-price-field
-                      inputId="setup-price"
-                      [short]="true"
-                      [currency]="currency() ?? 'RUB'"
-                      [control]="timeForm.controls.price"
-                    />
-                  </div>
-                  <small class="tb-hint tb-setup__shared-hint"
-                    ><i class="tb-i tb-i-info" aria-hidden="true"></i>{{ t.paymentHint }}</small
-                  >
-                </p-card>
-              </form>
+              <tb-setup-time-step
+                [form]="timeForm"
+                [locked]="saved()?.locked ?? false"
+                [currency]="currency()"
+                (submitted)="next()"
+              />
             }
             @case ('rules') {
-              <p class="tb-setup__lead">{{ t.rulesLead }}</p>
-              <form id="setup-rules" class="tb-stack" [formGroup]="rulesForm" (ngSubmit)="next()">
-                <button type="submit" class="tb-sr-only" tabindex="-1" aria-hidden="true"></button>
-                <p-card [header]="t.cancelCard" styleClass="tb-section-card tb-section-card--flow">
-                  <tb-late-cancellation-field
-                    inputId="setup-late"
-                    [control]="rulesForm.controls.late"
-                  />
-                  <tb-reminders-field labelId="setup-reminders" [(reminders)]="reminders" />
-                </p-card>
-                <p-card
-                  [header]="t.homeworkCard"
-                  styleClass="tb-section-card tb-section-card--flow"
-                >
-                  <div class="tb-stack">
-                    <tb-due-soon-field
-                      inputId="setup-due-soon"
-                      [control]="rulesForm.controls.dueSoon"
-                    />
-                    <tb-horizon-field
-                      inputId="setup-horizon"
-                      [control]="rulesForm.controls.horizon"
-                    />
-                  </div>
-                </p-card>
-              </form>
+              <tb-setup-rules-step
+                [form]="rulesForm"
+                [(reminders)]="reminders"
+                (submitted)="next()"
+              />
             }
             @case ('done') {
-              <p class="tb-setup__lead">{{ t.doneLead }}</p>
-              <ul class="tb-setup__next" [attr.aria-label]="t.nextSteps">
-                @for (card of nextCards(); track card.id; let first = $first) {
-                  <li>
-                    <button
-                      type="button"
-                      class="tb-setup__card"
-                      [class.tb-setup__card--hero]="first"
-                      [disabled]="pending()"
-                      (click)="finish(card.link, card.query)"
-                    >
-                      <span class="tb-setup__card-icon" aria-hidden="true"
-                        ><i class="tb-i" [class]="card.icon"></i
-                      ></span>
-                      <b>{{ card.title }}</b>
-                      <span class="tb-setup__card-text">{{ card.text }}</span>
-                      @if (card.state !== null) {
-                        <span class="tb-setup__card-state" [class.tb-positive]="card.done">
-                          @if (card.done) {
-                            <i class="tb-i tb-i-check_circle" aria-hidden="true"></i>
-                          }
-                          {{ card.state }}
-                        </span>
-                      }
-                    </button>
-                  </li>
-                }
-              </ul>
+              <tb-setup-done-step
+                [states]="states()"
+                [pending]="pending()"
+                (opened)="finish($event.link, $event.query)"
+              />
             }
           }
           @if (compact() && current() !== 'password') {
@@ -414,85 +246,29 @@ function sampleLesson(now = new Date()): Date {
 
     <ng-template #asideTemplate>
       <aside class="tb-setup__aside" [attr.aria-label]="asideTitle()">
+        @if (current() !== 'password') {
+          <span class="tb-setup__cap">{{ asideTitle() }}</span>
+        }
         @switch (current()) {
           @case ('portal') {
-            <span class="tb-setup__cap">{{ t.studentSees }}</span>
-            <div class="tb-setup__preview tb-setup__preview--center">
-              <div class="tb-setup__login">
-                <tb-portal-logo size="2.5rem" />
-                <b class="tb-setup__login-name">{{ portalName() }}</b>
-                <span class="tb-muted">{{ t.studentSignIn }}</span>
-                <span class="tb-setup__login-field"></span>
-                <span class="tb-setup__login-field"></span>
-                <span class="tb-setup__login-button">{{ t.signIn }}</span>
-              </div>
-              <p class="tb-setup__bubble">
-                {{ t.invite(teacherName(), portalName()) }}
-                <span class="tb-setup__link">{{ inviteLink() }}</span>
-              </p>
-            </div>
+            <tb-setup-portal-preview [values]="portalValues()" />
           }
           @case ('time') {
-            <span class="tb-setup__cap">{{ t.inSchedule }}</span>
-            <div class="tb-setup__preview">
-              <div class="tb-setup__lesson">
-                <span class="tb-setup__time">
-                  <small>{{ lessonDay }}</small>
-                  <b>{{ lessonStart }}</b>
-                </span>
-                <span class="tb-setup__lesson-text">
-                  <b>{{ t.sampleStudent }}</b>
-                  <span class="tb-muted">{{ lessonLine() }}</span>
-                </span>
-              </div>
-              <div class="tb-setup__lesson">
-                <span class="tb-setup__time tb-setup__time--tonal">
-                  <small>{{ t.month }}</small>
-                  <b>{{ currencySign() }}</b>
-                </span>
-                <span class="tb-setup__lesson-text">
-                  <b>{{ t.report(monthName) }}</b>
-                  <span class="tb-muted">{{ reportLine() }}</span>
-                </span>
-              </div>
-            </div>
-            <p class="tb-setup__note">
-              <i class="tb-i tb-i-schedule" aria-hidden="true"></i>{{ t.zoneLater }}
-            </p>
+            <tb-setup-time-preview
+              [values]="timeValues()"
+              [currency]="currency()"
+              [saved]="saved()"
+            />
           }
           @case ('rules') {
-            <span class="tb-setup__cap">{{ t.howItWorks }}</span>
-            @for (example of examples(); track example.icon) {
-              <p class="tb-setup__example">
-                <i class="tb-i" [class]="example.icon" aria-hidden="true"></i>
-                <span
-                  ><b>{{ example.title }}</b
-                  >{{ example.text }}</span
-                >
-              </p>
-            }
+            <tb-setup-rules-preview
+              [values]="rulesValues()"
+              [reminders]="reminders()"
+              [saved]="saved()"
+            />
           }
           @case ('done') {
-            <span class="tb-setup__cap">{{ t.configured }}</span>
-            <ul class="tb-tiles tb-setup__summary">
-              @for (row of summary(); track row.label) {
-                <li class="tb-tile">
-                  <span class="tb-tile__text">
-                    <span>{{ row.label }}</span>
-                    <b>{{ row.value }}</b>
-                  </span>
-                  <p-button
-                    icon="tb-i tb-i-edit"
-                    [text]="true"
-                    [rounded]="true"
-                    severity="secondary"
-                    [ariaLabel]="t.edit(row.label)"
-                    (onClick)="goTo(row.step)"
-                  />
-                </li>
-              }
-            </ul>
-            <small class="tb-hint">{{ t.changeLater }}</small>
+            <tb-setup-done-preview [saved]="saved()" (edit)="goTo($event)" />
           }
         }
       </aside>
@@ -620,104 +396,12 @@ function sampleLesson(now = new Date()): Date {
       font: var(--tb-type-body-l);
     }
 
-    .tb-setup__two {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
-      gap: var(--tb-space-3);
-      align-items: start;
-    }
-
-    .tb-setup__shared-hint {
-      display: flex;
-      gap: var(--tb-space-1);
-
-      .tb-i {
-        font-size: 1rem;
-      }
-    }
-
     .tb-setup__actions {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: var(--tb-space-2);
       margin-block-start: var(--tb-space-5);
-    }
-
-    /* «Готово»: the next steps as cards, two columns (sketch OnbDone) */
-    .tb-setup__next {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
-      gap: var(--tb-space-3);
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .tb-setup__card {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-2);
-      width: 100%;
-      height: 100%;
-      padding: var(--tb-space-5);
-      border: 1px solid var(--p-md-outline-variant);
-      border-radius: var(--tb-shape-lg-increased, 1.25rem);
-      background: var(--p-md-surface-container-lowest);
-      color: inherit;
-      font: inherit;
-      text-align: start;
-      cursor: pointer;
-
-      &:hover {
-        background: color-mix(
-          in srgb,
-          var(--p-md-on-surface) var(--tb-state-hover),
-          var(--p-md-surface-container-lowest)
-        );
-      }
-
-      b {
-        font: var(--tb-type-title-m);
-      }
-    }
-
-    .tb-setup__card--hero {
-      border-color: var(--p-md-secondary-container);
-      background: var(--p-md-secondary-container);
-      color: var(--p-md-on-secondary-container);
-
-      .tb-setup__card-icon {
-        background: var(--p-md-primary);
-        color: var(--p-md-on-primary);
-      }
-    }
-
-    .tb-setup__card-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 3rem;
-      height: 3rem;
-      border-radius: var(--tb-shape-lg);
-      background: var(--p-md-surface-container-low);
-      color: var(--p-md-primary);
-    }
-
-    .tb-setup__card-text {
-      font: var(--tb-type-body-m);
-    }
-
-    .tb-setup__card-state {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--tb-space-1);
-      margin-block-start: auto;
-      font: var(--tb-type-label-l);
-
-      .tb-i {
-        font-size: 1.125rem;
-      }
     }
 
     /* the example column */
@@ -734,151 +418,6 @@ function sampleLesson(now = new Date()): Date {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
       text-transform: uppercase;
-    }
-
-    .tb-setup__preview {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-3);
-      padding: var(--tb-space-5);
-      border-radius: var(--tb-shape-lg-increased, 1.25rem);
-      background: var(--p-md-surface-container);
-    }
-
-    .tb-setup__preview--center {
-      align-items: center;
-    }
-
-    .tb-setup__login {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-2);
-      align-items: center;
-      width: 100%;
-      max-width: 20rem;
-      padding: var(--tb-space-5);
-      border-radius: var(--tb-shape-lg-increased, 1.25rem);
-      background: var(--p-md-surface);
-      text-align: center;
-    }
-
-    .tb-setup__login-name {
-      font: var(--tb-type-title-l);
-    }
-
-    .tb-setup__login-field {
-      width: 100%;
-      height: 2.5rem;
-      border-radius: var(--tb-shape-xs) var(--tb-shape-xs) 0 0;
-      background: var(--p-md-surface-container-highest);
-    }
-
-    .tb-setup__login-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 2.5rem;
-      border-radius: var(--tb-shape-full);
-      background: var(--p-md-primary);
-      color: var(--p-md-on-primary);
-      font: var(--tb-type-label-l);
-    }
-
-    .tb-setup__bubble {
-      align-self: stretch;
-      margin: 0;
-      padding: var(--tb-space-3) var(--tb-space-4);
-      border-radius: var(--tb-shape-lg) var(--tb-shape-lg) var(--tb-shape-lg) var(--tb-shape-xs);
-      background: var(--p-md-surface-container-lowest);
-      font: var(--tb-type-body-m);
-      overflow-wrap: anywhere;
-    }
-
-    .tb-setup__link {
-      color: var(--p-md-primary);
-    }
-
-    .tb-setup__lesson {
-      display: flex;
-      align-items: center;
-      gap: var(--tb-space-4);
-      padding: var(--tb-space-3) var(--tb-space-4);
-      border-radius: var(--tb-shape-lg);
-      background: var(--p-md-surface-container-lowest);
-    }
-
-    .tb-setup__time {
-      display: flex;
-      flex: 0 0 4.5rem;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 4.5rem;
-      border-radius: var(--tb-shape-lg);
-      background: var(--p-md-primary);
-      color: var(--p-md-on-primary);
-
-      small {
-        font: var(--tb-type-label-m);
-      }
-
-      b {
-        font: var(--tb-type-title-l-emphasized);
-      }
-    }
-
-    .tb-setup__time--tonal {
-      background: var(--p-md-secondary-container);
-      color: var(--p-md-on-secondary-container);
-    }
-
-    .tb-setup__lesson-text {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-
-      b {
-        font: var(--tb-type-title-m);
-      }
-    }
-
-    .tb-setup__note,
-    .tb-setup__example {
-      display: flex;
-      gap: var(--tb-space-3);
-      align-items: flex-start;
-      margin: 0;
-      padding: var(--tb-space-3) var(--tb-space-4);
-      border-radius: var(--tb-shape-lg);
-      font: var(--tb-type-body-m);
-    }
-
-    .tb-setup__note {
-      background: var(--p-md-secondary-container);
-      color: var(--p-md-on-secondary-container);
-    }
-
-    .tb-setup__example {
-      padding: var(--tb-space-4);
-      border-radius: var(--tb-shape-lg-increased, 1.25rem);
-      background: var(--p-md-surface-container);
-
-      .tb-i {
-        color: var(--p-md-primary);
-      }
-
-      b {
-        display: block;
-        margin-block-end: var(--tb-space-1);
-        font: var(--tb-type-title-s);
-      }
-    }
-
-    .tb-setup__summary {
-      margin: 0;
-      padding: 0;
-      list-style: none;
     }
 
     /* compact and medium (sketch OnbPhone): the window is the surface, one column, «Далее» at the bottom */
@@ -985,6 +524,21 @@ export class SetupPage implements OnInit {
         return this.steps()[this.currentIndex()]?.title ?? '';
     }
   });
+  /** The lead under the heading of the step. */
+  protected readonly lead = computed(() => {
+    switch (this.current()) {
+      case 'password':
+        return t.passwordText;
+      case 'portal':
+        return t.portalLead;
+      case 'time':
+        return t.timeLead;
+      case 'rules':
+        return t.rulesLead;
+      default:
+        return t.doneLead;
+    }
+  });
   protected readonly asideTitle = computed(() => {
     switch (this.current()) {
       case 'portal':
@@ -1031,180 +585,22 @@ export class SetupPage implements OnInit {
   });
   readonly reminders = signal<readonly number[]>([]);
 
-  private readonly portalValues = toSignal(this.portalForm.valueChanges, {
+  protected readonly portalValues = toSignal(this.portalForm.valueChanges, {
     initialValue: this.portalForm.getRawValue(),
   });
-  private readonly timeValues = toSignal(this.timeForm.valueChanges, {
+  protected readonly timeValues = toSignal(this.timeForm.valueChanges, {
     initialValue: this.timeForm.getRawValue(),
   });
-  private readonly rulesValues = toSignal(this.rulesForm.valueChanges, {
+  protected readonly rulesValues = toSignal(this.rulesForm.valueChanges, {
     initialValue: this.rulesForm.getRawValue(),
-  });
-
-  protected readonly portalName = computed(
-    () => nonEmpty(this.portalValues().portalName?.trim()) ?? DEFAULT_PORTAL_NAME,
-  );
-  protected readonly teacherName = computed(() => this.portalValues().teacherName?.trim() ?? '');
-  protected readonly inviteLink = computed(() => {
-    const address = nonEmpty(this.portalValues().address?.trim()) ?? this.portal.openedAt();
-    return `${address.replace(/^https?:\/\//, '')}/invite/…`;
   });
 
   /** The currency as the price shows it: the chosen one, or the locked one. */
   protected readonly currency = computed(
     () => nonEmpty(this.timeValues().currency) ?? this.saved()?.currency ?? null,
   );
-  protected readonly currencySign = computed(() => {
-    const code = this.currency() ?? 'RUB';
-    return (
-      new Intl.NumberFormat(locale(), {
-        style: 'currency',
-        currency: code,
-        currencyDisplay: 'narrowSymbol',
-      })
-        .formatToParts(0)
-        .find((part) => part.type === 'currency')?.value ?? code
-    );
-  });
-
-  private readonly lesson = sampleLesson();
-  private readonly timeFormat = new Intl.DateTimeFormat(locale(), {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-  protected readonly lessonDay = new Intl.DateTimeFormat(locale(), {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'numeric',
-  }).format(this.lesson);
-  protected readonly lessonStart = this.timeFormat.format(this.lesson);
-  protected readonly monthName = new Intl.DateTimeFormat(locale(), { month: 'long' }).format(
-    new Date(),
-  );
-  protected readonly lessonLine = computed(() => {
-    const values = this.timeValues();
-    const minutes = values.duration ?? this.saved()?.rules.defaultDurationMinutes ?? 60;
-    const end = new Date(this.lesson.getTime() + minutes * 60_000);
-    const span = `${this.lessonStart}–${this.timeFormat.format(end)}`;
-    const price = values.price ?? 0;
-    const currency = this.currency();
-    return price > 0 && currency !== null
-      ? `${span} · ${formatMoney(toMinorUnits(price, currency), currency)}`
-      : span;
-  });
-  protected readonly reportLine = computed(() => {
-    const now = new Date();
-    const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    const day = new Intl.DateTimeFormat(locale(), { day: 'numeric', month: 'long' }).format(last);
-    return t.reportSpan(day, zoneLabel(this.timeValues().zone ?? ''));
-  });
-
-  protected readonly examples = computed(() => {
-    const values = this.rulesValues();
-    const saved = this.saved();
-    const late = values.late ?? (saved?.rules.lateCancellationMinutes ?? 0) / HOUR;
-    const dueSoon = values.dueSoon ?? (saved?.dueSoon ?? 0) / HOUR;
-    const horizon = values.horizon ?? saved?.rules.horizonWeeks ?? 0;
-    return [
-      { icon: 'tb-i-event_busy', title: t.lateTitle, text: lateExample(late * HOUR) },
-      {
-        icon: 'tb-i-notifications',
-        title: t.remindersTitle,
-        text: remindersExample(this.reminders()),
-      },
-      {
-        icon: 'tb-i-assignment_late',
-        title: t.dueSoonTitle,
-        text: dueSoonExample(dueSoon * HOUR),
-      },
-      { icon: 'tb-i-event_repeat', title: t.horizonTitle, text: horizonExample(horizon) },
-    ];
-  });
-
-  /** What «Готово» shows was set up: the values as saved (a skipped step shows the server's). */
-  protected readonly summary = computed<SummaryRow[]>(() => {
-    const saved = this.saved();
-    if (saved === null) {
-      return [];
-    }
-    const { portal, rules } = saved;
-    const host = (portal.address ?? this.portal.openedAt()).replace(/^https?:\/\//, '');
-    const length = spanLabel(rules.defaultDurationMinutes);
-    const reminders = [...rules.reminderMinutes]
-      .sort((a, b) => b - a)
-      .map((minutes) => T.page.before(spanLabel(minutes)).toLocaleLowerCase(locale()));
-    return [
-      {
-        label: t.summaryPortal,
-        value: `${nonEmpty(portal.name) ?? DEFAULT_PORTAL_NAME} · ${host}`,
-        step: 'portal',
-      },
-      { label: t.summaryZone, value: zoneLabel(saved.zone), step: 'time' },
-      {
-        label: t.summaryLesson,
-        value: saved.price > 0 ? `${length} · ${formatMoney(saved.price, saved.currency)}` : length,
-        step: 'time',
-      },
-      {
-        label: t.summaryLate,
-        value:
-          rules.lateCancellationMinutes > 0
-            ? t.lessThan(spanLabel(rules.lateCancellationMinutes))
-            : t.off,
-        step: 'rules',
-      },
-      {
-        label: t.summaryReminders,
-        value:
-          reminders.length > 0
-            ? `${reminders.slice(0, -1).join(', ')}${reminders.length > 1 ? t.and : ''}${reminders.at(-1) ?? ''}`
-            : t.off,
-        step: 'rules',
-      },
-      { label: t.summaryDueSoon, value: t.remindBefore(spanLabel(saved.dueSoon)), step: 'rules' },
-    ];
-  });
-
   /** The states of the next steps, once asked when «Готово» opens. */
-  private readonly states = signal<
-    Partial<Record<NextCard['id'], { state: string; done: boolean }>>
-  >({});
-  protected readonly nextCards = computed<NextCard[]>(() => {
-    const states = this.states();
-    const card = (id: NextCard['id'], rest: Omit<NextCard, 'id' | 'state' | 'done'>): NextCard => ({
-      id,
-      ...rest,
-      state: states[id]?.state ?? null,
-      done: states[id]?.done ?? false,
-    });
-    return [
-      card('student', {
-        icon: 'tb-i-person_add',
-        title: t.addStudent,
-        text: t.addStudentText,
-        link: '/teacher/students',
-        query: { create: 'student' },
-      }),
-      card('messenger', {
-        icon: 'tb-i-forum',
-        title: t.connectMessenger,
-        text: t.connectMessengerText,
-        link: '/teacher/settings/messengers',
-      }),
-      card('ai', {
-        icon: 'tb-i-auto_awesome',
-        title: t.connectAi,
-        text: t.connectAiText,
-        link: '/teacher/settings/ai',
-      }),
-      card('google', {
-        icon: 'tb-i-event',
-        title: t.google,
-        text: t.googleText,
-        link: '/teacher/settings/lessons',
-      }),
-    ];
-  });
+  protected readonly states = signal<NextStates>({});
   private statesAsked = false;
 
   ngOnInit(): void {
@@ -1517,7 +913,7 @@ export class SetupPage implements OnInit {
       return;
     }
     this.statesAsked = true;
-    const set = (id: NextCard['id'], state: string, done: boolean): void => {
+    const set = (id: NextCardId, state: string, done: boolean): void => {
       this.states.update((states) => ({ ...states, [id]: { state, done } }));
     };
     this.identity
@@ -1559,11 +955,6 @@ export class SetupPage implements OnInit {
         }
       });
   }
-}
-
-/** `null` for an empty or missing text. */
-function nonEmpty(text: string | undefined): string | null {
-  return text === undefined || text === '' ? null : text;
 }
 
 /** The requests one after another (a price after its currency); none — at once. */

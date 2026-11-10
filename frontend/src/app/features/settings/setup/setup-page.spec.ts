@@ -11,21 +11,8 @@ import { aStudent } from '@testing/identity-fixtures';
 import { portalSettings } from '@testing/portal-fixtures';
 import { lessonRules, scheduleSettings } from '@testing/schedule-fixtures';
 import { screenWidth, testProviders } from '@testing/setup';
-import type { Account } from '@features/identity/parts';
+import { SETUP_ACCOUNT } from '@testing/setup-fixtures';
 import { SetupPage } from './setup-page';
-
-const ACCOUNT: Account = {
-  id: 'teacher-1',
-  role: 'TEACHER',
-  displayName: 'Учитель',
-  profileName: 'Учитель',
-  avatar: null,
-  login: 'teacher',
-  email: null,
-  phone: null,
-  passwordChangeRequired: false,
-  language: 'ru',
-};
 
 const DEVICE = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -60,7 +47,7 @@ describe('SetupPage', () => {
   }
 
   function flushLoad(locked: boolean): void {
-    backend.expectOne('/api/me').flush(ACCOUNT);
+    backend.expectOne('/api/me').flush(SETUP_ACCOUNT);
     backend.expectOne('/api/teacher/portal').flush(portalSettings({ setupCompleted: false }));
     backend
       .expectOne('/api/me/schedule/settings')
@@ -138,7 +125,7 @@ describe('SetupPage', () => {
     await click(host, 'Далее');
     backend
       .expectOne({ method: 'PUT', url: '/api/teacher/profile' })
-      .flush({ ...ACCOUNT, displayName: 'Елена Викторовна' });
+      .flush({ ...SETUP_ACCOUNT, displayName: 'Елена Викторовна' });
     await fixture.whenStable();
     const portal = backend.expectOne({ method: 'PUT', url: '/api/teacher/portal' });
     expect(portal.request.body).toEqual({
@@ -175,19 +162,13 @@ describe('SetupPage', () => {
     length.flush(lessonRules({ defaultDurationMinutes: 90 }));
     await fixture.whenStable();
 
-    // «Правила»: examples follow the fields
+    // «Правила»: examples follow the fields (the examples themselves — rules-step.spec.ts)
     expect(readableText(host)).toContain('Как это работает');
-    expect(readableText(host)).toContain(
-      'Урок в четверг в 10:00. Ученик отменил в среду в 20:00 — это поздняя отмена',
-    );
-    expect(readableText(host)).toContain('в среду в 10:00 и в четверг в 9:00. Вам — только в 9:00');
     fixture.componentInstance.rulesForm.patchValue({ late: 0, dueSoon: 6, horizon: 4 });
     fixture.componentInstance.reminders.set([60]);
     await fixture.whenStable();
     let text = readableText(host);
     expect(text).toContain('Поздних отмен не будет');
-    expect(text).toContain('Сообщение придёт ученику и вам в четверг в 9:00');
-    expect(text).toContain('ученику напомнят в пятницу в 12:00');
     expect(text).toContain('на 4 недели вперёд');
     await click(host, 'Далее');
     const rules = backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/settings' });
@@ -212,7 +193,7 @@ describe('SetupPage', () => {
       .flush({ dueSoonMinutes: 360 });
     await fixture.whenStable();
 
-    // «Готово»: the next steps with their states and what was set up
+    // «Готово»: the next steps with their states and what was set up (the rows — done-step.spec.ts)
     flushStates(2, true);
     await fixture.whenStable();
     text = readableText(host);
@@ -222,8 +203,6 @@ describe('SetupPage', () => {
     expect(text).toContain('Подключён');
     expect(text).toContain('Английский с Еленой · school.example.com');
     expect(text).toContain('1 ч 30 мин · 25 €');
-    expect(text).toContain('Поздняя отмена нет');
-    expect(text).toContain('Напоминания за 1 ч');
     expect(text).toContain('напомнить за 6 ч');
     expect(text).not.toContain('Пропустить');
 

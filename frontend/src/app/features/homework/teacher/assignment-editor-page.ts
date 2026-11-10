@@ -57,7 +57,6 @@ import {
   AiApi,
   AppliedDraft,
   AppliedQuestions,
-  HomeworkAiPanel,
   HomeworkAiState,
   SourceOption,
 } from '@features/ai/parts';
@@ -78,7 +77,6 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { PageHeader } from '@shared/ui/page-header';
-import { Avatar } from '@shared/ui/avatar';
 import { InputChip } from '@shared/ui/input-chip';
 import {
   SectionNav,
@@ -92,34 +90,30 @@ import {
   AssignmentInput,
   Attachment,
   BoundTextbook,
-  QuizAnswer,
   QuizReveal,
 } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
-import { Due, DueChips, dueAtOf } from '../ui/due-chips';
-import { AttachmentList } from '../ui/attachment-list';
-import { BoardPick, MaterialChips } from '../ui/material-chips';
-import { RecipientsField } from '../ui/recipients-field';
-import { TextbookList } from '../ui/textbook-list';
-import { videoName } from '../ui/video-list';
+import { Due, dueAtOf } from '../ui/due-chips';
+import { BoardPick } from '../ui/material-chips';
 import { titleOf } from './assignment-draft';
 import { assignmentBoard } from './assignment-board';
 import { AssignMoreDialog } from './assign-more-dialog';
 import { BindTextbookDialog } from './bind-textbook-dialog';
-import { MaterialOpener } from './material-opener';
 import { NEXT_LESSON_DAYS, nextLessonStart } from './next-lesson';
 import {
   MAX_QUESTIONS,
-  QUESTION_ICONS,
   QuestionDraft,
   firstProblem,
   questionDraft,
   questionInputs,
-  asStudentSees,
 } from './question-drafts';
-import { QuestionSection } from './question-section';
+import { aiSources } from './editor/ai-sources';
+import { EditorAi } from './editor/editor-ai';
+import { EditorQuiz } from './editor/editor-quiz';
+import { EditorMaterials } from './editor/editor-materials';
+import { EditorQuizSummary } from './editor/editor-quiz-summary';
+import { EditorRecipients } from './editor/editor-recipients';
 import { QuizSettings } from './quiz-settings';
-import { QuizPlayer } from '../student/quiz-player';
 import { MAX_VIDEOS, VideoDraft, VideoSection, videoDraft, videoInputs } from './video-section';
 
 /** A student that can receive homework. */
@@ -131,13 +125,8 @@ export interface StudentOption {
 /** «Задание», «Тест» and, on a phone, «Настройки» of the test. */
 type EditorTab = 'task' | 'quiz' | 'settings';
 
-/** Questions on the summary card of «Задание». */
-const SUMMARY_QUESTIONS = 3;
 const AUTOSAVE_DELAY = 1500;
 const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-digit' });
-
-/** Files the AI reads (ADR-0039). */
-const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
 
 /**
  * Teacher: the page that creates an assignment or edits one, on two tabs (sketches 11, 28): «Задание» in the
@@ -160,28 +149,24 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
     Card,
     Menu,
     Message,
-    DueChips,
-    MaterialChips,
-    AttachmentList,
-    RecipientsField,
     SectionNav,
-    Avatar,
     InputChip,
     AssignMoreDialog,
     SelectButton,
     Textarea,
-    HomeworkAiPanel,
     ToBoardDialog,
     HelpButton,
     MarkdownView,
     PageHeader,
     LoadStateView,
     FieldErrors,
-    TextbookList,
     BindTextbookDialog,
     VideoSection,
-    QuestionSection,
-    QuizPlayer,
+    EditorAi,
+    EditorMaterials,
+    EditorQuiz,
+    EditorQuizSummary,
+    EditorRecipients,
     QuizSettings,
     Tabs,
     TabList,
@@ -382,52 +367,11 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                     }
 
                     @if (questions().length > 0) {
-                      <p-card
-                        id="editor-quiz-summary"
-                        styleClass="tb-section-card"
-                        class="tb-editor__quiz"
-                      >
-                        <div class="tb-editor__card-head">
-                          <h2 class="tb-subtitle">{{ t.quizTitle }}</h2>
-                          <span class="tb-hint">{{ quizSummary() }}</span>
-                        </div>
-                        <ul class="tb-list tb-list--no-lead" [attr.aria-label]="t.quizTitle">
-                          @for (
-                            question of firstQuestions();
-                            track question.id;
-                            let index = $index
-                          ) {
-                            <li>
-                              <span class="tb-editor__quiz-row">
-                                <b>{{ index + 1 }}</b>
-                                <i
-                                  class="tb-i {{ icons[question.type] }}"
-                                  aria-hidden="true"
-                                  [title]="tq.types[question.type]"
-                                ></i>
-                                <span class="tb-editor__quiz-text">{{
-                                  question.text.trim() || t.untitledQuestion
-                                }}</span>
-                              </span>
-                              <span class="tb-list__trail tb-hint">{{ question.points }}</span>
-                            </li>
-                          }
-                          @if (questions().length > firstQuestions().length) {
-                            <li>
-                              <span class="tb-editor__quiz-row tb-hint">{{
-                                t.quizMore(questions().length - firstQuestions().length)
-                              }}</span>
-                            </li>
-                          }
-                        </ul>
-                        <p class="tb-hint">{{ t.quizWhere }}</p>
-                        <p-button
-                          [label]="t.openQuiz"
-                          icon="tb-i tb-i-edit"
-                          severity="secondary"
-                          (onClick)="choose('quiz')"
-                        />
-                      </p-card>
+                      <tb-editor-quiz-summary
+                        [questions]="questions()"
+                        [attempts]="quizAttempts()"
+                        (open)="choose('quiz')"
+                      />
                     }
                     @if (error(); as message) {
                       <p-message severity="error" styleClass="tb-form-message">{{
@@ -437,87 +381,37 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                   </div>
 
                   <div class="tb-editor__aside" role="group" [attr.aria-label]="t.params">
-                    <p-card styleClass="tb-section-card" class="tb-editor__who-card">
-                      <div class="tb-editor__who">
-                        @if (draft()) {
-                          <tb-recipients-field
-                            inputId="editor-students"
-                            [control]="form.controls.members"
-                            [students]="studentOptions()"
-                            [groups]="groups()"
-                          />
-                        } @else {
-                          <div class="tb-field">
-                            <span id="editor-given">{{ c.whom }}</span>
-                            <div
-                              class="tb-editor__chips"
-                              role="group"
-                              aria-labelledby="editor-given"
-                            >
-                              @for (task of assignment()?.tasks ?? []; track task.taskId) {
-                                <tb-input-chip [label]="task.studentName" [readonly]="true">
-                                  <tb-avatar lead [name]="task.studentName" size="1.5rem" />
-                                </tb-input-chip>
-                              }
-                              <p-button
-                                [label]="t.assignMore"
-                                icon="tb-i tb-i-add"
-                                severity="secondary"
-                                (onClick)="giveMore()"
-                              />
-                            </div>
-                          </div>
-                        }
-
-                        <tb-due-chips
-                          [lesson]="nextLesson()"
-                          [choice]="dueChoice()"
-                          (choiceChange)="chooseDue($event)"
-                          [date]="duePicked()"
-                          (dateChange)="pickDue($event)"
-                        />
-                      </div>
-                    </p-card>
+                    <tb-editor-recipients
+                      [draft]="draft()"
+                      [members]="form.controls.members"
+                      [students]="studentOptions()"
+                      [groups]="groups()"
+                      [tasks]="assignment()?.tasks ?? []"
+                      [lesson]="nextLesson()"
+                      [choice]="dueChoice()"
+                      (choiceChange)="chooseDue($event)"
+                      [date]="duePicked()"
+                      (dateChange)="pickDue($event)"
+                      (more)="giveMore()"
+                    />
 
                     @if (draft() || extrasInMaterials()) {
-                      <p-card
-                        id="editor-materials"
-                        styleClass="tb-section-card"
-                        class="tb-editor__materials-card"
-                        [header]="c.materials"
-                      >
-                        <div class="tb-editor__materials tb-list--clamp">
-                          @if (draft()) {
-                            <div class="tb-list-group">
-                              <tb-textbook-list
-                                [textbooks]="textbooks()"
-                                [editable]="true"
-                                [withBoard]="false"
-                                (opened)="materials.textbook($event)"
-                                (edit)="editTextbook($event)"
-                                (remove)="removeTextbook($event)"
-                              />
-                              <tb-attachment-list
-                                [attachments]="savedFiles()"
-                                [removable]="true"
-                                (download)="materials.file($event)"
-                                (remove)="removeFile($event)"
-                              />
-                            </div>
-                          }
-                          <tb-material-chips
-                            [(files)]="newFiles"
-                            [compact]="compact()"
-                            [withFiles]="draft()"
-                            [videosFull]="videosFull()"
-                            [withExtras]="extrasInMaterials()"
-                            [boardPicked]="pickedBoard() !== null"
-                            (textbook)="bindTextbook()"
-                            (video)="addVideo()"
-                            (board)="chooseBoard($event)"
-                          />
-                        </div>
-                      </p-card>
+                      <tb-editor-materials
+                        [draft]="draft()"
+                        [extras]="extrasInMaterials()"
+                        [compact]="compact()"
+                        [textbooks]="textbooks()"
+                        [savedFiles]="savedFiles()"
+                        [videosFull]="videosFull()"
+                        [boardPicked]="pickedBoard() !== null"
+                        [(files)]="newFiles"
+                        (editTextbook)="editTextbook($event)"
+                        (removeTextbook)="removeTextbook($event)"
+                        (removeFile)="removeFile($event)"
+                        (bindTextbook)="bindTextbook()"
+                        (addVideo)="addVideo()"
+                        (chooseBoard)="chooseBoard($event)"
+                      />
                     }
                   </div>
                 </div>
@@ -529,8 +423,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                 <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
               }
               @if (activeTab() === 'quiz') {
-                <tb-question-section
-                  id="editor-quiz"
+                <tb-editor-quiz
                   [questions]="questions()"
                   (questionsChange)="changeQuestions($event)"
                   [reveal]="quizReveal()"
@@ -543,17 +436,9 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                   [compact]="compact()"
                   [single]="single()"
                   [status]="savedStatus()"
+                  [title]="titleValue()"
                   (ai)="openAi()"
                   (copyQuiz)="copyForEdits()"
-                />
-                <tb-quiz-player
-                  [(visible)]="studentView"
-                  [questions]="studentQuestions()"
-                  [(answers)]="studentAnswers"
-                  [title]="tt.testTitle(titleValue())"
-                  [subtitle]="t.studentViewNote"
-                  [exitLabel]="t.studentViewClose"
-                  (finished)="studentView.set(false)"
                 />
               }
               @if (activeTab() === 'settings') {
@@ -583,9 +468,9 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
                 />
               </div>
             </ng-template>
-            <tb-homework-ai-panel
-              [pane]="true"
+            <tb-editor-ai
               [students]="aiStudents()"
+              [compact]="compact()"
               (sourceAdd)="bindTextbook()"
               [title]="titleValue()"
               [hasText]="textValue().trim() !== ''"
@@ -609,8 +494,7 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
           [styleClass]="compact() ? 'tb-sheet tb-editor-ai-drawer' : 'tb-editor-ai-drawer'"
           [style]="compact() ? {} : { width: 'min(100vw, 25rem)' }"
         >
-          <tb-homework-ai-panel
-            [pane]="true"
+          <tb-editor-ai
             [students]="aiStudents()"
             [compact]="compact()"
             (sourceAdd)="bindTextbook()"
@@ -706,10 +590,6 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
       display: contents;
     }
 
-    .tb-editor__who-card {
-      order: -1;
-    }
-
     @container editor-form (width >= 52rem) {
       .tb-editor__columns {
         flex-direction: row;
@@ -733,16 +613,6 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
         flex: 0 1 23.75rem;
         min-width: 18.75rem;
       }
-
-      .tb-editor__who {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-
-    .tb-editor__who {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 17.5rem), 1fr));
-      gap: var(--tb-space-4) var(--tb-space-6);
     }
 
     .tb-editor__chips {
@@ -754,11 +624,6 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
 
     .tb-editor__text {
       width: 100%;
-    }
-
-    .tb-editor__materials {
-      display: grid;
-      gap: var(--tb-space-2);
     }
 
     .tb-editor__saved {
@@ -778,27 +643,6 @@ const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;
       justify-content: space-between;
       gap: var(--tb-space-2) var(--tb-space-4);
       margin-block-end: var(--tb-space-3);
-    }
-
-    /* one line: the number, the type icon and the text; the points are the row's trail */
-    .tb-editor__quiz-row {
-      grid-area: text;
-      display: flex;
-      align-items: center;
-      gap: var(--tb-space-3);
-      min-width: 0;
-    }
-
-    .tb-editor__quiz-row .tb-i {
-      color: var(--p-md-primary);
-      font-size: 1.25rem;
-    }
-
-    .tb-editor__quiz-text {
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
   `,
 })
@@ -823,17 +667,11 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
     else this.aiOpen.set(true);
   }
   protected readonly tq = T.quiz;
-  protected readonly tt = T.quizTake;
-  /** «Как увидит ученик»: the full-screen test with the editor's questions; the answers stay here. */
-  protected readonly studentView = signal(false);
-  protected readonly studentAnswers = signal<Readonly<Record<string, QuizAnswer>>>({});
-  protected readonly studentQuestions = computed(() =>
-    asStudentSees(questionInputs(this.questions())),
-  );
+  private readonly quiz = viewChild(EditorQuiz);
 
+  /** «Как увидит ученик» of the header: the test as the student sees it. */
   protected openStudentView(): void {
-    this.studentAnswers.set({});
-    this.studentView.set(true);
+    this.quiz()?.openStudentView();
   }
   private readonly api = inject(HomeworkApi);
   private readonly ai = inject(AiApi);
@@ -842,7 +680,6 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   private readonly router = inject(Router);
   private readonly snackbar = inject(Snackbar);
   private readonly confirm = inject(Confirm);
-  protected readonly materials = inject(MaterialOpener);
 
   /** Route parameter of `/teacher/homework/:assignmentId/edit`; none — a new assignment. */
   readonly assignmentId = input<string>();
@@ -926,16 +763,6 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
     }
     return tab === 'quiz' ? 'quiz' : 'task';
   });
-  protected readonly icons = QUESTION_ICONS;
-  /** The first questions on the summary card of «Задание». */
-  protected readonly firstQuestions = computed(() => this.questions().slice(0, SUMMARY_QUESTIONS));
-  protected readonly quizSummary = computed(() =>
-    T.editor.quizSummary(
-      this.questions().length,
-      this.questions().reduce((sum, question) => sum + question.points, 0),
-      this.quizAttempts(),
-    ),
-  );
   /** Files saved with a draft: removed here, an issued assignment has them on its page. */
   protected readonly savedFiles = computed(() =>
     this.isDraft() ? (this.assignment()?.attachments ?? []) : [],
@@ -1066,53 +893,10 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
     );
     return this.draft() ? [...saved, ...picked] : saved;
   });
-  /**
-   * What the AI may read for a draft: the bound textbooks (not Word files) and the PDF and picture files — saved ones by
-   * reference (ADR-0039), picked ones of a new assignment with the request (ADR-0042).
-   */
-  readonly sourceOptions = computed<SourceOption[]>(() => {
-    const assignment = this.assignment();
-    const textbooks = this.textbooks()
-      .filter((textbook) => textbook.format !== 'DOCUMENT')
-      .map((textbook) => ({
-        key: `textbook-${textbook.textbookId}`,
-        label:
-          textbook.pages === null
-            ? textbook.title
-            : `${textbook.title}, ${T.editor.pages(textbook.pages)}`,
-        source: { type: 'TEXTBOOK' as const, id: textbook.textbookId, pages: textbook.pages },
-      }));
-    const files =
-      assignment === null
-        ? []
-        : assignment.attachments
-            .filter((file) => AI_READABLE.test(file.contentType))
-            .map((file) => ({
-              key: `file-${file.id}`,
-              label: file.filename,
-              source: { type: 'FILE' as const, id: file.id, assignmentId: assignment.id },
-            }));
-    const picked = this.newFiles()
-      .filter((file) => AI_READABLE.test(file.type))
-      .map((file) => ({
-        key: `picked-${file.name}-${String(file.size)}-${String(file.lastModified)}`,
-        label: file.name,
-        source: file,
-      }));
-    const videos = this.videos()
-      .filter((video) => video.url.trim() !== '' && video.transcript.trim() !== '')
-      .map((video, index) => ({
-        key: `video-${String(video.key)}`,
-        label: T.videos.aiSource(videoName(video, index)),
-        source: {
-          type: 'VIDEO' as const,
-          title: video.title.trim() === '' ? null : video.title.trim(),
-          url: video.url.trim(),
-          transcript: video.transcript,
-        },
-      }));
-    return [...textbooks, ...files, ...picked, ...videos];
-  });
+  /** What the AI may read for a draft (see {@link aiSources}). */
+  readonly sourceOptions = computed<SourceOption[]>(() =>
+    aiSources(this.assignment(), this.textbooks(), this.newFiles(), this.videos()),
+  );
   protected readonly bindVisible = signal(false);
   protected readonly binding = signal<BoundTextbook | null>(null);
   /** The saved assignment going on a board: «Выдать и разместить на доске». */
