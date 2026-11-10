@@ -142,7 +142,7 @@ Styles of the gallery live in its components, not in `styles.scss`.
   samples are excluded in `angular.json` `coverageExclude`; the page and the nav are tested.
   *The route is `features/gallery/dev-routes.ts`, replaced by an empty `dev-routes.prod.ts` in
   production builds: `isDevMode()` kept the route's code in the initial bundle (ADR-0059).*
-- [ ] 371.2 **F** Components: buttons (variants, sizes, FAB, segmented), fields (text, select,
+- [x] 371.2 **F** Components: buttons (variants, sizes, FAB, segmented), fields (text, select,
   stepper, chips, errors), lists, tables and cards, dialogs, sheets and menus, states
   (`tb-load-state`, empty, snackbar, confirmation). Every `shared/ui/*` component has a sample.
 - [ ] 371.3 **F** Motion. A sample per `--tb-spring-*` token: the token name, the property it is

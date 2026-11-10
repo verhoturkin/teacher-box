@@ -3,8 +3,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
+  afterRenderEffect,
   computed,
   inject,
+  input,
 } from '@angular/core';
 import { ThemeMode } from '@core/theme/theme-mode';
 import { PageHeader } from '@shared/ui/page-header';
@@ -118,6 +120,13 @@ export const SAMPLE_ROOT = 'frontend/src/app/features/gallery/';
 
     .tb-gallery-sample__body {
       padding-top: var(--tb-space-2);
+
+      /* the host of a sample: its element, then the caption under it */
+      > * {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-3);
+      }
     }
 
     .tb-gallery-sample__path,
@@ -144,6 +153,13 @@ export const SAMPLE_ROOT = 'frontend/src/app/features/gallery/';
       gap: var(--tb-space-4);
     }
 
+    ul.tb-gallery-cell,
+    ul.tb-gallery-row {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
     .tb-gallery-cell {
       display: flex;
       flex-direction: column;
@@ -160,6 +176,8 @@ export const SAMPLE_ROOT = 'frontend/src/app/features/gallery/';
   `,
 })
 export class GalleryPage {
+  /** `/gallery/<section>`: the section the page opens at. */
+  readonly section = input<string>();
   private readonly mode = inject(ThemeMode);
   protected readonly root = SAMPLE_ROOT;
   protected readonly sections = GALLERY_SECTIONS;
@@ -173,6 +191,15 @@ export class GalleryPage {
     { value: 'dark', label: 'Dark', icon: 'tb-i tb-i-dark_mode' },
   ];
   protected readonly theme = computed<Theme>(() => (this.mode.dark() ? 'dark' : 'light'));
+
+  constructor() {
+    afterRenderEffect(() => {
+      const id = this.section();
+      if (id !== undefined) {
+        document.getElementById(id)?.scrollIntoView({ block: 'start' });
+      }
+    });
+  }
 
   /** The real theme switch of the portal: the choice is stored on the device, as in «Оформление». */
   protected choose(theme: Theme): void {

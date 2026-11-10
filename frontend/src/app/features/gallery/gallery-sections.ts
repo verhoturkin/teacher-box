@@ -10,6 +10,36 @@ import { TypeScaleSample } from './typography/type-scale';
 import { EmphasizedSample } from './typography/emphasized';
 import { IconMarkupSample } from './icons/markup';
 import { IconSizesSample } from './icons/sizes';
+import { MarkdownSample } from './typography/markdown';
+import { PageHeaderSample } from './frame/page-header';
+import { PanesSample } from './frame/panes';
+import { NavigationSample } from './frame/navigation';
+import { ButtonVariantsSample } from './buttons/variants';
+import { ButtonSizesSample } from './buttons/sizes';
+import { FabSample } from './buttons/fab';
+import { SplitButtonSample } from './buttons/split';
+import { ButtonGroupsSample } from './buttons/groups';
+import { SelectButtonSample } from './buttons/select-button';
+import { TextFieldsSample } from './fields/text';
+import { SelectFieldsSample } from './fields/select';
+import { StepperSample } from './fields/stepper';
+import { SearchSample } from './fields/search';
+import { ChipsSample } from './fields/chips';
+import { FieldErrorsSample } from './fields/errors';
+import { SegmentedListSample } from './lists/segmented-list';
+import { TableSample } from './lists/table';
+import { CardsSample } from './lists/cards';
+import { SwipeSample } from './lists/swipe';
+import { AlertDialogSample } from './dialogs/alert';
+import { FormDialogSample } from './dialogs/form';
+import { SheetDialogSample } from './dialogs/sheet';
+import { WizardDialogSample } from './dialogs/wizard';
+import { SideSheetSample } from './dialogs/side-sheet';
+import { MenuSample } from './dialogs/menu';
+import { LoadStateSample } from './states/load-state';
+import { EmptyStateSample } from './states/empty-state';
+import { FeedbackSample } from './states/feedback';
+import { ProgressSample } from './states/progress';
 
 /** One sample: its file under `features/gallery/`, a short title and the component that renders it. */
 export interface GallerySample {
@@ -68,6 +98,7 @@ export const GALLERY_SECTIONS: readonly GallerySection[] = [
     samples: [
       { path: 'typography/type-scale.ts', title: 'Type scale', component: TypeScaleSample },
       { path: 'typography/emphasized.ts', title: 'Emphasized roles', component: EmphasizedSample },
+      { path: 'typography/markdown.ts', title: 'Markdown', component: MarkdownSample },
     ],
   },
   {
@@ -78,6 +109,103 @@ export const GALLERY_SECTIONS: readonly GallerySection[] = [
     samples: [
       { path: 'icons/markup.ts', title: 'Markup', component: IconMarkupSample },
       { path: 'icons/sizes.ts', title: 'Sizes and fill', component: IconSizesSample },
+    ],
+  },
+  {
+    id: 'frame',
+    part: '§7',
+    title: 'Panes and page anatomy',
+    icon: 'tb-i-dashboard',
+    samples: [
+      { path: 'frame/page-header.ts', title: 'Page header', component: PageHeaderSample },
+      {
+        path: 'frame/navigation.ts',
+        title: 'Pane and section navigation',
+        component: NavigationSample,
+      },
+      { path: 'frame/panes.ts', title: 'Panes', component: PanesSample },
+    ],
+  },
+  {
+    id: 'buttons',
+    part: '§8',
+    title: 'Buttons',
+    icon: 'tb-i-radio_button_checked',
+    samples: [
+      { path: 'buttons/variants.ts', title: 'Variants', component: ButtonVariantsSample },
+      { path: 'buttons/sizes.ts', title: 'Sizes', component: ButtonSizesSample },
+      { path: 'buttons/fab.ts', title: 'FAB menu', component: FabSample },
+      { path: 'buttons/split.ts', title: 'Split button', component: SplitButtonSample },
+      {
+        path: 'buttons/groups.ts',
+        title: 'Button groups and segments',
+        component: ButtonGroupsSample,
+      },
+      { path: 'buttons/select-button.ts', title: 'Select button', component: SelectButtonSample },
+    ],
+  },
+  {
+    id: 'fields',
+    part: '§9',
+    title: 'Fields',
+    icon: 'tb-i-short_text',
+    samples: [
+      { path: 'fields/text.ts', title: 'Text fields', component: TextFieldsSample },
+      { path: 'fields/select.ts', title: 'Selects and dates', component: SelectFieldsSample },
+      { path: 'fields/stepper.ts', title: 'Numbers and passwords', component: StepperSample },
+      { path: 'fields/search.ts', title: 'Search field', component: SearchSample },
+      { path: 'fields/chips.ts', title: 'Chips', component: ChipsSample },
+      {
+        path: 'fields/errors.ts',
+        title: 'Required fields and errors',
+        component: FieldErrorsSample,
+      },
+    ],
+  },
+  {
+    id: 'lists',
+    part: '§10',
+    title: 'Lists, tables, chips, cards',
+    icon: 'tb-i-view_list',
+    samples: [
+      { path: 'lists/segmented-list.ts', title: 'Segmented list', component: SegmentedListSample },
+      { path: 'lists/table.ts', title: 'Table', component: TableSample },
+      { path: 'lists/cards.ts', title: 'Cards', component: CardsSample },
+      { path: 'lists/swipe.ts', title: 'Swipe', component: SwipeSample },
+    ],
+  },
+  {
+    id: 'dialogs',
+    part: '§11',
+    title: 'Dialogs, sheets, menus',
+    icon: 'tb-i-open_in_full',
+    samples: [
+      { path: 'dialogs/alert.ts', title: 'Alert', component: AlertDialogSample },
+      { path: 'dialogs/form.ts', title: 'Form', component: FormDialogSample },
+      { path: 'dialogs/sheet.ts', title: 'Sheet', component: SheetDialogSample },
+      {
+        path: 'dialogs/wizard.ts',
+        title: 'Wizard with its own footer',
+        component: WizardDialogSample,
+      },
+      { path: 'dialogs/side-sheet.ts', title: 'Side sheet', component: SideSheetSample },
+      { path: 'dialogs/menu.ts', title: 'Menu', component: MenuSample },
+    ],
+  },
+  {
+    id: 'states',
+    part: '§12',
+    title: 'States and feedback',
+    icon: 'tb-i-hourglass_top',
+    samples: [
+      { path: 'states/load-state.ts', title: 'Load states', component: LoadStateSample },
+      { path: 'states/empty-state.ts', title: 'Empty state', component: EmptyStateSample },
+      {
+        path: 'states/feedback.ts',
+        title: 'Snackbar and confirmations',
+        component: FeedbackSample,
+      },
+      { path: 'states/progress.ts', title: 'Progress and busy actions', component: ProgressSample },
     ],
   },
 ];

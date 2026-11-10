@@ -24,7 +24,10 @@ describe('development routes (ADR-0059)', () => {
 
   it('loads the gallery lazily', async () => {
     const children = await DEV_ROUTES[0]?.loadChildren?.();
-    expect(Array.isArray(children) ? children.map((route) => route.path) : []).toEqual(['']);
+    expect(Array.isArray(children) ? children.map((route) => route.path) : []).toEqual([
+      '',
+      ':section',
+    ]);
   });
 
   it('has no development route in production builds', () => {

@@ -1,3 +1,4 @@
+import { ApplicationRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ThemeMode } from '@core/theme/theme-mode';
 import { buttonByText, hostElement } from '@testing/dom';
@@ -5,15 +6,25 @@ import { testProviders } from '@testing/setup';
 import { GALLERY_SECTIONS } from './gallery-sections';
 import { GalleryPage, SAMPLE_ROOT } from './gallery-page';
 
-function render(): HTMLElement {
+function render(section?: string): HTMLElement {
   TestBed.configureTestingModule({ providers: testProviders() });
   const fixture = TestBed.createComponent(GalleryPage);
+  if (section !== undefined) {
+    fixture.componentRef.setInput('section', section);
+  }
   fixture.detectChanges();
   return hostElement(fixture);
 }
 
 describe('GalleryPage', () => {
+  const scrollIntoView = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollIntoView');
+
   afterEach(() => {
+    if (scrollIntoView === undefined) {
+      Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
+    } else {
+      Object.defineProperty(Element.prototype, 'scrollIntoView', scrollIntoView);
+    }
     localStorage.clear();
     document.documentElement.classList.remove('tb-dark');
   });
@@ -21,8 +32,10 @@ describe('GalleryPage', () => {
   it('shows a section per part with its anchor in the section nav', () => {
     const page = render();
     const ids = GALLERY_SECTIONS.map((section) => section.id);
-    expect(Array.from(page.querySelectorAll('section'), (section) => section.id)).toEqual(ids);
-    const anchors = Array.from(page.querySelectorAll('tb-section-nav a'), (a) =>
+    expect(
+      Array.from(page.querySelectorAll('.tb-gallery__section'), (section) => section.id),
+    ).toEqual(ids);
+    const anchors = Array.from(page.querySelectorAll('.tb-gallery__nav a'), (a) =>
       a.getAttribute('href'),
     );
     expect(anchors).toEqual(ids.map((id) => `#${id}`));
@@ -49,6 +62,15 @@ describe('GalleryPage', () => {
         expect(sample.path).toMatch(new RegExp(`^${section.id}/[a-z-]+\\.ts$`));
       }
     }
+  });
+
+  it('opens at the section of the address', async () => {
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    render('buttons');
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(scroll).toHaveBeenCalledWith({ block: 'start' });
+    expect(scroll.mock.contexts[0]).toBe(document.getElementById('buttons'));
   });
 
   it('switches the theme of the portal', () => {
