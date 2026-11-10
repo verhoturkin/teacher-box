@@ -9,7 +9,7 @@ Do it as the last stage of the release section in `docs/PLAN.md`, in one commit
 `chore(release): X.Y.Z` (or as the plan's substeps say).
 
 1. **Help and user docs** (user-facing):
-   - Help articles, every language — `frontend/src/app/features/help/articles/{teacher,student,admin}.{ru,en}.ts`:
+   - Help articles, every language — `frontend/src/app/features/help/articles/{teacher,student,admin}/{ru,en}/<topic>.ts`:
      describe every user-visible change of the release; wording per `docs/glossary.md`.
    - **Wiki** (`docs/wiki/`, Russian) — check that the release's substeps updated every page they change for
      users: install, update, the `teacherbox` command, settings (`TEACHERBOX_*` with defaults), integrations,

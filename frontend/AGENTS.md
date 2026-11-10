@@ -30,8 +30,8 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
   from the same intent, using natural Russian and British English. `Translation<typeof ru>` shares
   keys and parameter types, not wording or sentence structure. Review English copy on its own and
   keep action labels consistent with English help and server messages (`docs/glossary.md`).
-- User help — `features/help/articles/{teacher,student,admin}.{ru,en}.ts`; a UI change updates its article in every
-  language.
+- User help — `features/help/articles/{teacher,student,admin}/{ru,en}/<topic>.ts`; a UI change
+  updates its article in every language.
 
 ## Conventions
 

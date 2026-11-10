@@ -8,14 +8,14 @@ type Articles = () => Promise<Readonly<Record<string, HelpArticleText>>>;
 /** The articles of each language (ADR-0035): a chunk per language and area, loaded when the help opens. */
 const ARTICLES: Readonly<Record<Language, Readonly<Record<HelpArea, Articles>>>> = {
   ru: {
-    teacher: async () => (await import('./articles/teacher.ru')).TEACHER_ARTICLES,
-    cabinet: async () => (await import('./articles/student.ru')).STUDENT_ARTICLES,
-    admin: async () => (await import('./articles/admin.ru')).ADMIN_ARTICLES,
+    teacher: async () => (await import('./articles/teacher/ru')).TEACHER_ARTICLES,
+    cabinet: async () => (await import('./articles/student/ru')).STUDENT_ARTICLES,
+    admin: async () => (await import('./articles/admin/ru')).ADMIN_ARTICLES,
   },
   en: {
-    teacher: async () => (await import('./articles/teacher.en')).TEACHER_ARTICLES,
-    cabinet: async () => (await import('./articles/student.en')).STUDENT_ARTICLES,
-    admin: async () => (await import('./articles/admin.en')).ADMIN_ARTICLES,
+    teacher: async () => (await import('./articles/teacher/en')).TEACHER_ARTICLES,
+    cabinet: async () => (await import('./articles/student/en')).STUDENT_ARTICLES,
+    admin: async () => (await import('./articles/admin/en')).ADMIN_ARTICLES,
   },
 };
 

@@ -71,7 +71,7 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
   Proof: the built CSS of `npm run build` before and after is byte-identical apart from the hash
   in the file name. `docs/design-system.md` «Where it lives» and `core/theme/design-rules.spec.ts`
   follow the new paths.
-- [ ] 367.2 **F** Help articles: `features/help/articles/{teacher,student,admin}.{ru,en}.ts`
+- [x] 367.2 **F** Help articles: `features/help/articles/{teacher,student,admin}.{ru,en}.ts`
   become folders with one file per topic (`articles/teacher/ru/first-steps.ts`, …) and an index
   that keeps `TEACHER_ARTICLES` and the other exports as they are; no source line longer than 200
   characters (long strings split with template literals or array joins, the rendered text
