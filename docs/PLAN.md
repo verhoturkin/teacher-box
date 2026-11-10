@@ -65,7 +65,7 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
 
 ### Stage 367 — smaller files that every interface change touches (F)
 
-- [ ] 367.1 **F** `frontend/src/styles.scss` (5081 lines) becomes an index of `@use` partials in
+- [x] 367.1 **F** `frontend/src/styles.scss` (5081 lines) becomes an index of `@use` partials in
   `frontend/src/styles/` named after the design-system parts (`_tokens`, `_colour`, `_typography`,
   `_frame`, `_buttons`, `_fields`, `_lists`, `_dialogs`, `_states`, …), the cascade order kept.
   Proof: the built CSS of `npm run build` before and after is byte-identical apart from the hash
