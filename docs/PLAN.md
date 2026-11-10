@@ -77,7 +77,7 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
   characters (long strings split with template literals or array joins, the rendered text
   unchanged — a spec compares every article with its text before the split). `frontend/AGENTS.md`
   and the `release` skill (both copies) name the new paths.
-- [ ] 367.3 **D** `CHANGELOG.md` keeps the releases of the current minor series and the previous
+- [x] 367.3 **D** `CHANGELOG.md` keeps the releases of the current minor series and the previous
   one; older entries move to `docs/archive/changelog/<year>.md`, linked from the bottom. The
   `release` skill (both copies) says where old entries are.
 
