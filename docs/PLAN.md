@@ -279,10 +279,20 @@ tokens do — in the module's schema, inside the backups), AI usage limits per m
   where the kind allows none. Added `GET /api/teacher/ai/settings`; the first model added with no
   default becomes the default. Providers keep their creation order (no provider reorder endpoint —
   not asked for)._
-- [ ] **364.3 B** Per-request model: `modelId` (optional) in the `homework-draft`, `quiz-draft`,
+- [x] **364.3 B** Per-request model: `modelId` (optional) in the `homework-draft`, `quiz-draft`,
   `review-draft`, lesson summary requests (`AiViews`, `AiAssistant`); none — the default; an unknown
   or removed model → 409 with the default named. Usage (`AiUsage`) totals per model for the month;
   the monthly limit stays one for all. `AdminAiController` diagnostics list each provider's check.
+  _Done: `modelId` in the request records and the briefs; 409 `ai.model.unknown` carries
+  `defaultModelId` and `defaultModel` (label) when a default exists, and nothing is sent or logged;
+  no `modelId` and no default stays 422 `ai.disabled`. `ConflictException` got the properties
+  constructor `BusinessRuleException` has. `UsageReport.models` (`ModelUsage`): configured models in
+  their order, then removed ones by tokens (pre-364.1 rows grouped by provider and model, `modelId`
+  `null`). The diagnostics are the admin integrations check (`AiIntegrationCheck` →
+  `AiProviders.diagnose`): one line per connection, named by provider and numbered, no connection
+  names; they do not overwrite the teacher's check state (`AdminAiController` already lists the
+  states since 364.2). Frontend untouched: its types ignore the new optional fields until
+  364.4/364.5._
 - [ ] **364.4 F** Settings «ИИ-помощник» (`features/ai`, sketches `Ai`, `AiProviderDialog`): card
   «Подключения» — one `tb-list` row per provider (kind icon, name, «N моделей», state tag «Работает»
   / «Ошибка ключа»), its models nested as rows with a radio «По умолчанию»; «Добавить подключение»

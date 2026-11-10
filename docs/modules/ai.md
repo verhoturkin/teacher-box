@@ -15,8 +15,12 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
   model becomes `null` — AI off). `LlmClients.forModel(id)` / `forDefault()` give a `ModelClient`
   (provider, model, `LlmClient`); clients are kept per provider and built anew when the provider's
   or the model's version or the proxy in force changes. A provider that cannot be called (no key, no
-  address, a bad proxy) gets a client whose calls fail with the reason. The existing endpoints use
-  the default model until 364.3.
+  address, a bad proxy) gets a client whose calls fail with the reason.
+- Model per request (since 364.3): `homework-draft`, `quiz-draft` (JSON and multipart `brief`),
+  `review-draft` and `lesson-summary` take an optional `modelId` (a configured model's id); none —
+  the default model (none configured — 422 `ai.disabled`). An unknown or removed model is 409
+  `ai.model.unknown` with `defaultModelId` and `defaultModel` (its label) when a default exists;
+  nothing is sent to a provider and nothing is logged.
 - Connections over REST (`application.AiProviders`, since 364.2): a new connection needs what its
   kind needs (a key — `ai.provider.key-required`; an OpenAI-compatible address —
   `ai.provider.address-required`; a usable proxy), its name defaults to the kind's. The key is
@@ -53,6 +57,11 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 - Monthly token limit (`ai.settings.monthly_token_limit`, default 2 000 000, `0` = unlimited;
   input + output for all models, instance time zone): over the limit requests are rejected before
   calling the provider.
+- Usage per model (since 364.3): `UsageReport.models` — `ModelUsage {modelId, label, provider,
+  removed, requests, inputTokens, outputTokens}` for the models with requests in the month: the
+  configured ones in their order (label and provider kind of the connection), then removed ones
+  (most tokens first, labelled by the model the provider answered with; `modelId: null` for requests
+  logged before models had ids). The limit stays one for all the models.
 - `ai.requests` stores metadata only (feature, provider kind, model, configured `model_id`,
   status, tokens, duration, error) — never texts.
 - Request log by pages of 10 (since 0.14.6): `usage` returns the first page (`recent`, `moreRecent`), `GET requests`
@@ -60,8 +69,13 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 - Prompt library (`PromptLibrary`, `ai.prompts`): the teacher's saved prompts — title 1–100, text 1–4000 (no kinds
   since 0.14.1, ADR-0041); listed by title, optimistic locking, in the full reset; kept whether the AI is configured
   or not.
-- Prompts are versioned module resources. `AiIntegrationCheck` checks the default model's
-  provider without spending tokens.
+- Prompts are versioned module resources. `AiIntegrationCheck` (the administrator's diagnostics,
+  `AiProviders.diagnose`, since 364.3) checks every connection without spending tokens, one line
+  each:
+  «ИИ (<provider>)», numbered («ИИ (anthropic, 2)») when several share a provider — no connection
+  names. It pings the connection's default model, else its first one; a connection without models
+  is asked for its list («Подключение отвечает, моделей в нём пока нет»). No connection — one
+  `NOT_CONFIGURED` line. The diagnostics do not change the teacher's check state of a connection.
 - System prompts (`SystemPrompts`, `ai.system_prompts`, [ADR-0043](../adr/0043-editable-system-prompts.md), since
   0.14.6): the teacher rewrites the system prompt of a feature (`HOMEWORK_DRAFT`, `QUIZ_DRAFT`, `REVIEW_DRAFT`, `LESSON_SUMMARY`; 1–10000 characters,
   `ai.system-prompt-invalid`); a feature without a row uses its resource (`homework-draft.system.v4`,
@@ -118,8 +132,9 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 ## Data, REST
 
 `requests`, `prompts`, `system_prompts`, `providers`, `models`, `settings` (all in the full reset).
-`/api/teacher/ai/**` (status, usage, requests, homework-draft, quiz-draft, review-draft,
-lesson-summary, `prompts` CRUD, `system-prompts` list / `PUT` / `DELETE` by feature, `providers` —
+`/api/teacher/ai/**` (status, usage — with `models`, requests, homework-draft, quiz-draft,
+review-draft, lesson-summary — each with an optional `modelId`, `prompts` CRUD, `system-prompts`
+list / `PUT` / `DELETE` by feature, `providers` —
 list, `POST /providers/check` (an unsaved connection: state and its models), `POST` (saved and
 checked, 201), `PUT /{id}`, `POST /{id}/check`, `DELETE /{id}`; `/providers/{id}/models` — `POST`,
 `PUT /{modelId}` (with `version`), `DELETE /{modelId}`, `PUT /order` (every model once), `GET

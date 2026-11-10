@@ -36,11 +36,11 @@ class AiUnitTest {
                 mock(ru.teacherbox.homework.api.QuizDrafts.class));
 
         assertThatThrownBy(() -> assistant.homeworkDraft(
-                new HomeworkBrief("Дроби", null, java.util.List.of(), java.util.List.of())))
+                new HomeworkBrief("Дроби", null, java.util.List.of(), java.util.List.of(), null)))
                 .isInstanceOfSatisfying(BusinessRuleException.class,
                         e -> assertThat(e.code()).isEqualTo("ai.disabled"));
         assertThatThrownBy(() -> assistant.lessonSummary(
-                new AiViews.LessonSummaryBrief("Дроби", "слова", java.util.List.of())))
+                new AiViews.LessonSummaryBrief("Дроби", "слова", java.util.List.of(), null)))
                 .isInstanceOfSatisfying(BusinessRuleException.class,
                         e -> assertThat(e.code()).isEqualTo("ai.disabled"));
         verifyNoInteractions(usage);

@@ -7,6 +7,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.ai.domain.AiFeature;
@@ -18,6 +19,16 @@ public class AiRequestRepository {
 
     /** Requests and tokens of one feature in a period. */
     public record FeatureTotals(long requests, long inputTokens, long outputTokens) {
+    }
+
+    /**
+     * Totals of one model; requests logged before models had ids are grouped by the provider and the model they
+     * answered with.
+     *
+     * @param model a model id the provider answered with (the greatest, when it answered with several)
+     */
+    public record ModelTotals(@Nullable UUID modelId, String provider, String model, long requests, long inputTokens,
+            long outputTokens) {
     }
 
     private final JdbcClient jdbc;
@@ -75,6 +86,24 @@ public class AiRequestRepository {
                             rs.getLong("input_tokens"), rs.getLong("output_tokens")));
                 });
         return totals;
+    }
+
+    /** Totals per model of requests in {@code [from, to)}, most tokens first. */
+    public List<ModelTotals> totalsByModel(Instant from, Instant to) {
+        return jdbc.sql("""
+                select model_id, max(provider) as provider, max(model) as model, count(*) as requests,
+                    sum(input_tokens) as input_tokens, sum(output_tokens) as output_tokens
+                from ai.requests
+                where created_at >= :from and created_at < :to
+                group by model_id, case when model_id is null then provider || '/' || model end
+                order by sum(input_tokens + output_tokens) desc, max(model)
+                """)
+                .param("from", from)
+                .param("to", to)
+                .query((rs, row) -> new ModelTotals(rs.getObject("model_id", UUID.class), rs.getString("provider"),
+                        rs.getString("model"), rs.getLong("requests"), rs.getLong("input_tokens"),
+                        rs.getLong("output_tokens")))
+                .list();
     }
 
     /** Requests in {@code [from, to)}, newest first. */

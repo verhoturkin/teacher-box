@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import ru.teacherbox.ai.domain.AiFeature;
 import ru.teacherbox.ai.domain.RequestStatus;
 import ru.teacherbox.homework.api.QuizDrafts;
 import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.error.ConflictException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -111,7 +113,7 @@ public class AiAssistant {
                 "homework_draft",
                 HOMEWORK_SCHEMA,
                 materials);
-        return call(AiFeature.HOMEWORK_DRAFT, request, HomeworkAnswer.class, answer -> {
+        return call(AiFeature.HOMEWORK_DRAFT, brief.modelId(), request, HomeworkAnswer.class, answer -> {
             String title = answer.title() == null ? "" : answer.title().strip();
             String description = answer.description() == null ? "" : answer.description().strip();
             if (title.isEmpty() || description.isEmpty()) {
@@ -132,7 +134,7 @@ public class AiAssistant {
                 "students", students(brief.context()));
         LlmRequest request = new LlmRequest(systemPrompts.text(AiFeature.QUIZ_DRAFT),
                 prompts.render(QUIZ_PROMPT, values), "quiz_draft", QUIZ_SCHEMA, materials);
-        return call(AiFeature.QUIZ_DRAFT, request, QuizAnswer.class, answer -> {
+        return call(AiFeature.QUIZ_DRAFT, brief.modelId(), request, QuizAnswer.class, answer -> {
             List<QuizDrafts.Drafted> questions = quizDrafts.validate(
                     answer.questions() == null ? List.of() : answer.questions());
             return questions.isEmpty() ? null : new QuizDraft(questions);
@@ -147,7 +149,7 @@ public class AiAssistant {
                 "students", students(brief.context()));
         LlmRequest request = new LlmRequest(systemPrompts.text(AiFeature.REVIEW_DRAFT),
                 prompts.render(REVIEW_PROMPT, values), "review_draft", REVIEW_SCHEMA);
-        return call(AiFeature.REVIEW_DRAFT, request, ReviewAnswer.class, answer -> {
+        return call(AiFeature.REVIEW_DRAFT, brief.modelId(), request, ReviewAnswer.class, answer -> {
             String comment = answer.comment() == null ? "" : answer.comment().strip();
             if (comment.isEmpty() || answer.accept() == null) {
                 return null;
@@ -174,7 +176,7 @@ public class AiAssistant {
                 "words", orDash(brief.words()));
         LlmRequest request = new LlmRequest(systemPrompts.text(AiFeature.LESSON_SUMMARY),
                 prompts.render(LESSON_SUMMARY_PROMPT, values), "lesson_summary", LESSON_SUMMARY_SCHEMA);
-        return call(AiFeature.LESSON_SUMMARY, request, LessonSummaryAnswer.class, answer -> {
+        return call(AiFeature.LESSON_SUMMARY, brief.modelId(), request, LessonSummaryAnswer.class, answer -> {
             String summary = answer.summary() == null ? "" : answer.summary().strip();
             return summary.isEmpty() ? null : new LessonSummaryDraft(summary);
         });
@@ -185,9 +187,12 @@ public class AiAssistant {
         @Nullable T convert(A answer);
     }
 
-    private <A, T> T call(AiFeature feature, LlmRequest request, Class<A> answerType, Converter<A, T> converter) {
-        LlmClients.ModelClient client = llm.forDefault().orElseThrow(
-                () -> new BusinessRuleException("ai.disabled", "AI is not configured on this instance"));
+    private <A, T> T call(AiFeature feature, @Nullable UUID modelId, LlmRequest request, Class<A> answerType,
+            Converter<A, T> converter) {
+        LlmClients.ModelClient client = modelId == null
+                ? llm.forDefault().orElseThrow(
+                        () -> new BusinessRuleException("ai.disabled", "AI is not configured on this instance"))
+                : llm.forModel(modelId).orElseThrow(this::unknownModel);
         if (usage.budget().isExhausted()) {
             throw new BusinessRuleException("ai.limit-exceeded", "The monthly AI token limit is reached");
         }
@@ -212,6 +217,16 @@ public class AiAssistant {
         usage.record(feature, client, response.model(), RequestStatus.SUCCEEDED, response.inputTokens(),
                 response.outputTokens(), duration, null);
         return result;
+    }
+
+    /** The model asked for is not configured (removed meanwhile): the problem names the default one, if any. */
+    private ConflictException unknownModel() {
+        Map<String, Object> properties = llm.forDefault()
+                .<Map<String, Object>>map(client -> Map.of("defaultModelId", client.model().id(),
+                        "defaultModel", client.model().label()))
+                .orElse(Map.of());
+        return new ConflictException("ai.model.unknown", "The model is not configured; ask the default one",
+                properties);
     }
 
     private <A, T> @Nullable T parse(String text, Class<A> answerType, Converter<A, T> converter) {

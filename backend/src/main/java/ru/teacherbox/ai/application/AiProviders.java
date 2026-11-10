@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.shared.http.OutboundProxy;
+import ru.teacherbox.shared.i18n.Language;
 
 /**
  * The teacher's AI connections, their models and the AI settings (ADR-0057). The key is write-only: views show
@@ -104,6 +106,18 @@ public class AiProviders {
     public record SettingsView(@Nullable UUID defaultModelId, long monthlyTokenLimit, long version) {
     }
 
+    /**
+     * The diagnostics of a connection (ADR-0057): its default model, else its first one, is pinged; a connection
+     * without models is asked for its list.
+     *
+     * @param provider what its client calls the provider, e.g. {@code anthropic}
+     * @param detail   the ping's answer or the error; {@code null} for a connection without models that answers
+     * @param noModels the connection has no models yet
+     */
+    public record Diagnosis(String provider, State state, @Nullable String detail, boolean noModels,
+            long durationMs) {
+    }
+
     private record Check(long version, State state, @Nullable String detail) {
     }
 
@@ -135,6 +149,42 @@ public class AiProviders {
             return new AdminProviderView(provider.id(), provider.kind().id(), provider.apiKey() != null,
                     check.state(), check.detail(), providers.models(provider.id()).size());
         }).toList();
+    }
+
+    /**
+     * Checks every connection in their order, no tokens spent: the administrator's diagnostics. The teacher's
+     * check state of a connection stays what its own check said.
+     */
+    public List<Diagnosis> diagnose(Language language) {
+        UUID defaultModel = providers.settings().defaultModelId();
+        return providers.providers().stream().map(provider -> {
+            List<AiModel> models = providers.models(provider.id());
+            AiModel model = models.stream().filter(candidate -> candidate.id().equals(defaultModel)).findFirst()
+                    .orElse(models.isEmpty() ? null : models.getFirst());
+            long started = System.nanoTime();
+            Diagnosis diagnosis = model == null
+                    ? clients.probe(provider, client -> diagnosis(client, null, () -> client.models(), started))
+                    : clients.forModel(model.id()).map(LlmClients.ModelClient::client)
+                            .map(client -> diagnosis(client, model, () -> client.ping(language), started))
+                            .orElseThrow();
+            return diagnosis;
+        }).toList();
+    }
+
+    private static Diagnosis diagnosis(LlmClient client, @Nullable AiModel model, Supplier<Object> call,
+            long started) {
+        try {
+            Object answer = call.get();
+            return new Diagnosis(client.provider(), State.OK, model == null ? null : String.valueOf(answer),
+                    model == null, elapsed(started));
+        } catch (LlmException e) {
+            return new Diagnosis(client.provider(), State.FAILED, String.valueOf(e.getMessage()), model == null,
+                    elapsed(started));
+        }
+    }
+
+    private static long elapsed(long started) {
+        return Math.max(0, (System.nanoTime() - started) / 1_000_000);
     }
 
     /** Checks a connection that is not saved: the dialog's «Проверить». */

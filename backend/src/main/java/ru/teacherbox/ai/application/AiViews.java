@@ -22,9 +22,10 @@ public final class AiViews {
      * @param title   what the teacher already called the assignment, if anything
      * @param sources textbook pages and files of the assignment to base the draft on (ADR-0039)
      * @param context what the teacher noted about the recipients (ADR-0055)
+     * @param modelId the configured model to ask (ADR-0057); {@code null} — the default one
      */
     public record HomeworkBrief(String prompt, @Nullable String title, List<DraftSources.Source> sources,
-            List<StudentNote> context) {
+            List<StudentNote> context, @Nullable UUID modelId) {
 
         public HomeworkBrief {
             sources = List.copyOf(sources);
@@ -49,8 +50,13 @@ public final class AiViews {
     public record HomeworkDraft(String title, String description) {
     }
 
-    /** Texts of the task and the student's answer and the student's tags; the frontend sends them explicitly. */
-    public record ReviewBrief(String title, @Nullable String description, String answer, List<StudentNote> context) {
+    /**
+     * Texts of the task and the student's answer and the student's tags; the frontend sends them explicitly.
+     *
+     * @param modelId the configured model to ask; {@code null} — the default one
+     */
+    public record ReviewBrief(String title, @Nullable String description, String answer, List<StudentNote> context,
+            @Nullable UUID modelId) {
 
         public ReviewBrief {
             context = List.copyOf(context);
@@ -70,8 +76,10 @@ public final class AiViews {
      * What the teacher knows about a lesson; the frontend sends the texts.
      *
      * @param assignmentTitles titles of the assignments given at the lesson
+     * @param modelId          the configured model to ask; {@code null} — the default one
      */
-    public record LessonSummaryBrief(@Nullable String topic, @Nullable String words, List<String> assignmentTitles) {
+    public record LessonSummaryBrief(@Nullable String topic, @Nullable String words, List<String> assignmentTitles,
+            @Nullable UUID modelId) {
 
         public LessonSummaryBrief {
             assignmentTitles = List.copyOf(assignmentTitles);
@@ -99,6 +107,18 @@ public final class AiViews {
     public record FeatureUsage(AiFeature feature, long requests, long inputTokens, long outputTokens) {
     }
 
+    /**
+     * Usage of one model in a month (ADR-0057); the monthly limit is one for all the models.
+     *
+     * @param modelId  the configured model, {@code null} for requests logged before models had ids
+     * @param label    the model's label, or the model id the provider answered with once it is removed
+     * @param provider the provider kind, e.g. {@code anthropic}
+     * @param removed  whether the model is no longer configured
+     */
+    public record ModelUsage(@Nullable UUID modelId, String label, String provider, boolean removed, long requests,
+            long inputTokens, long outputTokens) {
+    }
+
     public record RequestView(
             AiFeature feature,
             String model,
@@ -119,6 +139,8 @@ public final class AiViews {
      * Usage in a calendar month (instance time zone).
      *
      * @param month      {@code yyyy-MM}
+     * @param models     the configured models in their order, then the removed ones by tokens; only those with
+     *                   requests in the month
      * @param recent     the newest requests of the month, the first page
      * @param moreRecent whether the month has older requests than {@code recent}
      */
@@ -127,6 +149,7 @@ public final class AiViews {
             long usedTokens,
             long monthlyTokenLimit,
             List<FeatureUsage> features,
+            List<ModelUsage> models,
             List<RequestView> recent,
             boolean moreRecent) {
     }
