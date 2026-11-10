@@ -11,6 +11,7 @@ import { guestGuard, redirectToHome, roleGuard } from '@core/auth/auth.guards';
 import { setupGuard } from '@core/portal/setup.guard';
 import { canLeaveGuard } from '@core/routing/can-leave.guard';
 import { CORE_T } from '@core/i18n/texts';
+import { DEV_ROUTES } from '@features/gallery';
 
 /**
  * Opens the teacher's area and loads the colours of the students and groups for its lists in the background;
@@ -380,6 +381,8 @@ export const routes: Routes = [
       },
     ],
   },
+  // the design gallery of development builds (ADR-0059); production builds have none
+  ...DEV_ROUTES,
   {
     path: '**',
     title: N.notFound,
