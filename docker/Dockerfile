@@ -24,7 +24,12 @@ WORKDIR /workspace
 COPY frontend/package.json frontend/package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
 COPY frontend/ ./
-RUN npm run build
+# nginx serves the .gz written next to a file (gzip_static) instead of compressing it on every request. The
+# originals stay as they are: the service worker manifest (ngsw.json) holds their hashes.
+RUN npm run build \
+    && find dist/teacher-box/browser -type f \
+        \( -name '*.js' -o -name '*.css' -o -name '*.html' -o -name '*.svg' -o -name '*.json' \) \
+        -size +1024c -exec gzip -9 -k {} +
 
 # ---------- backend build ----------
 FROM --platform=$BUILDPLATFORM ${MAVEN_IMAGE} AS backend-deps
@@ -68,8 +73,10 @@ LABEL org.opencontainers.image.title="Teacher Box backend" \
 
 FROM ${NGINX_IMAGE} AS frontend
 # Both are substituted into the nginx template at start; an unset one would leave "${...}" in the config.
+# 15-backend-upstream.envsh splits BACKEND_URL into the scheme and host:port of the template's upstream.
 ENV BACKEND_URL=http://backend:8080 \
     LIVEKIT_URL=http://livekit:7880
+COPY --chmod=755 docker/nginx/15-backend-upstream.envsh /docker-entrypoint.d/15-backend-upstream.envsh
 COPY docker/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY docker/nginx/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --from=frontend-build /workspace/dist/teacher-box/browser /usr/share/nginx/html

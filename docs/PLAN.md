@@ -202,7 +202,7 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
 
 ### Stage 373 — nginx: pre-compressed files, kept connections (D)
 
-- [ ] 373.1 **D** `docker/Dockerfile` (stage `frontend-build`): after `npm run build` write a
+- [x] 373.1 **D** `docker/Dockerfile` (stage `frontend-build`): after `npm run build` write a
   `.gz` next to every `js`, `css`, `html`, `svg`, `json` over 1 kB (`gzip -9 -k`).
   `docker/nginx/default.conf.template`: `gzip_static on`; an `upstream` with `keepalive` for
   `${BACKEND_URL}` used by `/api/` and `/actuator/health` (WebSocket upgrade of boards keeps

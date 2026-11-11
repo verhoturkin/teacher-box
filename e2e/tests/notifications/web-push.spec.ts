@@ -4,6 +4,7 @@ import { type APIRequestContext, expect, test } from '@playwright/test';
 /**
  * Installable app and web push (ADR-0051): the service worker files are revalidated, the devices REST,
  * and the devices card in the account. Real delivery through a push service stays a manual check.
+ * The files of the application themselves: nginx serves them compressed ahead of time (stage 373).
  */
 
 const RUN = Date.now().toString(36);
@@ -38,6 +39,21 @@ function subscription(): { endpoint: string; keys: { p256dh: string; auth: strin
 test.beforeAll(async ({ request }) => {
   await addStudent(request, `Ученик с push ${RUN}`, LOGIN);
   await addStudent(request, `Другой ученик с push ${RUN}`, OTHER);
+});
+
+test('a hashed script is served from its pre-compressed file', async ({ request }) => {
+  const home = await request.get('/');
+  const script = /src="([^"]+-[^"]+\.js)"/.exec(await home.text())?.[1];
+  expect(script, 'a hashed script in index.html').toBeTruthy();
+
+  const response = await request.get(`/${script}`, { headers: { 'Accept-Encoding': 'gzip' } });
+  expect(response.ok()).toBe(true);
+  expect(response.headers()['content-encoding']).toBe('gzip');
+  expect(response.headers()['cache-control']).toContain('immutable');
+  // nginx knows the length of a .gz written in the image build; what it compresses itself goes out in chunks
+  const sent = Number(response.headers()['content-length']);
+  expect(sent).toBeGreaterThan(0);
+  expect(sent).toBeLessThan((await response.body()).length);
 });
 
 test('the service worker files are never cached and the worker takes control', async ({
