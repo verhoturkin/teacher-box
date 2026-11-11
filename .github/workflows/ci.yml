@@ -85,6 +85,23 @@ jobs:
             backend.cache-to=type=gha,mode=max,scope=ci-backend,ignore-error=true
             frontend.cache-from=type=gha,scope=ci-frontend
             frontend.cache-to=type=gha,mode=max,scope=ci-frontend,ignore-error=true
+      # The JVM silently ignores an AOT cache it cannot use, so the first run makes that fatal (-XX:AOTMode=on,
+      # only here) under the limits of compose.yaml; then the start time without and with the cache.
+      - name: Check the AOT cache of the backend
+        run: |
+          image=ghcr.io/verhoturkin/teacher-box-backend:latest
+          options='-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError'
+          docker run --rm --network=none --memory=1g --cpus=2 \
+            -e JAVA_TOOL_OPTIONS="$options -XX:AOTMode=on -Dspring.context.exit=onRefresh" "$image"
+          for mode in off auto; do
+            id="$(docker run -d --memory=1g --cpus=2 -e JAVA_TOOL_OPTIONS="$options -XX:AOTMode=$mode" "$image")"
+            if ! timeout 120 sh -c "until docker logs $id 2>&1 | grep -q 'Started TeacherBoxApplication'; do sleep 1; done"; then
+              docker logs "$id"
+              exit 1
+            fi
+            echo "AOTMode=$mode: $(docker logs "$id" 2>&1 | grep -o 'Started TeacherBoxApplication in.*')"
+            docker rm -fv "$id" >/dev/null
+          done
       - name: Check the nginx configuration
         run: >-
           docker run --rm -e BACKEND_URL=http://127.0.0.1:8080

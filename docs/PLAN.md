@@ -216,14 +216,17 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
 
 ### Stage 374 — the JVM starts from an AOT cache (D)
 
-- [ ] 374.1 **D** `docker/Dockerfile`: a training run of the extracted application in the build
+- [x] 374.1 **D** `docker/Dockerfile`: a training run of the extracted application in the build
   (`-XX:AOTCacheOutput`, Spring `spring.context.exit=onRefresh`, a throw-away data directory, no
   network), the cache copied into the `backend` image and used by `JAVA_TOOL_OPTIONS`
   (`-XX:AOTCache`); the image still starts when the cache does not match (the JVM ignores it).
   The training run uses the target platform's JRE, so it runs in a per-platform stage, not on
   `$BUILDPLATFORM`. Record the start time (`Started TeacherBoxApplication in …`) before and
   after in the pull request; lower `start-period` only if the number allows. Check the current
-  Spring Boot 4.1 and JDK 25 documentation first (§13).
+  Spring Boot 4.1 and JDK 25 documentation first (§13). *The flag is an argument of the
+  entrypoint, not a part of `JAVA_TOOL_OPTIONS`: a server may set that variable in `.env`. The
+  start time is measured by the `Docker images` job of CI (without and with the cache);
+  `start-period` is unchanged.*
 
 ### Stage 375 — styles of one screen load with that screen (F)
 
