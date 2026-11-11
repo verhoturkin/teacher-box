@@ -6,10 +6,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.ai.domain.SavedPrompt;
+import ru.teacherbox.shared.persistence.OptimisticLock;
 
 @Repository
 public class PromptRepository {
@@ -49,9 +49,7 @@ public class PromptRepository {
                 .param("text", prompt.text())
                 .param("updatedAt", prompt.updatedAt())
                 .update();
-        if (updated != 1) {
-            throw new OptimisticLockingFailureException("Prompt " + prompt.id() + " was modified");
-        }
+        OptimisticLock.requireUpdated(updated, "Prompt", prompt.id());
         prompt.markSaved(prompt.version() + 1);
     }
 

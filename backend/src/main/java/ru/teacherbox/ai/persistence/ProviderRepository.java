@@ -166,8 +166,7 @@ public class ProviderRepository {
     /** The settings, {@link AiSettings#NONE} while nothing is stored. */
     public AiSettings settings() {
         return jdbc.sql("select default_model_id, monthly_token_limit, version from ai.settings where id = 1")
-                .query((rs, rowNum) -> new AiSettings(rs.getObject("default_model_id", UUID.class),
-                        rs.getLong("monthly_token_limit"), rs.getLong("version")))
+                .query(AiSettings.class)
                 .optional()
                 .orElse(AiSettings.NONE);
     }

@@ -1,7 +1,5 @@
 package ru.teacherbox.ai.persistence;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Optional;
 import org.springframework.dao.DuplicateKeyException;
@@ -9,6 +7,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.ai.domain.AiFeature;
+import ru.teacherbox.shared.persistence.OptimisticLock;
 
 /** System prompts the teacher rewrote; a feature without a row uses the default one. */
 @Repository
@@ -27,7 +26,7 @@ public class SystemPromptRepository {
     public Optional<StoredPrompt> find(AiFeature feature) {
         return jdbc.sql("select feature, text, updated_at, version from ai.system_prompts where feature = :feature")
                 .param("feature", feature.name())
-                .query(SystemPromptRepository::map)
+                .query(StoredPrompt.class)
                 .optional();
     }
 
@@ -61,22 +60,12 @@ public class SystemPromptRepository {
                     .param("text", text)
                     .param("updatedAt", now)
                     .update();
-            if (updated != 1) {
-                throw new OptimisticLockingFailureException("System prompt " + feature + " was modified");
-            }
+            OptimisticLock.requireUpdated(updated, "System prompt", feature);
         }
         return new StoredPrompt(feature, text, now, expectedVersion + 1);
     }
 
     public void delete(AiFeature feature) {
         jdbc.sql("delete from ai.system_prompts where feature = :feature").param("feature", feature.name()).update();
-    }
-
-    private static StoredPrompt map(ResultSet rs, int rowNum) throws SQLException {
-        return new StoredPrompt(
-                AiFeature.valueOf(rs.getString("feature")),
-                rs.getString("text"),
-                rs.getObject("updated_at", Instant.class),
-                rs.getLong("version"));
     }
 }

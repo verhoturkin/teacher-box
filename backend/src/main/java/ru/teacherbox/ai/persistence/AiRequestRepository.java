@@ -1,7 +1,6 @@
 package ru.teacherbox.ai.persistence;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.EnumMap;
 import java.util.List;
@@ -12,7 +11,6 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.ai.domain.AiFeature;
 import ru.teacherbox.ai.domain.AiRequest;
-import ru.teacherbox.ai.domain.RequestStatus;
 
 @Repository
 public class AiRequestRepository {
@@ -100,9 +98,7 @@ public class AiRequestRepository {
                 """)
                 .param("from", from)
                 .param("to", to)
-                .query((rs, row) -> new ModelTotals(rs.getObject("model_id", UUID.class), rs.getString("provider"),
-                        rs.getString("model"), rs.getLong("requests"), rs.getLong("input_tokens"),
-                        rs.getLong("output_tokens")))
+                .query(ModelTotals.class)
                 .list();
     }
 
@@ -125,22 +121,7 @@ public class AiRequestRepository {
                 .param("to", to)
                 .param("offset", offset)
                 .param("limit", limit)
-                .query(AiRequestRepository::map)
+                .query(AiRequest.class)
                 .list();
-    }
-
-    private static AiRequest map(ResultSet rs, int rowNum) throws SQLException {
-        return new AiRequest(
-                rs.getObject("id", UUID.class),
-                AiFeature.valueOf(rs.getString("feature")),
-                rs.getString("provider"),
-                rs.getString("model"),
-                rs.getObject("model_id", UUID.class),
-                RequestStatus.valueOf(rs.getString("status")),
-                rs.getLong("input_tokens"),
-                rs.getLong("output_tokens"),
-                rs.getLong("duration_ms"),
-                rs.getString("error"),
-                rs.getObject("created_at", Instant.class));
     }
 }
