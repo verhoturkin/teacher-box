@@ -130,11 +130,6 @@
   white-space: pre-line;
 }
 
-/* The week on a phone: the title fits in one line */
-.tb-calendar-title {
-  font: var(--tb-type-title-m);
-}
-
 /*
  * The main action of a page header (class tb-page-fab) becomes the M3 extended FAB on a phone: the
  * same button with its icon and label, fixed above the bottom navigation (ADR-0017, ADR-0018).

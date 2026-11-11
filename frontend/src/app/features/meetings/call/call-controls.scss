@@ -1,0 +1,20 @@
+/*
+ * The M3 Expressive floating toolbar: round 56 px toggles, the error container while switched off. A switched-off
+ * or active toggle turns into a rounded square (M3E icon button selected shape: 56 px CornerLarge, 48 and 44 px
+ * CornerMedium as the small one) on the fast spatial spring; pressed — CornerMedium / CornerSmall.
+ */
+.tb-call-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--tb-space-2);
+  padding: var(--tb-space-2);
+  border-radius: var(--tb-shape-full);
+  background: var(--p-md-surface-container-high);
+  box-shadow: var(--tb-elevation-2);
+}
+
+.tb-call-menu .tb-call-menu__blank {
+  visibility: hidden;
+}

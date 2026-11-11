@@ -100,14 +100,4 @@
     min-inline-size: 0;
     width: 100%;
   }
-
-  .tb-stats {
-    .p-card-body {
-      padding: var(--tb-space-3) var(--tb-space-4);
-    }
-
-    .tb-stat__value {
-      font: var(--tb-type-title-l);
-    }
-  }
 }

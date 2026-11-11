@@ -1,0 +1,137 @@
+/* The call window over the portal (ADR-0030, docs/screens.md «Call window»); colours follow the portal theme. */
+:root.tb-call-expanded body {
+  overflow: hidden;
+}
+
+.tb-call-window {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--tb-space-3);
+  padding: var(--tb-space-4) var(--tb-space-4) calc(var(--tb-space-4) + env(safe-area-inset-bottom));
+  background: var(--p-md-surface-container);
+  color: var(--p-md-on-surface);
+
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--tb-space-1) var(--tb-space-4);
+  }
+
+  &__title {
+    margin: 0;
+    font: var(--tb-type-title-l-emphasized);
+    outline-offset: 2px;
+  }
+
+  &__meta {
+    font: var(--tb-type-body-m);
+    color: var(--p-md-on-surface-variant);
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__warning {
+    padding: 0 var(--tb-space-2);
+    border-radius: var(--tb-shape-sm);
+    background: var(--p-md-warning-container);
+    color: var(--p-md-on-warning-container);
+  }
+
+  &__end {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--tb-space-4);
+    text-align: center;
+    font: var(--tb-type-body-l);
+  }
+
+  &__end-icon {
+    font-size: 2rem;
+    color: var(--p-md-on-surface-variant);
+    transform: rotate(135deg);
+  }
+
+  &__notice {
+    justify-self: center;
+  }
+
+  &__controls {
+    justify-self: center;
+  }
+}
+
+/* The stage: the main tile, an inset, a grid or a strip (call-layout.ts) */
+.tb-call-stage {
+  position: relative;
+  display: grid;
+  gap: var(--tb-space-2);
+  min-height: 0;
+
+  &--alone,
+  &--pair {
+    grid-template-rows: 1fr auto;
+    justify-items: center;
+  }
+
+  &--alone &__main,
+  &--pair &__main {
+    width: 100%;
+    max-width: calc((100dvh - 12rem) * 16 / 9);
+  }
+
+  /* --tb-call-columns / --tb-call-rows come from the number of people (gridSize in call-layout.ts) */
+  &--grid &__tiles {
+    display: grid;
+    grid-template-columns: repeat(var(--tb-call-columns, 2), minmax(0, 1fr));
+    grid-template-rows: repeat(var(--tb-call-rows, 2), minmax(0, 1fr));
+    gap: var(--tb-space-2);
+    min-height: 0;
+  }
+
+  &--screen {
+    grid-template-columns: 1fr 14rem;
+  }
+
+  &--screen &__tiles {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tb-space-2);
+    overflow: auto;
+
+    .tb-call-tile {
+      flex: none;
+      aspect-ratio: 16 / 9;
+    }
+  }
+
+  &__waiting {
+    margin: 0;
+    font: var(--tb-type-body-m);
+    color: var(--p-md-on-surface-variant);
+  }
+
+  @media (width < 37.5em) {
+    &--screen {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr auto;
+    }
+
+    &--screen &__tiles {
+      flex-direction: row;
+
+      .tb-call-tile {
+        width: 9rem;
+      }
+    }
+
+    &--alone &__main,
+    &--pair &__main {
+      max-width: none;
+    }
+  }
+}

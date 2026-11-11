@@ -140,7 +140,8 @@ Existing members absent from current options remain visible and removable.
     (`board-page.ts` → `GET|PUT /api/boards/library`); library URLs (`#addLibrary`) are refused and
     «Просмотреть библиотеки» is hidden — libraries.excalidraw.com is outside the CSP (ADR-0028); a
     `.excalidrawlib` file opens via «Открыть».
-  - Global `styles.scss`: the Cyrillic range of Excalidraw's `Assistant` font comes from system sans-serif fonts;
+  - `editor/excalidraw-theme.scss`, first in the `excalidraw` style bundle (not in the initial
+    CSS): the Cyrillic range of Excalidraw's `Assistant` font comes from system sans-serif fonts;
     Excalidraw's UI variables (primary, surfaces, text, outlines, danger) come from the portal's `--p-md-*` roles
     in both themes; the canvas background stays the board's.
   `board-page.ts` «Назад» returns in the history when the board was opened from another page of the portal

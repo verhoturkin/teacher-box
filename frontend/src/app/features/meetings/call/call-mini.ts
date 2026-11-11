@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  ViewEncapsulation,
+} from '@angular/core';
 import { Button } from 'primeng/button';
 import { injectMobile } from '@core/layout/mobile';
 import { CallControls } from './call-controls';
@@ -17,6 +24,9 @@ import { T } from '../i18n/texts';
   selector: 'tb-call-mini',
   imports: [Button, CallControls, CallTile],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // Global class names, loaded with the call (design-system «Where it lives»)
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './call-mini.scss',
   host: {
     role: 'region',
     '[attr.aria-label]': 't.call',

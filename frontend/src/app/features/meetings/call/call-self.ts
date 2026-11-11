@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
 import { CallParticipant } from './call-engine';
 import { CallSide, injectCornerDrag } from './call-corner';
 import { CallTile } from './call-tile';
@@ -19,6 +19,9 @@ const SIDES: Readonly<Record<string, CallSide>> = {
   selector: 'tb-call-self',
   imports: [CallTile],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // Global class names, loaded with the call (design-system «Where it lives»)
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './call-self.scss',
   host: {
     '[class]': "'tb-call-self tb-call-self--' + place.corner()",
     '[class.tb-call-self--dragging]': 'place.dragging()',

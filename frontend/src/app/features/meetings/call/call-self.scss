@@ -1,0 +1,52 @@
+/* The own camera of a one-to-one call: a small tile in a corner of the stage, dragged between corners */
+.tb-call-self {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  width: clamp(7rem, 22%, 16rem);
+  aspect-ratio: 16 / 9;
+  border-radius: var(--tb-shape-xl);
+  box-shadow: var(--tb-elevation-2);
+  cursor: grab;
+  touch-action: none;
+  transition:
+    top var(--tb-spring-default-spatial),
+    bottom var(--tb-spring-default-spatial),
+    left var(--tb-spring-default-spatial),
+    right var(--tb-spring-default-spatial);
+
+  &--dragging {
+    cursor: grabbing;
+    transition: none;
+  }
+
+  &--top-left,
+  &--top-right {
+    top: var(--tb-space-3);
+  }
+
+  &--bottom-left,
+  &--bottom-right {
+    bottom: var(--tb-space-3);
+  }
+
+  &--top-left,
+  &--bottom-left {
+    left: var(--tb-space-3);
+  }
+
+  &--top-right,
+  &--bottom-right {
+    right: var(--tb-space-3);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--p-md-primary);
+    outline-offset: 2px;
+  }
+
+  @media (width < 37.5em) {
+    width: 7rem;
+    aspect-ratio: 3 / 4;
+  }
+}

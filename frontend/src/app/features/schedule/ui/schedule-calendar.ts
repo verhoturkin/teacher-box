@@ -232,7 +232,7 @@ export class ScheduleCalendar {
     }
   }
 
-  /** Sets (px) or removes the height of a week of the month (`--tb-cal-row`, styles.scss). */
+  /** Sets (px) or removes the height of a week of the month (`--tb-cal-row`, schedule-calendar.scss). */
   private setRow(fill: HTMLElement, height: number | null): void {
     if (height === null) {
       fill.style.removeProperty('--tb-cal-row');

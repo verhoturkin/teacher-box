@@ -143,6 +143,10 @@ Missed calendar lessons use `error-container` / `on-error-container`, matching d
 status tags outside the calendar retain their warning styling. The teacher home's group attendance action
 opens the same attendance dialog as the calendar directly on the home page.
 
+The calendar's styles (FullCalendar's skeleton and classic theme, then
+`ui/schedule-calendar.scss`) are the `calendar` style bundle (`calendar.css`), loaded by the two
+schedule routes (`withStyleBundle` in `app.routes.ts`), not a part of the initial CSS.
+
 `features/schedule/`: `teacher/` (calendar — FullCalendar, unified lesson/repeat dialog, off-time, requests),
 `student/` (week/month calendar and a supporting pane with mini-month, upcoming lessons and requests; compact
 agenda with week/day navigation and week/month switches, lesson bottom sheet on compact (16 px between details and actions) and centered

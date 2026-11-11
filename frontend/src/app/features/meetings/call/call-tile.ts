@@ -6,6 +6,7 @@ import {
   effect,
   input,
   viewChild,
+  ViewEncapsulation,
 } from '@angular/core';
 import { InitialsPipe } from '@shared/ui/initials';
 import { CallParticipant, MediaRef } from './call-engine';
@@ -20,6 +21,9 @@ import { T } from '../i18n/texts';
   selector: 'tb-call-tile',
   imports: [InitialsPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // Global class names, loaded with the call (design-system «Where it lives»)
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './call-tile.scss',
   host: {
     class: 'tb-call-tile',
     '[class.tb-call-tile--speaking]': 'participant().speaking && !screen()',
