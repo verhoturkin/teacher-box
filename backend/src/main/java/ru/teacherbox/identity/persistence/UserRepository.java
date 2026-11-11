@@ -16,6 +16,7 @@ import ru.teacherbox.identity.domain.LabelColor;
 import ru.teacherbox.identity.domain.Profile;
 import ru.teacherbox.identity.domain.User;
 import ru.teacherbox.shared.i18n.Language;
+import ru.teacherbox.shared.persistence.OptimisticLock;
 import ru.teacherbox.shared.security.Role;
 
 @Repository
@@ -101,9 +102,7 @@ public class UserRepository {
                 .param("passwordChangeRequired", user.passwordChangeRequired())
                 .param("updatedAt", user.updatedAt())
                 .update();
-        if (updated != 1) {
-            throw new OptimisticLockingFailureException("User " + user.id() + " was modified concurrently");
-        }
+        OptimisticLock.requireUpdated(updated, "User", user.id());
         user.markSaved(user.version() + 1);
     }
 

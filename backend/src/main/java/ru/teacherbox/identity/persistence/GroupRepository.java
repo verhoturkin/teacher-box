@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.identity.domain.LabelColor;
 import ru.teacherbox.identity.domain.StudentGroup;
+import ru.teacherbox.shared.persistence.OptimisticLock;
 
 @Repository
 public class GroupRepository {
@@ -74,9 +75,7 @@ public class GroupRepository {
                 .param("archivedAt", group.archivedAt())
                 .param("updatedAt", group.updatedAt())
                 .update();
-        if (updated != 1) {
-            throw new OptimisticLockingFailureException("Group " + group.id() + " was modified concurrently");
-        }
+        OptimisticLock.requireUpdated(updated, "Group", group.id());
         jdbc.sql("delete from identity.group_members where group_id = :id").param("id", group.id()).update();
         insertMembers(group);
         group.markSaved(group.version() + 1);

@@ -5,12 +5,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.identity.domain.Tag;
+import ru.teacherbox.shared.persistence.OptimisticLock;
 
 /** Student tags, their values and the values set on students. */
 @Repository
@@ -28,8 +28,7 @@ public class TagRepository {
     /** All tags in the teacher's order. */
     public List<Tag> findAll() {
         return withValues(jdbc.sql("select id, name, kind, use_in_ai, version from identity.tags order by position, id")
-                .query((rs, rowNum) -> new Row(rs.getObject("id", UUID.class), rs.getString("name"),
-                        Tag.Kind.valueOf(rs.getString("kind")), rs.getBoolean("use_in_ai"), rs.getLong("version")))
+                .query(Row.class)
                 .list());
     }
 
@@ -65,9 +64,7 @@ public class TagRepository {
                 .param("kind", tag.kind().name())
                 .param("useInAi", tag.useInAi())
                 .update();
-        if (updated != 1) {
-            throw new OptimisticLockingFailureException("Tag " + tag.id() + " was modified concurrently");
-        }
+        OptimisticLock.requireUpdated(updated, "Tag", tag.id());
         List<UUID> kept = tag.values().stream().map(Tag.Value::id).toList();
         // a text tag has no values (and no student of a kind-changed tag has any): "not in ()" would be invalid
         if (kept.isEmpty()) {
