@@ -9,7 +9,9 @@
 # Tests are not run here: they run in scripts/verify.sh (pre-commit hook and CI).
 #
 # Multi-platform (ADR-0032): the jar and the SPA do not depend on the architecture, so the build stages run on the
-# builder's platform ($BUILDPLATFORM) once, and only the runtime stages are built per target platform.
+# builder's platform ($BUILDPLATFORM) once, and only the runtime stages are built per target platform. The AOT cache
+# of the JVM (stage backend-aot) belongs to one JVM build, so its training run is a per-platform stage too (under
+# emulation for a platform other than the builder's).
 
 ARG NODE_IMAGE=node:24-alpine
 ARG MAVEN_IMAGE=maven:3.9-eclipse-temurin-25-alpine
@@ -58,13 +60,33 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
     CMD wget -q -O /dev/null http://127.0.0.1:8080/actuator/health || exit 1
 USER teacherbox
-ENTRYPOINT ["java", "-jar", "/app/teacher-box.jar"]
+# The AOT cache is an entrypoint argument, not a part of JAVA_TOOL_OPTIONS: the variable is documented in
+# .env.example, and a server that sets its own value must not lose the cache. A missing cache or one that does
+# not match the JVM or the class path is ignored with a warning (never add -XX:AOTMode=on here: it makes that
+# fatal); JAVA_TOOL_OPTIONS=... -XX:AOTMode=off turns the cache off.
+ENTRYPOINT ["java", "-XX:AOTCache=/app/teacher-box.aot", "-jar", "/app/teacher-box.jar"]
 
-FROM jre-base AS backend
+FROM jre-base AS backend-app
 COPY --from=backend-build /workspace/target/extracted/dependencies/ ./
 COPY --from=backend-build /workspace/target/extracted/spring-boot-loader/ ./
 COPY --from=backend-build /workspace/target/extracted/snapshot-dependencies/ ./
 COPY --from=backend-build /workspace/target/extracted/application/ ./
+
+# Training run for the AOT cache (JDK 25, Spring Boot "AOT Cache"): the same JRE, files, paths and JVM options
+# as the image itself, since the cache is valid only for them. spring.context.exit=onRefresh ends the JVM once
+# every bean is created (migrations of an empty database included) and before the web server, the scheduled
+# jobs, the messenger polling and the creation of the accounts start. No network; the data directory is a tmpfs
+# that never reaches a layer. A failed run fails the build.
+FROM backend-app AS backend-aot
+USER root
+RUN --network=none --mount=type=tmpfs,target=/tmp/aot-data \
+    TEACHERBOX_DATA_DIR=/tmp/aot-data \
+    java -XX:AOTCacheOutput=/app/teacher-box.aot -Dspring.context.exit=onRefresh -jar /app/teacher-box.jar \
+    && test -s /app/teacher-box.aot
+
+FROM backend-app AS backend
+# The last layer: the cache changes with every change of the application.
+COPY --from=backend-aot --chmod=444 /app/teacher-box.aot /app/teacher-box.aot
 ARG VERSION
 LABEL org.opencontainers.image.title="Teacher Box backend" \
       org.opencontainers.image.description="API and data of Teacher Box, a self-hosted portal for a tutor" \
