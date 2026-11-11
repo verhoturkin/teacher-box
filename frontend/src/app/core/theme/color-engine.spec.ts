@@ -1,6 +1,7 @@
 import { Hct, SchemeFidelity, argbFromHex, hexFromArgb } from '@material/material-color-utilities';
 import { contrast } from './color';
-import { Shades, auraPalette, colorScheme, lowestContrast, textPairs } from './color-scheme';
+import { colorScheme } from './color-engine';
+import { Shades, auraPalette, lowestContrast, textPairs } from './color-scheme';
 import { ownShades } from './portal-accent';
 import { BASE_COLORS, CONTRASTS, SCHEMES } from './appearance';
 
@@ -11,7 +12,7 @@ const CASES: [string, Shades][] = [
   ...OWN.map((color): [string, Shades] => [color, ownShades(color)]),
 ];
 
-describe('color scheme', () => {
+describe('color engine', () => {
   it.each(SCHEMES)('keeps text readable for %s with every contrast and base colour', (scheme) => {
     for (const level of CONTRASTS) {
       for (const base of BASE_COLORS) {

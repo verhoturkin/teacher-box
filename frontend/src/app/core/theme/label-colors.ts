@@ -1,5 +1,4 @@
-import { Hct, SchemeFidelity, argbFromHex, hexFromArgb } from '@material/material-color-utilities';
-import { readable, toOklch } from './color';
+import { LABEL_ROLES } from './generated-colors';
 import { CORE_T } from '@core/i18n/texts';
 
 /**
@@ -25,20 +24,6 @@ export const LABEL_COLORS = [
 
 export type LabelColor = (typeof LABEL_COLORS)[number];
 
-/** The reference colours: Tailwind/Aura 500 (red 600), hues about 30° apart. */
-const REFERENCES: Readonly<Record<LabelColor, string>> = {
-  RED: '#dc2626',
-  ORANGE: '#f97316',
-  YELLOW: '#eab308',
-  LIME: '#84cc16',
-  GREEN: '#10b981',
-  CYAN: '#06b6d4',
-  BLUE: '#3b82f6',
-  VIOLET: '#8b5cf6',
-  PURPLE: '#d946ef',
-  PINK: '#ec4899',
-};
-
 /** The four roles of a label colour in one theme, every one `#rrggbb`. */
 export interface LabelRoles {
   readonly color: string;
@@ -52,40 +37,16 @@ export interface LabelRoles {
   readonly onSurfaceVariant: string;
 }
 
-/** Text is readable from this contrast on (WCAG 2.2, 1.4.3). */
-const TEXT = 4.5;
-
 export function isLabelColor(value: unknown): value is LabelColor {
   return typeof value === 'string' && (LABEL_COLORS as readonly string[]).includes(value);
 }
 
 /**
- * The roles of a label colour; an on-role short of 4.5:1 is moved along its hue (ADR-0023), the text of the
- * surfaces — away from every surface a row takes, as the portal's text roles are.
+ * The roles of a label colour: constants computed from the reference colours (`computed-colors.ts`) by
+ * `npm run colors`, so the lists need no colour library (stage 376).
  */
 export function labelRoles(label: LabelColor, dark: boolean): LabelRoles {
-  const scheme = new SchemeFidelity(Hct.fromInt(argbFromHex(REFERENCES[label])), dark, 0, '2025');
-  const hex = (argb: number): string => hexFromArgb(argb).toLowerCase();
-  const color = hex(scheme.primary);
-  const container = hex(scheme.primaryContainer);
-  const on = (text: string, ground: string): string =>
-    readable(text, [ground], toOklch(text).l >= toOklch(ground).l ? 'lighter' : 'darker', TEXT);
-  const surfaceContainerLowest = hex(scheme.surfaceContainerLowest);
-  const surfaceContainerLow = hex(scheme.surfaceContainerLow);
-  const surfaceContainerHigh = hex(scheme.surfaceContainerHigh);
-  const surfaces = [surfaceContainerLowest, surfaceContainerLow, surfaceContainerHigh];
-  const direction = dark ? 'lighter' : 'darker';
-  return {
-    color,
-    onColor: on(hex(scheme.onPrimary), color),
-    container,
-    onContainer: on(hex(scheme.onPrimaryContainer), container),
-    surfaceContainerLowest,
-    surfaceContainerLow,
-    surfaceContainerHigh,
-    onSurface: readable(hex(scheme.onSurface), surfaces, direction, TEXT),
-    onSurfaceVariant: readable(hex(scheme.onSurfaceVariant), surfaces, direction, TEXT),
-  };
+  return dark ? LABEL_ROLES[label].dark : LABEL_ROLES[label].light;
 }
 
 /** The colour's name in the interface. */
@@ -123,5 +84,5 @@ function tokens(dark: boolean): Readonly<Record<string, string>> {
   );
 }
 
-/** The tokens of both themes; static colours do not follow the portal colour, so they are computed once. */
+/** The tokens of both themes; static colours do not follow the portal colour. */
 export const LABEL_TOKENS = { light: tokens(false), dark: tokens(true) } as const;

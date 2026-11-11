@@ -24,12 +24,10 @@ import {
   DEFAULT_ACCENT,
   DEFAULT_OWN_COLOR,
   MIN_CONTRAST,
-  accentAdvice,
-  accentScheme,
-  accentSwatch,
   isOwnColor,
   isAccent,
 } from '@core/theme/portal-accent';
+import { accentAdvice, accentScheme, accentSwatch } from '@core/theme/accent-scheme';
 import { HelpButton } from '@features/help/parts';
 import { SettingsApi } from './data-access/settings-api';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';

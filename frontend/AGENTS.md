@@ -75,6 +75,11 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
   use `@testing/excalidraw-fake`.
 - Icons — Material Symbols Rounded classes `tb-i tb-i-<name>` (design-system §4 «Icons», ADR-0046): after adding or
   removing an icon run `npm run icons` and commit `core/theme/{icons,prime-icons}.scss` and `symbols.woff2`.
+- **Colour library stays out of the initial bundle** (stage 376, ADR-0034): only
+  `core/theme/color-engine.ts` imports `@material/material-color-utilities`, and the app reaches it
+  through `import()` or a lazy screen (`scripts/initial-imports.mjs`, part of `npm run lint`). After
+  changing the engine, `color.ts`, `computed-colors.ts` or the library version run `npm run colors`
+  and commit `core/theme/generated-colors.ts` (`generated-colors.spec.ts` fails until then).
 - **Design gallery** (`/gallery`, development builds, ADR-0059): a new shared component or variant
   adds its sample `features/gallery/<section>/<sample>.ts` in the same commit.
 - Section data — `LoadState` + `tb-load-state`, load requests via `quietContext()`; confirmations —

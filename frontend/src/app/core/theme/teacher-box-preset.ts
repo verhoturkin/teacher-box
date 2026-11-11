@@ -1,6 +1,7 @@
 import { definePreset } from '@primeuix/themes';
 import { AuraBase } from './aura-base';
-import { ColorScheme, Shades, auraPalette, colorScheme } from './color-scheme';
+import { ColorScheme, Shades, auraPalette } from './color-scheme';
+import { DEFAULT_ROLES } from './generated-colors';
 import { LABEL_TOKENS } from './label-colors';
 
 /**
@@ -148,8 +149,11 @@ export function schemeTokens(colors: ColorScheme): Record<string, unknown> {
   };
 }
 
-/** The scheme of the default color (indigo) until the portal tells its own. */
-export const DEFAULT_SCHEME = colorScheme(auraPalette('indigo'));
+/**
+ * The scheme of the default color (indigo) until the portal tells its own: its roles are generated
+ * constants (`npm run colors`), not computed at the start (stage 376).
+ */
+export const DEFAULT_SCHEME: ColorScheme = { primary: auraPalette('indigo'), ...DEFAULT_ROLES };
 
 // the values live in styles.scss (--tb-*): the preset only refers to them (ADR-0015)
 const ELEVATION_1 = 'var(--tb-elevation-1)';

@@ -1,13 +1,7 @@
 import { palette, updatePreset, updatePrimaryPalette } from '@primeuix/themes';
-import { difference } from './color';
-import {
-  ColorScheme,
-  SHADES,
-  Shades,
-  auraPalette,
-  colorScheme,
-  lowestContrast,
-} from './color-scheme';
+import { ColorScheme, SHADES, SchemeRoles, Shades, auraPalette, shade } from './color-scheme';
+import { DEFAULT_ROLES, ENGINE_STAMP } from './generated-colors';
+import { readDeviceSetting, writeDeviceSetting } from '@shared/storage/device-settings';
 import { CORE_T } from '@core/i18n/texts';
 import { schemeTokens } from './teacher-box-preset';
 import { Appearance, DEFAULT_APPEARANCE } from './appearance';
@@ -35,15 +29,6 @@ export const DEFAULT_OWN_COLOR = '#0f766e';
 /** Text is readable from this contrast on (WCAG 2.2, 1.4.3: text of normal size). */
 export const MIN_CONTRAST = 4.5;
 
-/** Colors closer than this look alike (the difference in OKLab × 100, ADR-0023). */
-export const ALIKE = 12;
-
-/**
- * The primary role differs from the chosen color this much or more: the teacher is told that the
- * color was made darker (lighter in the dark theme) to stay readable.
- */
-const ADJUSTED = 10;
-
 const OWN_COLOR = /^#[0-9a-f]{6}$/i;
 
 export function isAccent(value: string): value is Accent {
@@ -63,74 +48,101 @@ export function accentShades(accent: string): Shades {
   return auraPalette(isAccent(accent) ? accent : DEFAULT_ACCENT);
 }
 
-/** The scheme of a color of the portal (ADR-0023). */
-export function accentScheme(
-  accent: string,
-  appearance: Appearance = DEFAULT_APPEARANCE,
-): ColorScheme {
-  return colorScheme(accentShades(accent), appearance);
+/** Device setting with the roles computed for the portal color (stage 376). */
+export const SCHEME_KEY = 'tb.scheme';
+
+/**
+ * What the roles of a portal color are computed from: the stamp of the engine and the layout of the
+ * setting (`1`), the seed, the custom colors success and warning, the scheme and the contrast. Roles
+ * kept under another key are not used.
+ */
+function schemeKey(primary: Shades, appearance: Appearance): string {
+  return [
+    '1',
+    ENGINE_STAMP,
+    shade(primary, '500'),
+    shade(auraPalette('green'), '500'),
+    shade(auraPalette('amber'), '500'),
+    appearance.scheme,
+    appearance.contrast,
+  ].join('|');
 }
 
-/** A swatch of a color of the portal: the color itself and its readable mark (the check). */
-export interface AccentSwatch {
-  readonly background: string;
-  readonly color: string;
+const DEFAULT_KEY = schemeKey(auraPalette(DEFAULT_ACCENT), DEFAULT_APPEARANCE);
+
+/** `value` has every color of `sample` (roles or shades). */
+function hasColors<T extends object>(value: unknown, sample: T): value is T {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    Object.keys(sample).every((name) => {
+      const color: unknown = Object.entries(value).find(([key]) => key === name)?.[1];
+      return typeof color === 'string' && color !== '';
+    })
+  );
+}
+
+function storedRoles(key: string): SchemeRoles | null {
+  try {
+    const stored: unknown = JSON.parse(readDeviceSetting(SCHEME_KEY) ?? 'null');
+    if (typeof stored !== 'object' || stored === null || !('key' in stored) || stored.key !== key) {
+      return null;
+    }
+    const neutral: unknown = 'neutral' in stored ? stored.neutral : null;
+    const light: unknown = 'light' in stored ? stored.light : null;
+    const dark: unknown = 'dark' in stored ? stored.dark : null;
+    return hasColors(neutral, DEFAULT_ROLES.neutral) &&
+      hasColors(light, DEFAULT_ROLES.light) &&
+      hasColors(dark, DEFAULT_ROLES.dark)
+      ? { neutral, light, dark }
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
- * The swatch: the primary container of the light theme (Fidelity keeps the chosen color there)
- * and its on-color, ≥ 4.5:1 — white is short of 3:1 on teal and emerald.
+ * The scheme of a color of the portal when it is known without computing (stage 376): the default
+ * color with the default appearance is a generated constant, any other one is kept on this device
+ * once it has been computed. `null`: it has to be computed (`loadAccentScheme`).
  */
-export function accentSwatch(accent: string): AccentSwatch {
-  const { light } = accentScheme(accent);
-  return { background: light.primaryContainer, color: light.onPrimaryContainer };
+export function knownAccentScheme(
+  accent: string,
+  appearance: Appearance = DEFAULT_APPEARANCE,
+): ColorScheme | null {
+  const primary = accentShades(accent);
+  const key = schemeKey(primary, appearance);
+  const roles = key === DEFAULT_KEY ? DEFAULT_ROLES : storedRoles(key);
+  return roles === null ? null : { primary, ...roles };
 }
 
 /**
- * Paints the portal in its color: the roles of both themes are computed here and handed to the
- * theme as ready colors (ADR-0023).
- *
- * @return the scheme now in use
+ * The scheme of a color of the portal: the known one or, the first time on this device, computed by
+ * the color library, which is loaded for that only, and kept for the next start.
  */
-export function applyAccent(
+export async function loadAccentScheme(
   accent: string,
   appearance: Appearance = DEFAULT_APPEARANCE,
-): ColorScheme {
+): Promise<ColorScheme> {
+  const known = knownAccentScheme(accent, appearance);
+  if (known !== null) {
+    return known;
+  }
+  const { accentScheme } = await import('./accent-scheme');
   const scheme = accentScheme(accent, appearance);
-  // the palette first: it also sets up the theme with its options if there is none yet (tests)
-  updatePrimaryPalette(scheme.primary);
-  updatePreset({ semantic: schemeTokens(scheme) });
+  const { neutral, light, dark } = scheme;
+  writeDeviceSetting(
+    SCHEME_KEY,
+    JSON.stringify({ key: schemeKey(scheme.primary, appearance), neutral, light, dark }),
+  );
   return scheme;
 }
 
-/** What the teacher should know about a color of the portal (the settings, ADR-0023). */
-export interface AccentAdvice {
-  /** The lowest contrast of a text of the portal in the light and the dark theme. */
-  readonly light: number;
-  readonly dark: number;
-  /** Buttons and links are darker (or lighter) than the color itself, to stay readable. */
-  readonly adjusted: boolean;
-  /** The main buttons would look like the red deleting ones (there are no green buttons, ADR-0045). */
-  readonly likeError: boolean;
-}
-
-export function accentAdvice(
-  accent: string,
-  appearance: Appearance = DEFAULT_APPEARANCE,
-): AccentAdvice {
-  const shades = accentShades(accent);
-  const scheme = colorScheme(shades, appearance);
-  const alike = (role: 'error'): boolean =>
-    difference(scheme.light.primary, scheme.light[role]) < ALIKE ||
-    difference(scheme.dark.primary, scheme.dark[role]) < ALIKE;
-  return {
-    light: lowestContrast(scheme.light),
-    dark: lowestContrast(scheme.dark),
-    adjusted:
-      difference(scheme.light.primary, shades['600'] ?? scheme.light.primary) >= ADJUSTED ||
-      difference(scheme.dark.primary, shades['200'] ?? scheme.dark.primary) >= ADJUSTED,
-    likeError: alike('error'),
-  };
+/** Paints the portal in a scheme: its roles are handed to the theme as ready colors (ADR-0023). */
+export function applyScheme(scheme: ColorScheme): void {
+  // the palette first: it also sets up the theme with its options if there is none yet (tests)
+  updatePrimaryPalette(scheme.primary);
+  updatePreset({ semantic: schemeTokens(scheme) });
 }
 
 /** Shades 50–950 of the own color (the color itself is 500). */

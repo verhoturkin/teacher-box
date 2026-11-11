@@ -249,7 +249,7 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
 
 ### Stage 376 — the colour scheme is computed once (F)
 
-- [ ] 376.1 **F** `core/theme/color-scheme.ts`, `appearance.ts`, `label-colors.ts`:
+- [x] 376.1 **F** `core/theme/color-scheme.ts`, `appearance.ts`, `label-colors.ts`:
   `@material/material-color-utilities` (84 kB) runs at every start to compute the same roles.
   Keep the computed scheme of the default appearance as generated constants (a script next to
   `scripts/icons.mjs`, a spec that fails when the constants differ from the computed ones); a
@@ -257,6 +257,9 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
   loads the library with `import()` only when the seed changes or the store is empty. Target:
   the library is absent from the initial chunks (a spec on the build stats or on the import
   graph, like `scripts/import-cycles.mjs`).
+  *Done: initial JS 916.6 → 834.6 kB raw, the library (85.6 kB) is in a lazy chunk only. Constants
+  cover the default appearance and the labels; the six named colours with the default appearance
+  are kept on the device like any custom one (13 kB of constants would eat the gain).*
 
 ### Stage 377 — shared plumbing of repositories (B)
 
