@@ -1,0 +1,920 @@
+## lesson planned: title and topic [RU]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_PLANNED
+title: Новое занятие: четверг, 01.10 в 18:00
+body: Занятие «Английский». Тема: Дроби.
+link: /cabinet/schedule
+--
+
+## lesson planned: bare [RU]
+to: Vera Smith
+kind: SCHEDULE_LESSON_PLANNED
+title: Новое занятие: четверг, 01.10 в 18:00
+link: /cabinet/schedule
+--
+
+## lesson planned: group, topic [RU]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_PLANNED
+title: Новое занятие: пятница, 02.10 в 19:30
+body: Группа «ОГЭ». Тема: Past Simple.
+link: /cabinet/schedule
+--
+to: Борис
+kind: SCHEDULE_LESSON_PLANNED
+title: Новое занятие: пятница, 02.10 в 19:30
+body: Группа «ОГЭ». Тема: Past Simple.
+link: /cabinet/schedule
+--
+
+## lesson planned: lost group, title [RU]
+to: Борис
+kind: SCHEDULE_LESSON_PLANNED
+title: Новое занятие: четверг, 01.10 в 18:00
+body: Занятие «Maths».
+link: /cabinet/schedule
+--
+
+## lesson planned: nobody [RU]
+(nothing)
+
+## repeat: two days, every 2 weeks, till [RU]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_PLANNED
+title: Занятия с повтором по вторникам и четвергам в 18:00
+body: С 01.10.2026 по 31.12.2026, раз в 2 недели.
+link: /cabinet/schedule
+--
+
+## repeat: weekly, open [RU]
+to: Vera Smith
+kind: SCHEDULE_LESSON_PLANNED
+title: Занятия с повтором по понедельникам в 09:00
+body: С 05.10.2026.
+link: /cabinet/schedule
+--
+
+## repeat: group, three days, every 5 weeks [RU]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_PLANNED
+title: Занятия с повтором по средам, пятницам и воскресеньям в 12:30
+body: Группа «ОГЭ». С 02.10.2026 по 31.05.2027, раз в 5 недель.
+link: /cabinet/schedule
+--
+to: Борис
+kind: SCHEDULE_LESSON_PLANNED
+title: Занятия с повтором по средам, пятницам и воскресеньям в 12:30
+body: Группа «ОГЭ». С 02.10.2026 по 31.05.2027, раз в 5 недель.
+link: /cabinet/schedule
+--
+
+## repeat: every 21 weeks, saturday [RU]
+to: Борис
+kind: SCHEDULE_LESSON_PLANNED
+title: Занятия с повтором по субботам в 07:05
+body: С 03.10.2026, раз в 21 неделю.
+link: /cabinet/schedule
+--
+
+## repeat stopped: replaced [RU]
+(nothing)
+
+## repeat stopped [RU]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_CANCELLED
+title: Занятия с повтором завершены
+body: Занятия по расписанию с 05.10.2026 отменены.
+link: /cabinet/schedule
+--
+
+## repeat stopped: group [RU]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_CANCELLED
+title: Занятия с повтором завершены
+body: Группа «ОГЭ». Занятия по расписанию с 01.11.2026 отменены.
+link: /cabinet/schedule
+--
+to: Борис
+kind: SCHEDULE_LESSON_CANCELLED
+title: Занятия с повтором завершены
+body: Группа «ОГЭ». Занятия по расписанию с 01.11.2026 отменены.
+link: /cabinet/schedule
+--
+
+## moved [RU]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_MOVED
+title: Занятие перенесено на пятница, 02.10 в 19:30
+body: Было: четверг, 01.10 в 18:00.
+link: /cabinet/schedule
+--
+
+## moved: group, asked by Anna [RU]
+to: Борис
+kind: SCHEDULE_LESSON_MOVED
+title: Занятие перенесено на пятница, 02.10 в 19:30
+body: Группа «ОГЭ». Было: четверг, 01.10 в 18:00.
+link: /cabinet/schedule
+--
+
+## moved: by request [RU]
+(nothing)
+
+## cancelled: by request [RU]
+(nothing)
+
+## cancelled: reason, charged [RU]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_CANCELLED
+title: Занятие четверг, 01.10 в 18:00 отменено
+body: Причина: Заболел Занятие засчитано как пропуск.
+link: /cabinet/schedule
+--
+
+## cancelled: bare [RU]
+to: Vera Smith
+kind: SCHEDULE_LESSON_CANCELLED
+title: Занятие пятница, 02.10 в 19:30 отменено
+link: /cabinet/schedule
+--
+
+## cancelled: group, reason [RU]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_CANCELLED
+title: Занятие четверг, 01.10 в 18:00 отменено
+body: Группа «ОГЭ». Причина: Праздник.
+link: /cabinet/schedule
+--
+to: Борис
+kind: SCHEDULE_LESSON_CANCELLED
+title: Занятие четверг, 01.10 в 18:00 отменено
+body: Группа «ОГЭ». Причина: Праздник.
+link: /cabinet/schedule
+--
+
+## cancelled: group, charged [RU]
+to: Борис
+kind: SCHEDULE_LESSON_CANCELLED
+title: Занятие четверг, 01.10 в 18:00 отменено
+body: Группа «ОГЭ». Занятие засчитано как пропуск.
+link: /cabinet/schedule
+--
+
+## deleted: planned, ahead [RU]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_CANCELLED
+title: Занятие четверг, 01.10 в 18:00 отменено
+link: /cabinet/schedule
+--
+
+## deleted: group [RU]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_CANCELLED
+title: Занятие четверг, 01.10 в 18:00 отменено
+body: Группа «ОГЭ».
+link: /cabinet/schedule
+--
+to: Борис
+kind: SCHEDULE_LESSON_CANCELLED
+title: Занятие четверг, 01.10 в 18:00 отменено
+body: Группа «ОГЭ».
+link: /cabinet/schedule
+--
+
+## deleted: not planned [RU]
+(nothing)
+
+## deleted: passed [RU]
+(nothing)
+
+## deleted: at its start [RU]
+(nothing)
+
+## restored: ahead [RU]
+to: Vera Smith
+kind: SCHEDULE_LESSON_PLANNED
+title: Занятие пятница, 02.10 в 19:30 снова в расписании
+body: Отмена занятия снята.
+link: /cabinet/schedule
+--
+
+## restored: group [RU]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_PLANNED
+title: Занятие пятница, 02.10 в 19:30 снова в расписании
+body: Группа «ОГЭ». Отмена занятия снята.
+link: /cabinet/schedule
+--
+to: Борис
+kind: SCHEDULE_LESSON_PLANNED
+title: Занятие пятница, 02.10 в 19:30 снова в расписании
+body: Группа «ОГЭ». Отмена занятия снята.
+link: /cabinet/schedule
+--
+
+## restored: passed [RU]
+(nothing)
+
+## request: move, proposal, comment [RU]
+to: teacher
+kind: SCHEDULE_REQUEST
+title: Анна Иванова просит перенести занятие
+body: Занятие: четверг, 01.10 в 18:00. Предлагает: пятница, 02.10 в 19:30. Комментарий: Можно позже?
+link: /teacher/schedule
+subject: change-request 00000000-0000-0000-0000-0000000000ab
+--
+
+## request: cancel, late [RU]
+to: teacher
+kind: SCHEDULE_REQUEST
+title: Vera Smith просит отменить занятие
+body: Занятие: четверг, 01.10 в 18:00. Поздняя отмена.
+link: /teacher/schedule
+subject: change-request 00000000-0000-0000-0000-0000000000ad
+--
+
+## request: absence, accepted, comment [RU]
+to: teacher
+kind: SCHEDULE_REQUEST
+title: Борис не придёт на занятие группы
+body: Занятие: четверг, 01.10 в 18:00, группа «ОГЭ». Комментарий: Уезжаю
+link: /teacher/schedule
+--
+
+## request: absence, late [RU]
+to: teacher
+kind: SCHEDULE_REQUEST
+title: Анна Иванова не придёт на занятие группы
+body: Занятие: четверг, 01.10 в 18:00, группа «ОГЭ». Поздно — решите, засчитать ли пропуск.
+link: /teacher/schedule
+subject: change-request 00000000-0000-0000-0000-0000000000af
+--
+
+## request: move of a group lesson [RU]
+to: teacher
+kind: SCHEDULE_REQUEST
+title: Анна Иванова просит перенести занятие
+body: Занятие: четверг, 01.10 в 18:00, группа «ОГЭ».
+link: /teacher/schedule
+subject: change-request 00000000-0000-0000-0000-0000000000b0
+--
+
+## request: cancel, stranger, lost group [RU]
+to: teacher
+kind: SCHEDULE_REQUEST
+title: Ученик просит отменить занятие
+body: Занятие: четверг, 01.10 в 18:00. Поздняя отмена. Комментарий: Не смогу
+link: /teacher/schedule
+--
+
+## answer: move declined [RU]
+to: Анна Иванова
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Перенос занятия не согласован
+body: Занятие остаётся: четверг, 01.10 в 18:00.
+link: /cabinet/schedule
+--
+
+## answer: cancel declined, comment [RU]
+to: Vera Smith
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Отмена занятия не согласована
+body: Занятие остаётся: четверг, 01.10 в 18:00. Комментарий учителя: Перед контрольной нельзя
+link: /cabinet/schedule
+--
+
+## answer: absence declined [RU]
+to: Борис
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Пропуск занятия не согласован
+body: Занятие остаётся: четверг, 01.10 в 18:00.
+link: /cabinet/schedule
+--
+
+## answer: move agreed, comment [RU]
+to: Анна Иванова
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Перенос согласован: пятница, 02.10 в 19:30
+body: Комментарий учителя: Договорились
+link: /cabinet/schedule
+--
+
+## answer: cancel agreed, charged [RU]
+to: Vera Smith
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Отмена занятия четверг, 01.10 в 18:00 согласована
+body: Отмена поздняя, занятие засчитано как пропуск.
+link: /cabinet/schedule
+--
+
+## answer: cancel agreed [RU]
+to: Vera Smith
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Отмена занятия четверг, 01.10 в 18:00 согласована
+link: /cabinet/schedule
+--
+
+## answer: absence known, charged, comment [RU]
+to: Борис
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Учитель знает, что вас не будет четверг, 01.10 в 18:00
+body: Отмена поздняя, занятие засчитано как пропуск. Комментарий учителя: Жаль
+link: /cabinet/schedule
+--
+
+## answer: move of a group lesson agreed, charged [RU]
+to: Анна Иванова
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Перенос согласован: пятница, 02.10 в 19:30
+link: /cabinet/schedule
+--
+
+## answer: move of a group lesson declined [RU]
+to: Анна Иванова
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Перенос занятия не согласован
+body: Занятие остаётся: четверг, 01.10 в 18:00.
+link: /cabinet/schedule
+--
+
+## soon: a day before [RU]
+to: Анна Иванова
+kind: SCHEDULE_REMINDER
+title: Скоро занятие: четверг, 01.10 в 18:00
+body: Через 24 часа.
+link: /cabinet/schedule
+--
+
+## soon: last, topic, room [RU]
+to: Vera Smith
+kind: SCHEDULE_REMINDER
+title: Скоро занятие: четверг, 01.10 в 18:00
+body: Через 1 час. Тема: Дроби. Ссылка на урок: https://zoom.us/j/1
+link: /cabinet/schedule
+room: https://zoom.us/j/1
+room body: Через 1 час. Тема: Дроби.
+--
+to: teacher
+kind: SCHEDULE_REMINDER
+title: Скоро урок: Vera Smith, четверг, 01.10 в 18:00
+body: Через 1 час. Ссылка на урок: https://zoom.us/j/1
+link: /teacher/schedule
+room: https://zoom.us/j/1
+room body: Через 1 час.
+--
+
+## soon: group, title, last [RU]
+to: Анна Иванова
+kind: SCHEDULE_REMINDER
+title: Скоро занятие: четверг, 01.10 в 18:00
+body: Через 30 минут. Группа «ОГЭ». Занятие «Английский».
+link: /cabinet/schedule
+--
+to: Борис
+kind: SCHEDULE_REMINDER
+title: Скоро занятие: четверг, 01.10 в 18:00
+body: Через 30 минут. Группа «ОГЭ». Занятие «Английский».
+link: /cabinet/schedule
+--
+to: teacher
+kind: SCHEDULE_REMINDER
+title: Скоро урок: группа «ОГЭ», четверг, 01.10 в 18:00
+body: Через 30 минут.
+link: /teacher/schedule
+--
+
+## soon: group, everything, room, not last [RU]
+to: Борис
+kind: SCHEDULE_REMINDER
+title: Скоро занятие: пятница, 02.10 в 19:30
+body: Через 2 дня. Группа «ОГЭ». Занятие «Maths». Тема: Fractions. Ссылка на урок: https://telemost.yandex.ru/j/5
+link: /cabinet/schedule
+room: https://telemost.yandex.ru/j/5
+room body: Через 2 дня. Группа «ОГЭ». Занятие «Maths». Тема: Fractions.
+--
+
+## soon: nobody, last, room [RU]
+to: teacher
+kind: SCHEDULE_REMINDER
+title: Скоро урок: ученик, четверг, 01.10 в 18:00
+body: Через 21 минуту. Ссылка на урок: https://telemost.yandex.ru/j/5
+link: /teacher/schedule
+room: https://telemost.yandex.ru/j/5
+room body: Через 21 минуту.
+--
+
+## soon: lost group, last [RU]
+to: Анна Иванова
+kind: SCHEDULE_REMINDER
+title: Скоро занятие: четверг, 01.10 в 18:00
+body: Через 3 часа.
+link: /cabinet/schedule
+--
+to: Vera Smith
+kind: SCHEDULE_REMINDER
+title: Скоро занятие: четверг, 01.10 в 18:00
+body: Через 3 часа.
+link: /cabinet/schedule
+--
+to: teacher
+kind: SCHEDULE_REMINDER
+title: Скоро урок: Анна Иванова, четверг, 01.10 в 18:00
+body: Через 3 часа.
+link: /teacher/schedule
+--
+
+## soon: room only [RU]
+to: Анна Иванова
+kind: SCHEDULE_REMINDER
+title: Скоро занятие: четверг, 01.10 в 18:00
+body: Через 1 минуту. Ссылка на урок: https://telemost.yandex.ru/j/5
+link: /cabinet/schedule
+room: https://telemost.yandex.ru/j/5
+room body: Через 1 минуту.
+--
+
+## summary [RU]
+to: Анна Иванова
+kind: LESSON_SUMMARY
+title: Итоги урока 01.10
+body: Учитель написал, что вы прошли на уроке.
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c9
+--
+to: Vera Smith
+kind: LESSON_SUMMARY
+title: Итоги урока 01.10
+body: Учитель написал, что вы прошли на уроке.
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c9
+--
+
+## summary: nobody [RU]
+(nothing)
+
+## calendar lost [RU]
+to: teacher
+kind: SCHEDULE_CALENDAR
+title: Google Календарь отключён
+body: Google больше не принимает доступ портала, занятия не попадают в календарь. Подключите календарь заново в настройках.
+link: /teacher/settings?open=calendar
+--
+
+## lesson planned: title and topic [EN]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_PLANNED
+title: New lesson: Thursday, 01.10 at 18:00
+body: Lesson “Английский”. Topic: Дроби.
+link: /cabinet/schedule
+--
+
+## lesson planned: bare [EN]
+to: Vera Smith
+kind: SCHEDULE_LESSON_PLANNED
+title: New lesson: Thursday, 01.10 at 18:00
+link: /cabinet/schedule
+--
+
+## lesson planned: group, topic [EN]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_PLANNED
+title: New lesson: Friday, 02.10 at 19:30
+body: Group “ОГЭ”. Topic: Past Simple.
+link: /cabinet/schedule
+--
+to: Борис
+kind: SCHEDULE_LESSON_PLANNED
+title: New lesson: Friday, 02.10 at 19:30
+body: Group “ОГЭ”. Topic: Past Simple.
+link: /cabinet/schedule
+--
+
+## lesson planned: lost group, title [EN]
+to: Борис
+kind: SCHEDULE_LESSON_PLANNED
+title: New lesson: Thursday, 01.10 at 18:00
+body: Lesson “Maths”.
+link: /cabinet/schedule
+--
+
+## lesson planned: nobody [EN]
+(nothing)
+
+## repeat: two days, every 2 weeks, till [EN]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_PLANNED
+title: Recurring lessons on Tuesdays and Thursdays at 18:00
+body: From 01.10.2026 to 31.12.2026, every 2 weeks.
+link: /cabinet/schedule
+--
+
+## repeat: weekly, open [EN]
+to: Vera Smith
+kind: SCHEDULE_LESSON_PLANNED
+title: Recurring lessons on Mondays at 09:00
+body: From 05.10.2026.
+link: /cabinet/schedule
+--
+
+## repeat: group, three days, every 5 weeks [EN]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_PLANNED
+title: Recurring lessons on Wednesdays, Fridays and Sundays at 12:30
+body: Group “ОГЭ”. From 02.10.2026 to 31.05.2027, every 5 weeks.
+link: /cabinet/schedule
+--
+to: Борис
+kind: SCHEDULE_LESSON_PLANNED
+title: Recurring lessons on Wednesdays, Fridays and Sundays at 12:30
+body: Group “ОГЭ”. From 02.10.2026 to 31.05.2027, every 5 weeks.
+link: /cabinet/schedule
+--
+
+## repeat: every 21 weeks, saturday [EN]
+to: Борис
+kind: SCHEDULE_LESSON_PLANNED
+title: Recurring lessons on Saturdays at 07:05
+body: From 03.10.2026, every 21 weeks.
+link: /cabinet/schedule
+--
+
+## repeat stopped: replaced [EN]
+(nothing)
+
+## repeat stopped [EN]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_CANCELLED
+title: Recurring lessons ended
+body: Lessons scheduled for 05.10.2026 onwards have been cancelled.
+link: /cabinet/schedule
+--
+
+## repeat stopped: group [EN]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_CANCELLED
+title: Recurring lessons ended
+body: Group “ОГЭ”. Lessons scheduled for 01.11.2026 onwards have been cancelled.
+link: /cabinet/schedule
+--
+to: Борис
+kind: SCHEDULE_LESSON_CANCELLED
+title: Recurring lessons ended
+body: Group “ОГЭ”. Lessons scheduled for 01.11.2026 onwards have been cancelled.
+link: /cabinet/schedule
+--
+
+## moved [EN]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_MOVED
+title: Lesson rescheduled to Friday, 02.10 at 19:30
+body: Previously: Thursday, 01.10 at 18:00.
+link: /cabinet/schedule
+--
+
+## moved: group, asked by Anna [EN]
+to: Борис
+kind: SCHEDULE_LESSON_MOVED
+title: Lesson rescheduled to Friday, 02.10 at 19:30
+body: Group “ОГЭ”. Previously: Thursday, 01.10 at 18:00.
+link: /cabinet/schedule
+--
+
+## moved: by request [EN]
+(nothing)
+
+## cancelled: by request [EN]
+(nothing)
+
+## cancelled: reason, charged [EN]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_CANCELLED
+title: Lesson on Thursday, 01.10 at 18:00 cancelled
+body: Reason: Заболел This lesson has been marked as missed.
+link: /cabinet/schedule
+--
+
+## cancelled: bare [EN]
+to: Vera Smith
+kind: SCHEDULE_LESSON_CANCELLED
+title: Lesson on Friday, 02.10 at 19:30 cancelled
+link: /cabinet/schedule
+--
+
+## cancelled: group, reason [EN]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_CANCELLED
+title: Lesson on Thursday, 01.10 at 18:00 cancelled
+body: Group “ОГЭ”. Reason: Праздник.
+link: /cabinet/schedule
+--
+to: Борис
+kind: SCHEDULE_LESSON_CANCELLED
+title: Lesson on Thursday, 01.10 at 18:00 cancelled
+body: Group “ОГЭ”. Reason: Праздник.
+link: /cabinet/schedule
+--
+
+## cancelled: group, charged [EN]
+to: Борис
+kind: SCHEDULE_LESSON_CANCELLED
+title: Lesson on Thursday, 01.10 at 18:00 cancelled
+body: Group “ОГЭ”. This lesson has been marked as missed.
+link: /cabinet/schedule
+--
+
+## deleted: planned, ahead [EN]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_CANCELLED
+title: Lesson on Thursday, 01.10 at 18:00 cancelled
+link: /cabinet/schedule
+--
+
+## deleted: group [EN]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_CANCELLED
+title: Lesson on Thursday, 01.10 at 18:00 cancelled
+body: Group “ОГЭ”.
+link: /cabinet/schedule
+--
+to: Борис
+kind: SCHEDULE_LESSON_CANCELLED
+title: Lesson on Thursday, 01.10 at 18:00 cancelled
+body: Group “ОГЭ”.
+link: /cabinet/schedule
+--
+
+## deleted: not planned [EN]
+(nothing)
+
+## deleted: passed [EN]
+(nothing)
+
+## deleted: at its start [EN]
+(nothing)
+
+## restored: ahead [EN]
+to: Vera Smith
+kind: SCHEDULE_LESSON_PLANNED
+title: Lesson on Friday, 02.10 at 19:30 reinstated
+body: The lesson has been reinstated.
+link: /cabinet/schedule
+--
+
+## restored: group [EN]
+to: Анна Иванова
+kind: SCHEDULE_LESSON_PLANNED
+title: Lesson on Friday, 02.10 at 19:30 reinstated
+body: Group “ОГЭ”. The lesson has been reinstated.
+link: /cabinet/schedule
+--
+to: Борис
+kind: SCHEDULE_LESSON_PLANNED
+title: Lesson on Friday, 02.10 at 19:30 reinstated
+body: Group “ОГЭ”. The lesson has been reinstated.
+link: /cabinet/schedule
+--
+
+## restored: passed [EN]
+(nothing)
+
+## request: move, proposal, comment [EN]
+to: teacher
+kind: SCHEDULE_REQUEST
+title: Анна Иванова requested a lesson reschedule
+body: Lesson: Thursday, 01.10 at 18:00. Suggested time: Friday, 02.10 at 19:30. Comment: Можно позже?
+link: /teacher/schedule
+subject: change-request 00000000-0000-0000-0000-0000000000ab
+--
+
+## request: cancel, late [EN]
+to: teacher
+kind: SCHEDULE_REQUEST
+title: Vera Smith requested a lesson cancellation
+body: Lesson: Thursday, 01.10 at 18:00. Late cancellation.
+link: /teacher/schedule
+subject: change-request 00000000-0000-0000-0000-0000000000ad
+--
+
+## request: absence, accepted, comment [EN]
+to: teacher
+kind: SCHEDULE_REQUEST
+title: Борис can't attend a group lesson
+body: Lesson: Thursday, 01.10 at 18:00, group “ОГЭ”. Comment: Уезжаю
+link: /teacher/schedule
+--
+
+## request: absence, late [EN]
+to: teacher
+kind: SCHEDULE_REQUEST
+title: Анна Иванова can't attend a group lesson
+body: Lesson: Thursday, 01.10 at 18:00, group “ОГЭ”. This is short notice. Decide whether to mark the lesson as missed.
+link: /teacher/schedule
+subject: change-request 00000000-0000-0000-0000-0000000000af
+--
+
+## request: move of a group lesson [EN]
+to: teacher
+kind: SCHEDULE_REQUEST
+title: Анна Иванова requested a lesson reschedule
+body: Lesson: Thursday, 01.10 at 18:00, group “ОГЭ”.
+link: /teacher/schedule
+subject: change-request 00000000-0000-0000-0000-0000000000b0
+--
+
+## request: cancel, stranger, lost group [EN]
+to: teacher
+kind: SCHEDULE_REQUEST
+title: A student requested a lesson cancellation
+body: Lesson: Thursday, 01.10 at 18:00. Late cancellation. Comment: Не смогу
+link: /teacher/schedule
+--
+
+## answer: move declined [EN]
+to: Анна Иванова
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Reschedule request declined
+body: The lesson is still scheduled for Thursday, 01.10 at 18:00.
+link: /cabinet/schedule
+--
+
+## answer: cancel declined, comment [EN]
+to: Vera Smith
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Cancellation request declined
+body: The lesson is still scheduled for Thursday, 01.10 at 18:00. Teacher's comment: Перед контрольной нельзя
+link: /cabinet/schedule
+--
+
+## answer: absence declined [EN]
+to: Борис
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Absence request declined
+body: The lesson is still scheduled for Thursday, 01.10 at 18:00.
+link: /cabinet/schedule
+--
+
+## answer: move agreed, comment [EN]
+to: Анна Иванова
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Reschedule approved: Friday, 02.10 at 19:30
+body: Teacher's comment: Договорились
+link: /cabinet/schedule
+--
+
+## answer: cancel agreed, charged [EN]
+to: Vera Smith
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Cancellation approved for the lesson on Thursday, 01.10 at 18:00
+body: This was a late cancellation. The lesson has been marked as missed.
+link: /cabinet/schedule
+--
+
+## answer: cancel agreed [EN]
+to: Vera Smith
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Cancellation approved for the lesson on Thursday, 01.10 at 18:00
+link: /cabinet/schedule
+--
+
+## answer: absence known, charged, comment [EN]
+to: Борис
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Your teacher has acknowledged your absence on Thursday, 01.10 at 18:00.
+body: This was a late cancellation. The lesson has been marked as missed. Teacher's comment: Жаль
+link: /cabinet/schedule
+--
+
+## answer: move of a group lesson agreed, charged [EN]
+to: Анна Иванова
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Reschedule approved: Friday, 02.10 at 19:30
+link: /cabinet/schedule
+--
+
+## answer: move of a group lesson declined [EN]
+to: Анна Иванова
+kind: SCHEDULE_REQUEST_ANSWERED
+title: Reschedule request declined
+body: The lesson is still scheduled for Thursday, 01.10 at 18:00.
+link: /cabinet/schedule
+--
+
+## soon: a day before [EN]
+to: Анна Иванова
+kind: SCHEDULE_REMINDER
+title: Upcoming lesson: Thursday, 01.10 at 18:00
+body: In 24 hours.
+link: /cabinet/schedule
+--
+
+## soon: last, topic, room [EN]
+to: Vera Smith
+kind: SCHEDULE_REMINDER
+title: Upcoming lesson: Thursday, 01.10 at 18:00
+body: In 1 hour. Topic: Дроби. Lesson link: https://zoom.us/j/1
+link: /cabinet/schedule
+room: https://zoom.us/j/1
+room body: In 1 hour. Topic: Дроби.
+--
+to: teacher
+kind: SCHEDULE_REMINDER
+title: Upcoming lesson: Vera Smith, Thursday, 01.10 at 18:00
+body: In 1 hour. Lesson link: https://zoom.us/j/1
+link: /teacher/schedule
+room: https://zoom.us/j/1
+room body: In 1 hour.
+--
+
+## soon: group, title, last [EN]
+to: Анна Иванова
+kind: SCHEDULE_REMINDER
+title: Upcoming lesson: Thursday, 01.10 at 18:00
+body: In 30 minutes. Group “ОГЭ”. Lesson “Английский”.
+link: /cabinet/schedule
+--
+to: Борис
+kind: SCHEDULE_REMINDER
+title: Upcoming lesson: Thursday, 01.10 at 18:00
+body: In 30 minutes. Group “ОГЭ”. Lesson “Английский”.
+link: /cabinet/schedule
+--
+to: teacher
+kind: SCHEDULE_REMINDER
+title: Upcoming lesson: group “ОГЭ”, Thursday, 01.10 at 18:00
+body: In 30 minutes.
+link: /teacher/schedule
+--
+
+## soon: group, everything, room, not last [EN]
+to: Борис
+kind: SCHEDULE_REMINDER
+title: Upcoming lesson: Friday, 02.10 at 19:30
+body: In 2 days. Group “ОГЭ”. Lesson “Maths”. Topic: Fractions. Lesson link: https://telemost.yandex.ru/j/5
+link: /cabinet/schedule
+room: https://telemost.yandex.ru/j/5
+room body: In 2 days. Group “ОГЭ”. Lesson “Maths”. Topic: Fractions.
+--
+
+## soon: nobody, last, room [EN]
+to: teacher
+kind: SCHEDULE_REMINDER
+title: Upcoming lesson: a student, Thursday, 01.10 at 18:00
+body: In 21 minutes. Lesson link: https://telemost.yandex.ru/j/5
+link: /teacher/schedule
+room: https://telemost.yandex.ru/j/5
+room body: In 21 minutes.
+--
+
+## soon: lost group, last [EN]
+to: Анна Иванова
+kind: SCHEDULE_REMINDER
+title: Upcoming lesson: Thursday, 01.10 at 18:00
+body: In 3 hours.
+link: /cabinet/schedule
+--
+to: Vera Smith
+kind: SCHEDULE_REMINDER
+title: Upcoming lesson: Thursday, 01.10 at 18:00
+body: In 3 hours.
+link: /cabinet/schedule
+--
+to: teacher
+kind: SCHEDULE_REMINDER
+title: Upcoming lesson: Анна Иванова, Thursday, 01.10 at 18:00
+body: In 3 hours.
+link: /teacher/schedule
+--
+
+## soon: room only [EN]
+to: Анна Иванова
+kind: SCHEDULE_REMINDER
+title: Upcoming lesson: Thursday, 01.10 at 18:00
+body: In 1 minute. Lesson link: https://telemost.yandex.ru/j/5
+link: /cabinet/schedule
+room: https://telemost.yandex.ru/j/5
+room body: In 1 minute.
+--
+
+## summary [EN]
+to: Анна Иванова
+kind: LESSON_SUMMARY
+title: Lesson summary: 01.10
+body: Your teacher has shared a summary of what you covered.
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c9
+--
+to: Vera Smith
+kind: LESSON_SUMMARY
+title: Lesson summary: 01.10
+body: Your teacher has shared a summary of what you covered.
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c9
+--
+
+## summary: nobody [EN]
+(nothing)
+
+## calendar lost [EN]
+to: teacher
+kind: SCHEDULE_CALENDAR
+title: Google Calendar disconnected
+body: The portal no longer has access to your Google Calendar, so lessons aren't syncing. Reconnect it in Settings.
+link: /teacher/settings?open=calendar
+--
+

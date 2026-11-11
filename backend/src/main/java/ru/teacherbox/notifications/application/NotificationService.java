@@ -43,6 +43,8 @@ import ru.teacherbox.shared.chat.ChatSubject;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.notice.NoticeRequested;
+import ru.teacherbox.shared.notice.NoticeText;
 import ru.teacherbox.shared.portal.Portal;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 
@@ -127,9 +129,28 @@ public class NotificationService {
     @Transactional
     InboxNotification notify(UUID recipientId, NotificationKind kind, String title, @Nullable String body,
             @Nullable String link, @Nullable ChatSubject subject, @Nullable JoinLink join) {
+        return notify(Ids.newId(), recipientId, kind, title, body, link, subject, join);
+    }
+
+    /**
+     * Notifies the user a module asked to (ADR-0061), in the user's language. The notice keeps its id in the
+     * inbox, so one delivered again (the event registry resends after a failure or a restart) notifies once.
+     */
+    @Transactional
+    public void notify(NoticeRequested notice) {
+        if (inbox.findById(notice.id()).isPresent()) {
+            return;
+        }
+        NoticeText text = notice.text(users.language(notice.recipientId()));
+        notify(notice.id(), notice.recipientId(), NotificationKind.valueOf(notice.kind()), text.title(), text.body(),
+                notice.link(), notice.subject(),
+                notice.joinUrl() == null ? null : new JoinLink(notice.joinUrl(), text.roomBody()));
+    }
+
+    private InboxNotification notify(UUID id, UUID recipientId, NotificationKind kind, String title,
+            @Nullable String body, @Nullable String link, @Nullable ChatSubject subject, @Nullable JoinLink join) {
         Instant now = clock.instant();
-        InboxNotification notification = InboxNotification.create(Ids.newId(), recipientId, kind, title, body, link,
-                now);
+        InboxNotification notification = InboxNotification.create(id, recipientId, kind, title, body, link, now);
         inbox.insert(notification);
         Preferences settings = preferences.find(recipientId).orElse(Preferences.DEFAULT);
         if (mayUseMessengers(recipientId) && settings.sendsToMessengers(kind)) {

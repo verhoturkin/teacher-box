@@ -1,0 +1,160 @@
+## lesson: debt [RU]
+to: Анна Иванова
+kind: LESSON_RECORDED
+title: Занятие 24.09.2026
+body: Стоимость: 1 500 ₽. Задолженность: 1 500 ₽
+link: /cabinet/billing
+--
+
+## lesson: missed, zero [RU]
+to: Борис
+kind: LESSON_RECORDED
+title: Пропуск занятия 24.09.2026
+body: Стоимость: 1 500,50 ₽. Баланс: 0 ₽
+link: /cabinet/billing
+--
+
+## lesson: balance left [RU]
+to: Vera Smith
+kind: LESSON_RECORDED
+title: Занятие 24.09.2026
+body: Стоимость: 999,50 ₽. Баланс: 1 234 567,89 ₽
+link: /cabinet/billing
+--
+
+## lesson: dollars [RU]
+to: Vera Smith
+kind: LESSON_RECORDED
+title: Пропуск занятия 24.09.2026
+body: Стоимость: 25 $. Задолженность: 75,50 $
+link: /cabinet/billing
+--
+
+## charge removed [RU]
+to: Анна Иванова
+kind: LESSON_CANCELLED
+title: Начисление за занятие 24.09.2026 снято
+body: Занятие не оплачивается. Баланс: 0 ₽
+link: /cabinet/billing
+--
+
+## charge removed: debt [RU]
+to: Борис
+kind: LESSON_CANCELLED
+title: Начисление за занятие 24.09.2026 снято
+body: Занятие не оплачивается. Задолженность: 0,05 ₽
+link: /cabinet/billing
+--
+
+## payment [RU]
+to: Анна Иванова
+kind: PAYMENT_RECORDED
+title: Получена оплата 3 000 ₽
+body: Баланс: 1 500 ₽
+link: /cabinet/billing
+--
+
+## payment: still in debt [RU]
+to: Vera Smith
+kind: PAYMENT_RECORDED
+title: Получена оплата 1 000,50 ₽
+body: Задолженность: 499,50 ₽
+link: /cabinet/billing
+--
+
+## payment voided [RU]
+to: Борис
+kind: PAYMENT_VOIDED
+title: Оплата 3 000 ₽ аннулирована
+body: Задолженность: 100 ₽
+link: /cabinet/billing
+--
+
+## payment voided: balance left [RU]
+to: Анна Иванова
+kind: PAYMENT_VOIDED
+title: Оплата 10 ₽ аннулирована
+body: Баланс: 200 ₽
+link: /cabinet/billing
+--
+
+## lesson: debt [EN]
+to: Анна Иванова
+kind: LESSON_RECORDED
+title: Lesson completed: 24.09.2026
+body: Price: ₽1,500. Amount due: ₽1,500
+link: /cabinet/billing
+--
+
+## lesson: missed, zero [EN]
+to: Борис
+kind: LESSON_RECORDED
+title: Lesson missed: 24.09.2026
+body: Price: ₽1,500.50. Balance: ₽0
+link: /cabinet/billing
+--
+
+## lesson: balance left [EN]
+to: Vera Smith
+kind: LESSON_RECORDED
+title: Lesson completed: 24.09.2026
+body: Price: ₽999.50. Balance: ₽1,234,567.89
+link: /cabinet/billing
+--
+
+## lesson: dollars [EN]
+to: Vera Smith
+kind: LESSON_RECORDED
+title: Lesson missed: 24.09.2026
+body: Price: $25. Amount due: $75.50
+link: /cabinet/billing
+--
+
+## charge removed [EN]
+to: Анна Иванова
+kind: LESSON_CANCELLED
+title: Charge removed for the lesson on 24.09.2026
+body: You won't be charged for this lesson. Balance: ₽0
+link: /cabinet/billing
+--
+
+## charge removed: debt [EN]
+to: Борис
+kind: LESSON_CANCELLED
+title: Charge removed for the lesson on 24.09.2026
+body: You won't be charged for this lesson. Amount due: ₽0.05
+link: /cabinet/billing
+--
+
+## payment [EN]
+to: Анна Иванова
+kind: PAYMENT_RECORDED
+title: Payment received: ₽3,000
+body: Balance: ₽1,500
+link: /cabinet/billing
+--
+
+## payment: still in debt [EN]
+to: Vera Smith
+kind: PAYMENT_RECORDED
+title: Payment received: ₽1,000.50
+body: Amount due: ₽499.50
+link: /cabinet/billing
+--
+
+## payment voided [EN]
+to: Борис
+kind: PAYMENT_VOIDED
+title: Payment of ₽3,000 voided
+body: Amount due: ₽100
+link: /cabinet/billing
+--
+
+## payment voided: balance left [EN]
+to: Анна Иванова
+kind: PAYMENT_VOIDED
+title: Payment of ₽10 voided
+body: Balance: ₽200
+link: /cabinet/billing
+--
+

@@ -315,12 +315,17 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
 
 ### Stage 380 — modules write their own notifications (B, ADR-0061)
 
-- [ ] 380.1 **B** ADR-0061 and the contract. `notifications` depends on the `api` of five
+- [x] 380.1 **B** ADR-0061 and the contract. `notifications` depends on the `api` of five
   modules and holds their texts (`ScheduleNotifications`, `HomeworkNotifications`,
   `BillingNotifications`, `MeetingNotifications`, `NotificationTexts`). Chat actions already
   live with their owner (`schedule/chat`, `billing/chat`). Contract in `shared`: an event with
   the recipient, the kind (for the user's preferences), the texts in every language and the
   link; `notifications` listens to it and keeps delivery, preferences and the inbox.
+  *Done: `shared.notice` (`NoticeRequested`, `NoticeText`, `NoticeKind`), `NoticeListener` and
+  `NotificationService.notify(NoticeRequested)` — the notice id is the inbox id, so a redelivery
+  notifies once. The golden files `src/test/resources/notices/<module>.txt` hold what today's
+  listeners write for `testing.notices.NoticeSamples` in both languages (`NoticeBaselineTest`);
+  380.2 and 380.3 compare the modules with them.*
 - [ ] 380.2 **B** `schedule` writes its notifications; `ScheduleNotifications` is removed.
 - [ ] 380.3 **B** `homework`, `billing`, `meetings`, `identity` write theirs; `notifications`
   `allowedDependencies` shrink to `shared` and `identity :: api`; `AGENTS.md` §4.2 table,

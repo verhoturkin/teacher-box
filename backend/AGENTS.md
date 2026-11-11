@@ -40,6 +40,7 @@ Each business module is a direct subpackage of `ru.teacherbox` ([ADR-0001](../do
 | Admin / bot audit | `shared.diagnostics.AuditLog` (no personal data) |
 | External service health | SPI `shared.diagnostics.IntegrationCheck` (collected by `platform`) |
 | Messenger bot action | SPI `shared.chat.ChatAction` + helpers in `shared.chat` ([ADR-0013](../docs/adr/0013-bot-dialogs.md)); checks rights like REST, changes only its own module; texts in `ChatUser.language()` |
+| Notify a user (inbox, messengers, web push) | publish `shared.notice.NoticeRequested` in the transaction of the change ([ADR-0061](../docs/adr/0061-modules-write-their-notifications.md)): the texts in every language from the module's dictionary, a kind from the module's `NoticeKind` enum (known to `notifications`: `NotificationKind`), the portal link; `notifications` picks the recipient's language and delivers |
 | Texts the server writes (notifications, bot, calendars, admin answers) | a dictionary `enum` per module with a constant per `shared.i18n.Language` and `of(Language)` ([ADR-0036](../docs/adr/0036-server-texts-in-the-users-language.md)); for a recipient — `UserDirectory.language(id)`, in an answer — `Language.current()`; `ServerDictionariesTests` calls every text |
 | Domain errors | exceptions from `shared.error` → `ProblemDetail` (RFC 9457) in `platform` |
 
