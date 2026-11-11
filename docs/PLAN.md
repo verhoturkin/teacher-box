@@ -351,6 +351,14 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
   chrome`, the Google Chrome that the `ubuntu-latest` image ships. `e2e/README.md` describes it.
   *Fallback if a test differs only in Chrome: cache `~/.cache/ms-playwright` instead.*
 
+### Stage 382 — reliable month selection and release 0.47.1 (D)
+
+- [x] 382.1 **D** Scope the month-selection journey to the main calendar's empty day cells;
+  the mini-month also has `data-date` buttons and must not satisfy this locator. Check the
+  selected date and default duration in the lesson dialog, then verify the E2E suite in CI.
+- [ ] 382.2 **D** Release 0.47.1: review help and wiki, record the changes, bump versions,
+  archive stages 366–382, run the available checks and publish the annotated tag and wiki.
+
 ## Backlog
 
 After the bundle measurement of 2026-11-11 (see "Release after next"), not planned:
