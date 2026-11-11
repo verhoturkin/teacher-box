@@ -1,4 +1,4 @@
-import Aura from '@primeuix/themes/aura';
+import { AuraTokens } from './aura-base';
 import {
   ColorGroup,
   CustomColorGroup,
@@ -68,7 +68,7 @@ export interface ColorScheme {
 
 /** A palette of Aura (the colors of the portal, red, green, amber) as `#rrggbb`. */
 export function auraPalette(name: string): Shades {
-  const primitive: unknown = Aura.primitive;
+  const primitive: unknown = AuraTokens.primitive;
   const palette: unknown =
     typeof primitive === 'object' && primitive !== null
       ? Object.entries(primitive).find(([key]) => key === name)?.[1]

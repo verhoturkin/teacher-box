@@ -191,7 +191,7 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
 ### Stage 372 — only the theme tokens the portal uses (F)
 
 - [x] 372.0 Plan of the release (this section).
-- [ ] 372.1 **F** `core/theme/teacher-box-preset.ts`: `definePreset(Aura, …)` brings the tokens
+- [x] 372.1 **F** `core/theme/teacher-box-preset.ts`: `definePreset(Aura, …)` brings the tokens
   of every PrimeNG component (106 kB of the initial bundle). Build the base from the Aura parts
   the portal uses: `primitive`, `semantic` and the `components` of the PrimeNG modules imported
   under `src/app` (list them with `rg -o "from 'primeng/[a-z]+'" src/app`), imported per component
@@ -199,6 +199,10 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
   (§13). A spec fails when a `primeng/<module>` is imported in `src/app` and its tokens are not
   in the preset. Compare `/gallery` in both themes before and after (one screenshot each): no
   visual change. Target: initial JS at least 70 kB smaller.
+  *Done: `core/theme/aura-base.ts` holds the base, `aura-base.spec.ts` the check. Initial JS
+  960.8 → 915.8 kB (gzip 253.1 → 247.7 kB), 45 kB smaller: the target is not reached, because
+  the 35 components the portal uses and the `primitive` and `semantic` tokens keep 63 kB of
+  Aura's 109 kB.*
 
 ### Stage 373 — nginx: pre-compressed files, kept connections (D)
 

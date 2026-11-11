@@ -63,6 +63,10 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
   flow `@if`/`@for`. Angular 21 is zoneless; `ng test` = Vitest.
 - UI components — PrimeNG 21; custom ones only when PrimeNG has nothing suitable. Themes:
   `providePrimeNG({ theme: { preset } })` from `@primeuix/themes`.
+- **Theme tokens of used components only** (stage 372): the preset is built on
+  `core/theme/aura-base.ts`, not on `@primeuix/themes/aura`. The first `primeng/<module>` import in
+  `src/app` adds its `@primeuix/themes/aura/<component>` there, the last removed one drops it;
+  `aura-base.spec.ts` names what is missing or unused.
 - **Never upgrade PrimeNG / @primeuix/themes to 22 / 3** (commercial PrimeUI licence,
   [ADR-0007](../docs/adr/0007-frontend-stack-licensing.md)); Angular — 21.x only. Install with
   `npx -y npm@11 ci|install` (npm ≥ 11).
