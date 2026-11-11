@@ -284,7 +284,7 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
 
 ### Stage 378 — LiveKit without the server SDK (B, ADR-0060)
 
-- [ ] 378.1 **B** ADR-0060. `meetings/livekit/LiveKitCallServer.java` is the only user of
+- [x] 378.1 **B** ADR-0060. `meetings/livekit/LiveKitCallServer.java` is the only user of
   `io.livekit:livekit-server`, which brings protobuf and Retrofit and forces the OkHttp BOM in
   `backend/pom.xml`. Sign the access token with the Nimbus classes Spring Security already
   brings (HS256, the `video` grant claims of the LiveKit documentation); call the room service
@@ -292,6 +292,14 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
   what the SDK produced (captured once as fixtures). Remove `livekit-server`, `okhttp-jvm` and
   the `okhttp-bom` import if the Anthropic SDK builds without them. Record the size of the
   `backend` image layer with dependencies before and after.
+  *Done: the `dependencies` layer of the backend jar (`java -Djarmode=tools … extract --layers`,
+  what the Dockerfile copies as its own image layer; Docker was not available) went from 119 jars,
+  89 186 811 bytes to 109 jars, 82 564 809 bytes (−6.6 MB, −7.4 %). Gone: `livekit-server`,
+  protobuf with its util and Gson, Retrofit and its protobuf converter, `java-jwt`,
+  `logging-interceptor`, OkHttp 5 and Okio 3.16; the Anthropic client takes the OkHttp 4.12.0 and
+  Okio 3.6.0 it declares. Fixtures: `meetings/livekit/sdk-fixtures.json` (SDK 0.16.0); deliberate
+  differences — JSON bodies instead of protobuf, a 10-minute token per room-service call instead
+  of six hours, no empty `sip` grant.*
 
 ### Stage 379 — one Google OAuth client (B)
 

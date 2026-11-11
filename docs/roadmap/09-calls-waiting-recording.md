@@ -13,7 +13,7 @@ Covers the Backlog line «Calls after 0.8.0» except chat, PiP and noise suppres
 
 ## Current state
 
-- `meetings/livekit/LiveKitCallServer` over the official SDK: tokens, `ListRooms`,
+- `meetings/livekit/LiveKitCallServer` without the SDK (ADR-0060): tokens, `ListRooms`,
   `ListParticipants`, `RemoveParticipant`. Rooms are `tb-<ownerId>`. LiveKit runs in compose
   (profile `calls`, `livekit/livekit-server:v1.13.7`, inline `LIVEKIT_CONFIG`).
 - No webhooks, no egress (recording) container.
@@ -35,8 +35,9 @@ Covers the Backlog line «Calls after 0.8.0» except chat, PiP and noise suppres
 - LiveKit config: `webhook: {api_key: <key>, urls: [http://backend:8080/api/public/meetings/
   livekit/webhook]}` in the inline config of `compose.yaml` (internal network only; nginx must not
   expose this path — add a `location` deny rule and a test in `verify.sh docker`).
-- Endpoint verifies the `Authorization` JWT with the SDK's `WebhookReceiver` (API key/secret);
-  handles `participant_joined`, `participant_left`, `room_finished`, `egress_ended`.
+- Endpoint verifies the `Authorization` JWT (HS256 with the API secret, `sha256` of the body) with
+  Nimbus, as ADR-0060 signs tokens; handles `participant_joined`, `participant_left`,
+  `room_finished`, `egress_ended`.
 - `meetings` data: `call_sessions (id, owner_id, started_at, ended_at)`, `call_presence
   (session_id, user_id, joined_at, left_at)`; a session starts with the first participant and
   ends with `room_finished`. Webhooks may be lost or reordered: reconcile with `ListParticipants`
@@ -50,7 +51,7 @@ Covers the Backlog line «Calls after 0.8.0» except chat, PiP and noise suppres
 
 ### Moderation
 
-- `POST /api/teacher/meetings/calls/{ownerId}/participants/{userId}/mute` (SDK
+- `POST /api/teacher/meetings/calls/{ownerId}/participants/{userId}/mute` (Twirp
   `MutePublishedTrack`) and `…/remove` (`RemoveParticipant`, already wrapped). Frontend: tile menu
   in `meetings/call/call-tile.ts` for the teacher only.
 

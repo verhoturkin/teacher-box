@@ -8,11 +8,15 @@ on: `shared`, `identity::api`. Schema `meetings`. ADRs: [0012](../adr/0012-meeti
 
 - One external link per student and per group (owner id), any http(s) address the teacher pastes; a lesson's own
   link still wins over it. The Telemost API is gone (ADR-0030): links created through it earlier stay as such links.
-- Built-in calls (ADR-0030): port `CallServer` (`application`), adapter `livekit/LiveKitCallServer` over the
-  official SDK — tokens signed locally (TTL 10 min, LiveKit refreshes them), `ListRooms`/`ListParticipants` for
-  rooms `tb-<ownerId>`, `RemoveParticipant`. On only with `TEACHERBOX_MEETINGS_LIVEKIT_API_KEY/SECRET` (secret ≥ 32
-  chars, else startup fails); the backend calls `TEACHERBOX_MEETINGS_LIVEKIT_API_URL`, browsers always
-  `<portal>/livekit`. `LiveKitIntegrationCheck` on the admin integrations page.
+- Built-in calls (ADR-0030): port `CallServer` (`application`), adapter `livekit/LiveKitCallServer`
+  without the LiveKit SDK (ADR-0060) — tokens are HS256 JWTs signed locally with Nimbus (`video`
+  grant, TTL 10 min, LiveKit refreshes them); the room service is Twirp with JSON bodies through
+  `OutboundHttp` (a token per call: `roomList`, or `roomAdmin` + `room`):
+  `ListRooms`/`ListParticipants` for rooms `tb-<ownerId>`, `RemoveParticipant` (404 — already left).
+  Tests compare tokens and requests with fixtures captured once from the SDK (`sdk-fixtures.json`).
+  On only with `TEACHERBOX_MEETINGS_LIVEKIT_API_KEY/SECRET` (secret ≥ 32 chars, else startup fails);
+  the backend calls `TEACHERBOX_MEETINGS_LIVEKIT_API_URL`, browsers always `<portal>/livekit`.
+  `LiveKitIntegrationCheck` on the admin integrations page.
 - Joining (`CallService.join`): the teacher — the room of any current student or active group (as `roomAdmin`); a
   student — their own room and the rooms of their active groups; anything else is 404 `meetings.room-not-found`
   (no hint that a room exists), calls off — 422 `meetings.calls-disabled`. Identity = user id, name = display

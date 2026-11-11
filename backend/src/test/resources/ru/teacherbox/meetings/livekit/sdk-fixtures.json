@@ -1,0 +1,114 @@
+{
+  "sdk" : "io.livekit:livekit-server:0.16.0",
+  "apiKey" : "key",
+  "apiSecret" : "0123456789abcdef0123456789abcdef",
+  "studentToken" : {
+    "header" : {
+      "alg" : "HS256",
+      "typ" : "JWT"
+    },
+    "claims" : {
+      "iss" : "key",
+      "sub" : "u-1",
+      "name" : "Анна",
+      "video" : {
+        "roomJoin" : true,
+        "room" : "tb-a",
+        "canSubscribe" : true,
+        "canPublish" : true,
+        "canPublishData" : true,
+        "canPublishSources" : [ "camera", "microphone", "screen_share", "screen_share_audio" ],
+        "roomAdmin" : false
+      },
+      "sip" : { }
+    },
+    "ttlSeconds" : 600
+  },
+  "teacherToken" : {
+    "header" : {
+      "alg" : "HS256",
+      "typ" : "JWT"
+    },
+    "claims" : {
+      "iss" : "key",
+      "sub" : "t-1",
+      "name" : "Ольга",
+      "video" : {
+        "roomJoin" : true,
+        "room" : "tb-a",
+        "canSubscribe" : true,
+        "canPublish" : true,
+        "canPublishData" : true,
+        "canPublishSources" : [ "camera", "microphone", "screen_share", "screen_share_audio" ],
+        "roomAdmin" : true
+      },
+      "sip" : { }
+    },
+    "ttlSeconds" : 600
+  },
+  "requests" : [ {
+    "method" : "POST",
+    "path" : "/twirp/livekit.RoomService/ListRooms",
+    "contentType" : "application/protobuf",
+    "authorization" : {
+      "header" : {
+        "alg" : "HS256",
+        "typ" : "JWT"
+      },
+      "claims" : {
+        "iss" : "key",
+        "video" : {
+          "roomList" : true
+        },
+        "sip" : { }
+      },
+      "ttlSeconds" : 21600
+    },
+    "body" : { }
+  }, {
+    "method" : "POST",
+    "path" : "/twirp/livekit.RoomService/ListParticipants",
+    "contentType" : "application/protobuf",
+    "authorization" : {
+      "header" : {
+        "alg" : "HS256",
+        "typ" : "JWT"
+      },
+      "claims" : {
+        "iss" : "key",
+        "video" : {
+          "roomAdmin" : true,
+          "room" : "tb-00000000-0000-7000-8000-00000000000a"
+        },
+        "sip" : { }
+      },
+      "ttlSeconds" : 21600
+    },
+    "body" : {
+      "room" : "tb-00000000-0000-7000-8000-00000000000a"
+    }
+  }, {
+    "method" : "POST",
+    "path" : "/twirp/livekit.RoomService/RemoveParticipant",
+    "contentType" : "application/protobuf",
+    "authorization" : {
+      "header" : {
+        "alg" : "HS256",
+        "typ" : "JWT"
+      },
+      "claims" : {
+        "iss" : "key",
+        "video" : {
+          "roomAdmin" : true,
+          "room" : "tb-00000000-0000-7000-8000-00000000000a"
+        },
+        "sip" : { }
+      },
+      "ttlSeconds" : 21600
+    },
+    "body" : {
+      "room" : "tb-00000000-0000-7000-8000-00000000000a",
+      "identity" : "u-1"
+    }
+  } ]
+}
