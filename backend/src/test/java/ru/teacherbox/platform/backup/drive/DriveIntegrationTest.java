@@ -32,6 +32,7 @@ import ru.teacherbox.platform.core.PlatformProperties;
 import ru.teacherbox.shared.diagnostics.IntegrationCheck.State;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.ConflictException;
+import ru.teacherbox.shared.http.GoogleOAuth;
 import ru.teacherbox.testing.TestUsers;
 
 /** The teacher's Google Drive for the backups through REST, with the Drive API mocked (ADR-0037). */
@@ -125,7 +126,7 @@ class DriveIntegrationTest {
     @Test
     void aNewBackupGoesToTheDriveAndACopyComesBack() throws IOException {
         connect();
-        when(api.refresh(any(), eq("refresh"))).thenReturn(new DriveApi.Tokens("access", 3600, null));
+        when(api.refresh(any(), eq("refresh"))).thenReturn(new GoogleOAuth.Tokens("access", 3600, null));
         when(api.folderExists("access", "folder-1")).thenReturn(true);
         when(api.list("access", "folder-1")).thenReturn(List.of());
 
@@ -168,7 +169,7 @@ class DriveIntegrationTest {
                     assertThat(json).extractingPath("$.lastError").isNull();
                     assertThat(json).extractingPath("$.connected").isEqualTo(true);
                 });
-        when(api.refresh(any(), eq("refresh"))).thenReturn(new DriveApi.Tokens("access", 3600, null));
+        when(api.refresh(any(), eq("refresh"))).thenReturn(new GoogleOAuth.Tokens("access", 3600, null));
         when(api.folderExists("access", "folder-1")).thenReturn(true);
         when(api.list("access", "folder-1")).thenReturn(List.of());
 
@@ -203,7 +204,7 @@ class DriveIntegrationTest {
     @Test
     void theAdministratorSeesWhetherTheDriveAnswers() {
         connect();
-        when(api.refresh(any(), eq("refresh"))).thenReturn(new DriveApi.Tokens("access", 3600, null));
+        when(api.refresh(any(), eq("refresh"))).thenReturn(new GoogleOAuth.Tokens("access", 3600, null));
         when(api.account("access")).thenReturn("teacher@example.com").thenThrow(new DriveException("offline"));
 
         assertThat(check.check()).singleElement().satisfies(status -> {

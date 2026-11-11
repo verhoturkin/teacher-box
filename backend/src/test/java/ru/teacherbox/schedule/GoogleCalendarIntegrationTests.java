@@ -25,16 +25,17 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.modulith.test.AssertablePublishedEvents;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.teacherbox.schedule.api.GoogleCalendarDisconnected;
-import ru.teacherbox.shared.reset.DataReset;
 import ru.teacherbox.schedule.google.GoogleApi;
 import ru.teacherbox.schedule.google.GoogleAuthException;
 import ru.teacherbox.schedule.google.GoogleCalendarService;
 import ru.teacherbox.schedule.google.GoogleException;
-import org.springframework.test.context.TestPropertySource;
+import ru.teacherbox.shared.http.GoogleOAuth;
+import ru.teacherbox.shared.reset.DataReset;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
 
@@ -67,7 +68,7 @@ class GoogleCalendarIntegrationTests extends ScheduleHttpTestSupport {
         when(google.authorizationUrl(anyString(), anyString(), any(), anyString()))
                 .thenAnswer(call -> "https://accounts.google.com/o/oauth2/v2/auth?state=" + call.getArgument(3));
         when(google.exchangeCode(any(), eq("code-1"), anyString()))
-                .thenReturn(new GoogleApi.Tokens("access-1", 3600, "refresh-1"));
+                .thenReturn(new GoogleOAuth.Tokens("access-1", 3600, "refresh-1"));
         when(google.createCalendar("access-1", "Teacher Box", "Europe/Moscow")).thenReturn(CALENDAR);
     }
 
@@ -91,7 +92,7 @@ class GoogleCalendarIntegrationTests extends ScheduleHttpTestSupport {
 
         assertThat(callback("?state=" + state + "&code=code-1")).hasStatus(HttpStatus.FOUND)
                 .hasHeader("Location", "/teacher/settings?google=connected");
-        verify(google).exchangeCode(new GoogleApi.Client("id-1", "secret"), "code-1",
+        verify(google).exchangeCode(new GoogleOAuth.Client("id-1", "secret"), "code-1",
                 ORIGIN + "/api/public/schedule/google/callback");
         assertThat(get("/api/teacher/schedule/google")).bodyJson().satisfies(json -> {
             assertThat(json).extractingPath("$.status").isEqualTo("CONNECTED");
@@ -130,7 +131,7 @@ class GoogleCalendarIntegrationTests extends ScheduleHttpTestSupport {
                 .isEqualTo("Google token 400");
 
         when(google.exchangeCode(any(), eq("no-refresh"), anyString()))
-                .thenReturn(new GoogleApi.Tokens("access", 3600, null));
+                .thenReturn(new GoogleOAuth.Tokens("access", 3600, null));
         assertThat(callback("?state=" + authorize(false) + "&code=no-refresh"))
                 .hasHeader("Location", "/teacher/settings?google=failed");
     }
@@ -295,7 +296,7 @@ class GoogleCalendarIntegrationTests extends ScheduleHttpTestSupport {
     @Test
     void theFullResetDeletesTheCalendarOfThePortal() {
         connect();
-        when(google.refresh(any(), eq("refresh-1"))).thenReturn(new GoogleApi.Tokens("access-2", 3600, null));
+        when(google.refresh(any(), eq("refresh-1"))).thenReturn(new GoogleOAuth.Tokens("access-2", 3600, null));
 
         assertThat(calendar.removalForReset().getAsBoolean()).isTrue();
         verify(google).deleteCalendar("access-2", CALENDAR);

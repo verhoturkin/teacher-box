@@ -9,30 +9,30 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.function.BooleanSupplier;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import ru.teacherbox.schedule.application.CalendarTexts;
 import ru.teacherbox.schedule.api.GoogleCalendarDisconnected;
+import ru.teacherbox.schedule.application.CalendarTexts;
+import ru.teacherbox.schedule.application.LessonRulesService;
 import ru.teacherbox.schedule.application.ScheduleDirectory;
 import ru.teacherbox.schedule.application.ScheduleNames;
-import ru.teacherbox.schedule.application.LessonRulesService;
 import ru.teacherbox.schedule.domain.FeedTokens;
 import ru.teacherbox.schedule.domain.GoogleConnection;
 import ru.teacherbox.schedule.domain.GoogleStatus;
 import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.LessonStatus;
-import ru.teacherbox.schedule.persistence.GoogleRepository;
 import ru.teacherbox.schedule.persistence.GoogleRepository.PendingAuthorization;
+import ru.teacherbox.schedule.persistence.GoogleRepository;
 import ru.teacherbox.schedule.persistence.LessonRepository;
 import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.http.GoogleOAuth;
 import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.portal.Portal;
 import ru.teacherbox.shared.time.InstanceTimeZone;
@@ -108,7 +108,7 @@ public class GoogleCalendarService {
 
     public GoogleStatusView status() {
         GoogleConnection connection = connection();
-        GoogleApi.Client client = client(connection);
+        GoogleOAuth.Client client = client(connection);
         return new GoogleStatusView(client != null,
                 client == null ? null : client.id(), connection.status(), connection.busyEnabled(),
                 connection.lastError(), connection.lastSyncAt(), connection.connectedAt(), CALLBACK_PATH);
@@ -133,7 +133,7 @@ public class GoogleCalendarService {
      * @param busy   also ask for the busy times of the teacher's calendars
      */
     public String authorize(String origin, boolean busy) {
-        GoogleApi.Client client = requireClient(connection());
+        GoogleOAuth.Client client = requireClient(connection());
         String redirectUri = portal.link(CALLBACK_PATH).orElseGet(() -> origin(origin) + CALLBACK_PATH);
         String state = FeedTokens.generate();
         repository.addAuthorization(FeedTokens.hash(state), redirectUri, busy, clock.instant().plus(AUTHORIZATION_TTL));
@@ -157,8 +157,8 @@ public class GoogleCalendarService {
         }
         GoogleConnection connection = connection();
         try {
-            GoogleApi.Client client = requireClient(connection);
-            GoogleApi.Tokens tokens = api.exchangeCode(client, code, pending.redirectUri());
+            GoogleOAuth.Client client = requireClient(connection);
+            GoogleOAuth.Tokens tokens = api.exchangeCode(client, code, pending.redirectUri());
             if (tokens.refreshToken() == null) {
                 throw new GoogleException("Google did not return a refresh token");
             }
@@ -203,7 +203,7 @@ public class GoogleCalendarService {
      */
     public BooleanSupplier removalForReset() {
         GoogleConnection connection = connection();
-        GoogleApi.Client client = client(connection);
+        GoogleOAuth.Client client = client(connection);
         String refreshToken = connection.refreshToken();
         String calendarId = connection.calendarId();
         accessToken = null;
@@ -369,7 +369,7 @@ public class GoogleCalendarService {
         if (refreshToken == null) {
             throw new GoogleAuthException("The calendar is not connected");
         }
-        GoogleApi.Tokens tokens = api.refresh(requireClient(connection), refreshToken);
+        GoogleOAuth.Tokens tokens = api.refresh(requireClient(connection), refreshToken);
         accessToken = new AccessToken(tokens.accessToken(), now.plusSeconds(tokens.expiresInSeconds()));
         return tokens.accessToken();
     }
@@ -387,13 +387,13 @@ public class GoogleCalendarService {
     }
 
     /** The client entered in the settings (ADR-0056). */
-    private static GoogleApi.@Nullable Client client(GoogleConnection connection) {
+    private static GoogleOAuth.@Nullable Client client(GoogleConnection connection) {
         return connection.clientId() == null || connection.clientSecret() == null ? null
-                : new GoogleApi.Client(connection.clientId(), connection.clientSecret());
+                : new GoogleOAuth.Client(connection.clientId(), connection.clientSecret());
     }
 
-    private GoogleApi.Client requireClient(GoogleConnection connection) {
-        GoogleApi.Client client = client(connection);
+    private GoogleOAuth.Client requireClient(GoogleConnection connection) {
+        GoogleOAuth.Client client = client(connection);
         if (client == null) {
             throw new BusinessRuleException("schedule.google-client-missing", "Enter the client id and secret first");
         }

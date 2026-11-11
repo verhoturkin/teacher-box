@@ -16,14 +16,13 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
-import org.springframework.web.util.UriComponentsBuilder;
+import ru.teacherbox.shared.http.GoogleOAuth.Client;
+import ru.teacherbox.shared.http.GoogleOAuth.Tokens;
+import ru.teacherbox.shared.http.GoogleOAuth;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Google OAuth 2.0 (authorization code flow for web server applications) and the few Drive v3 calls the
@@ -36,22 +35,13 @@ public class DriveApi {
     static final String FOLDER_TYPE = "application/vnd.google-apps.folder";
     private static final String ZIP = "application/zip";
 
-    /** OAuth client of the teacher's Google Cloud project. */
-    public record Client(String id, String secret) {
-    }
-
-    /** @param refreshToken returned when the user consents (offline access) */
-    public record Tokens(String accessToken, long expiresInSeconds, @Nullable String refreshToken) {
-    }
-
     /** A file in the portal's folder. */
     public record DriveFile(String id, String name, long size, @Nullable Instant createdAt) {
     }
 
-    private final RestClient oauth;
+    private final GoogleOAuth oauth;
     private final RestClient api;
     private final RestClient files;
-    private final String authorizationUrl;
     private final String apiUrl;
     private final String uploadUrl;
 
@@ -64,71 +54,37 @@ public class DriveApi {
      */
     public DriveApi(RestClient oauth, RestClient api, RestClient files, String authorizationUrl, String apiUrl,
             String uploadUrl) {
-        this.oauth = oauth;
+        this.oauth = new GoogleOAuth(oauth, authorizationUrl, DriveException::new, DriveAuthException::new);
         this.api = api;
         this.files = files;
-        this.authorizationUrl = authorizationUrl;
         this.apiUrl = apiUrl;
         this.uploadUrl = uploadUrl;
     }
 
     /** The consent page; {@code prompt=consent} makes Google return a refresh token every time. */
     public String authorizationUrl(String clientId, String redirectUri, String state) {
-        return UriComponentsBuilder.fromUriString(authorizationUrl)
-                .queryParam("client_id", "{clientId}")
-                .queryParam("redirect_uri", "{redirectUri}")
-                .queryParam("response_type", "code")
-                .queryParam("scope", "{scope}")
-                .queryParam("access_type", "offline")
-                .queryParam("prompt", "consent")
-                .queryParam("state", "{state}")
-                .encode()
-                .buildAndExpand(Map.of("clientId", clientId, "redirectUri", redirectUri, "scope", SCOPE,
-                        "state", state))
-                .toUriString();
+        return oauth.authorizationUrl(clientId, redirectUri, SCOPE, state);
     }
 
     public Tokens exchangeCode(Client client, String code, String redirectUri) {
-        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        form.add("code", code);
-        form.add("client_id", client.id());
-        form.add("client_secret", client.secret());
-        form.add("redirect_uri", redirectUri);
-        form.add("grant_type", "authorization_code");
-        return tokens(form);
+        return oauth.exchangeCode(client, code, redirectUri);
     }
 
     /** @throws DriveAuthException if the refresh token is revoked or expired */
     public Tokens refresh(Client client, String refreshToken) {
-        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        form.add("client_id", client.id());
-        form.add("client_secret", client.secret());
-        form.add("refresh_token", refreshToken);
-        form.add("grant_type", "refresh_token");
-        return tokens(form);
+        return oauth.refresh(client, refreshToken);
     }
 
     /** Withdraws the app's access; a token that is already invalid is fine. */
     public void revoke(String token) {
-        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        form.add("token", token);
-        try {
-            oauth.post().uri("/revoke").contentType(MediaType.APPLICATION_FORM_URLENCODED).body(form).retrieve()
-                    .toBodilessEntity();
-        } catch (RestClientResponseException e) {
-            if (e.getStatusCode().value() != HttpStatus.BAD_REQUEST.value()) {
-                throw failure("revoke", e);
-            }
-        } catch (RestClientException e) {
-            throw new DriveException("Google revoke: " + e.getMessage());
-        }
+        oauth.revoke(token);
     }
 
     /** The address of the Google account; empty if Google does not tell it. */
     public String account(String accessToken) {
-        JsonNode about = call("about", () -> api.get()
+        JsonNode about = oauth.call("about", () -> api.get()
                 .uri("/about?fields=user(emailAddress)")
-                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
+                .header(HttpHeaders.AUTHORIZATION, GoogleOAuth.bearer(accessToken))
                 .retrieve()
                 .body(JsonNode.class));
         return about == null ? "" : about.path("user").path("emailAddress").asString("");
@@ -136,9 +92,9 @@ public class DriveApi {
 
     /** @return id of the new folder */
     public String createFolder(String accessToken, String name) {
-        JsonNode created = call("create folder", () -> api.post()
+        JsonNode created = oauth.call("create folder", () -> api.post()
                 .uri("/files?fields=id")
-                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
+                .header(HttpHeaders.AUTHORIZATION, GoogleOAuth.bearer(accessToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(Map.of("name", name, "mimeType", FOLDER_TYPE))
                 .retrieve()
@@ -155,7 +111,7 @@ public class DriveApi {
         try {
             JsonNode folder = api.get()
                     .uri("/files/{id}?fields=id,trashed", folderId)
-                    .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
+                    .header(HttpHeaders.AUTHORIZATION, GoogleOAuth.bearer(accessToken))
                     .retrieve()
                     .body(JsonNode.class);
             return folder != null && !folder.path("trashed").asBoolean(false);
@@ -163,7 +119,7 @@ public class DriveApi {
             if (e.getStatusCode().value() == HttpStatus.NOT_FOUND.value()) {
                 return false;
             }
-            throw failure("get folder", e);
+            throw oauth.failure("get folder", e);
         } catch (RestClientException e) {
             throw new DriveException("Google get folder: " + e.getMessage());
         }
@@ -175,7 +131,7 @@ public class DriveApi {
         String pageToken = null;
         do {
             String token = pageToken;
-            JsonNode page = call("list files", () -> api.get()
+            JsonNode page = oauth.call("list files", () -> api.get()
                     .uri(uri -> {
                         uri.path("/files")
                                 .queryParam("q", "{q}")
@@ -189,7 +145,7 @@ public class DriveApi {
                                 ? Map.of("q", query(folderId))
                                 : Map.of("q", query(folderId), "pageToken", token));
                     })
-                    .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
+                    .header(HttpHeaders.AUTHORIZATION, GoogleOAuth.bearer(accessToken))
                     .retrieve()
                     .body(JsonNode.class));
             if (page == null) {
@@ -214,9 +170,9 @@ public class DriveApi {
      */
     public String upload(String accessToken, String folderId, Path file) {
         long size = size(file);
-        URI session = call("start upload", () -> files.post()
+        URI session = oauth.call("start upload", () -> files.post()
                 .uri(uploadUrl + "/files?uploadType=resumable&fields=id")
-                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
+                .header(HttpHeaders.AUTHORIZATION, GoogleOAuth.bearer(accessToken))
                 .header("X-Upload-Content-Type", ZIP)
                 .header("X-Upload-Content-Length", Long.toString(size))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -229,9 +185,9 @@ public class DriveApi {
         if (session == null) {
             throw new DriveException("Google did not return the upload address");
         }
-        JsonNode uploaded = call("upload", () -> files.put()
+        JsonNode uploaded = oauth.call("upload", () -> files.put()
                 .uri(session)
-                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
+                .header(HttpHeaders.AUTHORIZATION, GoogleOAuth.bearer(accessToken))
                 .contentType(MediaType.parseMediaType(ZIP))
                 .contentLength(size)
                 .body(new FileSystemResource(file))
@@ -246,17 +202,14 @@ public class DriveApi {
 
     /** Streams the file's content into {@code target}. */
     public void download(String accessToken, String fileId, Path target) {
-        call("download", () -> files.get()
+        oauth.call("download", () -> files.get()
                 .uri(apiUrl + "/files/{id}?alt=media", fileId)
-                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
+                .header(HttpHeaders.AUTHORIZATION, GoogleOAuth.bearer(accessToken))
                 .exchange((request, response) -> {
                     int status = response.getStatusCode().value();
                     if (response.getStatusCode().isError()) {
-                        String message = "Google download " + status + ": "
-                                + describe(body(response.getBody()), response.getStatusText());
-                        throw status == HttpStatus.UNAUTHORIZED.value()
-                                ? new DriveAuthException(message)
-                                : new DriveException(message);
+                        throw oauth.failure("download", status,
+                                GoogleOAuth.describe(body(response.getBody()), response.getStatusText()));
                     }
                     Files.copy(response.getBody(), target, StandardCopyOption.REPLACE_EXISTING);
                     return target;
@@ -268,42 +221,16 @@ public class DriveApi {
         try {
             api.delete()
                     .uri("/files/{id}", fileId)
-                    .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
+                    .header(HttpHeaders.AUTHORIZATION, GoogleOAuth.bearer(accessToken))
                     .retrieve()
                     .toBodilessEntity();
         } catch (RestClientResponseException e) {
             if (e.getStatusCode().value() != HttpStatus.NOT_FOUND.value()) {
-                throw failure("delete file", e);
+                throw oauth.failure("delete file", e);
             }
         } catch (RestClientException e) {
             throw new DriveException("Google delete file: " + e.getMessage());
         }
-    }
-
-    private Tokens tokens(MultiValueMap<String, String> form) {
-        JsonNode response;
-        try {
-            response = oauth.post()
-                    .uri("/token")
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .body(form)
-                    .retrieve()
-                    .body(JsonNode.class);
-        } catch (RestClientResponseException e) {
-            if ("invalid_grant".equals(errorCode(e))) {
-                throw new DriveAuthException("Google refused the authorization: " + describe(e));
-            }
-            throw failure("token", e);
-        } catch (RestClientException e) {
-            throw new DriveException("Google token: " + e.getMessage());
-        }
-        String accessToken = response == null ? "" : response.path("access_token").asString("");
-        if (response == null || accessToken.isEmpty()) {
-            throw new DriveException("Google did not return an access token");
-        }
-        String refreshToken = response.path("refresh_token").asString("");
-        return new Tokens(accessToken, response.path("expires_in").asLong(3600),
-                refreshToken.isEmpty() ? null : refreshToken);
     }
 
     private static String query(String folderId) {
@@ -325,64 +252,5 @@ public class DriveApi {
         } catch (IOException e) {
             return new byte[0];
         }
-    }
-
-    private interface Call<T> {
-        @Nullable T run();
-    }
-
-    private static <T> @Nullable T call(String action, Call<T> call) {
-        try {
-            return call.run();
-        } catch (RestClientResponseException e) {
-            throw failure(action, e);
-        } catch (RestClientException | UncheckedIOException e) {
-            throw new DriveException("Google " + action + ": " + e.getMessage());
-        }
-    }
-
-    private static DriveException failure(String action, RestClientResponseException e) {
-        String message = "Google " + action + " " + e.getStatusCode().value() + ": " + describe(e);
-        return e.getStatusCode().value() == HttpStatus.UNAUTHORIZED.value()
-                ? new DriveAuthException(message)
-                : new DriveException(message);
-    }
-
-    private static @Nullable String errorCode(RestClientResponseException e) {
-        try {
-            JsonNode body = e.getResponseBodyAs(JsonNode.class);
-            JsonNode error = body == null ? null : body.path("error");
-            return error == null || !error.isString() ? null : error.asString();
-        } catch (RuntimeException ignored) {
-            return null;
-        }
-    }
-
-    /** The error text of Google's JSON error body (OAuth or API format), or the status text. */
-    private static String describe(RestClientResponseException e) {
-        return describe(e.getResponseBodyAsByteArray(), e.getStatusText());
-    }
-
-    private static String describe(byte[] response, String statusText) {
-        try {
-            JsonNode body = response.length == 0 ? null : JsonMapper.shared().readTree(response);
-            if (body != null) {
-                JsonNode error = body.path("error");
-                if (error.isString()) {
-                    String description = body.path("error_description").asString("");
-                    return description.isEmpty() ? error.asString() : error.asString() + " (" + description + ")";
-                }
-                if (error.has("message")) {
-                    return error.path("message").asString();
-                }
-            }
-        } catch (RuntimeException ignored) {
-            // not a JSON error body
-        }
-        return statusText;
-    }
-
-    private static String bearer(String accessToken) {
-        return "Bearer " + accessToken;
     }
 }

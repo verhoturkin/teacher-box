@@ -33,9 +33,10 @@
 ### Копии в Google Диске
 
 - Платформа (`platform/backup/drive/`) сама подключает Google Диск учителя: OAuth (web server flow), область
-  `drive.file` — приложение видит только созданные им файлы. Код OAuth похож на `schedule/google/GoogleApi`, но
-  `platform` не может зависеть от `schedule`, а `schedule` — от `platform`; общий клиент Google в `shared` не
-  выносим ради двух вызовов.
+  `drive.file` — приложение видит только созданные им файлы. Код OAuth общий с `schedule/google/GoogleApi`:
+  `platform` не может зависеть от `schedule`, а `schedule` — от `platform`, поэтому код обмена кода, обновления
+  токена и разбора ошибок Google лежит в `shared.http.GoogleOAuth` (этап 379; изначально его не выносили, пока
+  повторялось мало строк — к тому времени повторялось около 115); вызовы Drive остаются в `DriveApi`.
 - OAuth-клиент — из `TEACHERBOX_BACKUP_GOOGLE_CLIENT_ID` / `_SECRET` или введённый учителем (переменные
   главнее, как у календаря). Свой клиент Google Cloud с Drive API, областью `drive.file` и redirect URI
   `<адрес портала>/api/public/backups/google/callback`; приложение публикуется («In production»), иначе Google

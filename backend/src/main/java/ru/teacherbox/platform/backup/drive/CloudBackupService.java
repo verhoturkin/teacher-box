@@ -1,6 +1,5 @@
 package ru.teacherbox.platform.backup.drive;
 
-import java.util.function.Supplier;
 import java.net.URI;
 import java.security.SecureRandom;
 import java.time.Clock;
@@ -13,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +23,7 @@ import ru.teacherbox.platform.backup.BackupService;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.http.GoogleOAuth;
 import ru.teacherbox.shared.portal.Portal;
 
 /**
@@ -114,7 +115,7 @@ public class CloudBackupService implements AutoCloseable {
 
     public DriveStatus status() {
         DriveConnection connection = store.load();
-        DriveApi.Client client = client(connection);
+        GoogleOAuth.Client client = client(connection);
         return new DriveStatus(client != null, client == null ? null : client.id(), connection.isConnected(), connection.account(),
                 connection.connectedAt(), connection.lastUploadAt(), connection.lastUploadName(),
                 connection.lastError(), running, CALLBACK_PATH);
@@ -137,7 +138,7 @@ public class CloudBackupService implements AutoCloseable {
      * @param origin address the teacher uses to open the portal; used while the portal address is not set
      */
     public String authorize(String origin) {
-        DriveApi.Client client = requireClient(store.load());
+        GoogleOAuth.Client client = requireClient(store.load());
         String redirectUri = portal.link(CALLBACK_PATH).orElseGet(() -> origin(origin) + CALLBACK_PATH);
         Instant now = clock.instant();
         authorizations.values().removeIf(pending -> pending.expiresAt().isBefore(now));
@@ -159,8 +160,8 @@ public class CloudBackupService implements AutoCloseable {
         }
         DriveConnection connection = store.load();
         try {
-            DriveApi.Client client = requireClient(connection);
-            DriveApi.Tokens tokens = api.exchangeCode(client, code, pending.redirectUri());
+            GoogleOAuth.Client client = requireClient(connection);
+            GoogleOAuth.Tokens tokens = api.exchangeCode(client, code, pending.redirectUri());
             if (tokens.refreshToken() == null) {
                 throw new DriveException("Google did not return a refresh token");
             }
@@ -358,7 +359,7 @@ public class CloudBackupService implements AutoCloseable {
         if (refreshToken == null) {
             throw new DriveAuthException("Google Drive is not connected");
         }
-        DriveApi.Tokens tokens = api.refresh(requireClient(connection), refreshToken);
+        GoogleOAuth.Tokens tokens = api.refresh(requireClient(connection), refreshToken);
         AccessToken token = new AccessToken(tokens.accessToken(), clock.instant().plusSeconds(tokens.expiresInSeconds()));
         accessToken = token;
         return token;
@@ -373,14 +374,14 @@ public class CloudBackupService implements AutoCloseable {
     }
 
     /** The client entered in the interface (ADR-0056). */
-    private static DriveApi.@Nullable Client client(DriveConnection connection) {
+    private static GoogleOAuth.@Nullable Client client(DriveConnection connection) {
         String id = connection.clientId();
         String secret = connection.clientSecret();
-        return id == null || secret == null ? null : new DriveApi.Client(id, secret);
+        return id == null || secret == null ? null : new GoogleOAuth.Client(id, secret);
     }
 
-    private DriveApi.Client requireClient(DriveConnection connection) {
-        DriveApi.Client client = client(connection);
+    private GoogleOAuth.Client requireClient(DriveConnection connection) {
+        GoogleOAuth.Client client = client(connection);
         if (client == null) {
             throw new BusinessRuleException("backup.google-client-missing", "Enter the client id and secret");
         }
