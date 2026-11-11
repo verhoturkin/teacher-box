@@ -7,12 +7,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.schedule.api.ChangeKind;
 import ru.teacherbox.schedule.domain.ChangeRequest;
 import ru.teacherbox.schedule.domain.RequestStatus;
+import ru.teacherbox.shared.persistence.OptimisticLock;
 
 @Repository
 public class ChangeRequestRepository {
@@ -63,9 +63,7 @@ public class ChangeRequestRepository {
                 .param("resolution", request.resolutionComment())
                 .param("resolvedAt", request.resolvedAt())
                 .update();
-        if (updated != 1) {
-            throw new OptimisticLockingFailureException("Request " + request.id() + " was modified");
-        }
+        OptimisticLock.requireUpdated(updated, "Request", request.id());
         request.markSaved(request.version() + 1);
     }
 
