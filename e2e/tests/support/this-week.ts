@@ -26,6 +26,30 @@ export function todayThereAt(hour: number): string {
   return new Date(`${day}T${String(hour).padStart(2, '0')}:00:00+03:00`).toISOString();
 }
 
+/** The calendar day of `date` in the browser's time zone, `2026-11-11`. */
+function dayThere(date: Date): string {
+  return date.toLocaleDateString('en-CA', { timeZone: ZONE });
+}
+
+/**
+ * A phone's agenda opens on today. A lesson that started a few hours ago is on yesterday there
+ * during the first hours of the day: the day strip (Monday first) then goes to the lesson's day,
+ * through the previous week when that day is a Sunday.
+ */
+export async function openAgendaDayOf(page: Page, startsAt: Date): Promise<void> {
+  const day = dayThere(startsAt);
+  if (day === dayThere(new Date())) {
+    return;
+  }
+  const weekday = new Date(`${day}T12:00:00Z`).getUTCDay();
+  if (weekday === 0) {
+    await page.getByRole('button', { name: 'Предыдущая неделя' }).click();
+  }
+  const chip = page.locator('.tb-agenda__day').nth((weekday + 6) % 7);
+  await chip.click();
+  await expect(chip).toHaveAttribute('aria-pressed', 'true');
+}
+
 function midnight(date: Date): number {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 }

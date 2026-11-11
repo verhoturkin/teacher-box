@@ -1,4 +1,5 @@
 import { startSession } from '../support/session';
+import { openAgendaDayOf } from '../support/this-week';
 import { type APIRequestContext, type Locator, type Page, expect, test } from '@playwright/test';
 
 /**
@@ -17,6 +18,8 @@ const BOARD = `Доска 0.15.3 ${RUN}`;
 const LINK_BOARD = `Холст 0.15.3 ${RUN}`;
 const HOMEWORK = `Задание 0.15.3 ${RUN}`;
 const PHONE = 390;
+/** The lesson that waits for a mark: it started three hours before the run. */
+const PAST_LESSON = new Date(Date.now() - 3 * 3_600_000);
 
 test.describe.configure({ mode: 'serial' });
 
@@ -102,7 +105,7 @@ test.beforeAll(async ({ request }) => {
   });
   await api(request, teacher, '/api/teacher/schedule/lessons', {
     studentId,
-    startsAt: new Date(Date.now() - 3 * 3_600_000).toISOString(),
+    startsAt: PAST_LESSON.toISOString(),
     durationMinutes: 60,
     allowOverlap: true,
   });
@@ -189,6 +192,8 @@ test('a past lesson is outlined and repeats use the lesson form', async ({ page 
 test('on a phone a past lesson has its buttons under the row of the agenda', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD, PHONE);
   await page.goto('/teacher/schedule');
+  // from midnight to three in Moscow the lesson is on yesterday, the agenda opens on today
+  await openAgendaDayOf(page, PAST_LESSON);
   // 0.24.0: the agenda marks the lesson under its row, no bottom sheet
   await page.getByRole('button', { name: `Проведено: ${STUDENT}` }).click();
   await expect(page.getByRole('button', { name: `Проведено: ${STUDENT}` })).toHaveCount(0);
