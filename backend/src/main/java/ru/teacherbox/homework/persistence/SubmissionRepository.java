@@ -1,8 +1,5 @@
 package ru.teacherbox.homework.persistence;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -37,7 +34,7 @@ public class SubmissionRepository {
                 where task_id = :taskId order by submitted_at desc
                 """)
                 .param("taskId", taskId)
-                .query(SubmissionRepository::map)
+                .query(Submission.class)
                 .list();
     }
 
@@ -60,13 +57,5 @@ public class SubmissionRepository {
                 """)
                 .param("assignmentId", assignmentId)
                 .update();
-    }
-
-    private static Submission map(ResultSet rs, int rowNum) throws SQLException {
-        return new Submission(
-                rs.getObject("id", UUID.class),
-                rs.getObject("task_id", UUID.class),
-                rs.getString("text"),
-                rs.getObject("submitted_at", Instant.class));
     }
 }

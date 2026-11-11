@@ -11,11 +11,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.homework.domain.HomeworkTask;
 import ru.teacherbox.homework.domain.TaskStatus;
+import ru.teacherbox.shared.persistence.OptimisticLock;
 
 @Repository
 public class TaskRepository {
@@ -75,9 +75,7 @@ public class TaskRepository {
                 .param("reviewedAt", task.reviewedAt())
                 .param("reminderAt", task.dueReminderSentAt())
                 .update();
-        if (updated != 1) {
-            throw new OptimisticLockingFailureException("Task " + task.id() + " was modified");
-        }
+        OptimisticLock.requireUpdated(updated, "Task", task.id());
         task.markSaved(task.version() + 1);
     }
 
@@ -137,8 +135,7 @@ public class TaskRepository {
                 join homework.assignments a on a.id = t.assignment_id
                 where t.status in ('ASSIGNED', 'RETURNED') and a.due_at is not null
                 """)
-                .query((rs, rowNum) -> new OpenDeadline(rs.getObject("student_id", UUID.class),
-                        rs.getObject("due_at", Instant.class)))
+                .query(OpenDeadline.class)
                 .list();
     }
 
@@ -157,9 +154,7 @@ public class TaskRepository {
                    or (t.submitted_at >= :from and t.submitted_at < :to)
                 """)
                 .param("from", from).param("to", to)
-                .query((rs, rowNum) -> new WeekTask(rs.getObject("assignment_id", UUID.class),
-                        rs.getObject("student_id", UUID.class), rs.getObject("assigned_at", Instant.class),
-                        rs.getObject("submitted_at", Instant.class), rs.getObject("due_at", Instant.class)))
+                .query(WeekTask.class)
                 .list();
     }
 
