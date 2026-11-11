@@ -23,8 +23,9 @@ From the repository root (Git Bash on Windows):
 E2E_SHARDS=3 ./scripts/e2e.sh               # 3 slices + operations, 4 instances in parallel
 ```
 
-Use `E2E_BROWSER_CHANNEL=chrome` for installed Chrome. New tests can change the scenario count.
-The CI workflow runs the full browser suite; `verify.sh e2e` only checks types.
+Use `E2E_BROWSER_CHANNEL=chrome` for installed Chrome; the CI jobs do too, with the Google Chrome
+of the `ubuntu-latest` image, so they download no browser. New tests can change the scenario
+count. The CI workflow runs the full browser suite; `verify.sh e2e` only checks types.
 
 ## Shards and instances
 

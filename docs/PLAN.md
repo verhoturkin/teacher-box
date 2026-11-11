@@ -326,6 +326,13 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
   `allowedDependencies` shrink to `shared` and `identity :: api`; `AGENTS.md` §4.2 table,
   `docs/modules/notifications.md` and the modules' docs updated.
 
+### Stage 381 — E2E jobs use the runner's Chrome (D)
+
+- [x] 381.1 **D** `.github/workflows/ci.yml` job `e2e`: no `npx playwright install --with-deps
+  chromium` (its apt part fails on the runners); the scenarios run with `E2E_BROWSER_CHANNEL:
+  chrome`, the Google Chrome that the `ubuntu-latest` image ships. `e2e/README.md` describes it.
+  *Fallback if a test differs only in Chrome: cache `~/.cache/ms-playwright` instead.*
+
 ## Backlog
 
 After the bundle measurement of 2026-11-11 (see "Release after next"), not planned:
