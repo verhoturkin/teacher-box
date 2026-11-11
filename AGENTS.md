@@ -202,6 +202,8 @@ Tests come with (or before) the code. Never lower gates or lint rules to get gre
 - [ ] User-visible change → wiki pages and help articles in every language
       ([`docs/writing.md`](docs/writing.md)).
 - [ ] Interface change → made with the `m3-expressive` skill (§6.3).
+- [ ] New shared component or variant → its sample in `frontend/src/app/features/gallery/` in the
+  same commit (ADR-0059).
 - [ ] Architecture change → ADR; changed behaviour → `docs/modules/<m>.md`, `docs/design-system.md`,
   `docs/screens.md` updated.
 - [ ] Checkbox in `docs/PLAN.md` ticked.

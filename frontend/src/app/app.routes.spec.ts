@@ -442,4 +442,11 @@ describe('app routes', { timeout: 20_000 }, () => {
     expect(document.body.querySelectorAll('main')).toHaveLength(1);
     expect(document.body.querySelector('main.tb-not-found-page')).toBeNull();
   });
+  it('opens the design gallery of development builds without signing in (ADR-0059)', async () => {
+    await harness.navigateByUrl('/gallery');
+
+    expect(document.body.querySelector('tb-gallery-page')).not.toBeNull();
+    expect(title()).toBe('Design gallery — Teacher Box');
+    expect(document.body.querySelector('tb-shell')).toBeNull();
+  });
 });

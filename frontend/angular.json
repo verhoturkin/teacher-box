@@ -51,6 +51,12 @@
           "configurations": {
             "production": {
               "serviceWorker": "ngsw-config.json",
+              "fileReplacements": [
+                {
+                  "replace": "src/app/features/gallery/dev-routes.ts",
+                  "with": "src/app/features/gallery/dev-routes.prod.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
@@ -111,7 +117,8 @@
             "coverageExclude": [
               "src/app/**/*.spec.ts",
               "src/app/**/index.ts",
-              "src/app/**/*.models.ts"
+              "src/app/**/*.models.ts",
+              "src/app/features/gallery/*/*.ts"
             ],
             "coverageThresholds": {
               "statements": 90,

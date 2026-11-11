@@ -180,6 +180,17 @@ module.exports = defineConfig([
   },
   ...featureBoundaries,
   {
+    // The design gallery (ADR-0059): a tool of development builds. Its captions are literal English text
+    // (no dictionaries, it is not the product); it shows only core/ and shared/, so it imports no feature.
+    files: ['src/app/features/gallery/**/*.ts'],
+    rules: {
+      'no-restricted-imports': restrictImports({
+        regex: '^@features/',
+        message: 'The gallery shows core/ and shared/ only (ADR-0059): it imports no feature.',
+      }),
+    },
+  },
+  {
     files: ['src/app/features/meetings/call/livekit-engine.ts'],
     rules: {
       'no-restricted-imports': [

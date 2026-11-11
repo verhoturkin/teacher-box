@@ -139,7 +139,7 @@ No stage touches the backend, so `./scripts/verify.sh backend` is not needed for
 The gallery is built from the real components and tokens; nothing in it is drawn separately.
 Styles of the gallery live in its components, not in `styles.scss`.
 
-- [ ] 371.1 **F** Frame and foundations. ADR-0059. Feature `features/gallery/` behind the lazy
+- [x] 371.1 **F** Frame and foundations. ADR-0059. Feature `features/gallery/` behind the lazy
   route `/gallery`, registered only in development builds (`isDevMode()` in `app.routes.ts`); not
   in navigation, not in the production bundle (a spec checks the route list). One page with a
   section nav that follows the parts of `docs/design-system.md`; sections of this substep: tokens
@@ -147,13 +147,15 @@ Styles of the gallery live in its components, not in `styles.scss`.
   file `features/gallery/<section>/<sample>.ts` of at most 80 lines. ESLint override for
   `features/gallery/**`: sample captions may be literal English text (no dictionaries). Coverage:
   samples are excluded in `angular.json` `coverageExclude`; the page and the nav are tested.
-- [ ] 371.2 **F** Components: buttons (variants, sizes, FAB, segmented), fields (text, select,
+  *The route is `features/gallery/dev-routes.ts`, replaced by an empty `dev-routes.prod.ts` in
+  production builds: `isDevMode()` kept the route's code in the initial bundle (ADR-0059).*
+- [x] 371.2 **F** Components: buttons (variants, sizes, FAB, segmented), fields (text, select,
   stepper, chips, errors), lists, tables and cards, dialogs, sheets and menus, states
   (`tb-load-state`, empty, snackbar, confirmation). Every `shared/ui/*` component has a sample.
-- [ ] 371.3 **F** Motion. A sample per `--tb-spring-*` token: the token name, the property it is
+- [x] 371.3 **F** Motion. A sample per `--tb-spring-*` token: the token name, the property it is
   for (spatial / effects), a "Replay" button and a "Reduce motion" switch; the page transitions
   and the dialog, sheet and menu openings of §11.
-- [ ] 371.4 **F** Checks and docs. A Vitest spec renders every sample; E2E `e2e/tests/layout/`
+- [x] 371.4 **F** Checks and docs. A Vitest spec renders every sample; E2E `e2e/tests/layout/`
   runs axe on the gallery — screenshots of it are not compared yet (fonts differ between
   machines; decide after a CI trial). `docs/design-system.md`: each part links its gallery
   section and loses the values the gallery shows; rules and the M3 / *ours* marks stay.
