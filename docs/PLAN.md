@@ -162,7 +162,140 @@ Styles of the gallery live in its components, not in `styles.scss`.
   `frontend/AGENTS.md` and `AGENTS.md` §9: a new shared component or variant adds its sample in
   the same commit.
 
+## Release after next
+
+**Smaller start bundle, faster start, less hand-written plumbing** — no change the teacher or a
+student sees, except that the portal opens faster.
+
+Measured on `3cced13` (production build, `ng build --stats-json`): initial JS 961 kB raw / 253 kB
+gzip (budget warning at 700 kB), of it the Aura theme 106 kB, `@material/material-color-utilities`
+84 kB; initial CSS 239 kB raw / 30 kB gzip, of it our global styles 219 kB. Backend: 5.9k lines of
+hand-written `JdbcClient` repositories; the container health check allows 90 s for the JVM start.
+
+Goals:
+
+- The initial bundle is under the 700 kB warning without raising the budget.
+- nginx serves pre-compressed files and keeps connections to the backend; the JVM starts from an
+  AOT cache.
+- Repositories share the optimistic-lock and mapping plumbing; `meetings` talks to LiveKit without
+  its SDK; `notifications` no longer knows the texts of other modules.
+
+ADRs: new 0060 (LiveKit without the server SDK, changes ADR-0030; stage 378), new 0061 (modules
+write their own notifications, stage 380).
+
+Stages run in order, one branch and one pull request per stage, each from the latest `main`. Every
+stage states its numbers before and after in the pull request (bundle sizes from
+`ng build --stats-json`, lines removed, start time). A stage that does not reach its number says so
+and keeps what it did reach; it never raises a budget or lowers a gate.
+
+### Stage 372 — only the theme tokens the portal uses (F)
+
+- [x] 372.0 Plan of the release (this section).
+- [ ] 372.1 **F** `core/theme/teacher-box-preset.ts`: `definePreset(Aura, …)` brings the tokens
+  of every PrimeNG component (106 kB of the initial bundle). Build the base from the Aura parts
+  the portal uses: `primitive`, `semantic` and the `components` of the PrimeNG modules imported
+  under `src/app` (list them with `rg -o "from 'primeng/[a-z]+'" src/app`), imported per component
+  from `@primeuix/themes/aura/<component>`; check the current import paths in the package first
+  (§13). A spec fails when a `primeng/<module>` is imported in `src/app` and its tokens are not
+  in the preset. Compare `/gallery` in both themes before and after (one screenshot each): no
+  visual change. Target: initial JS at least 70 kB smaller.
+
+### Stage 373 — nginx: pre-compressed files, kept connections (D)
+
+- [ ] 373.1 **D** `docker/Dockerfile` (stage `frontend-build`): after `npm run build` write a
+  `.gz` next to every `js`, `css`, `html`, `svg`, `json` over 1 kB (`gzip -9 -k`).
+  `docker/nginx/default.conf.template`: `gzip_static on`; an `upstream` with `keepalive` for
+  `${BACKEND_URL}` used by `/api/` and `/actuator/health` (WebSocket upgrade of boards keeps
+  working: `Connection` stays `$teacherbox_connection`). E2E `e2e/tests/` (operations or the
+  suite that already checks headers): a hashed script answers `Content-Encoding: gzip`.
+  `docs/operations.md` if it describes the proxy.
+
+### Stage 374 — the JVM starts from an AOT cache (D)
+
+- [ ] 374.1 **D** `docker/Dockerfile`: a training run of the extracted application in the build
+  (`-XX:AOTCacheOutput`, Spring `spring.context.exit=onRefresh`, a throw-away data directory, no
+  network), the cache copied into the `backend` image and used by `JAVA_TOOL_OPTIONS`
+  (`-XX:AOTCache`); the image still starts when the cache does not match (the JVM ignores it).
+  The training run uses the target platform's JRE, so it runs in a per-platform stage, not on
+  `$BUILDPLATFORM`. Record the start time (`Started TeacherBoxApplication in …`) before and
+  after in the pull request; lower `start-period` only if the number allows. Check the current
+  Spring Boot 4.1 and JDK 25 documentation first (§13).
+
+### Stage 375 — styles of one screen load with that screen (F)
+
+- [ ] 375.1 **F** Move the rules used by one feature out of the global styles into the styles of
+  its components: `styles/_calls.scss` → `features/meetings/call/`, `styles/_calendar.scss` →
+  `features/schedule/ui/schedule-calendar.ts`, `styles/_excalidraw.scss` →
+  `features/boards/editor/`, `styles/_home.scss` → `features/home/`. A rule used by two features
+  stays global. The `anyComponentStyle` budget (4 kB warning, 8 kB error) is not raised: a part
+  that does not fit stays global and the plan notes it. FullCalendar's `skeleton.css` and
+  `themes/classic/theme.css` leave `angular.json` `styles` if the calendar component can carry
+  them. Target: initial CSS at least 40 kB raw smaller; `e2e/tests/layout/` stays green.
+
+### Stage 376 — the colour scheme is computed once (F)
+
+- [ ] 376.1 **F** `core/theme/color-scheme.ts`, `appearance.ts`, `label-colors.ts`:
+  `@material/material-color-utilities` (84 kB) runs at every start to compute the same roles.
+  Keep the computed scheme of the default appearance as generated constants (a script next to
+  `scripts/icons.mjs`, a spec that fails when the constants differ from the computed ones); a
+  custom appearance stores its computed roles (device setting keyed by the seed colours) and
+  loads the library with `import()` only when the seed changes or the store is empty. Target:
+  the library is absent from the initial chunks (a spec on the build stats or on the import
+  graph, like `scripts/import-cycles.mjs`).
+
+### Stage 377 — shared plumbing of repositories (B)
+
+- [ ] 377.1 **B** `shared/persistence`: `OptimisticLock.requireUpdated(int, String, Object)` for
+  the `if (updated != 1) throw new OptimisticLockingFailureException(…)` blocks; typed column
+  readers for the repeated `rs.getObject("…", UUID.class)` / nullable `Instant` / nullable
+  `long`. Apply to `billing/persistence` first (pilot, numbers in the pull request), then to the
+  other modules in the same branch, one commit per module. Flat read models use
+  `JdbcClient.query(Class)` where the columns match the record. No Spring Data JDBC (schema per
+  module, `restore` factories). Target: at least 600 lines fewer under `*/persistence/`, gates
+  unchanged.
+
+### Stage 378 — LiveKit without the server SDK (B, ADR-0060)
+
+- [ ] 378.1 **B** ADR-0060. `meetings/livekit/LiveKitCallServer.java` is the only user of
+  `io.livekit:livekit-server`, which brings protobuf and Retrofit and forces the OkHttp BOM in
+  `backend/pom.xml`. Sign the access token with the Nimbus classes Spring Security already
+  brings (HS256, the `video` grant claims of the LiveKit documentation); call the room service
+  (Twirp, JSON) through `shared/http/OutboundHttp`. Tests compare the claims and requests with
+  what the SDK produced (captured once as fixtures). Remove `livekit-server`, `okhttp-jvm` and
+  the `okhttp-bom` import if the Anthropic SDK builds without them. Record the size of the
+  `backend` image layer with dependencies before and after.
+
+### Stage 379 — one Google OAuth client (B)
+
+- [ ] 379.1 **B** Compare `platform/backup/drive/DriveApi.java` and
+  `schedule/google/GoogleApi.java`: the code exchange, token refresh and error mapping. If at
+  least 100 lines repeat, move them to `shared/http` (no business names, no module schema) and
+  keep the Drive and Calendar calls where they are; otherwise tick this substep with a note in
+  italics and change nothing.
+
+### Stage 380 — modules write their own notifications (B, ADR-0061)
+
+- [ ] 380.1 **B** ADR-0061 and the contract. `notifications` depends on the `api` of five
+  modules and holds their texts (`ScheduleNotifications`, `HomeworkNotifications`,
+  `BillingNotifications`, `MeetingNotifications`, `NotificationTexts`). Chat actions already
+  live with their owner (`schedule/chat`, `billing/chat`). Contract in `shared`: an event with
+  the recipient, the kind (for the user's preferences), the texts in every language and the
+  link; `notifications` listens to it and keeps delivery, preferences and the inbox.
+- [ ] 380.2 **B** `schedule` writes its notifications; `ScheduleNotifications` is removed.
+- [ ] 380.3 **B** `homework`, `billing`, `meetings`, `identity` write theirs; `notifications`
+  `allowedDependencies` shrink to `shared` and `identity :: api`; `AGENTS.md` §4.2 table,
+  `docs/modules/notifications.md` and the modules' docs updated.
+
 ## Backlog
+
+After the bundle measurement of 2026-11-11 (see "Release after next"), not planned:
+
+- Attachments are served with `no-store` (`shared/http/FileDownloads`), so pictures of homework are
+  downloaded at every opening; boards serve theirs as `private, immutable`. Needs the teacher's
+  decision: a private cache keeps files on a shared computer.
+- One language of the dictionaries per load: the unused language is 19 kB of the initial bundle
+  and 128 kB over all lazy chunks — too little for the change it needs.
+- Caddy alone instead of Caddy in front of nginx (profile `https`): changes ADR-0031 and ADR-0032.
 
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,
 self-booking, calls, spaced repetition) — [`roadmap/`](roadmap/README.md); move one here as a
