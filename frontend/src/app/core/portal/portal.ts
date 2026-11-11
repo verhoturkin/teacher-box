@@ -4,9 +4,14 @@ import { Injectable, Injector, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import { ColorScheme } from '@core/theme/color-scheme';
-import { DEFAULT_ACCENT, applyAccent } from '@core/theme/portal-accent';
+import {
+  DEFAULT_ACCENT,
+  applyScheme,
+  knownAccentScheme,
+  loadAccentScheme,
+} from '@core/theme/portal-accent';
 import { DEFAULT_SCHEME } from '@core/theme/teacher-box-preset';
-import { ContrastLevel, DEFAULT_APPEARANCE, SchemeType } from '@core/theme/appearance';
+import { Appearance, ContrastLevel, DEFAULT_APPEARANCE, SchemeType } from '@core/theme/appearance';
 
 export const DEFAULT_PORTAL_NAME = 'Teacher Box';
 
@@ -46,6 +51,8 @@ export class Portal {
     logo: null,
   });
   private setupDone = false;
+  private painting: Promise<void> = Promise.resolve();
+  private paintings = 0;
 
   /** The colors of the portal now in use (ADR-0034). */
   readonly scheme = signal<ColorScheme>(DEFAULT_SCHEME);
@@ -65,6 +72,8 @@ export class Portal {
           this.injector.get(HttpClient).get<PortalInfo>('/api/public/portal', { context }),
         ),
       );
+      // the app starts in its colors: no flash of the default ones while they are computed
+      await this.painting;
     } catch {
       // The defaults are good enough until the next start.
     }
@@ -114,11 +123,39 @@ export class Portal {
       appearance.scheme !== (before.scheme ?? DEFAULT_APPEARANCE.scheme) ||
       appearance.contrast !== (before.contrast ?? DEFAULT_APPEARANCE.contrast)
     ) {
-      this.scheme.set(applyAccent(info.accent, appearance));
+      this.painting = this.paint(info.accent, appearance);
     }
     if (info.logo !== before.logo) {
       this.showIcon(info.logo);
     }
+  }
+
+  /** Resolves when the colors of the last `set` are in use. */
+  painted(): Promise<void> {
+    return this.painting;
+  }
+
+  /**
+   * Paints the portal in its color (ADR-0034, stage 376): at once when the roles are known — the
+   * default appearance is a constant, any other one is kept on this device — otherwise as soon as
+   * the color library has computed them (`import()`, the first start with this appearance). When
+   * it cannot be loaded the colors in use stay.
+   */
+  private async paint(accent: string, appearance: Appearance): Promise<void> {
+    const painting = ++this.paintings;
+    let scheme = knownAccentScheme(accent, appearance);
+    if (scheme === null) {
+      try {
+        scheme = await loadAccentScheme(accent, appearance);
+      } catch {
+        return;
+      }
+      if (painting !== this.paintings) {
+        return;
+      }
+    }
+    applyScheme(scheme);
+    this.scheme.set(scheme);
   }
 
   /**

@@ -112,8 +112,13 @@ themes, severities, the colours of students.
   Vibrant, Expressive, Neutral, Monochrome, Content, Rainbow or Fruit Salad (MCU spec 2025 for
   Neutral, Tonal Spot, Vibrant, Expressive; spec 2021 for the rest). M3E component patterns do not
   require the Expressive colour variant. All roles of both themes and the neutral palette (tones
-  99…10 as shades 0–950) come from it (`color-scheme.ts`) and are pushed via `updatePreset`; no
-  `oklch(from …)` in CSS. Recomputed on load and when colour, scheme or contrast is saved. Contrast
+  99…10 as shades 0–950) come from it (`color-engine.ts`) and are pushed via `updatePreset`; no
+  `oklch(from …)` in CSS. **Computed once, not at every start** (stage 376): the roles of the
+  default appearance and of the label colours are generated constants (`generated-colors.ts`,
+  `npm run colors`); any other appearance is computed the first time on a device — the library is
+  loaded with `import()` — and kept as the device setting `tb.scheme`, keyed by the seed, scheme,
+  contrast and the stamp of the engine; the settings preview loads the library with their screen.
+  Applied on load and when colour, scheme or contrast is saved. Contrast
   Reduced / Standard / Increased / Maximum = MCU −1 / 0 / 0.5 / 1; Standard is the default; numbers
   never appear in the UI.
 - **Contrast is guaranteed by tone** (ADR-0023), also at Reduced, after MCU: primary, error,

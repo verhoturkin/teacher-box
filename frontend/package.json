@@ -9,10 +9,11 @@
         "test": "ng test --watch=false --coverage",
         "test:only": "ng test --watch=false --reporters=dot --include",
         "test:watch": "ng test",
-        "lint": "ng lint && npm run format:check && knip --no-progress && node scripts/import-cycles.mjs",
+        "lint": "ng lint && npm run format:check && knip --no-progress && node scripts/import-cycles.mjs && node scripts/initial-imports.mjs",
         "format": "prettier --write \"src/**/*.{ts,html,scss}\" \"../e2e/*.ts\" \"../e2e/tests/**/*.ts\" \"../e2e/telegram-mock/**/*.mjs\"",
         "format:check": "prettier --check \"src/**/*.{ts,html,scss}\" \"../e2e/*.ts\" \"../e2e/tests/**/*.ts\" \"../e2e/telegram-mock/**/*.mjs\"",
-        "icons": "node scripts/icons.mjs"
+        "icons": "node scripts/icons.mjs",
+        "colors": "node scripts/colors.mjs"
     },
     "private": true,
     "packageManager": "npm@11.20.0",

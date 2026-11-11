@@ -5,15 +5,11 @@ import { MessageService } from 'primeng/api';
 import { apiErrorInterceptor } from '@core/http/api-error.interceptor';
 import { DEFAULT_PORTAL_NAME, Portal } from './portal';
 import { portalInfo } from '@testing/portal-fixtures';
+import { accentScheme } from '@core/theme/accent-scheme';
+import { SCHEME_KEY, loadAccentScheme } from '@core/theme/portal-accent';
+import { DEFAULT_SCHEME } from '@core/theme/teacher-box-preset';
 
 describe('Portal', () => {
-  it('recomputes the theme when only scheme or contrast changes', () => {
-    portal.set(portalInfo({ scheme: 'tonal-spot', contrast: 'standard' }));
-    const monochrome = portal.scheme();
-    portal.set(portalInfo({ scheme: 'tonal-spot', contrast: 'maximum' }));
-    expect(portal.scheme()).not.toBe(monochrome);
-    expect(portal.scheme().light.primary).not.toBe(monochrome.light.primary);
-  });
   let portal: Portal;
   let backend: HttpTestingController;
 
@@ -29,8 +25,56 @@ describe('Portal', () => {
     backend = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     backend.verify();
+    portal.set(portalInfo());
+    await portal.painted();
+    localStorage.removeItem(SCHEME_KEY);
+  });
+
+  it('starts in the default scheme and repaints at once when the roles are known', () => {
+    expect(portal.scheme()).toBe(DEFAULT_SCHEME);
+
+    portal.set(portalInfo({ accent: 'emerald' }));
+    portal.set(portalInfo());
+
+    // the default appearance is a constant: nothing to wait for
+    expect(portal.scheme().light).toBe(DEFAULT_SCHEME.light);
+  });
+
+  it('recomputes the theme when only scheme or contrast changes', async () => {
+    portal.set(portalInfo({ scheme: 'tonal-spot', contrast: 'standard' }));
+    await portal.painted();
+    const standard = portal.scheme();
+    expect(standard).not.toBe(DEFAULT_SCHEME);
+
+    portal.set(portalInfo({ scheme: 'tonal-spot', contrast: 'maximum' }));
+    await portal.painted();
+
+    expect(portal.scheme()).not.toBe(standard);
+    expect(portal.scheme().light.primary).not.toBe(standard.light.primary);
+  });
+
+  it('starts in the colors of the portal: loading waits until they are computed', async () => {
+    const loaded = portal.load();
+    backend
+      .expectOne('/api/public/portal')
+      .flush(portalInfo({ accent: '#bb2649', scheme: 'vibrant', contrast: 'increased' }));
+    await loaded;
+
+    expect(portal.scheme()).toEqual(
+      accentScheme('#bb2649', { scheme: 'vibrant', contrast: 'increased' }),
+    );
+  });
+
+  it('paints the last color when two are computed at once', async () => {
+    portal.set(portalInfo({ accent: 'emerald' }));
+    portal.set(portalInfo({ accent: 'pink' }));
+    await portal.painted();
+    await loadAccentScheme('emerald');
+
+    expect(portal.scheme().primary).toEqual(accentScheme('pink').primary);
+    expect(portal.scheme().light).toEqual(accentScheme('pink').light);
   });
 
   it('builds links from the address the page is opened at until the address is set', () => {

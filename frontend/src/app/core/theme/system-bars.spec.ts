@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Portal } from '@core/portal/portal';
 import { testProviders } from '@testing/setup';
-import { accentScheme } from './portal-accent';
+import { accentScheme } from './accent-scheme';
 import { MANIFEST_PATH, SystemBars } from './system-bars';
 import { ThemeMode } from './theme-mode';
 
@@ -29,7 +29,7 @@ describe('SystemBars', () => {
     return document.head.querySelector('link[rel="manifest"]')?.getAttribute('href') ?? null;
   }
 
-  it('paints the system bars in the color of the top bar of the current theme and portal color', () => {
+  it('paints the system bars in the color of the top bar of the current theme and portal color', async () => {
     TestBed.configureTestingModule({ providers: testProviders() });
     const existing = document.createElement('meta');
     existing.name = 'theme-color';
@@ -59,7 +59,9 @@ describe('SystemBars', () => {
       }).toString()}`,
     );
 
-    TestBed.inject(Portal).set({ name: 'Портал', address: null, accent: 'emerald', logo: null });
+    const portal = TestBed.inject(Portal);
+    portal.set({ name: 'Портал', address: null, accent: 'emerald', logo: null });
+    await portal.painted();
     TestBed.tick();
     expect(meta()).toBe(accentScheme('emerald').dark.surface);
   });

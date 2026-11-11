@@ -1,26 +1,3 @@
-import {
-  SchemeContent,
-  SchemeExpressive,
-  SchemeFidelity,
-  SchemeFruitSalad,
-  SchemeMonochrome,
-  SchemeNeutral,
-  SchemeRainbow,
-  SchemeTonalSpot,
-  SchemeVibrant,
-} from '@material/material-color-utilities';
-
-export const SCHEME_TYPES = {
-  fidelity: SchemeFidelity,
-  'tonal-spot': SchemeTonalSpot,
-  vibrant: SchemeVibrant,
-  expressive: SchemeExpressive,
-  neutral: SchemeNeutral,
-  monochrome: SchemeMonochrome,
-  content: SchemeContent,
-  rainbow: SchemeRainbow,
-  'fruit-salad': SchemeFruitSalad,
-} as const;
 export const SCHEMES = [
   'fidelity',
   'tonal-spot',
