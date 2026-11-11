@@ -14,6 +14,7 @@ const PASSWORD = `pass-${RUN}-quiz`;
 const MIXED = `Тест ${RUN}`;
 const OPEN = `Тест с ключом ${RUN}`;
 const BLANK = `Тест без ответа ${RUN}`;
+const ORDER = ['Утро', 'День', 'Вечер'];
 
 test.describe.configure({ mode: 'serial' });
 
@@ -188,8 +189,13 @@ async function next(page: Page): Promise<void> {
 
 /** Moves the items with the arrow buttons until they stand in `wanted` order. */
 async function putInOrder(page: Page, wanted: readonly string[]): Promise<void> {
+  const items = page.locator('.tb-qp__order-text');
+  await expect(items).toHaveCount(wanted.length);
+  // An ordering is answered only after a move, even when the shuffle is already correct.
+  const first = (await items.first().innerText()).trim();
+  await page.getByRole('button', { name: /^Опустить ниже: 1\./ }).click();
+  await expect(items.nth(1)).toHaveText(first);
   for (const [target, text] of wanted.entries()) {
-    const items = page.locator('.tb-qp__order-text');
     for (;;) {
       const texts = await items.allTextContents();
       const at = texts.map((item) => item.trim()).indexOf(text);
@@ -203,9 +209,23 @@ async function putInOrder(page: Page, wanted: readonly string[]): Promise<void> 
       await expect(items.nth(at - 1)).toHaveText(text);
     }
   }
+  await expect(items).toHaveText(wanted);
 }
 
 test('a student answers all six types and sees a mixed score without the key', async ({ page }) => {
+  // A valid server shuffle can already be correct: cover that case on every run.
+  await page.route(`**/api/me/homework/tasks/${mixedTask}/quiz/attempts`, async (route) => {
+    const response = await route.fetch();
+    const quiz = (await response.json()) as {
+      questions: { type: string; options: { text: string }[] }[];
+    };
+    for (const question of quiz.questions) {
+      if (question.type === 'ORDERING') {
+        question.options.sort((a, b) => ORDER.indexOf(a.text) - ORDER.indexOf(b.text));
+      }
+    }
+    await route.fulfill({ response, json: quiz });
+  });
   await asStudent(page, mixedTask);
   await expect(page.getByText('Осталось попыток: 2')).toBeVisible();
   await page.getByRole('button', { name: 'Начать тест', exact: true }).click();
@@ -232,7 +252,7 @@ test('a student answers all six types and sees a mixed score without the key', a
     await page.getByRole('option', { name: right, exact: true }).click();
   }
   await next(page);
-  await putInOrder(page, ['Утро', 'День', 'Вечер']);
+  await putInOrder(page, ORDER);
   await submitQuiz(page);
 
   await expect(page.getByText('Тест · 5 из 6')).toBeVisible();
