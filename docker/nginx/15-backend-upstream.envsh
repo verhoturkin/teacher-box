@@ -1,0 +1,25 @@
+#!/bin/sh
+# shellcheck shell=sh
+# Sourced by the nginx image entrypoint before the templates are rendered. An `upstream` block takes host:port,
+# not a URL, so ${BACKEND_URL} (http://backend:8080) is split into ${BACKEND_SCHEME} and ${BACKEND_UPSTREAM}
+# for docker/nginx/default.conf.template. A deployment keeps setting only BACKEND_URL; either part may be given
+# explicitly.
+
+case "${BACKEND_URL:-}" in
+    https://*) teacherbox_backend_scheme=https ;;
+    *) teacherbox_backend_scheme=http ;;
+esac
+# Drop the scheme and any path: http://backend:8080/ -> backend:8080
+teacherbox_backend=${BACKEND_URL#*://}
+teacherbox_backend=${teacherbox_backend%%/*}
+# A `server` without a port means 80, whatever the scheme.
+if [ "$teacherbox_backend_scheme" = https ]; then
+    case "$teacherbox_backend" in
+        *:*) ;;
+        *) teacherbox_backend="$teacherbox_backend:443" ;;
+    esac
+fi
+
+export BACKEND_SCHEME="${BACKEND_SCHEME:-$teacherbox_backend_scheme}"
+export BACKEND_UPSTREAM="${BACKEND_UPSTREAM:-$teacherbox_backend}"
+unset teacherbox_backend teacherbox_backend_scheme

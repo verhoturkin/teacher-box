@@ -1,5 +1,6 @@
 # Teacher Box SPA + API reverse proxy (split variant, ADR-0004).
-# ${BACKEND_URL} and ${LIVEKIT_URL} are substituted by the nginx image entrypoint (envsubst) at container start.
+# ${BACKEND_SCHEME}, ${BACKEND_UPSTREAM} and ${LIVEKIT_URL} are substituted by the nginx image entrypoint (envsubst)
+# at container start; the first two are derived from ${BACKEND_URL} by 15-backend-upstream.envsh.
 
 map $http_x_forwarded_proto $teacherbox_forwarded_proto {
     default $http_x_forwarded_proto;
@@ -12,6 +13,14 @@ map $http_upgrade $teacherbox_connection {
     ""      "";
 }
 
+# Connections to the backend are kept open and reused: without this every API request opens a new one.
+upstream teacherbox-backend {
+    server ${BACKEND_UPSTREAM};
+    keepalive 16;
+    # Shorter than the backend's own idle timeout (Tomcat: 60 s), so nginx is the side that closes.
+    keepalive_timeout 30s;
+}
+
 server {
     listen 8080;
     server_name _;
@@ -22,6 +31,10 @@ server {
 
     client_max_body_size 30m;
 
+    # Static files are compressed in the image build (docker/Dockerfile writes a .gz next to each); API answers
+    # are compressed on the fly.
+    gzip_static on;
+    gzip_vary on;
     gzip on;
     gzip_comp_level 6;
     gzip_min_length 1024;
@@ -30,7 +43,7 @@ server {
     include /etc/nginx/snippets/security-headers.conf;
 
     location /api/ {
-        proxy_pass ${BACKEND_URL};
+        proxy_pass ${BACKEND_SCHEME}://teacherbox-backend;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -38,6 +51,7 @@ server {
         proxy_set_header X-Forwarded-Proto $teacherbox_forwarded_proto;
         proxy_set_header X-Forwarded-Host $host;
         proxy_set_header Upgrade $http_upgrade;
+        # Empty for a plain request, which is what lets the upstream connection be kept.
         proxy_set_header Connection $teacherbox_connection;
         # AI requests and file uploads may take a while; an open board pings its channel every 30 s.
         proxy_read_timeout 180s;
@@ -52,7 +66,7 @@ server {
         # Textbooks take files up to 100 MB (ADR-0033); the headers above are inherited.
         location /api/teacher/textbooks {
             client_max_body_size 105m;
-            proxy_pass ${BACKEND_URL};
+            proxy_pass ${BACKEND_SCHEME}://teacherbox-backend;
         }
     }
 
@@ -75,7 +89,9 @@ server {
     }
 
     location = /actuator/health {
-        proxy_pass ${BACKEND_URL};
+        proxy_pass ${BACKEND_SCHEME}://teacherbox-backend;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
     }
 
     # Other management endpoints are never exposed.
