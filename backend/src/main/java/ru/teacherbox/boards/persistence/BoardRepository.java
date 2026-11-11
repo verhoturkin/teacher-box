@@ -1,8 +1,6 @@
 package ru.teacherbox.boards.persistence;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,9 +12,9 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.boards.domain.Board;
-import ru.teacherbox.boards.domain.BoardKind;
 import ru.teacherbox.boards.domain.BoardMember;
 import ru.teacherbox.boards.domain.MemberType;
+import ru.teacherbox.shared.persistence.OptimisticLock;
 
 /** Boards and their members. */
 @Repository
@@ -64,9 +62,7 @@ public class BoardRepository {
                 .param("url", board.url())
                 .param("updatedAt", board.updatedAt())
                 .update();
-        if (updated != 1) {
-            throw new OptimisticLockingFailureException("Board " + board.id() + " was modified");
-        }
+        OptimisticLock.requireUpdated(updated, "Board", board.id());
         jdbc.sql("delete from boards.board_members where board_id = :id").param("id", board.id()).update();
         insertMembers(board.id(), members);
         return new Board(board.id(), board.kind(), board.title(), board.url(), board.createdAt(), board.updatedAt(),
@@ -79,18 +75,18 @@ public class BoardRepository {
     }
 
     public Optional<Board> findById(UUID id) {
-        return jdbc.sql(SELECT + " where id = :id").param("id", id).query(BoardRepository::map).optional();
+        return jdbc.sql(SELECT + " where id = :id").param("id", id).query(Board.class).optional();
     }
 
     public List<Board> findAll() {
-        return jdbc.sql(SELECT + ORDER).query(BoardRepository::map).list();
+        return jdbc.sql(SELECT + ORDER).query(Board.class).list();
     }
 
     public List<Board> findByIds(Collection<UUID> ids) {
         if (ids.isEmpty()) {
             return List.of();
         }
-        return jdbc.sql(SELECT + " where id in (:ids)" + ORDER).param("ids", ids).query(BoardRepository::map).list();
+        return jdbc.sql(SELECT + " where id in (:ids)" + ORDER).param("ids", ids).query(Board.class).list();
     }
 
     /** Ids of the boards any of the students or groups is a member of. */
@@ -137,16 +133,5 @@ public class BoardRepository {
                     .param("memberId", member.id())
                     .update();
         }
-    }
-
-    private static Board map(ResultSet rs, int rowNum) throws SQLException {
-        return new Board(
-                rs.getObject("id", UUID.class),
-                BoardKind.valueOf(rs.getString("kind")),
-                rs.getString("title"),
-                rs.getString("url"),
-                rs.getObject("created_at", Instant.class),
-                rs.getObject("updated_at", Instant.class),
-                rs.getLong("version"));
     }
 }

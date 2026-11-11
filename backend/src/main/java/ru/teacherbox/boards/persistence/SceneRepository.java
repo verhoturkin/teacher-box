@@ -121,12 +121,12 @@ public class SceneRepository {
     /** Newest first. */
     public List<BoardBackup> findBackups(UUID boardId) {
         return jdbc.sql(SELECT_BACKUP + " where board_id = :id order by created_at desc, id desc")
-                .param("id", boardId).query(SceneRepository::mapBackup).list();
+                .param("id", boardId).query(BoardBackup.class).list();
     }
 
     public Optional<BoardBackup> findBackup(UUID boardId, UUID backupId) {
         return jdbc.sql(SELECT_BACKUP + " where board_id = :boardId and id = :id")
-                .param("boardId", boardId).param("id", backupId).query(SceneRepository::mapBackup).optional();
+                .param("boardId", boardId).param("id", backupId).query(BoardBackup.class).optional();
     }
 
     public int countBackups(UUID boardId, BackupKind kind) {
@@ -155,17 +155,17 @@ public class SceneRepository {
 
     public Optional<BoardFile> findFile(UUID boardId, String fileId) {
         return jdbc.sql(SELECT_FILE + " where board_id = :boardId and file_id = :fileId")
-                .param("boardId", boardId).param("fileId", fileId).query(SceneRepository::mapFile).optional();
+                .param("boardId", boardId).param("fileId", fileId).query(BoardFile.class).optional();
     }
 
     public List<BoardFile> findFiles(UUID boardId) {
         return jdbc.sql(SELECT_FILE + " where board_id = :id").param("id", boardId)
-                .query(SceneRepository::mapFile).list();
+                .query(BoardFile.class).list();
     }
 
     /** The images of every board. */
     public List<BoardFile> findAllFiles() {
-        return jdbc.sql(SELECT_FILE).query(SceneRepository::mapFile).list();
+        return jdbc.sql(SELECT_FILE).query(BoardFile.class).list();
     }
 
     public void deleteFile(UUID boardId, String fileId) {
@@ -181,26 +181,5 @@ public class SceneRepository {
                 rs.getLong("scene_version"),
                 rs.getObject("updated_at", Instant.class),
                 rs.getObject("updated_by", UUID.class));
-    }
-
-    private static BoardBackup mapBackup(ResultSet rs, int rowNum) throws SQLException {
-        return new BoardBackup(
-                rs.getObject("id", UUID.class),
-                rs.getObject("board_id", UUID.class),
-                BackupKind.valueOf(rs.getString("kind")),
-                rs.getString("elements"),
-                rs.getString("app_state"),
-                rs.getLong("scene_version"),
-                rs.getObject("created_at", Instant.class));
-    }
-
-    private static BoardFile mapFile(ResultSet rs, int rowNum) throws SQLException {
-        return new BoardFile(
-                rs.getObject("board_id", UUID.class),
-                rs.getString("file_id"),
-                rs.getString("file_key"),
-                rs.getString("content_type"),
-                rs.getLong("size"),
-                rs.getObject("created_at", Instant.class));
     }
 }
