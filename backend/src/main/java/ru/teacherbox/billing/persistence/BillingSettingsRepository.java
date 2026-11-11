@@ -18,10 +18,7 @@ public class BillingSettingsRepository {
     /** Minor units; empty until the teacher sets it. */
     public Optional<Long> defaultLessonPrice() {
         return jdbc.sql("select default_lesson_price from billing.settings where id = 1")
-                .query((rs, row) -> {
-                    long price = rs.getLong("default_lesson_price");
-                    return rs.wasNull() ? Optional.<Long>empty() : Optional.of(price);
-                })
+                .query((rs, row) -> Optional.ofNullable(rs.getObject("default_lesson_price", Long.class)))
                 .single();
     }
 

@@ -6,11 +6,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.billing.domain.BillingCurrency;
 import ru.teacherbox.billing.domain.GroupPrice;
+import ru.teacherbox.shared.persistence.OptimisticLock;
 
 @Repository
 public class GroupPriceRepository {
@@ -50,9 +50,7 @@ public class GroupPriceRepository {
                 .param("lessonPrice", price.lessonPrice().amountMinor())
                 .param("updatedAt", price.updatedAt())
                 .update();
-        if (updated != 1) {
-            throw new OptimisticLockingFailureException("Group price " + price.groupId() + " was modified");
-        }
+        OptimisticLock.requireUpdated(updated, "Group price", price.groupId());
         price.markSaved(price.version() + 1);
     }
 
