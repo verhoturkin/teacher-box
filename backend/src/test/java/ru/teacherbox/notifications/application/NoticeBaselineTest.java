@@ -37,12 +37,6 @@ class NoticeBaselineTest {
     });
 
     @Test
-    void schedule() {
-        compare("schedule", NoticeSamples.schedule(),
-                new ScheduleNotifications(notifications, texts, people, people));
-    }
-
-    @Test
     void homework() {
         compare("homework", NoticeSamples.homework(), new HomeworkNotifications(notifications, texts, people));
     }

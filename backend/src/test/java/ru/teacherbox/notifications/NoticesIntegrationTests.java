@@ -127,6 +127,10 @@ class NoticesIntegrationTests {
 
     @Test
     void theKindDecidesWhatTheRecipientMuted() {
+        assertThat(NotificationTopic.of(NotificationKind.LESSON_SUMMARY)).isEqualTo(NotificationTopic.LESSON_SUMMARY);
+        assertThat(Preferences.DEFAULT.sendsToMessengers(NotificationKind.LESSON_SUMMARY)).isTrue();
+        assertThat(new Preferences(Set.of(NotificationTopic.LESSON_SUMMARY), null, null)
+                .sendsToMessengers(NotificationKind.LESSON_SUMMARY)).isFalse();
         UUID student = connectedStudent("9304");
         preferences.save(student, new Preferences(Set.of(NotificationTopic.LESSON_SUMMARY), null, null), Instant.now());
 

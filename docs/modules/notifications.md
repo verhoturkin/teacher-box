@@ -8,13 +8,13 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
 ## Rules
 
 - **Lesson repetition (0.29.0):** `LessonRepeatScheduled` and `LessonRepeatStopped` aggregate notices;
-  nightly occurrence generation sends none. Legacy `SeriesScheduled`/`SeriesStopped` listeners remain only
-  to replay durable publications from an older release. Billing still consumes individual lesson outcomes.
+  nightly occurrence generation sends none. Billing still consumes individual lesson outcomes.
 
 - Listens to domain events of other modules (producers don't know it) and turns each into an **inbox** record
   plus an outbox **delivery** per connected and enabled channel of the recipient. Texts — templates in
-  the module, in the recipient's language (0.11.1, ADR-0036: `UserDirectory.language`; dictionaries
-  `ScheduleMessages`, `NotificationMessages`, formats `NotificationTexts`); a stored notification keeps the language
+  the module, in the recipient's language (0.11.1, ADR-0036: `UserDirectory.language`; dictionary
+  `NotificationMessages`, formats `NotificationTexts`; the schedule writes its own since 380.2,
+  ADR-0061); a stored notification keeps the language
   it was written in. Preferences per topic (`Preferences`, `NotificationTopic`).
 - **Reminder from the teacher** (341.1): `HomeworkReminderRequested` → inbox record «Учитель напоминает
   о задании «…»» with the due date (kind `HOMEWORK_REMINDER`, topic `REMINDERS`), link to the task.

@@ -326,7 +326,14 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
   notifies once. The golden files `src/test/resources/notices/<module>.txt` hold what today's
   listeners write for `testing.notices.NoticeSamples` in both languages (`NoticeBaselineTest`);
   380.2 and 380.3 compare the modules with them.*
-- [ ] 380.2 **B** `schedule` writes its notifications; `ScheduleNotifications` is removed.
+- [x] 380.2 **B** `schedule` writes its notifications; `ScheduleNotifications` is removed.
+  *Done: `schedule/notices` (`ScheduleNotices`, `ScheduleNoticeTexts`, `ScheduleNoticeFormats`,
+  `ScheduleNoticeKind`); `ScheduleNoticesGoldenTest` gives `notices/schedule.txt` byte for byte.
+  Not kept: the listeners of the deprecated `SeriesScheduled` / `SeriesStopped` (replay of
+  publications from before 0.29.0) — the registry addresses a publication to a listener by its
+  method name, so a listener that left `notifications` cannot take them; for the same reason a
+  publication still incomplete for `ScheduleNotifications` at the moment of the upgrade stays
+  undelivered (ADR-0061, «Последствия»).*
 - [ ] 380.3 **B** `homework`, `billing`, `meetings`, `identity` write theirs; `notifications`
   `allowedDependencies` shrink to `shared` and `identity :: api`; `AGENTS.md` §4.2 table,
   `docs/modules/notifications.md` and the modules' docs updated.

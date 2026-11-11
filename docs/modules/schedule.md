@@ -77,9 +77,20 @@ Events: `LessonScheduled`, `LessonRepeatScheduled`, `LessonRepeatStopped`, `Less
 `LessonCompleted`, `LessonCompletionRevoked`, `LessonSummaryShared`, `GoogleCalendarDisconnected`; enums `CancelledBy`, `ChangeKind`.
 Lesson events carry `groupId` and participants; `LessonScheduled`, `LessonStartingSoon` and
 `LessonCompleted` carry `title` (`null` = default), the first two also `topic`.
-Consumers: `billing` (completion), `notifications` (all).
-Repeat events aggregate notifications; generation itself does not notify per occurrence. Deprecated
-`SeriesScheduled`/`SeriesStopped` records and listeners only drain durable publications from older versions.
+Consumers: `billing` (completion); the schedule itself (`notices/`, below).
+Repeat events aggregate notifications; generation itself does not notify per occurrence. The
+deprecated `SeriesScheduled`/`SeriesStopped` records stay only so that the event registry can read
+publications written before 0.29.0; nothing listens to them since ADR-0061.
+
+**Notices (`notices/`, ADR-0061, 380.2):** the schedule writes its own notifications.
+`ScheduleNotices` listens to the module's events synchronously (`@EventListener`, in the
+transaction that published them) and publishes `shared.notice.NoticeRequested` for each recipient:
+the texts in every language (`ScheduleNoticeTexts`, formats `ScheduleNoticeFormats`), a kind of
+`ScheduleNoticeKind`, the link (`/cabinet/schedule`, `/teacher/schedule`, a shared summary —
+`/cabinet/schedule?lesson=<id>`, a lost calendar — `/teacher/settings?open=calendar`), the bot
+subject of an unanswered request (`LessonChangeRequested.CHAT_SUBJECT`) and the room of a reminder.
+`notifications` picks the recipient's language and delivers. The texts are compared with what
+`notifications` wrote before (`notices/schedule.txt`, `ScheduleNoticesGoldenTest`).
 
 ## Data
 

@@ -1,4 +1,4 @@
-package ru.teacherbox.notifications.application;
+package ru.teacherbox.schedule.notices;
 
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.shared.i18n.Language;
@@ -6,9 +6,9 @@ import ru.teacherbox.shared.i18n.Plural;
 
 /**
  * Texts of the schedule notifications in each language (ADR-0036); dates and durations come formatted
- * ({@link NotificationTexts}).
+ * ({@link ScheduleNoticeFormats}).
  */
-enum ScheduleMessages {
+enum ScheduleNoticeTexts {
 
     RU {
         @Override String group(String name) { return "Группа «" + name + "»."; }
@@ -113,7 +113,7 @@ enum ScheduleMessages {
         @Override String calendarDisconnectedBody() { return "The portal no longer has access to your Google Calendar, so lessons aren't syncing. Reconnect it in Settings."; }
     };
 
-    static ScheduleMessages of(Language language) {
+    static ScheduleNoticeTexts of(Language language) {
         return switch (language) {
             case RU -> RU;
             case EN -> EN;
