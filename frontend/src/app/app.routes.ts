@@ -11,6 +11,7 @@ import { guestGuard, redirectToHome, roleGuard } from '@core/auth/auth.guards';
 import { setupGuard } from '@core/portal/setup.guard';
 import { canLeaveGuard } from '@core/routing/can-leave.guard';
 import { CORE_T } from '@core/i18n/texts';
+import { CALENDAR_STYLESHEET, withStyleBundle } from '@core/theme/style-bundles';
 import { defer, switchMap } from 'rxjs';
 import { DEV_ROUTES } from '@features/gallery';
 
@@ -195,6 +196,7 @@ export const routes: Routes = [
       {
         path: 'schedule',
         title: NAV.schedule,
+        canActivate: [withStyleBundle(CALENDAR_STYLESHEET)],
         loadComponent: () => import('@features/schedule').then((m) => m.SchedulePage),
       },
       {
@@ -292,6 +294,7 @@ export const routes: Routes = [
       {
         path: 'schedule',
         title: NAV.schedule,
+        canActivate: [withStyleBundle(CALENDAR_STYLESHEET)],
         loadComponent: () => import('@features/schedule').then((m) => m.MySchedulePage),
       },
       {

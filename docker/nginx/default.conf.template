@@ -105,8 +105,9 @@ server {
         return 200 "ok\n";
     }
 
-    # Style bundles loaded on demand by name (angular.json `inject: false`, ADR-0028) are not hashed.
-    location = /excalidraw.css {
+    # Style bundles loaded on demand by name (angular.json `inject: false`, ADR-0028; the calendar's — stage 375)
+    # are not hashed.
+    location ~ ^/(?:excalidraw|calendar)\.css$ {
         include /etc/nginx/snippets/security-headers.conf;
         add_header Cache-Control "no-cache" always;
         try_files $uri =404;

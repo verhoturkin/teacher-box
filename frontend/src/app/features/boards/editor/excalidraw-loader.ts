@@ -11,6 +11,7 @@ import type {
   LibraryItems,
 } from '@excalidraw/excalidraw/types';
 import type { ComponentType, ReactElement, ReactNode } from 'react';
+import { StyleBundles } from '@core/theme/style-bundles';
 import { selfHostFonts } from './self-hosted-fonts';
 
 /** A React root as the island uses it (`react-dom/client`). */
@@ -95,7 +96,10 @@ export const EXCALIDRAW_IMPORTS = new InjectionToken<() => Promise<ExcalidrawMod
   },
 );
 
-/** Excalidraw's stylesheet: a non-injected style bundle (angular.json `inject: false`). */
+/**
+ * Excalidraw's stylesheet after the portal's roles for it (`excalidraw-theme.scss`): a non-injected style
+ * bundle (angular.json `inject: false`), awaited so the editor never shows unstyled.
+ */
 export const EXCALIDRAW_STYLESHEET = 'excalidraw.css';
 
 /** Self-hosted Excalidraw fonts (angular.json assets → `excalidraw-assets/fonts/`): no CDN, CSP stays `'self'`. */
@@ -112,8 +116,8 @@ declare global {
 export class ExcalidrawLoader {
   private readonly document = inject(DOCUMENT);
   private readonly importModules = inject(EXCALIDRAW_IMPORTS);
+  private readonly styleBundles = inject(StyleBundles);
   private pending: Promise<ExcalidrawModules> | undefined;
-  private styles: Promise<void> | undefined;
 
   load(): Promise<ExcalidrawModules> {
     this.pending ??= this.loadOnce().catch((error: unknown) => {
@@ -129,29 +133,10 @@ export class ExcalidrawLoader {
       window.EXCALIDRAW_ASSET_PATH = new URL(EXCALIDRAW_ASSET_DIR, this.document.baseURI).href;
       selfHostFonts(window);
     }
-    this.styles ??= this.stylesheet().catch((error: unknown) => {
-      this.styles = undefined;
-      throw error;
-    });
-    const [modules] = await Promise.all([this.importModules(), this.styles]);
+    const [modules] = await Promise.all([
+      this.importModules(),
+      this.styleBundles.load(EXCALIDRAW_STYLESHEET),
+    ]);
     return modules;
-  }
-
-  /** Adds Excalidraw's stylesheet and waits for it, so the editor never shows unstyled. */
-  private stylesheet(): Promise<void> {
-    const link = this.document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = EXCALIDRAW_STYLESHEET;
-    const loaded = new Promise<void>((resolve, reject) => {
-      link.addEventListener('load', () => {
-        resolve();
-      });
-      link.addEventListener('error', () => {
-        link.remove();
-        reject(new Error(`${EXCALIDRAW_STYLESHEET} did not load`));
-      });
-    });
-    this.document.head.append(link);
-    return loaded;
   }
 }

@@ -1,3 +1,10 @@
+/*
+ * The calendar's part of the `calendar` style bundle (angular.json, `inject: false`): it follows
+ * FullCalendar's skeleton and classic theme there, so a rule here wins a tie with theirs. Global class
+ * names; the bundle is loaded by the routes of the schedule (`withStyleBundle`, core/theme/style-bundles.ts).
+ */
+@use '../../../../styles/mixins' as *;
+
 /* Calendar (FullCalendar, classic theme) in the M3 roles of the theme (ADR-0017) */
 :root {
   --fc-classic-button: var(--p-md-secondary-container);
@@ -489,109 +496,56 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
   font: var(--tb-type-label-m);
 }
 
-@mixin row-cards {
-  .p-datatable-table-container {
-    overflow: visible;
-  }
+/* The week on a phone: the title fits in one line */
+.tb-calendar-title {
+  font: var(--tb-type-title-m);
+}
 
-  .p-datatable-table,
-  .p-datatable-tbody,
-  .p-datatable-tbody > tr,
-  .p-datatable-tbody > tr > td {
-    display: block;
-    width: 100%;
-  }
+/* «Занятий нет» of the calendar: a compact empty state, not a grey frame (ADR-0018) */
+.tb-calendar-empty {
+  border: 0;
+  background: none;
+}
 
-  .p-datatable-thead {
-    display: none;
-  }
+.tb-calendar-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-3);
+  padding: var(--tb-space-2) 0;
+  color: var(--p-md-on-surface-variant);
+  font: var(--tb-type-body-l);
 
-  .p-datatable-tbody > tr {
-    margin-bottom: 2px;
-    padding: var(--tb-space-3) var(--tb-space-4);
-    border-radius: var(--tb-list-inner);
-    background: var(--tb-list-item);
-  }
-
-  .p-datatable-tbody > tr:first-child {
-    border-start-start-radius: var(--tb-list-outer);
-    border-start-end-radius: var(--tb-list-outer);
-  }
-
-  .p-datatable-tbody > tr:last-child {
-    margin-bottom: 0;
-    border-end-start-radius: var(--tb-list-outer);
-    border-end-end-radius: var(--tb-list-outer);
-  }
-
-  /* the row is the tile: its cells have neither corners (as specific as the rules of the columns) */
-  .p-datatable-tbody > tr:nth-child(n) > td:nth-child(n) {
-    border-radius: 0;
-  }
-
-  /* nor a background of their own */
-  .p-datatable-tbody > tr > td,
-  .p-datatable-tbody > tr:not(.p-datatable-row-selected):hover > td,
-  .p-datatable-tbody > tr.p-datatable-row-selected > td {
-    background: none;
-  }
-
-  .p-datatable-tbody > tr.p-datatable-row-selected {
+  &::before {
+    @include icon-font;
+    @include glyph('tb-i-calendar_month');
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--tb-shape-full);
     background: var(--p-md-secondary-container);
+    color: var(--p-md-on-secondary-container);
+    font-size: 1.25rem;
+  }
+}
+
+/* On a phone the titles of the lessons are cut with an ellipsis, not in the middle of a word */
+@media (width < 37.5em) {
+  .fc .fc-event-title,
+  .fc .fc-list-event-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .p-datatable-tbody > tr > td {
-    display: flow-root;
-    padding: var(--tb-space-1) 0;
-    border: 0;
-    text-align: right;
-    overflow-wrap: break-word;
-  }
-
-  .p-datatable-tbody > tr > td[data-label]::before {
-    content: attr(data-label);
-    float: left;
-    margin-right: var(--tb-space-3);
-    color: var(--p-md-on-surface-variant);
-    font: var(--tb-type-body-m);
-    line-height: inherit;
-    text-align: left;
-  }
-
-  /* long text: the label above, the text from the left */
-  .p-datatable-tbody > tr > td.tb-cell-wide {
-    text-align: left;
-
-    &::before {
-      display: block;
-      float: none;
-    }
-  }
-
-  .p-datatable-tbody > tr > td:first-child {
-    padding-bottom: var(--tb-space-2);
-    font: var(--tb-type-body-l);
-    text-align: left;
-
-    &::before {
-      display: none;
-    }
-  }
-
-  .p-datatable-tbody > tr > td:not([data-label]):not(:first-child) {
+  /* the dots of the month on a phone have a key under the calendar */
+  tb-schedule-calendar::after {
+    content: '● — занятие';
+    display: block;
     margin-top: var(--tb-space-2);
-    padding-top: var(--tb-space-2);
-    border-top: 1px solid var(--p-md-outline-variant);
-  }
-
-  /* the empty message is not a card */
-  .p-datatable-tbody > tr:has(> td[colspan]) {
-    border: 0;
-    background: none;
-
-    > td {
-      padding: 0;
-      font-weight: normal;
-    }
+    color: var(--p-md-on-surface-variant);
+    font: var(--tb-type-body-s);
   }
 }

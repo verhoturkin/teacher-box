@@ -7,6 +7,7 @@ import {
   inject,
   input,
   viewChild,
+  ViewEncapsulation,
 } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
@@ -28,6 +29,9 @@ import { SHARED_T } from '@shared/i18n/texts';
   selector: 'tb-call-window',
   imports: [Button, Message, ProgressSpinner, CallControls, CallSelf, CallTile],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // Global class names, loaded with the call (design-system «Where it lives»)
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './call-window.scss',
   host: {
     class: 'tb-call-window',
     role: 'dialog',

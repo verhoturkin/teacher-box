@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
@@ -19,6 +27,9 @@ import { T } from '../i18n/texts';
   selector: 'tb-call-controls',
   imports: [Button, Menu, ButtonAttributes, CallStatsDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // Global class names, loaded with the call (design-system «Where it lives»)
+  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./call-button.scss', './call-controls.scss'],
   host: { class: 'tb-call-controls', role: 'toolbar', '[attr.aria-label]': 't.toolbar' },
   template: `
     <p-button

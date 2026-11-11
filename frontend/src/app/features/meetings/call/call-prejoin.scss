@@ -1,0 +1,20 @@
+.tb-call-prejoin__preview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--tb-shape-lg);
+  background: var(--p-md-surface-container-highest);
+
+  .tb-call-tile__avatar {
+    width: 5rem;
+  }
+}
+
+.tb-call-prejoin__toggles {
+  display: flex;
+  justify-content: center;
+  gap: var(--tb-space-3);
+}

@@ -38,9 +38,27 @@
               }
             ],
             "styles": [
-              "node_modules/@fullcalendar/angular/skeleton.css",
-              "node_modules/@fullcalendar/angular/themes/classic/theme.css",
               "src/styles.scss",
+              {
+                "input": "node_modules/@fullcalendar/angular/skeleton.css",
+                "bundleName": "calendar",
+                "inject": false
+              },
+              {
+                "input": "node_modules/@fullcalendar/angular/themes/classic/theme.css",
+                "bundleName": "calendar",
+                "inject": false
+              },
+              {
+                "input": "src/app/features/schedule/ui/schedule-calendar.scss",
+                "bundleName": "calendar",
+                "inject": false
+              },
+              {
+                "input": "src/app/features/boards/editor/excalidraw-theme.scss",
+                "bundleName": "excalidraw",
+                "inject": false
+              },
               {
                 "input": "node_modules/@excalidraw/excalidraw/dist/prod/index.css",
                 "bundleName": "excalidraw",

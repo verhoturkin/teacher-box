@@ -6,6 +6,7 @@ import {
   inject,
   output,
   signal,
+  ViewEncapsulation,
 } from '@angular/core';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { CallStats } from './call-engine';
@@ -26,6 +27,9 @@ export const STATS_INTERVAL = 2000;
   selector: 'tb-call-stats-dialog',
   imports: [TbDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // Global class names, loaded with the call (design-system «Where it lives»)
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './call-stats-dialog.scss',
   template: `
     <tb-dialog
       kind="alert"

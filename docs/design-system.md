@@ -14,7 +14,15 @@ we deviate; a deviation says so («*ours, against M3*»). Unmarked rules are pro
 **Where it lives:** preset `core/theme/teacher-box-preset.ts`, colour scheme
 `core/theme/color-scheme.ts`, tokens and shared classes `src/styles.scss` (an index of the parts in
 `src/styles/`: `_tokens`, `_fields`, `_lists`, `_dialogs`…), components `shared/ui/*`,
-breakpoints `core/layout/mobile.ts`. **Gallery** (ADR-0059): `npm start`, then `/gallery` — every
+breakpoints `core/layout/mobile.ts`. **Styles of one screen load with that screen** (stage 375), not
+with `styles.scss`: a class family of one feature lives in the `.scss` files of the components that
+own its markup (`ViewEncapsulation.None` when the names are global: hosts, PrimeNG `styleClass`,
+overlays in `body` — the call in `features/meetings/call/`); third-party CSS and rules for its DOM
+are a style bundle of `angular.json` with `inject: false`, loaded by name through
+`core/theme/style-bundles.ts` — `excalidraw` (the editor's loader) and `calendar` (the schedule
+routes, `withStyleBundle`); a new bundle gets its `no-cache` location in nginx. A sheet that depends
+on another one's order names both classes instead (`.tb-call-mini__tile.tb-call-tile`). A class
+used by two features stays global. **Gallery** (ADR-0059): `npm start`, then `/gallery` — every
 part below links its section; a sample is one file `features/gallery/<section>/<sample>.ts` built
 from these components and tokens, with the class, component or token named beside it. Take a
 sample from there; this page keeps the rules. No other UI kits (Angular Material, Material Web); no

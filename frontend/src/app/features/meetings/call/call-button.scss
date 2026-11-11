@@ -1,0 +1,70 @@
+/* The round toggle of the call toolbar and of the pre-join sheet. */
+/* doubled: PrimeNG's icon-only rounded button sets its size with the same specificity, later */
+.p-button.tb-call-button.tb-call-button {
+  --tb-call-button-selected-shape: var(--tb-shape-lg);
+  --tb-call-button-pressed-shape: var(--tb-shape-md);
+  --tb-call-button-size: 3.5rem;
+
+  width: var(--tb-call-button-size);
+  height: var(--tb-call-button-size);
+  /* half the height, not «full»: the spring morphs the radius from a value that is seen */
+  border-radius: calc(var(--tb-call-button-size) / 2);
+  transition:
+    border-radius var(--tb-spring-fast-spatial),
+    background-color var(--tb-spring-fast-effects),
+    border-color var(--tb-spring-fast-effects),
+    color var(--tb-spring-fast-effects);
+
+  &.tb-call-button--off,
+  &.tb-call-button--active {
+    border-radius: var(--tb-call-button-selected-shape);
+  }
+
+  &:not(:disabled):active {
+    border-radius: var(--tb-call-button-pressed-shape);
+  }
+
+  &.tb-call-button--off {
+    border-color: transparent;
+    background: var(--p-md-error-container);
+    color: var(--p-md-on-error-container);
+
+    &:not(:disabled):hover {
+      background: color-mix(
+        in srgb,
+        var(--p-md-on-error-container) var(--tb-state-hover),
+        var(--p-md-error-container)
+      );
+    }
+  }
+
+  &.tb-call-button--leave {
+    width: 4.5rem;
+
+    .p-button-icon {
+      transform: rotate(135deg);
+    }
+  }
+}
+
+@media (width < 37.5em) {
+  .p-button.tb-call-button.tb-call-button {
+    --tb-call-button-selected-shape: var(--tb-shape-md);
+    --tb-call-button-pressed-shape: var(--tb-shape-sm);
+    --tb-call-button-size: 3rem;
+
+    &.tb-call-button--leave {
+      width: 4rem;
+    }
+  }
+}
+
+.tb-call-mini .p-button.tb-call-button.tb-call-button {
+  --tb-call-button-selected-shape: var(--tb-shape-md);
+  --tb-call-button-pressed-shape: var(--tb-shape-sm);
+  --tb-call-button-size: 2.75rem;
+
+  &.tb-call-button--leave {
+    width: 3.5rem;
+  }
+}

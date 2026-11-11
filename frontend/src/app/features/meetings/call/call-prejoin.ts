@@ -9,6 +9,7 @@ import {
   input,
   signal,
   viewChild,
+  ViewEncapsulation,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
@@ -36,6 +37,9 @@ interface DeviceOption {
   selector: 'tb-call-prejoin',
   imports: [FormsModule, Button, TbDialog, Message, Select, ButtonAttributes, InitialsPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // Global class names, loaded with the call (design-system «Where it lives»)
+  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./call-button.scss', './call-tile.scss', './call-prejoin.scss'],
   template: `
     <tb-dialog
       kind="form"

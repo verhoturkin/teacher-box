@@ -230,7 +230,7 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
 
 ### Stage 375 — styles of one screen load with that screen (F)
 
-- [ ] 375.1 **F** Move the rules used by one feature out of the global styles into the styles of
+- [x] 375.1 **F** Move the rules used by one feature out of the global styles into the styles of
   its components: `styles/_calls.scss` → `features/meetings/call/`, `styles/_calendar.scss` →
   `features/schedule/ui/schedule-calendar.ts`, `styles/_excalidraw.scss` →
   `features/boards/editor/`, `styles/_home.scss` → `features/home/`. A rule used by two features
@@ -238,6 +238,14 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
   that does not fit stays global and the plan notes it. FullCalendar's `skeleton.css` and
   `themes/classic/theme.css` leave `angular.json` `styles` if the calendar component can carry
   them. Target: initial CSS at least 40 kB raw smaller; `e2e/tests/layout/` stays green.
+  *Initial CSS 239.1 → 198.7 kB raw, 29.6 → 22.3 kB gzip. The call: eight sheets of its components
+  (`ViewEncapsulation.None`). The calendar with FullCalendar's CSS and the calendar rules of
+  `_tables` and `_overrides`: the `calendar` style bundle (27 kB, over the component budget), loaded
+  by the schedule routes. Excalidraw's roles: first in the `excalidraw` bundle. `_home.scss` stays
+  global: despite its name its classes are shared (`tb-amount`, `tb-link`, `tb-markdown`,
+  `tb-widget-footer`, `tb-board-chips`…) or spread over a dozen homework components
+  (`tb-assign`, `tb-subtitle`, `tb-submission`…, about 1 kB); only its unused `tb-stats` rules are
+  removed.*
 
 ### Stage 376 — the colour scheme is computed once (F)
 
