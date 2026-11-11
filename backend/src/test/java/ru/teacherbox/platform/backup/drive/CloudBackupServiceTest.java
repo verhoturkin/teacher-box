@@ -27,13 +27,14 @@ import org.junit.jupiter.api.io.TempDir;
 import ru.teacherbox.platform.backup.BackupCreated;
 import ru.teacherbox.platform.backup.BackupKind;
 import ru.teacherbox.platform.backup.BackupProperties;
-import ru.teacherbox.platform.backup.BackupService;
 import ru.teacherbox.platform.backup.BackupService.BackupInfo;
+import ru.teacherbox.platform.backup.BackupService;
 import ru.teacherbox.platform.backup.drive.CloudBackupService.AuthorizationResult;
 import ru.teacherbox.platform.backup.drive.CloudBackupService.CloudBackup;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.http.GoogleOAuth;
 import ru.teacherbox.shared.portal.Portal;
 import ru.teacherbox.testing.MutableClock;
 import tools.jackson.databind.json.JsonMapper;
@@ -63,7 +64,7 @@ class CloudBackupServiceTest {
         when(portal.link(anyString())).thenReturn(Optional.empty());
         when(api.authorizationUrl(anyString(), anyString(), anyString()))
                 .thenAnswer(call -> "https://consent?state=" + call.getArgument(2));
-        when(api.refresh(any(), anyString())).thenReturn(new DriveApi.Tokens("access", 3600, null));
+        when(api.refresh(any(), anyString())).thenReturn(new GoogleOAuth.Tokens("access", 3600, null));
     }
 
     @Test
@@ -75,9 +76,9 @@ class CloudBackupServiceTest {
 
         drive.saveClient(" id ", " secret ");
         String state = state(drive.authorize("https://school.example.com:8443/teacher/settings"));
-        when(api.exchangeCode(new DriveApi.Client("id", "secret"), "code",
+        when(api.exchangeCode(new GoogleOAuth.Client("id", "secret"), "code",
                 "https://school.example.com:8443" + CloudBackupService.CALLBACK_PATH))
-                .thenReturn(new DriveApi.Tokens("access", 3600, "refresh"));
+                .thenReturn(new GoogleOAuth.Tokens("access", 3600, "refresh"));
         when(api.createFolder("access", "Школа")).thenReturn("folder-1");
         when(api.account("access")).thenReturn("teacher@example.com");
 
@@ -97,7 +98,7 @@ class CloudBackupServiceTest {
         when(portal.link(CloudBackupService.CALLBACK_PATH)).thenReturn(Optional.of("https://portal/cb"));
         String state = state(drive.authorize("ignored"));
         when(api.exchangeCode(any(), eq("code"), eq("https://portal/cb")))
-                .thenReturn(new DriveApi.Tokens("access", 3600, "refresh"));
+                .thenReturn(new GoogleOAuth.Tokens("access", 3600, "refresh"));
         when(api.folderExists("access", "folder-1")).thenReturn(true);
         when(api.account("access")).thenReturn("");
 
@@ -118,7 +119,7 @@ class CloudBackupServiceTest {
         clock.advance(Duration.ofMinutes(11));
         assertThat(drive.complete(old, "code", null)).isEqualTo(AuthorizationResult.EXPIRED);
 
-        when(api.exchangeCode(any(), anyString(), anyString())).thenReturn(new DriveApi.Tokens("access", 3600, null));
+        when(api.exchangeCode(any(), anyString(), anyString())).thenReturn(new GoogleOAuth.Tokens("access", 3600, null));
         assertThat(drive.complete(state(drive.authorize("https://school")), "code", null))
                 .isEqualTo(AuthorizationResult.FAILED);
         assertThat(drive.status().lastError()).contains("refresh token");

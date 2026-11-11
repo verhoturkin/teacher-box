@@ -21,13 +21,14 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
+import ru.teacherbox.shared.http.GoogleOAuth;
 
 /** Google OAuth and Calendar API calls against a mock server. */
 class GoogleApiTest {
 
     private static final String OAUTH = "https://oauth2.googleapis.com";
     private static final String CALENDAR = "https://www.googleapis.com/calendar/v3";
-    private static final GoogleApi.Client CLIENT = new GoogleApi.Client("client-id", "client-secret");
+    private static final GoogleOAuth.Client CLIENT = new GoogleOAuth.Client("client-id", "client-secret");
 
     private final RestClient.Builder oauthBuilder = RestClient.builder().baseUrl(OAUTH);
     private final RestClient.Builder calendarBuilder = RestClient.builder().baseUrl(CALENDAR);
@@ -72,8 +73,8 @@ class GoogleApiTest {
                 .andRespond(withSuccess("{\"access_token\": \"access-2\"}", MediaType.APPLICATION_JSON));
 
         assertThat(api.exchangeCode(CLIENT, "code-1", "https://school/cb"))
-                .isEqualTo(new GoogleApi.Tokens("access-1", 3599, "refresh-1"));
-        assertThat(api.refresh(CLIENT, "refresh-1")).isEqualTo(new GoogleApi.Tokens("access-2", 3600, null));
+                .isEqualTo(new GoogleOAuth.Tokens("access-1", 3599, "refresh-1"));
+        assertThat(api.refresh(CLIENT, "refresh-1")).isEqualTo(new GoogleOAuth.Tokens("access-2", 3600, null));
         oauth.verify();
     }
 

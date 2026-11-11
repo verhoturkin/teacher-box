@@ -303,11 +303,15 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
 
 ### Stage 379 — one Google OAuth client (B)
 
-- [ ] 379.1 **B** Compare `platform/backup/drive/DriveApi.java` and
+- [x] 379.1 **B** Compare `platform/backup/drive/DriveApi.java` and
   `schedule/google/GoogleApi.java`: the code exchange, token refresh and error mapping. If at
   least 100 lines repeat, move them to `shared/http` (no business names, no module schema) and
   keep the Drive and Calendar calls where they are; otherwise tick this substep with a note in
   italics and change nothing.
+  *Done: about 115 lines repeated (the code exchange, refresh, revoke, token parsing, `call`,
+  `failure`, `describe`, `errorCode`, `bearer` and the consent address), so they moved to
+  `shared.http.GoogleOAuth`; the two exception families stay in their modules (passed in as
+  factories).*
 
 ### Stage 380 — modules write their own notifications (B, ADR-0061)
 

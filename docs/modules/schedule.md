@@ -61,6 +61,8 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
 - **Google Calendar:** OAuth web flow with the teacher's own client (env vars win over UI), scope
   `calendar.app.created` (+ optional `calendar.freebusy`), own «Teacher Box» calendar, one-way sync every minute
   (`GoogleSyncJob`), network calls outside transactions; `invalid_grant` → `GoogleCalendarDisconnected`.
+  The code exchange, token refresh, revoke and Google error mapping are `shared.http.GoogleOAuth` (shared
+  with `platform` backups); `GoogleApi` keeps the Calendar calls and its own exceptions.
   Redirect via `Portal.link`. Proxy `TEACHERBOX_SCHEDULE_GOOGLE_PROXY` (administrator setting, live:
   read per request).
   The OAuth client id and secret are the teacher's (Settings → Lessons), imported once from the old

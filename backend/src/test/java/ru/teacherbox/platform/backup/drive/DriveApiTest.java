@@ -29,6 +29,7 @@ import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
+import ru.teacherbox.shared.http.GoogleOAuth;
 
 /** Google OAuth and Drive API calls against a mock server. */
 class DriveApiTest {
@@ -36,7 +37,7 @@ class DriveApiTest {
     private static final String OAUTH = "https://oauth2.googleapis.com";
     private static final String API = "https://www.googleapis.com/drive/v3";
     private static final String UPLOAD = "https://www.googleapis.com/upload/drive/v3";
-    private static final DriveApi.Client CLIENT = new DriveApi.Client("client-id", "client-secret");
+    private static final GoogleOAuth.Client CLIENT = new GoogleOAuth.Client("client-id", "client-secret");
 
     private final RestClient.Builder oauthBuilder = RestClient.builder().baseUrl(OAUTH);
     private final RestClient.Builder apiBuilder = RestClient.builder().baseUrl(API);
@@ -78,8 +79,8 @@ class DriveApiTest {
                 .andRespond(withSuccess("{\"access_token\": \"access-2\"}", MediaType.APPLICATION_JSON));
 
         assertThat(drive.exchangeCode(CLIENT, "code-1", "https://school/cb"))
-                .isEqualTo(new DriveApi.Tokens("access-1", 3599, "refresh-1"));
-        assertThat(drive.refresh(CLIENT, "refresh-1")).isEqualTo(new DriveApi.Tokens("access-2", 3600, null));
+                .isEqualTo(new GoogleOAuth.Tokens("access-1", 3599, "refresh-1"));
+        assertThat(drive.refresh(CLIENT, "refresh-1")).isEqualTo(new GoogleOAuth.Tokens("access-2", 3600, null));
         oauth.verify();
     }
 
