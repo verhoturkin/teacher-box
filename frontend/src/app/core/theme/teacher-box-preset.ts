@@ -1,5 +1,5 @@
 import { definePreset } from '@primeuix/themes';
-import Aura from '@primeuix/themes/aura';
+import { AuraBase } from './aura-base';
 import { ColorScheme, Shades, auraPalette, colorScheme } from './color-scheme';
 import { LABEL_TOKENS } from './label-colors';
 
@@ -391,7 +391,7 @@ const NUMBER_BUTTON_SCHEME = {
   },
 };
 
-export const TeacherBoxPreset = definePreset(Aura, {
+export const TeacherBoxPreset = definePreset(AuraBase, {
   primitive: {
     borderRadius: {
       none: '0',
