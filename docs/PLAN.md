@@ -263,7 +263,7 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
 
 ### Stage 377 — shared plumbing of repositories (B)
 
-- [ ] 377.1 **B** `shared/persistence`: `OptimisticLock.requireUpdated(int, String, Object)` for
+- [x] 377.1 **B** `shared/persistence`: `OptimisticLock.requireUpdated(int, String, Object)` for
   the `if (updated != 1) throw new OptimisticLockingFailureException(…)` blocks; typed column
   readers for the repeated `rs.getObject("…", UUID.class)` / nullable `Instant` / nullable
   `long`. Apply to `billing/persistence` first (pilot, numbers in the pull request), then to the
@@ -271,6 +271,16 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
   `JdbcClient.query(Class)` where the columns match the record. No Spring Data JDBC (schema per
   module, `restore` factories). Target: at least 600 lines fewer under `*/persistence/`, gates
   unchanged.
+  *Done in part: 5919 → 5709 lines under `*/persistence/` (−210: −232 in the modules, +22 for the
+  helper), far below the target, which this code cannot give honestly: a survey showed 21
+  optimistic-lock blocks (2 lines each), 4 `wasNull` reads and one line per column in mappers and
+  `.param(...)` chains, which no helper shortens. Added `OptimisticLock.requireUpdated` (17 uses in
+  8 modules) and `.query(Record.class)` for 23 flat records (the only shape with a real gain:
+  −16 % in `meetings`, −8 % in `boards`, −6 % in `ai` and `notifications`). The pilot gave
+  `billing` −7 lines (its mappers convert `Money`). Not done: typed column readers (a call of the
+  same length, no line saved; nullable numbers are read with `rs.getObject(…, Integer.class)`) and
+  binding parameters from objects (enums and `Money` need a conversion, the binding would be
+  implicit).*
 
 ### Stage 378 — LiveKit without the server SDK (B, ADR-0060)
 

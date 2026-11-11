@@ -59,6 +59,13 @@ types (`JwtEncoder`, `PasswordEncoder`, `Clock`, `FileStorage`, `CurrentUser`).
 - DB — `JdbcClient` with explicit SQL; table names schema-prefixed (`billing.payments`), unquoted; mutable
   tables have `version` (optimistic locking `UPDATE ... WHERE id = ? AND version = ?`). No SQL, FKs or JOINs to
   other schemas; only UUIDs cross module boundaries.
+- Repositories: the check after a versioned `UPDATE`/`DELETE` is
+  `shared.persistence.OptimisticLock.requireUpdated(affected, "Lesson", id)`. A flat record whose
+  components are the selected columns in camelCase (enums by name, nullable `Integer`/`Long`
+  included) is read with `.query(Record.class)`; a hand-written mapper stays where a value is
+  converted (`Money`, JSON, a `restore` factory, a renamed column). A nullable number is read with
+  `rs.getObject("col", Integer.class)`, not `rs.wasNull()`. No shared column readers and no Spring
+  Data JDBC (stage 377: they save no lines).
 - Migrations — bean `ModuleMigrations.initializer(migrationConnection, "<module>")` in the module config (a
   `MigrationConnection` outside the pool — H2 check constraints keep the session that altered the table), scripts in
   `src/main/resources/db/migration/<module>/V<n>__<description>.sql`, own history table.
