@@ -1,0 +1,82 @@
+## room of a student [RU]
+to: Vera Smith
+kind: MEETING_LINK
+title: Ссылка на урок
+body: По этой ссылке проходят наши уроки: https://zoom.us/j/1
+link: /cabinet/schedule
+room: https://zoom.us/j/1
+room body: Здесь проходят наши уроки.
+--
+
+## room of a group [RU]
+to: Анна Иванова
+kind: MEETING_LINK
+title: Ссылка на урок
+body: По этой ссылке проходят уроки группы «ОГЭ»: https://telemost.yandex.ru/j/5
+link: /cabinet/schedule
+room: https://telemost.yandex.ru/j/5
+room body: Здесь проходят уроки группы «ОГЭ».
+--
+to: Борис
+kind: MEETING_LINK
+title: Ссылка на урок
+body: По этой ссылке проходят уроки группы «ОГЭ»: https://telemost.yandex.ru/j/5
+link: /cabinet/schedule
+room: https://telemost.yandex.ru/j/5
+room body: Здесь проходят уроки группы «ОГЭ».
+--
+
+## room of a lost group [RU]
+to: Анна Иванова
+kind: MEETING_LINK
+title: Ссылка на урок
+body: По этой ссылке проходят наши уроки: https://telemost.yandex.ru/j/5
+link: /cabinet/schedule
+room: https://telemost.yandex.ru/j/5
+room body: Здесь проходят наши уроки.
+--
+
+## room for nobody [RU]
+(nothing)
+
+## room of a student [EN]
+to: Vera Smith
+kind: MEETING_LINK
+title: Lesson link
+body: Join our lessons here: https://zoom.us/j/1
+link: /cabinet/schedule
+room: https://zoom.us/j/1
+room body: Join our lessons in this room.
+--
+
+## room of a group [EN]
+to: Анна Иванова
+kind: MEETING_LINK
+title: Lesson link
+body: Join lessons for “ОГЭ” here: https://telemost.yandex.ru/j/5
+link: /cabinet/schedule
+room: https://telemost.yandex.ru/j/5
+room body: Join lessons for “ОГЭ” in this room.
+--
+to: Борис
+kind: MEETING_LINK
+title: Lesson link
+body: Join lessons for “ОГЭ” here: https://telemost.yandex.ru/j/5
+link: /cabinet/schedule
+room: https://telemost.yandex.ru/j/5
+room body: Join lessons for “ОГЭ” in this room.
+--
+
+## room of a lost group [EN]
+to: Анна Иванова
+kind: MEETING_LINK
+title: Lesson link
+body: Join our lessons here: https://telemost.yandex.ru/j/5
+link: /cabinet/schedule
+room: https://telemost.yandex.ru/j/5
+room body: Join our lessons in this room.
+--
+
+## room for nobody [EN]
+(nothing)
+

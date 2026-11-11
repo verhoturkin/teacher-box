@@ -62,7 +62,12 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
   (`findGroup(s)`, `groupsOf`). DTOs `StudentSummary`, `GroupSummary`, enum `StudentStatus`.
 - Events: `StudentRegistered`, `StudentActivated`, `StudentDeactivated`, `StudentReactivated`, `GroupCreated`,
   `GroupChanged` (name/members, who joined/left), `GroupArchived`.
-- Consumers: `billing` (accounts, group prices), `schedule` (group changes), `notifications`.
+- Consumers: `billing` (accounts, group prices), `schedule` (group changes), `meetings`.
+- **Notices (`notices/`, ADR-0061, 380.3):** `IdentityNotices` listens to `StudentActivated`
+  synchronously (`@EventListener`, in the transaction that published it) and publishes
+  `shared.notice.NoticeRequested` for the teacher: kind `STUDENT_ACTIVATED`, «Ученик присоединился
+  к порталу» in every language (`IdentityNoticeTexts`), link `/teacher/students`. `notifications`
+  uses only the facades (`UserDirectory`, `StudentGroups`).
 
 ## Data
 

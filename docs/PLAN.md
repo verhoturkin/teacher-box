@@ -315,16 +315,34 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
 
 ### Stage 380 — modules write their own notifications (B, ADR-0061)
 
-- [ ] 380.1 **B** ADR-0061 and the contract. `notifications` depends on the `api` of five
+- [x] 380.1 **B** ADR-0061 and the contract. `notifications` depends on the `api` of five
   modules and holds their texts (`ScheduleNotifications`, `HomeworkNotifications`,
   `BillingNotifications`, `MeetingNotifications`, `NotificationTexts`). Chat actions already
   live with their owner (`schedule/chat`, `billing/chat`). Contract in `shared`: an event with
   the recipient, the kind (for the user's preferences), the texts in every language and the
   link; `notifications` listens to it and keeps delivery, preferences and the inbox.
-- [ ] 380.2 **B** `schedule` writes its notifications; `ScheduleNotifications` is removed.
-- [ ] 380.3 **B** `homework`, `billing`, `meetings`, `identity` write theirs; `notifications`
+  *Done: `shared.notice` (`NoticeRequested`, `NoticeText`, `NoticeKind`), `NoticeListener` and
+  `NotificationService.notify(NoticeRequested)` — the notice id is the inbox id, so a redelivery
+  notifies once. The golden files `src/test/resources/notices/<module>.txt` hold what today's
+  listeners write for `testing.notices.NoticeSamples` in both languages (`NoticeBaselineTest`);
+  380.2 and 380.3 compare the modules with them.*
+- [x] 380.2 **B** `schedule` writes its notifications; `ScheduleNotifications` is removed.
+  *Done: `schedule/notices` (`ScheduleNotices`, `ScheduleNoticeTexts`, `ScheduleNoticeFormats`,
+  `ScheduleNoticeKind`); `ScheduleNoticesGoldenTest` gives `notices/schedule.txt` byte for byte.
+  Not kept: the listeners of the deprecated `SeriesScheduled` / `SeriesStopped` (replay of
+  publications from before 0.29.0) — the registry addresses a publication to a listener by its
+  method name, so a listener that left `notifications` cannot take them; for the same reason a
+  publication still incomplete for `ScheduleNotifications` at the moment of the upgrade stays
+  undelivered (ADR-0061, «Последствия»).*
+- [x] 380.3 **B** `homework`, `billing`, `meetings`, `identity` write theirs; `notifications`
   `allowedDependencies` shrink to `shared` and `identity :: api`; `AGENTS.md` §4.2 table,
   `docs/modules/notifications.md` and the modules' docs updated.
+  *Done: `<module>/notices` in the four modules, each compared with its golden file;
+  `NotificationTexts`, the four listeners and the module texts of `NotificationMessages` are gone
+  from `notifications` (main code 7 378 → 6 445 lines; it imports `identity.api` facades only).
+  `NoticeKindsTests`: every `NotificationKind` but `MESSAGE` is declared by exactly one module.
+  `NoticesAcrossModulesIntegrationTest` follows events of four modules to the inbox in the whole
+  application.*
 
 ### Stage 381 — E2E jobs use the runner's Chrome (D)
 

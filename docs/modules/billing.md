@@ -34,9 +34,16 @@ schedule), [0011](../adr/0011-groups-and-group-lessons.md) (group prices), [0014
 
 ## Contract (`billing::api`)
 
-Events only: `LessonRecorded`, `LessonCancelled`, `PaymentRecorded`, `PaymentVoided` → consumed by
-`notifications`. Listens to: `StudentRegistered` (account), `GroupCreated` (group price), `LessonCompleted`,
+Events only: `LessonRecorded`, `LessonCancelled`, `PaymentRecorded`, `PaymentVoided`. Listens
+to: `StudentRegistered` (account), `GroupCreated` (group price), `LessonCompleted`,
 `LessonCompletionRevoked`.
+
+**Notices (`notices/`, ADR-0061, 380.3):** billing writes its own notifications. `BillingNotices`
+listens to these events synchronously (`@EventListener`, in the transaction that published them)
+and publishes `shared.notice.NoticeRequested` for the student with the texts in every language
+(`BillingNoticeTexts`), a kind of `BillingNoticeKind` and the link `/cabinet/billing`: a charged or
+missed lesson with its price, a removed charge, a payment and a voided payment — each with the new
+balance («Баланс» or, when negative, «Задолженность»).
 
 ## Data
 

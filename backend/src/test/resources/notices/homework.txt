@@ -1,0 +1,170 @@
+## assigned: deadline [RU]
+to: Анна Иванова
+kind: HOMEWORK_ASSIGNED
+title: Новое задание: «Дроби»
+body: Срок сдачи: 25.09.2026 18:30
+link: /cabinet/homework/00000000-0000-0000-0000-00000000012d
+--
+
+## assigned: no deadline [RU]
+to: Vera Smith
+kind: HOMEWORK_ASSIGNED
+title: Новое задание: «Essay»
+link: /cabinet/homework/00000000-0000-0000-0000-00000000012f
+--
+
+## due soon [RU]
+to: Борис
+kind: HOMEWORK_DUE_SOON
+title: Скоро срок сдачи: «Дроби»
+body: Срок сдачи: 25.09.2026 18:30
+link: /cabinet/homework/00000000-0000-0000-0000-000000000130
+--
+
+## reminder: deadline [RU]
+to: Анна Иванова
+kind: HOMEWORK_REMINDER
+title: Учитель напоминает о задании «Дроби»
+body: Срок сдачи: 25.09.2026 18:30
+link: /cabinet/homework/00000000-0000-0000-0000-000000000131
+--
+
+## reminder: no deadline [RU]
+to: Анна Иванова
+kind: HOMEWORK_REMINDER
+title: Учитель напоминает о задании «Дроби»
+link: /cabinet/homework/00000000-0000-0000-0000-000000000132
+--
+
+## accepted: grade [RU]
+to: Анна Иванова
+kind: HOMEWORK_REVIEWED
+title: Задание «Дроби» принято
+body: Оценка: 5
+link: /cabinet/homework/00000000-0000-0000-0000-000000000133
+--
+
+## accepted: no grade [RU]
+to: Vera Smith
+kind: HOMEWORK_REVIEWED
+title: Задание «Essay» принято
+link: /cabinet/homework/00000000-0000-0000-0000-000000000134
+--
+
+## returned [RU]
+to: Борис
+kind: HOMEWORK_REVIEWED
+title: Задание «Дроби» возвращено на доработку
+body: Посмотрите комментарий учителя.
+link: /cabinet/homework/00000000-0000-0000-0000-000000000135
+--
+
+## returned: grade ignored [RU]
+to: Борис
+kind: HOMEWORK_REVIEWED
+title: Задание «Дроби» возвращено на доработку
+body: Посмотрите комментарий учителя.
+link: /cabinet/homework/00000000-0000-0000-0000-000000000136
+--
+
+## submitted [RU]
+to: teacher
+kind: HOMEWORK_SUBMITTED
+title: Работа на проверку: «Дроби»
+body: Ученик: Анна Иванова
+link: /teacher/homework/tasks/00000000-0000-0000-0000-000000000137
+--
+
+## submitted: stranger [RU]
+to: teacher
+kind: HOMEWORK_SUBMITTED
+title: Работа на проверку: «Дроби»
+body: Ученик: Ученик
+link: /teacher/homework/tasks/00000000-0000-0000-0000-000000000138
+--
+
+## assigned: deadline [EN]
+to: Анна Иванова
+kind: HOMEWORK_ASSIGNED
+title: New assignment: “Дроби”
+body: Due: 25.09.2026 18:30
+link: /cabinet/homework/00000000-0000-0000-0000-00000000012d
+--
+
+## assigned: no deadline [EN]
+to: Vera Smith
+kind: HOMEWORK_ASSIGNED
+title: New assignment: “Essay”
+link: /cabinet/homework/00000000-0000-0000-0000-00000000012f
+--
+
+## due soon [EN]
+to: Борис
+kind: HOMEWORK_DUE_SOON
+title: Due soon: “Дроби”
+body: Due: 25.09.2026 18:30
+link: /cabinet/homework/00000000-0000-0000-0000-000000000130
+--
+
+## reminder: deadline [EN]
+to: Анна Иванова
+kind: HOMEWORK_REMINDER
+title: Your teacher reminds you about “Дроби”
+body: Due: 25.09.2026 18:30
+link: /cabinet/homework/00000000-0000-0000-0000-000000000131
+--
+
+## reminder: no deadline [EN]
+to: Анна Иванова
+kind: HOMEWORK_REMINDER
+title: Your teacher reminds you about “Дроби”
+link: /cabinet/homework/00000000-0000-0000-0000-000000000132
+--
+
+## accepted: grade [EN]
+to: Анна Иванова
+kind: HOMEWORK_REVIEWED
+title: Assignment accepted: “Дроби”
+body: Grade: 5
+link: /cabinet/homework/00000000-0000-0000-0000-000000000133
+--
+
+## accepted: no grade [EN]
+to: Vera Smith
+kind: HOMEWORK_REVIEWED
+title: Assignment accepted: “Essay”
+link: /cabinet/homework/00000000-0000-0000-0000-000000000134
+--
+
+## returned [EN]
+to: Борис
+kind: HOMEWORK_REVIEWED
+title: Changes requested: “Дроби”
+body: Check your teacher's feedback.
+link: /cabinet/homework/00000000-0000-0000-0000-000000000135
+--
+
+## returned: grade ignored [EN]
+to: Борис
+kind: HOMEWORK_REVIEWED
+title: Changes requested: “Дроби”
+body: Check your teacher's feedback.
+link: /cabinet/homework/00000000-0000-0000-0000-000000000136
+--
+
+## submitted [EN]
+to: teacher
+kind: HOMEWORK_SUBMITTED
+title: Submission ready for review: “Дроби”
+body: Student: Анна Иванова
+link: /teacher/homework/tasks/00000000-0000-0000-0000-000000000137
+--
+
+## submitted: stranger [EN]
+to: teacher
+kind: HOMEWORK_SUBMITTED
+title: Submission ready for review: “Дроби”
+body: Student: A student
+link: /teacher/homework/tasks/00000000-0000-0000-0000-000000000138
+--
+

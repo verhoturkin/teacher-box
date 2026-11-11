@@ -1,0 +1,32 @@
+## student joined [RU]
+to: teacher
+kind: STUDENT_ACTIVATED
+title: Ученик присоединился к порталу
+body: Анна Иванова принял(а) приглашение и теперь может войти в личный кабинет.
+link: /teacher/students
+--
+
+## student joined: latin name [RU]
+to: teacher
+kind: STUDENT_ACTIVATED
+title: Ученик присоединился к порталу
+body: Vera Smith принял(а) приглашение и теперь может войти в личный кабинет.
+link: /teacher/students
+--
+
+## student joined [EN]
+to: teacher
+kind: STUDENT_ACTIVATED
+title: A student has joined the portal
+body: Анна Иванова accepted the invitation and can now sign in to their account.
+link: /teacher/students
+--
+
+## student joined: latin name [EN]
+to: teacher
+kind: STUDENT_ACTIVATED
+title: A student has joined the portal
+body: Vera Smith accepted the invitation and can now sign in to their account.
+link: /teacher/students
+--
+

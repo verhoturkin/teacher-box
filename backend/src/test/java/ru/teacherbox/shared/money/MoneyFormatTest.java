@@ -20,4 +20,15 @@ class MoneyFormatTest {
         assertThat(MoneyFormat.format(Money.of(-20_000, RUB), Language.EN)).isEqualTo("−₽200");
         assertThat(MoneyFormat.format(Money.of(1_000, Currency.getInstance("USD")), Language.EN)).isEqualTo("$10");
     }
+
+    /** As the notices of billing show amounts: no needless fraction, the instance currency. */
+    @Test
+    void formatsMoneyWithoutNeedlessFraction() {
+        assertThat(MoneyFormat.format(Money.of(150_000, RUB), Language.RU)).isEqualTo("1 500 ₽");
+        assertThat(MoneyFormat.format(Money.of(123_456_789, RUB), Language.RU)).isEqualTo("1 234 567,89 ₽");
+        assertThat(MoneyFormat.format(Money.of(5, RUB), Language.RU)).isEqualTo("0,05 ₽");
+        assertThat(MoneyFormat.format(Money.of(-20_000, RUB), Language.RU)).isEqualTo("−200 ₽");
+        assertThat(MoneyFormat.format(Money.of(1_000, Currency.getInstance("USD")), Language.RU)).isEqualTo("10 $");
+        assertThat(MoneyFormat.format(Money.of(123_456_789, RUB), Language.EN)).isEqualTo("₽1,234,567.89");
+    }
 }

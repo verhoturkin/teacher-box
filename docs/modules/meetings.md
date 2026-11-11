@@ -31,8 +31,14 @@ on: `shared`, `identity::api`. Schema `meetings`. ADRs: [0012](../adr/0012-meeti
 
 ## Contract (`meetings::api`)
 
-Facade `MeetingRooms.links(ownerIds)` (read-only, used by `schedule`); event `MeetingLinkShared` →
-`notifications`. Consumes `identity::api` events `StudentDeactivated`, `GroupChanged`, `GroupArchived`.
+Facade `MeetingRooms.links(ownerIds)` (read-only, used by `schedule`); event `MeetingLinkShared`.
+Consumes `identity::api` events `StudentDeactivated`, `GroupChanged`, `GroupArchived`.
+
+**Notices (`notices/`, ADR-0061, 380.3):** `MeetingNotices` listens to `MeetingLinkShared`
+synchronously (`@EventListener`, in the transaction that published it) and publishes
+`shared.notice.NoticeRequested` for every recipient: kind `MEETING_LINK`, the texts in every
+language (`MeetingNoticeTexts`), link `/cabinet/schedule`, the room address as `joinUrl` — in
+messengers it is the «Подключиться» button and the text carries no address.
 
 ## Data, REST, bot
 

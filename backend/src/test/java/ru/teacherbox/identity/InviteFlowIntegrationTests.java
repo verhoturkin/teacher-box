@@ -22,6 +22,10 @@ import ru.teacherbox.identity.api.StudentActivated;
 import ru.teacherbox.identity.application.InviteService;
 import ru.teacherbox.identity.application.StudentAdminService;
 import ru.teacherbox.identity.domain.Profile;
+import ru.teacherbox.identity.api.UserDirectory;
+import ru.teacherbox.shared.i18n.Language;
+import ru.teacherbox.shared.notice.NoticeRequested;
+import ru.teacherbox.shared.notice.NoticeText;
 import ru.teacherbox.testing.MutableClock;
 
 @IdentityIntegrationTest
@@ -38,6 +42,9 @@ class InviteFlowIntegrationTests {
 
     @Autowired
     InviteService invites;
+
+    @Autowired
+    UserDirectory users;
 
     @Test
     void studentActivatesAccountAndIsSignedIn(AssertablePublishedEvents events) {
@@ -60,6 +67,14 @@ class InviteFlowIntegrationTests {
         assertThat(login(mvc, login, "alice-password")).hasStatusOk();
         assertThat(events).contains(StudentActivated.class)
                 .matching(StudentActivated::studentId, created.student().id());
+        assertThat(events).contains(NoticeRequested.class)
+                .matching(NoticeRequested::recipientId, users.teacherId())
+                .matching(NoticeRequested::kind, "STUDENT_ACTIVATED")
+                .matching(NoticeRequested::link, "/teacher/students")
+                .matching(notice -> notice.text(Language.RU), new NoticeText("Ученик присоединился к порталу",
+                        "Алиса принял(а) приглашение и теперь может войти в личный кабинет."))
+                .matching(notice -> notice.text(Language.EN), new NoticeText("A student has joined the portal",
+                        "Алиса accepted the invitation and can now sign in to their account."));
 
         assertThat(accept(token, uniqueLogin("again"), "alice-password"))
                 .hasStatus(HttpStatus.NOT_FOUND)

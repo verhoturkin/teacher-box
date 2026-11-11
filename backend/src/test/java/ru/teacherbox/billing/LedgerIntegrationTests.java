@@ -17,7 +17,10 @@ import ru.teacherbox.billing.api.LessonCancelled;
 import ru.teacherbox.billing.api.LessonRecorded;
 import ru.teacherbox.billing.api.PaymentRecorded;
 import ru.teacherbox.billing.api.PaymentVoided;
+import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.money.Money;
+import ru.teacherbox.shared.notice.NoticeRequested;
+import ru.teacherbox.shared.notice.NoticeText;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.TestUsers;
 
@@ -53,6 +56,11 @@ class LedgerIntegrationTests {
                 .matching(LessonRecorded::studentId, student)
                 .matching(LessonRecorded::missed, false)
                 .matching(event -> event.balanceAfter().amountMinor(), -150_000L);
+        assertThat(events).contains(NoticeRequested.class)
+                .matching(NoticeRequested::recipientId, student)
+                .matching(NoticeRequested::kind, "LESSON_RECORDED")
+                .matching(notice -> notice.text(Language.RU), new NoticeText("Занятие 01.09.2026",
+                        "Стоимость: 1 500 ₽. Задолженность: 1 500 ₽"));
     }
 
     @Test

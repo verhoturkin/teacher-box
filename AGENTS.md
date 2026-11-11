@@ -82,7 +82,7 @@ Only in [`backend/AGENTS.md`](backend/AGENTS.md).
    | `platform`, `identity` | `shared` |
    | `billing` | `shared`, `identity::api`, `schedule::api` (events only: lesson outcome → charge) |
    | `homework` | `shared`, `identity::api`, `textbooks::api` (summaries and pages of bound textbooks) |
-   | `notifications` | `shared`, `identity::api`, `billing::api`, `homework::api`, `schedule::api`, `meetings::api` (events only) |
+   | `notifications` | `shared`, `identity::api` (recipients and their languages; the modules write their notices — `shared.notice`, ADR-0061) |
    | `ai` | `shared`, `textbooks::api`, `homework::api` (sources of drafts, ADR-0039) |
    | `schedule` | `shared`, `identity::api`, `meetings::api` (room links) |
    | `meetings`, `boards`, `textbooks` | `shared`, `identity::api` |
@@ -93,7 +93,8 @@ Only in [`backend/AGENTS.md`](backend/AGENTS.md).
    `db/migration/<module>/` and history table. **Forbidden:** SQL to another schema, cross-schema
    FKs and JOINs (`SchemaIsolationTests`); only UUIDs cross module boundaries.
 4. **Interaction:** sync — another module's `api` facade (reads/checks only); async — domain events
-   (`@ApplicationModuleListener`). Producers don't know consumers.
+   (`@ApplicationModuleListener`). Producers don't know consumers. A notification is written by
+   the module it is about and published as `shared.notice.NoticeRequested` (ADR-0061).
 5. **Files:** only the module's own `FileStorage` namespace; absolute links only via
    `Portal.link(...)`.
 6. **Frontend** mirrors the boundaries: a feature imports another only via `@features/<name>`

@@ -1,27 +1,33 @@
 # notifications
 
 Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, broadcasts. Depends on:
-`shared`, `identity::api` (events and facades), `billing::api`, `homework::api`, `schedule::api`,
-`meetings::api` (events only). Schema `notifications`. ADRs: [0005](../adr/0005-notifications.md),
-[0009](../adr/0009-external-integrations.md), [0013](../adr/0013-bot-dialogs.md).
+`shared` and `identity::api` (facades: the recipients and their languages). Schema `notifications`.
+ADRs: [0005](../adr/0005-notifications.md), [0009](../adr/0009-external-integrations.md),
+[0013](../adr/0013-bot-dialogs.md), [0061](../adr/0061-modules-write-their-notifications.md).
 
 ## Rules
 
+- **Modules write their notices (ADR-0061, stage 380).** A module publishes
+  `shared.notice.NoticeRequested` in the transaction of the change: the recipient, the kind, the
+  texts in every language (`NoticeText`: title, body and, with a room, the body for messengers),
+  the portal link, the bot subject (`ChatSubject`) and the room address. `NoticeListener`
+  (`@ApplicationModuleListener`: after the commit, in its own transaction, kept in the event
+  registry until done) hands it to `NotificationService.notify(NoticeRequested)`, which picks the
+  text in the recipient's language (`UserDirectory.language`), writes the **inbox** record and an
+  outbox **delivery** per connected and enabled channel of the recipient. A stored notification
+  keeps the language it was written in. The notice id is the inbox id: a notice delivered again
+  notifies once. `notifications` holds no text of another module — only its own
+  (`NotificationMessages`: the buttons «Открыть» / «Подключиться», the reminder to connect a
+  messenger, the test message; `BotMessages`).
+- **Kinds and preferences.** `NoticeRequested.kind` is the name of a `NotificationKind`; the
+  modules declare their kinds as enums implementing `shared.notice.NoticeKind`
+  (`ScheduleNoticeKind`, `HomeworkNoticeKind`, `BillingNoticeKind`, `MeetingNoticeKind`,
+  `IdentityNoticeKind`), `NoticeKindsTests` compares both sides; an unknown kind is refused and
+  the publication stays incomplete. Preferences per topic (`Preferences`, `NotificationTopic` by
+  kind): `MESSAGE` is the teacher's own message and cannot be muted. What each module writes — in
+  its doc (`schedule`, `homework`, `billing`, `meetings`, `identity`: section «Notices»).
 - **Lesson repetition (0.29.0):** `LessonRepeatScheduled` and `LessonRepeatStopped` aggregate notices;
-  nightly occurrence generation sends none. Legacy `SeriesScheduled`/`SeriesStopped` listeners remain only
-  to replay durable publications from an older release. Billing still consumes individual lesson outcomes.
-
-- Listens to domain events of other modules (producers don't know it) and turns each into an **inbox** record
-  plus an outbox **delivery** per connected and enabled channel of the recipient. Texts — templates in
-  the module, in the recipient's language (0.11.1, ADR-0036: `UserDirectory.language`; dictionaries
-  `ScheduleMessages`, `NotificationMessages`, formats `NotificationTexts`); a stored notification keeps the language
-  it was written in. Preferences per topic (`Preferences`, `NotificationTopic`).
-- **Reminder from the teacher** (341.1): `HomeworkReminderRequested` → inbox record «Учитель напоминает
-  о задании «…»» with the due date (kind `HOMEWORK_REMINDER`, topic `REMINDERS`), link to the task.
-- **Lesson summary** (0.37.0): `LessonSummaryShared` → inbox record «Итоги урока dd.MM» (kind and topic
-  `LESSON_SUMMARY`, on by default, mutable in messengers) for every participant, link
-  `/cabinet/schedule?lesson=<id>` (messenger button «Открыть»). The text carries no summary — it stays in
-  the lesson card.
+  nightly occurrence generation sends none. Billing still consumes individual lesson outcomes.
 - **Links in messengers are buttons** (0.14.2): the text is the title and the body; the portal page of a notification
   goes as «Открыть» (`Portal.link`), a video room as «Подключиться» (`JoinLink`: the room link, lesson reminders —
   their messenger text has no address, the inbox keeps it), then the buttons of the bot's actions; `/help` has a
