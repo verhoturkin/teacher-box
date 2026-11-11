@@ -97,47 +97,53 @@ stamp_write() {
 
 # Checks the stamp logic in a throwaway repository: green run stamps, unchanged tree is fresh, any
 # change (tracked, untracked, staged) is not, a skipped or failed run leaves no stamp.
+# The body runs with ROOT and LOG_DIR of the throwaway repository, given for the call only.
+stamp_selftest_fail() {
+    echo "stamp selftest: $*"
+    exit 1
+}
+
+stamp_selftest_body() {
+    local before
+    mkdir -p "$LOG_DIR"
+    git init -q "$ROOT"
+    git -C "$ROOT" config user.email t@example.com
+    git -C "$ROOT" config user.name t
+    printf '.verify-logs/\nignored/\n' >"$ROOT/.gitignore"
+    echo a >"$ROOT/a.txt"
+    git -C "$ROOT" add -A
+    git -C "$ROOT" commit -q -m init
+    stamp_fresh p && stamp_selftest_fail "fresh without a stamp"
+    before="$(tree_fingerprint)"
+    stamp_write p "$before"
+    stamp_fresh p || stamp_selftest_fail "not fresh after a green run"
+    mkdir -p "$ROOT/ignored" && echo x >"$ROOT/ignored/f" && : >"$ROOT/.verify-logs/other.log"
+    stamp_fresh p || stamp_selftest_fail "ignored files must not matter"
+    echo b >>"$ROOT/a.txt"
+    stamp_fresh p && stamp_selftest_fail "fresh after editing a tracked file"
+    git -C "$ROOT" checkout -q a.txt
+    stamp_fresh p || stamp_selftest_fail "reverting must restore the stamp"
+    echo n >"$ROOT/new.txt"
+    stamp_fresh p && stamp_selftest_fail "fresh after adding an untracked file"
+    git -C "$ROOT" add new.txt
+    stamp_fresh p && stamp_selftest_fail "fresh after staging a new file"
+    rm -f "$(stamp_file p)"
+    SKIPPED=1
+    stamp_write q "$(tree_fingerprint)"
+    [ ! -f "$(stamp_file q)" ] || stamp_selftest_fail "a skipped part was stamped"
+    SKIPPED=0
+    before="$(tree_fingerprint)"
+    echo c >>"$ROOT/a.txt"
+    stamp_write q "$before"
+    [ ! -f "$(stamp_file q)" ] || stamp_selftest_fail "stamped although the tree changed during the run"
+}
+
 stamp_selftest() {
-    local tmp
+    local tmp status=0
     tmp="$(mktemp -d)"
-    (
-        set -e
-        ROOT="$tmp"
-        LOG_DIR="$tmp/.verify-logs"
-        mkdir -p "$LOG_DIR"
-        git init -q "$ROOT"
-        git -C "$ROOT" config user.email t@example.com
-        git -C "$ROOT" config user.name t
-        printf '.verify-logs/\nignored/\n' >"$ROOT/.gitignore"
-        echo a >"$ROOT/a.txt"
-        git -C "$ROOT" add -A
-        git -C "$ROOT" commit -q -m init
-        fail() { echo "stamp selftest: $*"; exit 1; }
-        stamp_fresh p && fail "fresh without a stamp"
-        before="$(tree_fingerprint)"
-        stamp_write p "$before"
-        stamp_fresh p || fail "not fresh after a green run"
-        mkdir -p "$ROOT/ignored" && echo x >"$ROOT/ignored/f" && : >"$ROOT/.verify-logs/other.log"
-        stamp_fresh p || fail "ignored files must not matter"
-        echo b >>"$ROOT/a.txt"
-        stamp_fresh p && fail "fresh after editing a tracked file"
-        git -C "$ROOT" checkout -q a.txt
-        stamp_fresh p || fail "reverting must restore the stamp"
-        echo n >"$ROOT/new.txt"
-        stamp_fresh p && fail "fresh after adding an untracked file"
-        git -C "$ROOT" add new.txt
-        stamp_fresh p && fail "fresh after staging a new file"
-        rm -f "$(stamp_file p)"
-        SKIPPED=1
-        stamp_write q "$(tree_fingerprint)"
-        [ ! -f "$(stamp_file q)" ] || fail "a skipped part was stamped"
-        SKIPPED=0
-        before="$(tree_fingerprint)"
-        echo c >>"$ROOT/a.txt"
-        stamp_write q "$before"
-        [ ! -f "$(stamp_file q)" ] || fail "stamped although the tree changed during the run"
-    ) || { rm -rf "$tmp"; return 1; }
+    (ROOT="$tmp" LOG_DIR="$tmp/.verify-logs" stamp_selftest_body) || status=1
     rm -rf "$tmp"
+    return "$status"
 }
 
 npm_install() {

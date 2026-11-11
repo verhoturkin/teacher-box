@@ -21,6 +21,10 @@ while IFS= read -r file; do
         e2e/*) e2e=true ;;
         *.md | scripts/check-wiki.sh | scripts/check-agents.sh | scripts/verify.sh | .claude/* | .agents/* | .codex/*) docs=true ;;
     esac
+    # Every script is shellchecked by the installer step of the docker part, whatever else it belongs to.
+    case "$file" in
+        scripts/*.sh) docker=true ;;
+    esac
 done < <(git diff --cached --name-only --diff-filter=ACMRD)
 
 # A part that already passed on exactly this working tree (stamp from scripts/verify.sh) is not run again;
