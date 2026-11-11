@@ -1,10 +1,10 @@
 /**
  * Notifications: personal area inbox and delivery to messengers (Telegram, VK, MAX).
- * Listens to events of other modules and never calls their services.
+ * The modules write their notices themselves ({@code shared.notice}, ADR-0061); this module listens to
+ * them and knows no module but {@code identity} (the recipients and their languages).
  */
 @ApplicationModule(displayName = "Notifications",
-        allowedDependencies = {"shared", "identity :: api", "billing :: api", "homework :: api",
-                "schedule :: api", "meetings :: api"})
+        allowedDependencies = {"shared", "identity :: api"})
 @NullMarked
 package ru.teacherbox.notifications;
 

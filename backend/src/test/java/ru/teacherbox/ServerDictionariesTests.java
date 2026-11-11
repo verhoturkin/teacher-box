@@ -29,7 +29,8 @@ class ServerDictionariesTests {
     void everyDictionaryHasEveryLanguageAndEveryText() throws ReflectiveOperationException {
         List<Class<?>> dictionaries = dictionaries();
         assertThat(dictionaries).extracting(Class::getSimpleName)
-                .contains("BotMessages", "ScheduleNoticeTexts", "NotificationMessages", "ScheduleChatTexts",
+                .contains("BotMessages", "ScheduleNoticeTexts", "NotificationMessages", "HomeworkNoticeTexts",
+                        "BillingNoticeTexts", "MeetingNoticeTexts", "IdentityNoticeTexts", "ScheduleChatTexts",
                         "BillingChatTexts", "ChatWords");
         for (Class<?> dictionary : dictionaries) {
             Method of = dictionary.getDeclaredMethod("of", Language.class);

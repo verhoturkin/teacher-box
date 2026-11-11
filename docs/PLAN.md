@@ -334,9 +334,15 @@ and keeps what it did reach; it never raises a budget or lowers a gate.
   method name, so a listener that left `notifications` cannot take them; for the same reason a
   publication still incomplete for `ScheduleNotifications` at the moment of the upgrade stays
   undelivered (ADR-0061, «Последствия»).*
-- [ ] 380.3 **B** `homework`, `billing`, `meetings`, `identity` write theirs; `notifications`
+- [x] 380.3 **B** `homework`, `billing`, `meetings`, `identity` write theirs; `notifications`
   `allowedDependencies` shrink to `shared` and `identity :: api`; `AGENTS.md` §4.2 table,
   `docs/modules/notifications.md` and the modules' docs updated.
+  *Done: `<module>/notices` in the four modules, each compared with its golden file;
+  `NotificationTexts`, the four listeners and the module texts of `NotificationMessages` are gone
+  from `notifications` (main code 7 378 → 6 445 lines; it imports `identity.api` facades only).
+  `NoticeKindsTests`: every `NotificationKind` but `MESSAGE` is declared by exactly one module.
+  `NoticesAcrossModulesIntegrationTest` follows events of four modules to the inbox in the whole
+  application.*
 
 ### Stage 381 — E2E jobs use the runner's Chrome (D)
 

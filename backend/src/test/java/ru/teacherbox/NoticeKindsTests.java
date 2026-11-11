@@ -28,6 +28,14 @@ class NoticeKindsTests {
                 .as("NotificationKind." + kind).anyMatch(known -> known.name().equals(kind)));
     }
 
+    /** Every kind but the teacher's own message, which {@code notifications} sends itself, has its module. */
+    @Test
+    void everyKindOfNotificationsIsWrittenByAModule() {
+        assertThat(Arrays.stream(NotificationKind.values()).filter(kind -> kind != NotificationKind.MESSAGE))
+                .extracting(NotificationKind::name)
+                .containsExactlyInAnyOrderElementsOf(declared());
+    }
+
     /** The names of every enum of the application that implements {@link NoticeKind}. */
     static List<String> declared() {
         List<String> names = new ArrayList<>();

@@ -73,7 +73,16 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
 
 ## Contract (`homework::api`)
 
-Events: `HomeworkAssigned`, `HomeworkSubmitted`, `HomeworkReviewed`, `HomeworkDueSoon`, `HomeworkReminderRequested` → `notifications`.
+Events: `HomeworkAssigned`, `HomeworkSubmitted`, `HomeworkReviewed`, `HomeworkDueSoon`,
+`HomeworkReminderRequested`.
+
+**Notices (`notices/`, ADR-0061, 380.3):** the homework writes its own notifications.
+`HomeworkNotices` listens to these events synchronously (`@EventListener`, in the transaction that
+published them) and publishes `shared.notice.NoticeRequested` with the texts in every language
+(`HomeworkNoticeTexts`) and a kind of `HomeworkNoticeKind`: to the student — a new task, «Скоро срок
+сдачи», the teacher's reminder «Учитель напоминает о задании «…»» with the due date
+(`HOMEWORK_REMINDER`, 341.1) and the review, link `/cabinet/homework/<task>`; to the teacher — a
+submission, link `/teacher/homework/tasks/<task>`. Deadlines are shown in the instance time zone.
 
 `POST /api/teacher/homework/assignments/{id}/students/{studentId}/remind` («Напомнить» on the assignment
 page) publishes `HomeworkReminderRequested` for a task that is `ASSIGNED` or `RETURNED`; otherwise 422

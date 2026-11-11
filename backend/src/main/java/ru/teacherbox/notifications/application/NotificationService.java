@@ -117,19 +117,7 @@ public class NotificationService {
     @Transactional
     public InboxNotification notify(UUID recipientId, NotificationKind kind, String title, @Nullable String body,
             @Nullable String link, @Nullable ChatSubject subject) {
-        return notify(recipientId, kind, title, body, link, subject, null);
-    }
-
-    /**
-     * Notifies a user. In messengers the links go as buttons, not in the text: «Подключиться» to the video room
-     * ({@code join}), «Открыть» to the portal page ({@code link}), then the buttons of the bot's actions.
-     *
-     * @param join the video room of the notification
-     */
-    @Transactional
-    InboxNotification notify(UUID recipientId, NotificationKind kind, String title, @Nullable String body,
-            @Nullable String link, @Nullable ChatSubject subject, @Nullable JoinLink join) {
-        return notify(Ids.newId(), recipientId, kind, title, body, link, subject, join);
+        return notify(Ids.newId(), recipientId, kind, title, body, link, subject, null);
     }
 
     /**
@@ -147,6 +135,10 @@ public class NotificationService {
                 notice.joinUrl() == null ? null : new JoinLink(notice.joinUrl(), text.roomBody()));
     }
 
+    /**
+     * In messengers the links go as buttons, not in the text: «Подключиться» to the video room ({@code join}),
+     * «Открыть» to the portal page ({@code link}), then the buttons of the bot's actions.
+     */
     private InboxNotification notify(UUID id, UUID recipientId, NotificationKind kind, String title,
             @Nullable String body, @Nullable String link, @Nullable ChatSubject subject, @Nullable JoinLink join) {
         Instant now = clock.instant();
