@@ -104,7 +104,7 @@ test('a day of the month view plans a lesson of the default duration', async ({ 
   await page.goto('/login');
   await signIn(page, 'Войти');
   await page.goto('/teacher/schedule');
-  // the lessons of the month first (buttons in their days): an empty day is picked among the days without them
+  // Wait for the month lessons before choosing an empty cell in the main calendar.
   const lessons = page.waitForResponse(
     (response) => response.url().includes('/api/teacher/schedule/lessons') && response.ok(),
   );
@@ -112,14 +112,19 @@ test('a day of the month view plans a lesson of the default duration', async ({ 
   await lessons;
 
   const day = page
-    .locator('[data-date]')
-    .filter({ hasNot: page.getByRole('button') })
-    .nth(20);
+    .locator('tb-schedule-calendar .tb-cal-cell[data-date]')
+    .filter({ hasNot: page.locator('.tb-lesson') })
+    .first();
+  const date = await day.getAttribute('data-date');
+  expect(date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   await day.click({ position: { x: 20, y: 40 } });
 
   const dialog = page.getByRole('dialog', { name: 'Новое занятие' });
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator('#schedule-lesson-start')).toHaveValue(/ 10:00$/);
+  const [year, month, dayOfMonth] = (date ?? '').split('-');
+  await expect(dialog.locator('#schedule-lesson-start')).toHaveValue(
+    `${dayOfMonth}.${month}.${year} 10:00`,
+  );
   await expect(dialog.locator('#schedule-lesson-duration')).not.toHaveValue('1440');
   await expect(dialog.locator('#schedule-lesson-duration')).not.toHaveValue('1 440');
 });
