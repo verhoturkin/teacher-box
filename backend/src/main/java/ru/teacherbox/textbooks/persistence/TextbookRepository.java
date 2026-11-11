@@ -14,6 +14,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import ru.teacherbox.shared.persistence.OptimisticLock;
 import ru.teacherbox.textbooks.api.TextbookFormat;
 import ru.teacherbox.textbooks.api.TextbookKind;
 import ru.teacherbox.textbooks.domain.MemberType;
@@ -66,9 +67,7 @@ public class TextbookRepository {
                 """)
                 .params(params(textbook))
                 .update();
-        if (updated != 1) {
-            throw new OptimisticLockingFailureException("Textbook " + textbook.id() + " was modified");
-        }
+        OptimisticLock.requireUpdated(updated, "Textbook", textbook.id());
         members.ifPresent(list -> {
             jdbc.sql("delete from textbooks.textbook_members where textbook_id = :id").param("id", textbook.id())
                     .update();
