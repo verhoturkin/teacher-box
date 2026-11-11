@@ -1,7 +1,5 @@
 package ru.teacherbox.schedule.persistence;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -13,7 +11,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.schedule.api.CancelledBy;
@@ -22,6 +19,7 @@ import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.LessonNote;
 import ru.teacherbox.schedule.domain.LessonStatus;
 import ru.teacherbox.schedule.domain.Participant;
+import ru.teacherbox.shared.persistence.OptimisticLock;
 
 /** Lessons of the schedule with their participants (the bean name differs from the billing lesson log). */
 @Repository("scheduleLessonRepository")
@@ -110,9 +108,7 @@ public class LessonRepository {
                 .param("originalStartsAt", lesson.originalStartsAt())
                 .param("updatedAt", lesson.updatedAt())
                 .update();
-        if (updated != 1) {
-            throw new OptimisticLockingFailureException("Lesson " + lesson.id() + " was modified");
-        }
+        OptimisticLock.requireUpdated(updated, "Lesson", lesson.id());
         jdbc.sql("delete from schedule.lesson_participants where lesson_id = :id").param("id", lesson.id()).update();
         insertParticipants(lesson);
         lesson.markSaved(lesson.version() + 1);
@@ -126,13 +122,11 @@ public class LessonRepository {
                 .param("id", lesson.id())
                 .param("version", lesson.version())
                 .update();
-        if (deleted != 1) {
-            throw new OptimisticLockingFailureException("Lesson " + lesson.id() + " was modified");
-        }
+        OptimisticLock.requireUpdated(deleted, "Lesson", lesson.id());
     }
 
     public Optional<Lesson> findById(UUID id) {
-        return load(jdbc.sql(SELECT + " where id = :id").param("id", id).query(LessonRepository::map).list())
+        return load(jdbc.sql(SELECT + " where id = :id").param("id", id).query(Row.class).list())
                 .stream().findFirst();
     }
 
@@ -150,7 +144,7 @@ public class LessonRepository {
                 """ + ORDER + " limit 1")
                 .param("studentId", studentId)
                 .param("now", now)
-                .query(LessonRepository::map)
+                .query(Row.class)
                 .list())
                 .stream().findFirst();
     }
@@ -160,7 +154,7 @@ public class LessonRepository {
         return load(jdbc.sql(SELECT + " where starts_at >= :from and starts_at < :to" + ORDER)
                 .param("from", from)
                 .param("to", to)
-                .query(LessonRepository::map)
+                .query(Row.class)
                 .list());
     }
 
@@ -170,7 +164,7 @@ public class LessonRepository {
                 .param("studentId", studentId)
                 .param("from", from)
                 .param("to", to)
-                .query(LessonRepository::map)
+                .query(Row.class)
                 .list());
     }
 
@@ -180,7 +174,7 @@ public class LessonRepository {
                 .param("groupId", groupId)
                 .param("from", from)
                 .param("to", to)
-                .query(LessonRepository::map)
+                .query(Row.class)
                 .list());
     }
 
@@ -190,7 +184,7 @@ public class LessonRepository {
                         + ORDER)
                 .param("groupId", groupId)
                 .param("after", after)
-                .query(LessonRepository::map)
+                .query(Row.class)
                 .list());
     }
 
@@ -199,7 +193,7 @@ public class LessonRepository {
         return load(jdbc.sql(SELECT + " where status <> 'CANCELLED' and starts_at < :to and ends_at > :from" + ORDER)
                 .param("from", from)
                 .param("to", to)
-                .query(LessonRepository::map)
+                .query(Row.class)
                 .list());
     }
 
@@ -209,7 +203,7 @@ public class LessonRepository {
                         + ORDER)
                 .param("after", after)
                 .param("until", until)
-                .query(LessonRepository::map)
+                .query(Row.class)
                 .list());
     }
 
@@ -217,7 +211,7 @@ public class LessonRepository {
     public List<Lesson> findUnmarked(Instant before) {
         return load(jdbc.sql(SELECT + " where status = 'SCHEDULED' and ends_at <= :before" + ORDER)
                 .param("before", before)
-                .query(LessonRepository::map)
+                .query(Row.class)
                 .list());
     }
 
@@ -258,7 +252,7 @@ public class LessonRepository {
 
     public List<Lesson> repeatTail(UUID ruleId, LocalDate from) {
         return load(jdbc.sql(SELECT + " where series_id = :id and series_date >= :from order by series_date, id")
-                .param("id", ruleId).param("from", from).query(LessonRepository::map).list());
+                .param("id", ruleId).param("from", from).query(Row.class).list());
     }
 
     public void suppress(UUID ruleId, LocalDate date) {
@@ -288,7 +282,7 @@ public class LessonRepository {
                 .param("startsAt", lesson.startsAt());
         query = lesson.isGroup() ? query.param("groupId", lesson.groupId())
                 : query.param("studentId", lesson.studentId());
-        return load(query.query(LessonRepository::map).list()).stream().findFirst();
+        return load(query.query(Row.class).list()).stream().findFirst();
     }
 
     /** Puts a topic into a lesson that has none; a filled topic stays. Does not bump the version. */
@@ -303,9 +297,7 @@ public class LessonRepository {
         return jdbc.sql("select lesson_id, student_id, note, updated_at from schedule.lesson_notes"
                         + " where lesson_id = :id order by updated_at, student_id")
                 .param("id", lessonId)
-                .query((rs, rowNum) -> new LessonNote(rs.getObject("lesson_id", UUID.class),
-                        rs.getObject("student_id", UUID.class), rs.getString("note"),
-                        rs.getObject("updated_at", Instant.class)))
+                .query(LessonNote.class)
                 .list();
     }
 
@@ -314,7 +306,7 @@ public class LessonRepository {
         return load(jdbc.sql(SELECT + " where status in ('CONDUCTED', 'MISSED') and starts_at < :before and"
                 + OF_STUDENT + HELD_ORDER + " limit :limit")
                 .param("studentId", studentId).param("before", before).param("limit", limit)
-                .query(LessonRepository::map).list());
+                .query(Row.class).list());
     }
 
     /** Held lessons of the group that start before {@code before}, newest first. */
@@ -322,7 +314,7 @@ public class LessonRepository {
         return load(jdbc.sql(SELECT + " where status in ('CONDUCTED', 'MISSED') and starts_at < :before"
                 + " and group_id = :groupId" + HELD_ORDER + " limit :limit")
                 .param("groupId", groupId).param("before", before).param("limit", limit)
-                .query(LessonRepository::map).list());
+                .query(Row.class).list());
     }
 
     /** The teacher's private notes about the student in the given lessons, by lesson. */
@@ -333,9 +325,7 @@ public class LessonRepository {
         return jdbc.sql("select lesson_id, student_id, note, updated_at from schedule.lesson_notes"
                         + " where student_id = :studentId and lesson_id in (:ids)")
                 .param("studentId", studentId).param("ids", lessonIds)
-                .query((rs, rowNum) -> new LessonNote(rs.getObject("lesson_id", UUID.class),
-                        rs.getObject("student_id", UUID.class), rs.getString("note"),
-                        rs.getObject("updated_at", Instant.class)))
+                .query(LessonNote.class)
                 .list().stream().collect(Collectors.toMap(LessonNote::lessonId, note -> note));
     }
 
@@ -424,26 +414,5 @@ public class LessonRepository {
 
     private static @Nullable String name(@Nullable Enum<?> value) {
         return value == null ? null : value.name();
-    }
-
-    private static Row map(ResultSet rs, int rowNum) throws SQLException {
-        String cancelledBy = rs.getString("cancelled_by");
-        return new Row(
-                rs.getObject("id", UUID.class),
-                rs.getObject("group_id", UUID.class),
-                rs.getObject("series_id", UUID.class),
-                rs.getObject("series_date", LocalDate.class),
-                rs.getObject("starts_at", Instant.class),
-                rs.getInt("duration_minutes"),
-                rs.getString("title"),
-                rs.getString("meeting_url"),
-                LessonStatus.valueOf(rs.getString("status")),
-                cancelledBy == null ? null : CancelledBy.valueOf(cancelledBy),
-                rs.getString("cancel_reason"),
-                rs.getObject("original_starts_at", Instant.class),
-                rs.getObject("created_at", Instant.class),
-                rs.getObject("updated_at", Instant.class),
-                rs.getLong("version"), rs.getBoolean("individually_changed"), rs.getString("summary"),
-                rs.getString("next_plan"), rs.getObject("summary_updated_at", Instant.class), rs.getString("topic"));
     }
 }

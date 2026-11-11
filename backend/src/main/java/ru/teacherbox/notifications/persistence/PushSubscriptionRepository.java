@@ -1,7 +1,5 @@
 package ru.teacherbox.notifications.persistence;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -62,18 +60,18 @@ public class PushSubscriptionRepository {
     }
 
     public Optional<PushSubscription> findById(UUID id) {
-        return jdbc.sql(SELECT + " where id = :id").param("id", id).query(PushSubscriptionRepository::map).optional();
+        return jdbc.sql(SELECT + " where id = :id").param("id", id).query(PushSubscription.class).optional();
     }
 
     public Optional<PushSubscription> findByEndpoint(String endpoint) {
         return jdbc.sql(SELECT + " where endpoint = :endpoint").param("endpoint", endpoint)
-                .query(PushSubscriptionRepository::map).optional();
+                .query(PushSubscription.class).optional();
     }
 
     /** Oldest first. */
     public List<PushSubscription> findByUser(UUID userId) {
         return jdbc.sql(SELECT + " where user_id = :userId order by created_at, id").param("userId", userId)
-                .query(PushSubscriptionRepository::map).list();
+                .query(PushSubscription.class).list();
     }
 
     public void delete(UUID id) {
@@ -112,12 +110,5 @@ public class PushSubscriptionRepository {
                 """)
                 .query((rs, rowNum) -> new Counts(rs.getLong("subscriptions"), rs.getLong("failing")))
                 .single();
-    }
-
-    private static PushSubscription map(ResultSet rs, int rowNum) throws SQLException {
-        return new PushSubscription(rs.getObject("id", UUID.class), rs.getObject("user_id", UUID.class),
-                rs.getString("endpoint"), rs.getString("p256dh"), rs.getString("auth"), rs.getString("user_agent"),
-                rs.getString("language"), rs.getObject("created_at", Instant.class),
-                rs.getObject("last_success_at", Instant.class), rs.getInt("failures"));
     }
 }

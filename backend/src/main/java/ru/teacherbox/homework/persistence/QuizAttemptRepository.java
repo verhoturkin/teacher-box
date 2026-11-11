@@ -1,7 +1,5 @@
 package ru.teacherbox.homework.persistence;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +39,7 @@ public class QuizAttemptRepository {
                 from homework.quiz_attempts where id = :id
                 """)
                 .param("id", id)
-                .query(QuizAttemptRepository::map)
+                .query(QuizAttempt.class)
                 .optional();
     }
 
@@ -52,7 +50,7 @@ public class QuizAttemptRepository {
                 from homework.quiz_attempts where task_id = :taskId order by started_at, id
                 """)
                 .param("taskId", taskId)
-                .query(QuizAttemptRepository::map)
+                .query(QuizAttempt.class)
                 .list();
     }
 
@@ -121,15 +119,5 @@ public class QuizAttemptRepository {
                         rs.getObject("question_id", UUID.class), QuizCodec.answer(rs.getString("answer")),
                         rs.getBoolean("correct"), rs.getInt("points"), rs.getBoolean("overridden")))
                 .list();
-    }
-
-    private static QuizAttempt map(ResultSet rs, int rowNum) throws SQLException {
-        int score = rs.getInt("score_points");
-        Integer scorePoints = rs.wasNull() ? null : score;
-        int max = rs.getInt("max_points");
-        Integer maxPoints = rs.wasNull() ? null : max;
-        return new QuizAttempt(rs.getObject("id", UUID.class), rs.getObject("task_id", UUID.class),
-                rs.getObject("started_at", Instant.class), rs.getObject("submitted_at", Instant.class), scorePoints,
-                maxPoints);
     }
 }

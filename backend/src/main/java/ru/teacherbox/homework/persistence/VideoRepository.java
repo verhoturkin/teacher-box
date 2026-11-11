@@ -60,10 +60,8 @@ public class VideoRepository {
     }
 
     private static AssignmentVideo map(ResultSet rs, int rowNum) throws SQLException {
-        int start = rs.getInt("start_seconds");
-        Integer startSeconds = rs.wasNull() ? null : start;
         VideoLink link = new VideoLink(rs.getString("url"), VideoLink.Provider.valueOf(rs.getString("provider")),
-                rs.getString("video_id"), startSeconds);
+                rs.getString("video_id"), rs.getObject("start_seconds", Integer.class));
         return new AssignmentVideo(rs.getObject("id", UUID.class), rs.getObject("assignment_id", UUID.class),
                 rs.getInt("position"), link, rs.getString("title"), rs.getString("transcript"),
                 rs.getBoolean("transcript_shown"));

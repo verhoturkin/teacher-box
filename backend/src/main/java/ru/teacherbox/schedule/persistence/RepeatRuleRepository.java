@@ -13,10 +13,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.schedule.domain.RepeatRule;
+import ru.teacherbox.shared.persistence.OptimisticLock;
 
 @Repository
 public class RepeatRuleRepository {
@@ -74,9 +74,7 @@ public class RepeatRuleRepository {
                 .param("generatedUntil", series.generatedUntil())
                 .param("updatedAt", series.updatedAt())
                 .update();
-        if (updated != 1) {
-            throw new OptimisticLockingFailureException("RepeatRule " + series.id() + " was modified");
-        }
+        OptimisticLock.requireUpdated(updated, "RepeatRule", series.id());
         series.markSaved(series.version() + 1);
     }
 

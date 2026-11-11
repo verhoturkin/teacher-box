@@ -1,8 +1,5 @@
 package ru.teacherbox.notifications.persistence;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -53,20 +50,20 @@ public class ChannelLinkRepository {
     public List<ChannelLink> findByRecipient(UUID recipientId) {
         return jdbc.sql(SELECT + " where recipient_id = :recipientId order by channel")
                 .param("recipientId", recipientId)
-                .query(ChannelLinkRepository::map)
+                .query(ChannelLink.class)
                 .list();
     }
 
     /** Connected accounts of all users. */
     public List<ChannelLink> findAll() {
-        return jdbc.sql(SELECT + " order by recipient_id, channel").query(ChannelLinkRepository::map).list();
+        return jdbc.sql(SELECT + " order by recipient_id, channel").query(ChannelLink.class).list();
     }
 
     public Optional<ChannelLink> find(UUID recipientId, ChannelType channel) {
         return jdbc.sql(SELECT + " where recipient_id = :recipientId and channel = :channel")
                 .param("recipientId", recipientId)
                 .param("channel", channel.name())
-                .query(ChannelLinkRepository::map)
+                .query(ChannelLink.class)
                 .optional();
     }
 
@@ -74,7 +71,7 @@ public class ChannelLinkRepository {
         return jdbc.sql(SELECT + " where channel = :channel and external_id = :externalId")
                 .param("channel", channel.name())
                 .param("externalId", externalId)
-                .query(ChannelLinkRepository::map)
+                .query(ChannelLink.class)
                 .list();
     }
 
@@ -86,16 +83,5 @@ public class ChannelLinkRepository {
                 .param("recipientId", recipientId)
                 .param("channel", channel.name())
                 .update() > 0;
-    }
-
-    private static ChannelLink map(ResultSet rs, int rowNum) throws SQLException {
-        return new ChannelLink(
-                rs.getObject("id", UUID.class),
-                rs.getObject("recipient_id", UUID.class),
-                ChannelType.valueOf(rs.getString("channel")),
-                rs.getString("external_id"),
-                rs.getString("display_name"),
-                rs.getBoolean("enabled"),
-                rs.getObject("linked_at", Instant.class));
     }
 }

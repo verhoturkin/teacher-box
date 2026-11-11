@@ -40,8 +40,7 @@ public class BroadcastRepository {
                 order by created_at desc, id desc limit :limit
                 """)
                 .param("limit", limit)
-                .query((rs, rowNum) -> new Broadcast(rs.getObject("id", UUID.class), rs.getString("title"),
-                        rs.getString("body"), rs.getInt("recipients"), rs.getObject("created_at", Instant.class)))
+                .query(Broadcast.class)
                 .list();
     }
 }

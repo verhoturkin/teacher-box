@@ -31,9 +31,7 @@ public class ChannelSettingsRepository {
                 where channel = :channel
                 """)
                 .param("channel", channel.name())
-                .query((rs, rowNum) -> new ChannelSettings(ChannelType.valueOf(rs.getString("channel")),
-                        rs.getString("token"), rs.getObject("group_id", Long.class), rs.getString("bot_name"),
-                        rs.getObject("updated_at", Instant.class)))
+                .query(ChannelSettings.class)
                 .optional();
     }
 

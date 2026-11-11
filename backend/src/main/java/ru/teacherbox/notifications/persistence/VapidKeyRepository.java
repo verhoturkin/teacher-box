@@ -26,8 +26,7 @@ public class VapidKeyRepository {
 
     public Optional<StoredKeys> find() {
         return jdbc.sql("select public_key, private_key, created_at from notifications.webpush_keys where id = 1")
-                .query((rs, rowNum) -> new StoredKeys(rs.getString("public_key"), rs.getString("private_key"),
-                        rs.getObject("created_at", Instant.class)))
+                .query(StoredKeys.class)
                 .optional();
     }
 

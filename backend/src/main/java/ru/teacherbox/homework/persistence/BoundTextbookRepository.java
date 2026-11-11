@@ -1,8 +1,6 @@
 package ru.teacherbox.homework.persistence;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +61,7 @@ public class BoundTextbookRepository {
     public List<BoundTextbook> findByAssignment(UUID assignmentId) {
         return jdbc.sql(SELECT + " where assignment_id = :assignmentId order by bound_at, textbook_id")
                 .param("assignmentId", assignmentId)
-                .query(BoundTextbookRepository::map)
+                .query(BoundTextbook.class)
                 .list();
     }
 
@@ -71,13 +69,8 @@ public class BoundTextbookRepository {
         return jdbc.sql(SELECT + " where assignment_id = :assignmentId and textbook_id = :textbookId")
                 .param("assignmentId", assignmentId)
                 .param("textbookId", textbookId)
-                .query(BoundTextbookRepository::map)
+                .query(BoundTextbook.class)
                 .optional();
-    }
-
-    private static BoundTextbook map(ResultSet rs, int rowNum) throws SQLException {
-        return new BoundTextbook(rs.getObject("assignment_id", UUID.class), rs.getObject("textbook_id", UUID.class),
-                rs.getString("pages"), rs.getObject("bound_at", Instant.class));
     }
 
     /** How many textbooks every assignment has (assignments with none are absent). */

@@ -14,13 +14,13 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.schedule.domain.OffTime;
 import ru.teacherbox.schedule.domain.OffTime.Once;
 import ru.teacherbox.schedule.domain.OffTime.Period;
 import ru.teacherbox.schedule.domain.OffTime.Weekly;
+import ru.teacherbox.shared.persistence.OptimisticLock;
 
 @Repository
 public class OffTimeRepository {
@@ -83,9 +83,7 @@ public class OffTimeRepository {
                 .param("note", offTime.note())
                 .param("updatedAt", offTime.updatedAt())
                 .update();
-        if (updated != 1) {
-            throw new OptimisticLockingFailureException("Off time " + offTime.id() + " was modified");
-        }
+        OptimisticLock.requireUpdated(updated, "Off time", offTime.id());
         offTime.markSaved(offTime.version() + 1);
     }
 

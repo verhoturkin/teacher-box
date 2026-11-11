@@ -7,11 +7,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.homework.domain.Assignment;
 import ru.teacherbox.homework.domain.quiz.RevealRule;
+import ru.teacherbox.shared.persistence.OptimisticLock;
 
 @Repository
 public class AssignmentRepository {
@@ -61,9 +61,7 @@ public class AssignmentRepository {
                 .param("quizAttempts", assignment.quizAttempts())
                 .param("updatedAt", assignment.updatedAt())
                 .update();
-        if (updated != 1) {
-            throw new OptimisticLockingFailureException("Assignment " + assignment.id() + " was modified");
-        }
+        OptimisticLock.requireUpdated(updated, "Assignment", assignment.id());
         assignment.markSaved(assignment.version() + 1);
     }
 

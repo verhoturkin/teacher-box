@@ -1,7 +1,5 @@
 package ru.teacherbox.notifications.persistence;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,7 +38,7 @@ public class LinkCodeRepository {
                 """)
                 .param("hash", codeHash)
                 .param("channel", channel.name())
-                .query(LinkCodeRepository::map)
+                .query(LinkCode.class)
                 .optional();
     }
 
@@ -64,15 +62,5 @@ public class LinkCodeRepository {
                 .param("channel", channel.name())
                 .param("now", now)
                 .update();
-    }
-
-    private static LinkCode map(ResultSet rs, int rowNum) throws SQLException {
-        return new LinkCode(
-                rs.getString("code_hash"),
-                rs.getObject("recipient_id", UUID.class),
-                ChannelType.valueOf(rs.getString("channel")),
-                rs.getObject("created_at", Instant.class),
-                rs.getObject("expires_at", Instant.class),
-                rs.getObject("used_at", Instant.class));
     }
 }

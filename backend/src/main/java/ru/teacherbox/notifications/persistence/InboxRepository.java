@@ -1,7 +1,5 @@
 package ru.teacherbox.notifications.persistence;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -9,7 +7,6 @@ import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.notifications.domain.InboxNotification;
-import ru.teacherbox.notifications.domain.NotificationKind;
 
 @Repository
 public class InboxRepository {
@@ -41,7 +38,7 @@ public class InboxRepository {
     }
 
     public Optional<InboxNotification> findById(UUID id) {
-        return jdbc.sql(SELECT + " where id = :id").param("id", id).query(InboxRepository::map).optional();
+        return jdbc.sql(SELECT + " where id = :id").param("id", id).query(InboxNotification.class).optional();
     }
 
     /** Newest first. */
@@ -60,7 +57,7 @@ public class InboxRepository {
                 .param("recipientId", recipientId)
                 .param("offset", offset)
                 .param("limit", limit)
-                .query(InboxRepository::map)
+                .query(InboxNotification.class)
                 .list();
     }
 
@@ -101,18 +98,6 @@ public class InboxRepository {
                 .param("recipientId", recipientId)
                 .param("now", now)
                 .update();
-    }
-
-    private static InboxNotification map(ResultSet rs, int rowNum) throws SQLException {
-        return new InboxNotification(
-                rs.getObject("id", UUID.class),
-                rs.getObject("recipient_id", UUID.class),
-                NotificationKind.valueOf(rs.getString("kind")),
-                rs.getString("title"),
-                rs.getString("body"),
-                rs.getString("link"),
-                rs.getObject("created_at", Instant.class),
-                rs.getObject("read_at", Instant.class));
     }
 
     private static String readFilter(Boolean read) {

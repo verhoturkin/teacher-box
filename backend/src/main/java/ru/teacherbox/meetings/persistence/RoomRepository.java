@@ -1,8 +1,5 @@
 package ru.teacherbox.meetings.persistence;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -11,7 +8,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.meetings.domain.Room;
-import ru.teacherbox.meetings.domain.RoomOwner;
+import ru.teacherbox.shared.persistence.OptimisticLock;
 
 @Repository
 public class RoomRepository {
@@ -54,9 +51,7 @@ public class RoomRepository {
                 .param("joinUrl", room.joinUrl())
                 .param("updatedAt", room.updatedAt())
                 .update();
-        if (updated != 1) {
-            throw new OptimisticLockingFailureException("Room " + room.id() + " was modified");
-        }
+        OptimisticLock.requireUpdated(updated, "Room", room.id());
         return new Room(room.id(), room.ownerType(), room.ownerId(), room.joinUrl(), room.createdAt(),
                 room.updatedAt(), room.version() + 1);
     }
@@ -66,7 +61,7 @@ public class RoomRepository {
     }
 
     public Optional<Room> findByOwner(UUID ownerId) {
-        return jdbc.sql(SELECT + " where owner_id = :ownerId").param("ownerId", ownerId).query(RoomRepository::map)
+        return jdbc.sql(SELECT + " where owner_id = :ownerId").param("ownerId", ownerId).query(Room.class)
                 .optional();
     }
 
@@ -74,21 +69,10 @@ public class RoomRepository {
         if (ownerIds.isEmpty()) {
             return List.of();
         }
-        return jdbc.sql(SELECT + " where owner_id in (:ids)").param("ids", ownerIds).query(RoomRepository::map).list();
+        return jdbc.sql(SELECT + " where owner_id in (:ids)").param("ids", ownerIds).query(Room.class).list();
     }
 
     public List<Room> findAll() {
-        return jdbc.sql(SELECT + " order by created_at, id").query(RoomRepository::map).list();
-    }
-
-    private static Room map(ResultSet rs, int rowNum) throws SQLException {
-        return new Room(
-                rs.getObject("id", UUID.class),
-                RoomOwner.valueOf(rs.getString("owner_type")),
-                rs.getObject("owner_id", UUID.class),
-                rs.getString("join_url"),
-                rs.getObject("created_at", Instant.class),
-                rs.getObject("updated_at", Instant.class),
-                rs.getLong("version"));
+        return jdbc.sql(SELECT + " order by created_at, id").query(Room.class).list();
     }
 }

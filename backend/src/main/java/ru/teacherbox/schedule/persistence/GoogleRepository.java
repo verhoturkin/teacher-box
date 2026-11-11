@@ -141,12 +141,8 @@ public class GoogleRepository {
                 rs.getBoolean("busy_enabled"),
                 GoogleStatus.valueOf(rs.getString("status")),
                 rs.getString("last_error"),
-                nullableInstant(rs, "last_sync_at"),
-                nullableInstant(rs, "connected_at"),
+                rs.getObject("last_sync_at", Instant.class),
+                rs.getObject("connected_at", Instant.class),
                 rs.getObject("updated_at", Instant.class));
-    }
-
-    private static @Nullable Instant nullableInstant(ResultSet rs, String column) throws SQLException {
-        return rs.getObject(column, Instant.class);
     }
 }
