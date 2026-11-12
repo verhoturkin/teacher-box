@@ -21,16 +21,33 @@ don't read them unless the task needs history.
 
 ## Next release
 
-Agent rules catch up with the architecture.
+Release images are built faster: `arm64` no longer runs the AOT training under QEMU. ADR-0062
+(amends ADR-0032).
 
-### Stage 383 — the `new-setting` skill after ADR-0056 (D)
+- [x] 383.1 **B** `SchemaIsolationTests` skipped `textbooks`: derive the module list from
+  `db/migration/<module>/` and fail when a module package has no migration directory. `textbooks`
+  checked — no cross-schema SQL, FK or JOIN. _`ArchitectureTests.BUSINESS_MODULES` has the same
+  gap — Backlog._
 
-- [x] 383.1 `.claude/skills/new-setting/SKILL.md` (and the copy in `.agents/skills/`): owner first
+### Stage 384 — native runners for the release images (D, ADR-0062)
+
+- [x] 384.1 **D** `.github/workflows/ci.yml`: job `image` builds each image per architecture on a
+  native runner (`ubuntu-latest`, `ubuntu-24.04-arm`) and pushes it by digest, `gha` cache scope
+  `<target>-<arch>`; job `publish` joins the digests with `docker buildx imagetools create` under
+  `X.Y.Z`, `X.Y`, `latest` and checks that the index has both architectures. `docker/Dockerfile`
+  comment, ADR-0062. *Not run in the cloud session (no Docker daemon); checked by the next release
+  tag.*
+
+### Stage 385 — the `new-setting` skill after ADR-0056 (D)
+
+- [x] 385.1 `.claude/skills/new-setting/SKILL.md` (and the copy in `.agents/skills/`): owner first
       (`TEACHER` / `ADMIN` / `ENV_ONLY`), `SettingsCatalog` builders, `LIVE` and `LiveProperties`,
       the administrator's cards (`admin/settings/settings-page.ts`), `TeacherSettingsImport`, tests of
       the catalog; `AGENTS.md` §6.1 / §9 and `backend/AGENTS.md` say the same.
 
 ## Backlog
+
+- `ArchitectureTests.BUSINESS_MODULES` lacks `textbooks`: derive it like `SchemaIsolationTests`.
 
 After the bundle measurement of 2026-11-11 (see [0.47.1](archive/plans/v0.47.1.md)), not planned:
 
