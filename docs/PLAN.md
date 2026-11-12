@@ -5,57 +5,7 @@ don't read them unless the task needs history.
 
 ## How to use
 
-- A release is a `## vX.Y.Z` section (or `## Next release` until the number is known): goals (2–5
-  lines), new/changed ADRs, then stages.
-- Stages are numbered globally, continuing from the archive. Substeps: `85.1`, `85.2`, … Tags: **B**
-  backend, **F** frontend, **D** docker/infra.
-- A substep names its entry points — files, classes, endpoints, routes
-  (`schedule/teacher/lesson-details-dialog.ts`, `ScheduleService.cancel`) — so the work starts there
-  instead of a repository search.
-- Each substep ends with a green `./scripts/verify.sh` and a commit that also ticks its `[x]`.
-- Partly done? Tick it and note in italics what was dropped and where it went (Backlog or next
-  release).
-- **Archiving** (skill `release`): in the release commit move the whole section to
-  `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
-  Backlog. This file keeps only unreleased work and the Backlog.
-
-## Next release
-
-Release images are built faster: `arm64` no longer runs the AOT training under QEMU. ADR-0062
-(amends ADR-0032). The pre-commit hook verifies exactly the content of the commit.
-
-- [x] 383.1 **B** `SchemaIsolationTests` skipped `textbooks`: derive the module list from
-  `db/migration/<module>/` and fail when a module package has no migration directory. `textbooks`
-  checked — no cross-schema SQL, FK or JOIN. _`ArchitectureTests.BUSINESS_MODULES` has the same
-  gap — Backlog._
-
-### Stage 384 — native runners for the release images (D, ADR-0062)
-
-- [x] 384.1 **D** `.github/workflows/ci.yml`: job `image` builds each image per architecture on a
-  native runner (`ubuntu-latest`, `ubuntu-24.04-arm`) and pushes it by digest, `gha` cache scope
-  `<target>-<arch>`; job `publish` joins the digests with `docker buildx imagetools create` under
-  `X.Y.Z`, `X.Y`, `latest` and checks that the index has both architectures. `docker/Dockerfile`
-  comment, ADR-0062. *Not run in the cloud session (no Docker daemon); checked by the next release
-  tag.*
-
-### Stage 385 — the `new-setting` skill after ADR-0056 (D)
-
-- [x] 385.1 `.claude/skills/new-setting/SKILL.md` (and the copy in `.agents/skills/`): owner first
-      (`TEACHER` / `ADMIN` / `ENV_ONLY`), `SettingsCatalog` builders, `LIVE` and `LiveProperties`,
-      the administrator's cards (`admin/settings/settings-page.ts`), `TeacherSettingsImport`, tests
-      of the catalog; `AGENTS.md` §6.1 / §9 and `backend/AGENTS.md` say the same.
-
-### Stage 386 — stamps of the commit content (D)
-
-- [x] 386.1 **D** `scripts/verify.sh staged <part>` (called by `.githooks/pre-commit`): the stamp is
-  compared with the tree of the commit's index (`git write-tree`), not the working tree; a part
-  runs in place only when the working tree equals that index (no unstaged edits, no untracked
-  files, no staged deletion of a file still on disk), else on an export of the index in a temporary
-  repository (`read-tree -u`, objects shared, `node_modules` linked when the lockfiles match). The
-  hook lists both paths of a rename and type changes. Stamp selftest covers partial staging,
-  untracked files and the export; AGENTS.md §5.
-
-## Backlog
+- A release is a `## vX.Y.Z` section (or `## Backlog
 
 - `ArchitectureTests.BUSINESS_MODULES` lacks `textbooks`: derive it like `SchemaIsolationTests`.
 
