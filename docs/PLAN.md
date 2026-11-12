@@ -19,6 +19,21 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
+## Next release
+
+Goals: the pre-commit hook verifies exactly the content of the commit; a stamp of the working tree
+no longer lets through a commit whose staged content was never checked.
+
+### Stage 383 — stamps of the commit content (D)
+
+- [x] 383.1 **D** `scripts/verify.sh staged <part>` (called by `.githooks/pre-commit`): the stamp is
+  compared with the tree of the commit's index (`git write-tree`), not the working tree; a part
+  runs in place only when the working tree equals that index (no unstaged edits, no untracked
+  files, no staged deletion of a file still on disk), else on an export of the index in a temporary
+  repository (`read-tree -u`, objects shared, `node_modules` linked when the lockfiles match). The
+  hook lists both paths of a rename and type changes. Stamp selftest covers partial staging,
+  untracked files and the export; AGENTS.md §5.
+
 ## Backlog
 
 After the bundle measurement of 2026-11-11 (see [0.47.1](archive/plans/v0.47.1.md)), not planned:
