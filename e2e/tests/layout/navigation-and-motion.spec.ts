@@ -6,7 +6,7 @@ import { create } from '../support/create';
  * Version 0.16.3 (M3 Expressive alignment, navigation and motion): the flexible navigation bar is 64 px with a
  * 56x32 indicator and no top border, the collapsed rail is 96 px, and a dialog enters on the M3E springs (scale on
  * a spatial spring, opacity on an effects spring) instead of PrimeNG's animation, and the help side sheet
- * leaves without flashing back.
+ * leaves without flashing back. Version 0.48.0: pages change by fade through, and the parts are named only while it runs.
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -100,4 +100,32 @@ test('the help side sheet leaves without flashing back in its place', async ({ p
   // once it starts moving out it never comes back to the left
   const furthest = lefts.reduce((max, left, index) => (index > 0 ? Math.max(max, left) : left));
   expect(lefts.at(-1)).toBeGreaterThanOrEqual(furthest - 20);
+});
+
+test('a page of another section fades through, and nothing stays named after it', async ({
+  page,
+}) => {
+  await signIn(page, 1280);
+  await page.goto('/teacher');
+  await page.evaluate(() => {
+    const seen: string[] = [];
+    (window as unknown as { tbPageMotions: string[] }).tbPageMotions = seen;
+    new MutationObserver(() => {
+      const motion = document.documentElement.getAttribute('data-tb-page');
+      if (motion !== null) {
+        seen.push(motion);
+      }
+    }).observe(document.documentElement, { attributeFilter: ['data-tb-page'] });
+  });
+  await page.locator('tb-side-nav').getByRole('link', { name: 'Расписание' }).click();
+  await expect(page).toHaveURL(/\/teacher\/schedule/);
+
+  await expect
+    .poll(() =>
+      page.evaluate(() => (window as unknown as { tbPageMotions: string[] }).tbPageMotions),
+    )
+    .toEqual(['through']);
+  // a named element is a stacking context: sheets inside the content would sink under their scrim
+  await expect(page.locator('html')).not.toHaveAttribute('data-tb-page');
+  await expect(page.locator('.tb-shell__content')).toHaveCSS('view-transition-name', 'none');
 });
