@@ -21,10 +21,22 @@ don't read them unless the task needs history.
 
 ## Next release
 
+Release images are built faster: `arm64` no longer runs the AOT training under QEMU. ADR-0062
+(amends ADR-0032).
+
 - [x] 383.1 **B** `SchemaIsolationTests` skipped `textbooks`: derive the module list from
   `db/migration/<module>/` and fail when a module package has no migration directory. `textbooks`
   checked — no cross-schema SQL, FK or JOIN. _`ArchitectureTests.BUSINESS_MODULES` has the same
   gap — Backlog._
+
+### Stage 384 — native runners for the release images (D, ADR-0062)
+
+- [x] 384.1 **D** `.github/workflows/ci.yml`: job `image` builds each image per architecture on a
+  native runner (`ubuntu-latest`, `ubuntu-24.04-arm`) and pushes it by digest, `gha` cache scope
+  `<target>-<arch>`; job `publish` joins the digests with `docker buildx imagetools create` under
+  `X.Y.Z`, `X.Y`, `latest` and checks that the index has both architectures. `docker/Dockerfile`
+  comment, ADR-0062. *Not run in the cloud session (no Docker daemon); checked by the next release
+  tag.*
 
 ## Backlog
 
