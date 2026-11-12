@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Prepares a fresh clone for an agent (AGENTS.md §12): the cloud environment's setup script.
+# Prepares a fresh clone for an agent (docs/agent-environment.md): the cloud environment's setup script.
 # Idempotent: a second run changes nothing.
 #
 set -euo pipefail
