@@ -25,19 +25,7 @@ don't read them unless the task needs history.
 
 ## Next release
 
-Goals: every motion of the interface runs on the M3E springs; nothing is left on Aura's timing.
-
-### 388. Missing M3E motion
-
-- [x] 388.1 **F** *simple* — springs for what still used Aura's timing: the semantic
-  `transitionDuration` of `core/theme/teacher-box-preset.ts` (all PrimeNG controls), the checkbox
-  mark, the radio dot, the progress bar value; `p-message` enter / leave and the tab indicator in
-  `styles/_motion.scss`, `styles/_sheets.scss`; the statement chevron of
-  `homework/teacher/task-review-page.ts`; a `design-rules.spec.ts` check against hand-timed
-  transitions; design-system §1 «Motion».
-- [x] 388.2 **F** *complex* — page transitions: `withViewTransitions` in `app.config.ts`,
-  `core/routing/page-transitions.ts` picks fade through or shared axis X, `styles/_motion.scss`
-  «Pages»; design-system §1 «Motion».
+_Empty: the next release section is added when work starts._
 
 ## Backlog
 
