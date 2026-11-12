@@ -17,11 +17,24 @@ import org.junit.jupiter.api.Test;
  */
 class SchemaIsolationTests {
 
-    static final List<String> MODULES = List.of("identity", "billing", "homework", "notifications", "ai", "schedule",
-            "meetings", "boards", "platform");
-
     private static final Path JAVA_ROOT = Path.of("src/main/java/ru/teacherbox");
     private static final Path MIGRATIONS_ROOT = Path.of("src/main/resources/db/migration");
+
+    /** Every module that owns a schema: derived from the migration directories, so none can be left out. */
+    static final List<String> MODULES = modulesWithMigrations();
+
+    @Test
+    void everyModuleWithMigrationsOrCodeIsChecked() throws IOException {
+        assertThat(MODULES).as("modules found by migration directories").isNotEmpty().contains("textbooks");
+        List<String> unchecked = new ArrayList<>();
+        try (Stream<Path> dirs = Files.list(JAVA_ROOT)) {
+            dirs.filter(Files::isDirectory)
+                    .map(dir -> dir.getFileName().toString())
+                    .filter(name -> !name.equals("shared") && !MODULES.contains(name))
+                    .forEach(unchecked::add);
+        }
+        assertThat(unchecked).as("module packages without a migration directory").isEmpty();
+    }
 
     @Test
     void modulesDoNotReferenceForeignSchemas() throws IOException {
@@ -51,6 +64,14 @@ class SchemaIsolationTests {
         Pattern pattern = Pattern.compile(
                 "(?i)\\b(from|join|into|update|table|references|exists)\\s+" + schema + "\\.");
         return pattern.matcher(content).find();
+    }
+
+    private static List<String> modulesWithMigrations() {
+        try (Stream<Path> dirs = Files.list(MIGRATIONS_ROOT)) {
+            return dirs.filter(Files::isDirectory).map(dir -> dir.getFileName().toString()).sorted().toList();
+        } catch (IOException e) {
+            throw new java.io.UncheckedIOException(e);
+        }
     }
 
     private static List<Path> sourcesOf(String module) throws IOException {
