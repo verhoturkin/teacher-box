@@ -105,6 +105,8 @@ elevation with their values; springs —
     section and back — shared axis X: both slide 30 dp on default spatial and cross-fade. Nothing
     moves on the first load, when only the parameters of the route change (a list-detail pane, a
     tab, a filter) and under reduced motion; browsers without view transitions swap the page.
+    The parts get their `view-transition-name` only while `<html data-tb-page>` is set: a named
+    element is a stacking context, and a sheet drawn inside the content sank under its scrim.
   - No transition or animation is timed by hand (`200ms`, `ease`, `cubic-bezier`): only the spring
     tokens; loops (`infinite`) are the exception. `design-rules.spec.ts` checks it outside
     `core/theme/` and `_tokens.scss`.

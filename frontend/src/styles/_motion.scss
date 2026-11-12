@@ -179,20 +179,24 @@
  * effects, the new one grows from 0.92 on default spatial and fades in on default effects. Shared axis
  * X — deeper into a section and back: both slide 30 dp on default spatial and cross-fade.
  */
-.tb-shell__content {
-  view-transition-name: tb-page;
-}
+:root[data-tb-page] {
+  /* named only while a page changes: a named element is a stacking context of its own, and a sheet
+     drawn inside the content would sink under its scrim */
+  .tb-shell__content {
+    view-transition-name: tb-page;
+  }
 
-.tb-shell__header {
-  view-transition-name: tb-top-bar;
-}
+  .tb-shell__header {
+    view-transition-name: tb-top-bar;
+  }
 
-tb-side-nav {
-  view-transition-name: tb-side-nav;
-}
+  tb-side-nav {
+    view-transition-name: tb-side-nav;
+  }
 
-.tb-bottom-nav {
-  view-transition-name: tb-bottom-bar;
+  .tb-bottom-nav {
+    view-transition-name: tb-bottom-bar;
+  }
 }
 
 ::view-transition-group(*),
