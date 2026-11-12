@@ -18,7 +18,7 @@ import { Menu } from 'primeng/menu';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
-import { Button, ButtonDirective, ButtonLabel } from 'primeng/button';
+import { Button } from 'primeng/button';
 import { Placed, ToBoardDialog } from '@features/boards/parts';
 import { injectMobile, injectWindowSize } from '@core/layout/mobile';
 import { FileSaver } from '@shared/files/file-saver';
@@ -32,41 +32,24 @@ import {
   AssignmentDetails,
   Attachment,
   QuizStats,
-  TaskStatus,
   TaskSummary,
 } from '../data-access/homework.models';
 import { AttachmentList } from '../ui/attachment-list';
 import { TextbookList } from '../ui/textbook-list';
 import { VideoList } from '../ui/video-list';
 import { AssignMoreDialog } from './assign-more-dialog';
-import { TaskStatusTag } from '../ui/task-status-tag';
-import { EmptyState } from '@shared/ui/empty-state';
 import { PageHeader } from '@shared/ui/page-header';
 import { Confirm } from '@shared/ui/confirm';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { pageDetail } from '@core/routing/page-detail';
-import { Avatar } from '@shared/ui/avatar';
-import { TeacherColors } from '@features/identity/parts';
 import { T } from '../i18n/texts';
+import { AssignmentGroups, AssignmentTiles } from './assignment/assignment-students';
+import { QuizMistakes } from './assignment/quiz-mistakes';
+import { TaskLines } from './assignment/task-lines';
 
 type Tab = 'students' | 'task' | 'errors';
-
-interface StudentGroup {
-  readonly key: string;
-  readonly status: TaskStatus;
-  readonly icon: string;
-  readonly label: string;
-  readonly tasks: readonly TaskSummary[];
-}
-
-const GROUPS: readonly Omit<StudentGroup, 'tasks'>[] = [
-  { key: 'review', status: 'SUBMITTED', icon: 'tb-i-rate_review', label: T.page.groupToReview },
-  { key: 'returned', status: 'RETURNED', icon: 'tb-i-replay', label: T.page.groupReturned },
-  { key: 'waiting', status: 'ASSIGNED', icon: 'tb-i-schedule', label: T.page.groupWaiting },
-  { key: 'accepted', status: 'ACCEPTED', icon: 'tb-i-check_circle', label: T.page.groupAccepted },
-];
 
 /** The text of the assignment is folded to three lines once it is longer than this (or has more lines). */
 const FOLD_LENGTH = 160;
@@ -85,16 +68,14 @@ const FOLD_LINES = 3;
   imports: [
     PaneHeader,
     VideoList,
-    Avatar,
-    EmptyState,
+    AssignmentGroups,
+    AssignmentTiles,
     Button,
-    ButtonDirective,
-    ButtonLabel,
     MarkdownView,
     AttachmentList,
     AssignMoreDialog,
     TextbookList,
-    TaskStatusTag,
+    QuizMistakes,
     ToBoardDialog,
     PageHeader,
     LoadStateView,
@@ -207,72 +188,13 @@ const FOLD_LINES = 3;
                 (onClick)="assignMore.open(assignment.draftStudentIds)"
               />
             </div>
-            @for (group of groups(); track group.key) {
-              <section class="tb-asg-group" [attr.aria-labelledby]="'tb-asg-group-' + group.key">
-                <h3
-                  class="tb-asg-group__head tb-asg-group__head--{{ group.key }}"
-                  [id]="'tb-asg-group-' + group.key"
-                >
-                  <i class="tb-i {{ group.icon }}" aria-hidden="true"></i>
-                  {{ group.label }}
-                  <span class="tb-asg-group__count">· {{ group.tasks.length }}</span>
-                </h3>
-                <ul class="tb-list tb-list--clamp tb-list--own-trail">
-                  @for (task of group.tasks; track task.taskId) {
-                    <li>
-                      <tb-avatar
-                        class="tb-list__lead"
-                        [attr.data-tb-label]="colors.studentLabel(task.studentId)"
-                        [name]="task.studentName"
-                        [photo]="task.studentAvatar"
-                      />
-                      <div class="tb-list__text">
-                        <button
-                          type="button"
-                          class="tb-list__title tb-link-button"
-                          [attr.aria-label]="t.action(t.open, task.studentName)"
-                          (click)="reviewWork.emit(task.taskId)"
-                        >
-                          {{ task.studentName }}
-                        </button>
-                        <span
-                          class="tb-list__supporting"
-                          [class.tb-negative]="task.overdue && task.submittedAt === null"
-                          >{{ rowLine(task, assignment.dueAt) }}</span
-                        >
-                      </div>
-                      <!-- --icons: the one button stays on the right of the narrow column -->
-                      <div class="tb-list__trail tb-list__trail--icons">
-                        @if (task.status === 'SUBMITTED') {
-                          <p-button
-                            [label]="t.review"
-                            [ariaLabel]="t.action(t.review, task.studentName)"
-                            (onClick)="reviewWork.emit(task.taskId)"
-                          />
-                        } @else if (task.status === 'ACCEPTED') {
-                          <p-button
-                            severity="secondary"
-                            [label]="t.open"
-                            [ariaLabel]="t.action(t.open, task.studentName)"
-                            (onClick)="reviewWork.emit(task.taskId)"
-                          />
-                        } @else {
-                          <p-button
-                            severity="secondary"
-                            [label]="t.remind"
-                            [ariaLabel]="t.action(t.remind, task.studentName)"
-                            [loading]="busy.is(task.studentId)"
-                            (onClick)="remind(task)"
-                          />
-                        }
-                      </div>
-                    </li>
-                  }
-                </ul>
-              </section>
-            } @empty {
-              <tb-empty-state icon="tb-i-send" [title]="t.notAssigned" />
-            }
+            <tb-assignment-groups
+              [tasks]="assignment.tasks"
+              [dueAt]="assignment.dueAt"
+              [busy]="busy"
+              (open)="reviewWork.emit($event)"
+              (remind)="remind($event)"
+            />
             <ng-container [ngTemplateOutlet]="errors" />
           </aside>
         </div>
@@ -299,75 +221,13 @@ const FOLD_LINES = 3;
                   (onClick)="assignMore.open(assignment.draftStudentIds)"
                 />
               </div>
-              @if (assignment.tasks.length > 0) {
-                <ul class="tb-asg__tiles" [attr.aria-label]="t.students">
-                  @for (task of assignment.tasks; track task.taskId) {
-                    <li class="tb-asg-tile">
-                      <div class="tb-asg-tile__head">
-                        <tb-avatar
-                          [attr.data-tb-label]="colors.studentLabel(task.studentId)"
-                          [name]="task.studentName"
-                          [photo]="task.studentAvatar"
-                        />
-                        <div class="tb-asg-tile__who">
-                          <span class="tb-asg-tile__name">{{ task.studentName }}</span>
-                          <span
-                            class="tb-asg-tile__line"
-                            [class.tb-negative]="task.overdue && task.submittedAt === null"
-                            >{{ statusLine(task, assignment.dueAt) }}</span
-                          >
-                        </div>
-                        <tb-task-status inline [status]="task.status" />
-                      </div>
-                      @if (task.answerPreview; as preview) {
-                        <p class="tb-asg-tile__preview">{{ preview }}</p>
-                      }
-                      <div class="tb-asg-tile__foot">
-                        @if (task.quizScore !== null && task.quizMax !== null) {
-                          <span class="tb-asg-tile__meta"
-                            ><i class="tb-i tb-i-quiz" aria-hidden="true"></i
-                            >{{ t.quiz(task.quizScore, task.quizMax) }}</span
-                          >
-                        }
-                        @if (task.answerFiles > 0) {
-                          <span class="tb-asg-tile__meta"
-                            ><i class="tb-i tb-i-attach_file" aria-hidden="true"></i
-                            >{{ t.files(task.answerFiles) }}</span
-                          >
-                        }
-                        <span class="tb-asg__spacer"></span>
-                        @if (task.status === 'ASSIGNED' || task.status === 'RETURNED') {
-                          <p-button
-                            severity="secondary"
-                            [label]="t.remind"
-                            [ariaLabel]="t.action(t.remind, task.studentName)"
-                            [loading]="busy.is(task.studentId)"
-                            (onClick)="remind(task)"
-                          />
-                        }
-                        <button
-                          pButton
-                          type="button"
-                          severity="secondary"
-                          (click)="reviewWork.emit(task.taskId)"
-                          [attr.aria-label]="
-                            t.action(
-                              task.status === 'SUBMITTED' ? t.review : t.open,
-                              task.studentName
-                            )
-                          "
-                        >
-                          <span pButtonLabel>{{
-                            task.status === 'SUBMITTED' ? t.review : t.open
-                          }}</span>
-                        </button>
-                      </div>
-                    </li>
-                  }
-                </ul>
-              } @else {
-                <tb-empty-state icon="tb-i-send" [title]="t.notAssigned" />
-              }
+              <tb-assignment-tiles
+                [tasks]="assignment.tasks"
+                [dueAt]="assignment.dueAt"
+                [busy]="busy"
+                (open)="reviewWork.emit($event)"
+                (remind)="remind($event)"
+              />
             </section>
           }
 
@@ -420,26 +280,7 @@ const FOLD_LINES = 3;
 
       <ng-template #errors>
         @if (hasQuiz() && stats(); as quizStats) {
-          <section class="tb-asg__side">
-            <h2 class="tb-asg__label">{{ tq.stats }}</h2>
-            @if (quizStats.students === 0) {
-              <p class="tb-muted">{{ tq.statsNone }}</p>
-            } @else {
-              <ol class="tb-asg-stats">
-                @for (q of quizStats.questions; track q.questionId; let n = $index) {
-                  <li class="tb-asg-stats__row" [attr.title]="plain(q.text)">
-                    <span class="tb-asg-stats__n">{{ n + 1 }}</span>
-                    <span class="tb-asg-stats__bar" aria-hidden="true"
-                      ><span [style.inline-size.%]="(q.wrong / quizStats.students) * 100"></span
-                    ></span>
-                    <span class="tb-asg-stats__count">{{
-                      tq.statsRow(q.wrong, quizStats.students)
-                    }}</span>
-                  </li>
-                }
-              </ol>
-            }
-          </section>
+          <tb-quiz-mistakes [stats]="quizStats" />
         }
       </ng-template>
 
@@ -546,44 +387,6 @@ const FOLD_LINES = 3;
       gap: var(--tb-space-4);
     }
 
-    .tb-asg-group {
-      display: grid;
-      gap: var(--tb-space-2);
-    }
-
-    /* a status group: the icon and the name in the status colour, the count muted (title small) */
-    .tb-asg-group__head {
-      display: flex;
-      align-items: center;
-      gap: var(--tb-space-2);
-      margin: 0;
-      font: var(--tb-type-title-s);
-
-      .tb-i {
-        font-size: 1.125rem;
-      }
-    }
-
-    .tb-asg-group__head--review {
-      color: var(--p-md-warning);
-    }
-
-    .tb-asg-group__head--returned {
-      color: var(--p-md-error);
-    }
-
-    .tb-asg-group__head--waiting {
-      color: var(--p-md-on-surface-variant);
-    }
-
-    .tb-asg-group__head--accepted {
-      color: var(--p-md-success);
-    }
-
-    .tb-asg-group__count {
-      color: var(--p-md-on-surface-variant);
-    }
-
     .tb-asg__main {
       flex: 999 1 560px;
       min-width: 0;
@@ -604,87 +407,6 @@ const FOLD_LINES = 3;
 
     .tb-asg__tabs {
       margin-block-end: var(--tb-space-4);
-    }
-
-    .tb-asg__tiles {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--tb-space-3);
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    /* two tiles do not fit below 36rem of the students' column: one column */
-    @container (width < 36rem) {
-      .tb-asg__tiles {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-
-    /* a student: a surface container tile (M3 filled card, 20 dp corners; our decision for the content) */
-    .tb-asg-tile {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-3);
-      padding: var(--tb-space-4);
-      border-radius: 20px;
-      background: var(--p-md-surface-container);
-    }
-
-    .tb-asg-tile__head {
-      display: flex;
-      align-items: center;
-      gap: var(--tb-space-3);
-    }
-
-    .tb-asg-tile__who {
-      display: flex;
-      flex: 1 1 0;
-      flex-direction: column;
-      min-width: 0;
-    }
-
-    .tb-asg-tile__name {
-      font: var(--tb-type-title-s);
-      overflow-wrap: anywhere;
-    }
-
-    .tb-asg-tile__line {
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-body-s);
-    }
-
-    /* the inset is a transparent border, not padding: the clamp cuts the text at the content edge, so no
-       half of a fourth line shows in the padding */
-    .tb-asg-tile__preview {
-      display: -webkit-box;
-      margin: 0;
-      border: var(--tb-space-3) solid transparent;
-      border-radius: 12px;
-      background: var(--p-md-surface);
-      font: var(--tb-type-body-m);
-      overflow: hidden;
-      overflow-wrap: anywhere;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3;
-    }
-
-    /* a tile stretched to the row's height keeps its buttons at the bottom */
-    .tb-asg-tile__foot {
-      display: flex;
-      margin-block-start: auto;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--tb-space-3);
-    }
-
-    .tb-asg-tile__meta {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--tb-space-1);
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-body-s);
     }
 
     .tb-asg__aside {
@@ -715,48 +437,10 @@ const FOLD_LINES = 3;
     .tb-asg__fold {
       align-self: flex-start;
     }
-
-    /* the mistakes of a question: the number, a bar of the share of students and the count (our decision) */
-    .tb-asg-stats {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-3);
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .tb-asg-stats__row {
-      display: grid;
-      grid-template-columns: 2rem minmax(0, 1fr) auto;
-      align-items: center;
-      gap: var(--tb-space-3);
-    }
-
-    .tb-asg-stats__n,
-    .tb-asg-stats__count {
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-label-m);
-      white-space: nowrap;
-    }
-
-    .tb-asg-stats__bar {
-      block-size: 8px;
-      border-radius: var(--tb-shape-full, 999px);
-      background: var(--p-md-surface-container-highest);
-      overflow: hidden;
-    }
-
-    .tb-asg-stats__bar > span {
-      display: block;
-      block-size: 100%;
-      background: var(--p-md-error);
-    }
   `,
 })
 export class AssignmentPage {
   protected readonly t = T.page;
-  protected readonly colors = inject(TeacherColors);
   protected readonly tv = T.videos;
   protected readonly r = T.remove;
   protected readonly m = T.menu;
@@ -772,7 +456,7 @@ export class AssignmentPage {
   protected readonly oneLine = computed(
     () => this.size() !== 'compact' && this.size() !== 'medium',
   );
-  private readonly dates = new DatePipe(inject(LOCALE_ID));
+  private readonly lines = new TaskLines(new DatePipe(inject(LOCALE_ID)));
   protected readonly busy = new Busy();
 
   /** Route parameter. */
@@ -818,14 +502,6 @@ export class AssignmentPage {
   protected readonly wide = computed(
     () => this.size() === 'large' || this.size() === 'extra-large',
   );
-  /** The students by status (sketch 4): what to review first, then the sent back, the waiting, the accepted. */
-  protected readonly groups = computed<StudentGroup[]>(() => {
-    const tasks = this.details()?.tasks ?? [];
-    return GROUPS.map((group) => ({
-      ...group,
-      tasks: tasks.filter((task) => task.status === group.status),
-    })).filter((group) => group.tasks.length > 0);
-  });
   protected readonly te = T.editor;
   /** The text of the assignment is shown whole. */
   protected readonly expanded = signal(false);
@@ -879,72 +555,13 @@ export class AssignmentPage {
       });
   }
 
-  /** A question's Markdown as one plain line for the stats. */
-  protected plain(text: string): string {
-    return text.replace(/[#*_`>-]/g, '').trim();
-  }
-
-  protected date(value: string): string {
-    return this.dates.transform(value, 'dd.MM.yyyy HH:mm') ?? '';
-  }
-
   /** «5 учеников · до 10.09.2026 15:00». */
   protected subtitle(assignment: AssignmentDetails): string {
     const due =
       assignment.dueAt === null
         ? this.t.noDueDate.toLocaleLowerCase()
-        : this.t.until(this.date(assignment.dueAt));
+        : this.t.until(this.lines.date(assignment.dueAt));
     return `${this.t.recipients(assignment.tasks.length)} · ${due}`;
-  }
-
-  /** Whole days from the day of `value` to today (0: today, 1: yesterday). */
-  private daysAgo(value: string): number {
-    const day = (date: Date): number =>
-      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
-    return Math.round((day(new Date()) - day(new Date(value))) / 86_400_000);
-  }
-
-  private time(value: string): string {
-    return this.dates.transform(value, 'HH:mm') ?? '';
-  }
-
-  private when(value: string): string {
-    const days = this.daysAgo(value);
-    return days === 0
-      ? this.t.today
-      : days === 1
-        ? this.t.yesterday
-        : (this.dates.transform(value, 'dd.MM') ?? '');
-  }
-
-  /** «Сдано сегодня, 09:12», «Принято вчера · оценка 4», «Отправлено на доработку 28.10», «Просрочено на 3 дня». */
-  protected statusLine(task: TaskSummary, dueAt: string | null): string {
-    if (task.status === 'ACCEPTED' && task.reviewedAt !== null) {
-      const when = this.when(task.reviewedAt);
-      return task.grade === null ? this.t.acceptedOn(when) : this.t.acceptedGrade(when, task.grade);
-    }
-    if (task.status === 'RETURNED' && task.reviewedAt !== null) {
-      return this.t.returnedOn(this.dates.transform(task.reviewedAt, 'dd.MM') ?? '');
-    }
-    if (task.submittedAt === null) {
-      return task.overdue && dueAt !== null
-        ? this.t.overdueBy(Math.max(1, this.daysAgo(dueAt)))
-        : this.t.notSubmitted;
-    }
-    const days = this.daysAgo(task.submittedAt);
-    return days === 0
-      ? this.t.submittedToday(this.time(task.submittedAt))
-      : days === 1
-        ? this.t.submittedYesterday(this.time(task.submittedAt))
-        : this.t.submittedAt(this.date(task.submittedAt));
-  }
-
-  /** A compact row's one line: the status line and the quiz score. */
-  protected rowLine(task: TaskSummary, dueAt: string | null): string {
-    const line = this.statusLine(task, dueAt);
-    return task.quizScore !== null && task.quizMax !== null
-      ? `${line} · ${this.t.quiz(task.quizScore, task.quizMax)}`
-      : line;
   }
 
   protected quizSummary(assignment: AssignmentDetails): string {

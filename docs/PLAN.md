@@ -42,7 +42,7 @@ Stage 353 of the agent chain; renumbered because stage 353 is taken (v0.44.0).
   first), surefire `redirectTestOutputToFile`, `trimStackTrace`. Entry: `backend/pom.xml`.
 - [x] 387.4 (353.4) Outlines for big docs: a short summary/outline at the top of
   `docs/modules/{homework,schedule,boards,ai}.md`, `e2e/README.md`, `docs/glossary.md`.
-- [ ] 387.5 (353.5) **F** Split the largest homework pages:
+- [x] 387.5 (353.5) **F** Split the largest homework pages:
   `features/homework/teacher/{assignment-editor-page,assignments-page,assignment-page}.ts` into
   smaller components.
 
