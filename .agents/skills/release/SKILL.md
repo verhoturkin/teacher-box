@@ -14,7 +14,8 @@ Do it as the last stage of the release section in `docs/PLAN.md`, in one commit
    - **Wiki** (`docs/wiki/`, Russian) — check that the release's substeps updated every page they change for
      users: install, update, the `teacherbox` command, settings (`TEACHERBOX_*` with defaults), integrations,
      backups, features, FAQ; fill the gaps and remove notes the release makes obsolete
-     (`git diff vPREV -- docs/wiki` shows what changed). CI publishes it with the tag (step 7).
+     (`git diff vPREV -- docs/wiki` shows what changed). CI publishes it with the release
+     (step 7).
    - README only if the basics or its links change (it stays slim and links the wiki); `docs/operations.md` if
      operations changed.
 2. **E2E** — extend the relevant functional suites under `e2e/tests/` (see `e2e/README.md`), reusing
@@ -32,10 +33,15 @@ Do it as the last stage of the release section in `docs/PLAN.md`, in one commit
 5. **Plan** — tick the stage; move the whole release section from `docs/PLAN.md` to
    `docs/archive/plans/vX.Y.Z.md` (heading `# vX.Y.Z — plan archive (stages N–M)`), add a row to
    `docs/archive/plans/README.md`, move unfinished items to Backlog.
-6. **Verify** — `./scripts/verify.sh` (backend, frontend, docker, e2e compile) green before committing.
-7. **Tag** — before the last push of the release, put an annotated tag `vX.Y.Z` on the release commit
-   (`git tag -a vX.Y.Z -m "X.Y.Z"`) and push it together with the branch
-   (`git push origin <branch> vX.Y.Z`). The tag push makes CI publish the images to GHCR. If the release
-   commit changes after tagging (a fix before the push), move the tag to the new commit.
-8. **Wiki** — the tag's CI run publishes `docs/wiki/` after the images (job «Publish the wiki»); check that it
-   passed and glance at the changed pages on GitHub. Republish by hand — workflow `wiki.yml` on the tag.
+6. **Verify** — `./scripts/verify.sh` (backend, frontend, docker, e2e compile) green before
+   committing; `./scripts/release-version.sh` prints `version=X.Y.Z`, `release=true` (one version
+   everywhere, the CHANGELOG section found).
+7. **No tag** (ADR-0063) — push the branch and open the PR as usual; never create or push `vX.Y.Z`.
+   The PR's job «Release version» repeats the check of step 6. Merging the PR into `main` **is** the
+   release: that CI run publishes the images, then tags the `main` commit `vX.Y.Z`, creates the
+   GitHub release from the CHANGELOG section and publishes `docs/wiki/`. So the version is bumped
+   only in the release commit, never in other branches.
+8. **After the merge** — check the `main` run: jobs «Tag and GitHub release» and «Publish the wiki»
+   passed, the release is on GitHub. A failed release has no tag: fix it with «Re-run failed jobs»
+   (or the next merge to `main`, which releases the same version). Republish the wiki by hand —
+   workflow `wiki.yml` on the tag.
