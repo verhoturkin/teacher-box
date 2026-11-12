@@ -27,13 +27,6 @@ don't read them unless the task needs history.
 
 _Empty: the next release section is added when work starts._
 
-### 389. Release from `main`
-
-- [x] 389.1 **D** *complex* — a release is a merge to `main` of a new version, CI tags it
-  (ADR-0063): `scripts/release-version.sh`, jobs `version` and `release` in
-  `.github/workflows/ci.yml` (no `tags` trigger, `main` runs not cancelled), skill `release`
-  steps 6–8.
-
 ## Backlog
 
 - Flaky `LiveAdminSettingsIntegrationTest.theNextSignInTakesTheNewLifetimeAndTheRateLimit`: expected
