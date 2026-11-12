@@ -1,4 +1,8 @@
 {
+  "env": {
+    "BASH_MAX_OUTPUT_LENGTH": "20000",
+    "MAX_MCP_OUTPUT_TOKENS": "15000"
+  },
   "permissions": {
     "deny": [
       "Read(**/package-lock.json)",
@@ -10,7 +14,9 @@
       "Read(backend/target/test-classes/**)",
       "Read(backend/target/site/**/*.html)",
       "Read(backend/data/**)",
-      "Read(e2e/test-results/**)"
+      "Read(e2e/test-results/**)",
+      "Read(frontend/src/testing/help-articles.fixture.json)",
+      "Read(docs/assets/**)"
     ],
     "allow": [
       "Bash(./mvnw:*)",
@@ -28,6 +34,18 @@
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/big-read.mjs\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit|MultiEdit",

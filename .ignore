@@ -3,3 +3,6 @@
 docs/archive/
 docs/sketches/
 **/package-lock.json
+# Generated, large: the help-text fixture (read only by its spec) and the screenshots.
+frontend/src/testing/help-articles.fixture.json
+docs/assets/

@@ -32,7 +32,7 @@ Stage 353 of the agent chain; renumbered because stage 353 is taken (v0.44.0).
   (`docs/agent-environment.md`: layout, all commands, stamps, local and cloud environment; the
   m3-expressive details to `frontend/AGENTS.md`). Section numbers kept. Entry: `AGENTS.md`,
   `CLAUDE.md`.
-- [ ] 387.2 (353.2) Harness: hide big generated files from search/read (`.ignore`,
+- [x] 387.2 (353.2) Harness: hide big generated files from search/read (`.ignore`,
   `permissions.deny`: `frontend/src/testing/help-articles.fixture.json`, `docs/assets/`), output
   limits in `.claude/settings.json` `env` (`BASH_MAX_OUTPUT_LENGTH`, `MAX_MCP_OUTPUT_TOKENS`), a
   PreToolUse hook that refuses a whole-file Read of a file over ~40 KB. Entry: `.ignore`,
