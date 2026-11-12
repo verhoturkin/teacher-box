@@ -10,8 +10,8 @@
 #
 # Multi-platform (ADR-0032): the jar and the SPA do not depend on the architecture, so the build stages run on the
 # builder's platform ($BUILDPLATFORM) once, and only the runtime stages are built per target platform. The AOT cache
-# of the JVM (stage backend-aot) belongs to one JVM build, so its training run is a per-platform stage too (under
-# emulation for a platform other than the builder's).
+# of the JVM (stage backend-aot) belongs to one JVM build, so its training run is a per-platform stage too: CI builds
+# each platform on a runner of that architecture (ADR-0062); a local build for another platform emulates it.
 
 ARG NODE_IMAGE=node:24-alpine
 ARG MAVEN_IMAGE=maven:3.9-eclipse-temurin-25-alpine
