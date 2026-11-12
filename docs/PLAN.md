@@ -22,7 +22,7 @@ don't read them unless the task needs history.
 ## Next release
 
 Release images are built faster: `arm64` no longer runs the AOT training under QEMU. ADR-0062
-(amends ADR-0032).
+(amends ADR-0032). The pre-commit hook verifies exactly the content of the commit.
 
 - [x] 383.1 **B** `SchemaIsolationTests` skipped `textbooks`: derive the module list from
   `db/migration/<module>/` and fail when a module package has no migration directory. `textbooks`
@@ -44,6 +44,16 @@ Release images are built faster: `arm64` no longer runs the AOT training under Q
       (`TEACHER` / `ADMIN` / `ENV_ONLY`), `SettingsCatalog` builders, `LIVE` and `LiveProperties`,
       the administrator's cards (`admin/settings/settings-page.ts`), `TeacherSettingsImport`, tests
       of the catalog; `AGENTS.md` §6.1 / §9 and `backend/AGENTS.md` say the same.
+
+### Stage 386 — stamps of the commit content (D)
+
+- [x] 386.1 **D** `scripts/verify.sh staged <part>` (called by `.githooks/pre-commit`): the stamp is
+  compared with the tree of the commit's index (`git write-tree`), not the working tree; a part
+  runs in place only when the working tree equals that index (no unstaged edits, no untracked
+  files, no staged deletion of a file still on disk), else on an export of the index in a temporary
+  repository (`read-tree -u`, objects shared, `node_modules` linked when the lockfiles match). The
+  hook lists both paths of a rename and type changes. Stamp selftest covers partial staging,
+  untracked files and the export; AGENTS.md §5.
 
 ## Backlog
 

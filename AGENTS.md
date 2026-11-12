@@ -139,9 +139,12 @@ docker compose -f compose.yaml -f compose.build.yaml up -d --build   # build fro
 Windows: `mvnw.cmd`, bash scripts via Git Bash. **While iterating run only the affected tests**
 (`npm run test:only -- <path>`, `./mvnw -q test -Dtest=<Class>`); `./scripts/verify.sh <part>` once
 before committing. A failed step prints its log tail: read it, then grep `.verify-logs/<step>.log`;
-no whole logs, no verbose reruns. A part that passes writes `.verify-logs/<part>.ok` (fingerprint of
-the whole tree) and the pre-commit hook skips a part with a matching stamp, so run `verify.sh
-<part>` after the final edit; a part with a skipped check leaves no stamp.
+no whole logs, no verbose reruns. A part that passes writes `.verify-logs/<part>.ok` (the tree it
+checked); a part with a skipped check leaves no stamp. The pre-commit hook (`verify.sh staged
+<part>`) checks the content of the commit: it skips a part stamped for exactly the index tree, runs
+it in place when the working tree equals the index, else on a temporary export of the index (slower:
+`git add -p`, unstaged edits and untracked files cost a run). So stage everything, then run
+`verify.sh <part>` after the final edit.
 
 ## 6. Conventions
 

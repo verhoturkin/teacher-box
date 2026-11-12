@@ -25,20 +25,14 @@ while IFS= read -r file; do
     case "$file" in
         scripts/*.sh) docker=true ;;
     esac
-done < <(git diff --cached --name-only --diff-filter=ACMRD)
+# --no-renames: a moved file names both its old and its new part; no --diff-filter: type changes count too.
+done < <(git diff --cached --name-only --no-renames)
 
-# A part that already passed on exactly this working tree (stamp from scripts/verify.sh) is not run again;
-# any change, a failed or partly skipped run leaves no matching stamp.
-run_part() {
-    if "$ROOT/scripts/verify.sh" fresh "$1"; then
-        echo "==> $1: already verified on this tree, skipped"
-    else
-        "$ROOT/scripts/verify.sh" "$1"
-    fi
-}
-
+# Each part is checked on exactly the content of the commit (the index git hands to this hook, see
+# GIT_INDEX_FILE): skipped when a stamp of that very content exists, run in place when the working tree
+# equals the index, otherwise run on an export of the index (scripts/verify.sh, "staged").
 for part in docs backend frontend docker e2e; do
     if [ "${!part}" = true ]; then
-        run_part "$part"
+        "$ROOT/scripts/verify.sh" staged "$part"
     fi
 done
