@@ -200,6 +200,9 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar} -Xshare:off</argLine>
+                    <!-- Test stdout goes to target/surefire-reports/<Class>-output.txt, not the console. -->
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <trimStackTrace>true</trimStackTrace>
                 </configuration>
             </plugin>
             <plugin>

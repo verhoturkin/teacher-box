@@ -37,7 +37,7 @@ Stage 353 of the agent chain; renumbered because stage 353 is taken (v0.44.0).
   limits in `.claude/settings.json` `env` (`BASH_MAX_OUTPUT_LENGTH`, `MAX_MCP_OUTPUT_TOKENS`), a
   PreToolUse hook that refuses a whole-file Read of a file over ~40 KB. Entry: `.ignore`,
   `.claude/settings.json`, `.claude/hooks/`.
-- [ ] 387.3 (353.3) **B** Quiet backend test output: `logging.level.root: WARN` in
+- [x] 387.3 (353.3) **B** Quiet backend test output: `logging.level.root: WARN` in
   `backend/src/test/resources/config/application.yaml` (check `OutputCaptureExtension` users
   first), surefire `redirectTestOutputToFile`, `trimStackTrace`. Entry: `backend/pom.xml`.
 - [ ] 387.4 (353.4) Outlines for big docs: a short summary/outline at the top of

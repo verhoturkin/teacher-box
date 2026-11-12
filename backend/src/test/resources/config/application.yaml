@@ -15,6 +15,10 @@ teacherbox:
       requests: 0
 
 logging:
+  # Quiet test output; ChatEngineIntegrationTests asserts INFO lines of the audit log.
+  level:
+    root: WARN
+    teacherbox.audit: INFO
   file:
     # No log files in tests; the log search has its own fixtures.
     name: ""

@@ -109,3 +109,6 @@ branches ≥ 80 %.
 ./mvnw -q test -Dtest='Ledger*,ModularityTests'         # several
 ./mvnw spring-boot:run                  # run, data in ./data
 ```
+
+Test logs are quiet (root `WARN` in `src/test/resources/config/application.yaml`); a test's stdout
+goes to `target/surefire-reports/<Class>-output.txt`, stack traces are trimmed to the test.
