@@ -3,6 +3,14 @@
 Assignments, submissions, review, attachments, bound textbooks. Depends on: `shared`, `identity::api`,
 `textbooks::api`. Schema `homework`.
 
+**Outline** — read only the section you need (`grep -n '^##'`, then Read with offset/limit):
+
+- **Rules** — assignment and submission lifecycle, review, attachments, bound textbooks; start here.
+- **Contract (`homework::api`)** — facade methods, DTOs and events other modules use.
+- **Data** — tables of the `homework` schema and their invariants.
+- **REST** — endpoints with roles; read when adding or testing a controller.
+- **Frontend** — teacher and student screens, components and their behaviour.
+
 ## Rules
 
 - An **assignment** is given to one or more students; each student gets a **task** with status

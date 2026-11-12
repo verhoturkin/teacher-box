@@ -5,6 +5,15 @@ Cabinet inbox, messenger delivery (Telegram, VK, MAX), messenger bot dialogs, br
 ADRs: [0005](../adr/0005-notifications.md), [0009](../adr/0009-external-integrations.md),
 [0013](../adr/0013-bot-dialogs.md), [0061](../adr/0061-modules-write-their-notifications.md).
 
+**Outline** — read only the section you need (`grep -n '^##'`, then Read with offset/limit):
+
+- **Rules** — notice flow (ADR-0061), inbox, messenger delivery, bot dialogs, broadcasts;
+  start here.
+- **Contract** — what other modules publish or call.
+- **Data** — tables of the `notifications` schema.
+- **REST** — endpoints with roles.
+- **Frontend** — inbox, notification settings and bot screens.
+
 ## Rules
 
 - **Modules write their notices (ADR-0061, stage 380).** A module publishes

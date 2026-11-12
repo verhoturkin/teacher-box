@@ -6,6 +6,12 @@ LLM features for the teacher: homework draft, quiz questions draft, review draft
 texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integration.md),
 [0009](../adr/0009-external-integrations.md). **Load the `claude-api` skill before changing LLM code.**
 
+**Outline** — read only the section you need (`grep -n '^##'`, then Read with offset/limit):
+
+- **Rules** — providers and models, draft kinds, prompts, limits, errors; start here.
+- **Data, REST** — settings and tables of the `ai` schema, endpoints with roles.
+- **Frontend** — draft dialogs and AI settings screens.
+
 ## Rules
 
 - Providers and models ([ADR-0057](../adr/0057-several-ai-providers.md), since 364.1):

@@ -3,6 +3,15 @@
 Tests are organized by functionality, not by the release that introduced a regression.
 Add new checks to the relevant suite; retain cross-module workflows in `journeys/`.
 
+**Outline** — read only the section you need (`grep -n '^##'`, then Read with offset/limit):
+
+- **Rules** — where new E2E checks go and what to keep; start here.
+- **Running** — commands to run suites and single specs.
+- **Shards and instances** — how suites are split across portal instances.
+- **Boundaries and setup** — what a suite may touch and shared setup in `tests/support`.
+- **Further test cleanup** — how to remove an assertion safely.
+- **Migration map** — where scenarios of the old per-version specs went.
+
 ## Rules
 
 E2E regressions belong in functional suites under `tests/`, never in `version-X-Y-Z.spec.ts` files.
