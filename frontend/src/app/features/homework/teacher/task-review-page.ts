@@ -276,7 +276,7 @@ import { NextWork, ReviewSheet } from './review-sheet';
     }
 
     .tb-task__chevron {
-      transition: rotate 200ms;
+      transition: rotate var(--tb-spring-standard-fast-spatial);
     }
 
     .tb-task__statement--open .tb-task__chevron {

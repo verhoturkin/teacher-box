@@ -42,6 +42,19 @@
   }
 }
 
+@keyframes tb-motion-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* an inline message opens its line, the snackbar leaves the line it took */
+@keyframes tb-motion-expand {
+  from {
+    grid-template-rows: 0fr;
+  }
+}
+
 /* the snackbar leaves the line it took, the others close up */
 @keyframes tb-motion-collapse {
   to {
@@ -129,6 +142,23 @@
 }
 
 /* The snackbar: grows from its middle on the fast spring, leaves by fading and closing its line */
+/*
+ * Inline messages (ours: M3 publishes no motion for them): instead of Aura's 0.3 s ease-out they open
+ * their line without a bounce (the content under them must not jump) and fade in on the default
+ * effects spring; they leave like the snackbar.
+ */
+.p-message.p-message-enter-active {
+  animation:
+    tb-motion-expand var(--tb-spring-standard-fast-spatial),
+    tb-motion-fade-in var(--tb-spring-default-effects);
+}
+
+.p-message.p-message-leave-active {
+  animation:
+    tb-motion-fade-out var(--tb-spring-fast-effects) forwards,
+    tb-motion-collapse var(--tb-spring-standard-fast-spatial) forwards;
+}
+
 .p-toast-message.p-toast-message-enter-active {
   --tb-motion-scale: 0.8;
 
@@ -141,6 +171,87 @@
   animation:
     tb-motion-fade-out var(--tb-spring-fast-effects) forwards,
     tb-motion-collapse var(--tb-spring-standard-fast-spatial) forwards;
+}
+
+/*
+ * Pages (core/routing/page-transitions.ts; M3 transition patterns, ours on M3E springs): only the
+ * content moves, the bars stay. Fade through — between destinations: the old page fades out on fast
+ * effects, the new one grows from 0.92 on default spatial and fades in on default effects. Shared axis
+ * X — deeper into a section and back: both slide 30 dp on default spatial and cross-fade.
+ */
+.tb-shell__content {
+  view-transition-name: tb-page;
+}
+
+.tb-shell__header {
+  view-transition-name: tb-top-bar;
+}
+
+tb-side-nav {
+  view-transition-name: tb-side-nav;
+}
+
+.tb-bottom-nav {
+  view-transition-name: tb-bottom-bar;
+}
+
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation: none;
+}
+
+::view-transition-old(tb-page),
+::view-transition-new(tb-page) {
+  mix-blend-mode: normal;
+}
+
+:root[data-tb-page] {
+  &::view-transition-old(tb-page) {
+    animation: tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
+  }
+
+  &[data-tb-page='through']::view-transition-new(tb-page) {
+    --tb-motion-scale: 0.92;
+
+    transform-origin: top center;
+    animation:
+      tb-motion-scale-in var(--tb-spring-default-spatial),
+      tb-motion-fade-in var(--tb-spring-default-effects);
+  }
+
+  &[data-tb-page='forward'],
+  &[data-tb-page='back'] {
+    &::view-transition-old(tb-page) {
+      animation:
+        tb-motion-slide-out var(--tb-spring-default-spatial) forwards,
+        tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
+    }
+
+    &::view-transition-new(tb-page) {
+      animation:
+        tb-motion-slide-in var(--tb-spring-default-spatial),
+        tb-motion-fade-in var(--tb-spring-default-effects);
+    }
+  }
+
+  &[data-tb-page='forward']::view-transition-old(tb-page),
+  &[data-tb-page='back']::view-transition-new(tb-page) {
+    --tb-motion-x: -30px;
+  }
+
+  &[data-tb-page='forward']::view-transition-new(tb-page),
+  &[data-tb-page='back']::view-transition-old(tb-page) {
+    --tb-motion-x: 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }
 
 .tb-page-title {

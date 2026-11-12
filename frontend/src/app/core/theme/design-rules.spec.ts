@@ -55,6 +55,13 @@ const PRIMEICONS = /(?<![\w-])pi-[a-z]|class="pi[\s"]/;
 const BUTTON_SUCCESS =
   /<(p-button|p-splitbutton)\b[^>]*success|<(button|a)\b[^>]*\bpButton\b[^>]*success|acceptButtonProps:[^}]*success/;
 
+/**
+ * A transition or an animation timed by hand (a duration, `ease`, `cubic-bezier`) instead of an M3E spring
+ * token (§1 «Motion»); loops (`infinite`) and the 0.01 ms of reduced motion are not motion of a change.
+ */
+const HAND_TIMED =
+  /(?:transition|animation)(?:-duration|-timing-function)?\s*:(?![^;{}]*infinite)[^;{}]*?(?:(?<![\d.])(?!0\.01ms)\d*\.?\d+m?s\b|\bease\b|ease-|cubic-bezier)/;
+
 describe('design rules', () => {
   it('reads the sources of the app', () => {
     expect(ALL.length).toBeGreaterThan(100);
@@ -101,6 +108,18 @@ describe('design rules', () => {
     expect(breaches(HEX_IN_STYLE, styles)).toEqual([]);
   });
 
+  it('times transitions and animations with the spring tokens (§1)', () => {
+    const root = join(process.cwd(), 'src', 'styles');
+    // `_tokens.scss` defines the springs themselves
+    const styles = readdirSync(root)
+      .filter((name) => name !== '_tokens.scss')
+      .map((name) => ({
+        path: `styles/${name}`,
+        text: readFileSync(join(root, name), 'utf8'),
+      }));
+    expect(breaches(HAND_TIMED, [...ALL, ...styles])).toEqual([]);
+  });
+
   it('has no primeicons: icons are Material Symbols (ADR-0046)', () => {
     expect(breaches(PRIMEICONS)).toEqual([]);
   });
@@ -131,6 +150,21 @@ describe('design rules', () => {
     expect(breaches(BUTTON_SUCCESS, sample)).toEqual(['z.ts:2']);
     expect(breaches(/size="small"/, sample)).toEqual(['x.ts:3']);
     expect(breaches(HEX_IN_STYLE, sample)).toEqual(['x.ts:4']);
+    expect(
+      breaches(HAND_TIMED, [
+        {
+          path: 'm.scss',
+          text: [
+            'transition: rotate 200ms;',
+            'transition: color var(--tb-spring-fast-effects);',
+            'animation: spin 1s linear infinite;',
+            'transition-duration: 0.01ms !important;',
+            'transition:\n  opacity 0.2s ease;',
+            'animation: x 300ms cubic-bezier(0, 0, 1, 1);',
+          ].join('\n'),
+        },
+      ]),
+    ).toEqual(['m.scss:1', 'm.scss:5', 'm.scss:7']);
     expect(
       breaches(PRIMEICONS, [
         { path: 'p.ts', text: `api-error\nicon: 'pi pi-check'\n<i class="pi">` },

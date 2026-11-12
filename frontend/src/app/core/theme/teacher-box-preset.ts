@@ -408,6 +408,9 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
   },
   semantic: {
     ...schemeTokens(DEFAULT_SCHEME),
+    // the colours, outlines and shadows of every PrimeNG control on the fast effects spring, not
+    // Aura's 0.2 s ease: components write it as `transition: background dt(…)`, a duration and a curve
+    transitionDuration: 'var(--tb-spring-fast-effects)',
     // the M3 focus indicator: 3 px of secondary, 2 px from the element (ADR-0024)
     focusRing: {
       width: '3px',
@@ -707,6 +710,14 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
         .p-checkbox-box {
           border-width: 2px;
         }
+        /* Aura writes only a duration here; the check mark grows in on the fast spatial spring (ours) */
+        .p-checkbox-icon {
+          transition: color var(--tb-spring-fast-effects);
+        }
+        .p-checkbox-checked .p-checkbox-icon {
+          animation: tb-motion-scale-in var(--tb-spring-fast-spatial);
+          --tb-motion-scale: 0.4;
+        }
         .p-checkbox.p-disabled .p-checkbox-box {
           border-color: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-disabled-content), transparent);
         }
@@ -734,6 +745,12 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
       css: `
         .p-radiobutton-box {
           border-width: 2px;
+        }
+        /* the dot grows from the middle on the fast spatial spring */
+        .p-radiobutton-icon {
+          transition:
+            transform var(--tb-spring-fast-spatial),
+            background var(--tb-spring-fast-effects);
         }
         .p-radiobutton.p-disabled .p-radiobutton-box {
           border-color: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-disabled-content), transparent);
@@ -822,6 +839,8 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
           border-inline-end: 4px solid transparent;
           background-clip: padding-box;
           border-radius: var(--tb-shape-full);
+          /* not Aura's 1 s ease-in-out; no overshoot past the value (ours) */
+          transition: width var(--tb-spring-standard-fast-spatial);
         }
         .p-progressbar-determinate::after {
           content: '';
