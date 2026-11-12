@@ -12,6 +12,10 @@ don't read them unless the task needs history.
 - A substep names its entry points — files, classes, endpoints, routes
   (`schedule/teacher/lesson-details-dialog.ts`, `ScheduleService.cancel`) — so the work starts there
   instead of a repository search.
+- Every new substep carries a complexity mark — *simple* (mechanical edit, docs, config) or
+  *complex* (architecture, big refactor, subtle bug) — so the user or an orchestrating agent picks
+  the model: smaller for simple, larger for complex. Several complex substeps do not share a
+  session.
 - Each substep ends with a green `./scripts/verify.sh` and a commit that also ticks its `[x]`.
 - Partly done? Tick it and note in italics what was dropped and where it went (Backlog or next
   release).
@@ -45,6 +49,9 @@ Stage 353 of the agent chain; renumbered because stage 353 is taken (v0.44.0).
 - [x] 387.5 (353.5) **F** Split the largest homework pages:
   `features/homework/teacher/{assignment-editor-page,assignments-page,assignment-page}.ts` into
   smaller components.
+- [x] 387.6 (353.6) *simple* Task sizing rules: complexity mark per substep (`docs/PLAN.md` "How to
+  use", `AGENTS.md` §10), model and session choice by complexity (`CLAUDE.md` "Claude Code
+  specifics"), a Vitest trap in `frontend/AGENTS.md`. Entry: `AGENTS.md`, `CLAUDE.md`.
 
 ## Backlog
 
