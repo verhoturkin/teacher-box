@@ -91,6 +91,25 @@ elevation with their values; springs —
     fast spring too; the scrim fades on default effects (in) and fast effects (out); list items of a
     FAB menu enter 30 ms apart; a pane that appears after the page enters on default spatial, panes
     of a new page don't.
+  - PrimeNG controls (fields, selects, checkboxes, tables, tabs, the paginator) change colour,
+    outline and shadow on the fast effects spring: the semantic `transitionDuration` of the preset
+    is `var(--tb-spring-fast-effects)`, a duration and a curve. The radio dot grows on the fast
+    spatial spring. *Ours*: the check mark grows in from 0.4 and the tab indicator from the middle
+    of its label on the fast spatial spring; inline messages (`p-message`) open their line on the
+    standard fast spring and fade in on default effects, they leave like the snackbar; the value of
+    a progress bar moves on the standard fast spring (no overshoot past it).
+  - Pages (view transitions of the router, `core/routing/page-transitions.ts`; M3 transition
+    patterns, *ours* on the springs): only the content moves, the bars and the rail stay. Between
+    sections and pages of equal depth — fade through: the old page fades out on fast effects, the
+    new one grows from 0.92 on default spatial and fades in on default effects. Deeper into a
+    section and back — shared axis X: both slide 30 dp on default spatial and cross-fade. Nothing
+    moves on the first load, when only the parameters of the route change (a list-detail pane, a
+    tab, a filter) and under reduced motion; browsers without view transitions swap the page.
+    The parts get their `view-transition-name` only while `<html data-tb-page>` is set: a named
+    element is a stacking context, and a sheet drawn inside the content sank under its scrim.
+  - No transition or animation is timed by hand (`200ms`, `ease`, `cubic-bezier`): only the spring
+    tokens; loops (`infinite`) are the exception. `design-rules.spec.ts` checks it outside
+    `core/theme/` and `_tokens.scss`.
   - `prefers-reduced-motion: reduce` disables transitions and animations (the loading indicator
     stays a circle).
 - **Frame sizes** in **px**, so a large font grows text, not frames: content up to

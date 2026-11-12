@@ -16,6 +16,7 @@ import {
   provideRouter,
   withComponentInputBinding,
   withInMemoryScrolling,
+  withViewTransitions,
 } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { ConfirmationService, MessageService, Translation } from 'primeng/api';
@@ -36,6 +37,7 @@ import { NOTIFICATIONS_SHEET_CONTENT } from '@core/notifications/notifications-s
 import { Portal } from '@core/portal/portal';
 import { SEARCH_SOURCES } from '@core/search/search';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
+import { startPageTransition } from '@core/routing/page-transitions';
 import { TeacherBoxPreset } from '@core/theme/teacher-box-preset';
 import { SystemBars } from '@core/theme/system-bars';
 import { DARK_CLASS, ThemeMode } from '@core/theme/theme-mode';
@@ -56,6 +58,11 @@ export const appConfig: ApplicationConfig = {
       routes,
       withComponentInputBinding(),
       withInMemoryScrolling({ anchorScrolling: 'enabled' }),
+      // pages fade through or slide on M3E springs; browsers without view transitions swap them
+      withViewTransitions({
+        skipInitialTransition: true,
+        onViewTransitionCreated: startPageTransition,
+      }),
     ),
     // Order matters: the error toast sees the final result after the auth retry.
     provideHttpClient(

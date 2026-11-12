@@ -206,6 +206,9 @@
     height: 3px;
     border-radius: 3px 3px 0 0;
     background: var(--p-md-primary);
+    /* the indicator grows from the middle of the label on the fast spatial spring (ours: PrimeNG's bar,
+       which slides, is as wide as the tab, not the label) */
+    animation: tb-motion-grow-x var(--tb-spring-fast-spatial);
   }
 
   .p-tablist-prev-button,
