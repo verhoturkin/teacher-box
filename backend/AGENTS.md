@@ -72,8 +72,9 @@ types (`JwtEncoder`, `PasswordEncoder`, `Clock`, `FileStorage`, `CurrentUser`).
   `src/main/resources/db/migration/<module>/V<n>__<description>.sql`, own history table.
   The history was restarted in 0.18.0 (one `V1__create_<module>_schema.sql` per module, no installations before):
   a released script is never edited again — a change is the next `V<n>`.
-- Config — typed `@ConfigurationProperties` records, prefix `teacherbox.<module>`. A new env var → `.env.example`
-  + `platform.settings.SettingsCatalog` (a test compares them) + the wiki page (skill `new-setting`).
+- Config — typed `@ConfigurationProperties` records, prefix `teacherbox.<module>`. A new setting →
+  `platform.settings.SettingsCatalog` with an owner (ADR-0056); `.env.example` only for `ENV_ONLY`
+  ones (a test compares them) + the wiki page (skill `new-setting`).
 - Input validation — Jakarta Validation in `web`. REST prefixes and role checks — root §4.3; every endpoint
   returning student data has a test "another student gets 403/404".
 - Logs — IDs, never names or texts.

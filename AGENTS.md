@@ -157,9 +157,11 @@ it in place when the working tree equals the index, else on a temporary export o
   ADRs, CHANGELOG and the wiki are Russian; product copy and help are written in both languages
   together. A user-visible change edits its `docs/wiki/<Page>.md` in the same commit; never edit the
   GitHub wiki by hand.
-- No secrets in the repo. Settings only via `TEACHERBOX_*` env vars; each new one → `.env.example`,
-  `platform.settings.SettingsCatalog` ([ADR-0016](docs/adr/0016-admin-settings.md)), wiki (skill
-  `new-setting`).
+- No secrets in the repo. A setting has an owner in `platform.settings.SettingsCatalog`
+  ([ADR-0016](docs/adr/0016-admin-settings.md),
+  [ADR-0056](docs/adr/0056-teacher-settings-in-the-portal.md)): the teacher's — in the portal; the
+  administrator's — `TEACHERBOX_*` > interface > default; deployment-only — `.env` and
+  `.env.example` (skill `new-setting`).
 - Time in UTC (`Instant`); teacher time zone — `shared.time.InstanceTimeZone`, read per call.
   Money — `long` minor units + instance currency, never `double`.
 - An architecture change → a new ADR (row in `docs/adr/README.md`) and an update of the spec it
@@ -202,7 +204,8 @@ Tests come with (or before) the code. Never lower gates or lint rules to get gre
 
 - [ ] Isolation rules (§4) and conventions (§6, nested AGENTS.md, design system) followed.
 - [ ] Tests written, `./scripts/verify.sh` green, gates met.
-- [ ] New env vars in `.env.example`, `SettingsCatalog`, wiki user docs.
+- [ ] New setting: owner chosen, `SettingsCatalog`, `.env.example` only for `ENV_ONLY`, wiki (skill
+      `new-setting`).
 - [ ] User-visible change → wiki pages and help articles in every language
       ([`docs/writing.md`](docs/writing.md)).
 - [ ] Interface change → made with the `m3-expressive` skill (§6.3).

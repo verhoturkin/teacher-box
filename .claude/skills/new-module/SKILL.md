@@ -16,7 +16,7 @@ Backend (`backend/src/main/java/ru/teacherbox/<m>/`, see `backend/AGENTS.md`):
    `ModuleMigrations.initializer(migrationConnection, "<m>")` (`MigrationConnection`) in the module configuration. Tables `<m>.<table>`,
    `version` column on mutable ones.
 4. `DataReset` bean listing **all** tables in `tables()` and clearing them in `erase()` (`ResetIntegrationTest`).
-5. Settings: `@ConfigurationProperties("teacherbox.<m>")` record; each env var via skill `new-setting`.
+5. Settings: `@ConfigurationProperties("teacherbox.<m>")` record; each setting via skill `new-setting` (owner first, ADR-0056).
 6. If it calls external services: `RestClient` from `OutboundHttp`, own proxy variable, an `IntegrationCheck`.
 7. Bot actions, if any: `ChatAction` beans in `<m>/chat/`.
 8. Security: REST under `/api/teacher/<...>`, `/api/me/<...>`, `/api/admin/<m>/**`; student-data endpoints get
