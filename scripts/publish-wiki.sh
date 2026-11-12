@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Publishes docs/wiki to the GitHub wiki: the wiki repository gets exactly the pages of docs/wiki.
-# CI runs it for a release tag (and on demand, workflow wiki.yml); pages edited in the wiki itself are overwritten.
+# CI runs it for every release (and on demand, workflow wiki.yml); pages edited in the wiki itself are overwritten.
 #
 #   GH_TOKEN=<token with contents: write> scripts/publish-wiki.sh <version>
 #

@@ -1,7 +1,7 @@
 name: Wiki
 
-# Republishes docs/wiki by hand (CI publishes it for every release tag): pick a tag in "Use workflow from"
-# to restore the wiki of that release, or main for an urgent fix between releases.
+# Republishes docs/wiki by hand (CI publishes it for every release, ADR-0063): pick a tag in "Use workflow
+# from" to restore the wiki of that release, or main for an urgent fix between releases.
 on:
   workflow_dispatch:
 

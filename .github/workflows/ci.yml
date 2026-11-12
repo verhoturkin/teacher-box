@@ -1,19 +1,36 @@
 name: CI
 
+# A release is a push to main whose version has no tag yet (ADR-0063): the same run publishes the images,
+# then tags the commit, creates the GitHub release and publishes the wiki. Nobody pushes a release tag.
 on:
   push:
     branches: [main]
-    tags: ['v*']
   pull_request:
+  workflow_dispatch:
 
+# A pull request cancels its older run; main never cancels a run that is under way (it may be a release).
+# A newer push replaces only a run still waiting, and its run releases the same untagged version.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
+  # One version in backend, frontend and the lockfile; a new version needs its CHANGELOG section. On a
+  # pull request this checks a release before the merge; on main a new version starts the release.
+  version:
+    name: Release version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      release: ${{ steps.check.outputs.release == 'true' && github.ref == 'refs/heads/main' }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: check
+        run: ./scripts/release-version.sh
+
   docs:
     name: Docs (wiki links)
     runs-on: ubuntu-latest
@@ -198,15 +215,15 @@ jobs:
           path: e2e/playwright-report
           retention-days: 7
 
-  # Ready images for servers (ADR-0032, ADR-0062): only for a release tag, after every check has passed.
+  # Ready images for servers (ADR-0032, ADR-0062, ADR-0063): only for a release, after every check has passed.
   # Each platform is built on a native runner (no QEMU: the AOT training run of the backend is a JVM
   # start of the image's own architecture) and pushed by digest; publish then joins the digests into
   # one multi-platform index with the release tags.
   image:
     name: Build ${{ matrix.target }} image (${{ matrix.arch }})
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: needs.version.outputs.release == 'true'
     runs-on: ${{ matrix.runner }}
-    needs: [backend, frontend, images, e2e]
+    needs: [version, backend, frontend, images, e2e]
     permissions:
       contents: read
       packages: write
@@ -236,8 +253,10 @@ jobs:
         with:
           images: ${{ env.IMAGE }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{version}},value=v${{ needs.version.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=v${{ needs.version.outputs.version }}
+            type=raw,value=latest,enable=${{ !contains(needs.version.outputs.version, '-') }}
+          flavor: latest=false
       - id: build
         uses: docker/build-push-action@v7
         with:
@@ -265,9 +284,9 @@ jobs:
 
   publish:
     name: Publish ${{ matrix.target }} image
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: needs.version.outputs.release == 'true'
     runs-on: ubuntu-latest
-    needs: [image]
+    needs: [version, image]
     permissions:
       contents: read
       packages: write
@@ -293,9 +312,11 @@ jobs:
         with:
           images: ${{ env.IMAGE }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-          # "latest" is the newest release tag (metadata-action's default for semver tags).
+            type=semver,pattern={{version}},value=v${{ needs.version.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=v${{ needs.version.outputs.version }}
+            type=raw,value=latest,enable=${{ !contains(needs.version.outputs.version, '-') }}
+          flavor: latest=false
+          # "latest" follows the newest release; a pre-release (X.Y.Z-rc.1) does not move it.
       - name: Join the platforms under the release tags
         working-directory: ${{ runner.temp }}/digests
         run: |
@@ -311,12 +332,55 @@ jobs:
             | jq -e '[.manifests[].platform | select(.os == "linux") | .architecture]
                      | (index("amd64") != null) and (index("arm64") != null)'
 
-  # The wiki shows the released version: docs/wiki is published once the release images are out.
+  # The tag and the GitHub release come last, once the images are out: a release that failed earlier has
+  # no tag, so the next push to main (or "Re-run failed jobs") releases it again. Safe to re-run: an
+  # existing tag on this commit and an existing release are kept. A tag pushed with GITHUB_TOKEN starts
+  # no workflow.
+  release:
+    name: Tag and GitHub release
+    if: needs.version.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    needs: [version, publish]
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: The release text from CHANGELOG.md
+        run: ./scripts/release-version.sh --notes "$RUNNER_TEMP/notes.md"
+      - name: Tag the commit
+        run: |
+          tag="v$VERSION"
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+            git fetch --quiet --no-tags origin "refs/tags/$tag:refs/tags/$tag"
+            tagged="$(git rev-parse "$tag^{commit}")"
+            test "$tagged" = "$GITHUB_SHA" || { echo "$tag is already on $tagged" >&2; exit 1; }
+            echo "$tag is already on this commit"
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" \
+            -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            tag -a "$tag" -m "$VERSION" "$GITHUB_SHA"
+          git push origin "refs/tags/$tag"
+      - name: Create the GitHub release
+        run: |
+          tag="v$VERSION"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "The release $tag already exists"
+            exit 0
+          fi
+          prerelease=()
+          case "$VERSION" in *-*) prerelease=(--prerelease) ;; esac
+          gh release create "$tag" --verify-tag --title "$VERSION" --notes-file "$RUNNER_TEMP/notes.md" "${prerelease[@]}"
+
+  # The wiki shows the released version: docs/wiki is published once the release is out.
   wiki:
     name: Publish the wiki
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: needs.version.outputs.release == 'true'
     runs-on: ubuntu-latest
-    needs: [docs, publish]
+    needs: [version, docs, release]
     permissions:
       contents: write
     steps:
@@ -324,4 +388,4 @@ jobs:
       - name: docs/wiki → GitHub wiki
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./scripts/publish-wiki.sh "${GITHUB_REF_NAME}"
+        run: ./scripts/publish-wiki.sh "v${{ needs.version.outputs.version }}"

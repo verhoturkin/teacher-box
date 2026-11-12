@@ -39,6 +39,13 @@ Goals: every motion of the interface runs on the M3E springs; nothing is left on
   `core/routing/page-transitions.ts` picks fade through or shared axis X, `styles/_motion.scss`
   «Pages»; design-system §1 «Motion».
 
+### 389. Release from `main`
+
+- [x] 389.1 **D** *complex* — a release is a merge to `main` of a new version, CI tags it
+  (ADR-0063): `scripts/release-version.sh`, jobs `version` and `release` in
+  `.github/workflows/ci.yml` (no `tags` trigger, `main` runs not cancelled), skill `release`
+  steps 6–8.
+
 ## Backlog
 
 - Flaky `LiveAdminSettingsIntegrationTest.theNextSignInTakesTheNewLifetimeAndTheRateLimit`: expected

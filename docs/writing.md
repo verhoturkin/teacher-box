@@ -21,7 +21,7 @@ articles, bot or notification copy, `docs/wiki/` or any documentation language.
   messengers, schedule, calls, boards, AI, proxy, FAQ. A change users see or must act on (install,
   the `teacherbox` command, settings, integrations, backups, operations) edits its
   `docs/wiki/<Page>.md` in the same branch and commit as the code; README stays slim and only links
-  the wiki. CI publishes `docs/wiki/` to the wiki for every release tag (`scripts/publish-wiki.sh`;
+  the wiki. CI publishes `docs/wiki/` to the wiki for every release (`scripts/publish-wiki.sh`;
   by hand — workflow `wiki.yml`), so the wiki shows the released version. Never edit the wiki on
   GitHub: the next release overwrites it. Page = file name without `.md`; links between pages are
   `[Text](Page)` (no `.md`), from other docs the full URL of the page under
