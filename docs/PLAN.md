@@ -5,7 +5,48 @@ don't read them unless the task needs history.
 
 ## How to use
 
-- A release is a `## vX.Y.Z` section (or `## Backlog
+- A release is a `## vX.Y.Z` section (or `## Next release` until the number is known): goals (2–5
+  lines), new/changed ADRs, then stages.
+- Stages are numbered globally, continuing from the archive. Substeps: `85.1`, `85.2`, … Tags: **B**
+  backend, **F** frontend, **D** docker/infra.
+- A substep names its entry points — files, classes, endpoints, routes
+  (`schedule/teacher/lesson-details-dialog.ts`, `ScheduleService.cancel`) — so the work starts there
+  instead of a repository search.
+- Each substep ends with a green `./scripts/verify.sh` and a commit that also ticks its `[x]`.
+- Partly done? Tick it and note in italics what was dropped and where it went (Backlog or next
+  release).
+- **Archiving** (skill `release`): in the release commit move the whole section to
+  `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
+  Backlog. This file keeps only unreleased work and the Backlog.
+
+## Next release
+
+Less context per agent session: smaller always-loaded rules, quieter tools, outlines for big
+docs, smaller source files.
+
+### Stage 387 — context economy for agents (D)
+
+Stage 353 of the agent chain; renumbered because stage 353 is taken (v0.44.0).
+
+- [x] 387.1 (353.1) Slim AGENTS.md: move rarely needed parts to docs on demand
+  (`docs/agent-environment.md`: layout, all commands, stamps, local and cloud environment; the
+  m3-expressive details to `frontend/AGENTS.md`). Section numbers kept. Entry: `AGENTS.md`,
+  `CLAUDE.md`.
+- [ ] 387.2 (353.2) Harness: hide big generated files from search/read (`.ignore`,
+  `permissions.deny`: `frontend/src/testing/help-articles.fixture.json`, `docs/assets/`), output
+  limits in `.claude/settings.json` `env` (`BASH_MAX_OUTPUT_LENGTH`, `MAX_MCP_OUTPUT_TOKENS`), a
+  PreToolUse hook that refuses a whole-file Read of a file over ~40 KB. Entry: `.ignore`,
+  `.claude/settings.json`, `.claude/hooks/`.
+- [ ] 387.3 (353.3) **B** Quiet backend test output: `logging.level.root: WARN` in
+  `backend/src/test/resources/config/application.yaml` (check `OutputCaptureExtension` users
+  first), surefire `redirectTestOutputToFile`, `trimStackTrace`. Entry: `backend/pom.xml`.
+- [ ] 387.4 (353.4) Outlines for big docs: a short summary/outline at the top of
+  `docs/modules/{homework,schedule,boards,ai}.md`, `e2e/README.md`, `docs/glossary.md`.
+- [ ] 387.5 (353.5) **F** Split the largest homework pages:
+  `features/homework/teacher/{assignment-editor-page,assignments-page,assignment-page}.ts` into
+  smaller components.
+
+## Backlog
 
 - `ArchitectureTests.BUSINESS_MODULES` lacks `textbooks`: derive it like `SchemaIsolationTests`.
 

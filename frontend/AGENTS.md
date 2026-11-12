@@ -6,6 +6,10 @@ styles: `grep -n '^##' docs/design-system.md` for the outline, then Read with `o
 read it whole); UI wording — [`docs/glossary.md`](../docs/glossary.md) (grep the term). Module
 facts — [`docs/modules/`](../docs/modules).
 
+**Every interface change is made with the `m3-expressive` skill** (root §6.3): load it before touching
+templates or styles, take M3 values from its references, mark anything M3 does not publish as our decision
+(as `docs/design-system.md` does). Without it follow m3.material.io.
+
 ## Structure
 
 ```
