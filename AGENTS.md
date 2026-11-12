@@ -143,7 +143,8 @@ lines/statements/functions ≥ 90 %, branches ≥ 80 %. Never lower gates or lin
 ## 10. Workflow
 
 1. **Work from the plan.** Find the task's substep in `docs/PLAN.md`; not there — add it first (or
-   ask the user). Plans are in English.
+   ask the user). Plans are in English. A new substep gets a complexity mark, *simple* or
+   *complex* (`docs/PLAN.md` "How to use").
 2. **Contract and tests first.** New use case: `api` facade/DTO/event → test → implementation. REST
    — controller test with role checks first.
 3. Another module's data — add a facade method or subscribe to an event (§4.2).

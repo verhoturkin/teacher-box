@@ -89,6 +89,11 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
 - Section data — `LoadState` + `tb-load-state`, load requests via `quietContext()`; confirmations —
   `dangerConfirmation` / `safeConfirmation`; request actions — `[loading]` (`shared/ui/busy.ts`).
 
+## Version traps
+
+- A component `styles` that is not a string literal (e.g. a constant) makes `ng test` pass but hang at
+  exit (esbuild child process): use string literals.
+
 ## Tests
 
 Stack: Vitest (jsdom) via `ng test`; lint — ESLint + angular-eslint + typescript-eslint (type-checked), Prettier,

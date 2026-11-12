@@ -19,4 +19,7 @@ work there. Add new shared rules to AGENTS.md, not here.
   grep the outline, then Read with `offset`/`limit`.
 - Output limits (`env` in `.claude/settings.json`): Bash 20 000 characters, MCP 15 000 tokens;
   longer output is cut or saved to a file.
+- Simple mechanical subtasks (search, doc sync) — delegate to a subagent on a smaller model
+  (`model: haiku` / `sonnet`); keep complex ones for the main model.
+- After committing a substep, suggest the user start the next one in a new session (`/clear`).
 - Library docs — context7 MCP.
