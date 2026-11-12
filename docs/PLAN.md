@@ -19,6 +19,17 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
+## Next release
+
+Agent rules catch up with the architecture.
+
+### Stage 383 — the `new-setting` skill after ADR-0056 (D)
+
+- [x] 383.1 `.claude/skills/new-setting/SKILL.md` (and the copy in `.agents/skills/`): owner first
+      (`TEACHER` / `ADMIN` / `ENV_ONLY`), `SettingsCatalog` builders, `LIVE` and `LiveProperties`,
+      the administrator's cards (`admin/settings/settings-page.ts`), `TeacherSettingsImport`, tests of
+      the catalog; `AGENTS.md` §6.1 / §9 and `backend/AGENTS.md` say the same.
+
 ## Backlog
 
 After the bundle measurement of 2026-11-11 (see [0.47.1](archive/plans/v0.47.1.md)), not planned:
