@@ -25,36 +25,13 @@ don't read them unless the task needs history.
 
 ## Next release
 
-Less context per agent session: smaller always-loaded rules, quieter tools, outlines for big
-docs, smaller source files.
-
-### Stage 387 — context economy for agents (D)
-
-Stage 353 of the agent chain; renumbered because stage 353 is taken (v0.44.0).
-
-- [x] 387.1 (353.1) Slim AGENTS.md: move rarely needed parts to docs on demand
-  (`docs/agent-environment.md`: layout, all commands, stamps, local and cloud environment; the
-  m3-expressive details to `frontend/AGENTS.md`). Section numbers kept. Entry: `AGENTS.md`,
-  `CLAUDE.md`.
-- [x] 387.2 (353.2) Harness: hide big generated files from search/read (`.ignore`,
-  `permissions.deny`: `frontend/src/testing/help-articles.fixture.json`, `docs/assets/`), output
-  limits in `.claude/settings.json` `env` (`BASH_MAX_OUTPUT_LENGTH`, `MAX_MCP_OUTPUT_TOKENS`), a
-  PreToolUse hook that refuses a whole-file Read of a file over ~40 KB. Entry: `.ignore`,
-  `.claude/settings.json`, `.claude/hooks/`.
-- [x] 387.3 (353.3) **B** Quiet backend test output: `logging.level.root: WARN` in
-  `backend/src/test/resources/config/application.yaml` (check `OutputCaptureExtension` users
-  first), surefire `redirectTestOutputToFile`, `trimStackTrace`. Entry: `backend/pom.xml`.
-- [x] 387.4 (353.4) Outlines for big docs: a short summary/outline at the top of
-  `docs/modules/{homework,schedule,boards,ai}.md`, `e2e/README.md`, `docs/glossary.md`.
-- [x] 387.5 (353.5) **F** Split the largest homework pages:
-  `features/homework/teacher/{assignment-editor-page,assignments-page,assignment-page}.ts` into
-  smaller components.
-- [x] 387.6 (353.6) *simple* Task sizing rules: complexity mark per substep (`docs/PLAN.md` "How to
-  use", `AGENTS.md` §10), model and session choice by complexity (`CLAUDE.md` "Claude Code
-  specifics"), a Vitest trap in `frontend/AGENTS.md`. Entry: `AGENTS.md`, `CLAUDE.md`.
+_Empty: the next release section is added when work starts._
 
 ## Backlog
 
+- Flaky `LiveAdminSettingsIntegrationTest.theNextSignInTakesTheNewLifetimeAndTheRateLimit`: expected
+  `expiresIn` 900, got 899 on a second boundary; allow 899–900 or fix the clock.
+- Candidates for `shared/` from 387.5: `EditorAutosave`, `WhomFilter`.
 - `ArchitectureTests.BUSINESS_MODULES` lacks `textbooks`: derive it like `SchemaIsolationTests`.
 
 After the bundle measurement of 2026-11-11 (see [0.47.1](archive/plans/v0.47.1.md)), not planned:
