@@ -6,6 +6,16 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
 [0011](../adr/0011-groups-and-group-lessons.md), [0012](../adr/0012-meetings-and-boards.md),
 [0053](../adr/0053-lesson-title-and-topic.md).
 
+**Outline** — read only the section you need (`grep -n '^##'`, then Read with offset/limit):
+
+- **Rules** — time, lessons, repetition, attendance, requests, reminders, calendars; start here.
+- **Contract (`schedule::api`)** — facade and events for other modules (billing, notifications).
+- **Data** — tables of the `schedule` schema.
+- **REST and bot** — endpoints with roles and messenger bot actions.
+- **Frontend** — schedule screens and components.
+- **Unified repetition contract (ADR-0049)** — Once / weekly repetition, occurrence and scope rules;
+  read when touching recurring lessons.
+
 ## Rules
 
 - **Time:** a lesson stores its start as `Instant`; its repeat rule stores weekday, local time and dates in

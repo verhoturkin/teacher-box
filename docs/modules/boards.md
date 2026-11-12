@@ -4,6 +4,12 @@ Boards of the portal: our own Excalidraw boards and external boards by link, bou
 groups. Depends on: `shared`, `identity::api`. Schema `boards`. ADR: [0028](../adr/0028-excalidraw-boards.md)
 (supersedes the boards part of [0012](../adr/0012-meetings-and-boards.md)), [0029](../adr/0029-live-boards.md) (real time).
 
+**Outline** — read only the section you need (`grep -n '^##'`, then Read with offset/limit):
+
+- **Rules** — board kinds, members, scenes, copies, live editing; start here.
+- **Contract, data, REST** — facade, tables and endpoints with roles.
+- **Frontend** — board list and editor screens.
+
 ## Rules
 
 - Kinds: `EXCALIDRAW` — scene, images and copies live in the portal; `LINK` — an external board (Холст or any

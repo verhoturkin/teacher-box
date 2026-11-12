@@ -8,6 +8,13 @@ portal settings, admin sections and diagnostics. Depends on: `shared`; knows no 
 [0056](../adr/0056-teacher-settings-in-the-portal.md). Operations
 guide for people — [`docs/operations.md`](../operations.md) (Russian).
 
+**Outline** — read only the section you need (`grep -n '^##'`, then Read with offset/limit):
+
+- **Parts** — one bullet per package (security, web, core, storage, portal, backup, settings,
+  admin…); find the package you touch.
+- **Data** — tables of the `platform` schema.
+- **Frontend** — admin screens.
+
 ## Parts
 
 - `security/` — Spring Security 7 resource server (JWT HS256, `TEACHERBOX_SECURITY_JWT_SECRET`), role rules by

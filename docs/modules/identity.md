@@ -6,6 +6,14 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
 [0011](../adr/0011-groups-and-group-lessons.md) groups,
 [0055](../adr/0055-student-tags.md) student tags.
 
+**Outline** — read only the section you need (`grep -n '^##'`, then Read with offset/limit):
+
+- **Rules** — accounts and roles, invites, login and passwords, groups, tags; start here.
+- **Contract (`identity::api`)** — facades other modules call.
+- **Data** — tables of the `identity` schema.
+- **REST** — endpoints with roles.
+- **Frontend** — login, profile, students and groups screens.
+
 ## Rules
 
 - **Teacher** — exactly one, created on first start from `TEACHERBOX_IDENTITY_TEACHER_*`; an auto-generated
