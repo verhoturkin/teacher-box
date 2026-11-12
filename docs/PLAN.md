@@ -38,6 +38,13 @@ Release images are built faster: `arm64` no longer runs the AOT training under Q
   comment, ADR-0062. *Not run in the cloud session (no Docker daemon); checked by the next release
   tag.*
 
+### Stage 385 — the `new-setting` skill after ADR-0056 (D)
+
+- [x] 385.1 `.claude/skills/new-setting/SKILL.md` (and the copy in `.agents/skills/`): owner first
+      (`TEACHER` / `ADMIN` / `ENV_ONLY`), `SettingsCatalog` builders, `LIVE` and `LiveProperties`,
+      the administrator's cards (`admin/settings/settings-page.ts`), `TeacherSettingsImport`, tests
+      of the catalog; `AGENTS.md` §6.1 / §9 and `backend/AGENTS.md` say the same.
+
 ## Backlog
 
 - `ArchitectureTests.BUSINESS_MODULES` lacks `textbooks`: derive it like `SchemaIsolationTests`.
