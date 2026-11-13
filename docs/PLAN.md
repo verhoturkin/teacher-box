@@ -23,21 +23,9 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
-## Next release
-
-### 390. README screenshot gallery
-
-- [x] 390.1 **D** Refresh `docs/assets/readme/` and expand the `README.md` gallery to cover
-  teacher and student workflows with varied fictional demo data; retain a reproducible capture
-  script and verify documentation links. *simple*
-
-- [x] 390.2 **D** Add real LiveKit prejoin, individual/group calls and minimized call screenshots
-  to `README.md`, with repeatable local media fixtures and capture instructions. *simple*
 
 ## Backlog
 
-- Flaky `LiveAdminSettingsIntegrationTest.theNextSignInTakesTheNewLifetimeAndTheRateLimit`: expected
-  `expiresIn` 900, got 899 on a second boundary; allow 899–900 or fix the clock.
 - Candidates for `shared/` from 387.5: `EditorAutosave`, `WhomFilter`.
 - `ArchitectureTests.BUSINESS_MODULES` lacks `textbooks`: derive it like `SchemaIsolationTests`.
 

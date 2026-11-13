@@ -21,6 +21,18 @@ const PARSED: unknown = JSON.parse(
 /** The texts as they were when each edition was one file (stage 367.2): do not regenerate it. */
 const ORIGINAL: Record<string, unknown> = isRecord(PARSED) ? PARSED : {};
 
+/** Reviewed additions in 0.48.2; the historical migration fixture stays unchanged. */
+const LOADING_RU = `## Загрузка данных
+
+При коротком ожидании индикатор не появляется. Если загрузка занимает больше 200 мс, появляется вращающаяся фигура. Данные показываются сразу по готовности. При включённом в системе уменьшении движения фигура остаётся неподвижной.
+
+`;
+const LOADING_EN = `## Loading data
+
+Short requests finish without a loading indicator. After 200 ms, a rotating shape appears until the data is ready. If your device uses reduced motion, the shape stays still.
+
+`;
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -31,11 +43,21 @@ const EDITIONS: readonly (readonly [string, Texts])[] = [
 ];
 
 describe('help articles after the split into one file per topic', () => {
-  it.each(EDITIONS)('%s keeps its topics, their order and every text', (name, texts) => {
+  it.each(EDITIONS)('%s preserves the baseline with reviewed loading guidance', (name, texts) => {
     const original = ORIGINAL[name];
     expect(isRecord(original)).toBe(true);
     expect(Object.keys(texts)).toEqual(Object.keys(isRecord(original) ? original : {}));
-    expect(texts).toEqual(original);
+    if (!isRecord(original)) throw new Error(`Missing edition ${name}`);
+    const topic = name.startsWith('admin.') ? 'diagnostics' : 'appearance';
+    const article = original[topic];
+    if (!isRecord(article) || typeof article['body'] !== 'string') {
+      throw new Error(`Missing original article ${name}/${topic}`);
+    }
+    const guidance = name.endsWith('.ru') ? LOADING_RU : LOADING_EN;
+    expect(texts).toEqual({
+      ...original,
+      [topic]: { ...article, body: article['body'].replace('## ', `${guidance}## `) },
+    });
   });
 
   it('has no source line longer than 200 characters', () => {

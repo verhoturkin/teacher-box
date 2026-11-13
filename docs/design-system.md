@@ -111,7 +111,7 @@ elevation with their values; springs —
     tokens; loops (`infinite`) are the exception. `design-rules.spec.ts` checks it outside
     `core/theme/` and `_tokens.scss`.
   - `prefers-reduced-motion: reduce` disables transitions and animations (the loading indicator
-    stays a circle).
+    holds its initial SoftBurst shape, without rotation or pulsing).
 - **Frame sizes** in **px**, so a large font grows text, not frames: content up to
   `--tb-content-max` (1440 px); short pages (not found) `--tb-content-narrow` (56 rem); form fields
   `tb-form--narrow` (26 rem); top strip 80 px (compact top app bar 64 px), bottom bar 64 px, rail
@@ -825,9 +825,15 @@ Gallery: [`/gallery/states`](../frontend/src/app/features/gallery/states/).
 
 - **Loading states:** every section that loads data has three states via `LoadState`
   (`shared/ui/load-state.ts`, `track()`) and `tb-load-state`:
-  - loading — the **M3E** loading indicator centred in the section's place (a 38 px shape in
-    on-primary-container inside a 48 px primary-container circle; a pulsing circle under reduced
-    motion), min height, «Загрузка…» `role="status"`;
+  - loading — `tb-loading-indicator`, centred in the section's place: a 38 px nominal shape in
+    on-primary-container inside a 48 px primary-container circle, uniformly scaled to fit while
+    rotating. The seven Material shapes (SoftBurst, Cookie9Sided, Pentagon, Pill, Sunny,
+    Cookie4Sided, Oval) morph through matched cubic curves. AndroidX motion: 650 ms morph interval,
+    spring stiffness 200 / damping ratio 0.6, spring-driven quarter-turn plus 360° / 4666 ms global
+    rotation. The indicator waits 200 ms and appears on the next animation frame; completion or
+    destruction cancels the delay and animation. Content appears immediately on completion.
+    Reduced motion holds SoftBurst without rotation or pulsing. Min height, «Загрузка…»
+    `role="status"`; the visible indicator has one labelled `progressbar` and a decorative SVG;
   - error — icon, «Не удалось загрузить …», the error with its code, «Повторить»;
   - ready — data or the empty state (only after a successful load; a bad link is an error).
 - Load requests are quiet (`quietContext()` / `SKIP_ERROR_TOAST`): the error shows in the section.

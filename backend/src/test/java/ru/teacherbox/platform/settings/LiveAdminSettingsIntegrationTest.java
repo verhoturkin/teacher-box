@@ -9,7 +9,10 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +24,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -42,7 +48,17 @@ import ru.teacherbox.testing.TestUsers;
  */
 @SpringBootTest(properties = "teacherbox.identity.teacher.password=" + LiveAdminSettingsIntegrationTest.TEACHER_PASSWORD)
 @AutoConfigureMockMvc
+@Import(LiveAdminSettingsIntegrationTest.StableTime.class)
 class LiveAdminSettingsIntegrationTest {
+
+    @TestConfiguration(proxyBeanMethods = false)
+    static class StableTime {
+        @Bean
+        Clock clock() {
+            // Token creation and the response must see the same second, even on slow CI runners.
+            return Clock.fixed(Instant.now(), ZoneOffset.UTC);
+        }
+    }
 
     static final String TEACHER_PASSWORD = "teacher-secret-1";
     private static final UUID ADMIN = UUID.randomUUID();

@@ -32,7 +32,8 @@ describe('LoadStateView', () => {
     await fixture.whenStable();
     const host = hostElement(fixture);
 
-    expect(host.querySelector('[role="status"] p-progressspinner')).not.toBeNull();
+    expect(host.querySelector('[role="status"] tb-loading-indicator')).not.toBeNull();
+    expect(host.querySelector('[role="progressbar"]')).toBeNull();
     expect(host.querySelector('tb-load-state')?.classList).toContain('tb-load-state--compact');
     expect(host.querySelector('.content')).toBeNull();
 
@@ -40,7 +41,15 @@ describe('LoadStateView', () => {
     await fixture.whenStable();
 
     expect(host.querySelector('.content')?.textContent).toBe('Задания');
-    expect(host.querySelector('p-progressspinner')).toBeNull();
+    expect(host.querySelector('tb-loading-indicator')).toBeNull();
+  });
+
+  it('shows synchronous results immediately without creating an indicator', async () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.state.done();
+    await fixture.whenStable();
+    expect(hostElement(fixture).querySelector('.content')?.textContent).toBe('Задания');
+    expect(hostElement(fixture).querySelector('tb-loading-indicator')).toBeNull();
   });
 
   it('shows the error with «Повторить» instead of the content', async () => {

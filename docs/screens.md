@@ -7,6 +7,10 @@ behaviour is in `docs/modules/<m>.md`. Marks: **M3** — published by Material 3
 decision. A change to a screen updates its page in the same commit. Boards: `docs/sketches/`
 (excluded from searches: `rg --no-ignore`).
 
+Shared loading feedback follows [design-system §12](design-system.md#12-states-and-feedback):
+all standalone loading indicators wait 200 ms, cancel on completion and hold a static shape under
+system reduced motion. This also applies to invitation validation and joining a call.
+
 ## Frame by role
 
 Destinations, bottom bars, «Аккаунт», offline page — [screens/frame.md](screens/frame.md).

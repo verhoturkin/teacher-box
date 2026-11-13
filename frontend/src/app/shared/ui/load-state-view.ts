@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { Button } from 'primeng/button';
-import { ProgressSpinner } from 'primeng/progressspinner';
+import { LoadingIndicator } from '@shared/ui/loading-indicator';
 import { LoadState } from './load-state';
 
 /**
@@ -13,14 +13,14 @@ import { LoadState } from './load-state';
 import { SHARED_T } from '@shared/i18n/texts';
 @Component({
   selector: 'tb-load-state',
-  imports: [Button, ProgressSpinner],
+  imports: [Button, LoadingIndicator],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class.tb-load-state--compact]': 'compact()' },
   template: `
     @switch (state().status()) {
       @case ('loading') {
         <div class="tb-load-state__loading" role="status">
-          <p-progressspinner [ariaLabel]="t.load.loading" />
+          <tb-loading-indicator [ariaLabel]="t.load.loading" />
           <span class="tb-sr-only">{{ t.common.loading }}</span>
         </div>
       }

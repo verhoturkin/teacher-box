@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { Button } from 'primeng/button';
-import { ProgressSpinner } from 'primeng/progressspinner';
+import { LoadingIndicator } from '@shared/ui/loading-indicator';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { SHARED_T } from '@shared/i18n/texts';
 import { LinkCode } from '../data-access/notifications.models';
@@ -14,7 +14,7 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-link-code-view',
-  imports: [DatePipe, Button, ProgressSpinner],
+  imports: [DatePipe, Button, LoadingIndicator],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let link = code();
@@ -49,7 +49,7 @@ import { T } from '../i18n/texts';
         />
       </div>
       <div class="tb-link-code__wait" role="status">
-        <p-progress-spinner strokeWidth="5" styleClass="tb-link-code__spinner" aria-hidden="true" />
+        <tb-loading-indicator class="tb-link-code__spinner" aria-hidden="true" />
         <small class="tb-muted">{{ t.validUntil((link.expiresAt | date: 'HH:mm') ?? '') }}</small>
       </div>
     </div>

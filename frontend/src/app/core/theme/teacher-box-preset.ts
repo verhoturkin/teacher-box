@@ -652,50 +652,6 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
         }
       `,
     },
-    // The loading indicator of M3 Expressive: a morphing shape in a round container
-    progressspinner: {
-      css: `
-        .p-progressspinner {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 3rem;
-          height: 3rem;
-          border-radius: var(--tb-shape-2xl);
-          background: var(--p-md-primary-container);
-        }
-        .p-progressspinner-spin {
-          display: none;
-        }
-        /* M3: a 38 dp shape in the 48 dp container; on the container it is on-primary-container */
-        .p-progressspinner::after {
-          content: '';
-          width: 79%;
-          height: 79%;
-          background: var(--p-md-on-primary-container);
-          animation: tb-loading-morph 1.6s linear infinite;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .p-progressspinner::after {
-            border-radius: 50%;
-            animation: tb-loading-pulse 2s ease-in-out infinite !important;
-            animation-iteration-count: infinite !important;
-            animation-duration: 2s !important;
-          }
-        }
-        @keyframes tb-loading-pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
-        }
-        @keyframes tb-loading-morph {
-          0% { border-radius: 50%; transform: rotate(0deg) scale(1); }
-          25% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; transform: rotate(90deg) scale(0.9); }
-          50% { border-radius: 22%; transform: rotate(180deg) scale(0.85); }
-          75% { border-radius: 70% 30% 50% 50% / 30% 50% 50% 70%; transform: rotate(270deg) scale(0.9); }
-          100% { border-radius: 50%; transform: rotate(360deg) scale(1); }
-        }
-      `,
-    },
     // M3: a 2 px outline, the label is the touch target
     checkbox: {
       root: {

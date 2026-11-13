@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ru">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Teacher Box · Загрузка</title>
+  <style>
+    :root { color-scheme: light; --surface: #fcf8ff; --card: #f2effb; --ink: #1b1b23; --muted: #464554; --primary: #4648d4; --container: #6063ee; --on-container: #fffbff; --line: #c7c4d7; }
+    :root[data-theme="dark"] { color-scheme: dark; --surface: #13131b; --card: #20202a; --ink: #e4e1ed; --muted: #c7c4d7; --primary: #c0c1ff; --container: #8083ff; --on-container: #01002b; --line: #464554; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--surface); color: var(--ink); font: 16px/1.5 system-ui, sans-serif; }
+    main { max-width: 1000px; padding: 40px 28px; margin: auto; }
+    header, .toolbar, .controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    header { justify-content: space-between; }
+    .eyebrow { color: var(--primary); font-size: 13px; font-weight: 650; letter-spacing: .08em; }
+    h1 { font-size: clamp(28px, 5vw, 38px); line-height: 1.2; font-weight: 500; margin: 8px 0 12px; }
+    h2 { font-size: 20px; font-weight: 550; margin: 0 0 8px; }
+    p { color: var(--muted); margin: 0; }
+    button, select { font: inherit; color: var(--ink); border: 1px solid var(--line); border-radius: 24px; background: transparent; min-height: 44px; padding: 8px 18px; cursor: pointer; }
+    button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+    button:hover { background: color-mix(in srgb, var(--primary) 8%, transparent); }
+    button.primary { background: var(--primary); color: var(--surface); border-color: transparent; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 28px; }
+    article, .sequence { background: var(--card); border-radius: 28px; padding: 24px; }
+    .stage { height: 196px; display: grid; place-items: center; }
+    .indicator { width: 48px; height: 48px; display: inline-grid; place-items: center; border-radius: 50%; background: var(--container); }
+    .indicator svg { width: 48px; height: 48px; display: block; overflow: visible; fill: var(--on-container); }
+    .large { width: 144px; height: 144px; }
+    .large svg { width: 144px; height: 144px; }
+    .caption { font-size: 13px; color: var(--muted); }
+    .toolbar { margin-top: 24px; }
+    .sequence { margin-top: 16px; }
+    .shapes { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 22px; }
+    .shape { text-align: center; min-width: 0; }
+    .shape svg { display: block; width: 48px; height: 48px; margin: 0 auto 10px; fill: var(--primary); }
+    .shape span { font-size: 11px; overflow-wrap: anywhere; color: var(--muted); }
+    .timing { margin-top: 16px; }
+    .controls { margin: 20px 0 0; }
+    .simulation { height: 132px; display: grid; place-items: center; }
+    [hidden] { display: none !important; }
+    .result { color: var(--primary); font-weight: 550; }
+    label { display: inline-flex; align-items: center; gap: 8px; }
+    input { accent-color: var(--primary); width: 18px; height: 18px; }
+    footer { display: flex; gap: 20px; margin-top: 24px; flex-wrap: wrap; font-size: 13px; }
+    a { color: var(--primary); }
+    @media (max-width: 620px) { main { padding: 24px 16px; } .grid { grid-template-columns: 1fr; } .shapes { grid-template-columns: repeat(4, 1fr); row-gap: 20px; } }
+  </style>
+  <main>
+    <header>
+      <div><div class="eyebrow">TEACHER BOX · ПРЕВЬЮ</div><h1>Загрузка · M3 Expressive</h1></div>
+      <button id="theme" aria-pressed="false">Тёмная тема</button>
+    </header>
+    <p>Семь фигур Material, непрерывный морфинг контура и пружинное вращение.</p>
+    <div class="grid">
+      <article>
+        <h2>В интерфейсе</h2><p>Контейнер 48 px · исходный размер</p>
+        <div class="stage"><div class="indicator" data-animated aria-hidden="true"><svg viewBox="0 0 1 1"><g><path /></g></svg></div></div>
+        <div class="caption">Цвета текущей темы Teacher Box</div>
+      </article>
+      <article>
+        <h2>Морфинг крупным планом</h2><p>Увеличение ×3 для просмотра переходов</p>
+        <div class="stage"><div class="indicator large" data-animated aria-hidden="true"><svg viewBox="0 0 1 1"><g><path /></g></svg></div></div>
+        <div class="caption">Контур из кривых Безье с сопоставлением углов</div>
+      </article>
+    </div>
+    <div class="toolbar">
+      <button id="pause" aria-pressed="false">Пауза</button>
+      <label>Скорость <select id="speed"><option value="1">1×</option><option value="0.25">0,25×</option></select></label>
+      <label><input type="checkbox" id="reduced" /> Уменьшение движения</label>
+    </div>
+    <section class="sequence">
+      <h2>Последовательность фигур</h2><div class="shapes" id="shapes"></div>
+    </section>
+    <article class="timing">
+      <h2>Когда появляется индикатор</h2>
+      <p>До 200 мс загрузка проходит без анимации. Данные показываются сразу по готовности.</p>
+      <div class="controls">
+        <label>Длительность <select id="duration"><option value="100">100 мс</option><option value="199">199 мс</option><option value="200">200 мс</option><option value="350">350 мс</option><option value="1500" selected>1,5 с</option><option value="4000">4 с</option></select></label>
+        <button class="primary" id="run">Запустить загрузку</button>
+      </div>
+      <div class="simulation" aria-busy="false">
+        <p id="hint">Выберите длительность и запустите пример</p>
+        <div id="pending" class="indicator" data-animated hidden role="status" aria-label="Загрузка данных"><svg aria-hidden="true" viewBox="0 0 1 1"><g><path /></g></svg></div>
+        <p id="result" class="result" role="status" hidden></p>
+      </div>
+      <div class="caption">В режиме уменьшения движения фигура статична. Задержка появления сохраняется.</div>
+    </article>
+    <footer>
+      <a href="https://m3.material.io/components/loading-indicator/guidelines" target="_blank" rel="noreferrer">Рекомендации Material 3</a>
+      <a href="https://github.com/androidx/androidx/blob/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/LoadingIndicator.kt" target="_blank" rel="noreferrer">Эталон движения AndroidX</a>
+    </footer>
+  </main>
+  <script type="module" src="./preview.js"></script>
+</html>
