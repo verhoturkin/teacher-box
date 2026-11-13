@@ -99,19 +99,195 @@ curl -fsSL https://raw.githubusercontent.com/verhoturkin/teacher-box/main/script
 
 ## Скриншоты
 
-Интерфейс версии 0.41.0. Имена учеников и данные на снимках вымышлены.
+Интерфейс версии 0.48.1. Все имена, контакты, занятия и оплаты на снимках вымышлены.
+
+На демонстрационном портале — восемь учеников, три группы, индивидуальные и групповые занятия,
+работы на проверке и доработке, мини-тест, оплаты и долги, совместные доски и учебники.
 
 <details>
-<summary><b>Кабинет учителя</b></summary>
+<summary><b>Кабинет учителя · занятия и ученики</b></summary>
 
 <table>
 <tr>
-<td width="50%" align="center"><a href="docs/assets/readme/schedule.png"><img src="docs/assets/readme/schedule.png" alt="Расписание учителя"></a><br><sub>Расписание</sub></td>
-<td width="50%" align="center"><a href="docs/assets/readme/homework.png"><img src="docs/assets/readme/homework.png" alt="Задания учителя"></a><br><sub>Задания</sub></td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/home.png">
+<img src="docs/assets/readme/home.png"
+alt="Рабочий день: ближайшее занятие и задачи учителя" loading="lazy">
+</a><br><sub>Рабочий день: ближайшее занятие и задачи учителя</sub>
+</td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/schedule.png">
+<img src="docs/assets/readme/schedule.png"
+alt="Расписание: индивидуальные и групповые занятия" loading="lazy">
+</a><br><sub>Расписание: индивидуальные и групповые занятия</sub>
+</td>
 </tr>
 <tr>
-<td width="50%" align="center"><a href="docs/assets/readme/billing.png"><img src="docs/assets/readme/billing.png" alt="Оплаты учителя"></a><br><sub>Оплаты</sub></td>
-<td width="50%" align="center"><a href="docs/assets/readme/students.png"><img src="docs/assets/readme/students.png" alt="Ученики учителя"></a><br><sub>Ученики</sub></td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/students.png">
+<img src="docs/assets/readme/students.png"
+alt="Ученики и группы" loading="lazy">
+</a><br><sub>Ученики и группы</sub>
+</td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/student-profile.png">
+<img src="docs/assets/readme/student-profile.png"
+alt="Карточка ученика: занятия, задания и баланс" loading="lazy">
+</a><br><sub>Карточка ученика: занятия, задания и баланс</sub>
+</td>
+</tr>
+<tr>
+<td width="50%" align="center">
+<a href="docs/assets/readme/groups.png">
+<img src="docs/assets/readme/groups.png"
+alt="Группа: состав и общие занятия" loading="lazy">
+</a><br><sub>Группа: состав и общие занятия</sub>
+</td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/settings.png">
+<img src="docs/assets/readme/settings.png"
+alt="Настройки занятий, календаря и звонков" loading="lazy">
+</a><br><sub>Настройки занятий, календаря и звонков</sub>
+</td>
+</tr>
+</table>
+
+</details>
+
+<details>
+<summary><b>Задания и оплаты</b></summary>
+
+<table>
+<tr>
+<td width="50%" align="center">
+<a href="docs/assets/readme/homework.png">
+<img src="docs/assets/readme/homework.png"
+alt="Задания: сроки, статусы и очередь проверки" loading="lazy">
+</a><br><sub>Задания: сроки, статусы и очередь проверки</sub>
+</td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/assignment.png">
+<img src="docs/assets/readme/assignment.png"
+alt="Задание: условия, учебник и прогресс учеников" loading="lazy">
+</a><br><sub>Задание: условия, учебник и прогресс учеников</sub>
+</td>
+</tr>
+<tr>
+<td width="50%" align="center">
+<a href="docs/assets/readme/homework-review.png">
+<img src="docs/assets/readme/homework-review.png"
+alt="Проверка ответа: оценка и комментарий" loading="lazy">
+</a><br><sub>Проверка ответа: оценка и комментарий</sub>
+</td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/billing.png">
+<img src="docs/assets/readme/billing.png"
+alt="Оплаты: начисления, поступления и баланс" loading="lazy">
+</a><br><sub>Оплаты: начисления, поступления и баланс</sub>
+</td>
+</tr>
+<tr>
+<td width="50%" align="center">
+<a href="docs/assets/readme/billing-report.png">
+<img src="docs/assets/readme/billing-report.png"
+alt="Отчёт по ученикам за месяц" loading="lazy">
+</a><br><sub>Отчёт по ученикам за месяц</sub>
+</td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/notifications.png">
+<img src="docs/assets/readme/notifications.png"
+alt="Уведомления и сообщения ученикам" loading="lazy">
+</a><br><sub>Уведомления и сообщения ученикам</sub>
+</td>
+</tr>
+</table>
+
+</details>
+
+<details>
+<summary><b>Видеозвонки</b></summary>
+
+Звонки сняты на работающем LiveKit с отдельными сессиями учителя и учеников.
+Вместо личных камер использованы учебные демо-видеопотоки с графиками и решениями задач.
+
+<table>
+<tr>
+<td width="50%" align="center">
+<a href="docs/assets/readme/call-prejoin.png">
+<img src="docs/assets/readme/call-prejoin.png"
+alt="Перед звонком: проверка камеры и микрофона" loading="lazy">
+</a><br><sub>Перед звонком: проверка камеры и микрофона</sub>
+</td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/call-individual.png">
+<img src="docs/assets/readme/call-individual.png"
+alt="Индивидуальное занятие: видео ученика и своя камера" loading="lazy">
+</a><br><sub>Индивидуальное занятие: видео ученика и своя камера</sub>
+</td>
+</tr>
+<tr>
+<td width="50%" align="center">
+<a href="docs/assets/readme/call-group.png">
+<img src="docs/assets/readme/call-group.png"
+alt="Групповое занятие: учитель и два ученика" loading="lazy">
+</a><br><sub>Групповое занятие: учитель и два ученика</sub>
+</td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/call-mini.png">
+<img src="docs/assets/readme/call-mini.png"
+alt="Свёрнутый звонок во время работы на доске" loading="lazy">
+</a><br><sub>Свёрнутый звонок во время работы на доске</sub>
+</td>
+</tr>
+</table>
+
+</details>
+
+<details>
+<summary><b>Материалы, мини-тесты и настройки</b></summary>
+
+<table>
+<tr>
+<td width="50%" align="center">
+<a href="docs/assets/readme/boards.png">
+<img src="docs/assets/readme/boards.png"
+alt="Библиотека совместных и внешних досок" loading="lazy">
+</a><br><sub>Библиотека совместных и внешних досок</sub>
+</td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/board-editor.png">
+<img src="docs/assets/readme/board-editor.png"
+alt="Совместная доска Excalidraw с разбором задачи" loading="lazy">
+</a><br><sub>Совместная доска Excalidraw с разбором задачи</sub>
+</td>
+</tr>
+<tr>
+<td width="50%" align="center">
+<a href="docs/assets/readme/textbooks.png">
+<img src="docs/assets/readme/textbooks.png"
+alt="Учебники и рабочие тетради" loading="lazy">
+</a><br><sub>Учебники и рабочие тетради</sub>
+</td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/ai.png">
+<img src="docs/assets/readme/ai.png"
+alt="Настройки ИИ-помощника" loading="lazy">
+</a><br><sub>Настройки ИИ-помощника</sub>
+</td>
+</tr>
+<tr>
+<td width="50%" align="center">
+<a href="docs/assets/readme/backups.png">
+<img src="docs/assets/readme/backups.png"
+alt="Резервные копии данных портала" loading="lazy">
+</a><br><sub>Резервные копии данных портала</sub>
+</td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/cabinet-quiz.png">
+<img src="docs/assets/readme/cabinet-quiz.png"
+alt="Мини-тест с выбором ответа и автоматической проверкой" loading="lazy">
+</a><br><sub>Мини-тест с выбором ответа и автоматической проверкой</sub>
+</td>
 </tr>
 </table>
 
@@ -122,16 +298,74 @@ curl -fsSL https://raw.githubusercontent.com/verhoturkin/teacher-box/main/script
 
 <table>
 <tr>
-<td width="50%" align="center"><a href="docs/assets/readme/cabinet-home.png"><img src="docs/assets/readme/cabinet-home.png" alt="Главная ученика"></a><br><sub>Главная</sub></td>
-<td width="50%" align="center"><a href="docs/assets/readme/cabinet-schedule.png"><img src="docs/assets/readme/cabinet-schedule.png" alt="Расписание ученика"></a><br><sub>Расписание</sub></td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/cabinet-home.png">
+<img src="docs/assets/readme/cabinet-home.png"
+alt="Главная: ближайшее занятие, задания и баланс" loading="lazy">
+</a><br><sub>Главная: ближайшее занятие, задания и баланс</sub>
+</td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/cabinet-schedule.png">
+<img src="docs/assets/readme/cabinet-schedule.png"
+alt="Личное расписание ученика" loading="lazy">
+</a><br><sub>Личное расписание ученика</sub>
+</td>
 </tr>
 <tr>
-<td width="50%" align="center"><a href="docs/assets/readme/cabinet-homework.png"><img src="docs/assets/readme/cabinet-homework.png" alt="Задания ученика"></a><br><sub>Задания</sub></td>
-<td width="50%" align="center"><a href="docs/assets/readme/cabinet-billing.png"><img src="docs/assets/readme/cabinet-billing.png" alt="Оплаты ученика"></a><br><sub>Оплаты</sub></td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/cabinet-homework.png">
+<img src="docs/assets/readme/cabinet-homework.png"
+alt="Задания ученика и результаты проверки" loading="lazy">
+</a><br><sub>Задания ученика и результаты проверки</sub>
+</td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/cabinet-billing.png">
+<img src="docs/assets/readme/cabinet-billing.png"
+alt="История занятий и оплат" loading="lazy">
+</a><br><sub>История занятий и оплат</sub>
+</td>
+</tr>
+<tr>
+<td width="50%" align="center">
+<a href="docs/assets/readme/cabinet-materials.png">
+<img src="docs/assets/readme/cabinet-materials.png"
+alt="Доступные ученику доски и учебники" loading="lazy">
+</a><br><sub>Доступные ученику доски и учебники</sub>
+</td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/cabinet-notifications.png">
+<img src="docs/assets/readme/cabinet-notifications.png"
+alt="Уведомления о заданиях, оплатах и сообщения учителя" loading="lazy">
+</a><br><sub>Уведомления о заданиях, оплатах и сообщения учителя</sub>
+</td>
 </tr>
 </table>
 
 </details>
+
+<details>
+<summary><b>На телефоне</b></summary>
+
+<table>
+<tr>
+<td width="50%" align="center">
+<a href="docs/assets/readme/teacher-mobile.png">
+<img src="docs/assets/readme/teacher-mobile.png"
+alt="Рабочий день учителя на телефоне" loading="lazy">
+</a><br><sub>Рабочий день учителя на телефоне</sub>
+</td>
+<td width="50%" align="center">
+<a href="docs/assets/readme/cabinet-mobile.png">
+<img src="docs/assets/readme/cabinet-mobile.png"
+alt="Главная ученика на телефоне" loading="lazy">
+</a><br><sub>Главная ученика на телефоне</sub>
+</td>
+</tr>
+</table>
+
+</details>
+
+Повторная съёмка галереи — [инструкция](docs/assets/readme/README.md).
 
 ## Первые шаги
 

@@ -25,7 +25,14 @@ don't read them unless the task needs history.
 
 ## Next release
 
-_Empty: the next release section is added when work starts._
+### 390. README screenshot gallery
+
+- [x] 390.1 **D** Refresh `docs/assets/readme/` and expand the `README.md` gallery to cover
+  teacher and student workflows with varied fictional demo data; retain a reproducible capture
+  script and verify documentation links. *simple*
+
+- [x] 390.2 **D** Add real LiveKit prejoin, individual/group calls and minimized call screenshots
+  to `README.md`, with repeatable local media fixtures and capture instructions. *simple*
 
 ## Backlog
 
