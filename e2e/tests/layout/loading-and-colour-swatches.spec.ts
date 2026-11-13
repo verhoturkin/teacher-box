@@ -29,7 +29,17 @@ test('the loading indicator morphs inside a 48 px circle and follows reduced mot
   const look = await indicator.evaluate((element) => {
     const container = getComputedStyle(element);
     const path = element.querySelector('path');
-    const shape = element.querySelector('g')?.getBoundingClientRect();
+    const matrix = path?.getScreenCTM();
+    let shapeWidth = 0;
+    if (path && matrix) {
+      // A rotated group's bounding rectangle includes empty corners. Measure its painted curve.
+      const length = path.getTotalLength();
+      const xs = Array.from(
+        { length: 257 },
+        (_, i) => path.getPointAtLength((length * i) / 256).matrixTransform(matrix).x,
+      );
+      shapeWidth = Math.max(...xs) - Math.min(...xs);
+    }
     const probe = document.createElement('span');
     probe.style.color = 'var(--p-md-on-primary-container)';
     document.body.append(probe);
@@ -37,7 +47,7 @@ test('the loading indicator morphs inside a 48 px circle and follows reduced mot
     probe.remove();
     return {
       size: container.width,
-      shape: shape?.width ?? 0,
+      shape: shapeWidth,
       colour: path ? getComputedStyle(path).fill : '',
       onContainer,
     };
