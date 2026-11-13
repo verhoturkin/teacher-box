@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
-import { ProgressSpinner } from 'primeng/progressspinner';
+import { LoadingIndicator } from '@shared/ui/loading-indicator';
 import { injectMobile } from '@core/layout/mobile';
 import { CallControls } from './call-controls';
 import { gridSize, stageLayout } from './call-layout';
@@ -27,7 +27,7 @@ import { SHARED_T } from '@shared/i18n/texts';
  */
 @Component({
   selector: 'tb-call-window',
-  imports: [Button, Message, ProgressSpinner, CallControls, CallSelf, CallTile],
+  imports: [Button, Message, LoadingIndicator, CallControls, CallSelf, CallTile],
   changeDetection: ChangeDetectionStrategy.OnPush,
   // Global class names, loaded with the call (design-system «Where it lives»)
   encapsulation: ViewEncapsulation.None,
@@ -76,7 +76,7 @@ import { SHARED_T } from '@shared/i18n/texts';
       </div>
     } @else if (session.phase() === 'connecting') {
       <div class="tb-call-window__end" role="status">
-        <p-progressspinner [ariaLabel]="t.joining" />
+        <tb-loading-indicator [ariaLabel]="t.joining" />
         <p>{{ t.joining }}</p>
       </div>
     } @else {

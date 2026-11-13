@@ -1,11 +1,7 @@
 import { startSession } from '../support/session';
 import { type Page, expect, test } from '@playwright/test';
 
-/**
- * Version 0.16.0 (M3 Expressive alignment, our own rules): the loading indicator is a 38 px shape in
- * on-primary-container inside the 48 px primary-container circle; the check on a portal colour swatch is
- * readable (≥ 4.5:1, white is short of 3:1 on teal and emerald).
- */
+/** Shared Material loading feedback and portal colour contrast. */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
 
@@ -14,7 +10,7 @@ async function signIn(page: Page): Promise<void> {
   await startSession(page, 'teacher', TEACHER_PASSWORD);
 }
 
-test('the loading indicator: a 38 px shape in on-primary-container in a 48 px circle', async ({
+test('the loading indicator morphs inside a 48 px circle and follows reduced motion', async ({
   page,
 }) => {
   await signIn(page);
@@ -28,11 +24,12 @@ test('the loading indicator: a 38 px shape in on-primary-container in a 48 px ci
   });
   await page.goto('/teacher/students');
 
-  const indicator = page.locator('main .p-progressspinner').first();
+  const indicator = page.locator('main tb-loading-indicator[role=progressbar]').first();
   await expect(indicator).toBeVisible();
   const look = await indicator.evaluate((element) => {
     const container = getComputedStyle(element);
-    const shape = getComputedStyle(element, '::after');
+    const path = element.querySelector('path');
+    const shape = element.querySelector('g')?.getBoundingClientRect();
     const probe = document.createElement('span');
     probe.style.color = 'var(--p-md-on-primary-container)';
     document.body.append(probe);
@@ -40,14 +37,32 @@ test('the loading indicator: a 38 px shape in on-primary-container in a 48 px ci
     probe.remove();
     return {
       size: container.width,
-      shape: Math.round(parseFloat(shape.width)),
-      colour: shape.backgroundColor,
+      shape: shape?.width ?? 0,
+      colour: path ? getComputedStyle(path).fill : '',
       onContainer,
     };
   });
   expect(look.size).toBe('48px');
-  expect(look.shape).toBe(38);
+  expect(look.shape).toBeGreaterThan(0);
+  expect(look.shape).toBeLessThanOrEqual(38.1);
   expect(look.colour).toBe(look.onContainer);
+
+  const path = indicator.locator('path');
+  const initial = await path.getAttribute('d');
+  await expect.poll(() => path.getAttribute('d')).not.toBe(initial);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const snapshots = await indicator.evaluate(async (element) => {
+    const frames: string[] = [];
+    for (let i = 0; i < 5; i++) {
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      frames.push(element.querySelector('svg')?.innerHTML ?? '');
+    }
+    return frames;
+  });
+  expect(new Set(snapshots).size).toBe(1);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  const still = await path.getAttribute('d');
+  await expect.poll(() => path.getAttribute('d')).not.toBe(still);
 
   release();
   await expect(indicator).toHaveCount(0);

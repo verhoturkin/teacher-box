@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { EmptyState } from '@shared/ui/empty-state';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { LoadingIndicator } from '@shared/ui/loading-indicator';
 
 /** A state that has already settled, as `LoadState.track()` leaves it after an answer. */
 function settled(failure: HttpErrorResponse | null): LoadState {
@@ -18,10 +19,16 @@ function settled(failure: HttpErrorResponse | null): LoadState {
  */
 @Component({
   selector: 'tb-gallery-load-state',
-  imports: [EmptyState, LoadStateView],
+  imports: [EmptyState, LoadStateView, LoadingIndicator],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ul class="tb-gallery-grid">
+      <li class="tb-gallery-cell">
+        <tb-loading-indicator />
+        <code class="tb-gallery-name"
+          >Seven Material shapes · 200 ms delay · system reduced motion</code
+        >
+      </li>
       <li class="tb-gallery-cell">
         <tb-load-state [state]="loading" />
         <code class="tb-gallery-name">new LoadState() — loading</code>

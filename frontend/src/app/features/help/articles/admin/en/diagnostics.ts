@@ -6,6 +6,11 @@ export const diagnosticsArticle: HelpArticleText = {
   body: `
 Administrators manage the server and integrations. They can inspect logs and collect diagnostics, but cannot view student records.
 
+## Loading data
+
+Short requests finish without a loading indicator. After 200 ms, a rotating shape appears until the data \
+is ready. If your device uses reduced motion, the shape stays still.
+
 ## Find the right section
 
 - **Status:** service health, pending events, version, uptime, memory, disk space, latest backup and portal address. “Collect diagnostics” downloads \

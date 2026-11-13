@@ -15,7 +15,7 @@ import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
-import { ProgressSpinner } from 'primeng/progressspinner';
+import { LoadingIndicator } from '@shared/ui/loading-indicator';
 import { AuthService } from '@core/auth/auth.service';
 import { describeError } from '@core/http/error-messages';
 import { problemCode } from '@core/http/problem-detail';
@@ -45,7 +45,7 @@ type InviteState =
     InputText,
     Message,
     Password,
-    ProgressSpinner,
+    LoadingIndicator,
     PortalLogo,
     PasswordToggle,
     FieldErrors,
@@ -57,7 +57,7 @@ type InviteState =
       <tb-portal-logo size="3rem" />
       @switch (state().kind) {
         @case ('loading') {
-          <p-progress-spinner [ariaLabel]="t.loading" />
+          <tb-loading-indicator [ariaLabel]="t.loading" />
         }
         @case ('invalid') {
           <p-card

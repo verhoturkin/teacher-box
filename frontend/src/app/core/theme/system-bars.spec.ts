@@ -6,12 +6,17 @@ import { MANIFEST_PATH, SystemBars } from './system-bars';
 import { ThemeMode } from './theme-mode';
 
 describe('SystemBars', () => {
-  afterEach(() => {
+  function clearHead(): void {
     document.head
       .querySelectorAll('meta[name="theme-color"], link[rel="manifest"]')
       .forEach((node) => {
         node.remove();
       });
+  }
+
+  beforeEach(clearHead);
+
+  afterEach(() => {
     TestBed.inject(ThemeMode).choose('system');
     TestBed.inject(Portal).set({
       name: 'Teacher Box',
@@ -19,6 +24,8 @@ describe('SystemBars', () => {
       accent: 'indigo',
       logo: null,
     });
+    TestBed.resetTestingModule();
+    clearHead();
   });
 
   function meta(): string | null {

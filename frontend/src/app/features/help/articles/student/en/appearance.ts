@@ -4,6 +4,11 @@ export const appearanceArticle: HelpArticleText = {
   title: 'Mobile use, theme and language',
   summary: 'Use the portal on your phone and choose your theme and language',
   body: `
+## Loading data
+
+Short requests finish without a loading indicator. After 200 ms, a rotating shape appears until the data \
+is ready. If your device uses reduced motion, the shape stays still.
+
 ## Use the portal on your phone
 
 The portal works in your phone’s browser. To give it its own app icon in Chrome on Android, open the browser menu (⋮) → “Add to Home screen” → \

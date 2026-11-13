@@ -22,7 +22,6 @@ import paginator from '@primeuix/themes/aura/paginator';
 import password from '@primeuix/themes/aura/password';
 import popover from '@primeuix/themes/aura/popover';
 import progressbar from '@primeuix/themes/aura/progressbar';
-import progressspinner from '@primeuix/themes/aura/progressspinner';
 import radiobutton from '@primeuix/themes/aura/radiobutton';
 import ripple from '@primeuix/themes/aura/ripple';
 import select from '@primeuix/themes/aura/select';
@@ -70,7 +69,6 @@ export const AURA_COMPONENTS = {
   password,
   popover,
   progressbar,
-  progressspinner,
   radiobutton,
   ripple,
   select,

@@ -4,6 +4,11 @@ export const appearanceArticle: HelpArticleText = {
   title: 'Appearance, language and mobile use',
   summary: 'Choose your portal’s appearance and use it comfortably on any device',
   body: `
+## Loading data
+
+Short requests finish without a loading indicator. After 200 ms, a rotating shape appears until the data \
+is ready. If your device uses reduced motion, the shape stays still.
+
 ## Portal branding
 
 Open “Settings” → “Portal” to change the name, logo and colour; scheme and contrast are under “Fine tuning”. Save from the row that appears under the \
