@@ -95,7 +95,7 @@ import { T } from '../i18n/texts';
       gap: var(--tb-space-3);
     }
 
-    :host ::ng-deep .tb-link-code__spinner {
+    .tb-link-code__spinner {
       width: 1.5rem;
       height: 1.5rem;
     }

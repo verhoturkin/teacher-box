@@ -392,7 +392,7 @@ export function nextMonday(date: Date): Date {
     }
 
     @media (width < 37.5em) {
-      :host ::ng-deep .tb-my-schedule-side {
+      .tb-my-schedule-side {
         background: transparent;
       }
 
@@ -415,14 +415,14 @@ export function nextMonday(date: Date): Date {
       align-items: stretch;
     }
 
-    :host ::ng-deep .tb-my-schedule-side {
+    .tb-my-schedule-side {
       @media (width >= 37.5em) {
         background: var(--p-md-surface-container-low);
       }
       --tb-list-item: var(--p-md-surface-container-lowest);
     }
 
-    :host-context(.tb-dark) ::ng-deep .tb-my-schedule-side {
+    :host-context(.tb-dark) .tb-my-schedule-side {
       --tb-list-item: var(--p-md-surface-container-high);
     }
 

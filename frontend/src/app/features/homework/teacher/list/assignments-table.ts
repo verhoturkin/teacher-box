@@ -251,7 +251,7 @@ export interface RowMenu {
   `,
   styles: `
     /* «⋮» sits at the right edge of the row */
-    :host ::ng-deep .tb-hw__table td:last-child:not([colspan]) {
+    .tb-hw__table td:last-child:not([colspan]) {
       text-align: end;
     }
 
@@ -278,29 +278,19 @@ export interface RowMenu {
       padding-block: var(--tb-space-4) var(--tb-space-1);
     }
 
-    :host ::ng-deep .tb-hw__table .p-datatable-tbody > tr.tb-hw__group-row + tr > td:first-child {
+    .tb-hw__table tr.tb-hw__group-row + tr > td:first-child {
       border-start-start-radius: var(--tb-list-outer);
     }
 
-    :host ::ng-deep .tb-hw__table .p-datatable-tbody > tr.tb-hw__group-row + tr > td:last-child {
+    .tb-hw__table tr.tb-hw__group-row + tr > td:last-child {
       border-start-end-radius: var(--tb-list-outer);
     }
 
-    :host
-      ::ng-deep
-      .tb-hw__table
-      .p-datatable-tbody
-      > tr:has(+ tr.tb-hw__group-row)
-      > td:first-child {
+    .tb-hw__table tr:has(+ tr.tb-hw__group-row) > td:first-child {
       border-end-start-radius: var(--tb-list-outer);
     }
 
-    :host
-      ::ng-deep
-      .tb-hw__table
-      .p-datatable-tbody
-      > tr:has(+ tr.tb-hw__group-row)
-      > td:last-child {
+    .tb-hw__table tr:has(+ tr.tb-hw__group-row) > td:last-child {
       border-end-end-radius: var(--tb-list-outer);
     }
 

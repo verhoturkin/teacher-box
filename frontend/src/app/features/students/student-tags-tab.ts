@@ -235,7 +235,7 @@ export const TAGS_SETTINGS = '/teacher/settings/students';
       margin-block-end: var(--tb-space-3);
     }
 
-    :host ::ng-deep .tb-student-tags__chip {
+    .tb-student-tags__chip {
       background: var(--p-md-tertiary-container);
       color: var(--p-md-on-tertiary-container);
     }

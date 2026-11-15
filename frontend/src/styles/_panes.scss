@@ -482,9 +482,8 @@ textarea.p-textarea {
   resize: vertical;
 }
 
-/* Buttons: Label Large (M3), 40 px high */
+/* Buttons, 40 px high: the line and tracking of Label Large (M3); the size stays PrimeNG's 1rem */
 .p-button {
-  font-size: 0.875rem;
   line-height: 1.25rem;
   letter-spacing: 0.00625rem;
 }

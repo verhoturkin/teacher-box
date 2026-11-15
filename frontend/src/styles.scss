@@ -1,6 +1,7 @@
 /* The index of the portal's global styles: every part is in `styles/`, the cascade order is the order of
    the lines below (docs/design-system.md, «Where it lives»). */
 
+@use './styles/layers';
 @use './styles/icons';
 @use './styles/tokens';
 @use './styles/panes';

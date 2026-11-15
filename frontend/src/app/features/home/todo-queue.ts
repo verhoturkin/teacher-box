@@ -283,7 +283,7 @@ interface Row {
       border-radius: var(--tb-shape-lg);
     }
 
-    :host ::ng-deep .tb-queue__progress {
+    .tb-queue__progress {
       height: 0.5rem;
     }
 

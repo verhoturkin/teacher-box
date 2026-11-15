@@ -29,6 +29,15 @@ sample from there; this page keeps the rules. No other UI kits (Angular Material
 primeicons. Minimum browsers: Chrome 119, Safari 17.2, Firefox 128 (`linear()`, `:has()`,
 `color-mix()`); older ones get no springs.
 
+**Cascade layers** ([ADR-0065](adr/0065-primeng-css-layer.md)): PrimeNG's theme and component CSS
+is `@layer primeng`, under it `@layer base` — element defaults PrimeNG's components override (`a`);
+the order is in `styles/_layers.scss` and `cssLayer.order` of `app.config.ts`. Everything else is
+unlayered and beats PrimeNG at any specificity: no `!important` against its selectors (only against
+its inline styles — the dialog mask, the toast — and for reduced motion). `::ng-deep` only for
+another template's DOM (inside a PrimeNG component: `.p-button` of `p-button`, `.p-card-body`; a
+child component; projected content); a class on a host in the own template — PrimeNG 21 puts
+`styleClass` on the host — needs none.
+
 **Checks.** `core/theme/design-rules.spec.ts` fails on Aura tokens, hex colours outside
 `core/theme/` and `boards/`, `size="small"` buttons, outlined ones not written as
 `variant="outlined"`, and when the icon font and the

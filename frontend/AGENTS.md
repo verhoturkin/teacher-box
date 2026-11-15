@@ -67,6 +67,10 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
   flow `@if`/`@for`. Angular 21 is zoneless; `ng test` = Vitest.
 - UI components — PrimeNG 21; custom ones only when PrimeNG has nothing suitable. Themes:
   `providePrimeNG({ theme: { preset } })` from `@primeuix/themes`.
+- **CSS layers** ([ADR-0065](../docs/adr/0065-primeng-css-layer.md)): PrimeNG's CSS is `@layer
+  primeng` (`cssLayer`), our styles are unlayered and win; element defaults go to `@layer base`
+  (`styles/_layers.scss`). No `!important` or `::ng-deep` to beat PrimeNG; `::ng-deep` only for DOM
+  of another template (design-system «Where it lives»).
 - **Theme tokens of used components only** (stage 372): the preset is built on
   `core/theme/aura-base.ts`, not on `@primeuix/themes/aura`. The first `primeng/<module>` import in
   `src/app` adds its `@primeuix/themes/aura/<component>` there, the last removed one drops it;

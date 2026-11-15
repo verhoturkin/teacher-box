@@ -320,7 +320,7 @@ const VIEWS: readonly View[] = ['list', 'journal'];
       pointer-events: none;
     }
 
-    :host ::ng-deep .tb-hw__select .p-select {
+    .tb-hw__select .p-select {
       box-sizing: border-box;
       block-size: 2.5rem;
       min-inline-size: 12rem;

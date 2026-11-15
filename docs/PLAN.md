@@ -58,7 +58,7 @@ Source: backlog review of 2026-11-15. ADRs: a new one for 400.1 (CSS layers repl
 
 ### 400. Styles: CSS layers and token check
 
-- [ ] 400.1 **F** *complex* — enable PrimeNG `cssLayer` in `providePrimeNG` (`app.config.ts`) with
+- [x] 400.1 **F** *complex* — enable PrimeNG `cssLayer` in `providePrimeNG` (`app.config.ts`) with
   a layer order in `styles.scss`, then remove the 38 `::ng-deep` and 20 `!important` where the
   layer order makes them unnecessary; screenshots of the gallery before and after must match. New
   ADR; update `docs/design-system.md` and `frontend/AGENTS.md`.

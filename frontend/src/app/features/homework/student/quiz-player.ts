@@ -289,7 +289,7 @@ export interface QuizEdit {
       margin-block-start: calc(-1 * var(--tb-space-2));
     }
 
-    :host ::ng-deep .tb-qp__progress {
+    .tb-qp__progress {
       height: 4px;
     }
 

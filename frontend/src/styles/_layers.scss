@@ -1,0 +1,7 @@
+/*
+ * The cascade layers (ADR-0065), declared before any other rule: `base` — the element defaults that
+ * PrimeNG's components override (links), then `primeng` — PrimeNG's theme and component CSS
+ * (`cssLayer` in `app.config.ts`). The rest of these styles and the components' own stay unlayered,
+ * so they beat both at any specificity: no `::ng-deep` or `!important` against PrimeNG's selectors.
+ */
+@layer base, primeng; /* the same order as `cssLayer.order` in app.config.ts */

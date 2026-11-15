@@ -388,7 +388,7 @@ const ALL_DAY_START_HOUR = 10;
     }
 
     /* the supporting pane: M3 side-sheet surface (spec §7) */
-    :host ::ng-deep .tb-schedule-side {
+    .tb-schedule-side {
       background: var(--p-md-surface-container-low);
       /* M3 expressive segmented list on a tonal pane, the sketch's light rows: the items are lighter than the pane
          (container lowest on container low; in the dark theme container high), 2 dp apart (SegmentedGap), the
@@ -396,12 +396,12 @@ const ALL_DAY_START_HOUR = 10;
       --tb-list-item: var(--p-md-surface-container-lowest);
     }
 
-    :host-context(.tb-dark) ::ng-deep .tb-schedule-side {
+    :host-context(.tb-dark) .tb-schedule-side {
       --tb-list-item: var(--p-md-surface-container-high);
     }
 
     /* 16 dp between the list and «Регулярное занятие», as between the other blocks of the pane */
-    :host ::ng-deep .tb-schedule-side__add {
+    .tb-schedule-side__add {
       display: block;
       margin-top: var(--tb-space-4);
     }

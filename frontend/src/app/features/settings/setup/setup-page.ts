@@ -404,7 +404,7 @@ const STEPS: readonly Step<StepId>[] = [
       }
     }
 
-    :host ::ng-deep .tb-setup__progress {
+    .tb-setup__progress {
       height: 0.25rem;
       margin: 0 var(--tb-space-4);
     }

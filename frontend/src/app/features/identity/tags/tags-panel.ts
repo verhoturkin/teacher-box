@@ -172,7 +172,7 @@ const TEMPLATES: readonly Template[] = [
       margin-block-start: var(--tb-space-1);
     }
 
-    :host ::ng-deep .tb-tags__ai {
+    .tb-tags__ai {
       background: var(--p-md-tertiary-container);
       color: var(--p-md-on-tertiary-container);
     }
