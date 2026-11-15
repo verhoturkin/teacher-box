@@ -154,6 +154,38 @@ class CloudBackupServiceTest {
     }
 
     @Test
+    void theDriveKeepsOnlyTheNewestCopies() throws IOException {
+        connect();
+        Path file = Files.writeString(dir.resolve(B3), "zip");
+        when(backups.file(B3)).thenReturn(file);
+        when(api.folderExists("access", "folder-1")).thenReturn(true);
+        when(api.list("access", "folder-1")).thenReturn(List.of(cloud("1", B1, 2), cloud("3", B3, 0),
+                cloud("x", "notes.zip", 5), cloud("2", B2, 1), cloud("u", B1.replace("10-", "08-"))));
+
+        drive.on(new BackupCreated(info(B3), BackupKind.SCHEDULED));
+
+        verify(api).delete("access", "1");
+        verify(api, never()).delete("access", "3");
+        verify(api, never()).delete("access", "2");
+        verify(api, never()).delete("access", "u");
+        verify(api, never()).delete("access", "x");
+    }
+
+    @Test
+    void lessThanOneCopyKeepsOne() throws IOException {
+        drive = service(google(0));
+        connect();
+        when(backups.file(B3)).thenReturn(Files.writeString(dir.resolve(B3), "zip"));
+        when(api.folderExists("access", "folder-1")).thenReturn(true);
+        when(api.list("access", "folder-1")).thenReturn(List.of(cloud("3", B3, 0), cloud("2", B2, 1)));
+
+        drive.on(new BackupCreated(info(B3), BackupKind.MANUAL));
+
+        verify(api).delete("access", "2");
+        verify(api, never()).delete("access", "3");
+    }
+
+    @Test
     void backupsBeforeARestoreOrAResetAndBackupsWithoutTheDriveStayOnTheServer() {
         drive.on(new BackupCreated(info(B1), BackupKind.MANUAL));
         connect();
@@ -329,8 +361,12 @@ class CloudBackupServiceTest {
     }
 
     private static BackupProperties.Google google() {
+        return google(3);
+    }
+
+    private static BackupProperties.Google google(int keep) {
         return new BackupProperties.Google(null, "https://consent", "https://oauth",
-                "https://api", "https://upload");
+                "https://api", "https://upload", keep);
     }
 
     private static String state(String url) {

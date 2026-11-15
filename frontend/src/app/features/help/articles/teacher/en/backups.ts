@@ -31,7 +31,8 @@ and create the configuration.
 7. Copy the Client ID and Client secret into the portal’s Google Drive panel and save. The secret is shown only once.
 
 Choose “Connect Google Drive” and grant access. The portal creates a folder named after your portal and uploads scheduled and manual backups. It can \
-access only files it creates. Retention matches the server; pre-restore and pre-reset backups remain on the server only.
+access only files it creates. It keeps the three newest backups (the administrator can change this); older ones, like pre-restore and pre-reset \
+backups, stay on the server only.
 
 Use “Send to Google Drive” in a backup’s menu to upload it manually. The Drive panel shows the latest upload and any error; when a new backup \
 fails to upload on its own, you also get a notification.

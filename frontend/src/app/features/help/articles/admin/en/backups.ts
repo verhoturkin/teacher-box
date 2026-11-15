@@ -12,7 +12,8 @@ data. The teacher also manages the Google Drive connection.
 Backups in Google Drive appear here too. Download one to the server before restoring it from the server list.
 
 Retention is set in “Settings” → “Backups” → “Days to keep backups”, with a default of 14 days. After creating a new backup, the portal removes older \
-backups of every kind from both the server and Google Drive.
+backups of every kind from both the server and Google Drive. Google Drive also keeps only the newest backups: “Backups to keep in Google Drive”, \
+with a default of 3.
 
 ## Restore a backup
 

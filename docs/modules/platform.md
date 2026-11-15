@@ -54,7 +54,9 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   `drive.file`; the OAuth flow and error mapping are `shared.http.GoogleOAuth`, shared with `schedule`; uploads and downloads streamed through `OutboundHttp.streamingRequestFactory`), the connection in
   `<data-dir>/google-drive.json` (`DriveConnectionStore`; survives restore and reset), `CloudBackupService`: after
   `BackupCreated` of a scheduled or manual backup it uploads it in the background (one task at a time) into the
-  portal's folder and deletes the ones uploaded more than `TEACHERBOX_BACKUP_KEEP_DAYS` ago; a rejected token disconnects with an error.
+  portal's folder and keeps there the `TEACHERBOX_BACKUP_GOOGLE_KEEP` newest uploads (3 by default,
+  live; 395.2), none older than `TEACHERBOX_BACKUP_KEEP_DAYS`; a rejected token disconnects with an
+  error.
   The administrator also has `GET /api/admin/backups/google`, `GET …/files`, `POST …/uploads/{name}`
   and `POST …/files/{id}/download`: technical backup management only, with no archive download to the device,
   OAuth management, account address, client ID or detailed connection errors. The admin backups page reuses

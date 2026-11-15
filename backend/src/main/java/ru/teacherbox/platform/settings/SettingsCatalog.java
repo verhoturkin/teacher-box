@@ -68,6 +68,7 @@ public final class SettingsCatalog {
             "TEACHERBOX_IDENTITY_LOCK_DURATION",
             "TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_REQUESTS", "TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_PERIOD",
             "TEACHERBOX_BACKUP_CRON", "TEACHERBOX_BACKUP_KEEP_DAYS", "TEACHERBOX_BACKUP_GOOGLE_PROXY",
+            "TEACHERBOX_BACKUP_GOOGLE_KEEP",
             "TEACHERBOX_AI_PROXY");
 
     /**
@@ -242,7 +243,12 @@ public final class SettingsCatalog {
                 .secret("TEACHERBOX_BACKUP_GOOGLE_CLIENT_SECRET",
                         w("Google Диск: секрет клиента OAuth", "Google Drive: OAuth client secret"))
                 .add("TEACHERBOX_BACKUP_GOOGLE_PROXY", w("Google Диск: прокси", "Google Drive: proxy"), PROXY,
-                        w("Если Google недоступен напрямую.", "If Google can't be reached directly."));
+                        w("Если Google недоступен напрямую.", "If Google can't be reached directly."))
+                .add("TEACHERBOX_BACKUP_GOOGLE_KEEP",
+                        w("Сколько копий хранить в Google Диске", "Backups to keep in Google Drive"), NUMBER,
+                        w("Последние копии в Диске учителя, но не старше срока хранения; по умолчанию 3.",
+                                "The newest backups in the teacher's Drive, none older than the retention period. "
+                                        + "Default: 3."));
 
         b.group("log", w("Журнал", "Log"))
                 .envChoice("LOGGING_STRUCTURED_FORMAT_CONSOLE", w("Формат журнала в консоли", "Console log format"),

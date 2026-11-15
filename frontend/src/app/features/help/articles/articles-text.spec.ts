@@ -51,7 +51,7 @@ them from a board backup rather than undoing the old deletion.
 
 `;
 
-/** Reviewed backup guidance from stage 395: [baseline text, text now] per edition. */
+/** Reviewed backup guidance from stage 395 (failure notices, Drive retention): [baseline, now] per edition. */
 const BACKUPS: Readonly<Record<string, readonly (readonly [string, string])[]>> = {
   'teacher.ru': [
     [
@@ -63,6 +63,10 @@ const BACKUPS: Readonly<Record<string, readonly (readonly [string, string])[]>> 
     [
       'и ошибку, если не ушла.\n',
       'и ошибку, если не ушла. Если копия по расписанию или ручная не ушла сама, придёт и уведомление.\n',
+    ],
+    [
+      'там они хранятся столько же, сколько на сервере (по умолчанию две недели).',
+      'там хранятся три последние копии (число задаёт администратор), более старые остаются только на сервере.',
     ],
   ],
   'teacher.en': [
@@ -76,6 +80,25 @@ const BACKUPS: Readonly<Record<string, readonly (readonly [string, string])[]>> 
       'The Drive panel shows the latest upload and any error.\n',
       'The Drive panel shows the latest upload and any error; when a new backup fails to upload on its own, ' +
         'you also get a notification.\n',
+    ],
+    [
+      'Retention matches the server; pre-restore and pre-reset backups remain on the server only.',
+      'It keeps the three newest backups (the administrator can change this); older ones, like ' +
+        'pre-restore and pre-reset backups, stay on the server only.',
+    ],
+  ],
+  'admin.ru': [
+    [
+      'на сервере и в Google Диске.\n',
+      'на сервере и в Google Диске. В Google Диске, кроме того, остаются только последние копии — ' +
+        '«Сколько копий хранить в Google Диске» (по умолчанию 3).\n',
+    ],
+  ],
+  'admin.en': [
+    [
+      'from both the server and Google Drive.\n',
+      'from both the server and Google Drive. Google Drive also keeps only the newest backups: ' +
+        '“Backups to keep in Google Drive”, with a default of 3.\n',
     ],
   ],
 };
@@ -115,18 +138,20 @@ describe('help articles after the split into one file per topic', () => {
         ...boards,
         body: boards['body'].replace('## ', `${boardGuidance}## `),
       };
-      const backups = original['backups'];
-      if (!isRecord(backups) || typeof backups['body'] !== 'string') {
-        throw new Error(`Missing original article ${name}/backups`);
-      }
+    }
+    const backups = original['backups'];
+    const backupGuidance = BACKUPS[name];
+    if (backupGuidance && (!isRecord(backups) || typeof backups['body'] !== 'string')) {
+      throw new Error(`Missing original article ${name}/backups`);
+    }
+    if (backupGuidance && isRecord(backups) && typeof backups['body'] === 'string')
       expected['backups'] = {
         ...backups,
-        body: (BACKUPS[name] ?? []).reduce(
+        body: backupGuidance.reduce(
           (body, [before, after]) => body.replace(before, after),
           backups['body'],
         ),
       };
-    }
     expect(texts).toEqual(expected);
   });
 

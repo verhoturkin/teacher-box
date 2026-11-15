@@ -66,7 +66,7 @@ docker compose up -d --remove-orphans
 | `HOMEWORK_MAX_FILE_SIZE`, `HOMEWORK_MAX_FILES_PER_UPLOAD` | «Файлы в заданиях» |
 | `*_PROXY`, `NOTIFICATIONS_TELEGRAM_API_URL` | «Сеть и прокси» |
 | `IDENTITY_*_TTL`, `IDENTITY_MAX_FAILED_LOGINS`, `IDENTITY_LOCK_DURATION`, `SECURITY_AUTH_RATE_LIMIT_*` | «Вход и сеансы» |
-| `BACKUP_CRON`, `BACKUP_KEEP_DAYS`, `BOARDS_BACKUP_*` | «Резервные копии» |
+| `BACKUP_CRON`, `BACKUP_KEEP_DAYS`, `BACKUP_GOOGLE_KEEP`, `BOARDS_BACKUP_*` | «Резервные копии» |
 | `NOTIFICATIONS_MAX_ATTEMPTS`, `NOTIFICATIONS_LINK_CODE_TTL`, `NOTIFICATIONS_WEBPUSH_SUBJECT` | «Сообщения» |
 
 **Остаются только в `.env`:**

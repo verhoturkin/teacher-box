@@ -5,7 +5,9 @@ import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -40,6 +42,9 @@ public class CloudBackupService implements AutoCloseable {
     static final Duration AUTHORIZATION_TTL = Duration.ofMinutes(10);
     private static final Duration TOKEN_MARGIN = Duration.ofMinutes(1);
     private static final Logger log = LoggerFactory.getLogger(CloudBackupService.class);
+    /** Uploads by time, newest first; an unknown time first. */
+    private static final Comparator<DriveApi.DriveFile> NEWEST_FIRST = Comparator.comparing(DriveApi.DriveFile::createdAt,
+            Comparator.nullsFirst(Comparator.<Instant>reverseOrder()));
 
     /** What runs in the background. */
     public enum Task {
@@ -312,13 +317,26 @@ public class CloudBackupService implements AutoCloseable {
         }
     }
 
-    /** Backups older than {@link BackupProperties#keepDays()} are deleted from the folder. */
+    /**
+     * The folder keeps the {@link BackupProperties.Google#kept()} newest uploads, none older than
+     * {@link BackupProperties#keepDays()}; the rest are deleted. A file whose upload time is unknown
+     * counts as the newest.
+     */
     private void rotate(DriveConnection connection, String folderId) {
-        Instant oldest = clock.instant().minus(properties.get().retention());
-        List<DriveApi.DriveFile> old = withToken(connection, token -> api.list(token, folderId)).stream()
+        BackupProperties current = properties.get();
+        Instant oldest = clock.instant().minus(current.retention());
+        List<DriveApi.DriveFile> copies = withToken(connection, token -> api.list(token, folderId)).stream()
                 .filter(file -> BackupService.isBackupName(file.name()))
-                .filter(file -> file.createdAt() != null && file.createdAt().isBefore(oldest))
+                .sorted(NEWEST_FIRST)
                 .toList();
+        int kept = current.google().kept();
+        List<DriveApi.DriveFile> old = new ArrayList<>();
+        for (int i = 0; i < copies.size(); i++) {
+            DriveApi.DriveFile file = copies.get(i);
+            if (i >= kept || file.createdAt() != null && file.createdAt().isBefore(oldest)) {
+                old.add(file);
+            }
+        }
         for (DriveApi.DriveFile file : old) {
             withToken(connection, token -> {
                 api.delete(token, file.id());
