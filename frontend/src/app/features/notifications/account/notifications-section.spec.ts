@@ -308,7 +308,7 @@ describe('NotificationsSection', () => {
     it('gives a student the student topics and the teacher the teacher ones', async () => {
       await render();
       expect(text()).toContain('Итоги урока');
-      expect(text()).not.toContain('Ученики и календарь');
+      expect(text()).not.toContain('Ученики, календарь и копии');
       expect(text()).toContain('Сообщения учителя Приходят всегда');
       expect(text()).toContain('Тихие часы Не присылать ночью');
       expect(text()).not.toContain('Действия учителя в боте');

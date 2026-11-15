@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import ru.teacherbox.platform.backup.BackupCreated;
+import ru.teacherbox.platform.backup.BackupFailures;
 import ru.teacherbox.platform.backup.BackupKind;
 import ru.teacherbox.platform.backup.BackupProperties;
 import ru.teacherbox.platform.backup.BackupService.BackupInfo;
@@ -52,6 +53,7 @@ class CloudBackupServiceTest {
     private final DriveApi api = mock(DriveApi.class);
     private final BackupService backups = mock(BackupService.class);
     private final Portal portal = mock(Portal.class);
+    private final BackupFailures failures = mock(BackupFailures.class);
     private final MutableClock clock = new MutableClock(Instant.parse("2026-10-12T10:00:00Z"));
     private DriveConnectionStore store;
     private CloudBackupService drive;
@@ -174,6 +176,7 @@ class CloudBackupServiceTest {
         assertThat(store.load().folderId()).isEqualTo("folder-2");
         assertThat(drive.status().lastError()).isEqualTo("quota exceeded");
         assertThat(drive.status().connected()).isTrue();
+        verify(failures, never()).uploadFailed(anyString());
     }
 
     @Test
@@ -210,9 +213,23 @@ class CloudBackupServiceTest {
         when(api.folderExists("access", "folder-1")).thenReturn(true);
         when(backups.file(B1)).thenThrow(new NotFoundException("backup.not-found", "Backup not found"));
 
-        drive.upload(B1);
+        drive.upload(B1, false);
 
         assertThat(drive.status().lastError()).isEqualTo("Backup not found");
+        verify(failures, never()).uploadFailed(anyString());
+    }
+
+    @Test
+    void aFailedUploadOfANewBackupNotifiesTheTeacher() throws IOException {
+        connect();
+        when(backups.file(B1)).thenReturn(Files.writeString(dir.resolve(B1), "zip"));
+        when(api.folderExists("access", "folder-1")).thenReturn(true);
+        when(api.upload(eq("access"), eq("folder-1"), any())).thenThrow(new DriveException("quota exceeded"));
+
+        drive.on(new BackupCreated(info(B1), BackupKind.SCHEDULED));
+
+        verify(failures).uploadFailed(B1);
+        assertThat(drive.status().lastError()).isEqualTo("quota exceeded");
     }
 
     @Test
@@ -287,7 +304,7 @@ class CloudBackupServiceTest {
     @Test
     void closingStopsTheBackgroundWork() {
         ExecutorService executor = mock(ExecutorService.class);
-        new CloudBackupService(api, store, backups, () -> properties(google()), portal, clock, executor).close();
+        new CloudBackupService(api, store, backups, () -> properties(google()), portal, clock, failures, executor).close();
         drive.close();
 
         verify(executor).shutdownNow();
@@ -304,7 +321,7 @@ class CloudBackupServiceTest {
     }
 
     private CloudBackupService service(BackupProperties.Google google) {
-        return new CloudBackupService(api, store, backups, () -> properties(google), portal, clock, Runnable::run);
+        return new CloudBackupService(api, store, backups, () -> properties(google), portal, clock, failures, Runnable::run);
     }
 
     private static BackupProperties properties(BackupProperties.Google google) {

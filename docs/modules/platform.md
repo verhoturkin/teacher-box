@@ -64,6 +64,13 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   `POST …/authorize` (`{origin}` → consent URL), `GET …/files`, `POST …/files/{id}/download` (202, the copy is
   adopted as a backup via `BackupService.adopt` after the archive check), `POST …/uploads/{name}` (202); redirect
   `/api/public/backups/google/callback` → `/teacher/settings?drive=connected|denied|expired|failed#backups`.
+- `backup/` failures (395.1, ADR-0061): a failed scheduled backup (`ScheduledBackup`) and a failed upload
+  of a new scheduled or manual backup (`CloudBackupService`; not one the teacher sends by hand) notify
+  the teacher through `BackupFailures`: `NoticeRequested` with a `BackupNoticeKind` (`BACKUP_FAILED`,
+  `BACKUP_UPLOAD_FAILED`), texts of `BackupNoticeTexts`, link `/teacher/settings#backups`. The platform
+  knows no users: the teacher comes from SPI `shared.notice.NoticeRecipients` (implemented by
+  `identity`); a failure has no transaction, so the notice is published in a new one. Notifying never
+  fails the job; no teacher yet, nothing is sent.
   `DriveIntegrationCheck` for the administrator (no account address).
 - `settings/` — admin settings (`/api/admin/settings`): `SettingsCatalog` holds every setting;
   `.env.example`

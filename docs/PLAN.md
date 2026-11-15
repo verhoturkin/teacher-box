@@ -117,7 +117,7 @@ a new one if 393 changes how the database is opened or closed; 395 may amend ADR
 
 ### 395. Backup volume and failures
 
-- [ ] 395.1 **B** *complex* — a failed scheduled backup (`ScheduledBackup` in
+- [x] 395.1 **B** *complex* — a failed scheduled backup (`ScheduledBackup` in
   `PlatformBackupAutoConfiguration`) and a failed Google Drive upload (`CloudBackupService`) notify
   the teacher (inbox and messengers). Check against ADR-0061 how `platform` may publish
   `shared.notice.NoticeRequested` (it depends on `shared` only); texts in both languages; wiki.

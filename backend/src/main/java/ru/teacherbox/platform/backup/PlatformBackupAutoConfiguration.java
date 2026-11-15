@@ -19,6 +19,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionOperations;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.json.JsonMapper;
 import ru.teacherbox.platform.core.PlatformCoreAutoConfiguration;
@@ -30,6 +32,7 @@ import ru.teacherbox.platform.backup.drive.DriveConnectionStore;
 import ru.teacherbox.platform.backup.drive.DriveIntegrationCheck;
 import ru.teacherbox.shared.backup.BackupExclusions;
 import ru.teacherbox.shared.http.OutboundHttp;
+import ru.teacherbox.shared.notice.NoticeRecipients;
 import ru.teacherbox.shared.settings.LiveProperties;
 import ru.teacherbox.shared.portal.Portal;
 import ru.teacherbox.shared.reset.DataReset;
@@ -104,11 +107,20 @@ public class PlatformBackupAutoConfiguration {
         return new DriveClientImport(store);
     }
 
+    /** The teacher comes from the identity module, through {@code shared} (ADR-0061). */
+    @Bean
+    BackupFailures backupFailures(ObjectProvider<NoticeRecipients> recipients, ApplicationEventPublisher events,
+            ObjectProvider<PlatformTransactionManager> transactions) {
+        PlatformTransactionManager manager = transactions.getIfAvailable();
+        return new BackupFailures(recipients::getIfAvailable, events,
+                manager == null ? TransactionOperations.withoutTransaction() : new TransactionTemplate(manager));
+    }
+
     @Bean
     CloudBackupService cloudBackupService(DriveApi api, DriveConnectionStore store, BackupService backups,
-            Environment environment, Portal portal, Clock clock) {
+            Environment environment, Portal portal, Clock clock, BackupFailures failures) {
         return new CloudBackupService(api, store, backups, new LiveProperties<>(environment, BackupProperties.class),
-                portal, clock, Executors.newSingleThreadExecutor(Thread.ofVirtual().name("google-drive").factory()));
+                portal, clock, failures, Executors.newSingleThreadExecutor(Thread.ofVirtual().name("google-drive").factory()));
     }
 
     @Bean
@@ -117,19 +129,24 @@ public class PlatformBackupAutoConfiguration {
     }
 
     @Bean
-    ScheduledBackup scheduledBackup(BackupService backups) {
-        return new ScheduledBackup(backups);
+    ScheduledBackup scheduledBackup(BackupService backups, BackupFailures failures) {
+        return new ScheduledBackup(backups, failures);
     }
 
-    /** Runs only when scheduling is enabled ({@code teacherbox.scheduling.enabled}). */
+    /**
+     * Runs only when scheduling is enabled ({@code teacherbox.scheduling.enabled}); a failure notifies the
+     * teacher.
+     */
     static class ScheduledBackup implements ZonedJob {
 
         private static final Logger log = LoggerFactory.getLogger(ScheduledBackup.class);
 
         private final BackupService backups;
+        private final BackupFailures failures;
 
-        ScheduledBackup(BackupService backups) {
+        ScheduledBackup(BackupService backups, BackupFailures failures) {
             this.backups = backups;
+            this.failures = failures;
         }
 
         @Override
@@ -153,6 +170,7 @@ public class PlatformBackupAutoConfiguration {
                 backups.create(BackupKind.SCHEDULED);
             } catch (RuntimeException e) {
                 log.error("Scheduled backup failed", e);
+                failures.backupFailed();
             }
         }
     }

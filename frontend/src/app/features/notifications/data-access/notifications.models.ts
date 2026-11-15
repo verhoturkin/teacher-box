@@ -17,6 +17,8 @@ export type NotificationKind =
   | 'SCHEDULE_CALENDAR'
   | 'MEETING_LINK'
   | 'STUDENT_ACTIVATED'
+  | 'BACKUP_FAILED'
+  | 'BACKUP_UPLOAD_FAILED'
   | 'LESSON_SUMMARY'
   | 'MESSAGE';
 

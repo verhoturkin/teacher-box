@@ -14,6 +14,9 @@ Open “Settings” → “Data” → “Backups” and choose “Back up now�
 Each entry shows its date, type, size and Google Drive status. Scheduled, manual, pre-restore and pre-reset backups are all subject to the retention \
 period. The default is two weeks; the administrator can change it. Older backups are removed after a new one is created.
 
+If the nightly backup fails, the portal sends you a notification in your inbox and messengers (topic “Students, calendar and backups”). Make a backup \
+by hand; if that fails too, contact the portal administrator — the reason is in their log.
+
 ## Connect Google Drive
 
 Open “Settings” → “Data” → “Google Drive”. Set up a Google OAuth client once; the panel includes instructions and your redirect URL.
@@ -30,7 +33,8 @@ and create the configuration.
 Choose “Connect Google Drive” and grant access. The portal creates a folder named after your portal and uploads scheduled and manual backups. It can \
 access only files it creates. Retention matches the server; pre-restore and pre-reset backups remain on the server only.
 
-Use “Send to Google Drive” in a backup’s menu to upload it manually. The Drive panel shows the latest upload and any error.
+Use “Send to Google Drive” in a backup’s menu to upload it manually. The Drive panel shows the latest upload and any error; when a new backup \
+fails to upload on its own, you also get a notification.
 
 If the server is lost, install the portal again, connect the same Drive account and choose “Download to server” beside a cloud backup. Once it \
 appears in the server list, restore it.

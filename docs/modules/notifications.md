@@ -31,7 +31,8 @@ ADRs: [0005](../adr/0005-notifications.md), [0009](../adr/0009-external-integrat
 - **Kinds and preferences.** `NoticeRequested.kind` is the name of a `NotificationKind`; the
   modules declare their kinds as enums implementing `shared.notice.NoticeKind`
   (`ScheduleNoticeKind`, `HomeworkNoticeKind`, `BillingNoticeKind`, `MeetingNoticeKind`,
-  `IdentityNoticeKind`), `NoticeKindsTests` compares both sides; an unknown kind is refused and
+  `IdentityNoticeKind`, platform's `BackupNoticeKind` — topic `ACCOUNT`), `NoticeKindsTests`
+  compares both sides; an unknown kind is refused and
   the publication stays incomplete. Preferences per topic (`Preferences`, `NotificationTopic` by
   kind): `MESSAGE` is the teacher's own message and cannot be muted. What each module writes — in
   its doc (`schedule`, `homework`, `billing`, `meetings`, `identity`: section «Notices»).

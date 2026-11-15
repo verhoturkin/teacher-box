@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import ru.teacherbox.platform.backup.BackupCreated;
+import ru.teacherbox.platform.backup.BackupFailures;
 import ru.teacherbox.platform.backup.BackupProperties;
 import ru.teacherbox.platform.backup.BackupService;
 import ru.teacherbox.shared.error.BusinessRuleException;
@@ -29,7 +30,8 @@ import ru.teacherbox.shared.portal.Portal;
 /**
  * Copies of the backups in the teacher's Google Drive (ADR-0037): the connection (OAuth, web server
  * flow), the upload of every scheduled and manual backup into the portal's folder, the rotation there
- * and taking a copy back to the server. Uploads and downloads run one at a time in the background.
+ * and taking a copy back to the server. Uploads and downloads run one at a time in the background; a
+ * failed automatic upload notifies the teacher.
  */
 public class CloudBackupService implements AutoCloseable {
 
@@ -95,21 +97,27 @@ public class CloudBackupService implements AutoCloseable {
     private final Supplier<BackupProperties> properties;
     private final Portal portal;
     private final Clock clock;
+    private final BackupFailures failures;
     private final Executor executor;
     private final SecureRandom random = new SecureRandom();
     private final Map<String, PendingAuthorization> authorizations = new ConcurrentHashMap<>();
     private volatile @Nullable AccessToken accessToken;
     private volatile @Nullable Running running;
 
-    /** @param executor runs uploads and downloads one at a time */
+    /**
+     * @param failures tells the teacher that an automatic upload failed
+     * @param executor runs uploads and downloads one at a time
+     */
     public CloudBackupService(DriveApi api, DriveConnectionStore store, BackupService backups,
-            Supplier<BackupProperties> properties, Portal portal, Clock clock, Executor executor) {
+            Supplier<BackupProperties> properties, Portal portal, Clock clock, BackupFailures failures,
+            Executor executor) {
         this.api = api;
         this.store = store;
         this.backups = backups;
         this.properties = properties;
         this.portal = portal;
         this.clock = clock;
+        this.failures = failures;
         this.executor = executor;
     }
 
@@ -201,7 +209,7 @@ public class CloudBackupService implements AutoCloseable {
     public void on(BackupCreated created) {
         if (created.kind().isCopiedToDrive() && store.load().isConnected()) {
             String name = created.backup().name();
-            executor.execute(() -> upload(name));
+            executor.execute(() -> upload(name, true));
         }
     }
 
@@ -209,7 +217,7 @@ public class CloudBackupService implements AutoCloseable {
     public void requestUpload(String name) {
         requireConnected();
         backups.file(name);
-        executor.execute(() -> upload(name));
+        executor.execute(() -> upload(name, false));
     }
 
     /** Backups in the Drive, newest first. */
@@ -264,7 +272,8 @@ public class CloudBackupService implements AutoCloseable {
         }
     }
 
-    void upload(String name) {
+    /** @param automatic the backup was just made, nobody waits for the upload: a failure notifies the teacher */
+    void upload(String name, boolean automatic) {
         running = new Running(Task.UPLOAD, name);
         try {
             DriveConnection connection = store.load();
@@ -278,6 +287,9 @@ public class CloudBackupService implements AutoCloseable {
             rotate(connection, folderId);
         } catch (DriveException | NotFoundException e) {
             failed("upload of " + name, e);
+            if (automatic) {
+                failures.uploadFailed(name);
+            }
         } finally {
             running = null;
         }

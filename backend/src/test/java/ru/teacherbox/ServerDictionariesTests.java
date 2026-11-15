@@ -30,7 +30,7 @@ class ServerDictionariesTests {
         List<Class<?>> dictionaries = dictionaries();
         assertThat(dictionaries).extracting(Class::getSimpleName)
                 .contains("BotMessages", "ScheduleNoticeTexts", "NotificationMessages", "HomeworkNoticeTexts",
-                        "BillingNoticeTexts", "MeetingNoticeTexts", "IdentityNoticeTexts", "ScheduleChatTexts",
+                        "BillingNoticeTexts", "MeetingNoticeTexts", "IdentityNoticeTexts", "BackupNoticeTexts", "ScheduleChatTexts",
                         "BillingChatTexts", "ChatWords");
         for (Class<?> dictionary : dictionaries) {
             Method of = dictionary.getDeclaredMethod("of", Language.class);

@@ -13,6 +13,7 @@ import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.identity.application.AccountService;
 import ru.teacherbox.identity.application.StudentAdminService;
 import ru.teacherbox.identity.domain.Profile;
+import ru.teacherbox.shared.notice.NoticeRecipients;
 
 /** The public facade used by other modules. */
 @IdentityIntegrationTest
@@ -22,6 +23,9 @@ class UserDirectoryIntegrationTests {
 
     @Autowired
     UserDirectory directory;
+
+    @Autowired
+    NoticeRecipients recipients;
 
     @Autowired
     StudentAdminService students;
@@ -37,6 +41,7 @@ class UserDirectoryIntegrationTests {
         UUID teacherId = IdentityTestSupport.signInTeacher(mvc).userId();
 
         assertThat(directory.teacherId()).isEqualTo(teacherId);
+        assertThat(recipients.teacher()).contains(teacherId);
         assertThat(directory.findStudent(teacherId)).isEmpty();
     }
 

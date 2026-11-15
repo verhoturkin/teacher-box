@@ -14,8 +14,8 @@ export const en: Translation<typeof ru> = {
     BILLING_HINT: 'Completed lessons and recorded payments',
     LESSON_SUMMARY: 'Lesson summary',
     LESSON_SUMMARY_HINT: 'What you covered and what comes next',
-    ACCOUNT: 'Students and calendar',
-    ACCOUNT_HINT: 'Accepted invitations and Google Calendar connection issues',
+    ACCOUNT: 'Students, calendar and backups',
+    ACCOUNT_HINT: 'Accepted invitations, Google Calendar connection issues and failed backups',
   },
   connections: {
     OK: 'Working',

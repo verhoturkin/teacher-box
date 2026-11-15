@@ -3,6 +3,7 @@ package ru.teacherbox.platform.backup;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,13 +17,17 @@ class ScheduledBackupTest {
     @Test
     void runsTheBackupAndSurvivesFailures() {
         BackupService backups = mock(BackupService.class);
-        PlatformBackupAutoConfiguration.ScheduledBackup job = new PlatformBackupAutoConfiguration.ScheduledBackup(backups);
+        BackupFailures failures = mock(BackupFailures.class);
+        PlatformBackupAutoConfiguration.ScheduledBackup job =
+                new PlatformBackupAutoConfiguration.ScheduledBackup(backups, failures);
 
         job.run();
         verify(backups).create(BackupKind.SCHEDULED);
+        verify(failures, never()).backupFailed();
 
         when(backups.create(BackupKind.SCHEDULED)).thenThrow(new UncheckedIOException(new IOException("disk full")));
         assertThatCode(job::run).doesNotThrowAnyException();
+        verify(failures).backupFailed();
     }
 
     @Test

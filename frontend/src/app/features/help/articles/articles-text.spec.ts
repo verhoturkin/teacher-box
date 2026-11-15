@@ -51,6 +51,35 @@ them from a board backup rather than undoing the old deletion.
 
 `;
 
+/** Reviewed backup guidance from stage 395: [baseline text, text now] per edition. */
+const BACKUPS: Readonly<Record<string, readonly (readonly [string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'более старые портал удаляет после создания новой.\n',
+      'более старые портал удаляет после создания новой.\n\nЕсли ночная копия не получилась, портал пришлёт ' +
+        'уведомление во «Входящие» и в мессенджеры (тема «Ученики, календарь и копии»). Создайте копию вручную; ' +
+        'если и она не создаётся, напишите администратору портала — причина в его журнале.\n',
+    ],
+    [
+      'и ошибку, если не ушла.\n',
+      'и ошибку, если не ушла. Если копия по расписанию или ручная не ушла сама, придёт и уведомление.\n',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'Older backups are removed after a new one is created.\n',
+      'Older backups are removed after a new one is created.\n\nIf the nightly backup fails, the portal sends ' +
+        'you a notification in your inbox and messengers (topic “Students, calendar and backups”). Make a ' +
+        'backup by hand; if that fails too, contact the portal administrator — the reason is in their log.\n',
+    ],
+    [
+      'The Drive panel shows the latest upload and any error.\n',
+      'The Drive panel shows the latest upload and any error; when a new backup fails to upload on its own, ' +
+        'you also get a notification.\n',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -85,6 +114,17 @@ describe('help articles after the split into one file per topic', () => {
       expected['boards'] = {
         ...boards,
         body: boards['body'].replace('## ', `${boardGuidance}## `),
+      };
+      const backups = original['backups'];
+      if (!isRecord(backups) || typeof backups['body'] !== 'string') {
+        throw new Error(`Missing original article ${name}/backups`);
+      }
+      expected['backups'] = {
+        ...backups,
+        body: (BACKUPS[name] ?? []).reduce(
+          (body, [before, after]) => body.replace(before, after),
+          backups['body'],
+        ),
       };
     }
     expect(texts).toEqual(expected);
