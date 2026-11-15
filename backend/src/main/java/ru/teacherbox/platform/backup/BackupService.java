@@ -14,11 +14,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.function.ToLongFunction;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -62,10 +64,18 @@ public class BackupService {
     private final Clock clock;
     private final Supplier<List<BackupExclusions>> exclusions;
     private final ApplicationEventPublisher events;
+    /** Bytes free on the volume of a directory. */
+    private final ToLongFunction<Path> freeSpace;
 
     public BackupService(JdbcClient jdbc, Path dataDir, Supplier<BackupProperties> properties, InstanceTimeZone timeZone,
             @Nullable String appVersion, Clock clock, Supplier<List<BackupExclusions>> exclusions,
             ApplicationEventPublisher events) {
+        this(jdbc, dataDir, properties, timeZone, appVersion, clock, exclusions, events, BackupService::usableSpace);
+    }
+
+    BackupService(JdbcClient jdbc, Path dataDir, Supplier<BackupProperties> properties, InstanceTimeZone timeZone,
+            @Nullable String appVersion, Clock clock, Supplier<List<BackupExclusions>> exclusions,
+            ApplicationEventPublisher events, ToLongFunction<Path> freeSpace) {
         this.jdbc = jdbc;
         this.dataDir = dataDir;
         this.backupDir = dataDir.resolve("backups");
@@ -75,6 +85,7 @@ public class BackupService {
         this.clock = clock;
         this.exclusions = exclusions;
         this.events = events;
+        this.freeSpace = freeSpace;
     }
 
     /** A backup by the teacher or the administrator. */
@@ -82,11 +93,17 @@ public class BackupService {
         return create(BackupKind.MANUAL);
     }
 
-    /** Writes a new backup and deletes the ones older than {@link BackupProperties#keepDays()}. */
+    /**
+     * Writes a new backup and deletes the ones older than {@link BackupProperties#keepDays()}.
+     *
+     * @throws BusinessRuleException {@code backup.no-space} if the free disk space is below the size of
+     *                               the last backup: the new one would most likely not fit
+     */
     public synchronized BackupInfo create(BackupKind kind) {
         Instant now = clock.instant();
         try {
             Files.createDirectories(backupDir);
+            requireSpace();
             Path target = uniqueTarget(now);
             Path partial = backupDir.resolve(target.getFileName() + ".part");
             // the files left out are found before the dump, so that it cannot refer to them
@@ -109,6 +126,30 @@ public class BackupService {
             return info;
         } catch (IOException e) {
             throw new UncheckedIOException("Backup failed", e);
+        }
+    }
+
+    /** A backup is about as big as the last one: refuse before a half-written {@code .part} fills the disk. */
+    private void requireSpace() {
+        Optional<BackupInfo> last = list().stream().findFirst();
+        if (last.isEmpty()) {
+            return;
+        }
+        long needed = last.get().size();
+        long free = freeSpace.applyAsLong(backupDir);
+        if (free < needed) {
+            log.warn("Backup not created: {} bytes free, the last backup has {}", free, needed);
+            throw new BusinessRuleException("backup.no-space",
+                    "Not enough free disk space for a backup: " + free + " bytes free, the last backup has " + needed,
+                    Map.of("free", free, "needed", needed));
+        }
+    }
+
+    private static long usableSpace(Path directory) {
+        try {
+            return Files.getFileStore(directory).getUsableSpace();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 

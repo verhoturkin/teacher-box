@@ -43,9 +43,13 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   Stored instants do not move; dates, reminders and jobs follow the new zone at once.
   Address changes by admin are audited.
 - `backup/` — scheduled backups (`TEACHERBOX_BACKUP_CRON`; backups of every kind older than
-  `TEACHERBOX_BACKUP_KEEP_DAYS`, 14 by default, are deleted after a new one), download, restore via restart (check
-  archive → backup current → put into `restore/` → exit → apply before DB opens → module migrations;
-  `TEACHERBOX_BACKUP_RESTART`), **full reset** (`/api/teacher/reset`) calling every module's `DataReset`;
+  `TEACHERBOX_BACKUP_KEEP_DAYS`, 14 by default, are deleted after a new one; a new backup is refused
+  with `backup.no-space` when the free space is below the size of the last one), download,
+  restore via restart (check archive → backup current → put into `restore/` → exit → apply before
+  DB opens → module migrations; `TEACHERBOX_BACKUP_RESTART`; after a start `RestoreLeftovers`
+  deletes `restore/previous-*` and `restore/applied/*` older than `TEACHERBOX_BACKUP_KEEP_DAYS`,
+  `restore/failed/` stays), **full reset** (`/api/teacher/reset`) calling every module's
+  `DataReset`;
   restore and reset are confirmed by password (`PasswordConfirmation`). `ResetIntegrationTest` checks that all
   tables are covered. What a module leaves out of the backup — SPI `shared.backup.BackupExclusions` (ADR-0037):
   rows of its tables (dropped from the H2 `SCRIPT` with their `SYSTEM_LOB_STREAM` parts, `BackupDump`) and files

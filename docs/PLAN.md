@@ -105,14 +105,14 @@ a new one if 393 changes how the database is opened or closed; 395 may amend ADR
 
 ### 394. Disk usage of data and backups
 
-- [ ] 394.1 **B** *simple* — delete `restore/previous-*` and `restore/applied/*` older than
+- [x] 394.1 **B** *simple* — delete `restore/previous-*` and `restore/applied/*` older than
   `TEACHERBOX_BACKUP_KEEP_DAYS` after a successful start (`platform/backup/PendingRestore`);
   `restore/failed/` keeps its archives. Tests in `PendingRestore*Tests`; update
   `docs/operations.md` («Восстановление вручную»).
-- [ ] 394.2 **B F** *simple* — sizes of `db/`, `files/`, `backups/`, `restore/` and free disk space
+- [x] 394.2 **B F** *simple* — sizes of `db/`, `files/`, `backups/`, `restore/` and free disk space
   on the administrator's status page (`platform/admin/SystemStatus`, `features/admin/` status);
   a warning when free space is below the size of the last backup. `m3-expressive` skill; wiki.
-- [ ] 394.3 **B** *simple* — before `BackupService.create` check free space against the size of
+- [x] 394.3 **B** *simple* — before `BackupService.create` check free space against the size of
   the last backup and fail with a clear reason instead of a half-written `.part`.
 
 ### 395. Backup volume and failures

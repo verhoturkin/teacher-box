@@ -7,6 +7,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileTime;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -33,6 +34,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
  * and files are moved to {@code restore/previous-<time>/}, the archive to {@code restore/applied/}.
  * If restoring fails, the previous state is put back, the archive goes to {@code restore/failed/}
  * and the application starts as before. The outcome is kept in {@value #RESULT} for the interface.
+ * {@link RestoreLeftovers} deletes old {@code previous-*} and {@code applied/} after a start.
  */
 public class PendingRestore implements ApplicationListener<ApplicationEnvironmentPreparedEvent>, Ordered {
 
@@ -91,6 +93,8 @@ public class PendingRestore implements ApplicationListener<ApplicationEnvironmen
             Path applied = restoreDir.resolve("applied");
             Files.createDirectories(applied);
             Files.move(file, applied.resolve(name), StandardCopyOption.REPLACE_EXISTING);
+            // its age in applied/ counts from the restore (RestoreLeftovers), not from the backup
+            Files.setLastModifiedTime(applied.resolve(name), FileTime.from(now));
             writeResult(restoreDir, true, name, now, null);
             log.warn("Backup {} restored; the previous data is kept in {}", name, previous);
             return Optional.of(applied.resolve(name));

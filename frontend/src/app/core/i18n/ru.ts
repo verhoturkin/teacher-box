@@ -215,6 +215,8 @@ export const ru = {
       'backup.damaged': 'Копия повреждена: её нельзя восстановить',
       'backup.newer-version': 'Копия сделана более новой версией портала. Сначала обновите портал',
       'backup.exists': 'Эта копия уже есть на сервере',
+      'backup.no-space':
+        'Копия не создана: на диске меньше свободного места, чем занимает последняя копия. Освободите место или удалите старые копии',
       'backup.google-not-connected': 'Google Диск не подключён',
       'backup.google-client-missing': 'Сначала укажите Client ID и Client secret',
       'backup.google-origin-invalid': 'Не удалось определить адрес портала',

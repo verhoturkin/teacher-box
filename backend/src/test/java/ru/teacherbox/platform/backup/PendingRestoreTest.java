@@ -53,6 +53,7 @@ class PendingRestoreTest {
         Path applied = PendingRestore.restore(dataDir, url(), "sa", "", NOW).orElseThrow();
 
         assertThat(applied).isEqualTo(dataDir.resolve("restore/applied").resolve(archive.getFileName()));
+        assertThat(Files.getLastModifiedTime(applied).toInstant()).as("its age counts from the restore").isEqualTo(NOW);
         assertThat(archive).doesNotExist();
         assertThat(query("select TEXT from DEMO.NOTES where ID = 1")).isEqualTo("из бэкапа");
         assertThat(dataDir.resolve("files/homework/a.txt")).hasContent("материал");

@@ -56,7 +56,12 @@ export interface SystemStatus {
   readonly heapMax: number;
   readonly diskFree: number;
   readonly diskTotal: number;
+  /** `db/`. */
   readonly dataSize: number;
+  /** `files/`, `backups/` and `restore/` (archives and the data before restores). */
+  readonly filesSize: number;
+  readonly backupsSize: number;
+  readonly restoreSize: number;
   readonly logsSize: number;
   readonly health: string;
   /** Health component → status, e.g. `db → UP`. */

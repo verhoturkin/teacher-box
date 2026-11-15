@@ -14,7 +14,8 @@ is ready. If your device uses reduced motion, the shape stays still.
 ## Find the right section
 
 - **Status:** service health, pending events, version, uptime, memory, disk space, latest backup and portal address. “Collect diagnostics” downloads \
-an archive for a developer with logs, redacted settings and system information.
+an archive for a developer with logs, redacted settings and system information. “Resources” shows how much space the database, files, backups on the \
+server and restores take up. “Less than the last backup” means the next backup may not fit: free up some space or delete old backups.
 - **Log:** switch between “Logs”, “Events” and “Errors”. Select an entry to see its request code and error details. With no entry selected, you can \
 temporarily enable more detailed logging for a section.
 - **Integrations:** check messaging apps, AI, the LiveKit call server and other connected services. This section also contains AI settings.
