@@ -163,11 +163,13 @@ class LiveAdminSettingsIntegrationTest {
                 });
 
         change(Map.of("TEACHERBOX_BACKUP_CRON", DailySchedule.off().cron(),
-                "TEACHERBOX_BOARDS_BACKUP_CRON", "0 */5 * * * *", "TEACHERBOX_BACKUP_KEEP_DAYS", "3"));
+                "TEACHERBOX_BOARDS_BACKUP_CRON", "0 */5 * * * *", "TEACHERBOX_BACKUP_KEEP_DAYS", "3",
+                "TEACHERBOX_BACKUP_GOOGLE_KEEP", "2"));
         assertThat(environment.getProperty("teacherbox.backup.cron")).isEqualTo("-");
         assertThat(environment.getProperty("teacherbox.boards.backup-cron")).isEqualTo("0 */5 * * * *");
         assertThat(new LiveProperties<>(environment, BackupProperties.class).get().retention())
                 .isEqualTo(Duration.ofDays(3));
+        assertThat(new LiveProperties<>(environment, BackupProperties.class).get().google().kept()).isEqualTo(2);
         assertThat(mvc.get().uri("/api/admin/settings").with(TestUsers.admin(ADMIN))).hasStatusOk().bodyJson()
                 .satisfies(json -> {
                     assertThat(json).extractingPath("$.settings[?(@.name == 'TEACHERBOX_BACKUP_CRON')].schedule.enabled")

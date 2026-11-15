@@ -122,7 +122,7 @@ class BackupIntegrationTest {
     void refusesABackupWhenTheFreeSpaceIsBelowTheLastOne() throws IOException {
         BackupService.BackupInfo last = backups.create();
         BackupService tight = new BackupService(jdbc, platform.dataDir(),
-                () -> new BackupProperties("-", 3, false, new BackupProperties.Google(null, "a", "o", "p", "u")),
+                () -> new BackupProperties("-", 3, false, new BackupProperties.Google(null, "a", "o", "p", "u", 3)),
                 new InstanceTimeZone(ZoneOffset.UTC), null, Clock.systemUTC(), List::of, event -> { },
                 directory -> last.size() - 1);
 
@@ -140,7 +140,7 @@ class BackupIntegrationTest {
     @Test
     void theFirstBackupNeedsNoComparison() {
         BackupService tight = new BackupService(jdbc, platform.dataDir(),
-                () -> new BackupProperties("-", 3, false, new BackupProperties.Google(null, "a", "o", "p", "u")),
+                () -> new BackupProperties("-", 3, false, new BackupProperties.Google(null, "a", "o", "p", "u", 3)),
                 new InstanceTimeZone(ZoneOffset.UTC), null, Clock.systemUTC(), List::of, event -> { },
                 directory -> 0);
 

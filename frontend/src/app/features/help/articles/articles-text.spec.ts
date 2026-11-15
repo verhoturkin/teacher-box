@@ -51,6 +51,58 @@ them from a board backup rather than undoing the old deletion.
 
 `;
 
+/** Reviewed backup guidance from stage 395 (failure notices, Drive retention): [baseline, now] per edition. */
+const BACKUPS: Readonly<Record<string, readonly (readonly [string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'более старые портал удаляет после создания новой.\n',
+      'более старые портал удаляет после создания новой.\n\nЕсли ночная копия не получилась, портал пришлёт ' +
+        'уведомление во «Входящие» и в мессенджеры (тема «Ученики, календарь и копии»). Создайте копию вручную; ' +
+        'если и она не создаётся, напишите администратору портала — причина в его журнале.\n',
+    ],
+    [
+      'и ошибку, если не ушла.\n',
+      'и ошибку, если не ушла. Если копия по расписанию или ручная не ушла сама, придёт и уведомление.\n',
+    ],
+    [
+      'там они хранятся столько же, сколько на сервере (по умолчанию две недели).',
+      'там хранятся три последние копии (число задаёт администратор), более старые остаются только на сервере.',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'Older backups are removed after a new one is created.\n',
+      'Older backups are removed after a new one is created.\n\nIf the nightly backup fails, the portal sends ' +
+        'you a notification in your inbox and messengers (topic “Students, calendar and backups”). Make a ' +
+        'backup by hand; if that fails too, contact the portal administrator — the reason is in their log.\n',
+    ],
+    [
+      'The Drive panel shows the latest upload and any error.\n',
+      'The Drive panel shows the latest upload and any error; when a new backup fails to upload on its own, ' +
+        'you also get a notification.\n',
+    ],
+    [
+      'Retention matches the server; pre-restore and pre-reset backups remain on the server only.',
+      'It keeps the three newest backups (the administrator can change this); older ones, like ' +
+        'pre-restore and pre-reset backups, stay on the server only.',
+    ],
+  ],
+  'admin.ru': [
+    [
+      'на сервере и в Google Диске.\n',
+      'на сервере и в Google Диске. В Google Диске, кроме того, остаются только последние копии — ' +
+        '«Сколько копий хранить в Google Диске» (по умолчанию 3).\n',
+    ],
+  ],
+  'admin.en': [
+    [
+      'from both the server and Google Drive.\n',
+      'from both the server and Google Drive. Google Drive also keeps only the newest backups: ' +
+        '“Backups to keep in Google Drive”, with a default of 3.\n',
+    ],
+  ],
+};
+
 const DISK_USAGE_RU = [
   'журнал и настройки без паролей и личных данных.',
   ' В «Ресурсах» видно, сколько занимают база данных, файлы, копии на сервере и восстановления.' +
@@ -103,6 +155,19 @@ describe('help articles after the split into one file per topic', () => {
         body: boards['body'].replace('## ', `${boardGuidance}## `),
       };
     }
+    const backups = original['backups'];
+    const backupGuidance = BACKUPS[name];
+    if (backupGuidance && (!isRecord(backups) || typeof backups['body'] !== 'string')) {
+      throw new Error(`Missing original article ${name}/backups`);
+    }
+    if (backupGuidance && isRecord(backups) && typeof backups['body'] === 'string')
+      expected['backups'] = {
+        ...backups,
+        body: backupGuidance.reduce(
+          (body, [before, after]) => body.replace(before, after),
+          backups['body'],
+        ),
+      };
     expect(texts).toEqual(expected);
   });
 

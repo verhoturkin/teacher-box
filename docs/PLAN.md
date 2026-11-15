@@ -117,14 +117,15 @@ a new one if 393 changes how the database is opened or closed; 395 may amend ADR
 
 ### 395. Backup volume and failures
 
-- [ ] 395.1 **B** *complex* — a failed scheduled backup (`ScheduledBackup` in
+- [x] 395.1 **B** *complex* — a failed scheduled backup (`ScheduledBackup` in
   `PlatformBackupAutoConfiguration`) and a failed Google Drive upload (`CloudBackupService`) notify
   the teacher (inbox and messengers). Check against ADR-0061 how `platform` may publish
   `shared.notice.NoticeRequested` (it depends on `shared` only); texts in both languages; wiki.
-- [ ] 395.2 **B** *complex* — less backup volume: a separate retention for Google Drive copies
-  (e.g. last 3) and/or textbook files (`files/textbooks/`, change rarely) not repeated in every
-  archive — needs the teacher's decision on which; ADR-0037 amendment, skill `new-setting` for a
-  new retention, `docs/operations.md`.
+- [x] 395.2 **B** *complex* — less backup volume, teacher's decision: a separate, shorter
+  retention for Google Drive copies — new `ADMIN` live setting `TEACHERBOX_BACKUP_GOOGLE_KEEP`
+  (the last 3 copies by default, `keepDays` still applies; `BackupProperties.Google`,
+  `CloudBackupService.rotate`, `SettingsCatalog`, admin card «Резервные копии»); textbook files
+  stay in every archive (no split). ADR-0037 amended, `docs/operations.md`, wiki.
 
 ### 396. Operations docs
 

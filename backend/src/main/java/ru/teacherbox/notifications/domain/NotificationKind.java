@@ -21,5 +21,7 @@ public enum NotificationKind {
     LESSON_SUMMARY,
     MEETING_LINK,
     STUDENT_ACTIVATED,
+    BACKUP_FAILED,
+    BACKUP_UPLOAD_FAILED,
     MESSAGE
 }

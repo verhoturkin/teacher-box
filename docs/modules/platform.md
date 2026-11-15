@@ -58,7 +58,9 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   `drive.file`; the OAuth flow and error mapping are `shared.http.GoogleOAuth`, shared with `schedule`; uploads and downloads streamed through `OutboundHttp.streamingRequestFactory`), the connection in
   `<data-dir>/google-drive.json` (`DriveConnectionStore`; survives restore and reset), `CloudBackupService`: after
   `BackupCreated` of a scheduled or manual backup it uploads it in the background (one task at a time) into the
-  portal's folder and deletes the ones uploaded more than `TEACHERBOX_BACKUP_KEEP_DAYS` ago; a rejected token disconnects with an error.
+  portal's folder and keeps there the `TEACHERBOX_BACKUP_GOOGLE_KEEP` newest uploads (3 by default,
+  live; 395.2), none older than `TEACHERBOX_BACKUP_KEEP_DAYS`; a rejected token disconnects with an
+  error.
   The administrator also has `GET /api/admin/backups/google`, `GET …/files`, `POST …/uploads/{name}`
   and `POST …/files/{id}/download`: technical backup management only, with no archive download to the device,
   OAuth management, account address, client ID or detailed connection errors. The admin backups page reuses
@@ -68,6 +70,13 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
   `POST …/authorize` (`{origin}` → consent URL), `GET …/files`, `POST …/files/{id}/download` (202, the copy is
   adopted as a backup via `BackupService.adopt` after the archive check), `POST …/uploads/{name}` (202); redirect
   `/api/public/backups/google/callback` → `/teacher/settings?drive=connected|denied|expired|failed#backups`.
+- `backup/` failures (395.1, ADR-0061): a failed scheduled backup (`ScheduledBackup`) and a failed upload
+  of a new scheduled or manual backup (`CloudBackupService`; not one the teacher sends by hand) notify
+  the teacher through `BackupFailures`: `NoticeRequested` with a `BackupNoticeKind` (`BACKUP_FAILED`,
+  `BACKUP_UPLOAD_FAILED`), texts of `BackupNoticeTexts`, link `/teacher/settings#backups`. The platform
+  knows no users: the teacher comes from SPI `shared.notice.NoticeRecipients` (implemented by
+  `identity`); a failure has no transaction, so the notice is published in a new one. Notifying never
+  fails the job; no teacher yet, nothing is sent.
   `DriveIntegrationCheck` for the administrator (no account address).
 - `settings/` — admin settings (`/api/admin/settings`): `SettingsCatalog` holds every setting;
   `.env.example`

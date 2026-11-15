@@ -92,7 +92,7 @@ class PendingRestoreLeftoversTest {
     }
 
     private BackupProperties properties() {
-        return new BackupProperties("-", keepDays, false, new BackupProperties.Google(null, "a", "o", "p", "u"));
+        return new BackupProperties("-", keepDays, false, new BackupProperties.Google(null, "a", "o", "p", "u", 3));
     }
 
     private Path previous(String name, Instant modified) throws IOException {

@@ -5,7 +5,9 @@ import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -18,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import ru.teacherbox.platform.backup.BackupCreated;
+import ru.teacherbox.platform.backup.BackupFailures;
 import ru.teacherbox.platform.backup.BackupProperties;
 import ru.teacherbox.platform.backup.BackupService;
 import ru.teacherbox.shared.error.BusinessRuleException;
@@ -29,7 +32,8 @@ import ru.teacherbox.shared.portal.Portal;
 /**
  * Copies of the backups in the teacher's Google Drive (ADR-0037): the connection (OAuth, web server
  * flow), the upload of every scheduled and manual backup into the portal's folder, the rotation there
- * and taking a copy back to the server. Uploads and downloads run one at a time in the background.
+ * and taking a copy back to the server. Uploads and downloads run one at a time in the background; a
+ * failed automatic upload notifies the teacher.
  */
 public class CloudBackupService implements AutoCloseable {
 
@@ -38,6 +42,9 @@ public class CloudBackupService implements AutoCloseable {
     static final Duration AUTHORIZATION_TTL = Duration.ofMinutes(10);
     private static final Duration TOKEN_MARGIN = Duration.ofMinutes(1);
     private static final Logger log = LoggerFactory.getLogger(CloudBackupService.class);
+    /** Uploads by time, newest first; an unknown time first. */
+    private static final Comparator<DriveApi.DriveFile> NEWEST_FIRST = Comparator.comparing(DriveApi.DriveFile::createdAt,
+            Comparator.nullsFirst(Comparator.<Instant>reverseOrder()));
 
     /** What runs in the background. */
     public enum Task {
@@ -95,21 +102,27 @@ public class CloudBackupService implements AutoCloseable {
     private final Supplier<BackupProperties> properties;
     private final Portal portal;
     private final Clock clock;
+    private final BackupFailures failures;
     private final Executor executor;
     private final SecureRandom random = new SecureRandom();
     private final Map<String, PendingAuthorization> authorizations = new ConcurrentHashMap<>();
     private volatile @Nullable AccessToken accessToken;
     private volatile @Nullable Running running;
 
-    /** @param executor runs uploads and downloads one at a time */
+    /**
+     * @param failures tells the teacher that an automatic upload failed
+     * @param executor runs uploads and downloads one at a time
+     */
     public CloudBackupService(DriveApi api, DriveConnectionStore store, BackupService backups,
-            Supplier<BackupProperties> properties, Portal portal, Clock clock, Executor executor) {
+            Supplier<BackupProperties> properties, Portal portal, Clock clock, BackupFailures failures,
+            Executor executor) {
         this.api = api;
         this.store = store;
         this.backups = backups;
         this.properties = properties;
         this.portal = portal;
         this.clock = clock;
+        this.failures = failures;
         this.executor = executor;
     }
 
@@ -201,7 +214,7 @@ public class CloudBackupService implements AutoCloseable {
     public void on(BackupCreated created) {
         if (created.kind().isCopiedToDrive() && store.load().isConnected()) {
             String name = created.backup().name();
-            executor.execute(() -> upload(name));
+            executor.execute(() -> upload(name, true));
         }
     }
 
@@ -209,7 +222,7 @@ public class CloudBackupService implements AutoCloseable {
     public void requestUpload(String name) {
         requireConnected();
         backups.file(name);
-        executor.execute(() -> upload(name));
+        executor.execute(() -> upload(name, false));
     }
 
     /** Backups in the Drive, newest first. */
@@ -264,7 +277,8 @@ public class CloudBackupService implements AutoCloseable {
         }
     }
 
-    void upload(String name) {
+    /** @param automatic the backup was just made, nobody waits for the upload: a failure notifies the teacher */
+    void upload(String name, boolean automatic) {
         running = new Running(Task.UPLOAD, name);
         try {
             DriveConnection connection = store.load();
@@ -278,6 +292,9 @@ public class CloudBackupService implements AutoCloseable {
             rotate(connection, folderId);
         } catch (DriveException | NotFoundException e) {
             failed("upload of " + name, e);
+            if (automatic) {
+                failures.uploadFailed(name);
+            }
         } finally {
             running = null;
         }
@@ -300,13 +317,26 @@ public class CloudBackupService implements AutoCloseable {
         }
     }
 
-    /** Backups older than {@link BackupProperties#keepDays()} are deleted from the folder. */
+    /**
+     * The folder keeps the {@link BackupProperties.Google#kept()} newest uploads, none older than
+     * {@link BackupProperties#keepDays()}; the rest are deleted. A file whose upload time is unknown
+     * counts as the newest.
+     */
     private void rotate(DriveConnection connection, String folderId) {
-        Instant oldest = clock.instant().minus(properties.get().retention());
-        List<DriveApi.DriveFile> old = withToken(connection, token -> api.list(token, folderId)).stream()
+        BackupProperties current = properties.get();
+        Instant oldest = clock.instant().minus(current.retention());
+        List<DriveApi.DriveFile> copies = withToken(connection, token -> api.list(token, folderId)).stream()
                 .filter(file -> BackupService.isBackupName(file.name()))
-                .filter(file -> file.createdAt() != null && file.createdAt().isBefore(oldest))
+                .sorted(NEWEST_FIRST)
                 .toList();
+        int kept = current.google().kept();
+        List<DriveApi.DriveFile> old = new ArrayList<>();
+        for (int i = 0; i < copies.size(); i++) {
+            DriveApi.DriveFile file = copies.get(i);
+            if (i >= kept || file.createdAt() != null && file.createdAt().isBefore(oldest)) {
+                old.add(file);
+            }
+        }
         for (DriveApi.DriveFile file : old) {
             withToken(connection, token -> {
                 api.delete(token, file.id());
