@@ -1,6 +1,7 @@
 package ru.teacherbox.platform.backup;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.jayway.jsonpath.JsonPath;
 import java.io.ByteArrayInputStream;
@@ -13,11 +14,15 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.nio.file.attribute.FileTime;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -33,6 +38,8 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import ru.teacherbox.platform.core.PlatformProperties;
+import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.time.InstanceTimeZone;
 import ru.teacherbox.testing.TestUsers;
 
 /** Backups of the running application and restoring them into a fresh database. */
@@ -109,6 +116,35 @@ class BackupIntegrationTest {
         assertThat(backups.list()).extracting(BackupService.BackupInfo::name).containsExactly(newest, recent);
         assertThat(backups.info(newest).kind()).isEqualTo(BackupKind.SCHEDULED);
         assertThat(backups.info(recent).kind()).isEqualTo(BackupKind.MANUAL);
+    }
+
+    @Test
+    void refusesABackupWhenTheFreeSpaceIsBelowTheLastOne() throws IOException {
+        BackupService.BackupInfo last = backups.create();
+        BackupService tight = new BackupService(jdbc, platform.dataDir(),
+                () -> new BackupProperties("-", 3, false, new BackupProperties.Google(null, "a", "o", "p", "u")),
+                new InstanceTimeZone(ZoneOffset.UTC), null, Clock.systemUTC(), List::of, event -> { },
+                directory -> last.size() - 1);
+
+        assertThatThrownBy(() -> tight.create(BackupKind.SCHEDULED))
+                .isInstanceOfSatisfying(BusinessRuleException.class, e -> {
+                    assertThat(e.code()).isEqualTo("backup.no-space");
+                    assertThat(e.getMessage()).contains("the last backup has " + last.size());
+                });
+        assertThat(backups.list()).extracting(BackupService.BackupInfo::name).containsExactly(last.name());
+        try (Stream<Path> files = Files.list(platform.dataDir().resolve("backups"))) {
+            assertThat(files.map(file -> file.getFileName().toString())).noneMatch(name -> name.endsWith(".part"));
+        }
+    }
+
+    @Test
+    void theFirstBackupNeedsNoComparison() {
+        BackupService tight = new BackupService(jdbc, platform.dataDir(),
+                () -> new BackupProperties("-", 3, false, new BackupProperties.Google(null, "a", "o", "p", "u")),
+                new InstanceTimeZone(ZoneOffset.UTC), null, Clock.systemUTC(), List::of, event -> { },
+                directory -> 0);
+
+        assertThat(tight.create(BackupKind.MANUAL).size()).isPositive();
     }
 
     @Test
