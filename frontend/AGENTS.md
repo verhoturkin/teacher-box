@@ -28,6 +28,7 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
 - **Feature directions** ([ADR-0058](../docs/adr/0058-frontend-feature-directions.md)): a feature
   imports only the features of its row — the table in `eslint.config.js`, mirrored here. Tests and
   `import type` count. `scripts/import-cycles.mjs` also fails on a cycle between features.
+  `scripts/tokens.mjs` fails on a `--tb-*` property declared but never read.
 
   | Layer | Feature | May import |
   |---|---|---|

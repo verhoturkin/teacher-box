@@ -193,10 +193,10 @@ themes, severities, the colours of students.
   reference colours (Tailwind 500, red 600; hues about 30° apart), each giving `label-<c>`,
   `on-label-<c>`, `label-<c>-container`, `on-label-<c>-container` of both themes from its Fidelity
   scheme (2025 spec), plus its surface containers lowest / low / high and on-surface(-variant)
-  (`--tb-label-surface-container-*`, `--tb-on-label-surface*`). *Ours:* not harmonized with the
+  (`--p-md-label-<c>-surface-*`; no `--tb-*` alias while nothing reads them). *Ours:* not harmonized with the
   portal colour; on-roles moved along the hue to 4.5:1; containers at least ΔE×100 10 apart and the
   colour role 3:1 on list and dialog surfaces (`label-colors.spec.ts`). `data-tb-label="<c>"` (or
-  `tb-label--<c>`) brings `--tb-label`, `--tb-on-label`, `--tb-label-container`,
+  `tb-label--<c>`) brings `--tb-label`, `--tb-label-container`,
   `--tb-on-label-container`. Teacher only, looked up by id (`TeacherColors`): avatars and group
   icons take the label container and its on-role, a photo keeps its image with a 2 px colour ring;
   chips of member multiselects take the container (`tbChipColors`); rows keep the neutral surface.
