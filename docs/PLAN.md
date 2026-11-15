@@ -48,9 +48,11 @@ a new one if 393 changes how the database is opened or closed; 395 may amend ADR
 
 ### 393. H2 file size
 
-- [ ] 393.1 **B** *complex* — measure first: a test or script that saves a 1 MB scene 10 000
+- [x] 393.1 **B** *complex* — measure first: a test or script that saves a 1 MB scene 10 000
   times and records the size of `db/` before and after a restart. Record the numbers in this
-  substep.
+  substep. JDK 25 / H2 2.4.240, 768 MiB heap: `db/` 24,576 bytes initially,
+  10,671,181,824 after saves, 12,906,496 after close and restart; reopen 658 ms, writer peak
+  RSS 994,840 KiB. Reproducer and limits: [measurement](measurements/h2-file-size.md).
 - [ ] 393.2 **B** *complex* — depending on 393.1: compact on graceful shutdown (`SHUTDOWN
   COMPACT` or `MAX_COMPACT_TIME` in the JDBC URL of `application.yaml`) and/or a nightly compaction
   job (`ZonedJob`, off by `-`, setting via skill `new-setting`). Check the start time and memory
