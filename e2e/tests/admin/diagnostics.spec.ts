@@ -36,6 +36,14 @@ test('the administrator searches the log and checks the instance', async ({ page
     .click();
   await expect(page.getByText('diskSpace', { exact: true })).toBeVisible();
 
+  // 394.2: the sizes of the data directory's parts are listed under "Resources".
+  const resources = page.locator('section').filter({
+    has: page.getByRole('heading', { name: 'Ресурсы', level: 2 }),
+  });
+  for (const part of ['База данных', 'Файлы', 'Копии на сервере', 'Восстановления']) {
+    await expect(resources.getByText(part, { exact: true })).toBeVisible();
+  }
+
   await page
     .getByRole('navigation', { name: 'Разделы' })
     .getByRole('link', { name: 'Интеграции' })
