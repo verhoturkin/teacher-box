@@ -105,7 +105,7 @@ a new one if 393 changes how the database is opened or closed; 395 may amend ADR
 
 ### 394. Disk usage of data and backups
 
-- [ ] 394.1 **B** *simple* — delete `restore/previous-*` and `restore/applied/*` older than
+- [x] 394.1 **B** *simple* — delete `restore/previous-*` and `restore/applied/*` older than
   `TEACHERBOX_BACKUP_KEEP_DAYS` after a successful start (`platform/backup/PendingRestore`);
   `restore/failed/` keeps its archives. Tests in `PendingRestore*Tests`; update
   `docs/operations.md` («Восстановление вручную»).
