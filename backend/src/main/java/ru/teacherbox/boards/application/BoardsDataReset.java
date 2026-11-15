@@ -12,7 +12,7 @@ import ru.teacherbox.shared.reset.DataReset;
 @Component
 class BoardsDataReset implements DataReset {
 
-    private static final List<String> TABLES = List.of("boards.board_previews", "boards.board_files", "boards.board_backups",
+    private static final List<String> TABLES = List.of("boards.board_deleted_elements", "boards.board_previews", "boards.board_files", "boards.board_backups",
             "boards.board_libraries", "boards.board_scenes", "boards.board_members", "boards.boards");
 
     private final JdbcClient jdbc;

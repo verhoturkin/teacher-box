@@ -13,3 +13,8 @@ without a card — title, the connected group boards / textbooks with counts, a 
   redirect to the tabs.
 - **Student** (`/cabinet/materials`, `MyMaterialsPage`): the same feeds without actions
   (`MyBoardsFeed`, `MyTextbooksFeed`); `/cabinet/boards` and `/cabinet/textbooks` redirect.
+
+The full-screen board editor shows the teacher an inline warning below the header once the saved
+scene reaches 4 M of its 5 M character limit: make a backup from the menu and create a new board.
+It follows the latest open/save/poll response and disappears below the threshold; students do not
+see a teacher-only instruction.

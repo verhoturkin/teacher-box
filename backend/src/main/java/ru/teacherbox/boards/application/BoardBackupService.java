@@ -3,6 +3,7 @@ package ru.teacherbox.boards.application;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -50,6 +51,7 @@ public class BoardBackupService {
     public record BackupView(UUID id, BackupKind kind, long sceneVersion, Instant createdAt) {
     }
 
+    private final SceneRetention retention;
     private final BoardService boards;
     private final SceneRepository scenes;
     private final FileStorage storage;
@@ -60,7 +62,9 @@ public class BoardBackupService {
     private final ApplicationEventPublisher events;
 
     public BoardBackupService(BoardService boards, SceneRepository scenes, FileStorage storage,
-            Environment environment, JsonMapper json, Clock clock, ApplicationEventPublisher events) {
+            Environment environment, JsonMapper json, Clock clock, ApplicationEventPublisher events,
+            SceneRetention retention) {
+        this.retention = retention;
         this.boards = boards;
         this.scenes = scenes;
         this.storage = storage;
@@ -96,9 +100,16 @@ public class BoardBackupService {
         BoardBackup backup = backup(board.id(), backupId);
         BoardScene current = scenes.lock(board.id()).orElseThrow(BoardService::notFound);
         BoardBackup safety = copy(current, BackupKind.MANUAL);
+        var deletions = retention.deletions(boardId);
+        List<ObjectNode> currentElements = new ArrayList<>(
+                SceneElements.valid(json.readTree(current.elements())));
+        deletions.values().stream().filter(deletion -> deletion.retired()).forEach(deletion ->
+                currentElements.add(json.createObjectNode().put("id", deletion.elementId())
+                        .put("version", deletion.elementVersion()).put("versionNonce", 0).put("isDeleted", true)));
         List<ObjectNode> restored = SceneElements.restored(
-                SceneElements.valid(json.readTree(current.elements())),
+                currentElements,
                 SceneElements.valid(json.readTree(backup.elements())));
+        restored = retention.prune(boardId, restored, deletions);
         scenes.update(new BoardScene(board.id(), json.writeValueAsString(restored), backup.appState(),
                 current.version() + 1, clock.instant(), teacher.id()));
         events.publishEvent(new SceneSaved(board.id(), current.version() + 1));
@@ -122,6 +133,17 @@ public class BoardBackupService {
      */
     @Transactional
     public int dailyCopies() {
+        for (UUID boardId : scenes.findSceneIds()) {
+            BoardScene current = scenes.lock(boardId).orElseThrow(BoardService::notFound);
+            List<ObjectNode> elements = SceneElements.valid(json.readTree(current.elements()));
+            List<ObjectNode> kept = retention.prune(boardId, elements, retention.deletions(boardId));
+            if (kept.size() != elements.size()) {
+                BoardScene pruned = new BoardScene(boardId, json.writeValueAsString(kept), current.appState(),
+                        current.version() + 1, clock.instant(), current.updatedBy());
+                scenes.update(pruned);
+                events.publishEvent(new SceneSaved(boardId, pruned.version()));
+            }
+        }
         List<UUID> changed = scenes.findChangedSinceLastDailyCopy();
         for (UUID boardId : changed) {
             copy(scene(boardId), BackupKind.DAILY);

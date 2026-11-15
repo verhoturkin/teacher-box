@@ -100,6 +100,9 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
           >
         }
       </header>
+      @if (teacher() && (sync()?.sceneChars() ?? 0) >= 4_000_000) {
+        <p-message severity="warn">{{ t.nearLimit }}</p-message>
+      }
       <main class="tb-board-page__body">
         <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
           @if (content(); as board) {

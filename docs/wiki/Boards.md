@@ -56,3 +56,18 @@ Ctrl+V; картинкой копирует, только когда порта�
 ученикам и в рассылке. Там группы превращаются в список текущих получателей: повторы исключаются,
 а личный выбор ученика сохраняется при снятии группы. Пустой выбор в рассылке означает всех;
 выбранная группа без доступных получателей не запускает рассылку всем.
+
+## Когда доска почти заполнена
+
+Подсказка учителю появляется при заполнении примерно 80% допустимого размера. В меню доски откройте
+«Резервные копии» → «Сделать копию», затем создайте новую доску в «Материалах»
+для следующих занятий.
+Копия не уменьшает размер исходной доски. Удалённые фигуры очищаются через 30 дней; после этого
+вернуть их можно из копии доски. Старый редактор, долго остававшийся без связи, не вернёт их сам.
+
+### Board size (English)
+
+At around 80% of the board size limit, the teacher sees a hint. Open the board menu → “Backups” →
+“Make a backup”, then create a new board in Materials for your next lessons. Making a backup does
+not shrink the original board. Deleted shapes are cleared after 30 days; recover them from a board
+backup after that. An editor reconnecting after a long time offline cannot bring them back.

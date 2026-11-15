@@ -34,6 +34,21 @@ class BoardSceneIntegrationTests {
     FakeStudentGroups groups;
 
     @Test
+    void reportsStoredSizeAndKeepsTheSceneWhenTheHardLimitIsExceeded() {
+        String id = board("{\"kind\":\"EXCALIDRAW\",\"title\":\"Size\"}");
+        String large = element("a", 1, 1).replace("}]", ",\"text\":\"" + "x".repeat(4_000_000) + "\"}]");
+        assertThat(save(teacher(), id, large, null, 0)).hasStatusOk().bodyJson()
+                .extractingPath("$.sceneChars").isEqualTo(large.length());
+        assertThat(mvc.get().uri("/api/boards/" + id).with(teacher())).hasStatusOk().bodyJson()
+                .extractingPath("$.sceneChars").isEqualTo(large.length());
+        String tooLarge = element("b", 1, 1).replace("}]", ",\"text\":\"" + "x".repeat(1_000_000) + "\"}]");
+        assertThat(save(teacher(), id, tooLarge, null, 1)).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+                .bodyJson().extractingPath("$.code").isEqualTo("boards.scene-too-large");
+        assertThat(mvc.get().uri("/api/boards/" + id + "/scene?since=0").with(teacher())).hasStatusOk()
+                .bodyJson().extractingPath("$.sceneChars").isEqualTo(large.length());
+    }
+
+    @Test
     void twoEditorsSaveAtOnceAndBothChangesStay() {
         UUID student = directory.addStudent("Соавтор");
         String id = board("{\"kind\":\"EXCALIDRAW\",\"title\":\"Вместе\",\"studentIds\":[\"%s\"]}".formatted(student));

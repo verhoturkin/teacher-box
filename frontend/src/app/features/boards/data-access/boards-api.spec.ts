@@ -85,22 +85,32 @@ describe('BoardsApi', () => {
       appState: { gridSize: 20 },
       baseVersion: 3,
     });
-    save.flush({ sceneVersion: 4, elements: [], appState: {} });
+    save.flush({
+      sceneVersion: 4,
+      sceneChars: 2,
+      rejectedElementIds: [],
+      elements: [],
+      appState: {},
+    });
     api.changes('board-1', 4).subscribe((scene) => seen.push(scene));
     backend.expectOne('/api/boards/board-1/scene?since=4').flush(null, {
       status: 204,
       statusText: 'No Content',
     });
     api.changes('board-1', 3).subscribe((scene) => seen.push(scene));
-    backend
-      .expectOne('/api/boards/board-1/scene?since=3')
-      .flush({ sceneVersion: 4, elements: [], appState: {} });
+    backend.expectOne('/api/boards/board-1/scene?since=3').flush({
+      sceneVersion: 4,
+      sceneChars: 2,
+      rejectedElementIds: [],
+      elements: [],
+      appState: {},
+    });
 
     expect(seen).toEqual([
       aBoardContent(),
-      { sceneVersion: 4, elements: [], appState: {} },
+      { sceneVersion: 4, sceneChars: 2, rejectedElementIds: [], elements: [], appState: {} },
       null,
-      { sceneVersion: 4, elements: [], appState: {} },
+      { sceneVersion: 4, sceneChars: 2, rejectedElementIds: [], elements: [], appState: {} },
     ]);
   });
 
