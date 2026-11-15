@@ -1,7 +1,7 @@
 import { bearer, startSession } from '../support/session';
 import { type Browser, type Page, expect, test } from '@playwright/test';
 import { create } from '../support/create';
-import { laterThisWeek, saveLesson } from '../support/this-week';
+import { daysToTodayThere, laterThisWeek, saveLesson } from '../support/this-week';
 
 /**
  * Version 0.5: tabs on the page and five sections in the phone navigation, payments without a
@@ -134,8 +134,9 @@ test('a student signs up and a payment is recorded without a method', async ({ p
 
 test('the teacher cancels, restores and deletes a lesson', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  // Today is always in the week shown; 07:00 is the first hour of the calendar.
-  await planLesson(page, STUDENT, 0, 7, 'Лишнее');
+  // Today in Moscow is always in the week shown (this machine's date may be yesterday there);
+  // 07:00 is the first hour of the calendar.
+  await planLesson(page, STUDENT, daysToTodayThere(), 7, 'Лишнее');
   const event = page.getByText(`${STUDENT} · Лишнее`);
   const card = page.getByRole('dialog', { name: 'Лишнее' });
 
