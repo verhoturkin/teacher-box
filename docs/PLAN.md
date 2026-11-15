@@ -129,7 +129,7 @@ a new one if 393 changes how the database is opened or closed; 395 may amend ADR
 
 ### 396. Operations docs
 
-- [ ] 396.1 *simple* — `docs/operations.md`: disk budget (data × (keep days + 1) on the server, the
+- [x] 396.1 *simple* — `docs/operations.md`: disk budget (data × (keep days + 1) on the server, the
   same in Google Drive against its quota), RPO of up to 24 hours with nightly backups and how to
   shorten it (a second backup cron), board history not in the portal backup, H2 major upgrades go
   through the SQL dump of a backup. Wiki page in both languages.
