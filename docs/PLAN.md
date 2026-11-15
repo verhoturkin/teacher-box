@@ -80,11 +80,28 @@ a new one if 393 changes how the database is opened or closed; 395 may amend ADR
     as in production, 3 of 3 runs passed and the data reopened intact. The 10 000-save burst
     stopped 20–30 saves after the idle on the same assert, so its restart numbers come from the
     4 000-save runs.*
-- [ ] 393.2 **B** *complex* — depending on 393.1: compact on graceful shutdown (`SHUTDOWN
+- [x] 393.2 **B** *complex* — depending on 393.1: compact on graceful shutdown (`SHUTDOWN
   COMPACT` or `MAX_COMPACT_TIME` in the JDBC URL of `application.yaml`) and/or a nightly compaction
   job (`ZonedJob`, off by `-`, setting via skill `new-setting`). Check the start time and memory
   under the 1 GB container limit. ADR if the open/close behaviour changes; update
-  `docs/modules/platform.md`.
+  `docs/modules/platform.md`. *Decided from the numbers: no compaction is added, the JDBC URL and
+  the open/close behaviour stay as they are (so no ADR); the decision is in
+  `docs/modules/platform.md` («H2 file size»). Further runs of `H2FileSizeMeasurement` (4 000
+  back-to-back saves, 768 MB heap, assertions off):*
+  - *`MAX_COMPACT_TIME=5000`: the first close right after the burst left 2.9 GB in 5 of 5 runs
+    (86 and 431 ms where timed), as the default mostly does — the replaced chunks are still within
+    the 45 s retention, and no time budget frees them; the second close left 1.0 MB in 3 of 5
+    runs and 101–111 MB in 2 (1.3 s there). The default second close left 1.0–1.9 MB in 6 of 7
+    runs and 2.9 GB once. A longer budget costs time on a stop and wins nothing stable.*
+  - *A close 60 s after the last save: 1.0 MB with the default (1 run; the other run left 2.9 GB
+    and the next close 1.0 MB) and with `MAX_COMPACT_TIME=5000` (1 run).*
+  - *`SHUTDOWN COMPACT` wins 0.5 MB over a normal close at 1 MB of live data, but rewrites all
+    live data on every stop and needs SQL after the last user of the pool; a nightly run closes
+    the database, i.e. a nightly outage — H2 has no online full compaction. Not worth it.*
+  - *What bounds the file is the save rate, not the save count: ~65 MB per 1 MB scene saved
+    once a second, freed by the next restart. Extrapolated: 10 editors saving 1 MB scenes every
+    second at once would hold ~650 MB while they work. The size of `db/` reaches the
+    administrator's status page in 394.2; revisit if real portals show more.*
 
 ### 394. Disk usage of data and backups
 

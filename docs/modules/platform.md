@@ -127,6 +127,21 @@ update requests retain their saved values. Logo changes, administrator updates a
 preserve them. They are included in backups; full reset restores the defaults.
 Backups and settings file live in the data directory, not in the DB.
 
+### H2 file size
+
+The database file `db/teacherbox.mv.db` is opened with the URL of `application.yaml` and no
+compaction settings of its own (stage 393, measured by the off-by-default
+`platform/core/H2FileSizeMeasurement`). H2 keeps a replaced chunk for its 45 s retention, then
+reuses the space while open, and a close (graceful shutdown) compacts within H2's default
+`MAX_COMPACT_TIME` of 200 ms. So the file follows the write rate, not the number of writes: a 1 MB
+board scene saved once a second (the editor's `SAVE_DELAY_MS`) holds the open file at ~65 MB and
+leaves 1 MB after a close; a burst of back-to-back saves grows it by ~1 MB per save until 45 s
+pass, and a close inside that window keeps the size until the next close. `MAX_COMPACT_TIME=5000`
+won nothing stable, `SHUTDOWN COMPACT` only 0.5 MB more at the price of rewriting all data on
+every stop, and a nightly compaction would close the database; none is used. Opening takes
+9–23 ms whatever the file size. With JVM assertions on (tests), a burst past ~4 GB of file trips
+an `assert` of H2 2.4.240 (`RandomAccessStore.validateFileLength`); production runs without them.
+
 ## Frontend
 
 `features/admin/` (logs, status, events, integrations, backups, settings, diagnostics — `/admin/**`),

@@ -26,18 +26,23 @@ import org.junit.jupiter.api.io.TempDir;
  * <p>It opens the database with the JDBC URL of {@code application.yaml} ({@code jdbc:h2:async:…;
  * DB_CLOSE_ON_EXIT=FALSE}), creates {@code boards.board_scenes} as migration V1 does, and updates one
  * row with a scene of {@code sceneBytes} characters {@code saves} times, one transaction per save as
- * {@code SceneService.save} does. Then it measures {@code db/} while open, after a plain close (the
- * last connection goes away, as on a graceful shutdown of the application), after a reopen, after
- * {@code SHUTDOWN COMPACT}, and after a close with a long {@code MAX_COMPACT_TIME}.
+ * {@code SceneService.save} does. Then it measures {@code db/} while open, after a close (the last
+ * connection goes away, as on a graceful shutdown of the application), after a reopen and a second
+ * close, after a close with a long {@code MAX_COMPACT_TIME}, and after {@code SHUTDOWN COMPACT}.
  *
  * <pre>
- * ./mvnw -q test -Dtest=H2FileSizeMeasurement -Djacoco.skip=true -Dteacherbox.measure.h2=true \
- *     -Dteacherbox.measure.saves=10000 -Dteacherbox.measure.scene-bytes=1000000 \
- *     -Dteacherbox.measure.pause-ms=0 -Dteacherbox.measure.idle-s=60 -Dteacherbox.measure.url-prefix=async:
+ * ./mvnw -q test -Dtest=H2FileSizeMeasurement -Djacoco.skip=true -DenableAssertions=false \
+ *     -Dteacherbox.measure.h2=true -Dteacherbox.measure.saves=10000 \
+ *     -Dteacherbox.measure.scene-bytes=1000000 -Dteacherbox.measure.pause-ms=0 \
+ *     -Dteacherbox.measure.idle-s=60 -Dteacherbox.measure.close-idle-s=0 \
+ *     -Dteacherbox.measure.url-prefix=async: -Dteacherbox.measure.url-suffix=';MAX_COMPACT_TIME=5000'
  * </pre>
  *
  * With {@code pause-ms=0} the saves follow each other as fast as the disk allows (the worst case: up to
  * {@code saves × scene} of disk); the editor saves at most once a second ({@code SAVE_DELAY_MS}).
+ * {@code -DenableAssertions=false} runs H2 as in production: Surefire turns JVM assertions on, and an
+ * {@code assert} of H2 trips on a burst past ~4 GB of file (plan 393.1). The container's heap — add
+ * {@code -Xmx768m} to {@code JAVA_TOOL_OPTIONS} (the forked JVM reads it).
  *
  * The report is printed and written to {@code target/h2-file-size.txt}.
  */
@@ -51,7 +56,9 @@ class H2FileSizeMeasurement {
     private final int sceneBytes = Integer.getInteger("teacherbox.measure.scene-bytes", 1_000_000);
     private final int pauseMillis = Integer.getInteger("teacherbox.measure.pause-ms", 0);
     private final String prefix = System.getProperty("teacherbox.measure.url-prefix", "async:");
+    private final String suffix = System.getProperty("teacherbox.measure.url-suffix", "");
     private final int idleSeconds = Integer.getInteger("teacherbox.measure.idle-s", 60);
+    private final int closeIdleSeconds = Integer.getInteger("teacherbox.measure.close-idle-s", 0);
     private final List<String> report = new ArrayList<>();
 
     @TempDir
@@ -60,11 +67,12 @@ class H2FileSizeMeasurement {
     @Test
     void measuresFileSizeAfterManySaves() throws Exception {
         Path db = dataDir.resolve("db");
-        String url = "jdbc:h2:" + prefix + db.resolve("teacherbox") + ";DB_CLOSE_ON_EXIT=FALSE";
-        line("url=%s, saves=%d, scene=%d chars, pause=%d ms, max heap=%d MB, h2=%s", prefix, saves, sceneBytes,
-                pauseMillis,
-                Runtime.getRuntime().maxMemory() / MB, org.h2.engine.Constants.FULL_VERSION);
+        String base = "jdbc:h2:" + prefix + db.resolve("teacherbox") + ";DB_CLOSE_ON_EXIT=FALSE";
+        String url = base + suffix;
+        line("url=%s…%s, saves=%d, scene=%d chars, pause=%d ms, max heap=%d MB, h2=%s", prefix, suffix, saves,
+                sceneBytes, pauseMillis, Runtime.getRuntime().maxMemory() / MB, org.h2.engine.Constants.FULL_VERSION);
         UUID board = UUID.randomUUID();
+        long closed;
         try (Connection connection = DriverManager.getConnection(url, "sa", "")) {
             createSchema(connection, board);
             line("after the first save: %s", size(db));
@@ -77,17 +85,23 @@ class H2FileSizeMeasurement {
             line("open, idle %d s: %s", idleSeconds, size(db));
             save(connection, board, saves + 1, saves + 100, db);
             line("open, 100 more saves: %s", size(db));
+            if (closeIdleSeconds > 0) {
+                Thread.sleep(closeIdleSeconds * 1000L);
+                line("open, idle %d s before the close: %s", closeIdleSeconds, size(db));
+            }
+            closed = System.nanoTime();
         }
-        line("closed (default close, MAX_COMPACT_TIME 200 ms): %s", size(db));
+        line("close took %d ms (MAX_COMPACT_TIME of the URL, H2's default 200 ms): %s", millis(closed), size(db));
 
         long reopened = System.nanoTime();
         try (Connection connection = DriverManager.getConnection(url, "sa", "")) {
             line("reopen took %d ms, open: %s", millis(reopened), size(db));
             line("rows: %d", count(connection));
+            closed = System.nanoTime();
         }
-        line("closed again: %s", size(db));
+        line("close again took %d ms: %s", millis(closed), size(db));
 
-        try (Connection connection = DriverManager.getConnection(url + ";MAX_COMPACT_TIME=60000", "sa", "")) {
+        try (Connection connection = DriverManager.getConnection(base + ";MAX_COMPACT_TIME=60000", "sa", "")) {
             System.gc();
             long heapBefore = usedHeap();
             long compacted = System.nanoTime();
@@ -96,7 +110,7 @@ class H2FileSizeMeasurement {
                     millis(compacted), heapBefore / MB, usedHeap() / MB, size(db));
         }
 
-        try (Connection connection = DriverManager.getConnection(url, "sa", "");
+        try (Connection connection = DriverManager.getConnection(base, "sa", "");
                 Statement statement = connection.createStatement()) {
             long compacted = System.nanoTime();
             statement.execute("SHUTDOWN COMPACT");
@@ -104,7 +118,7 @@ class H2FileSizeMeasurement {
         }
 
         long last = System.nanoTime();
-        try (Connection connection = DriverManager.getConnection(url, "sa", "")) {
+        try (Connection connection = DriverManager.getConnection(base, "sa", "")) {
             line("reopen after compaction took %d ms, rows: %d, open: %s", millis(last), count(connection),
                     size(db));
         }
