@@ -45,6 +45,12 @@ a new one if 393 changes how the database is opened or closed; 395 may amend ADR
   (`boards.scene-too-large`): the save answer carries the size, the board shows a hint to make a
   copy and start a new board. `m3-expressive` skill; help article and `docs/wiki/` page in both
   languages.
+- [x] 392.3 **B** *complex* — review fixes of 392.1: read deletion records only for the elements
+  of a save, restore or pruning (`SceneRetention.deletions`, `SceneRepository.deletions` in
+  chunks of 500) instead of all records of the board twice per save; the live channel drops
+  retired identities (`LiveRooms.elements`); the nightly pruning runs one transaction per board
+  and keeps the scene version (`BoardBackupService.dailyCopies`, `SceneRepository.replaceElements`),
+  so it makes no extra daily copy and no `SceneSaved`. ADR-0064 updated.
 
 ### 393. H2 file size
 

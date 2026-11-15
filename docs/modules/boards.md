@@ -25,6 +25,10 @@ groups. Depends on: `shared`, `identity::api`. Schema `boards`. ADR: [0028](../a
   (client timestamps are ignored).
   `SceneRetention` prunes older tombstones before merging a save and during every nightly run,
   including unchanged boards. Legacy tombstones get a full retention period on first observation.
+  It reads the deletion records of the elements at hand only (the stored and the incoming ones,
+  500 ids per query), never all records of the board. The nightly run takes one transaction per
+  board and keeps the scene version: no `SceneSaved`, no extra daily copy; it collects the images
+  the pruned tombstones held.
   `board_deleted_elements` retains compact identities and versions until board deletion, so even a
   higher-version edit from a long-offline client cannot resurrect a retired element. Undo before
   retirement clears its deletion record; a later deletion starts a new period. Explicit restore
@@ -43,7 +47,8 @@ groups. Depends on: `shared`, `identity::api`. Schema `boards`. ADR: [0028](../a
   `/api/public/boards/live?ticket=` (no ticket, a used or expired one → 403). `live/LiveRooms` keeps the editors of
   each board in memory (one instance): a peer has an id, the user's name and the smallest free colour index;
   `welcome` / `joined` / `left`; relays `pointer` (x, y, tool, button — checked) and `elements` (checked by
-  `SceneElements.valid`) to the others; answers `ping` with `pong`; sends `saved` with the version after a scene
+  `SceneElements.valid`, retired identities dropped — `SceneRetention.retired`)
+  to the others; answers `ping` with `pong`; sends `saved` with the version after a scene
   save or a restored copy (`SceneSaved`, after commit). Nothing is stored. Access is checked again
   (`BoardService.mayAccess`) when the board changes or is deleted (`BoardAccessChanged`), a group changes or is
   archived; a deactivated student's channels close — closed with 1008. Messages ≤ 1 M characters; a slow

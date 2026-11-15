@@ -120,6 +120,43 @@ class BoardBackupsIntegrationTests {
                 .extractingPath("$.elements").asArray().hasSize(1);
     }
 
+    @Test
+    void nightlyPruningKeepsTheVersionAndMakesNoExtraDailyCopy() {
+        String id = board();
+        assertThat(save(id, element("a", 1, 1), 0)).hasStatusOk();
+        assertThat(save(id, deleted("a", 2), 1)).hasStatusOk();
+        backups.dailyCopies();
+        clock.advance(Duration.ofDays(31));
+        backups.dailyCopies();
+        assertThat(scenes.findBackups(UUID.fromString(id))).as("pruning alone is no change for a daily copy")
+                .hasSize(1);
+        assertThat(mvc.get().uri("/api/boards/" + id).with(teacher())).hasStatusOk().bodyJson().satisfies(json -> {
+            assertThat(json).extractingPath("$.elements").asArray().isEmpty();
+            assertThat(json).extractingPath("$.sceneVersion").isEqualTo(2);
+        });
+        assertThat(mvc.get().uri("/api/boards/" + id + "/scene?since=2").with(teacher()))
+                .hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(save(id, element("a", 50, 1), 2)).hasStatusOk().bodyJson()
+                .extractingPath("$.rejectedElementIds").asArray().containsExactly("a");
+    }
+
+    @Test
+    void retiredIdentitiesAreFoundBeyondOneQueryOfElementIds() {
+        String id = board();
+        StringBuilder tombstones = new StringBuilder("[");
+        for (int i = 0; i < 600; i++) {
+            tombstones.append(i == 0 ? "" : ",").append(deleted("e" + i, 2), 1, deleted("e" + i, 2).length() - 1);
+        }
+        assertThat(save(id, tombstones.append(']').toString(), 0)).hasStatusOk();
+        clock.advance(Duration.ofDays(31));
+        backups.dailyCopies();
+        String stale = element("e1", 9, 1).replace("]", "," + element("e599", 9, 1).substring(1));
+        assertThat(save(id, stale, 1)).hasStatusOk().bodyJson().satisfies(json -> {
+            assertThat(json).extractingPath("$.elements").asArray().isEmpty();
+            assertThat(json).extractingPath("$.rejectedElementIds").asArray().containsExactlyInAnyOrder("e1", "e599");
+        });
+    }
+
     private static String deleted(String id, int version) {
         return element(id, version, 1).replace("}]", ",\"isDeleted\":true,\"updated\":0}]");
     }

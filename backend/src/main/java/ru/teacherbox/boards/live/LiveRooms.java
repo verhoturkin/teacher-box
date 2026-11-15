@@ -21,6 +21,7 @@ import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorato
 import ru.teacherbox.boards.application.BoardAccessChanged;
 import ru.teacherbox.boards.application.LiveTickets;
 import ru.teacherbox.boards.application.LiveTickets.LivePass;
+import ru.teacherbox.boards.application.SceneRetention;
 import ru.teacherbox.boards.application.SceneSaved;
 import ru.teacherbox.boards.domain.SceneElements;
 import ru.teacherbox.identity.api.GroupArchived;
@@ -64,12 +65,14 @@ class LiveRooms {
     }
 
     private final LiveTickets tickets;
+    private final SceneRetention retention;
     private final JsonMapper json;
     private final Map<UUID, Map<String, Peer>> rooms = new ConcurrentHashMap<>();
     private final Map<String, Peer> bySession = new ConcurrentHashMap<>();
 
-    LiveRooms(LiveTickets tickets, JsonMapper json) {
+    LiveRooms(LiveTickets tickets, SceneRetention retention, JsonMapper json) {
         this.tickets = tickets;
+        this.retention = retention;
         this.json = json;
     }
 
@@ -186,13 +189,26 @@ class LiveRooms {
     }
 
     private void elements(Peer peer, JsonNode message, Map<String, Peer> room) {
-        JsonNode elements = message.path("elements");
+        List<ObjectNode> elements;
         try {
-            SceneElements.valid(elements);
+            elements = SceneElements.valid(message.path("elements"));
         } catch (DomainException e) {
             return;
         }
-        relay(peer, room, message("elements").put("id", peer.id()).set("elements", elements));
+        if (elements.isEmpty() || room.size() < 2) {
+            return;
+        }
+        // An editor away for long may still hold pruned elements: the others never get them back (ADR-0064).
+        Set<String> retired = retention.retired(peer.boardId(),
+                elements.stream().map(element -> element.path("id").asString()).toList());
+        List<ObjectNode> relayed = elements.stream()
+                .filter(element -> !retired.contains(element.path("id").asString())).toList();
+        if (relayed.isEmpty()) {
+            return;
+        }
+        ObjectNode out = message("elements").put("id", peer.id());
+        out.putArray("elements").addAll(relayed);
+        relay(peer, room, out);
     }
 
     private ObjectNode describe(Peer peer) {

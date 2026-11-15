@@ -10,12 +10,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import ru.teacherbox.boards.domain.BackupKind;
 import ru.teacherbox.boards.domain.Board;
 import ru.teacherbox.boards.domain.BoardBackup;
@@ -52,6 +55,7 @@ public class BoardBackupService {
     }
 
     private final SceneRetention retention;
+    private final TransactionTemplate transactions;
     private final BoardService boards;
     private final SceneRepository scenes;
     private final FileStorage storage;
@@ -63,8 +67,9 @@ public class BoardBackupService {
 
     public BoardBackupService(BoardService boards, SceneRepository scenes, FileStorage storage,
             Environment environment, JsonMapper json, Clock clock, ApplicationEventPublisher events,
-            SceneRetention retention) {
+            SceneRetention retention, PlatformTransactionManager transactionManager) {
         this.retention = retention;
+        this.transactions = new TransactionTemplate(transactionManager);
         this.boards = boards;
         this.scenes = scenes;
         this.storage = storage;
@@ -100,15 +105,15 @@ public class BoardBackupService {
         BoardBackup backup = backup(board.id(), backupId);
         BoardScene current = scenes.lock(board.id()).orElseThrow(BoardService::notFound);
         BoardBackup safety = copy(current, BackupKind.MANUAL);
-        var deletions = retention.deletions(boardId);
         List<ObjectNode> currentElements = new ArrayList<>(
                 SceneElements.valid(json.readTree(current.elements())));
+        List<ObjectNode> copyElements = SceneElements.valid(json.readTree(backup.elements()));
+        var deletions = retention.deletions(boardId, Stream.concat(currentElements.stream(), copyElements.stream()));
+        // a retired element of the copy comes back with a version above its last deletion
         deletions.values().stream().filter(deletion -> deletion.retired()).forEach(deletion ->
                 currentElements.add(json.createObjectNode().put("id", deletion.elementId())
                         .put("version", deletion.elementVersion()).put("versionNonce", 0).put("isDeleted", true)));
-        List<ObjectNode> restored = SceneElements.restored(
-                currentElements,
-                SceneElements.valid(json.readTree(backup.elements())));
+        List<ObjectNode> restored = SceneElements.restored(currentElements, copyElements);
         restored = retention.prune(boardId, restored, deletions);
         scenes.update(new BoardScene(board.id(), json.writeValueAsString(restored), backup.appState(),
                 current.version() + 1, clock.instant(), teacher.id()));
@@ -126,32 +131,19 @@ public class BoardBackupService {
     }
 
     /**
-     * A daily copy of every board changed since its last daily copy; keeps the newest
-     * {@link BoardsProperties#backupKeep()} daily copies of each.
+     * Prunes the old tombstones of every board (ADR-0064), then makes a daily copy of every board changed since
+     * its last daily copy; keeps the newest {@link BoardsProperties#backupKeep()} daily copies of each.
      *
      * @return number of copies made
      */
-    @Transactional
     public int dailyCopies() {
+        // One short transaction per board: saves of the other boards never wait for the whole run.
         for (UUID boardId : scenes.findSceneIds()) {
-            BoardScene current = scenes.lock(boardId).orElseThrow(BoardService::notFound);
-            List<ObjectNode> elements = SceneElements.valid(json.readTree(current.elements()));
-            List<ObjectNode> kept = retention.prune(boardId, elements, retention.deletions(boardId));
-            if (kept.size() != elements.size()) {
-                BoardScene pruned = new BoardScene(boardId, json.writeValueAsString(kept), current.appState(),
-                        current.version() + 1, clock.instant(), current.updatedBy());
-                scenes.update(pruned);
-                events.publishEvent(new SceneSaved(boardId, pruned.version()));
-            }
+            transactions.executeWithoutResult(status -> pruneTombstones(boardId));
         }
         List<UUID> changed = scenes.findChangedSinceLastDailyCopy();
         for (UUID boardId : changed) {
-            copy(scene(boardId), BackupKind.DAILY);
-            List<BoardBackup> daily = scenes.findBackups(boardId).stream()
-                    .filter(backup -> backup.kind() == BackupKind.DAILY).toList();
-            daily.stream().skip(Math.max(properties.get().backupKeep(), 1))
-                    .forEach(old -> scenes.deleteBackup(boardId, old.id()));
-            collectGarbage(boardId);
+            transactions.executeWithoutResult(status -> dailyCopy(boardId));
         }
         if (!changed.isEmpty()) {
             log.info("Daily copies of {} boards made", changed.size());
@@ -191,6 +183,30 @@ public class BoardBackupService {
                 storage.delete(BoardService.NAMESPACE, file.fileKey());
             }
         }
+    }
+
+    /**
+     * Drops the old tombstones of an unedited board too. Keeps the scene version: pruning alone is no change
+     * for a daily copy, and the open editors hold their tombstones harmlessly until the next save or opening.
+     */
+    private void pruneTombstones(UUID boardId) {
+        scenes.lock(boardId).ifPresent(current -> {
+            List<ObjectNode> elements = SceneElements.valid(json.readTree(current.elements()));
+            List<ObjectNode> kept = retention.prune(boardId, elements, retention.deletions(boardId, elements.stream()));
+            if (kept.size() != elements.size()) {
+                scenes.replaceElements(boardId, json.writeValueAsString(kept));
+                collectGarbage(boardId);
+            }
+        });
+    }
+
+    private void dailyCopy(UUID boardId) {
+        copy(scene(boardId), BackupKind.DAILY);
+        List<BoardBackup> daily = scenes.findBackups(boardId).stream()
+                .filter(backup -> backup.kind() == BackupKind.DAILY).toList();
+        daily.stream().skip(Math.max(properties.get().backupKeep(), 1))
+                .forEach(old -> scenes.deleteBackup(boardId, old.id()));
+        collectGarbage(boardId);
     }
 
     private BoardBackup copy(BoardScene scene, BackupKind kind) {
