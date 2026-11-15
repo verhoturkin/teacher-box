@@ -21,11 +21,8 @@ async function signIn(page: Page, login: string, password: string, width: number
 }
 
 /** A lesson start in «Ближайшие занятия» of the student: later this week, in Moscow. */
-function upcomingStart(hours: number): string {
-  const lesson = laterThisWeek(hours);
-  // `days` counts from this machine's date (laterThisWeek), not from Moscow's
-  const day = new Date(Date.now() + lesson.days * 86_400_000).toLocaleDateString('sv-SE');
-  return `${day}T${String(lesson.hours).padStart(2, '0')}:00:00+03:00`;
+async function upcomingStart(hours: number): Promise<string> {
+  return (await laterThisWeek(hours)).startsAt;
 }
 
 /** A lesson going on now (a few minutes after midnight: soon). */
@@ -321,7 +318,7 @@ test('on a phone an upcoming lesson opens its actions in the bottom sheet', asyn
   page,
   request,
 }) => {
-  const online = await studentWithLesson(request, `Лист ${RUN}`, upcomingStart(21), true);
+  const online = await studentWithLesson(request, `Лист ${RUN}`, await upcomingStart(21), true);
   await signIn(page, online.login, online.password, 360);
   await page.goto('/cabinet/schedule');
 
@@ -351,7 +348,7 @@ test('on a phone an upcoming lesson opens its actions in the bottom sheet', asyn
 });
 
 test('on a phone the nearest lesson stacks its buttons', async ({ page, request }) => {
-  const plain = await studentWithLesson(request, `Главная ${RUN}`, upcomingStart(20), false);
+  const plain = await studentWithLesson(request, `Главная ${RUN}`, await upcomingStart(20), false);
   await signIn(page, plain.login, plain.password, 360);
 
   const hero = page.locator('tb-next-lesson-widget');
