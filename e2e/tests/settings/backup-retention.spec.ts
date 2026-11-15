@@ -20,6 +20,13 @@ test('the administrator sees how many days backups are kept', async ({ page }) =
   const days = page.locator('#setting-TEACHERBOX_BACKUP_KEEP_DAYS');
   await expect(days).toBeVisible();
   await expect(page.locator('.tb-setting').filter({ has: days })).toContainText('Хранить дней');
+
+  // 395.2: Google Drive keeps its own, shorter retention.
+  const drive = page.locator('#setting-TEACHERBOX_BACKUP_GOOGLE_KEEP');
+  await expect(drive).toBeVisible();
+  await expect(page.locator('.tb-setting').filter({ has: drive })).toContainText(
+    'Сколько копий хранить в Google Диске',
+  );
 });
 
 test('the teacher reads that backups are kept two weeks', async ({ page }) => {
