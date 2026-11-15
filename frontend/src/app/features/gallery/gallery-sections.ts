@@ -34,6 +34,7 @@ import { AlertDialogSample } from './dialogs/alert';
 import { FormDialogSample } from './dialogs/form';
 import { SheetDialogSample } from './dialogs/sheet';
 import { WizardDialogSample } from './dialogs/wizard';
+import { StepsSample } from './dialogs/steps';
 import { SideSheetSample } from './dialogs/side-sheet';
 import { MenuSample } from './dialogs/menu';
 import { LoadStateSample } from './states/load-state';
@@ -193,6 +194,7 @@ export const GALLERY_SECTIONS: readonly GallerySection[] = [
         title: 'Wizard with its own footer',
         component: WizardDialogSample,
       },
+      { path: 'dialogs/steps.ts', title: 'Wizard steps', component: StepsSample },
       { path: 'dialogs/side-sheet.ts', title: 'Side sheet', component: SideSheetSample },
       { path: 'dialogs/menu.ts', title: 'Menu', component: MenuSample },
     ],

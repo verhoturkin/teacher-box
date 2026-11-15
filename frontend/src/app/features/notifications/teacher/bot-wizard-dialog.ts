@@ -31,6 +31,7 @@ import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 import { TbDialog } from '@shared/ui/dialog/dialog';
+import { Step, Steps } from '@shared/ui/steps';
 
 /** Wizard steps: create a bot, check its token, connect the teacher's account, send a test message. */
 export type WizardStep = 1 | 2 | 3 | 4;
@@ -67,6 +68,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
     Password,
     PasswordToggle,
     FieldErrors,
+    Steps,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -78,290 +80,191 @@ function describeMessengerError(error: unknown, fallback: string): string {
       [cancelLabel]="c.close"
     >
       <tb-help-button topic="teacher/notifications" [label]="t.more" />
-      <ol class="tb-wizard">
-        <li
-          class="tb-wizard__step"
-          [class.tb-wizard__step--active]="step() === 1"
-          [class.tb-wizard__step--done]="step() > 1"
-        >
-          <button type="button" class="tb-wizard__header" (click)="go(1)">
-            <span class="tb-wizard__number">1</span>
-            <span>{{ t.step1 }}</span>
-          </button>
-          @if (step() === 1) {
-            <div class="tb-wizard__body">
-              @switch (channel()) {
-                @case ('TELEGRAM') {
-                  <ol class="tb-wizard__howto">
-                    <li>
-                      {{ t.tgOpen }}
-                      <a href="https://t.me/BotFather" target="_blank" rel="noopener"
-                        >&#64;BotFather</a
-                      >
-                      {{ t.tgSend }} <code>/newbot</code>.
-                    </li>
-                    <li>
-                      {{ t.tgName }}
-                      <code>bot</code>.
-                    </li>
-                    <li>{{ t.tgToken }} <code>123456789:AAF…</code> {{ t.tgCopy }}</li>
-                  </ol>
+      <tb-steps
+        [steps]="steps()"
+        [current]="step()"
+        [label]="t.steps"
+        [selectable]="true"
+        (selected)="go($event)"
+      >
+        <ng-template>
+          @switch (step()) {
+            @case (1) {
+              <div class="tb-wizard__body">
+                @switch (channel()) {
+                  @case ('TELEGRAM') {
+                    <ol class="tb-wizard__howto">
+                      <li>
+                        {{ t.tgOpen }}
+                        <a href="https://t.me/BotFather" target="_blank" rel="noopener"
+                          >&#64;BotFather</a
+                        >
+                        {{ t.tgSend }} <code>/newbot</code>.
+                      </li>
+                      <li>
+                        {{ t.tgName }}
+                        <code>bot</code>.
+                      </li>
+                      <li>{{ t.tgToken }} <code>123456789:AAF…</code> {{ t.tgCopy }}</li>
+                    </ol>
+                  }
+                  @case ('VK') {
+                    <ol class="tb-wizard__howto">
+                      <li>{{ t.vkCommunity }}</li>
+                      <li>{{ t.vkKey }}</li>
+                      <li>{{ t.vkLongPoll }}</li>
+                      <li>{{ t.vkButtons }}</li>
+                      <li>{{ t.vkNumber }} <code>club123456</code>.</li>
+                    </ol>
+                  }
+                  @case ('MAX') {
+                    <ol class="tb-wizard__howto">
+                      <li>
+                        {{ t.maxCreate
+                        }}<a href="https://dev.max.ru" target="_blank" rel="noopener">dev.max.ru</a
+                        >).
+                      </li>
+                      <li>{{ t.maxCopy }}</li>
+                    </ol>
+                  }
                 }
-                @case ('VK') {
-                  <ol class="tb-wizard__howto">
-                    <li>{{ t.vkCommunity }}</li>
-                    <li>{{ t.vkKey }}</li>
-                    <li>{{ t.vkLongPoll }}</li>
-                    <li>{{ t.vkButtons }}</li>
-                    <li>{{ t.vkNumber }} <code>club123456</code>.</li>
-                  </ol>
-                }
-                @case ('MAX') {
-                  <ol class="tb-wizard__howto">
-                    <li>
-                      {{ t.maxCreate
-                      }}<a href="https://dev.max.ru" target="_blank" rel="noopener">dev.max.ru</a>).
-                    </li>
-                    <li>{{ t.maxCopy }}</li>
-                  </ol>
-                }
-              }
-              <div class="tb-actions">
-                <p-button
-                  [label]="t.created"
-                  icon="tb-i tb-i-arrow_forward"
-                  iconPos="right"
-                  (onClick)="go(2)"
-                />
-              </div>
-            </div>
-          }
-        </li>
-
-        <li
-          class="tb-wizard__step"
-          [class.tb-wizard__step--active]="step() === 2"
-          [class.tb-wizard__step--done]="step() > 2"
-        >
-          <button type="button" class="tb-wizard__header" (click)="go(2)">
-            <span class="tb-wizard__number">2</span>
-            <span>{{ t.step2 }}</span>
-          </button>
-          @if (step() === 2) {
-            <form
-              tbFieldErrors
-              class="tb-wizard__body tb-form"
-              [formGroup]="form"
-              (ngSubmit)="saveToken()"
-            >
-              @if (bot(); as current) {
-                @if (current.configured) {
-                  <p class="tb-muted">{{ t.replace(current.botName ?? '') }}</p>
-                }
-              }
-              <div class="tb-field">
-                <label for="bot-token">{{
-                  channel() === 'VK' ? t.vkKeyLabel : t.tokenLabel
-                }}</label>
-                <p-password
-                  inputId="bot-token"
-                  formControlName="token"
-                  [feedback]="false"
-                  [toggleMask]="true"
-                  [fluid]="true"
-                  autocomplete="off"
-                >
-                  <ng-template #showicon><tb-password-toggle /></ng-template>
-                  <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
-                </p-password>
-              </div>
-              @if (channel() === 'VK') {
-                <div class="tb-field">
-                  <label for="bot-group">{{ t.community }}</label>
-                  <p-inputnumber
-                    inputId="bot-group"
-                    formControlName="groupId"
-                    [useGrouping]="false"
-                    [min]="1"
-                    [fluid]="true"
-                  />
-                </div>
-              }
-              @if (error(); as message) {
-                <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-              }
-              <div class="tb-actions">
-                <p-button
-                  type="submit"
-                  [label]="t.checkAndSave"
-                  icon="tb-i tb-i-check"
-                  [loading]="pending()"
-                />
-              </div>
-            </form>
-          }
-        </li>
-
-        <li
-          class="tb-wizard__step"
-          [class.tb-wizard__step--active]="step() === 3"
-          [class.tb-wizard__step--done]="step() > 3"
-        >
-          <button
-            type="button"
-            class="tb-wizard__header"
-            [disabled]="!configured()"
-            (click)="go(3)"
-          >
-            <span class="tb-wizard__number">3</span>
-            <span>{{ t.step3 }}</span>
-          </button>
-          @if (step() === 3) {
-            <div class="tb-wizard__body">
-              @if (bot()?.botName; as botName) {
-                <p-message severity="success" styleClass="tb-form-message">{{
-                  t.works(botName)
-                }}</p-message>
-              }
-              @if (teacherLinked()) {
-                <p>{{ t.linked(name()) }}</p>
                 <div class="tb-actions">
                   <p-button
-                    [label]="t.next"
+                    [label]="t.created"
                     icon="tb-i tb-i-arrow_forward"
                     iconPos="right"
-                    (onClick)="go(4)"
+                    (onClick)="go(2)"
                   />
                 </div>
-              } @else if (linkCode(); as code) {
-                <tb-link-code-view [code]="code" />
-              } @else {
-                <p>{{ t.linkHint }}</p>
+              </div>
+            }
+            @case (2) {
+              <form
+                tbFieldErrors
+                class="tb-wizard__body tb-form"
+                [formGroup]="form"
+                (ngSubmit)="saveToken()"
+              >
+                @if (bot(); as current) {
+                  @if (current.configured) {
+                    <p class="tb-muted">{{ t.replace(current.botName ?? '') }}</p>
+                  }
+                }
+                <div class="tb-field">
+                  <label for="bot-token">{{
+                    channel() === 'VK' ? t.vkKeyLabel : t.tokenLabel
+                  }}</label>
+                  <p-password
+                    inputId="bot-token"
+                    formControlName="token"
+                    [feedback]="false"
+                    [toggleMask]="true"
+                    [fluid]="true"
+                    autocomplete="off"
+                  >
+                    <ng-template #showicon><tb-password-toggle /></ng-template>
+                    <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
+                  </p-password>
+                </div>
+                @if (channel() === 'VK') {
+                  <div class="tb-field">
+                    <label for="bot-group">{{ t.community }}</label>
+                    <p-inputnumber
+                      inputId="bot-group"
+                      formControlName="groupId"
+                      [useGrouping]="false"
+                      [min]="1"
+                      [fluid]="true"
+                    />
+                  </div>
+                }
+                @if (error(); as message) {
+                  <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
+                }
                 <div class="tb-actions">
                   <p-button
-                    [label]="t.connectMine"
-                    icon="tb-i tb-i-link"
+                    type="submit"
+                    [label]="t.checkAndSave"
+                    icon="tb-i tb-i-check"
                     [loading]="pending()"
-                    (onClick)="connect()"
-                  />
-                  <p-button
-                    [label]="t.skip"
-                    severity="secondary"
-                    [text]="true"
-                    (onClick)="close()"
                   />
                 </div>
-              }
-            </div>
-          }
-        </li>
-
-        <li class="tb-wizard__step" [class.tb-wizard__step--active]="step() === 4">
-          <button
-            type="button"
-            class="tb-wizard__header"
-            [disabled]="!teacherLinked()"
-            (click)="go(4)"
-          >
-            <span class="tb-wizard__number">4</span>
-            <span>{{ t.step4 }}</span>
-          </button>
-          @if (step() === 4) {
-            <div class="tb-wizard__body">
-              @if (tested()) {
-                <p-message severity="success" styleClass="tb-form-message">{{
-                  t.testSent(name())
-                }}</p-message>
-              } @else {
-                <p>{{ t.testHint }}</p>
-              }
-              @if (error(); as message) {
-                <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-              }
-              <div class="tb-actions">
-                <p-button
-                  [label]="t.sendTest"
-                  icon="tb-i tb-i-send"
-                  severity="secondary"
-                  [loading]="pending()"
-                  (onClick)="sendTest()"
-                />
-                @if (tested()) {
-                  <p-button [label]="t.done" icon="tb-i tb-i-check" (onClick)="close()" />
+              </form>
+            }
+            @case (3) {
+              <div class="tb-wizard__body">
+                @if (bot()?.botName; as botName) {
+                  <p-message severity="success" styleClass="tb-form-message">{{
+                    t.works(botName)
+                  }}</p-message>
+                }
+                @if (teacherLinked()) {
+                  <p>{{ t.linked(name()) }}</p>
+                  <div class="tb-actions">
+                    <p-button
+                      [label]="t.next"
+                      icon="tb-i tb-i-arrow_forward"
+                      iconPos="right"
+                      (onClick)="go(4)"
+                    />
+                  </div>
+                } @else if (linkCode(); as code) {
+                  <tb-link-code-view [code]="code" />
+                } @else {
+                  <p>{{ t.linkHint }}</p>
+                  <div class="tb-actions">
+                    <p-button
+                      [label]="t.connectMine"
+                      icon="tb-i tb-i-link"
+                      [loading]="pending()"
+                      (onClick)="connect()"
+                    />
+                    <p-button
+                      [label]="t.skip"
+                      severity="secondary"
+                      [text]="true"
+                      (onClick)="close()"
+                    />
+                  </div>
                 }
               </div>
-            </div>
+            }
+            @case (4) {
+              <div class="tb-wizard__body">
+                @if (tested()) {
+                  <p-message severity="success" styleClass="tb-form-message">{{
+                    t.testSent(name())
+                  }}</p-message>
+                } @else {
+                  <p>{{ t.testHint }}</p>
+                }
+                @if (error(); as message) {
+                  <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
+                }
+                <div class="tb-actions">
+                  <p-button
+                    [label]="t.sendTest"
+                    icon="tb-i tb-i-send"
+                    severity="secondary"
+                    [loading]="pending()"
+                    (onClick)="sendTest()"
+                  />
+                  @if (tested()) {
+                    <p-button [label]="t.done" icon="tb-i tb-i-check" (onClick)="close()" />
+                  }
+                </div>
+              </div>
+            }
           }
-        </li>
-      </ol>
+        </ng-template>
+      </tb-steps>
     </tb-dialog>
   `,
   styles: `
-    .tb-wizard {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-2);
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .tb-wizard__header {
-      display: flex;
-      align-items: center;
-      gap: var(--tb-space-3);
-      width: 100%;
-      padding: var(--tb-space-1) 0;
-      border: 0;
-      background: none;
-      color: var(--p-md-on-surface-variant);
-      font: inherit;
-      text-align: left;
-      cursor: pointer;
-
-      &:disabled {
-        cursor: default;
-        color: color-mix(
-          in srgb,
-          var(--p-md-on-surface) var(--tb-state-disabled-content),
-          transparent
-        );
-      }
-    }
-
-    .tb-wizard__number {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 2rem;
-      height: 2rem;
-      border: 1px solid var(--p-md-outline-variant);
-      border-radius: var(--tb-shape-full);
-    }
-
-    .tb-wizard__step--active .tb-wizard__header {
-      color: var(--p-md-on-surface);
-      font-weight: 500;
-
-      .tb-wizard__number {
-        border-color: var(--p-md-primary);
-        background: var(--p-md-primary);
-        color: var(--p-md-on-primary);
-      }
-    }
-
-    .tb-wizard__step--done .tb-wizard__number {
-      border-color: var(--p-md-primary);
-      color: var(--p-md-primary);
-    }
-
     .tb-wizard__body {
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-3);
-      margin: var(--tb-space-1) 0 var(--tb-space-3) var(--tb-space-4);
-      padding-left: var(--tb-space-7);
-      border-left: 1px solid var(--p-md-outline-variant);
 
       p {
         margin: 0;
@@ -392,6 +295,12 @@ export class BotWizardDialog {
 
   protected readonly name = computed(() => CHANNEL_NAMES[this.channel()]);
   protected readonly step = signal<WizardStep>(1);
+  protected readonly steps = computed<readonly Step<WizardStep>[]>(() => [
+    { id: 1, title: this.t.step1 },
+    { id: 2, title: this.t.step2 },
+    { id: 3, title: this.t.step3, disabled: !this.configured() },
+    { id: 4, title: this.t.step4, disabled: !this.teacherLinked() },
+  ]);
   protected readonly bot = signal<ChannelSetup | null>(null);
   protected readonly configured = computed(() => this.bot()?.configured ?? false);
   protected readonly teacherLinked = computed(() => this.bot()?.teacherLinked ?? false);

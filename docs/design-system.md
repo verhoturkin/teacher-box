@@ -811,6 +811,13 @@ changes the container; content and markup are the same at every width. Every dia
   help 42 rem wide, 1 rem from the window edges, large corners; header «←» (only when there is a way
   back), the headline (Title Large) and «×»; on a phone the whole screen. Standard (non-modal) side
   sheet — `tb-pane kind="sheet"` (§7), e.g. the bell on extra-large and the review sheet.
+- **Wizard steps** `tb-steps` (`@shared/ui/steps`; *ours*: **M3** publishes no stepper): a
+  vertical list of rows in the navigation-rail manner — 56 dp, full corners, label large, a 28 dp
+  numbered circle (1 dp outline); a step behind is a primary circle with a check, the current row
+  is secondary container with an on-secondary-container circle (`aria-current="step"`). The setup
+  wizard shows rows only; `[selectable]` makes them buttons (`(selected)`, a step that can't open
+  yet is `disabled`) and an `ng-template` inside is the body of the current step under its row,
+  behind a 1 dp outline-variant rule (the bot wizard).
 - **Menus and dropdowns:** 16 px container, 4 px padding, elevation 2; items are tiles with 2 px gap
   — 4 px corners, 12 px on the outer side of the first and last item and of the selected one;
   *ours:* items next to a separator get the outer 12 px too, so each group reads as one segment (the

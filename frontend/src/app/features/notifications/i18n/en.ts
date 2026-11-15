@@ -200,6 +200,7 @@ export const en: Translation<typeof ru> = {
     connectMine: 'Connect my account',
     skip: 'Skip',
     step4: 'Check the connection',
+    steps: 'Steps',
     testSent: (name: string) => `Test message sent. Check ${name} to confirm it arrived.`,
     testHint: 'We will send you a test message through the bot.',
     sendTest: 'Send a test message',

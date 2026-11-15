@@ -46,7 +46,7 @@ Source: backlog review of 2026-11-15. ADRs: a new one for 400.1 (CSS layers repl
 
 ### 399. Shared `tb-steps` and `tb-copy-field`
 
-- [ ] 399.1 **F** *complex* — `shared/ui/steps.ts` (`tb-steps`): the step indicator of the setup
+- [x] 399.1 **F** *complex* — `shared/ui/steps.ts` (`tb-steps`): the step indicator of the setup
   wizard (`settings/setup/setup-page.ts`, `settings/setup/steps/`) and any other stepper markup
   becomes one component; sample in `features/gallery/`. `m3-expressive` skill.
 - [ ] 399.2 **F** *simple* — `shared/ui/copy-field.ts` (`tb-copy-field`): a read-only field with a
