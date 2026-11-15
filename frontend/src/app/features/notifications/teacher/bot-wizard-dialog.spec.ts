@@ -71,7 +71,9 @@ describe('BotWizardDialog', () => {
     backend.expectOne('/api/me/channels/TELEGRAM/link-code').flush(linkCode());
     fixture.detectChanges();
     await vi.advanceTimersByTimeAsync(0);
-    expect(text()).toContain('ABCD-2345');
+    expect(requireElement(document.body, 'tb-copy-field input', HTMLInputElement).value).toBe(
+      'ABCD-2345',
+    );
 
     await vi.advanceTimersByTimeAsync(LINK_POLL_INTERVAL_MS);
     backend.expectOne('/api/teacher/notifications/channels').flush([configured]);

@@ -1,4 +1,3 @@
-import { Clipboard } from '@angular/cdk/clipboard';
 import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -17,13 +16,13 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Button } from 'primeng/button';
+import { CopyField } from '@shared/ui/copy-field';
 import { Card } from 'primeng/card';
 import { Checkbox } from 'primeng/checkbox';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
 import { Tag } from 'primeng/tag';
-import { Tooltip } from 'primeng/tooltip';
 import { HelpButton } from '@features/help/parts';
 import { Portal } from '@core/portal/portal';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
@@ -66,13 +65,13 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
     FormsModule,
     ReactiveFormsModule,
     Button,
+    CopyField,
     Card,
     Checkbox,
     InputText,
     Message,
     Password,
     Tag,
-    Tooltip,
     PasswordToggle,
     FieldErrors,
   ],
@@ -176,18 +175,12 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
                 </li>
                 <li>
                   {{ t.clientBefore }} <strong>Web application</strong>{{ t.clientAfter }}
-                  <div class="tb-google-uri">
-                    <code>{{ redirectUri() }}</code>
-                    <p-button
-                      icon="tb-i tb-i-content_copy"
-                      [text]="true"
-                      [pTooltip]="t.copyAddress"
-                      [rounded]="true"
-                      severity="secondary"
-                      [ariaLabel]="t.copyAddress"
-                      (onClick)="copy(redirectUri())"
-                    />
-                  </div>
+                  <tb-copy-field
+                    class="tb-google-uri"
+                    [value]="redirectUri()"
+                    [copyLabel]="t.copyAddress"
+                    [copiedText]="t.copied"
+                  />
                   <small class="tb-muted">{{ t.httpsHint }}</small>
                 </li>
                 <li>{{ t.copyClient }}</li>
@@ -251,14 +244,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
     }
 
     .tb-google-uri {
-      display: flex;
-      align-items: center;
-      gap: var(--tb-space-1);
       margin: var(--tb-space-1) 0;
-
-      code {
-        overflow-wrap: anywhere;
-      }
     }
 
     .tb-actions {
@@ -275,7 +261,6 @@ export class GoogleCalendarPanel implements OnInit {
   private readonly portal = inject(Portal);
 
   protected readonly portalName = this.portal.name;
-  private readonly clipboard = inject(Clipboard);
   private readonly snackbar = inject(Snackbar);
   private readonly route = inject(ActivatedRoute);
 
@@ -363,12 +348,6 @@ export class GoogleCalendarPanel implements OnInit {
       this.resultCode.set(null);
       this.load();
     });
-  }
-
-  copy(text: string): void {
-    if (this.clipboard.copy(text)) {
-      this.snackbar.success(T.google.copied);
-    }
   }
 
   private load(): void {

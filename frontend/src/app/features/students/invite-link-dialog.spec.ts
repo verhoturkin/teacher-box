@@ -1,8 +1,10 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { Dialog } from 'primeng/dialog';
+import { Snackbar } from '@core/snackbar/snackbar';
 import { Portal } from '@core/portal/portal';
 import { bodyText, buttonByText, requireElement } from '@testing/dom';
 import { InviteLinkDialog } from './invite-link-dialog';
@@ -13,7 +15,10 @@ describe('InviteLinkDialog', () => {
   let clipboard: Clipboard;
 
   beforeEach(async () => {
-    TestBed.configureTestingModule({ imports: [InviteLinkDialog], providers: [providePrimeNG()] });
+    TestBed.configureTestingModule({
+      imports: [InviteLinkDialog],
+      providers: [providePrimeNG(), MessageService],
+    });
     clipboard = TestBed.inject(Clipboard);
     fixture = TestBed.createComponent(InviteLinkDialog);
     fixture.componentRef.setInput('studentName', 'Мария');
@@ -40,12 +45,17 @@ describe('InviteLinkDialog', () => {
 
   it('copies the link', async () => {
     vi.spyOn(clipboard, 'copy').mockReturnValue(true);
+    const success = vi.spyOn(TestBed.inject(Snackbar), 'success');
 
-    buttonByText(document.body, 'Копировать ссылку').click();
+    requireElement(
+      document.body,
+      'button[aria-label="Копировать ссылку"]',
+      HTMLButtonElement,
+    ).click();
     await fixture.whenStable();
 
     expect(clipboard.copy).toHaveBeenCalledWith(`${window.location.origin}/invite/secret-token`);
-    expect(bodyText()).toContain('Скопировано');
+    expect(success).toHaveBeenCalledWith('Скопировано');
   });
 
   it('closes with «Закрыть» and focuses the title when shown', async () => {

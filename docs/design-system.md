@@ -612,6 +612,9 @@ Gallery: [`/gallery/fields`](../frontend/src/app/features/gallery/fields/) (chip
   поиск» (while there is text; Esc clears) centred in round ends (4 + 48 + 4), text from 56 px; the
   browser's own clear button is hidden; it takes the full width of its pane or card and «×» never
   resizes it (*ours*). A dropdown filter is the same pill, 48 px, named «Поиск».
+- **Copy field** `tb-copy-field` (`@shared/ui`) — a read-only field (a link, an address, a code with
+  `mono`) with a round 40 px «Копировать» icon button centred on the 56 px field (*ours*); a
+  snackbar confirms the copy.
 - **Date** — one field with a trailing calendar icon. **Password** — `tb-password-toggle`, a 40×40
   icon button inside the field, «Показать пароль» / «Скрыть пароль», `aria-pressed`.
 - A 40 px button next to a 56 px field is centred on it (`tb-copy-row`).

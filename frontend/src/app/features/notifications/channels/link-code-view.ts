@@ -1,9 +1,7 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { Button } from 'primeng/button';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { CopyField } from '@shared/ui/copy-field';
 import { LoadingIndicator } from '@shared/ui/loading-indicator';
-import { Snackbar } from '@core/snackbar/snackbar';
-import { SHARED_T } from '@shared/i18n/texts';
 import { LinkCode } from '../data-access/notifications.models';
 import { CHANNEL_HAS_START_LINK, CHANNEL_NAMES } from '../notification-labels';
 import { T } from '../i18n/texts';
@@ -14,7 +12,7 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-link-code-view',
-  imports: [DatePipe, Button, LoadingIndicator],
+  imports: [DatePipe, CopyField, LoadingIndicator],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let link = code();
@@ -37,17 +35,12 @@ import { T } from '../i18n/texts';
           {{ t.privately }}
         </p>
       }
-      <div class="tb-link-code__value">
-        <span class="tb-link-code__digits">{{ link.code }}</span>
-        <p-button
-          icon="tb-i tb-i-content_copy"
-          severity="secondary"
-          [text]="true"
-          [rounded]="true"
-          [ariaLabel]="t.copyCode"
-          (onClick)="copy()"
-        />
-      </div>
+      <tb-copy-field
+        class="tb-link-code__value"
+        [value]="link.code"
+        [mono]="true"
+        [copyLabel]="t.copyCode"
+      />
       <div class="tb-link-code__wait" role="status">
         <tb-loading-indicator class="tb-link-code__spinner" aria-hidden="true" />
         <small class="tb-muted">{{ t.validUntil((link.expiresAt | date: 'HH:mm') ?? '') }}</small>
@@ -93,22 +86,7 @@ import { T } from '../i18n/texts';
     }
 
     .tb-link-code__value {
-      display: flex;
-      align-items: center;
       align-self: stretch;
-      gap: var(--tb-space-2);
-      padding: var(--tb-space-1) var(--tb-space-1) var(--tb-space-1) var(--tb-space-4);
-      border-radius: var(--tb-shape-lg);
-      background: var(--p-md-surface-container-highest);
-      color: var(--p-md-on-surface);
-      font-family: var(--tb-font-mono);
-      font-size: 1.75rem;
-      letter-spacing: 0.15em;
-    }
-
-    .tb-link-code__digits {
-      flex: 1;
-      user-select: all;
     }
 
     .tb-link-code__wait {
@@ -125,16 +103,8 @@ import { T } from '../i18n/texts';
 })
 export class LinkCodeView {
   protected readonly t = T.linkCode;
-  private readonly snackbar = inject(Snackbar);
   readonly code = input.required<LinkCode>();
 
   protected readonly name = computed(() => CHANNEL_NAMES[this.code().channel]);
   protected readonly startLink = computed(() => CHANNEL_HAS_START_LINK[this.code().channel]);
-
-  /** Without clipboard access (an insecure page) the code stays selectable by a tap. */
-  protected copy(): void {
-    void navigator.clipboard.writeText(this.code().code).then(() => {
-      this.snackbar.success(SHARED_T.common.copied);
-    });
-  }
 }

@@ -49,7 +49,7 @@ Source: backlog review of 2026-11-15. ADRs: a new one for 400.1 (CSS layers repl
 - [x] 399.1 **F** *complex* — `shared/ui/steps.ts` (`tb-steps`): the step indicator of the setup
   wizard (`settings/setup/setup-page.ts`, `settings/setup/steps/`) and any other stepper markup
   becomes one component; sample in `features/gallery/`. `m3-expressive` skill.
-- [ ] 399.2 **F** *simple* — `shared/ui/copy-field.ts` (`tb-copy-field`): a read-only field with a
+- [x] 399.2 **F** *simple* — `shared/ui/copy-field.ts` (`tb-copy-field`): a read-only field with a
   «Копировать» button centred on the field (DA-081). Replace the copies in
   `schedule/ui/calendar-feed-panel.ts`, `students/invite-link-dialog.ts`,
   `notifications/channels/link-code-view.ts`, `meetings/rooms/room-link.ts`,

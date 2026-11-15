@@ -1,4 +1,3 @@
-import { Clipboard } from '@angular/cdk/clipboard';
 import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -9,15 +8,13 @@ import {
   signal,
 } from '@angular/core';
 import { Button } from 'primeng/button';
+import { CopyField } from '@shared/ui/copy-field';
 import { Card } from 'primeng/card';
-import { InputText } from 'primeng/inputtext';
-import { Tooltip } from 'primeng/tooltip';
 import { Portal } from '@core/portal/portal';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { CalendarFeed } from '../data-access/schedule.models';
-import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
 import { T } from '../i18n/texts';
 
@@ -27,7 +24,7 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-calendar-feed-panel',
-  imports: [DatePipe, Button, Card, InputText, Tooltip, LoadStateView],
+  imports: [DatePipe, Button, Card, CopyField, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="t.title" styleClass="tb-section-card">
@@ -37,18 +34,12 @@ import { T } from '../i18n/texts';
             <p>{{ t.copyHint }}</p>
             <div class="tb-field">
               <label for="calendar-feed-link">{{ t.link }}</label>
-              <div class="tb-copy-row">
-                <input pInputText id="calendar-feed-link" class="tb-grow" [value]="link" readonly />
-                <p-button
-                  icon="tb-i tb-i-content_copy"
-                  [text]="true"
-                  [pTooltip]="t.copy"
-                  [rounded]="true"
-                  severity="secondary"
-                  [ariaLabel]="t.copy"
-                  (onClick)="copy(link)"
-                />
-              </div>
+              <tb-copy-field
+                inputId="calendar-feed-link"
+                [value]="link"
+                [copyLabel]="t.copy"
+                [copiedText]="t.copied"
+              />
             </div>
             <ul class="tb-muted tb-feed-help">
               <li>{{ t.google }}</li>
@@ -101,8 +92,6 @@ export class CalendarFeedPanel implements OnInit {
   protected readonly t = T.feed;
   protected readonly busy = new Busy();
   private readonly api = inject(ScheduleApi);
-  private readonly snackbar = inject(Snackbar);
-  private readonly clipboard = inject(Clipboard);
   private readonly portal = inject(Portal);
 
   protected readonly feed = signal<CalendarFeed | null>(null);
@@ -144,11 +133,5 @@ export class CalendarFeedPanel implements OnInit {
     this.busy.guard('disable', this.api.disableFeed()).subscribe(() => {
       this.feed.set({ enabled: false, createdAt: null, path: null });
     });
-  }
-
-  copy(link: string): void {
-    if (this.clipboard.copy(link)) {
-      this.snackbar.success(T.feed.copied);
-    }
   }
 }
