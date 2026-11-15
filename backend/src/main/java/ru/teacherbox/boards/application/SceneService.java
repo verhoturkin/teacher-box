@@ -7,6 +7,7 @@ import java.io.UncheckedIOException;
 import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
+import java.util.HashSet;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.Resource;
@@ -46,17 +47,19 @@ public class SceneService {
      * @param url the link of an external board (it has no scene)
      */
     public record BoardContent(UUID id, BoardKind kind, String title, @Nullable String url, long sceneVersion,
-            JsonNode elements, JsonNode appState) {
+            JsonNode elements, JsonNode appState, int sceneChars, List<String> rejectedElementIds) {
     }
 
     /** The scene after a save or a change by someone else. */
-    public record SceneView(long sceneVersion, JsonNode elements, JsonNode appState) {
+    public record SceneView(long sceneVersion, JsonNode elements, JsonNode appState, int sceneChars,
+            List<String> rejectedElementIds) {
     }
 
     /** An image of a board with its content. */
     public record FileDownload(BoardFile file, Resource content) {
     }
 
+    private final SceneRetention retention;
     private final BoardService boards;
     private final SceneRepository scenes;
     private final FileStorage storage;
@@ -65,7 +68,8 @@ public class SceneService {
     private final ApplicationEventPublisher events;
 
     public SceneService(BoardService boards, SceneRepository scenes, FileStorage storage, JsonMapper json,
-            Clock clock, ApplicationEventPublisher events) {
+            Clock clock, ApplicationEventPublisher events, SceneRetention retention) {
+        this.retention = retention;
         this.boards = boards;
         this.scenes = scenes;
         this.storage = storage;
@@ -79,11 +83,11 @@ public class SceneService {
         Board board = boards.requireAccess(user, boardId);
         if (!board.excalidraw()) {
             return new BoardContent(board.id(), board.kind(), board.title(), board.url(), 0,
-                    json.createArrayNode(), json.createObjectNode());
+                    json.createArrayNode(), json.createObjectNode(), 2, List.of());
         }
         SceneView scene = view(scene(board));
         return new BoardContent(board.id(), board.kind(), board.title(), null, scene.sceneVersion(),
-                scene.elements(), scene.appState());
+                scene.elements(), scene.appState(), scene.sceneChars(), List.of());
     }
 
     /**
@@ -100,7 +104,16 @@ public class SceneService {
         Board board = boards.requireAccess(user, boardId);
         List<ObjectNode> incoming = SceneElements.valid(elements);
         BoardScene stored = scenes.lock(requireScene(board).id()).orElseThrow(BoardService::notFound);
-        SceneElements.Merge merge = SceneElements.merge(elements(stored.elements()), incoming);
+        List<ObjectNode> original = elements(stored.elements());
+        List<ObjectNode> current = retention.prune(boardId, original, retention.deletions(boardId));
+        var deletions = retention.deletions(boardId);
+        List<String> rejected = incoming.stream().map(element -> element.path("id").asString())
+                .filter(id -> deletions.containsKey(id) && deletions.get(id).retired()).distinct().toList();
+        var rejectedIds = new HashSet<>(rejected);
+        SceneElements.Merge merge = SceneElements.merge(current, incoming.stream()
+                .filter(element -> !rejectedIds.contains(element.path("id").asString())).toList());
+        List<ObjectNode> retained = retention.prune(boardId, merge.elements(), deletions);
+        boolean pruned = current.size() != original.size() || retained.size() != merge.elements().size();
         ObjectNode state = (ObjectNode) json.readTree(stored.appState());
         boolean stateChanged = false;
         if (appState != null && !appState.isNull()) {
@@ -108,10 +121,10 @@ public class SceneService {
             stateChanged = !kept.equals(state);
             state = kept;
         }
-        if (!merge.changed() && !stateChanged) {
-            return view(stored);
+        if (!merge.changed() && !stateChanged && !pruned) {
+            return view(stored, rejected);
         }
-        String text = json.writeValueAsString(merge.elements());
+        String text = json.writeValueAsString(retained);
         if (text.length() > MAX_SCENE_CHARS) {
             throw new BusinessRuleException("boards.scene-too-large", "The board is too large to save");
         }
@@ -119,7 +132,7 @@ public class SceneService {
                 clock.instant(), user.id());
         scenes.update(saved);
         events.publishEvent(new SceneSaved(boardId, saved.version()));
-        return view(saved);
+        return view(saved, rejected);
     }
 
     /** @return the scene when its version differs from {@code since}; empty when nothing changed */
@@ -182,6 +195,11 @@ public class SceneService {
     }
 
     private SceneView view(BoardScene scene) {
-        return new SceneView(scene.version(), json.readTree(scene.elements()), json.readTree(scene.appState()));
+        return view(scene, List.of());
+    }
+
+    private SceneView view(BoardScene scene, List<String> rejected) {
+        return new SceneView(scene.version(), json.readTree(scene.elements()), json.readTree(scene.appState()),
+                scene.elements().length(), rejected);
     }
 }

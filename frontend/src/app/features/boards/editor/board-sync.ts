@@ -71,6 +71,7 @@ export type SceneAccess = Pick<
  */
 export class BoardSync {
   readonly status = signal<SaveStatus>('saved');
+  readonly sceneChars = signal(0);
 
   private access: SceneAccess | undefined;
   private reconcile: ExcalidrawModules['reconcileElements'] | undefined;
@@ -109,6 +110,7 @@ export class BoardSync {
     initial: BoardScene,
   ) {
     this.sceneVersion = initial.sceneVersion;
+    this.sceneChars.set(initial.sceneChars);
     this.initialElements = elementsOf(initial.elements);
     this.remember(this.initialElements);
     this.sharedState = sharedState(initial.appState);
@@ -366,13 +368,18 @@ export class BoardSync {
     if (access === undefined || reconcile === undefined) return;
     const remote = elementsOf(scene.elements);
     const changed = this.sceneVersion !== scene.sceneVersion;
+    this.sceneChars.set(scene.sceneChars);
+    const remoteIds = new Set(remote.map((element) => element.id));
+    const rejected = new Set(scene.rejectedElementIds);
+    const local = access
+      .getSceneElementsIncludingDeleted()
+      .filter(
+        (element) =>
+          !rejected.has(element.id) && (!this.known.has(element.id) || remoteIds.has(element.id)),
+      );
     this.sceneVersion = scene.sceneVersion;
     this.remember(remote);
-    const merged = reconcile(
-      access.getSceneElementsIncludingDeleted(),
-      remote,
-      access.getAppState(),
-    );
+    const merged = reconcile(local, remote, access.getAppState());
     const current = access.getAppState();
     // The shared appState (background, grid) only when the others changed it.
     const appState =

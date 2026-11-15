@@ -53,6 +53,10 @@ export interface BoardInput {
  * Typed as plain JSON here: only `features/boards/editor` knows Excalidraw's types.
  */
 export interface BoardScene {
+  /** Stored element JSON length in UTF-16 characters. */
+  readonly sceneChars: number;
+  /** Retired identities refused in this save (never reconcile them back from the editor). */
+  readonly rejectedElementIds: readonly string[];
   readonly sceneVersion: number;
   readonly elements: readonly unknown[];
   readonly appState: Readonly<Record<string, unknown>>;

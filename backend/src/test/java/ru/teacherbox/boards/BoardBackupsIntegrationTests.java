@@ -37,6 +37,93 @@ class BoardBackupsIntegrationTests {
     @Autowired
     BoardBackupService backups;
 
+    @Autowired
+    ru.teacherbox.boards.persistence.SceneRepository scenes;
+
+    @Test
+    void prunedImageIsExcludedFromPortalBackupButKeptByABoardCopy() {
+        String id = board();
+        assertThat(upload(id, "retired-image")).hasStatus(HttpStatus.NO_CONTENT);
+        String image = deleted("picture", 2).replace("\"type\":\"rectangle\"",
+                "\"type\":\"image\",\"fileId\":\"retired-image\"");
+        assertThat(save(id, image, 0)).hasStatusOk();
+        String copy = id(mvc.post().uri(backupsUri(id)).with(teacher()).exchange());
+        String key = scenes.findFile(UUID.fromString(id), "retired-image").orElseThrow().fileKey();
+        assertThat(backups.filesOutsideScenes()).doesNotContain(key);
+        clock.advance(Duration.ofDays(31));
+        // Save-time pruning happens before a new daily copy, so only the manual copy holds the image.
+        assertThat(save(id, "[]", 1)).hasStatusOk().bodyJson()
+                .extractingPath("$.sceneChars").isEqualTo(2);
+        assertThat(backups.filesOutsideScenes()).contains(key);
+        assertThat(mvc.get().uri("/api/boards/" + id + "/files/retired-image").with(teacher())).hasStatusOk();
+        assertThat(mvc.delete().uri(backupsUri(id) + "/" + copy).with(teacher()))
+                .hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(mvc.get().uri("/api/boards/" + id + "/files/retired-image").with(teacher()))
+                .hasStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void pruningOnSaveRefusesAnOfflineEditorsHigherVersionAndKeepsNewShapes() {
+        String id = board();
+        assertThat(save(id, element("gone", 1, 1), 0)).hasStatusOk();
+        assertThat(save(id, deleted("gone", 2), 1)).hasStatusOk();
+        clock.advance(Duration.ofDays(30));
+        assertThat(save(id, "[]", 2)).hasStatusOk().bodyJson()
+                .extractingPath("$.elements").asArray().hasSize(1);
+        clock.advance(Duration.ofSeconds(1));
+        String incoming = element("gone", 100, 1).replace("]", ","
+                + element("new", 1, 1).substring(1));
+        assertThat(save(id, incoming, 1)).hasStatusOk().bodyJson().satisfies(json -> {
+            assertThat(json).extractingPath("$.elements[*].id").asArray().containsExactly("new");
+            assertThat(json).extractingPath("$.rejectedElementIds").asArray().containsExactly("gone");
+        });
+        // Knowing the latest scene version must not bypass the retained deletion identity.
+        assertThat(save(id, element("gone", 101, 1), 3)).hasStatusOk().bodyJson()
+                .extractingPath("$.elements[*].id").asArray().containsExactly("new");
+    }
+
+    @Test
+    void nightlyPruningAlsoVisitsUnchangedBoardsAndRestoreCanRecoverRetiredElements() {
+        String id = board();
+        assertThat(save(id, element("a", 1, 1), 0)).hasStatusOk();
+        String copy = id(mvc.post().uri(backupsUri(id)).with(teacher()).exchange());
+        assertThat(save(id, deleted("a", 9), 1)).hasStatusOk();
+        backups.dailyCopies();
+        clock.advance(Duration.ofDays(31));
+        backups.dailyCopies();
+        assertThat(mvc.get().uri("/api/boards/" + id).with(teacher())).hasStatusOk().bodyJson()
+                .extractingPath("$.elements").asArray().isEmpty();
+        assertThat(save(id, element("b", 1, 1), 3)).hasStatusOk();
+        assertThat(mvc.post().uri(backupsUri(id) + "/" + copy + "/restore").with(teacher()))
+                .hasStatusOk();
+        assertThat(mvc.get().uri("/api/boards/" + id).with(teacher())).hasStatusOk().bodyJson()
+                .satisfies(json -> {
+                    assertThat(json).extractingPath("$.elements[0].id").isEqualTo("a");
+                    assertThat(json).extractingPath("$.elements[0].version").isEqualTo(10);
+                    assertThat(json).extractingPath("$.elements[1].id").isEqualTo("b");
+                    assertThat(json).extractingPath("$.elements[1].isDeleted").isEqualTo(true);
+                });
+        assertThat(save(id, element("a", 11, 1), 5)).hasStatusOk().bodyJson()
+                .extractingPath("$.rejectedElementIds").asArray().isEmpty();
+    }
+
+    @Test
+    void undoWithinRetentionStartsANewDeletionPeriod() {
+        String id = board();
+        assertThat(save(id, deleted("a", 1), 0)).hasStatusOk();
+        clock.advance(Duration.ofDays(29));
+        assertThat(save(id, element("a", 2, 1), 1)).hasStatusOk();
+        assertThat(save(id, deleted("a", 3), 2)).hasStatusOk();
+        clock.advance(Duration.ofDays(2));
+        backups.dailyCopies();
+        assertThat(mvc.get().uri("/api/boards/" + id).with(teacher())).hasStatusOk().bodyJson()
+                .extractingPath("$.elements").asArray().hasSize(1);
+    }
+
+    private static String deleted(String id, int version) {
+        return element(id, version, 1).replace("}]", ",\"isDeleted\":true,\"updated\":0}]");
+    }
+
     @Test
     void theTeacherCopiesChangesAndRestoresABoard() throws UnsupportedEncodingException {
         UUID student = directory.addStudent("Копия");

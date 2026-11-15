@@ -35,7 +35,13 @@ class FakeServer implements BoardServer {
     const answer = this.saveAnswers.shift();
     return answer
       ? answer()
-      : of({ sceneVersion: baseVersion + 1, elements: [...elements], appState });
+      : of({
+          sceneVersion: baseVersion + 1,
+          sceneChars: 2,
+          rejectedElementIds: [],
+          elements: [...elements],
+          appState,
+        });
   }
 
   changes(since: number): Observable<BoardScene | null> {
@@ -87,6 +93,8 @@ describe('BoardSync', () => {
   function start(elements = [anElement('a', 1)], sceneVersion = 3) {
     const sync = new BoardSync(server, {
       sceneVersion,
+      sceneChars: 2,
+      rejectedElementIds: [],
       elements,
       appState: { viewBackgroundColor: '#ffffff' },
     });
@@ -94,6 +102,41 @@ describe('BoardSync', () => {
     sync.attach(scene.access, island.modules);
     return { sync, ...scene };
   }
+
+  it('drops pruned and rejected identities but preserves new local edits', async () => {
+    const { sync, state, access } = start([anElement('gone', 1)]);
+    state.elements = [anElement('gone', 100), anElement('new', 1)];
+    sync.changed(state.elements, access.getAppState());
+    server.saveAnswers.push(() =>
+      of({
+        sceneVersion: 4,
+        elements: [anElement('new', 1)],
+        appState: {},
+        sceneChars: 4_000_000,
+        rejectedElementIds: ['gone'],
+      }),
+    );
+    await sync.flush();
+    expect(state.elements.map((element) => element.id)).toEqual(['new']);
+    expect(sync.sceneChars()).toBe(4_000_000);
+    sync.stop();
+  });
+
+  it('removes known tombstones on a poll after compaction', async () => {
+    const { sync, state } = start([anElement('gone', 2, { isDeleted: true })]);
+    server.changesAnswer = () =>
+      of({
+        sceneVersion: 4,
+        elements: [],
+        appState: {},
+        sceneChars: 2,
+        rejectedElementIds: [],
+      });
+    await sync.poll();
+    expect(state.elements).toEqual([]);
+    expect(sync.sceneChars()).toBe(2);
+    sync.stop();
+  });
 
   it('saves only the changed elements after a pause and applies the answer', async () => {
     const { sync, state, access } = start([anElement('a', 1), anElement('b', 1)]);
@@ -125,6 +168,8 @@ describe('BoardSync', () => {
     server.saveAnswers.push(() =>
       of({
         sceneVersion: 5,
+        sceneChars: 2,
+        rejectedElementIds: [],
         elements: [anElement('a', 1), anElement('theirs', 1)],
         appState: { viewBackgroundColor: '#000000' },
       }),
@@ -163,7 +208,13 @@ describe('BoardSync', () => {
 
     state.elements = [anElement('a', 3)];
     sync.changed(state.elements, access.getAppState());
-    answer.next({ sceneVersion: 4, elements: [anElement('a', 2)], appState: {} });
+    answer.next({
+      sceneVersion: 4,
+      sceneChars: 2,
+      rejectedElementIds: [],
+      elements: [anElement('a', 2)],
+      appState: {},
+    });
     answer.complete();
     await vi.advanceTimersByTimeAsync(0);
     expect(sync.status()).toBe('saving');
@@ -193,7 +244,13 @@ describe('BoardSync', () => {
   it('polls for the others’ changes while visible and idle', async () => {
     const { sync, state, access } = start();
     server.changesAnswer = () =>
-      of({ sceneVersion: 4, elements: [anElement('a', 1), anElement('b', 2)], appState: {} });
+      of({
+        sceneVersion: 4,
+        sceneChars: 2,
+        rejectedElementIds: [],
+        elements: [anElement('a', 1), anElement('b', 2)],
+        appState: {},
+      });
     await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS);
 
     expect(server.polls).toEqual([3]);
@@ -248,7 +305,13 @@ describe('BoardSync', () => {
 
   it('fetches the images of the opened drawing while the editor still loads it', async () => {
     const image = anElement('img', 1, { type: 'image', fileId: 'f1' });
-    const sync = new BoardSync(server, { sceneVersion: 3, elements: [image], appState: {} });
+    const sync = new BoardSync(server, {
+      sceneVersion: 3,
+      sceneChars: 2,
+      rejectedElementIds: [],
+      elements: [image],
+      appState: {},
+    });
     const { access, state } = fakeScene([]);
     sync.attach(access, island.modules);
     await vi.waitFor(() => {
@@ -292,6 +355,8 @@ describe('BoardSync', () => {
   it('does nothing before the editor is attached', async () => {
     const sync = new BoardSync(server, {
       sceneVersion: 0,
+      sceneChars: 2,
+      rejectedElementIds: [],
       elements: [],
       appState: {},
     });

@@ -16,6 +16,8 @@ export const en: Translation<typeof ru> = {
   group: (name: string) => `group “${name}”`,
   notOpened: 'not shared with anyone',
   editor: {
+    nearLimit:
+      'This board is nearly full. Make a backup from the board menu and create a new board for your next lessons.',
     what: 'the board',
     board: 'Board',
     boards: 'Boards',

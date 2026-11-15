@@ -55,6 +55,8 @@ export function aBoardContent(overrides: Partial<BoardContent> = {}): BoardConte
     title: 'Алгебра',
     url: null,
     sceneVersion: 3,
+    sceneChars: 2,
+    rejectedElementIds: [],
     elements: [{ id: 'r1', type: 'rectangle', version: 2, versionNonce: 7, isDeleted: false }],
     appState: { viewBackgroundColor: '#ffffff' },
     ...overrides,

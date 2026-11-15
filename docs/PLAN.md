@@ -34,14 +34,14 @@ a new one if 393 changes how the database is opened or closed; 395 may amend ADR
 
 ### 392. Board scene tombstones
 
-- [ ] 392.1 **B** *complex* — prune tombstones of deleted elements in `board_scenes.elements`:
+- [x] 392.1 **B** *complex* — prune tombstones of deleted elements in `board_scenes.elements`:
   drop a tombstone older than a retention (e.g. 30 days, a constant first) when the scene is saved
   and in the nightly `BoardBackupJob`. Entry points: `boards/domain/SceneElements` (`merge`,
   `restored`), `boards/application/SceneService`, `BoardBackupService.filesOutsideScenes` (images
   referenced only by pruned tombstones become unreferenced). Risk to cover by tests: an editor
   offline longer than the retention must not bring a deleted element back on its next save;
   restore of a copy still deletes current elements. Update `docs/modules/boards.md`.
-- [ ] 392.2 **F** *simple* — warn the teacher when a scene nears the 5 M chars limit
+- [x] 392.2 **F** *simple* — warn the teacher when a scene nears the 5 M chars limit
   (`boards.scene-too-large`): the save answer carries the size, the board shows a hint to make a
   copy and start a new board. `m3-expressive` skill; help article and `docs/wiki/` page in both
   languages.

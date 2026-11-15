@@ -10,6 +10,13 @@ sort order.
 - **Excalidraw boards** run in the portal, support live collaboration and save automatically.
 - **External boards**, such as [Holst](https://app.holst.so), are links to another service and open in a new tab.
 
+## Board size
+
+When a board is nearly full, a hint appears for the teacher. Open the board menu → “Backups” →
+“Make a backup”, then create a new board in Materials for your next lessons. Making a backup does
+not reduce the original board’s size. Deleted shapes are cleared after 30 days; after that, recover
+them from a board backup rather than undoing the old deletion.
+
 ## Create and share a board
 
 1. Choose “Create” → “Board”, or “Materials” → “New board” on a phone.

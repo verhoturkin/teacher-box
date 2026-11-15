@@ -14,6 +14,7 @@ import ru.teacherbox.boards.domain.BackupKind;
 import ru.teacherbox.boards.domain.BoardBackup;
 import ru.teacherbox.boards.domain.BoardFile;
 import ru.teacherbox.boards.domain.BoardScene;
+import ru.teacherbox.boards.domain.DeletedElement;
 
 /** Scenes of Excalidraw boards, their copies and images. */
 @Repository
@@ -33,6 +34,32 @@ public class SceneRepository {
 
     public SceneRepository(JdbcClient jdbc) {
         this.jdbc = jdbc;
+    }
+
+    public List<UUID> findSceneIds() {
+        return jdbc.sql("select board_id from boards.board_scenes order by board_id").query(UUID.class).list();
+    }
+
+    public List<DeletedElement> deletions(UUID boardId) {
+        return jdbc.sql("""
+                select element_id, element_version, deleted_at, retired
+                from boards.board_deleted_elements where board_id = :id
+                """).param("id", boardId).query(DeletedElement.class).list();
+    }
+
+    public void deletion(UUID boardId, DeletedElement deletion) {
+        jdbc.sql("""
+                merge into boards.board_deleted_elements
+                (board_id, element_id, element_version, deleted_at, retired)
+                key (board_id, element_id) values (:board, :id, :version, :at, :retired)
+                """).param("board", boardId).param("id", deletion.elementId())
+                .param("version", deletion.elementVersion()).param("at", deletion.deletedAt())
+                .param("retired", deletion.retired()).update();
+    }
+
+    public void forgetDeletion(UUID boardId, String elementId) {
+        jdbc.sql("delete from boards.board_deleted_elements where board_id = :board and element_id = :id")
+                .param("board", boardId).param("id", elementId).update();
     }
 
     public void insert(BoardScene scene) {

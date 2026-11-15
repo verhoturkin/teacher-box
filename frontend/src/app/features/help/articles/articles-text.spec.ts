@@ -33,6 +33,24 @@ Short requests finish without a loading indicator. After 200 ms, a rotating shap
 
 `;
 
+/** Reviewed board capacity guidance from stage 392; keep the migration fixture unchanged. */
+const BOARD_SIZE_RU = `## Размер доски
+
+Когда доска почти заполнена, учитель видит подсказку. Откройте меню доски → «Резервные копии» →
+«Сделать копию», затем создайте новую доску в «Материалах» для следующих занятий. Копия не уменьшает
+размер исходной доски. Удалённые фигуры очищаются через 30 дней; вернуть их после этого можно из
+копии доски, но не отменой старого удаления.
+
+`;
+const BOARD_SIZE_EN = `## Board size
+
+When a board is nearly full, a hint appears for the teacher. Open the board menu → “Backups” →
+“Make a backup”, then create a new board in Materials for your next lessons. Making a backup does
+not reduce the original board’s size. Deleted shapes are cleared after 30 days; after that, recover
+them from a board backup rather than undoing the old deletion.
+
+`;
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -43,7 +61,7 @@ const EDITIONS: readonly (readonly [string, Texts])[] = [
 ];
 
 describe('help articles after the split into one file per topic', () => {
-  it.each(EDITIONS)('%s preserves the baseline with reviewed loading guidance', (name, texts) => {
+  it.each(EDITIONS)('%s preserves the baseline with reviewed guidance', (name, texts) => {
     const original = ORIGINAL[name];
     expect(isRecord(original)).toBe(true);
     expect(Object.keys(texts)).toEqual(Object.keys(isRecord(original) ? original : {}));
@@ -54,10 +72,22 @@ describe('help articles after the split into one file per topic', () => {
       throw new Error(`Missing original article ${name}/${topic}`);
     }
     const guidance = name.endsWith('.ru') ? LOADING_RU : LOADING_EN;
-    expect(texts).toEqual({
+    const expected: Record<string, unknown> = {
       ...original,
       [topic]: { ...article, body: article['body'].replace('## ', `${guidance}## `) },
-    });
+    };
+    if (name.startsWith('teacher.')) {
+      const boards = original['boards'];
+      if (!isRecord(boards) || typeof boards['body'] !== 'string') {
+        throw new Error(`Missing original article ${name}/boards`);
+      }
+      const boardGuidance = name.endsWith('.ru') ? BOARD_SIZE_RU : BOARD_SIZE_EN;
+      expected['boards'] = {
+        ...boards,
+        body: boards['body'].replace('## ', `${boardGuidance}## `),
+      };
+    }
+    expect(texts).toEqual(expected);
   });
 
   it('has no source line longer than 200 characters', () => {

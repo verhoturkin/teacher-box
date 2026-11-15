@@ -21,9 +21,21 @@ groups. Depends on: `shared`, `identity::api`. Schema `boards`. ADR: [0028](../a
   directly or through a current group (always edit); anyone else — 404. `ADMIN` has no access (`/api/**`).
 - Scene save: `PUT /api/boards/{id}/scene` merges per element id (`SceneElements.merge`: a higher `version` wins,
   same version — the lower `versionNonce`, like Excalidraw's `reconcileElements`); deleted elements stay as
-  tombstones; only `viewBackgroundColor`, `gridSize`, `gridStep`, `gridModeEnabled` of `appState` are kept. The
+  tombstones for 30 days after the server first observes the deletion
+  (client timestamps are ignored).
+  `SceneRetention` prunes older tombstones before merging a save and during every nightly run,
+  including unchanged boards. Legacy tombstones get a full retention period on first observation.
+  `board_deleted_elements` retains compact identities and versions until board deletion, so even a
+  higher-version edit from a long-offline client cannot resurrect a retired element. Undo before
+  retirement clears its deletion record; a later deletion starts a new period. Explicit restore
+  can revive a retired identity with a version above its last deletion (ADR-0064).
+  Only `viewBackgroundColor`, `gridSize`, `gridStep`, `gridModeEnabled` of `appState` are kept. The
   scene row is locked (`for update`), `scene_version` grows only when something changed. Elements ≤ 5 M chars
-  (`boards.scene-too-large`).
+  (`boards.scene-too-large`). Open, save and poll responses carry `sceneChars` (the stored element
+  JSON length in UTF-16 characters); save also returns `rejectedElementIds`. The editor removes
+  rejected identities and known elements absent after compaction before reconciliation, preserving
+  new local edits. At 4 M chars the teacher sees a persistent hint to make a backup and start a new
+  board. This threshold and inline warning are product decisions, not M3 requirements.
 - Polling: `GET /api/boards/{id}/scene?since=<version>` → 204 while unchanged. An external board has no scene →
   409 `boards.no-scene`.
 - Live channel (ADR-0029): `POST /api/boards/{id}/live` → `{ticket}` (after `requireAccess`, Excalidraw boards
@@ -69,7 +81,8 @@ groups. Depends on: `shared`, `identity::api`. Schema `boards`. ADR: [0028](../a
 
 ## Contract, data, REST
 
-No `api` package. Tables `boards`, `board_members`, `board_scenes`, `board_files`, `board_previews`, `board_backups`, `board_libraries` (the
+No `api` package. Tables `boards`, `board_members`, `board_scenes`, `board_files`, `board_previews`,
+`board_backups`, `board_deleted_elements`, `board_libraries` (the
 Excalidraw library of each user, `user_id` → items JSON, up to 2 000 000 characters; `boards.library-invalid`,
 `boards.library-too-large`).
 

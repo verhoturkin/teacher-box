@@ -840,6 +840,9 @@ Gallery: [`/gallery/states`](../frontend/src/app/features/gallery/states/).
 - **Empty state** — only `tb-empty-state`: icon, what is empty, what will appear, a first-action
   button (omitted if the same action is the FAB or a section button); `compact` for home widgets and
   the calendar.
+- **Board capacity hint** (*ours*): a persistent `p-message` with `severity="warn"` below the
+  editor header at 80% of the scene limit. It occupies layout space, never covers the canvas or
+  takes focus, and uses the existing message tokens (§2).
 - **Snackbar** (`core/snackbar`): bottom centre, inverse-surface, above the bottom bar and FAB on a
   phone; never takes focus; success / info `role="status"`, error `role="alert"`; 5 s, error 8 s,
   paused on hover / focus; «Закрыть» 40×40; an identical message is not repeated while visible.

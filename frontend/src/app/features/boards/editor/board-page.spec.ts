@@ -78,6 +78,23 @@ describe('BoardPage', () => {
     backend.verify();
   });
 
+  it.each([3_999_999, 4_000_000])(
+    'warns the teacher at the size threshold: %s',
+    async (sceneChars) => {
+      render();
+      await open(aBoardContent({ sceneChars }));
+      fixture.detectChanges();
+      expect(host.textContent.includes('Доска почти заполнена')).toBe(sceneChars >= 4_000_000);
+    },
+  );
+
+  it('does not ask a student to make a backup', async () => {
+    render('cabinet');
+    await open(aBoardContent({ sceneChars: 4_900_000 }));
+    fixture.detectChanges();
+    expect(host.textContent).not.toContain('Доска почти заполнена');
+  });
+
   it('opens the teacher’s board full screen with its way back and its menu', async () => {
     render();
     await open();
