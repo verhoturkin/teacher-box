@@ -68,9 +68,12 @@ Source: backlog review of 2026-11-15. ADRs: a new one for 400.1 (CSS layers repl
 
 ### 401. Layout nits of the design audit
 
-- [ ] 401.1 **F** *simple* — DA-081 (`rg --no-ignore -n "DA-081" docs/archive/audit`): recheck
+- [x] 401.1 **F** *simple* — DA-081 (`rg --no-ignore -n "DA-081" docs/archive/audit`): recheck
   the 15 items against the current code, fix the ones still there (each 1–3 lines), note in this
-  substep which were already gone. `m3-expressive` skill.
+  substep which were already gone. `m3-expressive` skill. Done: fixed the `.tb-page-title` margin
+  reset (base margin is now 0); the setup wizard's own 44rem width stays (no shared token). The
+  other 13 were already gone after the redesign (files rebuilt or moved, Ctrl+V/Cmd+V text, copy
+  row alignment, empty-cell separator, button halves, `nav` label, duplicate `aria-label`).
 - [ ] 401.2 **F** *complex* — DA-082: `.tb-button-group` styles move out of
   `.tb-lesson-actions--stacked` into the class itself (`styles.scss`); decision pairs («Проведено |
   Пропуск», «Отклонить | Согласовать», «Принять | Вернуть на доработку») become connected button
