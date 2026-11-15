@@ -40,7 +40,7 @@ Source: backlog review of 2026-11-15. ADRs: a new one for 400.1 (CSS layers repl
   and `WhomFilter` (`homework/teacher/list/whom-filter.ts`) to `shared/` (candidates from 387.5),
   with their specs; update imports in `assignment-editor-page.ts`, `assignments-page.ts`; keep
   `frontend/scripts/import-cycles.mjs` and the feature directions (ADR-0058) green.
-- [ ] 398.2 **B** *simple* — `ArchitectureTests.BUSINESS_MODULES` derives the module list like
+- [x] 398.2 **B** *simple* — `ArchitectureTests.BUSINESS_MODULES` derives the module list like
   `SchemaIsolationTests.modulesWithMigrations()` (or from `ApplicationModules`), so `textbooks`
   and any future module are covered; assert the list contains `textbooks`.
 

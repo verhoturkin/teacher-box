@@ -18,12 +18,18 @@ import org.springframework.web.bind.annotation.RestController;
 class ArchitectureTests {
 
     private static final String ROOT = "ru.teacherbox";
-    private static final List<String> BUSINESS_MODULES =
-            List.of("identity", "billing", "homework", "notifications", "ai", "schedule", "meetings", "boards");
+    private static final List<String> BUSINESS_MODULES = SchemaIsolationTests.MODULES.stream()
+            .filter(module -> !module.equals("platform"))
+            .toList();
 
     private static final JavaClasses CLASSES = new ClassFileImporter()
             .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
             .importPackages(ROOT);
+
+    @Test
+    void businessModulesAreDerivedFromMigrations() {
+        assertThat(BUSINESS_MODULES).contains("identity", "textbooks").doesNotContain("platform", "shared");
+    }
 
     @Test
     void domainIsFrameworkFree() {
