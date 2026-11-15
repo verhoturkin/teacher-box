@@ -5,7 +5,8 @@ portal settings, admin sections and diagnostics. Depends on: `shared`; knows no 
 (it collects SPI beans). Schema `platform`. ADRs: [0002](../adr/0002-embedded-database.md),
 [0004](../adr/0004-delivery-variants.md), [0010](../adr/0010-administrator-and-diagnostics.md),
 [0014](../adr/0014-portal-settings-reset-and-restore.md), [0016](../adr/0016-admin-settings.md),
-[0056](../adr/0056-teacher-settings-in-the-portal.md). Operations
+[0056](../adr/0056-teacher-settings-in-the-portal.md),
+[0065](../adr/0065-h2-close-compaction.md). Operations
 guide for people — [`docs/operations.md`](../operations.md) (Russian).
 
 **Outline** — read only the section you need (`grep -n '^##'`, then Read with offset/limit):
@@ -25,6 +26,12 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
 - `core/` — auto-configuration, `Clock` (UTC), `teacherbox.*` platform properties, `shared.persistence.MigrationConnection`
   (module migrations run on one connection outside the pool, open until shutdown: H2 compiles `check (x in (…))`
   against the session that altered the table, and a pooled session is closed by the pool sooner or later).
+  The file database uses `MAX_COMPACT_TIME=5000`: H2 gets a 5-second compaction budget when the
+  last connection closes normally, including the migration connection. `DB_CLOSE_ON_EXIT=FALSE`
+  keeps close ordering with Spring; no shutdown SQL or nightly database shutdown is issued.
+  The budget is not a hard deadline for the whole close operation and does not bound file growth
+  while the database is open. Measurements and resource limits are recorded in
+  [H2 file size](../measurements/h2-file-size.md).
   `ZonedJobs` (a `SchedulingConfigurer`, ADR-0056) schedules every SPI bean `shared.time.ZonedJob`
   (nightly housekeeping of `identity`, `notifications`, `billing`, events; board copies, series
   extension, backups) by its cron property in the instance time zone; both are read when the next

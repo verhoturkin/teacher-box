@@ -24,9 +24,9 @@ curl -fsSL https://repo.maven.apache.org/maven2/com/h2database/h2/2.4.240/h2-2.4
   -o /tmp/h2-measure/h2.jar
 javac -d /tmp/h2-measure/classes scripts/H2FileSize.java
 java -Xmx768m -XX:+ExitOnOutOfMemoryError -cp /tmp/h2-measure/classes:/tmp/h2-measure/h2.jar \
-  H2FileSize write /tmp/h2-measure/baseline default
+  H2FileSize write /tmp/h2-measure/baseline 200
 java -Xmx768m -XX:+ExitOnOutOfMemoryError -cp /tmp/h2-measure/classes:/tmp/h2-measure/h2.jar \
-  H2FileSize reopen /tmp/h2-measure/baseline default
+  H2FileSize reopen /tmp/h2-measure/baseline 200
 java -Xmx768m -XX:+ExitOnOutOfMemoryError -cp /tmp/h2-measure/classes:/tmp/h2-measure/h2.jar \
   H2FileSize write /tmp/h2-measure/longer 5000
 java -Xmx768m -XX:+ExitOnOutOfMemoryError -cp /tmp/h2-measure/classes:/tmp/h2-measure/h2.jar \
@@ -49,10 +49,11 @@ that `/sys/fs/cgroup/memory.max` inside the container is **1073741824**. An acce
 alone is not proof of an enforced limit. A production validation must also measure the complete
 portal startup and shutdown with its usual data under that limit.
 
-## Baseline result (2026-11-15)
+## Results (2026-11-15)
 
-Linux x86-64, Temurin 25.0.5, H2 2.4.240, `-Xmx768m`, the default async JDBC URL from
-`application.yaml`. A new directory was used for every run. Sizes below are logical file bytes,
+Linux x86-64, Temurin 25.0.5, H2 2.4.240, `-Xmx768m`, the async JDBC URL from `application.yaml`.
+The baseline used the URL before 393.2 (no explicit compaction time); the comparison added
+`MAX_COMPACT_TIME=5000`. A new directory was used for every run. Sizes below are logical file bytes,
 not allocated filesystem blocks.
 
 | Metric | Default (`MAX_COMPACT_TIME=200`) |
@@ -72,7 +73,39 @@ Both final-scene checks passed. A preliminary Java 21 source-launch run also pre
 and shrank roughly 10 GB to 14 MB, but is not the reference above. A preliminary Docker run with
 `MaxRAMPercentage=75` was **not memory constrained**: Docker recorded a 1 GiB limit, while
 `memory.max` inside was 8 GiB and the JVM used that larger limit. It is excluded from the table.
-The reference instead fixes the heap explicitly. Its observed writer RSS fits below 1 GiB with
+The reference runs instead fix the heap explicitly. Its observed writer RSS fits below 1 GiB with
 little headroom; this is not evidence that the complete Spring application fits under that limit.
 Full portal startup and shutdown under an enforced 1 GiB limit remain unverified in this
 environment.
+
+| Metric | `MAX_COMPACT_TIME=5000` |
+|---|---:|
+| Initial `db/` | 24,576 bytes |
+| After 10,000 saves and checkpoint, before close | 10,566,430,720 bytes |
+| After normal close | 1,093,632 bytes |
+| After reopen in a new JVM | 1,093,632 bytes |
+| After that JVM closes | 1,101,824 bytes |
+| Saves including final checkpoint | 47,207 ms |
+| Writer close | 368 ms |
+| Database reopen | 565 ms |
+| Writer peak RSS | 1,038,948 KiB |
+| Reader peak RSS | 87,708 KiB |
+
+Both final-scene checks passed with 5000 ms too. The writer RSS is only about 9 MiB below 1 GiB;
+this comparison does not establish a safe memory margin for the portal. The two runs are single
+observations, not a statistical performance comparison. H2 startup times exclude JVM startup,
+Spring, migrations and application warmup.
+
+## Decision
+
+Use `MAX_COMPACT_TIME=5000` for normal last-connection close, as recorded in
+[ADR-0065](../adr/0065-h2-close-compaction.md). It reclaimed more of the old CLOB file on the first
+close in this workload, without needing a second restart. No unbounded `SHUTDOWN COMPACT`,
+shutdown hook or nightly job is introduced. The five seconds bound the compaction budget, not
+all shutdown work; the existing 30-second Compose grace period still needs to cover all phases.
+
+H2 2.4.240's `org.h2.engine.DbSettings.maxCompactTime` defaults to 200 ms, and
+`org.h2.mvstore.db.Store.close(int)` passes this budget to MVStore. The versioned source can be
+checked in the `h2-2.4.240-sources.jar` from Maven Central. Normal compaction cannot remove live
+or retained LOB versions during the rapid write burst. This experiment demonstrates transient
+file growth as well as reclamation; increasing close-time compaction does not cap runtime disk use.

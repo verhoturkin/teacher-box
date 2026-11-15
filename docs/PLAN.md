@@ -53,11 +53,15 @@ a new one if 393 changes how the database is opened or closed; 395 may amend ADR
   substep. JDK 25 / H2 2.4.240, 768 MiB heap: `db/` 24,576 bytes initially,
   10,671,181,824 after saves, 12,906,496 after close and restart; reopen 658 ms, writer peak
   RSS 994,840 KiB. Reproducer and limits: [measurement](measurements/h2-file-size.md).
-- [ ] 393.2 **B** *complex* — depending on 393.1: compact on graceful shutdown (`SHUTDOWN
+- [x] 393.2 **B** *complex* — depending on 393.1: compact on graceful shutdown (`SHUTDOWN
   COMPACT` or `MAX_COMPACT_TIME` in the JDBC URL of `application.yaml`) and/or a nightly compaction
   job (`ZonedJob`, off by `-`, setting via skill `new-setting`). Check the start time and memory
   under the 1 GB container limit. ADR if the open/close behaviour changes; update
   `docs/modules/platform.md`.
+  Selected `MAX_COMPACT_TIME=5000`, normal last-connection close (ADR-0065), no nightly job.
+  Measured 10,566,430,720 → 1,093,632 bytes after close/restart; close 368 ms, reopen 565 ms;
+  peak writer RSS 1,038,948 KiB with a 768 MiB heap. *Full portal startup/shutdown under an
+  enforced 1 GiB container limit could not be validated here; follow-up is in Backlog.*
 
 ### 394. Disk usage of data and backups
 
@@ -91,6 +95,10 @@ a new one if 393 changes how the database is opened or closed; 395 may amend ADR
 
 
 ## Backlog
+
+- Follow-up to 393.2: validate full portal startup/shutdown with a representative database under
+  an enforced 1 GiB container limit. This cloud Docker accepted `--memory=1g` but exposed an
+  8 GiB cgroup; the standalone H2 measurements do not establish a safe portal memory margin.
 
 - Candidates for `shared/` from 387.5: `EditorAutosave`, `WhomFilter`.
 - `ArchitectureTests.BUSINESS_MODULES` lacks `textbooks`: derive it like `SchemaIsolationTests`.
