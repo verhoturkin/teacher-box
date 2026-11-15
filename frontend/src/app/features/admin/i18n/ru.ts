@@ -48,6 +48,13 @@ export const ru = {
     lowDisk: 'Мало места',
     database: 'База данных',
     logs: (size: string) => `журналы: ${size}`,
+    files: 'Файлы',
+    backups: 'Копии на сервере',
+    restores: 'Восстановления',
+    restoresAbout: 'архивы и данные до восстановления',
+    noRoom: 'Меньше последней копии',
+    noRoomHint:
+      'Следующая копия может не поместиться на диск. Освободите место или удалите старые копии.',
     summary: (version: string, uptime: string) => `Версия ${version} · работает ${uptime}`,
     services: 'Службы',
     queue: 'Очередь событий',

@@ -6,7 +6,10 @@ sees IDs and technical data only (AGENTS.md §4.3).
 
 - **Status** (`status/status-page.ts`): a feed of tiles in a fixed order — services, event queue,
   diagnostics | system, resources, last backup, portal address; two columns from expanded. The queue
-  tile counts pending events and failed deliveries and links to the journal.
+  tile counts pending events and failed deliveries and links to the journal. Resources: memory,
+  free disk space, sizes of `db/` (with logs), `files/`, `backups/` and `restore/`; the disk row
+  turns negative below 10 % free or below the size of the last backup («Меньше последней копии»,
+  with a hint to free space).
 - **Journal** (`logs/journal-page.ts`): logs / events / errors as chips (`?view=`). Logs and errors
   are list-detail (with nothing open — the temporary log levels, `logger-levels-panel.ts`); events
   (`events/events-panel.ts`) is a wide page with resubmit of stuck events.

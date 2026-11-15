@@ -97,6 +97,10 @@ describe('StatusPage', () => {
     expect(text).toContain('из 512 МБ 100 МБ');
     expect(text).toContain('из 100 ГБ 20 ГБ');
     expect(text).toContain('журналы: 1 МБ 5 МБ');
+    expect(text).toContain('Файлы 300 МБ');
+    expect(text).toContain('Копии на сервере 2 ГБ');
+    expect(text).toContain('Восстановления архивы и данные до восстановления 0 Б');
+    expect(text).not.toContain('Меньше последней копии');
     expect(text).toContain('Данные: /data · часовой пояс Europe/Moscow');
     expect(text).toContain('Последняя копия 26.09.2026');
     expect(text).toContain('Всё обработано');
@@ -127,6 +131,16 @@ describe('StatusPage', () => {
 
     fixture.componentInstance.load();
     await answer(systemStatus({ diskTotal: 0 }));
+  });
+
+  it('warns when the free space is below the size of the last backup', async () => {
+    await render(systemStatus({ diskFree: 1024 * 1024 }), [BACKUP]);
+
+    const text = readableText(hostElement(fixture));
+    expect(text).toContain('Меньше последней копии');
+    expect(text).not.toContain('Мало места');
+    expect(text).toContain('Следующая копия может не поместиться на диск');
+    expect(hostElement(fixture).querySelector('[role="alert"]')).not.toBeNull();
   });
 
   it('counts the events and the deliveries that wait and leads to the journal', async () => {

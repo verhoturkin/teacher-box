@@ -27,7 +27,10 @@ public class SystemStatus {
      * @param uptime     seconds since start
      * @param heapUsed   bytes
      * @param diskFree   bytes free on the data volume
-     * @param dataSize   bytes of the database files
+     * @param dataSize   bytes of the database files ({@code db/})
+     * @param filesSize  bytes of the uploaded files ({@code files/})
+     * @param backupsSize bytes of the backups on the server ({@code backups/})
+     * @param restoreSize bytes left by restores ({@code restore/}: archives and data before them)
      * @param logsSize   bytes of the log files
      * @param health     overall status, e.g. {@code UP}
      * @param components status of health components, e.g. {@code db → UP}
@@ -45,6 +48,9 @@ public class SystemStatus {
             long diskFree,
             long diskTotal,
             long dataSize,
+            long filesSize,
+            long backupsSize,
+            long restoreSize,
             long logsSize,
             String health,
             Map<String, String> components) {
@@ -97,6 +103,9 @@ public class SystemStatus {
                 disk[0],
                 disk[1],
                 size(dataDir.resolve("db")),
+                size(dataDir.resolve("files")),
+                size(dataDir.resolve("backups")),
+                size(dataDir.resolve("restore")),
                 logs.totalSize(),
                 overall,
                 components);
