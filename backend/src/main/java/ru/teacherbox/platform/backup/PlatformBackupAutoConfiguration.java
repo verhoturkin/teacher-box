@@ -63,6 +63,12 @@ public class PlatformBackupAutoConfiguration {
     }
 
     @Bean
+    RestoreLeftovers restoreLeftovers(PlatformProperties platform, Environment environment, Clock clock) {
+        return new RestoreLeftovers(platform.dataDir(), new LiveProperties<>(environment, BackupProperties.class),
+                clock);
+    }
+
+    @Bean
     @ConditionalOnMissingBean
     Restarter restarter(ConfigurableApplicationContext context) {
         return new Restarter(() -> SpringApplication.exit(context, () -> Restarter.EXIT_CODE), System::exit,

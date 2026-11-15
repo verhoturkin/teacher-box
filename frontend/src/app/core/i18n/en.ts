@@ -218,6 +218,8 @@ export const en: Translation<typeof ru> = {
       'backup.newer-version':
         'The backup was made by a newer version of the portal. Update the portal first',
       'backup.exists': 'This backup is already on the server',
+      'backup.no-space':
+        'The backup was not created: there is less free disk space than the last backup takes up. Free up some space or delete old backups',
       'backup.google-not-connected': 'Google Drive is not connected',
       'backup.google-client-missing': 'Enter the Client ID and the Client secret first',
       'backup.google-origin-invalid': 'The portal address could not be determined',

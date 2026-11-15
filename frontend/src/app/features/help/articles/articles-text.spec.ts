@@ -103,6 +103,19 @@ const BACKUPS: Readonly<Record<string, readonly (readonly [string, string])[]>> 
   ],
 };
 
+const DISK_USAGE_RU = [
+  'журнал и настройки без паролей и личных данных.',
+  ' В «Ресурсах» видно, сколько занимают база данных, файлы, копии на сервере и восстановления.' +
+    ' Метка «Меньше последней копии» значит, что следующая копия может не поместиться:' +
+    ' освободите место или удалите старые копии.',
+] as const;
+const DISK_USAGE_EN = [
+  'redacted settings and system information.',
+  ' “Resources” shows how much space the database, files, backups on the server and restores' +
+    ' take up. “Less than the last backup” means the next backup may not fit: free up some space' +
+    ' or delete old backups.',
+] as const;
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -124,10 +137,13 @@ describe('help articles after the split into one file per topic', () => {
       throw new Error(`Missing original article ${name}/${topic}`);
     }
     const guidance = name.endsWith('.ru') ? LOADING_RU : LOADING_EN;
-    const expected: Record<string, unknown> = {
-      ...original,
-      [topic]: { ...article, body: article['body'].replace('## ', `${guidance}## `) },
-    };
+    let body = article['body'].replace('## ', `${guidance}## `);
+    if (name.startsWith('admin.')) {
+      const [anchor, disk] = name.endsWith('.ru') ? DISK_USAGE_RU : DISK_USAGE_EN;
+      expect(body).toContain(anchor);
+      body = body.replace(anchor, anchor + disk);
+    }
+    const expected: Record<string, unknown> = { ...original, [topic]: { ...article, body } };
     if (name.startsWith('teacher.')) {
       const boards = original['boards'];
       if (!isRecord(boards) || typeof boards['body'] !== 'string') {

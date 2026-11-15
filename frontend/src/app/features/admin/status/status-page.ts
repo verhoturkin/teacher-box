@@ -196,11 +196,13 @@ export const ARCHIVE_NAME = 'teacher-box-diagnostics.zip';
                       <div class="tb-list__text">
                         <span class="tb-list__title">{{ t.disk }}</span>
                         <span class="tb-list__supporting">{{ t.of(size(status.diskTotal)) }}</span>
-                        @if (lowDisk()) {
+                        @if (noRoom()) {
+                          <p-tag severity="danger" icon="tb-i tb-i-warning" [value]="t.noRoom" />
+                        } @else if (lowDisk()) {
                           <p-tag severity="danger" icon="tb-i tb-i-warning" [value]="t.lowDisk" />
                         }
                       </div>
-                      <div class="tb-list__trail" [class.tb-negative]="lowDisk()">
+                      <div class="tb-list__trail" [class.tb-negative]="lowDisk() || noRoom()">
                         {{ size(status.diskFree) }}
                       </div>
                     </li>
@@ -211,7 +213,29 @@ export const ARCHIVE_NAME = 'teacher-box-diagnostics.zip';
                       </div>
                       <div class="tb-list__trail">{{ size(status.dataSize) }}</div>
                     </li>
+                    <li>
+                      <div class="tb-list__text">
+                        <span class="tb-list__title">{{ t.files }}</span>
+                      </div>
+                      <div class="tb-list__trail">{{ size(status.filesSize) }}</div>
+                    </li>
+                    <li>
+                      <div class="tb-list__text">
+                        <span class="tb-list__title">{{ t.backups }}</span>
+                      </div>
+                      <div class="tb-list__trail">{{ size(status.backupsSize) }}</div>
+                    </li>
+                    <li>
+                      <div class="tb-list__text">
+                        <span class="tb-list__title">{{ t.restores }}</span>
+                        <span class="tb-list__supporting">{{ t.restoresAbout }}</span>
+                      </div>
+                      <div class="tb-list__trail">{{ size(status.restoreSize) }}</div>
+                    </li>
                   </ul>
+                  @if (noRoom()) {
+                    <p class="tb-feed__data tb-negative" role="alert">{{ t.noRoomHint }}</p>
+                  }
                   <p class="tb-muted tb-feed__data">
                     {{ t.data(status.dataDir, status.timeZone) }}
                   </p>
@@ -312,6 +336,13 @@ export class StatusPage implements OnInit {
   protected readonly lowDisk = computed(() => {
     const status = this.status();
     return status !== null && status.diskTotal > 0 && status.diskFree / status.diskTotal < 0.1;
+  });
+
+  /** Free space below the size of the last backup: the next one may not fit. */
+  protected readonly noRoom = computed(() => {
+    const status = this.status();
+    const backup = this.lastBackup();
+    return status !== null && backup !== null && status.diskFree < backup.size;
   });
 
   ngOnInit(): void {

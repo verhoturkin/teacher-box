@@ -49,6 +49,13 @@ export const en: Translation<typeof ru> = {
     lowDisk: 'Low disk space',
     database: 'Database',
     logs: (size: string) => `logs: ${size}`,
+    files: 'Files',
+    backups: 'Backups on the server',
+    restores: 'Restores',
+    restoresAbout: 'archives and the data from before each restore',
+    noRoom: 'Less than the last backup',
+    noRoomHint:
+      'The next backup may not fit on the disk. Free up some space or delete old backups.',
     summary: (version: string, uptime: string) => `Version ${version} · uptime ${uptime}`,
     services: 'Services',
     queue: 'Event queue',
