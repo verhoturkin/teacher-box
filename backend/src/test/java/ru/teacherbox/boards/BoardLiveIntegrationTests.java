@@ -226,6 +226,32 @@ class BoardLiveIntegrationTests {
     }
 
     /** An editor on the other end of the channel: what it got and how it was closed. */
+    @Test
+    void prunedElementsOfALongAwayEditorAreNotRelayed() throws Exception {
+        UUID student = directory.addStudent("Ученица");
+        String id = board("{\"kind\":\"EXCALIDRAW\",\"title\":\"Урок\",\"studentIds\":[\"%s\"]}".formatted(student));
+        UUID board = UUID.fromString(id);
+        String gone = element("gone", 2).replace("\"isDeleted\":false", "\"isDeleted\":true");
+        assertThat(mvc.put().uri("/api/boards/" + id + "/scene").with(teacher()).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"elements\":[" + gone + "],\"baseVersion\":0}")).hasStatusOk();
+        clock.advance(Duration.ofDays(31));
+        assertThat(mvc.put().uri("/api/boards/" + id + "/scene").with(teacher()).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"elements\":[],\"baseVersion\":1}")).hasStatusOk();
+
+        Editor teacher = connect(tickets.issue(teacherUser(), board));
+        teacher.next();
+        Editor pupil = connect(tickets.issue(new CurrentUser(student, Role.STUDENT, "Ученица"), board));
+        pupil.next();
+        teacher.next();
+
+        teacher.send("{\"type\":\"elements\",\"elements\":[" + element("gone", 50) + "," + element("e2", 1) + "]}");
+        JsonNode elements = pupil.next();
+        assertThat(elements.path("elements").size()).isEqualTo(1);
+        assertThat(elements.path("elements").get(0).path("id").asString()).isEqualTo("e2");
+        teacher.send("{\"type\":\"elements\",\"elements\":[" + element("gone", 51) + "]}");
+        assertThat(pupil.messages.poll(300, TimeUnit.MILLISECONDS)).as("only retired elements: nothing").isNull();
+    }
+
     private final class Editor extends TextWebSocketHandler {
 
         final BlockingQueue<String> messages = new LinkedBlockingQueue<>();

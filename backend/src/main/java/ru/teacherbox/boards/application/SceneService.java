@@ -5,10 +5,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.time.Clock;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.HashSet;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.Resource;
 import org.springframework.context.ApplicationEventPublisher;
@@ -105,8 +106,8 @@ public class SceneService {
         List<ObjectNode> incoming = SceneElements.valid(elements);
         BoardScene stored = scenes.lock(requireScene(board).id()).orElseThrow(BoardService::notFound);
         List<ObjectNode> original = elements(stored.elements());
-        List<ObjectNode> current = retention.prune(boardId, original, retention.deletions(boardId));
-        var deletions = retention.deletions(boardId);
+        var deletions = retention.deletions(boardId, Stream.concat(original.stream(), incoming.stream()));
+        List<ObjectNode> current = retention.prune(boardId, original, deletions);
         List<String> rejected = incoming.stream().map(element -> element.path("id").asString())
                 .filter(id -> deletions.containsKey(id) && deletions.get(id).retired()).distinct().toList();
         var rejectedIds = new HashSet<>(rejected);

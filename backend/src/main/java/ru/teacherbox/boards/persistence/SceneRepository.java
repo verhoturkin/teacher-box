@@ -3,6 +3,8 @@ package ru.teacherbox.boards.persistence;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +31,8 @@ public class SceneRepository {
     private static final String SELECT_FILE = """
             select board_id, file_id, file_key, content_type, size, created_at from boards.board_files
             """;
+    /** Element ids per query of {@link #deletions}: a scene may hold thousands of elements. */
+    private static final int DELETIONS_CHUNK = 500;
 
     private final JdbcClient jdbc;
 
@@ -40,11 +44,25 @@ public class SceneRepository {
         return jdbc.sql("select board_id from boards.board_scenes order by board_id").query(UUID.class).list();
     }
 
-    public List<DeletedElement> deletions(UUID boardId) {
-        return jdbc.sql("""
-                select element_id, element_version, deleted_at, retired
-                from boards.board_deleted_elements where board_id = :id
-                """).param("id", boardId).query(DeletedElement.class).list();
+    /** The deletion records of these elements only: a board keeps them for its whole history. */
+    public List<DeletedElement> deletions(UUID boardId, Collection<String> elementIds) {
+        List<String> ids = List.copyOf(elementIds);
+        List<DeletedElement> found = new ArrayList<>();
+        for (int from = 0; from < ids.size(); from += DELETIONS_CHUNK) {
+            found.addAll(jdbc.sql("""
+                    select element_id, element_version, deleted_at, retired
+                    from boards.board_deleted_elements where board_id = :id and element_id in (:ids)
+                    """).param("id", boardId)
+                    .param("ids", ids.subList(from, Math.min(from + DELETIONS_CHUNK, ids.size())))
+                    .query(DeletedElement.class).list());
+        }
+        return found;
+    }
+
+    /** Replaces the elements without a new version: the nightly pruning (open editors keep what they have). */
+    public void replaceElements(UUID boardId, String elements) {
+        jdbc.sql("update boards.board_scenes set elements = :elements where board_id = :boardId")
+                .param("boardId", boardId).param("elements", elements).update();
     }
 
     public void deletion(UUID boardId, DeletedElement deletion) {
