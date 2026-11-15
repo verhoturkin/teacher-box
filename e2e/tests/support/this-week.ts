@@ -34,7 +34,7 @@ export async function laterThisWeek(hours: number): Promise<WeekLesson> {
   }
   const now = new Date();
   const there = thereNow();
-  const shift = Math.round((midnight(there) - midnight(now)) / DAY_MS);
+  const shift = daysToTodayThere();
   let lesson = { days: shift + 1, hours, minutes: 0 };
   if (isSunday(there)) {
     const start = Math.max(23 * 60, Math.ceil((minutesOf(there) + LEAD_MINUTES) / 5) * 5);
@@ -43,6 +43,15 @@ export async function laterThisWeek(hours: number): Promise<WeekLesson> {
   const day = new Date(now.getTime() + lesson.days * DAY_MS).toLocaleDateString('sv-SE');
   const time = `${String(lesson.hours).padStart(2, '0')}:${String(lesson.minutes).padStart(2, '0')}`;
   return { ...lesson, startsAt: new Date(`${day}T${time}:00+03:00`).toISOString() };
+}
+
+/**
+ * Days from this machine's date to today in the browser's time zone, for the date pickers, which
+ * are filled from this machine's date: 1 from 21:00 UTC on a machine in UTC, when it is already
+ * tomorrow in Moscow (the week shown is then the next one on a Sunday).
+ */
+export function daysToTodayThere(): number {
+  return Math.round((midnight(thereNow()) - midnight(new Date())) / DAY_MS);
 }
 
 /** Now as a wall clock in the browser's time zone (a local `Date` showing Moscow's time). */
