@@ -1,11 +1,11 @@
-import { Signal, computed, inject, signal } from '@angular/core';
+import { HttpContext } from '@angular/common/http';
+import { Signal, computed, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl } from '@angular/forms';
 import { MenuItem } from 'primeng/api';
+import { Observable } from 'rxjs';
 import { quietContext } from '@core/http/api-error.interceptor';
-import { IdentityApi } from '@features/identity/parts';
 import { FilterMenuChip } from '@shared/ui/filter-chips';
-import { T } from '@features/homework/i18n/texts';
 
 /** One student or one group in the «Кому» select: `student:<id>` or `group:<id>`. */
 interface WhomOption {
@@ -13,13 +13,35 @@ interface WhomOption {
   readonly value: string;
 }
 
+/** The texts of the filter. */
+export interface WhomTexts {
+  readonly groupsOption: string;
+  readonly studentsOption: string;
+  readonly whomAll: string;
+  readonly whomChosen: (name: string) => string;
+  readonly everyone: string;
+}
+
+/** Where the students and the groups come from (the identity facade). */
+export interface WhomDirectory {
+  listStudents(
+    context: HttpContext,
+  ): Observable<readonly { id: string; displayName: string; status: string }[]>;
+  listGroups(context: HttpContext): Observable<
+    readonly {
+      id: string;
+      name: string;
+      archivedAt: string | null;
+      members: readonly { id: string }[];
+    }[]
+  >;
+}
+
 /**
  * «Кому» of the homework list: one student or one group, a select from medium and a chip with a menu on a
  * phone. Created in an injection context.
  */
 export class WhomFilter {
-  private readonly t = T.list;
-  private readonly identity = inject(IdentityApi);
   /** The students and the groups to choose from. */
   private readonly students = signal<{ id: string; name: string }[]>([]);
   private readonly groups = signal<{ id: string; name: string; memberIds: string[] }[]>([]);
@@ -88,7 +110,11 @@ export class WhomFilter {
   });
 
   /** `initial` — `student:<id>` or `group:<id>` of the address. */
-  constructor(initial: string | null) {
+  constructor(
+    initial: string | null,
+    private readonly t: WhomTexts,
+    private readonly identity: WhomDirectory,
+  ) {
     this.control = new FormControl<string | null>(initial);
     this.value = toSignal(this.control.valueChanges, { initialValue: this.control.value });
   }

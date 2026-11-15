@@ -1,26 +1,25 @@
 import { signal } from '@angular/core';
 import { Observable } from 'rxjs';
 import { locale } from '@core/i18n/language';
-import { AssignmentDetails } from '@features/homework/data-access/homework.models';
 
 const AUTOSAVE_DELAY = 1500;
 const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-digit' });
 
 /** A save of the editor: the assignment as the server has it, and whether all its materials made it. */
-export interface EditorWrite {
-  readonly assignment: AssignmentDetails;
+export interface EditorWrite<T> {
+  readonly assignment: T;
   readonly complete: boolean;
 }
 
 /** What the autosave needs of the editor. */
-export interface AutosavedDraft {
+export interface AutosavedDraft<T> {
   /** The draft may save itself now: it has a title, a valid text and is not given out yet. */
   canSave(): boolean;
   /** What a save sends besides the files and textbooks. */
   snapshot(): string;
   /** Saves the draft as it is: nothing goes to students. */
-  write(): Observable<EditorWrite>;
-  saved(result: EditorWrite): void;
+  write(): Observable<EditorWrite<T>>;
+  saved(result: EditorWrite<T>): void;
   failed(error: unknown): void;
 }
 
@@ -28,7 +27,7 @@ export interface AutosavedDraft {
  * The draft saves itself a moment after each change; «Выдать» pressed meanwhile waits for it, and a change
  * that came during a save is saved once more after it.
  */
-export class EditorAutosave {
+export class EditorAutosave<T> {
   /** A save (of either kind) is running. */
   readonly pending = signal(false);
   readonly autosaving = signal(false);
@@ -44,7 +43,7 @@ export class EditorAutosave {
   /** «Выдать» pressed during an autosave: runs after it. */
   private queued: (() => void) | null = null;
 
-  constructor(private readonly draft: AutosavedDraft) {}
+  constructor(private readonly draft: AutosavedDraft<T>) {}
 
   /** The server has this snapshot. */
   mark(snapshot: string): void {

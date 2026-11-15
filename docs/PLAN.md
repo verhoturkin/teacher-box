@@ -36,7 +36,7 @@ Source: backlog review of 2026-11-15. ADRs: a new one for 400.1 (CSS layers repl
 
 ### 398. Shared helpers and architecture tests
 
-- [ ] 398.1 **F** *simple* — move `EditorAutosave` (`homework/teacher/editor/editor-autosave.ts`)
+- [x] 398.1 **F** *simple* — move `EditorAutosave` (`homework/teacher/editor/editor-autosave.ts`)
   and `WhomFilter` (`homework/teacher/list/whom-filter.ts`) to `shared/` (candidates from 387.5),
   with their specs; update imports in `assignment-editor-page.ts`, `assignments-page.ts`; keep
   `frontend/scripts/import-cycles.mjs` and the feature directions (ADR-0058) green.

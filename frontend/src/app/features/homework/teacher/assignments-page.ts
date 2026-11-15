@@ -19,6 +19,7 @@ import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
 import { Select } from 'primeng/select';
+import { IdentityApi } from '@features/identity/parts';
 import { injectMobile, injectWindowSize } from '@core/layout/mobile';
 import { collapseRail, hideBottomBar, RailState } from '@core/layout/rail-state';
 import { Snackbar } from '@core/snackbar/snackbar';
@@ -44,7 +45,7 @@ import { isDone } from '../homework-labels';
 import { T } from '../i18n/texts';
 import { AssignmentsReview } from './list/assignments-review';
 import { AssignmentsTable, Line, Section } from './list/assignments-table';
-import { WhomFilter } from './list/whom-filter';
+import { WhomFilter } from '@shared/forms/whom-filter';
 
 /** How many finished assignments «Готовые» shows at a time. */
 const DONE_PAGE = 20;
@@ -478,7 +479,11 @@ export class AssignmentsPage implements OnInit {
   }
 
   /** «Кому» is kept in the address (`?who=student:<id>` / `group:<id>`), like the search. */
-  protected readonly who = new WhomFilter(this.route.snapshot.queryParamMap.get('who'));
+  protected readonly who = new WhomFilter(
+    this.route.snapshot.queryParamMap.get('who'),
+    T.list,
+    inject(IdentityApi),
+  );
   readonly whom = this.who.control;
 
   private readonly found = computed(() => {
