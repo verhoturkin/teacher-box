@@ -54,14 +54,54 @@ a new one if 393 changes how the database is opened or closed; 395 may amend ADR
 
 ### 393. H2 file size
 
-- [ ] 393.1 **B** *complex* — measure first: a test or script that saves a 1 MB scene 10 000
+- [x] 393.1 **B** *complex* — measure first: a test or script that saves a 1 MB scene 10 000
   times and records the size of `db/` before and after a restart. Record the numbers in this
-  substep.
-- [ ] 393.2 **B** *complex* — depending on 393.1: compact on graceful shutdown (`SHUTDOWN
+  substep. *Done as `platform/core/H2FileSizeMeasurement` (off unless
+  `-Dteacherbox.measure.h2=true`; the command is in its Javadoc): the URL of `application.yaml`,
+  `boards.board_scenes` of V1, one transaction per save, H2 2.4.240, Linux cloud container, 4 CPU.
+  Numbers:*
+  - *Saves back to back (worst case, 3–4 ms each): the open file grows by ~0.97 MB per 1 MB save
+    — 942 MB after 1 000, 3.8 GB after 4 000, 9.7 GB after 10 000. H2 keeps replaced chunks for
+    its 45 s retention, so nothing is reused during the burst. After 60 s idle the next saves
+    reuse the space (3.9 GB → 2.9 GB or 57 MB while open).*
+  - *Saves at the editor's pace (1 per second, `SAVE_DELAY_MS`; 900 + 100 saves, 17 min): the open
+    file stays at 58–65 MB; a normal close leaves 1.0 MB. 10 000 saves at that pace (2.8 h) would
+    stay on the same plateau: it is bounded by the save rate × the retention, not by the count.*
+  - *Restart after the burst: a normal close (H2's default `MAX_COMPACT_TIME` of 200 ms) left
+    15 MB, 100 MB, 101 MB, 101 MB, 2.9 GB and 2.9 GB in six runs of 4 000 saves; the close after the
+    next start left 1.0–1.9 MB, except with a 768 MB heap (the container's 75 % of 1 GB), where
+    2.9 GB survived two restarts. A close with `MAX_COMPACT_TIME=60000` took 1.25 s and left
+    16 MB; `SHUTDOWN COMPACT` took 50–70 ms and left 0.5 MB (at 1 MB of live data).*
+  - *Start: opening took 9–23 ms whatever the file size (0.5 MB–2.9 GB). Heap after a forced GC
+    stayed under 600 MB of 768 MB, most of it the measurement's own strings.*
+  - *Side finding: with JVM assertions on (as in Surefire) the burst past ~4 GB of file trips an
+    `assert` of H2 (`RandomAccessStore.shrinkStoreIfPossible` → `validateFileLength`, the cached
+    length above the measured one, by 8–12 KB, once by 1 GB) in 5 of 6 runs; with assertions off,
+    as in production, 3 of 3 runs passed and the data reopened intact. The 10 000-save burst
+    stopped 20–30 saves after the idle on the same assert, so its restart numbers come from the
+    4 000-save runs.*
+- [x] 393.2 **B** *complex* — depending on 393.1: compact on graceful shutdown (`SHUTDOWN
   COMPACT` or `MAX_COMPACT_TIME` in the JDBC URL of `application.yaml`) and/or a nightly compaction
   job (`ZonedJob`, off by `-`, setting via skill `new-setting`). Check the start time and memory
   under the 1 GB container limit. ADR if the open/close behaviour changes; update
-  `docs/modules/platform.md`.
+  `docs/modules/platform.md`. *Decided from the numbers: no compaction is added, the JDBC URL and
+  the open/close behaviour stay as they are (so no ADR); the decision is in
+  `docs/modules/platform.md` («H2 file size»). Further runs of `H2FileSizeMeasurement` (4 000
+  back-to-back saves, 768 MB heap, assertions off):*
+  - *`MAX_COMPACT_TIME=5000`: the first close right after the burst left 2.9 GB in 5 of 5 runs
+    (86 and 431 ms where timed), as the default mostly does — the replaced chunks are still within
+    the 45 s retention, and no time budget frees them; the second close left 1.0 MB in 3 of 5
+    runs and 101–111 MB in 2 (1.3 s there). The default second close left 1.0–1.9 MB in 6 of 7
+    runs and 2.9 GB once. A longer budget costs time on a stop and wins nothing stable.*
+  - *A close 60 s after the last save: 1.0 MB with the default (1 run; the other run left 2.9 GB
+    and the next close 1.0 MB) and with `MAX_COMPACT_TIME=5000` (1 run).*
+  - *`SHUTDOWN COMPACT` wins 0.5 MB over a normal close at 1 MB of live data, but rewrites all
+    live data on every stop and needs SQL after the last user of the pool; a nightly run closes
+    the database, i.e. a nightly outage — H2 has no online full compaction. Not worth it.*
+  - *What bounds the file is the save rate, not the save count: ~65 MB per 1 MB scene saved
+    once a second, freed by the next restart. Extrapolated: 10 editors saving 1 MB scenes every
+    second at once would hold ~650 MB while they work. The size of `db/` reaches the
+    administrator's status page in 394.2; revisit if real portals show more.*
 
 ### 394. Disk usage of data and backups
 
