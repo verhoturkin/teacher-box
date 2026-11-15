@@ -112,11 +112,8 @@ async function showYesterday(page: Page): Promise<void> {
 }
 
 /** An instant of a lesson the student sees in «Ближайшие занятия» (this week, Monday first). */
-function thisWeek(hours: number): string {
-  const lesson = laterThisWeek(hours);
-  // `days` counts from this machine's date (laterThisWeek), not from Moscow's
-  const day = new Date(Date.now() + lesson.days * 86_400_000).toLocaleDateString('sv-SE');
-  return new Date(`${day}T${String(lesson.hours).padStart(2, '0')}:00:00+03:00`).toISOString();
+async function thisWeek(hours: number): Promise<string> {
+  return (await laterThisWeek(hours)).startsAt;
 }
 
 async function sentTo(request: APIRequestContext, chat: number): Promise<SentMessage[]> {
@@ -255,7 +252,7 @@ test('a Telemost room and a board reach the student', async ({ page, browser, re
   await api(request, teacher, 'POST', '/api/teacher/schedule/lessons', {
     studentId: annaId,
     // the student's schedule lists this week only: tomorrow is next week on a Sunday
-    startsAt: thisWeek(15),
+    startsAt: await thisWeek(15),
     durationMinutes: 60,
     title: 'Проценты',
     allowOverlap: true,

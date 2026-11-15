@@ -51,13 +51,16 @@ async function planLesson(
   daysFromToday: number,
   hours: number,
   title: string,
+  minutes = 0,
 ): Promise<void> {
   await page.goto('/teacher/schedule');
   await create(page, 'Занятие');
   await page.locator('p-select:has(#schedule-lesson-student)').click();
   await page.getByRole('option', { name: student }).click();
   // The date picker parses typed keys, not a pasted value.
-  await page.locator('#schedule-lesson-start').pressSequentially(dateTime(daysFromToday, hours));
+  await page
+    .locator('#schedule-lesson-start')
+    .pressSequentially(dateTime(daysFromToday, hours, minutes));
   await page.locator('#schedule-lesson-title').fill(title);
   await saveLesson(page);
 }
@@ -173,8 +176,8 @@ test('a student cannot ask to move a lesson into the teacher’s busy time', asy
 }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   // The student's list of upcoming lessons shows this week only.
-  const own = laterThisWeek(12);
-  await planLesson(page, STUDENT, own.days, own.hours, 'Своё');
+  const own = await laterThisWeek(12);
+  await planLesson(page, STUDENT, own.days, own.hours, 'Своё', own.minutes);
   await planLesson(page, OTHER, 6, 12, 'Чужое');
 
   const student = await studentPage(browser);

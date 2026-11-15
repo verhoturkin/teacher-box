@@ -30,13 +30,21 @@ function dateTime(daysFromToday: number, hours: number, minutes = 0): string {
   return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${String(date.getFullYear())} ${pad(hours)}:${pad(minutes)}`;
 }
 
-async function planLesson(page: Page, daysFromToday: number, hours: number, topic: string) {
+async function planLesson(
+  page: Page,
+  daysFromToday: number,
+  hours: number,
+  topic: string,
+  minutes = 0,
+) {
   await page.goto('/teacher/schedule');
   await create(page, 'Занятие');
   await page.locator('p-select:has(#schedule-lesson-student)').click();
   await page.getByRole('option', { name: STUDENT }).click();
   // The date picker parses typed keys, not a pasted value.
-  await page.locator('#schedule-lesson-start').pressSequentially(dateTime(daysFromToday, hours));
+  await page
+    .locator('#schedule-lesson-start')
+    .pressSequentially(dateTime(daysFromToday, hours, minutes));
   await page.locator('#schedule-lesson-topic').fill(topic);
   await saveLesson(page);
 }
@@ -85,8 +93,8 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
   request: api,
 }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  const lesson = laterThisWeek(10);
-  await planLesson(page, lesson.days, lesson.hours, 'Ближняя');
+  const lesson = await laterThisWeek(10);
+  await planLesson(page, lesson.days, lesson.hours, 'Ближняя', lesson.minutes);
   // Eight days ahead is always a later week.
   await planLesson(page, 8, 10, 'Дальняя');
 

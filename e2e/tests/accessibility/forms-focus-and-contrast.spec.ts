@@ -41,10 +41,7 @@ async function studentWithLesson(
       await request.post(`/api/auth/invites/${invite.token}/accept`, { data: { login, password } })
     ).ok(),
   ).toBe(true);
-  const lesson = laterThisWeek(18);
-  // `days` counts from this machine's date (laterThisWeek), not from Moscow's
-  const day = new Date(Date.now() + lesson.days * 86_400_000).toLocaleDateString('sv-SE');
-  const startsAt = `${day}T${String(lesson.hours).padStart(2, '0')}:00:00+03:00`;
+  const { startsAt } = await laterThisWeek(18);
   expect(
     (
       await request.post('/api/teacher/schedule/lessons', {

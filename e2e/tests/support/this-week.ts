@@ -1,20 +1,61 @@
-import { type Page, expect } from '@playwright/test';
+import { type Page, expect, test } from '@playwright/test';
 
 /** The browser's time zone in the tests (playwright.config.ts). */
 const ZONE = 'Europe/Moscow';
 const DAY_MS = 86_400_000;
 
+/** A lesson of {@link laterThisWeek}: `days` from this machine's date, the time in Moscow. */
+export interface WeekLesson {
+  days: number;
+  hours: number;
+  minutes: number;
+  /** The same start as an instant. */
+  startsAt: string;
+}
+
+/** How long before its start a Sunday lesson is planned: the scenario must ask about it first. */
+const LEAD_MINUTES = 10;
+/** The latest start of a Sunday lesson, in minutes after midnight. */
+const LAST_START = 23 * 60 + 55;
+
 /**
- * A day and an hour for a lesson the student sees in «Ближайшие занятия» — the lessons of the
- * current week (Monday first) in the browser's time zone. It is the next day, or the last hour of
- * today when today is Sunday there. `days` counts from today on this machine, as the date pickers
- * are filled from this machine's date.
+ * A day and a time for a lesson the student sees in «Ближайшие занятия» — the lessons of the
+ * current week (Monday first) in the browser's time zone, not started yet (a started lesson cannot
+ * be moved). It is the next day at `hours`, or the last hour of today when today is Sunday there,
+ * at least {@link LEAD_MINUTES} ahead; in the last quarter of an hour of a Sunday it waits for
+ * Monday. `days` counts from today on this machine, as the date pickers are filled from this
+ * machine's date.
  */
-export function laterThisWeek(hours: number): { days: number; hours: number } {
+export async function laterThisWeek(hours: number): Promise<WeekLesson> {
+  if (isSunday(thereNow()) && minutesOf(thereNow()) + LEAD_MINUTES > LAST_START) {
+    const wait = (DAY_MS / 60_000 - minutesOf(thereNow())) * 60_000 + 5_000;
+    test.setTimeout(test.info().timeout + wait);
+    await new Promise((resolve) => setTimeout(resolve, wait));
+  }
   const now = new Date();
-  const there = new Date(now.toLocaleString('en-US', { timeZone: ZONE }));
+  const there = thereNow();
   const shift = Math.round((midnight(there) - midnight(now)) / DAY_MS);
-  return there.getDay() === 0 ? { days: shift, hours: 23 } : { days: shift + 1, hours };
+  let lesson = { days: shift + 1, hours, minutes: 0 };
+  if (isSunday(there)) {
+    const start = Math.max(23 * 60, Math.ceil((minutesOf(there) + LEAD_MINUTES) / 5) * 5);
+    lesson = { days: shift, hours: Math.floor(start / 60), minutes: start % 60 };
+  }
+  const day = new Date(now.getTime() + lesson.days * DAY_MS).toLocaleDateString('sv-SE');
+  const time = `${String(lesson.hours).padStart(2, '0')}:${String(lesson.minutes).padStart(2, '0')}`;
+  return { ...lesson, startsAt: new Date(`${day}T${time}:00+03:00`).toISOString() };
+}
+
+/** Now as a wall clock in the browser's time zone (a local `Date` showing Moscow's time). */
+function thereNow(): Date {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: ZONE }));
+}
+
+function isSunday(there: Date): boolean {
+  return there.getDay() === 0;
+}
+
+function minutesOf(there: Date): number {
+  return there.getHours() * 60 + there.getMinutes();
 }
 
 /**
