@@ -103,10 +103,13 @@ elevation with their values; springs —
   - PrimeNG controls (fields, selects, checkboxes, tables, tabs, the paginator) change colour,
     outline and shadow on the fast effects spring: the semantic `transitionDuration` of the preset
     is `var(--tb-spring-fast-effects)`, a duration and a curve. The radio dot grows on the fast
-    spatial spring. *Ours*: the check mark grows in from 0.4 and the tab indicator from the middle
-    of its label on the fast spatial spring; inline messages (`p-message`) open their line on the
-    standard fast spring and fade in on default effects, they leave like the snackbar; the value of
-    a progress bar moves on the standard fast spring (no overshoot past it).
+    spatial spring. *Ours*: the check mark grows in from 0.4 on the fast spatial spring; the one tab
+    indicator of a bar slides to the label of the chosen tab and takes its width on the slow spatial
+    spring, the leading edge first and the trailing one 50 ms later, so it stretches on its way (as
+    in the **M3** transition patterns video; the 50 ms is ours), while a first placement and a
+    resize jump; inline messages (`p-message`) open their line on the standard fast spring and fade
+    in on default effects, they leave like the snackbar; the value of a progress bar moves on the
+    standard fast spring (no overshoot past it).
   - Pages (view transitions of the router, `core/routing/page-transitions.ts`, ADR-0066) follow
     the M3 transition patterns on their **legacy easing and duration** (**M3**: transitions are not
     on springs yet): `--tb-easing-{standard-accelerate,standard-decelerate,emphasized-decelerate}`,
@@ -428,7 +431,8 @@ for the active navigation item and checked states.
   «back»; focus returns to the icon.
 - **Tabs** `tb-tabs` (**M3** primary tabs, every tab bar): no container, 48 dp, Title Small,
   label primary when active, a 3 dp primary indicator with 3 dp rounded top corners as wide as the
-  label (`::after` of `tb-tab-label`), one 1 dp outline-variant divider under the bar; an optional
+  label — one per bar (`::after` of the tab list, placed under the active `tb-tab-label` by
+  `shared/ui/tab-indicator.ts`), one 1 dp outline-variant divider under the bar; an optional
   20 dp icon before the label. Tabs keep the width of their label from the start edge and scroll
   (**M3** scrollable tabs, sketches 11, 21); `tb-tabs--fixed` — two or three short labels that
   share the width (**M3** fixed tabs), as the bell's «Входящие · Отправленные» and the editor on a

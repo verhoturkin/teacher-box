@@ -55,7 +55,7 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
 
 ### 413. Tabs
 
-- [ ] 413.1 **F** *complex* — one active indicator that slides from tab to tab and takes the width
+- [x] 413.1 **F** *complex* — one active indicator that slides from tab to tab and takes the width
   of the new label, on a spatial spring (`styles/_sheets.scss` `.tb-tabs`, today a per-label
   `::after` that grows from the middle; PrimeNG's `.p-tablist-active-bar` is hidden because it
   spans the tab). Every tab bar (student and group cards, schedule side pane, the bell's sheet).

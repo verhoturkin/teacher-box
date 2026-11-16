@@ -42,12 +42,6 @@
   }
 }
 
-@keyframes tb-motion-grow-x {
-  from {
-    transform: scaleX(0);
-  }
-}
-
 /* an inline message opens its line, the snackbar leaves the line it took */
 @keyframes tb-motion-expand {
   from {

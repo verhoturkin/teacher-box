@@ -133,8 +133,8 @@
  * sheet): no container, 48 dp high over a 1 dp outline-variant divider under the whole bar; the label in Title
  * Small, primary when active, on-surface-variant otherwise; the active indicator is 3 dp of primary with 3 dp top
  * corners under the label (as wide as the label). The tabs share the width of the bar equally and centre their
- * label (M3 fixed tabs); each label is wrapped in `tb-tab-label`, which carries the indicator. The badge sits 4 dp
- * after the label.
+ * label (M3 fixed tabs); each label is wrapped in `tb-tab-label`, whose box the one indicator of the bar takes
+ * (`shared/ui/tab-indicator.ts`). The badge sits 4 dp after the label.
  */
 .tb-tabs {
   display: block;
@@ -185,8 +185,8 @@
     color: var(--p-md-primary);
   }
 
-  /* the indicator is as wide as the label (M3 primary tabs): it is the ::after of the label, at the bottom of the tab,
-     with 3 dp top corners; the bar PrimeNG moves is not shown */
+  /* one indicator per bar (M3 primary tabs): the ::after of the tab list, under the label of the active tab
+     (`TabIndicator` sets its edges); PrimeNG's bar is as wide as the tab, so it is not shown */
   .p-tablist-active-bar {
     display: none;
   }
@@ -199,16 +199,28 @@
     gap: var(--tb-space-1);
   }
 
-  .p-tab-active .tb-tab-label::after {
+  .p-tablist-tab-list::after {
     content: '';
     position: absolute;
-    inset: auto 0 0;
+    inset: auto var(--tb-tab-end, 100%) 0 var(--tb-tab-start, 0);
     height: 3px;
     border-radius: 3px 3px 0 0;
     background: var(--p-md-primary);
-    /* the indicator grows from the middle of the label on the fast spatial spring (ours: PrimeNG's bar,
-       which slides, is as wide as the tab, not the label) */
-    animation: tb-motion-grow-x var(--tb-spring-fast-spatial);
+    pointer-events: none;
+  }
+
+  /* it slides to the new label on the slow spatial spring, the leading edge first and the trailing one 50 ms
+     later, so it stretches on its way (the M3 video; the delay is ours); a first placement and a resize jump */
+  .p-tablist-tab-list[data-tb-tab-move='right']::after {
+    transition:
+      right var(--tb-spring-slow-spatial),
+      left var(--tb-spring-slow-spatial) var(--tb-duration-short1);
+  }
+
+  .p-tablist-tab-list[data-tb-tab-move='left']::after {
+    transition:
+      left var(--tb-spring-slow-spatial),
+      right var(--tb-spring-slow-spatial) var(--tb-duration-short1);
   }
 
   .p-tablist-prev-button,

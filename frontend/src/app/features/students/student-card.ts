@@ -14,6 +14,7 @@ import { catchError, of } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
+import { TabIndicator } from '@shared/ui/tab-indicator';
 import { Tooltip } from 'primeng/tooltip';
 import { PaymentDialog, StudentBalanceCard, StudentPaymentsTab } from '@features/billing/parts';
 import { StudentTasksCard, StudentTasksTab } from '@features/homework/parts';
@@ -73,6 +74,7 @@ import { Student } from '@features/identity/parts';
     TabPanel,
     TabPanels,
     Tabs,
+    TabIndicator,
     Tooltip,
   ],
   providers: [DatePipe],
@@ -123,7 +125,13 @@ import { Student } from '@features/identity/parts';
         }</tb-card-head
     ></ng-template>
 
-    <p-tabs class="tb-tabs" [value]="tab()" [scrollable]="true" (valueChange)="choose($event)">
+    <p-tabs
+      tbTabIndicator
+      class="tb-tabs"
+      [value]="tab()"
+      [scrollable]="true"
+      (valueChange)="choose($event)"
+    >
       <p-tablist>
         @for (item of tabs; track item) {
           <p-tab [value]="item"
