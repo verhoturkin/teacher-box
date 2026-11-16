@@ -2,8 +2,10 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   computed,
+  effect,
   inject,
   input,
   viewChild,
@@ -19,6 +21,7 @@ import { CallChat } from './call-chat';
 import { CallParticipant } from './call-engine';
 import { CallControls } from './call-controls';
 import { gridSize, stageLayout } from './call-layout';
+import { openPip } from './call-pip';
 import { CallSelf } from './call-self';
 import { CallSession } from './call-session';
 import { CallTile } from './call-tile';
@@ -27,7 +30,9 @@ import { SHARED_T } from '@shared/i18n/texts';
 
 /**
  * The full call window over the portal: the stage (see `stageLayout`), the floating toolbar, the
- * states «Подключение…», «Переподключение…» and the end of the call. Esc minimizes it.
+ * states «Подключение…», «Переподключение…» and the end of the call. Esc minimizes it. In a
+ * floating window (Picture-in-Picture) only the stage and the compact controls stay: menus and
+ * dialogs open in the tab.
  */
 @Component({
   selector: 'tb-call-window',
@@ -39,6 +44,7 @@ import { SHARED_T } from '@shared/i18n/texts';
   host: {
     class: 'tb-call-window',
     '[class.tb-call-window--chat]': 'chat()',
+    '[class.tb-call-window--pip]': 'session.pip()',
     role: 'dialog',
     'aria-modal': 'true',
     'aria-labelledby': 'tb-call-title',
@@ -102,7 +108,7 @@ import { SHARED_T } from '@shared/i18n/texts';
             class="tb-call-stage__main"
             [participant]="main.participant"
             [screen]="main.screen"
-            [moderation]="teacher"
+            [moderation]="moderation()"
             (muted)="session.mute(main.participant.id)"
             (removed)="remove(main.participant)"
           />
@@ -119,7 +125,7 @@ import { SHARED_T } from '@shared/i18n/texts';
             @for (person of layout().tiles; track person.id) {
               <tb-call-tile
                 [participant]="person"
-                [moderation]="teacher"
+                [moderation]="moderation()"
                 (muted)="session.mute(person.id)"
                 (removed)="remove(person)"
               />
@@ -131,7 +137,11 @@ import { SHARED_T } from '@shared/i18n/texts';
         }
       </div>
     }
-    <tb-call-controls class="tb-call-window__controls" />
+    <tb-call-controls
+      class="tb-call-window__controls"
+      [compact]="session.pip()"
+      (pictureInPicture)="float()"
+    />
     @if (chat()) {
       <tb-call-chat />
     }
@@ -150,12 +160,30 @@ export class CallWindow implements AfterViewInit {
 
   /** The chat sheet: open, and the call goes on. */
   protected readonly chat = computed(
-    () => this.session.chatOpen() && this.session.live() && this.session.phase() !== 'connecting',
+    () =>
+      this.session.chatOpen() &&
+      this.session.live() &&
+      this.session.phase() !== 'connecting' &&
+      !this.session.pip(),
   );
+  /** The tile menu opens in the tab's document, so the floating window has none. */
+  protected readonly moderation = computed(() => this.teacher && !this.session.pip());
   protected readonly layout = computed(() => stageLayout(this.session.participants()));
   private readonly mobile = injectMobile();
   protected readonly grid = computed(() => gridSize(this.layout().tiles.length, this.mobile()));
   private readonly title = viewChild.required<ElementRef<HTMLElement>>('title');
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private floating: Window | null = null;
+
+  constructor() {
+    // «Вернуть во вкладку», minimizing or the end of the call close the floating window
+    effect(() => {
+      if (!this.session.pip()) {
+        this.floating?.close();
+      }
+    });
+    inject(DestroyRef).onDestroy(() => this.floating?.close());
+  }
 
   ngAfterViewInit(): void {
     this.title().nativeElement.focus();
@@ -170,6 +198,15 @@ export class CallWindow implements AfterViewInit {
     if (ok) {
       this.session.removeParticipant(person.id);
     }
+  }
+
+  /** Moves this window to a floating one; closing it brings the call back. */
+  protected async float(): Promise<void> {
+    this.floating = await openPip(this.element, () => {
+      this.floating = null;
+      this.session.pip.set(false);
+    });
+    this.session.pip.set(true);
   }
 
   protected escape(): void {

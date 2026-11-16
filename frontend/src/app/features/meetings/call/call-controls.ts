@@ -4,6 +4,7 @@ import {
   computed,
   inject,
   input,
+  output,
   signal,
   ViewEncapsulation,
 } from '@angular/core';
@@ -17,13 +18,14 @@ import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { NavBadge } from '@core/layout/nav-badge';
 import { CallDevices, DeviceList } from './call-devices';
 import { AudioProcessing } from './call-engine';
+import { pipSupported } from './call-pip';
 import { CallSession } from './call-session';
 import { CallStatsDialog } from './call-stats-dialog';
 import { T } from '../i18n/texts';
 
 /**
  * The buttons of a call (M3 Expressive toolbar): microphone and camera toggles (error-coloured while
- * off), screen sharing, devices, minimize/expand and the red «Выйти»; no tooltips, the labels are for
+ * off), screen sharing, devices, picture-in-picture, minimize/expand and the red «Выйти»; no tooltips, the labels are for
  * screen readers. The compact set is for the mini window.
  */
 @Component({
@@ -106,6 +108,16 @@ import { T } from '../i18n/texts';
       @if (statsOpen()) {
         <tb-call-stats-dialog (closed)="statsOpen.set(false)" />
       }
+      @if (canPip && !mobile()) {
+        <p-button
+          styleClass="tb-call-button"
+          icon="tb-i tb-i-picture_in_picture_alt"
+          [rounded]="true"
+          severity="secondary"
+          [ariaLabel]="t.pip"
+          (onClick)="pictureInPicture.emit()"
+        />
+      }
       <p-button
         styleClass="tb-call-button"
         icon="tb-i tb-i-close_fullscreen"
@@ -122,7 +134,9 @@ import { T } from '../i18n/texts';
           [rounded]="true"
           severity="secondary"
           [ariaLabel]="
-            session.unread() > 0 ? t.expand + '. ' + t.chatUnread(session.unread()) : t.expand
+            session.unread() > 0
+              ? expandLabel() + '. ' + t.chatUnread(session.unread())
+              : expandLabel()
           "
           (onClick)="session.expand()"
         />
@@ -150,11 +164,18 @@ export class CallControls {
 
   /** The mini window: microphone, camera, expand, leave. */
   readonly compact = input(false);
+  /** «Поверх других окон» was pressed: the call window moves to a floating window. */
+  readonly pictureInPicture = output();
 
   protected readonly canShare = this.devices.canShareScreen();
+  protected readonly canPip = pipSupported();
   /** Phones share no screen, and the toolbar keeps to one line. */
   protected readonly mobile = injectMobile();
   protected readonly connected = computed(() => this.session.phase() === 'connected');
+  /** In the floating window «Развернуть» brings the call back to the tab. */
+  protected readonly expandLabel = computed(() =>
+    this.session.pip() ? this.t.back : this.t.expand,
+  );
   protected readonly menuOpen = signal(false);
   protected readonly statsOpen = signal(false);
   /** PrimeNG menus start at z-index 1000, under the call window (1050 in `styles.scss`). */

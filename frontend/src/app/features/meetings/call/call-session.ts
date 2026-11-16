@@ -98,6 +98,8 @@ export class CallSession {
   readonly audioProcessing = signal<AudioProcessing>(this.devices.audioProcessing());
   readonly messages = signal<readonly ChatLine[]>([]);
   readonly chatOpen = signal(false);
+  /** The full window floats over other tabs (Document Picture-in-Picture, `call-pip.ts`). */
+  readonly pip = signal(false);
   /** Messages of the others not seen yet: the chat was closed or the window minimized. */
   readonly unread = signal(0);
 
@@ -241,6 +243,7 @@ export class CallSession {
 
   expand(): void {
     this.mode.set('expanded');
+    this.pip.set(false);
     if (this.chatOpen()) {
       this.unread.set(0);
     }
@@ -472,6 +475,7 @@ export class CallSession {
     this.endText.set(null);
     this.startedAt.set(null);
     this.announcement.set('');
+    this.pip.set(false);
   }
 
   /** Signalling goes through the portal itself (`/livekit`, ADR-0030). */

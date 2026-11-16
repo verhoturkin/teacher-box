@@ -211,7 +211,7 @@ const WORKING_HOURS: Readonly<Record<string, readonly (readonly [string, string,
   ],
 };
 
-/** Moderating a call and its chat (408.2, 409.1): [topic, baseline, now] of the call articles. */
+/** Moderating a call, its chat, the board and the floating window (408.2–410.1): [topic, baseline, now] of the call articles. */
 const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
   'teacher.ru': [
     [
@@ -223,7 +223,9 @@ const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, strin
         ' войти снова.\n- **Доска ученика** — в меню «Настройки звонка» выберите участника: его' +
         ' доски откроются в новой вкладке, звонок продолжится.\n- **Чат** — сообщения всем участникам звонка; число на кнопке —' +
         ' непрочитанные. Чат видят только участники звонка, после звонка он не сохраняется.' +
-        '\n- **Выйти из звонка**',
+        '\n- **Поверх других окон** — в Chrome и Edge на компьютере звонок переходит в маленькое' +
+        ' окно поверх других вкладок и программ: плитки, микрофон, камера и «Выйти». «Вернуть во' +
+        ' вкладку» или закрытие окна вернёт звонок в портал.\n- **Выйти из звонка**',
     ],
   ],
   'teacher.en': [
@@ -235,7 +237,10 @@ const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, strin
         ' the person sees why the call ended and can rejoin.\n- **Student’s board:** in the call “Settings” menu, pick a participant: their' +
         ' boards open in a new tab and the call carries on.\n- **Chat:** message everyone in the' +
         ' call; the number on the button shows unread messages. Only people in the call see the' +
-        ' chat, and it isn’t saved after the call.\n- **Leave call:**',
+        ' chat, and it isn’t saved after the call.\n- **Float over other windows:** in Chrome and' +
+        ' Edge on a computer, the call moves to a small window above other tabs and apps, with' +
+        ' the tiles, microphone, camera and Leave call. “Back to the tab” or closing that window' +
+        ' brings the call back to the portal.\n- **Leave call:**',
     ],
   ],
   'student.ru': [
@@ -243,7 +248,9 @@ const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, strin
       'lesson',
       '«Выйти из звонка» — красная кнопка.',
       '«Чат» открывает переписку со всеми в звонке, число на кнопке — непрочитанные сообщения;' +
-        ' после звонка чат не сохраняется. «Выйти из звонка» — красная кнопка.',
+        ' после звонка чат не сохраняется. В Chrome и Edge на компьютере «Поверх других окон»' +
+        ' переносит звонок в маленькое окно над другими вкладками и программами, «Вернуть во' +
+        ' вкладку» вернёт его. «Выйти из звонка» — красная кнопка.',
     ],
   ],
   'student.en': [
@@ -251,7 +258,9 @@ const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, strin
       'lesson',
       '- choose “Leave call” to leave.',
       '- choose “Chat” to message everyone in the call; the number on the button shows unread' +
-        ' messages, and the chat isn’t saved after the call;\n- choose “Leave call” to leave.',
+        ' messages, and the chat isn’t saved after the call;\n- choose “Float over other windows”' +
+        ' in Chrome or Edge on a computer to keep the call in a small window above other tabs and' +
+        ' apps; “Back to the tab” brings it back;\n- choose “Leave call” to leave.',
     ],
   ],
 };

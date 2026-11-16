@@ -53,7 +53,7 @@ ADRs: none needed — 409.2 opens the board through a route.
 
 ### 410. Document Picture-in-Picture
 
-- [ ] 410.1 **F** *complex* — `documentPictureInPicture` (Chromium only, feature-detected): the call
+- [x] 410.1 **F** *complex* — `documentPictureInPicture` (Chromium only, feature-detected): the call
   moves to a floating window with the tiles and the main controls; back to the tab on close;
   the button is hidden where the API is missing. `m3-expressive` skill; help and wiki.
 

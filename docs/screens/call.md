@@ -20,6 +20,11 @@
   the stage (at most 400 dp; on a phone it covers the window — *ours*); the field takes the focus,
   the messages are a `role="log"`, own ones on secondary-container (*ours*). Unread messages show as
   an **M3** large badge (`tb-nav-badge`) on «Чат», and on «Развернуть» of the mini window.
+- **Picture-in-Picture** (`call-pip.ts`, 410.1): «Поверх других окон» in the toolbar, only where
+  `documentPictureInPicture` exists and not on a phone, moves the whole window node with the
+  portal styles to a 480 × 360 floating window (*ours*): no header, the compact controls with
+  «Вернуть во вкладку», no chat and no tile menu (menus open in the tab). Closing it brings the
+  node back; the tab shows the portal meanwhile.
 - **Mini window** (`call-mini.ts`): on a computer a corner card dragged by its top line and snapped
   (or moved by a menu item; remembered) showing a shared screen, the speaker or a camera. On a phone
   a full-width pill above the bottom bar; the FAB moves above it.

@@ -17,6 +17,8 @@ For a portal call, check your camera and microphone in the preview, allow browse
 - choose “Minimise” to keep talking while you use a board or work on an assignment;
 - choose “Expand” to return to the full call window;
 - choose “Chat” to message everyone in the call; the number on the button shows unread messages, and the chat isn’t saved after the call;
+- choose “Float over other windows” in Chrome or Edge on a computer to keep the call in a small window above other tabs and apps; \
+“Back to the tab” brings it back;
 - choose “Leave call” to leave.
 
 If your teacher uses an external video service, such as Telemost, the lesson link opens that service in a new tab.

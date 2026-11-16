@@ -89,6 +89,8 @@ export const en: Translation<typeof ru> = {
     settings: 'Call settings',
     minimize: 'Minimise',
     expand: 'Expand',
+    pip: 'Float over other windows',
+    back: 'Back to the tab',
     leave: 'Leave call',
     notFound: 'None found',
     processing: 'Audio processing',

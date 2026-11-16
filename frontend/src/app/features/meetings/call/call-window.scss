@@ -65,6 +65,17 @@
     justify-self: center;
   }
 
+  /* The floating window (Picture-in-Picture): the stage and the compact controls only, our decision */
+  &--pip {
+    grid-template-rows: 1fr auto;
+    gap: var(--tb-space-2);
+    padding: var(--tb-space-2);
+
+    > .tb-call-window__header {
+      display: none;
+    }
+  }
+
   /* The chat sheet (call-chat.scss) beside everything else: M3 standard side sheet, at most 400 dp */
   &--chat {
     grid-template-columns: minmax(0, 1fr) min(25rem, 40%);

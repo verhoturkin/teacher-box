@@ -173,3 +173,47 @@ describe('CallWindow', () => {
     expect(confirm.mock.lastCall?.[0].message).toContain('Анна');
   });
 });
+
+describe('CallWindow in Picture-in-Picture', () => {
+  it('floats over other windows with the compact controls and comes back on close', async () => {
+    const floating = Object.assign(new EventTarget(), {
+      document: document.implementation.createHTMLDocument(),
+      close: vi.fn(() => floating.dispatchEvent(new Event('pagehide'))),
+    });
+    const requestWindow = vi.fn(() => Promise.resolve(floating));
+    vi.stubGlobal('documentPictureInPicture', { requestWindow });
+    TestBed.configureTestingModule({ imports: [CallWindow], providers: testProviders() });
+    const session = TestBed.inject(CallSession);
+    session.phase.set('connected');
+    session.participants.set([aParticipant()]);
+    const fixture = TestBed.createComponent(CallWindow);
+    const place = document.createElement('div');
+    const host = hostElement(fixture);
+    place.append(host);
+    await fixture.whenStable();
+    const button = (label: string): HTMLButtonElement | null =>
+      host.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`);
+
+    button('Поверх других окон')?.click();
+    await fixture.whenStable();
+    expect(requestWindow).toHaveBeenCalled();
+    expect(floating.document.body.firstChild).toBe(host);
+    expect(floating.document.head.querySelectorAll('style').length).toBe(
+      document.styleSheets.length,
+    );
+    expect(host.classList).toContain('tb-call-window--pip');
+    expect(button('Свернуть')).toBeNull();
+
+    button('Вернуть во вкладку')?.click();
+    await fixture.whenStable();
+    expect(floating.close).toHaveBeenCalled();
+    expect(place.firstChild).toBe(host);
+    expect(session.pip()).toBe(false);
+
+    button('Поверх других окон')?.click();
+    await fixture.whenStable();
+    fixture.destroy();
+    expect(floating.close).toHaveBeenCalledTimes(2);
+    vi.unstubAllGlobals();
+  });
+});

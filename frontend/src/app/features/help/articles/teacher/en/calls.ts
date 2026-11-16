@@ -28,6 +28,8 @@ bottom navigation. “Expand” restores the full window.
 then the person sees why the call ended and can rejoin.
 - **Student’s board:** in the call “Settings” menu, pick a participant: their boards open in a new tab and the call carries on.
 - **Chat:** message everyone in the call; the number on the button shows unread messages. Only people in the call see the chat, and it isn’t saved after the call.
+- **Float over other windows:** in Chrome and Edge on a computer, the call moves to a small window above other tabs and apps, with the tiles, microphone, camera and Leave call. \
+“Back to the tab” or closing that window brings the call back to the portal.
 - **Leave call:** leave using the red button.
 
 ## External meeting links
