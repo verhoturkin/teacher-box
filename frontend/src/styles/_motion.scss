@@ -136,16 +136,106 @@
     tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
 }
 
-/* Menus, dropdowns, the date picker: the fast spring (small surfaces) */
-.p-motion.p-anchored-overlay-enter-active {
-  animation:
-    tb-motion-scale-in var(--tb-spring-fast-spatial),
-    tb-motion-fade-in var(--tb-spring-fast-effects);
+/*
+ * Menus, dropdowns, the date picker (M3 video transition patterns 7-2): no scale — it implies an
+ * elevation change (M3). The surface opens away from its anchor along Y: a clip with the surface's
+ * corners grows from the anchored edge (down under the field, up above it — PrimeNG writes the side
+ * into the inline `transform-origin`), on the standard fast spring (the video shows no bounce), and
+ * fades in on fast effects. The items fade in away from the anchor as it opens (ours: 30 ms apart,
+ * the fourth and later ones together, all done by the end of the spring). It closes the same way back,
+ * the fade quicker than the clip. The clip leaves room for the shadow (`--tb-motion-room`, the
+ * reach of the surface's elevation) with its corners grown by as much, so the shadow moves with
+ * the surface instead of showing at the end.
+ */
+$tb-motion-out: calc(-1 * var(--tb-motion-room));
+$tb-motion-round: calc(var(--tb-motion-radius) + var(--tb-motion-room));
+/* closed: the moving edge lies on the anchored one, past its shadow, nothing shows */
+$tb-motion-shut: calc(100% + var(--tb-motion-room));
+
+@keyframes tb-motion-reveal {
+  from {
+    clip-path: var(--tb-motion-clip);
+  }
+
+  to {
+    clip-path: inset($tb-motion-out round $tb-motion-round);
+  }
 }
 
-.p-motion.p-anchored-overlay-leave-active {
+@keyframes tb-motion-conceal {
+  from {
+    clip-path: inset($tb-motion-out round $tb-motion-round);
+  }
+
+  to {
+    clip-path: var(--tb-motion-clip);
+  }
+}
+
+/* the rows of an overlay's list: options sit in host elements (`p-selectitem`), menu items do not */
+$tb-overlay-rows: ':is(.p-menu-list, .p-tieredmenu-root-list, .p-select-list, .p-multiselect-list, .p-autocomplete-list) > *';
+
+/* the place of a row from the anchored edge: the first three one by one, the rest together */
+@mixin tb-overlay-row-order($from) {
+  --tb-motion-order: 3;
+
+  &:#{$from}(1) {
+    --tb-motion-order: 0;
+  }
+
+  &:#{$from}(2) {
+    --tb-motion-order: 1;
+  }
+
+  &:#{$from}(3) {
+    --tb-motion-order: 2;
+  }
+}
+
+.p-anchored-overlay-enter-active,
+.p-anchored-overlay-leave-active {
+  --tb-motion-radius: var(--tb-shape-lg);
+  /* elevation 2 reaches 10 px below the surface */
+  --tb-motion-room: 0.75rem;
+  --tb-motion-clip: inset(
+    #{$tb-motion-out} #{$tb-motion-out} #{$tb-motion-shut} #{$tb-motion-out} round
+      #{$tb-motion-round}
+  );
+}
+
+.p-anchored-overlay-enter-active {
   animation:
-    tb-motion-scale-out var(--tb-spring-standard-fast-spatial) forwards,
+    tb-motion-reveal var(--tb-spring-standard-fast-spatial),
+    tb-motion-fade-in var(--tb-spring-fast-effects);
+
+  #{$tb-overlay-rows} {
+    @include tb-overlay-row-order(nth-child);
+
+    animation: tb-motion-fade-in var(--tb-spring-fast-effects) backwards;
+    animation-delay: calc(var(--tb-motion-order) * 30ms);
+  }
+}
+
+/* above the anchor it opens upwards and the rows appear bottom to top; the date picker and menus
+   carry the side themselves, selects on their `.p-overlay` */
+.p-anchored-overlay-enter-active,
+.p-anchored-overlay-leave-active {
+  &[style*='center bottom'],
+  .p-overlay[style*='center bottom'] > & {
+    --tb-motion-clip: inset(
+      #{$tb-motion-shut} #{$tb-motion-out} #{$tb-motion-out} #{$tb-motion-out} round
+        #{$tb-motion-round}
+    );
+
+    #{$tb-overlay-rows} {
+      @include tb-overlay-row-order(nth-last-child);
+    }
+  }
+}
+
+.p-anchored-overlay-leave-active {
+  animation:
+    tb-motion-conceal var(--tb-spring-standard-fast-spatial) forwards,
     tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
 }
 
@@ -201,7 +291,6 @@
   }
 }
 
-/* The snackbar: grows from its middle on the fast spring, leaves by fading and closing its line */
 /*
  * Inline messages (ours: M3 publishes no motion for them): instead of Aura's 0.3 s ease-out they open
  * their line without a bounce (the content under them must not jump) and fade in on the default
@@ -219,12 +308,23 @@
     tb-motion-collapse var(--tb-spring-standard-fast-spatial) forwards;
 }
 
+/* the snackbar opens upwards from its bottom edge, opaque (M3 video 7-3), and its text fades in just
+   after (ours: 50 ms); no bounce, no scale */
 .p-toast-message.p-toast-message-enter-active {
-  --tb-motion-scale: 0.8;
+  --tb-motion-radius: var(--tb-shape-xs);
+  /* elevation 3 reaches 15 px below the surface */
+  --tb-motion-room: 1rem;
+  --tb-motion-clip: inset(
+    #{$tb-motion-shut} #{$tb-motion-out} #{$tb-motion-out} #{$tb-motion-out} round
+      #{$tb-motion-round}
+  );
 
-  animation:
-    tb-motion-scale-in var(--tb-spring-fast-spatial),
-    tb-motion-fade-in var(--tb-spring-fast-effects);
+  animation: tb-motion-reveal var(--tb-spring-standard-fast-spatial);
+
+  .tb-snackbar {
+    animation: tb-motion-fade-in var(--tb-spring-fast-effects) backwards;
+    animation-delay: 50ms;
+  }
 }
 
 .p-toast-message.p-toast-message-leave-active {

@@ -88,7 +88,7 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
 
 ### 416. Overlays
 
-- [ ] 416.1 **F** *complex* — menus and the snackbar enter and exit along an axis instead of
+- [x] 416.1 **F** *complex* — menus and the snackbar enter and exit along an axis instead of
   scale (M3: scale implies an elevation change) in `styles/_motion.scss`. Menus, dropdowns and
   the date picker match the video `GM3-Transitions-TransitionPatterns-7-2`
   (https://firebasestorage.googleapis.com/v0/b/design-spec/o/projects%2Fgoogle-material-3%2Fimages%2Flyfs4dk9-GM3-Transitions-TransitionPatterns-7-2-v01.mp4?alt=media):

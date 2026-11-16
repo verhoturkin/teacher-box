@@ -15,12 +15,12 @@ const OVERLAYS = [
   ],
   [
     'menu, dropdown, date picker',
-    'scale 0.93 on fast spatial + fast effects',
-    'standard fast spatial + fast effects',
+    'clip opens away from the anchor on standard fast spatial + fast effects, rows 30 ms apart',
+    'clip closes to the anchor on standard fast spatial + fast effects',
   ],
   [
     'snackbar',
-    'scale 0.8 on fast spatial + fast effects',
+    'clip opens upwards on standard fast spatial, text fades in 50 ms later on fast effects',
     'fast effects + collapse on standard fast',
   ],
   ['scrim', 'default effects', 'fast effects'],

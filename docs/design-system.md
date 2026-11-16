@@ -93,10 +93,18 @@ elevation with their values; springs —
   - Overlays (`styles/_motion.scss` «Overlays on M3E springs») replace PrimeNG's cubic-bezier:
     they enter with scale or position on a spatial spring and opacity on the effects spring of
     the same speed —
-    dialogs default (scale from 0.93), menus, dropdowns and the date picker fast (0.93), the
-    snackbar fast (0.8), side sheets slide in on default spatial; they leave without a bounce on the
-    standard fast spring and fast effects. *Ours* (M3 publishes no choreography): the bottom sheet
-    sits on the bottom edge and would lift off it on an overshoot, so it enters on the standard
+    dialogs default (scale from 0.93), side sheets slide in on default spatial; they leave without
+    a bounce on the standard fast spring and fast effects. Menus, dropdowns and the date picker
+    take no scale (**M3**: scale implies an elevation change; they expand along an axis, away from
+    the anchor — videos of transition patterns 7-2): a clip with the surface's corners opens from
+    the anchored edge, down under the field or up above it, on the standard fast spring with fast
+    effects, the rows fade in from the anchor 30 ms apart (the fourth and later together); they
+    close the same way back, the fade quicker. The snackbar opens upwards from its bottom edge,
+    opaque, on the standard fast spring, its text fades in 50 ms later (**M3** video 7-3); it
+    leaves as before (fade, its line closes). The spring and the timings are *ours*, measured on
+    the videos (no bounce there); the clip leaves room for the shadow (`--tb-motion-room`), so it
+    moves with the surface. *Ours* (M3 publishes no choreography): the bottom sheet sits on the
+    bottom edge and would lift off it on an overshoot, so it enters on the standard
     fast spring too; the scrim fades on default effects (in) and fast effects (out); list items of a
     FAB menu enter 30 ms apart; a flexible pane that appears after the page enters on default
     spatial, panes of a new page don't.
