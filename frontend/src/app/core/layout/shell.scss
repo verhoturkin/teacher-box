@@ -91,6 +91,8 @@
   display: flex;
   flex: 1;
   align-items: flex-start;
+  /* the docked notifications pane enters and leaves past the trailing edge (clip keeps it sticky) */
+  overflow-x: clip;
 }
 
 .tb-shell__content {

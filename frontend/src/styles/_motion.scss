@@ -42,6 +42,21 @@
   }
 }
 
+/* a coplanar pane takes its room beside the page and gives it back: the trailing margin `--tb-motion-dock`
+   (minus its width and the gap before it) pulls it out of the row, past the clipped trailing edge — the
+   neighbours resize, the content keeps its width and moves with the pane's leading edge (M3 video 7-5) */
+@keyframes tb-motion-dock-in {
+  from {
+    margin-inline-end: var(--tb-motion-dock);
+  }
+}
+
+@keyframes tb-motion-dock-out {
+  to {
+    margin-inline-end: var(--tb-motion-dock);
+  }
+}
+
 /* an inline message opens its line, the snackbar leaves the line it took */
 @keyframes tb-motion-expand {
   from {

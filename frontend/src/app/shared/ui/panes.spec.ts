@@ -205,6 +205,20 @@ describe('Panes', () => {
     expect(host.querySelectorAll('tb-pane')).toHaveLength(3);
   });
 
+  it('gives a pane of a known width its coplanar room, a flexible one and one pane at a time none', async () => {
+    const { panes } = await render(1600);
+    const dock = (pane: HTMLElement | undefined) =>
+      pane?.style.getPropertyValue('--tb-motion-dock');
+
+    expect(dock(panes[0])).toBe('calc(-1 * (25.75rem + var(--tb-panes-spacer)))');
+    expect(dock(panes[1])).toBe('');
+    expect(dock(panes[2])).toBe('calc(-1 * (25rem + var(--tb-panes-spacer)))');
+    TestBed.resetTestingModule();
+
+    const single = await render(599);
+    expect(single.panes.map(dock)).toEqual(['', '', '']);
+  });
+
   it('changes the kind of a pane', async () => {
     const { fixture, panes } = await render(1200);
 

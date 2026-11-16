@@ -98,8 +98,17 @@ elevation with their values; springs —
     standard fast spring and fast effects. *Ours* (M3 publishes no choreography): the bottom sheet
     sits on the bottom edge and would lift off it on an overshoot, so it enters on the standard
     fast spring too; the scrim fades on default effects (in) and fast effects (out); list items of a
-    FAB menu enter 30 ms apart; a pane that appears after the page enters on default spatial, panes
-    of a new page don't.
+    FAB menu enter 30 ms apart; a flexible pane that appears after the page enters on default
+    spatial, panes of a new page don't.
+  - Coplanar panes (**M3**: a side sheet at the elevation of the content shrinks the area of the
+    content): the docked notifications pane and a fixed or sheet `tb-pane` that appears or leaves
+    beside others open by growing their room from 0 and close by shrinking it, so the neighbours
+    resize instead of jumping; the content keeps its width, moves with the leading edge and is
+    clipped at the trailing one (`tb-motion-dock-in/out` animate the trailing margin). *Ours*:
+    `--tb-spring-coplanar-spatial` (770 ms, a critically damped spring 1 / 130 on the effects
+    curve) — measured on the M3 video of the pattern (half the width at 150 ms, 90 % at 340 ms, no
+    overshoot); the expressive spatial springs are faster and bounce. The content fades in on fast
+    effects.
   - PrimeNG controls (fields, selects, checkboxes, tables, tabs, the paginator) change colour,
     outline and shadow on the fast effects spring: the semantic `transitionDuration` of the preset
     is `var(--tb-spring-fast-effects)`, a duration and a curve. The radio dot grows on the fast

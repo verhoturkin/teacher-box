@@ -63,7 +63,7 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
 
 ### 414. Panes and the rail
 
-- [ ] 414.1 **F** *complex* — the docked notifications pane is a coplanar sheet: it opens by
+- [x] 414.1 **F** *complex* — the docked notifications pane is a coplanar sheet: it opens by
   growing its width from 0, so the page beside it narrows smoothly, and closes by shrinking
   (`animate.leave`, missing today) — `core/notifications/notifications-sheet.ts`. The same for a
   `tb-pane` that appears or leaves beside others (`shared/ui/panes.ts`): the neighbours resize

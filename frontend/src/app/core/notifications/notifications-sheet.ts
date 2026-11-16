@@ -46,6 +46,8 @@ function pathOf(url: string): string {
           #pane
           id="tb-notifications-sheet"
           class="tb-notifications-pane"
+          animate.enter="tb-notifications-pane--enter"
+          animate.leave="tb-notifications-pane--leave"
           tabindex="-1"
           aria-labelledby="tb-notifications-sheet-title"
           (keydown.escape)="closeDocked()"
@@ -117,10 +119,20 @@ function pathOf(url: string): string {
       background: var(--p-md-surface);
       color: var(--p-md-on-surface);
       outline: none;
-      animation:
-        tb-motion-slide-in var(--tb-spring-default-spatial),
-        tb-motion-fade-in var(--tb-spring-default-effects);
-      --tb-motion-x: var(--tb-space-6);
+      /* a coplanar sheet (M3 video 7-5): its room grows from 0 and the page beside it narrows */
+      --tb-motion-dock: -25rem;
+    }
+
+    .tb-notifications-pane--enter {
+      animation: tb-motion-dock-in var(--tb-spring-coplanar-spatial);
+    }
+
+    .tb-notifications-pane--enter > * {
+      animation: tb-motion-fade-in var(--tb-spring-fast-effects);
+    }
+
+    .tb-notifications-pane--leave {
+      animation: tb-motion-dock-out var(--tb-spring-coplanar-spatial) forwards;
     }
 
     .tb-notifications-pane__head {

@@ -133,6 +133,7 @@ export class Panes {
     '[style.flex-grow]': 'grow()',
     '[style.flex-basis]': 'basis()',
     '[style.max-width]': 'maxWidth()',
+    '[style.--tb-motion-dock]': 'dock()',
     '[attr.role]': 'label() ? "region" : null',
     '[attr.aria-label]': 'label() || null',
     '[animate.enter]': 'enter()',
@@ -223,6 +224,19 @@ export class Panes {
         tb-motion-fade-in var(--tb-spring-default-effects);
     }
 
+    /* a pane of a known width beside others is coplanar: its room grows and shrinks, the neighbours resize */
+    :host(.tb-pane--dock-in) {
+      animation: tb-motion-dock-in var(--tb-spring-coplanar-spatial);
+    }
+
+    :host(.tb-pane--dock-in) > * {
+      animation: tb-motion-fade-in var(--tb-spring-fast-effects);
+    }
+
+    :host(.tb-pane--dock-out) {
+      animation: tb-motion-dock-out var(--tb-spring-coplanar-spatial) forwards;
+    }
+
     :host(.tb-pane--leave) {
       --tb-motion-x: var(--tb-space-6);
       animation:
@@ -272,9 +286,20 @@ export class Pane {
   protected readonly maxWidth = computed(() =>
     !this.panes.single() && this.kind() === 'sheet' ? SHEET_WIDTH : null,
   );
-  protected readonly enter = computed(() => (this.panes.settled() ? 'tb-pane--enter' : ''));
+  /** Its room beside the others when the width is known (fixed, sheet): it enters and leaves coplanar. */
+  protected readonly dock = computed(() => {
+    const basis = this.basis();
+    return basis !== null && basis !== '0%'
+      ? `calc(-1 * (${basis} + var(--tb-panes-spacer)))`
+      : null;
+  });
+  protected readonly enter = computed(() =>
+    this.panes.settled() ? (this.dock() === null ? 'tb-pane--enter' : 'tb-pane--dock-in') : '',
+  );
   /** Beside other panes only: one pane on compact gives its place at once (the route changes it). */
-  protected readonly leave = computed(() => (this.panes.single() ? '' : 'tb-pane--leave'));
+  protected readonly leave = computed(() =>
+    this.panes.single() ? '' : this.dock() === null ? 'tb-pane--leave' : 'tb-pane--dock-out',
+  );
 }
 
 /** Which panes of a list-detail layout are shown (redesign spec §3.3). */
