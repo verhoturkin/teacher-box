@@ -474,6 +474,11 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
         .p-button {
           transition: ${shapeTransition()};
         }
+        /* M3 Label Large: 14 / 20 (the 20 px line is already set), tracking 0.1 px; sm and lg keep their own */
+        .p-button:not(.p-button-sm, .p-button-lg) {
+          font-size: 0.875rem;
+          letter-spacing: var(--tb-tracking-label-l);
+        }
         .p-button:not(:disabled):active {
           border-radius: var(--tb-shape-sm);
         }
