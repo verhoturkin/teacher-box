@@ -158,9 +158,29 @@
 }
 
 /*
+ * A group across the width of its surface (the student's lesson sheet, the marks of a past lesson, a
+ * review decision): equal parts whatever the labels — they don't grow from the content, 16 px sides
+ * fit 360 px (our decision: M3 sizes a standard group by its buttons).
+ */
+.tb-button-group--fill {
+  display: flex;
+
+  > p-button {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .p-button {
+    width: 100%;
+    min-width: 0;
+    padding-inline: var(--tb-space-4);
+  }
+}
+
+/*
  * The student's buttons of a lesson (tb-lesson-actions). In a row the requests stand next to each
- * other; stacked (a phone) the meeting takes the whole width and the requests are a standard button
- * group under it, two halves of the width.
+ * other; stacked (a phone) the meeting takes the whole width and the requests are a filling
+ * standard button group under it.
  */
 .tb-lesson-actions--stacked {
   flex-direction: column;
@@ -170,21 +190,5 @@
   a.p-button,
   tb-join-lesson-button .p-button {
     width: 100%;
-  }
-
-  .tb-button-group {
-    display: flex;
-
-    /* equal halves whatever the labels: they don't grow from the content, 16 px sides fit 360 px */
-    > p-button {
-      flex: 1 1 0;
-      min-width: 0;
-    }
-
-    .p-button {
-      width: 100%;
-      min-width: 0;
-      padding-inline: var(--tb-space-4);
-    }
   }
 }

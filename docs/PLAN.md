@@ -23,64 +23,6 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
-## v0.50.0
-
-Goals: pay the technical and design debt left in the backlog. Two homework helpers move to
-`shared/`, architecture tests cover every module, the setup wizard and link fields get shared
-components, PrimeNG styles are overridden through CSS layers instead of `::ng-deep` /
-`!important`, CI catches unused design tokens, and the remaining layout nits of the 2026-09-29
-design audit are fixed.
-
-Source: backlog review of 2026-11-15. ADRs: a new one for 400.1 (CSS layers replace
-`::ng-deep`); 399.1 amends ADR-0059 only if the gallery rules change.
-
-### 398. Shared helpers and architecture tests
-
-- [ ] 398.1 **F** *simple* — move `EditorAutosave` (`homework/teacher/editor/editor-autosave.ts`)
-  and `WhomFilter` (`homework/teacher/list/whom-filter.ts`) to `shared/` (candidates from 387.5),
-  with their specs; update imports in `assignment-editor-page.ts`, `assignments-page.ts`; keep
-  `frontend/scripts/import-cycles.mjs` and the feature directions (ADR-0058) green.
-- [ ] 398.2 **B** *simple* — `ArchitectureTests.BUSINESS_MODULES` derives the module list like
-  `SchemaIsolationTests.modulesWithMigrations()` (or from `ApplicationModules`), so `textbooks`
-  and any future module are covered; assert the list contains `textbooks`.
-
-### 399. Shared `tb-steps` and `tb-copy-field`
-
-- [ ] 399.1 **F** *complex* — `shared/ui/steps.ts` (`tb-steps`): the step indicator of the setup
-  wizard (`settings/setup/setup-page.ts`, `settings/setup/steps/`) and any other stepper markup
-  becomes one component; sample in `features/gallery/`. `m3-expressive` skill.
-- [ ] 399.2 **F** *simple* — `shared/ui/copy-field.ts` (`tb-copy-field`): a read-only field with a
-  «Копировать» button centred on the field (DA-081). Replace the copies in
-  `schedule/ui/calendar-feed-panel.ts`, `students/invite-link-dialog.ts`,
-  `notifications/channels/link-code-view.ts`, `meetings/rooms/room-link.ts`,
-  `schedule/teacher/google-calendar-panel.ts` where they are a field + copy button; sample in the
-  gallery. `m3-expressive` skill.
-
-### 400. Styles: CSS layers and token check
-
-- [ ] 400.1 **F** *complex* — enable PrimeNG `cssLayer` in `providePrimeNG` (`app.config.ts`) with
-  a layer order in `styles.scss`, then remove the 38 `::ng-deep` and 20 `!important` where the
-  layer order makes them unnecessary; screenshots of the gallery before and after must match. New
-  ADR; update `docs/design-system.md` and `frontend/AGENTS.md`.
-- [ ] 400.2 **F** *simple* — `frontend/scripts/tokens.mjs`: fails on a `--tb-*` custom property
-  that is declared but never read (styles, components, `teacher-box-preset.ts`); run it from
-  `npm run lint` / `scripts/verify.sh frontend`; remove the unused tokens it finds.
-
-### 401. Layout nits of the design audit
-
-- [ ] 401.1 **F** *simple* — DA-081 (`rg --no-ignore -n "DA-081" docs/archive/audit`): recheck
-  the 15 items against the current code, fix the ones still there (each 1–3 lines), note in this
-  substep which were already gone. `m3-expressive` skill.
-- [ ] 401.2 **F** *complex* — DA-082: `.tb-button-group` styles move out of
-  `.tb-lesson-actions--stacked` into the class itself (`styles.scss`); decision pairs («Проведено |
-  Пропуск», «Отклонить | Согласовать», «Принять | Вернуть на доработку») become connected button
-  groups; no `size` on `p-selectbutton`, E2E checks `.p-togglebutton-sm`; the ⚠ icon is set in
-  `dangerConfirmation` for every danger confirmation. Gallery samples; `docs/design-system.md`.
-
-### 402. Release 0.50.0
-
-- [ ] 402.1 *simple* — skill `release`.
-
 ## v0.51.0
 
 Goals: smaller student and schedule features from the audit and the backlog. A student records a
@@ -181,3 +123,6 @@ Decided against on 2026-11-15 (don't propose again without a new reason): `no-st
 attachments stays (a shared computer must not keep files); one language of the dictionaries per
 load; Caddy alone instead of Caddy in front of nginx; colours on the board list; times in the
 portal time zone; search in the remaining long lists and list-detail for the review queue.
+
+- *simple* F — buttons render at 16px: the `.p-button { font-size: 0.875rem }` rule never applied
+  and was removed in 400.1 (ADR-0065); decide on M3 Label Large 14px as a separate visible change.

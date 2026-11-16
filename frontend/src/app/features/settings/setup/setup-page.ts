@@ -30,6 +30,7 @@ import { revealErrors } from '@shared/ui/field-errors';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { ProgressLabel } from '@shared/ui/progress-label.directive';
+import { Step, Steps } from '@shared/ui/steps';
 import { SettingsApi } from '../data-access/settings-api';
 import { T } from '../i18n/texts';
 import { deviceZone } from '../lesson-options';
@@ -42,14 +43,9 @@ import { SetupRulesPreview, SetupRulesStep } from './steps/rules-step';
 import { Saved, StepId, nonEmpty } from './steps/setup-state';
 import { SetupTimePreview, SetupTimeStep } from './steps/time-step';
 
-interface Step {
-  readonly id: StepId;
-  readonly title: string;
-}
-
 const t = T.setup;
 
-const STEPS: readonly Step[] = [
+const STEPS: readonly Step<StepId>[] = [
   { id: 'password', title: t.stepPassword },
   { id: 'portal', title: t.stepPortal },
   { id: 'time', title: t.stepTime },
@@ -84,6 +80,7 @@ const STEPS: readonly Step[] = [
     SetupRulesStep,
     SetupTimePreview,
     SetupTimeStep,
+    Steps,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'tb-setup', '[class.tb-setup--compact]': 'compact()' },
@@ -134,24 +131,12 @@ const STEPS: readonly Step[] = [
 
     <main class="tb-setup__pane">
       @if (!compact()) {
-        <ol class="tb-setup__steps" [attr.aria-label]="t.steps">
-          @for (step of steps(); track step.id; let index = $index) {
-            <li
-              [class.tb-setup__step--current]="step.id === current()"
-              [class.tb-setup__step--done]="index < currentIndex()"
-              [attr.aria-current]="step.id === current() ? 'step' : null"
-            >
-              <span class="tb-setup__number" aria-hidden="true">
-                @if (index < currentIndex()) {
-                  <i class="tb-i tb-i-check"></i>
-                } @else {
-                  {{ index + 1 }}
-                }
-              </span>
-              {{ step.title }}
-            </li>
-          }
-        </ol>
+        <tb-steps
+          class="tb-setup__steps"
+          [steps]="steps()"
+          [current]="current()"
+          [label]="t.steps"
+        />
       }
 
       <section class="tb-setup__main" aria-labelledby="setup-step-title">
@@ -321,59 +306,8 @@ const STEPS: readonly Step[] = [
       }
     }
 
-    /* the vertical stepper (our decision: M3 publishes no stepper; rows as the list items of a nav rail) */
     .tb-setup__steps {
       grid-area: steps;
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-1);
-      margin: 0;
-      padding: 0;
-      list-style: none;
-
-      li {
-        display: flex;
-        align-items: center;
-        gap: var(--tb-space-3);
-        min-height: 3.5rem;
-        padding: 0 var(--tb-space-4);
-        border-radius: var(--tb-shape-full);
-        color: var(--p-md-on-surface-variant);
-        font: var(--tb-type-label-l);
-      }
-
-      .tb-setup__step--current {
-        background: var(--p-md-secondary-container);
-        color: var(--p-md-on-secondary-container);
-      }
-    }
-
-    .tb-setup__number {
-      display: inline-flex;
-      flex: 0 0 1.75rem;
-      align-items: center;
-      justify-content: center;
-      width: 1.75rem;
-      height: 1.75rem;
-      border: 1px solid var(--p-md-outline);
-      border-radius: var(--tb-shape-full);
-      font: var(--tb-type-label-m);
-
-      .tb-i {
-        font-size: 1.125rem;
-      }
-    }
-
-    .tb-setup__step--current .tb-setup__number {
-      border-color: var(--p-md-on-secondary-container);
-      background: var(--p-md-on-secondary-container);
-      color: var(--p-md-secondary-container);
-    }
-
-    .tb-setup__step--done .tb-setup__number {
-      border-color: var(--p-md-primary);
-      background: var(--p-md-primary);
-      color: var(--p-md-on-primary);
     }
 
     .tb-setup__main {
@@ -470,7 +404,7 @@ const STEPS: readonly Step[] = [
       }
     }
 
-    :host ::ng-deep .tb-setup__progress {
+    .tb-setup__progress {
       height: 0.25rem;
       margin: 0 var(--tb-space-4);
     }
@@ -501,7 +435,7 @@ export class SetupPage implements OnInit {
   });
 
   /** The password step is there only when the password was generated (decided on opening). */
-  protected readonly steps = signal<readonly Step[]>(
+  protected readonly steps = signal<readonly Step<StepId>[]>(
     STEPS.filter((step) => step.id !== 'password' || this.passwordRequired()),
   );
   readonly current = signal<StepId>(this.steps()[0]?.id ?? 'portal');

@@ -7,7 +7,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { BREAKPOINT_QUERIES, WindowSize } from '@core/layout/mobile';
 import { PUSH_DEVICE_KEY, PushDevice } from '@core/push/web-push';
 import { Snackbar } from '@core/snackbar/snackbar';
-import { bodyText, buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
+import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { channel, linkCode, preferences } from '@testing/notification-fixtures';
 import { testProviders } from '@testing/setup';
 import { ChannelState, NotificationPreferences } from '../data-access/notifications.models';
@@ -171,7 +171,9 @@ describe('NotificationsSection', () => {
       backend.expectOne('/api/me/channels/TELEGRAM/link-code').flush(linkCode());
       fixture.detectChanges();
       await vi.advanceTimersByTimeAsync(0);
-      expect(bodyText()).toContain('ABCD-2345');
+      expect(requireElement(document.body, 'tb-copy-field input', HTMLInputElement).value).toBe(
+        'ABCD-2345',
+      );
 
       await vi.advanceTimersByTimeAsync(LINK_POLL_INTERVAL_MS);
       backend.expectOne('/api/me/channels').flush([channel(), channel({ channel: 'VK' })]);
@@ -198,13 +200,15 @@ describe('NotificationsSection', () => {
         .flush(linkCode({ channel: 'VK', code: 'EFGH-6789' }));
       fixture.detectChanges();
       await fixture.whenStable();
-      expect(bodyText()).toContain('EFGH-6789');
+      expect(requireElement(document.body, 'tb-copy-field input', HTMLInputElement).value).toBe(
+        'EFGH-6789',
+      );
 
       fixture.componentInstance.onLinkVisibleChange(true);
       fixture.componentInstance.onLinkVisibleChange(false);
       fixture.detectChanges();
       await fixture.whenStable();
-      expect(bodyText()).not.toContain('EFGH-6789');
+      expect(document.body.querySelector('tb-copy-field')).toBeNull();
     });
 
     it('pauses and disconnects a messenger', async () => {

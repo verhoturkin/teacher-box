@@ -82,7 +82,15 @@ export const appConfig: ApplicationConfig = {
       inject(SystemBars);
     }),
     providePrimeNG({
-      theme: { preset: TeacherBoxPreset, options: { darkModeSelector: `.${DARK_CLASS}` } },
+      theme: {
+        preset: TeacherBoxPreset,
+        // PrimeNG's CSS goes into `@layer primeng` (ADR-0065); its style comes first in <head>, so it also
+        // declares the order of styles/_layers.scss. Unlayered styles win over both layers.
+        options: {
+          darkModeSelector: `.${DARK_CLASS}`,
+          cssLayer: { name: 'primeng', order: 'base, primeng' },
+        },
+      },
       translation: PRIMENG_TEXTS[language()],
       pt: PASS_THROUGH,
       ripple: true,

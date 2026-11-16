@@ -86,7 +86,7 @@ import { T } from '../i18n/texts';
       color: var(--p-md-on-secondary-container);
     }
 
-    :host ::ng-deep .tb-lesson-scope__note {
+    .tb-lesson-scope__note {
       margin-top: var(--tb-space-3);
     }
   `,

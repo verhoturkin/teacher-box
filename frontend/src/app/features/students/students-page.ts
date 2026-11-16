@@ -781,7 +781,6 @@ export class StudentsPage implements OnInit {
       await this.confirm.danger({
         header: this.t.deactivateHeader,
         message: this.t.deactivateMessage(student.displayName),
-        icon: 'tb-i tb-i-warning',
         acceptLabel: this.t.deactivate,
       })
     ) {
@@ -802,7 +801,6 @@ export class StudentsPage implements OnInit {
       await this.confirm.danger({
         header: this.tg.archiveHeader,
         message: this.tg.archiveMessage(group.name),
-        icon: 'tb-i tb-i-warning',
         acceptLabel: this.tg.archive,
       })
     ) {

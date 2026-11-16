@@ -29,6 +29,15 @@ sample from there; this page keeps the rules. No other UI kits (Angular Material
 primeicons. Minimum browsers: Chrome 119, Safari 17.2, Firefox 128 (`linear()`, `:has()`,
 `color-mix()`); older ones get no springs.
 
+**Cascade layers** ([ADR-0065](adr/0065-primeng-css-layer.md)): PrimeNG's theme and component CSS
+is `@layer primeng`, under it `@layer base` — element defaults PrimeNG's components override (`a`);
+the order is in `styles/_layers.scss` and `cssLayer.order` of `app.config.ts`. Everything else is
+unlayered and beats PrimeNG at any specificity: no `!important` against its selectors (only against
+its inline styles — the dialog mask, the toast — and for reduced motion). `::ng-deep` only for
+another template's DOM (inside a PrimeNG component: `.p-button` of `p-button`, `.p-card-body`; a
+child component; projected content); a class on a host in the own template — PrimeNG 21 puts
+`styleClass` on the host — needs none.
+
 **Checks.** `core/theme/design-rules.spec.ts` fails on Aura tokens, hex colours outside
 `core/theme/` and `boards/`, `size="small"` buttons, outlined ones not written as
 `variant="outlined"`, and when the icon font and the
@@ -184,10 +193,10 @@ themes, severities, the colours of students.
   reference colours (Tailwind 500, red 600; hues about 30° apart), each giving `label-<c>`,
   `on-label-<c>`, `label-<c>-container`, `on-label-<c>-container` of both themes from its Fidelity
   scheme (2025 spec), plus its surface containers lowest / low / high and on-surface(-variant)
-  (`--tb-label-surface-container-*`, `--tb-on-label-surface*`). *Ours:* not harmonized with the
+  (`--p-md-label-<c>-surface-*`; no `--tb-*` alias while nothing reads them). *Ours:* not harmonized with the
   portal colour; on-roles moved along the hue to 4.5:1; containers at least ΔE×100 10 apart and the
   colour role 3:1 on list and dialog surfaces (`label-colors.spec.ts`). `data-tb-label="<c>"` (or
-  `tb-label--<c>`) brings `--tb-label`, `--tb-on-label`, `--tb-label-container`,
+  `tb-label--<c>`) brings `--tb-label`, `--tb-label-container`,
   `--tb-on-label-container`. Teacher only, looked up by id (`TeacherColors`): avatars and group
   icons take the label container and its on-role, a photo keeps its image with a 2 px colour ring;
   chips of member multiselects take the container (`tbChipColors`); rows keep the neutral surface.
@@ -545,7 +554,11 @@ action — «Изменить» next to «Проверить N работ» (hom
 - **Standard button group** `tb-button-group` — actions side by side: an invisible container with
   separate buttons, 12 dp gap (**M3** ButtonGroupSmall.BetweenSpace); a pressed button morphs its
   shape; the neighbours' width change is not done (*ours*). Never a primary button in a connected
-  group: it reads as «already selected». A dialog footer keeps its own 8 dp (§11).
+  group: it reads as «already selected». A dialog footer keeps its own 8 dp (§11). A decision pair
+  of actions («Вернуть на доработку | Принять», «Проведено | Пропуск» under a past lesson, the
+  student's «Перенести | Отменить» on a phone) is a standard group, not a connected one (**M3**:
+  connected only when a button can be toggled); `tb-button-group--fill` spreads it across its
+  surface in equal parts with 16 px sides (*ours*).
 - **Split button** `tb-split` («Начать урок» | «Открыть в браузере»): 2 px gap, inner corners 4 px
   (8 px pressed, *ours*), trailing part 48 px with a 22 px chevron (**M3E** small); while its menu
   is open the trailing part is round and the chevron turns 180° on the standard fast spring. The
@@ -612,6 +625,9 @@ Gallery: [`/gallery/fields`](../frontend/src/app/features/gallery/fields/) (chip
   поиск» (while there is text; Esc clears) centred in round ends (4 + 48 + 4), text from 56 px; the
   browser's own clear button is hidden; it takes the full width of its pane or card and «×» never
   resizes it (*ours*). A dropdown filter is the same pill, 48 px, named «Поиск».
+- **Copy field** `tb-copy-field` (`@shared/ui`) — a read-only field (a link, an address, a code with
+  `mono`) with a round 40 px «Копировать» icon button centred on the 56 px field (*ours*); a
+  snackbar confirms the copy.
 - **Date** — one field with a trailing calendar icon. **Password** — `tb-password-toggle`, a 40×40
   icon button inside the field, «Показать пароль» / «Скрыть пароль», `aria-pressed`.
 - A 40 px button next to a 56 px field is centred on it (`tb-copy-row`).
@@ -811,6 +827,13 @@ changes the container; content and markup are the same at every width. Every dia
   help 42 rem wide, 1 rem from the window edges, large corners; header «←» (only when there is a way
   back), the headline (Title Large) and «×»; on a phone the whole screen. Standard (non-modal) side
   sheet — `tb-pane kind="sheet"` (§7), e.g. the bell on extra-large and the review sheet.
+- **Wizard steps** `tb-steps` (`@shared/ui/steps`; *ours*: **M3** publishes no stepper): a
+  vertical list of rows in the navigation-rail manner — 56 dp, full corners, label large, a 28 dp
+  numbered circle (1 dp outline); a step behind is a primary circle with a check, the current row
+  is secondary container with an on-secondary-container circle (`aria-current="step"`). The setup
+  wizard shows rows only; `[selectable]` makes them buttons (`(selected)`, a step that can't open
+  yet is `disabled`) and an `ng-template` inside is the body of the current step under its row,
+  behind a 1 dp outline-variant rule (the bot wizard).
 - **Menus and dropdowns:** 16 px container, 4 px padding, elevation 2; items are tiles with 2 px gap
   — 4 px corners, 12 px on the outer side of the first and last item and of the selected one;
   *ours:* items next to a separator get the outer 12 px too, so each group reads as one segment (the

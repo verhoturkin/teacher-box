@@ -78,7 +78,7 @@ describe('CalendarFeedPanel', () => {
       .flush(calendarFeed({ enabled: true, path: '/api/public/schedule/abc.ics' }));
     await fixture.whenStable();
 
-    buttonByText(host, 'Копировать ссылку').click();
+    requireElement(host, 'button[aria-label="Копировать ссылку"]', HTMLButtonElement).click();
 
     expect(copy).toHaveBeenCalledWith(`${window.location.origin}/api/public/schedule/abc.ics`);
     expect(TestBed.inject(MessageService).add).toHaveBeenCalled();

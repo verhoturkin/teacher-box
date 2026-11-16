@@ -62,20 +62,22 @@ p-button.tb-button-steady .p-button {
 /*
  * Links: the primary color, underlined on hover, the focus ring from the keyboard; links styled as
  * buttons stay buttons, menu items (the navigation, the user menu) are highlighted by the
- * menu itself
+ * menu itself; under PrimeNG's layer, so `a pButton` keeps the button's colors
  */
-a {
-  color: var(--p-md-primary);
-  text-decoration: none;
-  border-radius: var(--tb-shape-xs);
+@layer base {
+  a {
+    color: var(--p-md-primary);
+    text-decoration: none;
+    border-radius: var(--tb-shape-xs);
 
-  &:hover {
-    text-decoration: underline;
-  }
+    &:hover {
+      text-decoration: underline;
+    }
 
-  &:focus-visible {
-    outline: 3px solid var(--p-md-secondary);
-    outline-offset: 2px;
+    &:focus-visible {
+      outline: 3px solid var(--p-md-secondary);
+      outline-offset: 2px;
+    }
   }
 }
 

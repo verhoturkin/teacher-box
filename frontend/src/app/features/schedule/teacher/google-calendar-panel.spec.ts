@@ -70,7 +70,9 @@ describe('GoogleCalendarPanel', () => {
     const text = readableText(host);
     expect(text).toContain('Google Calendar API');
     expect(text).toContain('Publish app');
-    expect(text).toContain('https://school.example.com/api/public/schedule/google/callback');
+    expect(host.querySelector<HTMLInputElement>('tb-copy-field input')?.value).toBe(
+      'https://school.example.com/api/public/schedule/google/callback',
+    );
 
     fixture.componentInstance.form.setValue({ clientId: ' id-1 ', clientSecret: 'secret' });
     await fixture.whenStable();
@@ -91,7 +93,7 @@ describe('GoogleCalendarPanel', () => {
     const copy = vi.spyOn(TestBed.inject(Clipboard), 'copy').mockReturnValue(true);
     const host = await render(googleStatus());
 
-    buttonByText(host, 'Копировать адрес').click();
+    requireElement(host, 'button[aria-label="Копировать адрес"]', HTMLButtonElement).click();
 
     expect(copy).toHaveBeenCalledWith(
       'https://school.example.com/api/public/schedule/google/callback',

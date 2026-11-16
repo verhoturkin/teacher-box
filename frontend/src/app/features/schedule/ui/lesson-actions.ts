@@ -8,8 +8,8 @@ import { T } from '../i18n/texts';
  * The student's buttons of a lesson: «Войти в урок» when the lesson has a meeting, «Перенести» and
  * «Отменить» («Не приду» in a group). In a row (a computer) they are items of the row they stand
  * in. Stacked (a phone: the bottom sheet of a lesson, the nearest lesson on the home page) the
- * meeting takes the whole width and the requests are an M3 Expressive connected button group of
- * two halves under it (ADR-0022).
+ * meeting takes the whole width and the requests are a standard button group of two halves under
+ * it (`tb-button-group--fill`, ADR-0022).
  */
 @Component({
   selector: 'tb-lesson-actions',
@@ -29,7 +29,12 @@ import { T } from '../i18n/texts';
       />
     }
     @if (requests()) {
-      <div class="tb-button-group" role="group" [attr.aria-label]="t.requests">
+      <div
+        class="tb-button-group"
+        [class.tb-button-group--fill]="stacked()"
+        role="group"
+        [attr.aria-label]="t.requests"
+      >
         <p-button
           [label]="t.reschedule"
           [icon]="rescheduleIcon()"

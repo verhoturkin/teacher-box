@@ -681,6 +681,7 @@ export const en: Translation<typeof ru> = {
     beyond: 'These pages are outside the textbook’s page range',
   },
   review: {
+    decision: 'Review decision',
     sheetTitle: 'Review',
     position: (n: number, total: number) => `${String(n)} of ${String(total)} to review`,
     previousWork: 'Previous submission',

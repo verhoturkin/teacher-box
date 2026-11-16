@@ -65,7 +65,7 @@ import { UpcomingLessons } from './next-lesson';
 import { QuestionDraft, questionInputs } from './question-drafts';
 import { aiSources } from './editor/ai-sources';
 import { EditorAi } from './editor/editor-ai';
-import { EditorAutosave, EditorWrite } from './editor/editor-autosave';
+import { EditorAutosave, EditorWrite } from '@shared/forms/editor-autosave';
 import { EditorHeader } from './editor/editor-header';
 import { EditorQuiz } from './editor/editor-quiz';
 import { EditorMaterialsState } from './editor/editor-materials-state';
@@ -402,7 +402,7 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
     this.isDraft() ? (this.assignment()?.attachments ?? []) : [],
   );
   /** The draft saves itself a moment after each change. */
-  private readonly drafts = new EditorAutosave({
+  private readonly drafts = new EditorAutosave<AssignmentDetails>({
     canSave: () => !this.saved && this.titleValue() !== '' && !this.form.invalid,
     snapshot: () => this.snapshot(),
     write: () => this.write(false),
@@ -772,7 +772,7 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
    * (`give`) or keeps its students. A new assignment is remembered as soon as it exists, so a later step
    * that fails never makes a second one.
    */
-  private write(give: boolean): Observable<EditorWrite> {
+  private write(give: boolean): Observable<EditorWrite<AssignmentDetails>> {
     const existing = this.assignment();
     const draft = this.draft();
     const students = this.who.recipients();

@@ -1,25 +1,24 @@
 import { Subject } from 'rxjs';
-import { assignmentDetails } from '@testing/homework-fixtures';
 import { AutosavedDraft, EditorAutosave, EditorWrite } from './editor-autosave';
 
 function draft(canSave = true) {
-  const writes: Subject<EditorWrite>[] = [];
+  const writes: Subject<EditorWrite<string>>[] = [];
   const host = {
     canSave: vi.fn(() => canSave),
     snapshot: vi.fn(() => 'text'),
     write: vi.fn(() => {
-      const write = new Subject<EditorWrite>();
+      const write = new Subject<EditorWrite<string>>();
       writes.push(write);
       return write;
     }),
     saved: vi.fn(),
     failed: vi.fn(),
-  } satisfies AutosavedDraft;
+  } satisfies AutosavedDraft<string>;
   return { host, writes, autosave: new EditorAutosave(host) };
 }
 
-function finish(write: Subject<EditorWrite> | undefined): void {
-  write?.next({ assignment: assignmentDetails(), complete: true });
+function finish(write: Subject<EditorWrite<string>> | undefined): void {
+  write?.next({ assignment: 'details', complete: true });
   write?.complete();
 }
 

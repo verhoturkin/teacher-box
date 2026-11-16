@@ -681,6 +681,7 @@ export const ru = {
   },
   review: {
     sheetTitle: 'Проверка',
+    decision: 'Решение по работе',
     position: (n: number, total: number) => `${String(n)} из ${String(total)} на проверке`,
     previousWork: 'Предыдущая работа',
     nextWork: 'Следующая работа',

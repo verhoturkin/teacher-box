@@ -73,6 +73,7 @@ describe('LessonActions', () => {
     expect(host.style.display).toBe('flex');
     const group = requireElement(host, '.tb-button-group[role="group"]', HTMLElement);
     expect(group.classList).not.toContain('tb-button-group--connected');
+    expect(group.classList).toContain('tb-button-group--fill');
     expect(group.querySelectorAll('p-button')).toHaveLength(2);
     expect(group.querySelectorAll('p-button')[1]?.textContent).toContain('Отменить');
     expect(group.querySelector('.p-button-danger')).toBeNull();
