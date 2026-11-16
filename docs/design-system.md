@@ -109,17 +109,26 @@ elevation with their values; springs —
     a progress bar moves on the standard fast spring (no overshoot past it).
   - Pages (view transitions of the router, `core/routing/page-transitions.ts`, ADR-0066) follow
     the M3 transition patterns on their **legacy easing and duration** (**M3**: transitions are not
-    on springs yet), standard set — the fallback M3 names for the web:
-    `--tb-easing-standard{,-accelerate,-decelerate}`, `--tb-duration-{short3,medium1,medium2}`.
-    Only the content moves, the bars and the rail stay. Clean fades (**M3**): the old page fades
-    out (short 3, standard accelerate), and only then the new one fades in (medium 1, standard
-    decelerate, delayed by short 3) — no cross-fade. Top level — between sections and pages of
+    on springs yet): `--tb-easing-{standard-accelerate,standard-decelerate,emphasized-decelerate}`,
+    `--tb-duration-{short1,short2,short4,medium4}` (CSS has no full emphasized curve, M3). Only the
+    content moves, the bars and the rail stay. Clean fades (**M3**): the old page fades out
+    (standard accelerate), and only then the new one fades in (standard decelerate, delayed by the
+    fade out) — no cross-fade: top level, the detail pane and reduced motion short 1 + short 2
+    (a quick fade, as in the M3 video), forward and backward short 2 + short 4. Top level — between sections and pages of
     equal depth, on a phone too: only the fades, no scale or slide (**M3**: a quick fade, no
     connection between destinations). Forward and backward — deeper into a section and back: both
-    pages also slide 30 dp together (medium 2, standard). *Ours*: the duration of each part and
-    the 30 dp. Reduced motion keeps only the fades (**M3**). Nothing moves on the first load and
-    when only the parameters of the route change (a list-detail pane, a tab, a filter); browsers
-    without view transitions swap the page.
+    pages also slide 30 dp together (medium 4, emphasized decelerate — M3's pair for entering): the
+    fades are over early in a long, soft slide, as in the M3 video of the pattern. The slide is
+    clipped to the frame of the panes (the content minus the margins of `tb-panes`, pane corners):
+    nothing slides over the rail or into the margins; behind a single pane lies its surface, so
+    the surface stays and only its content moves. One route with other segments (a list and its
+    detail, `/teacher/homework` → `/teacher/homework/:id`): on one pane it is deeper or
+    back by the depth of the address, an item of equal depth fades through; beside the list only
+    the detail pane fades (`detail`), the list stays; a side sheet is not a detail. *Ours*: the
+    duration of each part and the 30 dp. Reduced motion keeps only the fades (**M3**). The bars
+    show only their live new state (the old snapshot is hidden): one indicator, and it grows from
+    its middle during the transition. Nothing moves on the first load and when only the query
+    changes (a tab, a filter); browsers without view transitions swap the page.
     The parts get their `view-transition-name` only while `<html data-tb-page>` is set: a named
     element is a stacking context, and a sheet drawn inside the content sank under its scrim.
   - No transition or animation is timed by hand (`200ms`, `ease`, `cubic-bezier`): only the spring

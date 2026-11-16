@@ -163,14 +163,17 @@
   /*
    * Transitions between pages (ADR-0066): M3 transition patterns still use the legacy easing and
    * duration system, not springs. The standard set is M3's fallback for the web (CSS has no
-   * emphasized easing): accelerate to exit the screen, decelerate to enter it, standard on screen.
+   * emphasized easing, only its decelerate and accelerate halves): fades on the standard set (top
+   * level 50 + 100 ms, forward and backward 100 + 200 ms), the slide of forward and backward on
+   * emphasized decelerate (M3's pair for entering, 400 ms).
    */
-  --tb-easing-standard: cubic-bezier(0.2, 0, 0, 1);
   --tb-easing-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
   --tb-easing-standard-decelerate: cubic-bezier(0, 0, 0, 1);
-  --tb-duration-short3: 150ms;
-  --tb-duration-medium1: 250ms;
-  --tb-duration-medium2: 300ms;
+  --tb-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --tb-duration-short1: 50ms;
+  --tb-duration-short2: 100ms;
+  --tb-duration-short4: 200ms;
+  --tb-duration-medium4: 400ms;
 }
 
 :root {

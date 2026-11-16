@@ -43,14 +43,15 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
   out instead of cross-fading; top level is fades only (no 0.92 scale); the 30 dp slide and the
   fades on M3 easing and duration tokens (standard set), not springs; under reduced motion a
   short fade instead of skipping. ADR-0066, design-system «Motion».
-- [ ] 412.2 **F** *simple* — the navigation keeps one indicator during a page transition: the
+- [x] 412.2 **F** *simple* — the navigation keeps one indicator during a page transition: the
   snapshot of `tb-side-nav` has no background, so the old indicator shows under the new one and
   vanishes at the end (`core/layout/side-nav.scss`, `view-transition-name` in `_motion.scss`).
   Check the rail and the bottom bar in the browser before and after.
-- [ ] 412.3 **F** *complex* — forward/back on a phone: when only the route parameters change and
+- [x] 412.3 **F** *complex* — forward/back on a phone: when only the route parameters change and
   the single pane switches list ↔ detail (`shared/ui/panes.ts`, `pageMotion` returns `null`
   today), the detail slides in with shared axis X forward and back out on «←». The bottom bar
-  between sections stays fade through.
+  between sections stays fade through. Done together with the wide case: beside the list only
+  the detail pane fades (ADR-0066).
 
 ### 413. Tabs
 
