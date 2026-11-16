@@ -35,7 +35,7 @@ Source: backlog review of 2026-11-15; design audit DA-049, DA-050.
 
 - [x] 403.1 **B** *simple* — `homework/domain/FilePolicy` accepts `audio/webm` (and `audio/ogg`,
   `audio/mp4` for Safari) with a size limit; tests.
-- [ ] 403.2 **F** *complex* — «Записать голос» in the answer panel of
+- [x] 403.2 **F** *complex* — «Записать голос» in the answer panel of
   `homework/student/my-task-page.ts`: `MediaRecorder` records, shows the duration, stop / redo,
   uploads the record as an attachment; `ACCEPTED_FILES` (`homework/ui/file-picker.ts`); an audio
   player for audio attachments for the student and the teacher's review. Microphone denied → a

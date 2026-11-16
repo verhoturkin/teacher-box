@@ -27,6 +27,7 @@ import { AttachmentList } from '../ui/attachment-list';
 import { TextbookList, boundTextbookFilename } from '../ui/textbook-list';
 import { VideoList } from '../ui/video-list';
 import { FilePicker } from '../ui/file-picker';
+import { canRecord, VoiceRecorder } from '../ui/voice-recorder';
 import { AssistChip } from '@shared/ui/assist-chip';
 import { injectMobile } from '@core/layout/mobile';
 import { SubmissionList } from '../ui/submission-list';
@@ -66,6 +67,7 @@ import { QuizSection } from './quiz-section';
     AttachmentList,
     TextbookList,
     FilePicker,
+    VoiceRecorder,
     AssistChip,
     SubmissionList,
     TaskStatusTag,
@@ -201,7 +203,11 @@ import { QuizSection } from './quiz-section';
               @if (last.text) {
                 <p class="tb-pre tb-task__muted">{{ last.text }}</p>
               }
-              <tb-attachment-list [attachments]="last.attachments" (download)="download($event)" />
+              <tb-attachment-list
+                [attachments]="last.attachments"
+                [audio]="audio"
+                (download)="download($event)"
+              />
             </section>
           }
 
@@ -241,6 +247,7 @@ import { QuizSection } from './quiz-section';
                 [list]="false"
                 [capture]="true"
               />
+              <tb-voice-recorder #voice [(files)]="files" />
               @if (error(); as message) {
                 <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
               }
@@ -251,6 +258,11 @@ import { QuizSection } from './quiz-section';
                 <tb-assist-chip icon="attach_file" (click)="filePicker.choose()">
                   {{ t.file }}
                 </tb-assist-chip>
+                @if (canRecord) {
+                  <tb-assist-chip icon="mic" [disabled]="voice.recording()" (click)="voice.start()">
+                    {{ t.voice }}
+                  </tb-assist-chip>
+                }
                 <span class="tb-task__spacer"></span>
                 <p-button
                   [label]="task.status === 'RETURNED' ? t.submitAgain : t.submit"
@@ -273,6 +285,7 @@ import { QuizSection } from './quiz-section';
               <ng-template>
                 <tb-submission-list
                   [submissions]="task.submissions"
+                  [audio]="audio"
                   (download)="download($event)"
                 />
               </ng-template>
@@ -516,6 +529,8 @@ export class MyTaskPage {
   protected readonly t = T.myTask;
   protected readonly tv = T.videos;
   private readonly api = inject(HomeworkApi);
+  protected readonly canRecord = canRecord();
+  protected readonly audio = (attachmentId: string) => this.api.myFile(attachmentId);
   private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
   private readonly fileOpener = inject(FileOpener);

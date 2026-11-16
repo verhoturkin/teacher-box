@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+import { Observable } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Tooltip } from 'primeng/tooltip';
 import { Attachment } from '../data-access/homework.models';
@@ -7,7 +16,8 @@ import { T } from '../i18n/texts';
 
 /**
  * Files of an assignment or a submission: a card list like the textbooks, the same «×» to remove. The name downloads
- * the file, or — `openable` — opens it (a PDF or a picture in a tab) with the download button beside it.
+ * the file, or — `openable` — opens it (a PDF or a picture in a tab) with the download button beside it. With
+ * `audio` (the loader of a file) a sound file gets «Прослушать»: a player under its name.
  */
 @Component({
   selector: 'tb-attachment-list',
@@ -39,9 +49,23 @@ import { T } from '../i18n/texts';
                 </button>
               }
               <span class="tb-list__supporting">{{ size(file.size) }}</span>
+              @if (sources()[file.id]; as source) {
+                <audio class="tb-attachment-list__audio" controls autoplay [src]="source"></audio>
+              }
             </div>
-            @if (openable() || removable()) {
+            @if (openable() || removable() || playable(file)) {
               <div class="tb-list__trail tb-list__trail--icons">
+                @if (playable(file) && !sources()[file.id]) {
+                  <p-button
+                    icon="tb-i tb-i-play_arrow"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="secondary"
+                    [pTooltip]="t.listen(file.filename)"
+                    [ariaLabel]="t.listen(file.filename)"
+                    (onClick)="listen(file)"
+                  />
+                }
                 @if (openable()) {
                   <p-button
                     icon="tb-i tb-i-download"
@@ -76,6 +100,12 @@ import { T } from '../i18n/texts';
     .tb-attachment-list {
       margin: var(--tb-space-2) 0;
     }
+
+    .tb-attachment-list__audio {
+      display: block;
+      inline-size: 100%;
+      margin-block-start: var(--tb-space-1);
+    }
   `,
 })
 export class AttachmentList {
@@ -87,6 +117,27 @@ export class AttachmentList {
   readonly opened = output<Attachment>();
   readonly download = output<Attachment>();
   readonly remove = output<Attachment>();
+  /** Loads a file for the player; without it sound files are only downloaded. */
+  readonly audio = input<((attachmentId: string) => Observable<Blob>) | null>(null);
+  protected readonly sources = signal<Record<string, string>>({});
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      Object.values(this.sources()).forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+    });
+  }
+
+  protected playable(file: Attachment): boolean {
+    return this.audio() !== null && file.contentType.startsWith('audio/');
+  }
+
+  protected listen(file: Attachment): void {
+    this.audio()?.(file.id).subscribe((blob) => {
+      this.sources.update((sources) => ({ ...sources, [file.id]: URL.createObjectURL(blob) }));
+    });
+  }
 
   protected icon(file: Attachment): string {
     return fileIcon(file.contentType);

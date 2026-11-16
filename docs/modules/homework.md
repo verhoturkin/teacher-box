@@ -226,6 +226,12 @@ of an assignment (`teacher/assignment-board.ts`): the frame «<title> · dd.MM.y
 gif files, then the bound pages of each textbook (a whole PDF — from page 1, an image — its picture, a document —
 none), at most 30. Routes `/teacher/homework/**`, `/cabinet/homework/**`.
 
+Voice answers (0.51.0): «Записать голос» in the answer panel (`ui/voice-recorder.ts`, shown only where the browser
+has `MediaRecorder`) records the microphone with a running time, «Записать заново» and «Остановить запись»; the take
+joins the picked files as `голос HH-mm.webm` (Safari `.m4a`, Firefox may give `.ogg`) and is sent with the answer. A
+denied microphone shows a hint. `tb-attachment-list` with an `audio` loader gives sound files «Прослушать» — an
+`<audio>` player from a blob URL — on the student's page and in the teacher's review.
+
 Videos (0.19.0, ADR-0047; tiles 0.43.0): `teacher/video-section.ts` in the editor (sent
 whole with `videos`). A video is a tile: the preview (YouTube's public `i.ytimg.com/vi/<id>/mqdefault.jpg`, CSP
 `img-src https:`; Rutube, VK and other links show the source icon — they publish no preview without new backend

@@ -103,6 +103,35 @@ const BACKUPS: Readonly<Record<string, readonly (readonly [string, string])[]>> 
   ],
 };
 
+/** Reviewed voice answer guidance from stage 403.2: [baseline, now] of the homework article per edition. */
+const VOICE: Readonly<Record<string, readonly [string, string]>> = {
+  'student.ru': [
+    '3. Нажмите «Сдать».\n',
+    '3. Нажмите «Сдать».\n\nОтвет можно сказать голосом: **Записать голос** включает микрофон, рядом идёт ' +
+      'время записи. «Записать заново» начинает сначала, «Остановить запись» прикрепляет запись к ответу, ' +
+      'как файл. Если браузер не дал доступ к микрофону, разрешите его в настройках браузера и нажмите ' +
+      'снова. Голосовой ответ слушается прямо на странице — кнопкой «Прослушать» рядом с записью.\n',
+  ],
+  'student.en': [
+    '3. Choose “Hand in”.\n',
+    '3. Choose “Hand in”.\n\nYou can also answer by voice: **Record voice** turns the microphone on and ' +
+      'shows how long you have been recording. “Record again” starts over, and “Stop recording” attaches ' +
+      'the recording to your answer like a file. If the browser has no access to the microphone, allow it ' +
+      'in the browser settings and try again. Voice recordings play right on the page: choose “Play” next ' +
+      'to one.\n',
+  ],
+  'teacher.ru': [
+    'сколько работ ещё не сдано.',
+    'сколько работ ещё не сдано. Голосовой ответ ученика слушается прямо в работе: кнопка «Прослушать» ' +
+      'рядом с записью.',
+  ],
+  'teacher.en': [
+    'the student’s response and attached images.',
+    'the student’s response and attached images; a voice response plays right there with “Play” next ' +
+      'to it.',
+  ],
+};
+
 const DISK_USAGE_RU = [
   'журнал и настройки без паролей и личных данных.',
   ' В «Ресурсах» видно, сколько занимают база данных, файлы, копии на сервере и восстановления.' +
@@ -168,6 +197,12 @@ describe('help articles after the split into one file per topic', () => {
           backups['body'],
         ),
       };
+    const voice = VOICE[name];
+    const homework = original['homework'];
+    if (voice && isRecord(homework) && typeof homework['body'] === 'string') {
+      expect(homework['body']).toContain(voice[0]);
+      expected['homework'] = { ...homework, body: homework['body'].replace(...voice) };
+    }
     expect(texts).toEqual(expected);
   });
 

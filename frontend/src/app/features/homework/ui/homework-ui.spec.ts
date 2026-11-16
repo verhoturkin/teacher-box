@@ -2,6 +2,7 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { testProviders } from '@testing/setup';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
 import { providePrimeNG } from 'primeng/config';
 import { attachment, submission } from '@testing/homework-fixtures';
 import { Snackbar } from '@core/snackbar/snackbar';
@@ -59,6 +60,36 @@ describe('AttachmentList', () => {
     buttonByText(host, 'Скачать условие.pdf').click();
     expect(opened.map((file) => file.id)).toEqual(['f-1']);
     expect(downloaded.map((file) => file.id)).toEqual(['f-1']);
+  });
+
+  it('plays a sound file under its name when a loader is given', async () => {
+    TestBed.configureTestingModule({ imports: [AttachmentList], providers: [providePrimeNG()] });
+    const fixture = TestBed.createComponent(AttachmentList);
+    const voice = attachment({
+      id: 'f-2',
+      filename: 'голос 09-30.webm',
+      contentType: 'audio/webm',
+    });
+    fixture.componentRef.setInput('attachments', [attachment(), voice]);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+    expect(host.querySelector('[aria-label="Прослушать голос 09-30.webm"]')).toBeNull();
+
+    const loaded: string[] = [];
+    fixture.componentRef.setInput('audio', (id: string) => {
+      loaded.push(id);
+      return of(new Blob(['sound'], { type: 'audio/webm' }));
+    });
+    await fixture.whenStable();
+    expect(host.querySelector('[aria-label="Прослушать условие.pdf"]')).toBeNull();
+    expect(host.querySelector('.tb-i-mic')).not.toBeNull();
+    buttonByText(host, 'Прослушать голос 09-30.webm').click();
+    await fixture.whenStable();
+
+    expect(loaded).toEqual(['f-2']);
+    expect(host.querySelector('audio')?.getAttribute('src')).toMatch(/^blob:/);
+    expect(host.querySelector('[aria-label="Прослушать голос 09-30.webm"]')).toBeNull();
+    fixture.destroy();
   });
 
   it('renders nothing without files', async () => {

@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { Observable } from 'rxjs';
 import { Attachment, Submission } from '../data-access/homework.models';
 import { AttachmentList } from './attachment-list';
 import { EmptyState } from '@shared/ui/empty-state';
@@ -22,6 +23,7 @@ import { T } from '../i18n/texts';
         }
         <tb-attachment-list
           [attachments]="submission.attachments"
+          [audio]="audio()"
           (download)="download.emit($event)"
         />
       </article>
@@ -34,4 +36,6 @@ export class SubmissionList {
   protected readonly t = T.ui;
   readonly submissions = input.required<readonly Submission[]>();
   readonly download = output<Attachment>();
+  /** The player's file loader, passed to the files of every attempt. */
+  readonly audio = input<((attachmentId: string) => Observable<Blob>) | null>(null);
 }

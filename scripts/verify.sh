@@ -247,6 +247,8 @@ stamp_selftest_body() {
     git -C "$ROOT" config user.email t@example.com
     git -C "$ROOT" config user.name t
     printf '.verify-logs/\nignored/\n' >"$ROOT/.gitignore"
+    # LF like the real repository: Git for Windows sets core.autocrlf system-wide, the export would get CRLF
+    printf '* text=auto eol=lf\n' >"$ROOT/.gitattributes"
     echo a >"$ROOT/a.txt"
     git -C "$ROOT" add -A
     git -C "$ROOT" commit -q -m init
