@@ -1,7 +1,9 @@
 import { readStats, StatsReport } from './call-stats';
 import {
   AudioProcessing,
+  CHAT_LIMIT,
   DEFAULT_AUDIO_PROCESSING,
+  type CallChatMessage,
   type CallConnection,
   type CallDeviceKind,
   type CallEndReason,
@@ -60,6 +62,7 @@ export interface LkLocalParticipant extends LkParticipant {
   setMicrophoneEnabled(enabled: boolean, options?: LkAudioCapture): Promise<unknown>;
   setCameraEnabled(enabled: boolean): Promise<unknown>;
   setScreenShareEnabled(enabled: boolean, options?: { audio: boolean }): Promise<unknown>;
+  publishData(data: Uint8Array, options: { reliable: boolean; topic: string }): Promise<void>;
 }
 
 /** Capture defaults and adaptive video (`RoomOptions`). */
@@ -118,6 +121,9 @@ const PARTICIPANT_REMOVED = 4;
 const ROOM_DELETED = 5;
 const CLIENT_INITIATED = 1;
 
+/** The data channel topic of chat messages: UTF-8 text. */
+const CHAT_TOPIC = 'tb-chat';
+
 const QUALITIES: readonly CallQuality[] = ['excellent', 'good', 'poor', 'lost'];
 
 function quality(value: string): CallQuality {
@@ -142,9 +148,9 @@ export function endReason(reason: number | undefined): CallEndReason | null {
 /** LiveKit through a narrow contract; `document` holds the hidden audio elements of the others. */
 export function createLiveKitEngine(lk: LiveKitModule, document: Document): CallEngine {
   return {
-    async connect(url, token, media, onUpdate) {
+    async connect(url, token, media, onUpdate, onMessage) {
       const room = new lk.Room(roomOptions(media));
-      const call = new LiveKitCall(room, document, onUpdate);
+      const call = new LiveKitCall(room, document, onUpdate, onMessage);
       try {
         await room.connect(url, token);
       } catch (error: unknown) {
@@ -201,6 +207,7 @@ class LiveKitCall implements CallConnection {
     private readonly room: LkRoom,
     document: Document,
     private readonly onUpdate: (snapshot: CallSnapshot) => void,
+    onMessage: (message: CallChatMessage) => void,
   ) {
     this.audio = document.createElement('div');
     this.audio.hidden = true;
@@ -221,6 +228,15 @@ class LiveKitCall implements CallConnection {
         removeElements(track.detach());
       }
     });
+    room.on(
+      'dataReceived',
+      (payload: Uint8Array, participant?: LkParticipant, _kind?: unknown, topic?: string) => {
+        const text = new TextDecoder().decode(payload).trim().slice(0, CHAT_LIMIT);
+        if (topic === CHAT_TOPIC && participant !== undefined && text !== '') {
+          onMessage({ from: displayName(participant), text });
+        }
+      },
+    );
     room.on('reconnecting', () => {
       this.state = 'reconnecting';
       this.emit();
@@ -305,6 +321,13 @@ class LiveKitCall implements CallConnection {
     );
   }
 
+  async sendMessage(text: string): Promise<void> {
+    await this.room.localParticipant.publishData(new TextEncoder().encode(text), {
+      reliable: true,
+      topic: CHAT_TOPIC,
+    });
+  }
+
   async startAudio(): Promise<void> {
     await this.room.startAudio();
     this.emit();
@@ -322,7 +345,7 @@ class LiveKitCall implements CallConnection {
   private view(participant: LkParticipant, local: boolean): CallParticipant {
     return {
       id: participant.identity,
-      name: participant.name?.trim() ? participant.name : T.participant,
+      name: displayName(participant),
       local,
       speaking: participant.isSpeaking,
       microphone: participant.isMicrophoneEnabled,
@@ -354,6 +377,10 @@ class LiveKitCall implements CallConnection {
     }
     return ref;
   }
+}
+
+function displayName(participant: LkParticipant): string {
+  return participant.name?.trim() ? participant.name : T.participant;
 }
 
 function removeElements(elements: HTMLMediaElement | HTMLMediaElement[]): void {

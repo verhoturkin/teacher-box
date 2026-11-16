@@ -8,7 +8,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 import { AuthService } from '@core/auth/auth.service';
 import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
@@ -17,6 +17,7 @@ import { CallDevices, mediaErrorText } from './call-devices';
 import {
   AudioProcessing,
   CALL_ENGINE,
+  CallChatMessage,
   CallConnection,
   CallDeviceKind,
   CallEndReason,
@@ -40,6 +41,14 @@ export type CallMode = 'expanded' | 'minimized';
 export interface CallTarget {
   readonly ownerId: string;
   readonly title: string;
+}
+
+/** A line of the call chat; the chat lives only while the call goes on. */
+export interface ChatLine {
+  readonly id: number;
+  readonly from: string;
+  readonly text: string;
+  readonly mine: boolean;
 }
 
 /** The path of the portal that opens a built-in call (`RoomService.CALL_PATH`). */
@@ -69,6 +78,7 @@ export class CallSession {
   private connection: CallConnection | null = null;
   /** Bumped by every join and leave: answers of an older attempt are ignored. */
   private attempt = 0;
+  private nextLine = 0;
 
   readonly phase = signal<CallPhase>('idle');
   readonly mode = signal<CallMode>('expanded');
@@ -86,6 +96,12 @@ export class CallSession {
   readonly announcement = signal('');
   readonly media = signal<CallMedia>(this.devices.preferences());
   readonly audioProcessing = signal<AudioProcessing>(this.devices.audioProcessing());
+  readonly messages = signal<readonly ChatLine[]>([]);
+  readonly chatOpen = signal(false);
+  /** The full window floats over other tabs (Document Picture-in-Picture, `call-pip.ts`). */
+  readonly pip = signal(false);
+  /** Messages of the others not seen yet: the chat was closed or the window minimized. */
+  readonly unread = signal(0);
 
   readonly live = computed(() => LIVE.has(this.phase()));
   readonly local = computed(() => this.participants().find((person) => person.local) ?? null);
@@ -163,17 +179,28 @@ export class CallSession {
     this.target.set(target);
     this.mode.set('expanded');
     this.participants.set([]);
+    this.clearChat();
     this.endText.set(null);
     this.startedAt.set(null);
     this.phase.set('connecting');
     try {
       const join = await firstValueFrom(this.api.callToken(target.ownerId));
       const engine = await this.loadEngine();
-      const connection = await engine.connect(this.serverUrl(), join.token, media, (snapshot) => {
-        if (attempt === this.attempt) {
-          this.apply(snapshot);
-        }
-      });
+      const connection = await engine.connect(
+        this.serverUrl(),
+        join.token,
+        media,
+        (snapshot) => {
+          if (attempt === this.attempt) {
+            this.apply(snapshot);
+          }
+        },
+        (message) => {
+          if (attempt === this.attempt) {
+            this.receive(message);
+          }
+        },
+      );
       if (attempt !== this.attempt) {
         await connection.leave();
         return;
@@ -216,14 +243,74 @@ export class CallSession {
 
   expand(): void {
     this.mode.set('expanded');
+    this.pip.set(false);
+    if (this.chatOpen()) {
+      this.unread.set(0);
+    }
   }
 
   minimize(): void {
     this.mode.set('minimized');
   }
 
+  toggleChat(): void {
+    this.chatOpen.update((open) => !open);
+    this.unread.set(0);
+  }
+
+  /** Sends a chat message; `false` when it was not sent (the text stays in the field). */
+  async sendMessage(text: string): Promise<boolean> {
+    const connection = this.connection;
+    const clean = text.trim();
+    if (connection === null || clean === '') {
+      return false;
+    }
+    try {
+      await connection.sendMessage(clean);
+    } catch {
+      this.snackbar.error(T.chat.sendFailed);
+      return false;
+    }
+    this.addLine(this.local()?.name ?? '', clean, true);
+    return true;
+  }
+
   async toggleMicrophone(): Promise<void> {
     await this.run((connection) => connection.setMicrophone(!this.microphone()), mediaErrorText);
+  }
+
+  /** The teacher: turns another participant's microphone off. */
+  mute(userId: string): void {
+    this.moderate(
+      (owner, user) => this.api.muteParticipant(owner, user),
+      userId,
+      T.tile.muteFailed,
+    );
+  }
+
+  /** The teacher: removes another participant from the call. */
+  removeParticipant(userId: string): void {
+    this.moderate(
+      (owner, user) => this.api.removeParticipant(owner, user),
+      userId,
+      T.tile.removeFailed,
+    );
+  }
+
+  private moderate(
+    request: (ownerId: string, userId: string) => Observable<null>,
+    userId: string,
+    failure: string,
+  ): void {
+    const ownerId = this.target()?.ownerId;
+    if (ownerId === undefined) {
+      return;
+    }
+    request(ownerId, userId).subscribe({
+      error: (error: unknown) => {
+        this.snackbar.error(describeError(error, failure));
+      },
+    });
   }
 
   async toggleCamera(): Promise<void> {
@@ -335,6 +422,25 @@ export class CallSession {
     this.phase.set(snapshot.state);
   }
 
+  private receive(message: CallChatMessage): void {
+    this.addLine(message.from, message.text, false);
+    if (!this.chatOpen() || this.mode() === 'minimized') {
+      this.unread.update((count) => count + 1);
+      this.announcement.set(T.chat.received(message.from));
+    }
+  }
+
+  private addLine(from: string, text: string, mine: boolean): void {
+    this.nextLine += 1;
+    this.messages.update((lines) => [...lines, { id: this.nextLine, from, text, mine }]);
+  }
+
+  private clearChat(): void {
+    this.messages.set([]);
+    this.chatOpen.set(false);
+    this.unread.set(0);
+  }
+
   private announce(before: readonly CallParticipant[], after: readonly CallParticipant[]): void {
     if (before.length === 0) {
       return;
@@ -364,10 +470,12 @@ export class CallSession {
     this.phase.set('idle');
     this.target.set(null);
     this.participants.set([]);
+    this.clearChat();
     this.audioBlocked.set(false);
     this.endText.set(null);
     this.startedAt.set(null);
     this.announcement.set('');
+    this.pip.set(false);
   }
 
   /** Signalling goes through the portal itself (`/livekit`, ADR-0030). */

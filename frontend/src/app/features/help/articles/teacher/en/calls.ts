@@ -23,6 +23,13 @@ off if audio sounds clipped or muffled. Your choices are saved.
 administrator when investigating poor audio.
 - **Minimise:** keep the call in a small movable window while using boards, assignments or other portal pages. On a phone it becomes a bar above the \
 bottom navigation. “Expand” restores the full window.
+- **Moderate:** on another participant’s tile, open the “⋮” menu. “Turn off microphone” mutes them (they can turn it on again); \
+“Remove from call” asks for confirmation, \
+then the person sees why the call ended and can rejoin.
+- **Student’s board:** in the call “Settings” menu, pick a participant: their boards open in a new tab and the call carries on.
+- **Chat:** message everyone in the call; the number on the button shows unread messages. Only people in the call see the chat, and it isn’t saved after the call.
+- **Float over other windows:** in Chrome and Edge on a computer, the call moves to a small window above other tabs and apps, with the tiles, microphone, camera and Leave call. \
+“Back to the tab” or closing that window brings the call back to the portal.
 - **Leave call:** leave using the red button.
 
 ## External meeting links

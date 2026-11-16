@@ -40,6 +40,15 @@ export interface CallSnapshot {
   readonly endReason: CallEndReason | null;
 }
 
+/** The longest chat message, in characters; a longer received one is cut. */
+export const CHAT_LIMIT = 1000;
+
+/** A chat message from another participant (409.1): over the data channel, never stored. */
+export interface CallChatMessage {
+  readonly from: string;
+  readonly text: string;
+}
+
 /** What the user chose before joining. */
 export interface CallMedia {
   readonly microphone: boolean;
@@ -120,6 +129,8 @@ export interface CallConnection {
   setAudioProcessing(processing: AudioProcessing): Promise<void>;
   /** The current technical details. */
   stats(): Promise<CallStats>;
+  /** Sends a chat message to everyone in the room. */
+  sendMessage(text: string): Promise<void>;
   /** Unblocks the sound after a click. */
   startAudio(): Promise<void>;
   leave(): Promise<void>;
@@ -130,6 +141,7 @@ export interface CallEngine {
   /**
    * @param url      the signalling address (`<portal>/livekit`)
    * @param onUpdate called on every change in the room
+   * @param onMessage called with every chat message of the others
    * @throws when the server cannot be reached or the browser refuses the camera or the microphone
    */
   connect(
@@ -137,6 +149,7 @@ export interface CallEngine {
     token: string,
     media: CallMedia,
     onUpdate: (snapshot: CallSnapshot) => void,
+    onMessage: (message: CallChatMessage) => void,
   ): Promise<CallConnection>;
 }
 

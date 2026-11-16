@@ -48,6 +48,19 @@ export class MeetingsApi {
     return this.http.post<CallJoin>(`/api/meetings/calls/${ownerId}/token`, null);
   }
 
+  /** The teacher: turns the microphone of a participant off. */
+  muteParticipant(ownerId: string, userId: string): Observable<null> {
+    return this.http.post<null>(
+      `/api/teacher/meetings/calls/${ownerId}/participants/${userId}/mute`,
+      null,
+    );
+  }
+
+  /** The teacher: removes a participant from the call. */
+  removeParticipant(ownerId: string, userId: string): Observable<null> {
+    return this.http.delete<null>(`/api/teacher/meetings/calls/${ownerId}/participants/${userId}`);
+  }
+
   /** The teacher: every built-in room with who is in it. */
   calls(context?: HttpContext): Observable<CallsOverview> {
     return this.http.get<CallsOverview>('/api/teacher/meetings/calls', { context });

@@ -1,0 +1,120 @@
+/*
+ * The call chat (409.1): an M3 standard side sheet (at most 400 dp, 24 dp start/end padding, the close icon
+ * button upper right) on surface-container-low with 28 dp corners like a pane (ours). On a phone it covers the
+ * window (ours: M3 prefers a modal sheet on compact, the window has no room beside the video).
+ */
+.tb-call-chat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-3);
+  min-height: 0;
+  padding: var(--tb-space-4) var(--tb-space-6) var(--tb-space-6);
+  border-radius: var(--tb-shape-xl);
+  background: var(--p-md-surface-container-low);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--tb-space-3);
+  }
+
+  &__title {
+    margin: 0;
+    font: var(--tb-type-title-l);
+  }
+
+  &__scroll {
+    display: flex;
+    flex: 1;
+    flex-direction: column-reverse;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  &__log {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tb-space-2);
+  }
+
+  /* Bubbles (ours: M3 has no chat component): others on surface-container-highest, own on secondary-container */
+  &__message {
+    align-self: flex-start;
+    max-width: 85%;
+    padding: var(--tb-space-2) var(--tb-space-3);
+    border-radius: var(--tb-shape-lg);
+    background: var(--p-md-surface-container-highest);
+    color: var(--p-md-on-surface);
+
+    &--mine {
+      align-self: flex-end;
+      background: var(--p-md-secondary-container);
+      color: var(--p-md-on-secondary-container);
+    }
+  }
+
+  &__from {
+    display: block;
+    font: var(--tb-type-label-m);
+    opacity: 0.8;
+  }
+
+  &__text {
+    margin: 0;
+    font: var(--tb-type-body-m);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  &__empty {
+    margin: 0;
+    font: var(--tb-type-body-m);
+    color: var(--p-md-on-surface-variant);
+  }
+
+  &__form {
+    display: flex;
+    align-items: center;
+    gap: var(--tb-space-3);
+  }
+
+  /* Messenger composer (ours, M3 has no chat input): a filled pill (surface-container-highest, no outline) and a separate round send button */
+  &__field {
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+    height: 3.5rem;
+    padding: 0 var(--tb-space-6);
+    border: 0;
+    border-radius: var(--tb-shape-full);
+    background: var(--p-md-surface-container-highest);
+    color: var(--p-md-on-surface);
+    caret-color: var(--p-md-primary);
+    font: var(--tb-type-body-l);
+
+    &::placeholder {
+      color: var(--p-md-on-surface-variant);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--p-md-primary);
+      outline-offset: 2px;
+    }
+  }
+
+  &__send.p-button {
+    flex: none;
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  @media (width < 37.5em) {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    padding: var(--tb-space-4) var(--tb-space-4)
+      calc(var(--tb-space-4) + env(safe-area-inset-bottom));
+    border-radius: 0;
+  }
+}

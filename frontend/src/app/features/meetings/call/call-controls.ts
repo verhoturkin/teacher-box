@@ -4,28 +4,33 @@ import {
   computed,
   inject,
   input,
+  output,
   signal,
   ViewEncapsulation,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
+import { AuthService } from '@core/auth/auth.service';
 import { injectMobile } from '@core/layout/mobile';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
+import { NavBadge } from '@core/layout/nav-badge';
 import { CallDevices, DeviceList } from './call-devices';
 import { AudioProcessing } from './call-engine';
+import { pipSupported } from './call-pip';
 import { CallSession } from './call-session';
 import { CallStatsDialog } from './call-stats-dialog';
 import { T } from '../i18n/texts';
 
 /**
  * The buttons of a call (M3 Expressive toolbar): microphone and camera toggles (error-coloured while
- * off), screen sharing, devices, minimize/expand and the red «Выйти»; no tooltips, the labels are for
+ * off), screen sharing, devices, picture-in-picture, minimize/expand and the red «Выйти»; no tooltips, the labels are for
  * screen readers. The compact set is for the mini window.
  */
 @Component({
   selector: 'tb-call-controls',
-  imports: [Button, Menu, ButtonAttributes, CallStatsDialog],
+  imports: [Button, Menu, ButtonAttributes, CallStatsDialog, NavBadge],
   changeDetection: ChangeDetectionStrategy.OnPush,
   // Global class names, loaded with the call (design-system «Where it lives»)
   encapsulation: ViewEncapsulation.None,
@@ -65,6 +70,21 @@ import { T } from '../i18n/texts';
           (onClick)="session.toggleScreen()"
         />
       }
+      <span class="tb-call-controls__badged">
+        <p-button
+          [styleClass]="'tb-call-button' + (session.chatOpen() ? ' tb-call-button--active' : '')"
+          icon="tb-i tb-i-chat"
+          [rounded]="true"
+          [severity]="session.chatOpen() ? undefined : 'secondary'"
+          [ariaLabel]="session.unread() > 0 ? t.chatUnread(session.unread()) : t.chat"
+          [tbAttributes]="{ 'aria-pressed': session.chatOpen() ? 'true' : 'false' }"
+          [disabled]="!connected()"
+          (onClick)="session.toggleChat()"
+        />
+        @if (session.unread() > 0) {
+          <tb-nav-badge [count]="session.unread()" />
+        }
+      </span>
       <p-button
         styleClass="tb-call-button"
         icon="tb-i tb-i-settings"
@@ -88,6 +108,16 @@ import { T } from '../i18n/texts';
       @if (statsOpen()) {
         <tb-call-stats-dialog (closed)="statsOpen.set(false)" />
       }
+      @if (canPip && !mobile()) {
+        <p-button
+          styleClass="tb-call-button"
+          icon="tb-i tb-i-picture_in_picture_alt"
+          [rounded]="true"
+          severity="secondary"
+          [ariaLabel]="t.pip"
+          (onClick)="pictureInPicture.emit()"
+        />
+      }
       <p-button
         styleClass="tb-call-button"
         icon="tb-i tb-i-close_fullscreen"
@@ -97,14 +127,23 @@ import { T } from '../i18n/texts';
         (onClick)="session.minimize()"
       />
     } @else {
-      <p-button
-        styleClass="tb-call-button"
-        icon="tb-i tb-i-open_in_full"
-        [rounded]="true"
-        severity="secondary"
-        [ariaLabel]="t.expand"
-        (onClick)="session.expand()"
-      />
+      <span class="tb-call-controls__badged">
+        <p-button
+          styleClass="tb-call-button"
+          icon="tb-i tb-i-open_in_full"
+          [rounded]="true"
+          severity="secondary"
+          [ariaLabel]="
+            session.unread() > 0
+              ? expandLabel() + '. ' + t.chatUnread(session.unread())
+              : expandLabel()
+          "
+          (onClick)="session.expand()"
+        />
+        @if (session.unread() > 0) {
+          <tb-nav-badge [count]="session.unread()" />
+        }
+      </span>
     }
     <p-button
       styleClass="tb-call-button tb-call-button--leave"
@@ -120,14 +159,23 @@ export class CallControls {
   protected readonly t = T.controls;
   protected readonly session = inject(CallSession);
   private readonly devices = inject(CallDevices);
+  private readonly router = inject(Router);
+  private readonly teacher = inject(AuthService).role() === 'TEACHER';
 
   /** The mini window: microphone, camera, expand, leave. */
   readonly compact = input(false);
+  /** «Поверх других окон» was pressed: the call window moves to a floating window. */
+  readonly pictureInPicture = output();
 
   protected readonly canShare = this.devices.canShareScreen();
+  protected readonly canPip = pipSupported();
   /** Phones share no screen, and the toolbar keeps to one line. */
   protected readonly mobile = injectMobile();
   protected readonly connected = computed(() => this.session.phase() === 'connected');
+  /** In the floating window «Развернуть» brings the call back to the tab. */
+  protected readonly expandLabel = computed(() =>
+    this.session.pip() ? this.t.back : this.t.expand,
+  );
   protected readonly menuOpen = signal(false);
   protected readonly statsOpen = signal(false);
   /** PrimeNG menus start at z-index 1000, under the call window (1050 in `styles.scss`). */
@@ -168,7 +216,29 @@ export class CallControls {
         void this.session.setAudioProcessing({ ...processing, [key]: !processing[key] });
       },
     });
+    // The student's boards of Materials in a new tab (route, no `boards` import: ADR-0058); the search
+    // there matches the student's name. shortcut: two students with one name show both, rare.
+    const boards: MenuItem[] = this.teacher
+      ? [
+          {
+            label: T.controls.studentBoard,
+            items: this.session.others().map((person) => ({
+              label: person.name,
+              icon: 'tb-i tb-i-open_in_new',
+              command: () => {
+                const url = this.router.serializeUrl(
+                  this.router.createUrlTree(['/teacher/materials'], {
+                    queryParams: { tab: 'boards', q: person.name },
+                  }),
+                );
+                window.open(url, '_blank', 'noopener');
+              },
+            })),
+          },
+        ].filter((item) => item.items.length > 0)
+      : [];
     return [
+      ...boards,
       group(T.controls.microphone, 'audioinput', list.microphones, media.microphoneId),
       group(T.controls.camera, 'videoinput', list.cameras, media.cameraId),
       {

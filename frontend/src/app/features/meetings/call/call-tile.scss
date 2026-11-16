@@ -64,6 +64,25 @@
     text-overflow: ellipsis;
   }
 
+  &__more.p-button {
+    position: absolute;
+    top: var(--tb-space-2);
+    right: var(--tb-space-2);
+    opacity: 0;
+    transition: opacity var(--tb-spring-fast-effects);
+  }
+
+  &:hover &__more.p-button,
+  &:focus-within &__more.p-button {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    &__more.p-button {
+      opacity: 1;
+    }
+  }
+
   &__weak {
     color: var(--p-md-inverse-primary);
   }

@@ -2,6 +2,8 @@ package ru.teacherbox.meetings;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -193,6 +195,46 @@ class CallsIntegrationTests {
                 .bodyJson().extractingPath("$.length()").isEqualTo(0);
         assertThat(mvc.get().uri("/api/me/meetings/calls").with(TestUsers.teacher(directory.teacherId())))
                 .hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void theTeacherMutesAndRemovesAParticipant() {
+        RequestPostProcessor teacher = TestUsers.teacher(directory.teacherId());
+
+        assertThat(mvc.post().uri(participant(group, anna) + "/mute").with(teacher))
+                .hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(mvc.delete().uri(participant(group, anna)).with(teacher)).hasStatus(HttpStatus.NO_CONTENT);
+        verify(server).muteMicrophone("tb-" + group, anna.toString());
+        verify(server).removeParticipant("tb-" + group, anna.toString());
+    }
+
+    @Test
+    void onlyTheTeacherModeratesACall() {
+        for (RequestPostProcessor user : List.of(TestUsers.student(anna), TestUsers.admin(UUID.randomUUID()))) {
+            assertThat(mvc.post().uri(participant(anna, boris) + "/mute").with(user)).hasStatus(HttpStatus.FORBIDDEN);
+            assertThat(mvc.delete().uri(participant(anna, boris)).with(user)).hasStatus(HttpStatus.FORBIDDEN);
+        }
+        verify(server, never()).muteMicrophone(anyString(), anyString());
+        verify(server, never()).removeParticipant(anyString(), anyString());
+    }
+
+    @Test
+    void moderationReportsCallsOffAndAnUnreachableServer() {
+        RequestPostProcessor teacher = TestUsers.teacher(directory.teacherId());
+        doThrow(new CallServerException("down")).when(server).muteMicrophone(anyString(), anyString());
+
+        assertThat(mvc.post().uri(participant(anna, anna) + "/mute").with(teacher))
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+                .bodyJson().extractingPath("$.code").isEqualTo("meetings.call-server-unreachable");
+        when(server.enabled()).thenReturn(false);
+        assertThat(mvc.delete().uri(participant(anna, anna)).with(teacher))
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+                .bodyJson().extractingPath("$.code").isEqualTo("meetings.calls-disabled");
+        verify(server, never()).removeParticipant(anyString(), anyString());
+    }
+
+    private static String participant(UUID ownerId, UUID userId) {
+        return "/api/teacher/meetings/calls/" + ownerId + "/participants/" + userId;
     }
 
     private static String card(UUID ownerId) {

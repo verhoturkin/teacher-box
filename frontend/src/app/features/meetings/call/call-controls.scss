@@ -15,6 +15,12 @@
   box-shadow: var(--tb-elevation-2);
 }
 
+/* An M3 large badge (unread chat messages) on the upper trailing edge of a button */
+.tb-call-controls__badged {
+  position: relative;
+  display: inline-flex;
+}
+
 .tb-call-menu .tb-call-menu__blank {
   visibility: hidden;
 }

@@ -47,7 +47,11 @@ messengers it is the «Подключиться» button and the text carries no
 `GET /api/teacher/meetings/calls` → `{status: OK | UNREACHABLE | OFF, rooms: [{ownerId, ownerType, name, members,
 waiting, teacherPresent, externalLink}]}` (every current student by name, then active groups; one `ListRooms` + `ListParticipants` of every room of the
 portal — not `num_participants`, LiveKit updates it seconds after a join; outside transactions), `GET /api/me/meetings/calls` → the student's own room
-and active groups with `teacherPresent`. Bot action:
+and active groups with `teacherPresent`. Moderation, teacher only (204; calls off or the media server down → 422
+`meetings.calls-disabled` / `meetings.call-server-unreachable`):
+`POST /api/teacher/meetings/calls/{ownerId}/participants/{userId}/mute` — `GetParticipant`, then `MutePublishedTrack` of
+each open microphone track (only the participant can unmute), `DELETE …/participants/{userId}` — `RemoveParticipant`
+(they may join again); a user not in the room is no error. Bot action:
 join the lesson (`JoinLessonChatAction`).
 
 ## Frontend
@@ -56,9 +60,13 @@ join the lesson (`JoinLessonChatAction`).
 `livekit-engine.ts`, the only file importing `livekit-client`, ESLint), `call-session.ts` (root service: phase,
 mode, participants, devices; leaves on sign-out, asks before the page closes), `call-devices.ts` (preview, device
 list, choice in `localStorage`), components `call-host` (in `app.ts`), `call-prejoin`, `call-window`, `call-mini`,
-`call-tile`, `call-controls` (settings menu: devices, sound processing, «Сведения о связи» —
+`call-tile`, `call-controls` (settings menu: for the teacher «Доска ученика» — each other participant opens `/teacher/materials?tab=boards&q=<name>` in a new tab, 409.2, no `boards` import; devices, sound processing, «Сведения о связи» —
 `call-stats-dialog.ts`, WebRTC statistics read by `readStats` / `statsSections` in `call-stats.ts`),
-`call-self` (own camera of a one-to-one call), layout in `call-layout.ts`, moving
+`call-self` (own camera of a one-to-one call), `call-chat` (the chat of the call, 409.1: text
+over the LiveKit data channel, topic `tb-chat`, at most 1000 characters; kept in `CallSession`
+only while the call goes on, never stored), `call-pip.ts` (410.1: Document Picture-in-Picture,
+feature-detected; `CallSession.pip`; the `call-window` node moves to the floating window and back),
+layout in `call-layout.ts`, moving
 between corners in `call-corner.ts` (mini window and own camera, each remembered in `localStorage`); `index.ts` exports `CallHost` (root `@defer`) and
 `CALL_ROUTES` (`/call/:ownerId`, `openCallGuard`; 0.22.0: no «Звонки» section — `/teacher/calls` redirects to the
 settings category «Занятия», `/teacher/settings/lessons`) — never import them from `parts.ts` in the root, it pulls the

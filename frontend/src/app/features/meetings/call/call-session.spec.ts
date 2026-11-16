@@ -10,6 +10,7 @@ import { CallDevices } from './call-devices';
 import {
   AudioProcessing,
   CALL_ENGINE,
+  CallChatMessage,
   CallConnection,
   CallEngine,
   CallMedia,
@@ -59,6 +60,9 @@ class FakeConnection implements CallConnection {
   stats(): Promise<CallStats> {
     return this.failWith === null ? Promise.resolve(STATS) : Promise.reject(this.failWith);
   }
+  sendMessage(text: string) {
+    return this.act(`send ${text}`);
+  }
   startAudio() {
     return this.act('startAudio');
   }
@@ -71,14 +75,22 @@ class FakeEngine implements CallEngine {
   readonly connections: FakeConnection[] = [];
   readonly urls: string[] = [];
   update: (snapshot: CallSnapshot) => void = () => undefined;
+  message: (message: CallChatMessage) => void = () => undefined;
   fail = false;
 
-  connect(url: string, token: string, _media: CallMedia, onUpdate: (s: CallSnapshot) => void) {
+  connect(
+    url: string,
+    token: string,
+    _media: CallMedia,
+    onUpdate: (s: CallSnapshot) => void,
+    onMessage: (m: CallChatMessage) => void,
+  ) {
     this.urls.push(`${url} ${token}`);
     if (this.fail) {
       return Promise.reject(new Error('down'));
     }
     this.update = onUpdate;
+    this.message = onMessage;
     const connection = new FakeConnection();
     this.connections.push(connection);
     return Promise.resolve(connection);
@@ -361,5 +373,72 @@ describe('CallSession', () => {
     window.dispatchEvent(asked);
     expect(asked.defaultPrevented).toBe(true);
     await session.leave();
+  });
+
+  it('keeps the chat of the call and counts unread messages', async () => {
+    expect(await session.sendMessage('ignored')).toBe(false);
+    const connection = await joined();
+    engine.update(snapshot());
+
+    engine.message({ from: 'Анна', text: 'Здравствуйте' });
+    expect(session.unread()).toBe(1);
+    expect(session.announcement()).toBe('Новое сообщение от Анна');
+    session.toggleChat();
+    expect(session.chatOpen()).toBe(true);
+    expect(session.unread()).toBe(0);
+
+    expect(await session.sendMessage('  Привет ')).toBe(true);
+    expect(await session.sendMessage('   ')).toBe(false);
+    expect(connection.calls.at(-1)).toBe('send Привет');
+    expect(session.messages().map(({ from, text, mine }) => [from, text, mine])).toEqual([
+      ['Анна', 'Здравствуйте', false],
+      ['Ольга', 'Привет', true],
+    ]);
+
+    engine.message({ from: 'Анна', text: 'Видно' });
+    expect(session.unread()).toBe(0);
+    session.minimize();
+    engine.message({ from: 'Анна', text: 'Вы тут?' });
+    expect(session.unread()).toBe(1);
+    session.expand();
+    expect(session.unread()).toBe(0);
+
+    connection.failWith = new Error('closed');
+    expect(await session.sendMessage('Ещё')).toBe(false);
+    expect(errors).toEqual(['Не удалось отправить сообщение']);
+
+    await session.leave();
+    expect(session.messages()).toEqual([]);
+    expect(session.chatOpen()).toBe(false);
+  });
+
+  it('ignores chat messages of an older call', async () => {
+    await joined('s-1');
+    const old = engine.message;
+    session.open('s-2');
+    token('s-2');
+    const joining = session.join(MEDIA);
+    await answer('s-2');
+    await joining;
+    old({ from: 'Анна', text: 'поздно' });
+    expect(session.messages()).toEqual([]);
+    session.minimize();
+    session.expand();
+    expect(session.unread()).toBe(0);
+  });
+
+  it('lets the teacher mute and remove a participant of the open room', () => {
+    session.mute('u-1');
+    session.target.set({ ownerId: 'g-1', title: 'ОГЭ' });
+    session.mute('u-1');
+    session.removeParticipant('u-2');
+
+    backend
+      .expectOne({ method: 'POST', url: '/api/teacher/meetings/calls/g-1/participants/u-1/mute' })
+      .flush(null);
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/meetings/calls/g-1/participants/u-2' })
+      .flush({ message: 'x' }, { status: 422, statusText: 'Unprocessable' });
+    expect(errors).toHaveLength(1);
   });
 });

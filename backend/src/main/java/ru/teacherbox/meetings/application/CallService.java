@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -135,15 +136,39 @@ public class CallService {
 
     /** No transaction: nothing is stored, the token is signed locally. */
     public JoinView join(CurrentUser user, UUID ownerId) {
-        if (!server.enabled()) {
-            throw new BusinessRuleException("meetings.calls-disabled", "Built-in calls are not set up");
-        }
+        requireEnabled();
         Owner owner = accessible(user, ownerId).orElseThrow(CallService::roomNotFound);
         String room = CallRooms.name(owner.id());
         String title = user.isTeacher() || owner.type() == RoomOwner.GROUP ? owner.name() : ownRoomTitle();
         String token = server.token(new CallServer.Grant(room, user.id().toString(), user.displayName(),
                 user.isTeacher()));
         return new JoinView(token, room, title);
+    }
+
+    /** The teacher mutes the microphone of a participant; a user not in the room is no error. */
+    public void mute(UUID ownerId, UUID userId) {
+        moderate(ownerId, userId, server::muteMicrophone);
+    }
+
+    /** The teacher removes a participant; they may join again while the room is open to them. */
+    public void remove(UUID ownerId, UUID userId) {
+        moderate(ownerId, userId, server::removeParticipant);
+    }
+
+    private void moderate(UUID ownerId, UUID userId, BiConsumer<String, String> action) {
+        requireEnabled();
+        try {
+            action.accept(CallRooms.name(ownerId), userId.toString());
+        } catch (CallServerException e) {
+            log.warn("The media server did not answer: {}", e.getMessage());
+            throw new BusinessRuleException("meetings.call-server-unreachable", "The media server did not answer");
+        }
+    }
+
+    private void requireEnabled() {
+        if (!server.enabled()) {
+            throw new BusinessRuleException("meetings.calls-disabled", "Built-in calls are not set up");
+        }
     }
 
     /** The room of a current student or an active group that the user may enter. */

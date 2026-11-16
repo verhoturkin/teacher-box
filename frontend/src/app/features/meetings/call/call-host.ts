@@ -61,7 +61,9 @@ export class CallHost {
     effect(() => {
       root.classList.toggle(
         EXPANDED_CLASS,
-        this.session.phase() !== 'idle' && this.session.mode() === 'expanded',
+        this.session.phase() !== 'idle' &&
+          this.session.mode() === 'expanded' &&
+          !this.session.pip(),
       );
     });
     inject(DestroyRef).onDestroy(() => {

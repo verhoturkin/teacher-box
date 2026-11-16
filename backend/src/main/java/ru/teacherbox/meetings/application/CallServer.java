@@ -34,4 +34,7 @@ public interface CallServer {
 
     /** Removes the user from the room if they are there. */
     void removeParticipant(String room, String identity);
+
+    /** Mutes the microphone of the user if they are in the room and publish it; only they can unmute it. */
+    void muteMicrophone(String room, String identity);
 }
