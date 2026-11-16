@@ -326,6 +326,14 @@ export class ScheduleApi {
     });
   }
 
+  /** Free start times (ISO instants) of `date` to move a lesson to: the student's or the teacher's view. */
+  freeTimes(lessonId: string, date: string, asTeacher: boolean): Observable<string[]> {
+    return this.http.get<string[]>(`/api/${asTeacher ? 'teacher' : 'me'}/schedule/free-times`, {
+      ...QUIET,
+      params: new HttpParams().set('date', date).set('lessonId', lessonId),
+    });
+  }
+
   summary(): Observable<ScheduleSummary> {
     return this.http.get<ScheduleSummary>('/api/teacher/schedule/summary', QUIET);
   }

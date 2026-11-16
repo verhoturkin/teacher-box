@@ -38,6 +38,7 @@ import {
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { T } from '../i18n/texts';
+import { FreeTimes } from '../ui/free-times';
 import { SHARED_T } from '@shared/i18n/texts';
 
 /** A student the teacher can plan a lesson with. */
@@ -67,6 +68,7 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
     ReactiveFormsModule,
     Button,
     DatePicker,
+    FreeTimes,
     TbDialog,
     InputNumber,
     InputText,
@@ -128,6 +130,14 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
               appendTo="body"
               [fluid]="true"
             />
+            @if (lesson(); as moving) {
+              <tb-free-times
+                [lessonId]="moving.id"
+                [date]="startDay() ?? movingStart(moving)"
+                [asTeacher]="true"
+                (picked)="pickStart($event)"
+              />
+            }
           </div>
           <div class="tb-field">
             <label for="schedule-lesson-duration">{{ t.duration }}</label>
@@ -283,6 +293,17 @@ export class LessonDialog {
       validators: [Validators.maxLength(1000), Validators.pattern(MEETING_URL_PATTERN)],
     }),
   });
+
+  protected readonly startDay = toSignal(this.form.controls.startsAt.valueChanges, {
+    initialValue: null,
+  });
+  protected movingStart(lesson: ScheduledLesson): Date {
+    return new Date(lesson.startsAt);
+  }
+  protected pickStart(time: Date): void {
+    this.form.controls.startsAt.markAsDirty();
+    this.form.controls.startsAt.setValue(time);
+  }
 
   protected readonly dirty = toSignal(this.form.valueChanges.pipe(map(() => this.form.dirty)), {
     initialValue: false,

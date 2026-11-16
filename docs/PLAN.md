@@ -55,7 +55,7 @@ Source: backlog review of 2026-11-15; design audit DA-049, DA-050.
   start times of a day by a step); student `GET /api/me/schedule/free-times?date&lessonId` and the
   teacher's twin in `TeacherScheduleController`; role tests incl. another student's lesson → 404.
   Written so roadmap/08 can reuse it with working windows later.
-- [ ] 405.2 **F** *simple* — the reschedule dialogs (`schedule/student/change-request-dialog.ts`,
+- [x] 405.2 **F** *simple* — the reschedule dialogs (`schedule/student/change-request-dialog.ts`,
   `schedule/teacher/request-answer-dialog.ts`, the teacher's move in `lesson-details-dialog.ts`)
   offer the free times of the chosen day as chips; a manual time stays possible. `m3-expressive`
   skill; help and wiki in both languages; `docs/modules/schedule.md`.

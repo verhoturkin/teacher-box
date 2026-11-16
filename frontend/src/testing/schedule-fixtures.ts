@@ -1,3 +1,4 @@
+import { HttpTestingController } from '@angular/common/http/testing';
 import {
   CalendarFeed,
   ChangeRequest,
@@ -160,4 +161,14 @@ export function scheduleSummary(overrides: Partial<ScheduleSummary> = {}): Sched
 
 export function myScheduleSummary(overrides: Partial<MyScheduleSummary> = {}): MyScheduleSummary {
   return { next: null, weekLessons: 0, pendingRequests: 0, ...overrides };
+}
+
+/** A dialog with a move asks for the free times of a day; the tests that do not care answer none. */
+export function dropFreeTimes(backend: HttpTestingController): void {
+  backend
+    .match((request) => request.url.endsWith('/schedule/free-times'))
+    .filter((r) => !r.cancelled)
+    .forEach((r) => {
+      r.flush([]);
+    });
 }

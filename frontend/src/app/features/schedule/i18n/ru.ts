@@ -87,6 +87,9 @@ export const ru = {
     wontCome: 'Не приду',
     cancel: 'Отменить',
   },
+  freeTimes: {
+    label: 'Свободное время',
+  },
   changeRequest: {
     lesson: (time: string) => `Занятие: ${time}`,
     groupReschedule: (group: string) =>

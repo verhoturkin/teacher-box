@@ -21,6 +21,7 @@ import { ScheduleApi } from '../data-access/schedule-api';
 import { ChangeRequest } from '../data-access/schedule.models';
 import { formatLessonStart, optionalText } from '../schedule-labels';
 import { T } from '../i18n/texts';
+import { FreeTimes } from '../ui/free-times';
 import { SHARED_T } from '@shared/i18n/texts';
 import { Confirm } from '@shared/ui/confirm';
 import { TbDialog } from '@shared/ui/dialog/dialog';
@@ -31,7 +32,7 @@ import { TbDialog } from '@shared/ui/dialog/dialog';
  */
 @Component({
   selector: 'tb-request-answer-dialog',
-  imports: [FormsModule, Checkbox, DatePicker, SelectButton, TbDialog, Textarea],
+  imports: [FormsModule, Checkbox, DatePicker, FreeTimes, SelectButton, TbDialog, Textarea],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-dialog
@@ -91,6 +92,12 @@ import { TbDialog } from '@shared/ui/dialog/dialog';
                 appendTo="body"
                 [fluid]="true"
               />
+              <tb-free-times
+                [lessonId]="request.lessonId"
+                [date]="startsAt() ?? start0()"
+                [asTeacher]="true"
+                (picked)="startsAt.set($event)"
+              />
             </div>
           } @else if (approving() && request.kind === 'CANCEL') {
             @if (request.late) {
@@ -141,6 +148,8 @@ export class RequestAnswerDialog {
     { label: T.answer.decline, value: 'DECLINE' },
   ];
   protected readonly startsAt = signal<Date | null>(null);
+  /** The day the free times are shown for when no time is chosen: the lesson's own. */
+  protected readonly start0 = computed(() => new Date(this.request()?.lessonStartsAt ?? 0));
   protected readonly charge = signal(false);
   protected readonly answer = signal('');
   protected readonly error = signal<string | null>(null);

@@ -132,6 +132,26 @@ const VOICE: Readonly<Record<string, readonly [string, string]>> = {
   ],
 };
 
+/** Free times of the day offered as chips in the move dialogs (stage 405.2). */
+const FREE_TIMES: Record<string, readonly [string, string]> = {
+  'teacher.ru': [
+    '(или укажите своё). Если',
+    '(или выберите своё: свободное время дня предложено кнопками, можно ввести любое). Если',
+  ],
+  'teacher.en': [
+    'approve the suggested time or enter another. The portal',
+    'approve the suggested time or pick another: the free times of the day are offered as buttons, or enter any time yourself. The portal',
+  ],
+  'student.ru': [
+    'Выберите свободное время: попросить',
+    'Под полем даты портал показывает свободное время выбранного дня кнопками: нажмите одну или введите любое другое время. Попросить',
+  ],
+  'student.en': [
+    'Choose a free time; the portal',
+    'Below the date field the portal offers the free times of the chosen day as buttons: tap one, or enter any other time yourself. The portal',
+  ],
+};
+
 const DISK_USAGE_RU = [
   'журнал и настройки без паролей и личных данных.',
   ' В «Ресурсах» видно, сколько занимают база данных, файлы, копии на сервере и восстановления.' +
@@ -202,6 +222,12 @@ describe('help articles after the split into one file per topic', () => {
     if (voice && isRecord(homework) && typeof homework['body'] === 'string') {
       expect(homework['body']).toContain(voice[0]);
       expected['homework'] = { ...homework, body: homework['body'].replace(...voice) };
+    }
+    const free = FREE_TIMES[name];
+    const schedule = original['schedule'];
+    if (free && isRecord(schedule) && typeof schedule['body'] === 'string') {
+      expect(schedule['body']).toContain(free[0]);
+      expected['schedule'] = { ...schedule, body: schedule['body'].replace(...free) };
     }
     expect(texts).toEqual(expected);
   });

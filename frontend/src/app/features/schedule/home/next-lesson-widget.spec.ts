@@ -8,6 +8,7 @@ import {
   myScheduleSummary,
   scheduleSettings,
   scheduledLesson,
+  dropFreeTimes,
 } from '@testing/schedule-fixtures';
 import { aMyBoard } from '@testing/boards-fixtures';
 import { MyScheduleSummary } from '../data-access/schedule.models';
@@ -45,6 +46,7 @@ describe('NextLessonWidget', () => {
 
   afterEach(() => {
     fixture.destroy();
+    dropFreeTimes(backend);
     backend.verify();
     vi.useRealTimers();
   });

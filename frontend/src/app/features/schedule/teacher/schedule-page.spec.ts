@@ -14,6 +14,7 @@ import {
   scheduleSettings,
   scheduledLesson,
   weeklyOffTime,
+  dropFreeTimes,
 } from '@testing/schedule-fixtures';
 import { OffTime, ScheduledLesson } from '../data-access/schedule.models';
 import { LessonMove, ScheduleCalendar } from '../ui/schedule-calendar';
@@ -61,6 +62,7 @@ describe('SchedulePage', () => {
     for (const request of offTimePeriodRequests()) {
       request.flush([]);
     }
+    dropFreeTimes(backend);
     backend.verify();
     fixture.destroy();
   });

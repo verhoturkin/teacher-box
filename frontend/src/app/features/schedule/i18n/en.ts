@@ -90,6 +90,9 @@ export const en: Translation<typeof ru> = {
     wontCome: 'I can’t attend',
     cancel: 'Cancel',
   },
+  freeTimes: {
+    label: 'Free times',
+  },
   changeRequest: {
     lesson: (time: string) => `Lesson: ${time}`,
     groupReschedule: (group: string) =>

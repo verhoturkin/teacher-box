@@ -13,7 +13,8 @@ On a computer, upcoming lessons and “My requests” appear beside the calendar
 
 Choose “Reschedule” or “Cancel” beside the lesson. To reschedule, suggest a new date and time. You can also include a message for your teacher.
 
-Times when your teacher is unavailable are marked “Busy”. Choose a free time; the portal will tell you if your suggested time is unavailable.
+Times when your teacher is unavailable are marked “Busy”. Below the date field the portal offers the free times of the chosen day as buttons: tap one, or enter any other time yourself. \
+The portal will tell you if your suggested time is unavailable.
 
 Your teacher will receive the request and you will be notified of their response. Check its status in “My requests”. Until your teacher responds, you \
 can withdraw it with “Withdraw” or “Withdraw request”.
