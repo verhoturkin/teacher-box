@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.homework.domain.Submission;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 @Repository
 public class SubmissionRepository {
@@ -34,7 +35,7 @@ public class SubmissionRepository {
                 where task_id = :taskId order by submitted_at desc
                 """)
                 .param("taskId", taskId)
-                .query(Submission.class)
+                .query(RecordRowMapper.of(Submission.class))
                 .list();
     }
 

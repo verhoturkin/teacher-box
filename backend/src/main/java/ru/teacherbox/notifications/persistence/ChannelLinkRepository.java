@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.notifications.domain.ChannelLink;
 import ru.teacherbox.notifications.domain.ChannelType;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 @Repository
 public class ChannelLinkRepository {
@@ -50,20 +51,20 @@ public class ChannelLinkRepository {
     public List<ChannelLink> findByRecipient(UUID recipientId) {
         return jdbc.sql(SELECT + " where recipient_id = :recipientId order by channel")
                 .param("recipientId", recipientId)
-                .query(ChannelLink.class)
+                .query(RecordRowMapper.of(ChannelLink.class))
                 .list();
     }
 
     /** Connected accounts of all users. */
     public List<ChannelLink> findAll() {
-        return jdbc.sql(SELECT + " order by recipient_id, channel").query(ChannelLink.class).list();
+        return jdbc.sql(SELECT + " order by recipient_id, channel").query(RecordRowMapper.of(ChannelLink.class)).list();
     }
 
     public Optional<ChannelLink> find(UUID recipientId, ChannelType channel) {
         return jdbc.sql(SELECT + " where recipient_id = :recipientId and channel = :channel")
                 .param("recipientId", recipientId)
                 .param("channel", channel.name())
-                .query(ChannelLink.class)
+                .query(RecordRowMapper.of(ChannelLink.class))
                 .optional();
     }
 
@@ -71,7 +72,7 @@ public class ChannelLinkRepository {
         return jdbc.sql(SELECT + " where channel = :channel and external_id = :externalId")
                 .param("channel", channel.name())
                 .param("externalId", externalId)
-                .query(ChannelLink.class)
+                .query(RecordRowMapper.of(ChannelLink.class))
                 .list();
     }
 

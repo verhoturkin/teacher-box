@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.meetings.domain.Room;
 import ru.teacherbox.shared.persistence.OptimisticLock;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 @Repository
 public class RoomRepository {
@@ -61,7 +62,7 @@ public class RoomRepository {
     }
 
     public Optional<Room> findByOwner(UUID ownerId) {
-        return jdbc.sql(SELECT + " where owner_id = :ownerId").param("ownerId", ownerId).query(Room.class)
+        return jdbc.sql(SELECT + " where owner_id = :ownerId").param("ownerId", ownerId).query(RecordRowMapper.of(Room.class))
                 .optional();
     }
 
@@ -69,10 +70,10 @@ public class RoomRepository {
         if (ownerIds.isEmpty()) {
             return List.of();
         }
-        return jdbc.sql(SELECT + " where owner_id in (:ids)").param("ids", ownerIds).query(Room.class).list();
+        return jdbc.sql(SELECT + " where owner_id in (:ids)").param("ids", ownerIds).query(RecordRowMapper.of(Room.class)).list();
     }
 
     public List<Room> findAll() {
-        return jdbc.sql(SELECT + " order by created_at, id").query(Room.class).list();
+        return jdbc.sql(SELECT + " order by created_at, id").query(RecordRowMapper.of(Room.class)).list();
     }
 }

@@ -20,6 +20,7 @@ import ru.teacherbox.schedule.domain.LessonNote;
 import ru.teacherbox.schedule.domain.LessonStatus;
 import ru.teacherbox.schedule.domain.Participant;
 import ru.teacherbox.shared.persistence.OptimisticLock;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 /** Lessons of the schedule with their participants (the bean name differs from the billing lesson log). */
 @Repository("scheduleLessonRepository")
@@ -126,7 +127,7 @@ public class LessonRepository {
     }
 
     public Optional<Lesson> findById(UUID id) {
-        return load(jdbc.sql(SELECT + " where id = :id").param("id", id).query(Row.class).list())
+        return load(jdbc.sql(SELECT + " where id = :id").param("id", id).query(RecordRowMapper.of(Row.class)).list())
                 .stream().findFirst();
     }
 
@@ -144,7 +145,7 @@ public class LessonRepository {
                 """ + ORDER + " limit 1")
                 .param("studentId", studentId)
                 .param("now", now)
-                .query(Row.class)
+                .query(RecordRowMapper.of(Row.class))
                 .list())
                 .stream().findFirst();
     }
@@ -154,7 +155,7 @@ public class LessonRepository {
         return load(jdbc.sql(SELECT + " where starts_at >= :from and starts_at < :to" + ORDER)
                 .param("from", from)
                 .param("to", to)
-                .query(Row.class)
+                .query(RecordRowMapper.of(Row.class))
                 .list());
     }
 
@@ -164,7 +165,7 @@ public class LessonRepository {
                 .param("studentId", studentId)
                 .param("from", from)
                 .param("to", to)
-                .query(Row.class)
+                .query(RecordRowMapper.of(Row.class))
                 .list());
     }
 
@@ -174,7 +175,7 @@ public class LessonRepository {
                 .param("groupId", groupId)
                 .param("from", from)
                 .param("to", to)
-                .query(Row.class)
+                .query(RecordRowMapper.of(Row.class))
                 .list());
     }
 
@@ -184,7 +185,7 @@ public class LessonRepository {
                         + ORDER)
                 .param("groupId", groupId)
                 .param("after", after)
-                .query(Row.class)
+                .query(RecordRowMapper.of(Row.class))
                 .list());
     }
 
@@ -193,7 +194,7 @@ public class LessonRepository {
         return load(jdbc.sql(SELECT + " where status <> 'CANCELLED' and starts_at < :to and ends_at > :from" + ORDER)
                 .param("from", from)
                 .param("to", to)
-                .query(Row.class)
+                .query(RecordRowMapper.of(Row.class))
                 .list());
     }
 
@@ -203,7 +204,7 @@ public class LessonRepository {
                         + ORDER)
                 .param("after", after)
                 .param("until", until)
-                .query(Row.class)
+                .query(RecordRowMapper.of(Row.class))
                 .list());
     }
 
@@ -211,7 +212,7 @@ public class LessonRepository {
     public List<Lesson> findUnmarked(Instant before) {
         return load(jdbc.sql(SELECT + " where status = 'SCHEDULED' and ends_at <= :before" + ORDER)
                 .param("before", before)
-                .query(Row.class)
+                .query(RecordRowMapper.of(Row.class))
                 .list());
     }
 
@@ -252,7 +253,7 @@ public class LessonRepository {
 
     public List<Lesson> repeatTail(UUID ruleId, LocalDate from) {
         return load(jdbc.sql(SELECT + " where series_id = :id and series_date >= :from order by series_date, id")
-                .param("id", ruleId).param("from", from).query(Row.class).list());
+                .param("id", ruleId).param("from", from).query(RecordRowMapper.of(Row.class)).list());
     }
 
     public void suppress(UUID ruleId, LocalDate date) {
@@ -282,7 +283,7 @@ public class LessonRepository {
                 .param("startsAt", lesson.startsAt());
         query = lesson.isGroup() ? query.param("groupId", lesson.groupId())
                 : query.param("studentId", lesson.studentId());
-        return load(query.query(Row.class).list()).stream().findFirst();
+        return load(query.query(RecordRowMapper.of(Row.class)).list()).stream().findFirst();
     }
 
     /** Puts a topic into a lesson that has none; a filled topic stays. Does not bump the version. */
@@ -297,7 +298,7 @@ public class LessonRepository {
         return jdbc.sql("select lesson_id, student_id, note, updated_at from schedule.lesson_notes"
                         + " where lesson_id = :id order by updated_at, student_id")
                 .param("id", lessonId)
-                .query(LessonNote.class)
+                .query(RecordRowMapper.of(LessonNote.class))
                 .list();
     }
 
@@ -306,7 +307,7 @@ public class LessonRepository {
         return load(jdbc.sql(SELECT + " where status in ('CONDUCTED', 'MISSED') and starts_at < :before and"
                 + OF_STUDENT + HELD_ORDER + " limit :limit")
                 .param("studentId", studentId).param("before", before).param("limit", limit)
-                .query(Row.class).list());
+                .query(RecordRowMapper.of(Row.class)).list());
     }
 
     /** Held lessons of the group that start before {@code before}, newest first. */
@@ -314,7 +315,7 @@ public class LessonRepository {
         return load(jdbc.sql(SELECT + " where status in ('CONDUCTED', 'MISSED') and starts_at < :before"
                 + " and group_id = :groupId" + HELD_ORDER + " limit :limit")
                 .param("groupId", groupId).param("before", before).param("limit", limit)
-                .query(Row.class).list());
+                .query(RecordRowMapper.of(Row.class)).list());
     }
 
     /** The teacher's private notes about the student in the given lessons, by lesson. */
@@ -325,7 +326,7 @@ public class LessonRepository {
         return jdbc.sql("select lesson_id, student_id, note, updated_at from schedule.lesson_notes"
                         + " where student_id = :studentId and lesson_id in (:ids)")
                 .param("studentId", studentId).param("ids", lessonIds)
-                .query(LessonNote.class)
+                .query(RecordRowMapper.of(LessonNote.class))
                 .list().stream().collect(Collectors.toMap(LessonNote::lessonId, note -> note));
     }
 

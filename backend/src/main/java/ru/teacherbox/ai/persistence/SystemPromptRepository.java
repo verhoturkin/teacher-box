@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.ai.domain.AiFeature;
 import ru.teacherbox.shared.persistence.OptimisticLock;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 /** System prompts the teacher rewrote; a feature without a row uses the default one. */
 @Repository
@@ -26,7 +27,7 @@ public class SystemPromptRepository {
     public Optional<StoredPrompt> find(AiFeature feature) {
         return jdbc.sql("select feature, text, updated_at, version from ai.system_prompts where feature = :feature")
                 .param("feature", feature.name())
-                .query(StoredPrompt.class)
+                .query(RecordRowMapper.of(StoredPrompt.class))
                 .optional();
     }
 

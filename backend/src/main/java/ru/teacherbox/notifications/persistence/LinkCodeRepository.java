@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.notifications.domain.ChannelType;
 import ru.teacherbox.notifications.domain.LinkCode;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 @Repository
 public class LinkCodeRepository {
@@ -38,7 +39,7 @@ public class LinkCodeRepository {
                 """)
                 .param("hash", codeHash)
                 .param("channel", channel.name())
-                .query(LinkCode.class)
+                .query(RecordRowMapper.of(LinkCode.class))
                 .optional();
     }
 

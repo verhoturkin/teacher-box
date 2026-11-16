@@ -136,12 +136,14 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
 
 ### 419. Responsiveness
 
-- [ ] 419.1 **B** *simple* — rows mapped without failing lookups: `JdbcClient.query(Row.class)`
+- [x] 419.1 **B** *complex* — rows mapped without failing lookups: `JdbcClient.query(Row.class)`
   (Spring `SimplePropertyRowMapper`) asks H2 for `startsAt` before `starts_at`, and H2 throws and
-  logs every miss. Replace the ~55 calls in 20 repositories (most in
-  `schedule/persistence/LessonRepository`) with `DataClassRowMapper`; add `TRACE_LEVEL_FILE=0` to
-  the datasource URL (`application.yaml`); an ArchUnit or grep test forbids `query(<Record>.class)`.
-  Check: `/api/teacher/schedule/unmarked` and `/lessons` answer in ~10 ms.
+  logs every miss to `.trace.db`. Measured on a file H2, 25 rows: 36 ms per query; the datasource
+  option `TRACE_LEVEL_FILE=0` (`application.yaml`) alone gives ~10 ms (3.5x); `DataClassRowMapper`
+  gives nothing (it still looks `studentid` up for `student_id`). So the ~52 record reads in 19
+  repositories use `shared.persistence.RecordRowMapper` (columns matched to components once by
+  name, then read by index, no failed lookups; a component without a column fails fast), and
+  `RowMapperTests` forbids `query(<Record>.class)`.
 - [ ] 419.2 **F** *simple* — the student list appears whole: `students-page.ts` shows the rows on
   `/students`, then balances, messengers and the nearest lesson fill in (`forkJoin` at line ~594).
   Keep the skeleton until the extras come or ~300 ms pass, whichever is first.

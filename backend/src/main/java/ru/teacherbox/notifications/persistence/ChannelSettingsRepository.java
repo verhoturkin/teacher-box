@@ -6,6 +6,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.notifications.domain.ChannelType;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 /** Bot tokens entered in the settings page, one row per messenger. */
 @Repository
@@ -31,7 +32,7 @@ public class ChannelSettingsRepository {
                 where channel = :channel
                 """)
                 .param("channel", channel.name())
-                .query(ChannelSettings.class)
+                .query(RecordRowMapper.of(ChannelSettings.class))
                 .optional();
     }
 

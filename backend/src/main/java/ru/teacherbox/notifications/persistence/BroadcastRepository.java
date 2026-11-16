@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 /** Messages the teacher sent to students (the history on the notifications page). */
 @Repository
@@ -40,7 +41,7 @@ public class BroadcastRepository {
                 order by created_at desc, id desc limit :limit
                 """)
                 .param("limit", limit)
-                .query(Broadcast.class)
+                .query(RecordRowMapper.of(Broadcast.class))
                 .list();
     }
 }

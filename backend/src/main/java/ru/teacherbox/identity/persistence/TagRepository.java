@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.identity.domain.Tag;
 import ru.teacherbox.shared.persistence.OptimisticLock;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 /** Student tags, their values and the values set on students. */
 @Repository
@@ -28,7 +29,7 @@ public class TagRepository {
     /** All tags in the teacher's order. */
     public List<Tag> findAll() {
         return withValues(jdbc.sql("select id, name, kind, use_in_ai, version from identity.tags order by position, id")
-                .query(Row.class)
+                .query(RecordRowMapper.of(Row.class))
                 .list());
     }
 
