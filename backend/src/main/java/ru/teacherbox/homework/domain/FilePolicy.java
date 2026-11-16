@@ -35,6 +35,7 @@ public final class FilePolicy {
             Map.entry("mp3", "audio/mpeg"),
             Map.entry("m4a", "audio/mp4"),
             Map.entry("ogg", "audio/ogg"),
+            Map.entry("webm", "audio/webm"),
             Map.entry("wav", "audio/wav"),
             Map.entry("zip", "application/zip"));
 

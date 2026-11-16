@@ -137,6 +137,9 @@ class HomeworkDomainTest {
     void filePolicy() {
         assertThat(FilePolicy.contentTypeOf("Решение.PDF")).isEqualTo("application/pdf");
         assertThat(FilePolicy.contentTypeOf("photo.jpeg")).isEqualTo("image/jpeg");
+        assertThat(FilePolicy.contentTypeOf("voice.webm")).isEqualTo("audio/webm");
+        assertThat(FilePolicy.contentTypeOf("voice.ogg")).isEqualTo("audio/ogg");
+        assertThat(FilePolicy.contentTypeOf("voice.m4a")).isEqualTo("audio/mp4");
         assertThatThrownBy(() -> FilePolicy.contentTypeOf("script.exe")).hasMessageContaining("exe");
         assertThatThrownBy(() -> FilePolicy.contentTypeOf("noextension")).hasMessageContaining("no extension");
 
