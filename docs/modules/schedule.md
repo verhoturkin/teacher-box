@@ -51,6 +51,17 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
   «Засчитать как пропуск» show only for an approval, a busy time asks «Всё равно перенести». Cancelling later
   than the late cancellation window (lesson rules, 24 h by default) is marked late — the teacher
   decides if it counts as missed.
+- **Free times:** the move dialogs (student's request, teacher's answer, teacher's edit of a lesson) show
+  the free windows of the chosen day, e.g. «9:00–11:30» (`tb-free-times`: consecutive starts of
+  `GET /api/me|teacher/schedule/free-times` collapsed, the end = last start + lesson length); a
+  window fills in its start, the date picker stays the main control, and a teacher's typed time that
+  fits no window gets the hint «Это время занято».
+- **Working hours** (405.3): one range of every day in the teacher's zone (lesson rules
+  `workStart` / `workEnd`, `HH:mm`, default 08:00–21:00, the end after the start). Free times start
+  at `workStart` and the whole lesson ends by `workEnd` (`TeacherAvailability.freeTimes` adds the time
+  after the end as busy for `SlotFinder`); the time grid of `ui/schedule-calendar.ts` shows them,
+  rounded out to whole hours and widened to lessons outside them. A manual time outside them stays
+  possible; per-weekday windows are roadmap/08.
   In a group lesson an early «Не приду» is accepted at once (excused); a move moves it for everyone. A teacher
   edit of a lesson with an open request makes it `OUTDATED`.
 - **Availability:** the student sees the teacher's busy time without names (lessons, Google busy, off-time)
@@ -60,9 +71,10 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
   intervals of the lesson rules (24 h and 1 h by default), only the nearest if several are due;
   reset on reschedule.
 - **Lesson rules** (ADR-0056, `LessonRulesService`, read per call): default duration, late
-  cancellation, reminders, horizon. `GET/PUT /api/teacher/schedule/settings`
+  cancellation, reminders, horizon, working hours. `GET/PUT /api/teacher/schedule/settings`
   (`defaultDurationMinutes` 15–480, `lateCancellationMinutes` 0 – 7 d, `reminderMinutes` ≤ 3 of
-  15 min – 7 d, `horizonWeeks` 4–26; otherwise 422 `schedule.settings-*-invalid`). Values imported
+  15 min – 7 d, `horizonWeeks` 4–26, `workStart` before `workEnd`; otherwise 422
+  `schedule.settings-*-invalid`). Values imported
   from the old variables keep the old limits until the teacher changes them.
 - **ICS feed:** `/api/public/schedule/<token>.ics` (256-bit token, hash stored, shown once): the teacher's feed
   has all lessons with names, a student's — own lessons (incl. group ones, group name instead of names).

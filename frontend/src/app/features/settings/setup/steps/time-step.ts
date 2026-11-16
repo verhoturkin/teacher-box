@@ -4,19 +4,21 @@ import { Card } from 'primeng/card';
 import { locale } from '@core/i18n/language';
 import { PriceField } from '@features/billing/parts';
 import { CurrencyField } from '@features/settings/fields/currency-field';
-import { DurationField } from '@features/settings/fields/lesson-rule-fields';
+import { DurationField, WorkingHoursField } from '@features/settings/fields/lesson-rule-fields';
 import { TimeZoneField } from '@features/settings/fields/time-zone-field';
 import { T } from '@features/settings/i18n/texts';
 import { zoneLabel } from '@features/settings/lesson-options';
 import { formatMoney, toMinorUnits } from '@shared/money/money';
 import { Saved } from './setup-state';
 
-/** The fields of «Время и оплата»; the price in major units. */
+/** The fields of «Время и оплата»; the price in major units, the working hours as picked times. */
 export type TimeForm = FormGroup<{
   zone: FormControl<string>;
   duration: FormControl<number | null>;
   currency: FormControl<string>;
   price: FormControl<number | null>;
+  workStart: FormControl<Date | null>;
+  workEnd: FormControl<Date | null>;
 }>;
 
 const t = T.setup;
@@ -29,10 +31,21 @@ function sampleLesson(now = new Date()): Date {
   return lesson;
 }
 
-/** «Время и оплата»: the time zone, the lesson length, the currency and the price of a lesson. */
+/**
+ * «Время и оплата»: the time zone, the lesson length, the working hours, the currency and the price of a
+ * lesson.
+ */
 @Component({
   selector: 'tb-setup-time-step',
-  imports: [ReactiveFormsModule, Card, CurrencyField, DurationField, PriceField, TimeZoneField],
+  imports: [
+    ReactiveFormsModule,
+    Card,
+    CurrencyField,
+    DurationField,
+    PriceField,
+    TimeZoneField,
+    WorkingHoursField,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display: contents' },
   template: `
@@ -44,6 +57,11 @@ function sampleLesson(now = new Date()): Date {
           inputId="setup-duration"
           [hint]="true"
           [control]="form().controls.duration"
+        />
+        <tb-working-hours-field
+          inputId="setup-work"
+          [start]="form().controls.workStart"
+          [end]="form().controls.workEnd"
         />
       </p-card>
       <p-card [header]="t.paymentCard" styleClass="tb-section-card tb-section-card--flow">

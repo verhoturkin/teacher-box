@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
-import { changeRequest, scheduledLesson } from '@testing/schedule-fixtures';
+import { changeRequest, scheduledLesson, dropFreeTimes } from '@testing/schedule-fixtures';
 import { ChangeKind, ChangeRequest } from '../data-access/schedule.models';
 import { ChangeRequestDialog } from './change-request-dialog';
 import { testProviders } from '@testing/setup';
@@ -25,6 +25,7 @@ describe('ChangeRequestDialog', () => {
   });
 
   afterEach(() => {
+    dropFreeTimes(backend);
     backend.verify();
     fixture.destroy();
   });
@@ -35,6 +36,18 @@ describe('ChangeRequestDialog', () => {
     fixture.componentRef.setInput('visible', true);
     await fixture.whenStable();
   }
+
+  it('offers the free times of the day and checks the chosen one', async () => {
+    await open('RESCHEDULE', new Date(2026, 8, 20));
+    const free = new Date(2026, 9, 5, 12, 30);
+    backend.expectOne((r) => r.url === '/api/me/schedule/free-times').flush([free.toISOString()]);
+    await fixture.whenStable();
+
+    buttonByText(document.body, '12:30–13:30').click();
+
+    expect(fixture.componentInstance.proposed()).toEqual(free);
+    backend.expectOne((r) => r.url === '/api/me/schedule/busy').flush([]);
+  });
 
   it('proposes another time', async () => {
     await open('RESCHEDULE', new Date(2026, 8, 20));

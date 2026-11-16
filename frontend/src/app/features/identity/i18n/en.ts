@@ -40,6 +40,11 @@ export const en: Translation<typeof ru> = {
     mismatch: 'Passwords do not match',
     createAccount: 'Create account',
     savePassword: 'Save password',
+    signIn: 'Sign in',
+    toCabinet: 'To my cabinet',
+    teacherBanner: 'You are signed in as a teacher. A student will open this link',
+    created: 'Account created',
+    passwordSaved: 'Password saved',
     failed: 'Could not save your changes. Try again later',
   },
   roles: {

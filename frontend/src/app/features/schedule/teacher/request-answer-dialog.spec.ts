@@ -2,7 +2,7 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationService } from 'primeng/api';
 import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
-import { changeRequest, scheduledLesson } from '@testing/schedule-fixtures';
+import { changeRequest, scheduledLesson, dropFreeTimes } from '@testing/schedule-fixtures';
 import { ChangeRequest } from '../data-access/schedule.models';
 import { RequestAnswerDialog } from './request-answer-dialog';
 import { testProviders } from '@testing/setup';
@@ -35,6 +35,7 @@ describe('RequestAnswerDialog', () => {
   });
 
   afterEach(() => {
+    dropFreeTimes(backend);
     backend.verify();
     fixture.destroy();
   });
@@ -44,6 +45,23 @@ describe('RequestAnswerDialog', () => {
     fixture.componentRef.setInput('visible', true);
     await fixture.whenStable();
   }
+
+  it('approves a move for a free window', async () => {
+    await open(changeRequest());
+    backend.expectOne('/api/teacher/schedule/lessons/l-1').flush(scheduledLesson());
+    const free = new Date(2026, 9, 5, 12, 30);
+    backend
+      .expectOne((r) => r.url === '/api/teacher/schedule/free-times')
+      .flush([free.toISOString()]);
+    await fixture.whenStable();
+
+    buttonByText(document.body, '12:30–13:30').click();
+    buttonByText(document.body, 'Согласовать').click();
+
+    const call = backend.expectOne('/api/teacher/schedule/requests/r-1/approve');
+    expect(call.request.body).toMatchObject({ startsAt: free.toISOString() });
+    call.flush(scheduledLesson());
+  });
 
   it('approves a move for the proposed time', async () => {
     const request = changeRequest({ comment: 'Можно в пятницу?' });

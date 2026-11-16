@@ -107,6 +107,8 @@ describe('ScheduleApi', () => {
       lateCancellationMinutes: 0,
       reminderMinutes: [],
       horizonWeeks: 4,
+      workStart: '08:00',
+      workEnd: '21:00',
     };
     api.lessonRules().subscribe();
     api.changeLessonRules(rules).subscribe();

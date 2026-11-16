@@ -19,6 +19,7 @@ import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
+import { OwnerOption } from '@features/identity/parts';
 import { describeError } from '@core/http/error-messages';
 import { problemCode } from '@core/http/problem-detail';
 import { ScheduleApi } from '../data-access/schedule-api';
@@ -37,6 +38,7 @@ import {
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { T } from '../i18n/texts';
+import { FreeTimes } from '../ui/free-times';
 import { SHARED_T } from '@shared/i18n/texts';
 
 /** A student the teacher can plan a lesson with. */
@@ -62,9 +64,11 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
 @Component({
   selector: 'tb-lesson-dialog',
   imports: [
+    OwnerOption,
     ReactiveFormsModule,
     Button,
     DatePicker,
+    FreeTimes,
     TbDialog,
     InputNumber,
     InputText,
@@ -97,12 +101,21 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
             optionLabel="label"
             optionValue="value"
             [placeholder]="t.chooseOwner"
+            [emptyMessage]="t.noOwners"
+            [emptyFilterMessage]="t.noOwners"
             [filter]="true"
             [filterPlaceholder]="t.search"
             [ariaFilterLabel]="t.search"
             appendTo="body"
             [fluid]="true"
-          />
+          >
+            <ng-template #selectedItem let-option>
+              <tb-owner-option [name]="option.label" [value]="option.value" />
+            </ng-template>
+            <ng-template #item let-option>
+              <tb-owner-option [name]="option.label" [value]="option.value" />
+            </ng-template>
+          </p-select>
         </div>
         <div class="tb-row">
           <div class="tb-field">
@@ -119,6 +132,16 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
               appendTo="body"
               [fluid]="true"
             />
+            @if (lesson(); as moving) {
+              <tb-free-times
+                [lessonId]="moving.id"
+                [date]="startDay() ?? movingStart(moving)"
+                [minutes]="moving.durationMinutes"
+                [selected]="startDay()"
+                [asTeacher]="true"
+                (picked)="pickStart($event)"
+              />
+            }
           </div>
           <div class="tb-field">
             <label for="schedule-lesson-duration">{{ t.duration }}</label>
@@ -274,6 +297,17 @@ export class LessonDialog {
       validators: [Validators.maxLength(1000), Validators.pattern(MEETING_URL_PATTERN)],
     }),
   });
+
+  protected readonly startDay = toSignal(this.form.controls.startsAt.valueChanges, {
+    initialValue: null,
+  });
+  protected movingStart(lesson: ScheduledLesson): Date {
+    return new Date(lesson.startsAt);
+  }
+  protected pickStart(time: Date): void {
+    this.form.controls.startsAt.markAsDirty();
+    this.form.controls.startsAt.setValue(time);
+  }
 
   protected readonly dirty = toSignal(this.form.valueChanges.pipe(map(() => this.form.dirty)), {
     initialValue: false,

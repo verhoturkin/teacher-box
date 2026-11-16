@@ -177,9 +177,14 @@ interface Row {
             [tbProgressLabel]="t.progress(doneCount(), steps().length)"
           />
           <ol class="tb-queue__steps">
-            @for (step of left(); track step.title) {
-              <li>
-                <i class="tb-i tb-i-radio_button_unchecked" aria-hidden="true"></i>
+            @for (step of steps(); track step.title) {
+              <li [class.tb-queue__step--done]="step.done">
+                <i
+                  class="tb-i"
+                  [class.tb-i-check_circle]="step.done"
+                  [class.tb-i-radio_button_unchecked]="!step.done"
+                  aria-hidden="true"
+                ></i>
                 <div>
                   <a [routerLink]="step.link" [queryParams]="step.query" class="tb-link">{{
                     step.title
@@ -308,6 +313,16 @@ interface Row {
         div {
           display: flex;
           flex-direction: column;
+        }
+      }
+
+      .tb-queue__step--done {
+        > i {
+          color: var(--p-md-primary);
+        }
+
+        a {
+          text-decoration: line-through;
         }
       }
     }

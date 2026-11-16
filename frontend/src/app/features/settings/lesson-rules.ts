@@ -9,6 +9,8 @@ export function sameRules(a: LessonRules, b: LessonRules): boolean {
     a.defaultDurationMinutes === b.defaultDurationMinutes &&
     a.lateCancellationMinutes === b.lateCancellationMinutes &&
     a.horizonWeeks === b.horizonWeeks &&
+    a.workStart === b.workStart &&
+    a.workEnd === b.workEnd &&
     a.reminderMinutes.length === b.reminderMinutes.length &&
     a.reminderMinutes.every((minutes) => b.reminderMinutes.includes(minutes))
   );

@@ -70,7 +70,9 @@ export function fileIcon(contentType: string): string {
     ? 'tb-i tb-i-image'
     : contentType === 'application/pdf'
       ? 'tb-i tb-i-picture_as_pdf'
-      : 'tb-i tb-i-draft';
+      : contentType.startsWith('audio/')
+        ? 'tb-i tb-i-mic'
+        : 'tb-i tb-i-draft';
 }
 
 /** «осталось 2 дня» / «сегодня» / «просрочено на 1 день»: whole calendar days from today to the deadline. */

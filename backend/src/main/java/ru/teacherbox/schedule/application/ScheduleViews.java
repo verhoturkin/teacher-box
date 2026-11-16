@@ -182,10 +182,12 @@ public final class ScheduleViews {
     /**
      * Settings the UI needs to show and edit times correctly.
      *
-     * @param timeZone time zone of series and notifications (the teacher's), e.g. {@code Europe/Moscow}
+     * @param timeZone  time zone of series and notifications (the teacher's), e.g. {@code Europe/Moscow}
+     * @param workStart the teacher's working hours, {@code HH:mm} of {@code timeZone}
+     * @param workEnd   their end
      */
     public record ScheduleSettings(String timeZone, int defaultDurationMinutes, long lateCancellationMinutes,
-            List<Long> reminderMinutes) {
+            List<Long> reminderMinutes, String workStart, String workEnd) {
     }
 
     /**

@@ -103,6 +103,114 @@ const BACKUPS: Readonly<Record<string, readonly (readonly [string, string])[]>> 
   ],
 };
 
+/** Reviewed voice answer guidance from stage 403.2: [baseline, now] of the homework article per edition. */
+const VOICE: Readonly<Record<string, readonly [string, string]>> = {
+  'student.ru': [
+    '3. Нажмите «Сдать».\n',
+    '3. Нажмите «Сдать».\n\nОтвет можно сказать голосом: **Записать голос** включает микрофон и показывает ' +
+      'время записи, красная кнопка её останавливает. Перед сдачей запись можно прослушать, «Перезаписать» ' +
+      'или «Удалить»; «Сдать» отправит её вместе с ответом. Если браузер не дал доступ к микрофону, ' +
+      'разрешите его в настройках браузера и нажмите снова. Сданная запись тоже слушается прямо на ' +
+      'странице.\n',
+  ],
+  'student.en': [
+    '3. Choose “Hand in”.\n',
+    '3. Choose “Hand in”.\n\nYou can also answer by voice: **Record voice** turns the microphone on and ' +
+      'shows the recording time; the red button stops it. Before you hand it in, play the recording back, ' +
+      'or choose “Record again” or “Delete”; “Hand in” sends it with your answer. If the browser has no ' +
+      'access to the microphone, allow it in the browser settings and try again. Handed-in recordings ' +
+      'play right on the page.\n',
+  ],
+  'teacher.ru': [
+    'сколько работ ещё не сдано.',
+    'сколько работ ещё не сдано. Голосовой ответ ученика слушается прямо в работе.',
+  ],
+  'teacher.en': [
+    'the student’s response and attached images.',
+    'the student’s response and attached images; a voice response plays right there.',
+  ],
+};
+
+/** Free times of the day offered as chips in the move dialogs (stage 405.2). */
+const FREE_TIMES: Record<string, readonly [string, string]> = {
+  'teacher.ru': [
+    '(или укажите своё). Если',
+    '(или выберите своё: свободные окна дня вроде «9:00–11:30» подставляют начало, можно ввести любое; занятое время подсветится подсказкой). Если',
+  ],
+  'teacher.en': [
+    'approve the suggested time or enter another. The portal',
+    'approve the suggested time or pick another: the free windows of the day such as “9:00–11:30” fill in the start, or type any time yourself; a hint warns if it is taken. The portal',
+  ],
+  'student.ru': [
+    'Выберите свободное время: попросить',
+    'Под полем даты портал показывает свободные окна выбранного дня вроде «9:00–11:30»: нажмите на окно, чтобы подставить его начало, или введите любое время. Если время занято, под полем появится подсказка. Попросить',
+  ],
+  'student.en': [
+    'Choose a free time; the portal',
+    'Below the date field the portal offers the free windows of the chosen day such as “9:00–11:30”: tap one to fill in its start, or type any time yourself. If the time is taken, a hint says so. The portal',
+  ],
+};
+
+/** Invitation page guidance (stage 406.1): [baseline, now] of the student login article. */
+const INVITE: Readonly<Record<string, readonly [string, string]>> = {
+  'student.ru': [
+    'и вы в личном кабинете. Дальше',
+    'и вы в личном кабинете. Логин — латиницей, цифрами, «.», «-», «_», от 3 до 50 символов. ' +
+      'Если ссылка уже использована или устарела, нажмите «Войти» (или «В кабинет», если вы уже вошли) ' +
+      'либо попросите учителя прислать новую. Дальше',
+  ],
+  'student.en': [
+    'with those details. If',
+    'with those details. The username is 3–50 characters: letters (a–z), numbers, dots, hyphens or ' +
+      'underscores. If the link has already been used, choose “Sign in” (or “To my cabinet” if you are ' +
+      'signed in). If',
+  ],
+};
+
+/** Checklist keeps done steps (stage 406.2): [baseline, now] of the first-steps article. */
+const CHECKLIST: Readonly<Record<string, readonly [string, string]>> = {
+  'teacher.ru': [
+    'в нём остаются только несделанные шаги',
+    'в нём сделанные шаги отмечены галочкой',
+  ],
+  'teacher.en': [
+    'tracks these steps and hides completed ones',
+    'tracks these steps and keeps completed ones ticked',
+  ],
+};
+
+/** The teacher's working hours (stage 405.3): [topic, baseline, now] per edition. */
+const WORKING_HOURS: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'settings',
+      '([Оплаты](/teacher/help/billing)). «Правила»',
+      '([Оплаты](/teacher/help/billing)), рабочее время — часы календаря, внутри них портал предлагает' +
+        ' свободное время для переноса занятия. «Правила»',
+    ],
+    [
+      'setup',
+      'устройства. Валюта, длительность',
+      'устройства. Рабочее время — часы календаря и свободного времени для переноса занятий.' +
+        ' Валюта, длительность',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'settings',
+      '[Payments](/teacher/help/billing)). Under “Rules”',
+      '[Payments](/teacher/help/billing)), and your working hours: the calendar shows them, and free' +
+        ' times to move a lesson are offered within them. Under “Rules”',
+    ],
+    [
+      'setup',
+      'device. Then choose a currency',
+      'device. Your working hours set the hours of the calendar and of free times to move a lesson.' +
+        ' Then choose a currency',
+    ],
+  ],
+};
+
 const DISK_USAGE_RU = [
   'журнал и настройки без паролей и личных данных.',
   ' В «Ресурсах» видно, сколько занимают база данных, файлы, копии на сервере и восстановления.' +
@@ -168,6 +276,37 @@ describe('help articles after the split into one file per topic', () => {
           backups['body'],
         ),
       };
+    const voice = VOICE[name];
+    const homework = original['homework'];
+    if (voice && isRecord(homework) && typeof homework['body'] === 'string') {
+      expect(homework['body']).toContain(voice[0]);
+      expected['homework'] = { ...homework, body: homework['body'].replace(...voice) };
+    }
+    const free = FREE_TIMES[name];
+    const schedule = original['schedule'];
+    if (free && isRecord(schedule) && typeof schedule['body'] === 'string') {
+      expect(schedule['body']).toContain(free[0]);
+      expected['schedule'] = { ...schedule, body: schedule['body'].replace(...free) };
+    }
+    const invite = INVITE[name];
+    const login = original['login'];
+    if (invite && isRecord(login) && typeof login['body'] === 'string') {
+      expect(login['body']).toContain(invite[0]);
+      expected['login'] = { ...login, body: login['body'].replace(...invite) };
+    }
+    const checklist = CHECKLIST[name];
+    const first = original['first-steps'];
+    if (checklist && isRecord(first) && typeof first['body'] === 'string') {
+      expect(first['body']).toContain(checklist[0]);
+      expected['first-steps'] = { ...first, body: first['body'].replace(...checklist) };
+    }
+    for (const [topic, before, after] of WORKING_HOURS[name] ?? []) {
+      const reviewed = original[topic];
+      if (isRecord(reviewed) && typeof reviewed['body'] === 'string') {
+        expect(reviewed['body']).toContain(before);
+        expected[topic] = { ...reviewed, body: reviewed['body'].replace(before, after) };
+      }
+    }
     expect(texts).toEqual(expected);
   });
 

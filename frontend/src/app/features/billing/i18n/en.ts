@@ -141,6 +141,7 @@ export const en: Translation<typeof ru> = {
     title: 'Payment',
     student: 'Student',
     chooseStudent: 'Choose a student',
+    noStudents: 'Add a student first, in «Students»',
     search: 'Search',
     amount: 'Amount',
     date: 'Payment date',

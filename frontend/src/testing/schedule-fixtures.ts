@@ -1,3 +1,4 @@
+import { HttpTestingController } from '@angular/common/http/testing';
 import {
   CalendarFeed,
   ChangeRequest,
@@ -126,6 +127,8 @@ export function scheduleSettings(overrides: Partial<ScheduleSettings> = {}): Sch
     defaultDurationMinutes: 60,
     lateCancellationMinutes: 1440,
     reminderMinutes: [60, 1440],
+    workStart: '08:00',
+    workEnd: '21:00',
     ...overrides,
   };
 }
@@ -136,6 +139,8 @@ export function lessonRules(overrides: Partial<LessonRules> = {}): LessonRules {
     lateCancellationMinutes: 1440,
     reminderMinutes: [1440, 60],
     horizonWeeks: 12,
+    workStart: '08:00',
+    workEnd: '21:00',
     ...overrides,
   };
 }
@@ -160,4 +165,21 @@ export function scheduleSummary(overrides: Partial<ScheduleSummary> = {}): Sched
 
 export function myScheduleSummary(overrides: Partial<MyScheduleSummary> = {}): MyScheduleSummary {
   return { next: null, weekLessons: 0, pendingRequests: 0, ...overrides };
+}
+
+/**
+ * A dialog with a move asks for the free times of a day (and the teacher's one for the lesson's
+ * length); the tests that do not care answer none.
+ */
+export function dropFreeTimes(backend: HttpTestingController): void {
+  backend
+    .match(
+      (request) =>
+        request.url.endsWith('/schedule/free-times') ||
+        (request.method === 'GET' && /\/teacher\/schedule\/lessons\/[^/]+$/.test(request.url)),
+    )
+    .filter((r) => !r.cancelled)
+    .forEach((r) => {
+      r.flush(r.request.url.endsWith('/free-times') ? [] : scheduledLesson());
+    });
 }

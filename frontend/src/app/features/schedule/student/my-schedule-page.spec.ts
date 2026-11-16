@@ -12,6 +12,7 @@ import {
   groupLesson,
   scheduleSettings,
   scheduledLesson,
+  dropFreeTimes,
 } from '@testing/schedule-fixtures';
 import { ScheduleApi } from '../data-access/schedule-api';
 import {
@@ -66,6 +67,7 @@ describe('MySchedulePage', () => {
     for (const request of busyRequests()) {
       request.flush([]);
     }
+    dropFreeTimes(backend);
     backend.verify();
     fixture.destroy();
     vi.useRealTimers();
@@ -471,6 +473,7 @@ describe('MySchedulePage lesson summaries', () => {
     for (const request of backend.match((r) => r.url === '/api/me/schedule/busy')) {
       request.flush([]);
     }
+    dropFreeTimes(backend);
     backend.verify();
     fixture.destroy();
   });

@@ -243,6 +243,8 @@ class RequestsIntegrationTests {
                     assertThat(json).extractingPath("$.lateCancellationMinutes").isEqualTo(1440);
                     assertThat(json).extractingPath("$.reminderMinutes").asArray().containsExactly(60, 1440);
                     assertThat(json).extractingPath("$.defaultDurationMinutes").isEqualTo(60);
+                    assertThat(json).extractingPath("$.workStart").isEqualTo("08:00");
+                    assertThat(json).extractingPath("$.workEnd").isEqualTo("21:00");
                 });
     }
 

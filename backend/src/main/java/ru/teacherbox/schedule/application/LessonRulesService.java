@@ -2,6 +2,7 @@ package ru.teacherbox.schedule.application;
 
 import java.time.Clock;
 import java.time.Duration;
+import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
@@ -51,14 +52,23 @@ public class LessonRulesService {
         List<Duration> reminders = value(stored, Setting.REMINDERS, LessonRulesService::reminders)
                 .orElse(LessonRules.DEFAULT_REMINDERS);
         Duration horizon = value(stored, Setting.HORIZON, Duration::parse).orElse(LessonRules.DEFAULT_HORIZON);
-        return new LessonRules(duration, late, reminders, horizon);
+        LocalTime workStart = value(stored, Setting.WORK_START, LocalTime::parse)
+                .orElse(LessonRules.DEFAULT_WORK_START);
+        LocalTime workEnd = value(stored, Setting.WORK_END, LocalTime::parse).orElse(LessonRules.DEFAULT_WORK_END);
+        // hours stored by hand that end before they start are unusable: the default instead
+        if (!workStart.isBefore(workEnd)) {
+            workStart = LessonRules.DEFAULT_WORK_START;
+            workEnd = LessonRules.DEFAULT_WORK_END;
+        }
+        return new LessonRules(duration, late, reminders, horizon, workStart, workEnd);
     }
 
     /**
      * Stores all the rules at once.
      *
      * @throws BusinessRuleException if a value is outside the limits: duration 15–480 min, late cancellation
-     *                               0–7 d, at most 3 reminders of 15 min – 7 d, horizon 4–26 weeks
+     *                               0–7 d, at most 3 reminders of 15 min – 7 d, horizon 4–26 weeks, the working
+     *                               hours start before they end
      */
     @Transactional
     public LessonRules change(LessonRules rules) {
@@ -80,9 +90,12 @@ public class LessonRulesService {
             throw invalid("schedule.settings-horizon-invalid",
                     "The horizon must be " + MIN_HORIZON_WEEKS + "-" + MAX_HORIZON_WEEKS + " weeks");
         }
+        if (!rules.workStart().isBefore(rules.workEnd())) {
+            throw invalid("schedule.settings-working-hours-invalid", "The working hours must start before they end");
+        }
         settings.save(rules.defaultDurationMinutes(), rules.lateCancellation().toString(),
                 rules.reminders().stream().map(Duration::toString).collect(Collectors.joining(",")),
-                rules.horizon().toString(), clock.instant());
+                rules.horizon().toString(), hhmm(rules.workStart()), hhmm(rules.workEnd()), clock.instant());
         return current();
     }
 
@@ -96,6 +109,11 @@ public class LessonRulesService {
         } catch (NumberFormatException | DateTimeParseException e) {
             return Optional.empty();
         }
+    }
+
+    /** {@code HH:mm}: seconds are not kept. */
+    private static String hhmm(LocalTime time) {
+        return time.withSecond(0).withNano(0).toString();
     }
 
     private static List<Duration> reminders(String value) {

@@ -7,7 +7,7 @@ import { lessonRules, scheduleSettings } from '@testing/schedule-fixtures';
 import { testProviders } from '@testing/setup';
 import { Select } from 'primeng/select';
 import { LessonSettings } from './lesson-settings';
-import { Option } from './lesson-options';
+import { Option, deviceZone } from './lesson-options';
 
 function isOption(value: unknown): value is Option {
   return (
@@ -112,11 +112,13 @@ describe('LessonSettings', () => {
   });
 
   it('saves a new time zone at once and keeps the old one when it is refused', async () => {
+    // not the device's zone: that one is always first, and the saved one second
+    const zone = deviceZone() === 'Asia/Yekaterinburg' ? 'Asia/Novosibirsk' : 'Asia/Yekaterinburg';
     await render();
-    await emit('tb-time-zone-field p-select', 'onChange', 'Asia/Yekaterinburg');
+    await emit('tb-time-zone-field p-select', 'onChange', zone);
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/settings/time-zone' });
-    expect(request.request.body).toEqual({ timeZone: 'Asia/Yekaterinburg' });
-    request.flush({ timeZone: 'Asia/Yekaterinburg' });
+    expect(request.request.body).toEqual({ timeZone: zone });
+    request.flush({ timeZone: zone });
     await fixture.whenStable();
 
     await emit('tb-time-zone-field p-select', 'onChange', 'Asia/Tokyo');
@@ -125,7 +127,7 @@ describe('LessonSettings', () => {
       .flush({ code: 'portal.time-zone-invalid' }, { status: 422, statusText: 'Invalid' });
     await fixture.whenStable();
     const zones = fixture.debugElement.query(By.css('tb-time-zone-field p-select'));
-    expect(zoneValues(zones.injector.get(Select).options)[1]).toBe('Asia/Yekaterinburg');
+    expect(zoneValues(zones.injector.get(Select).options)[1]).toBe(zone);
   });
 
   it('changes the currency, shows the price in it and reads the setting again after a refusal', async () => {
@@ -188,6 +190,23 @@ describe('LessonSettings', () => {
       dueSoon: 24,
       horizon: 12,
     });
+  });
+
+  it('saves the working hours when a time is picked', async () => {
+    const host = await render();
+    expect(readableText(host)).toContain('Рабочее время');
+    const { workStart, workEnd } = fixture.componentInstance.form.controls;
+    workStart.setValue(new Date(2026, 0, 1, 9, 30));
+    workEnd.setValue(new Date(2026, 0, 1, 18));
+    await emit('tb-working-hours-field p-datepicker', 'onClose');
+    const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/settings' });
+    expect(request.request.body).toEqual(lessonRules({ workStart: '09:30', workEnd: '18:00' }));
+    request.flush(lessonRules({ workStart: '09:30', workEnd: '18:00' }));
+    await fixture.whenStable();
+
+    workStart.setValue(null);
+    await emit('tb-working-hours-field p-datepicker', 'onClose');
+    expect(workStart.value?.getHours()).toBe(9);
   });
 
   it('puts the saved value back into an emptied field', async () => {

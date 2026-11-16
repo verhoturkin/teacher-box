@@ -17,6 +17,7 @@ import { ScheduleApi } from '../data-access/schedule-api';
 import { ChangeKind, ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
 import { formatLessonTime, optionalText } from '../schedule-labels';
 import { T } from '../i18n/texts';
+import { FreeTimes } from '../ui/free-times';
 import { SHARED_T } from '@shared/i18n/texts';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
@@ -27,7 +28,7 @@ import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
  */
 @Component({
   selector: 'tb-change-request-dialog',
-  imports: [FormsModule, DatePicker, Message, TbDialog, Textarea],
+  imports: [FormsModule, DatePicker, FreeTimes, Message, TbDialog, Textarea],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-dialog
@@ -69,6 +70,12 @@ import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
                 [showOnFocus]="false"
                 appendTo="body"
                 [fluid]="true"
+              />
+              <tb-free-times
+                [lessonId]="lesson.id"
+                [date]="day()"
+                [minutes]="lesson.durationMinutes"
+                (picked)="choose($event)"
               />
             </div>
             @if (busyAt()) {
@@ -133,6 +140,10 @@ export class ChangeRequestDialog {
     }
     return this.absence() ? T.changeRequest.absenceTitle : T.changeRequest.cancelTitle;
   });
+  /** The day the free times are shown for: the chosen one, else the lesson's own. */
+  protected readonly day = computed(
+    () => this.proposed() ?? new Date(this.lesson()?.startsAt ?? this.now()),
+  );
   protected readonly time = computed(() => {
     const lesson = this.lesson();
     return lesson === null ? '' : formatLessonTime(lesson.startsAt, lesson.endsAt);

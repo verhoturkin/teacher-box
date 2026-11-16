@@ -12,7 +12,8 @@ send, quiet hours). Changes save immediately. You can also open it by selecting 
 - **Portal:** name and logo, portal colour, and fine tuning (scheme, contrast) with a preview. See [Appearance](/teacher/help/appearance).
 - **Lessons:** under “Time and price”, the time zone (used for lesson times, reminders and monthly reports; lessons already booked keep their time), \
 the currency (fixed once the first charge or payment is recorded), and the length and price for new lessons, students and groups (see \
-[Payments](/teacher/help/billing)). Under “Rules”, when a cancellation counts as late, up to three lesson reminders for students (“Add” to choose \
+[Payments](/teacher/help/billing)), and your working hours: the calendar shows them, and free times to move a lesson are \
+offered within them. Under “Rules”, when a cancellation counts as late, up to three lesson reminders for students (“Add” to choose \
 when, “×” to remove one), how many hours before a homework deadline to remind students, and how many weeks ahead to create repeating lessons. Each \
 field saves as soon as you leave it or press Enter. Also [calls](/teacher/help/calls) and [external video meetings](/teacher/help/meetings), Google \
 Calendar and the calendar subscription (see [Calendars](/teacher/help/calendars)).

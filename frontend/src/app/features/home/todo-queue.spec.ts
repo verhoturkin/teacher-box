@@ -185,7 +185,8 @@ describe('TodoQueue', () => {
     expect(content).toContain('Подключите ИИ-помощника');
     expect(content).not.toContain('стоимость занятия');
     expect(content).toContain('Запланируйте первое занятие');
-    expect(content).not.toContain('Добавьте ученика');
+    expect(content).toContain('Добавьте ученика');
+    expect(hostElement(fixture).querySelectorAll('.tb-queue__step--done').length).toBe(1);
     expect(content).not.toContain('Срочных дел нет');
 
     buttonByText(hostElement(fixture), 'Скрыть').click();
@@ -199,7 +200,7 @@ describe('TodoQueue', () => {
     await render({ ...done, hasLessons: false });
 
     expect(text()).toContain('Сделано 3 из 4');
-    expect(text()).not.toContain('Подключите ИИ-помощника');
+    expect(hostElement(fixture).querySelectorAll('.tb-queue__step--done').length).toBe(3);
   });
 
   it('keeps the steps hidden while something is unknown', async () => {

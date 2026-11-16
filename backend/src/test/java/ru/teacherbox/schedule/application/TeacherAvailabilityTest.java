@@ -6,7 +6,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -17,6 +19,7 @@ import ru.teacherbox.schedule.application.TeacherAvailability.BusyTime;
 import ru.teacherbox.schedule.application.TeacherAvailability.ExternalBusyTimes;
 import ru.teacherbox.schedule.persistence.LessonRepository;
 import ru.teacherbox.shared.error.ConflictException;
+import ru.teacherbox.shared.time.InstanceTimeZone;
 
 class TeacherAvailabilityTest {
 
@@ -40,7 +43,8 @@ class TeacherAvailabilityTest {
             beans.addBean("calendar", calendar);
         }
         ObjectProvider<ExternalBusyTimes> provider = beans.getBeanProvider(ExternalBusyTimes.class);
-        return new TeacherAvailability(lessons, offTimes, provider);
+        return new TeacherAvailability(lessons, offTimes, provider, new InstanceTimeZone(ZoneOffset.UTC),
+                mock(LessonRulesService.class), Clock.fixed(NINE, ZoneOffset.UTC));
     }
 
     @Test

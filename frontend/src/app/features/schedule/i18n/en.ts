@@ -90,6 +90,10 @@ export const en: Translation<typeof ru> = {
     wontCome: 'I can’t attend',
     cancel: 'Cancel',
   },
+  freeTimes: {
+    label: 'Free',
+    taken: 'This time is taken',
+  },
   changeRequest: {
     lesson: (time: string) => `Lesson: ${time}`,
     groupReschedule: (group: string) =>
@@ -187,6 +191,7 @@ export const en: Translation<typeof ru> = {
     editLesson: 'Edit lesson',
     with: 'With',
     chooseOwner: 'Choose a student or a group',
+    noOwners: 'Add a student first, in «Students»',
     search: 'Search',
     start: 'Start',
     duration: 'Duration, min',

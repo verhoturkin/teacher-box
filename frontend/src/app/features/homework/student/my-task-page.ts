@@ -27,6 +27,7 @@ import { AttachmentList } from '../ui/attachment-list';
 import { TextbookList, boundTextbookFilename } from '../ui/textbook-list';
 import { VideoList } from '../ui/video-list';
 import { FilePicker } from '../ui/file-picker';
+import { canRecord, VoiceRecorder } from '../ui/voice-recorder';
 import { AssistChip } from '@shared/ui/assist-chip';
 import { injectMobile } from '@core/layout/mobile';
 import { SubmissionList } from '../ui/submission-list';
@@ -66,6 +67,7 @@ import { QuizSection } from './quiz-section';
     AttachmentList,
     TextbookList,
     FilePicker,
+    VoiceRecorder,
     AssistChip,
     SubmissionList,
     TaskStatusTag,
@@ -201,7 +203,11 @@ import { QuizSection } from './quiz-section';
               @if (last.text) {
                 <p class="tb-pre tb-task__muted">{{ last.text }}</p>
               }
-              <tb-attachment-list [attachments]="last.attachments" (download)="download($event)" />
+              <tb-attachment-list
+                [attachments]="last.attachments"
+                [audio]="audio"
+                (download)="download($event)"
+              />
             </section>
           }
 
@@ -241,6 +247,9 @@ import { QuizSection } from './quiz-section';
                 [list]="false"
                 [capture]="true"
               />
+              @if (canRecord) {
+                <tb-voice-recorder class="tb-task__voice" [(file)]="voice" />
+              }
               @if (error(); as message) {
                 <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
               }
@@ -273,6 +282,7 @@ import { QuizSection } from './quiz-section';
               <ng-template>
                 <tb-submission-list
                   [submissions]="task.submissions"
+                  [audio]="audio"
                   (download)="download($event)"
                 />
               </ng-template>
@@ -516,6 +526,8 @@ export class MyTaskPage {
   protected readonly t = T.myTask;
   protected readonly tv = T.videos;
   private readonly api = inject(HomeworkApi);
+  protected readonly canRecord = canRecord();
+  protected readonly audio = (attachmentId: string) => this.api.myFile(attachmentId);
   private readonly snackbar = inject(Snackbar);
   private readonly fileSaver = inject(FileSaver);
   private readonly fileOpener = inject(FileOpener);
@@ -571,6 +583,8 @@ export class MyTaskPage {
     validators: [Validators.maxLength(20_000)],
   });
   readonly files = signal<File[]>([]);
+  /** The voice record, listened to before sending; it goes with the files. */
+  readonly voice = signal<File | null>(null);
   private readonly quiz = viewChild(QuizSection);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -623,7 +637,9 @@ export class MyTaskPage {
     if (quiz?.started()) {
       await quiz.flush();
     }
-    if (text === '' && this.files().length === 0 && !quiz?.started()) {
+    const voice = this.voice();
+    const files = voice ? [...this.files(), voice] : this.files();
+    if (text === '' && files.length === 0 && !quiz?.started()) {
       this.error.set(T.myTask.empty);
       return;
     }
@@ -632,7 +648,7 @@ export class MyTaskPage {
     }
     this.pending.set(true);
     this.error.set(null);
-    this.api.submit(this.taskId(), text === '' ? null : text, this.files()).subscribe({
+    this.api.submit(this.taskId(), text === '' ? null : text, files).subscribe({
       next: (task) => {
         this.pending.set(false);
         this.task.set(task);
@@ -641,6 +657,7 @@ export class MyTaskPage {
         this.text.setValue('');
         this.prefilled.set(false);
         this.files.set([]);
+        this.voice.set(null);
         this.quiz()?.reload();
         this.changed.emit(task);
         this.snackbar.success(T.myTask.sent);

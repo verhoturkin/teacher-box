@@ -20,7 +20,11 @@ public class ScheduleSettingsRepository {
         /** Comma-separated ISO-8601 durations; {@code ""}: no reminders. */
         REMINDERS("reminders"),
         /** ISO-8601 duration. */
-        HORIZON("horizon");
+        HORIZON("horizon"),
+        /** {@code HH:mm}, the teacher's zone. */
+        WORK_START("work_start"),
+        /** {@code HH:mm}, the teacher's zone. */
+        WORK_END("work_end");
 
         private final String column;
 
@@ -45,8 +49,8 @@ public class ScheduleSettingsRepository {
 
     /** The whole row as stored, each value empty until it is set. */
     public Map<Setting, String> findAll() {
-        return jdbc.sql("select default_duration, late_cancellation, reminders, horizon from schedule.settings"
-                + " where id = 1")
+        return jdbc.sql("select default_duration, late_cancellation, reminders, horizon, work_start, work_end"
+                + " from schedule.settings where id = 1")
                 .query((rs, row) -> {
                     Map<Setting, String> values = new EnumMap<>(Setting.class);
                     for (Setting setting : Setting.values()) {
@@ -62,18 +66,22 @@ public class ScheduleSettingsRepository {
     }
 
     /** Replaces every value. */
-    public void save(int defaultDuration, String lateCancellation, String reminders, String horizon, Instant now) {
+    public void save(int defaultDuration, String lateCancellation, String reminders, String horizon, String workStart,
+            String workEnd, Instant now) {
         insertRow(now);
         jdbc.sql("""
                 update schedule.settings
                 set default_duration = :duration, late_cancellation = :late, reminders = :reminders,
-                    horizon = :horizon, updated_at = :now, version = version + 1
+                    horizon = :horizon, work_start = :workStart, work_end = :workEnd, updated_at = :now,
+                    version = version + 1
                 where id = 1
                 """)
                 .param("duration", defaultDuration)
                 .param("late", lateCancellation)
                 .param("reminders", reminders)
                 .param("horizon", horizon)
+                .param("workStart", workStart)
+                .param("workEnd", workEnd)
                 .param("now", now)
                 .update();
     }

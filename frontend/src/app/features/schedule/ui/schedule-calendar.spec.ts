@@ -12,6 +12,7 @@ import {
   ScheduleCalendar,
   lessonClasses,
   mergePeriods,
+  visibleHours,
 } from './schedule-calendar';
 
 describe('ScheduleCalendar', () => {
@@ -334,6 +335,27 @@ describe('ScheduleCalendar unmarked lessons', () => {
     await fixture.whenStable();
 
     expect(hostElement(fixture).querySelectorAll('.tb-lesson--unmarked')).toHaveLength(1);
+  });
+});
+
+describe('visibleHours', () => {
+  const lesson = (start: Date, end: Date): ScheduledLesson =>
+    scheduledLesson({ startsAt: start.toISOString(), endsAt: end.toISOString() });
+
+  it('shows the working hours rounded out to whole hours', () => {
+    expect(visibleHours('08:00', '21:00', [])).toEqual({ min: '08:00:00', max: '21:00:00' });
+    expect(visibleHours('09:30', '18:15', [])).toEqual({ min: '09:00:00', max: '19:00:00' });
+  });
+
+  it('widens them to the lessons outside, a lesson past midnight to 24:00', () => {
+    const early = lesson(new Date(2026, 9, 1, 6, 30), new Date(2026, 9, 1, 7, 30));
+    const late = lesson(new Date(2026, 9, 1, 21, 15), new Date(2026, 9, 1, 22, 15));
+    const night = lesson(new Date(2026, 9, 1, 23, 30), new Date(2026, 9, 2, 0, 30));
+    expect(visibleHours('08:00', '21:00', [early, late])).toEqual({
+      min: '06:00:00',
+      max: '23:00:00',
+    });
+    expect(visibleHours('08:00', '21:00', [night])).toEqual({ min: '08:00:00', max: '24:00:00' });
   });
 });
 

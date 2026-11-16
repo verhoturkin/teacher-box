@@ -237,6 +237,7 @@ export const en: Translation<typeof ru> = {
       'schedule.settings-reminders-invalid':
         'Up to three reminders, each between 15 minutes and 7 days before',
       'schedule.settings-horizon-invalid': 'Repeating lessons can be created 4–26 weeks ahead',
+      'schedule.settings-working-hours-invalid': 'Working hours must end after they start',
       'homework.settings-due-soon-invalid': 'The deadline reminder must be 1–72 hours before',
       'auth.rate-limited': 'Too many sign-in attempts. Wait a minute and try again',
       // ai

@@ -24,7 +24,7 @@ import { BillingApi } from '@features/billing/parts';
 import { HelpButton } from '@features/help/parts';
 import { HomeworkApi } from '@features/homework/parts';
 import { Account, IdentityApi, TEACHER_NAME_VALIDATORS } from '@features/identity/parts';
-import { LessonRules, ScheduleApi } from '@features/schedule/parts';
+import { LessonRules, ScheduleApi, fromTime, toTime } from '@features/schedule/parts';
 import { toMajorUnits, toMinorUnits } from '@shared/money/money';
 import { revealErrors } from '@shared/ui/field-errors';
 import { LoadState } from '@shared/ui/load-state';
@@ -34,7 +34,7 @@ import { Step, Steps } from '@shared/ui/steps';
 import { SettingsApi } from '../data-access/settings-api';
 import { T } from '../i18n/texts';
 import { deviceZone } from '../lesson-options';
-import { HOUR } from '../lesson-rules';
+import { HOUR, sameRules } from '../lesson-rules';
 import { aiState, messengersState } from '../settings-categories';
 import { NextCardId, NextStates, SetupDonePreview, SetupDoneStep } from './steps/done-step';
 import { SetupPasswordStep } from './steps/password-step';
@@ -511,6 +511,8 @@ export class SetupPage implements OnInit {
     duration: new FormControl<number | null>(null),
     currency: new FormControl('', { nonNullable: true }),
     price: new FormControl<number | null>(null, [Validators.min(0)]),
+    workStart: new FormControl<Date | null>(null),
+    workEnd: new FormControl<Date | null>(null),
   });
   readonly rulesForm = new FormGroup({
     late: new FormControl<number | null>(null),
@@ -723,7 +725,7 @@ export class SetupPage implements OnInit {
   }
 
   private saveTime(saved: Saved): Observable<unknown> {
-    const { zone, duration, currency, price } = this.timeForm.getRawValue();
+    const { zone, duration, currency, price, workStart, workEnd } = this.timeForm.getRawValue();
     const requests: Observable<unknown>[] = [];
     if (zone !== '' && zone !== saved.zone) {
       requests.push(
@@ -754,9 +756,14 @@ export class SetupPage implements OnInit {
         ),
       );
     }
-    const minutes = duration ?? saved.rules.defaultDurationMinutes;
-    if (minutes !== saved.rules.defaultDurationMinutes) {
-      requests.push(this.changeRules({ ...saved.rules, defaultDurationMinutes: minutes }));
+    const rules: LessonRules = {
+      ...saved.rules,
+      defaultDurationMinutes: duration ?? saved.rules.defaultDurationMinutes,
+      workStart: workStart === null ? saved.rules.workStart : toTime(workStart),
+      workEnd: workEnd === null ? saved.rules.workEnd : toTime(workEnd),
+    };
+    if (!sameRules(rules, saved.rules)) {
+      requests.push(this.changeRules(rules));
     }
     return all(requests);
   }
@@ -764,7 +771,7 @@ export class SetupPage implements OnInit {
   private saveRules(saved: Saved): Observable<unknown> {
     const { late, dueSoon, horizon } = this.rulesForm.getRawValue();
     const rules: LessonRules = {
-      defaultDurationMinutes: saved.rules.defaultDurationMinutes,
+      ...saved.rules,
       lateCancellationMinutes:
         late === null ? saved.rules.lateCancellationMinutes : Math.round(late * HOUR),
       reminderMinutes: this.reminders(),
@@ -819,6 +826,8 @@ export class SetupPage implements OnInit {
       zone: zone ?? saved.zone,
       duration: saved.rules.defaultDurationMinutes,
       currency: saved.currency,
+      workStart: fromTime(saved.rules.workStart),
+      workEnd: fromTime(saved.rules.workEnd),
       price: toMajorUnits(saved.price, saved.currency),
     });
     if (saved.locked) {

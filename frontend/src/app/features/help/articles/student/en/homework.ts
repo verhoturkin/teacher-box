@@ -37,6 +37,10 @@ assigned pages.
 documents; use “Remove” to take one off. The portal checks the file type and size when you select them.
 3. Choose “Hand in”.
 
+You can also answer by voice: **Record voice** turns the microphone on and shows the recording time; the red button stops it. \
+Before you hand it in, play the recording back, or choose “Record again” or “Delete”; “Hand in” sends it with your answer. If the \
+browser has no access to the microphone, allow it in the browser settings and try again. Handed-in recordings play right on the page.
+
 Text you have typed but not handed in is kept on this device, so you can leave the page and come back to it (the note says “draft saved”). Files are \
 not kept in the draft; attach them again. On a phone “My answer” stays at the bottom of the screen, with the materials and the test below the task.
 

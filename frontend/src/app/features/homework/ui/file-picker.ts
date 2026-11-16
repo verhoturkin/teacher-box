@@ -19,7 +19,7 @@ import { T } from '../i18n/texts';
 
 /** Extensions accepted by the backend (FilePolicy). */
 export const ACCEPTED_FILES =
-  '.pdf,.txt,.md,.rtf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.odp,.jpg,.jpeg,.png,.gif,.webp,.heic,.mp3,.m4a,.ogg,.wav,.zip';
+  '.pdf,.txt,.md,.rtf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.odp,.jpg,.jpeg,.png,.gif,.webp,.heic,.mp3,.m4a,.ogg,.webm,.wav,.zip';
 
 const ACCEPTED_EXTENSIONS = ACCEPTED_FILES.split(',').map((extension) => extension.slice(1));
 

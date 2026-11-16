@@ -95,6 +95,12 @@ class MyScheduleController {
         return availability.forStudent(studentId(user), from, to);
     }
 
+    /** Free start times of a day to move the student's lesson to. */
+    @GetMapping("/free-times")
+    List<Instant> freeTimes(CurrentUser user, @RequestParam LocalDate date, @RequestParam UUID lessonId) {
+        return availability.freeTimes(studentId(user), lessonId, date);
+    }
+
     @PostMapping("/lessons/{lessonId}/requests")
     @ResponseStatus(HttpStatus.CREATED)
     RequestView request(CurrentUser user, @PathVariable UUID lessonId, @Valid @RequestBody ChangeRequestBody body) {

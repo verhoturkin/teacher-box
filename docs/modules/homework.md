@@ -178,8 +178,6 @@ Student answer draft (342.2): the backend stores no draft of a submission (the `
 assignment drafts), so the text of an unsent answer lives in `localStorage` as `tb.homework.draft.<taskId>` (a task
 is one student + one assignment), written on every change, cleared on «Сдать», on an empty text and never restored
 into accepted work. Files are not kept: a server draft would need a new table and endpoints for a small gain.
-Voice answers are not done (Backlog in `PLAN.md`).
-
 `features/homework/`: `teacher/` (assignments list pane, assignment page, editor), `student/` (my tasks, task
 page), `ui/`, `home/` widgets, `homework-labels.ts`. Textbooks: `ui/textbook-list.ts` (kind icon, title,
 «Учебник · course · с. 12-14» / «целиком»; the teacher's pencil and cross, the student's tap opens the pages in a new tab,
@@ -225,6 +223,16 @@ with a search by the title and pages of 10, as the teacher's) are `tb-list` card
 of an assignment (`teacher/assignment-board.ts`): the frame «<title> · dd.MM.yyyy», the pictures — png / jpeg / webp /
 gif files, then the bound pages of each textbook (a whole PDF — from page 1, an image — its picture, a document —
 none), at most 30. Routes `/teacher/homework/**`, `/cabinet/homework/**`.
+
+Voice answers (0.51.0): one compact pill, `ui/voice-player.ts` — a filled play / pause icon button,
+a seekable 4 dp bar (primary on secondary-container), «0:04 / 0:12»; the sound plays in a hidden
+`<audio>` (no native controls), a webm without duration is measured by one seek to its end.
+`ui/voice-recorder.ts` (only where the browser has `MediaRecorder`) in the answer panel: tonal
+«Записать голос» → a red dot, the time and a filled red stop → the record in the pill with
+«Перезаписать» and «Удалить», so the student listens before sending. The record is `voice` of
+`my-task-page.ts` (`голос HH-mm.webm`; Safari `.m4a`, Firefox may give `.ogg`), sent with the files.
+A denied microphone shows a hint. `tb-attachment-list` with an `audio` loader shows a sound file as
+the same pill, without its name — on the student's page and in the teacher's review.
 
 Videos (0.19.0, ADR-0047; tiles 0.43.0): `teacher/video-section.ts` in the editor (sent
 whole with `videos`). A video is a tile: the preview (YouTube's public `i.ytimg.com/vi/<id>/mqdefault.jpg`, CSP

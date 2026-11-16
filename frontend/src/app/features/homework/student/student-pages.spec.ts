@@ -356,6 +356,26 @@ describe('MyTaskPage', () => {
     expect(TestBed.inject(MessageService).add).toHaveBeenCalled();
   });
 
+  it('hands in a voice record alone, with the files', async () => {
+    const { fixture, host, backend } = await render(
+      taskDetails({ status: 'ASSIGNED', submissions: [] }),
+    );
+    fixture.componentInstance.voice.set(new File(['sound'], 'голос 09-30.webm'));
+    await fixture.whenStable();
+    buttonByText(host, 'Сдать').click();
+
+    const request = backend.expectOne('/api/me/homework/tasks/t-1/submissions');
+    const body: unknown = request.request.body;
+    const files = body instanceof FormData ? body.getAll('files') : [];
+    expect(files.map((file) => (file instanceof File ? file.name : ''))).toEqual([
+      'голос 09-30.webm',
+    ]);
+    request.flush(taskDetails());
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.voice()).toBeNull();
+  });
+
   it('keeps the text of an unsent answer and restores it, then forgets it after «Сдать»', async () => {
     localStorage.clear();
     const first = await render(taskDetails({ status: 'ASSIGNED', submissions: [] }));

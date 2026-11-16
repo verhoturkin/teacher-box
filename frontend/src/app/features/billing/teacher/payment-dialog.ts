@@ -24,6 +24,7 @@ import { RECEIPT_ACCEPT, RECEIPT_POLICY } from '../receipts';
 import { BillingStudent, Payment } from '../data-access/billing.models';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
+import { OwnerOption } from '@features/identity/parts';
 import { FieldErrors } from '@shared/ui/field-errors';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
@@ -33,6 +34,7 @@ import { locale } from '@core/i18n/language';
 @Component({
   selector: 'tb-payment-dialog',
   imports: [
+    OwnerOption,
     ReactiveFormsModule,
     Button,
     DatePicker,
@@ -70,12 +72,21 @@ import { locale } from '@core/i18n/language';
             optionLabel="label"
             optionValue="value"
             [placeholder]="t.chooseStudent"
+            [emptyMessage]="t.noStudents"
+            [emptyFilterMessage]="t.noStudents"
             [filter]="true"
             [filterPlaceholder]="t.search"
             [ariaFilterLabel]="t.search"
             appendTo="body"
             [fluid]="true"
-          />
+          >
+            <ng-template #selectedItem let-option>
+              <tb-owner-option [name]="option.label" [value]="option.value" />
+            </ng-template>
+            <ng-template #item let-option>
+              <tb-owner-option [name]="option.label" [value]="option.value" />
+            </ng-template>
+          </p-select>
         </div>
         <div class="tb-row">
           <div class="tb-field">

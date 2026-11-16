@@ -87,6 +87,10 @@ export const ru = {
     wontCome: 'Не приду',
     cancel: 'Отменить',
   },
+  freeTimes: {
+    label: 'Свободно',
+    taken: 'Это время занято',
+  },
   changeRequest: {
     lesson: (time: string) => `Занятие: ${time}`,
     groupReschedule: (group: string) =>
@@ -187,6 +191,7 @@ export const ru = {
     editLesson: 'Изменить занятие',
     with: 'С кем',
     chooseOwner: 'Выберите ученика или группу',
+    noOwners: 'Сначала добавьте ученика в разделе «Ученики»',
     search: 'Поиск',
     start: 'Начало',
     duration: 'Длительность, мин',

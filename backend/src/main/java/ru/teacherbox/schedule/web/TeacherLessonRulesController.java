@@ -3,6 +3,7 @@ package ru.teacherbox.schedule.web;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.time.Duration;
+import java.time.LocalTime;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -27,19 +28,26 @@ class TeacherLessonRulesController {
      * @param lateCancellationMinutes 0 – 7 days
      * @param reminderMinutes         at most 3, each 15 minutes – 7 days; empty: no reminders
      * @param horizonWeeks            4–26
+     * @param workStart               {@code HH:mm}, the teacher's zone
+     * @param workEnd                 {@code HH:mm}, after {@code workStart}
      */
     record LessonRulesRequest(@NotNull Integer defaultDurationMinutes, @NotNull Integer lateCancellationMinutes,
-            @NotNull List<@NotNull Integer> reminderMinutes, @NotNull Integer horizonWeeks) {
+            @NotNull List<@NotNull Integer> reminderMinutes, @NotNull Integer horizonWeeks,
+            @NotNull LocalTime workStart, @NotNull LocalTime workEnd) {
     }
 
-    /** @param horizonWeeks whole weeks, rounded up (an imported horizon may be a number of days) */
+    /**
+     * @param horizonWeeks whole weeks, rounded up (an imported horizon may be a number of days)
+     * @param workStart    {@code HH:mm}
+     * @param workEnd      {@code HH:mm}
+     */
     record LessonRulesView(int defaultDurationMinutes, long lateCancellationMinutes, List<Long> reminderMinutes,
-            long horizonWeeks) {
+            long horizonWeeks, String workStart, String workEnd) {
 
         static LessonRulesView of(LessonRules rules) {
             return new LessonRulesView(rules.defaultDurationMinutes(), rules.lateCancellation().toMinutes(),
                     rules.reminders().stream().map(Duration::toMinutes).toList(),
-                    (rules.horizonDays() + 6) / 7);
+                    (rules.horizonDays() + 6) / 7, rules.workStart().toString(), rules.workEnd().toString());
         }
     }
 
@@ -59,7 +67,7 @@ class TeacherLessonRulesController {
         LessonRules changed = rules.change(new LessonRules(request.defaultDurationMinutes(),
                 Duration.ofMinutes(request.lateCancellationMinutes()),
                 request.reminderMinutes().stream().map(Duration::ofMinutes).toList(),
-                Duration.ofDays(7L * request.horizonWeeks())));
+                Duration.ofDays(7L * request.horizonWeeks()), request.workStart(), request.workEnd()));
         AuditLog.record(user.id(), "lesson-rules", "changed");
         return LessonRulesView.of(changed);
     }

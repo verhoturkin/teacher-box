@@ -12,6 +12,7 @@ import {
   myScheduleSummary,
   scheduleSettings,
   scheduledLesson,
+  dropFreeTimes,
 } from '@testing/schedule-fixtures';
 import { screenWidth, testProviders } from '@testing/setup';
 import { aMyTextbook } from '@testing/textbooks-fixtures';
@@ -56,6 +57,7 @@ describe('StudentHome', () => {
         request.flush(new Blob());
       });
     fixture.destroy();
+    dropFreeTimes(backend);
     backend.verify();
     localStorage.clear();
     vi.useRealTimers();

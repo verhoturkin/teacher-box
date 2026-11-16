@@ -1,7 +1,10 @@
 package ru.teacherbox.schedule.application;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -15,6 +18,8 @@ import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.persistence.LessonRepository;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.ConflictException;
+import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.shared.time.InstanceTimeZone;
 
 /**
  * When the teacher is busy: lessons that are not cancelled, the time the teacher does not work and, if
@@ -26,6 +31,9 @@ public class TeacherAvailability {
 
     /** Longest period of busy times in one request. */
     static final Duration MAX_RANGE = Duration.ofDays(62);
+
+    /** Step between the offered free start times. */
+    static final Duration FREE_TIME_STEP = Duration.ofMinutes(15);
 
     /** A period when the teacher is busy. */
     public record BusyTime(Instant start, Instant end) {
@@ -40,12 +48,45 @@ public class TeacherAvailability {
     private final LessonRepository lessons;
     private final OffTimeService offTime;
     private final ObjectProvider<ExternalBusyTimes> external;
+    private final InstanceTimeZone timeZone;
+    private final LessonRulesService rules;
+    private final Clock clock;
 
     public TeacherAvailability(LessonRepository lessons, OffTimeService offTime,
-            ObjectProvider<ExternalBusyTimes> external) {
+            ObjectProvider<ExternalBusyTimes> external, InstanceTimeZone timeZone, LessonRulesService rules,
+            Clock clock) {
         this.lessons = lessons;
         this.offTime = offTime;
         this.external = external;
+        this.timeZone = timeZone;
+        this.rules = rules;
+        this.clock = clock;
+    }
+
+    /**
+     * Free start times on {@code date} (the teacher's zone) to move the lesson to: from now on, every
+     * {@link #FREE_TIME_STEP} from the start of the working hours, where the whole lesson ends by their end
+     * and misses other lessons, the off time and the teacher's calendar. With a {@code studentId}, a lesson the student does not take part in is not
+     * found.
+     */
+    @Transactional(readOnly = true)
+    public List<Instant> freeTimes(@Nullable UUID studentId, UUID lessonId, LocalDate date) {
+        Lesson moved = lessons.findById(lessonId)
+                .filter(lesson -> studentId == null || lesson.hasParticipant(studentId))
+                .orElseThrow(() -> new NotFoundException("schedule.lesson-not-found", "Lesson not found"));
+        ZoneId zone = timeZone.zoneId();
+        LessonRules working = rules.current();
+        Instant from = date.atTime(working.workStart()).atZone(zone).toInstant();
+        Instant to = date.atTime(working.workEnd()).atZone(zone).toInstant();
+        Duration length = Duration.between(moved.startsAt(), moved.endsAt());
+        Instant now = clock.instant();
+        if (!to.isAfter(now)) {
+            return List.of();
+        }
+        List<BusyTime> busy = new ArrayList<>(busy(from, to, lesson -> !lesson.id().equals(lessonId)));
+        // the time after the working hours is busy: a lesson must end by then
+        busy.add(new BusyTime(to, to.plus(length)));
+        return SlotFinder.freeStarts(from, to, now, busy, length, FREE_TIME_STEP);
     }
 
     /**

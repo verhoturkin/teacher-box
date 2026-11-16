@@ -139,6 +139,8 @@ export function nextMonday(date: Date): Date {
           @for (view of [screen()]; track view) {
             <tb-schedule-calendar
               [lessons]="calendarLessons()"
+              [workStart]="settings()?.workStart ?? '08:00'"
+              [workEnd]="settings()?.workEnd ?? '21:00'"
               [busy]="busy()"
               [busyTitle]="t.busy"
               [showStudent]="false"

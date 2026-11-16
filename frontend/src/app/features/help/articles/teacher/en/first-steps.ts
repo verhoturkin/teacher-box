@@ -21,7 +21,7 @@ AI provider: “Settings” → “AI”.
 
 You already chose the default lesson price during setup. To give one student a different price, open their “Profile” tab.
 
-The “Getting started” checklist under “To do” on your home page tracks these steps and hides completed ones.
+The “Getting started” checklist under “To do” on your home page tracks these steps and keeps completed ones ticked.
 
 ## Your Today page
 

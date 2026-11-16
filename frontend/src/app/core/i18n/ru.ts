@@ -232,6 +232,7 @@ export const ru = {
       'schedule.settings-late-cancellation-invalid': 'Поздняя отмена — не больше чем за 7 дней',
       'schedule.settings-reminders-invalid': 'До трёх напоминаний, каждое — от 15 минут до 7 дней',
       'schedule.settings-horizon-invalid': 'Занятия с повтором создаются на 4–26 недель вперёд',
+      'schedule.settings-working-hours-invalid': 'Конец рабочего времени должен быть позже начала',
       'homework.settings-due-soon-invalid': 'Напоминание о сроке — за 1–72 часа',
       'auth.rate-limited': 'Слишком много попыток входа. Подождите минуту и попробуйте снова',
       // ai

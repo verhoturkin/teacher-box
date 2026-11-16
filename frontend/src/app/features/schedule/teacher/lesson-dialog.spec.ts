@@ -1,7 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { bodyText, buttonByText } from '@testing/dom';
-import { scheduledLesson } from '@testing/schedule-fixtures';
+import { scheduledLesson, dropFreeTimes } from '@testing/schedule-fixtures';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { LessonDialog } from './lesson-dialog';
 import { testProviders } from '@testing/setup';
@@ -28,6 +28,7 @@ describe('LessonDialog', () => {
   });
 
   afterEach(() => {
+    dropFreeTimes(backend);
     backend.verify();
     fixture.destroy();
   });
@@ -253,6 +254,23 @@ describe('LessonDialog', () => {
       document.body.querySelector<HTMLInputElement>('#schedule-lesson-title')?.placeholder,
     ).toBe('Иван');
     expect(dialog.form.controls.topic.value).toBe('');
+  });
+
+  it('moves a planned lesson to a free window', async () => {
+    const lesson = scheduledLesson();
+    const dialog = await open(lesson);
+    const free = new Date(2026, 9, 5, 12, 30);
+    backend
+      .expectOne((request) => request.url === '/api/teacher/schedule/free-times')
+      .flush([free.toISOString()]);
+    await fixture.whenStable();
+
+    buttonByText(document.body, '12:30–13:30').click();
+    dialog.save();
+
+    const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/lessons/l-1' });
+    expect(request.request.body).toMatchObject({ startsAt: free.toISOString() });
+    request.flush(lesson);
   });
 
   it('changes a planned lesson', async () => {

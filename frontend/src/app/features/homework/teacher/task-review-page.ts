@@ -160,7 +160,11 @@ import { NextWork, ReviewSheet } from './review-sheet';
 
         <section class="tb-task__block">
           <h2 class="tb-task__label">{{ t.answer }}</h2>
-          <tb-submission-list [submissions]="task.submissions" (download)="download($event)" />
+          <tb-submission-list
+            [submissions]="task.submissions"
+            [audio]="audio"
+            (download)="download($event)"
+          />
         </section>
 
         @if (task.quiz; as quiz) {
@@ -291,6 +295,7 @@ import { NextWork, ReviewSheet } from './review-sheet';
 export class TaskReviewPage {
   protected readonly t = T.review;
   private readonly api = inject(HomeworkApi);
+  protected readonly audio = (attachmentId: string) => this.api.teacherFile(attachmentId);
   private readonly fileSaver = inject(FileSaver);
   protected readonly mobile = injectMobile();
   private readonly dates = new DatePipe(inject(LOCALE_ID));

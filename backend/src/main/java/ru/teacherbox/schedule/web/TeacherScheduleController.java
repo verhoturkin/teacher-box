@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.schedule.application.ChangeRequestService;
 import ru.teacherbox.schedule.application.ScheduleQueries;
+import ru.teacherbox.schedule.application.TeacherAvailability;
 import ru.teacherbox.schedule.application.ScheduleService;
 import ru.teacherbox.schedule.application.LessonRepetitionService;
 import ru.teacherbox.schedule.application.LessonRepetitionService.Options;
@@ -106,8 +107,11 @@ class TeacherScheduleController {
     private final LessonRepetitionService repetition;
     private final ChangeRequestService requests;
     private final ScheduleQueries queries;
+    private final TeacherAvailability availability;
 
-    TeacherScheduleController(ScheduleService schedule, ChangeRequestService requests, ScheduleQueries queries, LessonRepetitionService repetition) {
+    TeacherScheduleController(ScheduleService schedule, ChangeRequestService requests, ScheduleQueries queries,
+            LessonRepetitionService repetition, TeacherAvailability availability) {
+        this.availability = availability;
         this.schedule = schedule;
         this.repetition = repetition;
         this.requests = requests;
@@ -128,6 +132,12 @@ class TeacherScheduleController {
     @GetMapping("/lessons/{lessonId}")
     LessonView lesson(@PathVariable UUID lessonId) {
         return queries.lesson(lessonId);
+    }
+
+    /** Free start times of a day to move the lesson to. */
+    @GetMapping("/free-times")
+    List<Instant> freeTimes(@RequestParam LocalDate date, @RequestParam UUID lessonId) {
+        return availability.freeTimes(null, lessonId, date);
     }
 
     @PostMapping("/lessons")

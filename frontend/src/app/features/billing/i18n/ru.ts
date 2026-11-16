@@ -140,6 +140,7 @@ export const ru = {
     title: 'Оплата',
     student: 'Ученик',
     chooseStudent: 'Выберите ученика',
+    noStudents: 'Сначала добавьте ученика в разделе «Ученики»',
     search: 'Поиск',
     amount: 'Сумма',
     date: 'Дата оплаты',

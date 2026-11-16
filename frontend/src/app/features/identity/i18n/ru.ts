@@ -38,6 +38,11 @@ export const ru = {
     mismatch: 'Пароли не совпадают',
     createAccount: 'Создать аккаунт',
     savePassword: 'Сохранить пароль',
+    signIn: 'Войти',
+    toCabinet: 'В кабинет',
+    teacherBanner: 'Вы вошли как учитель. Эту ссылку откроет ученик',
+    created: 'Аккаунт создан',
+    passwordSaved: 'Пароль сохранён',
     failed: 'Не удалось сохранить. Попробуйте позже',
   },
   roles: {

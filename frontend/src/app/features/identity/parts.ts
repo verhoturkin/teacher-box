@@ -11,6 +11,7 @@ export { ProfilePhoto } from './account/profile-photo';
 export { TEACHER_NAME_VALIDATORS, TeacherNameField } from './account/teacher-name-field';
 export { ChipColors } from './colors/chip-colors';
 export { LabelColorField } from './colors/label-color-field';
+export { OwnerOption } from './colors/owner-option';
 export { TeacherColors } from './colors/teacher-colors';
 export { IdentityApi } from './data-access/identity-api';
 export { TagsPanel } from './tags/tags-panel';
