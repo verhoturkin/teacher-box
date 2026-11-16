@@ -147,4 +147,35 @@ describe('InvitePage', () => {
     expect(request.request.body).toEqual({ login: null, password: 'new-password' });
     request.flush(authResponse('STUDENT'));
   });
+
+  it('offers sign-in on an invalid link, the cabinet to a signed-in user', async () => {
+    backend
+      .expectOne('/api/auth/invites/tok-en')
+      .flush({ status: 404, code: 'invite.invalid' }, { status: 404, statusText: 'Not Found' });
+    await fixture.whenStable();
+    expect(text()).toContain('Войти');
+
+    TestBed.inject(AuthService).acceptSession(authResponse('STUDENT'));
+    await fixture.whenStable();
+    expect(text()).toContain('В кабинет');
+  });
+
+  it('checks the login format in the browser', async () => {
+    await load(activation);
+    await fill({ login: 'ab', password: 'alice-password', confirm: 'alice-password' });
+    buttonByText(hostElement(fixture), 'Создать аккаунт').click();
+    await fixture.whenStable();
+
+    backend.expectNone('/api/auth/invites/tok-en/accept');
+    expect(text()).toContain('Неверный формат');
+  });
+
+  it('blocks the form for a signed-in teacher', async () => {
+    TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
+    await load(activation);
+
+    expect(text()).toContain('Вы вошли как учитель');
+    expect(requireElement(hostElement(fixture), '#login', HTMLInputElement).disabled).toBe(true);
+    expect(buttonByText(hostElement(fixture), 'Создать аккаунт').disabled).toBe(true);
+  });
 });

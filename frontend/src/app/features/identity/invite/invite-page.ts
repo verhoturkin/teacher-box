@@ -9,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
@@ -28,6 +28,7 @@ import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors, showAtField } from '@shared/ui/field-errors';
 import { T } from '../i18n/texts';
 import { LanguagePicker } from '@core/i18n/language-picker';
+import { Snackbar } from '@core/snackbar/snackbar';
 
 type InviteState =
   | { readonly kind: 'loading' }
@@ -50,11 +51,13 @@ type InviteState =
     PasswordToggle,
     FieldErrors,
     LanguagePicker,
+    RouterLink,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="tb-auth-page">
       <tb-portal-logo size="3rem" />
+      <p class="tb-muted">{{ portalName() }}</p>
       @switch (state().kind) {
         @case ('loading') {
           <tb-loading-indicator [ariaLabel]="t.loading" />
@@ -66,6 +69,11 @@ type InviteState =
             [pt]="{ title: { role: 'heading', 'aria-level': '1' } }"
           >
             <p>{{ t.invalidText }}</p>
+            @if (auth.isAuthenticated()) {
+              <p-button [label]="t.toCabinet" [routerLink]="auth.homeUrl()" [fluid]="true" />
+            } @else {
+              <p-button [label]="t.signIn" routerLink="/login" [fluid]="true" />
+            }
           </p-card>
         }
         @case ('ready') {
@@ -84,6 +92,11 @@ type InviteState =
                 }
                 {{ t.validUntil((invite.expiresAt | date: 'dd.MM.yyyy HH:mm') ?? '') }}
               </p>
+              @if (isTeacher()) {
+                <p-message severity="warn" styleClass="tb-form-message">{{
+                  t.teacherBanner
+                }}</p-message>
+              }
               <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="submit()">
                 @if (isActivation()) {
                   <div class="tb-field">
@@ -131,6 +144,7 @@ type InviteState =
                   type="submit"
                   [label]="isActivation() ? t.createAccount : t.savePassword"
                   [loading]="pending()"
+                  [disabled]="isTeacher()"
                   [fluid]="true"
                 />
               </form>
@@ -145,7 +159,8 @@ type InviteState =
 export class InvitePage implements OnInit {
   protected readonly t = T.invite;
   private readonly api = inject(IdentityApi);
-  private readonly auth = inject(AuthService);
+  protected readonly auth = inject(AuthService);
+  private readonly snackbar = inject(Snackbar);
   private readonly router = inject(Router);
 
   protected readonly portalName = inject(Portal).name;
@@ -159,12 +174,13 @@ export class InvitePage implements OnInit {
     return state.kind === 'ready' ? state.invite : null;
   });
   protected readonly isActivation = computed(() => this.invite()?.purpose === 'ACTIVATION');
+  protected readonly isTeacher = computed(() => this.auth.role() === 'TEACHER');
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
   protected readonly form = inject(NonNullableFormBuilder).group(
     {
-      login: ['', [Validators.maxLength(50)]],
+      login: ['', [Validators.pattern(/^[A-Za-z0-9._-]{3,50}$/)]],
       password: [
         '',
         [Validators.required, Validators.minLength(PASSWORD_MIN_LENGTH), Validators.maxLength(128)],
@@ -181,6 +197,9 @@ export class InvitePage implements OnInit {
           this.form.controls.login.addValidators(Validators.required);
           this.form.controls.login.updateValueAndValidity();
         }
+        if (this.isTeacher()) {
+          this.form.disable();
+        }
         this.state.set({ kind: 'ready', invite });
       },
       error: () => {
@@ -190,7 +209,7 @@ export class InvitePage implements OnInit {
   }
 
   protected submit(): void {
-    if (!revealErrors(this.form) || this.pending()) {
+    if (this.isTeacher() || !revealErrors(this.form) || this.pending()) {
       return;
     }
     const { login, password } = this.form.getRawValue();
@@ -199,6 +218,7 @@ export class InvitePage implements OnInit {
     this.api.acceptInvite(this.token(), this.isActivation() ? login : null, password).subscribe({
       next: (response) => {
         this.auth.acceptSession(response);
+        this.snackbar.success(this.isActivation() ? this.t.created : this.t.passwordSaved);
         void this.router.navigateByUrl(this.auth.homeUrl());
       },
       error: (error: unknown) => {

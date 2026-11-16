@@ -62,7 +62,7 @@ Source: backlog review of 2026-11-15; design audit DA-049, DA-050.
 
 ### 406. Invitation and first run
 
-- [ ] 406.1 **F** *simple* — DA-049 (`identity/invite/invite-page.ts`): an invalid or used link
+- [x] 406.1 **F** *simple* — DA-049 (`identity/invite/invite-page.ts`): an invalid or used link
   offers «Войти» (a signed-in student — «В кабинет»), shows the portal name and an h1; a signed-in
   teacher sees a banner «Вы вошли как учитель. Эту ссылку откроет ученик» and a disabled form; the
   login is checked in the browser (`^[A-Za-z0-9._-]{3,50}$`) with a text under the field; a toast

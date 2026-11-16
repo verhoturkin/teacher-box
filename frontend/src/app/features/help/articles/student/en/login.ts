@@ -6,7 +6,10 @@ export const loginArticle: HelpArticleText = {
   body: `
 ## Set up your account
 
-Your teacher will send you an invitation link. Open it and choose a username and password. You can then sign in to the portal with those details. If \
+Your teacher will send you an invitation link. Open it and choose a username and password. You can then sign in to the portal with those details. \
+The username is 3–50 characters: letters (a–z), numbers, dots, hyphens or underscores. \
+If the link has already been used, choose “Sign in” (or “To my cabinet” if you are signed in). \
+If \
 the invitation has expired or does not open, ask your teacher for a new link.
 
 ## Reset or change your password

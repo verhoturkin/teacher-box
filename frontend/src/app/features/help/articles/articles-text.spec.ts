@@ -152,6 +152,22 @@ const FREE_TIMES: Record<string, readonly [string, string]> = {
   ],
 };
 
+/** Invitation page guidance (stage 406.1): [baseline, now] of the student login article. */
+const INVITE: Readonly<Record<string, readonly [string, string]>> = {
+  'student.ru': [
+    'и вы в личном кабинете. Дальше',
+    'и вы в личном кабинете. Логин — латиницей, цифрами, «.», «-», «_», от 3 до 50 символов. ' +
+      'Если ссылка уже использована или устарела, нажмите «Войти» (или «В кабинет», если вы уже вошли) ' +
+      'либо попросите учителя прислать новую. Дальше',
+  ],
+  'student.en': [
+    'with those details. If',
+    'with those details. The username is 3–50 characters: letters (a–z), numbers, dots, hyphens or ' +
+      'underscores. If the link has already been used, choose “Sign in” (or “To my cabinet” if you are ' +
+      'signed in). If',
+  ],
+};
+
 const DISK_USAGE_RU = [
   'журнал и настройки без паролей и личных данных.',
   ' В «Ресурсах» видно, сколько занимают база данных, файлы, копии на сервере и восстановления.' +
@@ -228,6 +244,12 @@ describe('help articles after the split into one file per topic', () => {
     if (free && isRecord(schedule) && typeof schedule['body'] === 'string') {
       expect(schedule['body']).toContain(free[0]);
       expected['schedule'] = { ...schedule, body: schedule['body'].replace(...free) };
+    }
+    const invite = INVITE[name];
+    const login = original['login'];
+    if (invite && isRecord(login) && typeof login['body'] === 'string') {
+      expect(login['body']).toContain(invite[0]);
+      expected['login'] = { ...login, body: login['body'].replace(...invite) };
     }
     expect(texts).toEqual(expected);
   });
