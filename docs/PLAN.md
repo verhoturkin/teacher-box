@@ -30,7 +30,7 @@ student's board from the call, and keep the call in a Picture-in-Picture window 
 Call history, «ученик ждёт» and recording stay in
 [`roadmap/09`](roadmap/09-calls-waiting-recording.md).
 
-ADRs: a new one if 409.2 needs a frontend dependency of `meetings` on `boards` (ADR-0058).
+ADRs: none needed — 409.2 opens the board through a route.
 
 ### 408. Moderation
 
@@ -47,7 +47,7 @@ ADRs: a new one if 409.2 needs a frontend dependency of `meetings` on `boards` (
   (`meetings/call/livekit-engine.ts`, `call-engine.ts`, a panel in `call-window.ts`): text
   messages, unread badge on the button, not stored after the call. `m3-expressive` skill; help and
   wiki.
-- [ ] 409.2 **F** *simple* — «Доска ученика» in the call controls (`call-controls.ts`) opens the
+- [x] 409.2 **F** *simple* — «Доска ученика» in the call controls (`call-controls.ts`) opens the
   student's board in a new tab or beside the call, through a route, not an import of `boards`
   code. Help and wiki.
 

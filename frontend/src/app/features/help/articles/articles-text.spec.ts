@@ -220,7 +220,8 @@ const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, strin
       '- **Управление участником** — на плитке другого участника откройте меню «⋮». «Выключить' +
         ' микрофон» отключает ему звук (он сможет включить его снова); «Удалить из звонка»' +
         ' спросит подтверждение, после чего участник увидит, почему звонок закончился, и сможет' +
-        ' войти снова.\n- **Чат** — сообщения всем участникам звонка; число на кнопке —' +
+        ' войти снова.\n- **Доска ученика** — в меню «Настройки звонка» выберите участника: его' +
+        ' доски откроются в новой вкладке, звонок продолжится.\n- **Чат** — сообщения всем участникам звонка; число на кнопке —' +
         ' непрочитанные. Чат видят только участники звонка, после звонка он не сохраняется.' +
         '\n- **Выйти из звонка**',
     ],
@@ -231,7 +232,8 @@ const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, strin
       '- **Leave call:**',
       '- **Moderate:** on another participant’s tile, open the “⋮” menu. “Turn off microphone”' +
         ' mutes them (they can turn it on again); “Remove from call” asks for confirmation, then' +
-        ' the person sees why the call ended and can rejoin.\n- **Chat:** message everyone in the' +
+        ' the person sees why the call ended and can rejoin.\n- **Student’s board:** in the call “Settings” menu, pick a participant: their' +
+        ' boards open in a new tab and the call carries on.\n- **Chat:** message everyone in the' +
         ' call; the number on the button shows unread messages. Only people in the call see the' +
         ' chat, and it isn’t saved after the call.\n- **Leave call:**',
     ],

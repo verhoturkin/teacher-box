@@ -60,7 +60,7 @@ join the lesson (`JoinLessonChatAction`).
 `livekit-engine.ts`, the only file importing `livekit-client`, ESLint), `call-session.ts` (root service: phase,
 mode, participants, devices; leaves on sign-out, asks before the page closes), `call-devices.ts` (preview, device
 list, choice in `localStorage`), components `call-host` (in `app.ts`), `call-prejoin`, `call-window`, `call-mini`,
-`call-tile`, `call-controls` (settings menu: devices, sound processing, «Сведения о связи» —
+`call-tile`, `call-controls` (settings menu: for the teacher «Доска ученика» — each other participant opens `/teacher/materials?tab=boards&q=<name>` in a new tab, 409.2, no `boards` import; devices, sound processing, «Сведения о связи» —
 `call-stats-dialog.ts`, WebRTC statistics read by `readStats` / `statsSections` in `call-stats.ts`),
 `call-self` (own camera of a one-to-one call), `call-chat` (the chat of the call, 409.1: text
 over the LiveKit data channel, topic `tb-chat`, at most 1000 characters; kept in `CallSession`

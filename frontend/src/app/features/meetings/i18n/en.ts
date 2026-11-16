@@ -97,6 +97,7 @@ export const en: Translation<typeof ru> = {
     gain: 'Automatic gain control',
     network: 'Connection',
     stats: 'Connection details',
+    studentBoard: 'Student’s board',
     chat: 'Chat',
     chatUnread: (count: number) => `Chat, ${String(count)} unread`,
   },

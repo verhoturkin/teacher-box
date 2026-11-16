@@ -13,7 +13,7 @@ describe('MaterialsPage', () => {
   let backend: HttpTestingController;
   let host: HTMLElement;
 
-  async function render(inputs: { tab?: string } = {}, width = 1280): Promise<void> {
+  async function render(inputs: { tab?: string; q?: string } = {}, width = 1280): Promise<void> {
     TestBed.configureTestingModule({
       imports: [MaterialsPage],
       providers: testProviders(screenWidth(width)),
@@ -47,6 +47,13 @@ describe('MaterialsPage', () => {
   afterEach(() => {
     backend.verify();
     fixture.destroy();
+  });
+
+  it('starts with the search text of `?q=`', async () => {
+    await render({ q: 'Мария' });
+    expect(host.querySelector<HTMLInputElement>('input[type="search"], input')?.value).toBe(
+      'Мария',
+    );
   });
 
   function segments(): string[] {

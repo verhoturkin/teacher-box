@@ -184,6 +184,8 @@ export class MaterialsPage implements OnInit {
 
   /** `?tab=` — boards (by default) or textbooks. */
   readonly tab = input<string | undefined>();
+  /** `?q=` — the search text to start with (the call's «Доска ученика» passes the student's name). */
+  readonly q = input<string | undefined>();
 
   protected readonly boards = viewChild<BoardsFeed>('boards');
   protected readonly textbooks = viewChild<TextbooksFeed>('textbooks');
@@ -250,6 +252,7 @@ export class MaterialsPage implements OnInit {
   }
 
   ngOnInit(): void {
+    this.search.setValue(this.q() ?? '');
     this.identity.listStudents(quietContext()).subscribe((students) => {
       this.students.set(
         students

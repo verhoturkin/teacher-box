@@ -95,6 +95,7 @@ export const ru = {
     gain: 'Автоусиление громкости',
     network: 'Связь',
     stats: 'Сведения о связи',
+    studentBoard: 'Доска ученика',
     chat: 'Чат',
     chatUnread: (count: number) => `Чат, непрочитанных: ${String(count)}`,
   },

@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { AuthService } from '@core/auth/auth.service';
+import { authResponse } from '@testing/auth';
 import { buttonByText, hostElement, menuItemByText } from '@testing/dom';
 import { aMediaRef, aParticipant } from '@testing/meetings-fixtures';
 import { testProviders } from '@testing/setup';
@@ -16,7 +18,7 @@ describe('CallControls', () => {
   let session: CallSession;
   let host: HTMLElement;
 
-  async function render(compact = false): Promise<void> {
+  async function render(compact = false, teacher = false): Promise<void> {
     TestBed.configureTestingModule({
       imports: [CallControls],
       providers: testProviders({
@@ -42,6 +44,9 @@ describe('CallControls', () => {
         },
       }),
     });
+    if (teacher) {
+      TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
+    }
     session = TestBed.inject(CallSession);
     session.phase.set('connected');
     session.participants.set([aParticipant({ camera: aMediaRef() })]);
@@ -164,6 +169,28 @@ describe('CallControls', () => {
     buttonByText(document.body, 'Закрыть').click();
     await fixture.whenStable();
     expect(host.querySelector('tb-call-stats-dialog')).toBeNull();
+  });
+
+  it('opens the board of a student in a new tab from the settings menu of the teacher', async () => {
+    await render(false, true);
+    session.participants.set([
+      aParticipant(),
+      aParticipant({ id: 's-1', name: 'Иван Петров', local: false }),
+    ]);
+    const open = vi.spyOn(window, 'open').mockReturnValue(null);
+
+    button('Настройки звонка').click();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await fixture.whenStable();
+    menuItemByText('Иван Петров').click();
+
+    expect(open).toHaveBeenCalledWith(
+      '/teacher/materials?tab=boards&q=%D0%98%D0%B2%D0%B0%D0%BD%20%D0%9F%D0%B5%D1%82%D1%80%D0%BE%D0%B2',
+      '_blank',
+      'noopener',
+    );
+    open.mockRestore();
   });
 
   it('keeps the compact set for the mini window and waits while connecting', async () => {

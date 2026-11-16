@@ -26,6 +26,7 @@ bottom navigation. “Expand” restores the full window.
 - **Moderate:** on another participant’s tile, open the “⋮” menu. “Turn off microphone” mutes them (they can turn it on again); \
 “Remove from call” asks for confirmation, \
 then the person sees why the call ended and can rejoin.
+- **Student’s board:** in the call “Settings” menu, pick a participant: their boards open in a new tab and the call carries on.
 - **Chat:** message everyone in the call; the number on the button shows unread messages. Only people in the call see the chat, and it isn’t saved after the call.
 - **Leave call:** leave using the red button.
 

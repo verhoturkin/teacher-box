@@ -7,9 +7,11 @@ import {
   signal,
   ViewEncapsulation,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
+import { AuthService } from '@core/auth/auth.service';
 import { injectMobile } from '@core/layout/mobile';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { NavBadge } from '@core/layout/nav-badge';
@@ -143,6 +145,8 @@ export class CallControls {
   protected readonly t = T.controls;
   protected readonly session = inject(CallSession);
   private readonly devices = inject(CallDevices);
+  private readonly router = inject(Router);
+  private readonly teacher = inject(AuthService).role() === 'TEACHER';
 
   /** The mini window: microphone, camera, expand, leave. */
   readonly compact = input(false);
@@ -191,7 +195,29 @@ export class CallControls {
         void this.session.setAudioProcessing({ ...processing, [key]: !processing[key] });
       },
     });
+    // The student's boards of Materials in a new tab (route, no `boards` import: ADR-0058); the search
+    // there matches the student's name. shortcut: two students with one name show both, rare.
+    const boards: MenuItem[] = this.teacher
+      ? [
+          {
+            label: T.controls.studentBoard,
+            items: this.session.others().map((person) => ({
+              label: person.name,
+              icon: 'tb-i tb-i-open_in_new',
+              command: () => {
+                const url = this.router.serializeUrl(
+                  this.router.createUrlTree(['/teacher/materials'], {
+                    queryParams: { tab: 'boards', q: person.name },
+                  }),
+                );
+                window.open(url, '_blank', 'noopener');
+              },
+            })),
+          },
+        ].filter((item) => item.items.length > 0)
+      : [];
     return [
+      ...boards,
       group(T.controls.microphone, 'audioinput', list.microphones, media.microphoneId),
       group(T.controls.camera, 'videoinput', list.cameras, media.cameraId),
       {
