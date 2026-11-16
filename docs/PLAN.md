@@ -23,6 +23,84 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
+## v0.53.0
+
+Goals: the portal moves the way M3 transition patterns say. Fades are clean (out, then in),
+common transitions don't bounce, the tab indicator slides, a docked pane makes room for itself,
+list rows come and go with motion, loading keeps the layout stable. Decided on 2026-11-16:
+top-level destinations on a phone stay fade through (M3: no lateral motion between them); the
+slide is for going deeper (list → detail).
+
+ADRs: new ADR-0066 — transition choreography on M3E springs (412.1): sequential fades, the
+standard spring for page-sized motion, coplanar panes, list rows; updates design-system
+«Motion».
+
+### 412. Page transitions
+
+- [ ] 412.1 **F** *complex* — fade through and shared axis X per M3 (`styles/_motion.scss`
+  «Pages», `core/routing/page-transitions.ts`): the new page waits until the old one has faded
+  out instead of cross-fading; scale 0.92 and the 30 dp slide on a spring without overshoot
+  (`--tb-spring-standard-*`, not `default-spatial`); under reduced motion a short fade instead of
+  skipping. ADR-0066, design-system «Motion».
+- [ ] 412.2 **F** *simple* — the navigation keeps one indicator during a page transition: the
+  snapshot of `tb-side-nav` has no background, so the old indicator shows under the new one and
+  vanishes at the end (`core/layout/side-nav.scss`, `view-transition-name` in `_motion.scss`).
+  Check the rail and the bottom bar in the browser before and after.
+- [ ] 412.3 **F** *complex* — forward/back on a phone: when only the route parameters change and
+  the single pane switches list ↔ detail (`shared/ui/panes.ts`, `pageMotion` returns `null`
+  today), the detail slides in with shared axis X forward and back out on «←». The bottom bar
+  between sections stays fade through.
+
+### 413. Tabs
+
+- [ ] 413.1 **F** *complex* — one active indicator that slides from tab to tab and takes the width
+  of the new label, on a spatial spring (`styles/_sheets.scss` `.tb-tabs`, today a per-label
+  `::after` that grows from the middle; PrimeNG's `.p-tablist-active-bar` is hidden because it
+  spans the tab). Every tab bar (student and group cards, schedule side pane, the bell's sheet).
+  Gallery sample.
+- [ ] 413.2 **F** *complex* — lateral transition of the tab content: the panel slides in from the
+  side of the chosen tab, no fade (M3 lateral), in step with 413.1; nothing under reduced motion.
+
+### 414. Panes and the rail
+
+- [ ] 414.1 **F** *complex* — the docked notifications pane is a coplanar sheet: it opens by
+  growing its width from 0, so the page beside it narrows smoothly, and closes by shrinking
+  (`animate.leave`, missing today) — `core/notifications/notifications-sheet.ts`. The same for a
+  `tb-pane` that appears or leaves beside others (`shared/ui/panes.ts`): the neighbours resize
+  instead of jumping. Width on default spatial, content opacity on effects.
+- [ ] 414.2 **F** *simple* — expanding and collapsing the rail (`core/layout/rail-state.ts`,
+  `side-nav.scss`): check in the browser; if the width and labels jump, animate the width on
+  default spatial and the labels on effects.
+
+### 415. List rows
+
+- [ ] 415.1 **F** *complex* — shared enter/leave motion for list rows in `shared/ui/` (on
+  `animate.enter` / `animate.leave`): a leaving row fades out on fast effects and then closes its
+  height on the standard fast spring; a new row opens its height and fades in. Gallery sample,
+  design-system «Motion».
+- [ ] 415.2 **F** *simple* — apply 415.1 where rows are removed or added: notifications
+  (`features/notifications/inbox/notification-list.ts`), then the other lists that delete,
+  archive or filter rows (homework, materials, students, payments, lessons). Rows changed by a
+  filter or a route parameter on wide screens enter the same way.
+
+### 416. Overlays
+
+- [ ] 416.1 **F** *simple* — enter/exit along an axis instead of scale (M3: scale implies an
+  elevation change) in `styles/_motion.scss`: the snackbar opens upwards from the bottom, menus
+  and dropdowns open away from their anchor along Y. Dialogs keep their scale. design-system
+  «Motion», `/gallery/motion`.
+
+### 417. Skeleton loaders
+
+- [ ] 417.1 **F** *complex* — skeletons in `tb-load-state` (`shared/ui/load-state-view.ts`) for
+  list sections: the shape of the rows while they load, a pulse from top left to bottom right,
+  the content fades in over it; the loading indicator stays for the rest. Static under reduced
+  motion. Gallery sample, design-system.
+
+### 418. Release 0.53.0
+
+- [ ] 418.1 *simple* — skill `release`.
+
 ## Backlog
 
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,
