@@ -29,28 +29,6 @@ async function snapshot(url: string): Promise<ActivatedRouteSnapshot> {
   return router.routerState.snapshot.root;
 }
 
-/** The system setting «reduce motion». */
-class ReducedMotion extends EventTarget implements MediaQueryList {
-  readonly media = '(prefers-reduced-motion: reduce)';
-  onchange: ((this: MediaQueryList, event: MediaQueryListEvent) => unknown) | null = null;
-
-  constructor(readonly matches: boolean) {
-    super();
-  }
-
-  addListener(): void {
-    // deprecated API
-  }
-
-  removeListener(): void {
-    // deprecated API
-  }
-}
-
-function media(reduced: boolean): void {
-  vi.spyOn(window, 'matchMedia').mockReturnValue(new ReducedMotion(reduced));
-}
-
 /** A view transition that finishes when it is skipped. */
 class FakeTransition implements ViewTransition {
   readonly ready = Promise.resolve(undefined);
@@ -118,7 +96,6 @@ describe('page transitions', () => {
   });
 
   it('marks the root with the motion until the transition ends', async () => {
-    media(false);
     const view = transition();
     const info: ViewTransitionInfo = {
       transition: view,
@@ -139,7 +116,6 @@ describe('page transitions', () => {
   });
 
   it('leaves the mark of a newer transition in place', async () => {
-    media(false);
     const first = transition();
     const second = transition();
     const from = await snapshot('/teacher');
@@ -154,23 +130,14 @@ describe('page transitions', () => {
     expect(document.documentElement.getAttribute(PAGE_MOTION_ATTRIBUTE)).toBe('through');
   });
 
-  it('skips the transition when the page stays or the system asks for less motion', async () => {
+  it('skips the transition when the page stays', async () => {
     const same = transition();
-    media(false);
     const one = await snapshot('/teacher/students/1');
     const two = await snapshot('/teacher/students/2');
     runInInjectionContext(TestBed.inject(Injector), () => {
       startPageTransition({ transition: same, from: one, to: two });
     });
     expect(same.skipTransition).toHaveBeenCalled();
-
-    media(true);
-    const reduced = transition();
-    const list = await snapshot('/teacher/billing');
-    runInInjectionContext(TestBed.inject(Injector), () => {
-      startPageTransition({ transition: reduced, from: one, to: list });
-    });
-    expect(reduced.skipTransition).toHaveBeenCalled();
     expect(document.documentElement.hasAttribute(PAGE_MOTION_ATTRIBUTE)).toBe(false);
   });
 });

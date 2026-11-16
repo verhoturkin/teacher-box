@@ -159,6 +159,18 @@
   --tb-spring-default-effects: 220ms var(--tb-spring-effects-curve);
   /* 1 / 800 */
   --tb-spring-slow-effects: 310ms var(--tb-spring-effects-curve);
+
+  /*
+   * Transitions between pages (ADR-0066): M3 transition patterns still use the legacy easing and
+   * duration system, not springs. The standard set is M3's fallback for the web (CSS has no
+   * emphasized easing): accelerate to exit the screen, decelerate to enter it, standard on screen.
+   */
+  --tb-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --tb-easing-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --tb-easing-standard-decelerate: cubic-bezier(0, 0, 0, 1);
+  --tb-duration-short3: 150ms;
+  --tb-duration-medium1: 250ms;
+  --tb-duration-medium2: 300ms;
 }
 
 :root {

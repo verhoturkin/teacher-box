@@ -107,20 +107,27 @@ elevation with their values; springs —
     of its label on the fast spatial spring; inline messages (`p-message`) open their line on the
     standard fast spring and fade in on default effects, they leave like the snackbar; the value of
     a progress bar moves on the standard fast spring (no overshoot past it).
-  - Pages (view transitions of the router, `core/routing/page-transitions.ts`; M3 transition
-    patterns, *ours* on the springs): only the content moves, the bars and the rail stay. Between
-    sections and pages of equal depth — fade through: the old page fades out on fast effects, the
-    new one grows from 0.92 on default spatial and fades in on default effects. Deeper into a
-    section and back — shared axis X: both slide 30 dp on default spatial and cross-fade. Nothing
-    moves on the first load, when only the parameters of the route change (a list-detail pane, a
-    tab, a filter) and under reduced motion; browsers without view transitions swap the page.
+  - Pages (view transitions of the router, `core/routing/page-transitions.ts`, ADR-0066) follow
+    the M3 transition patterns on their **legacy easing and duration** (**M3**: transitions are not
+    on springs yet), standard set — the fallback M3 names for the web:
+    `--tb-easing-standard{,-accelerate,-decelerate}`, `--tb-duration-{short3,medium1,medium2}`.
+    Only the content moves, the bars and the rail stay. Clean fades (**M3**): the old page fades
+    out (short 3, standard accelerate), and only then the new one fades in (medium 1, standard
+    decelerate, delayed by short 3) — no cross-fade. Top level — between sections and pages of
+    equal depth, on a phone too: only the fades, no scale or slide (**M3**: a quick fade, no
+    connection between destinations). Forward and backward — deeper into a section and back: both
+    pages also slide 30 dp together (medium 2, standard). *Ours*: the duration of each part and
+    the 30 dp. Reduced motion keeps only the fades (**M3**). Nothing moves on the first load and
+    when only the parameters of the route change (a list-detail pane, a tab, a filter); browsers
+    without view transitions swap the page.
     The parts get their `view-transition-name` only while `<html data-tb-page>` is set: a named
     element is a stacking context, and a sheet drawn inside the content sank under its scrim.
   - No transition or animation is timed by hand (`200ms`, `ease`, `cubic-bezier`): only the spring
-    tokens; loops (`infinite`) are the exception. `design-rules.spec.ts` checks it outside
+    tokens and, for page transitions, the M3 easing and duration tokens; loops (`infinite`) are
+    the exception. `design-rules.spec.ts` checks it outside
     `core/theme/` and `_tokens.scss`.
   - `prefers-reduced-motion: reduce` disables transitions and animations (the loading indicator
-    holds its initial SoftBurst shape, without rotation or pulsing).
+    holds its initial SoftBurst shape, without rotation or pulsing); pages keep a short fade.
 - **Frame sizes** in **px**, so a large font grows text, not frames: content up to
   `--tb-content-max` (1440 px); short pages (not found) `--tb-content-narrow` (56 rem); form fields
   `tb-form--narrow` (26 rem); top strip 80 px (compact top app bar 64 px), bottom bar 64 px, rail

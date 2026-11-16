@@ -2,9 +2,9 @@ import { DOCUMENT, inject } from '@angular/core';
 import { type ActivatedRouteSnapshot, type ViewTransitionInfo } from '@angular/router';
 
 /**
- * How a page replaces the previous one (M3 transition patterns on M3E springs, design-system §1
- * «Motion»): `through` — fade through, between destinations of the navigation and at equal depth;
- * `forward` / `back` — shared axis X, deeper into a section and back out of it.
+ * How a page replaces the previous one (M3 transition patterns, ADR-0066, design-system §1 «Motion»):
+ * `through` — top level (fade through), between destinations of the navigation and at equal depth;
+ * `forward` / `back` — forward and backward, deeper into a section and back out of it.
  */
 export type PageMotion = 'through' | 'forward' | 'back';
 
@@ -50,13 +50,12 @@ let running: ViewTransition | null = null;
 
 /**
  * `onViewTransitionCreated` of `withViewTransitions`: marks `<html>` with the motion for the CSS, or
- * skips the transition when the page stays or the system asks for less motion.
+ * skips the transition when the page stays. With less motion the CSS keeps only the fades (ADR-0066).
  */
 export function startPageTransition({ transition, from, to }: ViewTransitionInfo): void {
   const document = inject(DOCUMENT);
   const motion = pageMotion(from, to);
-  const reduced = document.defaultView?.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (motion === null || reduced === true) {
+  if (motion === null) {
     transition.skipTransition();
     return;
   }

@@ -29,19 +29,20 @@ Goals: the portal moves the way M3 transition patterns say. Fades are clean (out
 common transitions don't bounce, the tab indicator slides, a docked pane makes room for itself,
 list rows come and go with motion, loading keeps the layout stable. Decided on 2026-11-16:
 top-level destinations on a phone stay fade through (M3: no lateral motion between them); the
-slide is for going deeper (list → detail).
+slide is for going deeper (list → detail). Decided on 2026-11-16 too: transitions run on M3's
+legacy easing and duration (standard set), not on springs, as the M3 transitions pages say; top
+level is fades only, without the 0.92 scale.
 
-ADRs: new ADR-0066 — transition choreography on M3E springs (412.1): sequential fades, the
-standard spring for page-sized motion, coplanar panes, list rows; updates design-system
-«Motion».
+ADRs: new ADR-0066 — transition choreography per M3 transition patterns (412.1): M3 easing
+and duration, sequential fades, coplanar panes, list rows; updates design-system «Motion».
 
 ### 412. Page transitions
 
-- [ ] 412.1 **F** *complex* — fade through and shared axis X per M3 (`styles/_motion.scss`
+- [x] 412.1 **F** *complex* — top level and forward and backward per M3 (`styles/_motion.scss`
   «Pages», `core/routing/page-transitions.ts`): the new page waits until the old one has faded
-  out instead of cross-fading; scale 0.92 and the 30 dp slide on a spring without overshoot
-  (`--tb-spring-standard-*`, not `default-spatial`); under reduced motion a short fade instead of
-  skipping. ADR-0066, design-system «Motion».
+  out instead of cross-fading; top level is fades only (no 0.92 scale); the 30 dp slide and the
+  fades on M3 easing and duration tokens (standard set), not springs; under reduced motion a
+  short fade instead of skipping. ADR-0066, design-system «Motion».
 - [ ] 412.2 **F** *simple* — the navigation keeps one indicator during a page transition: the
   snapshot of `tb-side-nav` has no background, so the old indicator shows under the new one and
   vanishes at the end (`core/layout/side-nav.scss`, `view-transition-name` in `_motion.scss`).

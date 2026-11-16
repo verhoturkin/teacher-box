@@ -174,10 +174,12 @@
 }
 
 /*
- * Pages (core/routing/page-transitions.ts; M3 transition patterns, ours on M3E springs): only the
- * content moves, the bars stay. Fade through — between destinations: the old page fades out on fast
- * effects, the new one grows from 0.92 on default spatial and fades in on default effects. Shared axis
- * X — deeper into a section and back: both slide 30 dp on default spatial and cross-fade.
+ * Pages (core/routing/page-transitions.ts; M3 transition patterns on M3 easing and duration, ADR-0066):
+ * only the content moves, the bars stay. Clean fades: the old page fades out (short 3, standard
+ * accelerate), and only then the new one fades in (medium 1, standard decelerate). Top level —
+ * between destinations: nothing but the fades. Forward and backward — deeper into a section and
+ * back: both pages also slide 30 dp together (medium 2, standard). With less motion only the fades
+ * stay.
  */
 :root[data-tb-page] {
   /* named only while a page changes: a named element is a stacking context of its own, and a sheet
@@ -212,49 +214,41 @@
 
 :root[data-tb-page] {
   &::view-transition-old(tb-page) {
-    animation: tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
+    animation: tb-motion-fade-out var(--tb-duration-short3) var(--tb-easing-standard-accelerate)
+      forwards;
   }
 
-  &[data-tb-page='through']::view-transition-new(tb-page) {
-    --tb-motion-scale: 0.92;
-
-    transform-origin: top center;
-    animation:
-      tb-motion-scale-in var(--tb-spring-default-spatial),
-      tb-motion-fade-in var(--tb-spring-default-effects);
+  &::view-transition-new(tb-page) {
+    animation: tb-motion-fade-in var(--tb-duration-medium1) var(--tb-easing-standard-decelerate)
+      var(--tb-duration-short3) backwards;
   }
+}
 
-  &[data-tb-page='forward'],
-  &[data-tb-page='back'] {
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-tb-page='forward'],
+  :root[data-tb-page='back'] {
     &::view-transition-old(tb-page) {
       animation:
-        tb-motion-slide-out var(--tb-spring-default-spatial) forwards,
-        tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
+        tb-motion-slide-out var(--tb-duration-medium2) var(--tb-easing-standard) forwards,
+        tb-motion-fade-out var(--tb-duration-short3) var(--tb-easing-standard-accelerate) forwards;
     }
 
     &::view-transition-new(tb-page) {
       animation:
-        tb-motion-slide-in var(--tb-spring-default-spatial),
-        tb-motion-fade-in var(--tb-spring-default-effects);
+        tb-motion-slide-in var(--tb-duration-medium2) var(--tb-easing-standard),
+        tb-motion-fade-in var(--tb-duration-medium1) var(--tb-easing-standard-decelerate)
+          var(--tb-duration-short3) backwards;
     }
   }
 
-  &[data-tb-page='forward']::view-transition-old(tb-page),
-  &[data-tb-page='back']::view-transition-new(tb-page) {
+  :root[data-tb-page='forward']::view-transition-old(tb-page),
+  :root[data-tb-page='back']::view-transition-new(tb-page) {
     --tb-motion-x: -30px;
   }
 
-  &[data-tb-page='forward']::view-transition-new(tb-page),
-  &[data-tb-page='back']::view-transition-old(tb-page) {
+  :root[data-tb-page='forward']::view-transition-new(tb-page),
+  :root[data-tb-page='back']::view-transition-old(tb-page) {
     --tb-motion-x: 30px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation: none !important;
   }
 }
 
