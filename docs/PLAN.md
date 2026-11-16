@@ -43,7 +43,7 @@ Source: backlog review of 2026-11-15; design audit DA-049, DA-050.
 
 ### 404. Colours in student and group selects
 
-- [ ] 404.1 **F** *simple* — options and the selected value of student / group `p-select`s
+- [x] 404.1 **F** *simple* — options and the selected value of student / group `p-select`s
   (homework recipients, lesson dialog, billing, boards) show `tb-avatar` in the label colour
   (`colors.studentLabel`, as in `monthly-report-page.ts`); one shared item template if they repeat.
   `m3-expressive` skill.

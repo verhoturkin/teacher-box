@@ -19,6 +19,7 @@ import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
+import { OwnerOption } from '@features/identity/parts';
 import { describeError } from '@core/http/error-messages';
 import { problemCode } from '@core/http/problem-detail';
 import { ScheduleApi } from '../data-access/schedule-api';
@@ -62,6 +63,7 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
 @Component({
   selector: 'tb-lesson-dialog',
   imports: [
+    OwnerOption,
     ReactiveFormsModule,
     Button,
     DatePicker,
@@ -102,7 +104,14 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
             [ariaFilterLabel]="t.search"
             appendTo="body"
             [fluid]="true"
-          />
+          >
+            <ng-template #selectedItem let-option>
+              <tb-owner-option [name]="option.label" [value]="option.value" />
+            </ng-template>
+            <ng-template #item let-option>
+              <tb-owner-option [name]="option.label" [value]="option.value" />
+            </ng-template>
+          </p-select>
         </div>
         <div class="tb-row">
           <div class="tb-field">

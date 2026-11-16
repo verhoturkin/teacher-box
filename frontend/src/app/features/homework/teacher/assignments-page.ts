@@ -19,7 +19,7 @@ import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
 import { Select } from 'primeng/select';
-import { IdentityApi } from '@features/identity/parts';
+import { IdentityApi, OwnerOption } from '@features/identity/parts';
 import { injectMobile, injectWindowSize } from '@core/layout/mobile';
 import { collapseRail, hideBottomBar, RailState } from '@core/layout/rail-state';
 import { Snackbar } from '@core/snackbar/snackbar';
@@ -68,6 +68,7 @@ const VIEWS: readonly View[] = ['list', 'journal'];
 @Component({
   selector: 'tb-assignments-page',
   imports: [
+    OwnerOption,
     NgTemplateOutlet,
     AssignmentPage,
     AssignmentsReview,
@@ -262,7 +263,14 @@ const VIEWS: readonly View[] = ['list', 'journal'];
           [showClear]="true"
           [ariaLabel]="t.whom"
           appendTo="body"
-        />
+        >
+          <ng-template #selectedItem let-option>
+            <tb-owner-option [name]="option.label" [value]="option.value" />
+          </ng-template>
+          <ng-template #item let-option>
+            <tb-owner-option [name]="option.label" [value]="option.value" />
+          </ng-template>
+        </p-select>
       </span>
     </ng-template>
 

@@ -22,7 +22,7 @@ import { openOnCreate } from '@core/routing/create-param';
 import { writeQuery } from '@core/routing/query-state';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { HelpButton } from '@features/help/parts';
-import { TeacherColors } from '@features/identity/parts';
+import { OwnerOption, TeacherColors } from '@features/identity/parts';
 import { BroadcastDialog } from '@features/notifications/parts';
 import { monthLabel, toIsoDate, toIsoMonth } from '@shared/dates/iso-date';
 import { formatMoney, toMajorUnits } from '@shared/money/money';
@@ -101,6 +101,7 @@ const NUMBER = new Intl.NumberFormat(locale());
 @Component({
   selector: 'tb-billing-overview-page',
   imports: [
+    OwnerOption,
     Avatar,
     NgTemplateOutlet,
     BroadcastDialog,
@@ -270,7 +271,14 @@ const NUMBER = new Intl.NumberFormat(locale());
                   [ariaLabel]="t.studentFilter"
                   styleClass="tb-ops__student"
                   appendTo="body"
-                />
+                >
+                  <ng-template #selectedItem let-option>
+                    <tb-owner-option [name]="option.displayName" [value]="option.studentId" />
+                  </ng-template>
+                  <ng-template #item let-option>
+                    <tb-owner-option [name]="option.displayName" [value]="option.studentId" />
+                  </ng-template>
+                </p-select>
               </div>
             </div>
           }
