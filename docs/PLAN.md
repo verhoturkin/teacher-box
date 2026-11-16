@@ -60,8 +60,6 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
   `::after` that grows from the middle; PrimeNG's `.p-tablist-active-bar` is hidden because it
   spans the tab). Every tab bar (student and group cards, schedule side pane, the bell's sheet).
   Gallery sample.
-- [ ] 413.2 **F** *complex* — lateral transition of the tab content: the panel slides in from the
-  side of the chosen tab, no fade (M3 lateral), in step with 413.1; nothing under reduced motion.
 
 ### 414. Panes and the rail
 
