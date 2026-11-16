@@ -9,9 +9,13 @@ import { type ActivatedRouteSnapshot, type ViewTransitionInfo } from '@angular/r
  */
 export type PageMotion = 'through' | 'forward' | 'back' | 'detail';
 
-/** Panes side by side in the content: a list-detail layout from expanded (a side sheet is not a detail). */
+/**
+ * A detail beside its list in the content: the second of panes side by side from expanded (a side
+ * sheet is not a detail), or the detail column of a list inside one pane (`data-tb-detail`, Settings).
+ */
 const SIDE_BY_SIDE =
-  '.tb-shell__content tb-panes:not(.tb-panes--single) > tb-pane + tb-pane:not(.tb-pane--sheet)';
+  '.tb-shell__content tb-panes:not(.tb-panes--single) > tb-pane + tb-pane:not(.tb-pane--sheet), ' +
+  '.tb-shell__content [data-tb-detail]';
 
 /** The attribute of `<html>` that `styles/_motion.scss` reads while a page transition runs. */
 export const PAGE_MOTION_ATTRIBUTE = 'data-tb-page';
@@ -32,8 +36,9 @@ function segments(snapshot: ActivatedRouteSnapshot): string[] {
  * The motion from one page to another, or `null` when the page stays (only the query changes: a tab
  * or a filter). The same route with other segments (`/teacher/homework` → `/teacher/homework/:id`)
  * changes the detail: beside the list (`sideBySide`) only the detail pane fades, on one pane it is
- * deeper or back. A section is the first two segments (`teacher/billing`); a role's home is a
- * section of its own.
+ * deeper or back. So does the same page on two routes of a section (`help` and `help/:topic`): the
+ * first choice beside the list moves like every later one. A section is the first two segments
+ * (`teacher/billing`); a role's home is a section of its own.
  */
 export function pageMotion(
   from: ActivatedRouteSnapshot,
@@ -52,10 +57,13 @@ export function pageMotion(
     return sideBySide ? 'detail' : was.length === is.length ? 'through' : depth();
   }
   const section = (path: readonly string[]): string => path.slice(0, 2).join('/');
-  if (section(was) !== section(is) || was.length === is.length) {
+  if (section(was) !== section(is)) {
     return 'through';
   }
-  return depth();
+  if (sideBySide && before.component !== null && before.component === after.component) {
+    return 'detail';
+  }
+  return was.length === is.length ? 'through' : depth();
 }
 
 /** The custom property of `<html>` with the frame a page slides in (`styles/_motion.scss`). */

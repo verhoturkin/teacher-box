@@ -20,6 +20,10 @@ import {
 @Component({ changeDetection: ChangeDetectionStrategy.OnPush, template: '' })
 class Blank {}
 
+/** A page on two routes of a section, like `help` and `help/:topic`. */
+@Component({ changeDetection: ChangeDetectionStrategy.OnPush, template: '' })
+class Help {}
+
 /** `/teacher/homework` and `/teacher/homework/:id` are one route, like the list and its detail. */
 const listDetail: UrlMatcher = (segments) => {
   const [role, section, id, ...rest] = segments;
@@ -40,6 +44,8 @@ const ROUTES = [
   { path: 'teacher/homework/new', component: Blank },
   { path: 'teacher/homework/review', component: Blank },
   { path: 'teacher/students/:id', component: Blank },
+  { path: 'teacher/help', component: Help },
+  { path: 'teacher/help/:topic', component: Help },
 ];
 
 let router: Router;
@@ -129,6 +135,14 @@ describe('page transitions', () => {
     expect(pageMotion(one, two, true)).toBe('detail');
   });
 
+  it('moves the detail of one page on two routes like the detail of one route', async () => {
+    const list = await snapshot('/teacher/help');
+    const one = await snapshot('/teacher/help/a');
+    expect(pageMotion(list, one)).toBe('forward');
+    expect(pageMotion(list, one, true)).toBe('detail');
+    expect(pageMotion(await snapshot('/teacher/billing'), one, true)).toBe('through');
+  });
+
   it('slides a page within the frame of its panes until the transition ends', async () => {
     const content = document.createElement('div');
     content.className = 'tb-shell__content';
@@ -163,6 +177,22 @@ describe('page transitions', () => {
     const view = transition();
     const from = await snapshot('/teacher/homework/1');
     const to = await snapshot('/teacher/homework/2');
+    runInInjectionContext(TestBed.inject(Injector), () => {
+      startPageTransition({ transition: view, from, to });
+    });
+    content.remove();
+    expect(document.documentElement.getAttribute(PAGE_MOTION_ATTRIBUTE)).toBe('detail');
+  });
+
+  it('fades only the detail column of a list inside one pane', async () => {
+    const content = document.createElement('div');
+    content.className = 'tb-shell__content';
+    content.innerHTML =
+      '<tb-panes><tb-pane><nav></nav><div data-tb-detail></div></tb-pane></tb-panes>';
+    document.body.append(content);
+    const view = transition();
+    const from = await snapshot('/teacher/homework');
+    const to = await snapshot('/teacher/homework/1');
     runInInjectionContext(TestBed.inject(Injector), () => {
       startPageTransition({ transition: view, from, to });
     });

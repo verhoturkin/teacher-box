@@ -74,7 +74,7 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
 - [x] 414.2 **F** *simple* — expanding and collapsing the rail (`core/layout/rail-state.ts`,
   `side-nav.scss`): check in the browser; if the width and labels jump, animate the width on
   default spatial and the labels on effects.
-- [ ] 414.3 **F** *complex* — list-detail in one pane (Settings:
+- [x] 414.3 **F** *complex* — list-detail in one pane (Settings:
   `features/settings/settings-page.ts`, one route for `/teacher/settings` and
   `/teacher/settings/:category` in `settings.routes.ts`): the first choice of a section moves
   differently from the next ones, and its motion takes the list of sections with it. Likely cause:

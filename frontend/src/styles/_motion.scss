@@ -340,7 +340,7 @@ $tb-overlay-rows: ':is(.p-menu-list, .p-tieredmenu-root-list, .p-select-list, .p
  * short 1 out and short 2 in (as in M3's video). Forward and backward — deeper into a section and
  * back: both pages also slide 30 dp together (medium 4, emphasized decelerate), the fades short 2
  * and short 4 are over early in the long, soft slide. Detail — another item beside the
- * list: only the last pane fades, the list stays. With less motion only the fades stay.
+ * list (a pane, or the detail column of one pane): only the detail fades, the list stays. With less motion only the fades stay.
  */
 :root[data-tb-page] {
   /* named only while a page changes: a named element is a stacking context of its own, and a sheet
@@ -349,12 +349,13 @@ $tb-overlay-rows: ':is(.p-menu-list, .p-tieredmenu-root-list, .p-select-list, .p
     view-transition-name: tb-page;
   }
 
-  /* the detail beside the list; a side sheet is not one */
+  /* the detail beside the list (a pane, or a column inside one pane); a side sheet is not one */
   &[data-tb-page='detail']
     .tb-shell__content
     tb-panes:not(.tb-panes--single)
     > tb-pane
-    + tb-pane:not(.tb-pane--sheet) {
+    + tb-pane:not(.tb-pane--sheet),
+  &[data-tb-page='detail'] .tb-shell__content [data-tb-detail] {
     view-transition-name: tb-detail;
   }
 

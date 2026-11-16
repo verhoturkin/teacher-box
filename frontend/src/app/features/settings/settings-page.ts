@@ -135,7 +135,8 @@ import { T } from './i18n/texts';
                 }
               </ul>
             </nav>
-            <div class="tb-settings__detail">
+            <!-- the detail fades alone, the list stays (page-transitions.ts) -->
+            <div class="tb-settings__detail" data-tb-detail>
               <ng-container *ngTemplateOutlet="detail" />
             </div>
           </div>

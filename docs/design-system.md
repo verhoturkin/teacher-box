@@ -168,7 +168,10 @@ elevation with their values; springs —
     the surface stays and only its content moves. One route with other segments (a list and its
     detail, `/teacher/homework` → `/teacher/homework/:id`): on one pane it is deeper or
     back by the depth of the address, an item of equal depth fades through; beside the list only
-    the detail pane fades (`detail`), the list stays; a side sheet is not a detail. *Ours*: the
+    the detail pane fades (`detail`), the list stays; a side sheet is not a detail. The same
+    holds for the detail column of a list inside one pane (`data-tb-detail`, Settings) and for
+    one page on two routes of a section (`help` → `help/:topic`): the first choice and every
+    later one fade the detail only (414.3); on compact they stay deeper or back. *Ours*: the
     duration of each part and the 30 dp. Reduced motion keeps only the fades (**M3**). The bars
     show only their live new state (the old snapshot is hidden): one indicator, and it grows from
     its middle during the transition. Nothing moves on the first load and when only the query
