@@ -91,6 +91,14 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
   elevation change) in `styles/_motion.scss`: the snackbar opens upwards from the bottom, menus
   and dropdowns open away from their anchor along Y. Dialogs keep their scale. design-system
   «Motion», `/gallery/motion`.
+- [ ] 416.2 **F** *complex* — the global search opens with a container transform (M3 transition
+  patterns, the search video `GM3-Transitions-TransitionPatterns-3-4`): the docked search bar's
+  pill grows down and a little to the sides into the search view under it, its corners go from
+  full to the view's corner, the field row stays in place, the results fade in once it has
+  opened; closing runs the same way back. The full-screen view on compact grows from the search
+  icon of the top app bar. `core/search/global-search-view.ts` (no motion today); a spatial
+  spring for the container, effects for the content; a fade alone under reduced motion. ADR-0066
+  (container transform), design-system «Motion».
 
 ### 417. Skeleton loaders
 
