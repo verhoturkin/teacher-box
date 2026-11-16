@@ -12,12 +12,6 @@
   }
 }
 
-@keyframes tb-motion-scale-out {
-  to {
-    transform: scale(var(--tb-motion-scale, 0.93));
-  }
-}
-
 @keyframes tb-motion-fade-in {
   from {
     opacity: 0;
@@ -123,19 +117,6 @@
   animation-delay: 70ms;
 }
 
-/* Dialogs: the default spring (a medium surface) */
-.p-dialog.p-dialog-enter-active {
-  animation:
-    tb-motion-scale-in var(--tb-spring-default-spatial),
-    tb-motion-fade-in var(--tb-spring-default-effects);
-}
-
-.p-dialog.p-dialog-leave-active {
-  animation:
-    tb-motion-scale-out var(--tb-spring-standard-fast-spatial) forwards,
-    tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
-}
-
 /*
  * Menus, dropdowns, the date picker (M3 video transition patterns 7-2): no scale — it implies an
  * elevation change (M3). The surface opens away from its anchor along Y: a clip with the surface's
@@ -237,6 +218,76 @@ $tb-overlay-rows: ':is(.p-menu-list, .p-tieredmenu-root-list, .p-select-list, .p
   animation:
     tb-motion-conceal var(--tb-spring-standard-fast-spatial) forwards,
     tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
+}
+
+/*
+ * Dialogs, confirmations included (M3 video transition patterns 7-1): no scale. The scrim fades
+ * in first; 80 ms later the container opens downwards from its top edge (a clip with its
+ * corners) on the standard fast spring (the video shows no bounce) and fades in on fast effects;
+ * the content fades in 70 ms after the container on default effects. It closes at once, the scrim
+ * with it: the container fades on fast effects while it collapses by a quarter towards its top
+ * edge, the content fading with it; the scrim fades on default effects and goes last. The clip
+ * leaves room for the elevation 3 shadow (15 px below the surface).
+ */
+.p-dialog.p-dialog-enter-active,
+.p-dialog.p-dialog-leave-active {
+  --tb-motion-radius: var(--tb-shape-xl);
+  --tb-motion-room: 1rem;
+  --tb-motion-clip: inset(
+    #{$tb-motion-out} #{$tb-motion-out} #{$tb-motion-shut} #{$tb-motion-out} round
+      #{$tb-motion-round}
+  );
+}
+
+.p-dialog.p-dialog-enter-active {
+  animation:
+    tb-motion-reveal var(--tb-spring-standard-fast-spatial) backwards,
+    tb-motion-fade-in var(--tb-spring-fast-effects) backwards;
+  /* a delay for each of the two, or PrimeNG ends the enter at once */
+  animation-delay: 80ms, 80ms;
+
+  > * {
+    animation: tb-motion-fade-in var(--tb-spring-default-effects) backwards;
+    animation-delay: 150ms;
+  }
+}
+
+/*
+ * The dialog must be gone before its scrim: when the scrim's leave ends first, PrimeNG plays the
+ * dialog's leave again from the start (a flash). So the collapse runs on the fast effects spring
+ * (no overshoot, 140 ms; the dialog has faded by its end) and the scrim on default effects.
+ */
+.p-dialog.p-dialog-leave-active {
+  --tb-motion-clip: inset(
+    #{$tb-motion-out} #{$tb-motion-out} 25% #{$tb-motion-out} round #{$tb-motion-round}
+  );
+
+  animation:
+    tb-motion-conceal var(--tb-spring-fast-effects) forwards,
+    tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
+}
+
+.p-dialog-mask.p-overlay-mask.p-overlay-mask-leave-active {
+  animation: p-animate-overlay-mask-leave var(--tb-spring-default-effects) forwards;
+}
+
+/* Less motion: the dialog only fades in and out, its scrim still goes last */
+@media (prefers-reduced-motion: reduce) {
+  .p-dialog.p-dialog-enter-active {
+    animation: tb-motion-fade-in var(--tb-spring-default-effects) !important;
+  }
+
+  .p-dialog.p-dialog-leave-active {
+    animation: tb-motion-fade-out var(--tb-spring-fast-effects) forwards !important;
+  }
+
+  .p-dialog-mask.p-overlay-mask.p-overlay-mask-leave-active {
+    animation: p-animate-overlay-mask-leave var(--tb-spring-default-effects) forwards !important;
+  }
+
+  .p-dialog.p-dialog-enter-active > * {
+    animation: none !important;
+  }
 }
 
 /* The scrim fades on the default effects spring */

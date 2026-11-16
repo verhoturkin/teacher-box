@@ -117,7 +117,7 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
   icon of the top app bar. `core/search/global-search-view.ts` (no motion today); a spatial
   spring for the container, effects for the content; a fade alone under reduced motion. ADR-0066
   (container transform), design-system «Motion».
-- [ ] 416.3 **F** *complex* — dialogs match the video `GM3-Transitions-TransitionPatterns-7-1`
+- [x] 416.3 **F** *complex* — dialogs match the video `GM3-Transitions-TransitionPatterns-7-1`
   (https://firebasestorage.googleapis.com/v0/b/design-spec/o/projects%2Fgoogle-material-3%2Fimages%2Flyfs2znj-GM3-Transitions-TransitionPatterns-7-1-v01.mp4?alt=media):
   the scrim fades in first, then the dialog's container opens downwards from its top edge (its
   height grows, no scale) and the content fades in just after; closing is a quick fade with the

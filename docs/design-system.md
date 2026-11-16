@@ -91,15 +91,21 @@ elevation with their values; springs —
   - `--tb-spring-standard-fast-spatial` (standard scheme, 0.9 / 1400, barely overshoots) only for
     turns that must not bounce (the split-button chevron) and for leaving overlays.
   - Overlays (`styles/_motion.scss` «Overlays on M3E springs») replace PrimeNG's cubic-bezier:
-    they enter with scale or position on a spatial spring and opacity on the effects spring of
-    the same speed —
-    dialogs default (scale from 0.93), side sheets slide in on default spatial; they leave without
-    a bounce on the standard fast spring and fast effects. Menus, dropdowns and the date picker
-    take no scale (**M3**: scale implies an elevation change; they expand along an axis, away from
-    the anchor — videos of transition patterns 7-2): a clip with the surface's corners opens from
-    the anchored edge, down under the field or up above it, on the standard fast spring with fast
-    effects, the rows fade in from the anchor 30 ms apart (the fourth and later together); they
-    close the same way back, the fade quicker. The snackbar opens upwards from its bottom edge,
+    they enter with size or position on a spatial spring and opacity on an effects spring; side
+    sheets slide in on default spatial; they leave without a bounce on the standard fast spring
+    and fast effects. Dialogs and confirmations take no scale (**M3** video 7-1): the scrim fades
+    in first, 80 ms later the container opens downwards from its top edge (a clip with its
+    corners) on the standard fast spring with fast effects, the content fades in 70 ms after it
+    on default effects; it closes at once with the scrim, fading while it collapses by a quarter
+    towards its top edge (both on fast effects), its scrim fading on default effects and going
+    last — PrimeNG replays a dialog's leave if its scrim ends first; with less motion it only
+    fades. Menus, dropdowns
+    and the date picker take no scale either (**M3**: scale implies an elevation change; they
+    expand along an axis, away from the anchor — videos of transition patterns 7-2): a clip
+    with the surface's corners opens from the anchored edge, down under the field or up above
+    it, on the standard fast spring with fast effects, the rows fade in from the anchor 30 ms
+    apart (the fourth and later together); they close the same way back, the fade quicker. The
+    snackbar opens upwards from its bottom edge,
     opaque, on the standard fast spring, its text fades in 50 ms later (**M3** video 7-3); it
     leaves as before (fade, its line closes). The spring and the timings are *ours*, measured on
     the videos (no bounce there); the clip leaves room for the shadow (`--tb-motion-room`), so it
