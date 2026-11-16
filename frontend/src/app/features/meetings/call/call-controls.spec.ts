@@ -63,6 +63,27 @@ describe('CallControls', () => {
     return found;
   }
 
+  it('opens the chat and shows the unread messages on its button and on «Развернуть»', async () => {
+    await render();
+    expect(host.querySelector('tb-nav-badge')).toBeNull();
+    session.unread.set(3);
+    await fixture.whenStable();
+    expect(host.querySelector('tb-nav-badge')?.textContent).toBe('3');
+    button('Чат, непрочитанных: 3').click();
+    await fixture.whenStable();
+    expect(session.chatOpen()).toBe(true);
+    expect(session.unread()).toBe(0);
+    expect(button('Чат').getAttribute('aria-pressed')).toBe('true');
+    fixture.destroy();
+    TestBed.resetTestingModule();
+
+    await render(true);
+    session.unread.set(2);
+    await fixture.whenStable();
+    expect(button('Развернуть. Чат, непрочитанных: 2')).toBeDefined();
+    expect(host.querySelector('tb-nav-badge')?.textContent).toBe('2');
+  });
+
   it('toggles the devices and shows their state', async () => {
     await render();
     const toggles = {

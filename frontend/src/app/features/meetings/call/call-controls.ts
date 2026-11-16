@@ -12,6 +12,7 @@ import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
 import { injectMobile } from '@core/layout/mobile';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
+import { NavBadge } from '@core/layout/nav-badge';
 import { CallDevices, DeviceList } from './call-devices';
 import { AudioProcessing } from './call-engine';
 import { CallSession } from './call-session';
@@ -25,7 +26,7 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-call-controls',
-  imports: [Button, Menu, ButtonAttributes, CallStatsDialog],
+  imports: [Button, Menu, ButtonAttributes, CallStatsDialog, NavBadge],
   changeDetection: ChangeDetectionStrategy.OnPush,
   // Global class names, loaded with the call (design-system «Where it lives»)
   encapsulation: ViewEncapsulation.None,
@@ -65,6 +66,21 @@ import { T } from '../i18n/texts';
           (onClick)="session.toggleScreen()"
         />
       }
+      <span class="tb-call-controls__badged">
+        <p-button
+          [styleClass]="'tb-call-button' + (session.chatOpen() ? ' tb-call-button--active' : '')"
+          icon="tb-i tb-i-chat"
+          [rounded]="true"
+          [severity]="session.chatOpen() ? undefined : 'secondary'"
+          [ariaLabel]="session.unread() > 0 ? t.chatUnread(session.unread()) : t.chat"
+          [tbAttributes]="{ 'aria-pressed': session.chatOpen() ? 'true' : 'false' }"
+          [disabled]="!connected()"
+          (onClick)="session.toggleChat()"
+        />
+        @if (session.unread() > 0) {
+          <tb-nav-badge [count]="session.unread()" />
+        }
+      </span>
       <p-button
         styleClass="tb-call-button"
         icon="tb-i tb-i-settings"
@@ -97,14 +113,21 @@ import { T } from '../i18n/texts';
         (onClick)="session.minimize()"
       />
     } @else {
-      <p-button
-        styleClass="tb-call-button"
-        icon="tb-i tb-i-open_in_full"
-        [rounded]="true"
-        severity="secondary"
-        [ariaLabel]="t.expand"
-        (onClick)="session.expand()"
-      />
+      <span class="tb-call-controls__badged">
+        <p-button
+          styleClass="tb-call-button"
+          icon="tb-i tb-i-open_in_full"
+          [rounded]="true"
+          severity="secondary"
+          [ariaLabel]="
+            session.unread() > 0 ? t.expand + '. ' + t.chatUnread(session.unread()) : t.expand
+          "
+          (onClick)="session.expand()"
+        />
+        @if (session.unread() > 0) {
+          <tb-nav-badge [count]="session.unread()" />
+        }
+      </span>
     }
     <p-button
       styleClass="tb-call-button tb-call-button--leave"

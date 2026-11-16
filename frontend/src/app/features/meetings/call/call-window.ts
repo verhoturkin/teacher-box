@@ -15,6 +15,7 @@ import { LoadingIndicator } from '@shared/ui/loading-indicator';
 import { injectMobile } from '@core/layout/mobile';
 import { AuthService } from '@core/auth/auth.service';
 import { Confirm } from '@shared/ui/confirm';
+import { CallChat } from './call-chat';
 import { CallParticipant } from './call-engine';
 import { CallControls } from './call-controls';
 import { gridSize, stageLayout } from './call-layout';
@@ -30,13 +31,14 @@ import { SHARED_T } from '@shared/i18n/texts';
  */
 @Component({
   selector: 'tb-call-window',
-  imports: [Button, Message, LoadingIndicator, CallControls, CallSelf, CallTile],
+  imports: [Button, Message, LoadingIndicator, CallChat, CallControls, CallSelf, CallTile],
   changeDetection: ChangeDetectionStrategy.OnPush,
   // Global class names, loaded with the call (design-system «Where it lives»)
   encapsulation: ViewEncapsulation.None,
   styleUrl: './call-window.scss',
   host: {
     class: 'tb-call-window',
+    '[class.tb-call-window--chat]': 'chat()',
     role: 'dialog',
     'aria-modal': 'true',
     'aria-labelledby': 'tb-call-title',
@@ -130,6 +132,9 @@ import { SHARED_T } from '@shared/i18n/texts';
       </div>
     }
     <tb-call-controls class="tb-call-window__controls" />
+    @if (chat()) {
+      <tb-call-chat />
+    }
     <div class="tb-sr-only" aria-live="polite">{{ session.announcement() }}</div>
   `,
 })
@@ -143,6 +148,10 @@ export class CallWindow implements AfterViewInit {
   /** The time in the call, `m:ss`. */
   readonly elapsed = input('');
 
+  /** The chat sheet: open, and the call goes on. */
+  protected readonly chat = computed(
+    () => this.session.chatOpen() && this.session.live() && this.session.phase() !== 'connecting',
+  );
   protected readonly layout = computed(() => stageLayout(this.session.participants()));
   private readonly mobile = injectMobile();
   protected readonly grid = computed(() => gridSize(this.layout().tiles.length, this.mobile()));

@@ -62,7 +62,9 @@ mode, participants, devices; leaves on sign-out, asks before the page closes), `
 list, choice in `localStorage`), components `call-host` (in `app.ts`), `call-prejoin`, `call-window`, `call-mini`,
 `call-tile`, `call-controls` (settings menu: devices, sound processing, «Сведения о связи» —
 `call-stats-dialog.ts`, WebRTC statistics read by `readStats` / `statsSections` in `call-stats.ts`),
-`call-self` (own camera of a one-to-one call), layout in `call-layout.ts`, moving
+`call-self` (own camera of a one-to-one call), `call-chat` (the chat of the call, 409.1: text
+over the LiveKit data channel, topic `tb-chat`, at most 1000 characters; kept in `CallSession`
+only while the call goes on, never stored), layout in `call-layout.ts`, moving
 between corners in `call-corner.ts` (mini window and own camera, each remembered in `localStorage`); `index.ts` exports `CallHost` (root `@defer`) and
 `CALL_ROUTES` (`/call/:ownerId`, `openCallGuard`; 0.22.0: no «Звонки» section — `/teacher/calls` redirects to the
 settings category «Занятия», `/teacher/settings/lessons`) — never import them from `parts.ts` in the root, it pulls the

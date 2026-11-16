@@ -211,7 +211,7 @@ const WORKING_HOURS: Readonly<Record<string, readonly (readonly [string, string,
   ],
 };
 
-/** Moderating a call (stage 408.2): [topic, baseline, now] of the calls article per edition. */
+/** Moderating a call and its chat (408.2, 409.1): [topic, baseline, now] of the call articles. */
 const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
   'teacher.ru': [
     [
@@ -220,7 +220,9 @@ const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, strin
       '- **Управление участником** — на плитке другого участника откройте меню «⋮». «Выключить' +
         ' микрофон» отключает ему звук (он сможет включить его снова); «Удалить из звонка»' +
         ' спросит подтверждение, после чего участник увидит, почему звонок закончился, и сможет' +
-        ' войти снова.\n- **Выйти из звонка**',
+        ' войти снова.\n- **Чат** — сообщения всем участникам звонка; число на кнопке —' +
+        ' непрочитанные. Чат видят только участники звонка, после звонка он не сохраняется.' +
+        '\n- **Выйти из звонка**',
     ],
   ],
   'teacher.en': [
@@ -229,7 +231,25 @@ const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, strin
       '- **Leave call:**',
       '- **Moderate:** on another participant’s tile, open the “⋮” menu. “Turn off microphone”' +
         ' mutes them (they can turn it on again); “Remove from call” asks for confirmation, then' +
-        ' the person sees why the call ended and can rejoin.\n- **Leave call:**',
+        ' the person sees why the call ended and can rejoin.\n- **Chat:** message everyone in the' +
+        ' call; the number on the button shows unread messages. Only people in the call see the' +
+        ' chat, and it isn’t saved after the call.\n- **Leave call:**',
+    ],
+  ],
+  'student.ru': [
+    [
+      'lesson',
+      '«Выйти из звонка» — красная кнопка.',
+      '«Чат» открывает переписку со всеми в звонке, число на кнопке — непрочитанные сообщения;' +
+        ' после звонка чат не сохраняется. «Выйти из звонка» — красная кнопка.',
+    ],
+  ],
+  'student.en': [
+    [
+      'lesson',
+      '- choose “Leave call” to leave.',
+      '- choose “Chat” to message everyone in the call; the number on the button shows unread' +
+        ' messages, and the chat isn’t saved after the call;\n- choose “Leave call” to leave.',
     ],
   ],
 };

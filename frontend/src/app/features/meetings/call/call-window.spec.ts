@@ -88,6 +88,68 @@ describe('CallWindow', () => {
     expect(close).toHaveBeenCalledTimes(2);
   });
 
+  it('opens the chat beside the call and sends a message from the field', async () => {
+    expect(host.querySelector('tb-call-chat')).toBeNull();
+    session.chatOpen.set(true);
+    await fixture.whenStable();
+    const chat = host.querySelector<HTMLElement>('tb-call-chat');
+    const field = host.querySelector<HTMLInputElement>('.tb-call-chat__field');
+    expect(host.classList).toContain('tb-call-window--chat');
+    expect(chat?.textContent).toContain('Сообщения видят только участники звонка');
+    expect(document.activeElement).toBe(field);
+
+    const send = vi
+      .spyOn(session, 'sendMessage')
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(false);
+    if (field === null) {
+      throw new Error('no field');
+    }
+    field.value = 'Привет';
+    host.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
+    await fixture.whenStable();
+    expect(send).toHaveBeenCalledWith('Привет');
+    expect(field.value).toBe('');
+    field.value = 'Ещё';
+    host.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
+    await fixture.whenStable();
+    expect(field.value).toBe('Ещё');
+
+    session.messages.set([
+      { id: 1, from: 'Анна', text: 'Здравствуйте', mine: false },
+      { id: 2, from: 'Ольга', text: 'Привет', mine: true },
+    ]);
+    await fixture.whenStable();
+    const lines = [...host.querySelectorAll('.tb-call-chat__message')].map((line) => [
+      line.querySelector('.tb-call-chat__from')?.textContent,
+      line.querySelector('.tb-call-chat__text')?.textContent,
+    ]);
+    expect(lines).toEqual([
+      ['Анна', 'Здравствуйте'],
+      ['Вы', 'Привет'],
+    ]);
+    expect(host.querySelector('.tb-call-chat__message--mine')).not.toBeNull();
+
+    host.querySelector<HTMLButtonElement>('button[aria-label="Закрыть чат"]')?.click();
+    await fixture.whenStable();
+    expect(host.querySelector('tb-call-chat')).toBeNull();
+  });
+
+  it('sends one message at a time', async () => {
+    session.chatOpen.set(true);
+    await fixture.whenStable();
+    let done: (sent: boolean) => void = () => undefined;
+    const send = vi
+      .spyOn(session, 'sendMessage')
+      .mockReturnValue(new Promise((resolve) => (done = resolve)));
+    const form = host.querySelector('form');
+    form?.dispatchEvent(new Event('submit', { cancelable: true }));
+    form?.dispatchEvent(new Event('submit', { cancelable: true }));
+    done(true);
+    await fixture.whenStable();
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+
   it('minimizes on Esc', async () => {
     const minimize = vi.spyOn(session, 'minimize');
     host.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));

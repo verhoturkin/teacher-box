@@ -1,4 +1,4 @@
-import { CallMedia, CallSnapshot, DEFAULT_AUDIO_PROCESSING } from './call-engine';
+import { CallChatMessage, CallMedia, CallSnapshot, DEFAULT_AUDIO_PROCESSING } from './call-engine';
 import { StatsReport } from './call-stats';
 import {
   LiveKitModule,
@@ -57,11 +57,19 @@ class FakeParticipant implements LkParticipant {
 class FakeLocal extends FakeParticipant implements LkLocalParticipant {
   readonly calls: string[] = [];
   readonly captures: (LkAudioCapture | undefined)[] = [];
+  readonly published: string[] = [];
 
   setMicrophoneEnabled(enabled: boolean, options?: LkAudioCapture): Promise<unknown> {
     this.calls.push(`mic ${String(enabled)}`);
     this.captures.push(options);
     this.isMicrophoneEnabled = enabled;
+    return Promise.resolve();
+  }
+
+  publishData(data: Uint8Array, options: { reliable: boolean; topic: string }): Promise<void> {
+    this.published.push(
+      `${options.topic} ${String(options.reliable)} ${new TextDecoder().decode(data)}`,
+    );
     return Promise.resolve();
   }
 
@@ -131,6 +139,7 @@ const LK: LiveKitModule = { Room: FakeRoom };
 
 describe('LiveKit engine', () => {
   let snapshots: CallSnapshot[];
+  let messages: CallChatMessage[];
 
   function last(): CallSnapshot {
     const snapshot = snapshots.at(-1);
@@ -149,6 +158,7 @@ describe('LiveKit engine', () => {
 
   beforeEach(() => {
     snapshots = [];
+    messages = [];
     FakeRoom.nextFails = false;
   });
 
@@ -159,8 +169,12 @@ describe('LiveKit engine', () => {
   });
 
   async function connect() {
-    return createLiveKitEngine(LK, document).connect('wss://p/livekit', 'jwt', MEDIA, (snapshot) =>
-      snapshots.push(snapshot),
+    return createLiveKitEngine(LK, document).connect(
+      'wss://p/livekit',
+      'jwt',
+      MEDIA,
+      (snapshot) => snapshots.push(snapshot),
+      (message) => messages.push(message),
     );
   }
 
@@ -222,6 +236,24 @@ describe('LiveKit engine', () => {
     room().remoteParticipants.set('s-3', unnamed);
     room().fire('trackSubscribed', new FakeTrack('video'));
     expect(last().participants[3]?.camera?.id).toMatch(/^track-/);
+  });
+
+  it('sends and receives chat messages over the data channel', async () => {
+    const call = await connect();
+    await call.sendMessage('Привет');
+    expect(room().localParticipant.published).toEqual(['tb-chat true Привет']);
+
+    const bytes = (text: string) => new TextEncoder().encode(text);
+    const anna = new FakeParticipant('s-1', 'Анна');
+    room().fire('dataReceived', bytes('  Здравствуйте '), anna, 0, 'tb-chat');
+    room().fire('dataReceived', bytes('x'.repeat(1200)), new FakeParticipant('s-2'), 0, 'tb-chat');
+    room().fire('dataReceived', bytes('other'), anna, 0, 'whiteboard');
+    room().fire('dataReceived', bytes('   '), anna, 0, 'tb-chat');
+    room().fire('dataReceived', bytes('server'), undefined, 0, 'tb-chat');
+
+    expect(messages.map((message) => message.from)).toEqual(['Анна', 'Участник']);
+    expect(messages[0]?.text).toBe('Здравствуйте');
+    expect(messages[1]?.text).toHaveLength(1000);
   });
 
   it('plays the sound of the others in hidden elements', async () => {

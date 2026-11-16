@@ -43,7 +43,7 @@ ADRs: a new one if 409.2 needs a frontend dependency of `meetings` on `boards` (
 
 ### 409. Chat and board in the call
 
-- [ ] 409.1 **F** *complex* — chat in the call over the LiveKit data channel
+- [x] 409.1 **F** *complex* — chat in the call over the LiveKit data channel
   (`meetings/call/livekit-engine.ts`, `call-engine.ts`, a panel in `call-window.ts`): text
   messages, unread badge on the button, not stored after the call. `m3-expressive` skill; help and
   wiki.

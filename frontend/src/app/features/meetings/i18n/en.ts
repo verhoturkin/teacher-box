@@ -97,6 +97,8 @@ export const en: Translation<typeof ru> = {
     gain: 'Automatic gain control',
     network: 'Connection',
     stats: 'Connection details',
+    chat: 'Chat',
+    chatUnread: (count: number) => `Chat, ${String(count)} unread`,
   },
   prejoin: {
     title: (name: string) => `Call: ${name}`,
@@ -107,6 +109,16 @@ export const en: Translation<typeof ru> = {
       'This browser cannot make video calls. Open the portal in Chrome, Edge, Firefox or Safari.',
     switching: (name: string) => `You will leave the call “${name}”.`,
     join: 'Join',
+  },
+  chat: {
+    title: 'Chat',
+    close: 'Close chat',
+    empty: 'Only people in the call see these messages. The chat isn’t saved after the call.',
+    you: 'You',
+    field: 'Message',
+    send: 'Send',
+    sendFailed: 'Could not send the message',
+    received: (name: string) => `New message from ${name}`,
   },
   window: {
     connecting: 'Connecting…',

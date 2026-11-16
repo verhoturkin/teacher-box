@@ -95,6 +95,8 @@ export const ru = {
     gain: 'Автоусиление громкости',
     network: 'Связь',
     stats: 'Сведения о связи',
+    chat: 'Чат',
+    chatUnread: (count: number) => `Чат, непрочитанных: ${String(count)}`,
   },
   prejoin: {
     title: (name: string) => `Звонок: ${name}`,
@@ -105,6 +107,16 @@ export const ru = {
       'Этот браузер не умеет видеозвонки. Откройте портал в Chrome, Edge, Firefox или Safari.',
     switching: (name: string) => `Звонок «${name}» завершится.`,
     join: 'Войти',
+  },
+  chat: {
+    title: 'Чат',
+    close: 'Закрыть чат',
+    empty: 'Сообщения видят только участники звонка. После звонка чат не сохраняется.',
+    you: 'Вы',
+    field: 'Сообщение',
+    send: 'Отправить',
+    sendFailed: 'Не удалось отправить сообщение',
+    received: (name: string) => `Новое сообщение от ${name}`,
   },
   window: {
     connecting: 'Подключение…',

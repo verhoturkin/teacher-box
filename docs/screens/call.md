@@ -16,6 +16,10 @@
   share become **M3E** selected icon buttons (sizes M3 lacks are *ours*); `aria-pressed` on every
   toggle. No tooltips — they cover the video. The settings menu lies above the window; connection
   details (`call-stats-dialog.ts`) refresh every 2 s. No screen sharing on phones.
+- **Chat** (`call-chat.ts`, 409.1): «Чат» in the toolbar opens an **M3** standard side sheet beside
+  the stage (at most 400 dp; on a phone it covers the window — *ours*); the field takes the focus,
+  the messages are a `role="log"`, own ones on secondary-container (*ours*). Unread messages show as
+  an **M3** large badge (`tb-nav-badge`) on «Чат», and on «Развернуть» of the mini window.
 - **Mini window** (`call-mini.ts`): on a computer a corner card dragged by its top line and snapped
   (or moved by a menu item; remembered) showing a shared screen, the speaker or a camera. On a phone
   a full-width pill above the bottom bar; the FAB moves above it.

@@ -9,6 +9,7 @@
   z-index: 1050;
   display: grid;
   grid-template-rows: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--tb-space-3);
   padding: var(--tb-space-4) var(--tb-space-4) calc(var(--tb-space-4) + env(safe-area-inset-bottom));
   background: var(--p-md-surface-container);
@@ -62,6 +63,24 @@
 
   &__controls {
     justify-self: center;
+  }
+
+  /* The chat sheet (call-chat.scss) beside everything else: M3 standard side sheet, at most 400 dp */
+  &--chat {
+    grid-template-columns: minmax(0, 1fr) min(25rem, 40%);
+
+    > :not(.tb-call-chat) {
+      grid-column: 1;
+    }
+
+    > .tb-call-chat {
+      grid-column: 2;
+      grid-row: 1 / -1;
+    }
+
+    @media (width < 37.5em) {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 }
 
