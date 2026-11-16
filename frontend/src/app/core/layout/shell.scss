@@ -12,6 +12,11 @@
 :host(.tb-shell--rail) {
   .tb-shell__header {
     margin-inline-start: var(--tb-rail-width);
+
+    /* the strip follows the rail as it springs between 96 and 280 px (side-nav.scss) */
+    @media (prefers-reduced-motion: no-preference) {
+      transition: margin-inline-start var(--tb-spring-default-spatial);
+    }
   }
 
   .tb-shell__body {

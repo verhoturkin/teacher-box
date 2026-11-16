@@ -71,7 +71,7 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
   `GM3-Transitions-TransitionPatterns-7-5`
   (https://firebasestorage.googleapis.com/v0/b/design-spec/o/projects%2Fgoogle-material-3%2Fimages%2Flygxnh2p-GM3-Transitions-TransitionPatterns-7-5-v01.mp4?alt=media);
   view it frame by frame (built-in browser, the `<video>` drawn into a canvas contact sheet).
-- [ ] 414.2 **F** *simple* — expanding and collapsing the rail (`core/layout/rail-state.ts`,
+- [x] 414.2 **F** *simple* — expanding and collapsing the rail (`core/layout/rail-state.ts`,
   `side-nav.scss`): check in the browser; if the width and labels jump, animate the width on
   default spatial and the labels on effects.
 

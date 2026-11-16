@@ -109,6 +109,10 @@ elevation with their values; springs —
     curve) — measured on the M3 video of the pattern (half the width at 150 ms, 90 % at 340 ms, no
     overshoot); the expressive spatial springs are faster and bounce. The content fades in on fast
     effects.
+  - The navigation rail (**M3**: the expanded rail is the «default spatial» example)
+    springs its width between 96 and 280 px on default spatial when the page collapses it or the
+    window crosses 1600 px; the page and the top strip beside it follow, and the labels fade in on
+    fast effects (*ours*: an item's own layout switches at once).
   - PrimeNG controls (fields, selects, checkboxes, tables, tabs, the paginator) change colour,
     outline and shadow on the fast effects spring: the semantic `transitionDuration` of the preset
     is `var(--tb-spring-fast-effects)`, a duration and a curve. The radio dot grows on the fast
