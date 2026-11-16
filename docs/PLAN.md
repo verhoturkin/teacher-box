@@ -50,7 +50,7 @@ Source: backlog review of 2026-11-15; design audit DA-049, DA-050.
 
 ### 405. Reschedule from free times
 
-- [ ] 405.1 **B** *complex* — `schedule/application/SlotFinder` (pure: busy intervals of
+- [x] 405.1 **B** *complex* — `schedule/application/SlotFinder` (pure: busy intervals of
   `TeacherAvailability` — lessons, Google busy times, off-times — and a lesson duration → free
   start times of a day by a step); student `GET /api/me/schedule/free-times?date&lessonId` and the
   teacher's twin in `TeacherScheduleController`; role tests incl. another student's lesson → 404.
