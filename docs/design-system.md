@@ -109,6 +109,13 @@ elevation with their values; springs —
     curve) — measured on the M3 video of the pattern (half the width at 150 ms, 90 % at 340 ms, no
     overshoot); the expressive spatial springs are faster and bounce. The content fades in on fast
     effects.
+  - List rows (`shared/ui/list-row.ts`, `li[tbListRow]`; *ours*: M3 publishes no motion for
+    them, enter and exit within bounds expand and collapse along an axis): a new row opens its
+    height on the standard fast spring (no overshoot, the rows under it must not bounce) and fades
+    in on default effects; a leaving row fades out on fast effects and, from halfway through the
+    fade (70 ms), closes its height, so the rows under it close up. The height is measured into
+    `--tb-motion-height` (`height: auto` does not animate). The rows of a list's first render
+    stand still; the 2 px gap of `.tb-list` goes with the row.
   - The navigation rail (**M3**: the expanded rail is the «default spatial» example)
     springs its width between 96 and 280 px on default spatial when the page collapses it or the
     window crosses 1600 px; the page and the top strip beside it follow, and the labels fade in on

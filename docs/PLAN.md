@@ -77,7 +77,7 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
 
 ### 415. List rows
 
-- [ ] 415.1 **F** *complex* — shared enter/leave motion for list rows in `shared/ui/` (on
+- [x] 415.1 **F** *complex* — shared enter/leave motion for list rows in `shared/ui/` (on
   `animate.enter` / `animate.leave`): a leaving row fades out on fast effects and then closes its
   height on the standard fast spring; a new row opens its height and fades in. Gallery sample,
   design-system «Motion».

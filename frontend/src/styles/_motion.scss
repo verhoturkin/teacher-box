@@ -72,6 +72,57 @@
   }
 }
 
+/*
+ * List rows (`shared/ui/list-row.ts`; ours: M3 publishes no motion for them). A new row opens its
+ * measured height on the standard fast spring (no overshoot: the rows under it must not bounce) and
+ * fades in on default effects, like an inline message. A leaving row fades out on fast effects (a
+ * transition: Angular removes the row at the end of its one animation) and, from halfway through
+ * the fade, closes its height. The 2 px gap of `.tb-list` stays until the row goes (a grid track
+ * takes no negative margin).
+ */
+@keyframes tb-motion-row-open {
+  from {
+    height: 0;
+    padding-block: 0;
+  }
+
+  to {
+    height: var(--tb-motion-height);
+  }
+}
+
+@keyframes tb-motion-row-close {
+  from {
+    height: var(--tb-motion-height);
+  }
+
+  to {
+    height: 0;
+    padding-block: 0;
+  }
+}
+
+.tb-list-row--enter,
+.tb-list > li.tb-list-row--enter {
+  min-height: 0;
+  overflow: clip;
+  animation:
+    tb-motion-row-open var(--tb-spring-standard-fast-spatial),
+    tb-motion-fade-in var(--tb-spring-default-effects);
+}
+
+.tb-list-row--leave,
+.tb-list > li.tb-list-row--leave {
+  min-height: 0;
+  overflow: clip;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--tb-spring-fast-effects);
+  animation: tb-motion-row-close var(--tb-spring-standard-fast-spatial) forwards;
+  /* half of the fast effects fade (140 ms): the row is nearly transparent before it closes */
+  animation-delay: 70ms;
+}
+
 /* Dialogs: the default spring (a medium surface) */
 .p-dialog.p-dialog-enter-active {
   animation:

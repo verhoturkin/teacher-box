@@ -4,6 +4,7 @@ import { Button } from 'primeng/button';
 import { Tooltip } from 'primeng/tooltip';
 import { injectMobile } from '@core/layout/mobile';
 import { Busy } from '@shared/ui/busy';
+import { ListRow } from '@shared/ui/list-row';
 import { Swipe } from '@shared/ui/swipe';
 import { NotificationItem } from '../data-access/notifications.models';
 import { T } from '../i18n/texts';
@@ -14,12 +15,13 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-notification-list',
-  imports: [DatePipe, Button, Swipe, Tooltip],
+  imports: [DatePipe, Button, ListRow, Swipe, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ul class="tb-list tb-list--no-lead tb-notifications" [attr.aria-label]="label()">
       @for (item of items(); track item.id) {
         <li
+          tbListRow
           class="tb-notification"
           [class.tb-notification--unread]="!item.read"
           [tbSwipe]="mobile() && !item.read"
