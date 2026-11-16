@@ -47,7 +47,11 @@ messengers it is the «Подключиться» button and the text carries no
 `GET /api/teacher/meetings/calls` → `{status: OK | UNREACHABLE | OFF, rooms: [{ownerId, ownerType, name, members,
 waiting, teacherPresent, externalLink}]}` (every current student by name, then active groups; one `ListRooms` + `ListParticipants` of every room of the
 portal — not `num_participants`, LiveKit updates it seconds after a join; outside transactions), `GET /api/me/meetings/calls` → the student's own room
-and active groups with `teacherPresent`. Bot action:
+and active groups with `teacherPresent`. Moderation, teacher only (204; calls off or the media server down → 422
+`meetings.calls-disabled` / `meetings.call-server-unreachable`):
+`POST /api/teacher/meetings/calls/{ownerId}/participants/{userId}/mute` — `GetParticipant`, then `MutePublishedTrack` of
+each open microphone track (only the participant can unmute), `DELETE …/participants/{userId}` — `RemoveParticipant`
+(they may join again); a user not in the room is no error. Bot action:
 join the lesson (`JoinLessonChatAction`).
 
 ## Frontend

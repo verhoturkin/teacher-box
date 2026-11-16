@@ -105,6 +105,18 @@ class LiveKitCallServer implements CallServer {
         call("RemoveParticipant", Map.of("room", room, "identity", identity), admin(room), true);
     }
 
+    @Override
+    public void muteMicrophone(String room, String identity) {
+        Map<String, Object> video = admin(room);
+        JsonNode participant = call("GetParticipant", Map.of("room", room, "identity", identity), video, true);
+        for (JsonNode track : participant.path("tracks")) {
+            if ("MICROPHONE".equals(track.path("source").asString("")) && !track.path("muted").asBoolean(false)) {
+                call("MutePublishedTrack", Map.of("room", room, "identity", identity,
+                        "track_sid", track.path("sid").asString(""), "muted", true), video, true);
+            }
+        }
+    }
+
     private static Map<String, Object> admin(String room) {
         Map<String, Object> video = new LinkedHashMap<>();
         video.put("roomAdmin", true);

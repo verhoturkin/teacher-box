@@ -115,6 +115,18 @@ class LiveKitCallServerTest {
     }
 
     @Test
+    void mutesOnlyAnOpenMicrophoneAndIgnoresOneWhoLeft() {
+        server(url()).muteMicrophone("tb-a", "u-1");
+        server(url()).muteMicrophone("tb-a", "u-gone");
+        assertThat(calls).containsExactly("GetParticipant tb-a u-1", "MutePublishedTrack tb-a u-1 TR_mic true",
+                "GetParticipant tb-a u-gone");
+
+        removeStatus = 503;
+        assertThatThrownBy(() -> server(url()).muteMicrophone("tb-a", "u-1"))
+                .hasMessage("LiveKit MutePublishedTrack answered 503");
+    }
+
+    @Test
     void signsATokenForOneRoom() {
         String student = server(url()).token(new Grant("tb-a", "u-1", "Анна", false));
         String teacher = server(url()).token(new Grant("tb-a", "t-1", "Ольга", true));
@@ -177,6 +189,7 @@ class LiveKitCallServerTest {
                 .isInstanceOf(CallServerException.class);
         assertThatThrownBy(off::occupiedRooms).isInstanceOf(CallServerException.class);
         assertThatThrownBy(() -> off.removeParticipant("tb-a", "u")).isInstanceOf(CallServerException.class);
+        assertThatThrownBy(() -> off.muteMicrophone("tb-a", "u")).isInstanceOf(CallServerException.class);
         assertThat(new LiveKitIntegrationCheck(off).check().getFirst().state()).isEqualTo(State.NOT_CONFIGURED);
     }
 
@@ -269,6 +282,26 @@ class LiveKitCallServerTest {
             }
             case "RemoveParticipant" -> {
                 calls.add(method + " " + request.path("room").asString() + " " + request.path("identity").asString());
+                reply(exchange, removeStatus, removeStatus == 200 ? JSON.createObjectNode() : error());
+            }
+            case "GetParticipant" -> {
+                String identity = request.path("identity").asString();
+                calls.add(method + " " + request.path("room").asString() + " " + identity);
+                if (!identity.equals("u-1")) {
+                    reply(exchange, 404, error());
+                    return;
+                }
+                ObjectNode response = JSON.createObjectNode().put("identity", identity);
+                response.putArray("tracks").addObject().put("sid", "TR_cam").put("type", "VIDEO").put("source", "CAMERA");
+                response.withArray("tracks").addObject().put("sid", "TR_mic").put("type", "AUDIO")
+                        .put("source", "MICROPHONE");
+                response.withArray("tracks").addObject().put("sid", "TR_mic2").put("type", "AUDIO")
+                        .put("source", "MICROPHONE").put("muted", true);
+                reply(exchange, 200, response);
+            }
+            case "MutePublishedTrack" -> {
+                calls.add(method + " " + request.path("room").asString() + " " + request.path("identity").asString()
+                        + " " + request.path("track_sid").asString() + " " + request.path("muted").asBoolean());
                 reply(exchange, removeStatus, removeStatus == 200 ? JSON.createObjectNode() : error());
             }
             default -> reply(exchange, 404, error());
