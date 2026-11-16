@@ -362,4 +362,19 @@ describe('CallSession', () => {
     expect(asked.defaultPrevented).toBe(true);
     await session.leave();
   });
+
+  it('lets the teacher mute and remove a participant of the open room', () => {
+    session.mute('u-1');
+    session.target.set({ ownerId: 'g-1', title: 'ОГЭ' });
+    session.mute('u-1');
+    session.removeParticipant('u-2');
+
+    backend
+      .expectOne({ method: 'POST', url: '/api/teacher/meetings/calls/g-1/participants/u-1/mute' })
+      .flush(null);
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/meetings/calls/g-1/participants/u-2' })
+      .flush({ message: 'x' }, { status: 422, statusText: 'Unprocessable' });
+    expect(errors).toHaveLength(1);
+  });
 });

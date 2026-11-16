@@ -8,7 +8,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 import { AuthService } from '@core/auth/auth.service';
 import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
@@ -224,6 +224,40 @@ export class CallSession {
 
   async toggleMicrophone(): Promise<void> {
     await this.run((connection) => connection.setMicrophone(!this.microphone()), mediaErrorText);
+  }
+
+  /** The teacher: turns another participant's microphone off. */
+  mute(userId: string): void {
+    this.moderate(
+      (owner, user) => this.api.muteParticipant(owner, user),
+      userId,
+      T.tile.muteFailed,
+    );
+  }
+
+  /** The teacher: removes another participant from the call. */
+  removeParticipant(userId: string): void {
+    this.moderate(
+      (owner, user) => this.api.removeParticipant(owner, user),
+      userId,
+      T.tile.removeFailed,
+    );
+  }
+
+  private moderate(
+    request: (ownerId: string, userId: string) => Observable<null>,
+    userId: string,
+    failure: string,
+  ): void {
+    const ownerId = this.target()?.ownerId;
+    if (ownerId === undefined) {
+      return;
+    }
+    request(ownerId, userId).subscribe({
+      error: (error: unknown) => {
+        this.snackbar.error(describeError(error, failure));
+      },
+    });
   }
 
   async toggleCamera(): Promise<void> {

@@ -1,3 +1,4 @@
+import { buttonByText } from '@testing/dom';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { hostElement } from '@testing/dom';
 import { aMediaRef, aParticipant } from '@testing/meetings-fixtures';
@@ -81,5 +82,32 @@ describe('CallTile', () => {
 
     await show({ participant: aParticipant({ local: false, camera: aMediaRef() }), screen: false });
     expect(host.getAttribute('aria-label')).toBe('Ольга, микрофон включён, камера включена');
+  });
+
+  it('offers the teacher a menu on the tile of another participant', async () => {
+    const other = aParticipant({ local: false });
+    const host = await show({ participant: other, moderation: true });
+    const muted = vi.fn();
+    const removed = vi.fn();
+    fixture.componentInstance.muted.subscribe(muted);
+    fixture.componentInstance.removed.subscribe(removed);
+
+    buttonByText(host, 'Действия: Ольга').click();
+    await fixture.whenStable();
+    const items = Array.from(document.querySelectorAll<HTMLElement>('.p-menu-item-link'));
+    expect(items.map((item) => item.textContent.trim())).toEqual([
+      'Выключить микрофон',
+      'Удалить из звонка',
+    ]);
+    items.forEach((item) => {
+      item.click();
+    });
+    expect(muted).toHaveBeenCalledOnce();
+    expect(removed).toHaveBeenCalledOnce();
+
+    await show({ participant: aParticipant({ local: true }), moderation: true });
+    expect(host.querySelector('.tb-call-tile__more')).toBeNull();
+    await show({ participant: other, moderation: false });
+    expect(host.querySelector('.tb-call-tile__more')).toBeNull();
   });
 });

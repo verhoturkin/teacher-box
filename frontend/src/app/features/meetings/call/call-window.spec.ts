@@ -1,3 +1,4 @@
+import { Confirm } from '@shared/ui/confirm';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { buttonByText, hostElement } from '@testing/dom';
 import { aMediaRef, aParticipant } from '@testing/meetings-fixtures';
@@ -92,5 +93,21 @@ describe('CallWindow', () => {
     host.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     await fixture.whenStable();
     expect(minimize).toHaveBeenCalled();
+  });
+
+  it('removes a participant only after the teacher confirms', async () => {
+    const confirm = vi.spyOn(TestBed.inject(Confirm), 'danger');
+    const remove = vi.spyOn(session, 'removeParticipant').mockImplementation(() => undefined);
+    const anna = aParticipant({ id: 'a', name: 'Анна', local: false });
+    const window = fixture.componentInstance;
+
+    confirm.mockResolvedValueOnce(false);
+    await window.remove(anna);
+    expect(remove).not.toHaveBeenCalled();
+
+    confirm.mockResolvedValueOnce(true);
+    await window.remove(anna);
+    expect(remove).toHaveBeenCalledWith('a');
+    expect(confirm.mock.lastCall?.[0].message).toContain('Анна');
   });
 });

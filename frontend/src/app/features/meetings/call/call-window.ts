@@ -13,6 +13,9 @@ import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
 import { LoadingIndicator } from '@shared/ui/loading-indicator';
 import { injectMobile } from '@core/layout/mobile';
+import { AuthService } from '@core/auth/auth.service';
+import { Confirm } from '@shared/ui/confirm';
+import { CallParticipant } from './call-engine';
 import { CallControls } from './call-controls';
 import { gridSize, stageLayout } from './call-layout';
 import { CallSelf } from './call-self';
@@ -97,6 +100,9 @@ import { SHARED_T } from '@shared/i18n/texts';
             class="tb-call-stage__main"
             [participant]="main.participant"
             [screen]="main.screen"
+            [moderation]="teacher"
+            (muted)="session.mute(main.participant.id)"
+            (removed)="remove(main.participant)"
           />
         }
         @if (layout().inset; as inset) {
@@ -109,7 +115,12 @@ import { SHARED_T } from '@shared/i18n/texts';
             [style.--tb-call-rows]="grid().rows"
           >
             @for (person of layout().tiles; track person.id) {
-              <tb-call-tile [participant]="person" />
+              <tb-call-tile
+                [participant]="person"
+                [moderation]="teacher"
+                (muted)="session.mute(person.id)"
+                (removed)="remove(person)"
+              />
             }
           </div>
         }
@@ -126,6 +137,8 @@ export class CallWindow implements AfterViewInit {
   protected readonly c = SHARED_T.common;
   protected readonly t = T.window;
   protected readonly session = inject(CallSession);
+  private readonly confirm = inject(Confirm);
+  protected readonly teacher = inject(AuthService).role() === 'TEACHER';
 
   /** The time in the call, `m:ss`. */
   readonly elapsed = input('');
@@ -137,6 +150,17 @@ export class CallWindow implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.title().nativeElement.focus();
+  }
+
+  async remove(person: CallParticipant): Promise<void> {
+    const ok = await this.confirm.danger({
+      header: T.tile.removeHeader,
+      message: T.tile.removeMessage(person.name),
+      acceptLabel: T.tile.removeAccept,
+    });
+    if (ok) {
+      this.session.removeParticipant(person.id);
+    }
   }
 
   protected escape(): void {

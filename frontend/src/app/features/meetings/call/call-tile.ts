@@ -5,9 +5,13 @@ import {
   computed,
   effect,
   input,
+  output,
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
+import { MenuItem } from 'primeng/api';
+import { Button } from 'primeng/button';
+import { Menu } from 'primeng/menu';
 import { InitialsPipe } from '@shared/ui/initials';
 import { CallParticipant, MediaRef } from './call-engine';
 import { T } from '../i18n/texts';
@@ -19,7 +23,7 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-call-tile',
-  imports: [InitialsPipe],
+  imports: [InitialsPipe, Button, Menu],
   changeDetection: ChangeDetectionStrategy.OnPush,
   // Global class names, loaded with the call (design-system «Where it lives»)
   encapsulation: ViewEncapsulation.None,
@@ -46,6 +50,24 @@ import { T } from '../i18n/texts';
         participant().name | initials
       }}</span>
     }
+    @if (moderated()) {
+      <p-button
+        styleClass="tb-call-tile__more"
+        icon="tb-i tb-i-more_vert"
+        [rounded]="true"
+        severity="secondary"
+        [ariaLabel]="t.actions(participant().name)"
+        (onClick)="menu.toggle($event)"
+      />
+      <p-menu
+        #menu
+        [model]="items()"
+        [popup]="true"
+        appendTo="body"
+        [baseZIndex]="100"
+        styleClass="tb-call-menu"
+      />
+    }
     <span class="tb-call-tile__name" aria-hidden="true">
       @if (!participant().microphone && !screen()) {
         <i class="tb-i tb-i-mic_off"></i>
@@ -63,6 +85,33 @@ export class CallTile {
   /** Shows the shared screen instead of the camera. */
   readonly screen = input(false);
 
+  /** The teacher moderates: a menu on the tiles of the others. */
+  readonly moderation = input(false);
+  /** Turn this participant's microphone off. */
+  readonly muted = output();
+  /** Remove this participant (the host asks for confirmation). */
+  readonly removed = output();
+
+  protected readonly moderated = computed(
+    () => this.moderation() && !this.participant().local && !this.screen(),
+  );
+  protected readonly items = computed<MenuItem[]>(() => [
+    {
+      label: T.tile.mute,
+      icon: 'tb-i tb-i-mic_off',
+      disabled: !this.participant().microphone,
+      command: () => {
+        this.muted.emit();
+      },
+    },
+    {
+      label: T.tile.remove,
+      icon: 'tb-i tb-i-person_remove',
+      command: () => {
+        this.removed.emit();
+      },
+    },
+  ]);
   protected readonly media = computed<MediaRef | null>(() =>
     this.screen() ? this.participant().screen : this.participant().camera,
   );

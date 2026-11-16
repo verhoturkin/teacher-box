@@ -57,4 +57,16 @@ describe('MeetingsApi', () => {
 
     expect(joins).toEqual([{ token: 'jwt', room: 'tb-s-1', title: 'Мария' }]);
   });
+
+  it('mutes and removes a participant', () => {
+    api.muteParticipant('s-1', 'u-2').subscribe();
+    api.removeParticipant('s-1', 'u-2').subscribe();
+
+    backend
+      .expectOne({ method: 'POST', url: '/api/teacher/meetings/calls/s-1/participants/u-2/mute' })
+      .flush(null);
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/meetings/calls/s-1/participants/u-2' })
+      .flush(null);
+  });
 });

@@ -72,6 +72,14 @@ export const en: Translation<typeof ru> = {
     cameraOn: 'camera on',
     cameraOff: 'camera off',
     weak: 'weak connection',
+    actions: (name: string) => `Actions: ${name}`,
+    mute: 'Turn off microphone',
+    remove: 'Remove from call',
+    removeHeader: 'Remove from the call?',
+    removeMessage: (name: string) => `${name} will leave the call and can join it again.`,
+    removeAccept: 'Remove',
+    muteFailed: 'Could not turn the microphone off',
+    removeFailed: 'Could not remove the participant',
   },
   controls: {
     toolbar: 'Call controls',
@@ -111,7 +119,8 @@ export const en: Translation<typeof ru> = {
     alone: 'You’re the only person in this room',
   },
   session: {
-    removed: 'The call has ended because you no longer have access to this room.',
+    removed:
+      'You were removed from the call: the teacher removed you or your access to the room was closed.',
     replaced: 'You joined this call in another tab or on another device.',
     lost: 'You have been disconnected from the call.',
     failed: 'Could not join the call. Check your internet connection and try again.',

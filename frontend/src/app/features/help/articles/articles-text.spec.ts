@@ -211,6 +211,29 @@ const WORKING_HOURS: Readonly<Record<string, readonly (readonly [string, string,
   ],
 };
 
+/** Moderating a call (stage 408.2): [topic, baseline, now] of the calls article per edition. */
+const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'calls',
+      '- **Выйти из звонка**',
+      '- **Управление участником** — на плитке другого участника откройте меню «⋮». «Выключить' +
+        ' микрофон» отключает ему звук (он сможет включить его снова); «Удалить из звонка»' +
+        ' спросит подтверждение, после чего участник увидит, почему звонок закончился, и сможет' +
+        ' войти снова.\n- **Выйти из звонка**',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'calls',
+      '- **Leave call:**',
+      '- **Moderate:** on another participant’s tile, open the “⋮” menu. “Turn off microphone”' +
+        ' mutes them (they can turn it on again); “Remove from call” asks for confirmation, then' +
+        ' the person sees why the call ended and can rejoin.\n- **Leave call:**',
+    ],
+  ],
+};
+
 const DISK_USAGE_RU = [
   'журнал и настройки без паролей и личных данных.',
   ' В «Ресурсах» видно, сколько занимают база данных, файлы, копии на сервере и восстановления.' +
@@ -300,7 +323,10 @@ describe('help articles after the split into one file per topic', () => {
       expect(first['body']).toContain(checklist[0]);
       expected['first-steps'] = { ...first, body: first['body'].replace(...checklist) };
     }
-    for (const [topic, before, after] of WORKING_HOURS[name] ?? []) {
+    for (const [topic, before, after] of [
+      ...(WORKING_HOURS[name] ?? []),
+      ...(CALL_MODERATION[name] ?? []),
+    ]) {
       const reviewed = original[topic];
       if (isRecord(reviewed) && typeof reviewed['body'] === 'string') {
         expect(reviewed['body']).toContain(before);

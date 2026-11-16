@@ -37,7 +37,7 @@ ADRs: a new one if 409.2 needs a frontend dependency of `meetings` on `boards` (
 - [x] 408.1 **B** *complex* — teacher endpoints in `meetings/web/CallsController` to mute a
   participant's microphone and remove a participant (`CallServer.removeParticipant`, a new
   `mute` via LiveKit `MutePublishedTrack`); only the teacher; tests incl. a student → 403.
-- [ ] 408.2 **F** *simple* — a menu on a participant's tile (`meetings/call/call-tile.ts`):
+- [x] 408.2 **F** *simple* — a menu on a participant's tile (`meetings/call/call-tile.ts`):
   «Выключить микрофон», «Удалить из звонка» with a confirmation; the removed student sees why.
   `m3-expressive` skill; help and wiki in both languages.
 

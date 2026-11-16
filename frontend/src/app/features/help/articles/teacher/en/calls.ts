@@ -23,6 +23,9 @@ off if audio sounds clipped or muffled. Your choices are saved.
 administrator when investigating poor audio.
 - **Minimise:** keep the call in a small movable window while using boards, assignments or other portal pages. On a phone it becomes a bar above the \
 bottom navigation. “Expand” restores the full window.
+- **Moderate:** on another participant’s tile, open the “⋮” menu. “Turn off microphone” mutes them (they can turn it on again); \
+“Remove from call” asks for confirmation, \
+then the person sees why the call ended and can rejoin.
 - **Leave call:** leave using the red button.
 
 ## External meeting links
