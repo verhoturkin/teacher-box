@@ -76,12 +76,37 @@
   &__form {
     display: flex;
     align-items: center;
-    gap: var(--tb-space-2);
+    gap: var(--tb-space-3);
   }
 
+  /* Messenger composer (ours, M3 has no chat input): a filled pill (surface-container-highest, no outline) and a separate round send button */
   &__field {
     flex: 1;
     min-width: 0;
+    box-sizing: border-box;
+    height: 3.5rem;
+    padding: 0 var(--tb-space-6);
+    border: 0;
+    border-radius: var(--tb-shape-full);
+    background: var(--p-md-surface-container-highest);
+    color: var(--p-md-on-surface);
+    caret-color: var(--p-md-primary);
+    font: var(--tb-type-body-l);
+
+    &::placeholder {
+      color: var(--p-md-on-surface-variant);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--p-md-primary);
+      outline-offset: 2px;
+    }
+  }
+
+  &__send.p-button {
+    flex: none;
+    width: 3.5rem;
+    height: 3.5rem;
   }
 
   @media (width < 37.5em) {

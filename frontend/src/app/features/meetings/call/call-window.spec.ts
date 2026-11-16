@@ -105,7 +105,12 @@ describe('CallWindow', () => {
     if (field === null) {
       throw new Error('no field');
     }
+    const button = host.querySelector<HTMLButtonElement>('.tb-call-chat__send button');
+    expect(button?.disabled).toBe(true);
     field.value = 'Привет';
+    field.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(button?.disabled).toBe(false);
     host.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
     await fixture.whenStable();
     expect(send).toHaveBeenCalledWith('Привет');

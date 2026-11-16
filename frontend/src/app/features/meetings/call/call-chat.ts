@@ -9,18 +9,17 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Button } from 'primeng/button';
-import { InputText } from 'primeng/inputtext';
 import { CHAT_LIMIT } from './call-engine';
 import { CallSession } from './call-session';
 import { T } from '../i18n/texts';
 
 /**
  * The chat of the call (409.1): a side sheet of the call window with the messages of this call
- * only, a field and «Отправить». Nothing is stored: the chat ends with the call.
+ * only, a pill field and a round send button. Nothing is stored: the chat ends with the call.
  */
 @Component({
   selector: 'tb-call-chat',
-  imports: [Button, InputText],
+  imports: [Button],
   changeDetection: ChangeDetectionStrategy.OnPush,
   // Global class names, loaded with the call (design-system «Where it lives»)
   encapsulation: ViewEncapsulation.None,
@@ -58,18 +57,20 @@ import { T } from '../i18n/texts';
     <form class="tb-call-chat__form" (submit)="send($event)">
       <input
         #field
-        pInputText
         class="tb-call-chat__field"
         [attr.aria-label]="t.field"
         [placeholder]="t.field"
         [maxLength]="limit"
         autocomplete="off"
+        (input)="draft.set(field.value)"
       />
       <p-button
         type="submit"
         icon="tb-i tb-i-send"
+        class="tb-call-chat__send"
         [rounded]="true"
         [ariaLabel]="t.send"
+        [disabled]="draft().trim() === ''"
         [loading]="sending()"
       />
     </form>
@@ -80,6 +81,7 @@ export class CallChat implements AfterViewInit {
   protected readonly session = inject(CallSession);
   protected readonly limit = CHAT_LIMIT;
   protected readonly sending = signal(false);
+  protected readonly draft = signal('');
   private readonly field = viewChild.required<ElementRef<HTMLInputElement>>('field');
 
   ngAfterViewInit(): void {
@@ -97,6 +99,7 @@ export class CallChat implements AfterViewInit {
     this.sending.set(false);
     if (sent) {
       field.value = '';
+      this.draft.set('');
     }
     field.focus();
   }
