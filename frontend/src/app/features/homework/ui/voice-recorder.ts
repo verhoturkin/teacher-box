@@ -10,15 +10,11 @@ import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
 import { Tooltip } from 'primeng/tooltip';
 import { T } from '../i18n/texts';
+import { VoicePlayer, formatDuration } from './voice-player';
 
-/** The browser records sound: the «Записать голос» chip shows only then. */
+/** The browser records sound: the recorder shows only then. */
 export function canRecord(): boolean {
   return typeof MediaRecorder !== 'undefined' && 'mediaDevices' in navigator;
-}
-
-/** «0:07», «12:40». */
-export function formatDuration(seconds: number): string {
-  return `${String(Math.floor(seconds / 60))}:${String(seconds % 60).padStart(2, '0')}`;
 }
 
 /** Chrome and Firefox record webm, Firefox may give ogg, Safari mp4 (FilePolicy accepts all three). */
@@ -31,21 +27,17 @@ function voiceFile(chunks: Blob[], mimeType: string, name: string): File {
 }
 
 /**
- * A voice answer: `start()` asks for the microphone and records; the bar shows the duration, «Записать заново»
- * drops the take and starts again, «Остановить» puts the record into `files` — it is sent with the answer like a
- * picked file. A denied microphone leaves a hint instead.
+ * A voice answer as one pill: «Записать голос» (tonal) → a red dot, the time and a filled red «stop» → the record
+ * in `tb-voice-player` with «Перезаписать» and «Удалить», so the student listens before sending. The record is
+ * the `file` model; the page sends it with the answer. A denied microphone leaves a hint.
  */
 @Component({
   selector: 'tb-voice-recorder',
-  imports: [Button, Message, Tooltip],
+  imports: [Button, Message, Tooltip, VoicePlayer],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (recording()) {
-      <div class="tb-voice" role="status">
-        <i class="tb-i tb-i-mic tb-voice__dot" aria-hidden="true"></i>
-        <span class="tb-voice__label">{{ t.recording }}</span>
-        <span class="tb-voice__time">{{ duration(seconds()) }}</span>
-        <span class="tb-voice__spacer"></span>
+    @if (file(); as recorded) {
+      <tb-voice-player [source]="recorded" [duration]="seconds()">
         <p-button
           icon="tb-i tb-i-replay"
           [text]="true"
@@ -56,49 +48,84 @@ function voiceFile(chunks: Blob[], mimeType: string, name: string): File {
           (onClick)="redo()"
         />
         <p-button
+          icon="tb-i tb-i-delete"
+          [text]="true"
+          [rounded]="true"
+          severity="danger"
+          [pTooltip]="t.deleteRecording"
+          [ariaLabel]="t.deleteRecording"
+          (onClick)="file.set(null)"
+        />
+      </tb-voice-player>
+    } @else if (recording()) {
+      <div class="tb-voice-pill" role="status">
+        <span class="tb-voice-pill__dot" aria-hidden="true"></span>
+        <span>{{ t.recording }}</span>
+        <span class="tb-voice-pill__time">{{ duration(seconds()) }}</span>
+        <span class="tb-voice-pill__spacer"></span>
+        <p-button
           icon="tb-i tb-i-stop"
           [rounded]="true"
+          severity="danger"
           [pTooltip]="t.stopRecording"
           [ariaLabel]="t.stopRecording"
           (onClick)="stop()"
         />
       </div>
+    } @else {
+      <p-button
+        [label]="t.recordVoice"
+        icon="tb-i tb-i-mic"
+        [rounded]="true"
+        severity="secondary"
+        (onClick)="start()"
+      />
     }
     @if (denied()) {
       <p-message severity="warn" styleClass="tb-form-message">{{ t.micDenied }}</p-message>
     }
   `,
   styles: `
-    .tb-voice {
+    :host {
+      display: block;
+    }
+
+    /* the same pill as tb-voice-player */
+    .tb-voice-pill {
       display: flex;
       align-items: center;
       gap: var(--tb-space-2);
-      margin: var(--tb-space-2) 0;
-      padding: var(--tb-space-1) var(--tb-space-2) var(--tb-space-1) var(--tb-space-4);
+      min-block-size: 3rem;
+      padding: var(--tb-space-1) var(--tb-space-1) var(--tb-space-1) var(--tb-space-4);
       border-radius: var(--tb-shape-full);
       background: var(--p-md-surface-container-high);
+      color: var(--p-md-on-surface);
     }
 
-    .tb-voice__dot {
-      color: var(--p-md-error);
+    .tb-voice-pill__dot {
+      inline-size: 0.625rem;
+      block-size: 0.625rem;
+      border-radius: var(--tb-shape-full);
+      background: var(--p-md-error);
     }
 
-    .tb-voice__time {
+    .tb-voice-pill__time {
       font-variant-numeric: tabular-nums;
+      color: var(--p-md-on-surface-variant);
     }
 
-    .tb-voice__spacer {
+    .tb-voice-pill__spacer {
       flex: 1;
     }
   `,
 })
 export class VoiceRecorder {
   protected readonly t = T.ui;
-  readonly files = model<File[]>([]);
+  readonly file = model<File | null>(null);
   readonly recording = signal(false);
   protected readonly seconds = signal(0);
   protected readonly denied = signal(false);
-  /** The take on air; `keep` is read when its recorder stops, after a «Записать заново» has started the next one. */
+  /** The take on air; `keep` is read when its recorder stops. */
   private take: { recorder: MediaRecorder; keep: boolean } | null = null;
   private timer: ReturnType<typeof setInterval> | undefined;
 
@@ -130,8 +157,7 @@ export class VoiceRecorder {
         track.stop();
       });
       if (take.keep && chunks.length > 0) {
-        const file = voiceFile(chunks, take.recorder.mimeType, this.t.voiceName);
-        this.files.update((files) => [...files, file]);
+        this.file.set(voiceFile(chunks, take.recorder.mimeType, this.t.voiceName));
       }
     };
     this.take = take;
@@ -149,7 +175,7 @@ export class VoiceRecorder {
   }
 
   protected async redo(): Promise<void> {
-    this.finish(false);
+    this.file.set(null);
     await this.start();
   }
 

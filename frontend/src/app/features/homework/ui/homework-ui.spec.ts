@@ -62,7 +62,7 @@ describe('AttachmentList', () => {
     expect(downloaded.map((file) => file.id)).toEqual(['f-1']);
   });
 
-  it('plays a sound file under its name when a loader is given', async () => {
+  it('shows a sound file as a voice pill, without its name, when a loader is given', async () => {
     TestBed.configureTestingModule({ imports: [AttachmentList], providers: [providePrimeNG()] });
     const fixture = TestBed.createComponent(AttachmentList);
     const voice = attachment({
@@ -73,7 +73,9 @@ describe('AttachmentList', () => {
     fixture.componentRef.setInput('attachments', [attachment(), voice]);
     await fixture.whenStable();
     const host = hostElement(fixture);
-    expect(host.querySelector('[aria-label="Прослушать голос 09-30.webm"]')).toBeNull();
+    expect(readableText(host)).toContain('голос 09-30.webm');
+    expect(host.querySelector('.tb-i-mic')).not.toBeNull();
+    expect(host.querySelector('tb-voice-player')).toBeNull();
 
     const loaded: string[] = [];
     fixture.componentRef.setInput('audio', (id: string) => {
@@ -81,14 +83,13 @@ describe('AttachmentList', () => {
       return of(new Blob(['sound'], { type: 'audio/webm' }));
     });
     await fixture.whenStable();
-    expect(host.querySelector('[aria-label="Прослушать условие.pdf"]')).toBeNull();
-    expect(host.querySelector('.tb-i-mic')).not.toBeNull();
-    buttonByText(host, 'Прослушать голос 09-30.webm').click();
-    await fixture.whenStable();
 
     expect(loaded).toEqual(['f-2']);
+    expect(host.querySelectorAll('tb-voice-player')).toHaveLength(1);
     expect(host.querySelector('audio')?.getAttribute('src')).toMatch(/^blob:/);
-    expect(host.querySelector('[aria-label="Прослушать голос 09-30.webm"]')).toBeNull();
+    expect(host.querySelector('audio')?.controls).toBe(false);
+    expect(readableText(host)).not.toContain('голос 09-30.webm');
+    expect(readableText(host)).toContain('условие.pdf');
     fixture.destroy();
   });
 

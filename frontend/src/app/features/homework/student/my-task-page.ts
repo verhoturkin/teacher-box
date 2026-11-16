@@ -247,7 +247,9 @@ import { QuizSection } from './quiz-section';
                 [list]="false"
                 [capture]="true"
               />
-              <tb-voice-recorder #voice [(files)]="files" />
+              @if (canRecord) {
+                <tb-voice-recorder class="tb-task__voice" [(file)]="voice" />
+              }
               @if (error(); as message) {
                 <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
               }
@@ -258,11 +260,6 @@ import { QuizSection } from './quiz-section';
                 <tb-assist-chip icon="attach_file" (click)="filePicker.choose()">
                   {{ t.file }}
                 </tb-assist-chip>
-                @if (canRecord) {
-                  <tb-assist-chip icon="mic" [disabled]="voice.recording()" (click)="voice.start()">
-                    {{ t.voice }}
-                  </tb-assist-chip>
-                }
                 <span class="tb-task__spacer"></span>
                 <p-button
                   [label]="task.status === 'RETURNED' ? t.submitAgain : t.submit"
@@ -586,6 +583,8 @@ export class MyTaskPage {
     validators: [Validators.maxLength(20_000)],
   });
   readonly files = signal<File[]>([]);
+  /** The voice record, listened to before sending; it goes with the files. */
+  readonly voice = signal<File | null>(null);
   private readonly quiz = viewChild(QuizSection);
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -638,7 +637,9 @@ export class MyTaskPage {
     if (quiz?.started()) {
       await quiz.flush();
     }
-    if (text === '' && this.files().length === 0 && !quiz?.started()) {
+    const voice = this.voice();
+    const files = voice ? [...this.files(), voice] : this.files();
+    if (text === '' && files.length === 0 && !quiz?.started()) {
       this.error.set(T.myTask.empty);
       return;
     }
@@ -647,7 +648,7 @@ export class MyTaskPage {
     }
     this.pending.set(true);
     this.error.set(null);
-    this.api.submit(this.taskId(), text === '' ? null : text, this.files()).subscribe({
+    this.api.submit(this.taskId(), text === '' ? null : text, files).subscribe({
       next: (task) => {
         this.pending.set(false);
         this.task.set(task);
@@ -656,6 +657,7 @@ export class MyTaskPage {
         this.text.setValue('');
         this.prefilled.set(false);
         this.files.set([]);
+        this.voice.set(null);
         this.quiz()?.reload();
         this.changed.emit(task);
         this.snackbar.success(T.myTask.sent);

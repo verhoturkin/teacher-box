@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, signal, viewChild } from '@angular/
 import { TestBed } from '@angular/core/testing';
 import { providePrimeNG } from 'primeng/config';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
-import { canRecord, formatDuration, VoiceRecorder } from './voice-recorder';
+import { canRecord, VoiceRecorder } from './voice-recorder';
 
 class FakeRecorder {
   static readonly all: FakeRecorder[] = [];
@@ -30,10 +30,10 @@ class FakeRecorder {
   selector: 'tb-recorder-host',
   imports: [VoiceRecorder],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<tb-voice-recorder [(files)]="files" />`,
+  template: `<tb-voice-recorder [(file)]="file" />`,
 })
 class RecorderHost {
-  readonly files = signal<File[]>([]);
+  readonly file = signal<File | null>(null);
   readonly recorder = viewChild.required(VoiceRecorder);
 }
 
@@ -68,77 +68,85 @@ describe('VoiceRecorder', () => {
     return fixture;
   }
 
+  async function click(fixture: Awaited<ReturnType<typeof setUp>>, label: string): Promise<void> {
+    buttonByText(hostElement(fixture), label).click();
+    // getUserMedia resolves on the next microtasks
+    await new Promise((resolve) => setTimeout(resolve));
+    await fixture.whenStable();
+  }
+
   it('knows whether the browser records', () => {
     expect(canRecord()).toBe(true);
     vi.stubGlobal('MediaRecorder', undefined);
     expect(canRecord()).toBe(false);
   });
 
-  it('formats the duration', () => {
-    expect(formatDuration(7)).toBe('0:07');
-    expect(formatDuration(760)).toBe('12:40');
-  });
-
-  it('records, shows the duration and puts the record into the files on stop', async () => {
+  it('records, shows the time and gives the record to listen to before sending', async () => {
     const fixture = await setUp();
     const host = hostElement(fixture);
-    await fixture.componentInstance.recorder().start();
-    await fixture.whenStable();
+    await click(fixture, 'Записать голос');
 
     expect(readableText(host)).toContain('Идёт запись 0:00');
-    buttonByText(host, 'Остановить запись').click();
-    await fixture.whenStable();
+    await click(fixture, 'Остановить запись');
 
-    const [file] = fixture.componentInstance.files();
+    const file = fixture.componentInstance.file();
     expect(file?.name).toMatch(/^голос \d\d-\d\d\.webm$/);
     expect(file?.type).toBe('audio/webm');
     expect(stopped).toEqual(['track']);
     expect(host.querySelector('[role="status"]')).toBeNull();
+    expect(host.querySelector('tb-voice-player')).not.toBeNull();
+    expect(host.querySelector('[aria-label="Слушать"]')).not.toBeNull();
+    expect(readableText(host)).not.toContain('голос');
   });
 
-  it('drops the take and starts again on redo; a second start while recording is ignored', async () => {
+  it('re-records and deletes the record', async () => {
+    const fixture = await setUp();
+    await click(fixture, 'Записать голос');
+    await click(fixture, 'Остановить запись');
+
+    await click(fixture, 'Перезаписать');
+    expect(fixture.componentInstance.file()).toBeNull();
+    expect(FakeRecorder.all).toHaveLength(2);
+    expect(fixture.componentInstance.recorder().recording()).toBe(true);
+    await click(fixture, 'Остановить запись');
+
+    await click(fixture, 'Удалить');
+    expect(fixture.componentInstance.file()).toBeNull();
+    expect(buttonByText(hostElement(fixture), 'Записать голос')).toBeTruthy();
+  });
+
+  it('ignores a second start and drops the take when it goes away', async () => {
     const fixture = await setUp();
     const recorder = fixture.componentInstance.recorder();
     await recorder.start();
     await recorder.start();
-    await fixture.whenStable();
     expect(FakeRecorder.all).toHaveLength(1);
 
-    buttonByText(hostElement(fixture), 'Записать заново').click();
-    await fixture.whenStable();
-    expect(FakeRecorder.all).toHaveLength(2);
-    expect(fixture.componentInstance.files()).toEqual([]);
-    expect(recorder.recording()).toBe(true);
-
     fixture.destroy();
-    expect(FakeRecorder.all[1]?.state).toBe('inactive');
-    expect(fixture.componentInstance.files()).toEqual([]);
+    expect(FakeRecorder.all[0]?.state).toBe('inactive');
+    expect(fixture.componentInstance.file()).toBeNull();
   });
 
   it('names a Safari record m4a and a Firefox one ogg', async () => {
     const fixture = await setUp();
-    const recorder = fixture.componentInstance.recorder();
-    for (const mimeType of ['audio/mp4', 'audio/ogg;codecs=opus']) {
-      await recorder.start();
+    const names: string[] = [];
+    for (const mimeType of ['audio/mp4', 'audio/ogg;codecs=opus', '']) {
+      await click(fixture, fixture.componentInstance.file() ? 'Перезаписать' : 'Записать голос');
       const take = FakeRecorder.all.at(-1);
       if (take) {
         take.mimeType = mimeType;
       }
-      await fixture.whenStable();
-      buttonByText(hostElement(fixture), 'Остановить запись').click();
+      await click(fixture, 'Остановить запись');
+      names.push(fixture.componentInstance.file()?.name.split('.')[1] ?? '');
     }
 
-    expect(fixture.componentInstance.files().map((file) => file.name.split('.')[1])).toEqual([
-      'm4a',
-      'ogg',
-    ]);
+    expect(names).toEqual(['m4a', 'ogg', 'webm']);
   });
 
   it('shows a hint when the microphone is denied', async () => {
     getUserMedia = () => Promise.reject(new DOMException('denied', 'NotAllowedError'));
     const fixture = await setUp();
-    await fixture.componentInstance.recorder().start();
-    await fixture.whenStable();
+    await click(fixture, 'Записать голос');
 
     expect(readableText(hostElement(fixture))).toContain('Нет доступа к микрофону');
     expect(FakeRecorder.all).toHaveLength(0);
