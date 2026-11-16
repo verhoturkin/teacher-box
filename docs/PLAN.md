@@ -25,12 +25,14 @@ don't read them unless the task needs history.
 
 ## v0.53.0
 
-Goals: the portal moves the way M3 transition patterns say. Fades are clean (out, then in),
-common transitions don't bounce, the tab indicator slides, a docked pane makes room for itself,
-list rows come and go with motion, loading keeps the layout stable. Decided on 2026-11-16:
-top-level destinations on a phone stay fade through (M3: no lateral motion between them); the
-slide is for going deeper (list → detail). Decided on 2026-11-16 too: transitions run on M3's
-legacy easing and duration (standard set), not on springs, as the M3 transitions pages say; top
+Goals: the portal moves the way M3 transition patterns say. Fades are clean (out, then in), common
+transitions don't bounce, the tab indicator slides, a docked pane makes room for itself, list rows
+come and go with motion, loading keeps the layout stable, and the portal answers quickly again (419:
+measured on 2026-11-16, schedule endpoints take 120–210 ms against 5–6 ms elsewhere, the time spent
+in H2 failing column lookups since the 2026-11-11 «records mapped by class» refactors). Decided on
+2026-11-16: top-level destinations on a phone stay fade through (M3: no lateral motion between
+them); the slide is for going deeper (list → detail). Decided on 2026-11-16 too: transitions run on
+M3's legacy easing and duration (standard set), not on springs, as the M3 transitions pages say; top
 level is fades only, without the 0.92 scale.
 
 ADRs: new ADR-0066 — transition choreography per M3 transition patterns (412.1): M3 easing
@@ -111,10 +113,10 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
 - [x] 416.2 **F** *complex* — the global search opens with a container transform (M3 transition
   patterns, the search video `GM3-Transitions-TransitionPatterns-3-4`,
   https://firebasestorage.googleapis.com/v0/b/design-spec/o/projects%2Fgoogle-material-3%2Fimages%2Flyfrdrxa-GM3-Transitions-TransitionPatterns-3-4-v01.mp4?alt=media):
-  the docked search bar's pill grows down and a little to the sides into the search view under it, its corners go from
-  full to the view's corner, the field row stays in place, the results fade in once it has
-  opened; closing runs the same way back. The full-screen view on compact grows from the search
-  icon of the top app bar. `core/search/global-search-view.ts` (no motion today); a spatial
+  the docked search bar's pill grows down and a little to the sides into the search view under it,
+  its corners go from full to the view's corner, the field row stays in place, the results fade in
+  once it has opened; closing runs the same way back. The full-screen view on compact grows from the
+  search icon of the top app bar. `core/search/global-search-view.ts` (no motion today); a spatial
   spring for the container, effects for the content; a fade alone under reduced motion. ADR-0066
   (container transform), design-system «Motion».
 - [x] 416.3 **F** *complex* — dialogs match the video `GM3-Transitions-TransitionPatterns-7-1`
@@ -131,6 +133,27 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
   list sections: the shape of the rows while they load, a pulse from top left to bottom right,
   the content fades in over it; the loading indicator stays for the rest. Static under reduced
   motion. Gallery sample, design-system.
+
+### 419. Responsiveness
+
+- [ ] 419.1 **B** *simple* — rows mapped without failing lookups: `JdbcClient.query(Row.class)`
+  (Spring `SimplePropertyRowMapper`) asks H2 for `startsAt` before `starts_at`, and H2 throws and
+  logs every miss. Replace the ~55 calls in 20 repositories (most in
+  `schedule/persistence/LessonRepository`) with `DataClassRowMapper`; add `TRACE_LEVEL_FILE=0` to
+  the datasource URL (`application.yaml`); an ArchUnit or grep test forbids `query(<Record>.class)`.
+  Check: `/api/teacher/schedule/unmarked` and `/lessons` answer in ~10 ms.
+- [ ] 419.2 **F** *simple* — the student list appears whole: `students-page.ts` shows the rows on
+  `/students`, then balances, messengers and the nearest lesson fill in (`forkJoin` at line ~594).
+  Keep the skeleton until the extras come or ~300 ms pass, whichever is first.
+- [ ] 419.3 **F** *simple* — the dashboard (`/teacher`) requests the second wave (`unmarked`,
+  `boards`, `requests`, `review-queue`) only after `schedule/summary`; start them together.
+- [ ] 419.4 **B** *simple* — less work in `schedule/application/ScheduleQueries`: `views()` reads
+  the repeat rule per lesson (`series.findById`) — read them in one query; `summary()` loads every
+  unmarked lesson to count it — a count query; an index on `schedule.lessons (status, ends_at)`
+  (new migration).
+- [ ] 419.5 **F** *complex* — the schedule page renders in one 180 ms task, which holds the page
+  transition frozen (`updateCallbackDone` 158 ms): profile the production build after 419.1 and
+  split or defer the heavy part of the week view.
 
 ### 418. Release 0.53.0
 
