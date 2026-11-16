@@ -69,7 +69,10 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
   growing its width from 0, so the page beside it narrows smoothly, and closes by shrinking
   (`animate.leave`, missing today) — `core/notifications/notifications-sheet.ts`. The same for a
   `tb-pane` that appears or leaves beside others (`shared/ui/panes.ts`): the neighbours resize
-  instead of jumping. Width on default spatial, content opacity on effects.
+  instead of jumping. Width on default spatial, content opacity on effects. Match the video
+  `GM3-Transitions-TransitionPatterns-7-5`
+  (https://firebasestorage.googleapis.com/v0/b/design-spec/o/projects%2Fgoogle-material-3%2Fimages%2Flygxnh2p-GM3-Transitions-TransitionPatterns-7-5-v01.mp4?alt=media);
+  view it frame by frame (built-in browser, the `<video>` drawn into a canvas contact sheet).
 - [ ] 414.2 **F** *simple* — expanding and collapsing the rail (`core/layout/rail-state.ts`,
   `side-nav.scss`): check in the browser; if the width and labels jump, animate the width on
   default spatial and the labels on effects.
