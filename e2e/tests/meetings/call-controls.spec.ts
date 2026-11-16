@@ -2,7 +2,7 @@ import { startSession, bearer } from '../support/session';
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 
 /**
- * Version 0.8.1: call fixes — the own camera floats in a corner and moves, no tooltips on call buttons,
+ * Version 0.8.1 (chat added in 0.52.0): call fixes — the own camera floats in a corner and moves, no tooltips on call buttons,
  * the settings menu opens above the call window with sound processing and «Сведения о связи». Runs on the
  * split variant only (ADR-0031): the signalling goes through the nginx of the frontend.
  */
@@ -93,6 +93,14 @@ test('the call window: movable own camera, settings menu and details', async ({ 
   await expect(details).toContainText('LiveKit');
   await details.getByRole('button', { name: 'Закрыть' }).last().click();
   await expect(details).toBeHidden();
+
+  // 0.52.0: the chat of the call goes over the data channel and shows to the other side
+  await window.getByRole('button', { name: /^Чат/ }).click();
+  await teacher.getByRole('textbox', { name: 'Сообщение' }).fill('Привет из чата');
+  await teacher.getByRole('button', { name: 'Отправить' }).click();
+  await expect(teacher.getByRole('log')).toContainText('Привет из чата');
+  await student.getByRole('button', { name: /^Чат/ }).click();
+  await expect(student.getByRole('log')).toContainText('Привет из чата');
 
   await student.getByRole('button', { name: 'Выйти из звонка' }).click();
   await teacher.getByRole('button', { name: 'Выйти из звонка' }).click();

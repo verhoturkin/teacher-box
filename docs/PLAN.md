@@ -23,44 +23,6 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
-## v0.52.0
-
-Goals: the teacher runs the call. Mute or remove a participant, chat inside the call, open the
-student's board from the call, and keep the call in a Picture-in-Picture window over other tabs.
-Call history, «ученик ждёт» and recording stay in
-[`roadmap/09`](roadmap/09-calls-waiting-recording.md).
-
-ADRs: none needed — 409.2 opens the board through a route.
-
-### 408. Moderation
-
-- [x] 408.1 **B** *complex* — teacher endpoints in `meetings/web/CallsController` to mute a
-  participant's microphone and remove a participant (`CallServer.removeParticipant`, a new
-  `mute` via LiveKit `MutePublishedTrack`); only the teacher; tests incl. a student → 403.
-- [x] 408.2 **F** *simple* — a menu on a participant's tile (`meetings/call/call-tile.ts`):
-  «Выключить микрофон», «Удалить из звонка» with a confirmation; the removed student sees why.
-  `m3-expressive` skill; help and wiki in both languages.
-
-### 409. Chat and board in the call
-
-- [x] 409.1 **F** *complex* — chat in the call over the LiveKit data channel
-  (`meetings/call/livekit-engine.ts`, `call-engine.ts`, a panel in `call-window.ts`): text
-  messages, unread badge on the button, not stored after the call. `m3-expressive` skill; help and
-  wiki.
-- [x] 409.2 **F** *simple* — «Доска ученика» in the call controls (`call-controls.ts`) opens the
-  student's board in a new tab or beside the call, through a route, not an import of `boards`
-  code. Help and wiki.
-
-### 410. Document Picture-in-Picture
-
-- [x] 410.1 **F** *complex* — `documentPictureInPicture` (Chromium only, feature-detected): the call
-  moves to a floating window with the tiles and the main controls; back to the tab on close;
-  the button is hidden where the API is missing. `m3-expressive` skill; help and wiki.
-
-### 411. Release 0.52.0
-
-- [ ] 411.1 *simple* — skill `release`.
-
 ## Backlog
 
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,
