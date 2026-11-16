@@ -77,12 +77,13 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
 - [ ] 414.3 **F** *complex* — list-detail in one pane (Settings:
   `features/settings/settings-page.ts`, one route for `/teacher/settings` and
   `/teacher/settings/:category` in `settings.routes.ts`): the first choice of a section moves
-  differently from the next ones, and its motion takes the list of sections with it. Likely cause: `pageMotion` (`core/routing/page-transitions.ts`, 412.3)
-  reads 2 → 3 segments as forward and slides the whole content, 3 → 3 gives no motion. Fix: with
-  the list on screen (not compact) the list stands still and only the detail column changes, with
-  the same motion every time (M3: the detail of a list-detail layout, not a page); on compact the
-  list ↔ detail forward/back of 412.3 stays. Check the other list-detail pages (students, groups,
-  schedule side pane) for the same split. Browser check of the first and a later choice.
+  differently from the next ones, and its motion takes the list of sections with it. Likely cause:
+  `pageMotion` (`core/routing/page-transitions.ts`, 412.3) reads 2 → 3 segments as forward and
+  slides the whole content, 3 → 3 gives no motion. Fix: with the list on screen (not compact) the
+  list stands still and only the detail column changes, with the same motion every time (M3: the
+  detail of a list-detail layout, not a page); on compact the list ↔ detail forward/back of 412.3
+  stays. Check the other list-detail pages (students, groups, schedule side pane) for the same
+  split. Browser check of the first and a later choice.
 
 ### 415. List rows
 
