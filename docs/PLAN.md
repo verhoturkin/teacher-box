@@ -144,7 +144,7 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
   repositories use `shared.persistence.RecordRowMapper` (columns matched to components once by
   name, then read by index, no failed lookups; a component without a column fails fast), and
   `RowMapperTests` forbids `query(<Record>.class)`.
-- [ ] 419.2 **F** *simple* — the student list appears whole: `students-page.ts` shows the rows on
+- [x] 419.2 **F** *simple* — the student list appears whole: `students-page.ts` shows the rows on
   `/students`, then balances, messengers and the nearest lesson fill in (`forkJoin` at line ~594).
   Keep the skeleton until the extras come or ~300 ms pass, whichever is first.
 - [ ] 419.3 **F** *simple* — the dashboard (`/teacher`) requests the second wave (`unmarked`,

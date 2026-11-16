@@ -161,6 +161,10 @@ describe('app routes', { timeout: 20_000 }, () => {
     for (const request of lists) {
       request.flush([]);
     }
+    // the list waits for the balances, messengers and lessons (419.2)
+    backend.expectOne('/api/teacher/billing/overview').flush({ currency: 'RUB', students: [] });
+    backend.expectOne('/api/teacher/notifications/students').flush([]);
+    backend.expectOne((request) => request.url === '/api/teacher/schedule/lessons').flush([]);
     await harness.fixture.whenStable();
 
     expect(title()).toBe('Ученики — Teacher Box');
