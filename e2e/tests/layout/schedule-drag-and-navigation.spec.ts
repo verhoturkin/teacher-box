@@ -106,9 +106,9 @@ test('a dragged lesson waits for «Перенести» on its card', async ({ p
 });
 
 test('the top bar keeps its tone when the page scrolls', async ({ page }) => {
-  // 0.51.0: the calendar shows only the working hours and may fit a tall window — keep it short
-  await page.setViewportSize({ width: 1280, height: 480 });
   await signIn(page);
+  // 0.51.0: the calendar shows only the working hours and nearly fits 900 px — keep the window short
+  await page.setViewportSize({ width: 1280, height: 480 });
   await page.goto('/teacher/schedule');
   const header = page.locator('.tb-shell__header');
   const tone = () => header.evaluate((element) => getComputedStyle(element).backgroundColor);
