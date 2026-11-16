@@ -46,15 +46,16 @@ describe('RequestAnswerDialog', () => {
     await fixture.whenStable();
   }
 
-  it('approves a move for a free time chip', async () => {
+  it('approves a move for a free window', async () => {
     await open(changeRequest());
+    backend.expectOne('/api/teacher/schedule/lessons/l-1').flush(scheduledLesson());
     const free = new Date(2026, 9, 5, 12, 30);
     backend
       .expectOne((r) => r.url === '/api/teacher/schedule/free-times')
       .flush([free.toISOString()]);
     await fixture.whenStable();
 
-    buttonByText(document.body, '12:30').click();
+    buttonByText(document.body, '12:30–13:30').click();
     buttonByText(document.body, 'Согласовать').click();
 
     const call = backend.expectOne('/api/teacher/schedule/requests/r-1/approve');

@@ -136,19 +136,19 @@ const VOICE: Readonly<Record<string, readonly [string, string]>> = {
 const FREE_TIMES: Record<string, readonly [string, string]> = {
   'teacher.ru': [
     '(или укажите своё). Если',
-    '(или выберите своё: свободное время дня предложено кнопками, можно ввести любое). Если',
+    '(или выберите своё: свободные окна дня вроде «9:00–11:30» подставляют начало, можно ввести любое; занятое время подсветится подсказкой). Если',
   ],
   'teacher.en': [
     'approve the suggested time or enter another. The portal',
-    'approve the suggested time or pick another: the free times of the day are offered as buttons, or enter any time yourself. The portal',
+    'approve the suggested time or pick another: the free windows of the day such as “9:00–11:30” fill in the start, or type any time yourself; a hint warns if it is taken. The portal',
   ],
   'student.ru': [
     'Выберите свободное время: попросить',
-    'Под полем даты портал показывает свободное время выбранного дня кнопками: нажмите одну или введите любое другое время. Попросить',
+    'Под полем даты портал показывает свободные окна выбранного дня вроде «9:00–11:30»: нажмите на окно, чтобы подставить его начало, или введите любое время. Если время занято, под полем появится подсказка. Попросить',
   ],
   'student.en': [
     'Choose a free time; the portal',
-    'Below the date field the portal offers the free times of the chosen day as buttons: tap one, or enter any other time yourself. The portal',
+    'Below the date field the portal offers the free windows of the chosen day such as “9:00–11:30”: tap one to fill in its start, or type any time yourself. If the time is taken, a hint says so. The portal',
   ],
 };
 

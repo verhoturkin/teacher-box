@@ -134,6 +134,8 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
               <tb-free-times
                 [lessonId]="moving.id"
                 [date]="startDay() ?? movingStart(moving)"
+                [minutes]="moving.durationMinutes"
+                [selected]="startDay()"
                 [asTeacher]="true"
                 (picked)="pickStart($event)"
               />

@@ -71,7 +71,12 @@ import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
                 appendTo="body"
                 [fluid]="true"
               />
-              <tb-free-times [lessonId]="lesson.id" [date]="day()" (picked)="choose($event)" />
+              <tb-free-times
+                [lessonId]="lesson.id"
+                [date]="day()"
+                [minutes]="lesson.durationMinutes"
+                (picked)="choose($event)"
+              />
             </div>
             @if (busyAt()) {
               <p-message severity="warn" styleClass="tb-form-message">{{ t.busy }}</p-message>

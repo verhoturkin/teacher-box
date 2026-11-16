@@ -52,8 +52,10 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
   than the late cancellation window (lesson rules, 24 h by default) is marked late — the teacher
   decides if it counts as missed.
 - **Free times:** the move dialogs (student's request, teacher's answer, teacher's edit of a lesson) show
-  the free starts of the chosen day as chips (`tb-free-times`, `GET /api/me|teacher/schedule/free-times`);
-  the date picker stays for any other time.
+  the free windows of the chosen day, e.g. «9:00–11:30» (`tb-free-times`: consecutive starts of
+  `GET /api/me|teacher/schedule/free-times` collapsed, the end = last start + lesson length); a
+  window fills in its start, the date picker stays the main control, and a teacher's typed time that
+  fits no window gets the hint «Это время занято».
   In a group lesson an early «Не приду» is accepted at once (excused); a move moves it for everyone. A teacher
   edit of a lesson with an open request makes it `OUTDATED`.
 - **Availability:** the student sees the teacher's busy time without names (lessons, Google busy, off-time)

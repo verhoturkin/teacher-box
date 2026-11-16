@@ -88,7 +88,8 @@ export const ru = {
     cancel: 'Отменить',
   },
   freeTimes: {
-    label: 'Свободное время',
+    label: 'Свободно',
+    taken: 'Это время занято',
   },
   changeRequest: {
     lesson: (time: string) => `Занятие: ${time}`,

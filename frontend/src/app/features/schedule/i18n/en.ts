@@ -91,7 +91,8 @@ export const en: Translation<typeof ru> = {
     cancel: 'Cancel',
   },
   freeTimes: {
-    label: 'Free times',
+    label: 'Free',
+    taken: 'This time is taken',
   },
   changeRequest: {
     lesson: (time: string) => `Lesson: ${time}`,

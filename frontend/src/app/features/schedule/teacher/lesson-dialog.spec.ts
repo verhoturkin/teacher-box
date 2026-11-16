@@ -256,7 +256,7 @@ describe('LessonDialog', () => {
     expect(dialog.form.controls.topic.value).toBe('');
   });
 
-  it('moves a planned lesson to a free time chip', async () => {
+  it('moves a planned lesson to a free window', async () => {
     const lesson = scheduledLesson();
     const dialog = await open(lesson);
     const free = new Date(2026, 9, 5, 12, 30);
@@ -265,7 +265,7 @@ describe('LessonDialog', () => {
       .flush([free.toISOString()]);
     await fixture.whenStable();
 
-    buttonByText(document.body, '12:30').click();
+    buttonByText(document.body, '12:30–13:30').click();
     dialog.save();
 
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/lessons/l-1' });

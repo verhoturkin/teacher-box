@@ -73,7 +73,8 @@ occurrences are preserved. Deleted occurrences are not generated again.
 Students can request a reschedule or cancellation in the portal or bot. Requests appear in “Student requests” and arrive as notifications with \
 “Approve” and “Decline” buttons. In the portal, open a request to respond.
 
-- **Reschedule:** approve the suggested time or pick another: the free times of the day are offered as buttons, or enter any time yourself. The portal warns about lessons, time off or \
+- **Reschedule:** approve the suggested time or pick another: the free windows of the day such as “9:00–11:30” fill in the start, or type any time yourself; a hint warns if it is \
+taken. The portal warns about lessons, time off or \
 Google Calendar events at that time; you \
 can choose to proceed.
 - **Late cancellation:** decide whether to mark the lesson as missed and charge for it.

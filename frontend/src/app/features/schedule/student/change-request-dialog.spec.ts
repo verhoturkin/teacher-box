@@ -43,7 +43,7 @@ describe('ChangeRequestDialog', () => {
     backend.expectOne((r) => r.url === '/api/me/schedule/free-times').flush([free.toISOString()]);
     await fixture.whenStable();
 
-    buttonByText(document.body, '12:30').click();
+    buttonByText(document.body, '12:30–13:30').click();
 
     expect(fixture.componentInstance.proposed()).toEqual(free);
     backend.expectOne((r) => r.url === '/api/me/schedule/busy').flush([]);

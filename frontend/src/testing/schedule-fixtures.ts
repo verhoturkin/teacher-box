@@ -163,12 +163,19 @@ export function myScheduleSummary(overrides: Partial<MyScheduleSummary> = {}): M
   return { next: null, weekLessons: 0, pendingRequests: 0, ...overrides };
 }
 
-/** A dialog with a move asks for the free times of a day; the tests that do not care answer none. */
+/**
+ * A dialog with a move asks for the free times of a day (and the teacher's one for the lesson's
+ * length); the tests that do not care answer none.
+ */
 export function dropFreeTimes(backend: HttpTestingController): void {
   backend
-    .match((request) => request.url.endsWith('/schedule/free-times'))
+    .match(
+      (request) =>
+        request.url.endsWith('/schedule/free-times') ||
+        (request.method === 'GET' && /\/teacher\/schedule\/lessons\/[^/]+$/.test(request.url)),
+    )
     .filter((r) => !r.cancelled)
     .forEach((r) => {
-      r.flush([]);
+      r.flush(r.request.url.endsWith('/free-times') ? [] : scheduledLesson());
     });
 }

@@ -95,6 +95,8 @@ import { TbDialog } from '@shared/ui/dialog/dialog';
               <tb-free-times
                 [lessonId]="request.lessonId"
                 [date]="startsAt() ?? start0()"
+                [minutes]="minutes()"
+                [selected]="startsAt()"
                 [asTeacher]="true"
                 (picked)="startsAt.set($event)"
               />
@@ -150,6 +152,8 @@ export class RequestAnswerDialog {
   protected readonly startsAt = signal<Date | null>(null);
   /** The day the free times are shown for when no time is chosen: the lesson's own. */
   protected readonly start0 = computed(() => new Date(this.request()?.lessonStartsAt ?? 0));
+  /** The lesson's length, for the ends of the free windows. */
+  protected readonly minutes = signal<number | null>(null);
   protected readonly charge = signal(false);
   protected readonly answer = signal('');
   protected readonly error = signal<string | null>(null);
@@ -164,6 +168,12 @@ export class RequestAnswerDialog {
         this.charge.set(request.late);
         this.answer.set('');
         this.choice.set('APPROVE');
+        this.minutes.set(null);
+        this.api.lesson(request.lessonId).subscribe({
+          next: (lesson) => {
+            this.minutes.set(lesson.durationMinutes);
+          },
+        });
         this.error.set(null);
       }
     });
