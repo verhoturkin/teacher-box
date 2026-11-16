@@ -81,7 +81,7 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
   `animate.enter` / `animate.leave`): a leaving row fades out on fast effects and then closes its
   height on the standard fast spring; a new row opens its height and fades in. Gallery sample,
   design-system «Motion».
-- [ ] 415.2 **F** *simple* — apply 415.1 where rows are removed or added: notifications
+- [x] 415.2 **F** *simple* — apply 415.1 where rows are removed or added: notifications
   (`features/notifications/inbox/notification-list.ts`), then the other lists that delete,
   archive or filter rows (homework, materials, students, payments, lessons). Rows changed by a
   filter or a route parameter on wide screens enter the same way.

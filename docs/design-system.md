@@ -115,7 +115,9 @@ elevation with their values; springs —
     in on default effects; a leaving row fades out on fast effects and, from halfway through the
     fade (70 ms), closes its height, so the rows under it close up. The height is measured into
     `--tb-motion-height` (`height: auto` does not animate). The rows of a list's first render
-    stand still; the 2 px gap of `.tb-list` goes with the row.
+    stand still, and so does a list whose rows are all replaced in one update (another student
+    in the same card): with no row staying and more than one changing, the rows swap at once.
+    The 2 px gap of `.tb-list` goes with the row.
   - The navigation rail (**M3**: the expanded rail is the «default spatial» example)
     springs its width between 96 and 280 px on default spatial when the page collapses it or the
     window crosses 1600 px; the page and the top strip beside it follow, and the labels fade in on

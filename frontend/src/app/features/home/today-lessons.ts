@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import { Card } from 'primeng/card';
 import { locale } from '@core/i18n/language';
 import { STATUS_LABELS, lessonWith } from '@features/schedule/parts';
@@ -11,13 +12,17 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
 /** Spec §6: «Занятия сегодня» under the hero — time, avatar, name, topic, status; the next one is selected. */
 @Component({
   selector: 'tb-today-lessons',
-  imports: [Card, Avatar],
+  imports: [ListRow, Card, Avatar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="t.title">
       <ul class="tb-list">
         @for (lesson of lessons(); track lesson.id) {
-          <li class="tb-today-lesson" [class.tb-today-lesson--next]="lesson.id === nextId()">
+          <li
+            tbListRow
+            class="tb-today-lesson"
+            [class.tb-today-lesson--next]="lesson.id === nextId()"
+          >
             <time class="tb-today-lesson__time" [attr.datetime]="lesson.startsAt">{{
               time(lesson)
             }}</time>

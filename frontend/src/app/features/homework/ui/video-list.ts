@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import { Button } from 'primeng/button';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
 import { Video } from '../data-access/homework.models';
@@ -17,13 +18,13 @@ export function videoName(video: { readonly title: string | null }, index: numbe
  */
 @Component({
   selector: 'tb-video-list',
-  imports: [Button, ButtonAttributes, VideoPlayer],
+  imports: [ListRow, Button, ButtonAttributes, VideoPlayer],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (videos().length > 0) {
       <ul class="tb-video-list" [attr.aria-label]="t.list">
         @for (video of videos(); track $index) {
-          <li class="tb-video-list__item">
+          <li tbListRow class="tb-video-list__item">
             <span class="tb-video-list__title">{{ name(video, $index) }}</span>
             <tb-video-player [video]="playable(video, $index)" />
             @if (video.transcript; as transcript) {

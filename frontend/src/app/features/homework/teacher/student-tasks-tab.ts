@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { ListRow } from '@shared/ui/list-row';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -53,7 +54,7 @@ function inOrder(a: MyTask, b: MyTask): number {
  */
 @Component({
   selector: 'tb-student-tasks-tab',
-  imports: [Button, Card, DatePipe, EmptyState, LoadStateView, RouterLink, Tag],
+  imports: [ListRow, Button, Card, DatePipe, EmptyState, LoadStateView, RouterLink, Tag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="t.title">
@@ -63,7 +64,7 @@ function inOrder(a: MyTask, b: MyTask): number {
         } @else {
           <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
             @for (task of visible(); track task.taskId + (task.who ?? '')) {
-              <li>
+              <li tbListRow>
                 <span
                   class="tb-list__lead"
                   [class.tb-list__lead--accent]="task.overdue"

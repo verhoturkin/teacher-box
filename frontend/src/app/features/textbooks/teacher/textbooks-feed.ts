@@ -8,6 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import { Observable } from 'rxjs';
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
@@ -47,14 +48,22 @@ export type TextbooksFilter = 'all' | TextbookKind;
  */
 @Component({
   selector: 'tb-textbooks-feed',
-  imports: [MaterialCard, Menu, EmptyState, LoadStateView, TextbookDialog, TextbookToBoardDialog],
+  imports: [
+    ListRow,
+    MaterialCard,
+    Menu,
+    EmptyState,
+    LoadStateView,
+    TextbookDialog,
+    TextbookToBoardDialog,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
       @if (shown().length > 0) {
         <ul class="tb-material-grid" [attr.aria-label]="t.list">
           @for (textbook of shown(); track textbook.id) {
-            <li>
+            <li tbListRow>
               <tb-material-card
                 [title]="textbook.title"
                 [supporting]="supportingOf(textbook)"

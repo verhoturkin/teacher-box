@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { ListRow } from '@shared/ui/list-row';
 import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -14,7 +15,7 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-broadcasts-panel',
-  imports: [DatePipe, Button, Card, EmptyState],
+  imports: [ListRow, DatePipe, Button, Card, EmptyState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card>
@@ -33,7 +34,7 @@ import { T } from '../i18n/texts';
         } @else {
           <ul class="tb-list tb-broadcasts">
             @for (item of history; track item.id) {
-              <li class="tb-broadcast">
+              <li tbListRow class="tb-broadcast">
                 <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-send"></i></span>
                 <div class="tb-list__text">
                   <span class="tb-list__title">{{ item.title }}</span>

@@ -8,6 +8,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Button, ButtonDirective } from 'primeng/button';
@@ -80,6 +81,7 @@ interface Row {
 @Component({
   selector: 'tb-todo-queue',
   imports: [
+    ListRow,
     Button,
     AttendanceDialog,
     ButtonDirective,
@@ -106,7 +108,7 @@ interface Row {
       @if (rows().length > 0) {
         <ul class="tb-list tb-queue">
           @for (row of rows(); track row.key) {
-            <li>
+            <li tbListRow>
               <span class="tb-queue__icon" [class.tb-queue__icon--debt]="row.kind === 'debt'">
                 <i class="tb-i {{ row.icon }}" aria-hidden="true"></i>
               </span>

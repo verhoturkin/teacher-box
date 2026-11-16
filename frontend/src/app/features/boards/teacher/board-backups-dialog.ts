@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { ListRow } from '@shared/ui/list-row';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -36,7 +37,16 @@ interface PendingAction {
  */
 @Component({
   selector: 'tb-board-backups-dialog',
-  imports: [DatePipe, Button, TbDialog, DialogConfirmStep, Tooltip, EmptyState, LoadStateView],
+  imports: [
+    ListRow,
+    DatePipe,
+    Button,
+    TbDialog,
+    DialogConfirmStep,
+    Tooltip,
+    EmptyState,
+    LoadStateView,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-dialog
@@ -75,7 +85,7 @@ interface PendingAction {
           @if (backups().length > 0) {
             <ul class="tb-list">
               @for (backup of backups(); track backup.id) {
-                <li>
+                <li tbListRow>
                   <span class="tb-list__lead" aria-hidden="true"
                     ><i
                       [class]="

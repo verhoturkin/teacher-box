@@ -8,6 +8,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
@@ -35,6 +36,7 @@ export const TAGS_SETTINGS = '/teacher/settings/students';
 @Component({
   selector: 'tb-student-tags-tab',
   imports: [
+    ListRow,
     ButtonDirective,
     ButtonIcon,
     ButtonLabel,
@@ -70,7 +72,7 @@ export const TAGS_SETTINGS = '/teacher/settings/students';
             </ng-template>
             <ul class="tb-tiles tb-student-tags__list" [attr.aria-label]="t.title">
               @for (tag of tags(); track tag.id) {
-                <li class="tb-tile">
+                <li tbListRow class="tb-tile">
                   <i
                     class="tb-i tb-tile__icon"
                     [class.tb-i-auto_awesome]="tag.useInAi"

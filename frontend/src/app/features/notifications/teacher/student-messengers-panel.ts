@@ -6,6 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import { RouterLink } from '@angular/router';
 import { Button, ButtonDirective, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -34,6 +35,7 @@ function reached(student: StudentMessengers): boolean {
 @Component({
   selector: 'tb-student-messengers-panel',
   imports: [
+    ListRow,
     Avatar,
     Button,
     ButtonDirective,
@@ -70,7 +72,7 @@ function reached(student: StudentMessengers): boolean {
                 <h3 class="tb-section-label">{{ t.missing }}</h3>
                 <ul class="tb-list tb-list--no-phone-lead">
                   @for (row of missing(); track row.studentId) {
-                    <li>
+                    <li tbListRow>
                       <tb-avatar
                         class="tb-list__lead"
                         [attr.data-tb-label]="colors.studentLabel(row.studentId)"

@@ -65,6 +65,7 @@ describe('ListRow', () => {
     const child = element.appendChild(document.createElement('span'));
 
     callbacks.enter({ animationComplete });
+    await Promise.resolve();
     expect(element.classList.contains(ROW_ENTER)).toBe(true);
     expect(element.style.getPropertyValue('--tb-motion-height')).toBe('0px');
 
@@ -82,9 +83,51 @@ describe('ListRow', () => {
     const { row } = await render();
     const { element, callbacks } = row(1);
 
-    callbacks.leave();
+    const animationComplete = vi.fn();
+
+    callbacks.leave({ animationComplete });
+    await Promise.resolve();
 
     expect(element.classList.contains(ROW_LEAVE)).toBe(true);
     expect(element.style.getPropertyValue('--tb-motion-height')).toBe('0px');
+    expect(animationComplete).not.toHaveBeenCalled();
+  });
+
+  it('swaps a list whose rows are all replaced at once without motion', async () => {
+    const { row } = await render();
+    const old = [row(0), row(1)];
+    const fresh = document.createElement('li');
+    fresh.className = row(0).element.className;
+    row(0).element.parentElement!.append(fresh);
+    const left = [vi.fn(), vi.fn()];
+    const entered = vi.fn();
+
+    old.forEach(({ callbacks }, index) => {
+      callbacks.leave({ animationComplete: left[index]! });
+    });
+    // the new row's directive is the same code: borrow a callback bound to an element of this list
+    Reflect.apply(ListRow.prototype.enter, { row: fresh }, [{ animationComplete: entered }]);
+    await Promise.resolve();
+
+    expect(left[0]).toHaveBeenCalledOnce();
+    expect(left[1]).toHaveBeenCalledOnce();
+    expect(entered).toHaveBeenCalledOnce();
+    expect(old[0]!.element.classList.contains(ROW_LEAVE)).toBe(false);
+    expect(fresh.classList.contains(ROW_ENTER)).toBe(false);
+  });
+
+  it('still closes the last row of a list on its own', async () => {
+    const { row } = await render();
+    const { element, callbacks } = row(1);
+    const other = row(0);
+    const animationComplete = vi.fn();
+
+    other.callbacks.leave({ animationComplete: vi.fn() });
+    await Promise.resolve();
+    callbacks.leave({ animationComplete });
+    await Promise.resolve();
+
+    expect(element.classList.contains(ROW_LEAVE)).toBe(true);
+    expect(animationComplete).not.toHaveBeenCalled();
   });
 });

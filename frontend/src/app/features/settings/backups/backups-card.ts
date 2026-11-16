@@ -1,4 +1,5 @@
 import { PaneHeader } from '@shared/ui/panes';
+import { ListRow } from '@shared/ui/list-row';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -55,6 +56,7 @@ const KIND_ICONS: Readonly<Record<BackupKind, string>> = {
 @Component({
   selector: 'tb-backups-card',
   imports: [
+    ListRow,
     PaneHeader,
     EmptyState,
     Button,
@@ -101,7 +103,7 @@ const KIND_ICONS: Readonly<Record<BackupKind, string>> = {
           </p-message>
           <ul class="tb-list" [attr.aria-label]="t.title">
             @for (backup of shown(); track backup.name) {
-              <li>
+              <li tbListRow>
                 <span class="tb-list__lead" aria-hidden="true"
                   ><i class="tb-i" [class]="'tb-i-' + icon(backup)"></i
                 ></span>

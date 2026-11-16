@@ -7,6 +7,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -98,6 +99,7 @@ const ALL_DAY_START_HOUR = 10;
 @Component({
   selector: 'tb-schedule-page',
   imports: [
+    ListRow,
     Avatar,
     ButtonAttributes,
     HelpButton,
@@ -238,7 +240,7 @@ const ALL_DAY_START_HOUR = 10;
               <h2 class="tb-schedule-section__title">{{ t.requests }}</h2>
               <ul class="tb-list">
                 @for (request of requests(); track request.id) {
-                  <li>
+                  <li tbListRow>
                     <tb-avatar
                       [attr.data-tb-label]="colors.studentLabel(request.studentId)"
                       [name]="request.studentName ?? c.student"
@@ -295,7 +297,7 @@ const ALL_DAY_START_HOUR = 10;
                 } @else {
                   <ul class="tb-list tb-list--no-phone-lead">
                     @for (item of offTimes(); track item.id) {
-                      <li>
+                      <li tbListRow>
                         <span class="tb-list__lead" aria-hidden="true"
                           ><i class="tb-i tb-i-dark_mode"></i
                         ></span>

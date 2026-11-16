@@ -7,6 +7,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -39,6 +40,7 @@ import { groupInput } from './group-input';
 @Component({
   selector: 'tb-group-members-tab',
   imports: [
+    ListRow,
     ReactiveFormsModule,
     RouterLink,
     Avatar,
@@ -59,7 +61,7 @@ import { groupInput } from './group-input';
       } @else {
         <ul class="tb-list" [attr.aria-label]="t.title">
           @for (member of members(); track member.id) {
-            <li>
+            <li tbListRow>
               <tb-avatar
                 [attr.data-tb-label]="colorOf(member)"
                 [name]="member.displayName"

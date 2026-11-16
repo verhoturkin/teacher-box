@@ -1,4 +1,5 @@
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
+import { ListRow } from '@shared/ui/list-row';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -104,6 +105,7 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
 @Component({
   selector: 'tb-students-page',
   imports: [
+    ListRow,
     NgTemplateOutlet,
     SearchField,
     Avatar,
@@ -186,7 +188,7 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
             @if (visibleRows().length > 0) {
               <ul class="tb-list tb-list--clamp tb-list--own-trail" [attr.aria-label]="t.title">
                 @for (row of visibleRows(); track row.kind + row.id) {
-                  <li [class.tb-list__item--current]="isCurrent(row)">
+                  <li tbListRow [class.tb-list__item--current]="isCurrent(row)">
                     @if (row.kind === 'student') {
                       <tb-avatar
                         [attr.data-tb-label]="colorOf(row)"

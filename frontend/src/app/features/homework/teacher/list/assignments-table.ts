@@ -1,4 +1,5 @@
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
+import { ListRow } from '@shared/ui/list-row';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -49,6 +50,7 @@ export interface RowMenu {
 @Component({
   selector: 'tb-assignments-table',
   imports: [
+    ListRow,
     NgTemplateOutlet,
     Button,
     ButtonAttributes,
@@ -70,7 +72,7 @@ export interface RowMenu {
         }
         <ul class="tb-list tb-list--clamp" [attr.aria-label]="section.title ?? t.title">
           @for (assignment of section.rows; track assignment.id) {
-            <li>
+            <li tbListRow>
               @if (medium()) {
                 <span class="tb-list__lead" aria-hidden="true"
                   ><i

@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { ListRow } from '@shared/ui/list-row';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -37,7 +38,7 @@ export const LEDGER_PAGE = 20;
  */
 @Component({
   selector: 'tb-ledger-list',
-  imports: [EmptyState, DatePipe, Button, Menu, Tag, Tooltip, MoneyPipe, ButtonAttributes],
+  imports: [ListRow, EmptyState, DatePipe, Button, Menu, Tag, Tooltip, MoneyPipe, ButtonAttributes],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (entries().length === 0) {
@@ -45,7 +46,7 @@ export const LEDGER_PAGE = 20;
     } @else {
       <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.history">
         @for (entry of visible(); track entry.id) {
-          <li [class.tb-inactive]="entry.inactive">
+          <li tbListRow [class.tb-inactive]="entry.inactive">
             <span class="tb-list__lead" aria-hidden="true"
               ><i
                 [class]="

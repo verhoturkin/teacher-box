@@ -7,6 +7,7 @@ import {
   input,
   signal,
 } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import { Observable } from 'rxjs';
 import { FileOpener } from '@shared/files/file-opener';
 import { EmptyState } from '@shared/ui/empty-state';
@@ -25,14 +26,14 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-my-textbooks-feed',
-  imports: [MaterialCard, EmptyState, LoadStateView],
+  imports: [ListRow, MaterialCard, EmptyState, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-load-state [state]="state" [what]="t.what" [compact]="limit() > 0" (retry)="load()">
       @if (shown().length > 0) {
         <ul class="tb-material-grid" [attr.aria-label]="t.list">
           @for (textbook of visible(); track textbook.id) {
-            <li>
+            <li tbListRow>
               <tb-material-card
                 [title]="textbook.title"
                 [supporting]="supportingOf(textbook)"

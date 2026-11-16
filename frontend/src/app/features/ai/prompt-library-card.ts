@@ -7,6 +7,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import {
   AbstractControl,
   FormControl,
@@ -40,6 +41,7 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
 @Component({
   selector: 'tb-prompt-library-card',
   imports: [
+    ListRow,
     ReactiveFormsModule,
     Button,
     Card,
@@ -77,7 +79,7 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
       } @else {
         <ul class="tb-list" [attr.aria-label]="t.title">
           @for (prompt of prompts(); track prompt.id) {
-            <li>
+            <li tbListRow>
               <span class="tb-list__lead" aria-hidden="true"
                 ><i class="tb-i tb-i-bookmark"></i
               ></span>

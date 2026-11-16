@@ -8,6 +8,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import { forkJoin } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -80,7 +81,7 @@ function daysFrom(date: Date, days: number): Date {
  */
 @Component({
   selector: 'tb-student-lessons-tab',
-  imports: [Button, Card, EmptyState, LoadStateView, MarkdownView, Tag],
+  imports: [ListRow, Button, Card, EmptyState, LoadStateView, MarkdownView, Tag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
@@ -91,7 +92,7 @@ function daysFrom(date: Date, days: number): Date {
           } @else if (all()) {
             <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.upcoming">
               @for (row of upcoming(); track row.lesson.id) {
-                <li [class.tb-inactive]="row.lesson.status === 'CANCELLED'">
+                <li tbListRow [class.tb-inactive]="row.lesson.status === 'CANCELLED'">
                   <span class="tb-list__lead" aria-hidden="true"
                     ><i
                       class="tb-i"
@@ -114,7 +115,7 @@ function daysFrom(date: Date, days: number): Date {
           } @else {
             <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.upcoming">
               @for (row of grouped(); track row.key; let first = $first) {
-                <li [class.tb-inactive]="row.inactive">
+                <li tbListRow [class.tb-inactive]="row.inactive">
                   <span
                     class="tb-list__lead"
                     [class.tb-list__lead--accent]="first"
@@ -152,7 +153,7 @@ function daysFrom(date: Date, days: number): Date {
           } @else {
             <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.history">
               @for (entry of history(); track entry.lessonId) {
-                <li>
+                <li tbListRow>
                   <span class="tb-list__lead" aria-hidden="true"
                     ><i
                       class="tb-i"

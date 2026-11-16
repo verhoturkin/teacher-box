@@ -8,6 +8,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import { Card } from 'primeng/card';
 import { locale } from '@core/i18n/language';
 import { toIsoDate } from '@shared/dates/iso-date';
@@ -34,7 +35,7 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
  */
 @Component({
   selector: 'tb-student-lessons-card',
-  imports: [Card, EmptyState, LoadStateView],
+  imports: [ListRow, Card, EmptyState, LoadStateView],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="t.title">
@@ -44,7 +45,7 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
         } @else {
           <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
             @for (lesson of next(); track lesson.id; let first = $first) {
-              <li>
+              <li tbListRow>
                 <span class="tb-list__lead" [class.tb-list__lead--accent]="first" aria-hidden="true"
                   ><i class="tb-i tb-i-event"></i
                 ></span>

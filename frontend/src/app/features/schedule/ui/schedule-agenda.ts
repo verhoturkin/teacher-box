@@ -7,6 +7,7 @@ import {
   model,
   output,
 } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import { Button } from 'primeng/button';
 import { TeacherColors } from '@features/identity/parts';
 import { Avatar } from '@shared/ui/avatar';
@@ -46,7 +47,7 @@ export interface AgendaMark {
  */
 @Component({
   selector: 'tb-schedule-agenda',
-  imports: [Avatar, Button],
+  imports: [ListRow, Avatar, Button],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-agenda__strip" role="group" [attr.aria-label]="t.weekStrip">
@@ -98,7 +99,7 @@ export interface AgendaMark {
     } @else {
       <ul class="tb-agenda__list">
         @for (lesson of dayLessons(); track lesson.id) {
-          <li class="tb-agenda__item">
+          <li tbListRow class="tb-agenda__item">
             <button
               type="button"
               class="tb-agenda__row"
