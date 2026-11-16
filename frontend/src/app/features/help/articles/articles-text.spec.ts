@@ -168,6 +168,18 @@ const INVITE: Readonly<Record<string, readonly [string, string]>> = {
   ],
 };
 
+/** Checklist keeps done steps (stage 406.2): [baseline, now] of the first-steps article. */
+const CHECKLIST: Readonly<Record<string, readonly [string, string]>> = {
+  'teacher.ru': [
+    'в нём остаются только несделанные шаги',
+    'в нём сделанные шаги отмечены галочкой',
+  ],
+  'teacher.en': [
+    'tracks these steps and hides completed ones',
+    'tracks these steps and keeps completed ones ticked',
+  ],
+};
+
 const DISK_USAGE_RU = [
   'журнал и настройки без паролей и личных данных.',
   ' В «Ресурсах» видно, сколько занимают база данных, файлы, копии на сервере и восстановления.' +
@@ -250,6 +262,12 @@ describe('help articles after the split into one file per topic', () => {
     if (invite && isRecord(login) && typeof login['body'] === 'string') {
       expect(login['body']).toContain(invite[0]);
       expected['login'] = { ...login, body: login['body'].replace(...invite) };
+    }
+    const checklist = CHECKLIST[name];
+    const first = original['first-steps'];
+    if (checklist && isRecord(first) && typeof first['body'] === 'string') {
+      expect(first['body']).toContain(checklist[0]);
+      expected['first-steps'] = { ...first, body: first['body'].replace(...checklist) };
     }
     expect(texts).toEqual(expected);
   });

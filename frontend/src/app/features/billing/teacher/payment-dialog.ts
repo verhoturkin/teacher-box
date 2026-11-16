@@ -72,6 +72,8 @@ import { locale } from '@core/i18n/language';
             optionLabel="label"
             optionValue="value"
             [placeholder]="t.chooseStudent"
+            [emptyMessage]="t.noStudents"
+            [emptyFilterMessage]="t.noStudents"
             [filter]="true"
             [filterPlaceholder]="t.search"
             [ariaFilterLabel]="t.search"

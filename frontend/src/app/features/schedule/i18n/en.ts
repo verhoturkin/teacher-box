@@ -191,6 +191,7 @@ export const en: Translation<typeof ru> = {
     editLesson: 'Edit lesson',
     with: 'With',
     chooseOwner: 'Choose a student or a group',
+    noOwners: 'Add a student first, in «Students»',
     search: 'Search',
     start: 'Start',
     duration: 'Duration, min',

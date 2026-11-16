@@ -67,9 +67,12 @@ Source: backlog review of 2026-11-15; design audit DA-049, DA-050.
   teacher sees a banner «Вы вошли как учитель. Эту ссылку откроет ученик» and a disabled form; the
   login is checked in the browser (`^[A-Za-z0-9._-]{3,50}$`) with a text under the field; a toast
   after the account is created. Help and wiki in both languages.
-- [ ] 406.2 **F** *simple* — DA-050: recheck the first-run items (FAB «Занятие» / «Оплата» with no
+- [x] 406.2 **F** *simple* — DA-050: recheck the first-run items (FAB «Занятие» / «Оплата» with no
   students, the default price, the wizard's form rules, «С чего начать» losing done steps) against
   the current code; fix what remains, note what was already gone.
+  *Done: the empty «С кем» / «Ученик» selects say «Сначала добавьте ученика», the checklist keeps
+  done steps ticked. Already gone or left: the wizard has no 0 ₽ default (the price starts empty);
+  form actions and widths of the wizard were not changed.*
 
 ### 407. Release 0.51.0
 
