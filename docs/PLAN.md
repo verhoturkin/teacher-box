@@ -87,18 +87,29 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
 
 ### 416. Overlays
 
-- [ ] 416.1 **F** *simple* — enter/exit along an axis instead of scale (M3: scale implies an
-  elevation change) in `styles/_motion.scss`: the snackbar opens upwards from the bottom, menus
-  and dropdowns open away from their anchor along Y. Dialogs keep their scale. design-system
-  «Motion», `/gallery/motion`.
+- [ ] 416.1 **F** *complex* — menus and the snackbar enter and exit along an axis instead of
+  scale (M3: scale implies an elevation change) in `styles/_motion.scss`. Menus, dropdowns and
+  the date picker match the video `GM3-Transitions-TransitionPatterns-7-2`
+  (https://firebasestorage.googleapis.com/v0/b/design-spec/o/projects%2Fgoogle-material-3%2Fimages%2Flyfs4dk9-GM3-Transitions-TransitionPatterns-7-2-v01.mp4?alt=media):
+  the container opens away from its anchor along Y (down under the button, up above it), the
+  items appear top to bottom as it opens, it closes with a short fade. The snackbar opens upwards
+  from the bottom. design-system «Motion», `/gallery/motion`.
 - [ ] 416.2 **F** *complex* — the global search opens with a container transform (M3 transition
-  patterns, the search video `GM3-Transitions-TransitionPatterns-3-4`): the docked search bar's
-  pill grows down and a little to the sides into the search view under it, its corners go from
+  patterns, the search video `GM3-Transitions-TransitionPatterns-3-4`,
+  https://firebasestorage.googleapis.com/v0/b/design-spec/o/projects%2Fgoogle-material-3%2Fimages%2Flyfrdrxa-GM3-Transitions-TransitionPatterns-3-4-v01.mp4?alt=media):
+  the docked search bar's pill grows down and a little to the sides into the search view under it, its corners go from
   full to the view's corner, the field row stays in place, the results fade in once it has
   opened; closing runs the same way back. The full-screen view on compact grows from the search
   icon of the top app bar. `core/search/global-search-view.ts` (no motion today); a spatial
   spring for the container, effects for the content; a fade alone under reduced motion. ADR-0066
   (container transform), design-system «Motion».
+- [ ] 416.3 **F** *complex* — dialogs match the video `GM3-Transitions-TransitionPatterns-7-1`
+  (https://firebasestorage.googleapis.com/v0/b/design-spec/o/projects%2Fgoogle-material-3%2Fimages%2Flyfs2znj-GM3-Transitions-TransitionPatterns-7-1-v01.mp4?alt=media):
+  the scrim fades in first, then the dialog's container opens downwards from its top edge (its
+  height grows, no scale) and the content fades in just after; closing is a quick fade with the
+  container collapsing, then the scrim fades out. Today `.p-dialog` grows from scale 0.93
+  (`styles/_motion.scss`). Every `p-dialog`, the confirmations included; side and bottom sheets
+  stay as they are. design-system «Motion», `/gallery/motion`.
 
 ### 417. Skeleton loaders
 
