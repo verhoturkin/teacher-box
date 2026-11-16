@@ -5,7 +5,8 @@ import { Segment, SegmentGroup } from '@shared/ui/segment-group';
 type View = 'list' | 'students';
 
 /**
- * §8 Button groups. Standard `tb-button-group` — actions side by side; connected `tb-button-group--connected`
+ * §8 Button groups. Standard `tb-button-group` — actions side by side, `--fill` across the width
+ * in equal parts (a decision pair: «Вернуть | Принять», «Проведено | Пропуск»); connected `tb-button-group--connected`
  * and `tb-segment-group` — toggles only (a value, a view, a filter); `[outlined]` — the M3 segmented buttons.
  */
 @Component({
@@ -20,6 +21,13 @@ type View = 'list' | 'students';
           <p-button label="I will not come" severity="secondary" />
         </div>
         <code class="tb-gallery-name">div.tb-button-group[role=group] — actions</code>
+      </li>
+      <li class="tb-gallery-cell">
+        <div class="tb-button-group tb-button-group--fill" role="group" aria-label="Decision">
+          <p-button label="Return" icon="tb-i tb-i-replay" severity="secondary" />
+          <p-button label="Accept" icon="tb-i tb-i-check" />
+        </div>
+        <code class="tb-gallery-name">.tb-button-group--fill — a decision pair</code>
       </li>
       <li class="tb-gallery-cell">
         <tb-segment-group label="View" [segments]="views" [(value)]="view" />

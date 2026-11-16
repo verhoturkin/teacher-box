@@ -124,7 +124,11 @@ export interface AgendaMark {
               </span>
             </button>
             @if (isUnmarked(lesson)) {
-              <div class="tb-agenda__marks tb-button-group">
+              <div
+                class="tb-agenda__marks tb-button-group tb-button-group--fill"
+                role="group"
+                [attr.aria-label]="t.markLesson(with(lesson))"
+              >
                 @if (lesson.groupId !== null) {
                   <p-button
                     [label]="t.mark"
@@ -266,12 +270,7 @@ export interface AgendaMark {
 
     /* the group under its row: across the width, the buttons share it */
     .tb-agenda__marks {
-      display: flex;
       padding: 0 var(--tb-space-4) var(--tb-space-3);
-
-      > p-button {
-        flex: 1;
-      }
     }
 
     .tb-agenda__empty {

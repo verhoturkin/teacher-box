@@ -74,11 +74,15 @@ Source: backlog review of 2026-11-15. ADRs: a new one for 400.1 (CSS layers repl
   reset (base margin is now 0); the setup wizard's own 44rem width stays (no shared token). The
   other 13 were already gone after the redesign (files rebuilt or moved, Ctrl+V/Cmd+V text, copy
   row alignment, empty-cell separator, button halves, `nav` label, duplicate `aria-label`).
-- [ ] 401.2 **F** *complex* — DA-082: `.tb-button-group` styles move out of
+- [x] 401.2 **F** *complex* — DA-082: `.tb-button-group` styles move out of
   `.tb-lesson-actions--stacked` into the class itself (`styles.scss`); decision pairs («Проведено |
   Пропуск», «Отклонить | Согласовать», «Принять | Вернуть на доработку») become connected button
   groups; no `size` on `p-selectbutton`, E2E checks `.p-togglebutton-sm`; the ⚠ icon is set in
   `dangerConfirmation` for every danger confirmation. Gallery samples; `docs/design-system.md`.
+  Done: the equal-parts layout is `tb-button-group--fill` (lesson actions, the agenda's marks, the
+  review decision); action pairs are standard groups — M3 and design-system §8 keep connected
+  groups for toggles, and «Согласовать | Отклонить» and «Итог» already are `p-selectbutton`; the
+  ⚠ sign is fixed in `dangerConfirmation`. `size` and `.p-togglebutton-sm` were already done.
 
 ### 402. Release 0.50.0
 

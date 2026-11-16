@@ -2,10 +2,11 @@ import { Confirmation } from 'primeng/api';
 import { dangerConfirmation, safeConfirmation } from './confirmation';
 
 describe('confirmations', () => {
-  it('makes the irreversible action red and «Отмена» neutral', () => {
+  it('makes the irreversible action red, «Отмена» neutral and shows the ⚠ sign', () => {
     expect(dangerConfirmation({ header: 'Удалить?', acceptLabel: 'Удалить' })).toEqual({
       header: 'Удалить?',
       acceptLabel: 'Удалить',
+      icon: 'tb-i tb-i-warning',
       rejectLabel: 'Отмена',
       acceptButtonProps: { severity: 'danger' },
       rejectButtonProps: { severity: 'secondary', text: true },

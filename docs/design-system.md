@@ -554,7 +554,11 @@ action — «Изменить» next to «Проверить N работ» (hom
 - **Standard button group** `tb-button-group` — actions side by side: an invisible container with
   separate buttons, 12 dp gap (**M3** ButtonGroupSmall.BetweenSpace); a pressed button morphs its
   shape; the neighbours' width change is not done (*ours*). Never a primary button in a connected
-  group: it reads as «already selected». A dialog footer keeps its own 8 dp (§11).
+  group: it reads as «already selected». A dialog footer keeps its own 8 dp (§11). A decision pair
+  of actions («Вернуть на доработку | Принять», «Проведено | Пропуск» under a past lesson, the
+  student's «Перенести | Отменить» on a phone) is a standard group, not a connected one (**M3**:
+  connected only when a button can be toggled); `tb-button-group--fill` spreads it across its
+  surface in equal parts with 16 px sides (*ours*).
 - **Split button** `tb-split` («Начать урок» | «Открыть в браузере»): 2 px gap, inner corners 4 px
   (8 px pressed, *ours*), trailing part 48 px with a 22 px chevron (**M3E** small); while its menu
   is open the trailing part is round and the chevron turns 180° on the standard fast spring. The

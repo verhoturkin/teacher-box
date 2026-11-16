@@ -113,7 +113,7 @@ export interface NextWork {
         [header]="t.commentToStudent"
       >
         <ng-container [ngTemplateOutlet]="fields" />
-        <div class="tb-sheet__decision">
+        <div class="tb-sheet__decision tb-button-group tb-button-group--fill">
           <p-button
             [label]="t.toBoard"
             icon="tb-i tb-i-co_present"
@@ -147,7 +147,11 @@ export interface NextWork {
       }
       <ng-container [ngTemplateOutlet]="fields" />
 
-      <div class="tb-sheet__decision">
+      <div
+        class="tb-sheet__decision tb-button-group tb-button-group--fill"
+        role="group"
+        [attr.aria-label]="t.decision"
+      >
         <p-button
           [label]="t.rework"
           icon="tb-i tb-i-replay"
@@ -445,17 +449,7 @@ export interface NextWork {
 
     /* the decision stays at the foot of the sheet however long the comment is */
     .tb-sheet__decision {
-      display: flex;
-      gap: var(--tb-space-2);
       margin-block-start: auto;
-    }
-
-    .tb-sheet__decision p-button {
-      flex: 1;
-    }
-
-    .tb-sheet__decision ::ng-deep .p-button {
-      inline-size: 100%;
     }
 
     .tb-sheet__foot ::ng-deep .p-button {

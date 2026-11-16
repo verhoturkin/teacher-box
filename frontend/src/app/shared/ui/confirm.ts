@@ -3,10 +3,7 @@ import { ConfirmationService } from 'primeng/api';
 import { ConfirmationRequest, dangerConfirmation, safeConfirmation } from './confirmation';
 
 /** What the dialog says; the buttons are fixed by the kind of the confirmation. */
-export type ConfirmRequest = Pick<
-  ConfirmationRequest,
-  'header' | 'message' | 'acceptLabel' | 'icon'
->;
+export type ConfirmRequest = Pick<ConfirmationRequest, 'header' | 'message' | 'acceptLabel'>;
 
 /**
  * The only way to ask «Are you sure?» (ADR-0050): the one host `<p-confirmdialog>` lives in `App`.
