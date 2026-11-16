@@ -228,7 +228,9 @@
     display: none;
   }
 
+  /* p-tabpanels is inline by default: without a block its top padding would not move the content */
   .p-tabpanels {
+    display: block;
     padding: var(--tb-space-4) 0 0;
     background: transparent;
   }
