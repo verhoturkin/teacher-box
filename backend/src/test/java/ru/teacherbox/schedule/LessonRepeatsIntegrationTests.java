@@ -70,6 +70,17 @@ class LessonRepeatsIntegrationTests {
     }
 
     @Test
+    void oneListCarriesTheRepeatRuleOfEachSeriesAndZeroForOneOffLessons() throws Exception {
+        UUID student = directory.addStudent("Разные повторы");
+        Instant start = Slots.seriesStart(clock, 2);
+        post("/lessons", input(student, start, 0));
+        post("/lessons", input(student, start, 1));
+        post("/lessons", input(student, start, 2));
+        assertThat(list(student, start).stream().limit(3).map(row -> row.get("repeatWeeks")).toList())
+                .containsExactly(0, 1, 2);
+    }
+
+    @Test
     void followingScopePreservesAnIndividuallyEditedOccurrenceAndOnceKeepsTheSelectedLesson() throws Exception {
         UUID student = directory.addStudent("Исключения");
         Instant start = Slots.seriesStart(clock, 2);

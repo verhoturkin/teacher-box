@@ -259,7 +259,7 @@ public class ScheduleQueries {
                 week.stream().filter(lesson -> lesson.startsAt().isBefore(tomorrow)).toList(),
                 upcoming.isEmpty() ? null : upcoming.getFirst(),
                 upcoming.size(),
-                lessons.findUnmarked(now).size(),
+                lessons.countUnmarked(now),
                 requests.findPending().size(),
                 lessons.exists(),
                 countStatus(calendarWeek, LessonStatus.CONDUCTED),
@@ -300,10 +300,12 @@ public class ScheduleQueries {
                 .stream()
                 .collect(Collectors.groupingBy(ChangeRequest::lessonId));
         Duration late = rules.current().lateCancellation();
+        Map<UUID, RepeatRule> repeats = series.findByIds(found.stream().map(Lesson::seriesId)
+                .filter(Objects::nonNull).collect(Collectors.toSet()));
         return found.stream()
                 .map(lesson -> LessonView.of(lesson, names, pending.getOrDefault(lesson.id(), List.of()).stream()
                         .map(request -> RequestView.of(request, lesson, names, late))
-                        .toList(), lesson.seriesId() == null ? null : series.findById(lesson.seriesId()).orElse(null)))
+                        .toList(), lesson.seriesId() == null ? null : repeats.get(lesson.seriesId())))
                 .toList();
     }
 

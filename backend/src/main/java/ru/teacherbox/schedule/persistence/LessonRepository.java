@@ -216,6 +216,12 @@ public class LessonRepository {
                 .list());
     }
 
+    /** How many lessons {@link #findUnmarked} would return. */
+    public int countUnmarked(Instant before) {
+        return jdbc.sql("select count(*) from schedule.lessons where status = 'SCHEDULED' and ends_at <= :before")
+                .param("before", before).query(Integer.class).single();
+    }
+
     /**
      * Removes the planned lessons of a series from {@code from} on, except the ones moved
      * individually (they are arranged separately and stay) and the ones with a charged participant.
