@@ -61,7 +61,10 @@ function shortcutHint(): string {
     @if (!full() || open()) {
       <div
         class="tb-search"
+        animate.enter="tb-search--enter"
+        animate.leave="tb-search--leave"
         [class.tb-search--open]="panelOpen()"
+        [style.--tb-search-from]="origin()"
         [attr.role]="full() ? 'dialog' : null"
         [attr.aria-modal]="full() ? 'true' : null"
         [attr.aria-label]="full() ? t.label : null"
@@ -115,72 +118,79 @@ function shortcutHint(): string {
         </div>
         @if (panelOpen()) {
           <!-- the field keeps the focus when a result is pressed: the press must not blur it first -->
-          <div class="tb-search__panel" (mousedown)="$event.preventDefault()">
-            @if (groups().length > 0) {
-              <div
-                class="tb-search__list"
-                role="listbox"
-                [id]="listId"
-                [attr.aria-label]="t.results"
-              >
-                @for (group of groups(); track group.group) {
-                  <div role="group" [attr.aria-labelledby]="listId + '-' + group.group">
-                    <div
-                      class="tb-search__group"
-                      role="presentation"
-                      [id]="listId + '-' + group.group"
-                    >
-                      {{ group.label }}
-                    </div>
-                    @for (item of group.items; track item.entry.id) {
-                      <a
-                        class="tb-search__option"
-                        role="option"
-                        tabindex="-1"
-                        [id]="optionId(item.index)"
-                        [class.tb-search__option--active]="item.index === active()"
-                        [attr.aria-selected]="item.index === active()"
-                        [routerLink]="item.entry.link"
-                        [queryParams]="item.entry.query"
-                        (click)="picked()"
-                        (mousemove)="active.set(item.index)"
+          <div
+            class="tb-search__panel"
+            animate.enter="tb-search__panel--enter"
+            animate.leave="tb-search__panel--leave"
+            (mousedown)="$event.preventDefault()"
+          >
+            <div class="tb-search__results">
+              @if (groups().length > 0) {
+                <div
+                  class="tb-search__list"
+                  role="listbox"
+                  [id]="listId"
+                  [attr.aria-label]="t.results"
+                >
+                  @for (group of groups(); track group.group) {
+                    <div role="group" [attr.aria-labelledby]="listId + '-' + group.group">
+                      <div
+                        class="tb-search__group"
+                        role="presentation"
+                        [id]="listId + '-' + group.group"
                       >
-                        <i
-                          class="tb-i {{ group.icon }} tb-search__option-icon"
-                          aria-hidden="true"
-                        ></i>
-                        <span class="tb-search__option-text">
-                          <span class="tb-search__option-title">{{ item.entry.title }}</span>
-                          @if (item.entry.subtitle; as subtitle) {
-                            <span class="tb-search__option-subtitle">{{ subtitle }}</span>
-                          }
-                        </span>
-                      </a>
-                    }
-                    @if (group.total > group.items.length) {
-                      <div class="tb-search__more" role="presentation">
-                        {{ t.more(group.total - group.items.length) }}
+                        {{ group.label }}
                       </div>
-                    }
-                  </div>
-                }
-              </div>
-            } @else {
-              <p class="tb-search__state" role="status">
-                @if (search.loading()) {
-                  {{ t.loading }}
-                } @else if (search.query().trim() === '') {
-                  {{ t.hint }}
-                } @else {
-                  {{ t.none(search.query().trim()) }}
-                }
-              </p>
-            }
-            @if (failedGroups(); as failed) {
-              <p class="tb-search__state tb-search__state--error" role="status">
-                {{ t.failed(failed) }}
-              </p>
-            }
+                      @for (item of group.items; track item.entry.id) {
+                        <a
+                          class="tb-search__option"
+                          role="option"
+                          tabindex="-1"
+                          [id]="optionId(item.index)"
+                          [class.tb-search__option--active]="item.index === active()"
+                          [attr.aria-selected]="item.index === active()"
+                          [routerLink]="item.entry.link"
+                          [queryParams]="item.entry.query"
+                          (click)="picked()"
+                          (mousemove)="active.set(item.index)"
+                        >
+                          <i
+                            class="tb-i {{ group.icon }} tb-search__option-icon"
+                            aria-hidden="true"
+                          ></i>
+                          <span class="tb-search__option-text">
+                            <span class="tb-search__option-title">{{ item.entry.title }}</span>
+                            @if (item.entry.subtitle; as subtitle) {
+                              <span class="tb-search__option-subtitle">{{ subtitle }}</span>
+                            }
+                          </span>
+                        </a>
+                      }
+                      @if (group.total > group.items.length) {
+                        <div class="tb-search__more" role="presentation">
+                          {{ t.more(group.total - group.items.length) }}
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="tb-search__state" role="status">
+                  @if (search.loading()) {
+                    {{ t.loading }}
+                  } @else if (search.query().trim() === '') {
+                    {{ t.hint }}
+                  } @else {
+                    {{ t.none(search.query().trim()) }}
+                  }
+                </p>
+              }
+              @if (failedGroups(); as failed) {
+                <p class="tb-search__state tb-search__state--error" role="status">
+                  {{ t.failed(failed) }}
+                </p>
+              }
+            </div>
           </div>
         }
       </div>
@@ -209,6 +219,11 @@ export class GlobalSearchView {
   /** The results under the bar are shown (the bar only; the full-screen view always shows them). */
   private readonly expanded = signal(false);
   protected readonly panelOpen = computed(() => (this.full() ? this.open() : this.expanded()));
+  /**
+   * Where the full-screen view grows from and shrinks back to: the clip of the button that opened it (the search
+   * icon of the top app bar), or none (Ctrl K from elsewhere: the view grows from the top edge).
+   */
+  protected readonly origin = signal<string | null>(null);
   /** The active result (the one Enter opens), counted over all groups. */
   protected readonly active = signal(0);
 
@@ -238,11 +253,24 @@ export class GlobalSearchView {
         untracked(() => {
           const active = this.document.activeElement;
           this.opener = active instanceof HTMLElement ? active : null;
+          this.origin.set(this.clipOf(this.opener));
           void this.search.refresh();
           afterNextRender(() => this.field()?.nativeElement.focus(), { injector: this.injector });
         });
       }
     });
+  }
+
+  /** The clip of the viewport down to the button that opens a dialog (round, as the icon button is). */
+  private clipOf(opener: HTMLElement | null): string | null {
+    const view = this.document.defaultView;
+    if (opener?.getAttribute('aria-haspopup') !== 'dialog' || view === null) {
+      return null;
+    }
+    const box = opener.getBoundingClientRect();
+    const right = view.innerWidth - box.right;
+    const bottom = view.innerHeight - box.bottom;
+    return `inset(${String(box.top)}px ${String(right)}px ${String(bottom)}px ${String(box.left)}px round ${String(box.height / 2)}px)`;
   }
 
   /** Ctrl K: the focus into the bar (or the full-screen view on compact — the shell opens it). */

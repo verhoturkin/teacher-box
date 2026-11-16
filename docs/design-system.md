@@ -126,6 +126,17 @@ elevation with their values; springs —
     stand still, and so does a list whose rows are all replaced in one update (another student
     in the same card): with no row staying and more than one changing, the rows swap at once.
     The 2 px gap of `.tb-list` goes with the row.
+  - Global search (`core/search/global-search-view.ts`, **M3** container transform, search
+    video 3-4): the docked search view is one container with the 56 px bar as its header
+    (extra-large corners, elevation 3). It opens from the bar's pill: a clip grows down from the
+    bar's box to the whole container (corners from half the bar's height to 28 px) on the
+    standard fast spring, the bar row never moves, the results fade in on default effects 50 ms
+    later; closing runs back, the results fading out on fast effects. The view is as wide as the
+    bar (*ours*). On compact the full-screen view grows out of the search icon of the top app bar
+    (its round box, `--tb-search-from`; the top edge after Ctrl K) on default spatial, its content
+    fading in after 100 ms, and shrinks back into it on the standard fast spring. *Ours*: the
+    springs and delays, measured on the video (~130 ms to open, no bounce). Reduced motion: the
+    container fades in and out, nothing grows.
   - The navigation rail (**M3**: the expanded rail is the «default spatial» example)
     springs its width between 96 and 280 px on default spatial when the page collapses it or the
     window crosses 1600 px; the page and the top strip beside it follow, and the labels fade in on

@@ -98,7 +98,7 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
   (https://firebasestorage.googleapis.com/v0/b/design-spec/o/projects%2Fgoogle-material-3%2Fimages%2Flyfs56ki-GM3-Transitions-TransitionPatterns-7-3-v01.mp4?alt=media).
   View the videos frame by frame (built-in browser, the `<video>` drawn into a canvas contact
   sheet). design-system «Motion», `/gallery/motion`.
-- [ ] 416.2 **F** *complex* — the global search opens with a container transform (M3 transition
+- [x] 416.2 **F** *complex* — the global search opens with a container transform (M3 transition
   patterns, the search video `GM3-Transitions-TransitionPatterns-3-4`,
   https://firebasestorage.googleapis.com/v0/b/design-spec/o/projects%2Fgoogle-material-3%2Fimages%2Flyfrdrxa-GM3-Transitions-TransitionPatterns-3-4-v01.mp4?alt=media):
   the docked search bar's pill grows down and a little to the sides into the search view under it, its corners go from
