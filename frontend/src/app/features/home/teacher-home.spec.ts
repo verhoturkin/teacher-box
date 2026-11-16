@@ -35,6 +35,11 @@ describe('TeacherHome', () => {
 
   it('collects the widgets of the modules', async () => {
     fixture.detectChanges();
+    // the queue asks for its sources together with the summaries, not after them
+    backend.expectOne('/api/teacher/ai/status').flush({ enabled: false });
+    backend.expectOne('/api/teacher/schedule/unmarked').flush([scheduledLesson()]);
+    backend.expectOne('/api/teacher/schedule/requests').flush([]);
+    backend.expectOne('/api/teacher/homework/review-queue').flush([reviewQueueItem()]);
     backend.expectOne('/api/teacher/schedule/summary').flush(
       scheduleSummary({
         today: [scheduledLesson()],
@@ -54,10 +59,6 @@ describe('TeacherHome', () => {
       .expectOne('/api/teacher/notifications/summary')
       .flush(teacherNotificationsSummary({ students: 0, messengerConfigured: false }));
     fixture.detectChanges();
-    backend.expectOne('/api/teacher/ai/status').flush({ enabled: false });
-    backend.expectOne('/api/teacher/schedule/unmarked').flush([scheduledLesson()]);
-    backend.expectOne('/api/teacher/schedule/requests').flush([]);
-    backend.expectOne('/api/teacher/homework/review-queue').flush([reviewQueueItem()]);
     backend.expectOne((request) => request.url === '/api/teacher/boards').flush([]);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -103,6 +104,7 @@ describe('TeacherHome', () => {
       .flush(null, { status: 500, statusText: 'Error' });
     fixture.detectChanges();
     await fixture.whenStable();
+    backend.match(() => true); // the queue's own sources, started with the summaries
 
     const text = readableText(hostElement(fixture));
     expect(text).toContain('Не удалось загрузить занятия, задания, уведомления и финансы');
@@ -111,15 +113,15 @@ describe('TeacherHome', () => {
 
   it('reloads the schedule counters', async () => {
     fixture.detectChanges();
+    backend.expectOne('/api/teacher/ai/status').flush({ enabled: false });
+    backend.expectOne('/api/teacher/schedule/unmarked').flush([]);
+    backend.expectOne('/api/teacher/schedule/requests').flush([]);
+    backend.expectOne('/api/teacher/homework/review-queue').flush([]);
     backend.expectOne('/api/teacher/schedule/summary').flush(scheduleSummary({ unmarked: 1 }));
     backend.expectOne('/api/teacher/billing/summary').flush(billingSummary());
     backend.expectOne('/api/teacher/homework/summary').flush(homeworkSummary());
     backend.expectOne('/api/teacher/notifications/summary').flush(teacherNotificationsSummary());
     fixture.detectChanges();
-    backend.expectOne('/api/teacher/ai/status').flush({ enabled: false });
-    backend.expectOne('/api/teacher/schedule/unmarked').flush([]);
-    backend.expectOne('/api/teacher/schedule/requests').flush([]);
-    backend.expectOne('/api/teacher/homework/review-queue').flush([]);
 
     fixture.componentInstance.loadSchedule();
     backend.expectOne('/api/teacher/schedule/summary').flush(scheduleSummary());

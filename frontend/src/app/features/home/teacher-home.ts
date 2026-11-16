@@ -89,11 +89,11 @@ function dayTitle(date: Date): string {
             <tb-push-onboarding-card [teacher]="true" />
           </div>
           <div class="tb-stack tb-feed__queue">
-            @if (billing(); as billing) {
+            @if (state.error() === null) {
               <tb-todo-queue
                 [progress]="progress()"
-                [debtors]="billing.topDebtors"
-                [currency]="billing.currency"
+                [debtors]="billing()?.topDebtors ?? null"
+                [currency]="billing()?.currency ?? 'RUB'"
                 (marked)="loadSchedule()"
               />
             }

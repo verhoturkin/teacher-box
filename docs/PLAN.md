@@ -147,7 +147,7 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
 - [x] 419.2 **F** *simple* — the student list appears whole: `students-page.ts` shows the rows on
   `/students`, then balances, messengers and the nearest lesson fill in (`forkJoin` at line ~594).
   Keep the skeleton until the extras come or ~300 ms pass, whichever is first.
-- [ ] 419.3 **F** *simple* — the dashboard (`/teacher`) requests the second wave (`unmarked`,
+- [x] 419.3 **F** *simple* — the dashboard (`/teacher`) requests the second wave (`unmarked`,
   `boards`, `requests`, `review-queue`) only after `schedule/summary`; start them together.
 - [ ] 419.4 **B** *simple* — less work in `schedule/application/ScheduleQueries`: `views()` reads
   the repeat rule per lesson (`series.findById`) — read them in one query; `summary()` loads every

@@ -56,6 +56,14 @@ describe('TodoQueue', () => {
     localStorage.clear();
   });
 
+  it('does not say «nothing» until the debtors are known', async () => {
+    await render(done);
+    fixture.componentRef.setInput('debtors', null);
+    fixture.detectChanges();
+
+    expect(text()).not.toContain('Срочных дел нет');
+  });
+
   it('says when nothing is waiting', async () => {
     await render(done);
 
