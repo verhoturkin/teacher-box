@@ -290,7 +290,8 @@ public class ScheduleQueries {
         LessonRules current = rules.current();
         return new ScheduleSettings(zone().getId(), current.defaultDurationMinutes(),
                 current.lateCancellation().toMinutes(),
-                current.reminders().stream().map(Duration::toMinutes).toList());
+                current.reminders().stream().map(Duration::toMinutes).toList(), current.workStart().toString(),
+                current.workEnd().toString());
     }
 
     private List<LessonView> views(List<Lesson> found) {

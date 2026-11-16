@@ -13,7 +13,8 @@ class SchedulePropertiesTest {
     @Test
     void lessonRulesSortRemindersWithoutRepeats() {
         LessonRules rules = new LessonRules(60, Duration.ofHours(24),
-                List.of(Duration.ofHours(24), Duration.ofHours(1), Duration.ofHours(24)), Duration.ofDays(84));
+                List.of(Duration.ofHours(24), Duration.ofHours(1), Duration.ofHours(24)), Duration.ofDays(84),
+                LessonRules.DEFAULT_WORK_START, LessonRules.DEFAULT_WORK_END);
 
         assertThat(rules.reminders()).containsExactly(Duration.ofHours(1), Duration.ofHours(24));
         assertThat(rules.horizonDays()).isEqualTo(84);

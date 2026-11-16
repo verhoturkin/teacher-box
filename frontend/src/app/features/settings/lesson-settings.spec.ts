@@ -192,6 +192,23 @@ describe('LessonSettings', () => {
     });
   });
 
+  it('saves the working hours when a time is picked', async () => {
+    const host = await render();
+    expect(readableText(host)).toContain('Рабочее время');
+    const { workStart, workEnd } = fixture.componentInstance.form.controls;
+    workStart.setValue(new Date(2026, 0, 1, 9, 30));
+    workEnd.setValue(new Date(2026, 0, 1, 18));
+    await emit('tb-working-hours-field p-datepicker', 'onClose');
+    const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/settings' });
+    expect(request.request.body).toEqual(lessonRules({ workStart: '09:30', workEnd: '18:00' }));
+    request.flush(lessonRules({ workStart: '09:30', workEnd: '18:00' }));
+    await fixture.whenStable();
+
+    workStart.setValue(null);
+    await emit('tb-working-hours-field p-datepicker', 'onClose');
+    expect(workStart.value?.getHours()).toBe(9);
+  });
+
   it('puts the saved value back into an emptied field', async () => {
     await render();
     setNumber('duration', null);

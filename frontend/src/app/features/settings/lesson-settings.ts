@@ -12,7 +12,7 @@ import { Card } from 'primeng/card';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { BillingApi, DefaultPriceCard } from '@features/billing/parts';
 import { HomeworkApi } from '@features/homework/parts';
-import { LessonRules, ScheduleApi } from '@features/schedule/parts';
+import { LessonRules, ScheduleApi, fromTime, toTime } from '@features/schedule/parts';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { SettingsApi } from './data-access/settings-api';
@@ -22,6 +22,7 @@ import {
   DurationField,
   HorizonField,
   LateCancellationField,
+  WorkingHoursField,
 } from './fields/lesson-rule-fields';
 import { RemindersField } from './fields/reminders-field';
 import { TimeZoneField } from './fields/time-zone-field';
@@ -30,7 +31,8 @@ import { T } from './i18n/texts';
 
 /**
  * The first column of the settings category «Занятия» (sketch Lessons): «Время и цена» — the time zone, the
- * currency (locked once a lesson or payment is recorded), the default lesson length and price — and «Правила»
+ * currency (locked once a lesson or payment is recorded), the default lesson length and price, the working
+ * hours — and «Правила»
  * — late cancellation, the lesson reminders as input chips, the homework deadline reminder and how far ahead
  * series are booked. Every field saves on change: a select at once, a number on leaving it or Enter. The
  * fields are the ones the first setup asks (one component per setting).
@@ -49,6 +51,7 @@ import { T } from './i18n/texts';
     LateCancellationField,
     RemindersField,
     TimeZoneField,
+    WorkingHoursField,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'tb-stack' },
@@ -76,6 +79,11 @@ import { T } from './i18n/texts';
           <tb-default-price-card [short]="true" />
         </div>
         <small class="tb-hint tb-lesson-settings__shared-hint">{{ t.newLessonsHint }}</small>
+        <tb-working-hours-field
+          [start]="form.controls.workStart"
+          [end]="form.controls.workEnd"
+          (committed)="saveRules()"
+        />
       </tb-load-state>
     </p-card>
 
@@ -135,6 +143,8 @@ export class LessonSettings implements OnInit {
     late: new FormControl<number | null>(null),
     dueSoon: new FormControl<number | null>(null),
     horizon: new FormControl<number | null>(null),
+    workStart: new FormControl<Date | null>(null),
+    workEnd: new FormControl<Date | null>(null),
   });
 
   private pending = false;
@@ -256,7 +266,7 @@ export class LessonSettings implements OnInit {
 
   /** The rules the fields and chips show; an emptied field shows its saved value again. */
   private wantedRules(saved: LessonRules): LessonRules {
-    const { duration, late, horizon } = this.form.controls;
+    const { duration, late, horizon, workStart, workEnd } = this.form.controls;
     if (duration.value === null) {
       duration.setValue(saved.defaultDurationMinutes);
     }
@@ -266,11 +276,19 @@ export class LessonSettings implements OnInit {
     if (horizon.value === null) {
       horizon.setValue(saved.horizonWeeks);
     }
+    if (workStart.value === null) {
+      workStart.setValue(fromTime(saved.workStart));
+    }
+    if (workEnd.value === null) {
+      workEnd.setValue(fromTime(saved.workEnd));
+    }
     return {
       defaultDurationMinutes: duration.value ?? saved.defaultDurationMinutes,
       lateCancellationMinutes: Math.round((late.value ?? 0) * HOUR),
       reminderMinutes: this.chosen(),
       horizonWeeks: horizon.value ?? saved.horizonWeeks,
+      workStart: workStart.value === null ? saved.workStart : toTime(workStart.value),
+      workEnd: workEnd.value === null ? saved.workEnd : toTime(workEnd.value),
     };
   }
 
@@ -299,6 +317,8 @@ export class LessonSettings implements OnInit {
       duration: rules.defaultDurationMinutes,
       late: rules.lateCancellationMinutes / HOUR,
       horizon: rules.horizonWeeks,
+      workStart: fromTime(rules.workStart),
+      workEnd: fromTime(rules.workEnd),
     });
   }
 

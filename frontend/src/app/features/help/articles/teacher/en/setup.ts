@@ -12,8 +12,8 @@ cannot be skipped.
 2. **You and your portal:** enter the name students will see, and a photo if you like. The portal name appears in navigation, browser tabs, the \
 sign-in page and the calendar. The portal address is the one students use to open it, such as https://school.example.com. Invitations, bot links and \
 calendar subscriptions start with it. The portal fills in the address you are using now, and “Check” tells you whether it can be reached.
-3. **Time and payment:** the time zone sets your schedule and monthly reports, and the portal suggests the one on your device. Then choose a \
-currency, the usual lesson length and the default price for new students and groups. Individual prices can be changed later.
+3. **Time and payment:** the time zone sets your schedule and monthly reports, and the portal suggests the one on your device. Your working hours set the hours of \
+the calendar and of free times to move a lesson. Then choose a currency, the usual lesson length and the default price for new students and groups. Individual prices can be changed later.
 4. **Rules:** late cancellation, lesson reminders, the reminder before an assignment is due, and how many weeks of a repeating lesson appear ahead. \
 An example next to each rule shows what it does.
 5. **Done:** the portal suggests what to do next: add a student, connect a messaging app, the AI assistant or Google Calendar. “Go to the portal” \

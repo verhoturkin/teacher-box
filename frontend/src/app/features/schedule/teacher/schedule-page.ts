@@ -202,6 +202,8 @@ const ALL_DAY_START_HOUR = 10;
             @for (view of [screen()]; track view) {
               <tb-schedule-calendar
                 [lessons]="shownLessons()"
+                [workStart]="settings()?.workStart ?? '08:00'"
+                [workEnd]="settings()?.workEnd ?? '21:00'"
                 [busy]="busy()"
                 [offTime]="offTimePeriods()"
                 [unmarked]="unmarked()"

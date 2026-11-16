@@ -180,6 +180,38 @@ const CHECKLIST: Readonly<Record<string, readonly [string, string]>> = {
   ],
 };
 
+/** The teacher's working hours (stage 405.3): [topic, baseline, now] per edition. */
+const WORKING_HOURS: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'settings',
+      '([Оплаты](/teacher/help/billing)). «Правила»',
+      '([Оплаты](/teacher/help/billing)), рабочее время — часы календаря, внутри них портал предлагает' +
+        ' свободное время для переноса занятия. «Правила»',
+    ],
+    [
+      'setup',
+      'устройства. Валюта, длительность',
+      'устройства. Рабочее время — часы календаря и свободного времени для переноса занятий.' +
+        ' Валюта, длительность',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'settings',
+      '[Payments](/teacher/help/billing)). Under “Rules”',
+      '[Payments](/teacher/help/billing)), and your working hours: the calendar shows them, and free' +
+        ' times to move a lesson are offered within them. Under “Rules”',
+    ],
+    [
+      'setup',
+      'device. Then choose a currency',
+      'device. Your working hours set the hours of the calendar and of free times to move a lesson.' +
+        ' Then choose a currency',
+    ],
+  ],
+};
+
 const DISK_USAGE_RU = [
   'журнал и настройки без паролей и личных данных.',
   ' В «Ресурсах» видно, сколько занимают база данных, файлы, копии на сервере и восстановления.' +
@@ -268,6 +300,13 @@ describe('help articles after the split into one file per topic', () => {
     if (checklist && isRecord(first) && typeof first['body'] === 'string') {
       expect(first['body']).toContain(checklist[0]);
       expected['first-steps'] = { ...first, body: first['body'].replace(...checklist) };
+    }
+    for (const [topic, before, after] of WORKING_HOURS[name] ?? []) {
+      const reviewed = original[topic];
+      if (isRecord(reviewed) && typeof reviewed['body'] === 'string') {
+        expect(reviewed['body']).toContain(before);
+        expected[topic] = { ...reviewed, body: reviewed['body'].replace(before, after) };
+      }
     }
     expect(texts).toEqual(expected);
   });

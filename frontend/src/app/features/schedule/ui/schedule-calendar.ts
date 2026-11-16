@@ -135,6 +135,12 @@ export class ScheduleCalendar {
    * day, the weeks of the month are stretched; never below the height they have by their content.
    */
   readonly fillHeight = input(false);
+  /**
+   * The teacher's working hours (`HH:mm`): the hours of the week and the day, widened to whole hours and to
+   * the lessons outside them; 08:00–21:00 until they are loaded.
+   */
+  readonly workStart = input('08:00');
+  readonly workEnd = input('21:00');
 
   readonly rangeChange = output<CalendarRange>();
   readonly lessonClick = output<ScheduledLesson>();
@@ -242,6 +248,10 @@ export class ScheduleCalendar {
   }
 
   // overlapping periods are one: two background events over each other would paint (hatch) twice
+  private lastRange: CalendarRange | null = null;
+  private readonly hours = computed(() =>
+    visibleHours(this.workStart(), this.workEnd(), this.lessons()),
+  );
   private readonly busyPeriods = computed(() => mergePeriods(this.busy(), (first) => first));
   private readonly offTimePeriods = computed(() =>
     mergePeriods(this.offTime(), (first, second) => ({
@@ -330,8 +340,8 @@ export class ScheduleCalendar {
       firstDay: 1,
       nowIndicator: true,
       allDaySlot: false,
-      slotMinTime: '07:00:00',
-      slotMaxTime: '23:00:00',
+      slotMinTime: this.hours().min,
+      slotMaxTime: this.hours().max,
       height: 'auto',
       selectable: editable,
       selectMirror: editable,
@@ -344,11 +354,18 @@ export class ScheduleCalendar {
         ...this.offTimePeriods().map((period, index) => toOffTime(period, index)),
       ],
       datesSet: (info: DatesSetInfo) => {
-        this.rangeChange.emit({
+        const range = {
           from: toIsoDate(info.start),
           to: toIsoDate(info.end),
           current: toIsoDate(info.view.currentStart),
-        });
+        };
+        // new options (e.g. the hours widened to the loaded lessons) set the same dates again
+        const last = this.lastRange;
+        if (last?.from === range.from && last.to === range.to && last.current === range.current) {
+          return;
+        }
+        this.lastRange = range;
+        this.rangeChange.emit(range);
       },
       eventClick: (info: EventClickInfo) => {
         this.handleClick(info.event.id);
@@ -529,6 +546,34 @@ function joinNotes(first: string | null, second: string | null): string | null {
  * The periods with the overlapping and touching ones joined (`join` makes one of two, its `end` is the later):
  * the off time of two overlapping rules is one hatched block with the captions of both.
  */
+/**
+ * The hours of the time grid: the working hours (`HH:mm`) rounded out to whole hours and widened so that no
+ * lesson (device time) is cut off; a lesson past midnight runs to 24:00.
+ * shortcut: hours are compared in the device's zone, as the grid draws them; a teacher away from their zone
+ * sees the working hours shifted, until the calendar draws in the teacher's zone.
+ */
+export function visibleHours(
+  workStart: string,
+  workEnd: string,
+  lessons: readonly ScheduledLesson[],
+): { min: string; max: string } {
+  const minutes = (time: string): number => {
+    const [hours = 0, mins = 0] = time.split(':').map(Number);
+    return hours * 60 + mins;
+  };
+  const ofDay = (date: Date): number => date.getHours() * 60 + date.getMinutes();
+  let from = minutes(workStart);
+  let to = minutes(workEnd);
+  for (const lesson of lessons) {
+    const start = new Date(lesson.startsAt);
+    const end = new Date(lesson.endsAt);
+    from = Math.min(from, ofDay(start));
+    to = Math.max(to, end.toDateString() === start.toDateString() ? ofDay(end) : 24 * 60);
+  }
+  const hour = (total: number): string => `${String(total).padStart(2, '0')}:00:00`;
+  return { min: hour(Math.floor(from / 60)), max: hour(Math.ceil(to / 60)) };
+}
+
 export function mergePeriods<T extends { readonly start: string; readonly end: string }>(
   periods: readonly T[],
   join: (first: T, second: T) => T,

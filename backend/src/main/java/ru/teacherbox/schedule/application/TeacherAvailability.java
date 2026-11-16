@@ -49,21 +49,24 @@ public class TeacherAvailability {
     private final OffTimeService offTime;
     private final ObjectProvider<ExternalBusyTimes> external;
     private final InstanceTimeZone timeZone;
+    private final LessonRulesService rules;
     private final Clock clock;
 
     public TeacherAvailability(LessonRepository lessons, OffTimeService offTime,
-            ObjectProvider<ExternalBusyTimes> external, InstanceTimeZone timeZone, Clock clock) {
+            ObjectProvider<ExternalBusyTimes> external, InstanceTimeZone timeZone, LessonRulesService rules,
+            Clock clock) {
         this.lessons = lessons;
         this.offTime = offTime;
         this.external = external;
         this.timeZone = timeZone;
+        this.rules = rules;
         this.clock = clock;
     }
 
     /**
      * Free start times on {@code date} (the teacher's zone) to move the lesson to: from now on, every
-     * {@link #FREE_TIME_STEP}, where the whole lesson misses other lessons, the off time and the
-     * teacher's calendar. With a {@code studentId}, a lesson the student does not take part in is not
+     * {@link #FREE_TIME_STEP} from the start of the working hours, where the whole lesson ends by their end
+     * and misses other lessons, the off time and the teacher's calendar. With a {@code studentId}, a lesson the student does not take part in is not
      * found.
      */
     @Transactional(readOnly = true)
@@ -72,15 +75,18 @@ public class TeacherAvailability {
                 .filter(lesson -> studentId == null || lesson.hasParticipant(studentId))
                 .orElseThrow(() -> new NotFoundException("schedule.lesson-not-found", "Lesson not found"));
         ZoneId zone = timeZone.zoneId();
-        Instant from = date.atStartOfDay(zone).toInstant();
-        Instant to = date.plusDays(1).atStartOfDay(zone).toInstant();
+        LessonRules working = rules.current();
+        Instant from = date.atTime(working.workStart()).atZone(zone).toInstant();
+        Instant to = date.atTime(working.workEnd()).atZone(zone).toInstant();
         Duration length = Duration.between(moved.startsAt(), moved.endsAt());
         Instant now = clock.instant();
         if (!to.isAfter(now)) {
             return List.of();
         }
-        return SlotFinder.freeStarts(from, to, now,
-                busy(from, to.plus(length), lesson -> !lesson.id().equals(lessonId)), length, FREE_TIME_STEP);
+        List<BusyTime> busy = new ArrayList<>(busy(from, to, lesson -> !lesson.id().equals(lessonId)));
+        // the time after the working hours is busy: a lesson must end by then
+        busy.add(new BusyTime(to, to.plus(length)));
+        return SlotFinder.freeStarts(from, to, now, busy, length, FREE_TIME_STEP);
     }
 
     /**

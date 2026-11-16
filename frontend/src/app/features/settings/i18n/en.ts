@@ -33,6 +33,11 @@ export const en: Translation<typeof ru> = {
     durationLabel: 'Lesson length',
     durationHint: 'Used for each new lesson; you can change it for any lesson.',
     durationSuffix: ' min',
+    workLabel: 'Working hours',
+    workFrom: 'Start',
+    workTo: 'End',
+    workHint:
+      'The calendar shows these hours; free times to move a lesson are offered within them.',
     newLessonsHint:
       'Applies to new lessons, students and groups. Set a student’s own price on their details.',
     lateLabel: 'Late cancellation — within',

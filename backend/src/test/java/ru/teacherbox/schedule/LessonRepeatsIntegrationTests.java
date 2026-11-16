@@ -40,7 +40,7 @@ class LessonRepeatsIntegrationTests {
     void twelveWeeksAhead() {
         LessonRules test = TestLessonRules.RULES;
         rules.change(new LessonRules(test.defaultDurationMinutes(), test.lateCancellation(), test.reminders(),
-                Duration.ofDays(84)));
+                Duration.ofDays(84), test.workStart(), test.workEnd()));
     }
 
     @AfterEach

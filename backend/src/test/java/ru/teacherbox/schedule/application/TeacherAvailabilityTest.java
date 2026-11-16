@@ -44,7 +44,7 @@ class TeacherAvailabilityTest {
         }
         ObjectProvider<ExternalBusyTimes> provider = beans.getBeanProvider(ExternalBusyTimes.class);
         return new TeacherAvailability(lessons, offTimes, provider, new InstanceTimeZone(ZoneOffset.UTC),
-                Clock.fixed(NINE, ZoneOffset.UTC));
+                mock(LessonRulesService.class), Clock.fixed(NINE, ZoneOffset.UTC));
     }
 
     @Test

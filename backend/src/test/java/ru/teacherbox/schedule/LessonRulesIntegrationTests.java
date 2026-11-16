@@ -43,13 +43,18 @@ class LessonRulesIntegrationTests extends ScheduleHttpTestSupport {
             assertThat(json).extractingPath("$.lateCancellationMinutes").isEqualTo(1440);
             assertThat(json).extractingPath("$.reminderMinutes").isEqualTo(List.of(60, 1440));
             assertThat(json).extractingPath("$.horizonWeeks").isEqualTo(4);
+            assertThat(json).extractingPath("$.workStart").isEqualTo("08:00");
+            assertThat(json).extractingPath("$.workEnd").isEqualTo("21:00");
         });
 
-        assertThat(put(URI, rules(90, 720, "[2880, 30, 30]", 8))).hasStatusOk().bodyJson().satisfies(json -> {
-            assertThat(json).extractingPath("$.defaultDurationMinutes").isEqualTo(90);
-            assertThat(json).extractingPath("$.reminderMinutes").isEqualTo(List.of(30, 2880));
-            assertThat(json).extractingPath("$.horizonWeeks").isEqualTo(8);
-        });
+        assertThat(put(URI, rules(90, 720, "[2880, 30, 30]", 8, "09:30", "18:00"))).hasStatusOk().bodyJson()
+                .satisfies(json -> {
+                    assertThat(json).extractingPath("$.defaultDurationMinutes").isEqualTo(90);
+                    assertThat(json).extractingPath("$.reminderMinutes").isEqualTo(List.of(30, 2880));
+                    assertThat(json).extractingPath("$.horizonWeeks").isEqualTo(8);
+                    assertThat(json).extractingPath("$.workStart").isEqualTo("09:30");
+                    assertThat(json).extractingPath("$.workEnd").isEqualTo("18:00");
+                });
 
         UUID student = directory.addStudent("Правила");
         assertThat(mvc.get().uri("/api/me/schedule/settings").with(TestUsers.student(student)))
@@ -57,6 +62,8 @@ class LessonRulesIntegrationTests extends ScheduleHttpTestSupport {
                     assertThat(json).extractingPath("$.defaultDurationMinutes").isEqualTo(90);
                     assertThat(json).extractingPath("$.lateCancellationMinutes").isEqualTo(720);
                     assertThat(json).extractingPath("$.reminderMinutes").isEqualTo(List.of(30, 2880));
+                    assertThat(json).extractingPath("$.workStart").isEqualTo("09:30");
+                    assertThat(json).extractingPath("$.workEnd").isEqualTo("18:00");
                 });
         assertThat(post("/api/teacher/schedule/lessons", """
                 {"studentId":"%s","startsAt":"%s","allowOverlap":true}
@@ -99,6 +106,8 @@ class LessonRulesIntegrationTests extends ScheduleHttpTestSupport {
         assertRefused(rules(60, 0, "[10081]", 4), "schedule.settings-reminders-invalid");
         assertRefused(rules(60, 0, "[]", 3), "schedule.settings-horizon-invalid");
         assertRefused(rules(60, 0, "[]", 27), "schedule.settings-horizon-invalid");
+        assertRefused(rules(60, 0, "[]", 4, "18:00", "18:00"), "schedule.settings-working-hours-invalid");
+        assertRefused(rules(60, 0, "[]", 4, "20:00", "08:00"), "schedule.settings-working-hours-invalid");
         assertThat(put(URI, "{\"defaultDurationMinutes\":60}")).hasStatus(HttpStatus.BAD_REQUEST);
 
         assertThat(put(URI, rules(15, 10080, "[15, 60, 10080]", 26))).hasStatusOk();
@@ -107,13 +116,15 @@ class LessonRulesIntegrationTests extends ScheduleHttpTestSupport {
 
     @Test
     void anImportedValueKeepsTheOldLimitsAndAnUnreadableOneIsTheDefault() {
-        jdbc.sql("update schedule.settings set default_duration = 5, horizon = 'PT240H', reminders = 'later'"
-                + " where id = 1").update();
+        jdbc.sql("update schedule.settings set default_duration = 5, horizon = 'PT240H', reminders = 'later',"
+                + " work_start = '22:00', work_end = '07:00' where id = 1").update();
 
         assertThat(get(URI)).hasStatusOk().bodyJson().satisfies(json -> {
             assertThat(json).extractingPath("$.defaultDurationMinutes").isEqualTo(5);
             assertThat(json).extractingPath("$.horizonWeeks").isEqualTo(2);
             assertThat(json).extractingPath("$.reminderMinutes").isEqualTo(List.of(60, 1440));
+            assertThat(json).extractingPath("$.workStart").isEqualTo("08:00");
+            assertThat(json).extractingPath("$.workEnd").isEqualTo("21:00");
         });
     }
 
@@ -144,8 +155,13 @@ class LessonRulesIntegrationTests extends ScheduleHttpTestSupport {
     }
 
     private static String rules(int duration, int late, String reminders, int horizonWeeks) {
+        return rules(duration, late, reminders, horizonWeeks, "08:00", "21:00");
+    }
+
+    private static String rules(int duration, int late, String reminders, int horizonWeeks, String workStart,
+            String workEnd) {
         return """
-                {"defaultDurationMinutes":%d,"lateCancellationMinutes":%d,"reminderMinutes":%s,"horizonWeeks":%d}
-                """.formatted(duration, late, reminders, horizonWeeks);
+                {"defaultDurationMinutes":%d,"lateCancellationMinutes":%d,"reminderMinutes":%s,"horizonWeeks":%d,                "workStart":"%s","workEnd":"%s"}
+                """.formatted(duration, late, reminders, horizonWeeks, workStart, workEnd);
     }
 }

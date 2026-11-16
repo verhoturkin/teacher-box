@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import ru.teacherbox.schedule.application.LessonRules;
+import ru.teacherbox.schedule.application.LessonRulesService;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
@@ -37,6 +40,32 @@ class FreeTimesIntegrationTests {
 
     @Autowired
     InstanceTimeZone timeZone;
+
+    @Autowired
+    LessonRulesService rules;
+
+    @Autowired
+    TestLessonRules testRules;
+
+    @AfterEach
+    void backToTheTestRules() {
+        testRules.restore();
+    }
+
+    @Test
+    void freeTimesStayInTheWorkingHours() throws UnsupportedEncodingException {
+        LessonRules test = TestLessonRules.RULES;
+        rules.change(new LessonRules(test.defaultDurationMinutes(), test.lateCancellation(), test.reminders(),
+                test.horizon(), LocalTime.of(10, 0), LocalTime.of(13, 0)));
+        UUID student = directory.addStudent("Рабочее время");
+        LocalDate day = LocalDate.ofInstant(clock.instant(), zone()).plusDays(3 * 365 + 42);
+        String own = plan(student, at(day, 18, 0));
+
+        assertThat(mvc.get().uri("/api/teacher/schedule/free-times?date={date}&lessonId={id}", day, own)
+                .with(teacher())).hasStatusOk().bodyJson().extractingPath("$").asArray()
+                .startsWith(at(day, 10, 0).toString()).endsWith(at(day, 12, 0).toString())
+                .doesNotContain(at(day, 9, 45).toString(), at(day, 12, 15).toString(), at(day, 18, 0).toString());
+    }
 
     @Test
     void freeTimesLeaveOutOtherLessonsButNotTheMovedOne() throws UnsupportedEncodingException {

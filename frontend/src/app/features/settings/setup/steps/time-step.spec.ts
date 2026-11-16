@@ -5,18 +5,27 @@ import { lessonRules } from '@testing/schedule-fixtures';
 import { SetupTimePreview, SetupTimeStep, TimeForm } from './time-step';
 
 describe('SetupTimeStep', () => {
-  it('shows the zone, the length, the currency and the price and submits by Enter', async () => {
+  it('shows the zone, the length, the working hours, the currency and the price and submits by Enter', async () => {
     const form: TimeForm = new FormGroup({
       zone: new FormControl('Europe/Moscow', { nonNullable: true }),
       duration: new FormControl<number | null>(60),
       currency: new FormControl('RUB', { nonNullable: true }),
       price: new FormControl<number | null>(null),
+      workStart: new FormControl<Date | null>(new Date(2026, 0, 1, 8)),
+      workEnd: new FormControl<Date | null>(new Date(2026, 0, 1, 21)),
     });
     const fixture = await renderStep(SetupTimeStep, { form, locked: false, currency: null });
     const submitted = vi.fn();
     fixture.componentInstance.submitted.subscribe(submitted);
     const host = hostElement(fixture);
-    for (const id of ['#setup-zone', '#setup-duration', '#setup-currency', '#setup-price']) {
+    for (const id of [
+      '#setup-zone',
+      '#setup-duration',
+      '#setup-work-start',
+      '#setup-work-end',
+      '#setup-currency',
+      '#setup-price',
+    ]) {
       expect(host.querySelector(id)).not.toBeNull();
     }
     host.querySelector('form')?.dispatchEvent(new Event('submit'));

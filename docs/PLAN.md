@@ -59,6 +59,14 @@ Source: backlog review of 2026-11-15; design audit DA-049, DA-050.
   `schedule/teacher/request-answer-dialog.ts`, the teacher's move in `lesson-details-dialog.ts`)
   offer the free times of the chosen day as chips; a manual time stays possible. `m3-expressive`
   skill; help and wiki in both languages; `docs/modules/schedule.md`.
+- [x] 405.3 **B F** *complex* — the teacher's working hours (one day range, teacher's zone, default
+  08:00–21:00): `workStart` / `workEnd` in `schedule/application/LessonRules` (`schedule.settings`,
+  `LessonRulesService`, `TeacherLessonRulesController`, `ScheduleSettings` of
+  `/api/me/schedule/settings`); `TeacherAvailability.freeTimes` offers only starts whose lesson fits
+  in them; `ui/schedule-calendar.ts` shows these hours instead of the fixed 07:00 (widened to fit
+  lessons outside them); the field in `settings/lesson-settings.ts` and the wizard's
+  `setup/steps/rules-step.ts`. Glossary, help, wiki, `docs/modules/schedule.md`. Per-weekday
+  windows stay with roadmap/08.
 
 ### 406. Invitation and first run
 

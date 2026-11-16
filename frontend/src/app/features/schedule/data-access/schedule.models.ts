@@ -109,6 +109,9 @@ export interface ScheduleSettings {
   readonly defaultDurationMinutes: number;
   readonly lateCancellationMinutes: number;
   readonly reminderMinutes: number[];
+  /** The teacher's working hours, `HH:mm` of `timeZone`. */
+  readonly workStart: string;
+  readonly workEnd: string;
 }
 
 /** Mirrors `TeacherLessonRulesController.LessonRulesView` (and its request). */
@@ -121,6 +124,10 @@ export interface LessonRules {
   readonly reminderMinutes: readonly number[];
   /** 4–26. */
   readonly horizonWeeks: number;
+  /** `HH:mm`, the teacher's zone. */
+  readonly workStart: string;
+  /** `HH:mm`, after `workStart`. */
+  readonly workEnd: string;
 }
 
 /** Mirrors `FeedView` of the backend. */

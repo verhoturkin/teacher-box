@@ -127,6 +127,8 @@ export function scheduleSettings(overrides: Partial<ScheduleSettings> = {}): Sch
     defaultDurationMinutes: 60,
     lateCancellationMinutes: 1440,
     reminderMinutes: [60, 1440],
+    workStart: '08:00',
+    workEnd: '21:00',
     ...overrides,
   };
 }
@@ -137,6 +139,8 @@ export function lessonRules(overrides: Partial<LessonRules> = {}): LessonRules {
     lateCancellationMinutes: 1440,
     reminderMinutes: [1440, 60],
     horizonWeeks: 12,
+    workStart: '08:00',
+    workEnd: '21:00',
     ...overrides,
   };
 }
