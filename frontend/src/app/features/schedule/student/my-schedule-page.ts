@@ -295,7 +295,12 @@ export function nextMonday(date: Date): Date {
           </ng-template>
           <section class="tb-my-schedule-section">
             <h2>{{ t.history }}</h2>
-            <tb-load-state [state]="historyState" [what]="t.whatHistory" (retry)="loadHistory()">
+            <tb-load-state
+              [state]="historyState"
+              [what]="t.whatHistory"
+              [skeleton]="true"
+              (retry)="loadHistory()"
+            >
               @if (history().length === 0) {
                 <tb-empty-state icon="tb-i-history" [title]="t.noHistory" />
               } @else {

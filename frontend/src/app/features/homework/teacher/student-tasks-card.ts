@@ -43,7 +43,7 @@ export function byUrgency(a: MyTask, b: MyTask): number {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="t.title">
-      <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+      <tb-load-state [state]="state" [what]="t.what" [skeleton]="true" (retry)="load()">
         @if (shown().length === 0) {
           <tb-empty-state [compact]="true" icon="tb-i-assignment" [title]="t.nothing" />
         } @else {

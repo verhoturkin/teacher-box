@@ -184,7 +184,7 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
               />
             </div>
           </div>
-          <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+          <tb-load-state [state]="state" [what]="t.what" [skeleton]="true" (retry)="load()">
             @if (visibleRows().length > 0) {
               <ul class="tb-list tb-list--clamp tb-list--own-trail" [attr.aria-label]="t.title">
                 @for (row of visibleRows(); track row.kind + row.id) {

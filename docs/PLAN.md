@@ -127,7 +127,7 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
 
 ### 417. Skeleton loaders
 
-- [ ] 417.1 **F** *complex* — skeletons in `tb-load-state` (`shared/ui/load-state-view.ts`) for
+- [x] 417.1 **F** *complex* — skeletons in `tb-load-state` (`shared/ui/load-state-view.ts`) for
   list sections: the shape of the rows while they load, a pulse from top left to bottom right,
   the content fades in over it; the loading indicator stays for the rest. Static under reduced
   motion. Gallery sample, design-system.

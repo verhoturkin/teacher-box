@@ -927,6 +927,12 @@ Gallery: [`/gallery/states`](../frontend/src/app/features/gallery/states/).
     destruction cancels the delay and animation. Content appears immediately on completion.
     Reduced motion holds SoftBurst without rotation or pulsing. Min height, «Загрузка…»
     `role="status"`; the visible indicator has one labelled `progressbar` and a decorative SVG;
+  - loading a list section — `[skeleton]="true"` (ADR-0066, 417.1): three `.tb-list` rows (two
+    when `compact`) with a lead circle and two text bars in surface-container-highest instead of
+    the indicator; a lighter diagonal band (a mask over the whole list, 1.6 s linear loop) runs
+    from top left to bottom right; the content fades in over the rows on default effects while
+    they fade out under it. Reduced motion: the band stops off the rows, the skeleton is static.
+    Only list sections; the rest keep the indicator;
   - error — icon, «Не удалось загрузить …», the error with its code, «Повторить»;
   - ready — data or the empty state (only after a successful load; a bad link is an error).
 - Load requests are quiet (`quietContext()` / `SKIP_ERROR_TOAST`): the error shows in the section.

@@ -285,7 +285,7 @@ const NUMBER = new Intl.NumberFormat(locale());
             </div>
           }
         </div>
-        <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+        <tb-load-state [state]="state" [what]="t.what" [skeleton]="true" (retry)="load()">
           @if (summary(); as summary) {
             @if (list().length > 0) {
               <ul class="tb-list tb-ops__list" [attr.aria-label]="t.operations">
