@@ -504,8 +504,8 @@ Gallery: [`/gallery/buttons`](../frontend/src/app/features/gallery/buttons/).
 
 Variant = **weight**, colour = **one accent** (ADR-0045): filled is primary (the portal colour),
 tonal is neutral secondary, red only destroys; green and amber are statuses, never buttons.
-40 px pill (icon button 40×40, 48 px target), Label Large, 16 px sides, 20 px icon (**M3E** small);
-icon buttons 24 px icon; shape morphs to 8 px while pressed. Never `size="small"`, `success`,
+40 px pill (icon button 40×40, 48 px target), Label Large (14 / 20, set in the preset), 16 px
+sides, 20 px icon (**M3E** small); icon buttons 24 px icon; shape morphs to 8 px while pressed. Never `size="small"`, `success`,
 `warn`, `info`, `help`, `contrast`. Outlined (**M3** medium emphasis: 1 dp outline, primary label,
 no container) only as `variant="outlined"`, for the secondary action beside a page's filled main
 action — «Изменить» next to «Проверить N работ» (homework sketches, stages 339–342) — and for

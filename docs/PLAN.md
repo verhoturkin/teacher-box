@@ -124,5 +124,6 @@ attachments stays (a shared computer must not keep files); one language of the d
 load; Caddy alone instead of Caddy in front of nginx; colours on the board list; times in the
 portal time zone; search in the remaining long lists and list-detail for the review queue.
 
-- *simple* F — buttons render at 16px: the `.p-button { font-size: 0.875rem }` rule never applied
-  and was removed in 400.1 (ADR-0065); decide on M3 Label Large 14px as a separate visible change.
+- [x] *simple* F — buttons render at 16px: the `.p-button { font-size: 0.875rem }` rule never
+  applied and was removed in 400.1 (ADR-0065); decided on 2026-11-16: M3 Label Large 14px, done
+  in the button `css` of `teacher-box-preset.ts` (`sm` / `lg` keep their own size).
