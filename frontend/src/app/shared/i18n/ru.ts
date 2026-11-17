@@ -75,6 +75,7 @@ export const ru = {
     nextYear: 'Следующий год (Shift+Page Down)',
   },
   time: {
+    label: 'Время',
     format: 'ЧЧ:ММ',
     open: 'Выбрать время',
     wrong: (format: string) => `Введите время в виде ${format}`,

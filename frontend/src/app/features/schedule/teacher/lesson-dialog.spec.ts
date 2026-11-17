@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { bodyText, buttonByText } from '@testing/dom';
+import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
 import { scheduledLesson, dropFreeTimes } from '@testing/schedule-fixtures';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { LessonDialog } from './lesson-dialog';
@@ -104,6 +104,13 @@ describe('LessonDialog', () => {
       topic: ' Сложение ',
       meetingUrl: 'https://zoom.us/j/1',
     });
+    expect(requireElement(document.body, '#schedule-lesson-start', HTMLInputElement).value).toBe(
+      '01.10.2026',
+    );
+    const time = requireElement(document.body, '#schedule-lesson-start-time', HTMLInputElement);
+    expect(time.value).toBe('18:00');
+    typeInto(time, '1930');
+    time.dispatchEvent(new FocusEvent('blur'));
     await fixture.whenStable();
 
     buttonByText(document.body, 'Сохранить').click();
@@ -112,7 +119,7 @@ describe('LessonDialog', () => {
     expect(request.request.body).toMatchObject({
       studentId: 's-2',
       groupId: null,
-      startsAt: start.toISOString(),
+      startsAt: new Date(2026, 9, 1, 19, 30).toISOString(),
       durationMinutes: 90,
       title: 'Дроби',
       topic: 'Сложение',

@@ -1,3 +1,4 @@
+import { enterDateTime } from '../support/date-time';
 import { closePicker } from '../support/session';
 import { type Browser, type Page, expect, test } from '@playwright/test';
 import { create } from '../support/create';
@@ -28,14 +29,6 @@ async function signIn(page: Page, login: string, password: string): Promise<void
   await page.getByRole('button', { name: 'Войти' }).click();
 }
 
-/** `dd.MM.yyyy HH:mm` of a day relative to today (the format of the date pickers). */
-function dateTime(daysFromToday: number, hours: number, minutes = 0): string {
-  const date = new Date();
-  date.setDate(date.getDate() + daysFromToday);
-  const pad = (value: number): string => String(value).padStart(2, '0');
-  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${String(date.getFullYear())} ${pad(hours)}:${pad(minutes)}`;
-}
-
 async function planLesson(
   page: Page,
   daysFromToday: number,
@@ -50,10 +43,7 @@ async function planLesson(
   await create(page, 'Занятие');
   await page.locator('p-select:has(#schedule-lesson-student)').click();
   await page.getByRole('option', { name: STUDENT_NAME }).click();
-  // The date picker parses typed keys, not a pasted value.
-  await page
-    .locator('#schedule-lesson-start')
-    .pressSequentially(dateTime(daysFromToday, hours, minutes));
+  await enterDateTime(page, 'schedule-lesson-start', daysFromToday, hours, minutes);
   await page.locator('#schedule-lesson-title').fill(topic);
   await saveLesson(page);
 }
@@ -208,7 +198,7 @@ test('the student moves a lesson when the teacher agrees', async ({ page, browse
   // the home page has «Перенести» too: the click waits for the schedule
   await expect(student).toHaveURL(/\/cabinet\/schedule$/);
   await student.getByRole('button', { name: 'Перенести' }).click();
-  await student.locator('#request-start').pressSequentially(dateTime(4, 16));
+  await enterDateTime(student, 'request-start', 4, 16);
   await student.locator('#request-comment').fill('Можно на день позже?');
   await student.getByRole('button', { name: 'Отправить учителю' }).click();
   await expect(student.getByText('ждёт ответа учителя')).toBeVisible();

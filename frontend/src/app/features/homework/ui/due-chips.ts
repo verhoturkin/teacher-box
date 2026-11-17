@@ -9,7 +9,8 @@ import {
   model,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DatePicker } from 'primeng/datepicker';
+import { DateTimeField } from '@shared/ui/date-time-field';
+import { FieldErrors } from '@shared/ui/field-errors';
 import { FilterChip, FilterChips } from '@shared/ui/filter-chips';
 import { T } from '../i18n/texts';
 
@@ -39,7 +40,7 @@ export function dueAtOf(choice: Due, lesson: Date | null, picked: Date | null): 
 /** «Срок»: the next lesson, in a week, none, or a date — chips and, for a date, the picker. */
 @Component({
   selector: 'tb-due-chips',
-  imports: [FormsModule, DatePicker, FilterChips],
+  imports: [FormsModule, DateTimeField, FieldErrors, FilterChips],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
     :host {
@@ -58,17 +59,14 @@ export function dueAtOf(choice: Due, lesson: Date | null, picked: Date | null): 
       />
     </div>
     @if (shown() === 'date') {
-      <p-datepicker
-        [ngModel]="date()"
-        (ngModelChange)="pick($event)"
-        [ariaLabel]="t.dueAt"
-        [showTime]="true"
-        hourFormat="24"
-        dateFormat="dd.mm.yy"
-        [showIcon]="true"
-        appendTo="body"
-        [fluid]="true"
-      />
+      <div class="tb-field" tbFieldErrors>
+        <tb-date-time-field
+          inputId="homework-due-at"
+          [label]="t.dueAt"
+          [ngModel]="date()"
+          (ngModelChange)="pick($event)"
+        />
+      </div>
     }
   `,
 })

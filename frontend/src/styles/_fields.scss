@@ -317,7 +317,8 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
   display: none;
 }
 
-.tb-field--required > label:first-child::after {
+.tb-field--required > label:first-child::after,
+.tb-field--required > tb-date-time-field label::after {
   content: ' *';
 }
 

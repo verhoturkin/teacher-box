@@ -14,7 +14,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { map } from 'rxjs';
 import { Button } from 'primeng/button';
-import { DatePicker } from 'primeng/datepicker';
+import { DateTimeField } from '@shared/ui/date-time-field';
 import { DateField } from '@shared/ui/date-field';
 import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
@@ -69,7 +69,7 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
     OwnerOption,
     ReactiveFormsModule,
     Button,
-    DatePicker,
+    DateTimeField,
     DateField,
     FreeTimes,
     TbDialog,
@@ -123,18 +123,10 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
           </div>
           <div class="tb-row">
             <div class="tb-field">
-              <label for="schedule-lesson-start">{{ t.start }}</label>
-              <p-datepicker
+              <tb-date-time-field
                 inputId="schedule-lesson-start"
+                [label]="t.start"
                 formControlName="startsAt"
-                dateFormat="dd.mm.yy"
-                [showTime]="true"
-                hourFormat="24"
-                [stepMinute]="5"
-                [showIcon]="true"
-                [showOnFocus]="false"
-                appendTo="body"
-                [fluid]="true"
               />
               @if (lesson(); as moving) {
                 <tb-free-times

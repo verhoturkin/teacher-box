@@ -1,3 +1,4 @@
+import { dayText, enterDateTime } from '../support/date-time';
 import { bearer, startSession } from '../support/session';
 import { type Browser, type Page, expect, test } from '@playwright/test';
 import { create } from '../support/create';
@@ -25,14 +26,6 @@ async function signIn(page: Page, login: string, password: string): Promise<void
   await startSession(page, login, password);
 }
 
-/** `dd.MM.yyyy HH:mm` of a day relative to today (the format of the date pickers). */
-function dateTime(daysFromToday: number, hours: number, minutes = 0): string {
-  const date = new Date();
-  date.setDate(date.getDate() + daysFromToday);
-  const pad = (value: number): string => String(value).padStart(2, '0');
-  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${String(date.getFullYear())} ${pad(hours)}:${pad(minutes)}`;
-}
-
 async function addStudent(page: Page, name: string): Promise<string> {
   await page.goto('/teacher/students');
   await create(page, 'Ученик');
@@ -57,10 +50,7 @@ async function planLesson(
   await create(page, 'Занятие');
   await page.locator('p-select:has(#schedule-lesson-student)').click();
   await page.getByRole('option', { name: student }).click();
-  // The date picker parses typed keys, not a pasted value.
-  await page
-    .locator('#schedule-lesson-start')
-    .pressSequentially(dateTime(daysFromToday, hours, minutes));
+  await enterDateTime(page, 'schedule-lesson-start', daysFromToday, hours, minutes);
   await page.locator('#schedule-lesson-title').fill(title);
   await saveLesson(page);
 }
@@ -185,7 +175,7 @@ test('a student cannot ask to move a lesson into the teacher’s busy time', asy
   await student.goto('/cabinet/schedule');
   await student.getByRole('button', { name: 'Перенести' }).click();
   const dialog = student.getByRole('dialog', { name: 'Перенести занятие' });
-  await student.locator('#request-start').pressSequentially(dateTime(6, 12, 30));
+  await enterDateTime(student, 'request-start', 6, 12, 30);
   await expect(dialog).toContainText('В это время учитель занят');
   // the button is never disabled: sending says what is wrong and keeps the dialog
   await dialog.getByRole('button', { name: 'Отправить учителю' }).click();
@@ -201,7 +191,7 @@ test('a student cannot ask to move a lesson into the teacher’s busy time', asy
   });
   expect(response.ok()).toBe(true);
   const busy = (await response.json()) as { start: string; end: string }[];
-  const day = dateTime(6, 0).slice(0, 10).split('.').reverse().join('-');
+  const day = dayText(6).split('.').reverse().join('-');
   const freeHour = Array.from({ length: 10 }, (_, index) => index + 13).find((hour) => {
     const start = Date.parse(`${day}T${String(hour).padStart(2, '0')}:00:00+03:00`);
     return busy.every(
@@ -210,8 +200,7 @@ test('a student cannot ask to move a lesson into the teacher’s busy time', asy
   });
   if (freeHour === undefined) throw new Error('No free hour for the busy-time scenario');
 
-  await student.locator('#request-start').clear();
-  await student.locator('#request-start').pressSequentially(dateTime(6, freeHour));
+  await enterDateTime(student, 'request-start', 6, freeHour);
   await expect(dialog).not.toContainText('В это время учитель занят');
   await dialog.getByRole('button', { name: 'Отправить учителю' }).click();
   await expect(student.getByText('ждёт ответа учителя')).toBeVisible();

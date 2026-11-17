@@ -9,7 +9,8 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DatePicker } from 'primeng/datepicker';
+import { DateTimeField } from '@shared/ui/date-time-field';
+import { FieldErrors } from '@shared/ui/field-errors';
 import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
 import { EMPTY } from 'rxjs';
@@ -29,7 +30,7 @@ import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
  */
 @Component({
   selector: 'tb-change-request-dialog',
-  imports: [FormsModule, DatePicker, FreeTimes, Message, TbDialog, Textarea],
+  imports: [FormsModule, DateTimeField, FieldErrors, FreeTimes, Message, TbDialog, Textarea],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (built()) {
@@ -56,22 +57,14 @@ import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
               </p>
             }
             @if (kind() === 'RESCHEDULE') {
-              <div class="tb-field">
-                <label for="request-start">{{ t.time }}</label>
-                <p-datepicker
+              <div class="tb-field" tbFieldErrors>
+                <tb-date-time-field
                   inputId="request-start"
+                  [label]="t.time"
                   [ngModel]="proposed()"
                   (ngModelChange)="choose($event)"
                   [ngModelOptions]="{ standalone: true }"
-                  dateFormat="dd.mm.yy"
-                  [showTime]="true"
-                  hourFormat="24"
-                  [stepMinute]="5"
                   [minDate]="now()"
-                  [showIcon]="true"
-                  [showOnFocus]="false"
-                  appendTo="body"
-                  [fluid]="true"
                 />
                 <tb-free-times
                   [lessonId]="lesson.id"

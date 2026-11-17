@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { bodyText, buttonByText, requireElement } from '@testing/dom';
+import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
 import { onceOffTime, weeklyOffTime } from '@testing/schedule-fixtures';
 import { OffTime } from '../data-access/schedule.models';
 import { OffTimeDialog } from './off-time-dialog';
@@ -42,12 +42,16 @@ describe('OffTimeDialog', () => {
     const dialog = await open();
     expect(bodyText()).toContain('Нерабочее время');
     expect(bodyText()).toContain('Ученики увидят это время занятым');
-    expect(document.body.querySelector('#off-time-starts-at')).not.toBeNull();
-    dialog.form.patchValue({
-      startsAt: new Date(2026, 9, 5, 0, 0),
-      endsAt: new Date(2026, 9, 10, 0, 0),
-      note: '  Отпуск ',
-    });
+    const type = (selector: string, text: string): void => {
+      const input = requireElement(document.body, selector, HTMLInputElement);
+      typeInto(input, text);
+      input.dispatchEvent(new FocusEvent('blur'));
+    };
+    type('#off-time-starts-at', '5.10.2026');
+    type('#off-time-starts-at-time', '0');
+    type('#off-time-ends-at', '10.10.2026');
+    type('#off-time-ends-at-time', '0:00');
+    dialog.form.patchValue({ note: '  Отпуск ' });
     await fixture.whenStable();
 
     buttonByText(document.body, 'Сохранить').click();

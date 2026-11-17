@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { DatePicker } from 'primeng/datepicker';
+import { DateTimeField } from '@shared/ui/date-time-field';
 import { DateField } from '@shared/ui/date-field';
 import { TimeField } from '@shared/ui/time-field';
 import { InputText } from 'primeng/inputtext';
@@ -44,7 +44,7 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
   selector: 'tb-off-time-dialog',
   imports: [
     ReactiveFormsModule,
-    DatePicker,
+    DateTimeField,
     DateField,
     TimeField,
     TbDialog,
@@ -131,37 +131,19 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
               </div>
             </div>
           } @else {
-            <div class="tb-row">
-              <div class="tb-field">
-                <label for="off-time-starts-at">{{ t.from }}</label>
-                <p-datepicker
-                  inputId="off-time-starts-at"
-                  formControlName="startsAt"
-                  dateFormat="dd.mm.yy"
-                  [showTime]="true"
-                  hourFormat="24"
-                  [stepMinute]="5"
-                  [showIcon]="true"
-                  [showOnFocus]="false"
-                  appendTo="body"
-                  [fluid]="true"
-                />
-              </div>
-              <div class="tb-field">
-                <label for="off-time-ends-at">{{ t.to }}</label>
-                <p-datepicker
-                  inputId="off-time-ends-at"
-                  formControlName="endsAt"
-                  dateFormat="dd.mm.yy"
-                  [showTime]="true"
-                  hourFormat="24"
-                  [stepMinute]="5"
-                  [showIcon]="true"
-                  [showOnFocus]="false"
-                  appendTo="body"
-                  [fluid]="true"
-                />
-              </div>
+            <div class="tb-field">
+              <tb-date-time-field
+                inputId="off-time-starts-at"
+                [label]="t.from"
+                formControlName="startsAt"
+              />
+            </div>
+            <div class="tb-field">
+              <tb-date-time-field
+                inputId="off-time-ends-at"
+                [label]="t.to"
+                formControlName="endsAt"
+              />
             </div>
           }
           <div class="tb-field">

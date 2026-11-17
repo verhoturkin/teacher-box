@@ -123,8 +123,9 @@ test('a day of the month view plans a lesson of the default duration', async ({ 
   await expect(dialog).toBeVisible();
   const [year, month, dayOfMonth] = (date ?? '').split('-');
   await expect(dialog.locator('#schedule-lesson-start')).toHaveValue(
-    `${dayOfMonth}.${month}.${year} 10:00`,
+    `${dayOfMonth}.${month}.${year}`,
   );
+  await expect(dialog.locator('#schedule-lesson-start-time')).toHaveValue('10:00');
   await expect(dialog.locator('#schedule-lesson-duration')).not.toHaveValue('1440');
   await expect(dialog.locator('#schedule-lesson-duration')).not.toHaveValue('1 440');
 });

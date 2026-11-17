@@ -68,6 +68,10 @@ describe('RequestAnswerDialog', () => {
     await open(request);
     expect(bodyText()).toContain('Иван Петров: перенос занятия');
     expect(bodyText()).toContain('«Можно в пятницу?»');
+    const proposed = new Date(request.proposedStartsAt ?? '');
+    expect(requireElement(document.body, '#answer-start-time', HTMLInputElement).value).toBe(
+      `${String(proposed.getHours()).padStart(2, '0')}:${String(proposed.getMinutes()).padStart(2, '0')}`,
+    );
     typeInto(
       requireElement(document.body, '#answer-comment', HTMLTextAreaElement),
       ' Договорились ',

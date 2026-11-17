@@ -1,3 +1,4 @@
+import { dayText, enterDateTime } from '../support/date-time';
 import { bearer, startSession } from '../support/session';
 import { type Browser, type Page, expect, test } from '@playwright/test';
 import { create } from '../support/create';
@@ -22,14 +23,6 @@ async function signIn(page: Page, login: string, password: string): Promise<void
   await startSession(page, login, password);
 }
 
-/** `dd.MM.yyyy HH:mm` of a day relative to today (the format of the date pickers). */
-function dateTime(daysFromToday: number, hours: number, minutes = 0): string {
-  const date = new Date();
-  date.setDate(date.getDate() + daysFromToday);
-  const pad = (value: number): string => String(value).padStart(2, '0');
-  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${String(date.getFullYear())} ${pad(hours)}:${pad(minutes)}`;
-}
-
 async function planLesson(
   page: Page,
   daysFromToday: number,
@@ -41,10 +34,7 @@ async function planLesson(
   await create(page, 'Занятие');
   await page.locator('p-select:has(#schedule-lesson-student)').click();
   await page.getByRole('option', { name: STUDENT }).click();
-  // The date picker parses typed keys, not a pasted value.
-  await page
-    .locator('#schedule-lesson-start')
-    .pressSequentially(dateTime(daysFromToday, hours, minutes));
+  await enterDateTime(page, 'schedule-lesson-start', daysFromToday, hours, minutes);
   await page.locator('#schedule-lesson-topic').fill(topic);
   await saveLesson(page);
 }
@@ -109,7 +99,7 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
   expect(response.ok()).toBe(true);
   const busy = (await response.json()) as { start: string; end: string }[];
   const freeDay = Array.from({ length: 21 }, (_, index) => index + 9).find((days) => {
-    const day = dateTime(days, 9).slice(0, 10).split('.').reverse().join('-');
+    const day = dayText(days).split('.').reverse().join('-');
     const start = Date.parse(`${day}T09:00:00+03:00`);
     const end = Date.parse(`${day}T18:00:00+03:00`);
     return busy.every((time) => Date.parse(time.end) <= start || Date.parse(time.start) >= end);
@@ -123,10 +113,8 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
     'aria-pressed',
     'true',
   );
-  await page.locator('#off-time-starts-at').clear();
-  await page.locator('#off-time-starts-at').pressSequentially(dateTime(freeDay, 9));
-  await page.locator('#off-time-ends-at').clear();
-  await page.locator('#off-time-ends-at').pressSequentially(dateTime(freeDay, 18));
+  await enterDateTime(page, 'off-time-starts-at', freeDay, 9);
+  await enterDateTime(page, 'off-time-ends-at', freeDay, 18);
   await page.locator('#off-time-note').fill(OFF_TIME);
   await dialog.getByRole('button', { name: 'Сохранить' }).click();
   await expect(dialog).toBeHidden();
@@ -142,7 +130,7 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
   await expect(upcoming).not.toContainText('Дальняя');
   await upcoming.getByRole('button', { name: 'Перенести' }).click();
   const request = student.getByRole('dialog', { name: 'Перенести занятие' });
-  await student.locator('#request-start').pressSequentially(dateTime(freeDay, 12));
+  await enterDateTime(student, 'request-start', freeDay, 12);
   await expect(request).toContainText('В это время учитель занят');
   // the button stays enabled (ADR-0050); a busy time is not sent
   await request.getByRole('button', { name: 'Отправить учителю' }).click();
@@ -155,8 +143,7 @@ test('a student cannot ask to move a lesson into the teacher’s off time', asyn
   await page.getByRole('alertdialog').getByRole('button', { name: 'Удалить' }).click();
   await expect(offTime).toHaveCount(0);
 
-  await student.locator('#request-start').clear();
-  await student.locator('#request-start').pressSequentially(dateTime(freeDay, 12, 5));
+  await enterDateTime(student, 'request-start', freeDay, 12, 5);
   await expect(request).not.toContainText('В это время учитель занят');
   await student.context().close();
 });

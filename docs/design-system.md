@@ -786,11 +786,13 @@ Gallery: [`/gallery/fields`](../frontend/src/app/features/gallery/fields/) (chip
     arrows move by an hour or the step, Enter confirms the hour, then the time; Esc cancels.
     Motion: the hand turns on `--tb-spring-standard-fast-spatial` (no bounce, user choice, 424.2),
     the numbers swap and the selector colours change on fast effects.
-- **Date and time** (**M3** has no combined picker, ADR-0067): two fields in one row — date, then
-  time —, each with its own label and error. *Ours:* the row is 3fr / 2fr with a 16 dp gap, never
-  stacked; `minDate` stays (today: no time before now, rounded up to the step); the screen joins
-  the two into one `Instant` and splits it back in the zone it already works in (`shared.time`
-  rules, the fields convert nothing).
+- **Date and time** `tb-date-time-field` (`@shared/ui`, value `Date`, inputs `label`, `minDate`,
+  `step`; **M3** has no combined picker, ADR-0067): two fields in one row — date, then time
+  («Время», id `<inputId>-time`) —, each with its own label. *Ours:* the row is 3fr / 2fr with a
+  16 dp gap, never stacked; its one error (a wrong text, too early) goes under the row; `minDate`
+  stays (today: no time before now, rounded up to the step); the row joins the two into one
+  moment and splits it back in the zone the screen already works in (`shared/dates/date-time`,
+  `shared.time` rules, the fields convert nothing).
 - **Password** — `tb-password-toggle`, a 40×40 icon button inside the field, «Показать пароль» /
   «Скрыть пароль», `aria-pressed`.
 - A 40 px button next to a 56 px field is centred on it (`tb-copy-row`).

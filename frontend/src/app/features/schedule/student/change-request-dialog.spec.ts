@@ -37,6 +37,25 @@ describe('ChangeRequestDialog', () => {
     await fixture.whenStable();
   }
 
+  /** Types into a date or time field and leaves it. */
+  function enter(selector: string, text: string): void {
+    const input = requireElement(document.body, selector, HTMLInputElement);
+    typeInto(input, text);
+    input.dispatchEvent(new FocusEvent('blur'));
+    input.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+  }
+
+  it('keeps no time before now today', async () => {
+    await open('RESCHEDULE', new Date(2026, 8, 20, 14, 32));
+
+    enter('#request-start', '20.09.2026');
+    enter('#request-start-time', '14:30');
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.proposed()).toBeNull();
+    expect(bodyText()).toContain('Не раньше 14:35');
+  });
+
   it('offers the free times of the day and checks the chosen one', async () => {
     await open('RESCHEDULE', new Date(2026, 8, 20));
     const free = new Date(2026, 9, 5, 12, 30);
@@ -57,7 +76,11 @@ describe('ChangeRequestDialog', () => {
     expect(bodyText()).toContain('Выберите время');
     backend.expectNone('/api/me/schedule/lessons/l-1/requests');
     const proposed = new Date(2026, 9, 2, 17);
-    fixture.componentInstance.proposed.set(proposed);
+    enter('#request-start', '2.10.2026');
+    enter('#request-start-time', '17');
+    await fixture.whenStable();
+    expect(fixture.componentInstance.proposed()).toEqual(proposed);
+    backend.expectOne((r) => r.url === '/api/me/schedule/busy').flush([]);
     typeInto(
       requireElement(document.body, '#request-comment', HTMLTextAreaElement),
       'Можно в пятницу?',

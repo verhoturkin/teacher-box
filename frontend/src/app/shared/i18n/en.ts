@@ -74,6 +74,7 @@ export const en: Translation<typeof ru> = {
     nextYear: 'Next year (Shift+Page Down)',
   },
   time: {
+    label: 'Time',
     format: 'HH:MM',
     open: 'Choose time',
     wrong: (format: string) => `Enter the time as ${format}`,

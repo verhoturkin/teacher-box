@@ -152,7 +152,7 @@ What we take from M3:
   move by the step, Enter confirms), the input view, both layouts. Replace the `timeOnly` pickers
   (`off-time-dialog.ts`, `settings/fields/lesson-rule-fields.ts`,
   `admin/settings/settings-page.ts`); a gallery sample.
-- [ ] 425.4 *complex* F — a date with a time as two fields in one row (date, then time; one value
+- [x] 425.4 *complex* F — a date with a time as two fields in one row (date, then time; one value
   in the instance time zone, `shared.time` rules): `homework/ui/due-chips.ts`,
   `schedule/student/change-request-dialog.ts`, `schedule/teacher/lesson-dialog.ts`,
   `request-answer-dialog.ts`, `off-time-dialog.ts`; keep `minDate` (no past time today). Update
