@@ -44,7 +44,7 @@ sheet. KISS: remove before adding. No new ADR unless the call change needs one.
   (title bar of the call view) and set a clear window title (`<call> · Teacher Box`) instead of
   the portal address; if the browser itself paints the origin and it cannot be changed, say so in
   the report. Update `docs/modules/meetings.md`, `docs/screens.md`, wiki and help.
-- [ ] 421.3 *simple* F — student schedule (`schedule/student/my-schedule-page.ts`): the cards
+- [x] 421.3 *simple* F — student schedule (`schedule/student/my-schedule-page.ts`): the cards
   «Ближайшие занятия», «Мои запросы», «История занятий» are nested in a pane; lift them one level
   so they are top-level cards of the page, like the teacher's panes. The «Подписка на календарь»
   card (`schedule/ui/calendar-feed-panel.ts`) has broken layout there — a bordered card inside a
