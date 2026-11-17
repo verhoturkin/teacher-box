@@ -109,6 +109,11 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
       color var(--tb-spring-fast-effects);
   }
 
+  /* a long label ends in «…» before the trailing icon button of a date or time field */
+  &:has(> :is(tb-date-field, tb-time-field)) > label:first-child {
+    max-width: calc(100% - 4.5rem);
+  }
+
   /* the label of a textarea has the container fill behind it, so scrolled text never runs under it */
   &:has(> textarea) > label:first-child {
     overflow: visible;

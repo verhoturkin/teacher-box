@@ -249,9 +249,10 @@ const MINUTE_MARKS = Array.from({ length: 12 }, (_, index) =>
         color: var(--p-md-on-primary-container);
       }
 
+      /* inside the box: the dialog content clips a ring drawn outside the full-width selectors */
       &:focus-visible {
         outline: 3px solid var(--p-md-secondary);
-        outline-offset: 2px;
+        outline-offset: -3px;
       }
     }
 

@@ -121,7 +121,7 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
               </ng-template>
             </p-select>
           </div>
-          <div class="tb-row">
+          <div class="tb-form">
             <div class="tb-field">
               <tb-date-time-field
                 inputId="schedule-lesson-start"

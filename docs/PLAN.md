@@ -161,9 +161,14 @@ What we take from M3:
   `teacher-box-preset.ts` that nothing uses any more (and its `aura-base.ts` entry if
   `p-datepicker` is gone — `aura-base.spec.ts` tells); `docs/screens.md` where it names the
   pickers; wiki and help (typing a date or time, the clock) in both languages.
-- [ ] 425.6 *simple* F — browser check of 425.2–425.5: every replaced field at 400, 1024 and
+- [x] 425.6 *simple* F — browser check of 425.2–425.5: every replaced field at 400, 1024 and
   1920 px, typed entry, keyboard only, the dial with the mouse and touch emulation, light and
-  dark; fix small defects, list the rest.
+  dark; fix small defects, list the rest. *Fixed: the lesson dialog squeezed date and time into
+  half a row; the date picker now ends at its field's end; a long label stops before the icon;
+  the time selectors' focus ring was clipped. Left: not checked in the browser — student change
+  request, request answer, due chips, admin settings time (no student/admin sign-in), 1920 px,
+  dark theme of the open pickers; the dial is the third Tab stop (after the hour and minute
+  selectors), focus starts on the headline.*
 
 ### 426. Release 0.55.0
 

@@ -579,6 +579,7 @@ export class DateField extends TypedField<Date> {
   /** The docked picker opens on the chosen day (or today) or the chosen month. */
   protected focusChoice(): void {
     const panel = this.panel();
+    this.alignToEnd(panel);
     const day =
       panel?.querySelector<HTMLElement>('.p-datepicker-day-selected') ??
       panel?.querySelector<HTMLElement>('.p-datepicker-today > .p-datepicker-day') ??
@@ -587,6 +588,16 @@ export class DateField extends TypedField<Date> {
       panel?.querySelector<HTMLElement>('.tb-date-picker__item');
     if (day !== null && day !== undefined) {
       focusDay(day);
+    }
+  }
+
+  /** The overlay starts at the field's start; a picker wider than the field ends where the field does. */
+  private alignToEnd(panel: HTMLElement | null | undefined): void {
+    const overlay = panel?.closest<HTMLElement>('.p-overlay');
+    const field = this.opener().nativeElement.parentElement;
+    if (overlay && field) {
+      const end = field.getBoundingClientRect().right;
+      overlay.style.left = String(Math.max(end - overlay.offsetWidth, 8) + window.scrollX) + 'px';
     }
   }
 
