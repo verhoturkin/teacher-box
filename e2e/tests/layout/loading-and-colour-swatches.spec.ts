@@ -18,11 +18,12 @@ test('the loading indicator morphs inside a 48 px circle and follows reduced mot
   const held = new Promise<void>((resolve) => {
     release = resolve;
   });
-  await page.route('**/api/teacher/students', async (route) => {
+  // 0.53.0: the students list loads with skeleton rows; the assignments keep the indicator
+  await page.route('**/api/teacher/homework/assignments', async (route) => {
     await held;
     await route.continue();
   });
-  await page.goto('/teacher/students');
+  await page.goto('/teacher/homework');
 
   const indicator = page.locator('main tb-loading-indicator[role=progressbar]').first();
   await expect(indicator).toBeVisible();
