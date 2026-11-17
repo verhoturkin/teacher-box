@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { FileSaver } from '@shared/files/file-saver';
 import { toIsoMonth } from '@shared/dates/iso-date';
 import { monthlyReport, payment } from '@testing/billing-fixtures';
-import { buttonByText, hostElement, readableText } from '@testing/dom';
+import { buttonByText, hostElement, readableText, requireElement, typeInto } from '@testing/dom';
 import { MonthlyReportPage } from './monthly-report-page';
 import { testProviders } from '@testing/setup';
 
@@ -76,7 +76,9 @@ describe('MonthlyReportPage', () => {
     backend.expectOne(() => true).flush(monthlyReport());
     await fixture.whenStable();
 
-    fixture.componentInstance.month.setValue(new Date(2025, 2, 1));
+    const field = requireElement(host, '#report-month', HTMLInputElement);
+    typeInto(field, '3.2025');
+    field.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
 
     backend
       .expectOne('/api/teacher/billing/reports/monthly?month=2025-03')
@@ -86,6 +88,13 @@ describe('MonthlyReportPage', () => {
     expect(text()).toContain('В этом месяце не было ни занятий, ни оплат');
     expect(text()).toContain('Занятий нет');
     expect(text()).toContain('Оплат нет');
+
+    // a cleared field keeps the report of its month
+    typeInto(field, '');
+    field.dispatchEvent(new Event('blur'));
+    backend.expectNone(() => true);
+    buttonByText(host, 'Скачать CSV').click();
+    backend.expectOne('/api/teacher/billing/operations.csv?month=2025-03');
   });
 
   it('downloads the whole month journal as CSV', async () => {

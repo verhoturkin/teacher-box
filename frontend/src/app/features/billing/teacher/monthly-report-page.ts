@@ -12,9 +12,9 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { DateField } from '@shared/ui/date-field';
 import { FileSaver } from '@shared/files/file-saver';
 import { Pane, Panes } from '@shared/ui/panes';
-import { DatePicker } from 'primeng/datepicker';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { fromIsoMonth, toIsoMonth } from '@shared/dates/iso-date';
@@ -47,7 +47,7 @@ import { PAYMENTS_TAB } from '../card-link';
     RouterLink,
     Button,
     Card,
-    DatePicker,
+    DateField,
     TableModule,
     Tag,
     MoneyPipe,
@@ -64,17 +64,15 @@ import { PAYMENTS_TAB } from '../card-link';
             <tb-help-button help topic="teacher/billing" />
           </tb-page-header>
           <div class="tb-toolbar">
-            <p-datepicker
-              [formControl]="month"
-              [fluid]="true"
-              appendTo="body"
-              view="month"
-              dateFormat="mm.yy"
-              [showIcon]="true"
-              [readonlyInput]="true"
-              inputId="report-month"
-              [ariaLabel]="t.month"
-            />
+            <div class="tb-field">
+              <label for="report-month">{{ t.month }}</label>
+              <tb-date-field
+                inputId="report-month"
+                [label]="t.month"
+                [month]="true"
+                [formControl]="month"
+              />
+            </div>
             <p-button
               [label]="t.downloadCsv"
               icon="tb-i tb-i-download"
@@ -83,7 +81,7 @@ import { PAYMENTS_TAB } from '../card-link';
             />
           </div>
         </div>
-        <tb-load-state [state]="state" [what]="t.what" (retry)="load(month.value)">
+        <tb-load-state [state]="state" [what]="t.what" (retry)="load(reportMonth)">
           @if (report(); as report) {
             <dl class="tb-figures">
               <div class="tb-figure">
@@ -278,23 +276,26 @@ export class MonthlyReportPage implements OnInit {
   protected readonly lessonStatusHints = LESSON_STATUS_HINTS;
   private readonly requested = inject(ActivatedRoute).snapshot.queryParamMap.get('month');
   /** The month of the report: the one «Отчёт за месяц» was opened from (`?month=yyyy-MM`), else this one. */
-  readonly month = new FormControl<Date>(
+  protected reportMonth =
     this.requested !== null && /^\d{4}-\d{2}$/.test(this.requested)
       ? fromIsoMonth(this.requested)
-      : new Date(),
-    { nonNullable: true },
-  );
+      : new Date();
+  /** The month field; a cleared or wrong one keeps the report of `reportMonth`. */
+  readonly month = new FormControl<Date | null>(this.reportMonth);
   protected readonly report = signal<MonthlyReport | null>(null);
   protected readonly state = new LoadState();
 
   ngOnInit(): void {
-    this.load(this.month.value);
+    this.load(this.reportMonth);
     this.month.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((month) => {
-      this.load(month);
+      if (month !== null) {
+        this.load(month);
+      }
     });
   }
 
   protected load(month: Date): void {
+    this.reportMonth = month;
     this.api
       .monthlyReport(toIsoMonth(month))
       .pipe(this.state.track())
@@ -305,7 +306,7 @@ export class MonthlyReportPage implements OnInit {
 
   /** The whole journal of the report's month, without the overview's chip and student. */
   protected downloadCsv(): void {
-    const month = toIsoMonth(this.month.value);
+    const month = toIsoMonth(this.reportMonth);
     this.api
       .operationsCsv(month)
       .pipe(takeUntilDestroyed(this.destroyRef))

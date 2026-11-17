@@ -12,6 +12,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DatePicker } from 'primeng/datepicker';
+import { DateField } from '@shared/ui/date-field';
 import { InputText } from 'primeng/inputtext';
 import { SelectButton } from 'primeng/selectbutton';
 import { fromIsoDate, toIsoDate } from '@shared/dates/iso-date';
@@ -41,7 +42,15 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
  */
 @Component({
   selector: 'tb-off-time-dialog',
-  imports: [ReactiveFormsModule, DatePicker, TbDialog, InputText, SelectButton, FieldErrors],
+  imports: [
+    ReactiveFormsModule,
+    DatePicker,
+    DateField,
+    TbDialog,
+    InputText,
+    SelectButton,
+    FieldErrors,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (built()) {
@@ -121,27 +130,18 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
             <div class="tb-row">
               <div class="tb-field">
                 <label for="off-time-starts-on">{{ t.fromDate }}</label>
-                <p-datepicker
+                <tb-date-field
                   inputId="off-time-starts-on"
+                  [label]="t.fromDate"
                   formControlName="startsOn"
-                  dateFormat="dd.mm.yy"
-                  [showIcon]="true"
-                  [showOnFocus]="false"
-                  appendTo="body"
-                  [fluid]="true"
                 />
               </div>
               <div class="tb-field">
                 <label for="off-time-ends-on">{{ t.toDate }}</label>
-                <p-datepicker
+                <tb-date-field
                   inputId="off-time-ends-on"
+                  [label]="t.toDate"
                   formControlName="endsOn"
-                  dateFormat="dd.mm.yy"
-                  [showIcon]="true"
-                  [showOnFocus]="false"
-                  [showClear]="true"
-                  appendTo="body"
-                  [fluid]="true"
                 />
               </div>
             </div>

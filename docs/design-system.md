@@ -721,12 +721,13 @@ Gallery: [`/gallery/fields`](../frontend/src/app/features/gallery/fields/) (chip
 - **Date** `tb-date-field` (`@shared/ui`, value `Date`, `minDate` / `maxDate`, a month mode) — the
   filled field with a trailing `calendar_month` icon button «Выбрать дату».
   - **Docked picker** (medium and up, **M3**) just below the field, in the overlay of dropdowns
-    (§1 «Motion»). **M3:** container `surface-container-high`; days 40 dp round
-    (`DateContainer*`), on-surface; today 1 dp primary outline and primary text; selected primary /
-    on-primary; outside-month days on-surface-variant; header month and year menu buttons, each
-    with previous / next icon buttons (on-surface-variant); the month or year list **replaces**
-    the grid; weekdays on-surface, not focusable; hover 8 %, focus and pressed 10 % state layers;
-    disabled days 38 % on-surface; the size never scales with the window.
+    (§1 «Motion»); *ours* (user choice, 425.2): anchored at the icon button, it grows out of the
+    button's circle and goes back into it. **M3:** container `surface-container-high`; days 40 dp
+    round (`DateContainer*`), on-surface; today 1 dp primary outline and primary text; selected
+    primary / on-primary; outside-month days on-surface-variant; header month and year menu
+    buttons, each with previous / next icon buttons (on-surface-variant); the month or year list
+    **replaces** the grid; weekdays on-surface, not focusable; hover 8 %, focus and pressed 10 %
+    state layers; disabled days 38 % on-surface; the size never scales with the window.
   - *Ours* (M3 publishes no docked measurements and no picker type roles): width 360 dp (the
     modal's `ContainerWidth`), 12 dp padding, `--tb-shape-lg` like other dropdowns,
     `--tb-elevation-2` (M3 drops the shadow, but on a dialog the `surface-container-high`

@@ -53,7 +53,7 @@
 }
 
 /*
- * Scrollbars inside rounded shapes (panes, dialogs, sheets): the scrolling area lies inside its
+ * Scrollbars inside rounded shapes (panes, dialogs, sheets, the date picker's lists): the scrolling area lies inside its
  * clipped, rounded container, the scrollbar is thin, its track stays 16 px away from the corners and the thumb is
  * a rounded outline-variant bar. Ours (M3 does not publish scrollbars). Firefox has no track margin: it
  * gets the thin standard bar, which the clipped corner already hides.
@@ -77,6 +77,7 @@
 .p-autocomplete-list-container,
 .p-treeselect-tree-container,
 .p-menu,
+.tb-date-picker__list,
 textarea.p-textarea {
   &::-webkit-scrollbar {
     width: 0.75rem;
@@ -127,6 +128,7 @@ textarea.p-textarea::-webkit-resizer {
   .p-autocomplete-list-container,
   .p-treeselect-tree-container,
   .p-menu,
+  .tb-date-picker__list,
   textarea.p-textarea {
     scrollbar-color: var(--p-md-outline-variant) transparent;
     scrollbar-width: thin;

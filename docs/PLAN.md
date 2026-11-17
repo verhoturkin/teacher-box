@@ -133,7 +133,7 @@ What we take from M3:
   `p-datepicker [inline]` inside our overlay (preferred: less code) or needs its own grid — only
   if the M3 header cannot be built with PrimeNG templates. Decided: the PrimeNG grid stays, its
   header is hidden, our M3 header and month / year lists sit around it (ADR-0067).
-- [ ] 425.2 *complex* F — `tb-date-field` (`shared/ui/date-field.ts`, `ControlValueAccessor`,
+- [x] 425.2 *complex* F — `tb-date-field` (`shared/ui/date-field.ts`, `ControlValueAccessor`,
   value `Date`): the filled field (ADR-0050) with the trailing `calendar_month` icon button; a
   parser for typed dates (`shared/dates`) with tests for every accepted format and the rejects;
   the docked picker in an overlay under the field from medium, the full-screen dialog on compact;

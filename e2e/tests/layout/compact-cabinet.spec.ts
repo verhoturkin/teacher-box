@@ -169,8 +169,8 @@ test('compact payment figures and filters fit both cabinets; teacher report open
     await fits(page.locator('tb-monthly-report-page .tb-toolbar'));
     await fits(page.locator('tb-monthly-report-page .tb-figures'));
   }
-  await page.locator('#report-month').click();
-  await expect(page.locator('.p-datepicker-panel')).toBeVisible();
+  await page.getByRole('button', { name: 'Выбрать месяц', exact: true }).click();
+  await expect(page.locator('.tb-date-picker')).toBeVisible();
   await student(page);
   for (const width of [320, 390, 599]) {
     await page.setViewportSize({ width, height: 844 });

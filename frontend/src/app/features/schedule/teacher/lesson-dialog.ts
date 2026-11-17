@@ -15,6 +15,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { map } from 'rxjs';
 import { Button } from 'primeng/button';
 import { DatePicker } from 'primeng/datepicker';
+import { DateField } from '@shared/ui/date-field';
 import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
@@ -69,6 +70,7 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
     ReactiveFormsModule,
     Button,
     DatePicker,
+    DateField,
     FreeTimes,
     TbDialog,
     InputNumber,
@@ -176,15 +178,10 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
           @if (repeatWeeks() > 0) {
             <div class="tb-field">
               <label for="schedule-lesson-repeat-until">{{ t.repeatUntil }}</label>
-              <p-datepicker
+              <tb-date-field
                 inputId="schedule-lesson-repeat-until"
+                [label]="t.repeatUntil"
                 formControlName="repeatUntil"
-                dateFormat="dd.mm.yy"
-                [showIcon]="true"
-                [showOnFocus]="false"
-                [showClear]="true"
-                appendTo="body"
-                [fluid]="true"
               />
             </div>
           }

@@ -11,7 +11,7 @@ import {
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable, catchError, of, switchMap } from 'rxjs';
 import { Button } from 'primeng/button';
-import { DatePicker } from 'primeng/datepicker';
+import { DateField } from '@shared/ui/date-field';
 import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
 import { Select } from 'primeng/select';
@@ -38,7 +38,7 @@ import { locale } from '@core/i18n/language';
     OwnerOption,
     ReactiveFormsModule,
     Button,
-    DatePicker,
+    DateField,
     TbDialog,
     InputNumber,
     InputText,
@@ -106,15 +106,7 @@ import { locale } from '@core/i18n/language';
             </div>
             <div class="tb-field">
               <label for="payment-date">{{ t.date }}</label>
-              <p-datepicker
-                inputId="payment-date"
-                formControlName="paidOn"
-                dateFormat="dd.mm.yy"
-                [showIcon]="true"
-                [showOnFocus]="false"
-                appendTo="body"
-                [fluid]="true"
-              />
+              <tb-date-field inputId="payment-date" [label]="t.date" formControlName="paidOn" />
             </div>
           </div>
           <div class="tb-field">

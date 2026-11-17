@@ -4,7 +4,7 @@ import { DatePicker } from 'primeng/datepicker';
 import { MultiSelect } from 'primeng/multiselect';
 import { Select } from 'primeng/select';
 
-/** §9 Composite controls in `.tb-field`: select, multiselect, a date with its calendar icon, a time. */
+/** §9 Composite controls in `.tb-field`: select, multiselect, a time. */
 @Component({
   selector: 'tb-gallery-select-fields',
   imports: [FormsModule, Select, MultiSelect, DatePicker],
@@ -27,16 +27,6 @@ import { Select } from 'primeng/select';
           inputId="gallery-multi"
           [options]="days"
           [(ngModel)]="chosen"
-          appendTo="body"
-          [fluid]="true"
-        />
-      </div>
-      <div class="tb-field">
-        <label for="gallery-date">Date</label>
-        <p-datepicker
-          inputId="gallery-date"
-          [showIcon]="true"
-          iconDisplay="input"
           appendTo="body"
           [fluid]="true"
         />

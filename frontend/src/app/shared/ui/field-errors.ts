@@ -27,15 +27,17 @@ function numberOf(value: unknown, key: string): number {
 
 /**
  * The text of a field error (ADR-0024) by its validator; `server` is the message the server gave for
- * the field. Other errors are explained by their forms themselves: none here.
+ * the field, `date` the text of a date field. Other errors are explained by their forms themselves:
+ * none here.
  */
 export function errorText(errors: ValidationErrors | null): string | null {
   if (errors === null) {
     return null;
   }
-  const server: unknown = errors['server'];
-  if (typeof server === 'string') {
-    return server;
+  // the server's message for the field, or the text a field gives its own error (`tb-date-field`)
+  const own: unknown = errors['server'] ?? errors['date'];
+  if (typeof own === 'string') {
+    return own;
   }
   if ('required' in errors) {
     return T.required;
