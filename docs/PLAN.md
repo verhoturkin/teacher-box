@@ -62,7 +62,7 @@ sheet. KISS: remove before adding. No new ADR unless the call change needs one.
   `--compact`, `call-window.scss` `&--pip`, `call-tile.scss`). Both strips hide when the pointer
   leaves the window and show on hover or keyboard focus; the muted-microphone mark stays visible.
   The full call view in the tab keeps its look. Update `docs/screens/call.md`.
-- [ ] 421.6 *simple* F — browser check of 421.1–421.5 in the built-in browser; fix small defects,
+- [x] 421.6 *simple* F — browser check of 421.1–421.5 in the built-in browser; fix small defects,
   list the rest.
 
 ### 422. Release 0.54.0
