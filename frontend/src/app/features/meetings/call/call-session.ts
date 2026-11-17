@@ -34,9 +34,6 @@ import { T } from '../i18n/texts';
  */
 export type CallPhase = 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'ended';
 
-/** The full window or the floating mini window over the portal. */
-export type CallMode = 'expanded' | 'minimized';
-
 /** The room the user is about to join: the pre-join sheet. */
 export interface CallTarget {
   readonly ownerId: string;
@@ -81,7 +78,6 @@ export class CallSession {
   private nextLine = 0;
 
   readonly phase = signal<CallPhase>('idle');
-  readonly mode = signal<CallMode>('expanded');
   /** The room being opened: the token is requested. */
   readonly opening = signal<string | null>(null);
   readonly prejoin = signal<CallTarget | null>(null);
@@ -100,7 +96,7 @@ export class CallSession {
   readonly chatOpen = signal(false);
   /** The full window floats over other tabs (Document Picture-in-Picture, `call-pip.ts`). */
   readonly pip = signal(false);
-  /** Messages of the others not seen yet: the chat was closed or the window minimized. */
+  /** Messages of the others not seen yet: the chat was closed or the call floats without it. */
   readonly unread = signal(0);
 
   readonly live = computed(() => LIVE.has(this.phase()));
@@ -137,13 +133,9 @@ export class CallSession {
     });
   }
 
-  /** Opens the room: the pre-join sheet, or the window if this call is going on. */
+  /** Opens the room: the pre-join sheet; nothing if this call is going on. */
   open(ownerId: string): void {
-    if (this.live() && this.target()?.ownerId === ownerId) {
-      this.mode.set('expanded');
-      return;
-    }
-    if (this.opening() !== null) {
+    if ((this.live() && this.target()?.ownerId === ownerId) || this.opening() !== null) {
       return;
     }
     this.opening.set(ownerId);
@@ -177,7 +169,6 @@ export class CallSession {
     this.media.set(media);
     const attempt = ++this.attempt;
     this.target.set(target);
-    this.mode.set('expanded');
     this.participants.set([]);
     this.clearChat();
     this.endText.set(null);
@@ -241,16 +232,12 @@ export class CallSession {
     }
   }
 
-  expand(): void {
-    this.mode.set('expanded');
+  /** «Вернуть во вкладку»: the floating window closes, the call goes on in the tab. */
+  back(): void {
     this.pip.set(false);
     if (this.chatOpen()) {
       this.unread.set(0);
     }
-  }
-
-  minimize(): void {
-    this.mode.set('minimized');
   }
 
   toggleChat(): void {
@@ -424,7 +411,7 @@ export class CallSession {
 
   private receive(message: CallChatMessage): void {
     this.addLine(message.from, message.text, false);
-    if (!this.chatOpen() || this.mode() === 'minimized') {
+    if (!this.chatOpen() || this.pip()) {
       this.unread.update((count) => count + 1);
       this.announcement.set(T.chat.received(message.from));
     }
@@ -461,7 +448,6 @@ export class CallSession {
   private end(text: string): void {
     this.connection = null;
     this.phase.set('ended');
-    this.mode.set('expanded');
     this.endText.set(text);
     this.startedAt.set(null);
   }

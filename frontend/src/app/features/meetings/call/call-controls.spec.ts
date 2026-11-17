@@ -68,7 +68,7 @@ describe('CallControls', () => {
     return found;
   }
 
-  it('opens the chat and shows the unread messages on its button and on «Развернуть»', async () => {
+  it('opens the chat and shows the unread messages on its button and on «Вернуть во вкладку»', async () => {
     await render();
     expect(host.querySelector('tb-nav-badge')).toBeNull();
     session.unread.set(3);
@@ -85,7 +85,7 @@ describe('CallControls', () => {
     await render(true);
     session.unread.set(2);
     await fixture.whenStable();
-    expect(button('Развернуть. Чат, непрочитанных: 2')).toBeDefined();
+    expect(button('Вернуть во вкладку. Чат, непрочитанных: 2')).toBeDefined();
     expect(host.querySelector('tb-nav-badge')?.textContent).toBe('2');
   });
 
@@ -95,7 +95,6 @@ describe('CallControls', () => {
       mic: vi.spyOn(session, 'toggleMicrophone').mockResolvedValue(),
       camera: vi.spyOn(session, 'toggleCamera').mockResolvedValue(),
       screen: vi.spyOn(session, 'toggleScreen').mockResolvedValue(),
-      minimize: vi.spyOn(session, 'minimize'),
       leave: vi.spyOn(session, 'leave').mockResolvedValue(),
     };
 
@@ -105,7 +104,6 @@ describe('CallControls', () => {
     button('Микрофон').click();
     button('Камера').click();
     button('Показ экрана').click();
-    button('Свернуть').click();
     button('Выйти из звонка').click();
 
     expect(Object.values(toggles).every((spy) => spy.mock.calls.length === 1)).toBe(true);
@@ -193,12 +191,13 @@ describe('CallControls', () => {
     open.mockRestore();
   });
 
-  it('keeps the compact set for the mini window and waits while connecting', async () => {
+  it('keeps the compact set for the floating window and waits while connecting', async () => {
     await render(true);
-    const expand = vi.spyOn(session, 'expand');
+    const back = vi.spyOn(session, 'back');
 
-    button('Развернуть').click();
-    expect(expand).toHaveBeenCalled();
+    button('Вернуть во вкладку').click();
+    expect(back).toHaveBeenCalled();
+    expect(host.querySelector('button[aria-label="Свернуть"]')).toBeNull();
     expect(host.querySelector('button[aria-label="Настройки звонка"]')).toBeNull();
     expect(host.querySelector('button[aria-label="Показ экрана"]')).toBeNull();
 

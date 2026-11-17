@@ -56,18 +56,21 @@ join the lesson (`JoinLessonChatAction`).
 
 ## Frontend
 
-`features/meetings/`: `call/` — built-in calls: `call-engine.ts` (contract, `CALL_ENGINE` lazily imports
-`livekit-engine.ts`, the only file importing `livekit-client`, ESLint), `call-session.ts` (root service: phase,
-mode, participants, devices; leaves on sign-out, asks before the page closes), `call-devices.ts` (preview, device
-list, choice in `localStorage`), components `call-host` (in `app.ts`), `call-prejoin`, `call-window`, `call-mini`,
-`call-tile`, `call-controls` (settings menu: for the teacher «Доска ученика» — each other participant opens `/teacher/materials?tab=boards&q=<name>` in a new tab, 409.2, no `boards` import; devices, sound processing, «Сведения о связи» —
+`features/meetings/`: `call/` — built-in calls: `call-engine.ts` (contract, `CALL_ENGINE` lazily
+imports `livekit-engine.ts`, the only file importing `livekit-client`, ESLint), `call-session.ts`
+(root service: phase, participants, devices; leaves on sign-out, asks before the page closes),
+`call-devices.ts` (preview, device list, choice in `localStorage`), components `call-host` (in
+`app.ts`), `call-prejoin`, `call-window`, `call-tile`, `call-controls` (settings menu: for the
+teacher «Доска ученика» — each other participant opens `/teacher/materials?tab=boards&q=<name>` in a
+new tab, 409.2, no `boards` import; devices, sound processing, «Сведения о связи» —
 `call-stats-dialog.ts`, WebRTC statistics read by `readStats` / `statsSections` in `call-stats.ts`),
-`call-self` (own camera of a one-to-one call), `call-chat` (the chat of the call, 409.1: text
-over the LiveKit data channel, topic `tb-chat`, at most 1000 characters; kept in `CallSession`
-only while the call goes on, never stored), `call-pip.ts` (410.1: Document Picture-in-Picture,
-feature-detected; `CallSession.pip`; the `call-window` node moves to the floating window and back),
-layout in `call-layout.ts`, moving
-between corners in `call-corner.ts` (mini window and own camera, each remembered in `localStorage`); `index.ts` exports `CallHost` (root `@defer`) and
+`call-self` (own camera of a one-to-one call), `call-chat` (the chat of the call, 409.1: text over
+the LiveKit data channel, topic `tb-chat`, at most 1000 characters; kept in `CallSession` only while
+the call goes on, never stored), `call-pip.ts` (410.1: Document Picture-in-Picture,
+feature-detected; `CallSession.pip`; the `call-window` node moves to the floating window and back,
+window title «<call> — <portal name>»; 421.2: the only floating mode, no mini window — elsewhere the
+call stays full), layout in `call-layout.ts`, moving between corners in `call-corner.ts` (own
+camera, remembered in `localStorage`); `index.ts` exports `CallHost` (root `@defer`) and
 `CALL_ROUTES` (`/call/:ownerId`, `openCallGuard`; 0.22.0: no «Звонки» section — `/teacher/calls` redirects to the
 settings category «Занятия», `/teacher/settings/lessons`) — never import them from `parts.ts` in the root, it pulls the
 help articles into the first load (0.15.3: no call card on the student's home — the student joins from the lesson). `rooms/` (`room-panel.ts` — the card «Видеовстреча» on the Профиль tab of a student's or a group's card, saved at

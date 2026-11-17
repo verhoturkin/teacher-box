@@ -3,9 +3,9 @@ import { type APIRequestContext, type Page, expect, test } from '@playwright/tes
 
 /**
  * Version 0.8.0: built-in calls on LiveKit (ADR-0030) — the teacher opens the room of a student by its
- * link (0.22.0: «Звонки» is a category of the settings), joins it, minimizes the call and keeps working
- * in the portal; the student joins by the room's link and both see each other. The browser has a fake
- * camera and microphone (playwright.config.ts).
+ * link (0.22.0: «Звонки» is a category of the settings), joins it (0.54.0: no
+ * minimized call — it floats only in Picture-in-Picture); the student joins by the room's link
+ * and both see each other. The browser has a fake camera and microphone (playwright.config.ts).
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -72,17 +72,6 @@ test('the teacher and the student meet in the room of the student', async ({ bro
     'true',
   );
 
-  // minimized, the call goes on while the teacher works in the portal
-  await teacher.getByRole('button', { name: 'Свернуть' }).click();
-  const mini = teacher.getByRole('region', { name: 'Звонок' });
-  await expect(mini).toContainText(STUDENT);
-  await teacher
-    .getByRole('navigation', { name: 'Разделы' })
-    .getByRole('link', { name: 'Расписание' })
-    .click();
-  await expect(teacher).toHaveURL(/\/teacher\/schedule/);
-  await expect(mini).toBeVisible();
-
   const student = await (await browser.newContext()).newPage();
   await signIn(student, vera.login, vera.password);
   // 0.15.3: no call card on the student's home — the room's link opens the call
@@ -92,7 +81,6 @@ test('the teacher and the student meet in the room of the student', async ({ bro
   await expect(student.locator('tb-call-tile')).toHaveCount(2);
 
   // the teacher sees the student come in, with her camera
-  await mini.getByRole('button', { name: 'Развернуть' }).click();
   const window = teacher.getByRole('dialog', { name: STUDENT });
   await expect(window).toContainText('2 участника');
   await expect(

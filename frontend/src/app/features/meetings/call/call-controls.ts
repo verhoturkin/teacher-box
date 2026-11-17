@@ -25,8 +25,8 @@ import { T } from '../i18n/texts';
 
 /**
  * The buttons of a call (M3 Expressive toolbar): microphone and camera toggles (error-coloured while
- * off), screen sharing, devices, picture-in-picture, minimize/expand and the red «Выйти»; no tooltips, the labels are for
- * screen readers. The compact set is for the mini window.
+ * off), screen sharing, chat, devices, picture-in-picture and the red «Выйти»; no tooltips, the labels
+ * are for screen readers. The compact set is for the floating window.
  */
 @Component({
   selector: 'tb-call-controls',
@@ -118,14 +118,6 @@ import { T } from '../i18n/texts';
           (onClick)="pictureInPicture.emit()"
         />
       }
-      <p-button
-        styleClass="tb-call-button"
-        icon="tb-i tb-i-close_fullscreen"
-        [rounded]="true"
-        severity="secondary"
-        [ariaLabel]="t.minimize"
-        (onClick)="session.minimize()"
-      />
     } @else {
       <span class="tb-call-controls__badged">
         <p-button
@@ -134,11 +126,9 @@ import { T } from '../i18n/texts';
           [rounded]="true"
           severity="secondary"
           [ariaLabel]="
-            session.unread() > 0
-              ? expandLabel() + '. ' + t.chatUnread(session.unread())
-              : expandLabel()
+            session.unread() > 0 ? t.back + '. ' + t.chatUnread(session.unread()) : t.back
           "
-          (onClick)="session.expand()"
+          (onClick)="session.back()"
         />
         @if (session.unread() > 0) {
           <tb-nav-badge [count]="session.unread()" />
@@ -162,7 +152,7 @@ export class CallControls {
   private readonly router = inject(Router);
   private readonly teacher = inject(AuthService).role() === 'TEACHER';
 
-  /** The mini window: microphone, camera, expand, leave. */
+  /** The floating window: microphone, camera, back to the tab, leave. */
   readonly compact = input(false);
   /** «Поверх других окон» was pressed: the call window moves to a floating window. */
   readonly pictureInPicture = output();
@@ -172,10 +162,6 @@ export class CallControls {
   /** Phones share no screen, and the toolbar keeps to one line. */
   protected readonly mobile = injectMobile();
   protected readonly connected = computed(() => this.session.phase() === 'connected');
-  /** In the floating window «Развернуть» brings the call back to the tab. */
-  protected readonly expandLabel = computed(() =>
-    this.session.pip() ? this.t.back : this.t.expand,
-  );
   protected readonly menuOpen = signal(false);
   protected readonly statsOpen = signal(false);
   /** PrimeNG menus start at z-index 1000, under the call window (1050 in `styles.scss`). */

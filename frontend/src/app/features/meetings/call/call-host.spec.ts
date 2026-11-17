@@ -43,7 +43,7 @@ describe('CallHost', () => {
     await fixture.whenStable();
   });
 
-  it('counts the time in the full window and keeps the page still, then minimizes', async () => {
+  it('counts the time in the full window and keeps the page still, unless it floats', async () => {
     session.target.set({ ownerId: 'g-1', title: 'ОГЭ' });
     session.participants.set([aParticipant()]);
     session.phase.set('connected');
@@ -56,9 +56,8 @@ describe('CallHost', () => {
     await fixture.whenStable();
     expect(host.textContent).toContain('1:05');
 
-    session.minimize();
+    session.pip.set(true);
     await fixture.whenStable();
-    expect(host.querySelector('tb-call-mini')).not.toBeNull();
     expect(document.documentElement.classList).not.toContain('tb-call-expanded');
 
     fixture.destroy();

@@ -58,6 +58,19 @@ describe('LoadStateView', () => {
     expect(host.querySelector('tb-loading-indicator')).toBeNull();
   });
 
+  it('leaves absolute content anchored to the caller: only the list rows position the host', async () => {
+    const plain = TestBed.createComponent(Host);
+    const list = TestBed.createComponent(ListHost);
+    await plain.whenStable();
+    await list.whenStable();
+    const position = (fixture: typeof plain | typeof list): string =>
+      getComputedStyle(hostElement(fixture).querySelector('tb-load-state')!).position;
+
+    // a positioned host collapsed the board canvas (absolute, inset 0) to its own empty box
+    expect(position(plain)).not.toBe('relative');
+    expect(position(list)).toBe('relative');
+  });
+
   it('shows synchronous results immediately without creating an indicator', async () => {
     const fixture = TestBed.createComponent(Host);
     fixture.componentInstance.state.done();

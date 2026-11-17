@@ -1,5 +1,5 @@
 import { MediaRef } from './call-engine';
-import { elapsedText, gridSize, miniView, stageLayout } from './call-layout';
+import { elapsedText, gridSize, stageLayout } from './call-layout';
 import { aParticipant as person } from '@testing/meetings-fixtures';
 
 const VIDEO: MediaRef = { id: 'v', attach: () => undefined, detach: () => undefined };
@@ -41,15 +41,6 @@ describe('call layout', () => {
     });
     expect(stageLayout([sharingMe, sharingAnna]).main?.participant).toBe(sharingAnna);
     expect(stageLayout([sharingAnna]).tiles).toEqual([sharingAnna]);
-  });
-
-  it('shows in the mini window a screen, a speaker, a camera, anyone, then this user', () => {
-    expect(miniView([me, anna, { ...boris, screen: VIDEO }])?.screen).toBe(true);
-    expect(miniView([me, anna, { ...boris, speaking: true }])?.participant.id).toBe('boris');
-    expect(miniView([me, anna, { ...boris, camera: VIDEO }])?.participant.id).toBe('boris');
-    expect(miniView([me, anna, boris])?.participant.id).toBe('anna');
-    expect(miniView([me])?.participant.id).toBe('me');
-    expect(miniView([])).toBeNull();
   });
 
   it('makes the grid as square as possible, two columns on a phone', () => {

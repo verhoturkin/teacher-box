@@ -138,7 +138,7 @@ decision. When none are left you return to where you started and see “Nothing 
 assignment’s submissions only, and “Back” returns to the assignment. You will see the assignment, the student’s response and attached images; a \
 voice response plays right there. “Open on the board” opens the assignment’s board.
 
-Add feedback and a grade, then choose “Accept” or “Return for revision”. Quick comments help with common responses. “Next: …” opens the next \
+Add feedback and a grade, then choose “Accept” or “Return for revision”. “Next: …” opens the next \
 submission after your decision. If AI is enabled, “AI draft” suggests feedback and a grade; review them before choosing “Insert”.
 
 On wide screens the review form sits beside the submission. On a phone, use the bottom toolbar; feedback, grades and AI drafts open in a bottom \

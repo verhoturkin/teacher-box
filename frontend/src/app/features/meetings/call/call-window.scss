@@ -65,14 +65,86 @@
     justify-self: center;
   }
 
-  /* The floating window (Picture-in-Picture): the stage and the compact controls only, our decision */
+  /*
+   * The floating window (Picture-in-Picture, variant A — our decision): the video edge to edge, the title bar and
+   * the compact controls on dark scrim strips over it; the strips fade (effects spring) when the pointer leaves or
+   * rests (`--idle`, call-window.ts) and come back on hover or keyboard focus. White on the 60 % black scrim keeps
+   * at least 5.9:1 over a white frame.
+   */
   &--pip {
-    grid-template-rows: 1fr auto;
-    gap: var(--tb-space-2);
-    padding: var(--tb-space-2);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    background: var(--p-md-surface-container-lowest);
 
-    > .tb-call-window__header {
+    > .tb-call-stage,
+    > .tb-call-window__end {
+      flex: 1;
+    }
+
+    .tb-call-window__header,
+    .tb-call-window__controls {
+      position: absolute;
+      inset-inline: 0;
+      z-index: 2;
+      padding: var(--tb-space-2) var(--tb-space-3);
+      background: rgb(0 0 0 / 60%);
+      color: white;
+      opacity: 0;
+      transition: opacity var(--tb-spring-default-effects);
+    }
+
+    .tb-call-window__header {
+      top: 0;
+    }
+
+    .tb-call-window__title {
+      font: var(--tb-type-title-s-emphasized);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .tb-call-window__meta {
+      color: inherit;
+    }
+
+    .tb-call-window__controls {
+      bottom: 0;
+      justify-self: stretch;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    &:not(.tb-call-window--idle):hover,
+    &:has(:focus-visible) {
+      .tb-call-window__header,
+      .tb-call-window__controls {
+        opacity: 1;
+      }
+    }
+
+    .tb-call-stage {
+      gap: 0;
+    }
+
+    /* above `.tb-call-stage--alone .tb-call-stage__main` below */
+    .tb-call-stage .tb-call-stage__main {
+      max-width: none;
+      border-radius: 0;
+    }
+
+    /* «1 участник» in the title bar says the same */
+    .tb-call-stage__waiting {
       display: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tb-call-window__header,
+      .tb-call-window__controls {
+        transition: none;
+      }
     }
   }
 

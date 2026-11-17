@@ -338,7 +338,7 @@ export function nextMonday(date: Date): Date {
               }
             </tb-load-state>
           </section>
-          <tb-calendar-feed-panel class="tb-my-schedule-feed" />
+          <tb-calendar-feed-panel />
         </div>
       </tb-pane>
     </tb-panes>
@@ -396,21 +396,9 @@ export function nextMonday(date: Date): Date {
       gap: var(--tb-space-4);
     }
 
-    :host ::ng-deep .tb-my-schedule-feed .p-card-body {
-      padding: 0;
-    }
-
     @media (width < 37.5em) {
       .tb-my-schedule-side {
         background: transparent;
-      }
-
-      .tb-my-schedule-section,
-      .tb-my-schedule-feed {
-        display: block;
-        padding: var(--tb-space-4);
-        border-radius: var(--tb-shape-lg);
-        background: var(--p-md-surface-container-low);
       }
     }
 

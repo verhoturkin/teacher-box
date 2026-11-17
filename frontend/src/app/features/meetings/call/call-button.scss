@@ -58,13 +58,3 @@
     }
   }
 }
-
-.tb-call-mini .p-button.tb-call-button.tb-call-button {
-  --tb-call-button-selected-shape: var(--tb-shape-md);
-  --tb-call-button-pressed-shape: var(--tb-shape-sm);
-  --tb-call-button-size: 2.75rem;
-
-  &.tb-call-button--leave {
-    width: 3.5rem;
-  }
-}

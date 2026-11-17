@@ -216,7 +216,19 @@ const WORKING_HOURS: Readonly<Record<string, readonly (readonly [string, string,
   ],
 };
 
-/** Moderating a call, its chat, the board and the floating window (408.2–410.1): [topic, baseline, now] of the call articles. */
+/** Moderating a call, its chat, the board and the floating window (408.2–410.1, 421.2): [topic, baseline, now] of the call articles. */
+/** The review sheet without quick phrases (421.4): [topic, baseline, now]. */
+const REVIEW_SHEET: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'homework',
+      '- **Комментарий ученику** и быстрые фразы под ним — «Отлично», «Есть ошибка», «Перепроверь»;',
+      '- **Комментарий ученику**;',
+    ],
+  ],
+  'teacher.en': [['homework', ' Quick comments help with common responses.', '']],
+};
+
 const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
   'teacher.ru': [
     [
@@ -229,8 +241,19 @@ const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, strin
         ' доски откроются в новой вкладке, звонок продолжится.\n- **Чат** — сообщения всем участникам звонка; число на кнопке —' +
         ' непрочитанные. Чат видят только участники звонка, после звонка он не сохраняется.' +
         '\n- **Поверх других окон** — в Chrome и Edge на компьютере звонок переходит в маленькое' +
-        ' окно поверх других вкладок и программ: плитки, микрофон, камера и «Выйти». «Вернуть во' +
-        ' вкладку» или закрытие окна вернёт звонок в портал.\n- **Выйти из звонка**',
+        ' окно поверх других вкладок и программ: название звонка, плитки, микрофон, камера и' +
+        ' «Выйти», а вы работайте в портале: откройте доску, задания, расписание. «Вернуть во' +
+        ' вкладку» или закрытие окна вернёт звонок в портал. В других браузерах и на телефоне' +
+        ' звонок остаётся в большом окне — для работы рядом откройте портал в новой вкладке.' +
+        '\n- **Выйти из звонка**',
+    ],
+    // 421.2: one floating mode, the mini window is gone
+    [
+      'calls',
+      '- **Свернуть** — звонок продолжится в маленьком окне в углу, а вы работайте в портале:' +
+        ' откройте доску, задания, расписание. Окно можно перетащить в другой угол. «Развернуть»' +
+        ' вернёт большое окно.\n',
+      '',
     ],
   ],
   'teacher.en': [
@@ -244,8 +267,17 @@ const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, strin
         ' call; the number on the button shows unread messages. Only people in the call see the' +
         ' chat, and it isn’t saved after the call.\n- **Float over other windows:** in Chrome and' +
         ' Edge on a computer, the call moves to a small window above other tabs and apps, with' +
-        ' the tiles, microphone, camera and Leave call. “Back to the tab” or closing that window' +
-        ' brings the call back to the portal.\n- **Leave call:**',
+        ' the call name, tiles, microphone, camera and Leave call, so you can use boards,' +
+        ' assignments or other portal pages. “Back to the tab” or closing that window brings the' +
+        ' call back to the portal. In other browsers and on a phone, the call stays in the full' +
+        ' window; open the portal in another tab to work alongside it.\n- **Leave call:**',
+    ],
+    [
+      'calls',
+      '- **Minimise:** keep the call in a small movable window while using boards, assignments' +
+        ' or other portal pages. On a phone it becomes a bar above the bottom navigation.' +
+        ' “Expand” restores the full window.\n',
+      '',
     ],
   ],
   'student.ru': [
@@ -254,8 +286,15 @@ const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, strin
       '«Выйти из звонка» — красная кнопка.',
       '«Чат» открывает переписку со всеми в звонке, число на кнопке — непрочитанные сообщения;' +
         ' после звонка чат не сохраняется. В Chrome и Edge на компьютере «Поверх других окон»' +
-        ' переносит звонок в маленькое окно над другими вкладками и программами, «Вернуть во' +
-        ' вкладку» вернёт его. «Выйти из звонка» — красная кнопка.',
+        ' переносит звонок в маленькое окно над другими вкладками и программами — откройте' +
+        ' доску или задание, разговор продолжится; «Вернуть во вкладку» вернёт его. В других' +
+        ' браузерах откройте портал в новой вкладке. «Выйти из звонка» — красная кнопка.',
+    ],
+    [
+      'lesson',
+      ', а «Свернуть» оставит звонок в маленьком окне — откройте доску или задание, разговор' +
+        ' продолжится.',
+      '.',
     ],
   ],
   'student.en': [
@@ -264,8 +303,15 @@ const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, strin
       '- choose “Leave call” to leave.',
       '- choose “Chat” to message everyone in the call; the number on the button shows unread' +
         ' messages, and the chat isn’t saved after the call;\n- choose “Float over other windows”' +
-        ' in Chrome or Edge on a computer to keep the call in a small window above other tabs and' +
-        ' apps; “Back to the tab” brings it back;\n- choose “Leave call” to leave.',
+        ' in Chrome or Edge on a computer to keep talking in a small window above other tabs and' +
+        ' apps while you use a board or work on an assignment; “Back to the tab” brings it back.' +
+        ' In other browsers, open the portal in another tab;\n- choose “Leave call” to leave.',
+    ],
+    [
+      'lesson',
+      '- choose “Minimise” to keep talking while you use a board or work on an assignment;\n' +
+        '- choose “Expand” to return to the full call window;\n',
+      '',
     ],
   ],
 };
@@ -368,8 +414,10 @@ describe('help articles after the split into one file per topic', () => {
     for (const [topic, before, after] of [
       ...(WORKING_HOURS[name] ?? []),
       ...(CALL_MODERATION[name] ?? []),
+      ...(REVIEW_SHEET[name] ?? []),
     ]) {
-      const reviewed = original[topic];
+      // several reviews of one topic apply in turn
+      const reviewed = expected[topic];
       if (isRecord(reviewed) && typeof reviewed['body'] === 'string') {
         expect(reviewed['body']).toContain(before);
         expected[topic] = { ...reviewed, body: reviewed['body'].replace(before, after) };

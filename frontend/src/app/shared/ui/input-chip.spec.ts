@@ -34,6 +34,8 @@ describe('InputChip', () => {
     const host = hostElement(fixture);
 
     expect(host.textContent).toContain('Группа B1 · 4');
+    // one line with an ellipsis: the full text is the title
+    expect(host.querySelector('tb-input-chip')?.getAttribute('title')).toBe('Группа B1 · 4');
     expect(host.querySelector('.tb-i-groups')).not.toBeNull();
 
     host.querySelector<HTMLButtonElement>('button[aria-label="Убрать: Группа B1"]')?.click();

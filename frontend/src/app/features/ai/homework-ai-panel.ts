@@ -197,9 +197,6 @@ export class HomeworkAiState {
             [placeholder]="mode() === 'TASK' ? t.placeholder : t.questionsPlaceholder"
           ></textarea>
           <div class="tb-ai-pane__chips">
-            @for (hint of suggestions; track hint.label) {
-              <tb-assist-chip (click)="prompt.setValue(hint.text)">{{ hint.label }}</tb-assist-chip>
-            }
             <tb-assist-chip icon="bookmarks" (click)="prompts.toggle($event)">{{
               t.myPrompts
             }}</tb-assist-chip>
@@ -920,11 +917,6 @@ export class HomeworkAiPanel implements OnInit {
   protected readonly paneModes: Segment<AiMode>[] = [
     { label: this.t.paneTask, value: 'TASK' },
     { label: this.t.paneQuestions, value: 'QUESTIONS' },
-  ];
-  protected readonly suggestions = [
-    { label: this.t.suggestTopic, text: this.t.suggestTopicText },
-    { label: this.t.suggestEssay, text: this.t.suggestEssayText },
-    { label: this.t.suggestBook, text: this.t.suggestBookText },
   ];
   protected readonly draft = this.state.draft;
   protected readonly history = this.state.history;

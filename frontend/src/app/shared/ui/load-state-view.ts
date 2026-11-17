@@ -74,7 +74,6 @@ import { SHARED_T } from '@shared/i18n/texts';
   `,
   styles: `
     :host {
-      position: relative;
       display: block;
     }
 
@@ -136,7 +135,10 @@ import { SHARED_T } from '@shared/i18n/texts';
     }
 
     /* the rows take the width of the section even in a flex parent that does not stretch them */
+    /* positioned only here, for the leaving rows: elsewhere absolute content (the board) anchors
+       to the caller's box */
     :host(.tb-load-state--skeleton) {
+      position: relative;
       align-self: stretch;
     }
 
