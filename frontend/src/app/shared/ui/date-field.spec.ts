@@ -73,7 +73,7 @@ async function render(width = 1024, setup?: (host: Host) => void): Promise<Rende
       fixture.debugElement
         .query(By.directive(Overlay))
         .injector.get(Overlay)
-        .onEnter.emit({ element: document.createElement('div') });
+        .onEnter.emit({ element: document.body });
     },
   };
 }

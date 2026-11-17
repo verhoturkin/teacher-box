@@ -239,9 +239,9 @@ let nextId = 0;
       <p-overlay
         [visible]="docked()"
         (visibleChange)="docked.set($event)"
-        target="@prev"
+        target="@parent"
         appendTo="body"
-        (onEnter)="entered($event.element)"
+        (onEnter)="focusChoice()"
       >
         @if (docked()) {
           <ng-container *ngTemplateOutlet="picker" />
@@ -320,6 +320,8 @@ let nextId = 0;
       box-sizing: border-box;
       width: 22.5rem;
       max-width: 100%;
+      /* the overlay is as wide as the field: the picker keeps to the field's end (user choice) */
+      margin-inline-start: auto;
       padding: var(--tb-space-3);
       border-radius: var(--tb-shape-lg);
       background: var(--p-md-surface-container-high);
@@ -657,24 +659,8 @@ export class DateField implements ControlValueAccessor, Validator {
     this.opener().nativeElement.focus();
   }
 
-  /** The docked picker grows out of its icon button (and goes back into it), then takes the focus. */
-  protected entered(surface: Element): void {
-    const icon = this.opener().nativeElement.getBoundingClientRect();
-    const box = surface.getBoundingClientRect();
-    const inset = [
-      icon.top - box.top,
-      box.right - icon.right,
-      box.bottom - icon.bottom,
-      icon.left - box.left,
-    ].map((side) => `${String(Math.round(side))}px`);
-    if (surface instanceof HTMLElement) {
-      surface.style.setProperty('--tb-motion-clip', `inset(${inset.join(' ')} round 50%)`);
-    }
-    this.focusChoice();
-  }
-
   /** The docked picker opens on the chosen day (or today) or the chosen month. */
-  private focusChoice(): void {
+  protected focusChoice(): void {
     const panel = this.panel();
     const day =
       panel?.querySelector<HTMLElement>('.p-datepicker-day-selected') ??
