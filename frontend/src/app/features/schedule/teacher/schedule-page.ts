@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnInit,
+  Signal,
   computed,
   inject,
   signal,
@@ -350,41 +351,52 @@ const ALL_DAY_START_HOUR = 10;
       (onHide)="menuFor.set(null)"
     />
 
-    <tb-lesson-dialog
-      [(visible)]="lessonDialogVisible"
-      [students]="students()"
-      [groups]="groups()"
-      [lesson]="editing()"
-      [slot]="slot()"
-      [defaultDuration]="defaultDuration()"
-      (saved)="done(t.saved)"
-    />
-    <tb-lesson-details-dialog
-      [(visible)]="detailsVisible"
-      [lesson]="selected()"
-      (changed)="reload()"
-      (deleted)="done(t.deleted)"
-      (edit)="editLesson($event)"
-      (answerOpened)="answer($event)"
-    />
-    <tb-attendance-dialog
-      [(visible)]="attendanceVisible"
-      [lesson]="selected()"
-      (saved)="reload()"
-      (restored)="reload()"
-    />
-
-    <tb-off-time-dialog
-      [(visible)]="offTimeDialogVisible"
-      [offTime]="editingOffTime()"
-      [timeZone]="settings()?.timeZone ?? null"
-      (saved)="onOffTimeSaved()"
-    />
-    <tb-request-answer-dialog
-      [(visible)]="answerVisible"
-      [request]="answering()"
-      (answered)="done(t.answered)"
-    />
+    <!-- each dialog is built when first opened: their hidden forms took ~100 ms of the page's first
+      render, which held the page transition (stage 419.5) -->
+    @if (built.lessonDialog()) {
+      <tb-lesson-dialog
+        [(visible)]="lessonDialogVisible"
+        [students]="students()"
+        [groups]="groups()"
+        [lesson]="editing()"
+        [slot]="slot()"
+        [defaultDuration]="defaultDuration()"
+        (saved)="done(t.saved)"
+      />
+    }
+    @if (built.details()) {
+      <tb-lesson-details-dialog
+        [(visible)]="detailsVisible"
+        [lesson]="selected()"
+        (changed)="reload()"
+        (deleted)="done(t.deleted)"
+        (edit)="editLesson($event)"
+        (answerOpened)="answer($event)"
+      />
+    }
+    @if (built.attendance()) {
+      <tb-attendance-dialog
+        [(visible)]="attendanceVisible"
+        [lesson]="selected()"
+        (saved)="reload()"
+        (restored)="reload()"
+      />
+    }
+    @if (built.offTimeDialog()) {
+      <tb-off-time-dialog
+        [(visible)]="offTimeDialogVisible"
+        [offTime]="editingOffTime()"
+        [timeZone]="settings()?.timeZone ?? null"
+        (saved)="onOffTimeSaved()"
+      />
+    }
+    @if (built.answer()) {
+      <tb-request-answer-dialog
+        [(visible)]="answerVisible"
+        [request]="answering()"
+        (answered)="done(t.answered)"
+      />
+    }
   `,
   styles: `
     .tb-schedule-screens {
@@ -522,6 +534,14 @@ export class SchedulePage implements OnInit {
   protected readonly editingOffTime = signal<OffTime | null>(null);
   protected readonly answerVisible = signal(false);
   protected readonly answering = signal<ChangeRequest | null>(null);
+  /** Whether each dialog has been opened once: it is built then and stays (its closing animation plays). */
+  protected readonly built = {
+    lessonDialog: openedOnce(this.lessonDialogVisible),
+    details: openedOnce(this.detailsVisible),
+    attendance: openedOnce(this.attendanceVisible),
+    offTimeDialog: openedOnce(this.offTimeDialogVisible),
+    answer: openedOnce(this.answerVisible),
+  };
 
   /** A phone's screens (chips above the calendar): the agenda is the first; each of the others is its own screen. */
   protected readonly screen = signal<PhoneScreen>('agenda');
@@ -877,4 +897,10 @@ export class SchedulePage implements OnInit {
     this.loadOffTimes();
     this.loadAttention();
   }
+}
+
+/** True from the first time `visible` is true on: the dialog is built when first opened, never dropped. */
+function openedOnce(visible: Signal<boolean>): Signal<boolean> {
+  let opened = false;
+  return computed(() => (opened ||= visible()));
 }

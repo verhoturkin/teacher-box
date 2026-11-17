@@ -153,9 +153,14 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
   the repeat rule per lesson (`series.findById`) — read them in one query; `summary()` loads every
   unmarked lesson to count it — a count query; an index on `schedule.lessons (status, ends_at)`
   (new migration).
-- [ ] 419.5 **F** *complex* — the schedule page renders in one 180 ms task, which holds the page
+- [x] 419.5 **F** *complex* — the schedule page renders in one 180 ms task, which holds the page
   transition frozen (`updateCallbackDone` 158 ms): profile the production build after 419.1 and
-  split or defer the heavy part of the week view.
+  split or defer the heavy part of the week view. Found: not the week view (FullCalendar renders
+  ~300 nodes in ~6 ms) but the five hidden dialogs, whose projected forms (date pickers, inputs,
+  buttons) were built with the page; `schedule-page.ts` now builds each dialog when first opened
+  (`openedOnce`). Production build: the render task 135–165 ms → 27–37 ms (53 ms on the first
+  visit), `updateCallbackDone` 198 → 45–74 ms. Endpoints after 419.1 and 419.4 (dev data, warm):
+  `summary`, `lessons`, `unmarked` ~3–4 ms each (were 178 / 213 / 126 ms).
 
 ### 418. Release 0.53.0
 
