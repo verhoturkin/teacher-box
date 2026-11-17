@@ -23,52 +23,6 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
-## v0.54.0
-
-Goals: fixes from the teacher's review of 0.53.0 — the board fills the screen, one call mode that
-floats over everything, a flatter student schedule, fewer chips in the AI helper and the review
-sheet. KISS: remove before adding. No new ADR unless the call change needs one.
-
-### 421. Fixes from the 0.53.0 review
-
-- [x] 421.1 *complex* F — the board is cut off at the bottom: the Excalidraw canvas stops at about
-  a third of the viewport, the rest is empty. Find why the host gets no height
-  (`boards/editor/board-page.ts`, `board-canvas.ts`, `excalidraw-host.ts`); fix the root cause in
-  the layout, not a fixed pixel height. Check the full and mobile widths.
-- [x] 421.2 *complex* F — calls: one floating mode instead of two. Today the call can float in the
-  Document Picture-in-Picture window (`meetings/call/call-pip.ts`) or in the in-portal mini window
-  (`call-mini.ts`, `call-corner.ts`, `call-host.ts`, `call-session.ts`). Keep only the mode that
-  floats over everything (PiP); delete the other one with its tests, labels and help text; where
-  PiP is unsupported (Firefox, Safari) keep the smallest fallback that still lets the call go on
-  — decide and say which in the commit. In the PiP window show the portal's own header styles
-  (title bar of the call view) and set a clear window title (`<call> · Teacher Box`) instead of
-  the portal address; if the browser itself paints the origin and it cannot be changed, say so in
-  the report. Update `docs/modules/meetings.md`, `docs/screens.md`, wiki and help.
-- [x] 421.3 *simple* F — student schedule (`schedule/student/my-schedule-page.ts`): the cards
-  «Ближайшие занятия», «Мои запросы», «История занятий» are nested in a pane; lift them one level
-  so they are top-level cards of the page, like the teacher's panes. The «Подписка на календарь»
-  card (`schedule/ui/calendar-feed-panel.ts`) has broken layout there — a bordered card inside a
-  card with a misplaced edge; make it one plain card. Update `docs/screens.md`.
-- [x] 421.4 *simple* F — AI helper and review sheet. AI helper: remove the suggestion chips
-  «Упражнения по теме», «Эссе», «По тексту учебника» (`suggest*` labels in `ai/i18n`), keep
-  «Мои запросы». Review sheet (`homework/teacher/review-sheet.ts`): remove the quick-comment chips
-  under the comment; grades 1–5 plus «Без оценки» (now 3–5); the student-context tags wrap badly
-  on two lines — one line with an ellipsis and the full text in a tooltip (fix in the shared tag
-  component, so the AI helper's tags get it too). Check the backend accepts grades 1 and 2.
-- [x] 421.5 *complex* F — the floating call window (PiP), variant A picked by the teacher: the
-  video fills the whole window edge to edge — no rounding, no padding around the main tile; the
-  call name and time on a scrim strip over the top of the video, the controls as separate round
-  icon buttons on a scrim strip over the bottom — no shared pill surface (`call-controls.scss`
-  `--compact`, `call-window.scss` `&--pip`, `call-tile.scss`). Both strips hide when the pointer
-  leaves the window and show on hover or keyboard focus; the muted-microphone mark stays visible.
-  The full call view in the tab keeps its look. Update `docs/screens/call.md`.
-- [x] 421.6 *simple* F — browser check of 421.1–421.5 in the built-in browser; fix small defects,
-  list the rest.
-
-### 422. Release 0.54.0
-
-- [ ] 422.1 *simple* — skill `release`: help, E2E, CHANGELOG, version, archive this section.
-
 ## Backlog
 
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,
