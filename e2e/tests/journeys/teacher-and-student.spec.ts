@@ -198,7 +198,8 @@ test('the student moves a lesson when the teacher agrees', async ({ page, browse
   // the home page has «Перенести» too: the click waits for the schedule
   await expect(student).toHaveURL(/\/cabinet\/schedule$/);
   await student.getByRole('button', { name: 'Перенести' }).click();
-  await enterDateTime(student, 'request-start', 4, 16);
+  // the day through the modal date picker over the request dialog (430.1)
+  await enterDateTime(student, 'request-start', 4, 16, 0, true);
   await student.locator('#request-comment').fill('Можно на день позже?');
   await student.getByRole('button', { name: 'Отправить учителю' }).click();
   await expect(student.getByText('ждёт ответа учителя')).toBeVisible();

@@ -358,7 +358,7 @@ const DATE_TIME: Readonly<Record<string, readonly (readonly [string, string, str
       'schedule',
       '## Нерабочее время\n',
       '**Дата и время.** Их можно вписать (например, «17.11.2026», «14:30» или «1430») или выбрать: ' +
-        'календарь открывается под полем, значок часов — циферблат со временем.\n\n## Нерабочее время\n',
+        'значок календаря открывает календарь в окне по центру экрана, значок часов — циферблат со временем.\n\n## Нерабочее время\n',
     ],
   ],
   'teacher.en': [
@@ -366,7 +366,7 @@ const DATE_TIME: Readonly<Record<string, readonly (readonly [string, string, str
       'schedule',
       '## Time off\n',
       '**Date and time.** Type the date and time (for example “17.11.2026”, “14:30” or “1430”) or pick them: the ' +
-        'calendar opens under the field, and the clock icon opens a dial.\n\n## Time off\n',
+        'calendar icon opens a calendar in a dialog, and the clock icon opens a dial.\n\n## Time off\n',
     ],
   ],
   'student.ru': [
@@ -374,7 +374,7 @@ const DATE_TIME: Readonly<Record<string, readonly (readonly [string, string, str
       'schedule',
       'Учитель получит запрос и ответит',
       'Дату и время можно вписать (например, «17.11.2026», «14:30» или «1430») или выбрать: ' +
-        'календарь открывается под полем, значок часов — циферблат со временем.\n\nУчитель получит запрос и ответит',
+        'значок календаря открывает календарь в окне по центру экрана, значок часов — циферблат со временем.\n\nУчитель получит запрос и ответит',
     ],
   ],
   'student.en': [
@@ -382,7 +382,7 @@ const DATE_TIME: Readonly<Record<string, readonly (readonly [string, string, str
       'schedule',
       'Your teacher will receive the request',
       'Type the date and time (for example “17.11.2026”, “14:30” or “1430”) or pick them: the calendar ' +
-        'opens under the field, and the clock icon opens a dial.\n\nYour teacher will receive the request',
+        'icon opens a calendar in a dialog, and the clock icon opens a dial.\n\nYour teacher will receive the request',
     ],
   ],
 };

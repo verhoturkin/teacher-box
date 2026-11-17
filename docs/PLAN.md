@@ -95,7 +95,7 @@ Order: one substep per session, a commit each; the PR is opened once, after 431.
 
 ### 430. Date and time pickers: one modal pattern
 
-- [ ] 430.1 *complex* F — the date picker opens as a modal centred dialog like the time picker,
+- [x] 430.1 *complex* F — the date picker opens as a modal centred dialog like the time picker,
   on every size (M3 modal date picker: headline, supporting text, «Отмена» / «ОК»; typed entry
   in the field stays), instead of the docked dropdown on a desktop and the full-screen one on a
   phone: `shared/ui/date-field.ts` (and `date-time-field.ts` which uses it), the same dialog

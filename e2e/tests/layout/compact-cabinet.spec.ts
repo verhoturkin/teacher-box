@@ -170,7 +170,14 @@ test('compact payment figures and filters fit both cabinets; teacher report open
     await fits(page.locator('tb-monthly-report-page .tb-figures'));
   }
   await page.getByRole('button', { name: 'Выбрать месяц', exact: true }).click();
-  await expect(page.locator('.tb-date-picker')).toBeVisible();
+  // the modal date picker (430.1) fits a phone
+  const picker = page.getByRole('alertdialog', { name: 'Выберите месяц' });
+  await expect(picker.locator('.tb-date-picker')).toBeVisible();
+  await page.setViewportSize({ width: 320, height: 844 });
+  const box = await picker.boundingBox();
+  expect(box !== null && box.x >= 0 && box.x + box.width <= 320).toBe(true);
+  await picker.getByRole('button', { name: 'Отмена', exact: true }).click();
+  await expect(picker).toBeHidden();
   await student(page);
   for (const width of [320, 390, 599]) {
     await page.setViewportSize({ width, height: 844 });

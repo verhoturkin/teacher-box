@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DateField } from '@shared/ui/date-field';
 
-/** §9 «Date» `tb-date-field`: typed entry, the docked picker (full screen on compact), a month field. */
+/** §9 «Date» `tb-date-field`: typed entry, the modal picker on every size, a month field. */
 @Component({
   selector: 'tb-gallery-date-fields',
   imports: [FormsModule, DateField],

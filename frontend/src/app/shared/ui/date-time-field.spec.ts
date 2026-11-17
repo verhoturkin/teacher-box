@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { hostElement, requireElement, typeInto } from '@testing/dom';
+import { buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
 import { testProviders } from '@testing/setup';
 import { DateTimeField } from './date-time-field';
 import { FieldErrors } from './field-errors';
@@ -76,6 +76,21 @@ describe('DateTimeField', () => {
 
     await enter(date, '20.11.2026', detect);
     expect(component.moment.value).toEqual(new Date(2026, 10, 20, 14, 30));
+  });
+
+  it('picks the day in the modal date picker and keeps the time', async () => {
+    const { host, component, detect } = await render();
+    requireElement(host, 'button[aria-label="Выбрать дату"]', HTMLButtonElement).click();
+    await detect();
+    await detect();
+    const picker = requireElement(document.body, '.p-dialog .tb-date-picker', HTMLElement);
+    expect(picker.getAttribute('aria-label')).toBe('Начало');
+    requireElement(picker, '[data-date="2026-10-25"]', HTMLElement).click();
+    await detect();
+    buttonByText(document.body, 'ОК').click();
+    await detect();
+    expect(component.moment.value).toEqual(new Date(2026, 10, 25, 9, 5));
+    expect(document.body.querySelector('.tb-date-picker')).toBeNull();
   });
 
   it('keeps no time before now today', async () => {
