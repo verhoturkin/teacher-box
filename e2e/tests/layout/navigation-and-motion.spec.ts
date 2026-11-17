@@ -43,7 +43,7 @@ test('the collapsed rail is 96 px', async ({ page }) => {
   expect(Math.round((await rail.boundingBox())?.width ?? 0)).toBe(96);
 });
 
-test('a dialog enters on the M3E springs', async ({ page }) => {
+test('a dialog opens downwards from its top edge', async ({ page }) => {
   await signIn(page, 1280);
   await page.goto('/teacher/students');
   await page.evaluate(() => {
@@ -68,7 +68,7 @@ test('a dialog enters on the M3E springs', async ({ page }) => {
         [...(window as unknown as { tbAnimations: string[] }).tbAnimations].sort(),
       ),
     )
-    .toEqual(['tb-motion-fade-in', 'tb-motion-scale-in']);
+    .toEqual(['tb-motion-fade-in', 'tb-motion-reveal']);
 });
 
 test('the help side sheet leaves without flashing back in its place', async ({ page }) => {
