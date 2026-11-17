@@ -31,6 +31,7 @@ import { InputText } from 'primeng/inputtext';
 import { SelectButton } from 'primeng/selectbutton';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Confirm } from '@shared/ui/confirm';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { FieldErrors } from '@shared/ui/field-errors';
@@ -66,116 +67,118 @@ function hasValues(control: AbstractControl<readonly TagValueInput[]>): Validati
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      [(visible)]="visible"
-      [headline]="tag() === null ? t.newTag : t.editTag"
-      [confirmLabel]="tag() === null ? t.create : t.save"
-      formId="tag-form"
-      [pending]="submit.pending()"
-      [error]="submit.error()"
-      [dirty]="submit.dirty()"
-    >
-      <form
-        tbFieldErrors
-        id="tag-form"
-        class="tb-form"
-        [formGroup]="form"
-        (ngSubmit)="submit.run()"
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        [(visible)]="visible"
+        [headline]="tag() === null ? t.newTag : t.editTag"
+        [confirmLabel]="tag() === null ? t.create : t.save"
+        formId="tag-form"
+        [pending]="submit.pending()"
+        [error]="submit.error()"
+        [dirty]="submit.dirty()"
       >
-        <div class="tb-field">
-          <label for="tag-name">{{ t.name }}</label>
-          <input
-            pInputText
-            id="tag-name"
-            formControlName="name"
-            autocomplete="off"
-            [placeholder]="t.namePlaceholder"
-          />
-          <small class="tb-field__hint">{{ t.nameHint }}</small>
-        </div>
-        <div class="tb-field tb-field__header">
-          <span id="tag-kind-label">{{ t.kind }}</span>
-          <p-selectbutton
-            formControlName="kind"
-            [options]="kinds"
-            optionLabel="label"
-            optionValue="value"
-            [allowEmpty]="false"
-            ariaLabelledBy="tag-kind-label"
-          />
-          <small class="tb-hint">{{ kindHint() }}</small>
-        </div>
-        @if (kind() === 'LIST') {
+        <form
+          tbFieldErrors
+          id="tag-form"
+          class="tb-form"
+          [formGroup]="form"
+          (ngSubmit)="submit.run()"
+        >
           <div class="tb-field">
-            <span class="tb-section-label">{{ t.valuesLabel }}</span>
-            <div
-              class="tb-tag-values"
-              cdkDropList
-              cdkDropListOrientation="mixed"
-              (cdkDropListDropped)="drop($event)"
-            >
-              @for (value of values(); track $index; let index = $index) {
-                <tb-input-chip
-                  cdkDrag
-                  [label]="value.label"
-                  [removeLabel]="t.removeValue(value.label)"
-                  (removed)="remove(index)"
-                >
-                  <button
-                    lead
-                    type="button"
-                    class="tb-tag-handle"
-                    cdkDragHandle
-                    [attr.aria-label]="t.dragValue(value.label)"
-                    (keydown)="keyMove($event, index)"
-                  >
-                    <i class="tb-i tb-i-drag_indicator" aria-hidden="true"></i>
-                  </button>
-                </tb-input-chip>
-              }
-            </div>
-            @if (form.controls.values.touched && form.controls.values.invalid) {
-              <small class="tb-field__error" role="alert">{{ t.valuesRequired }}</small>
-            }
-          </div>
-          <div class="tb-field">
-            <label for="tag-new-value">{{ t.newValue }}</label>
+            <label for="tag-name">{{ t.name }}</label>
             <input
               pInputText
-              id="tag-new-value"
+              id="tag-name"
+              formControlName="name"
               autocomplete="off"
-              maxlength="40"
-              #draft
-              (keydown.enter)="add(draft); $event.preventDefault()"
+              [placeholder]="t.namePlaceholder"
             />
-            <small class="tb-field__hint">{{ t.newValueHint }}</small>
+            <small class="tb-field__hint">{{ t.nameHint }}</small>
           </div>
-        }
-        <label class="tb-tile tb-tag-ai" for="tag-use-in-ai">
-          <i class="tb-i tb-i-auto_awesome tb-tile__icon tb-tag-ai__icon" aria-hidden="true"></i>
-          <span class="tb-tile__text">
-            <b>{{ t.useInAi }}</b>
-            <span>{{ t.useInAiHint }}</span>
-          </span>
-          <p-toggleswitch inputId="tag-use-in-ai" formControlName="useInAi" />
-        </label>
-        @if (tag() !== null && kind() === 'LIST') {
-          <p class="tb-tag-note">
-            <i class="tb-i tb-i-info" aria-hidden="true"></i>{{ t.removeNote }}
-          </p>
-        }
-        @if (tag() !== null) {
-          <p-button
-            class="tb-tag-delete"
-            severity="danger"
-            [text]="true"
-            [label]="t.delete"
-            (onClick)="askDelete()"
-          />
-        }
-      </form>
-    </tb-dialog>
+          <div class="tb-field tb-field__header">
+            <span id="tag-kind-label">{{ t.kind }}</span>
+            <p-selectbutton
+              formControlName="kind"
+              [options]="kinds"
+              optionLabel="label"
+              optionValue="value"
+              [allowEmpty]="false"
+              ariaLabelledBy="tag-kind-label"
+            />
+            <small class="tb-hint">{{ kindHint() }}</small>
+          </div>
+          @if (kind() === 'LIST') {
+            <div class="tb-field">
+              <span class="tb-section-label">{{ t.valuesLabel }}</span>
+              <div
+                class="tb-tag-values"
+                cdkDropList
+                cdkDropListOrientation="mixed"
+                (cdkDropListDropped)="drop($event)"
+              >
+                @for (value of values(); track $index; let index = $index) {
+                  <tb-input-chip
+                    cdkDrag
+                    [label]="value.label"
+                    [removeLabel]="t.removeValue(value.label)"
+                    (removed)="remove(index)"
+                  >
+                    <button
+                      lead
+                      type="button"
+                      class="tb-tag-handle"
+                      cdkDragHandle
+                      [attr.aria-label]="t.dragValue(value.label)"
+                      (keydown)="keyMove($event, index)"
+                    >
+                      <i class="tb-i tb-i-drag_indicator" aria-hidden="true"></i>
+                    </button>
+                  </tb-input-chip>
+                }
+              </div>
+              @if (form.controls.values.touched && form.controls.values.invalid) {
+                <small class="tb-field__error" role="alert">{{ t.valuesRequired }}</small>
+              }
+            </div>
+            <div class="tb-field">
+              <label for="tag-new-value">{{ t.newValue }}</label>
+              <input
+                pInputText
+                id="tag-new-value"
+                autocomplete="off"
+                maxlength="40"
+                #draft
+                (keydown.enter)="add(draft); $event.preventDefault()"
+              />
+              <small class="tb-field__hint">{{ t.newValueHint }}</small>
+            </div>
+          }
+          <label class="tb-tile tb-tag-ai" for="tag-use-in-ai">
+            <i class="tb-i tb-i-auto_awesome tb-tile__icon tb-tag-ai__icon" aria-hidden="true"></i>
+            <span class="tb-tile__text">
+              <b>{{ t.useInAi }}</b>
+              <span>{{ t.useInAiHint }}</span>
+            </span>
+            <p-toggleswitch inputId="tag-use-in-ai" formControlName="useInAi" />
+          </label>
+          @if (tag() !== null && kind() === 'LIST') {
+            <p class="tb-tag-note">
+              <i class="tb-i tb-i-info" aria-hidden="true"></i>{{ t.removeNote }}
+            </p>
+          }
+          @if (tag() !== null) {
+            <p-button
+              class="tb-tag-delete"
+              severity="danger"
+              [text]="true"
+              [label]="t.delete"
+              (onClick)="askDelete()"
+            />
+          }
+        </form>
+      </tb-dialog>
+    }
   `,
   styles: `
     .tb-tag-values {
@@ -226,6 +229,8 @@ export class TagDialog {
   private readonly confirm = inject(Confirm);
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   /** The tag to edit; none — a new one. */
   readonly tag = input<StudentTag | null>(null);
   readonly saved = output<TagChanged>();

@@ -5,7 +5,6 @@ import { NotificationsSheetState } from '@core/notifications/notifications-sheet
 import { Portal } from '@core/portal/portal';
 import { authResponse } from '@testing/auth';
 import { hostElement, requireElement } from '@testing/dom';
-import { RailState } from './rail-state';
 import { Shell } from './shell';
 import { screenWidth, testProviders } from '@testing/setup';
 import { portalInfo } from '@testing/portal-fixtures';
@@ -141,19 +140,6 @@ describe('Shell', () => {
     expect(nav?.classList).not.toContain('tb-side-nav--rail');
     expect(nav?.textContent).toContain('Ученики');
     expect(hostElement(fixture).querySelector('nav.tb-bottom-nav')).toBeNull();
-  });
-
-  it('collapses the expanded rail to 96 px while a page asks for it (spec §9)', async () => {
-    TestBed.inject(RailState).collapsed.set(true);
-    await fixture.whenStable();
-
-    const host = hostElement(fixture);
-    expect(host.querySelector('tb-side-nav')?.classList).toContain('tb-side-nav--rail');
-    expect(host.classList).not.toContain('tb-shell--wide');
-
-    TestBed.inject(RailState).collapsed.set(false);
-    await fixture.whenStable();
-    expect(host.querySelector('tb-side-nav')?.classList).not.toContain('tb-side-nav--rail');
   });
 
   it('keeps the tone of the top bar when the page is scrolled', async () => {

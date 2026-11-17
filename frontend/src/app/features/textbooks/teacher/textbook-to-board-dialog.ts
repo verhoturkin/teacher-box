@@ -1,3 +1,4 @@
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -33,31 +34,36 @@ export interface BoardTextbook {
   imports: [FormsModule, InputText, ToBoardDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-to-board-dialog
-      [(visible)]="visible"
-      [title]="textbook()?.title ?? ''"
-      [pages]="material()"
-      [students]="students()"
-    >
-      @if (multiPage()) {
-        <div class="tb-field tb-textbook-pages">
-          <label for="board-pages">{{ t.pages }}</label>
-          <input
-            pInputText
-            id="board-pages"
-            [ngModel]="pagesText()"
-            (ngModelChange)="pagesText.set($event)"
-            [placeholder]="t.pagesPlaceholder"
-            autocomplete="off"
-            [attr.aria-invalid]="parsed() === null"
-            aria-describedby="board-pages-hint"
-          />
-          <small id="board-pages-hint" [class]="parsed() === null ? 'tb-field__error' : 'tb-hint'">
-            {{ pagesHint() }}
-          </small>
-        </div>
-      }
-    </tb-to-board-dialog>
+    @if (built()) {
+      <tb-to-board-dialog
+        [(visible)]="visible"
+        [title]="textbook()?.title ?? ''"
+        [pages]="material()"
+        [students]="students()"
+      >
+        @if (multiPage()) {
+          <div class="tb-field tb-textbook-pages">
+            <label for="board-pages">{{ t.pages }}</label>
+            <input
+              pInputText
+              id="board-pages"
+              [ngModel]="pagesText()"
+              (ngModelChange)="pagesText.set($event)"
+              [placeholder]="t.pagesPlaceholder"
+              autocomplete="off"
+              [attr.aria-invalid]="parsed() === null"
+              aria-describedby="board-pages-hint"
+            />
+            <small
+              id="board-pages-hint"
+              [class]="parsed() === null ? 'tb-field__error' : 'tb-hint'"
+            >
+              {{ pagesHint() }}
+            </small>
+          </div>
+        }
+      </tb-to-board-dialog>
+    }
   `,
   styles: `
     .tb-textbook-pages {
@@ -68,6 +74,8 @@ export interface BoardTextbook {
 export class TextbookToBoardDialog {
   protected readonly t = T.toBoard;
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   readonly textbook = input<BoardTextbook | null>(null);
   /** The students of an assignment: only their boards; `null` — every board. */
   readonly students = input<readonly string[] | null>(null);

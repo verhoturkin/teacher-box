@@ -1,4 +1,5 @@
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
+import { ListRow } from '@shared/ui/list-row';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -101,6 +102,7 @@ const NUMBER = new Intl.NumberFormat(locale());
 @Component({
   selector: 'tb-billing-overview-page',
   imports: [
+    ListRow,
     OwnerOption,
     Avatar,
     NgTemplateOutlet,
@@ -133,7 +135,7 @@ const NUMBER = new Intl.NumberFormat(locale());
           @if (debtors().length > 0) {
             <ul class="tb-list tb-ops__people">
               @for (row of debtors(); track row.studentId) {
-                <li>
+                <li tbListRow>
                   <tb-avatar
                     [attr.data-tb-label]="colors.studentLabel(row.studentId)"
                     [name]="row.displayName"
@@ -283,12 +285,12 @@ const NUMBER = new Intl.NumberFormat(locale());
             </div>
           }
         </div>
-        <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+        <tb-load-state [state]="state" [what]="t.what" [skeleton]="true" (retry)="load()">
           @if (summary(); as summary) {
             @if (list().length > 0) {
               <ul class="tb-list tb-ops__list" [attr.aria-label]="t.operations">
                 @for (operation of list(); track operation.id) {
-                  <li>
+                  <li tbListRow>
                     <span class="tb-ops__lead">
                       <span
                         class="tb-list__lead"
@@ -348,7 +350,7 @@ const NUMBER = new Intl.NumberFormat(locale());
                 <h3 class="tb-ops__overline">{{ t.running }}</h3>
                 <ul class="tb-list tb-ops__people">
                   @for (row of runningOut(); track row.student.studentId) {
-                    <li>
+                    <li tbListRow>
                       <tb-avatar
                         [attr.data-tb-label]="colors.studentLabel(row.student.studentId)"
                         [name]="row.student.displayName"

@@ -1,3 +1,4 @@
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -65,211 +66,213 @@ export interface QuizEdit {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="screen"
-      [(visible)]="visible"
-      [headline]="title()"
-      [closeLabel]="exitLabel()"
-      [cancelLabel]="null"
-    >
-      <ng-template tbDialogHeaderActions>
-        <span class="tb-qp__step" aria-live="polite">{{ t.step(step() + 1, total()) }}</span>
-      </ng-template>
-      @if (current(); as q) {
-        <div class="tb-qp">
-          <p class="tb-qp__muted tb-qp__subtitle">{{ subtitle() }}</p>
-          <p-progressbar
-            styleClass="tb-qp__progress"
-            [value]="progress()"
-            [showValue]="false"
-            [tbProgressLabel]="t.progress(answeredCount(), total())"
-          />
-          <div class="tb-qp__body">
-            <section class="tb-qp__question" [attr.aria-label]="t.question(step() + 1)">
-              <p class="tb-qp__muted">{{ kinds[q.type] }} · {{ t.points(q.points) }}</p>
-              <tb-markdown class="tb-qp__text" [text]="q.text" />
-              @switch (q.type) {
-                @case ('SINGLE_CHOICE') {
-                  <div class="tb-qp__options" role="radiogroup" [attr.aria-label]="t.single">
-                    @for (option of q.options; track option.id) {
-                      <label class="tb-qp__option" [for]="'o-' + option.id">
-                        <p-radiobutton
-                          [name]="'q-' + q.id"
-                          [value]="option.id"
-                          [inputId]="'o-' + option.id"
-                          [ngModel]="ids(q)[0]"
-                          (ngModelChange)="setIds(q, [$event])"
-                        />
-                        <span>{{ option.text }}</span>
-                      </label>
-                    }
-                  </div>
+    @if (built()) {
+      <tb-dialog
+        kind="screen"
+        [(visible)]="visible"
+        [headline]="title()"
+        [closeLabel]="exitLabel()"
+        [cancelLabel]="null"
+      >
+        <ng-template tbDialogHeaderActions>
+          <span class="tb-qp__step" aria-live="polite">{{ t.step(step() + 1, total()) }}</span>
+        </ng-template>
+        @if (current(); as q) {
+          <div class="tb-qp">
+            <p class="tb-qp__muted tb-qp__subtitle">{{ subtitle() }}</p>
+            <p-progressbar
+              styleClass="tb-qp__progress"
+              [value]="progress()"
+              [showValue]="false"
+              [tbProgressLabel]="t.progress(answeredCount(), total())"
+            />
+            <div class="tb-qp__body">
+              <section class="tb-qp__question" [attr.aria-label]="t.question(step() + 1)">
+                <p class="tb-qp__muted">{{ kinds[q.type] }} · {{ t.points(q.points) }}</p>
+                <tb-markdown class="tb-qp__text" [text]="q.text" />
+                @switch (q.type) {
+                  @case ('SINGLE_CHOICE') {
+                    <div class="tb-qp__options" role="radiogroup" [attr.aria-label]="t.single">
+                      @for (option of q.options; track option.id) {
+                        <label class="tb-qp__option" [for]="'o-' + option.id">
+                          <p-radiobutton
+                            [name]="'q-' + q.id"
+                            [value]="option.id"
+                            [inputId]="'o-' + option.id"
+                            [ngModel]="ids(q)[0]"
+                            (ngModelChange)="setIds(q, [$event])"
+                          />
+                          <span>{{ option.text }}</span>
+                        </label>
+                      }
+                    </div>
+                  }
+                  @case ('MULTIPLE_CHOICE') {
+                    <div class="tb-qp__options" role="group" [attr.aria-label]="t.multiple">
+                      @for (option of q.options; track option.id) {
+                        <label class="tb-qp__option" [for]="'o-' + option.id">
+                          <p-checkbox
+                            [binary]="true"
+                            [inputId]="'o-' + option.id"
+                            [ngModel]="ids(q).includes(option.id)"
+                            (ngModelChange)="toggle(q, option.id, $event)"
+                          />
+                          <span>{{ option.text }}</span>
+                        </label>
+                      }
+                    </div>
+                  }
+                  @case ('SHORT_TEXT') {
+                    <input
+                      pInputText
+                      class="tb-qp__input"
+                      type="text"
+                      maxlength="200"
+                      autocomplete="off"
+                      [attr.aria-label]="t.answerText"
+                      [placeholder]="t.answerText"
+                      [value]="answers()[q.id]?.text ?? ''"
+                      (input)="setText(q, valueOf($event))"
+                      (blur)="settle.emit()"
+                    />
+                  }
+                  @case ('NUMBER') {
+                    <input
+                      pInputText
+                      class="tb-qp__input"
+                      type="text"
+                      inputmode="decimal"
+                      autocomplete="off"
+                      [attr.aria-label]="t.answerNumber"
+                      [placeholder]="t.answerNumber"
+                      [value]="answers()[q.id]?.number ?? ''"
+                      (input)="setNumber(q, valueOf($event))"
+                      (blur)="settle.emit()"
+                    />
+                  }
+                  @case ('MATCHING') {
+                    <div class="tb-qp__pairs">
+                      @for (left of q.left; track left.id) {
+                        <div class="tb-qp__pair">
+                          <span class="tb-qp__pair-left">{{ left.text }}</span>
+                          <p-select
+                            [options]="rights().get(q.id)"
+                            optionLabel="text"
+                            optionValue="id"
+                            appendTo="body"
+                            [fluid]="true"
+                            [placeholder]="t.pairChoose"
+                            [ariaLabel]="t.pairFor(left.text)"
+                            [ngModel]="answers()[q.id]?.pairs?.[left.id] ?? null"
+                            (ngModelChange)="setPair(q, left.id, $event)"
+                          />
+                        </div>
+                      }
+                    </div>
+                  }
+                  @case ('ORDERING') {
+                    <p class="tb-qp__muted">{{ t.orderHint }}</p>
+                    <ol class="tb-qp__order">
+                      @for (item of ordered(q); track item.id; let i = $index; let last = $last) {
+                        <li class="tb-qp__order-item">
+                          <span class="tb-qp__order-text">{{ item.text }}</span>
+                          <p-button
+                            icon="tb-i tb-i-expand_less"
+                            [text]="true"
+                            [rounded]="true"
+                            severity="secondary"
+                            [disabled]="i === 0"
+                            [ariaLabel]="t.moveUp(i + 1, item.text)"
+                            (onClick)="move(q, i, -1)"
+                          />
+                          <p-button
+                            icon="tb-i tb-i-expand_more"
+                            [text]="true"
+                            [rounded]="true"
+                            severity="secondary"
+                            [disabled]="last"
+                            [ariaLabel]="t.moveDown(i + 1, item.text)"
+                            (onClick)="move(q, i, 1)"
+                          />
+                        </li>
+                      }
+                    </ol>
+                  }
                 }
-                @case ('MULTIPLE_CHOICE') {
-                  <div class="tb-qp__options" role="group" [attr.aria-label]="t.multiple">
-                    @for (option of q.options; track option.id) {
-                      <label class="tb-qp__option" [for]="'o-' + option.id">
-                        <p-checkbox
-                          [binary]="true"
-                          [inputId]="'o-' + option.id"
-                          [ngModel]="ids(q).includes(option.id)"
-                          (ngModelChange)="toggle(q, option.id, $event)"
-                        />
-                        <span>{{ option.text }}</span>
-                      </label>
-                    }
-                  </div>
-                }
-                @case ('SHORT_TEXT') {
-                  <input
-                    pInputText
-                    class="tb-qp__input"
-                    type="text"
-                    maxlength="200"
-                    autocomplete="off"
-                    [attr.aria-label]="t.answerText"
-                    [placeholder]="t.answerText"
-                    [value]="answers()[q.id]?.text ?? ''"
-                    (input)="setText(q, valueOf($event))"
-                    (blur)="settle.emit()"
-                  />
-                }
-                @case ('NUMBER') {
-                  <input
-                    pInputText
-                    class="tb-qp__input"
-                    type="text"
-                    inputmode="decimal"
-                    autocomplete="off"
-                    [attr.aria-label]="t.answerNumber"
-                    [placeholder]="t.answerNumber"
-                    [value]="answers()[q.id]?.number ?? ''"
-                    (input)="setNumber(q, valueOf($event))"
-                    (blur)="settle.emit()"
-                  />
-                }
-                @case ('MATCHING') {
-                  <div class="tb-qp__pairs">
-                    @for (left of q.left; track left.id) {
-                      <div class="tb-qp__pair">
-                        <span class="tb-qp__pair-left">{{ left.text }}</span>
-                        <p-select
-                          [options]="rights().get(q.id)"
-                          optionLabel="text"
-                          optionValue="id"
-                          appendTo="body"
-                          [fluid]="true"
-                          [placeholder]="t.pairChoose"
-                          [ariaLabel]="t.pairFor(left.text)"
-                          [ngModel]="answers()[q.id]?.pairs?.[left.id] ?? null"
-                          (ngModelChange)="setPair(q, left.id, $event)"
-                        />
-                      </div>
-                    }
-                  </div>
-                }
-                @case ('ORDERING') {
-                  <p class="tb-qp__muted">{{ t.orderHint }}</p>
-                  <ol class="tb-qp__order">
-                    @for (item of ordered(q); track item.id; let i = $index; let last = $last) {
-                      <li class="tb-qp__order-item">
-                        <span class="tb-qp__order-text">{{ item.text }}</span>
-                        <p-button
-                          icon="tb-i tb-i-expand_less"
-                          [text]="true"
-                          [rounded]="true"
-                          severity="secondary"
-                          [disabled]="i === 0"
-                          [ariaLabel]="t.moveUp(i + 1, item.text)"
-                          (onClick)="move(q, i, -1)"
-                        />
-                        <p-button
-                          icon="tb-i tb-i-expand_more"
-                          [text]="true"
-                          [rounded]="true"
-                          severity="secondary"
-                          [disabled]="last"
-                          [ariaLabel]="t.moveDown(i + 1, item.text)"
-                          (onClick)="move(q, i, 1)"
-                        />
-                      </li>
-                    }
-                  </ol>
-                }
-              }
-              <div class="tb-qp__dots" aria-hidden="true">
-                @for (other of questions(); track other.id; let n = $index) {
-                  <span
-                    class="tb-qp__dot"
-                    [class.tb-qp__dot--done]="answered(other)"
-                    [class.tb-qp__dot--current]="n === step()"
-                  ></span>
-                }
-              </div>
-              <div class="tb-qp__nav">
-                @if (mobile()) {
-                  <p-button
-                    icon="tb-i tb-i-arrow_back"
-                    severity="secondary"
-                    [rounded]="true"
-                    [ariaLabel]="t.prev"
-                    [disabled]="step() === 0"
-                    (onClick)="go(step() - 1)"
-                  />
-                } @else {
-                  <p-button
-                    [label]="t.prev"
-                    icon="tb-i tb-i-arrow_back"
-                    [text]="true"
-                    [disabled]="step() === 0"
-                    (onClick)="go(step() - 1)"
-                  />
-                }
-                <span class="tb-qp__spacer"></span>
-                @if (step() < total() - 1) {
-                  <p-button
-                    [label]="t.next"
-                    icon="tb-i tb-i-arrow_forward"
-                    iconPos="right"
-                    (onClick)="go(step() + 1)"
-                  />
-                } @else {
-                  <p-button [label]="t.finish" [loading]="pending()" (onClick)="end()" />
-                }
-              </div>
-            </section>
+                <div class="tb-qp__dots" aria-hidden="true">
+                  @for (other of questions(); track other.id; let n = $index) {
+                    <span
+                      class="tb-qp__dot"
+                      [class.tb-qp__dot--done]="answered(other)"
+                      [class.tb-qp__dot--current]="n === step()"
+                    ></span>
+                  }
+                </div>
+                <div class="tb-qp__nav">
+                  @if (mobile()) {
+                    <p-button
+                      icon="tb-i tb-i-arrow_back"
+                      severity="secondary"
+                      [rounded]="true"
+                      [ariaLabel]="t.prev"
+                      [disabled]="step() === 0"
+                      (onClick)="go(step() - 1)"
+                    />
+                  } @else {
+                    <p-button
+                      [label]="t.prev"
+                      icon="tb-i tb-i-arrow_back"
+                      [text]="true"
+                      [disabled]="step() === 0"
+                      (onClick)="go(step() - 1)"
+                    />
+                  }
+                  <span class="tb-qp__spacer"></span>
+                  @if (step() < total() - 1) {
+                    <p-button
+                      [label]="t.next"
+                      icon="tb-i tb-i-arrow_forward"
+                      iconPos="right"
+                      (onClick)="go(step() + 1)"
+                    />
+                  } @else {
+                    <p-button [label]="t.finish" [loading]="pending()" (onClick)="end()" />
+                  }
+                </div>
+              </section>
 
-            <aside class="tb-qp__side" [attr.aria-label]="t.questions">
-              <span class="tb-qp__label">{{ t.questions }}</span>
-              <div class="tb-qp__map">
-                @for (other of questions(); track other.id; let n = $index) {
-                  <button
-                    type="button"
-                    class="tb-qp__number"
-                    [class.tb-qp__number--done]="answered(other)"
-                    [class.tb-qp__number--current]="n === step()"
-                    [attr.aria-current]="n === step() ? 'step' : null"
-                    [attr.aria-label]="t.numberLabel(n + 1, answered(other))"
-                    (click)="go(n)"
-                  >
-                    {{ n + 1 }}
-                  </button>
+              <aside class="tb-qp__side" [attr.aria-label]="t.questions">
+                <span class="tb-qp__label">{{ t.questions }}</span>
+                <div class="tb-qp__map">
+                  @for (other of questions(); track other.id; let n = $index) {
+                    <button
+                      type="button"
+                      class="tb-qp__number"
+                      [class.tb-qp__number--done]="answered(other)"
+                      [class.tb-qp__number--current]="n === step()"
+                      [attr.aria-current]="n === step() ? 'step' : null"
+                      [attr.aria-label]="t.numberLabel(n + 1, answered(other))"
+                      (click)="go(n)"
+                    >
+                      {{ n + 1 }}
+                    </button>
+                  }
+                </div>
+                <p-button
+                  [label]="t.finish"
+                  severity="secondary"
+                  [loading]="pending()"
+                  (onClick)="end()"
+                />
+                @if (hint(); as text) {
+                  <p class="tb-qp__muted">{{ text }}</p>
                 }
-              </div>
-              <p-button
-                [label]="t.finish"
-                severity="secondary"
-                [loading]="pending()"
-                (onClick)="end()"
-              />
-              @if (hint(); as text) {
-                <p class="tb-qp__muted">{{ text }}</p>
-              }
-            </aside>
+              </aside>
+            </div>
           </div>
-        </div>
-      }
-    </tb-dialog>
+        }
+      </tb-dialog>
+    }
   `,
   styles: `
     /*
@@ -527,6 +530,8 @@ export class QuizPlayer {
   protected readonly mobile = injectMobile();
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   readonly questions = input.required<readonly QuizQuestion[]>();
   readonly answers = model.required<Readonly<Record<string, QuizAnswer>>>();
   /** «Тест · <задание>». */

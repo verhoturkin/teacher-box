@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { ListRow } from '@shared/ui/list-row';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -29,7 +30,7 @@ const SHOWN_WORKS_MEDIUM = 2;
  */
 @Component({
   selector: 'tb-assignments-review',
-  imports: [Avatar, Button, Tag],
+  imports: [ListRow, Avatar, Button, Tag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display: contents' },
   template: `
@@ -46,7 +47,7 @@ const SHOWN_WORKS_MEDIUM = 2;
       </div>
       <ul class="tb-hw__cards">
         @for (work of shownWorks(); track work.taskId) {
-          <li class="tb-hw__card">
+          <li tbListRow class="tb-hw__card">
             <div class="tb-hw__card-head">
               <tb-avatar
                 [attr.data-tb-label]="colors.studentLabel(work.studentId)"

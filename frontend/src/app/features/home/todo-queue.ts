@@ -8,6 +8,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Button, ButtonDirective } from 'primeng/button';
@@ -80,6 +81,7 @@ interface Row {
 @Component({
   selector: 'tb-todo-queue',
   imports: [
+    ListRow,
     Button,
     AttendanceDialog,
     ButtonDirective,
@@ -100,13 +102,13 @@ interface Row {
           <span class="tb-queue__count" [attr.aria-label]="t.count(count())">{{ count() }}</span>
         }
       </ng-template>
-      @if (loaded() && rows().length === 0 && !setupVisible()) {
+      @if (loaded() && debtors() !== null && rows().length === 0 && !setupVisible()) {
         <tb-empty-state [compact]="true" icon="tb-i-check_circle" [title]="t.nothing" />
       }
       @if (rows().length > 0) {
         <ul class="tb-list tb-queue">
           @for (row of rows(); track row.key) {
-            <li>
+            <li tbListRow>
               <span class="tb-queue__icon" [class.tb-queue__icon--debt]="row.kind === 'debt'">
                 <i class="tb-i {{ row.icon }}" aria-hidden="true"></i>
               </span>
@@ -341,7 +343,8 @@ export class TodoQueue implements OnInit {
   protected readonly sheet = signal<Row | null>(null);
 
   readonly progress = input.required<SetupProgress>();
-  readonly debtors = input<readonly Debtor[]>([]);
+  /** `null` until the billing summary is known: the queue starts its own requests without it. */
+  readonly debtors = input<readonly Debtor[] | null>(null);
   readonly currency = input('RUB');
   /** A lesson was marked: the schedule counters of the page are stale. */
   readonly marked = output();
@@ -382,7 +385,7 @@ export class TodoQueue implements OnInit {
       icon: 'tb-i-rate_review',
       link: '/teacher/homework/review',
     })),
-    this.debtors().map((debtor) => ({
+    (this.debtors() ?? []).map((debtor) => ({
       key: `debt-${debtor.studentId}`,
       kind: 'debt',
       title: T.queue.debt(formatMoney(-debtor.balance, this.currency())),

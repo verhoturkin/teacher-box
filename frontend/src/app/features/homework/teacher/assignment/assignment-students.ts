@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { ListRow } from '@shared/ui/list-row';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -39,7 +40,7 @@ const GROUPS: readonly Omit<StudentGroup, 'tasks'>[] = [
  */
 @Component({
   selector: 'tb-assignment-groups',
-  imports: [Avatar, Button, EmptyState],
+  imports: [ListRow, Avatar, Button, EmptyState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display: contents' },
   template: `
@@ -55,7 +56,7 @@ const GROUPS: readonly Omit<StudentGroup, 'tasks'>[] = [
         </h3>
         <ul class="tb-list tb-list--clamp tb-list--own-trail">
           @for (task of group.tasks; track task.taskId) {
-            <li>
+            <li tbListRow>
               <tb-avatar
                 class="tb-list__lead"
                 [attr.data-tb-label]="colors.studentLabel(task.studentId)"
@@ -184,7 +185,7 @@ export class AssignmentGroups {
     @if (tasks().length > 0) {
       <ul class="tb-asg__tiles" [attr.aria-label]="t.students">
         @for (task of tasks(); track task.taskId) {
-          <li class="tb-asg-tile">
+          <li tbListRow class="tb-asg-tile">
             <div class="tb-asg-tile__head">
               <tb-avatar
                 [attr.data-tb-label]="colors.studentLabel(task.studentId)"

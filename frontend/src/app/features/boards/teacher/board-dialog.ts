@@ -18,6 +18,7 @@ import {
 import { InputText } from 'primeng/inputtext';
 import { MemberPicker, MemberSelection } from '@features/identity/parts';
 import { SelectButton } from 'primeng/selectbutton';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { FieldErrors } from '@shared/ui/field-errors';
@@ -50,73 +51,75 @@ export interface BoardDefaults {
   imports: [ReactiveFormsModule, TbDialog, InputText, MemberPicker, SelectButton, FieldErrors],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      [(visible)]="visible"
-      [headline]="board() === null ? t.newBoard : t.editBoard"
-      [confirmLabel]="board() === null ? c.create : c.save"
-      formId="board-form"
-      [pending]="submit.pending()"
-      [error]="submit.error()"
-      [dirty]="submit.dirty()"
-    >
-      <form
-        tbFieldErrors
-        id="board-form"
-        class="tb-form"
-        [formGroup]="form"
-        (ngSubmit)="submit.run()"
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        [(visible)]="visible"
+        [headline]="board() === null ? t.newBoard : t.editBoard"
+        [confirmLabel]="board() === null ? c.create : c.save"
+        formId="board-form"
+        [pending]="submit.pending()"
+        [error]="submit.error()"
+        [dirty]="submit.dirty()"
       >
-        @if (board() === null) {
-          <div class="tb-field tb-field__header">
-            <span id="board-kind-label">{{ t.kind }}</span>
-            <p-selectbutton
-              formControlName="kind"
-              [options]="kinds"
-              optionLabel="label"
-              optionValue="value"
-              [allowEmpty]="false"
-              ariaLabelledBy="board-kind-label"
-            />
-            <small class="tb-hint">{{ kindHint() }}</small>
-          </div>
-        }
-        <div class="tb-field tb-field--required">
-          <label for="board-title">{{ t.title }}</label>
-          <input
-            pInputText
-            id="board-title"
-            formControlName="title"
-            [placeholder]="t.titlePlaceholder"
-            autocomplete="off"
-            aria-required="true"
-          />
-        </div>
-        @if (kind() === 'LINK') {
+        <form
+          tbFieldErrors
+          id="board-form"
+          class="tb-form"
+          [formGroup]="form"
+          (ngSubmit)="submit.run()"
+        >
+          @if (board() === null) {
+            <div class="tb-field tb-field__header">
+              <span id="board-kind-label">{{ t.kind }}</span>
+              <p-selectbutton
+                formControlName="kind"
+                [options]="kinds"
+                optionLabel="label"
+                optionValue="value"
+                [allowEmpty]="false"
+                ariaLabelledBy="board-kind-label"
+              />
+              <small class="tb-hint">{{ kindHint() }}</small>
+            </div>
+          }
           <div class="tb-field tb-field--required">
-            <label for="board-url">{{ t.url }}</label>
+            <label for="board-title">{{ t.title }}</label>
             <input
               pInputText
-              id="board-url"
-              formControlName="url"
-              placeholder="https://…"
+              id="board-title"
+              formControlName="title"
+              [placeholder]="t.titlePlaceholder"
               autocomplete="off"
               aria-required="true"
             />
-            <small class="tb-hint">{{ t.urlHint }}</small>
           </div>
-        }
-        <div class="tb-field">
-          <label for="board-members">{{ t.members }}</label>
-          <tb-member-picker
-            inputId="board-members"
-            formControlName="members"
-            [students]="studentOptions()"
-            [groups]="groupOptions()"
-          />
-        </div>
-      </form>
-    </tb-dialog>
+          @if (kind() === 'LINK') {
+            <div class="tb-field tb-field--required">
+              <label for="board-url">{{ t.url }}</label>
+              <input
+                pInputText
+                id="board-url"
+                formControlName="url"
+                placeholder="https://…"
+                autocomplete="off"
+                aria-required="true"
+              />
+              <small class="tb-hint">{{ t.urlHint }}</small>
+            </div>
+          }
+          <div class="tb-field">
+            <label for="board-members">{{ t.members }}</label>
+            <tb-member-picker
+              inputId="board-members"
+              formControlName="members"
+              [students]="studentOptions()"
+              [groups]="groupOptions()"
+            />
+          </div>
+        </form>
+      </tb-dialog>
+    }
   `,
 })
 export class BoardDialog {
@@ -125,6 +128,8 @@ export class BoardDialog {
   private readonly api = inject(BoardsApi);
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   /** The board to change; `null` creates a new one. */
   readonly board = input<Board | null>(null);
   /** Current students and active groups. */

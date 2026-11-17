@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.homework.domain.BoundTextbook;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 /** Textbooks bound to assignments. */
 @Repository
@@ -61,7 +62,7 @@ public class BoundTextbookRepository {
     public List<BoundTextbook> findByAssignment(UUID assignmentId) {
         return jdbc.sql(SELECT + " where assignment_id = :assignmentId order by bound_at, textbook_id")
                 .param("assignmentId", assignmentId)
-                .query(BoundTextbook.class)
+                .query(RecordRowMapper.of(BoundTextbook.class))
                 .list();
     }
 
@@ -69,7 +70,7 @@ public class BoundTextbookRepository {
         return jdbc.sql(SELECT + " where assignment_id = :assignmentId and textbook_id = :textbookId")
                 .param("assignmentId", assignmentId)
                 .param("textbookId", textbookId)
-                .query(BoundTextbook.class)
+                .query(RecordRowMapper.of(BoundTextbook.class))
                 .optional();
     }
 

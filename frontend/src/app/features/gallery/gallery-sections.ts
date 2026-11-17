@@ -47,6 +47,8 @@ import { EffectsSpringsSample } from './motion/effects';
 import { OverlayMotionSample } from './motion/overlays';
 import { PaneMotionSample } from './motion/panes';
 import { SheetMotionSample } from './motion/sheets';
+import { TabMotionSample } from './motion/tabs';
+import { ListRowMotionSample } from './motion/list-rows';
 
 /** One sample: its file under `features/gallery/`, a short title and the component that renders it. */
 export interface GallerySample {
@@ -232,6 +234,8 @@ export const GALLERY_SECTIONS: readonly GallerySection[] = [
       },
       { path: 'motion/sheets.ts', title: 'Side and bottom sheets', component: SheetMotionSample },
       { path: 'motion/panes.ts', title: 'Panes of a page', component: PaneMotionSample },
+      { path: 'motion/tabs.ts', title: 'Tab indicator', component: TabMotionSample },
+      { path: 'motion/list-rows.ts', title: 'List rows', component: ListRowMotionSample },
     ],
   },
 ];

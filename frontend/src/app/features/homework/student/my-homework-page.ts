@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { ListRow } from '@shared/ui/list-row';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -43,6 +44,7 @@ interface Group {
 @Component({
   selector: 'tb-my-homework-page',
   imports: [
+    ListRow,
     ButtonDirective,
     EmptyState,
     LoadStateView,
@@ -93,7 +95,7 @@ interface Group {
                 </h2>
                 <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="group.label">
                   @for (task of group.tasks; track task.taskId) {
-                    <li [class.tb-list__item--current]="taskId() === task.taskId">
+                    <li tbListRow [class.tb-list__item--current]="taskId() === task.taskId">
                       <span class="tb-list__lead" aria-hidden="true"
                         ><i class="tb-i" [class]="group.icon"></i
                       ></span>

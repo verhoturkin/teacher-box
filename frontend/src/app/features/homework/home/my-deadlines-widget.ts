@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { ListRow } from '@shared/ui/list-row';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -25,7 +26,7 @@ const RECENT = 3;
  */
 @Component({
   selector: 'tb-my-deadlines-widget',
-  imports: [Button, DatePipe, Tag],
+  imports: [ListRow, Button, DatePipe, Tag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="tb-hw-section" [attr.aria-labelledby]="'tb-hw-due'">
@@ -35,7 +36,7 @@ const RECENT = 3;
       } @else {
         <ul class="tb-list tb-list--no-phone-lead">
           @for (task of summary().upcoming; track task.taskId) {
-            <li>
+            <li tbListRow>
               <span
                 class="tb-list__lead"
                 [class.tb-list__lead--accent]="task.overdue"
@@ -77,7 +78,7 @@ const RECENT = 3;
         <h2 id="tb-hw-recent" class="tb-hw-section__title">{{ t.recent }}</h2>
         <ul class="tb-list tb-list--no-phone-lead">
           @for (task of recent(); track task.taskId) {
-            <li>
+            <li tbListRow>
               <div class="tb-list__text">
                 <span class="tb-list__title">{{ task.title }}</span>
                 @if (task.reviewedAt !== null) {

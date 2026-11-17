@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Badge } from 'primeng/badge';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
+import { TabIndicator } from '@shared/ui/tab-indicator';
 import { AuthService } from '@core/auth/auth.service';
 import {
   NotificationsSheetState,
@@ -18,11 +19,26 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-notifications-sheet-content',
-  imports: [Badge, BroadcastsPanel, InboxPanel, Tab, TabList, TabPanel, TabPanels, Tabs],
+  imports: [
+    Badge,
+    BroadcastsPanel,
+    InboxPanel,
+    Tab,
+    TabList,
+    TabPanel,
+    TabPanels,
+    Tabs,
+    TabIndicator,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (teacher) {
-      <p-tabs class="tb-tabs tb-tabs--fixed" [value]="state.tab()" (valueChange)="choose($event)">
+      <p-tabs
+        tbTabIndicator
+        class="tb-tabs tb-tabs--fixed"
+        [value]="state.tab()"
+        (valueChange)="choose($event)"
+      >
         <p-tablist>
           <p-tab value="inbox">
             <span class="tb-tab-label">

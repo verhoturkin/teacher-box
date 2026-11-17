@@ -234,12 +234,14 @@ describe('SchedulePage', () => {
     for (const request of offTimePeriodRequests()) {
       request.flush([]);
     }
-    const dialog = fixture.debugElement
-      .query(By.directive(OffTimeDialog))
-      .injector.get(OffTimeDialog);
+    // a dialog is built when first opened: its hidden form would slow the page's first render
+    expect(fixture.debugElement.query(By.directive(OffTimeDialog))).toBeNull();
 
     buttonByText(hostElement(fixture), 'Добавить нерабочее время').click();
     await fixture.whenStable();
+    const dialog = fixture.debugElement
+      .query(By.directive(OffTimeDialog))
+      .injector.get(OffTimeDialog);
     expect(dialog.visible()).toBe(true);
     expect(dialog.offTime()).toBeNull();
     dialog.visible.set(false);
@@ -336,13 +338,14 @@ describe('SchedulePage', () => {
 
   it('plans a lesson in a selected slot with the default or the selected duration', async () => {
     await render(scheduleSettings({ defaultDurationMinutes: 45 }));
-    const dialog = fixture.debugElement
-      .query(By.directive(LessonDialog))
-      .injector.get(LessonDialog);
     const start = new Date(2026, 9, 1, 18);
+    expect(fixture.debugElement.query(By.directive(LessonDialog))).toBeNull();
 
     page.onSlot({ start, end: new Date(2026, 9, 1, 18, 30) });
     await fixture.whenStable();
+    const dialog = fixture.debugElement
+      .query(By.directive(LessonDialog))
+      .injector.get(LessonDialog);
     expect(dialog.form.controls.durationMinutes.value).toBe(45);
     expect(dialog.form.controls.startsAt.value).toEqual(start);
     expect(bodyText()).toContain('Новое занятие');
@@ -454,6 +457,8 @@ describe('SchedulePage', () => {
 
   it('tells that a lesson was saved: the new lesson may be out of the screen', async () => {
     await render();
+    page.onSlot({ start: new Date(2026, 9, 1, 18), end: new Date(2026, 9, 1, 18, 30) });
+    await fixture.whenStable();
 
     fixture.debugElement
       .query(By.directive(LessonDialog))

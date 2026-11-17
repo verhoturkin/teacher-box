@@ -9,21 +9,21 @@ import { Replay } from '../motion-playback';
 /** How each overlay enters and leaves (`styles.scss` «Overlays on M3E springs»). */
 const OVERLAYS = [
   [
-    'dialog',
-    'scale 0.93 on default spatial + default effects',
-    'standard fast spatial + fast effects',
+    'dialog, confirmation',
+    'clip opens down 80 ms after the scrim on standard fast spatial + fast effects, content 70 ms later',
+    'fast effects + collapse by a quarter on fast effects, its scrim on default effects',
   ],
   [
     'menu, dropdown, date picker',
-    'scale 0.93 on fast spatial + fast effects',
-    'standard fast spatial + fast effects',
+    'clip opens away from the anchor on standard fast spatial + fast effects, rows 30 ms apart',
+    'clip closes to the anchor on standard fast spatial + fast effects',
   ],
   [
     'snackbar',
-    'scale 0.8 on fast spatial + fast effects',
+    'clip opens upwards on standard fast spatial, text fades in 50 ms later on fast effects',
     'fast effects + collapse on standard fast',
   ],
-  ['scrim', 'default effects', 'fast effects'],
+  ['scrim', 'default effects', 'fast effects (around a dialog: default effects)'],
 ] as const;
 
 /** §1 and §11 The openings of dialogs, menus and the snackbar: the buttons replay them; they enter on a spring and leave without a bounce. */
@@ -56,7 +56,7 @@ const OVERLAYS = [
       [cancelLabel]="null"
       (confirm)="dialog.set(false)"
     >
-      <p>Entered on --tb-spring-default-spatial.</p>
+      <p>Opened downwards on --tb-spring-standard-fast-spatial.</p>
     </tb-dialog>
   `,
 })

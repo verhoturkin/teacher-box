@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.notifications.domain.InboxNotification;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 @Repository
 public class InboxRepository {
@@ -38,7 +39,7 @@ public class InboxRepository {
     }
 
     public Optional<InboxNotification> findById(UUID id) {
-        return jdbc.sql(SELECT + " where id = :id").param("id", id).query(InboxNotification.class).optional();
+        return jdbc.sql(SELECT + " where id = :id").param("id", id).query(RecordRowMapper.of(InboxNotification.class)).optional();
     }
 
     /** Newest first. */
@@ -57,7 +58,7 @@ public class InboxRepository {
                 .param("recipientId", recipientId)
                 .param("offset", offset)
                 .param("limit", limit)
-                .query(InboxNotification.class)
+                .query(RecordRowMapper.of(InboxNotification.class))
                 .list();
     }
 

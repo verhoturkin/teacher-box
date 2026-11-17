@@ -352,6 +352,36 @@ describe('StudentsPage', () => {
       expect(rows()[0]).toContain('Олег');
     });
 
+    it('keeps the skeleton until the extras come, then shows the rows whole', async () => {
+      backend.expectOne('/api/teacher/students').flush([MARIA]);
+      backend.expectOne('/api/teacher/groups').flush([OGE]);
+      backend.expectOne('/api/teacher/tags').flush([]);
+      await fixture.whenStable();
+      expect(rows()).toEqual([]);
+      expect(host.querySelector('.tb-load-state__skeleton')).not.toBeNull();
+
+      flushExtras([MARIA], { balances: { m: 1000 } });
+      await fixture.whenStable();
+
+      expect(rows()[0]).toContain('Мария');
+      expect(host.querySelector('.tb-load-state__skeleton')).toBeNull();
+    });
+
+    it('shows the rows after 300 ms even when the extras are slow', async () => {
+      backend.expectOne('/api/teacher/students').flush([MARIA]);
+      backend.expectOne('/api/teacher/groups').flush([OGE]);
+      backend.expectOne('/api/teacher/tags').flush([]);
+      await fixture.whenStable();
+      expect(rows()).toEqual([]);
+
+      // the wait started with the page, a real timer: the extras are still unanswered
+      await new Promise((resolve) => setTimeout(resolve, 320));
+      await fixture.whenStable();
+      expect(rows()[0]).toContain('Мария');
+
+      flushExtras([MARIA]);
+    });
+
     it('goes without balances, messengers and lessons it could not read', async () => {
       backend.expectOne('/api/teacher/students').flush([MARIA]);
       backend.expectOne('/api/teacher/groups').flush([OGE]);

@@ -7,6 +7,8 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -98,6 +100,7 @@ const ALL_DAY_START_HOUR = 10;
 @Component({
   selector: 'tb-schedule-page',
   imports: [
+    ListRow,
     Avatar,
     ButtonAttributes,
     HelpButton,
@@ -238,7 +241,7 @@ const ALL_DAY_START_HOUR = 10;
               <h2 class="tb-schedule-section__title">{{ t.requests }}</h2>
               <ul class="tb-list">
                 @for (request of requests(); track request.id) {
-                  <li>
+                  <li tbListRow>
                     <tb-avatar
                       [attr.data-tb-label]="colors.studentLabel(request.studentId)"
                       [name]="request.studentName ?? c.student"
@@ -295,7 +298,7 @@ const ALL_DAY_START_HOUR = 10;
                 } @else {
                   <ul class="tb-list tb-list--no-phone-lead">
                     @for (item of offTimes(); track item.id) {
-                      <li>
+                      <li tbListRow>
                         <span class="tb-list__lead" aria-hidden="true"
                           ><i class="tb-i tb-i-dark_mode"></i
                         ></span>
@@ -348,41 +351,52 @@ const ALL_DAY_START_HOUR = 10;
       (onHide)="menuFor.set(null)"
     />
 
-    <tb-lesson-dialog
-      [(visible)]="lessonDialogVisible"
-      [students]="students()"
-      [groups]="groups()"
-      [lesson]="editing()"
-      [slot]="slot()"
-      [defaultDuration]="defaultDuration()"
-      (saved)="done(t.saved)"
-    />
-    <tb-lesson-details-dialog
-      [(visible)]="detailsVisible"
-      [lesson]="selected()"
-      (changed)="reload()"
-      (deleted)="done(t.deleted)"
-      (edit)="editLesson($event)"
-      (answerOpened)="answer($event)"
-    />
-    <tb-attendance-dialog
-      [(visible)]="attendanceVisible"
-      [lesson]="selected()"
-      (saved)="reload()"
-      (restored)="reload()"
-    />
-
-    <tb-off-time-dialog
-      [(visible)]="offTimeDialogVisible"
-      [offTime]="editingOffTime()"
-      [timeZone]="settings()?.timeZone ?? null"
-      (saved)="onOffTimeSaved()"
-    />
-    <tb-request-answer-dialog
-      [(visible)]="answerVisible"
-      [request]="answering()"
-      (answered)="done(t.answered)"
-    />
+    <!-- each dialog is built when first opened: their hidden forms took ~100 ms of the page's first
+      render, which held the page transition (stage 419.5) -->
+    @if (built.lessonDialog()) {
+      <tb-lesson-dialog
+        [(visible)]="lessonDialogVisible"
+        [students]="students()"
+        [groups]="groups()"
+        [lesson]="editing()"
+        [slot]="slot()"
+        [defaultDuration]="defaultDuration()"
+        (saved)="done(t.saved)"
+      />
+    }
+    @if (built.details()) {
+      <tb-lesson-details-dialog
+        [(visible)]="detailsVisible"
+        [lesson]="selected()"
+        (changed)="reload()"
+        (deleted)="done(t.deleted)"
+        (edit)="editLesson($event)"
+        (answerOpened)="answer($event)"
+      />
+    }
+    @if (built.attendance()) {
+      <tb-attendance-dialog
+        [(visible)]="attendanceVisible"
+        [lesson]="selected()"
+        (saved)="reload()"
+        (restored)="reload()"
+      />
+    }
+    @if (built.offTimeDialog()) {
+      <tb-off-time-dialog
+        [(visible)]="offTimeDialogVisible"
+        [offTime]="editingOffTime()"
+        [timeZone]="settings()?.timeZone ?? null"
+        (saved)="onOffTimeSaved()"
+      />
+    }
+    @if (built.answer()) {
+      <tb-request-answer-dialog
+        [(visible)]="answerVisible"
+        [request]="answering()"
+        (answered)="done(t.answered)"
+      />
+    }
   `,
   styles: `
     .tb-schedule-screens {
@@ -520,6 +534,14 @@ export class SchedulePage implements OnInit {
   protected readonly editingOffTime = signal<OffTime | null>(null);
   protected readonly answerVisible = signal(false);
   protected readonly answering = signal<ChangeRequest | null>(null);
+  /** Whether each dialog has been opened once: it is built then and stays (its closing animation plays). */
+  protected readonly built = {
+    lessonDialog: openedOnce(this.lessonDialogVisible),
+    details: openedOnce(this.detailsVisible),
+    attendance: openedOnce(this.attendanceVisible),
+    offTimeDialog: openedOnce(this.offTimeDialogVisible),
+    answer: openedOnce(this.answerVisible),
+  };
 
   /** A phone's screens (chips above the calendar): the agenda is the first; each of the others is its own screen. */
   protected readonly screen = signal<PhoneScreen>('agenda');

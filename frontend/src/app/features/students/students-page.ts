@@ -1,4 +1,5 @@
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
+import { ListRow } from '@shared/ui/list-row';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -12,7 +13,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Observable, catchError, forkJoin, of } from 'rxjs';
+import { Observable, ReplaySubject, catchError, forkJoin, of, race, take, timer } from 'rxjs';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
@@ -75,6 +76,11 @@ import { INVITE_PURPOSE_LABELS, STATUS_LABELS, STATUS_SEVERITIES } from './stude
 /** How far ahead the list looks for the nearest lesson of each row. */
 const LESSON_DAYS = 28;
 const DAY_MS = 86_400_000;
+/**
+ * How long the skeleton waits for the balances, messengers and lessons after the roster is
+ * there: the rows appear whole, not filling in; a slow extra read does not hold the list longer.
+ */
+const EXTRAS_WAIT_MS = 300;
 
 /** The short name of a tag on the chip: «Уровень английского» → «Уровень». */
 function shortName(name: string): string {
@@ -104,6 +110,7 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
 @Component({
   selector: 'tb-students-page',
   imports: [
+    ListRow,
     NgTemplateOutlet,
     SearchField,
     Avatar,
@@ -182,11 +189,11 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
               />
             </div>
           </div>
-          <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+          <tb-load-state [state]="state" [what]="t.what" [skeleton]="true" (retry)="load()">
             @if (visibleRows().length > 0) {
               <ul class="tb-list tb-list--clamp tb-list--own-trail" [attr.aria-label]="t.title">
                 @for (row of visibleRows(); track row.kind + row.id) {
-                  <li [class.tb-list__item--current]="isCurrent(row)">
+                  <li tbListRow [class.tb-list__item--current]="isCurrent(row)">
                     @if (row.kind === 'student') {
                       <tb-avatar
                         [attr.data-tb-label]="colorOf(row)"
@@ -565,6 +572,9 @@ export class StudentsPage implements OnInit {
     pageDetail(() => (this.open() ? this.selected()?.name : null));
   }
 
+  /** Emits once the extras are answered (or failed); replays for a retry of the roster. */
+  private readonly extrasSettled = new ReplaySubject<void>(1);
+
   ngOnInit(): void {
     this.load();
     this.loadExtras();
@@ -574,6 +584,7 @@ export class StudentsPage implements OnInit {
     forkJoin({
       students: this.api.listStudents(quietContext()),
       groups: this.api.listGroups(quietContext()),
+      extras: race(this.extrasSettled.pipe(take(1)), timer(EXTRAS_WAIT_MS)),
     })
       .pipe(this.state.track())
       .subscribe(({ students, groups }) => {
@@ -628,6 +639,7 @@ export class StudentsPage implements OnInit {
               ),
         lessons,
       });
+      this.extrasSettled.next();
     });
   }
 

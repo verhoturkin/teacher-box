@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.notifications.domain.PushSubscription;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 @Repository
 public class PushSubscriptionRepository {
@@ -60,18 +61,18 @@ public class PushSubscriptionRepository {
     }
 
     public Optional<PushSubscription> findById(UUID id) {
-        return jdbc.sql(SELECT + " where id = :id").param("id", id).query(PushSubscription.class).optional();
+        return jdbc.sql(SELECT + " where id = :id").param("id", id).query(RecordRowMapper.of(PushSubscription.class)).optional();
     }
 
     public Optional<PushSubscription> findByEndpoint(String endpoint) {
         return jdbc.sql(SELECT + " where endpoint = :endpoint").param("endpoint", endpoint)
-                .query(PushSubscription.class).optional();
+                .query(RecordRowMapper.of(PushSubscription.class)).optional();
     }
 
     /** Oldest first. */
     public List<PushSubscription> findByUser(UUID userId) {
         return jdbc.sql(SELECT + " where user_id = :userId order by created_at, id").param("userId", userId)
-                .query(PushSubscription.class).list();
+                .query(RecordRowMapper.of(PushSubscription.class)).list();
     }
 
     public void delete(UUID id) {

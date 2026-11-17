@@ -7,6 +7,7 @@ import {
   model,
   viewChild,
 } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import { catchError, firstValueFrom, of } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Tooltip } from 'primeng/tooltip';
@@ -29,13 +30,13 @@ const ACCEPTED_EXTENSIONS = ACCEPTED_FILES.split(',').map((extension) => extensi
  */
 @Component({
   selector: 'tb-file-picker',
-  imports: [Button, Tooltip],
+  imports: [ListRow, Button, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (list() && files().length > 0) {
       <ul class="tb-list tb-file-picker__list" [attr.aria-label]="t.picked">
         @for (file of files(); track $index) {
-          <li>
+          <li tbListRow>
             <span class="tb-list__lead" aria-hidden="true"><i [class]="icon(file)"></i></span>
             <div class="tb-list__text">
               @if (showable(file)) {

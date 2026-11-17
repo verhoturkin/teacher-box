@@ -279,10 +279,11 @@ test('long search results scroll with the keyboard', async ({ page, request }) =
   if (await more.isVisible()) await more.click();
   await search.focus();
   for (let index = 0; index < 8; index++) await page.keyboard.press('ArrowDown');
+  // 0.53.0: the results scroll under the bar row, inside the container (416.2)
   expect(
-    await panel.evaluate(
-      (element) => element.scrollHeight > element.clientHeight && element.scrollTop > 0,
-    ),
+    await panel
+      .locator('.tb-search__results')
+      .evaluate((element) => element.scrollHeight > element.clientHeight && element.scrollTop > 0),
   ).toBe(true);
   await expect(search).toHaveAttribute('aria-activedescendant', /.+/);
 });

@@ -69,7 +69,7 @@
 .tb-pane__scroll,
 .tb-notifications-scroll,
 .tb-roster__scroll,
-.tb-search__panel,
+.tb-search__results,
 .p-dialog-content,
 .p-drawer-content,
 .p-select-list-container,
@@ -119,7 +119,7 @@ textarea.p-textarea::-webkit-resizer {
   .tb-pane__scroll,
   .tb-notifications-scroll,
   .tb-roster__scroll,
-  .tb-search__panel,
+  .tb-search__results,
   .p-dialog-content,
   .p-drawer-content,
   .p-select-list-container,
@@ -496,6 +496,7 @@ textarea.p-textarea {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
     scroll-behavior: auto !important;
   }
 }

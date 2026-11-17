@@ -14,6 +14,7 @@ import { InputText } from 'primeng/inputtext';
 import { Select } from 'primeng/select';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { Textbook, TextbooksApi, parsePages } from '@features/textbooks/parts';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
@@ -39,62 +40,64 @@ export const PAGES_PATTERN = /^\s*\d+(\s*[-–—]\s*\d+)?(\s*[,;\s]\s*\d+(\s*[-
   imports: [ReactiveFormsModule, InputText, Select, FieldErrors, TbDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      [(visible)]="visible"
-      [headline]="bound() === null ? t.newTitle : t.pagesTitle"
-      [confirmLabel]="empty() ? null : bound() === null ? t.bind : c.save"
-      [cancelLabel]="empty() ? c.close : c.cancel"
-      formId="bind-textbook-form"
-      [pending]="submit.pending()"
-      [error]="localError() ?? submit.error()"
-      [dirty]="submit.dirty()"
-    >
-      @if (empty()) {
-        <p class="tb-muted">{{ t.noTextbooks }}</p>
-      } @else {
-        <form
-          tbFieldErrors
-          id="bind-textbook-form"
-          class="tb-form"
-          [formGroup]="form"
-          (ngSubmit)="save()"
-        >
-          @if (bound(); as current) {
-            <p class="tb-strong">{{ current.title }}</p>
-          } @else {
-            <div class="tb-field tb-field--required">
-              <label for="bind-textbook">{{ t.textbook }}</label>
-              <p-select
-                inputId="bind-textbook"
-                formControlName="textbook"
-                [options]="choices()"
-                optionLabel="title"
-                optionValue="id"
-                [placeholder]="t.chooseTextbook"
-                [filter]="true"
-                filterBy="title,course"
-                appendTo="body"
-                [fluid]="true"
-              />
-            </div>
-          }
-          @if (paged()) {
-            <div class="tb-field">
-              <label for="bind-pages">{{ t.pages }}</label>
-              <input
-                pInputText
-                id="bind-pages"
-                formControlName="pages"
-                [placeholder]="t.pagesPlaceholder"
-                autocomplete="off"
-              />
-              <small class="tb-hint">{{ pagesHint() }}</small>
-            </div>
-          }
-        </form>
-      }
-    </tb-dialog>
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        [(visible)]="visible"
+        [headline]="bound() === null ? t.newTitle : t.pagesTitle"
+        [confirmLabel]="empty() ? null : bound() === null ? t.bind : c.save"
+        [cancelLabel]="empty() ? c.close : c.cancel"
+        formId="bind-textbook-form"
+        [pending]="submit.pending()"
+        [error]="localError() ?? submit.error()"
+        [dirty]="submit.dirty()"
+      >
+        @if (empty()) {
+          <p class="tb-muted">{{ t.noTextbooks }}</p>
+        } @else {
+          <form
+            tbFieldErrors
+            id="bind-textbook-form"
+            class="tb-form"
+            [formGroup]="form"
+            (ngSubmit)="save()"
+          >
+            @if (bound(); as current) {
+              <p class="tb-strong">{{ current.title }}</p>
+            } @else {
+              <div class="tb-field tb-field--required">
+                <label for="bind-textbook">{{ t.textbook }}</label>
+                <p-select
+                  inputId="bind-textbook"
+                  formControlName="textbook"
+                  [options]="choices()"
+                  optionLabel="title"
+                  optionValue="id"
+                  [placeholder]="t.chooseTextbook"
+                  [filter]="true"
+                  filterBy="title,course"
+                  appendTo="body"
+                  [fluid]="true"
+                />
+              </div>
+            }
+            @if (paged()) {
+              <div class="tb-field">
+                <label for="bind-pages">{{ t.pages }}</label>
+                <input
+                  pInputText
+                  id="bind-pages"
+                  formControlName="pages"
+                  [placeholder]="t.pagesPlaceholder"
+                  autocomplete="off"
+                />
+                <small class="tb-hint">{{ pagesHint() }}</small>
+              </div>
+            }
+          </form>
+        }
+      </tb-dialog>
+    }
   `,
 })
 export class BindTextbookDialog {
@@ -104,6 +107,8 @@ export class BindTextbookDialog {
   private readonly textbooksApi = inject(TextbooksApi);
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   /** `null`: the assignment is not created yet — the choice goes to `picked`. */
   readonly assignmentId = input<string | null>(null);
   /** The textbooks the assignment already has. */

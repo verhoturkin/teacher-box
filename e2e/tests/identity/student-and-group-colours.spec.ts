@@ -54,6 +54,8 @@ test('the teacher colours a student and a group', async ({ page }) => {
   await page.getByLabel('Название').fill(group);
   await page.locator('p-multiselect:has(#group-members)').click();
   await page.getByRole('option', { name: student }).click();
+  // PrimeNG listens for Escape once the list has opened; the clip (0.53.0) keeps the box still meanwhile
+  await expect(page.locator('.p-anchored-overlay-enter-active')).toHaveCount(0);
   await page.keyboard.press('Escape');
   await expect(
     page.getByRole('dialog').locator('.p-multiselect-chip', { hasText: student }),

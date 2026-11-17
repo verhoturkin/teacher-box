@@ -56,7 +56,7 @@ interface InboxPart {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card>
-      <tb-load-state [state]="state" [what]="t.what" (retry)="reload()">
+      <tb-load-state [state]="state" [what]="t.what" [skeleton]="true" (retry)="reload()">
         @if (unreadPart(); as part) {
           @if (part.items.length === 0) {
             <tb-empty-state icon="tb-i-notifications" [title]="t.nothing" />

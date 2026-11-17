@@ -7,7 +7,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -80,6 +82,15 @@ public class RepeatRuleRepository {
 
     public Optional<RepeatRule> findById(UUID id) {
         return jdbc.sql(SELECT + " where id = :id").param("id", id).query(this::map).optional();
+    }
+
+    /** The rules with the given ids in one query, by id; unknown ids are absent. */
+    public Map<UUID, RepeatRule> findByIds(Collection<UUID> ids) {
+        if (ids.isEmpty()) {
+            return Map.of();
+        }
+        return jdbc.sql(SELECT + " where id in (:ids)").param("ids", ids).query(this::map).list().stream()
+                .collect(Collectors.toMap(RepeatRule::id, rule -> rule));
     }
 
     /** RepeatRule with lessons on or after {@code date} (a series stopped before its start has none). */

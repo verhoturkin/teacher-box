@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { ListRow } from '@shared/ui/list-row';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -25,7 +26,7 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-my-boards-feed',
-  imports: [MaterialCard, EmptyState, LoadStateView],
+  imports: [ListRow, MaterialCard, EmptyState, LoadStateView],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -33,7 +34,7 @@ import { T } from '../i18n/texts';
       @if (shown().length > 0) {
         <ul class="tb-material-grid" [attr.aria-label]="t.list">
           @for (board of visible(); track board.id) {
-            <li>
+            <li tbListRow>
               <tb-material-card
                 [title]="board.title"
                 [supporting]="details(board)"

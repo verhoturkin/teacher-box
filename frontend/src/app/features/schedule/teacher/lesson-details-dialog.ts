@@ -1,3 +1,4 @@
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -68,74 +69,76 @@ function withDetails(lesson: ScheduledLesson, details: ScheduledLesson): Schedul
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="sheet"
-      [(visible)]="visible"
-      [headline]="headline()"
-      [confirmLabel]="footerAction()"
-      [cancelLabel]="null"
-      [pending]="busy.is('restore')"
-      (confirm)="footerConfirm()"
-    >
-      <ng-template tbDialogHeaderActions>
-        @if (shown(); as item) {
-          @if (item.status === 'SCHEDULED') {
-            <p-button
-              icon="tb-i tb-i-edit"
-              severity="secondary"
-              [text]="true"
-              [rounded]="true"
-              [pTooltip]="t.edit"
-              [ariaLabel]="t.edit"
-              (onClick)="editLesson()"
-            />
+    @if (built()) {
+      <tb-dialog
+        kind="sheet"
+        [(visible)]="visible"
+        [headline]="headline()"
+        [confirmLabel]="footerAction()"
+        [cancelLabel]="null"
+        [pending]="busy.is('restore')"
+        (confirm)="footerConfirm()"
+      >
+        <ng-template tbDialogHeaderActions>
+          @if (shown(); as item) {
+            @if (item.status === 'SCHEDULED') {
+              <p-button
+                icon="tb-i tb-i-edit"
+                severity="secondary"
+                [text]="true"
+                [rounded]="true"
+                [pTooltip]="t.edit"
+                [ariaLabel]="t.edit"
+                (onClick)="editLesson()"
+              />
+            }
+            @if (menuItems().length > 0) {
+              <p-button
+                icon="tb-i tb-i-more_vert"
+                severity="secondary"
+                [text]="true"
+                [rounded]="true"
+                [pTooltip]="t.more"
+                [ariaLabel]="t.more"
+                aria-haspopup="menu"
+                (onClick)="menu.toggle($event)"
+              />
+              <p-menu #menu [model]="menuItems()" [popup]="true" appendTo="body" />
+            }
           }
-          @if (menuItems().length > 0) {
-            <p-button
-              icon="tb-i tb-i-more_vert"
-              severity="secondary"
-              [text]="true"
-              [rounded]="true"
-              [pTooltip]="t.more"
-              [ariaLabel]="t.more"
-              aria-haspopup="menu"
-              (onClick)="menu.toggle($event)"
-            />
-            <p-menu #menu [model]="menuItems()" [popup]="true" appendTo="body" />
+        </ng-template>
+        @if (visible() && shown(); as item) {
+          <tb-lesson-card
+            role="teacher"
+            [lesson]="item"
+            [now]="now()"
+            [busy]="busy.is('outcome')"
+            (outcomeChange)="mark($event)"
+            (answer)="answerRequest($event)"
+          />
+          @if (summarizable()) {
+            <tb-lesson-summary [lesson]="item" (saved)="onSummarySaved($event)" />
           }
         }
-      </ng-template>
-      @if (visible() && shown(); as item) {
-        <tb-lesson-card
-          role="teacher"
-          [lesson]="item"
-          [now]="now()"
-          [busy]="busy.is('outcome')"
-          (outcomeChange)="mark($event)"
-          (answer)="answerRequest($event)"
-        />
-        @if (summarizable()) {
-          <tb-lesson-summary [lesson]="item" (saved)="onSummarySaved($event)" />
-        }
-      }
-    </tb-dialog>
+      </tb-dialog>
 
-    <tb-attendance-dialog
-      [(visible)]="attendanceVisible"
-      [lesson]="shown()"
-      (saved)="onChanged($event, false)"
-      (restored)="onChanged($event)"
-    />
-    <tb-lesson-cancel-dialog
-      [(visible)]="cancelVisible"
-      [lesson]="shown()"
-      (cancelled)="onChanged($event)"
-    />
-    <tb-lesson-delete-dialog
-      [(visible)]="deleteVisible"
-      [lesson]="shown()"
-      (deleted)="deleted.emit($event)"
-    />
+      <tb-attendance-dialog
+        [(visible)]="attendanceVisible"
+        [lesson]="shown()"
+        (saved)="onChanged($event, false)"
+        (restored)="onChanged($event)"
+      />
+      <tb-lesson-cancel-dialog
+        [(visible)]="cancelVisible"
+        [lesson]="shown()"
+        (cancelled)="onChanged($event)"
+      />
+      <tb-lesson-delete-dialog
+        [(visible)]="deleteVisible"
+        [lesson]="shown()"
+        (deleted)="deleted.emit($event)"
+      />
+    }
   `,
 })
 export class LessonDetailsDialog {
@@ -147,6 +150,8 @@ export class LessonDetailsDialog {
   protected readonly busy = new Busy();
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   readonly lesson = input<ScheduledLesson | null>(null);
   /** Current time, for deciding whether the outcome can be marked. */
   readonly now = input<Date>(new Date());

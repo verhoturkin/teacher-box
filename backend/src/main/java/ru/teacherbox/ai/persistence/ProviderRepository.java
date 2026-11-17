@@ -15,6 +15,7 @@ import ru.teacherbox.ai.domain.AiModel;
 import ru.teacherbox.ai.domain.AiProvider;
 import ru.teacherbox.ai.domain.AiSettings;
 import ru.teacherbox.ai.domain.ProviderKind;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 /** The AI providers, their models and the teacher's AI settings (ADR-0057). */
 @Repository
@@ -166,7 +167,7 @@ public class ProviderRepository {
     /** The settings, {@link AiSettings#NONE} while nothing is stored. */
     public AiSettings settings() {
         return jdbc.sql("select default_model_id, monthly_token_limit, version from ai.settings where id = 1")
-                .query(AiSettings.class)
+                .query(RecordRowMapper.of(AiSettings.class))
                 .optional()
                 .orElse(AiSettings.NONE);
     }

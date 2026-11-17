@@ -249,6 +249,32 @@ describe('GlobalSearchView', () => {
       opener.remove();
     });
 
+    it('grows from the button that opens it, or from the top edge after Ctrl K', async () => {
+      const opener = document.createElement('button');
+      opener.setAttribute('aria-haspopup', 'dialog');
+      vi.spyOn(opener, 'getBoundingClientRect').mockReturnValue(new DOMRect(300, 8, 40, 40));
+      document.body.append(opener);
+      opener.focus();
+      const host = await render(true);
+      fixture.componentInstance.open.set(true);
+      await fixture.whenStable();
+
+      const from = (): string =>
+        requireElement(host, '.tb-search', HTMLElement).style.getPropertyValue('--tb-search-from');
+      expect(from()).toBe(
+        `inset(8px ${String(window.innerWidth - 340)}px ${String(window.innerHeight - 48)}px 300px round 20px)`,
+      );
+
+      press(host, 'Escape');
+      await fixture.whenStable();
+      opener.removeAttribute('aria-haspopup');
+      fixture.componentInstance.open.set(true);
+      await fixture.whenStable();
+
+      expect(from()).toBe('');
+      opener.remove();
+    });
+
     it('closes with «назад» and after a result is opened', async () => {
       const host = await render(true);
       fixture.componentInstance.open.set(true);

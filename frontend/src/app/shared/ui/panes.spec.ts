@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { hostElement, readableText, requireElement } from '@testing/dom';
 import { screenWidth } from '@testing/setup';
+import { PAGE_MOTION_ATTRIBUTE } from '@core/routing/page-transitions';
 import { MediumPanes, Pane, Panes, PaneHeader, PaneKind, injectListDetail } from './panes';
 
 @Component({
@@ -203,6 +205,42 @@ describe('Panes', () => {
     fixture.componentInstance.sheet.set(true);
     await fixture.whenStable();
     expect(host.querySelectorAll('tb-pane')).toHaveLength(3);
+  });
+
+  it('docks in a pane that appears alone, but not one that comes with a page transition', async () => {
+    const { fixture } = await render(1600);
+    // the class `animate.enter` puts on the element is not laid out in jsdom: read what the pane asks for
+    const enter = () =>
+      fixture.debugElement.queryAll(By.directive(Pane))[2]?.injector.get(Pane).enter();
+    fixture.componentInstance.sheet.set(false);
+    await fixture.whenStable();
+
+    fixture.componentInstance.sheet.set(true);
+    await fixture.whenStable();
+    expect(enter()).toBe('tb-pane--dock-in');
+
+    fixture.componentInstance.sheet.set(false);
+    await fixture.whenStable();
+    document.documentElement.setAttribute(PAGE_MOTION_ATTRIBUTE, 'forward');
+    fixture.componentInstance.sheet.set(true);
+    await fixture.whenStable();
+    document.documentElement.removeAttribute(PAGE_MOTION_ATTRIBUTE);
+
+    expect(enter()).toBe('');
+  });
+
+  it('gives a pane of a known width its coplanar room, a flexible one and one pane at a time none', async () => {
+    const { panes } = await render(1600);
+    const dock = (pane: HTMLElement | undefined) =>
+      pane?.style.getPropertyValue('--tb-motion-dock');
+
+    expect(dock(panes[0])).toBe('calc(-1 * (25.75rem + var(--tb-panes-spacer)))');
+    expect(dock(panes[1])).toBe('');
+    expect(dock(panes[2])).toBe('calc(-1 * (25rem + var(--tb-panes-spacer)))');
+    TestBed.resetTestingModule();
+
+    const single = await render(599);
+    expect(single.panes.map(dock)).toEqual(['', '', '']);
   });
 
   it('changes the kind of a pane', async () => {

@@ -4,22 +4,48 @@ import {
   type ActivatedRouteSnapshot,
   Router,
   provideRouter,
+  type UrlMatcher,
   type ViewTransitionInfo,
 } from '@angular/router';
 import { vi } from 'vitest';
 
-import { PAGE_MOTION_ATTRIBUTE, pageMotion, startPageTransition } from './page-transitions';
+import {
+  PAGE_CLIP_PROPERTY,
+  PAGE_MOTION_ATTRIBUTE,
+  PAGE_SURFACE_PROPERTY,
+  pageMotion,
+  startPageTransition,
+} from './page-transitions';
 
 @Component({ changeDetection: ChangeDetectionStrategy.OnPush, template: '' })
 class Blank {}
 
+/** A page on two routes of a section, like `help` and `help/:topic`. */
+@Component({ changeDetection: ChangeDetectionStrategy.OnPush, template: '' })
+class Help {}
+
+/** `/teacher/homework` and `/teacher/homework/:id` are one route, like the list and its detail. */
+const listDetail: UrlMatcher = (segments) => {
+  const [role, section, id, ...rest] = segments;
+  return role?.path === 'teacher' &&
+    section?.path === 'homework' &&
+    rest.length === 0 &&
+    id?.path !== 'new' &&
+    id?.path !== 'review'
+    ? { consumed: segments }
+    : null;
+};
+
 const ROUTES = [
+  { matcher: listDetail, component: Blank },
   { path: 'teacher', component: Blank },
   { path: 'teacher/billing', component: Blank },
   { path: 'teacher/billing/students/:id', component: Blank },
   { path: 'teacher/homework/new', component: Blank },
   { path: 'teacher/homework/review', component: Blank },
   { path: 'teacher/students/:id', component: Blank },
+  { path: 'teacher/help', component: Help },
+  { path: 'teacher/help/:topic', component: Help },
 ];
 
 let router: Router;
@@ -27,28 +53,6 @@ let router: Router;
 async function snapshot(url: string): Promise<ActivatedRouteSnapshot> {
   await router.navigateByUrl(url);
   return router.routerState.snapshot.root;
-}
-
-/** The system setting «reduce motion». */
-class ReducedMotion extends EventTarget implements MediaQueryList {
-  readonly media = '(prefers-reduced-motion: reduce)';
-  onchange: ((this: MediaQueryList, event: MediaQueryListEvent) => unknown) | null = null;
-
-  constructor(readonly matches: boolean) {
-    super();
-  }
-
-  addListener(): void {
-    // deprecated API
-  }
-
-  removeListener(): void {
-    // deprecated API
-  }
-}
-
-function media(reduced: boolean): void {
-  vi.spyOn(window, 'matchMedia').mockReturnValue(new ReducedMotion(reduced));
 }
 
 /** A view transition that finishes when it is skipped. */
@@ -111,14 +115,92 @@ describe('page transitions', () => {
     expect(pageMotion(student, list)).toBe('back');
   });
 
-  it('keeps the page when only its parameters change', async () => {
+  it('keeps the page when only its query changes', async () => {
     expect(
-      pageMotion(await snapshot('/teacher/students/1'), await snapshot('/teacher/students/2')),
+      pageMotion(
+        await snapshot('/teacher/students/1'),
+        await snapshot('/teacher/students/1?tab=a'),
+      ),
     ).toBeNull();
   });
 
+  it('moves the detail of one route by its segments', async () => {
+    const list = await snapshot('/teacher/homework');
+    const one = await snapshot('/teacher/homework/1');
+    const two = await snapshot('/teacher/homework/2');
+    expect(pageMotion(list, one)).toBe('forward');
+    expect(pageMotion(one, list)).toBe('back');
+    expect(pageMotion(one, two)).toBe('through');
+    expect(pageMotion(list, one, true)).toBe('detail');
+    expect(pageMotion(one, two, true)).toBe('detail');
+  });
+
+  it('moves the detail of one page on two routes like the detail of one route', async () => {
+    const list = await snapshot('/teacher/help');
+    const one = await snapshot('/teacher/help/a');
+    expect(pageMotion(list, one)).toBe('forward');
+    expect(pageMotion(list, one, true)).toBe('detail');
+    expect(pageMotion(await snapshot('/teacher/billing'), one, true)).toBe('through');
+  });
+
+  it('slides a page within the frame of its panes until the transition ends', async () => {
+    const content = document.createElement('div');
+    content.className = 'tb-shell__content';
+    content.innerHTML =
+      '<tb-panes style="padding: 0 24px 24px 0"><tb-pane style="background: rgb(1, 2, 3)"></tb-pane></tb-panes>';
+    document.body.append(content);
+    const view = transition();
+    const from = await snapshot('/teacher/billing');
+    const to = await snapshot('/teacher/billing/students/1');
+    runInInjectionContext(TestBed.inject(Injector), () => {
+      startPageTransition({ transition: view, from, to });
+    });
+    content.remove();
+    const root = document.documentElement;
+    expect(root.style.getPropertyValue(PAGE_CLIP_PROPERTY)).toBe(
+      'inset(0px 24px 24px 0px round var(--tb-shape-xl))',
+    );
+    expect(root.style.getPropertyValue(PAGE_SURFACE_PROPERTY)).toBe('rgb(1, 2, 3)');
+
+    view.skipTransition();
+    await view.finished;
+    await Promise.resolve();
+    expect(root.style.getPropertyValue(PAGE_CLIP_PROPERTY)).toBe('');
+    expect(root.style.getPropertyValue(PAGE_SURFACE_PROPERTY)).toBe('');
+  });
+
+  it('fades only the detail pane beside the list', async () => {
+    const content = document.createElement('div');
+    content.className = 'tb-shell__content';
+    content.innerHTML = '<tb-panes><tb-pane></tb-pane><tb-pane></tb-pane></tb-panes>';
+    document.body.append(content);
+    const view = transition();
+    const from = await snapshot('/teacher/homework/1');
+    const to = await snapshot('/teacher/homework/2');
+    runInInjectionContext(TestBed.inject(Injector), () => {
+      startPageTransition({ transition: view, from, to });
+    });
+    content.remove();
+    expect(document.documentElement.getAttribute(PAGE_MOTION_ATTRIBUTE)).toBe('detail');
+  });
+
+  it('fades only the detail column of a list inside one pane', async () => {
+    const content = document.createElement('div');
+    content.className = 'tb-shell__content';
+    content.innerHTML =
+      '<tb-panes><tb-pane><nav></nav><div data-tb-detail></div></tb-pane></tb-panes>';
+    document.body.append(content);
+    const view = transition();
+    const from = await snapshot('/teacher/homework');
+    const to = await snapshot('/teacher/homework/1');
+    runInInjectionContext(TestBed.inject(Injector), () => {
+      startPageTransition({ transition: view, from, to });
+    });
+    content.remove();
+    expect(document.documentElement.getAttribute(PAGE_MOTION_ATTRIBUTE)).toBe('detail');
+  });
+
   it('marks the root with the motion until the transition ends', async () => {
-    media(false);
     const view = transition();
     const info: ViewTransitionInfo = {
       transition: view,
@@ -139,7 +221,6 @@ describe('page transitions', () => {
   });
 
   it('leaves the mark of a newer transition in place', async () => {
-    media(false);
     const first = transition();
     const second = transition();
     const from = await snapshot('/teacher');
@@ -154,23 +235,14 @@ describe('page transitions', () => {
     expect(document.documentElement.getAttribute(PAGE_MOTION_ATTRIBUTE)).toBe('through');
   });
 
-  it('skips the transition when the page stays or the system asks for less motion', async () => {
+  it('skips the transition when the page stays', async () => {
     const same = transition();
-    media(false);
     const one = await snapshot('/teacher/students/1');
-    const two = await snapshot('/teacher/students/2');
+    const two = await snapshot('/teacher/students/1?tab=a');
     runInInjectionContext(TestBed.inject(Injector), () => {
       startPageTransition({ transition: same, from: one, to: two });
     });
     expect(same.skipTransition).toHaveBeenCalled();
-
-    media(true);
-    const reduced = transition();
-    const list = await snapshot('/teacher/billing');
-    runInInjectionContext(TestBed.inject(Injector), () => {
-      startPageTransition({ transition: reduced, from: one, to: list });
-    });
-    expect(reduced.skipTransition).toHaveBeenCalled();
     expect(document.documentElement.hasAttribute(PAGE_MOTION_ATTRIBUTE)).toBe(false);
   });
 });

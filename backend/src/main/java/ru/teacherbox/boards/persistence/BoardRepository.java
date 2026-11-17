@@ -15,6 +15,7 @@ import ru.teacherbox.boards.domain.Board;
 import ru.teacherbox.boards.domain.BoardMember;
 import ru.teacherbox.boards.domain.MemberType;
 import ru.teacherbox.shared.persistence.OptimisticLock;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 /** Boards and their members. */
 @Repository
@@ -75,18 +76,18 @@ public class BoardRepository {
     }
 
     public Optional<Board> findById(UUID id) {
-        return jdbc.sql(SELECT + " where id = :id").param("id", id).query(Board.class).optional();
+        return jdbc.sql(SELECT + " where id = :id").param("id", id).query(RecordRowMapper.of(Board.class)).optional();
     }
 
     public List<Board> findAll() {
-        return jdbc.sql(SELECT + ORDER).query(Board.class).list();
+        return jdbc.sql(SELECT + ORDER).query(RecordRowMapper.of(Board.class)).list();
     }
 
     public List<Board> findByIds(Collection<UUID> ids) {
         if (ids.isEmpty()) {
             return List.of();
         }
-        return jdbc.sql(SELECT + " where id in (:ids)" + ORDER).param("ids", ids).query(Board.class).list();
+        return jdbc.sql(SELECT + " where id in (:ids)" + ORDER).param("ids", ids).query(RecordRowMapper.of(Board.class)).list();
     }
 
     /** Ids of the boards any of the students or groups is a member of. */

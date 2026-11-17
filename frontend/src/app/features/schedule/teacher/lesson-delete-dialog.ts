@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { EMPTY } from 'rxjs';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { ScheduleApi } from '../data-access/schedule-api';
@@ -25,26 +26,28 @@ import { LessonScope } from './lesson-scope';
   imports: [TbDialog, LessonScope],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="alert"
-      [(visible)]="visible"
-      [headline]="t.deleteSeriesHeader"
-      [confirmLabel]="t.deleteLesson"
-      confirmSeverity="danger"
-      [pending]="submit.pending()"
-      [error]="submit.error()"
-      (confirm)="send()"
-    >
-      @if (lesson(); as item) {
-        <p class="tb-lesson-delete__text">
-          {{ t.deleteWarning }}
-          @if (item.status === 'SCHEDULED') {
-            {{ t.deleteNotice }}
-          }
-        </p>
-        <tb-lesson-scope [lessonId]="item.id" [(scope)]="scope" [(preview)]="preview" />
-      }
-    </tb-dialog>
+    @if (built()) {
+      <tb-dialog
+        kind="alert"
+        [(visible)]="visible"
+        [headline]="t.deleteSeriesHeader"
+        [confirmLabel]="t.deleteLesson"
+        confirmSeverity="danger"
+        [pending]="submit.pending()"
+        [error]="submit.error()"
+        (confirm)="send()"
+      >
+        @if (lesson(); as item) {
+          <p class="tb-lesson-delete__text">
+            {{ t.deleteWarning }}
+            @if (item.status === 'SCHEDULED') {
+              {{ t.deleteNotice }}
+            }
+          </p>
+          <tb-lesson-scope [lessonId]="item.id" [(scope)]="scope" [(preview)]="preview" />
+        }
+      </tb-dialog>
+    }
   `,
   styles: `
     .tb-lesson-delete__text {
@@ -57,6 +60,8 @@ export class LessonDeleteDialog {
   private readonly api = inject(ScheduleApi);
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   readonly lesson = input<ScheduledLesson | null>(null);
   /** The id of the lesson that was deleted. */
   readonly deleted = output<string>();

@@ -12,12 +12,6 @@
   }
 }
 
-@keyframes tb-motion-scale-out {
-  to {
-    transform: scale(var(--tb-motion-scale, 0.93));
-  }
-}
-
 @keyframes tb-motion-fade-in {
   from {
     opacity: 0;
@@ -42,9 +36,18 @@
   }
 }
 
-@keyframes tb-motion-grow-x {
+/* a coplanar pane takes its room beside the page and gives it back: the trailing margin `--tb-motion-dock`
+   (minus its width and the gap before it) pulls it out of the row, past the clipped trailing edge — the
+   neighbours resize, the content keeps its width and moves with the pane's leading edge (M3 video 7-5) */
+@keyframes tb-motion-dock-in {
   from {
-    transform: scaleX(0);
+    margin-inline-end: var(--tb-motion-dock);
+  }
+}
+
+@keyframes tb-motion-dock-out {
+  to {
+    margin-inline-end: var(--tb-motion-dock);
   }
 }
 
@@ -63,30 +66,228 @@
   }
 }
 
-/* Dialogs: the default spring (a medium surface) */
-.p-dialog.p-dialog-enter-active {
+/*
+ * List rows (`shared/ui/list-row.ts`; ours: M3 publishes no motion for them). A new row opens its
+ * measured height on the standard fast spring (no overshoot: the rows under it must not bounce) and
+ * fades in on default effects, like an inline message. A leaving row fades out on fast effects (a
+ * transition: Angular removes the row at the end of its one animation) and, from halfway through
+ * the fade, closes its height. The 2 px gap of `.tb-list` stays until the row goes (a grid track
+ * takes no negative margin).
+ */
+@keyframes tb-motion-row-open {
+  from {
+    height: 0;
+    padding-block: 0;
+  }
+
+  to {
+    height: var(--tb-motion-height);
+  }
+}
+
+@keyframes tb-motion-row-close {
+  from {
+    height: var(--tb-motion-height);
+  }
+
+  to {
+    height: 0;
+    padding-block: 0;
+  }
+}
+
+.tb-list-row--enter,
+.tb-list > li.tb-list-row--enter {
+  min-height: 0;
+  overflow: clip;
   animation:
-    tb-motion-scale-in var(--tb-spring-default-spatial),
+    tb-motion-row-open var(--tb-spring-standard-fast-spatial),
     tb-motion-fade-in var(--tb-spring-default-effects);
 }
 
-.p-dialog.p-dialog-leave-active {
-  animation:
-    tb-motion-scale-out var(--tb-spring-standard-fast-spatial) forwards,
-    tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
+.tb-list-row--leave,
+.tb-list > li.tb-list-row--leave {
+  min-height: 0;
+  overflow: clip;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--tb-spring-fast-effects);
+  animation: tb-motion-row-close var(--tb-spring-standard-fast-spatial) forwards;
+  /* half of the fast effects fade (140 ms): the row is nearly transparent before it closes */
+  animation-delay: 70ms;
 }
 
-/* Menus, dropdowns, the date picker: the fast spring (small surfaces) */
-.p-motion.p-anchored-overlay-enter-active {
+/*
+ * Menus, dropdowns, the date picker (M3 video transition patterns 7-2): no scale — it implies an
+ * elevation change (M3). The surface opens away from its anchor along Y: a clip with the surface's
+ * corners grows from the anchored edge (down under the field, up above it — PrimeNG writes the side
+ * into the inline `transform-origin`), on the standard fast spring (the video shows no bounce), and
+ * fades in on fast effects. The items fade in away from the anchor as it opens (ours: 30 ms apart,
+ * the fourth and later ones together, all done by the end of the spring). It closes the same way back,
+ * the fade quicker than the clip. The clip leaves room for the shadow (`--tb-motion-room`, the
+ * reach of the surface's elevation) with its corners grown by as much, so the shadow moves with
+ * the surface instead of showing at the end.
+ */
+$tb-motion-out: calc(-1 * var(--tb-motion-room));
+$tb-motion-round: calc(var(--tb-motion-radius) + var(--tb-motion-room));
+/* closed: the moving edge lies on the anchored one, past its shadow, nothing shows */
+$tb-motion-shut: calc(100% + var(--tb-motion-room));
+
+@keyframes tb-motion-reveal {
+  from {
+    clip-path: var(--tb-motion-clip);
+  }
+
+  to {
+    clip-path: inset($tb-motion-out round $tb-motion-round);
+  }
+}
+
+@keyframes tb-motion-conceal {
+  from {
+    clip-path: inset($tb-motion-out round $tb-motion-round);
+  }
+
+  to {
+    clip-path: var(--tb-motion-clip);
+  }
+}
+
+/* the rows of an overlay's list: options sit in host elements (`p-selectitem`), menu items do not */
+$tb-overlay-rows: ':is(.p-menu-list, .p-tieredmenu-root-list, .p-select-list, .p-multiselect-list, .p-autocomplete-list) > *';
+
+/* the place of a row from the anchored edge: the first three one by one, the rest together */
+@mixin tb-overlay-row-order($from) {
+  --tb-motion-order: 3;
+
+  &:#{$from}(1) {
+    --tb-motion-order: 0;
+  }
+
+  &:#{$from}(2) {
+    --tb-motion-order: 1;
+  }
+
+  &:#{$from}(3) {
+    --tb-motion-order: 2;
+  }
+}
+
+.p-anchored-overlay-enter-active,
+.p-anchored-overlay-leave-active {
+  --tb-motion-radius: var(--tb-shape-lg);
+  /* elevation 2 reaches 10 px below the surface */
+  --tb-motion-room: 0.75rem;
+  --tb-motion-clip: inset(
+    #{$tb-motion-out} #{$tb-motion-out} #{$tb-motion-shut} #{$tb-motion-out} round
+      #{$tb-motion-round}
+  );
+}
+
+.p-anchored-overlay-enter-active {
   animation:
-    tb-motion-scale-in var(--tb-spring-fast-spatial),
+    tb-motion-reveal var(--tb-spring-standard-fast-spatial),
     tb-motion-fade-in var(--tb-spring-fast-effects);
+
+  #{$tb-overlay-rows} {
+    @include tb-overlay-row-order(nth-child);
+
+    animation: tb-motion-fade-in var(--tb-spring-fast-effects) backwards;
+    animation-delay: calc(var(--tb-motion-order) * 30ms);
+  }
 }
 
-.p-motion.p-anchored-overlay-leave-active {
+/* above the anchor it opens upwards and the rows appear bottom to top; the date picker and menus
+   carry the side themselves, selects on their `.p-overlay` */
+.p-anchored-overlay-enter-active,
+.p-anchored-overlay-leave-active {
+  &[style*='center bottom'],
+  .p-overlay[style*='center bottom'] > & {
+    --tb-motion-clip: inset(
+      #{$tb-motion-shut} #{$tb-motion-out} #{$tb-motion-out} #{$tb-motion-out} round
+        #{$tb-motion-round}
+    );
+
+    #{$tb-overlay-rows} {
+      @include tb-overlay-row-order(nth-last-child);
+    }
+  }
+}
+
+.p-anchored-overlay-leave-active {
   animation:
-    tb-motion-scale-out var(--tb-spring-standard-fast-spatial) forwards,
+    tb-motion-conceal var(--tb-spring-standard-fast-spatial) forwards,
     tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
+}
+
+/*
+ * Dialogs, confirmations included (M3 video transition patterns 7-1): no scale. The scrim fades
+ * in first; 80 ms later the container opens downwards from its top edge (a clip with its
+ * corners) on the standard fast spring (the video shows no bounce) and fades in on fast effects;
+ * the content fades in 70 ms after the container on default effects. It closes at once, the scrim
+ * with it: the container fades on fast effects while it collapses by a quarter towards its top
+ * edge, the content fading with it; the scrim fades on default effects and goes last. The clip
+ * leaves room for the elevation 3 shadow (15 px below the surface).
+ */
+.p-dialog.p-dialog-enter-active,
+.p-dialog.p-dialog-leave-active {
+  --tb-motion-radius: var(--tb-shape-xl);
+  --tb-motion-room: 1rem;
+  --tb-motion-clip: inset(
+    #{$tb-motion-out} #{$tb-motion-out} #{$tb-motion-shut} #{$tb-motion-out} round
+      #{$tb-motion-round}
+  );
+}
+
+.p-dialog.p-dialog-enter-active {
+  animation:
+    tb-motion-reveal var(--tb-spring-standard-fast-spatial) backwards,
+    tb-motion-fade-in var(--tb-spring-fast-effects) backwards;
+  /* a delay for each of the two, or PrimeNG ends the enter at once */
+  animation-delay: 80ms, 80ms;
+
+  > * {
+    animation: tb-motion-fade-in var(--tb-spring-default-effects) backwards;
+    animation-delay: 150ms;
+  }
+}
+
+/*
+ * The dialog must be gone before its scrim: when the scrim's leave ends first, PrimeNG plays the
+ * dialog's leave again from the start (a flash). So the collapse runs on the fast effects spring
+ * (no overshoot, 140 ms; the dialog has faded by its end) and the scrim on default effects.
+ */
+.p-dialog.p-dialog-leave-active {
+  --tb-motion-clip: inset(
+    #{$tb-motion-out} #{$tb-motion-out} 25% #{$tb-motion-out} round #{$tb-motion-round}
+  );
+
+  animation:
+    tb-motion-conceal var(--tb-spring-fast-effects) forwards,
+    tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
+}
+
+.p-dialog-mask.p-overlay-mask.p-overlay-mask-leave-active {
+  animation: p-animate-overlay-mask-leave var(--tb-spring-default-effects) forwards;
+}
+
+/* Less motion: the dialog only fades in and out, its scrim still goes last */
+@media (prefers-reduced-motion: reduce) {
+  .p-dialog.p-dialog-enter-active {
+    animation: tb-motion-fade-in var(--tb-spring-default-effects) !important;
+  }
+
+  .p-dialog.p-dialog-leave-active {
+    animation: tb-motion-fade-out var(--tb-spring-fast-effects) forwards !important;
+  }
+
+  .p-dialog-mask.p-overlay-mask.p-overlay-mask-leave-active {
+    animation: p-animate-overlay-mask-leave var(--tb-spring-default-effects) forwards !important;
+  }
+
+  .p-dialog.p-dialog-enter-active > * {
+    animation: none !important;
+  }
 }
 
 /* The scrim fades on the default effects spring */
@@ -141,7 +342,6 @@
   }
 }
 
-/* The snackbar: grows from its middle on the fast spring, leaves by fading and closing its line */
 /*
  * Inline messages (ours: M3 publishes no motion for them): instead of Aura's 0.3 s ease-out they open
  * their line without a bounce (the content under them must not jump) and fade in on the default
@@ -159,12 +359,23 @@
     tb-motion-collapse var(--tb-spring-standard-fast-spatial) forwards;
 }
 
+/* the snackbar opens upwards from its bottom edge, opaque (M3 video 7-3), and its text fades in just
+   after (ours: 50 ms); no bounce, no scale */
 .p-toast-message.p-toast-message-enter-active {
-  --tb-motion-scale: 0.8;
+  --tb-motion-radius: var(--tb-shape-xs);
+  /* elevation 3 reaches 15 px below the surface */
+  --tb-motion-room: 1rem;
+  --tb-motion-clip: inset(
+    #{$tb-motion-shut} #{$tb-motion-out} #{$tb-motion-out} #{$tb-motion-out} round
+      #{$tb-motion-round}
+  );
 
-  animation:
-    tb-motion-scale-in var(--tb-spring-fast-spatial),
-    tb-motion-fade-in var(--tb-spring-fast-effects);
+  animation: tb-motion-reveal var(--tb-spring-standard-fast-spatial);
+
+  .tb-snackbar {
+    animation: tb-motion-fade-in var(--tb-spring-fast-effects) backwards;
+    animation-delay: 50ms;
+  }
 }
 
 .p-toast-message.p-toast-message-leave-active {
@@ -174,16 +385,29 @@
 }
 
 /*
- * Pages (core/routing/page-transitions.ts; M3 transition patterns, ours on M3E springs): only the
- * content moves, the bars stay. Fade through — between destinations: the old page fades out on fast
- * effects, the new one grows from 0.92 on default spatial and fades in on default effects. Shared axis
- * X — deeper into a section and back: both slide 30 dp on default spatial and cross-fade.
+ * Pages (core/routing/page-transitions.ts; M3 transition patterns on M3 easing and duration, ADR-0066):
+ * only the content moves, the bars stay. Clean fades: the old page fades out (accelerate), and
+ * only then the new one fades in (decelerate). Top level — between destinations: only a quick fade,
+ * short 1 out and short 2 in (as in M3's video). Forward and backward — deeper into a section and
+ * back: both pages also slide 30 dp together (medium 4, emphasized decelerate), the fades short 2
+ * and short 4 are over early in the long, soft slide. Detail — another item beside the
+ * list (a pane, or the detail column of one pane): only the detail fades, the list stays. With less motion only the fades stay.
  */
 :root[data-tb-page] {
   /* named only while a page changes: a named element is a stacking context of its own, and a sheet
      drawn inside the content would sink under its scrim */
-  .tb-shell__content {
+  &:not([data-tb-page='detail']) .tb-shell__content {
     view-transition-name: tb-page;
+  }
+
+  /* the detail beside the list (a pane, or a column inside one pane); a side sheet is not one */
+  &[data-tb-page='detail']
+    .tb-shell__content
+    tb-panes:not(.tb-panes--single)
+    > tb-pane
+    + tb-pane:not(.tb-pane--sheet),
+  &[data-tb-page='detail'] .tb-shell__content [data-tb-detail] {
+    view-transition-name: tb-detail;
   }
 
   .tb-shell__header {
@@ -205,56 +429,68 @@
   animation: none;
 }
 
-::view-transition-old(tb-page),
-::view-transition-new(tb-page) {
+::view-transition-old(*),
+::view-transition-new(*) {
   mix-blend-mode: normal;
 }
 
+/* a page slides within the frame of its panes (page-transitions.ts sets it): the snapshots lie over
+   the whole window and would cover the rail and the margins. Behind a single pane lies its surface,
+   so the surface stays and only the content slides and fades (M3) */
+::view-transition-group(tb-page) {
+  overflow: clip;
+  clip-path: var(--tb-page-clip, none);
+  background: var(--tb-page-surface, transparent);
+}
+
+/* the bars stay: only their live new state shows, so the old indicator does not linger under the
+   new one, and the new indicator grows from its middle */
+::view-transition-old(tb-top-bar),
+::view-transition-old(tb-side-nav),
+::view-transition-old(tb-bottom-bar) {
+  display: none;
+}
+
 :root[data-tb-page] {
-  &::view-transition-old(tb-page) {
-    animation: tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
+  &::view-transition-old(tb-page),
+  &::view-transition-old(tb-detail) {
+    animation: tb-motion-fade-out var(--tb-duration-short1) var(--tb-easing-standard-accelerate)
+      forwards;
   }
 
-  &[data-tb-page='through']::view-transition-new(tb-page) {
-    --tb-motion-scale: 0.92;
-
-    transform-origin: top center;
-    animation:
-      tb-motion-scale-in var(--tb-spring-default-spatial),
-      tb-motion-fade-in var(--tb-spring-default-effects);
+  &::view-transition-new(tb-page),
+  &::view-transition-new(tb-detail) {
+    animation: tb-motion-fade-in var(--tb-duration-short2) var(--tb-easing-standard-decelerate)
+      var(--tb-duration-short1) backwards;
   }
+}
 
-  &[data-tb-page='forward'],
-  &[data-tb-page='back'] {
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-tb-page='forward'],
+  :root[data-tb-page='back'] {
     &::view-transition-old(tb-page) {
       animation:
-        tb-motion-slide-out var(--tb-spring-default-spatial) forwards,
-        tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
+        tb-motion-slide-out var(--tb-duration-medium4) var(--tb-easing-emphasized-decelerate)
+          forwards,
+        tb-motion-fade-out var(--tb-duration-short2) var(--tb-easing-standard-accelerate) forwards;
     }
 
     &::view-transition-new(tb-page) {
       animation:
-        tb-motion-slide-in var(--tb-spring-default-spatial),
-        tb-motion-fade-in var(--tb-spring-default-effects);
+        tb-motion-slide-in var(--tb-duration-medium4) var(--tb-easing-emphasized-decelerate),
+        tb-motion-fade-in var(--tb-duration-short4) var(--tb-easing-standard-decelerate)
+          var(--tb-duration-short2) backwards;
     }
   }
 
-  &[data-tb-page='forward']::view-transition-old(tb-page),
-  &[data-tb-page='back']::view-transition-new(tb-page) {
+  :root[data-tb-page='forward']::view-transition-old(tb-page),
+  :root[data-tb-page='back']::view-transition-new(tb-page) {
     --tb-motion-x: -30px;
   }
 
-  &[data-tb-page='forward']::view-transition-new(tb-page),
-  &[data-tb-page='back']::view-transition-old(tb-page) {
+  :root[data-tb-page='forward']::view-transition-new(tb-page),
+  :root[data-tb-page='back']::view-transition-old(tb-page) {
     --tb-motion-x: 30px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation: none !important;
   }
 }
 

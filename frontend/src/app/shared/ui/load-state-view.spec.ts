@@ -20,6 +20,20 @@ class Host {
   retries = 0;
 }
 
+@Component({
+  imports: [LoadStateView],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <tb-load-state [state]="state" [skeleton]="true" [compact]="compact">
+      <ul class="content"></ul>
+    </tb-load-state>
+  `,
+})
+class ListHost {
+  readonly state = new LoadState();
+  compact = false;
+}
+
 describe('LoadStateView', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ providers: testProviders() });
@@ -67,5 +81,32 @@ describe('LoadStateView', () => {
     buttonByText(host, 'Повторить').click();
 
     expect(fixture.componentInstance.retries).toBe(1);
+  });
+
+  it('shows the shape of the rows of a list section instead of the indicator', async () => {
+    const fixture = TestBed.createComponent(ListHost);
+    const source = new Subject<number>();
+    source.pipe(fixture.componentInstance.state.track()).subscribe();
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+
+    expect(host.querySelector('tb-load-state')?.classList).toContain('tb-load-state--skeleton');
+    expect(host.querySelector('tb-loading-indicator')).toBeNull();
+    const skeleton = host.querySelector('.tb-load-state__skeleton[role="status"]');
+    expect(skeleton?.querySelectorAll('ul[aria-hidden="true"] > li')).toHaveLength(3);
+    expect(readableText(host)).toBe('Загрузка…');
+
+    source.next(1);
+    await fixture.whenStable();
+
+    expect(host.querySelector('.tb-load-state__content > .content')).not.toBeNull();
+  });
+
+  it('shows two rows in a compact list section', async () => {
+    const fixture = TestBed.createComponent(ListHost);
+    fixture.componentInstance.compact = true;
+    await fixture.whenStable();
+
+    expect(hostElement(fixture).querySelectorAll('.tb-load-state__skeleton li')).toHaveLength(2);
   });
 });

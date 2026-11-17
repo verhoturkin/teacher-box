@@ -10,6 +10,7 @@ import {
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputText } from 'primeng/inputtext';
 import { MultiSelect } from 'primeng/multiselect';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { FieldErrors } from '@shared/ui/field-errors';
@@ -25,53 +26,55 @@ import { T } from '../i18n/texts';
   imports: [ReactiveFormsModule, TbDialog, InputText, MultiSelect, FieldErrors, ChipColors],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      [(visible)]="visible"
-      [headline]="t.newGroup"
-      [confirmLabel]="t.create"
-      formId="group-form"
-      [pending]="submit.pending()"
-      [error]="submit.error()"
-      [dirty]="submit.dirty()"
-    >
-      <form
-        tbFieldErrors
-        id="group-form"
-        class="tb-form"
-        [formGroup]="form"
-        (ngSubmit)="submit.run()"
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        [(visible)]="visible"
+        [headline]="t.newGroup"
+        [confirmLabel]="t.create"
+        formId="group-form"
+        [pending]="submit.pending()"
+        [error]="submit.error()"
+        [dirty]="submit.dirty()"
       >
-        <div class="tb-field">
-          <label for="group-name">{{ t.name }}</label>
-          <input
-            pInputText
-            id="group-name"
-            formControlName="name"
-            autocomplete="off"
-            [placeholder]="t.namePlaceholder"
-          />
-        </div>
-        <div class="tb-field">
-          <label for="group-members">{{ t.members }}</label>
-          <p-multiselect
-            inputId="group-members"
-            formControlName="memberIds"
-            [options]="memberOptions()"
-            optionLabel="displayName"
-            optionValue="id"
-            [placeholder]="t.membersPlaceholder"
-            [filter]="true"
-            [filterPlaceHolder]="t.search"
-            [ariaFilterLabel]="t.search"
-            display="chip"
-            tbChipColors="student"
-            appendTo="body"
-            [fluid]="true"
-          />
-        </div>
-      </form>
-    </tb-dialog>
+        <form
+          tbFieldErrors
+          id="group-form"
+          class="tb-form"
+          [formGroup]="form"
+          (ngSubmit)="submit.run()"
+        >
+          <div class="tb-field">
+            <label for="group-name">{{ t.name }}</label>
+            <input
+              pInputText
+              id="group-name"
+              formControlName="name"
+              autocomplete="off"
+              [placeholder]="t.namePlaceholder"
+            />
+          </div>
+          <div class="tb-field">
+            <label for="group-members">{{ t.members }}</label>
+            <p-multiselect
+              inputId="group-members"
+              formControlName="memberIds"
+              [options]="memberOptions()"
+              optionLabel="displayName"
+              optionValue="id"
+              [placeholder]="t.membersPlaceholder"
+              [filter]="true"
+              [filterPlaceHolder]="t.search"
+              [ariaFilterLabel]="t.search"
+              display="chip"
+              tbChipColors="student"
+              appendTo="body"
+              [fluid]="true"
+            />
+          </div>
+        </form>
+      </tb-dialog>
+    }
   `,
 })
 export class GroupFormDialog {
@@ -79,6 +82,8 @@ export class GroupFormDialog {
   private readonly api = inject(IdentityApi);
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   /** Students that can join (deactivated ones are skipped). */
   readonly students = input<readonly Student[]>([]);
   readonly created = output<StudentGroup>();

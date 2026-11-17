@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { ListRow } from '@shared/ui/list-row';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -38,17 +39,17 @@ export function byUrgency(a: MyTask, b: MyTask): number {
  */
 @Component({
   selector: 'tb-student-tasks-card',
-  imports: [Card, DatePipe, EmptyState, LoadStateView, RouterLink, Tag],
+  imports: [ListRow, Card, DatePipe, EmptyState, LoadStateView, RouterLink, Tag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="t.title">
-      <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
+      <tb-load-state [state]="state" [what]="t.what" [skeleton]="true" (retry)="load()">
         @if (shown().length === 0) {
           <tb-empty-state [compact]="true" icon="tb-i-assignment" [title]="t.nothing" />
         } @else {
           <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
             @for (task of shown(); track task.taskId) {
-              <li>
+              <li tbListRow>
                 <span
                   class="tb-list__lead"
                   [class.tb-list__lead--accent]="task.overdue"

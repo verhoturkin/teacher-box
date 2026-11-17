@@ -15,7 +15,8 @@ function settled(failure: HttpErrorResponse | null): LoadState {
 
 /**
  * §12 The three states of a section that loads: `LoadState` + `tb-load-state` — the M3E loading indicator,
- * the error with its code and «Retry», the content (here the empty state, shown only after an answer).
+ * the error with its code and «Retry», the content (here the empty state, shown only after an answer);
+ * a list section shows the shape of its rows instead of the indicator (`[skeleton]`, 417.1).
  */
 @Component({
   selector: 'tb-gallery-load-state',
@@ -32,6 +33,10 @@ function settled(failure: HttpErrorResponse | null): LoadState {
       <li class="tb-gallery-cell">
         <tb-load-state [state]="loading" />
         <code class="tb-gallery-name">new LoadState() — loading</code>
+      </li>
+      <li class="tb-gallery-cell">
+        <tb-load-state [state]="loading" [skeleton]="true" />
+        <code class="tb-gallery-name">[skeleton]="true" — a list section loading</code>
       </li>
       <li class="tb-gallery-cell">
         <tb-load-state [state]="failed" [compact]="true" (retry)="retried = retried + 1" />

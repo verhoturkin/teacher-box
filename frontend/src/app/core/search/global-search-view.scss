@@ -97,19 +97,76 @@
   }
 }
 
-/* The dropdown search view: surface container high, extra-large corners, elevated, under the bar */
+/* «Очистить» at the end of the bar: its 48 px target 4 px from the edge, as from the top and bottom (M3: the
+   icon itself 16 dp in) */
+:host(:not(.tb-search--full)) .tb-search__bar > .tb-search__icon-button:last-child {
+  margin-inline-end: calc(var(--tb-space-1) - var(--tb-space-4));
+}
+
+/* The docked search view (M3: one container, extra-large corners, the 56 px bar its header): the bar's pill
+   grown down to the bar's width (ours: not wider, M3's 24 → 12 dp margins are for a bar between margins),
+   elevated; the bar row stays in place over it and lends it its surface */
+.tb-search__bar {
+  position: relative;
+  z-index: 2;
+}
+
+.tb-search--open .tb-search__bar,
+.tb-search--open .tb-search__bar:hover {
+  background: transparent;
+}
+
 .tb-search__panel {
   position: absolute;
   inset-inline: 0;
-  top: calc(100% + var(--tb-space-2));
+  top: 0;
   z-index: 1;
   box-sizing: border-box;
-  max-height: min(32rem, 70vh);
-  padding: var(--tb-space-2);
-  overflow-y: auto;
+  padding-top: 3.5rem;
+  /* the results and their highlights end at the rounded corners */
+  overflow: clip;
   border-radius: var(--tb-shape-xl);
   background: var(--p-md-surface-container-high);
   box-shadow: var(--tb-elevation-3);
+}
+
+/* the results scroll under the bar row, inside the container */
+.tb-search__results {
+  box-sizing: border-box;
+  max-height: min(32rem, 70vh);
+  padding: 0 var(--tb-space-2) var(--tb-space-2);
+  overflow-y: auto;
+}
+
+/*
+ * The container transform (M3 transition patterns, search video 3-4; ADR-0066). Measured on the video: the
+ * container opens in about 130 ms with no overshoot and closes in about as long, the bar row never moves.
+ * The clip of the container goes from the bar's pill (its 56 px box, corners half its height) to the whole
+ * container with its extra-large corners on the standard fast spring (no bounce: the video shows none), the
+ * room of the elevation-3 shadow (16 px) kept so the shadow moves with it (`_motion.scss`, 416.1). The results
+ * fade in on default effects as it opens (ours: after 50 ms) and out on fast effects as it closes.
+ */
+:host(:not(.tb-search--full)) .tb-search__panel {
+  --tb-motion-radius: var(--tb-shape-xl);
+  --tb-motion-room: 1rem;
+  --tb-motion-clip: inset(0 0 calc(100% - 3.5rem) 0 round 1.75rem);
+
+  &.tb-search__panel--enter {
+    animation: tb-motion-reveal var(--tb-spring-standard-fast-spatial);
+
+    .tb-search__results {
+      animation: tb-motion-fade-in var(--tb-spring-default-effects) backwards;
+      animation-delay: 50ms;
+    }
+  }
+
+  &.tb-search__panel--leave {
+    animation: tb-motion-conceal var(--tb-spring-standard-fast-spatial) forwards;
+
+    .tb-search__results {
+      animation: tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
+    }
+  }
 }
 
 .tb-search__group {
@@ -222,7 +279,64 @@
   flex: 1;
   min-height: 0;
   max-height: none;
+  padding-top: 0;
   border-radius: 0;
   background: var(--p-md-surface);
   box-shadow: none;
+}
+
+:host(.tb-search--full) .tb-search__results {
+  height: 100%;
+  max-height: none;
+  padding: var(--tb-space-2);
+}
+
+/*
+ * Compact: the full-screen view grows out of the search icon of the top app bar (`--tb-search-from`, its round
+ * box; the top edge when Ctrl K opened it) to the whole screen on the default spatial spring (a full-screen
+ * surface: its overshoot falls past the screen's edges) and shrinks back into it on the standard spring (no
+ * bounce on the way out). The bar row and the results fade in once it has mostly opened (ours: after 100 ms)
+ * and fade out at once as it closes.
+ */
+:host(.tb-search--full) .tb-search {
+  --tb-motion-radius: 0px;
+  --tb-motion-room: 0px;
+  --tb-motion-clip: var(--tb-search-from, inset(0 0 100% 0));
+
+  &.tb-search--enter {
+    animation: tb-motion-reveal var(--tb-spring-default-spatial);
+
+    > * {
+      animation: tb-motion-fade-in var(--tb-spring-default-effects) backwards;
+      animation-delay: 100ms;
+    }
+  }
+
+  &.tb-search--leave {
+    animation: tb-motion-conceal var(--tb-spring-standard-fast-spatial) forwards;
+
+    > * {
+      animation: tb-motion-fade-out var(--tb-spring-fast-effects) forwards;
+    }
+  }
+}
+
+/* Less motion: the container does not grow, it fades in and out (the global rule makes the rest instant) */
+@media (prefers-reduced-motion: reduce) {
+  :host(:not(.tb-search--full)) .tb-search__panel--enter,
+  :host(.tb-search--full) .tb-search.tb-search--enter {
+    animation: tb-motion-fade-in var(--tb-spring-default-effects) !important;
+  }
+
+  :host(:not(.tb-search--full)) .tb-search__panel--leave,
+  :host(.tb-search--full) .tb-search.tb-search--leave {
+    animation: tb-motion-fade-out var(--tb-spring-fast-effects) forwards !important;
+  }
+
+  .tb-search__panel--enter .tb-search__results,
+  .tb-search__panel--leave .tb-search__results,
+  .tb-search--enter > *,
+  .tb-search--leave > * {
+    animation: none !important;
+  }
 }

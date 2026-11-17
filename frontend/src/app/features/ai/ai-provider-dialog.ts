@@ -16,6 +16,7 @@ import { Observable, catchError, concatMap, from, map, of, toArray } from 'rxjs'
 import { describeError } from '@core/http/error-messages';
 import { injectWindowSize } from '@core/layout/mobile';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog, DialogFooter } from '@shared/ui/dialog/dialog';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { SearchField } from '@shared/ui/search-field';
@@ -72,211 +73,213 @@ interface Choice {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      width="wide"
-      [(visible)]="visible"
-      [headline]="headline()"
-      [confirmLabel]="confirmLabel()"
-      [formId]="step() === 1 ? 'ai-provider-form' : undefined"
-      [pending]="pending()"
-      [error]="error()"
-      [dirty]="form.dirty || chosen().size > 0"
-      (confirm)="saveModels()"
-    >
-      @if (step() === 2 && mode() === 'new') {
-        <ng-template tbDialogFooter>
-          <p-button [label]="t.back" severity="secondary" [text]="true" (onClick)="back()" />
-          @if (!compact()) {
-            <p-button [label]="confirmLabel()" [loading]="pending()" (onClick)="saveModels()" />
-          }
-        </ng-template>
-      }
-      @if (mode() !== 'edit') {
-        <span class="tb-ai-dialog__step">{{ step() === 1 ? t.step1 : t.step2 }}</span>
-      }
-      @if (step() === 1) {
-        <form
-          tbFieldErrors
-          id="ai-provider-form"
-          class="tb-form"
-          [formGroup]="form"
-          (ngSubmit)="submitConnection()"
-        >
-          @if (mode() === 'new') {
-            <p class="tb-muted">{{ t.keyWhere }}</p>
-            <div class="tb-ai-kinds" role="radiogroup" [attr.aria-label]="t.kind">
-              @for (option of kinds; track option) {
-                <label class="tb-ai-kind" [class.tb-ai-kind--on]="option === kind()">
-                  <input
-                    type="radio"
-                    name="ai-kind"
-                    class="tb-ai-kind__input"
-                    [value]="option"
-                    [checked]="option === kind()"
-                    (change)="pick(option)"
-                  />
-                  <i class="tb-i {{ icons[option] }}" aria-hidden="true"></i>
-                  <span class="tb-ai-kind__text">
-                    <b>{{ kindTexts[option].name }}</b>
-                    <small>{{ kindTexts[option].sub }}</small>
-                  </span>
-                </label>
-              }
-            </div>
-          }
-          <div class="tb-field">
-            <label for="ai-provider-name">{{ t.name }}</label>
-            <input pInputText id="ai-provider-name" formControlName="name" autocomplete="off" />
-            <small class="tb-hint">{{ t.nameHint }}</small>
-          </div>
-          <div class="tb-field">
-            <label for="ai-provider-key">{{ t.apiKey }}</label>
-            <input
-              pInputText
-              id="ai-provider-key"
-              type="password"
-              formControlName="apiKey"
-              autocomplete="off"
-            />
-            <small class="tb-hint">{{ keyHint() }}</small>
-          </div>
-          @if (mode() === 'edit' && editing()?.keySet && kind() === 'openai-compatible') {
-            <div class="tb-ai-dialog__check">
-              <p-checkbox
-                [binary]="true"
-                inputId="ai-provider-remove-key"
-                formControlName="removeKey"
-              />
-              <label for="ai-provider-remove-key">{{ t.removeKey }}</label>
-            </div>
-          }
-          @if (kind() === 'openai-compatible') {
-            <ng-container *ngTemplateOutlet="address" />
-          } @else {
-            <p-button
-              class="tb-ai-dialog__more"
-              [label]="t.more"
-              [icon]="moreOpen() ? 'tb-i tb-i-expand_less' : 'tb-i tb-i-expand_more'"
-              [text]="true"
-              [attr.aria-expanded]="moreOpen()"
-              (onClick)="moreOpen.set(!moreOpen())"
-            />
-          }
-          @if (moreOpen() || kind() === 'openai-compatible') {
-            @if (kind() !== 'openai-compatible') {
-              <ng-container *ngTemplateOutlet="address" />
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        width="wide"
+        [(visible)]="visible"
+        [headline]="headline()"
+        [confirmLabel]="confirmLabel()"
+        [formId]="step() === 1 ? 'ai-provider-form' : undefined"
+        [pending]="pending()"
+        [error]="error()"
+        [dirty]="form.dirty || chosen().size > 0"
+        (confirm)="saveModels()"
+      >
+        @if (step() === 2 && mode() === 'new') {
+          <ng-template tbDialogFooter>
+            <p-button [label]="t.back" severity="secondary" [text]="true" (onClick)="back()" />
+            @if (!compact()) {
+              <p-button [label]="confirmLabel()" [loading]="pending()" (onClick)="saveModels()" />
             }
-            <div class="tb-field">
-              <label for="ai-provider-proxy">{{ t.proxy }}</label>
-              <input
-                pInputText
-                id="ai-provider-proxy"
-                formControlName="proxy"
-                autocomplete="off"
-                placeholder="socks5://host.docker.internal:1080"
-              />
-              <small class="tb-hint">{{ t.proxyHint }}</small>
-            </div>
-          }
-          <ng-template #address>
-            <div class="tb-field">
-              <label for="ai-provider-url">{{ t.address }}</label>
-              <input
-                pInputText
-                id="ai-provider-url"
-                formControlName="baseUrl"
-                autocomplete="off"
-                [placeholder]="editing()?.address ?? addresses[kind()]"
-              />
-              <small class="tb-hint">{{
-                kind() === 'openai-compatible' ? t.addressRequired : t.addressHint
-              }}</small>
-            </div>
           </ng-template>
-        </form>
-      } @else {
-        @if (loadingModels()) {
-          <p class="tb-muted">…</p>
-        } @else {
-          @if (worksNote(); as note) {
-            <p-message
-              severity="success"
-              icon="tb-i tb-i-check_circle"
-              styleClass="tb-form-message"
-              >{{ note }}</p-message
-            >
-          }
-          @if (choices().length > 0) {
-            <tb-search-field
-              [label]="t.search"
-              [ngModel]="search()"
-              (ngModelChange)="search.set($event)"
-            />
-            @if (shown().length === 0) {
-              <p class="tb-muted">{{ t.nothingFound }}</p>
-            } @else {
-              <ul
-                class="tb-list tb-list--own-trail tb-ai-dialog__models"
-                [attr.aria-label]="headline()"
-              >
-                @for (choice of shown(); track choice.modelId) {
-                  <li>
-                    <p-checkbox
-                      class="tb-list__lead tb-ai-dialog__box"
-                      [binary]="true"
-                      [inputId]="'ai-model-' + $index"
-                      [ngModel]="choice.added || chosen().has(choice.modelId)"
-                      (ngModelChange)="toggle(choice.modelId, $event)"
-                      [disabled]="choice.added"
+        }
+        @if (mode() !== 'edit') {
+          <span class="tb-ai-dialog__step">{{ step() === 1 ? t.step1 : t.step2 }}</span>
+        }
+        @if (step() === 1) {
+          <form
+            tbFieldErrors
+            id="ai-provider-form"
+            class="tb-form"
+            [formGroup]="form"
+            (ngSubmit)="submitConnection()"
+          >
+            @if (mode() === 'new') {
+              <p class="tb-muted">{{ t.keyWhere }}</p>
+              <div class="tb-ai-kinds" role="radiogroup" [attr.aria-label]="t.kind">
+                @for (option of kinds; track option) {
+                  <label class="tb-ai-kind" [class.tb-ai-kind--on]="option === kind()">
+                    <input
+                      type="radio"
+                      name="ai-kind"
+                      class="tb-ai-kind__input"
+                      [value]="option"
+                      [checked]="option === kind()"
+                      (change)="pick(option)"
                     />
-                    <label class="tb-list__text" [for]="'ai-model-' + $index">
-                      <span class="tb-list__title">{{ choice.label }}</span>
-                      @if (choice.added || choice.label !== choice.modelId) {
-                        <span class="tb-list__supporting">{{ choiceHint(choice) }}</span>
-                      }
-                    </label>
-                  </li>
+                    <i class="tb-i {{ icons[option] }}" aria-hidden="true"></i>
+                    <span class="tb-ai-kind__text">
+                      <b>{{ kindTexts[option].name }}</b>
+                      <small>{{ kindTexts[option].sub }}</small>
+                    </span>
+                  </label>
                 }
-              </ul>
-              @if (hidden() > 0) {
-                <p class="tb-muted">{{ t.moreFound(hidden()) }}</p>
-              }
+              </div>
             }
-          }
-          @if (manualOpen() || choices().length === 0) {
-            <div class="tb-ai-dialog__manual">
+            <div class="tb-field">
+              <label for="ai-provider-name">{{ t.name }}</label>
+              <input pInputText id="ai-provider-name" formControlName="name" autocomplete="off" />
+              <small class="tb-hint">{{ t.nameHint }}</small>
+            </div>
+            <div class="tb-field">
+              <label for="ai-provider-key">{{ t.apiKey }}</label>
+              <input
+                pInputText
+                id="ai-provider-key"
+                type="password"
+                formControlName="apiKey"
+                autocomplete="off"
+              />
+              <small class="tb-hint">{{ keyHint() }}</small>
+            </div>
+            @if (mode() === 'edit' && editing()?.keySet && kind() === 'openai-compatible') {
+              <div class="tb-ai-dialog__check">
+                <p-checkbox
+                  [binary]="true"
+                  inputId="ai-provider-remove-key"
+                  formControlName="removeKey"
+                />
+                <label for="ai-provider-remove-key">{{ t.removeKey }}</label>
+              </div>
+            }
+            @if (kind() === 'openai-compatible') {
+              <ng-container *ngTemplateOutlet="address" />
+            } @else {
+              <p-button
+                class="tb-ai-dialog__more"
+                [label]="t.more"
+                [icon]="moreOpen() ? 'tb-i tb-i-expand_less' : 'tb-i tb-i-expand_more'"
+                [text]="true"
+                [attr.aria-expanded]="moreOpen()"
+                (onClick)="moreOpen.set(!moreOpen())"
+              />
+            }
+            @if (moreOpen() || kind() === 'openai-compatible') {
+              @if (kind() !== 'openai-compatible') {
+                <ng-container *ngTemplateOutlet="address" />
+              }
               <div class="tb-field">
-                <label for="ai-model-manual">{{ t.manualId }}</label>
+                <label for="ai-provider-proxy">{{ t.proxy }}</label>
                 <input
                   pInputText
-                  id="ai-model-manual"
+                  id="ai-provider-proxy"
+                  formControlName="proxy"
                   autocomplete="off"
-                  [formControl]="manual"
-                  (keydown.enter)="$event.preventDefault(); addManual()"
+                  placeholder="socks5://host.docker.internal:1080"
                 />
-                <small class="tb-hint">{{ t.manualHint }}</small>
+                <small class="tb-hint">{{ t.proxyHint }}</small>
               </div>
-              <p-button
-                [label]="t.manualAdd"
-                icon="tb-i tb-i-add"
-                severity="secondary"
-                (onClick)="addManual()"
-              />
-            </div>
+            }
+            <ng-template #address>
+              <div class="tb-field">
+                <label for="ai-provider-url">{{ t.address }}</label>
+                <input
+                  pInputText
+                  id="ai-provider-url"
+                  formControlName="baseUrl"
+                  autocomplete="off"
+                  [placeholder]="editing()?.address ?? addresses[kind()]"
+                />
+                <small class="tb-hint">{{
+                  kind() === 'openai-compatible' ? t.addressRequired : t.addressHint
+                }}</small>
+              </div>
+            </ng-template>
+          </form>
+        } @else {
+          @if (loadingModels()) {
+            <p class="tb-muted">…</p>
           } @else {
-            <p-button
-              class="tb-ai-dialog__more"
-              [label]="t.addManually"
-              icon="tb-i tb-i-add"
-              [text]="true"
-              (onClick)="manualOpen.set(true)"
-            />
+            @if (worksNote(); as note) {
+              <p-message
+                severity="success"
+                icon="tb-i tb-i-check_circle"
+                styleClass="tb-form-message"
+                >{{ note }}</p-message
+              >
+            }
+            @if (choices().length > 0) {
+              <tb-search-field
+                [label]="t.search"
+                [ngModel]="search()"
+                (ngModelChange)="search.set($event)"
+              />
+              @if (shown().length === 0) {
+                <p class="tb-muted">{{ t.nothingFound }}</p>
+              } @else {
+                <ul
+                  class="tb-list tb-list--own-trail tb-ai-dialog__models"
+                  [attr.aria-label]="headline()"
+                >
+                  @for (choice of shown(); track choice.modelId) {
+                    <li>
+                      <p-checkbox
+                        class="tb-list__lead tb-ai-dialog__box"
+                        [binary]="true"
+                        [inputId]="'ai-model-' + $index"
+                        [ngModel]="choice.added || chosen().has(choice.modelId)"
+                        (ngModelChange)="toggle(choice.modelId, $event)"
+                        [disabled]="choice.added"
+                      />
+                      <label class="tb-list__text" [for]="'ai-model-' + $index">
+                        <span class="tb-list__title">{{ choice.label }}</span>
+                        @if (choice.added || choice.label !== choice.modelId) {
+                          <span class="tb-list__supporting">{{ choiceHint(choice) }}</span>
+                        }
+                      </label>
+                    </li>
+                  }
+                </ul>
+                @if (hidden() > 0) {
+                  <p class="tb-muted">{{ t.moreFound(hidden()) }}</p>
+                }
+              }
+            }
+            @if (manualOpen() || choices().length === 0) {
+              <div class="tb-ai-dialog__manual">
+                <div class="tb-field">
+                  <label for="ai-model-manual">{{ t.manualId }}</label>
+                  <input
+                    pInputText
+                    id="ai-model-manual"
+                    autocomplete="off"
+                    [formControl]="manual"
+                    (keydown.enter)="$event.preventDefault(); addManual()"
+                  />
+                  <small class="tb-hint">{{ t.manualHint }}</small>
+                </div>
+                <p-button
+                  [label]="t.manualAdd"
+                  icon="tb-i tb-i-add"
+                  severity="secondary"
+                  (onClick)="addManual()"
+                />
+              </div>
+            } @else {
+              <p-button
+                class="tb-ai-dialog__more"
+                [label]="t.addManually"
+                icon="tb-i tb-i-add"
+                [text]="true"
+                (onClick)="manualOpen.set(true)"
+              />
+            }
+            <p class="tb-muted tb-ai-dialog__note">{{ t.shownLater }}</p>
           }
-          <p class="tb-muted tb-ai-dialog__note">{{ t.shownLater }}</p>
         }
-      }
-    </tb-dialog>
+      </tb-dialog>
+    }
   `,
   styles: `
     /* the sketch's overline «Шаг 1 из 2 · Подключение»: M3 label medium, on-surface-variant */
@@ -418,6 +421,8 @@ export class AiProviderDialog {
   protected readonly compact = computed(() => this.size() === 'compact');
 
   readonly visible = signal(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   protected readonly mode = signal<Mode>('new');
   protected readonly step = signal<1 | 2>(1);
   protected readonly kind = signal<ProviderKind>('anthropic');

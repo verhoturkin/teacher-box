@@ -18,6 +18,7 @@ import { AttendanceMark, ScheduledLesson } from '../data-access/schedule.models'
 import { formatLessonTime, lessonWith } from '../schedule-labels';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 
@@ -42,42 +43,44 @@ export const MARK_OPTIONS: readonly MarkOption[] = [
   imports: [FormsModule, Message, SelectButton, TbDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      [(visible)]="visible"
-      [headline]="t.title"
-      [confirmLabel]="c.save"
-      formId="attendance-form"
-      [pending]="submit.pending()"
-      [error]="submit.error()"
-    >
-      @if (lesson(); as lesson) {
-        <form id="attendance-form" (ngSubmit)="save()">
-          <p class="tb-muted">{{ with(lesson) }}, {{ time() }}</p>
-          <ul class="tb-attendance">
-            @for (participant of lesson.participants; track participant.studentId) {
-              <li>
-                <span>{{ participant.studentName ?? c.student }}</span>
-                <p-selectbutton
-                  [options]="options"
-                  optionLabel="label"
-                  optionValue="value"
-                  [allowEmpty]="false"
-                  [ngModel]="marks()[participant.studentId]"
-                  [ngModelOptions]="{ standalone: true }"
-                  (ngModelChange)="set(participant.studentId, $event)"
-                  [ariaLabel]="t.of(participant.studentName ?? t.student)"
-                />
-              </li>
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        [(visible)]="visible"
+        [headline]="t.title"
+        [confirmLabel]="c.save"
+        formId="attendance-form"
+        [pending]="submit.pending()"
+        [error]="submit.error()"
+      >
+        @if (lesson(); as lesson) {
+          <form id="attendance-form" (ngSubmit)="save()">
+            <p class="tb-muted">{{ with(lesson) }}, {{ time() }}</p>
+            <ul class="tb-attendance">
+              @for (participant of lesson.participants; track participant.studentId) {
+                <li>
+                  <span>{{ participant.studentName ?? c.student }}</span>
+                  <p-selectbutton
+                    [options]="options"
+                    optionLabel="label"
+                    optionValue="value"
+                    [allowEmpty]="false"
+                    [ngModel]="marks()[participant.studentId]"
+                    [ngModelOptions]="{ standalone: true }"
+                    (ngModelChange)="set(participant.studentId, $event)"
+                    [ariaLabel]="t.of(participant.studentName ?? t.student)"
+                  />
+                </li>
+              }
+            </ul>
+            <small class="tb-hint">{{ t.hint }}</small>
+            @if (!anybody()) {
+              <p-message severity="warn" styleClass="tb-form-message">{{ t.nobody }}</p-message>
             }
-          </ul>
-          <small class="tb-hint">{{ t.hint }}</small>
-          @if (!anybody()) {
-            <p-message severity="warn" styleClass="tb-form-message">{{ t.nobody }}</p-message>
-          }
-        </form>
-      }
-    </tb-dialog>
+          </form>
+        }
+      </tb-dialog>
+    }
   `,
   styles: `
     .tb-attendance {
@@ -105,6 +108,8 @@ export class AttendanceDialog {
   private readonly undo = inject(LessonMarkUndo);
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   readonly lesson = input<ScheduledLesson | null>(null);
   readonly saved = output<ScheduledLesson>();
   /** «Отменить» in the snackbar put the previous attendance back. */

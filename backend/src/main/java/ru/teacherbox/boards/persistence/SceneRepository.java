@@ -17,6 +17,7 @@ import ru.teacherbox.boards.domain.BoardBackup;
 import ru.teacherbox.boards.domain.BoardFile;
 import ru.teacherbox.boards.domain.BoardScene;
 import ru.teacherbox.boards.domain.DeletedElement;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 /** Scenes of Excalidraw boards, their copies and images. */
 @Repository
@@ -54,7 +55,7 @@ public class SceneRepository {
                     from boards.board_deleted_elements where board_id = :id and element_id in (:ids)
                     """).param("id", boardId)
                     .param("ids", ids.subList(from, Math.min(from + DELETIONS_CHUNK, ids.size())))
-                    .query(DeletedElement.class).list());
+                    .query(RecordRowMapper.of(DeletedElement.class)).list());
         }
         return found;
     }
@@ -166,12 +167,12 @@ public class SceneRepository {
     /** Newest first. */
     public List<BoardBackup> findBackups(UUID boardId) {
         return jdbc.sql(SELECT_BACKUP + " where board_id = :id order by created_at desc, id desc")
-                .param("id", boardId).query(BoardBackup.class).list();
+                .param("id", boardId).query(RecordRowMapper.of(BoardBackup.class)).list();
     }
 
     public Optional<BoardBackup> findBackup(UUID boardId, UUID backupId) {
         return jdbc.sql(SELECT_BACKUP + " where board_id = :boardId and id = :id")
-                .param("boardId", boardId).param("id", backupId).query(BoardBackup.class).optional();
+                .param("boardId", boardId).param("id", backupId).query(RecordRowMapper.of(BoardBackup.class)).optional();
     }
 
     public int countBackups(UUID boardId, BackupKind kind) {
@@ -200,17 +201,17 @@ public class SceneRepository {
 
     public Optional<BoardFile> findFile(UUID boardId, String fileId) {
         return jdbc.sql(SELECT_FILE + " where board_id = :boardId and file_id = :fileId")
-                .param("boardId", boardId).param("fileId", fileId).query(BoardFile.class).optional();
+                .param("boardId", boardId).param("fileId", fileId).query(RecordRowMapper.of(BoardFile.class)).optional();
     }
 
     public List<BoardFile> findFiles(UUID boardId) {
         return jdbc.sql(SELECT_FILE + " where board_id = :id").param("id", boardId)
-                .query(BoardFile.class).list();
+                .query(RecordRowMapper.of(BoardFile.class)).list();
     }
 
     /** The images of every board. */
     public List<BoardFile> findAllFiles() {
-        return jdbc.sql(SELECT_FILE).query(BoardFile.class).list();
+        return jdbc.sql(SELECT_FILE).query(RecordRowMapper.of(BoardFile.class)).list();
     }
 
     public void deleteFile(UUID boardId, String fileId) {

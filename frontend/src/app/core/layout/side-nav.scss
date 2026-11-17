@@ -273,3 +273,16 @@
   padding: 0;
   overflow: visible;
 }
+
+/* Expanding and collapsing (M3: the expanded rail is the «default spatial» example, labels are effects). ours:
+   the width springs and the page beside the rail (a flex sibling) and the strip (shell.scss) follow it; the
+   labels fade in on fast effects, the layout of an item itself switches at once. Nothing under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  :host {
+    transition: width var(--tb-spring-default-spatial);
+  }
+
+  .tb-side-nav__label {
+    animation: tb-motion-fade-in var(--tb-spring-fast-effects);
+  }
+}

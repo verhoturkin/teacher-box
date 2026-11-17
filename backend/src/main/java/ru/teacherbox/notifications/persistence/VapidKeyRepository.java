@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Optional;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 /** The VAPID key pair of the portal, the only row of {@code webpush_keys} (ADR-0051). */
 @Repository
@@ -26,7 +27,7 @@ public class VapidKeyRepository {
 
     public Optional<StoredKeys> find() {
         return jdbc.sql("select public_key, private_key, created_at from notifications.webpush_keys where id = 1")
-                .query(StoredKeys.class)
+                .query(RecordRowMapper.of(StoredKeys.class))
                 .optional();
     }
 

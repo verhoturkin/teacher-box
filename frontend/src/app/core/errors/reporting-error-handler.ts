@@ -23,6 +23,16 @@ function describe(error: unknown): { message: string; stack: string | null } {
 }
 
 /**
+ * The browser's note that a resize observer had no time to deliver everything in one frame (an animated
+ * size, a dialog opening): not an error, nothing broke, and Angular's global listener passes it on as one.
+ */
+function isResizeObserverNotice(error: unknown): boolean {
+  return (
+    error instanceof Error && /ResizeObserver loop (completed|limit exceeded)/.test(error.message)
+  );
+}
+
+/**
  * Logs uncaught errors to the console as usual and sends them to the server log (ADR-0010), so that the
  * administrator sees them next to the server errors. HTTP errors are skipped: the server logged them.
  */
@@ -34,6 +44,9 @@ export class ReportingErrorHandler extends ErrorHandler {
   private lastMessage: string | null = null;
 
   override handleError(error: unknown): void {
+    if (isResizeObserverNotice(error)) {
+      return;
+    }
     super.handleError(error);
     this.report(error);
   }

@@ -14,6 +14,7 @@ import { catchError, of } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
+import { TabIndicator } from '@shared/ui/tab-indicator';
 import { Tooltip } from 'primeng/tooltip';
 import { StudentTasksTab } from '@features/homework/parts';
 import { RoomLink } from '@features/meetings/parts';
@@ -60,6 +61,7 @@ import { GroupProfileTab } from './group-profile-tab';
     TabPanel,
     TabPanels,
     Tabs,
+    TabIndicator,
     Tooltip,
   ],
   providers: [DatePipe],
@@ -101,7 +103,13 @@ import { GroupProfileTab } from './group-profile-tab';
         }</tb-card-head
     ></ng-template>
 
-    <p-tabs class="tb-tabs" [value]="tab()" [scrollable]="true" (valueChange)="choose($event)">
+    <p-tabs
+      tbTabIndicator
+      class="tb-tabs"
+      [value]="tab()"
+      [scrollable]="true"
+      (valueChange)="choose($event)"
+    >
       <p-tablist>
         @for (name of tabs; track name) {
           <p-tab [value]="name"

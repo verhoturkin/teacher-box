@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { Tab, TabList, Tabs } from 'primeng/tabs';
+import { TabIndicator } from '@shared/ui/tab-indicator';
 import { T } from '@features/homework/i18n/texts';
 
 /** «Задание», «Тест» and, on a phone, «Настройки» of the test. */
@@ -8,11 +9,12 @@ export type EditorTab = 'task' | 'quiz' | 'settings';
 /** The tabs of the assignment editor: «Задание» and «Тест» (on a phone «Вопросы» and «Настройки»). */
 @Component({
   selector: 'tb-editor-tabs',
-  imports: [Tabs, TabList, Tab],
+  imports: [Tabs, TabIndicator, TabList, Tab],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display: contents' },
   template: `
     <p-tabs
+      tbTabIndicator
       class="tb-tabs tb-editor__tabs"
       [class.tb-tabs--fixed]="compact()"
       [value]="value()"

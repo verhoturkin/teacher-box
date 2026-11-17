@@ -27,6 +27,11 @@ const LOADING_RU = `## Загрузка данных
 При коротком ожидании индикатор не появляется. Если загрузка занимает больше 200 мс, появляется вращающаяся фигура. Данные показываются сразу по готовности. При включённом в системе уменьшении движения фигура остаётся неподвижной.
 
 `;
+/** Loading rows and motion (0.53.0): teacher and student editions only. */
+const MOTION_RU =
+  'Списки, пока грузятся, показывают бледные строки-заготовки, а переходы между страницами и окна двигаются плавно; при уменьшении движения остаётся короткое появление.';
+const MOTION_EN =
+  'Lists show pale placeholder rows while they load, and page changes and dialogs move smoothly; with reduced motion they just fade in briefly.';
 const LOADING_EN = `## Loading data
 
 Short requests finish without a loading indicator. After 200 ms, a rotating shape appears until the data is ready. If your device uses reduced motion, the shape stays still.
@@ -298,7 +303,13 @@ describe('help articles after the split into one file per topic', () => {
     if (!isRecord(article) || typeof article['body'] !== 'string') {
       throw new Error(`Missing original article ${name}/${topic}`);
     }
-    const guidance = name.endsWith('.ru') ? LOADING_RU : LOADING_EN;
+    const ru = name.endsWith('.ru');
+    const motion = name.startsWith('admin.')
+      ? ''
+      : `${ru ? MOTION_RU : MOTION_EN}
+
+`;
+    const guidance = (ru ? LOADING_RU : LOADING_EN) + motion;
     let body = article['body'].replace('## ', `${guidance}## `);
     if (name.startsWith('admin.')) {
       const [anchor, disk] = name.endsWith('.ru') ? DISK_USAGE_RU : DISK_USAGE_EN;

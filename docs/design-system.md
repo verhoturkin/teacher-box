@@ -91,36 +91,105 @@ elevation with their values; springs —
   - `--tb-spring-standard-fast-spatial` (standard scheme, 0.9 / 1400, barely overshoots) only for
     turns that must not bounce (the split-button chevron) and for leaving overlays.
   - Overlays (`styles/_motion.scss` «Overlays on M3E springs») replace PrimeNG's cubic-bezier:
-    they enter with scale or position on a spatial spring and opacity on the effects spring of
-    the same speed —
-    dialogs default (scale from 0.93), menus, dropdowns and the date picker fast (0.93), the
-    snackbar fast (0.8), side sheets slide in on default spatial; they leave without a bounce on the
-    standard fast spring and fast effects. *Ours* (M3 publishes no choreography): the bottom sheet
-    sits on the bottom edge and would lift off it on an overshoot, so it enters on the standard
+    they enter with size or position on a spatial spring and opacity on an effects spring; side
+    sheets slide in on default spatial; they leave without a bounce on the standard fast spring
+    and fast effects. Dialogs and confirmations take no scale (**M3** video 7-1): the scrim fades
+    in first, 80 ms later the container opens downwards from its top edge (a clip with its
+    corners) on the standard fast spring with fast effects, the content fades in 70 ms after it
+    on default effects; it closes at once with the scrim, fading while it collapses by a quarter
+    towards its top edge (both on fast effects), its scrim fading on default effects and going
+    last — PrimeNG replays a dialog's leave if its scrim ends first; with less motion it only
+    fades. Menus, dropdowns
+    and the date picker take no scale either (**M3**: scale implies an elevation change; they
+    expand along an axis, away from the anchor — videos of transition patterns 7-2): a clip
+    with the surface's corners opens from the anchored edge, down under the field or up above
+    it, on the standard fast spring with fast effects, the rows fade in from the anchor 30 ms
+    apart (the fourth and later together); they close the same way back, the fade quicker. The
+    snackbar opens upwards from its bottom edge,
+    opaque, on the standard fast spring, its text fades in 50 ms later (**M3** video 7-3); it
+    leaves as before (fade, its line closes). The spring and the timings are *ours*, measured on
+    the videos (no bounce there); the clip leaves room for the shadow (`--tb-motion-room`), so it
+    moves with the surface. *Ours* (M3 publishes no choreography): the bottom sheet sits on the
+    bottom edge and would lift off it on an overshoot, so it enters on the standard
     fast spring too; the scrim fades on default effects (in) and fast effects (out); list items of a
-    FAB menu enter 30 ms apart; a pane that appears after the page enters on default spatial, panes
-    of a new page don't.
+    FAB menu enter 30 ms apart; a flexible pane that appears after the page enters on default
+    spatial, panes of a new page don't.
+  - Coplanar panes (**M3**: a side sheet at the elevation of the content shrinks the area of the
+    content): the docked notifications pane and a fixed or sheet `tb-pane` that appears or leaves
+    beside others open by growing their room from 0 and close by shrinking it, so the neighbours
+    resize instead of jumping; the content keeps its width, moves with the leading edge and is
+    clipped at the trailing one (`tb-motion-dock-in/out` animate the trailing margin). *Ours*:
+    `--tb-spring-coplanar-spatial` (770 ms, a critically damped spring 1 / 130 on the effects
+    curve) — measured on the M3 video of the pattern (half the width at 150 ms, 90 % at 340 ms, no
+    overshoot); the expressive spatial springs are faster and bounce. The content fades in on fast
+    effects.
+  - List rows (`shared/ui/list-row.ts`, `li[tbListRow]`; *ours*: M3 publishes no motion for
+    them, enter and exit within bounds expand and collapse along an axis): a new row opens its
+    height on the standard fast spring (no overshoot, the rows under it must not bounce) and fades
+    in on default effects; a leaving row fades out on fast effects and, from halfway through the
+    fade (70 ms), closes its height, so the rows under it close up. The height is measured into
+    `--tb-motion-height` (`height: auto` does not animate). The rows of a list's first render
+    stand still, and so does a list whose rows are all replaced in one update (another student
+    in the same card): with no row staying and more than one changing, the rows swap at once.
+    The 2 px gap of `.tb-list` goes with the row.
+  - Global search (`core/search/global-search-view.ts`, **M3** container transform, search
+    video 3-4): the docked search view is one container with the 56 px bar as its header
+    (extra-large corners, elevation 3). It opens from the bar's pill: a clip grows down from the
+    bar's box to the whole container (corners from half the bar's height to 28 px) on the
+    standard fast spring, the bar row never moves, the results fade in on default effects 50 ms
+    later; closing runs back, the results fading out on fast effects. The view is as wide as the
+    bar (*ours*). On compact the full-screen view grows out of the search icon of the top app bar
+    (its round box, `--tb-search-from`; the top edge after Ctrl K) on default spatial, its content
+    fading in after 100 ms, and shrinks back into it on the standard fast spring. *Ours*: the
+    springs and delays, measured on the video (~130 ms to open, no bounce). Reduced motion: the
+    container fades in and out, nothing grows.
+  - The navigation rail (**M3**: the expanded rail is the «default spatial» example)
+    springs its width between 96 and 280 px on default spatial when the window crosses 1600 px (a
+    page never collapses it); the page and the top strip beside it follow, and the labels fade in on
+    fast effects (*ours*: an item's own layout switches at once).
   - PrimeNG controls (fields, selects, checkboxes, tables, tabs, the paginator) change colour,
     outline and shadow on the fast effects spring: the semantic `transitionDuration` of the preset
     is `var(--tb-spring-fast-effects)`, a duration and a curve. The radio dot grows on the fast
-    spatial spring. *Ours*: the check mark grows in from 0.4 and the tab indicator from the middle
-    of its label on the fast spatial spring; inline messages (`p-message`) open their line on the
-    standard fast spring and fade in on default effects, they leave like the snackbar; the value of
-    a progress bar moves on the standard fast spring (no overshoot past it).
-  - Pages (view transitions of the router, `core/routing/page-transitions.ts`; M3 transition
-    patterns, *ours* on the springs): only the content moves, the bars and the rail stay. Between
-    sections and pages of equal depth — fade through: the old page fades out on fast effects, the
-    new one grows from 0.92 on default spatial and fades in on default effects. Deeper into a
-    section and back — shared axis X: both slide 30 dp on default spatial and cross-fade. Nothing
-    moves on the first load, when only the parameters of the route change (a list-detail pane, a
-    tab, a filter) and under reduced motion; browsers without view transitions swap the page.
+    spatial spring. *Ours*: the check mark grows in from 0.4 on the fast spatial spring; the one tab
+    indicator of a bar slides to the label of the chosen tab and takes its width on the slow spatial
+    spring, the leading edge first and the trailing one 50 ms later, so it stretches on its way (as
+    in the **M3** transition patterns video; the 50 ms is ours), while a first placement and a
+    resize jump; inline messages (`p-message`) open their line on the standard fast spring and fade
+    in on default effects, they leave like the snackbar; the value of a progress bar moves on the
+    standard fast spring (no overshoot past it).
+  - Pages (view transitions of the router, `core/routing/page-transitions.ts`, ADR-0066) follow
+    the M3 transition patterns on their **legacy easing and duration** (**M3**: transitions are not
+    on springs yet): `--tb-easing-{standard-accelerate,standard-decelerate,emphasized-decelerate}`,
+    `--tb-duration-{short1,short2,short4,medium4}` (CSS has no full emphasized curve, M3). Only the
+    content moves, the bars and the rail stay. Clean fades (**M3**): the old page fades out
+    (standard accelerate), and only then the new one fades in (standard decelerate, delayed by the
+    fade out) — no cross-fade: top level, the detail pane and reduced motion short 1 + short 2
+    (a quick fade, as in the M3 video), forward and backward short 2 + short 4. Top level — between sections and pages of
+    equal depth, on a phone too: only the fades, no scale or slide (**M3**: a quick fade, no
+    connection between destinations). Forward and backward — deeper into a section and back: both
+    pages also slide 30 dp together (medium 4, emphasized decelerate — M3's pair for entering): the
+    fades are over early in a long, soft slide, as in the M3 video of the pattern. The slide is
+    clipped to the frame of the panes (the content minus the margins of `tb-panes`, pane corners):
+    nothing slides over the rail or into the margins; behind a single pane lies its surface, so
+    the surface stays and only its content moves. One route with other segments (a list and its
+    detail, `/teacher/homework` → `/teacher/homework/:id`): on one pane it is deeper or
+    back by the depth of the address, an item of equal depth fades through; beside the list only
+    the detail pane fades (`detail`), the list stays; a side sheet is not a detail. The same
+    holds for the detail column of a list inside one pane (`data-tb-detail`, Settings) and for
+    one page on two routes of a section (`help` → `help/:topic`): the first choice and every
+    later one fade the detail only (414.3); on compact they stay deeper or back. *Ours*: the
+    duration of each part and the 30 dp. Reduced motion keeps only the fades (**M3**). The bars
+    show only their live new state (the old snapshot is hidden): one indicator, and it grows from
+    its middle during the transition. Nothing moves on the first load and when only the query
+    changes (a tab, a filter); browsers without view transitions swap the page.
     The parts get their `view-transition-name` only while `<html data-tb-page>` is set: a named
     element is a stacking context, and a sheet drawn inside the content sank under its scrim.
   - No transition or animation is timed by hand (`200ms`, `ease`, `cubic-bezier`): only the spring
-    tokens; loops (`infinite`) are the exception. `design-rules.spec.ts` checks it outside
+    tokens and, for page transitions, the M3 easing and duration tokens; loops (`infinite`) are
+    the exception. `design-rules.spec.ts` checks it outside
     `core/theme/` and `_tokens.scss`.
   - `prefers-reduced-motion: reduce` disables transitions and animations (the loading indicator
-    holds its initial SoftBurst shape, without rotation or pulsing).
+    holds its initial SoftBurst shape, without rotation or pulsing); pages keep a short fade.
 - **Frame sizes** in **px**, so a large font grows text, not frames: content up to
   `--tb-content-max` (1440 px); short pages (not found) `--tb-content-narrow` (56 rem); form fields
   `tb-form--narrow` (26 rem); top strip 80 px (compact top app bar 64 px), bottom bar 64 px, rail
@@ -412,7 +481,8 @@ for the active navigation item and checked states.
   «back»; focus returns to the icon.
 - **Tabs** `tb-tabs` (**M3** primary tabs, every tab bar): no container, 48 dp, Title Small,
   label primary when active, a 3 dp primary indicator with 3 dp rounded top corners as wide as the
-  label (`::after` of `tb-tab-label`), one 1 dp outline-variant divider under the bar; an optional
+  label — one per bar (`::after` of the tab list, placed under the active `tb-tab-label` by
+  `shared/ui/tab-indicator.ts`), one 1 dp outline-variant divider under the bar; an optional
   20 dp icon before the label. Tabs keep the width of their label from the start edge and scroll
   (**M3** scrollable tabs, sketches 11, 21); `tb-tabs--fixed` — two or three short labels that
   share the width (**M3** fixed tabs), as the bell's «Входящие · Отправленные» and the editor on a
@@ -763,6 +833,9 @@ changes the container; content and markup are the same at every width. Every dia
   `<ng-template tbDialogFooter>` (a custom footer, rare). `dialogSubmit({ visible, form, failed,
   request, done })` returns `pending`, `error`, `dirty` and `run()`: reset on open, `revealErrors`,
   one request at a time, close on success. `<tb-dialog-confirm-step>` is the inline question.
+- **Built when first opened:** content projected into `<tb-dialog>` is built with its host even
+  while hidden, so a dialog wraps it in `@if (built())`, `built = openedOnce(this.visible)`
+  (`shared/ui/dialog/opened-once.ts`, stage 419): a page's hidden forms no longer slow its render.
 - **Basic dialog** (**M3**): 280–560 dp, 28 dp corners, 24 dp padding, 16 dp headline → body, 24 dp
   body → actions, 8 dp between buttons, surface-container-high, scrim; buttons at the trailing edge,
   the confirming one closest to it; with scrolling content the headline and buttons stay pinned.
@@ -857,6 +930,12 @@ Gallery: [`/gallery/states`](../frontend/src/app/features/gallery/states/).
     destruction cancels the delay and animation. Content appears immediately on completion.
     Reduced motion holds SoftBurst without rotation or pulsing. Min height, «Загрузка…»
     `role="status"`; the visible indicator has one labelled `progressbar` and a decorative SVG;
+  - loading a list section — `[skeleton]="true"` (ADR-0066, 417.1): three `.tb-list` rows (two
+    when `compact`) with a lead circle and two text bars in surface-container-highest instead of
+    the indicator; a lighter diagonal band (a mask over the whole list, 1.6 s linear loop) runs
+    from top left to bottom right; the content fades in over the rows on default effects while
+    they fade out under it. Reduced motion: the band stops off the rows, the skeleton is static.
+    Only list sections; the rest keep the indicator;
   - error — icon, «Не удалось загрузить …», the error with its code, «Повторить»;
   - ready — data or the empty state (only after a successful load; a bad link is an error).
 - Load requests are quiet (`quietContext()` / `SKIP_ERROR_TOAST`): the error shows in the section.

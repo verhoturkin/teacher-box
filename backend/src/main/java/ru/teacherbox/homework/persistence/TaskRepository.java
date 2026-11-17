@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import ru.teacherbox.homework.domain.HomeworkTask;
 import ru.teacherbox.homework.domain.TaskStatus;
 import ru.teacherbox.shared.persistence.OptimisticLock;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 @Repository
 public class TaskRepository {
@@ -135,7 +136,7 @@ public class TaskRepository {
                 join homework.assignments a on a.id = t.assignment_id
                 where t.status in ('ASSIGNED', 'RETURNED') and a.due_at is not null
                 """)
-                .query(OpenDeadline.class)
+                .query(RecordRowMapper.of(OpenDeadline.class))
                 .list();
     }
 
@@ -154,7 +155,7 @@ public class TaskRepository {
                    or (t.submitted_at >= :from and t.submitted_at < :to)
                 """)
                 .param("from", from).param("to", to)
-                .query(WeekTask.class)
+                .query(RecordRowMapper.of(WeekTask.class))
                 .list();
     }
 

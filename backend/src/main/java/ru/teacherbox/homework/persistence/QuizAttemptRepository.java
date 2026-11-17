@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.homework.domain.quiz.QuizAnswer;
 import ru.teacherbox.homework.domain.quiz.QuizAttempt;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 /** Attempts of students and their answers (ADR-0052). */
 @Repository
@@ -39,7 +40,7 @@ public class QuizAttemptRepository {
                 from homework.quiz_attempts where id = :id
                 """)
                 .param("id", id)
-                .query(QuizAttempt.class)
+                .query(RecordRowMapper.of(QuizAttempt.class))
                 .optional();
     }
 
@@ -50,7 +51,7 @@ public class QuizAttemptRepository {
                 from homework.quiz_attempts where task_id = :taskId order by started_at, id
                 """)
                 .param("taskId", taskId)
-                .query(QuizAttempt.class)
+                .query(RecordRowMapper.of(QuizAttempt.class))
                 .list();
     }
 

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import { Button } from 'primeng/button';
 import { Tooltip } from 'primeng/tooltip';
 import { TEXTBOOK_KIND_ICONS, TEXTBOOK_KIND_LABELS } from '@features/textbooks/parts';
@@ -40,13 +41,13 @@ export function boundTextbookFilename(textbook: BoundTextbook, contentType: stri
  */
 @Component({
   selector: 'tb-textbook-list',
-  imports: [Button, Tooltip],
+  imports: [ListRow, Button, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (textbooks().length > 0) {
       <ul class="tb-list tb-textbook-list" [attr.aria-label]="t.list">
         @for (textbook of textbooks(); track textbook.textbookId) {
-          <li>
+          <li tbListRow>
             <span class="tb-list__lead" aria-hidden="true"
               ><i [class]="icons[textbook.kind]"></i
             ></span>

@@ -685,15 +685,14 @@ describe('AssignmentsPage with the review side sheet (from large)', () => {
     return { backend, fixture, host: hostElement(fixture), navigate };
   }
 
-  it('takes the review out of the work into a third pane and collapses the rail', async () => {
+  it('takes the review out of the work into a third pane and leaves the rail alone', async () => {
     const { fixture, host } = await render();
 
     expect(host.querySelector('tb-review-sheet')).not.toBeNull();
     expect(host.querySelector('tb-task-review-page form')).toBeNull();
     expect(readableText(host)).toContain('1 из 3 на проверке');
-    expect(TestBed.inject(RailState).collapsed()).toBe(true);
+    expect(host.querySelector('tb-pane.tb-pane--sheet')).not.toBeNull();
     fixture.destroy();
-    expect(TestBed.inject(RailState).collapsed()).toBe(false);
   });
 
   it('names the next work and opens it from the header', async () => {

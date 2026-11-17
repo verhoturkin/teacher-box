@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.ai.domain.AiFeature;
 import ru.teacherbox.ai.domain.AiRequest;
+import ru.teacherbox.shared.persistence.RecordRowMapper;
 
 @Repository
 public class AiRequestRepository {
@@ -98,7 +99,7 @@ public class AiRequestRepository {
                 """)
                 .param("from", from)
                 .param("to", to)
-                .query(ModelTotals.class)
+                .query(RecordRowMapper.of(ModelTotals.class))
                 .list();
     }
 
@@ -121,7 +122,7 @@ public class AiRequestRepository {
                 .param("to", to)
                 .param("offset", offset)
                 .param("limit", limit)
-                .query(AiRequest.class)
+                .query(RecordRowMapper.of(AiRequest.class))
                 .list();
     }
 }

@@ -6,6 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { ListRow } from '@shared/ui/list-row';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { NgTemplateOutlet } from '@angular/common';
@@ -71,6 +72,7 @@ export function nextMonday(date: Date): Date {
 @Component({
   selector: 'tb-my-schedule-page',
   imports: [
+    ListRow,
     NgTemplateOutlet,
     ButtonAttributes,
     RowType,
@@ -177,7 +179,7 @@ export function nextMonday(date: Date): Date {
               } @else {
                 <ul class="tb-list tb-list--no-phone-lead tb-schedule-list">
                   @for (lesson of upcoming(); track lesson.id) {
-                    <li [class.tb-list__item--link]="mobile()">
+                    <li tbListRow [class.tb-list__item--link]="mobile()">
                       <span class="tb-list__lead" aria-hidden="true">
                         <i [class]="leadIcon(lesson)"></i>
                       </span>
@@ -293,13 +295,18 @@ export function nextMonday(date: Date): Date {
           </ng-template>
           <section class="tb-my-schedule-section">
             <h2>{{ t.history }}</h2>
-            <tb-load-state [state]="historyState" [what]="t.whatHistory" (retry)="loadHistory()">
+            <tb-load-state
+              [state]="historyState"
+              [what]="t.whatHistory"
+              [skeleton]="true"
+              (retry)="loadHistory()"
+            >
               @if (history().length === 0) {
                 <tb-empty-state icon="tb-i-history" [title]="t.noHistory" />
               } @else {
                 <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.history">
                   @for (entry of history(); track entry.lessonId) {
-                    <li>
+                    <li tbListRow>
                       <span class="tb-list__lead" aria-hidden="true">
                         <i
                           class="tb-i"

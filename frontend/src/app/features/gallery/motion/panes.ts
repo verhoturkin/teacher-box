@@ -3,8 +3,9 @@ import { Pane, Panes } from '@shared/ui/panes';
 import { MotionPlayback, Replay } from '../motion-playback';
 
 /**
- * §1 The page's motion: a pane that appears after the page (the detail beside a list) enters on
- * `--tb-spring-default-spatial`; the panes of a new page don't. «Replay» shows and hides the pane.
+ * §1 The page's motion: a pane of a known width (fixed, sheet) that appears after the page is coplanar —
+ * its room grows from 0 on `--tb-spring-coplanar-spatial` and the flexible pane beside it narrows; it
+ * leaves by shrinking (M3 video 7-5). The panes of a new page don't move. «Replay» shows and hides it.
  */
 @Component({
   selector: 'tb-gallery-pane-motion',
@@ -13,13 +14,15 @@ import { MotionPlayback, Replay } from '../motion-playback';
   template: `
     <tb-gallery-replay />
     <code class="tb-gallery-name"
-      >tb-pane — .tb-pane--enter after the first render of tb-panes</code
+      >tb-pane kind="sheet" — .tb-pane--dock-in / .tb-pane--dock-out</code
     >
     <div class="window">
       <tb-panes>
-        <tb-pane kind="fixed" label="List"><p>Here from the start: no motion</p></tb-pane>
+        <tb-pane label="Page"><p>Here from the start: narrows and widens</p></tb-pane>
         @if (shown()) {
-          <tb-pane label="Detail"><p>Entered on --tb-spring-default-spatial</p></tb-pane>
+          <tb-pane kind="sheet" label="Sheet"
+            ><p>Its room grows on --tb-spring-coplanar-spatial</p></tb-pane
+          >
         }
       </tb-panes>
     </div>

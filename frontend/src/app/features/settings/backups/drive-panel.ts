@@ -1,4 +1,5 @@
 import { Clipboard } from '@angular/cdk/clipboard';
+import { ListRow } from '@shared/ui/list-row';
 import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -56,6 +57,7 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
 @Component({
   selector: 'tb-drive-panel',
   imports: [
+    ListRow,
     DatePipe,
     ReactiveFormsModule,
     Button,
@@ -127,7 +129,7 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
           } @else {
             <ul class="tb-list" [attr.aria-label]="t.files">
               @for (file of shownFiles(); track file.id) {
-                <li>
+                <li tbListRow>
                   <span class="tb-list__lead" aria-hidden="true"
                     ><i class="tb-i tb-i-cloud"></i
                   ></span>
