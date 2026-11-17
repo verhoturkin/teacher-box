@@ -712,8 +712,85 @@ Gallery: [`/gallery/fields`](../frontend/src/app/features/gallery/fields/) (chip
 - **Copy field** `tb-copy-field` (`@shared/ui`) — a read-only field (a link, an address, a code with
   `mono`) with a round 40 px «Копировать» icon button centred on the 56 px field (*ours*); a
   snackbar confirms the copy.
-- **Date** — one field with a trailing calendar icon. **Password** — `tb-password-toggle`, a 40×40
-  icon button inside the field, «Показать пароль» / «Скрыть пароль», `aria-pressed`.
+- **Typed entry** (dates and times, **M3**, ADR-0067): every date and time field takes typing;
+  the parser (`shared/dates`) accepts dots, slashes, dashes and spaces, a leading 0 or none, a 2-
+  or 4-digit year; times «14:30», «1430», «14.30», «14 30», «9» → 09:00. No input masks; the value
+  is formatted only on Enter or leaving the field, unparsed text stays and gets a field error. The
+  trailing icon button is the only way into the picker and a separate tab stop. *Ours:* the format
+  («ДД.ММ.ГГГГ», «ЧЧ:ММ») is the placeholder, shown while the label is small; no clear button.
+- **Date** `tb-date-field` (`@shared/ui`, value `Date`, `minDate` / `maxDate`, a month mode) — the
+  filled field with a trailing `calendar_month` icon button «Выбрать дату».
+  - **Docked picker** (medium and up, **M3**) just below the field, in the overlay of dropdowns
+    (§1 «Motion»). **M3:** container `surface-container-high`; days 40 dp round
+    (`DateContainer*`), on-surface; today 1 dp primary outline and primary text; selected primary /
+    on-primary; outside-month days on-surface-variant; header month and year menu buttons, each
+    with previous / next icon buttons (on-surface-variant); the month or year list **replaces**
+    the grid; weekdays on-surface, not focusable; hover 8 %, focus and pressed 10 % state layers;
+    disabled days 38 % on-surface; the size never scales with the window.
+  - *Ours* (M3 publishes no docked measurements and no picker type roles): width 360 dp (the
+    modal's `ContainerWidth`), 12 dp padding, `--tb-shape-lg` like other dropdowns,
+    `--tb-elevation-2` (M3 drops the shadow, but on a dialog the `surface-container-high`
+    container would merge into it); rows 48 dp: header ‹ month ▾ › ‹ year ▾ › (icon buttons
+    40 dp in 48 dp targets, the two menu buttons share the rest; the month is short, «сент.»),
+    weekdays, days in 48×48 dp cells; a divider outline-variant under the header while a list is
+    open; type — menu buttons, list items Label Large, weekdays and days Body Large. Lists: the
+    12 months, the years from `minDate` (or this year − 10) to `maxDate` (or + 10), 48 dp items,
+    opened at the selected one; the selected item and a pressed menu button are **primary** /
+    on-primary (user choice, 424.2). Picking a day sets the value and closes (no «Отмена» /
+    «ОК»); Esc or a click outside closes without change. The day grid is PrimeNG
+    `p-datepicker [inline]` with its header hidden; our header shows a month through
+    `defaultDate`, paging in the grid comes back through `onMonthChange`. The month mode (monthly
+    report) has no grid: the year header and the month list.
+  - **Compact:** the full-screen dialog (§11 «Full-screen dialog»): «✕», the field label as the
+    headline, «Сохранить». Under the header (**M3** modal date picker) the supporting text «Выберите
+    дату» (Label Large, on-surface-variant) and the chosen date (Headline Large, on-surface) — type
+    *ours* —, a divider outline-variant, then the same 360 dp body centred (**M3**: not scaled). No
+    edit icon (*ours*): typing stays in the field itself.
+  - **Keyboard** (**M3**): the picker opens on the selected day (or today); arrows move by a day,
+    Page Up/Down a month, Shift+Page Up/Down a year, Home/End the first and last day, Shift+M /
+    Shift+Y open the month and year lists, Enter picks and closes, Esc closes; focus returns to the
+    icon button. The previous / next tooltips name their keys («Следующий месяц (Page Down)»).
+  - **Screen readers** (**M3**): the grid is `role="grid"`, weekdays column headers (full name in
+    `abbr`, *ours*); each day is named by its full date («понедельник, 17 августа 2026 г.»); the
+    menu buttons say what they choose and the current value, with `aria-expanded`.
+  - Motion (*ours*): the list ↔ grid swap fades on fast effects; the menu button arrow turns on
+    `--tb-spring-standard-fast-spatial` (no bounce, user choice, 424.2).
+- **Time** `tb-time-field` (`@shared/ui`, value `HH:mm`, input `step` 5 or 15) — the filled field
+  with a trailing `schedule` icon button «Выбрать время» that opens `tb-time-picker`, the **M3**
+  modal time picker, 24-hour (no AM/PM).
+  - **M3:** a dialog over the scrim, container `surface-container-high`, CornerExtraLarge
+    (`--tb-shape-xl`), elevation level 3 (`--tb-elevation-3`), 24 dp padding, headline
+    left-aligned on-surface-variant («Выберите время» / «Введите время»). The lower left icon button
+    (on-surface-variant, `keyboard` «Ввести время с клавиатуры» / `schedule` «Выбрать время на
+    циферблате») switches the views; «Отмена» / «ОК» text buttons (primary) at the end.
+  - **Dial view (M3):** hour and minute selectors 114×80 dp vertical (96×80 dp horizontal),
+    CornerSmall (`--tb-shape-sm`), `surface-container-highest` / on-surface, the selected one
+    `primary-container` / on-primary-container (M3 sets this colour, so not primary), separator
+    «:» on-surface; dial 256 dp round `surface-container-highest`, labels on-surface, the selected
+    one on-primary; handle 48 dp, centre 8 dp and track 2 dp, all primary; hours 0–11 on the outer
+    ring, 12–23 on the inner; targets 48×48 dp; screen readers hear «9 часов из 24» / «30 минут из
+    60».
+  - **Input view (M3):** hour and minute fields 96×72 dp, CornerSmall, `surface-container-highest`
+    / on-surface, focused `primary-container` / on-primary-container with a 2 dp primary outline,
+    the labels «Часы» / «Минуты» below; named «Час», «Минута».
+  - **Layouts (M3):** vertical by default; horizontal (selectors beside the dial) when the window is
+    short; the input view alone when even that does not fit — the picker never scrolls. *Ours:*
+    horizontal below 560 px of window height, input only below 400 px.
+  - *Ours:* type — digits Display Small (M3 shows larger, the scale has no Display L/M and 36 px
+    fits 80 dp), headline Label Medium, dial labels Body Large, input labels Body Small; the dial
+    view opens by default (the field already takes typing), the last view chosen is remembered for
+    the session; after an hour is picked the dial turns to minutes; minutes show every 5, the dial
+    snaps to the field's step, typed minutes are kept as typed. Keyboard: the dial is one tab stop,
+    arrows move by an hour or the step, Enter confirms the hour, then the time; Esc cancels.
+    Motion: the hand turns on `--tb-spring-standard-fast-spatial` (no bounce, user choice, 424.2),
+    the numbers swap and the selector colours change on fast effects.
+- **Date and time** (**M3** has no combined picker, ADR-0067): two fields in one row — date, then
+  time —, each with its own label and error. *Ours:* the row is 3fr / 2fr with a 16 dp gap, never
+  stacked; `minDate` stays (today: no time before now, rounded up to the step); the screen joins
+  the two into one `Instant` and splits it back in the zone it already works in (`shared.time`
+  rules, the fields convert nothing).
+- **Password** — `tb-password-toggle`, a 40×40 icon button inside the field, «Показать пароль» /
+  «Скрыть пароль», `aria-pressed`.
 - A 40 px button next to a 56 px field is centred on it (`tb-copy-row`).
 - **Textarea** resizes only vertically and never wider than its field.
 - **Autosave** (settings and «Мой аккаунт», sketch `Changes`): a field or switch saves on change

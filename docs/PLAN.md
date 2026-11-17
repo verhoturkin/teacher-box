@@ -115,7 +115,8 @@ What we take from M3:
   outline, selected primary / on-primary, the year view replaces the calendar; a header with
   month and year menu buttons and previous/next icon buttons; keyboard Page Up/Down,
   Shift+Page Up/Down, Home/End; screen readers hear the full date. Container
-  `surface-container-high`, no shadow.
+  `surface-container-high`; ours: the docked one keeps the dropdown shadow (on a dialog it would
+  merge into the same colour).
 - Time: the modal time picker, 24-hour (no AM/PM). Dial view — hour and minute selectors 96×80 dp
   (114 dp wide for 24 h), dial 256 dp `surface-container-highest`, handle 48 dp, centre 8 dp,
   track 2 dp primary, hours 0–11 on the outer ring and 12–23 on the inner; input view — fields
@@ -126,16 +127,22 @@ What we take from M3:
   typed; the dial is the default view (the field already takes typing), the last view chosen is
   remembered for the session.
 
-- [ ] 425.1 *complex* F — ADR-0067 and the spec: `docs/design-system.md` §9 «Date», «Time»,
+- [x] 425.1 *complex* F — ADR-0067 and the spec: `docs/design-system.md` §9 «Date», «Time»,
   «Date and time» with the values above, each marked **M3** or *ours*; a row in
   `docs/adr/README.md`. Decide there whether the docked calendar stays PrimeNG
   `p-datepicker [inline]` inside our overlay (preferred: less code) or needs its own grid — only
-  if the M3 header cannot be built with PrimeNG templates.
+  if the M3 header cannot be built with PrimeNG templates. Decided: the PrimeNG grid stays, its
+  header is hidden, our M3 header and month / year lists sit around it (ADR-0067).
 - [ ] 425.2 *complex* F — `tb-date-field` (`shared/ui/date-field.ts`, `ControlValueAccessor`,
   value `Date`): the filled field (ADR-0050) with the trailing `calendar_month` icon button; a
   parser for typed dates (`shared/dates`) with tests for every accepted format and the rejects;
   the docked picker in an overlay under the field from medium, the full-screen dialog on compact;
-  `minDate` / `maxDate`; a month mode for the monthly report. Replace the date-only
+  `minDate` / `maxDate`; a month mode for the monthly report (no grid: the year header and the
+  month list). The grid is `p-datepicker [inline]` with its header hidden; ours: the M3 header
+  (shows a month through `defaultDate`, follows `onMonthChange`), the month and year lists,
+  Shift+Page Up/Down and Shift+M / Shift+Y, the full date as each day's label (PrimeNG puts only
+  the number in the cell's `aria-label`; check with a screen reader whether `#date` content or
+  `pt` is enough). Replace the date-only
   `p-datepicker`s (`billing/teacher/payment-dialog.ts`, `monthly-report-page.ts`,
   `schedule/teacher/lesson-dialog.ts` series end, `off-time-dialog.ts` days); a gallery sample in
   `features/gallery/fields/`.
