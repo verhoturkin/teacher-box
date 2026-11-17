@@ -387,6 +387,26 @@ const DATE_TIME: Readonly<Record<string, readonly (readonly [string, string, str
   ],
 };
 
+/** A tap on a whole notification row opens it (429.2): [topic, baseline, now] of the notifications article. */
+const TAP_ROW: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'notifications',
+      'проведите по нему пальцем влево или вправо.',
+      'проведите по нему пальцем влево или вправо. Нажатие на само уведомление открывает связанную ' +
+        'страницу (занятие, задание) и закрывает окно; уведомление без ссылки просто читается.',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'notifications',
+      'swipe an item left or right to mark it as read.',
+      'swipe an item left or right to mark it as read. Tapping a notification opens the page it is ' +
+        'about (a lesson, a task) and closes the panel; a notification with no link is just for reading.',
+    ],
+  ],
+};
+
 /** Two cards of Today, no debt rows (427.1): [topic, baseline, now] of the first-steps article. */
 const TWO_CARDS: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
   'teacher.ru': [
@@ -524,6 +544,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(PANE_HANDLE[name] ?? []),
       ...(DATE_TIME[name] ?? []),
       ...(TWO_CARDS[name] ?? []),
+      ...(TAP_ROW[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

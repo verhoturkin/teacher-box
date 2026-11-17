@@ -10,7 +10,7 @@ import { NotificationItem } from '../data-access/notifications.models';
 import { T } from '../i18n/texts';
 
 /**
- * Notifications as a list: emphasized unread titles; the title (it opens the notification), text and time and
+ * Notifications as a list: emphasized unread titles; a row with a link opens it on a tap (the title is its keyboard button), text and time and
  * «Отметить прочитанным» (on a phone a swipe sideways instead of the tick).
  */
 @Component({
@@ -24,6 +24,7 @@ import { T } from '../i18n/texts';
           tbListRow
           class="tb-notification"
           [class.tb-notification--unread]="!item.read"
+          [class.tb-notification--link]="item.link !== null"
           [tbSwipe]="mobile() && !item.read"
           (tbSwiped)="markRead.emit(item)"
         >
@@ -86,10 +87,25 @@ import { T } from '../i18n/texts';
       cursor: pointer;
     }
 
-    /* the text may hold a link to a meeting: a long address breaks anywhere (ADR-0021) */
+    /* the whole row opens the notification: the title button stretches over it (the tick stays above) */
+    .tb-notification--link {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .tb-notification__open::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+    }
+
+    .tb-notification--link .tb-list__trail {
+      position: relative;
+      z-index: 1;
+    }
+
     .tb-notification__body {
       white-space: pre-line;
-      overflow-wrap: anywhere;
     }
   `,
 })

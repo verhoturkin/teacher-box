@@ -87,7 +87,7 @@ Order: one substep per session, a commit each; the PR is opened once, after 431.
   rows that already hold an address stay as they are (no migration; YAGNI). Tests: notices tests
   of meetings and schedule, `NotificationServiceTest` (inbox body has no `https://`, messengers
   get the same text and the button as before).
-- [ ] 429.2 *simple* F — the whole notification row opens its `link` (not only the title button):
+- [x] 429.2 *simple* F — the whole notification row opens its `link` (not only the title button):
   `notifications/inbox/notification-list.ts`, `inbox-panel.ts`, the bell sheet; it marks it read
   and closes the sheet; a row without a link is not interactive. Drop the «long address breaks
   anywhere» styles. Tests: `inbox-panel.spec.ts`. Docs: `docs/screens.md` «Notifications»,

@@ -159,6 +159,16 @@ describe('InboxPanel', () => {
     expect(list('Непрочитанные')).toEqual([]);
   });
 
+  it('the title button covers the row; a row without a link has no button', async () => {
+    await render(notificationPage([notification(), notification({ id: 'n-2', link: null })]));
+    const rows = host().querySelectorAll('ul[aria-label="Непрочитанные"] > li');
+
+    expect(rows[0]?.classList).toContain('tb-notification--link');
+    expect(rows[0]?.querySelector('button.tb-notification__open')).not.toBeNull();
+    expect(rows[1]?.classList).not.toContain('tb-notification--link');
+    expect(rows[1]?.querySelector('button.tb-notification__open')).toBeNull();
+  });
+
   it('opens an already read notification without requests', async () => {
     await render(notificationPage([]));
     vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);

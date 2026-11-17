@@ -43,7 +43,7 @@ ADRs: [0005](../adr/0005-notifications.md), [0009](../adr/0009-external-integrat
   of a notification goes as «Открыть» (`Portal.link`), a video room as «Подключиться»
   (`NoticeRequested.joinUrl`: the room link, lesson reminders), then the buttons of the bot's
   actions. The inbox shows the same text without the address and opens the link (since 0.56.0,
-  429.1; older inbox records keep theirs); `/help` has a «Справка» button. A messenger that refuses
+  429.1; a tap on the whole inbox row, 429.2; older inbox records keep theirs); `/help` has a «Справка» button. A messenger that refuses
   link buttons (Telegram and a portal on a local address) gets the message again with «Открыть:
   https://…» in the text (`OutgoingMessage.linksInText`, in `DeliveryDispatcher` and
   `MessengerPolling`).

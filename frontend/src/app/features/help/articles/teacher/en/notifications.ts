@@ -10,7 +10,8 @@ between pages; on smaller screens it opens over the page.
 ## Inbox and sent messages
 
 - **Inbox:** new notifications appear first. Opening one or marking it as read moves it to the expandable Read group. Choose “Mark all as read” to \
-clear the unread list. On a phone, swipe an item left or right to mark it as read.
+clear the unread list. On a phone, swipe an item left or right to mark it as read. Tapping a notification opens the page it is about (a lesson, a task) and \
+closes the panel; a notification with no link is just for reading.
 - **Sent:** messages you have sent to students, with the date and recipient count. Choose “Message students” to write another.
 
 Close the panel with ×, Esc or the bell. On smaller screens it also closes when a notification opens another page. Existing links to Notifications \
