@@ -56,7 +56,6 @@ describe('TeacherHome', () => {
         income: 300_000,
         totalDebt: 150_000,
         debtors: 1,
-        topDebtors: [{ studentId: 's-9', displayName: 'Пётр', avatar: null, balance: -150_000 }],
       }),
     );
     backend
