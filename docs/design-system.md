@@ -503,9 +503,10 @@ Gallery: [`/gallery/frame`](../frontend/src/app/features/gallery/frame/).
 - **Drag handle** (`shared/ui/pane-handle.ts`, **M3** DragHandle): `tb-pane kind="fixed"
   resizeKey="<page>"` gets a handle in the spacer on its flexible side while the panes stand side
   by side (from expanded; none in `single`, none for `sheet`). Look: 4×48 dp, full corners;
-  pressed and dragged 12×52 dp, corner medium, morph on `--tb-spring-fast-spatial` (**M3**);
-  outline-variant at rest, outline on hover, on-surface pressed and dragged; hit zone the 24 dp
-  spacer plus 8 dp over each pane (*ours*). Limits (*ours*): from 360 dp, the flexible pane keeps
+  pressed and dragged 12×52 dp, corner medium, morph on `--tb-spring-standard-fast-spatial`
+  (no overshoot, ours: the bar must not bounce under a moving pane); outline-variant at rest,
+  outline on hover, primary pressed and dragged, no tooltip; hit zone the 24 dp spacer plus 8 dp
+  over each pane (*ours*). Limits (*ours*): from 360 dp, the flexible pane keeps
   360 dp, at most 50 % of the panes; CSS `clamp()` keeps them on window resize, the stored width
   stays. A drag writes `--tb-pane-width` once a frame (pointer capture, no change detection), the
   panes drop their motion, the page gets `col-resize`; a drop within 24 dp (*ours*) snaps to

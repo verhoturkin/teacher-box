@@ -12,7 +12,6 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Tooltip } from 'primeng/tooltip';
 import { AuthService } from '@core/auth/auth.service';
 import { SHARED_T } from '@shared/i18n/texts';
 
@@ -43,7 +42,6 @@ interface Limits {
  */
 @Component({
   selector: 'tb-pane-handle',
-  imports: [Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   // the side of the handle depends on the panes around its pane (`:has`), out of reach of emulated styles
   encapsulation: ViewEncapsulation.None,
@@ -60,7 +58,6 @@ interface Limits {
       [attr.aria-valuenow]="now()"
       [attr.aria-valuemin]="min()"
       [attr.aria-valuemax]="max()"
-      [pTooltip]="label"
       (pointerdown)="start($event)"
       (dblclick)="toggle()"
       (keydown)="key($event)"
@@ -99,10 +96,11 @@ interface Limits {
       block-size: 48px;
       border-radius: var(--tb-shape-full);
       background: var(--p-md-outline-variant);
+      /* no overshoot: the bar would bounce while the pane moves under the pointer (ours) */
       transition:
-        inline-size var(--tb-spring-fast-spatial),
-        block-size var(--tb-spring-fast-spatial),
-        border-radius var(--tb-spring-fast-spatial),
+        inline-size var(--tb-spring-standard-fast-spatial),
+        block-size var(--tb-spring-standard-fast-spatial),
+        border-radius var(--tb-spring-standard-fast-spatial),
         background-color var(--tb-spring-fast-effects);
     }
 
@@ -115,7 +113,7 @@ interface Limits {
       inline-size: 12px;
       block-size: 52px;
       border-radius: var(--tb-shape-md);
-      background: var(--p-md-on-surface);
+      background: var(--p-md-primary);
     }
   `,
 })
