@@ -285,7 +285,8 @@ export class PaneHandle implements OnInit {
       this.custom = width;
     }
     this.apply(width);
-    this.now.set(width ?? Math.round(this.pane().getBoundingClientRect().width));
+    // the default width is the CSS one (412 dp); the pane itself is still moving to it
+    this.now.set(width ?? clamp(LARGE_WIDTH, this.measure()));
     try {
       if (width === null) {
         this.window?.localStorage.removeItem(this.storageKey());

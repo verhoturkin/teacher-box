@@ -91,9 +91,11 @@ the width of our spacer.
     handle on compact and medium; gallery sample `features/gallery/frame/panes.ts`;
     `docs/design-system.md` §7; wiki page of the interface and the help article in both
     languages (one line: drag the edge between panes, a double click returns the width).
-- [ ] 424.2 *simple* F — browser check of 424.1: drag on Ученики and Расписание at 1280 and
+- [x] 424.2 *simple* F — browser check of 424.1: drag on Ученики and Расписание at 1280 and
   1920 px, a Performance trace of a drag without long tasks or forced layouts, reload keeps the
   width, another user's width is separate, keyboard and screen reader names, light and dark.
+  *Fixed: `aria-valuenow` stayed stale after the default toggle. Not checked: a second (student)
+  login — the key holds the user id; forced layouts (no long tasks, one write per frame).*
 
 ### 425. M3 date and time pickers
 

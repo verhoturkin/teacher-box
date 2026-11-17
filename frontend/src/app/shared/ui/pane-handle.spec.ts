@@ -206,6 +206,7 @@ describe('PaneHandle', () => {
     key(zone, 'End');
     zone.dispatchEvent(new MouseEvent('dblclick'));
     expect(width(pane)).toBe('');
+    expect(zone.getAttribute('aria-valuenow')).not.toBe('600');
     expect(localStorage.getItem(KEY)).toBeNull();
     key(zone, 'Enter');
     expect(width(pane)).toBe('600px');
