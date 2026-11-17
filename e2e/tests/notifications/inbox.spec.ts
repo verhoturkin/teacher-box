@@ -3,7 +3,8 @@ import { type APIRequestContext, type Page, expect, test } from '@playwright/tes
 
 /**
  * Version 0.10.2: the unread notifications, each with «Отметить прочитанным», and «Прочитать все» (the home
- * card until 0.22.0, the bell's sheet since).
+ * card until 0.22.0, the bell's sheet since). Version 0.56.0: a tap anywhere on a row with a link opens its page,
+ * marks it read and closes the sheet.
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -11,9 +12,12 @@ const RUN = Date.now().toString(36);
 const STUDENT = `Ученик с уведомлениями ${RUN}`;
 const LOGIN = `notify-${RUN}`;
 const PASSWORD = 'student-pass-1';
+const TAPPED = `Задание по ссылке ${RUN}`;
 const TASKS = ['Первое', 'Второе', 'Третье'].map((name) => `${name} задание ${RUN}`);
 
 test.describe.configure({ mode: 'serial' });
+
+let studentId = '';
 
 async function signIn(page: Page): Promise<void> {
   await page.setViewportSize({ width: 1280, height: 900 });
@@ -31,6 +35,7 @@ test.beforeAll(async ({ request }) => {
     student: { id: string };
     invite: { token: string };
   };
+  studentId = student.id;
   const accepted = await request.post(`/api/auth/invites/${invite.token}/accept`, {
     data: { login: LOGIN, password: PASSWORD },
   });
@@ -88,5 +93,43 @@ test('the bell’s sheet shows the unread notifications: ✓ one, then «Про�
   await expect(sheet.getByRole('button', { name: 'Прочитать все' })).toHaveCount(0);
 
   await openSheet();
+  await expect(sheet.getByText('Новых уведомлений нет')).toBeVisible();
+});
+
+// 0.56.0: the whole row opens the page of the notification, not only its title
+test('a tap on the row of a notification opens its page and marks it read', async ({
+  page,
+  request,
+}) => {
+  const assignment = await request.post('/api/teacher/homework/assignments', {
+    headers: await bearer(request),
+    data: { title: TAPPED, description: 'Упражнения', studentIds: [studentId] },
+  });
+  expect(assignment.ok()).toBe(true);
+  const studentHeaders = await bearer(request, LOGIN, PASSWORD);
+  await expect
+    .poll(async () => {
+      const found = await request.get('/api/me/notifications?page=0&size=20&read=false', {
+        headers: studentHeaders,
+      });
+      const body = (await found.json()) as { items: { title: string }[] };
+      return body.items.some((item) => item.title.includes(TAPPED));
+    })
+    .toBe(true);
+
+  await signIn(page);
+  await page.goto('/cabinet/notifications');
+  const sheet = page.getByRole('dialog', { name: 'Уведомления' });
+  const unread = sheet.getByRole('list', { name: 'Непрочитанные', exact: true });
+  await expect(unread).toContainText(TAPPED);
+  // near the bottom left corner of the row (its time line), away from the title text
+  const row = unread.getByRole('listitem').filter({ hasText: TAPPED });
+  const box = await row.boundingBox();
+  expect(box).toBeTruthy();
+  await row.click({ position: { x: 8, y: (box?.height ?? 16) - 8 } });
+  await expect(page).toHaveURL(/\/cabinet\/homework\/[0-9a-f-]+$/);
+  await expect(sheet).toHaveCount(0);
+
+  await page.goto('/cabinet/notifications');
   await expect(sheet.getByText('Новых уведомлений нет')).toBeVisible();
 });
