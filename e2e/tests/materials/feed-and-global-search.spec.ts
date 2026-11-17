@@ -3,7 +3,7 @@ import { type APIRequestContext, type Page, expect, test } from '@playwright/tes
 
 /**
  * Version 0.26.0, «Materials, cabinet, admin, search»: boards and textbooks in one Materials feed; the student's
- * bar of five destinations and the two-column home; the global search (Ctrl K) opens a student.
+ * bar of five destinations (0.56.0: the home holds no materials); the global search (Ctrl K) opens a student.
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -106,7 +106,10 @@ test('Materials show boards and textbooks in one feed and a card opens', async (
   await expect(page).toHaveURL(/\/teacher\/boards\/[0-9a-f-]+$/);
 });
 
-test('the student has a bar of five destinations and a home with materials', async ({ page }) => {
+// 0.56.0: the student's home no longer shows the lesson materials; they stay in «Материалы»
+test('the student has a bar of five destinations, the materials are in Materials', async ({
+  page,
+}) => {
   await page.setViewportSize(PHONE);
   await signIn(page, LOGIN, PASSWORD);
   const bar = page.getByRole('navigation', { name: 'Разделы' });
@@ -116,30 +119,12 @@ test('the student has a bar of five destinations and a home with materials', asy
   }
   await page.setViewportSize(WIDE);
   await page.goto('/cabinet');
-  await expect(page.getByRole('link', { name: BOARD }).first()).toBeVisible();
-  const materials = page.locator('.tb-feed__materials');
-  const board = materials.locator('tb-my-boards-feed tb-material-card');
-  const textbook = materials.locator('tb-my-textbooks-feed tb-material-card');
-  await expect(textbook).toBeVisible();
-  const boardBox = await board.boundingBox();
-  const textbookBox = await textbook.boundingBox();
-  expect(boardBox && textbookBox).toBeTruthy();
-  if (boardBox && textbookBox) {
-    expect(Math.abs(textbookBox.y - boardBox.y)).toBeLessThan(1);
-    expect(textbookBox.x - boardBox.x - boardBox.width).toBeGreaterThanOrEqual(8);
-    expect(textbookBox.x - boardBox.x - boardBox.width).toBeLessThanOrEqual(16);
-  }
-  await page.setViewportSize(PHONE);
-  await expect(materials).toBeVisible();
-  const phoneBoard = await board.boundingBox();
-  const phoneTextbook = await textbook.boundingBox();
-  expect(phoneBoard && phoneTextbook).toBeTruthy();
-  if (phoneBoard && phoneTextbook) {
-    expect(Math.abs(phoneTextbook.x - phoneBoard.x)).toBeLessThan(1);
-    expect(phoneTextbook.y).toBeGreaterThan(phoneBoard.y + phoneBoard.height);
-    expect(phoneTextbook.x + phoneTextbook.width).toBeLessThanOrEqual(PHONE.width);
-  }
+  await expect(page.locator('tb-student-home')).toBeVisible();
+  await expect(page.locator('.tb-feed__materials')).toHaveCount(0);
+  await expect(page.locator('tb-material-card')).toHaveCount(0);
+
   await page.goto('/cabinet/materials');
+  await expect(page.getByRole('link', { name: BOARD })).toBeVisible();
   await page.getByRole('button', { name: /^Учебники/ }).click();
   await expect(page.getByRole('button', { name: `Открыть ${TEXTBOOK}` })).toBeVisible();
 });
