@@ -39,7 +39,7 @@ Order: one substep per session, a commit each; the PR is opened once, after 431.
 
 ### 427. Teacher's Today: two queues, no debtors
 
-- [ ] 427.1 *complex* F — `features/home/todo-queue.ts` (one card with `kind` lesson / request /
+- [x] 427.1 *complex* F — `features/home/todo-queue.ts` (one card with `kind` lesson / request /
   review / debt) becomes two cards in the queue column of `features/home/teacher-home.ts`:
   «Отметить занятия» (unmarked lessons with «Проведено | Пропуск» in place, change requests of
   the schedule under them — they are schedule work too; ours) and «Проверить работы» (the review

@@ -2,7 +2,7 @@ import { startSession } from '../support/session';
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 
 /**
- * Version 0.24.0, Today and Schedule: the «Нужно сделать» queue of Today holds a past lesson without a mark and
+ * Version 0.24.0, Today and Schedule: the «Отметить занятия» card of Today holds a past lesson without a mark and
  * marks it in place; the schedule's calendar outlines a lesson until it is marked, and the outline disappears
  * once the lesson is marked. The queue shows only the first rows (the oldest lessons), so its lesson is a very old
  * one: other specs leave their own unmarked lessons on the instance.
