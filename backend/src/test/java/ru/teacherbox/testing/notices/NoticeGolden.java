@@ -30,12 +30,12 @@ public final class NoticeGolden {
 
     /** One notice in one language. */
     public record Line(UUID recipientId, String kind, String title, @Nullable String body, @Nullable String link,
-            @Nullable ChatSubject subject, @Nullable String joinUrl, @Nullable String roomBody) {
+            @Nullable ChatSubject subject, @Nullable String joinUrl) {
 
         public static Line of(NoticeRequested notice, Language language) {
             NoticeText text = notice.text(language);
             return new Line(notice.recipientId(), notice.kind(), text.title(), text.body(), notice.link(),
-                    notice.subject(), notice.joinUrl(), text.roomBody());
+                    notice.subject(), notice.joinUrl());
         }
     }
 
@@ -59,7 +59,6 @@ public final class NoticeGolden {
             field("link", line.link());
             field("subject", line.subject() == null ? null : line.subject().type() + " " + line.subject().id());
             field("room", line.joinUrl());
-            field("room body", line.roomBody());
             written.append("--\n");
         }
         written.append('\n');

@@ -219,18 +219,19 @@ class ScheduleNoticesIntegrationTests {
         assertThat(teacherNotices(events, "Скоро урок: Напомнить, четверг, 01.10 в 18:00")).isEmpty();
 
         UUID last = directory.addStudent("Последнее");
-        publish(new LessonStartingSoon(UUID.randomUUID(), null, List.of(last), START, 60, null, "Дроби",
+        UUID lesson = UUID.randomUUID();
+        publish(new LessonStartingSoon(lesson, null, List.of(last), START, 60, null, "Дроби",
                 "https://zoom.us/j/1", Duration.ofHours(1), true, Instant.now()));
         assertThat(teacherNotices(events, "Скоро урок: Последнее, четверг, 01.10 в 18:00")).singleElement()
                 .satisfies(notice -> {
-                    assertThat(ru(notice).body()).isEqualTo("Через 1 час. Ссылка на урок: https://zoom.us/j/1");
-                    assertThat(ru(notice).roomBody()).isEqualTo("Через 1 час.");
+                    assertThat(ru(notice).body()).as("the address goes as a button").isEqualTo("Через 1 час.");
                     assertThat(notice.joinUrl()).isEqualTo("https://zoom.us/j/1");
+                    assertThat(notice.link()).isEqualTo("/teacher/schedule");
                 });
         assertThat(notices(events, last)).singleElement().satisfies(notice -> {
-            assertThat(ru(notice).body()).isEqualTo("Через 1 час. Тема: Дроби. Ссылка на урок: https://zoom.us/j/1");
-            assertThat(ru(notice).roomBody()).as("the address goes as a button").isEqualTo("Через 1 час. Тема: Дроби.");
+            assertThat(ru(notice).body()).as("the address goes as a button").isEqualTo("Через 1 час. Тема: Дроби.");
             assertThat(notice.joinUrl()).isEqualTo("https://zoom.us/j/1");
+            assertThat(notice.link()).as("the reminder opens its lesson").isEqualTo("/cabinet/schedule?lesson=" + lesson);
         });
     }
 
@@ -254,7 +255,7 @@ class ScheduleNoticesIntegrationTests {
                 List.of(reminded), START, 60, "Maths", "Fractions", "https://zoom.us/j/1", Duration.ofHours(24), false,
                 Instant.now())));
         assertThat(soon.title()).isEqualTo("Upcoming lesson: Thursday, 01.10 at 18:00");
-        assertThat(soon.body()).isEqualTo("In 24 hours. Lesson “Maths”. Topic: Fractions. Lesson link: https://zoom.us/j/1");
+        assertThat(soon.body()).isEqualTo("In 24 hours. Lesson “Maths”. Topic: Fractions.");
 
         UUID asks = directory.addStudent("Asks");
         publish(new LessonChangeRequested(UUID.randomUUID(), UUID.randomUUID(), asks, null,

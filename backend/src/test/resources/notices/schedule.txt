@@ -342,25 +342,23 @@ to: Анна Иванова
 kind: SCHEDULE_REMINDER
 title: Скоро занятие: четверг, 01.10 в 18:00
 body: Через 24 часа.
-link: /cabinet/schedule
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000bf
 --
 
 ## soon: last, topic, room [RU]
 to: Vera Smith
 kind: SCHEDULE_REMINDER
 title: Скоро занятие: четверг, 01.10 в 18:00
-body: Через 1 час. Тема: Дроби. Ссылка на урок: https://zoom.us/j/1
-link: /cabinet/schedule
+body: Через 1 час. Тема: Дроби.
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c0
 room: https://zoom.us/j/1
-room body: Через 1 час. Тема: Дроби.
 --
 to: teacher
 kind: SCHEDULE_REMINDER
 title: Скоро урок: Vera Smith, четверг, 01.10 в 18:00
-body: Через 1 час. Ссылка на урок: https://zoom.us/j/1
+body: Через 1 час.
 link: /teacher/schedule
 room: https://zoom.us/j/1
-room body: Через 1 час.
 --
 
 ## soon: group, title, last [RU]
@@ -368,13 +366,13 @@ to: Анна Иванова
 kind: SCHEDULE_REMINDER
 title: Скоро занятие: четверг, 01.10 в 18:00
 body: Через 30 минут. Группа «ОГЭ». Занятие «Английский».
-link: /cabinet/schedule
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c1
 --
 to: Борис
 kind: SCHEDULE_REMINDER
 title: Скоро занятие: четверг, 01.10 в 18:00
 body: Через 30 минут. Группа «ОГЭ». Занятие «Английский».
-link: /cabinet/schedule
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c1
 --
 to: teacher
 kind: SCHEDULE_REMINDER
@@ -387,20 +385,18 @@ link: /teacher/schedule
 to: Борис
 kind: SCHEDULE_REMINDER
 title: Скоро занятие: пятница, 02.10 в 19:30
-body: Через 2 дня. Группа «ОГЭ». Занятие «Maths». Тема: Fractions. Ссылка на урок: https://telemost.yandex.ru/j/5
-link: /cabinet/schedule
+body: Через 2 дня. Группа «ОГЭ». Занятие «Maths». Тема: Fractions.
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c2
 room: https://telemost.yandex.ru/j/5
-room body: Через 2 дня. Группа «ОГЭ». Занятие «Maths». Тема: Fractions.
 --
 
 ## soon: nobody, last, room [RU]
 to: teacher
 kind: SCHEDULE_REMINDER
 title: Скоро урок: ученик, четверг, 01.10 в 18:00
-body: Через 21 минуту. Ссылка на урок: https://telemost.yandex.ru/j/5
+body: Через 21 минуту.
 link: /teacher/schedule
 room: https://telemost.yandex.ru/j/5
-room body: Через 21 минуту.
 --
 
 ## soon: lost group, last [RU]
@@ -408,13 +404,13 @@ to: Анна Иванова
 kind: SCHEDULE_REMINDER
 title: Скоро занятие: четверг, 01.10 в 18:00
 body: Через 3 часа.
-link: /cabinet/schedule
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c4
 --
 to: Vera Smith
 kind: SCHEDULE_REMINDER
 title: Скоро занятие: четверг, 01.10 в 18:00
 body: Через 3 часа.
-link: /cabinet/schedule
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c4
 --
 to: teacher
 kind: SCHEDULE_REMINDER
@@ -427,10 +423,9 @@ link: /teacher/schedule
 to: Анна Иванова
 kind: SCHEDULE_REMINDER
 title: Скоро занятие: четверг, 01.10 в 18:00
-body: Через 1 минуту. Ссылка на урок: https://telemost.yandex.ru/j/5
-link: /cabinet/schedule
+body: Через 1 минуту.
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c5
 room: https://telemost.yandex.ru/j/5
-room body: Через 1 минуту.
 --
 
 ## summary [RU]
@@ -802,25 +797,23 @@ to: Анна Иванова
 kind: SCHEDULE_REMINDER
 title: Upcoming lesson: Thursday, 01.10 at 18:00
 body: In 24 hours.
-link: /cabinet/schedule
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000bf
 --
 
 ## soon: last, topic, room [EN]
 to: Vera Smith
 kind: SCHEDULE_REMINDER
 title: Upcoming lesson: Thursday, 01.10 at 18:00
-body: In 1 hour. Topic: Дроби. Lesson link: https://zoom.us/j/1
-link: /cabinet/schedule
+body: In 1 hour. Topic: Дроби.
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c0
 room: https://zoom.us/j/1
-room body: In 1 hour. Topic: Дроби.
 --
 to: teacher
 kind: SCHEDULE_REMINDER
 title: Upcoming lesson: Vera Smith, Thursday, 01.10 at 18:00
-body: In 1 hour. Lesson link: https://zoom.us/j/1
+body: In 1 hour.
 link: /teacher/schedule
 room: https://zoom.us/j/1
-room body: In 1 hour.
 --
 
 ## soon: group, title, last [EN]
@@ -828,13 +821,13 @@ to: Анна Иванова
 kind: SCHEDULE_REMINDER
 title: Upcoming lesson: Thursday, 01.10 at 18:00
 body: In 30 minutes. Group “ОГЭ”. Lesson “Английский”.
-link: /cabinet/schedule
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c1
 --
 to: Борис
 kind: SCHEDULE_REMINDER
 title: Upcoming lesson: Thursday, 01.10 at 18:00
 body: In 30 minutes. Group “ОГЭ”. Lesson “Английский”.
-link: /cabinet/schedule
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c1
 --
 to: teacher
 kind: SCHEDULE_REMINDER
@@ -847,20 +840,18 @@ link: /teacher/schedule
 to: Борис
 kind: SCHEDULE_REMINDER
 title: Upcoming lesson: Friday, 02.10 at 19:30
-body: In 2 days. Group “ОГЭ”. Lesson “Maths”. Topic: Fractions. Lesson link: https://telemost.yandex.ru/j/5
-link: /cabinet/schedule
+body: In 2 days. Group “ОГЭ”. Lesson “Maths”. Topic: Fractions.
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c2
 room: https://telemost.yandex.ru/j/5
-room body: In 2 days. Group “ОГЭ”. Lesson “Maths”. Topic: Fractions.
 --
 
 ## soon: nobody, last, room [EN]
 to: teacher
 kind: SCHEDULE_REMINDER
 title: Upcoming lesson: a student, Thursday, 01.10 at 18:00
-body: In 21 minutes. Lesson link: https://telemost.yandex.ru/j/5
+body: In 21 minutes.
 link: /teacher/schedule
 room: https://telemost.yandex.ru/j/5
-room body: In 21 minutes.
 --
 
 ## soon: lost group, last [EN]
@@ -868,13 +859,13 @@ to: Анна Иванова
 kind: SCHEDULE_REMINDER
 title: Upcoming lesson: Thursday, 01.10 at 18:00
 body: In 3 hours.
-link: /cabinet/schedule
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c4
 --
 to: Vera Smith
 kind: SCHEDULE_REMINDER
 title: Upcoming lesson: Thursday, 01.10 at 18:00
 body: In 3 hours.
-link: /cabinet/schedule
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c4
 --
 to: teacher
 kind: SCHEDULE_REMINDER
@@ -887,10 +878,9 @@ link: /teacher/schedule
 to: Анна Иванова
 kind: SCHEDULE_REMINDER
 title: Upcoming lesson: Thursday, 01.10 at 18:00
-body: In 1 minute. Lesson link: https://telemost.yandex.ru/j/5
-link: /cabinet/schedule
+body: In 1 minute.
+link: /cabinet/schedule?lesson=00000000-0000-0000-0000-0000000000c5
 room: https://telemost.yandex.ru/j/5
-room body: In 1 minute.
 --
 
 ## summary [EN]

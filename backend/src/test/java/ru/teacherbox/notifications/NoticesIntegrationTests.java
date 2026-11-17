@@ -93,14 +93,16 @@ class NoticesIntegrationTests {
     void aRoomGoesAsAButtonAndTheBotOffersItsActions() {
         UUID student = connectedStudent("9301");
         NoticeRequested room = new NoticeRequested(Ids.newId(), student, "MEETING_LINK",
-                NoticeText.inEveryLanguage(language -> new NoticeText("Ссылка на урок",
-                        "По этой ссылке проходят наши уроки: https://zoom.us/j/1", "Здесь проходят наши уроки.")),
+                NoticeText.inEveryLanguage(language -> new NoticeText("Ссылка на урок", "Здесь проходят наши уроки.")),
                 "/cabinet/schedule", null, "https://zoom.us/j/1");
 
         notifications.notify(room);
 
-        assertThat(inbox.findPage(student, 0, 10)).singleElement().satisfies(notification -> assertThat(
-                notification.body()).isEqualTo("По этой ссылке проходят наши уроки: https://zoom.us/j/1"));
+        assertThat(inbox.findPage(student, 0, 10)).singleElement().satisfies(notification -> {
+            assertThat(notification.body()).as("the inbox holds no address").isEqualTo("Здесь проходят наши уроки.")
+                    .doesNotContain("https://");
+            assertThat(notification.link()).isEqualTo("/cabinet/schedule");
+        });
         assertThat(deliveries.findByRecipient(student)).singleElement().satisfies(delivery -> {
             assertThat(delivery.text()).isEqualTo("Ссылка на урок\nЗдесь проходят наши уроки.");
             assertThat(delivery.keyboard()).contains("Подключиться", "https://zoom.us/j/1", "Открыть");
@@ -108,10 +110,10 @@ class NoticesIntegrationTests {
 
         UUID quiet = connectedStudent("9302");
         notifications.notify(new NoticeRequested(Ids.newId(), quiet, "MEETING_LINK",
-                NoticeText.inEveryLanguage(language -> new NoticeText("Ссылка на урок", "https://zoom.us/j/2")),
+                NoticeText.inEveryLanguage(language -> new NoticeText("Ссылка на урок", null)),
                 null, null, "https://zoom.us/j/2"));
         assertThat(deliveries.findByRecipient(quiet)).singleElement().satisfies(delivery -> {
-            assertThat(delivery.text()).as("a room without a text for messengers: the title only")
+            assertThat(delivery.text()).as("a room without a text: the title only")
                     .isEqualTo("Ссылка на урок");
             assertThat(delivery.keyboard()).contains("Подключиться").doesNotContain("Открыть");
         });
@@ -189,7 +191,7 @@ class NoticesIntegrationTests {
     @Test
     void aNoticeSurvivesTheEventRegistry() {
         NoticeRequested notice = new NoticeRequested(Ids.newId(), Ids.newId(), "MEETING_LINK",
-                NoticeText.inEveryLanguage(language -> new NoticeText("Заголовок " + language, null, "Комната")),
+                NoticeText.inEveryLanguage(language -> new NoticeText("Заголовок " + language, "Комната")),
                 "/cabinet/schedule", new ChatSubject("sample", Ids.newId()), "https://zoom.us/j/1");
         NoticeRequested plain = notice(Ids.newId(), Kind.HOMEWORK_ASSIGNED, null);
 
@@ -197,6 +199,19 @@ class NoticesIntegrationTests {
             Object stored = serializer.serialize(each);
             assertThat(serializer.deserialize(stored, NoticeRequested.class)).isEqualTo(each);
         }
+    }
+
+    /** A notice the registry stored before 0.56.0 still had the messengers' text of a room: it is ignored. */
+    @Test
+    void aNoticeStoredWithTheOldRoomTextIsReadBack() {
+        NoticeRequested notice = new NoticeRequested(Ids.newId(), Ids.newId(), "MEETING_LINK",
+                NoticeText.inEveryLanguage(language -> new NoticeText("Ссылка на урок", "Комната")),
+                "/cabinet/schedule", null, "https://zoom.us/j/1");
+        String old = serializer.serialize(notice).toString()
+                .replace("\"body\":\"Комната\"", "\"body\":\"Комната\",\"roomBody\":\"Комната\"");
+        assertThat(old).contains("roomBody");
+
+        assertThat(serializer.deserialize(old, NoticeRequested.class)).isEqualTo(notice);
     }
 
     private static NoticeRequested notice(UUID recipient, NoticeKind kind, String link) {

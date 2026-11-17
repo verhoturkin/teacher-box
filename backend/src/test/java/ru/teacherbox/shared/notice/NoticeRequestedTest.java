@@ -28,14 +28,14 @@ class NoticeRequestedTest {
         assertThat(notice.joinUrl()).isNull();
         assertThat(notice.texts()).containsOnlyKeys(Language.values());
         for (Language language : Language.values()) {
-            assertThat(notice.text(language)).isEqualTo(new NoticeText("title " + language, "body " + language, null));
+            assertThat(notice.text(language)).isEqualTo(new NoticeText("title " + language, "body " + language));
         }
     }
 
     @Test
     void theSubjectAndTheRoomKeepTheNotice() {
         NoticeRequested notice = NoticeRequested.of(UUID.randomUUID(), Kind.SAMPLE,
-                language -> new NoticeText("title", "body https://room.example", "body"), null);
+                language -> new NoticeText("title", "body"), null);
         ChatSubject subject = new ChatSubject("sample", UUID.randomUUID());
 
         NoticeRequested full = notice.about(subject).withRoom("https://room.example");

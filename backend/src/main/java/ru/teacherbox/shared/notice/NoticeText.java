@@ -11,20 +11,14 @@ import ru.teacherbox.shared.i18n.Language;
  * A notice in one language.
  *
  * @param title the title, shown everywhere
- * @param body the text under the title in the inbox; {@code null} — no text
- * @param roomBody the text under the title in messengers when the notice has a room
- *                 ({@link NoticeRequested#joinUrl()}): the address goes as a button there, so this
- *                 text has none; {@code null} — only the title. Not used without a room.
+ * @param body the text under the title, the same in the inbox and in messengers; {@code null} — no
+ *             text. It holds no address: the portal page goes as the notice's link and the video
+ *             room as {@link NoticeRequested#joinUrl()}
  */
-public record NoticeText(String title, @Nullable String body, @Nullable String roomBody) {
+public record NoticeText(String title, @Nullable String body) {
 
     public NoticeText {
         Objects.requireNonNull(title, "title");
-    }
-
-    /** A notice without a room: messengers get the same text as the inbox. */
-    public NoticeText(String title, @Nullable String body) {
-        this(title, body, null);
     }
 
     /** The same notice written in every language. */

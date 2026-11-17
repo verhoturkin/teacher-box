@@ -74,7 +74,7 @@ Order: one substep per session, a commit each; the PR is opened once, after 431.
 
 ### 429. Notifications: no addresses in the portal, a tap opens the page
 
-- [ ] 429.1 *complex* B — the inbox keeps the text without the address; messengers stay as they
+- [x] 429.1 *complex* B — the inbox keeps the text without the address; messengers stay as they
   are. Today a notice with a room (`meetings/notices/MeetingNotices.java` MEETING_LINK,
   `schedule/notices/ScheduleNotices.java` SCHEDULE_REMINDER and the other `join(body)` with
   `t.meetingLink(room)`) puts the address into `NoticeText.body` (inbox) and the text without it

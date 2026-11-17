@@ -18,8 +18,9 @@ ADRs: [0005](../adr/0005-notifications.md), [0009](../adr/0009-external-integrat
 
 - **Modules write their notices (ADR-0061, stage 380).** A module publishes
   `shared.notice.NoticeRequested` in the transaction of the change: the recipient, the kind, the
-  texts in every language (`NoticeText`: title, body and, with a room, the body for messengers),
-  the portal link, the bot subject (`ChatSubject`) and the room address. `NoticeListener`
+  texts in every language (`NoticeText`: title and body, the same in the inbox and in messengers,
+  never an address — 429.1), the portal link, the bot subject (`ChatSubject`) and the room address.
+  `NoticeListener`
   (`@ApplicationModuleListener`: after the commit, in its own transaction, kept in the event
   registry until done) hands it to `NotificationService.notify(NoticeRequested)`, which picks the
   text in the recipient's language (`UserDirectory.language`), writes the **inbox** record and an
@@ -38,11 +39,13 @@ ADRs: [0005](../adr/0005-notifications.md), [0009](../adr/0009-external-integrat
   its doc (`schedule`, `homework`, `billing`, `meetings`, `identity`: section «Notices»).
 - **Lesson repetition (0.29.0):** `LessonRepeatScheduled` and `LessonRepeatStopped` aggregate notices;
   nightly occurrence generation sends none. Billing still consumes individual lesson outcomes.
-- **Links in messengers are buttons** (0.14.2): the text is the title and the body; the portal page of a notification
-  goes as «Открыть» (`Portal.link`), a video room as «Подключиться» (`JoinLink`: the room link, lesson reminders —
-  their messenger text has no address, the inbox keeps it), then the buttons of the bot's actions; `/help` has a
-  «Справка» button. A messenger that refuses link buttons (Telegram and a portal on a local address) gets the message
-  again with «Открыть: https://…» in the text (`OutgoingMessage.linksInText`, in `DeliveryDispatcher` and
+- **Links in messengers are buttons** (0.14.2): the text is the title and the body; the portal page
+  of a notification goes as «Открыть» (`Portal.link`), a video room as «Подключиться»
+  (`NoticeRequested.joinUrl`: the room link, lesson reminders), then the buttons of the bot's
+  actions. The inbox shows the same text without the address and opens the link (since 0.56.0,
+  429.1; older inbox records keep theirs); `/help` has a «Справка» button. A messenger that refuses
+  link buttons (Telegram and a portal on a local address) gets the message again with «Открыть:
+  https://…» in the text (`OutgoingMessage.linksInText`, in `DeliveryDispatcher` and
   `MessengerPolling`).
 - `DeliveryDispatcher` sends deliveries with backoff (30 s … 1 h,
   `TEACHERBOX_NOTIFICATIONS_MAX_ATTEMPTS`, a live administrator setting);

@@ -41,10 +41,10 @@ public record InboxNotification(
     }
 
     /**
-     * Plain text for messengers: the title and the body ({@code body} replaces the stored one, e.g. without a link
-     * that goes as a button). The portal link goes as an «Открыть» button, not in the text.
+     * Plain text for messengers: the title and the body, as in the inbox. The portal link and the video room go as
+     * buttons, not in the text.
      */
-    public String messengerText(@Nullable String body) {
-        return body == null || body.isBlank() ? title : title + "\n" + body.strip();
+    public String messengerText() {
+        return body == null ? title : title + "\n" + body;
     }
 }

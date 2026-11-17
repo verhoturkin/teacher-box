@@ -12,7 +12,8 @@ import ru.teacherbox.shared.notice.NoticeText;
 
 /**
  * The teacher sent the link of a video room: every recipient gets a notice with it (ADR-0061),
- * written in each language. Messengers show the address as a button, so their text has none.
+ * written in each language. The text holds no address: messengers show the room as a button, the
+ * inbox opens the schedule.
  *
  * <p>The listener runs in the transaction that published the event.
  */
@@ -36,9 +37,7 @@ class MeetingNotices {
         for (UUID studentId : event.studentIds()) {
             events.publishEvent(NoticeRequested.of(studentId, MeetingNoticeKind.MEETING_LINK, language -> {
                 MeetingNoticeTexts t = MeetingNoticeTexts.of(language);
-                return new NoticeText(t.meetingLink(),
-                        group == null ? t.ourLessons(event.joinUrl()) : t.groupLessons(group, event.joinUrl()),
-                        group == null ? t.ourRoom() : t.groupRoom(group));
+                return new NoticeText(t.meetingLink(), group == null ? t.ourRoom() : t.groupRoom(group));
             }, STUDENT_LINK).withRoom(event.joinUrl()));
         }
     }
