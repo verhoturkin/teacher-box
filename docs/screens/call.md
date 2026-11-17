@@ -24,9 +24,14 @@
   window.
 - **Picture-in-Picture** (`call-pip.ts`, 410.1): «Поверх других окон» in the toolbar, only where
   `documentPictureInPicture` exists and not on a phone, moves the whole window node with the
-  portal styles to a 480 × 360 floating window (*ours*): the same title bar (**M3** small top app
-  bar title — title large), the compact controls with «Вернуть во вкладку», no chat and no tile
-  menu (menus open in the tab); the window title is «<call> — <portal name>» (Chromium paints the
+  portal styles to a 480 × 360 floating window (*ours*; 421.5, variant A): the video fills the
+  window edge to edge (no rounding or padding; the own inset keeps its corners); the title (title
+  small emphasized) and time on a 60 % black scrim strip over the top, the compact controls
+  (microphone, camera, «Вернуть во вкладку», «Выйти» — the only red one) as separate round buttons
+  on a scrim strip over the bottom, no toolbar pill. Both strips fade (effects spring, instant
+  with reduced motion) when the pointer leaves the window or rests 3 s, and come back on pointer
+  move, hover or keyboard focus; the crossed microphone on the tile stays. No «waiting» note, no
+  chat and no tile menu (menus open in the tab); the window title is «<call> — <portal name>» (Chromium paints the
   portal origin above it — not changeable). Closing it brings the node back; the tab shows the
   portal meanwhile. Elsewhere (Firefox, Safari, phones) the call stays in the full window — the
   only fallback (421.2); the portal can be opened in another tab.

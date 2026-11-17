@@ -7,6 +7,7 @@ import {
   computed,
   effect,
   inject,
+  signal,
   input,
   viewChild,
   ViewEncapsulation,
@@ -29,6 +30,8 @@ import { CallTile } from './call-tile';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
+const IDLE_MS = 3000;
+
 /**
  * The full call window over the portal: the stage (see `stageLayout`), the floating toolbar, the
  * states «Подключение…», «Переподключение…» and the end of the call. Esc closes an ended call. In a
@@ -46,6 +49,8 @@ import { SHARED_T } from '@shared/i18n/texts';
     class: 'tb-call-window',
     '[class.tb-call-window--chat]': 'chat()',
     '[class.tb-call-window--pip]': 'session.pip()',
+    '[class.tb-call-window--idle]': 'idle()',
+    '(pointermove)': 'wake()',
     role: 'dialog',
     'aria-modal': 'true',
     'aria-labelledby': 'tb-call-title',
@@ -176,6 +181,9 @@ export class CallWindow implements AfterViewInit {
   private readonly title = viewChild.required<ElementRef<HTMLElement>>('title');
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private floating: Window | null = null;
+  /** The pointer rests in the floating window: its title bar and controls fade out. */
+  protected readonly idle = signal(false);
+  private idleTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
     // «Вернуть во вкладку» or leaving the call closes the floating window
@@ -184,7 +192,22 @@ export class CallWindow implements AfterViewInit {
         this.floating?.close();
       }
     });
-    inject(DestroyRef).onDestroy(() => this.floating?.close());
+    inject(DestroyRef).onDestroy(() => {
+      clearTimeout(this.idleTimer);
+      this.floating?.close();
+    });
+  }
+
+  /** A pointer move in the floating window shows its title bar and controls for 3 s (our decision). */
+  protected wake(): void {
+    if (!this.session.pip()) {
+      return;
+    }
+    this.idle.set(false);
+    clearTimeout(this.idleTimer);
+    this.idleTimer = setTimeout(() => {
+      this.idle.set(true);
+    }, IDLE_MS);
   }
 
   ngAfterViewInit(): void {

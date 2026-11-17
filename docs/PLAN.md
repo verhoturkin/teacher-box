@@ -55,7 +55,7 @@ sheet. KISS: remove before adding. No new ADR unless the call change needs one.
   under the comment; grades 1–5 plus «Без оценки» (now 3–5); the student-context tags wrap badly
   on two lines — one line with an ellipsis and the full text in a tooltip (fix in the shared tag
   component, so the AI helper's tags get it too). Check the backend accepts grades 1 and 2.
-- [ ] 421.5 *complex* F — the floating call window (PiP), variant A picked by the teacher: the
+- [x] 421.5 *complex* F — the floating call window (PiP), variant A picked by the teacher: the
   video fills the whole window edge to edge — no rounding, no padding around the main tile; the
   call name and time on a scrim strip over the top of the video, the controls as separate round
   icon buttons on a scrim strip over the bottom — no shared pill surface (`call-controls.scss`

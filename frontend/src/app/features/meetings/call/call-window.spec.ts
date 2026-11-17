@@ -214,6 +214,16 @@ describe('CallWindow in Picture-in-Picture', () => {
     expect(floating.document.title).toBe('ОГЭ — Teacher Box');
     expect(host.querySelector('.tb-call-window__title')?.textContent).toContain('ОГЭ');
 
+    vi.useFakeTimers();
+    host.dispatchEvent(new Event('pointermove'));
+    vi.advanceTimersByTime(3000);
+    fixture.detectChanges();
+    expect(host.classList).toContain('tb-call-window--idle');
+    host.dispatchEvent(new Event('pointermove'));
+    fixture.detectChanges();
+    expect(host.classList).not.toContain('tb-call-window--idle');
+    vi.useRealTimers();
+
     button('Вернуть во вкладку')?.click();
     await fixture.whenStable();
     expect(floating.close).toHaveBeenCalled();
