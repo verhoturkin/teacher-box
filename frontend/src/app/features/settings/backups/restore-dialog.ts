@@ -24,6 +24,7 @@ import { describeError } from '@core/http/error-messages';
 import { RESTART_POLL_MS, RESTART_WAIT_MS } from '@shared/restart/restart-wait';
 import { BackupInfo, RestoreStatus } from '../data-access/settings.models';
 import { BackupsApi, BackupsArea } from './backups-api';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
@@ -50,97 +51,99 @@ type Stage = 'confirm' | 'restarting' | 'manual' | 'done' | 'failed' | 'silent';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="alert"
-      [(visible)]="visible"
-      [headline]="t.title"
-      [closable]="stage() !== 'restarting'"
-      [confirmLabel]="confirmLabel()"
-      [confirmSeverity]="stage() === 'confirm' ? 'danger' : 'primary'"
-      [cancelLabel]="cancelLabel()"
-      [formId]="stage() === 'confirm' ? 'restore-form' : undefined"
-      [pending]="pending()"
-      [error]="error()"
-      (confirm)="signInAgain()"
-      (closed)="reset()"
-    >
-      @if (backup(); as backup) {
-        @switch (stage()) {
-          @case ('confirm') {
-            @if (choices().length > 1) {
-              <p-select
-                [options]="choices()"
-                [ngModel]="backup"
-                (ngModelChange)="choose($event)"
-                [fluid]="true"
-                optionLabel="name"
-                [ariaLabel]="t.chooseCopy"
-              >
-                <ng-template #selectedItem let-choice>{{ choiceLabel(choice) }}</ng-template>
-                <ng-template #item let-choice>{{ choiceLabel(choice) }}</ng-template>
-              </p-select>
-            }
-            <p-message severity="error" icon="tb-i tb-i-warning" styleClass="tb-form-message">
-              {{ t.replaceBefore }} <strong>{{ when(backup.createdAt) }}</strong
-              >{{ t.replaceAfter }} {{ t.beforeRestore }}
-            </p-message>
-            <form
-              tbFieldErrors
-              id="restore-form"
-              class="tb-form"
-              [formGroup]="form"
-              (ngSubmit)="restore()"
-            >
-              <div class="tb-field">
-                <label for="restore-password">{{ t.password }}</label>
-                <p-password
-                  inputId="restore-password"
-                  formControlName="password"
-                  autocomplete="current-password"
-                  [feedback]="false"
-                  [toggleMask]="true"
+    @if (built()) {
+      <tb-dialog
+        kind="alert"
+        [(visible)]="visible"
+        [headline]="t.title"
+        [closable]="stage() !== 'restarting'"
+        [confirmLabel]="confirmLabel()"
+        [confirmSeverity]="stage() === 'confirm' ? 'danger' : 'primary'"
+        [cancelLabel]="cancelLabel()"
+        [formId]="stage() === 'confirm' ? 'restore-form' : undefined"
+        [pending]="pending()"
+        [error]="error()"
+        (confirm)="signInAgain()"
+        (closed)="reset()"
+      >
+        @if (backup(); as backup) {
+          @switch (stage()) {
+            @case ('confirm') {
+              @if (choices().length > 1) {
+                <p-select
+                  [options]="choices()"
+                  [ngModel]="backup"
+                  (ngModelChange)="choose($event)"
                   [fluid]="true"
+                  optionLabel="name"
+                  [ariaLabel]="t.chooseCopy"
                 >
-                  <ng-template #showicon><tb-password-toggle /></ng-template>
-                  <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
-                </p-password>
-                <small class="tb-hint">{{ t.passwordHint }}</small>
-              </div>
-            </form>
-          }
-          @case ('restarting') {
-            <p>
-              <i class="tb-i tb-i-progress_activity tb-i--spin" aria-hidden="true"></i>
-              {{ t.restarting }}
-            </p>
-            <p class="tb-muted">{{ t.keepOpen }}</p>
-          }
-          @case ('manual') {
-            <p-message severity="info" styleClass="tb-form-message">
-              {{ t.manualBefore }} <code>docker compose restart</code> {{ t.manualAfter }}
-            </p-message>
-          }
-          @case ('done') {
-            <p-message severity="success" styleClass="tb-form-message">
-              {{ t.done }}
-            </p-message>
-          }
-          @case ('failed') {
-            <p-message severity="error" styleClass="tb-form-message">
-              {{ t.failed }}
-              @if (failure(); as reason) {
-                {{ t.reason(reason) }}
+                  <ng-template #selectedItem let-choice>{{ choiceLabel(choice) }}</ng-template>
+                  <ng-template #item let-choice>{{ choiceLabel(choice) }}</ng-template>
+                </p-select>
               }
-            </p-message>
-          }
-          @case ('silent') {
-            <p-message severity="warn" styleClass="tb-form-message">
-              {{ t.silent }}
-            </p-message>
+              <p-message severity="error" icon="tb-i tb-i-warning" styleClass="tb-form-message">
+                {{ t.replaceBefore }} <strong>{{ when(backup.createdAt) }}</strong
+                >{{ t.replaceAfter }} {{ t.beforeRestore }}
+              </p-message>
+              <form
+                tbFieldErrors
+                id="restore-form"
+                class="tb-form"
+                [formGroup]="form"
+                (ngSubmit)="restore()"
+              >
+                <div class="tb-field">
+                  <label for="restore-password">{{ t.password }}</label>
+                  <p-password
+                    inputId="restore-password"
+                    formControlName="password"
+                    autocomplete="current-password"
+                    [feedback]="false"
+                    [toggleMask]="true"
+                    [fluid]="true"
+                  >
+                    <ng-template #showicon><tb-password-toggle /></ng-template>
+                    <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
+                  </p-password>
+                  <small class="tb-hint">{{ t.passwordHint }}</small>
+                </div>
+              </form>
+            }
+            @case ('restarting') {
+              <p>
+                <i class="tb-i tb-i-progress_activity tb-i--spin" aria-hidden="true"></i>
+                {{ t.restarting }}
+              </p>
+              <p class="tb-muted">{{ t.keepOpen }}</p>
+            }
+            @case ('manual') {
+              <p-message severity="info" styleClass="tb-form-message">
+                {{ t.manualBefore }} <code>docker compose restart</code> {{ t.manualAfter }}
+              </p-message>
+            }
+            @case ('done') {
+              <p-message severity="success" styleClass="tb-form-message">
+                {{ t.done }}
+              </p-message>
+            }
+            @case ('failed') {
+              <p-message severity="error" styleClass="tb-form-message">
+                {{ t.failed }}
+                @if (failure(); as reason) {
+                  {{ t.reason(reason) }}
+                }
+              </p-message>
+            }
+            @case ('silent') {
+              <p-message severity="warn" styleClass="tb-form-message">
+                {{ t.silent }}
+              </p-message>
+            }
           }
         }
-      }
-    </tb-dialog>
+      </tb-dialog>
+    }
   `,
 })
 export class RestoreDialog {
@@ -150,6 +153,8 @@ export class RestoreDialog {
   private readonly pollMs = inject(RESTART_POLL_MS);
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   readonly backup = model<BackupInfo | null>(null);
   /** The copies to choose from; the select is shown when there are several. */
   readonly choices = input<BackupInfo[]>([]);

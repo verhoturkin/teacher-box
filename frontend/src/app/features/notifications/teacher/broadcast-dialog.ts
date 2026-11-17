@@ -21,6 +21,7 @@ import {
 } from '@features/identity/parts';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { FieldErrors } from '@shared/ui/field-errors';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { T } from '../i18n/texts';
@@ -43,66 +44,68 @@ export interface RecipientGroup {
   imports: [ReactiveFormsModule, MemberPicker, InputText, Textarea, FieldErrors, TbDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      width="wide"
-      [(visible)]="visible"
-      [headline]="t.title"
-      [confirmLabel]="t.send"
-      formId="broadcast-form"
-      [pending]="submit.pending()"
-      [error]="localError() ?? submit.error()"
-      [dirty]="submit.dirty()"
-    >
-      <form
-        tbFieldErrors
-        id="broadcast-form"
-        class="tb-form"
-        [formGroup]="form"
-        (ngSubmit)="send()"
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        width="wide"
+        [(visible)]="visible"
+        [headline]="t.title"
+        [confirmLabel]="t.send"
+        formId="broadcast-form"
+        [pending]="submit.pending()"
+        [error]="localError() ?? submit.error()"
+        [dirty]="submit.dirty()"
       >
-        @if (to(); as recipient) {
-          <!-- the student's card writes to that student only -->
+        <form
+          tbFieldErrors
+          id="broadcast-form"
+          class="tb-form"
+          [formGroup]="form"
+          (ngSubmit)="send()"
+        >
+          @if (to(); as recipient) {
+            <!-- the student's card writes to that student only -->
+            <div class="tb-field">
+              <label for="broadcast-to">{{ t.to }}</label>
+              <input pInputText id="broadcast-to" [value]="recipient.displayName" readonly />
+            </div>
+          } @else if (toGroup(); as group) {
+            <!-- the group's card writes to its members -->
+            <div class="tb-field">
+              <label for="broadcast-to">{{ t.to }}</label>
+              <input
+                pInputText
+                id="broadcast-to"
+                [value]="t.group(group.name)"
+                readonly
+                aria-describedby="broadcast-to-hint"
+              />
+              <small id="broadcast-to-hint" class="tb-hint">{{ memberNames() }}</small>
+            </div>
+          } @else {
+            <div class="tb-field">
+              <label for="broadcast-students">{{ t.to }}</label>
+              <tb-member-picker
+                inputId="broadcast-students"
+                formControlName="members"
+                [students]="studentOptions()"
+                [groups]="groups()"
+                [placeholder]="t.everyone"
+              />
+              <small class="tb-hint">{{ t.hint }}</small>
+            </div>
+          }
           <div class="tb-field">
-            <label for="broadcast-to">{{ t.to }}</label>
-            <input pInputText id="broadcast-to" [value]="recipient.displayName" readonly />
+            <label for="broadcast-title">{{ t.subject }}</label>
+            <input pInputText id="broadcast-title" formControlName="title" autocomplete="off" />
           </div>
-        } @else if (toGroup(); as group) {
-          <!-- the group's card writes to its members -->
           <div class="tb-field">
-            <label for="broadcast-to">{{ t.to }}</label>
-            <input
-              pInputText
-              id="broadcast-to"
-              [value]="t.group(group.name)"
-              readonly
-              aria-describedby="broadcast-to-hint"
-            />
-            <small id="broadcast-to-hint" class="tb-hint">{{ memberNames() }}</small>
+            <label for="broadcast-body">{{ t.text }}</label>
+            <textarea pTextarea id="broadcast-body" formControlName="body" rows="6"></textarea>
           </div>
-        } @else {
-          <div class="tb-field">
-            <label for="broadcast-students">{{ t.to }}</label>
-            <tb-member-picker
-              inputId="broadcast-students"
-              formControlName="members"
-              [students]="studentOptions()"
-              [groups]="groups()"
-              [placeholder]="t.everyone"
-            />
-            <small class="tb-hint">{{ t.hint }}</small>
-          </div>
-        }
-        <div class="tb-field">
-          <label for="broadcast-title">{{ t.subject }}</label>
-          <input pInputText id="broadcast-title" formControlName="title" autocomplete="off" />
-        </div>
-        <div class="tb-field">
-          <label for="broadcast-body">{{ t.text }}</label>
-          <textarea pTextarea id="broadcast-body" formControlName="body" rows="6"></textarea>
-        </div>
-      </form>
-    </tb-dialog>
+        </form>
+      </tb-dialog>
+    }
   `,
 })
 export class BroadcastDialog {
@@ -115,6 +118,8 @@ export class BroadcastDialog {
     this.students().map((student) => ({ id: student.id, name: student.displayName })),
   );
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   readonly students = input<Recipient[]>([]);
   /** The one student to write to (their card): no choice of recipients. */
   readonly to = input<Recipient | null>(null);

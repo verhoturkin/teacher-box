@@ -13,6 +13,7 @@ import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Checkbox } from 'primeng/checkbox';
 import { Textarea } from 'primeng/textarea';
 import { SHARED_T } from '@shared/i18n/texts';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { ScheduleApi } from '../data-access/schedule-api';
@@ -30,52 +31,58 @@ import { LessonScope } from './lesson-scope';
   imports: [ReactiveFormsModule, Checkbox, Textarea, TbDialog, LessonScope],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      [(visible)]="visible"
-      [headline]="t.cancelLesson"
-      [confirmLabel]="t.cancelLesson"
-      confirmSeverity="danger"
-      [cancelLabel]="c.close"
-      formId="lesson-cancel-form"
-      [pending]="submit.pending()"
-      [error]="submit.error()"
-      [dirty]="submit.dirty()"
-    >
-      @if (lesson(); as item) {
-        <form id="lesson-cancel-form" class="tb-form" [formGroup]="form" (ngSubmit)="send()">
-          <div class="tb-field">
-            <label for="lesson-cancel-reason">{{ t.reason }}</label>
-            <textarea
-              pTextarea
-              id="lesson-cancel-reason"
-              rows="2"
-              maxlength="500"
-              formControlName="reason"
-            ></textarea>
-          </div>
-          @if (item.groupId === null) {
-            <label class="tb-switch" for="lesson-cancel-by-student">
-              <p-checkbox
-                formControlName="byStudent"
-                [binary]="true"
-                inputId="lesson-cancel-by-student"
-              />
-              <span>{{ t.byStudent }}</span>
-            </label>
-          }
-          @if (byStudent()) {
-            <label class="tb-switch" for="lesson-cancel-charge">
-              <p-checkbox formControlName="charge" [binary]="true" inputId="lesson-cancel-charge" />
-              <span>{{ t.charge }}</span>
-            </label>
-          }
-          @if (item.seriesId) {
-            <tb-lesson-scope [lessonId]="item.id" [(scope)]="scope" [(preview)]="preview" />
-          }
-        </form>
-      }
-    </tb-dialog>
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        [(visible)]="visible"
+        [headline]="t.cancelLesson"
+        [confirmLabel]="t.cancelLesson"
+        confirmSeverity="danger"
+        [cancelLabel]="c.close"
+        formId="lesson-cancel-form"
+        [pending]="submit.pending()"
+        [error]="submit.error()"
+        [dirty]="submit.dirty()"
+      >
+        @if (lesson(); as item) {
+          <form id="lesson-cancel-form" class="tb-form" [formGroup]="form" (ngSubmit)="send()">
+            <div class="tb-field">
+              <label for="lesson-cancel-reason">{{ t.reason }}</label>
+              <textarea
+                pTextarea
+                id="lesson-cancel-reason"
+                rows="2"
+                maxlength="500"
+                formControlName="reason"
+              ></textarea>
+            </div>
+            @if (item.groupId === null) {
+              <label class="tb-switch" for="lesson-cancel-by-student">
+                <p-checkbox
+                  formControlName="byStudent"
+                  [binary]="true"
+                  inputId="lesson-cancel-by-student"
+                />
+                <span>{{ t.byStudent }}</span>
+              </label>
+            }
+            @if (byStudent()) {
+              <label class="tb-switch" for="lesson-cancel-charge">
+                <p-checkbox
+                  formControlName="charge"
+                  [binary]="true"
+                  inputId="lesson-cancel-charge"
+                />
+                <span>{{ t.charge }}</span>
+              </label>
+            }
+            @if (item.seriesId) {
+              <tb-lesson-scope [lessonId]="item.id" [(scope)]="scope" [(preview)]="preview" />
+            }
+          </form>
+        }
+      </tb-dialog>
+    }
   `,
 })
 export class LessonCancelDialog {
@@ -84,6 +91,8 @@ export class LessonCancelDialog {
   private readonly api = inject(ScheduleApi);
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   readonly lesson = input<ScheduledLesson | null>(null);
   /** The lesson (or the following ones) was cancelled; the result of the lesson itself. */
   readonly cancelled = output<ScheduledLesson>();

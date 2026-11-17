@@ -19,6 +19,7 @@ import { formatLessonTime, optionalText } from '../schedule-labels';
 import { T } from '../i18n/texts';
 import { FreeTimes } from '../ui/free-times';
 import { SHARED_T } from '@shared/i18n/texts';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 
@@ -31,75 +32,77 @@ import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
   imports: [FormsModule, DatePicker, FreeTimes, Message, TbDialog, Textarea],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      [(visible)]="visible"
-      [headline]="title()"
-      [confirmLabel]="sendLabel()"
-      [confirmSeverity]="cancelsOwnLesson() ? 'danger' : 'primary'"
-      formId="change-request-form"
-      [pending]="submit.pending()"
-      [error]="submit.error()"
-    >
-      @if (lesson(); as lesson) {
-        <form id="change-request-form" class="tb-form" (ngSubmit)="send()">
-          <p>{{ t.lesson(time()) }}</p>
-          @if (lesson.groupId !== null) {
-            <p class="tb-muted">
-              {{
-                kind() === 'RESCHEDULE'
-                  ? t.groupReschedule(lesson.groupName ?? '')
-                  : t.groupAbsence(lesson.groupName ?? '')
-              }}
-            </p>
-          }
-          @if (kind() === 'RESCHEDULE') {
-            <div class="tb-field">
-              <label for="request-start">{{ t.time }}</label>
-              <p-datepicker
-                inputId="request-start"
-                [ngModel]="proposed()"
-                (ngModelChange)="choose($event)"
-                [ngModelOptions]="{ standalone: true }"
-                dateFormat="dd.mm.yy"
-                [showTime]="true"
-                hourFormat="24"
-                [stepMinute]="5"
-                [minDate]="now()"
-                [showIcon]="true"
-                [showOnFocus]="false"
-                appendTo="body"
-                [fluid]="true"
-              />
-              <tb-free-times
-                [lessonId]="lesson.id"
-                [date]="day()"
-                [minutes]="lesson.durationMinutes"
-                (picked)="choose($event)"
-              />
-            </div>
-            @if (busyAt()) {
-              <p-message severity="warn" styleClass="tb-form-message">{{ t.busy }}</p-message>
-            } @else if (missing()) {
-              <small class="tb-field__error" role="alert">{{ t.pickTime }}</small>
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        [(visible)]="visible"
+        [headline]="title()"
+        [confirmLabel]="sendLabel()"
+        [confirmSeverity]="cancelsOwnLesson() ? 'danger' : 'primary'"
+        formId="change-request-form"
+        [pending]="submit.pending()"
+        [error]="submit.error()"
+      >
+        @if (lesson(); as lesson) {
+          <form id="change-request-form" class="tb-form" (ngSubmit)="send()">
+            <p>{{ t.lesson(time()) }}</p>
+            @if (lesson.groupId !== null) {
+              <p class="tb-muted">
+                {{
+                  kind() === 'RESCHEDULE'
+                    ? t.groupReschedule(lesson.groupName ?? '')
+                    : t.groupAbsence(lesson.groupName ?? '')
+                }}
+              </p>
             }
-          } @else if (late()) {
-            <p-message severity="warn" styleClass="tb-form-message">{{ t.late }}</p-message>
-          }
-          <div class="tb-field">
-            <label for="request-comment">{{ t.comment }}</label>
-            <textarea
-              pTextarea
-              id="request-comment"
-              rows="2"
-              [(ngModel)]="comment"
-              [ngModelOptions]="{ standalone: true }"
-              maxlength="500"
-            ></textarea>
-          </div>
-        </form>
-      }
-    </tb-dialog>
+            @if (kind() === 'RESCHEDULE') {
+              <div class="tb-field">
+                <label for="request-start">{{ t.time }}</label>
+                <p-datepicker
+                  inputId="request-start"
+                  [ngModel]="proposed()"
+                  (ngModelChange)="choose($event)"
+                  [ngModelOptions]="{ standalone: true }"
+                  dateFormat="dd.mm.yy"
+                  [showTime]="true"
+                  hourFormat="24"
+                  [stepMinute]="5"
+                  [minDate]="now()"
+                  [showIcon]="true"
+                  [showOnFocus]="false"
+                  appendTo="body"
+                  [fluid]="true"
+                />
+                <tb-free-times
+                  [lessonId]="lesson.id"
+                  [date]="day()"
+                  [minutes]="lesson.durationMinutes"
+                  (picked)="choose($event)"
+                />
+              </div>
+              @if (busyAt()) {
+                <p-message severity="warn" styleClass="tb-form-message">{{ t.busy }}</p-message>
+              } @else if (missing()) {
+                <small class="tb-field__error" role="alert">{{ t.pickTime }}</small>
+              }
+            } @else if (late()) {
+              <p-message severity="warn" styleClass="tb-form-message">{{ t.late }}</p-message>
+            }
+            <div class="tb-field">
+              <label for="request-comment">{{ t.comment }}</label>
+              <textarea
+                pTextarea
+                id="request-comment"
+                rows="2"
+                [(ngModel)]="comment"
+                [ngModelOptions]="{ standalone: true }"
+                maxlength="500"
+              ></textarea>
+            </div>
+          </form>
+        }
+      </tb-dialog>
+    }
   `,
 })
 export class ChangeRequestDialog {
@@ -108,6 +111,8 @@ export class ChangeRequestDialog {
   private readonly api = inject(ScheduleApi);
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   readonly lesson = input<ScheduledLesson | null>(null);
   readonly kind = input<ChangeKind>('RESCHEDULE');
   /** A cancellation later than this before the lesson is late. */

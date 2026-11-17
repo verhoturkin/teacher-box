@@ -22,6 +22,7 @@ import { BillingApi } from '../data-access/billing-api';
 import { checkFiles } from '@shared/files/check-files';
 import { RECEIPT_ACCEPT, RECEIPT_POLICY } from '../receipts';
 import { BillingStudent, Payment } from '../data-access/billing.models';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { OwnerOption } from '@features/identity/parts';
@@ -46,113 +47,115 @@ import { locale } from '@core/i18n/language';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      [(visible)]="visible"
-      [headline]="t.title"
-      [confirmLabel]="c.save"
-      formId="payment-form"
-      [pending]="submit.pending()"
-      [error]="submit.error()"
-      [dirty]="submit.dirty()"
-    >
-      <form
-        tbFieldErrors
-        id="payment-form"
-        class="tb-form"
-        [formGroup]="form"
-        (ngSubmit)="submit.run()"
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        [(visible)]="visible"
+        [headline]="t.title"
+        [confirmLabel]="c.save"
+        formId="payment-form"
+        [pending]="submit.pending()"
+        [error]="submit.error()"
+        [dirty]="submit.dirty()"
       >
-        <div class="tb-field">
-          <label for="payment-student">{{ t.student }}</label>
-          <p-select
-            inputId="payment-student"
-            formControlName="studentId"
-            [options]="studentOptions()"
-            optionLabel="label"
-            optionValue="value"
-            [placeholder]="t.chooseStudent"
-            [emptyMessage]="t.noStudents"
-            [emptyFilterMessage]="t.noStudents"
-            [filter]="true"
-            [filterPlaceholder]="t.search"
-            [ariaFilterLabel]="t.search"
-            appendTo="body"
-            [fluid]="true"
-          >
-            <ng-template #selectedItem let-option>
-              <tb-owner-option [name]="option.label" [value]="option.value" />
-            </ng-template>
-            <ng-template #item let-option>
-              <tb-owner-option [name]="option.label" [value]="option.value" />
-            </ng-template>
-          </p-select>
-        </div>
-        <div class="tb-row">
+        <form
+          tbFieldErrors
+          id="payment-form"
+          class="tb-form"
+          [formGroup]="form"
+          (ngSubmit)="submit.run()"
+        >
           <div class="tb-field">
-            <label for="payment-amount">{{ t.amount }}</label>
-            <p-inputnumber
-              inputId="payment-amount"
-              formControlName="amount"
-              mode="currency"
-              currencyDisplay="narrowSymbol"
-              [currency]="currency()"
-              [locale]="locale"
-              [min]="0"
-              [fluid]="true"
-            />
-          </div>
-          <div class="tb-field">
-            <label for="payment-date">{{ t.date }}</label>
-            <p-datepicker
-              inputId="payment-date"
-              formControlName="paidOn"
-              dateFormat="dd.mm.yy"
-              [showIcon]="true"
-              [showOnFocus]="false"
+            <label for="payment-student">{{ t.student }}</label>
+            <p-select
+              inputId="payment-student"
+              formControlName="studentId"
+              [options]="studentOptions()"
+              optionLabel="label"
+              optionValue="value"
+              [placeholder]="t.chooseStudent"
+              [emptyMessage]="t.noStudents"
+              [emptyFilterMessage]="t.noStudents"
+              [filter]="true"
+              [filterPlaceholder]="t.search"
+              [ariaFilterLabel]="t.search"
               appendTo="body"
               [fluid]="true"
-            />
+            >
+              <ng-template #selectedItem let-option>
+                <tb-owner-option [name]="option.label" [value]="option.value" />
+              </ng-template>
+              <ng-template #item let-option>
+                <tb-owner-option [name]="option.label" [value]="option.value" />
+              </ng-template>
+            </p-select>
           </div>
-        </div>
-        <div class="tb-field">
-          <label for="payment-comment">{{ t.comment }}</label>
-          <input pInputText id="payment-comment" formControlName="comment" autocomplete="off" />
-        </div>
-        <div class="tb-field">
-          <span id="payment-receipt-label">{{ t.receipt }}</span>
-          <input
-            #picker
-            type="file"
-            class="tb-sr-only"
-            [accept]="receiptAccept"
-            aria-labelledby="payment-receipt-label"
-            (change)="onPicked(picker)"
-          />
-          <div class="tb-receipt-file">
-            <p-button
-              [label]="receipt() === null ? t.chooseReceipt : t.otherReceipt"
-              icon="tb-i tb-i-attach_file"
-              severity="secondary"
-              (onClick)="picker.click()"
-            />
-            @if (receipt(); as chosen) {
-              <span class="tb-receipt-file__name">{{ chosen.name }}</span>
-              <p-button
-                [label]="t.clearReceipt"
-                severity="secondary"
-                [text]="true"
-                (onClick)="receipt.set(null)"
+          <div class="tb-row">
+            <div class="tb-field">
+              <label for="payment-amount">{{ t.amount }}</label>
+              <p-inputnumber
+                inputId="payment-amount"
+                formControlName="amount"
+                mode="currency"
+                currencyDisplay="narrowSymbol"
+                [currency]="currency()"
+                [locale]="locale"
+                [min]="0"
+                [fluid]="true"
               />
+            </div>
+            <div class="tb-field">
+              <label for="payment-date">{{ t.date }}</label>
+              <p-datepicker
+                inputId="payment-date"
+                formControlName="paidOn"
+                dateFormat="dd.mm.yy"
+                [showIcon]="true"
+                [showOnFocus]="false"
+                appendTo="body"
+                [fluid]="true"
+              />
+            </div>
+          </div>
+          <div class="tb-field">
+            <label for="payment-comment">{{ t.comment }}</label>
+            <input pInputText id="payment-comment" formControlName="comment" autocomplete="off" />
+          </div>
+          <div class="tb-field">
+            <span id="payment-receipt-label">{{ t.receipt }}</span>
+            <input
+              #picker
+              type="file"
+              class="tb-sr-only"
+              [accept]="receiptAccept"
+              aria-labelledby="payment-receipt-label"
+              (change)="onPicked(picker)"
+            />
+            <div class="tb-receipt-file">
+              <p-button
+                [label]="receipt() === null ? t.chooseReceipt : t.otherReceipt"
+                icon="tb-i tb-i-attach_file"
+                severity="secondary"
+                (onClick)="picker.click()"
+              />
+              @if (receipt(); as chosen) {
+                <span class="tb-receipt-file__name">{{ chosen.name }}</span>
+                <p-button
+                  [label]="t.clearReceipt"
+                  severity="secondary"
+                  [text]="true"
+                  (onClick)="receipt.set(null)"
+                />
+              }
+            </div>
+            <small class="tb-hint">{{ t.receiptHint }}</small>
+            @if (receiptError(); as message) {
+              <small class="tb-field__error" role="alert">{{ message }}</small>
             }
           </div>
-          <small class="tb-hint">{{ t.receiptHint }}</small>
-          @if (receiptError(); as message) {
-            <small class="tb-field__error" role="alert">{{ message }}</small>
-          }
-        </div>
-      </form>
-    </tb-dialog>
+        </form>
+      </tb-dialog>
+    }
   `,
   styles: `
     .tb-receipt-file {
@@ -180,6 +183,8 @@ export class PaymentDialog {
   protected readonly receiptError = signal<string | null>(null);
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   readonly students = input.required<readonly BillingStudent[]>();
   readonly studentId = input<string | null>(null);
   readonly currency = input.required<string>();

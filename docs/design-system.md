@@ -833,6 +833,9 @@ changes the container; content and markup are the same at every width. Every dia
   `<ng-template tbDialogFooter>` (a custom footer, rare). `dialogSubmit({ visible, form, failed,
   request, done })` returns `pending`, `error`, `dirty` and `run()`: reset on open, `revealErrors`,
   one request at a time, close on success. `<tb-dialog-confirm-step>` is the inline question.
+- **Built when first opened:** content projected into `<tb-dialog>` is built with its host even
+  while hidden, so a dialog wraps it in `@if (built())`, `built = openedOnce(this.visible)`
+  (`shared/ui/dialog/opened-once.ts`, stage 419): a page's hidden forms no longer slow its render.
 - **Basic dialog** (**M3**): 280–560 dp, 28 dp corners, 24 dp padding, 16 dp headline → body, 24 dp
   body → actions, 8 dp between buttons, surface-container-high, scrim; buttons at the trailing edge,
   the confirming one closest to it; with scrolling content the headline and buttons stay pinned.

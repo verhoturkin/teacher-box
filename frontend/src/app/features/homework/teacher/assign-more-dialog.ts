@@ -19,6 +19,7 @@ import {
   memberRecipients,
   IdentityApi,
 } from '@features/identity/parts';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { HomeworkApi } from '../data-access/homework-api';
@@ -32,28 +33,30 @@ import type { StudentOption } from './editor/editor-recipients-state';
   imports: [ReactiveFormsModule, TbDialog, MemberPicker],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      width="wide"
-      [(visible)]="visible"
-      [headline]="t.assignMore"
-      [confirmLabel]="t.assign"
-      formId="assign-more-form"
-      [pending]="submit.pending()"
-      [error]="submit.error()"
-    >
-      <form id="assign-more-form" class="tb-assign" [formGroup]="form" (ngSubmit)="assign()">
-        <div class="tb-field">
-          <label for="assign-students">{{ t.members }}</label>
-          <tb-member-picker
-            inputId="assign-students"
-            [formControl]="members"
-            [students]="studentOptions()"
-            [groups]="groups()"
-          />
-        </div>
-      </form>
-    </tb-dialog>
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        width="wide"
+        [(visible)]="visible"
+        [headline]="t.assignMore"
+        [confirmLabel]="t.assign"
+        formId="assign-more-form"
+        [pending]="submit.pending()"
+        [error]="submit.error()"
+      >
+        <form id="assign-more-form" class="tb-assign" [formGroup]="form" (ngSubmit)="assign()">
+          <div class="tb-field">
+            <label for="assign-students">{{ t.members }}</label>
+            <tb-member-picker
+              inputId="assign-students"
+              [formControl]="members"
+              [students]="studentOptions()"
+              [groups]="groups()"
+            />
+          </div>
+        </form>
+      </tb-dialog>
+    }
   `,
   styles: `
     .tb-assign {
@@ -70,6 +73,8 @@ export class AssignMoreDialog {
   private readonly identity = inject(IdentityApi);
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   readonly assignmentId = input.required<string>();
   /** Students who already have the assignment. */
   readonly assigned = input<readonly string[]>([]);

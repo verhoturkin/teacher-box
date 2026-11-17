@@ -19,6 +19,7 @@ import { ScheduleApi } from '../data-access/schedule-api';
 import { OffTime, OffTimeKind, OffTimeRequest, Weekday } from '../data-access/schedule.models';
 import { WEEKDAYS, browserTimeZone, optionalText } from '../schedule-labels';
 import { fromTime, toTime } from './lesson-time';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { FieldErrors } from '@shared/ui/field-errors';
@@ -43,146 +44,154 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
   imports: [ReactiveFormsModule, DatePicker, TbDialog, InputText, SelectButton, FieldErrors],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      [(visible)]="visible"
-      [headline]="offTime() === null ? t.newTitle : t.editTitle"
-      [confirmLabel]="c.save"
-      formId="off-time-form"
-      [pending]="submit.pending()"
-      [error]="submit.error()"
-      [dirty]="submit.dirty()"
-    >
-      <form tbFieldErrors id="off-time-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
-        <p class="tb-hint">{{ t.hint }}</p>
-        <div class="tb-field">
-          <span id="off-time-kind-label">{{ t.repeat }}</span>
-          <p-selectbutton
-            formControlName="kind"
-            [options]="kinds"
-            optionLabel="label"
-            optionValue="value"
-            [allowEmpty]="false"
-            ariaLabelledBy="off-time-kind-label"
-          />
-        </div>
-        @if (weekly()) {
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        [(visible)]="visible"
+        [headline]="offTime() === null ? t.newTitle : t.editTitle"
+        [confirmLabel]="c.save"
+        formId="off-time-form"
+        [pending]="submit.pending()"
+        [error]="submit.error()"
+        [dirty]="submit.dirty()"
+      >
+        <form
+          tbFieldErrors
+          id="off-time-form"
+          class="tb-form"
+          [formGroup]="form"
+          (ngSubmit)="save()"
+        >
+          <p class="tb-hint">{{ t.hint }}</p>
           <div class="tb-field">
-            <span id="off-time-weekdays-label">{{ t.weekdays }}</span>
+            <span id="off-time-kind-label">{{ t.repeat }}</span>
             <p-selectbutton
-              formControlName="weekdays"
-              [options]="weekdays"
-              optionLabel="short"
+              formControlName="kind"
+              [options]="kinds"
+              optionLabel="label"
               optionValue="value"
-              [multiple]="true"
-              ariaLabelledBy="off-time-weekdays-label"
+              [allowEmpty]="false"
+              ariaLabelledBy="off-time-kind-label"
             />
           </div>
-          <div class="tb-row">
+          @if (weekly()) {
             <div class="tb-field">
-              <label for="off-time-start-time">{{ t.from }}</label>
-              <p-datepicker
-                inputId="off-time-start-time"
-                formControlName="startTime"
-                [timeOnly]="true"
-                hourFormat="24"
-                [stepMinute]="5"
-                appendTo="body"
-                [fluid]="true"
+              <span id="off-time-weekdays-label">{{ t.weekdays }}</span>
+              <p-selectbutton
+                formControlName="weekdays"
+                [options]="weekdays"
+                optionLabel="short"
+                optionValue="value"
+                [multiple]="true"
+                ariaLabelledBy="off-time-weekdays-label"
               />
             </div>
-            <div class="tb-field">
-              <label for="off-time-end-time">{{ t.to }}</label>
-              <p-datepicker
-                inputId="off-time-end-time"
-                formControlName="endTime"
-                [timeOnly]="true"
-                hourFormat="24"
-                [stepMinute]="5"
-                appendTo="body"
-                [fluid]="true"
-              />
+            <div class="tb-row">
+              <div class="tb-field">
+                <label for="off-time-start-time">{{ t.from }}</label>
+                <p-datepicker
+                  inputId="off-time-start-time"
+                  formControlName="startTime"
+                  [timeOnly]="true"
+                  hourFormat="24"
+                  [stepMinute]="5"
+                  appendTo="body"
+                  [fluid]="true"
+                />
+              </div>
+              <div class="tb-field">
+                <label for="off-time-end-time">{{ t.to }}</label>
+                <p-datepicker
+                  inputId="off-time-end-time"
+                  formControlName="endTime"
+                  [timeOnly]="true"
+                  hourFormat="24"
+                  [stepMinute]="5"
+                  appendTo="body"
+                  [fluid]="true"
+                />
+              </div>
             </div>
+            <small class="tb-hint">
+              {{ t.nextDay }}
+              @if (otherTimeZone(); as zone) {
+                {{ t.zone(zone) }}
+              }
+            </small>
+            <div class="tb-row">
+              <div class="tb-field">
+                <label for="off-time-starts-on">{{ t.fromDate }}</label>
+                <p-datepicker
+                  inputId="off-time-starts-on"
+                  formControlName="startsOn"
+                  dateFormat="dd.mm.yy"
+                  [showIcon]="true"
+                  [showOnFocus]="false"
+                  appendTo="body"
+                  [fluid]="true"
+                />
+              </div>
+              <div class="tb-field">
+                <label for="off-time-ends-on">{{ t.toDate }}</label>
+                <p-datepicker
+                  inputId="off-time-ends-on"
+                  formControlName="endsOn"
+                  dateFormat="dd.mm.yy"
+                  [showIcon]="true"
+                  [showOnFocus]="false"
+                  [showClear]="true"
+                  appendTo="body"
+                  [fluid]="true"
+                />
+              </div>
+            </div>
+          } @else {
+            <div class="tb-row">
+              <div class="tb-field">
+                <label for="off-time-starts-at">{{ t.from }}</label>
+                <p-datepicker
+                  inputId="off-time-starts-at"
+                  formControlName="startsAt"
+                  dateFormat="dd.mm.yy"
+                  [showTime]="true"
+                  hourFormat="24"
+                  [stepMinute]="5"
+                  [showIcon]="true"
+                  [showOnFocus]="false"
+                  appendTo="body"
+                  [fluid]="true"
+                />
+              </div>
+              <div class="tb-field">
+                <label for="off-time-ends-at">{{ t.to }}</label>
+                <p-datepicker
+                  inputId="off-time-ends-at"
+                  formControlName="endsAt"
+                  dateFormat="dd.mm.yy"
+                  [showTime]="true"
+                  hourFormat="24"
+                  [stepMinute]="5"
+                  [showIcon]="true"
+                  [showOnFocus]="false"
+                  appendTo="body"
+                  [fluid]="true"
+                />
+              </div>
+            </div>
+          }
+          <div class="tb-field">
+            <label for="off-time-note">{{ t.note }}</label>
+            <input
+              pInputText
+              id="off-time-note"
+              formControlName="note"
+              [placeholder]="t.notePlaceholder"
+              autocomplete="off"
+            />
           </div>
-          <small class="tb-hint">
-            {{ t.nextDay }}
-            @if (otherTimeZone(); as zone) {
-              {{ t.zone(zone) }}
-            }
-          </small>
-          <div class="tb-row">
-            <div class="tb-field">
-              <label for="off-time-starts-on">{{ t.fromDate }}</label>
-              <p-datepicker
-                inputId="off-time-starts-on"
-                formControlName="startsOn"
-                dateFormat="dd.mm.yy"
-                [showIcon]="true"
-                [showOnFocus]="false"
-                appendTo="body"
-                [fluid]="true"
-              />
-            </div>
-            <div class="tb-field">
-              <label for="off-time-ends-on">{{ t.toDate }}</label>
-              <p-datepicker
-                inputId="off-time-ends-on"
-                formControlName="endsOn"
-                dateFormat="dd.mm.yy"
-                [showIcon]="true"
-                [showOnFocus]="false"
-                [showClear]="true"
-                appendTo="body"
-                [fluid]="true"
-              />
-            </div>
-          </div>
-        } @else {
-          <div class="tb-row">
-            <div class="tb-field">
-              <label for="off-time-starts-at">{{ t.from }}</label>
-              <p-datepicker
-                inputId="off-time-starts-at"
-                formControlName="startsAt"
-                dateFormat="dd.mm.yy"
-                [showTime]="true"
-                hourFormat="24"
-                [stepMinute]="5"
-                [showIcon]="true"
-                [showOnFocus]="false"
-                appendTo="body"
-                [fluid]="true"
-              />
-            </div>
-            <div class="tb-field">
-              <label for="off-time-ends-at">{{ t.to }}</label>
-              <p-datepicker
-                inputId="off-time-ends-at"
-                formControlName="endsAt"
-                dateFormat="dd.mm.yy"
-                [showTime]="true"
-                hourFormat="24"
-                [stepMinute]="5"
-                [showIcon]="true"
-                [showOnFocus]="false"
-                appendTo="body"
-                [fluid]="true"
-              />
-            </div>
-          </div>
-        }
-        <div class="tb-field">
-          <label for="off-time-note">{{ t.note }}</label>
-          <input
-            pInputText
-            id="off-time-note"
-            formControlName="note"
-            [placeholder]="t.notePlaceholder"
-            autocomplete="off"
-          />
-        </div>
-      </form>
-    </tb-dialog>
+        </form>
+      </tb-dialog>
+    }
   `,
 })
 export class OffTimeDialog {
@@ -191,6 +200,8 @@ export class OffTimeDialog {
   private readonly api = inject(ScheduleApi);
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   /** The off time to change; `null` adds a new one. */
   readonly offTime = input<OffTime | null>(null);
   /** Time zone of the portal (weekly times are local times of this zone). */

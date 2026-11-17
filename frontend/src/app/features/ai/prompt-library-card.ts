@@ -25,6 +25,7 @@ import { Textarea } from 'primeng/textarea';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Confirm } from '@shared/ui/confirm';
 import { EmptyState } from '@shared/ui/empty-state';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { FieldErrors } from '@shared/ui/field-errors';
@@ -111,33 +112,35 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
       (onHide)="menuFor.set(null)"
     />
 
-    <tb-dialog
-      kind="form"
-      [(visible)]="visible"
-      [headline]="t.editTitle"
-      [confirmLabel]="t.save"
-      formId="prompt-form"
-      [pending]="submit.pending()"
-      [error]="submit.error()"
-      [dirty]="submit.dirty()"
-    >
-      <form
-        tbFieldErrors
-        id="prompt-form"
-        class="tb-form"
-        [formGroup]="form"
-        (ngSubmit)="submit.run()"
+    @if (dialogBuilt()) {
+      <tb-dialog
+        kind="form"
+        [(visible)]="visible"
+        [headline]="t.editTitle"
+        [confirmLabel]="t.save"
+        formId="prompt-form"
+        [pending]="submit.pending()"
+        [error]="submit.error()"
+        [dirty]="submit.dirty()"
       >
-        <div class="tb-field tb-field--required">
-          <label for="prompt-title">{{ t.name }}</label>
-          <input pInputText id="prompt-title" formControlName="title" autocomplete="off" />
-        </div>
-        <div class="tb-field tb-field--required">
-          <label for="prompt-text">{{ t.text }}</label>
-          <textarea pTextarea id="prompt-text" formControlName="text" rows="6"></textarea>
-        </div>
-      </form>
-    </tb-dialog>
+        <form
+          tbFieldErrors
+          id="prompt-form"
+          class="tb-form"
+          [formGroup]="form"
+          (ngSubmit)="submit.run()"
+        >
+          <div class="tb-field tb-field--required">
+            <label for="prompt-title">{{ t.name }}</label>
+            <input pInputText id="prompt-title" formControlName="title" autocomplete="off" />
+          </div>
+          <div class="tb-field tb-field--required">
+            <label for="prompt-text">{{ t.text }}</label>
+            <textarea pTextarea id="prompt-text" formControlName="text" rows="6"></textarea>
+          </div>
+        </form>
+      </tb-dialog>
+    }
   `,
   styles: `
     .tb-prompt-text {
@@ -184,6 +187,8 @@ export class PromptLibraryCard implements OnInit {
   /** The prompt in the dialog; null for a new one. */
   readonly editing = signal<SavedPrompt | null>(null);
   readonly visible = signal(false);
+  /** The dialog is built when first opened (`openedOnce`), not with the page. */
+  protected readonly dialogBuilt = openedOnce(this.visible);
   readonly form = new FormGroup({
     title: new FormControl('', {
       nonNullable: true,

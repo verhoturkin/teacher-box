@@ -36,6 +36,7 @@ import {
   ownerValue,
 } from './lesson-owner';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { T } from '../i18n/texts';
 import { FreeTimes } from '../ui/free-times';
@@ -78,171 +79,178 @@ export const MEETING_URL_PATTERN = /^https?:\/\/\S+$/;
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      [(visible)]="visible"
-      [headline]="lesson() === null ? t.newLesson : t.editLesson"
-      [confirmLabel]="c.save"
-      formId="lesson-form"
-      [pending]="pending()"
-      [error]="error()"
-      [dirty]="dirty()"
-    >
-      <form tbFieldErrors id="lesson-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
-        <div class="tb-field">
-          <label for="schedule-lesson-student">{{ t.with }}</label>
-          <p-select
-            inputId="schedule-lesson-student"
-            formControlName="owner"
-            [options]="ownerOptions()"
-            [group]="true"
-            optionGroupLabel="label"
-            optionGroupChildren="items"
-            optionLabel="label"
-            optionValue="value"
-            [placeholder]="t.chooseOwner"
-            [emptyMessage]="t.noOwners"
-            [emptyFilterMessage]="t.noOwners"
-            [filter]="true"
-            [filterPlaceholder]="t.search"
-            [ariaFilterLabel]="t.search"
-            appendTo="body"
-            [fluid]="true"
-          >
-            <ng-template #selectedItem let-option>
-              <tb-owner-option [name]="option.label" [value]="option.value" />
-            </ng-template>
-            <ng-template #item let-option>
-              <tb-owner-option [name]="option.label" [value]="option.value" />
-            </ng-template>
-          </p-select>
-        </div>
-        <div class="tb-row">
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        [(visible)]="visible"
+        [headline]="lesson() === null ? t.newLesson : t.editLesson"
+        [confirmLabel]="c.save"
+        formId="lesson-form"
+        [pending]="pending()"
+        [error]="error()"
+        [dirty]="dirty()"
+      >
+        <form tbFieldErrors id="lesson-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
           <div class="tb-field">
-            <label for="schedule-lesson-start">{{ t.start }}</label>
-            <p-datepicker
-              inputId="schedule-lesson-start"
-              formControlName="startsAt"
-              dateFormat="dd.mm.yy"
-              [showTime]="true"
-              hourFormat="24"
-              [stepMinute]="5"
-              [showIcon]="true"
-              [showOnFocus]="false"
+            <label for="schedule-lesson-student">{{ t.with }}</label>
+            <p-select
+              inputId="schedule-lesson-student"
+              formControlName="owner"
+              [options]="ownerOptions()"
+              [group]="true"
+              optionGroupLabel="label"
+              optionGroupChildren="items"
+              optionLabel="label"
+              optionValue="value"
+              [placeholder]="t.chooseOwner"
+              [emptyMessage]="t.noOwners"
+              [emptyFilterMessage]="t.noOwners"
+              [filter]="true"
+              [filterPlaceholder]="t.search"
+              [ariaFilterLabel]="t.search"
               appendTo="body"
               [fluid]="true"
-            />
-            @if (lesson(); as moving) {
-              <tb-free-times
-                [lessonId]="moving.id"
-                [date]="startDay() ?? movingStart(moving)"
-                [minutes]="moving.durationMinutes"
-                [selected]="startDay()"
-                [asTeacher]="true"
-                (picked)="pickStart($event)"
+            >
+              <ng-template #selectedItem let-option>
+                <tb-owner-option [name]="option.label" [value]="option.value" />
+              </ng-template>
+              <ng-template #item let-option>
+                <tb-owner-option [name]="option.label" [value]="option.value" />
+              </ng-template>
+            </p-select>
+          </div>
+          <div class="tb-row">
+            <div class="tb-field">
+              <label for="schedule-lesson-start">{{ t.start }}</label>
+              <p-datepicker
+                inputId="schedule-lesson-start"
+                formControlName="startsAt"
+                dateFormat="dd.mm.yy"
+                [showTime]="true"
+                hourFormat="24"
+                [stepMinute]="5"
+                [showIcon]="true"
+                [showOnFocus]="false"
+                appendTo="body"
+                [fluid]="true"
               />
-            }
+              @if (lesson(); as moving) {
+                <tb-free-times
+                  [lessonId]="moving.id"
+                  [date]="startDay() ?? movingStart(moving)"
+                  [minutes]="moving.durationMinutes"
+                  [selected]="startDay()"
+                  [asTeacher]="true"
+                  (picked)="pickStart($event)"
+                />
+              }
+            </div>
+            <div class="tb-field">
+              <label for="schedule-lesson-duration">{{ t.duration }}</label>
+              <p-inputnumber
+                inputId="schedule-lesson-duration"
+                formControlName="durationMinutes"
+                [min]="1"
+                [max]="600"
+                [showButtons]="true"
+                [step]="15"
+                [fluid]="true"
+              />
+            </div>
           </div>
           <div class="tb-field">
-            <label for="schedule-lesson-duration">{{ t.duration }}</label>
-            <p-inputnumber
-              inputId="schedule-lesson-duration"
-              formControlName="durationMinutes"
-              [min]="1"
-              [max]="600"
-              [showButtons]="true"
-              [step]="15"
-              [fluid]="true"
-            />
-          </div>
-        </div>
-        <div class="tb-field">
-          <label id="schedule-lesson-repeat-label" for="schedule-lesson-repeat">{{
-            t.repeat
-          }}</label>
-          <p-select
-            inputId="schedule-lesson-repeat"
-            ariaLabelledBy="schedule-lesson-repeat-label"
-            formControlName="repeatWeeks"
-            [options]="repeats"
-            optionLabel="label"
-            optionValue="value"
-            appendTo="body"
-            [fluid]="true"
-          />
-        </div>
-        @if (repeatWeeks() > 0) {
-          <div class="tb-field">
-            <label for="schedule-lesson-repeat-until">{{ t.repeatUntil }}</label>
-            <p-datepicker
-              inputId="schedule-lesson-repeat-until"
-              formControlName="repeatUntil"
-              dateFormat="dd.mm.yy"
-              [showIcon]="true"
-              [showOnFocus]="false"
-              [showClear]="true"
-              appendTo="body"
-              [fluid]="true"
-            />
-          </div>
-        }
-        @if (lesson()?.seriesId) {
-          <div class="tb-field">
-            <label id="schedule-lesson-scope-label" for="schedule-lesson-scope">{{
-              t.scope
+            <label id="schedule-lesson-repeat-label" for="schedule-lesson-repeat">{{
+              t.repeat
             }}</label>
             <p-select
-              inputId="schedule-lesson-scope"
-              ariaLabelledBy="schedule-lesson-scope-label"
-              formControlName="scope"
-              [options]="scopes"
+              inputId="schedule-lesson-repeat"
+              ariaLabelledBy="schedule-lesson-repeat-label"
+              formControlName="repeatWeeks"
+              [options]="repeats"
               optionLabel="label"
               optionValue="value"
               appendTo="body"
               [fluid]="true"
             />
           </div>
-          @if (preview(); as affected) {
-            <p-message severity="info">{{
-              t.affected(affected.affected.length, affected.protectedLessons.length)
-            }}</p-message>
+          @if (repeatWeeks() > 0) {
+            <div class="tb-field">
+              <label for="schedule-lesson-repeat-until">{{ t.repeatUntil }}</label>
+              <p-datepicker
+                inputId="schedule-lesson-repeat-until"
+                formControlName="repeatUntil"
+                dateFormat="dd.mm.yy"
+                [showIcon]="true"
+                [showOnFocus]="false"
+                [showClear]="true"
+                appendTo="body"
+                [fluid]="true"
+              />
+            </div>
           }
-        }
-        <div class="tb-field">
-          <label for="schedule-lesson-title">{{ t.name }}</label>
-          <input
-            pInputText
-            id="schedule-lesson-title"
-            formControlName="title"
-            autocomplete="off"
-            [placeholder]="ownerName()"
-          />
-        </div>
-        <div class="tb-field">
-          <label for="schedule-lesson-topic">{{ t.topic }}</label>
-          <input pInputText id="schedule-lesson-topic" formControlName="topic" autocomplete="off" />
-        </div>
-        <div class="tb-field">
-          <label for="schedule-lesson-url">{{ t.url }}</label>
-          <input
-            pInputText
-            id="schedule-lesson-url"
-            formControlName="meetingUrl"
-            placeholder="https://telemost.yandex.ru/..."
-            autocomplete="off"
-          />
-          @if (form.controls.meetingUrl.invalid) {
-            <small class="tb-error">{{ t.urlInvalid }}</small>
+          @if (lesson()?.seriesId) {
+            <div class="tb-field">
+              <label id="schedule-lesson-scope-label" for="schedule-lesson-scope">{{
+                t.scope
+              }}</label>
+              <p-select
+                inputId="schedule-lesson-scope"
+                ariaLabelledBy="schedule-lesson-scope-label"
+                formControlName="scope"
+                [options]="scopes"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                [fluid]="true"
+              />
+            </div>
+            @if (preview(); as affected) {
+              <p-message severity="info">{{
+                t.affected(affected.affected.length, affected.protectedLessons.length)
+              }}</p-message>
+            }
           }
-        </div>
-        @if (overlap()) {
-          <p-message severity="warn" styleClass="tb-form-message">
-            {{ t.overlap }}
-            <p-button [label]="t.saveAnyway" [text]="true" (onClick)="save(true)" />
-          </p-message>
-        }
-      </form>
-    </tb-dialog>
+          <div class="tb-field">
+            <label for="schedule-lesson-title">{{ t.name }}</label>
+            <input
+              pInputText
+              id="schedule-lesson-title"
+              formControlName="title"
+              autocomplete="off"
+              [placeholder]="ownerName()"
+            />
+          </div>
+          <div class="tb-field">
+            <label for="schedule-lesson-topic">{{ t.topic }}</label>
+            <input
+              pInputText
+              id="schedule-lesson-topic"
+              formControlName="topic"
+              autocomplete="off"
+            />
+          </div>
+          <div class="tb-field">
+            <label for="schedule-lesson-url">{{ t.url }}</label>
+            <input
+              pInputText
+              id="schedule-lesson-url"
+              formControlName="meetingUrl"
+              placeholder="https://telemost.yandex.ru/..."
+              autocomplete="off"
+            />
+            @if (form.controls.meetingUrl.invalid) {
+              <small class="tb-error">{{ t.urlInvalid }}</small>
+            }
+          </div>
+          @if (overlap()) {
+            <p-message severity="warn" styleClass="tb-form-message">
+              {{ t.overlap }}
+              <p-button [label]="t.saveAnyway" [text]="true" (onClick)="save(true)" />
+            </p-message>
+          }
+        </form>
+      </tb-dialog>
+    }
   `,
 })
 export class LessonDialog {
@@ -251,6 +259,8 @@ export class LessonDialog {
   private readonly api = inject(ScheduleApi);
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   readonly students = input.required<readonly LessonStudent[]>();
   /** Groups with students; empty when the teacher has none. */
   readonly groups = input<readonly LessonGroup[]>([]);

@@ -27,6 +27,7 @@ import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
 import { AuthService } from '@core/auth/auth.service';
 import { Avatar } from '@shared/ui/avatar';
 import { Busy } from '@shared/ui/busy';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { IdentityApi } from '../data-access/identity-api';
 import { Account } from '../data-access/identity.models';
@@ -300,20 +301,22 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
         <ng-container *ngTemplateOutlet="notifications(); context: { $implicit: isTeacher() }" />
       </div>
     }
-    <tb-dialog
-      kind="form"
-      [(visible)]="passwordDialog"
-      [headline]="t.changePassword"
-      [confirmLabel]="cp.change"
-      formId="change-password-form"
-      [pending]="passwordForm()?.pending() ?? false"
-    >
-      <tb-change-password-form
+    @if (passwordDialogBuilt()) {
+      <tb-dialog
+        kind="form"
+        [(visible)]="passwordDialog"
+        [headline]="t.changePassword"
+        [confirmLabel]="cp.change"
         formId="change-password-form"
-        [narrow]="false"
-        (changed)="passwordChanged()"
-      />
-    </tb-dialog>
+        [pending]="passwordForm()?.pending() ?? false"
+      >
+        <tb-change-password-form
+          formId="change-password-form"
+          [narrow]="false"
+          (changed)="passwordChanged()"
+        />
+      </tb-dialog>
+    }
   `,
   styles: `
     /* the account and «Уведомления» side by side when both fit (sketch \`Main\`); one column below */
@@ -414,6 +417,8 @@ export class AccountPanel implements OnInit {
       `${this.themes.find((theme) => theme.value === this.theme.choice())?.label ?? ''} · ${this.languages.find((lang) => lang.value === this.currentLanguage)?.label ?? ''}`,
   );
   protected readonly passwordDialog = signal(false);
+  /** The dialog is built when first opened (`openedOnce`), not with the page. */
+  protected readonly passwordDialogBuilt = openedOnce(this.passwordDialog);
   protected readonly passwordForm = viewChild(ChangePasswordForm);
   protected readonly cp = T.changePassword;
 

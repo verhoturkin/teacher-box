@@ -16,6 +16,7 @@ import { Message } from 'primeng/message';
 import { RadioButton } from 'primeng/radiobutton';
 import { Select } from 'primeng/select';
 import { quietContext } from '@core/http/api-error.interceptor';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { EmptyState } from '@shared/ui/empty-state';
 import { BoardsApi } from '../data-access/boards-api';
@@ -45,97 +46,99 @@ export interface Placed {
   imports: [EmptyState, FormsModule, TbDialog, Message, RadioButton, Select],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      [(visible)]="visible"
-      [headline]="t.title"
-      [confirmLabel]="canPlace() ? t.transfer : null"
-      [cancelLabel]="done() || !canPlace() ? c.close : c.cancel"
-      [pending]="copying()"
-      (confirm)="transfer()"
-    >
-      @if (loaded() && sorted().length === 0) {
-        <tb-empty-state
-          [compact]="true"
-          icon="tb-i-co_present"
-          [title]="emptyTitle()"
-          [hint]="emptyHint()"
-        />
-      } @else {
-        <ng-content />
-        <p class="tb-muted">{{ hint() }}</p>
-        @if (needsClipboard() && !richClipboard) {
-          <p class="tb-muted">{{ t.https }}</p>
-        }
-        <div class="tb-field tb-to-board">
-          <label for="to-board-board">{{ t.board }}</label>
-          <p-select
-            inputId="to-board-board"
-            [options]="sorted()"
-            optionLabel="title"
-            optionValue="id"
-            [(ngModel)]="chosen"
-            [placeholder]="t.choose"
-            [filter]="true"
-            filterBy="title"
-            [filterPlaceholder]="t.search"
-            [emptyFilterMessage]="t.noBoards"
-            appendTo="body"
-            [fluid]="true"
-          >
-            <ng-template #item let-board>
-              <div class="tb-to-board__option">
-                <span>{{ board.title }}</span>
-                <small class="tb-muted"
-                  >{{ kindLabels[kindOf(board)] }}, {{ membersText(board) }}</small
-                >
-              </div>
-            </ng-template>
-          </p-select>
-        </div>
-        @if (pages() === null) {
-          <ul class="tb-list" role="radiogroup" [attr.aria-label]="t.how">
-            @for (option of modes; track option.mode) {
-              <li
-                class="tb-to-board__mode"
-                [class.tb-to-board__mode--checked]="option.mode === mode()"
-                [class.tb-to-board__mode--disabled]="blocked(option.mode)"
-              >
-                <p-radiobutton
-                  class="tb-to-board__radio"
-                  name="to-board-mode"
-                  [inputId]="'to-board-mode-' + option.mode"
-                  [value]="option.mode"
-                  [ngModel]="mode()"
-                  (ngModelChange)="chosenMode.set($event)"
-                  [disabled]="blocked(option.mode)"
-                />
-                <label class="tb-list__text" [for]="'to-board-mode-' + option.mode">
-                  <span class="tb-list__title">{{ option.label }}</span>
-                </label>
-              </li>
-            }
-          </ul>
-        }
-      }
-      @if (done(); as placed) {
-        <p-message severity="success" styleClass="tb-form-message">
-          @if (placed.mode === 'pages') {
-            {{ t.pagesPlaced }}
-          } @else if (placed.board.kind === 'EXCALIDRAW') {
-            {{ t.materialPlaced }}
-          } @else {
-            {{ placed.mode === 'image' ? t.imageCopied : t.textCopied }}
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        [(visible)]="visible"
+        [headline]="t.title"
+        [confirmLabel]="canPlace() ? t.transfer : null"
+        [cancelLabel]="done() || !canPlace() ? c.close : c.cancel"
+        [pending]="copying()"
+        (confirm)="transfer()"
+      >
+        @if (loaded() && sorted().length === 0) {
+          <tb-empty-state
+            [compact]="true"
+            icon="tb-i-co_present"
+            [title]="emptyTitle()"
+            [hint]="emptyHint()"
+          />
+        } @else {
+          <ng-content />
+          <p class="tb-muted">{{ hint() }}</p>
+          @if (needsClipboard() && !richClipboard) {
+            <p class="tb-muted">{{ t.https }}</p>
           }
-          <a [href]="placed.href" target="_blank" rel="noopener">{{
-            t.openBoard(placed.board.title)
-          }}</a>
-        </p-message>
-      }
-      @if (error(); as message) {
-        <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-      }
-    </tb-dialog>
+          <div class="tb-field tb-to-board">
+            <label for="to-board-board">{{ t.board }}</label>
+            <p-select
+              inputId="to-board-board"
+              [options]="sorted()"
+              optionLabel="title"
+              optionValue="id"
+              [(ngModel)]="chosen"
+              [placeholder]="t.choose"
+              [filter]="true"
+              filterBy="title"
+              [filterPlaceholder]="t.search"
+              [emptyFilterMessage]="t.noBoards"
+              appendTo="body"
+              [fluid]="true"
+            >
+              <ng-template #item let-board>
+                <div class="tb-to-board__option">
+                  <span>{{ board.title }}</span>
+                  <small class="tb-muted"
+                    >{{ kindLabels[kindOf(board)] }}, {{ membersText(board) }}</small
+                  >
+                </div>
+              </ng-template>
+            </p-select>
+          </div>
+          @if (pages() === null) {
+            <ul class="tb-list" role="radiogroup" [attr.aria-label]="t.how">
+              @for (option of modes; track option.mode) {
+                <li
+                  class="tb-to-board__mode"
+                  [class.tb-to-board__mode--checked]="option.mode === mode()"
+                  [class.tb-to-board__mode--disabled]="blocked(option.mode)"
+                >
+                  <p-radiobutton
+                    class="tb-to-board__radio"
+                    name="to-board-mode"
+                    [inputId]="'to-board-mode-' + option.mode"
+                    [value]="option.mode"
+                    [ngModel]="mode()"
+                    (ngModelChange)="chosenMode.set($event)"
+                    [disabled]="blocked(option.mode)"
+                  />
+                  <label class="tb-list__text" [for]="'to-board-mode-' + option.mode">
+                    <span class="tb-list__title">{{ option.label }}</span>
+                  </label>
+                </li>
+              }
+            </ul>
+          }
+        }
+        @if (done(); as placed) {
+          <p-message severity="success" styleClass="tb-form-message">
+            @if (placed.mode === 'pages') {
+              {{ t.pagesPlaced }}
+            } @else if (placed.board.kind === 'EXCALIDRAW') {
+              {{ t.materialPlaced }}
+            } @else {
+              {{ placed.mode === 'image' ? t.imageCopied : t.textCopied }}
+            }
+            <a [href]="placed.href" target="_blank" rel="noopener">{{
+              t.openBoard(placed.board.title)
+            }}</a>
+          </p-message>
+        }
+        @if (error(); as message) {
+          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
+        }
+      </tb-dialog>
+    }
   `,
   styles: `
     .tb-to-board__option {
@@ -195,6 +198,8 @@ export class ToBoardDialog {
   private readonly insert = inject(BoardInsert);
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   readonly title = input('');
   /** The material in Markdown. */
   readonly markdown = input('');

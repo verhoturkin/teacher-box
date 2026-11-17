@@ -6,6 +6,7 @@ import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
 import { Select } from 'primeng/select';
 import { Snackbar } from '@core/snackbar/snackbar';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { FieldErrors } from '@shared/ui/field-errors';
@@ -35,91 +36,93 @@ export const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'] as const;
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      [(visible)]="visible"
-      [headline]="t.title"
-      [confirmLabel]="t.save"
-      formId="ai-model-form"
-      [pending]="submit.pending()"
-      [error]="submit.error()"
-      [dirty]="submit.dirty()"
-    >
-      <form
-        tbFieldErrors
-        id="ai-model-form"
-        class="tb-form"
-        [formGroup]="form"
-        (ngSubmit)="submit.run()"
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        [(visible)]="visible"
+        [headline]="t.title"
+        [confirmLabel]="t.save"
+        formId="ai-model-form"
+        [pending]="submit.pending()"
+        [error]="submit.error()"
+        [dirty]="submit.dirty()"
       >
-        <div class="tb-field">
-          <label for="ai-model-label">{{ t.label }}</label>
-          <input pInputText id="ai-model-label" formControlName="label" autocomplete="off" />
-          <small class="tb-hint">{{ t.labelHint }}</small>
-        </div>
-        <div class="tb-field">
-          <label for="ai-model-id">{{ t.modelId }}</label>
-          <input pInputText id="ai-model-id" formControlName="modelId" autocomplete="off" />
-        </div>
-        <p-button
-          class="tb-ai-model__more"
-          [label]="t.more"
-          [icon]="moreOpen() ? 'tb-i tb-i-expand_less' : 'tb-i tb-i-expand_more'"
-          [text]="true"
-          [attr.aria-expanded]="moreOpen()"
-          (onClick)="moreOpen.set(!moreOpen())"
-        />
-        @if (moreOpen()) {
-          @if (anthropic()) {
-            <div class="tb-field">
-              <label for="ai-model-effort">{{ t.effort }}</label>
-              <p-select
-                inputId="ai-model-effort"
-                formControlName="effort"
-                [options]="efforts"
-                optionLabel="label"
-                optionValue="value"
-                [fluid]="true"
-                appendTo="body"
-              />
-              <small class="tb-hint">{{ t.effortHint }}</small>
-            </div>
-            <div class="tb-ai-model__check">
-              <p-checkbox
-                [binary]="true"
-                inputId="ai-model-fallbacks"
-                formControlName="fallbacks"
-              />
-              <span>
-                <label for="ai-model-fallbacks">{{ t.fallbacks }}</label>
-                <small class="tb-hint">{{ t.fallbacksHint }}</small>
-              </span>
+        <form
+          tbFieldErrors
+          id="ai-model-form"
+          class="tb-form"
+          [formGroup]="form"
+          (ngSubmit)="submit.run()"
+        >
+          <div class="tb-field">
+            <label for="ai-model-label">{{ t.label }}</label>
+            <input pInputText id="ai-model-label" formControlName="label" autocomplete="off" />
+            <small class="tb-hint">{{ t.labelHint }}</small>
+          </div>
+          <div class="tb-field">
+            <label for="ai-model-id">{{ t.modelId }}</label>
+            <input pInputText id="ai-model-id" formControlName="modelId" autocomplete="off" />
+          </div>
+          <p-button
+            class="tb-ai-model__more"
+            [label]="t.more"
+            [icon]="moreOpen() ? 'tb-i tb-i-expand_less' : 'tb-i tb-i-expand_more'"
+            [text]="true"
+            [attr.aria-expanded]="moreOpen()"
+            (onClick)="moreOpen.set(!moreOpen())"
+          />
+          @if (moreOpen()) {
+            @if (anthropic()) {
+              <div class="tb-field">
+                <label for="ai-model-effort">{{ t.effort }}</label>
+                <p-select
+                  inputId="ai-model-effort"
+                  formControlName="effort"
+                  [options]="efforts"
+                  optionLabel="label"
+                  optionValue="value"
+                  [fluid]="true"
+                  appendTo="body"
+                />
+                <small class="tb-hint">{{ t.effortHint }}</small>
+              </div>
+              <div class="tb-ai-model__check">
+                <p-checkbox
+                  [binary]="true"
+                  inputId="ai-model-fallbacks"
+                  formControlName="fallbacks"
+                />
+                <span>
+                  <label for="ai-model-fallbacks">{{ t.fallbacks }}</label>
+                  <small class="tb-hint">{{ t.fallbacksHint }}</small>
+                </span>
+              </div>
+            }
+            <div class="tb-ai-model__pair">
+              <div class="tb-field">
+                <label for="ai-model-tokens">{{ t.maxTokens }}</label>
+                <p-inputnumber
+                  inputId="ai-model-tokens"
+                  formControlName="maxTokens"
+                  [min]="1"
+                  [fluid]="true"
+                />
+              </div>
+              <div class="tb-field">
+                <label for="ai-model-timeout">{{ t.timeout }}</label>
+                <p-inputnumber
+                  inputId="ai-model-timeout"
+                  formControlName="timeoutSeconds"
+                  [min]="1"
+                  [max]="600"
+                  [fluid]="true"
+                />
+              </div>
             </div>
           }
-          <div class="tb-ai-model__pair">
-            <div class="tb-field">
-              <label for="ai-model-tokens">{{ t.maxTokens }}</label>
-              <p-inputnumber
-                inputId="ai-model-tokens"
-                formControlName="maxTokens"
-                [min]="1"
-                [fluid]="true"
-              />
-            </div>
-            <div class="tb-field">
-              <label for="ai-model-timeout">{{ t.timeout }}</label>
-              <p-inputnumber
-                inputId="ai-model-timeout"
-                formControlName="timeoutSeconds"
-                [min]="1"
-                [max]="600"
-                [fluid]="true"
-              />
-            </div>
-          </div>
-        }
-      </form>
-    </tb-dialog>
+        </form>
+      </tb-dialog>
+    }
   `,
   styles: `
     .tb-ai-model__more {
@@ -156,6 +159,8 @@ export class AiModelDialog {
     ...EFFORTS.map((effort) => ({ value: effort, label: T.efforts[effort] })),
   ];
   readonly visible = signal(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   protected readonly moreOpen = signal(false);
   protected readonly anthropic = signal(false);
   private readonly editing = signal<{ provider: AiProvider; model: AiModel } | null>(null);

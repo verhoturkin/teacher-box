@@ -22,6 +22,7 @@ import { MemberPicker, MemberSelection } from '@features/identity/parts';
 import { SelectButton } from 'primeng/selectbutton';
 import { checkFiles } from '@shared/files/check-files';
 import { formatFileSize } from '@shared/files/file-size';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
@@ -60,108 +61,116 @@ export interface MemberOption {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      [(visible)]="visible"
-      [headline]="textbook() === null ? t.newTextbook : t.editTextbook"
-      [confirmLabel]="textbook() === null ? t.add : c.save"
-      formId="textbook-form"
-      [pending]="submit.pending()"
-      [error]="submit.error()"
-      [dirty]="submit.dirty() || file() !== null"
-    >
-      <form tbFieldErrors id="textbook-form" class="tb-form" [formGroup]="form" (ngSubmit)="save()">
-        @if (textbook() === null) {
-          <div class="tb-field tb-field--required">
-            <span id="textbook-file-label">{{ t.file }}</span>
-            <input
-              #picker
-              type="file"
-              class="tb-sr-only"
-              [accept]="accept"
-              aria-labelledby="textbook-file-label"
-              (change)="onPicked(picker)"
-            />
-            <div class="tb-textbook-file">
-              <p-button
-                [label]="file() === null ? t.chooseFile : t.otherFile"
-                icon="tb-i tb-i-attach_file"
-                severity="secondary"
-                (onClick)="picker.click()"
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        [(visible)]="visible"
+        [headline]="textbook() === null ? t.newTextbook : t.editTextbook"
+        [confirmLabel]="textbook() === null ? t.add : c.save"
+        formId="textbook-form"
+        [pending]="submit.pending()"
+        [error]="submit.error()"
+        [dirty]="submit.dirty() || file() !== null"
+      >
+        <form
+          tbFieldErrors
+          id="textbook-form"
+          class="tb-form"
+          [formGroup]="form"
+          (ngSubmit)="save()"
+        >
+          @if (textbook() === null) {
+            <div class="tb-field tb-field--required">
+              <span id="textbook-file-label">{{ t.file }}</span>
+              <input
+                #picker
+                type="file"
+                class="tb-sr-only"
+                [accept]="accept"
+                aria-labelledby="textbook-file-label"
+                (change)="onPicked(picker)"
               />
-              @if (file(); as chosen) {
-                <span class="tb-textbook-file__name">{{ chosen.name }}</span>
-                <small class="tb-muted">{{ size(chosen.size) }}</small>
+              <div class="tb-textbook-file">
+                <p-button
+                  [label]="file() === null ? t.chooseFile : t.otherFile"
+                  icon="tb-i tb-i-attach_file"
+                  severity="secondary"
+                  (onClick)="picker.click()"
+                />
+                @if (file(); as chosen) {
+                  <span class="tb-textbook-file__name">{{ chosen.name }}</span>
+                  <small class="tb-muted">{{ size(chosen.size) }}</small>
+                }
+              </div>
+              <small class="tb-hint">{{ t.fileHint }}</small>
+              @if (fileError(); as message) {
+                <small class="tb-field__error" role="alert">{{ message }}</small>
               }
             </div>
-            <small class="tb-hint">{{ t.fileHint }}</small>
-            @if (fileError(); as message) {
-              <small class="tb-field__error" role="alert">{{ message }}</small>
-            }
-          </div>
-        }
-        <div class="tb-field tb-field__header">
-          <span id="textbook-kind-label">{{ t.kind }}</span>
-          <p-selectbutton
-            formControlName="kind"
-            [options]="kinds"
-            optionLabel="label"
-            optionValue="value"
-            [allowEmpty]="false"
-            ariaLabelledBy="textbook-kind-label"
-          />
-        </div>
-        <div class="tb-field tb-field--required">
-          <label for="textbook-title">{{ t.title }}</label>
-          <input
-            pInputText
-            id="textbook-title"
-            formControlName="title"
-            [placeholder]="t.titlePlaceholder"
-            autocomplete="off"
-            aria-required="true"
-          />
-        </div>
-        <div class="tb-field">
-          <label for="textbook-course">{{ t.course }}</label>
-          <input
-            pInputText
-            id="textbook-course"
-            formControlName="course"
-            [placeholder]="t.coursePlaceholder"
-            autocomplete="off"
-            list="textbook-courses"
-          />
-          <datalist id="textbook-courses">
-            @for (course of courses(); track course) {
-              <option [value]="course"></option>
-            }
-          </datalist>
-        </div>
-        @if (document()) {
-          <div class="tb-field">
-            <label for="textbook-pages">{{ t.pageCount }}</label>
-            <p-inputnumber
-              inputId="textbook-pages"
-              formControlName="pageCount"
-              [min]="1"
-              [max]="10000"
-              [useGrouping]="false"
+          }
+          <div class="tb-field tb-field__header">
+            <span id="textbook-kind-label">{{ t.kind }}</span>
+            <p-selectbutton
+              formControlName="kind"
+              [options]="kinds"
+              optionLabel="label"
+              optionValue="value"
+              [allowEmpty]="false"
+              ariaLabelledBy="textbook-kind-label"
             />
-            <small class="tb-hint">{{ t.pageCountHint }}</small>
           </div>
-        }
-        <div class="tb-field">
-          <label for="textbook-members">{{ t.members }}</label>
-          <tb-member-picker
-            inputId="textbook-members"
-            formControlName="members"
-            [students]="studentOptions()"
-            [groups]="groupOptions()"
-          />
-        </div>
-      </form>
-    </tb-dialog>
+          <div class="tb-field tb-field--required">
+            <label for="textbook-title">{{ t.title }}</label>
+            <input
+              pInputText
+              id="textbook-title"
+              formControlName="title"
+              [placeholder]="t.titlePlaceholder"
+              autocomplete="off"
+              aria-required="true"
+            />
+          </div>
+          <div class="tb-field">
+            <label for="textbook-course">{{ t.course }}</label>
+            <input
+              pInputText
+              id="textbook-course"
+              formControlName="course"
+              [placeholder]="t.coursePlaceholder"
+              autocomplete="off"
+              list="textbook-courses"
+            />
+            <datalist id="textbook-courses">
+              @for (course of courses(); track course) {
+                <option [value]="course"></option>
+              }
+            </datalist>
+          </div>
+          @if (document()) {
+            <div class="tb-field">
+              <label for="textbook-pages">{{ t.pageCount }}</label>
+              <p-inputnumber
+                inputId="textbook-pages"
+                formControlName="pageCount"
+                [min]="1"
+                [max]="10000"
+                [useGrouping]="false"
+              />
+              <small class="tb-hint">{{ t.pageCountHint }}</small>
+            </div>
+          }
+          <div class="tb-field">
+            <label for="textbook-members">{{ t.members }}</label>
+            <tb-member-picker
+              inputId="textbook-members"
+              formControlName="members"
+              [students]="studentOptions()"
+              [groups]="groupOptions()"
+            />
+          </div>
+        </form>
+      </tb-dialog>
+    }
   `,
   styles: `
     .tb-textbook-file {
@@ -183,6 +192,8 @@ export class TextbookDialog {
   private readonly api = inject(TextbooksApi);
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   /** The textbook to change; `null` adds a new one. */
   readonly textbook = input<Textbook | null>(null);
   /** Current students and active groups. */

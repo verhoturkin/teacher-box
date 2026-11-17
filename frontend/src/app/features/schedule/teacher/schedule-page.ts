@@ -2,13 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnInit,
-  Signal,
   computed,
   inject,
   signal,
   viewChild,
 } from '@angular/core';
 import { ListRow } from '@shared/ui/list-row';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -897,10 +897,4 @@ export class SchedulePage implements OnInit {
     this.loadOffTimes();
     this.loadAttention();
   }
-}
-
-/** True from the first time `visible` is true on: the dialog is built when first opened, never dropped. */
-function openedOnce(visible: Signal<boolean>): Signal<boolean> {
-  let opened = false;
-  return computed(() => (opened ||= visible()));
 }

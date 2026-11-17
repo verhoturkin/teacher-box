@@ -24,6 +24,7 @@ import { T } from '../i18n/texts';
 import { FreeTimes } from '../ui/free-times';
 import { SHARED_T } from '@shared/i18n/texts';
 import { Confirm } from '@shared/ui/confirm';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 
 /**
@@ -35,100 +36,102 @@ import { TbDialog } from '@shared/ui/dialog/dialog';
   imports: [FormsModule, Checkbox, DatePicker, FreeTimes, SelectButton, TbDialog, Textarea],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <tb-dialog
-      kind="form"
-      [(visible)]="visible"
-      [headline]="t.title"
-      [confirmLabel]="approving() ? t.approve : t.decline"
-      [confirmSeverity]="approving() ? 'primary' : 'danger'"
-      formId="request-answer-form"
-      [pending]="pending()"
-      [error]="error()"
-    >
-      @if (request(); as request) {
-        <form id="request-answer-form" class="tb-form" (ngSubmit)="answerRequest()">
-          <p>
-            @if (request.groupId !== null && request.kind === 'CANCEL') {
-              <strong>{{ request.studentName ?? c.student }}</strong>
-              {{ t.groupAbsence(request.groupName ?? '', start(request.lessonStartsAt)) }}
-            } @else {
-              <strong>{{ request.studentName ?? c.student }}</strong
-              >{{
-                request.kind === 'RESCHEDULE'
-                  ? t.asksReschedule(start(request.lessonStartsAt))
-                  : t.asksCancel(start(request.lessonStartsAt))
-              }}
-              @if (request.groupId !== null) {
-                {{ t.forAll(request.groupName ?? '') }}
+    @if (built()) {
+      <tb-dialog
+        kind="form"
+        [(visible)]="visible"
+        [headline]="t.title"
+        [confirmLabel]="approving() ? t.approve : t.decline"
+        [confirmSeverity]="approving() ? 'primary' : 'danger'"
+        formId="request-answer-form"
+        [pending]="pending()"
+        [error]="error()"
+      >
+        @if (request(); as request) {
+          <form id="request-answer-form" class="tb-form" (ngSubmit)="answerRequest()">
+            <p>
+              @if (request.groupId !== null && request.kind === 'CANCEL') {
+                <strong>{{ request.studentName ?? c.student }}</strong>
+                {{ t.groupAbsence(request.groupName ?? '', start(request.lessonStartsAt)) }}
+              } @else {
+                <strong>{{ request.studentName ?? c.student }}</strong
+                >{{
+                  request.kind === 'RESCHEDULE'
+                    ? t.asksReschedule(start(request.lessonStartsAt))
+                    : t.asksCancel(start(request.lessonStartsAt))
+                }}
+                @if (request.groupId !== null) {
+                  {{ t.forAll(request.groupName ?? '') }}
+                }
               }
+            </p>
+            @if (request.comment !== null) {
+              <p class="tb-muted">«{{ request.comment }}»</p>
             }
-          </p>
-          @if (request.comment !== null) {
-            <p class="tb-muted">«{{ request.comment }}»</p>
-          }
-          <p-selectbutton
-            [options]="choices"
-            optionLabel="label"
-            optionValue="value"
-            [allowEmpty]="false"
-            [ngModel]="choice()"
-            (ngModelChange)="choice.set($event)"
-            [ngModelOptions]="{ standalone: true }"
-            [ariaLabel]="t.title"
-          />
-          @if (approving() && request.kind === 'RESCHEDULE') {
-            <div class="tb-field">
-              <label for="answer-start">{{ t.newTime }}</label>
-              <p-datepicker
-                inputId="answer-start"
-                [(ngModel)]="startsAt"
-                [ngModelOptions]="{ standalone: true }"
-                dateFormat="dd.mm.yy"
-                [showTime]="true"
-                hourFormat="24"
-                [stepMinute]="5"
-                [showIcon]="true"
-                [showOnFocus]="false"
-                appendTo="body"
-                [fluid]="true"
-              />
-              <tb-free-times
-                [lessonId]="request.lessonId"
-                [date]="startsAt() ?? start0()"
-                [minutes]="minutes()"
-                [selected]="startsAt()"
-                [asTeacher]="true"
-                (picked)="startsAt.set($event)"
-              />
-            </div>
-          } @else if (approving() && request.kind === 'CANCEL') {
-            @if (request.late) {
-              <p class="tb-hint">{{ t.late }}</p>
-            }
-            <label class="tb-switch" for="answer-charge">
-              <p-checkbox
-                [(ngModel)]="charge"
-                [ngModelOptions]="{ standalone: true }"
-                [binary]="true"
-                inputId="answer-charge"
-              />
-              <span>{{ t.charge }}</span>
-            </label>
-          }
-          <div class="tb-field">
-            <label for="answer-comment">{{ t.comment }}</label>
-            <textarea
-              pTextarea
-              id="answer-comment"
-              rows="2"
-              [(ngModel)]="answer"
+            <p-selectbutton
+              [options]="choices"
+              optionLabel="label"
+              optionValue="value"
+              [allowEmpty]="false"
+              [ngModel]="choice()"
+              (ngModelChange)="choice.set($event)"
               [ngModelOptions]="{ standalone: true }"
-              maxlength="500"
-            ></textarea>
-          </div>
-        </form>
-      }
-    </tb-dialog>
+              [ariaLabel]="t.title"
+            />
+            @if (approving() && request.kind === 'RESCHEDULE') {
+              <div class="tb-field">
+                <label for="answer-start">{{ t.newTime }}</label>
+                <p-datepicker
+                  inputId="answer-start"
+                  [(ngModel)]="startsAt"
+                  [ngModelOptions]="{ standalone: true }"
+                  dateFormat="dd.mm.yy"
+                  [showTime]="true"
+                  hourFormat="24"
+                  [stepMinute]="5"
+                  [showIcon]="true"
+                  [showOnFocus]="false"
+                  appendTo="body"
+                  [fluid]="true"
+                />
+                <tb-free-times
+                  [lessonId]="request.lessonId"
+                  [date]="startsAt() ?? start0()"
+                  [minutes]="minutes()"
+                  [selected]="startsAt()"
+                  [asTeacher]="true"
+                  (picked)="startsAt.set($event)"
+                />
+              </div>
+            } @else if (approving() && request.kind === 'CANCEL') {
+              @if (request.late) {
+                <p class="tb-hint">{{ t.late }}</p>
+              }
+              <label class="tb-switch" for="answer-charge">
+                <p-checkbox
+                  [(ngModel)]="charge"
+                  [ngModelOptions]="{ standalone: true }"
+                  [binary]="true"
+                  inputId="answer-charge"
+                />
+                <span>{{ t.charge }}</span>
+              </label>
+            }
+            <div class="tb-field">
+              <label for="answer-comment">{{ t.comment }}</label>
+              <textarea
+                pTextarea
+                id="answer-comment"
+                rows="2"
+                [(ngModel)]="answer"
+                [ngModelOptions]="{ standalone: true }"
+                maxlength="500"
+              ></textarea>
+            </div>
+          </form>
+        }
+      </tb-dialog>
+    }
   `,
 })
 export class RequestAnswerDialog {
@@ -138,6 +141,8 @@ export class RequestAnswerDialog {
   private readonly confirm = inject(Confirm);
 
   readonly visible = model(false);
+  /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
+  protected readonly built = openedOnce(this.visible);
   readonly request = input<ChangeRequest | null>(null);
   readonly answered = output<ChangeRequest>();
 

@@ -22,6 +22,7 @@ import { Tag } from 'primeng/tag';
 import { Textarea } from 'primeng/textarea';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Confirm } from '@shared/ui/confirm';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { DialogHeaderActions, TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { FieldErrors } from '@shared/ui/field-errors';
@@ -111,52 +112,54 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
       </div>
     </p-card>
 
-    <tb-dialog
-      kind="form"
-      width="wide"
-      [(visible)]="visible"
-      [headline]="header()"
-      [confirmLabel]="t.save"
-      formId="system-prompt-form"
-      [pending]="submit.pending()"
-      [error]="submit.error()"
-      [dirty]="submit.dirty()"
-    >
-      @if (editing()?.custom) {
-        <ng-template tbDialogHeaderActions>
-          <p-button
-            icon="tb-i tb-i-more_vert"
-            severity="secondary"
-            [text]="true"
-            [rounded]="true"
-            [ariaLabel]="t.more"
-            aria-haspopup="menu"
-            [loading]="resetting()"
-            (onClick)="menu.toggle($event)"
-          />
-          <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
-        </ng-template>
-      }
-      <form
-        tbFieldErrors
-        id="system-prompt-form"
-        class="tb-form"
-        [formGroup]="form"
-        (ngSubmit)="submit.run()"
+    @if (dialogBuilt()) {
+      <tb-dialog
+        kind="form"
+        width="wide"
+        [(visible)]="visible"
+        [headline]="header()"
+        [confirmLabel]="t.save"
+        formId="system-prompt-form"
+        [pending]="submit.pending()"
+        [error]="submit.error()"
+        [dirty]="submit.dirty()"
       >
-        <div class="tb-field tb-field--required">
-          <label for="system-prompt-text">{{ t.text }}</label>
-          <textarea
-            pTextarea
-            id="system-prompt-text"
-            formControlName="text"
-            rows="14"
-            [autoResize]="true"
-          ></textarea>
-          <small class="tb-hint">{{ t.textHint }}</small>
-        </div>
-      </form>
-    </tb-dialog>
+        @if (editing()?.custom) {
+          <ng-template tbDialogHeaderActions>
+            <p-button
+              icon="tb-i tb-i-more_vert"
+              severity="secondary"
+              [text]="true"
+              [rounded]="true"
+              [ariaLabel]="t.more"
+              aria-haspopup="menu"
+              [loading]="resetting()"
+              (onClick)="menu.toggle($event)"
+            />
+            <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
+          </ng-template>
+        }
+        <form
+          tbFieldErrors
+          id="system-prompt-form"
+          class="tb-form"
+          [formGroup]="form"
+          (ngSubmit)="submit.run()"
+        >
+          <div class="tb-field tb-field--required">
+            <label for="system-prompt-text">{{ t.text }}</label>
+            <textarea
+              pTextarea
+              id="system-prompt-text"
+              formControlName="text"
+              rows="14"
+              [autoResize]="true"
+            ></textarea>
+            <small class="tb-hint">{{ t.textHint }}</small>
+          </div>
+        </form>
+      </tb-dialog>
+    }
   `,
   styles: `
     /* the title of the card is the fold button: the sketch Ai «Системные промты» */
@@ -234,6 +237,8 @@ export class SystemPromptsCard implements OnInit {
     return prompt === null ? '' : T.systemPrompts.features[prompt.feature];
   });
   readonly visible = signal(false);
+  /** The dialog is built when first opened (`openedOnce`), not with the page. */
+  protected readonly dialogBuilt = openedOnce(this.visible);
   protected readonly resetting = signal(false);
   /** «Сбросить» destroys the teacher's text: red, behind a confirmation. */
   protected readonly menuItems: MenuItem[] = [

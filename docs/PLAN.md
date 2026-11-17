@@ -161,6 +161,11 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
   (`openedOnce`). Production build: the render task 135–165 ms → 27–37 ms (53 ms on the first
   visit), `updateCallbackDone` 198 → 45–74 ms. Endpoints after 419.1 and 419.4 (dev data, warm):
   `summary`, `lessons`, `unmarked` ~3–4 ms each (were 178 / 213 / 126 ms).
+- [x] 419.6 **F** *simple* — the same on every page: each dialog component (26, and the inline
+  dialogs of the account and AI settings) wraps its `<tb-dialog>` in `@if (built())`,
+  `openedOnce` moved to `shared/ui/dialog/opened-once.ts`. Dev build, first visit, render time:
+  student card 176 → 54 ms, billing 73 → 30, materials 68 → 22, students 57 → 41, AI settings
+  56 → 45, account 56 → 42, `/teacher` 47 → 26.
 
 ### 418. Release 0.53.0
 
