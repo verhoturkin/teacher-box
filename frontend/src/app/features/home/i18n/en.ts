@@ -35,7 +35,6 @@ export const en: Translation<typeof ru> = {
     hello: (name: string) => (name === '' ? 'Hello' : `Hello, ${name}`),
     next: (start: string) => `Next lesson: ${start}`,
     toHandIn: (count: number) => `Assignments due: ${String(count)}`,
-    materials: 'Lesson materials',
   },
   welcome: {
     title: (portal: string) => `Welcome to ${portal}!`,

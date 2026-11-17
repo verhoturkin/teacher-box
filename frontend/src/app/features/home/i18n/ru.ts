@@ -34,7 +34,6 @@ export const ru = {
     hello: (name: string) => (name === '' ? 'Привет' : `Привет, ${name}`),
     next: (start: string) => `Следующее занятие: ${start}`,
     toHandIn: (count: number) => `Заданий к сдаче: ${String(count)}`,
-    materials: 'Материалы урока',
   },
   welcome: {
     title: (portal: string) => `Добро пожаловать в «${portal}»!`,

@@ -426,6 +426,13 @@ const TWO_CARDS: Readonly<Record<string, readonly (readonly [string, string, str
         'outstanding and how many students owe. See “Payments” for who they are.',
     ],
   ],
+  'student.en': [
+    [
+      'appearance',
+      'recent feedback, your lesson credit and materials.',
+      'recent feedback, and your lesson credit.',
+    ],
+  ],
 };
 
 const EDITIONS: readonly (readonly [string, Texts])[] = [

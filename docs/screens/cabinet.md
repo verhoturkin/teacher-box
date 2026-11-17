@@ -7,8 +7,8 @@ Routes under `/cabinet`. Boards: `docs/sketches/homework/` and `docs/sketches/se
 `features/home/student-home.ts`: two columns from expanded (1.8fr / 1fr, *ours*), one below in the
 same order. Lead: the [hero](today.md#nearest-lesson-hero), due tasks (`tb-my-deadlines-widget`),
 recently reviewed, welcome, messenger and push offers. Side: «paid lessons» (`tb-my-balance-widget`:
-balance ÷ price, a bar full at 8 lessons — *ours*; a debt or no price shows the balance alone) and
-one board and one textbook, hidden when none. No FAB.
+balance ÷ price, a bar full at 8 lessons — *ours*; a debt or no price shows the balance alone). The
+lesson materials are not on the home page: they stay in the lesson and in «Материалы». No FAB.
 
 ## Schedule
 

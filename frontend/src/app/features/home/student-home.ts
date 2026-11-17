@@ -5,12 +5,10 @@ import {
   computed,
   inject,
   signal,
-  viewChild,
 } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { AuthService } from '@core/auth/auth.service';
 import { injectWindowSize } from '@core/layout/mobile';
-import { MyBoardsFeed } from '@features/boards/parts';
 import { HelpButton } from '@features/help/parts';
 import { BillingApi, MyBalanceWidget } from '@features/billing/parts';
 import type { MyBillingSummary } from '@features/billing/parts';
@@ -19,7 +17,6 @@ import type { MyHomeworkSummary } from '@features/homework/parts';
 import { ConnectMessengerCard, PushOnboardingCard } from '@features/notifications/parts';
 import { NextLessonWidget, ScheduleApi, formatLessonStart } from '@features/schedule/parts';
 import type { MyScheduleSummary } from '@features/schedule/parts';
-import { MyTextbooksFeed } from '@features/textbooks/parts';
 import { StudentWelcomeCard } from './student-welcome-card';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
@@ -27,12 +24,9 @@ import { PageHeader } from '@shared/ui/page-header';
 import { Pane, Panes } from '@shared/ui/panes';
 import { T } from './i18n/texts';
 
-/** Cards of the lesson's materials per kind on the home page: a board and a textbook side by side (ours). */
-const MATERIALS = 1;
-
 /**
  * Student's home (spec §10.4): a feed of two columns — the nearest lesson (hero), «Сдать» and «Проверено недавно»;
- * on the right «Оплачено N занятий» and the materials. Narrower than the expanded size: one column in the same order.
+ * on the right «Оплачено N занятий». Narrower than the expanded size: one column in the same order.
  */
 @Component({
   selector: 'tb-student-home',
@@ -41,9 +35,7 @@ const MATERIALS = 1;
     ConnectMessengerCard,
     PushOnboardingCard,
     MyBalanceWidget,
-    MyBoardsFeed,
     MyDeadlinesWidget,
-    MyTextbooksFeed,
     NextLessonWidget,
     StudentWelcomeCard,
     LoadStateView,
@@ -85,11 +77,6 @@ const MATERIALS = 1;
             @if (billing(); as billing) {
               <tb-my-balance-widget [summary]="billing" />
             }
-            <section class="tb-feed__materials" [hidden]="materialsTotal() === 0">
-              <h2 class="tb-feed__title">{{ t.materials }}</h2>
-              <tb-my-boards-feed [limit]="cards" />
-              <tb-my-textbooks-feed [limit]="cards" />
-            </section>
           </div>
         </div>
       </tb-pane>
@@ -115,33 +102,10 @@ const MATERIALS = 1;
     .tb-feed__side:empty {
       display: none;
     }
-
-    .tb-feed__materials {
-      display: grid;
-      /* Portal decision: match material cards' capped width and wrap when two no longer fit. */
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 15rem));
-      gap: var(--tb-space-3);
-    }
-
-    .tb-feed__materials[hidden] {
-      display: none;
-    }
-
-    .tb-feed__title {
-      grid-column: 1 / -1;
-      margin: 0;
-      font: var(--tb-type-title-m);
-    }
-
-    /* each feed gives one card: the grid of the feed is one column here */
-    .tb-feed__materials ::ng-deep .tb-material-grid {
-      grid-template-columns: minmax(0, 1fr);
-    }
   `,
 })
 export class StudentHome implements OnInit {
   protected readonly t = T.studentHome;
-  protected readonly cards = MATERIALS;
   private readonly scheduleApi = inject(ScheduleApi);
   private readonly homeworkApi = inject(HomeworkApi);
   private readonly billingApi = inject(BillingApi);
@@ -152,12 +116,6 @@ export class StudentHome implements OnInit {
   protected readonly homework = signal<MyHomeworkSummary | null>(null);
   protected readonly billing = signal<MyBillingSummary | null>(null);
   protected readonly state = new LoadState();
-
-  private readonly boards = viewChild(MyBoardsFeed);
-  private readonly textbooks = viewChild(MyTextbooksFeed);
-  protected readonly materialsTotal = computed(
-    () => (this.boards()?.total() ?? 0) + (this.textbooks()?.total() ?? 0),
-  );
 
   protected readonly twoColumns = computed(() => {
     const size = this.size();

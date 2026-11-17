@@ -66,7 +66,7 @@ Order: one substep per session, a commit each; the PR is opened once, after 431.
   `--tb-list-item`); make them tonal like the teacher's schedule and the rest of the portal (the
   same `--tb-list-item` / lesson-card surface as `schedule/teacher`), light and dark; check the
   agenda and the day views. Test or a screenshot check at 390 px.
-- [ ] 428.2 *simple* F — remove the lesson materials from the student's home
+- [x] 428.2 *simple* F — remove the lesson materials from the student's home
   (`features/home/student-home.ts`: the `tb-feed__materials` section, `MATERIALS`,
   `materialsTotal`, its styles and texts in `home/i18n`; the materials stay in the lesson and in
   «Материалы»). Tests: `student-home.spec.ts`. Docs: `docs/screens.md` «Student cabinet», wiki,
