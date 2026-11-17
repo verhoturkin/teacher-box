@@ -195,6 +195,19 @@ describe('TimePicker', () => {
     expect(component.picked).toEqual(['08:05']);
   });
 
+  it('unmounts its content when the dialog is gone, and mounts it again on the next open', async () => {
+    const { component, detect } = await render();
+    component.picker().open('10:00');
+    await detect();
+    expect(document.body.querySelector('.tb-time-picker__dial')).not.toBeNull();
+    buttonByText(document.body, 'Отмена').click();
+    await detect();
+    expect(document.body.querySelector('.tb-time-picker__dial')).toBeNull();
+    component.picker().open('11:00');
+    await detect();
+    expect(parts()).toEqual(['11', '00']);
+  });
+
   it('is the input view alone in a short window', async () => {
     const { component, detect } = await render(true);
     component.picker().open('10:00');

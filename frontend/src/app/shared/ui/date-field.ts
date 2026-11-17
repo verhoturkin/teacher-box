@@ -217,8 +217,9 @@ let nextId = 0;
       [headline]="month() ? t.pickMonth : t.pick"
       (shown)="focusChoice()"
       (closed)="closed()"
+      (gone)="mounted.set(false)"
     >
-      @if (dialogOpen()) {
+      @if (mounted()) {
         <p class="tb-date-field__chosen">{{ chosen() }}</p>
         <ng-container *ngTemplateOutlet="picker" />
       }
@@ -390,6 +391,8 @@ export class DateField extends TypedField<Date> {
   readonly month = input(false);
 
   protected readonly dialogOpen = signal(false);
+  /** The content stays until the leave animation ends: without it the dialog shrinks first. */
+  protected readonly mounted = signal(false);
   protected readonly view = signal<View>('days');
   /** The month the header shows (its first day); the grid's paging comes back here. */
   protected readonly shown = signal(new Date());
@@ -479,6 +482,7 @@ export class DateField extends TypedField<Date> {
     this.draft.set(value);
     this.show(firstOf(start.getFullYear(), start.getMonth()));
     this.view.set(this.month() ? 'months' : 'days');
+    this.mounted.set(true);
     this.dialogOpen.set(true);
   }
 

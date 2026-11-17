@@ -103,7 +103,7 @@ Order: one substep per session, a commit each; the PR is opened once, after 431.
   `features/gallery/fields/`. Tests: `date-field.spec.ts`, `date-time-field.spec.ts`; E2E helper
   `e2e/tests/support/date-time.ts` follows. Docs: `docs/design-system.md` §9, ADR-0067 update,
   wiki `Schedule` if it describes the picker.
-- [ ] 430.2 *simple* F — the time picker's closing animation jerks
+- [x] 430.2 *simple* F — the time picker's closing animation jerks
   (`shared/ui/time-picker.ts`): find the cause (leave animation vs. the dialog removed before it
   ends, a layout change of the dial, a spring on a non-transform property) and close on the M3
   exit motion (`--tb-spring-*` effects / emphasized accelerate) with only `opacity` /

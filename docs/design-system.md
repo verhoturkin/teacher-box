@@ -99,7 +99,9 @@ elevation with their values; springs —
     on default effects; it closes at once with the scrim, fading while it collapses by a quarter
     towards its top edge (both on fast effects), its scrim fading on default effects and going
     last — PrimeNG replays a dialog's leave if its scrim ends first; with less motion it only
-    fades. Menus and dropdowns
+    fades. A picker (`tb-time-picker`, `tb-date-field`) keeps its content mounted until the
+    dialog's `gone` output: removing it on `visible = false` shrinks the window (506 → 162 px
+    for the time picker) in the first frame of the leave. Menus and dropdowns
     take no scale either (**M3**: scale implies an elevation change; they
     expand along an axis, away from the anchor — videos of transition patterns 7-2): a clip
     with the surface's corners opens from the anchored edge, down under the field or up above
