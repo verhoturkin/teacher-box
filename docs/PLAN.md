@@ -56,7 +56,7 @@ width across restarts and breakpoints; its touch target slightly overlaps the pa
 4×48 dp, full corners; pressed and dragged 12×52 dp, corner medium (12 dp); container 24 dp wide —
 the width of our spacer.
 
-- [ ] 424.1 *complex* F — drag handle of the panes (`shared/ui/panes.ts`, a new
+- [x] 424.1 *complex* F — drag handle of the panes (`shared/ui/panes.ts`, a new
   `shared/ui/pane-handle.ts` if `Pane` gets too big). A `tb-pane kind="fixed"` with
   `resizeKey="<page>"` gets a handle in the spacer on its flexible side, only while the panes
   stand side by side (from expanded; none in `single`, none for `sheet` — M3 resizes supporting

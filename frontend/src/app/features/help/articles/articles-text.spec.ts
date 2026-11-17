@@ -329,6 +329,28 @@ const DISK_USAGE_EN = [
     ' or delete old backups.',
 ] as const;
 
+/** The pane drag handle (424.1): one paragraph in the appearance article of the teacher. */
+const PANE_HANDLE: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'appearance',
+      'выйти из портала.\n',
+      'выйти из портала.\n\nНа большом экране границу между двумя панелями, например списком учеников и ' +
+        'карточкой ученика, можно перетащить за ручку, чтобы сделать панель шире; двойной щелчок по ручке ' +
+        'возвращает обычную ширину. Ширина запоминается на этом устройстве.\n',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'appearance',
+      'Settings and Help near the bottom.\n',
+      'Settings and Help near the bottom.\n\nOn a large screen, drag the handle between two panes, such as ' +
+        'the student list and the student card, to widen one of them; double-click it to go back to the ' +
+        'standard width. The portal remembers the width on this device.\n',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -415,6 +437,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(WORKING_HOURS[name] ?? []),
       ...(CALL_MODERATION[name] ?? []),
       ...(REVIEW_SHEET[name] ?? []),
+      ...(PANE_HANDLE[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

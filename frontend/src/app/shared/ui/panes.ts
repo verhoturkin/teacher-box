@@ -5,6 +5,7 @@ import {
   Directive,
   DestroyRef,
   DOCUMENT,
+  ElementRef,
   TemplateRef,
   ViewContainerRef,
   Signal,
@@ -16,6 +17,7 @@ import {
 } from '@angular/core';
 import { WindowSize, injectWindowSize } from '@core/layout/mobile';
 import { PAGE_MOTION_ATTRIBUTE } from '@core/routing/page-transitions';
+import { PaneHandle } from './pane-handle';
 
 /**
  * The kind of a pane (M3 panes, redesign spec §3.3): `fixed` keeps the M3 default width of its
@@ -44,6 +46,8 @@ const FIXED_WIDTH: Partial<Record<WindowSize, string>> = {
   large: '25.75rem',
   'extra-large': '25.75rem',
 };
+
+let paneIds = 0;
 
 /** M3 default maximum width of a side sheet: 400 dp. */
 const SHEET_WIDTH = '25rem';
@@ -84,6 +88,12 @@ const SHEET_WIDTH = '25rem';
       block-size: calc(100dvh - var(--tb-header-height));
       /* a pane that slides in (24 dp) never widens the window */
       overflow-x: clip;
+    }
+
+    /* a drag of the pane handle: the pointer keeps its shape, text is not selected */
+    :host(.tb-panes--resizing) {
+      cursor: col-resize;
+      user-select: none;
     }
 
     :host(.tb-panes--single) {
@@ -127,11 +137,13 @@ export class Panes {
  */
 @Component({
   selector: 'tb-pane',
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, PaneHandle],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'tb-pane',
     '[class.tb-pane--sheet]': "kind() === 'sheet'",
+    '[class.tb-pane--resizable]': 'resizable()',
+    '[attr.id]': 'resizable() ? id : null',
     '[style.flex-grow]': 'grow()',
     '[style.flex-basis]': 'basis()',
     '[style.max-width]': 'maxWidth()',
@@ -142,31 +154,58 @@ export class Panes {
     '[animate.leave]': 'leave()',
   },
   template: `
-    <div class="tb-pane__header">
-      <ng-content select="[tbPaneHeader]" />
-      @for (heading of headings(); track heading) {
-        <ng-container [ngTemplateOutlet]="heading" />
-      }
+    <div class="tb-pane__sheet">
+      <div class="tb-pane__header">
+        <ng-content select="[tbPaneHeader]" />
+        @for (heading of headings(); track heading) {
+          <ng-container [ngTemplateOutlet]="heading" />
+        }
+      </div>
+      <div class="tb-pane__scroll"><ng-content /></div>
     </div>
-    <div class="tb-pane__scroll"><ng-content /></div>
+    @if (resizable()) {
+      <tb-pane-handle [pane]="host" [resizeKey]="resizeKey() ?? ''" [controls]="id" />
+    }
   `,
   styles: `
-    /*
-     * The pane clips to its rounded corners and the scrolling area lies inside it, so the scrollbar never sticks
-     * out past the corners: its track is inset by the corner radius (ours, \`tb-scrollbar\` in styles.scss)
-     */
     :host {
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
       min-width: 0;
       box-sizing: border-box;
-      overflow: clip;
       border-radius: var(--tb-shape-xl);
       background: var(--p-md-surface);
       /* a list lies right on the pane's surface: its group keeps the M3 list container corner, large (16 px) —
          the first and the last rows round their outer corners by it, the rows between by 4 px */
       --tb-list-outer: var(--tb-shape-lg);
+    }
+
+    /*
+     * The sheet clips to the pane's rounded corners and the scrolling area lies inside it, so the scrollbar never
+     * sticks out past the corners: its track is inset by the corner radius (ours, \`tb-scrollbar\` in styles.scss).
+     * The pane itself does not clip: its drag handle lies in the spacer beside it
+     */
+    .tb-pane__sheet {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      min-height: 0;
+      overflow: clip;
+      border-radius: inherit;
+    }
+
+    /* the width the user set moves on a spring when it snaps or a key changes it */
+    :host(.tb-pane--resizable) {
+      position: relative;
+      transition: flex-basis var(--tb-spring-default-spatial);
+    }
+
+    /* a drag follows the pointer: no motion of the panes */
+    :host-context(.tb-panes--resizing),
+    :host-context(.tb-panes--resizing) > * {
+      transition: none;
+      animation: none;
     }
 
     /* Optional persistent heading/actions; geometry is a portal decision using the pane padding. */
@@ -261,6 +300,21 @@ export class Pane {
   readonly kind = input<PaneKind>('flexible');
   /** The name of the pane for assistive technology (a landmark region); none — a plain block. */
   readonly label = input<string>();
+  /**
+   * A fixed pane with a key gets the M3 drag handle while the panes stand side by side (from expanded); the
+   * width is remembered under the key (unique per page).
+   */
+  readonly resizeKey = input<string>();
+
+  protected readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  protected readonly id = `tb-pane-${String(++paneIds)}`;
+  protected readonly resizable = computed(
+    () =>
+      this.resizeKey() !== undefined &&
+      this.kind() === 'fixed' &&
+      !this.panes.single() &&
+      this.panes.size() !== 'medium',
+  );
 
   /** The width of the pane on this breakpoint (`flex-basis`); `null` — the width of the column. */
   protected readonly basis = computed(() => {
@@ -271,8 +325,13 @@ export class Pane {
       return '0%';
     }
     switch (this.kind()) {
-      case 'fixed':
-        return FIXED_WIDTH[this.panes.size()] ?? null;
+      case 'fixed': {
+        const width = FIXED_WIDTH[this.panes.size()] ?? null;
+        // the width the user set: from one column up to half of the panes, clamped as the window changes
+        return this.resizable() && width !== null
+          ? `clamp(360px, var(--tb-pane-width, ${width}), 50%)`
+          : width;
+      }
       case 'sheet':
         return SHEET_WIDTH;
       case 'flexible':

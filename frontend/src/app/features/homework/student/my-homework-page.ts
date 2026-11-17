@@ -59,7 +59,7 @@ interface Group {
   template: `
     <tb-panes>
       @if (layout.list()) {
-        <tb-pane kind="fixed" [label]="t.title">
+        <tb-pane kind="fixed" resizeKey="my-homework" [label]="t.title">
           <div tbPaneHeader>
             <tb-page-header [title]="t.title" />
           </div>

@@ -500,6 +500,19 @@ Gallery: [`/gallery/frame`](../frontend/src/app/features/gallery/frame/).
   expanded panes stand side by side and each scrolls on its own; below they follow one another and
   the window scrolls. Focus order = template order = visual order; `label` makes a pane a named
   region. The shell drops its content padding for a page of panes.
+- **Drag handle** (`shared/ui/pane-handle.ts`, **M3** DragHandle): `tb-pane kind="fixed"
+  resizeKey="<page>"` gets a handle in the spacer on its flexible side while the panes stand side
+  by side (from expanded; none in `single`, none for `sheet`). Look: 4×48 dp, full corners;
+  pressed and dragged 12×52 dp, corner medium, morph on `--tb-spring-fast-spatial` (**M3**);
+  outline-variant at rest, outline on hover, on-surface pressed and dragged; hit zone the 24 dp
+  spacer plus 8 dp over each pane (*ours*). Limits (*ours*): from 360 dp, the flexible pane keeps
+  360 dp, at most 50 % of the panes; CSS `clamp()` keeps them on window resize, the stored width
+  stays. A drag writes `--tb-pane-width` once a frame (pointer capture, no change detection), the
+  panes drop their motion, the page gets `col-resize`; a drop within 24 dp (*ours*) snaps to
+  360 dp, 412 dp or the centred split (**M3**) on `--tb-spring-default-spatial`. Double click or
+  Enter: default width ↔ last custom one (**M3** toggle); ←/→ 16 dp (*ours*, mirrored in RTL),
+  Home/End to the limits; `role="separator"` with `aria-valuenow/min/max` in px. The width is
+  kept in `localStorage` under `tb.pane-width.<userId>.<resizeKey>` (**M3** persistent resizing).
 - **List-detail:** `injectListDetail(() => routeHasDetail)` — from expanded both panes; on compact
   and medium the list or the detail by the route, the detail with «back» (`tb-page-header [back]`).
   `tb-panes medium="two"` with `injectListDetail(open, 'two')` keeps both panes on medium at 50 %

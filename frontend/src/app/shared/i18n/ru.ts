@@ -76,6 +76,9 @@ export const ru = {
     bytes: 'Б',
     units: ['КБ', 'МБ', 'ГБ'],
   },
+  panes: {
+    resize: 'Изменить ширину панели',
+  },
   fileCheck: {
     tooLarge: (name: string, max: string) => `«${name}» больше ${max}`,
     unsupported: (name: string) => `«${name}»: такой тип файла загружать нельзя`,

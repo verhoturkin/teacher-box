@@ -44,6 +44,9 @@ your name and logo. Android may take time to refresh app colours after a theme c
 On a phone, use the bottom navigation for Home, Schedule, Homework, Students and Payments. Open ☰ for Materials, Settings and Help. The current \
 section is highlighted. On larger screens, sections appear in a sidebar, with Create near the top and Settings and Help near the bottom.
 
+On a large screen, drag the handle between two panes, such as the student list and the student card, to widen one of them; \
+double-click it to go back to the standard width. The portal remembers the width on this device.
+
 The main action, such as “Add student” or “New assignment”, appears at the bottom right on phones. Forms with several fields open full screen with \
 Save or Create at the top. Lesson details open in a bottom panel and confirmations in a dialog. Use the back arrow on detail pages to return to the \
 list.

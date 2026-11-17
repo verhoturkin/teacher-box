@@ -227,7 +227,7 @@ const ALL_DAY_START_HOUR = 10;
       </tb-pane>
 
       @if (sideShown()) {
-        <tb-pane kind="fixed" class="tb-schedule-side" [label]="t.sidePane">
+        <tb-pane kind="fixed" resizeKey="schedule" class="tb-schedule-side" [label]="t.sidePane">
           @if (!mobile()) {
             <tb-mini-month
               tbPaneHeader

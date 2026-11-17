@@ -42,7 +42,7 @@ import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
   template: `
     <tb-panes>
       @if (layout.list()) {
-        <tb-pane kind="fixed" [label]="t.articles">
+        <tb-pane kind="fixed" resizeKey="help" [label]="t.articles">
           <div tbPaneHeader>
             <tb-page-header [title]="t.help" />
             <tb-search-field [formControl]="search" [label]="t.search" />

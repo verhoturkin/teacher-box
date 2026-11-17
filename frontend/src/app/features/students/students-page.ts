@@ -139,7 +139,7 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
   template: `
     <tb-panes>
       @if (layout.list()) {
-        <tb-pane kind="fixed" [label]="t.list">
+        <tb-pane kind="fixed" resizeKey="students" [label]="t.list">
           <div tbPaneHeader>
             <tb-page-header [title]="t.title">
               <tb-help-button help topic="teacher/students" />

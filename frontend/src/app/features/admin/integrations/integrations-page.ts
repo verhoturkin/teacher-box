@@ -57,7 +57,7 @@ type Section = 'connections' | 'ai';
   template: `
     <tb-panes medium="two">
       @if (layout.list()) {
-        <tb-pane kind="fixed" [label]="t.sections">
+        <tb-pane kind="fixed" resizeKey="integrations" [label]="t.sections">
           <tb-page-header tbPaneHeader [title]="t.title">
             <tb-help-button help topic="admin/diagnostics" />
           </tb-page-header>

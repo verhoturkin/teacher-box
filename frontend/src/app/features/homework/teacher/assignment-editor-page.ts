@@ -208,7 +208,7 @@ import { VideoDraft, videoDraft, videoInputs } from './video-section';
           }
         </tb-pane>
         @if (aiEnabled() && !single() && aiOpen()) {
-          <tb-pane class="tb-editor__ai" kind="fixed" [label]="t.aiTitle">
+          <tb-pane class="tb-editor__ai" kind="fixed" resizeKey="assignment-ai" [label]="t.aiTitle">
             <ng-template tbPaneHeader>
               <div class="tb-editor__ai-head">
                 <h2 class="tb-subtitle">{{ t.aiTitle }}</h2>

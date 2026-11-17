@@ -157,7 +157,12 @@ export function nextMonday(date: Date): Date {
           }
         }
       </tb-pane>
-      <tb-pane kind="fixed" class="tb-my-schedule-side" [label]="t.upcoming">
+      <tb-pane
+        kind="fixed"
+        resizeKey="my-schedule"
+        class="tb-my-schedule-side"
+        [label]="t.upcoming"
+      >
         @if (!mobile()) {
           <tb-mini-month
             tbPaneHeader

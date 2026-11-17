@@ -3,8 +3,8 @@ import { ButtonModule } from 'primeng/button';
 import { Pane, PaneHeader, Panes } from '@shared/ui/panes';
 
 /**
- * §7 Panes `tb-panes` > `tb-pane`: side by side from expanded (`kind="fixed"` 360 / 412 dp, the flexible one
- * takes the rest, `kind="sheet"` the standard side sheet), one after another below; a pane that appears after
+ * §7 Panes `tb-panes` > `tb-pane`: side by side from expanded (`kind="fixed"` 360 / 412 dp; with
+ * `resizeKey` the M3 drag handle `tb-pane-handle` in the spacer resizes it; the flexible one takes the rest, `kind="sheet"` the standard side sheet), one after another below; a pane that appears after
  * the page enters on `--tb-spring-default-spatial`. The panes take the window's height.
  */
 @Component({
@@ -13,10 +13,15 @@ import { Pane, PaneHeader, Panes } from '@shared/ui/panes';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-button label="Toggle the sheet" severity="secondary" (onClick)="sheet.set(!sheet())" />
-    <code class="tb-gallery-name">tb-panes > tb-pane kind="fixed" | (flexible) | kind="sheet"</code>
+    <code class="tb-gallery-name"
+      >tb-panes > tb-pane kind="fixed" [resizeKey] (tb-pane-handle) | (flexible) |
+      kind="sheet"</code
+    >
     <div class="window">
       <tb-panes>
-        <tb-pane kind="fixed" label="List"><p>kind="fixed"</p></tb-pane>
+        <tb-pane kind="fixed" resizeKey="gallery" label="List"
+          ><p>kind="fixed" resizeKey: drag the handle</p></tb-pane
+        >
         <tb-pane label="Detail">
           <ng-template tbPaneHeader><h3>Detail: ng-template tbPaneHeader</h3></ng-template>
           <p>flexible (the default)</p>

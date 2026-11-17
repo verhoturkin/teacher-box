@@ -337,7 +337,7 @@ const NUMBER = new Intl.NumberFormat(locale());
       </tb-pane>
 
       @if (!mobile()) {
-        <tb-pane kind="fixed" [label]="t.byStudents">
+        <tb-pane kind="fixed" resizeKey="billing" [label]="t.byStudents">
           <div tbPaneHeader class="tb-ops__bar tb-ops__bar--pane">
             <h2 class="tb-ops__pane-title">{{ t.byStudents }}</h2>
             <a class="tb-link tb-ops__all" routerLink="/teacher/students">{{ t.allInStudents }}</a>
