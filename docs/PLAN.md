@@ -55,7 +55,14 @@ sheet. KISS: remove before adding. No new ADR unless the call change needs one.
   under the comment; grades 1–5 plus «Без оценки» (now 3–5); the student-context tags wrap badly
   on two lines — one line with an ellipsis and the full text in a tooltip (fix in the shared tag
   component, so the AI helper's tags get it too). Check the backend accepts grades 1 and 2.
-- [ ] 421.5 *simple* F — browser check of 421.1–421.4 in the built-in browser; fix small defects,
+- [ ] 421.5 *complex* F — the floating call window (PiP), variant A picked by the teacher: the
+  video fills the whole window edge to edge — no rounding, no padding around the main tile; the
+  call name and time on a scrim strip over the top of the video, the controls as separate round
+  icon buttons on a scrim strip over the bottom — no shared pill surface (`call-controls.scss`
+  `--compact`, `call-window.scss` `&--pip`, `call-tile.scss`). Both strips hide when the pointer
+  leaves the window and show on hover or keyboard focus; the muted-microphone mark stays visible.
+  The full call view in the tab keeps its look. Update `docs/screens/call.md`.
+- [ ] 421.6 *simple* F — browser check of 421.1–421.5 in the built-in browser; fix small defects,
   list the rest.
 
 ### 422. Release 0.54.0
