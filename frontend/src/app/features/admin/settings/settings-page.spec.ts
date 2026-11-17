@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Select } from 'primeng/select';
 import { ToggleSwitch } from 'primeng/toggleswitch';
-import { DatePicker } from 'primeng/datepicker';
 import { adminSetting, adminSettings } from '@testing/admin-fixtures';
 import {
   bodyText,
@@ -197,11 +196,12 @@ describe('SettingsPage', () => {
     ).toBe('0 0 3 * * MON');
     expect(readableText(backups)).toContain('Задано своё расписание в формате cron');
 
-    const picker = fixture.debugElement.query(By.directive(DatePicker)).injector.get(DatePicker);
-    expect(picker.timeOnly).toBe(true);
+    const time = requireElement(backups, '#setting-TEACHERBOX_BACKUP_CRON-time', HTMLInputElement);
+    expect(time.value).toBe('03:30');
     const page = fixture.componentInstance;
     const cron = setting('TEACHERBOX_BACKUP_CRON');
-    page.setTime(cron, new Date(2026, 0, 1, 4, 5));
+    typeInto(time, '4.05');
+    time.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
     page.setTime(cron, null);
     await fixture.whenStable();
     expect(page.edits()).toEqual({ TEACHERBOX_BACKUP_CRON: '0 5 4 * * *' });

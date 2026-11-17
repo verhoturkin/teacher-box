@@ -1,6 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { bodyText, buttonByText } from '@testing/dom';
+import { bodyText, buttonByText, requireElement } from '@testing/dom';
 import { onceOffTime, weeklyOffTime } from '@testing/schedule-fixtures';
 import { OffTime } from '../data-access/schedule.models';
 import { OffTimeDialog } from './off-time-dialog';
@@ -79,8 +79,8 @@ describe('OffTimeDialog', () => {
 
     dialog.form.patchValue({
       weekdays: ['WEDNESDAY', 'MONDAY'],
-      startTime: new Date(2026, 0, 1, 13, 0),
-      endTime: new Date(2026, 0, 1, 14, 30),
+      startTime: '13:00',
+      endTime: '14:30',
       startsOn: new Date(2026, 9, 1),
       endsOn: new Date(2026, 11, 31),
     });
@@ -115,7 +115,10 @@ describe('OffTimeDialog', () => {
         note: 'Обед',
       }),
     );
-    expect(dialog.form.controls.startTime.value?.getHours()).toBe(13);
+    expect(dialog.form.controls.startTime.value).toBe('13:00');
+    expect(requireElement(document.body, '#off-time-start-time', HTMLInputElement).value).toBe(
+      '13:00',
+    );
 
     dialog.save();
     backend

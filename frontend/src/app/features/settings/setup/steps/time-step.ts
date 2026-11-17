@@ -17,8 +17,8 @@ export type TimeForm = FormGroup<{
   duration: FormControl<number | null>;
   currency: FormControl<string>;
   price: FormControl<number | null>;
-  workStart: FormControl<Date | null>;
-  workEnd: FormControl<Date | null>;
+  workStart: FormControl<string | null>;
+  workEnd: FormControl<string | null>;
 }>;
 
 const t = T.setup;

@@ -24,7 +24,8 @@ export const MOBILE_QUERY = BREAKPOINT_QUERIES.compact;
 
 const SIZES: readonly WindowSize[] = ['compact', 'medium', 'expanded', 'large', 'extra-large'];
 
-function matches(query: string): Signal<boolean> {
+/** Whether a media query holds; follows the window. Call in an injection context. */
+export function injectMedia(query: string): Signal<boolean> {
   return toSignal(
     inject(BreakpointObserver)
       .observe(query)
@@ -35,7 +36,7 @@ function matches(query: string): Signal<boolean> {
 
 /** Whether the screen is a phone's; follows rotation and window resizing. Call in an injection context. */
 export function injectMobile(): Signal<boolean> {
-  return matches(MOBILE_QUERY);
+  return injectMedia(MOBILE_QUERY);
 }
 
 /**
@@ -43,6 +44,6 @@ export function injectMobile(): Signal<boolean> {
  * (and when nothing matches) it is expanded. Call in an injection context.
  */
 export function injectWindowSize(): Signal<WindowSize> {
-  const checks = SIZES.map((size) => [size, matches(BREAKPOINT_QUERIES[size])] as const);
+  const checks = SIZES.map((size) => [size, injectMedia(BREAKPOINT_QUERIES[size])] as const);
   return computed(() => checks.find(([, match]) => match())?.[0] ?? 'expanded');
 }

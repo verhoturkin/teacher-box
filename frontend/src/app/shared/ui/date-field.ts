@@ -13,14 +13,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import {
-  ControlValueAccessor,
-  FormsModule,
-  NG_VALIDATORS,
-  NG_VALUE_ACCESSOR,
-  ValidationErrors,
-  Validator,
-} from '@angular/forms';
+import { FormsModule, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { DatePicker } from 'primeng/datepicker';
 import { InputText } from 'primeng/inputtext';
@@ -32,6 +25,7 @@ import { toIsoDate } from '@shared/dates/iso-date';
 import { formatDate, formatMonth, fullDate, parseDate, parseMonth } from '@shared/dates/typed-date';
 import { SHARED_T } from '@shared/i18n/texts';
 import { TbDialog } from './dialog/dialog';
+import { TypedField } from './typed-field';
 
 /** A day of PrimeNG's grid (`#date` template): the month counts from 0. */
 interface GridDay {
@@ -93,7 +87,7 @@ let nextId = 0;
     <button
       #opener
       type="button"
-      class="tb-date-field__open"
+      class="tb-typed-field__open"
       aria-haspopup="dialog"
       [attr.aria-label]="month() ? t.openMonth : t.open"
       [attr.aria-expanded]="docked() || dialogOpen()"
@@ -250,52 +244,6 @@ let nextId = 0;
     }
   `,
   styles: `
-    :host {
-      position: relative;
-      display: block;
-      min-width: 0;
-    }
-
-    /* the text never runs under the icon button */
-    input {
-      width: 100%;
-      padding-inline-end: 3.5rem;
-    }
-
-    /* M3 trailing icon: 24 dp in a 40 dp round button, like «Показать пароль» */
-    .tb-date-field__open {
-      position: absolute;
-      top: 50%;
-      inset-inline-end: var(--tb-space-2);
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 2.5rem;
-      height: 2.5rem;
-      padding: 0;
-      border: 0;
-      border-radius: var(--tb-shape-full);
-      background: none;
-      color: var(--p-md-on-surface-variant);
-      cursor: pointer;
-      transform: translateY(-50%);
-
-      &:hover:not(:disabled) {
-        background: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-hover), transparent);
-      }
-
-      &:focus-visible {
-        outline: 3px solid var(--p-md-secondary);
-        outline-offset: 2px;
-      }
-
-      &:disabled {
-        color: color-mix(in srgb, var(--p-md-on-surface) 38%, transparent);
-        cursor: default;
-      }
-    }
-
     /* the modal picker on compact: «Выберите дату» and the chosen date above the picker */
     .tb-date-field__sheet {
       margin-bottom: var(--tb-space-3);
@@ -459,7 +407,7 @@ let nextId = 0;
     }
   `,
 })
-export class DateField implements ControlValueAccessor, Validator {
+export class DateField extends TypedField<Date> {
   protected readonly t = SHARED_T.date;
   protected readonly c = SHARED_T.common;
   private readonly document = inject(DOCUMENT);
@@ -477,12 +425,6 @@ export class DateField implements ControlValueAccessor, Validator {
   readonly maxDate = input<Date | null>(null);
   /** A month field: the value is the first day of the month. */
   readonly month = input(false);
-
-  protected readonly text = signal('');
-  protected readonly disabled = signal(false);
-  private readonly value = signal<Date | null>(null);
-  /** The typed text is not a date. */
-  private wrong = false;
 
   protected readonly docked = signal(false);
   protected readonly dialogOpen = signal(false);
@@ -525,11 +467,8 @@ export class DateField implements ControlValueAccessor, Validator {
       : draft.toLocaleDateString(locale(), { weekday: 'short', day: 'numeric', month: 'short' });
   });
 
-  private onChange: (value: Date | null) => void = () => undefined;
-  protected onTouched: () => void = () => undefined;
-  private onValidatorChange: () => void = () => undefined;
-
   constructor() {
+    super();
     // the picker's keys come first: Shift+Page Up/Down would page a month in PrimeNG's grid
     const keys = (event: KeyboardEvent): void => {
       this.onKey(event);
@@ -540,58 +479,36 @@ export class DateField implements ControlValueAccessor, Validator {
     });
   }
 
-  writeValue(value: unknown): void {
-    const date = value instanceof Date ? value : null;
-    this.value.set(date);
-    this.text.set(date === null ? '' : this.format(date));
-    this.wrong = false;
+  protected override read(value: unknown): Date | null {
+    return value instanceof Date ? value : null;
   }
 
-  registerOnChange(fn: (value: Date | null) => void): void {
-    this.onChange = fn;
+  protected override parse(text: string): Date | null {
+    return this.month() ? parseMonth(text) : parseDate(text);
   }
 
-  registerOnTouched(fn: () => void): void {
-    this.onTouched = fn;
+  protected override format(date: Date): string {
+    return this.month() ? formatMonth(date) : formatDate(date);
   }
 
-  registerOnValidatorChange(fn: () => void): void {
-    this.onValidatorChange = fn;
+  protected override wrongError(): ValidationErrors {
+    return { date: this.t.wrong(this.month() ? this.t.monthFormat : this.t.format) };
   }
 
-  setDisabledState(disabled: boolean): void {
-    this.disabled.set(disabled);
-  }
-
-  validate(): ValidationErrors | null {
-    if (this.wrong) {
-      return { date: this.t.wrong(this.month() ? this.t.monthFormat : this.t.format) };
-    }
-    const value = this.value();
+  protected override check(value: Date): ValidationErrors | null {
     const min = this.minDate();
     const max = this.maxDate();
-    if (value !== null && min !== null && toIsoDate(value) < toIsoDate(min)) {
+    if (min !== null && toIsoDate(value) < toIsoDate(min)) {
       return { date: this.t.min(formatDate(min)) };
     }
-    if (value !== null && max !== null && toIsoDate(value) > toIsoDate(max)) {
+    if (max !== null && toIsoDate(value) > toIsoDate(max)) {
       return { date: this.t.max(formatDate(max)) };
     }
     return null;
   }
 
-  /** Enter or leaving the field: the typed text becomes the value; text that is no date stays. */
-  protected readText(): void {
-    const text = this.text().trim();
-    const date = this.month() ? parseMonth(text) : parseDate(text);
-    const wrong = text !== '' && date === null;
-    if (!wrong) {
-      this.text.set(date === null ? '' : this.format(date));
-    }
-    if (wrong !== this.wrong) {
-      this.wrong = wrong;
-      this.onValidatorChange();
-    }
-    this.commit(date);
+  protected override same(a: Date | null, b: Date | null): boolean {
+    return a?.getTime() === b?.getTime();
   }
 
   protected toggle(): void {
@@ -701,29 +618,9 @@ export class DateField implements ControlValueAccessor, Validator {
     this.closed();
   }
 
-  private choose(date: Date): void {
-    this.text.set(this.format(date));
-    if (this.wrong) {
-      this.wrong = false;
-      this.onValidatorChange();
-    }
-    this.commit(date);
-  }
-
-  private commit(date: Date | null): void {
-    if (date?.getTime() !== this.value()?.getTime()) {
-      this.value.set(date);
-      this.onChange(date);
-    }
-  }
-
   private show(month: Date): void {
     this.shown.set(month);
     this.target.set(month);
-  }
-
-  private format(date: Date): string {
-    return this.month() ? formatMonth(date) : formatDate(date);
   }
 
   private panel(): HTMLElement | null {

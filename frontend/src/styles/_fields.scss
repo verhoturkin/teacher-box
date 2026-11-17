@@ -30,7 +30,11 @@ $field-state-wrong: ":is([aria-invalid='true'], .p-invalid)";
 @function field-rel($tail: '', $list: $field-controls) {
   $out: ();
   @each $head
-    in ('> ', '> :is(.tb-copy-row, .tb-inline) > ', '> :is(tb-member-picker, tb-date-field) > ')
+    in (
+      '> ',
+      '> :is(.tb-copy-row, .tb-inline) > ',
+      '> :is(tb-member-picker, tb-date-field, tb-time-field) > '
+    )
   {
     @each $control in $list {
       $out: list.append($out, '#{$head}#{$control}#{$tail}', comma);
@@ -47,7 +51,7 @@ $field-state-wrong: ":is([aria-invalid='true'], .p-invalid)";
   @return $out;
 }
 
-$field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-member-picker, tb-date-field)), :has(> label:first-child + :is(.tb-copy-row, .tb-inline) > :first-child:is(input, p-select, p-inputnumber, p-datepicker, p-password)))';
+$field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-member-picker, tb-date-field, tb-time-field)), :has(> label:first-child + :is(.tb-copy-row, .tb-inline) > :first-child:is(input, p-select, p-inputnumber, p-datepicker, p-password)))';
 
 #{$field} {
   --tb-filled-background: var(--p-md-surface-container-highest);
@@ -120,7 +124,7 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
     }
   }
 
-  > :is(.tb-copy-row, .tb-inline, tb-member-picker, tb-date-field) {
+  > :is(.tb-copy-row, .tb-inline, tb-member-picker, tb-date-field, tb-time-field) {
     grid-area: control;
   }
 
@@ -315,6 +319,52 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
 
 .tb-field--required > label:first-child::after {
   content: ' *';
+}
+
+/* the date and time fields (ADR-0067): the typed text never runs under the trailing icon button */
+:is(tb-date-field, tb-time-field) {
+  position: relative;
+  display: block;
+  min-width: 0;
+
+  > input {
+    width: 100%;
+    padding-inline-end: 3.5rem;
+  }
+}
+
+/* M3 trailing icon: 24 dp in a 40 dp round button, like «Показать пароль» */
+.tb-typed-field__open {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: var(--tb-space-2);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--tb-shape-full);
+  background: none;
+  color: var(--p-md-on-surface-variant);
+  cursor: pointer;
+  transform: translateY(-50%);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-hover), transparent);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--p-md-secondary);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    color: color-mix(in srgb, var(--p-md-on-surface) 38%, transparent);
+    cursor: default;
+  }
 }
 
 /*

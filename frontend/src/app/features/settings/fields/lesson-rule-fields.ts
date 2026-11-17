@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { DatePicker } from 'primeng/datepicker';
 import { InputNumber } from 'primeng/inputnumber';
+import { TimeField } from '@shared/ui/time-field';
 import { T } from '../i18n/texts';
 
 /**
@@ -134,7 +134,7 @@ export class HorizonField {
 /** The teacher's working hours of every day, `HH:mm` in the teacher's zone; the end after the start. */
 @Component({
   selector: 'tb-working-hours-field',
-  imports: [ReactiveFormsModule, DatePicker],
+  imports: [ReactiveFormsModule, TimeField],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <fieldset class="tb-field tb-working-hours">
@@ -142,30 +142,20 @@ export class HorizonField {
       <div class="tb-working-hours__two">
         <div class="tb-field">
           <label [for]="inputId() + '-start'">{{ t.workFrom }}</label>
-          <p-datepicker
+          <tb-time-field
             [inputId]="inputId() + '-start'"
             [formControl]="start()"
-            [timeOnly]="true"
-            hourFormat="24"
-            [stepMinute]="15"
-            appendTo="body"
-            [fluid]="true"
-            (onClose)="committed.emit()"
-            (keydown.enter)="committed.emit()"
+            [step]="15"
+            (changed)="committed.emit()"
           />
         </div>
         <div class="tb-field">
           <label [for]="inputId() + '-end'">{{ t.workTo }}</label>
-          <p-datepicker
+          <tb-time-field
             [inputId]="inputId() + '-end'"
             [formControl]="end()"
-            [timeOnly]="true"
-            hourFormat="24"
-            [stepMinute]="15"
-            appendTo="body"
-            [fluid]="true"
-            (onClose)="committed.emit()"
-            (keydown.enter)="committed.emit()"
+            [step]="15"
+            (changed)="committed.emit()"
           />
         </div>
       </div>
@@ -193,8 +183,8 @@ export class HorizonField {
   `,
 })
 export class WorkingHoursField {
-  readonly start = input.required<FormControl<Date | null>>();
-  readonly end = input.required<FormControl<Date | null>>();
+  readonly start = input.required<FormControl<string | null>>();
+  readonly end = input.required<FormControl<string | null>>();
   readonly inputId = input('work');
   readonly committed = output();
   protected readonly t = t;

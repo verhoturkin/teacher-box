@@ -305,3 +305,21 @@
     display: none;
   }
 }
+
+/*
+ * The M3 time picker (`tb-time-picker`, design-system §9 «Time»): as wide as its content, the
+ * headline Label Medium on-surface-variant (ours), the view switch at the start of the footer.
+ */
+.p-dialog.tb-d:has(.tb-time-picker) {
+  width: auto;
+  max-width: calc(100vw - 2rem);
+
+  .tb-d__headline {
+    color: var(--p-md-on-surface-variant);
+    font: var(--tb-type-label-m);
+  }
+
+  .tb-time-picker__switch {
+    margin-inline-end: auto;
+  }
+}

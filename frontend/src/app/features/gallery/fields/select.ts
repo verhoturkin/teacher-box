@@ -1,13 +1,12 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DatePicker } from 'primeng/datepicker';
 import { MultiSelect } from 'primeng/multiselect';
 import { Select } from 'primeng/select';
 
-/** §9 Composite controls in `.tb-field`: select, multiselect, a time. */
+/** §9 Composite controls in `.tb-field`: select, multiselect. */
 @Component({
   selector: 'tb-gallery-select-fields',
-  imports: [FormsModule, Select, MultiSelect, DatePicker],
+  imports: [FormsModule, Select, MultiSelect],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-form tb-form--narrow">
@@ -31,19 +30,7 @@ import { Select } from 'primeng/select';
           [fluid]="true"
         />
       </div>
-      <div class="tb-field">
-        <label for="gallery-time">Time</label>
-        <p-datepicker
-          inputId="gallery-time"
-          [timeOnly]="true"
-          hourFormat="24"
-          appendTo="body"
-          [fluid]="true"
-        />
-      </div>
-      <code class="tb-gallery-name"
-        >.tb-field > p-select | p-multiselect | p-datepicker, appendTo="body"</code
-      >
+      <code class="tb-gallery-name">.tb-field > p-select | p-multiselect, appendTo="body"</code>
     </div>
   `,
 })

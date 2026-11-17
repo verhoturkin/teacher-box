@@ -12,7 +12,7 @@ import { toIsoDate } from '@shared/dates/iso-date';
 import { AssistChip } from '@shared/ui/assist-chip';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { T } from '../i18n/texts';
-import { toTime } from '../teacher/lesson-time';
+import { toHhMm } from '@shared/dates/typed-time';
 
 /** The step of the starts the backend offers (`TeacherAvailability.FREE_TIME_STEP`). */
 const STEP_MS = 15 * 60_000;
@@ -134,6 +134,10 @@ export class FreeTimes {
   }
 
   protected label(window: Window): string {
-    return `${toTime(window.start)}–${toTime(window.end)}`;
+    return `${hhMm(window.start)}–${hhMm(window.end)}`;
   }
+}
+
+function hhMm(date: Date): string {
+  return toHhMm(date.getHours(), date.getMinutes());
 }

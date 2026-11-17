@@ -12,7 +12,7 @@ import { Card } from 'primeng/card';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { BillingApi, DefaultPriceCard } from '@features/billing/parts';
 import { HomeworkApi } from '@features/homework/parts';
-import { LessonRules, ScheduleApi, fromTime, toTime } from '@features/schedule/parts';
+import { LessonRules, ScheduleApi } from '@features/schedule/parts';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { SettingsApi } from './data-access/settings-api';
@@ -143,8 +143,8 @@ export class LessonSettings implements OnInit {
     late: new FormControl<number | null>(null),
     dueSoon: new FormControl<number | null>(null),
     horizon: new FormControl<number | null>(null),
-    workStart: new FormControl<Date | null>(null),
-    workEnd: new FormControl<Date | null>(null),
+    workStart: new FormControl<string | null>(null),
+    workEnd: new FormControl<string | null>(null),
   });
 
   private pending = false;
@@ -277,18 +277,18 @@ export class LessonSettings implements OnInit {
       horizon.setValue(saved.horizonWeeks);
     }
     if (workStart.value === null) {
-      workStart.setValue(fromTime(saved.workStart));
+      workStart.setValue(saved.workStart);
     }
     if (workEnd.value === null) {
-      workEnd.setValue(fromTime(saved.workEnd));
+      workEnd.setValue(saved.workEnd);
     }
     return {
       defaultDurationMinutes: duration.value ?? saved.defaultDurationMinutes,
       lateCancellationMinutes: Math.round((late.value ?? 0) * HOUR),
       reminderMinutes: this.chosen(),
       horizonWeeks: horizon.value ?? saved.horizonWeeks,
-      workStart: workStart.value === null ? saved.workStart : toTime(workStart.value),
-      workEnd: workEnd.value === null ? saved.workEnd : toTime(workEnd.value),
+      workStart: workStart.value ?? saved.workStart,
+      workEnd: workEnd.value ?? saved.workEnd,
     };
   }
 
@@ -317,8 +317,8 @@ export class LessonSettings implements OnInit {
       duration: rules.defaultDurationMinutes,
       late: rules.lateCancellationMinutes / HOUR,
       horizon: rules.horizonWeeks,
-      workStart: fromTime(rules.workStart),
-      workEnd: fromTime(rules.workEnd),
+      workStart: rules.workStart,
+      workEnd: rules.workEnd,
     });
   }
 

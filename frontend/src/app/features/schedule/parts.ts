@@ -4,7 +4,6 @@
  */
 export { ScheduleApi } from './data-access/schedule-api';
 export { LessonMarkUndo } from './data-access/lesson-mark-undo';
-export { fromTime, toTime } from './teacher/lesson-time';
 export { STATUS_LABELS, formatLessonStart, lessonWith, requestKindLabel } from './schedule-labels';
 export type {
   ChangeRequest,

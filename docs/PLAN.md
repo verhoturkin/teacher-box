@@ -146,7 +146,7 @@ What we take from M3:
   `p-datepicker`s (`billing/teacher/payment-dialog.ts`, `monthly-report-page.ts`,
   `schedule/teacher/lesson-dialog.ts` series end, `off-time-dialog.ts` days); a gallery sample in
   `features/gallery/fields/`.
-- [ ] 425.3 *complex* F — `tb-time-field` and the `tb-time-picker` dialog
+- [x] 425.3 *complex* F — `tb-time-field` and the `tb-time-picker` dialog
   (`shared/ui/time-field.ts`, `time-picker.ts`, value `HH:mm`, input `step`): typed times
   «14:30», «1430», «14.30», «14 30», «9» → 09:00; the dial with pointer drag and keyboard (arrows
   move by the step, Enter confirms), the input view, both layouts. Replace the `timeOnly` pickers

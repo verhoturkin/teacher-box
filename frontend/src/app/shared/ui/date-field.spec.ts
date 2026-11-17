@@ -52,7 +52,7 @@ async function render(width = 1024, setup?: (host: Host) => void): Promise<Rende
   setup?.(fixture.componentInstance);
   await fixture.whenStable();
   const host = hostElement(fixture);
-  const opener = requireElement(host, '.tb-date-field__open', HTMLButtonElement);
+  const opener = requireElement(host, '.tb-typed-field__open', HTMLButtonElement);
   return {
     host,
     component: fixture.componentInstance,

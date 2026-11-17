@@ -1,7 +1,14 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { buttonByText, hostElement, menuItemByText, readableText } from '@testing/dom';
+import {
+  buttonByText,
+  hostElement,
+  menuItemByText,
+  readableText,
+  requireElement,
+  typeInto,
+} from '@testing/dom';
 import { currencySetting, overview } from '@testing/billing-fixtures';
 import { lessonRules, scheduleSettings } from '@testing/schedule-fixtures';
 import { testProviders } from '@testing/setup';
@@ -192,21 +199,24 @@ describe('LessonSettings', () => {
     });
   });
 
-  it('saves the working hours when a time is picked', async () => {
+  it('saves the working hours when a time is typed or picked', async () => {
     const host = await render();
     expect(readableText(host)).toContain('Рабочее время');
-    const { workStart, workEnd } = fixture.componentInstance.form.controls;
-    workStart.setValue(new Date(2026, 0, 1, 9, 30));
-    workEnd.setValue(new Date(2026, 0, 1, 18));
-    await emit('tb-working-hours-field p-datepicker', 'onClose');
+    const start = requireElement(host, '#work-start', HTMLInputElement);
+    typeInto(start, '9.30');
+    start.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/schedule/settings' });
-    expect(request.request.body).toEqual(lessonRules({ workStart: '09:30', workEnd: '18:00' }));
-    request.flush(lessonRules({ workStart: '09:30', workEnd: '18:00' }));
+    expect(request.request.body).toEqual(lessonRules({ workStart: '09:30' }));
+    request.flush(lessonRules({ workStart: '09:30' }));
     await fixture.whenStable();
 
-    workStart.setValue(null);
-    await emit('tb-working-hours-field p-datepicker', 'onClose');
-    expect(workStart.value?.getHours()).toBe(9);
+    // an emptied field shows the saved time again
+    typeInto(start, '');
+    await fixture.whenStable();
+    start.dispatchEvent(new Event('blur'));
+    await fixture.whenStable();
+    expect(fixture.componentInstance.form.controls.workStart.value).toBe('09:30');
+    expect(start.value).toBe('09:30');
   });
 
   it('puts the saved value back into an emptied field', async () => {

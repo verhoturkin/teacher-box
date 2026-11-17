@@ -13,13 +13,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DatePicker } from 'primeng/datepicker';
 import { DateField } from '@shared/ui/date-field';
+import { TimeField } from '@shared/ui/time-field';
 import { InputText } from 'primeng/inputtext';
 import { SelectButton } from 'primeng/selectbutton';
 import { fromIsoDate, toIsoDate } from '@shared/dates/iso-date';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { OffTime, OffTimeKind, OffTimeRequest, Weekday } from '../data-access/schedule.models';
 import { WEEKDAYS, browserTimeZone, optionalText } from '../schedule-labels';
-import { fromTime, toTime } from './lesson-time';
 import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
@@ -46,6 +46,7 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
     ReactiveFormsModule,
     DatePicker,
     DateField,
+    TimeField,
     TbDialog,
     InputText,
     SelectButton,
@@ -98,27 +99,11 @@ const WEEKLY_CONTROLS = ['weekdays', 'startTime', 'endTime', 'startsOn', 'endsOn
             <div class="tb-row">
               <div class="tb-field">
                 <label for="off-time-start-time">{{ t.from }}</label>
-                <p-datepicker
-                  inputId="off-time-start-time"
-                  formControlName="startTime"
-                  [timeOnly]="true"
-                  hourFormat="24"
-                  [stepMinute]="5"
-                  appendTo="body"
-                  [fluid]="true"
-                />
+                <tb-time-field inputId="off-time-start-time" formControlName="startTime" />
               </div>
               <div class="tb-field">
                 <label for="off-time-end-time">{{ t.to }}</label>
-                <p-datepicker
-                  inputId="off-time-end-time"
-                  formControlName="endTime"
-                  [timeOnly]="true"
-                  hourFormat="24"
-                  [stepMinute]="5"
-                  appendTo="body"
-                  [fluid]="true"
-                />
+                <tb-time-field inputId="off-time-end-time" formControlName="endTime" />
               </div>
             </div>
             <small class="tb-hint">
@@ -224,8 +209,8 @@ export class OffTimeDialog {
       nonNullable: true,
       validators: [Validators.required],
     }),
-    startTime: new FormControl<Date | null>(null, [Validators.required]),
-    endTime: new FormControl<Date | null>(null, [Validators.required]),
+    startTime: new FormControl<string | null>(null, [Validators.required]),
+    endTime: new FormControl<string | null>(null, [Validators.required]),
     startsOn: new FormControl<Date | null>(null, [Validators.required]),
     endsOn: new FormControl<Date | null>(null),
     note: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(200)] }),
@@ -255,8 +240,8 @@ export class OffTimeDialog {
         weekdays: weekly
           ? WEEKDAYS.map((day) => day.value).filter((day) => value.weekdays.includes(day))
           : [],
-        startTime: weekly && value.startTime !== null ? toTime(value.startTime) : null,
-        endTime: weekly && value.endTime !== null ? toTime(value.endTime) : null,
+        startTime: weekly ? value.startTime : null,
+        endTime: weekly ? value.endTime : null,
         startsOn: weekly && value.startsOn !== null ? toIsoDate(value.startsOn) : null,
         endsOn: weekly && value.endsOn !== null ? toIsoDate(value.endsOn) : null,
         note: optionalText(value.note),
@@ -287,8 +272,8 @@ export class OffTimeDialog {
       startsAt: startsAt === null ? start : new Date(startsAt),
       endsAt: endsAt === null ? new Date(start.getTime() + 3_600_000) : new Date(endsAt),
       weekdays: offTime?.weekdays ?? [],
-      startTime: fromTime(offTime?.startTime ?? '13:00'),
-      endTime: fromTime(offTime?.endTime ?? '14:00'),
+      startTime: (offTime?.startTime ?? '13:00').slice(0, 5),
+      endTime: (offTime?.endTime ?? '14:00').slice(0, 5),
       startsOn: startsOn === null ? new Date() : fromIsoDate(startsOn),
       endsOn: endsOn === null ? null : fromIsoDate(endsOn),
       note: offTime?.note ?? '',

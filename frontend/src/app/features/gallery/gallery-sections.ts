@@ -22,6 +22,7 @@ import { ButtonGroupsSample } from './buttons/groups';
 import { SelectButtonSample } from './buttons/select-button';
 import { TextFieldsSample } from './fields/text';
 import { DateFieldsSample } from './fields/date';
+import { TimeFieldsSample } from './fields/time';
 import { SelectFieldsSample } from './fields/select';
 import { StepperSample } from './fields/stepper';
 import { CopyFieldSample } from './fields/copy-field';
@@ -163,6 +164,7 @@ export const GALLERY_SECTIONS: readonly GallerySection[] = [
       { path: 'fields/text.ts', title: 'Text fields', component: TextFieldsSample },
       { path: 'fields/select.ts', title: 'Selects', component: SelectFieldsSample },
       { path: 'fields/date.ts', title: 'Date field', component: DateFieldsSample },
+      { path: 'fields/time.ts', title: 'Time field', component: TimeFieldsSample },
       { path: 'fields/stepper.ts', title: 'Numbers and passwords', component: StepperSample },
       { path: 'fields/search.ts', title: 'Search field', component: SearchSample },
       { path: 'fields/copy-field.ts', title: 'Copy field', component: CopyFieldSample },

@@ -11,7 +11,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { DatePicker } from 'primeng/datepicker';
+import { TimeField } from '@shared/ui/time-field';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
@@ -177,7 +177,7 @@ function dailyCron(time: string): string {
     NgTemplateOutlet,
     Button,
     Card,
-    DatePicker,
+    TimeField,
     Panes,
     Pane,
     TbDialog,
@@ -271,15 +271,10 @@ function dailyCron(time: string): string {
                                 <label [for]="'setting-' + setting.name + '-time'">{{
                                   t.time
                                 }}</label>
-                                <p-datepicker
+                                <tb-time-field
                                   [inputId]="'setting-' + setting.name + '-time'"
-                                  [ngModel]="timeDate(time)"
+                                  [ngModel]="time"
                                   (ngModelChange)="setTime(setting, $event)"
-                                  [timeOnly]="true"
-                                  hourFormat="24"
-                                  [stepMinute]="5"
-                                  appendTo="body"
-                                  [fluid]="true"
                                 />
                                 @if (!setting.live) {
                                   <small class="tb-hint tb-admin-settings__support">
@@ -611,7 +606,6 @@ export class SettingsPage implements OnInit {
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
-  private readonly times = new Map<string, Date>();
   private startedAt: string | null = null;
   private deadline = 0;
   private poll: ReturnType<typeof setInterval> | null = null;
@@ -683,21 +677,9 @@ export class SettingsPage implements OnInit {
     this.change(setting, enabled ? dailyCron(time) : OFF);
   }
 
-  /** The picker's value: one `Date` per time, so the picker is not given a new value on every check. */
-  protected timeDate(time: string): Date {
-    let date = this.times.get(time);
-    if (date === undefined) {
-      const [hours = 0, minutes = 0] = time.split(':').map(Number);
-      date = new Date();
-      date.setHours(hours, minutes, 0, 0);
-      this.times.set(time, date);
-    }
-    return date;
-  }
-
-  setTime(setting: AdminSetting, date: Date | null): void {
-    if (date instanceof Date) {
-      this.change(setting, dailyCron(`${String(date.getHours())}:${String(date.getMinutes())}`));
+  setTime(setting: AdminSetting, time: string | null): void {
+    if (time !== null) {
+      this.change(setting, dailyCron(time));
     }
   }
 

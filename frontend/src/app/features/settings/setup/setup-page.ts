@@ -24,7 +24,7 @@ import { BillingApi } from '@features/billing/parts';
 import { HelpButton } from '@features/help/parts';
 import { HomeworkApi } from '@features/homework/parts';
 import { Account, IdentityApi, TEACHER_NAME_VALIDATORS } from '@features/identity/parts';
-import { LessonRules, ScheduleApi, fromTime, toTime } from '@features/schedule/parts';
+import { LessonRules, ScheduleApi } from '@features/schedule/parts';
 import { toMajorUnits, toMinorUnits } from '@shared/money/money';
 import { revealErrors } from '@shared/ui/field-errors';
 import { LoadState } from '@shared/ui/load-state';
@@ -511,8 +511,8 @@ export class SetupPage implements OnInit {
     duration: new FormControl<number | null>(null),
     currency: new FormControl('', { nonNullable: true }),
     price: new FormControl<number | null>(null, [Validators.min(0)]),
-    workStart: new FormControl<Date | null>(null),
-    workEnd: new FormControl<Date | null>(null),
+    workStart: new FormControl<string | null>(null),
+    workEnd: new FormControl<string | null>(null),
   });
   readonly rulesForm = new FormGroup({
     late: new FormControl<number | null>(null),
@@ -759,8 +759,8 @@ export class SetupPage implements OnInit {
     const rules: LessonRules = {
       ...saved.rules,
       defaultDurationMinutes: duration ?? saved.rules.defaultDurationMinutes,
-      workStart: workStart === null ? saved.rules.workStart : toTime(workStart),
-      workEnd: workEnd === null ? saved.rules.workEnd : toTime(workEnd),
+      workStart: workStart ?? saved.rules.workStart,
+      workEnd: workEnd ?? saved.rules.workEnd,
     };
     if (!sameRules(rules, saved.rules)) {
       requests.push(this.changeRules(rules));
@@ -826,8 +826,8 @@ export class SetupPage implements OnInit {
       zone: zone ?? saved.zone,
       duration: saved.rules.defaultDurationMinutes,
       currency: saved.currency,
-      workStart: fromTime(saved.rules.workStart),
-      workEnd: fromTime(saved.rules.workEnd),
+      workStart: saved.rules.workStart,
+      workEnd: saved.rules.workEnd,
       price: toMajorUnits(saved.price, saved.currency),
     });
     if (saved.locked) {

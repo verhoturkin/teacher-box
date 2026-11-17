@@ -11,8 +11,8 @@ describe('SetupTimeStep', () => {
       duration: new FormControl<number | null>(60),
       currency: new FormControl('RUB', { nonNullable: true }),
       price: new FormControl<number | null>(null),
-      workStart: new FormControl<Date | null>(new Date(2026, 0, 1, 8)),
-      workEnd: new FormControl<Date | null>(new Date(2026, 0, 1, 21)),
+      workStart: new FormControl<string | null>('08:00'),
+      workEnd: new FormControl<string | null>('21:00'),
     });
     const fixture = await renderStep(SetupTimeStep, { form, locked: false, currency: null });
     const submitted = vi.fn();
