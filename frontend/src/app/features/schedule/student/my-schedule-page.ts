@@ -400,13 +400,6 @@ export function nextMonday(date: Date): Date {
       .tb-my-schedule-side {
         background: transparent;
       }
-
-      .tb-my-schedule-section {
-        display: block;
-        padding: var(--tb-space-4);
-        border-radius: var(--tb-shape-lg);
-        background: var(--p-md-surface-container-low);
-      }
     }
 
     .tb-schedule-list > li:has(> .tb-list__trail:not(.tb-list__trail--icons) tb-lesson-actions) {
