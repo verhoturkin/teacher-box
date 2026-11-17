@@ -217,6 +217,18 @@ const WORKING_HOURS: Readonly<Record<string, readonly (readonly [string, string,
 };
 
 /** Moderating a call, its chat, the board and the floating window (408.2–410.1, 421.2): [topic, baseline, now] of the call articles. */
+/** The review sheet without quick phrases (421.4): [topic, baseline, now]. */
+const REVIEW_SHEET: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'homework',
+      '- **Комментарий ученику** и быстрые фразы под ним — «Отлично», «Есть ошибка», «Перепроверь»;',
+      '- **Комментарий ученику**;',
+    ],
+  ],
+  'teacher.en': [['homework', ' Quick comments help with common responses.', '']],
+};
+
 const CALL_MODERATION: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
   'teacher.ru': [
     [
@@ -402,6 +414,7 @@ describe('help articles after the split into one file per topic', () => {
     for (const [topic, before, after] of [
       ...(WORKING_HOURS[name] ?? []),
       ...(CALL_MODERATION[name] ?? []),
+      ...(REVIEW_SHEET[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

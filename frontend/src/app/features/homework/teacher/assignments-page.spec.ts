@@ -720,16 +720,16 @@ describe('AssignmentsPage with the review side sheet (from large)', () => {
     expect(navigate).toHaveBeenCalledWith(['/teacher/homework']);
   });
 
-  it('takes the quick phrases into the comment', async () => {
-    const { host, fixture } = await render();
+  it('offers the grades 1–5 and «Без оценки», no quick phrases', async () => {
+    const { host } = await render();
 
-    buttonByText(host, 'Молодец!').click();
-    buttonByText(host, 'Аккуратнее с орфографией').click();
-    await fixture.whenStable();
-
-    expect(requireElement(host, '#sheet-comment', HTMLTextAreaElement).value).toBe(
-      'Молодец!\nАккуратнее с орфографией.',
+    const labels = [...host.querySelectorAll('tb-filter-chips .tb-filter-chip')].map((chip) =>
+      chip.textContent.trim(),
     );
+
+    expect(labels.slice(0, 5)).toEqual(['1', '2', '3', '4', '5']);
+    expect(labels).toContain('Без оценки');
+    expect(host.textContent).not.toContain('Молодец!');
   });
 
   it('accepts the work and opens the next one of the queue', async () => {

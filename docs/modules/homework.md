@@ -215,7 +215,7 @@ Detail (242.2): `/teacher/homework`, `/teacher/homework/tasks/:taskId` and `/tea
 (since 339.1 never beside each other); «back» (`single` input, always on) leads to the list. The pages (`task-review-page.ts`, `assignment-page.ts`) reload when the id
 changes and emit `changed` (reviewed, given to more students, deleted), so the list reads itself again. The work: title =
 the assignment, the line «student · срок · status · попытка N», «Открыть на доске» (the assignment's board), the collapsible
-«Задание» block (statement and files), «Ответ ученика», then «Проверка» (the form below extra-large; from extra-large it is the side sheet, see below; on a phone (< 600) the M3 floating toolbar — AI, comment, «На доработку», «Принять» — with the comment, the draft, the quick phrases and the grade in a bottom sheet, and the bottom navigation bar hidden: `RailState.bottomBarHidden`, `ReviewSheet [compact]`); blocks lie
+«Задание» block (statement and files), «Ответ ученика», then «Проверка» (the form below extra-large; from extra-large it is the side sheet, see below; on a phone (< 600) the M3 floating toolbar — AI, comment, «На доработку», «Принять» — with the comment, the draft and the grade in a bottom sheet, and the bottom navigation bar hidden: `RailState.bottomBarHidden`, `ReviewSheet [compact]`); blocks lie
 on the pane's surface under uppercase labels, no cards. The student's «Задания» (0.15.1: `student/my-task-list.ts` — «Активные» / «Выполненные»
 with a search by the title and pages of 10, as the teacher's) are `tb-list` cards too
 (avatar, student, «задание · сдано · срок»; icon, title, «до …», status). The student's `my-task-page.ts` shows

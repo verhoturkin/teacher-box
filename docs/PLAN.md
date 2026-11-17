@@ -49,7 +49,7 @@ sheet. KISS: remove before adding. No new ADR unless the call change needs one.
   so they are top-level cards of the page, like the teacher's panes. The «Подписка на календарь»
   card (`schedule/ui/calendar-feed-panel.ts`) has broken layout there — a bordered card inside a
   card with a misplaced edge; make it one plain card. Update `docs/screens.md`.
-- [ ] 421.4 *simple* F — AI helper and review sheet. AI helper: remove the suggestion chips
+- [x] 421.4 *simple* F — AI helper and review sheet. AI helper: remove the suggestion chips
   «Упражнения по теме», «Эссе», «По тексту учебника» (`suggest*` labels in `ai/i18n`), keep
   «Мои запросы». Review sheet (`homework/teacher/review-sheet.ts`): remove the quick-comment chips
   under the comment; grades 1–5 plus «Без оценки» (now 3–5); the student-context tags wrap badly

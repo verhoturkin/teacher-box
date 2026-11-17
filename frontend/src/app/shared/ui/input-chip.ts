@@ -9,7 +9,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 @Component({
   selector: 'tb-input-chip',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class.tb-input-chip--static]': 'readonly()' },
+  host: { '[class.tb-input-chip--static]': 'readonly()', '[attr.title]': 'label()' },
   template: `
     <span class="tb-input-chip__lead"><ng-content select="[lead]" /></span>
     @if (menu()) {
@@ -44,6 +44,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
       display: inline-flex;
       align-items: center;
       gap: var(--tb-space-2);
+      max-inline-size: 100%;
       block-size: 2rem;
       box-sizing: border-box;
       padding-inline: var(--tb-space-1) 0;
@@ -53,8 +54,17 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
       font: var(--tb-type-label-l);
     }
 
+    /* one line, the full text is the host's title */
+    .tb-input-chip__label {
+      min-inline-size: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     .tb-input-chip__lead {
       display: inline-flex;
+      flex: none;
       font-size: 1.125rem;
     }
 
@@ -66,6 +76,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
       background: transparent;
       color: inherit;
       font: inherit;
+      text-align: start;
       cursor: pointer;
 
       &:focus-visible {
@@ -79,6 +90,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      flex: none;
       block-size: 2rem;
       inline-size: 1.75rem;
       padding: 0;

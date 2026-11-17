@@ -64,7 +64,7 @@ describe('TaskReviewPage', () => {
   it('accepts a submission with a grade chip and a comment under the answer', async () => {
     const { fixture, host, backend, reviewed } = await render();
     expect(readableText(host.querySelector('.tb-sheet--inline')!)).toContain(
-      'Оценка 3 4 5 Без оценки',
+      'Оценка 1 2 3 4 5 Без оценки',
     );
 
     chip(host, '5').click();

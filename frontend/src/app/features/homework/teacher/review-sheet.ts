@@ -37,7 +37,7 @@ export interface NextWork {
  * The review of a work (sketches 14, 15, 16): from large the side sheet beside the work, «Проверка» and the
  * close button; below large (`inline`) the same form under the answer; on a phone (`compact`) the floating
  * toolbar with the form in a bottom sheet. The form: the AI draft («Вставить» takes it), the comment, the
- * quick phrases, the grade as chips («3 · 4 · 5 · 8 из 10 · Без оценки»), the decision — «На доработку»
+ * grade as chips («1 · 2 · 3 · 4 · 5 · 8 из 10 · Без оценки»), the decision — «На доработку»
  * (tonal) and «Принять» (filled) — and «После этого откроется: <student>».
  */
 @Component({
@@ -175,7 +175,7 @@ export interface NextWork {
       </div>
     }
 
-    <!-- the AI draft, the comment, the quick phrases and the grade: in the sheet and in the phone's bottom sheet -->
+    <!-- the AI draft, the comment and the grade: in the sheet and in the phone's bottom sheet -->
     <ng-template #fields>
       <form tbFieldErrors class="tb-sheet__form" [formGroup]="form">
         @if (draft(); as draft) {
@@ -210,18 +210,6 @@ export interface NextWork {
         <div class="tb-sheet__field">
           <label for="sheet-comment">{{ t.comment }}</label>
           <textarea pTextarea id="sheet-comment" formControlName="comment" rows="6"></textarea>
-        </div>
-
-        <div class="tb-sheet__chips" role="group" [attr.aria-label]="t.quick">
-          <button type="button" class="tb-sheet__chip" (click)="phrase(t.greatText)">
-            {{ t.great }}
-          </button>
-          <button type="button" class="tb-sheet__chip" (click)="phrase(t.mistakeText)">
-            {{ t.mistake }}
-          </button>
-          <button type="button" class="tb-sheet__chip" (click)="phrase(t.recheckText)">
-            {{ t.recheck }}
-          </button>
         </div>
 
         <div class="tb-sheet__field">
@@ -411,42 +399,6 @@ export interface NextWork {
       font: var(--tb-type-label-m);
     }
 
-    .tb-sheet__chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--tb-space-2);
-    }
-
-    /* M3 assist chip: 32 dp, 8 dp corners, 1 dp outline variant, label large; ours: a 48 dp target over it */
-    .tb-sheet__chip {
-      position: relative;
-      block-size: 2rem;
-      box-sizing: border-box;
-      padding: 0 var(--tb-space-4);
-      border: 1px solid var(--p-md-outline-variant);
-      border-radius: var(--tb-shape-sm);
-      background: transparent;
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-label-l);
-      cursor: pointer;
-      transition: background var(--tb-spring-fast-effects);
-    }
-
-    .tb-sheet__chip::before {
-      content: '';
-      position: absolute;
-      inset-block: -0.5rem;
-      inset-inline: 0;
-    }
-
-    .tb-sheet__chip:hover {
-      background: color-mix(in srgb, var(--p-md-on-surface-variant) 8%, transparent);
-    }
-
-    .tb-sheet__chip:focus-visible {
-      outline: 3px solid var(--p-md-secondary);
-    }
-
     /* the decision stays at the foot of the sheet however long the comment is */
     .tb-sheet__decision {
       margin-block-start: auto;
@@ -524,10 +476,19 @@ export class ReviewSheet {
   protected readonly form = this.reviewForm.form;
   protected readonly commentValue = this.reviewForm.commentValue;
   protected readonly gradeValue = this.reviewForm.gradeValue;
-  /** «3 · 4 · 5 · 8 из 10 · Без оценки»: the quiz score and a grade set before join the usual ones. */
+  /** «1 · 2 · 3 · 4 · 5 · 8 из 10 · Без оценки»: the quiz score and a grade set before join the usual ones. */
   protected readonly grades = computed<FilterChip<string>[]>(() => {
     const task = this.task();
-    const values = ['3', '4', '5', task.quiz?.suggestedGrade, task.grade, this.gradeValue()]
+    const values = [
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      task.quiz?.suggestedGrade,
+      task.grade,
+      this.gradeValue(),
+    ]
       .map((grade) => grade?.trim() ?? '')
       .filter((grade, index, all) => grade !== '' && all.indexOf(grade) === index);
     return [
@@ -586,14 +547,6 @@ export class ReviewSheet {
   protected setGrade(grade: string): void {
     this.form.controls.grade.setValue(grade);
     this.form.controls.grade.markAsDirty();
-  }
-
-  /** A quick phrase goes after the comment, on a line of its own. */
-  protected phrase(text: string): void {
-    const control = this.form.controls.comment;
-    const current = control.value.trimEnd();
-    control.setValue(current === '' ? text : `${current}\n${text}`);
-    control.markAsDirty();
   }
 
   protected review(decision: ReviewDecision): void {
