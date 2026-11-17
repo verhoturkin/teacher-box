@@ -157,7 +157,7 @@ What we take from M3:
   `schedule/student/change-request-dialog.ts`, `schedule/teacher/lesson-dialog.ts`,
   `request-answer-dialog.ts`, `off-time-dialog.ts`; keep `minDate` (no past time today). Update
   their specs and the E2E steps that type into these fields (`e2e/tests/**`, grep the labels).
-- [ ] 425.5 *simple* F — clean-up and docs: drop the `datepicker` overrides of
+- [x] 425.5 *simple* F — clean-up and docs: drop the `datepicker` overrides of
   `teacher-box-preset.ts` that nothing uses any more (and its `aura-base.ts` entry if
   `p-datepicker` is gone — `aura-base.spec.ts` tells); `docs/screens.md` where it names the
   pickers; wiki and help (typing a date or time, the clock) in both languages.

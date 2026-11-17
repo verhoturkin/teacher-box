@@ -351,6 +351,42 @@ const PANE_HANDLE: Readonly<Record<string, readonly (readonly [string, string, s
   ],
 };
 
+/** Typed or picked dates and times, the clock (425.5): one paragraph in the schedule article. */
+const DATE_TIME: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'schedule',
+      '## Нерабочее время\n',
+      '**Дата и время.** Их можно вписать (например, «17.11.2026», «14:30» или «1430») или выбрать: ' +
+        'календарь открывается под полем, значок часов — циферблат со временем.\n\n## Нерабочее время\n',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'schedule',
+      '## Time off\n',
+      '**Date and time.** Type the date and time (for example “17.11.2026”, “14:30” or “1430”) or pick them: the ' +
+        'calendar opens under the field, and the clock icon opens a dial.\n\n## Time off\n',
+    ],
+  ],
+  'student.ru': [
+    [
+      'schedule',
+      'Учитель получит запрос и ответит',
+      'Дату и время можно вписать (например, «17.11.2026», «14:30» или «1430») или выбрать: ' +
+        'календарь открывается под полем, значок часов — циферблат со временем.\n\nУчитель получит запрос и ответит',
+    ],
+  ],
+  'student.en': [
+    [
+      'schedule',
+      'Your teacher will receive the request',
+      'Type the date and time (for example “17.11.2026”, “14:30” or “1430”) or pick them: the calendar ' +
+        'opens under the field, and the clock icon opens a dial.\n\nYour teacher will receive the request',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -438,6 +474,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(CALL_MODERATION[name] ?? []),
       ...(REVIEW_SHEET[name] ?? []),
       ...(PANE_HANDLE[name] ?? []),
+      ...(DATE_TIME[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

@@ -50,17 +50,6 @@
   }
 }
 
-/* The time of the date picker steps up and down like a number field, it opens no list */
-.p-datepicker-time-picker {
-  svg.p-icon[data-p-icon='chevron-up'] {
-    mask-image: url('data:image/svg+xml,#{map.get(prime-icons.$prime-icons, "angle-up")}');
-  }
-
-  svg.p-icon[data-p-icon='chevron-down'] {
-    mask-image: url('data:image/svg+xml,#{map.get(prime-icons.$prime-icons, "angle-down")}');
-  }
-}
-
 /* A chip is removed with «×» (M3 input chip): `times-circle` is the error sign of messages elsewhere */
 .p-chip svg.p-icon[data-p-icon='times-circle'] {
   mask-image: url('data:image/svg+xml,#{map.get(prime-icons.$prime-icons, "times")}');

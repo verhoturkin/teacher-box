@@ -842,45 +842,10 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
     datepicker: {
       panel: { background: '{content.background}', borderRadius: '{border.radius.lg}' },
       date: { borderRadius: PILL, width: '2.5rem', height: '2.5rem' },
-      dropdown: {
-        width: '3rem',
-        borderColor: '{form.field.border.color}',
-        hoverBorderColor: '{form.field.border.color}',
-        activeBorderColor: '{form.field.border.color}',
-        borderRadius: '{border.radius.xs}',
-      },
       colorScheme: { light: DATE_BUTTON_SCHEME, dark: DATE_BUTTON_SCHEME },
-      // M3 text field with a trailing icon (ADR-0022): one outline around the input and the
-      // calendar button, the focus is the outline of the whole field
       css: `
         .p-datepicker-today > .p-datepicker-day:not(.p-datepicker-day-selected) {
           box-shadow: inset 0 0 0 1px var(--p-md-primary);
-        }
-        .p-datepicker:has(.p-datepicker-dropdown) {
-          border: 1px solid dt('form.field.border.color');
-          border-radius: dt('form.field.border.radius');
-          transition: border-color dt('form.field.transition.duration');
-        }
-        .p-datepicker:has(.p-datepicker-dropdown):hover {
-          border-color: dt('form.field.hover.border.color');
-        }
-        .p-datepicker:has(.p-datepicker-dropdown):focus-within {
-          border-color: dt('form.field.focus.border.color');
-          box-shadow: inset 0 0 0 1px dt('form.field.focus.border.color');
-        }
-        .p-datepicker:has(.p-datepicker-dropdown) .p-datepicker-input,
-        .p-datepicker:has(.p-datepicker-dropdown) .p-datepicker-input:enabled:hover,
-        .p-datepicker:has(.p-datepicker-dropdown) .p-datepicker-input:enabled:focus {
-          border: 0;
-          outline: none;
-          box-shadow: none;
-          background: transparent;
-        }
-        .p-datepicker .p-datepicker-dropdown,
-        .p-datepicker .p-datepicker-dropdown:not(:disabled):hover {
-          border: 0;
-          background: transparent;
-          color: dt('form.field.icon.color');
         }
       `,
     },
