@@ -25,7 +25,6 @@ describe('TodoQueue', () => {
       requests?: unknown[];
       reviews?: unknown[];
     } = {},
-    debtors: { studentId: string; displayName: string; avatar: null; balance: number }[] = [],
     phone = false,
     aiEnabled = true,
   ): Promise<void> {
@@ -36,7 +35,6 @@ describe('TodoQueue', () => {
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(TodoQueue);
     fixture.componentRef.setInput('progress', progress);
-    fixture.componentRef.setInput('debtors', debtors);
     fixture.detectChanges();
     backend.expectOne('/api/teacher/ai/status').flush({ enabled: aiEnabled });
     backend.expectOne('/api/teacher/schedule/unmarked').flush(sources.lessons ?? []);
@@ -56,54 +54,80 @@ describe('TodoQueue', () => {
     localStorage.clear();
   });
 
-  it('does not say «nothing» until the debtors are known', async () => {
-    await render(done);
-    fixture.componentRef.setInput('debtors', null);
+  /** The cards of the queue: the title (with its badge) and the rows. */
+  function cards(): { title: string; badge: string; rows: string[] }[] {
+    return Array.from(hostElement(fixture).querySelectorAll('p-card'), (card) => ({
+      title: readableText(card.querySelector<HTMLElement>('.p-card-title') ?? card),
+      badge: card.querySelector('.tb-queue__count')?.getAttribute('aria-label') ?? '',
+      rows: Array.from(card.querySelectorAll<HTMLElement>('li'), (row) => readableText(row)),
+    }));
+  }
+
+  it('says nothing until the sources are known', () => {
+    TestBed.configureTestingModule({ imports: [TodoQueue], providers: testProviders() });
+    backend = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(TodoQueue);
+    fixture.componentRef.setInput('progress', done);
     fixture.detectChanges();
 
     expect(text()).not.toContain('Срочных дел нет');
+    backend.match(() => true);
   });
 
-  it('says when nothing is waiting', async () => {
+  it('shows one compact empty state when both cards are empty', async () => {
     await render(done);
 
     expect(text()).toContain('Срочных дел нет');
+    expect(hostElement(fixture).querySelectorAll('p-card')).toHaveLength(1);
+    expect(hostElement(fixture).querySelector('.tb-queue__count')).toBeNull();
   });
 
-  it('lists every source with its action', async () => {
-    await render(
-      done,
-      {
-        lessons: [scheduledLesson(), groupLesson()],
-        requests: [changeRequest({ studentName: 'Мария' })],
-        reviews: [reviewQueueItem({ title: 'Дроби', studentName: 'Анна' })],
-      },
-      [{ studentId: 's-9', displayName: 'Пётр', avatar: null, balance: -150_000 }],
-    );
+  it('splits the work into lessons to mark and work to review, each with its action', async () => {
+    await render(done, {
+      lessons: [scheduledLesson(), groupLesson()],
+      requests: [changeRequest({ studentName: 'Мария' })],
+      reviews: [reviewQueueItem({ title: 'Дроби', studentName: 'Анна' })],
+    });
 
-    const content = text();
-    expect(content).toContain('Иван Петров');
-    expect(content).toContain('Группа «ОГЭ»');
-    expect(content).toContain('Мария');
-    expect(content).toContain('Проверьте работу');
-    expect(content).toContain('Анна · Дроби');
-    expect(content).toContain('Пётр');
-    expect(content).toContain('Долг');
+    const [lessons, reviews, ...rest] = cards();
+    expect(rest).toEqual([]);
+    expect(lessons?.title).toContain('Отметить занятия');
+    expect(lessons?.badge).toBe('Отметить занятия: 3');
+    // the lessons, then the change requests under them: schedule work too
+    expect(lessons?.rows).toHaveLength(3);
+    expect(lessons?.rows[0]).toContain('Иван Петров');
+    expect(lessons?.rows[1]).toContain('Группа «ОГЭ»');
+    expect(lessons?.rows[2]).toContain('Мария');
+    expect(reviews?.title).toContain('Проверить работы');
+    expect(reviews?.badge).toBe('Проверить работы: 1');
+    expect(reviews?.rows).toEqual([expect.stringContaining('Анна · Дроби')]);
+    expect(reviews?.rows[0]).toContain('Проверьте работу');
     const host = hostElement(fixture);
     expect(buttonByText(host, 'Проведено')).toBeTruthy();
     const links = Array.from(host.querySelectorAll('a'), (a) => a.getAttribute('href'));
-    expect(links).toEqual([
-      '/teacher/schedule',
-      '/teacher/homework/review',
-      '/teacher/students/s-9?tab=payments',
-    ]);
-    expect(content).not.toContain('Срочных дел нет');
+    expect(links).toEqual(['/teacher/schedule', '/teacher/homework/review']);
+    expect(text()).not.toContain('Срочных дел нет');
+  });
+
+  it('hides a card with nothing to do', async () => {
+    await render(done, { reviews: [reviewQueueItem({ title: 'Дроби' })] });
+
+    expect(cards().map((card) => card.badge)).toEqual(['Проверить работы: 1']);
+    expect(text()).not.toContain('Отметить занятия');
+    expect(text()).not.toContain('Срочных дел нет');
+  });
+
+  it('puts a change request alone into the lessons card', async () => {
+    await render(done, { requests: [changeRequest({ studentName: 'Мария' })] });
+
+    expect(cards().map((card) => card.badge)).toEqual(['Отметить занятия: 1']);
+    expect(text()).toContain('Ответить');
   });
 
   it.each([false, true])(
     'opens and saves group attendance from Today (phone: %s)',
     async (phone) => {
-      await render(done, { lessons: [groupLesson()] }, [], phone);
+      await render(done, { lessons: [groupLesson()] }, phone);
       const marked = vi.fn();
       fixture.componentInstance.marked.subscribe(marked);
       const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
@@ -181,10 +205,11 @@ describe('TodoQueue', () => {
 
     expect(hostElement(fixture).querySelectorAll('li')).toHaveLength(5);
     expect(text()).toContain('Ещё 2');
+    expect(cards()[0]?.badge).toBe('Отметить занятия: 7');
   });
 
   it('shows the first-run steps left with progress, until hidden', async () => {
-    await render({ ...done, messengerConfigured: false, hasLessons: false }, {}, [], false, false);
+    await render({ ...done, messengerConfigured: false, hasLessons: false }, {}, false, false);
 
     const content = text();
     expect(content).toContain('С чего начать');
@@ -222,7 +247,6 @@ describe('TodoQueue', () => {
       await render(
         done,
         { lessons: [scheduledLesson()], reviews: [reviewQueueItem({ title: 'Дроби' })] },
-        [],
         true,
       );
 
@@ -233,7 +257,7 @@ describe('TodoQueue', () => {
     });
 
     it('opens a sheet for a lesson and marks it from there', async () => {
-      await render(done, { lessons: [scheduledLesson({ id: 'l-3' })] }, [], true);
+      await render(done, { lessons: [scheduledLesson({ id: 'l-3' })] }, true);
 
       hostElement(fixture).querySelector<HTMLElement>('.tb-list__stretched button')?.click();
       fixture.detectChanges();
@@ -254,7 +278,7 @@ describe('TodoQueue', () => {
     });
 
     it('goes to the page of a row with one action', async () => {
-      await render(done, { reviews: [reviewQueueItem({ title: 'Дроби' })] }, [], true);
+      await render(done, { reviews: [reviewQueueItem({ title: 'Дроби' })] }, true);
       const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
       hostElement(fixture).querySelector<HTMLElement>('.tb-list__stretched button')?.click();

@@ -40,7 +40,7 @@ function dayTitle(date: Date): string {
 
 /**
  * Teacher's «Сегодня» (spec §6): the feed in three columns (extra-large), two (large) or one — the hero and
- * the lessons of today, the «Нужно сделать» queue, the month and the week figures. On a phone the same sections follow one another.
+ * the lessons of today, the queue («Отметить занятия», «Проверить работы»), the month and the week figures. On a phone the same sections follow one another.
  */
 @Component({
   selector: 'tb-teacher-home',
@@ -90,12 +90,7 @@ function dayTitle(date: Date): string {
           </div>
           <div class="tb-stack tb-feed__queue">
             @if (state.error() === null) {
-              <tb-todo-queue
-                [progress]="progress()"
-                [debtors]="billing()?.topDebtors ?? null"
-                [currency]="billing()?.currency ?? 'RUB'"
-                (marked)="loadSchedule()"
-              />
+              <tb-todo-queue [progress]="progress()" (marked)="loadSchedule()" />
             }
           </div>
           <div class="tb-stack tb-feed__figures">

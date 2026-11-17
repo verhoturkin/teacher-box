@@ -39,7 +39,7 @@ Order: one substep per session, a commit each; the PR is opened once, after 431.
 
 ### 427. Teacher's Today: two queues, no debtors
 
-- [ ] 427.1 *complex* F — `features/home/todo-queue.ts` (one card with `kind` lesson / request /
+- [x] 427.1 *complex* F — `features/home/todo-queue.ts` (one card with `kind` lesson / request /
   review / debt) becomes two cards in the queue column of `features/home/teacher-home.ts`:
   «Отметить занятия» (unmarked lessons with «Проведено | Пропуск» in place, change requests of
   the schedule under them — they are schedule work too; ours) and «Проверить работы» (the review
@@ -51,6 +51,13 @@ Order: one substep per session, a commit each; the PR is opened once, after 431.
   in one column, rows stay one line. Tests: `todo-queue.spec.ts`, `teacher-home.spec.ts`. Docs:
   `docs/screens.md` «Today (teacher home)», wiki `Home`/first steps page, help article
   `teacher/first-steps` (ru, en).
+- [ ] 427.2 *simple* B F — the summary of payments no longer sends the debtors list, nobody reads
+  it after 427.1 (decided on 2026-11-17): drop `topDebtors` and the `Debtor` record from
+  `billing/application/BillingViews.java` `BillingSummary`, its building in
+  `BillingQueryService` (around `new Debtor(`), the assertions in `SummaryIntegrationTests`;
+  `totalDebt` and `debtors` (the count) stay for the month card. Frontend: `topDebtors` and
+  `Debtor` in `billing/data-access/billing.models.ts`, `testing/billing-fixtures.ts`,
+  `home/teacher-home.spec.ts`. Docs: `docs/modules/billing.md` if it lists the field.
 
 ### 428. Student: tonal schedule cards, home without materials
 
@@ -67,20 +74,19 @@ Order: one substep per session, a commit each; the PR is opened once, after 431.
 
 ### 429. Notifications: no addresses in the portal, a tap opens the page
 
-- [ ] 429.1 *complex* B F — the inbox keeps the text without the address, messengers keep it.
-  Today a notice with a room (`meetings/notices/MeetingNotices.java` MEETING_LINK,
+- [ ] 429.1 *complex* B — the inbox keeps the text without the address; messengers stay as they
+  are. Today a notice with a room (`meetings/notices/MeetingNotices.java` MEETING_LINK,
   `schedule/notices/ScheduleNotices.java` SCHEDULE_REMINDER and the other `join(body)` with
   `t.meetingLink(room)`) puts the address into `NoticeText.body` (inbox) and the text without it
-  into `roomBody` (messengers, with a «Подключиться» button). Turn it over: `body` is the text
-  without the address for the inbox; the messenger text carries the address (and keeps the
-  buttons) — rename `roomBody` to what it now means (e.g. `chatBody`) in
-  `shared/notice/NoticeText.java`, `NoticeRequested`,
-  `notifications/application/NotificationService` and its producers. Every notice that refers to something has a portal `link` (check MEETING_LINK
-  and reminders: the lesson / the schedule). Old inbox rows that already hold an address stay as
-  they are (no migration; YAGNI) — *or* strip URLs in a Flyway migration of `notifications` if the
-  teacher wants a clean inbox (decide in the session, note it). Tests: notices tests of meetings
-  and schedule, `NotificationServiceTest` (inbox body has no `https://`, the messenger text has
-  it).
+  into `roomBody` (messengers, with a «Подключиться» button). Messengers do not change (decided
+  on 2026-11-17: the text without the address and the button). The inbox `body` becomes that
+  same text without the address; where `body` and `roomBody` then match, drop `roomBody` from
+  `shared/notice/NoticeText.java`, `NoticeRequested` and
+  `notifications/application/NotificationService` (KISS). Every notice that refers to something
+  has a portal `link` (check MEETING_LINK and reminders: the lesson / the schedule). Old inbox
+  rows that already hold an address stay as they are (no migration; YAGNI). Tests: notices tests
+  of meetings and schedule, `NotificationServiceTest` (inbox body has no `https://`, messengers
+  get the same text and the button as before).
 - [ ] 429.2 *simple* F — the whole notification row opens its `link` (not only the title button):
   `notifications/inbox/notification-list.ts`, `inbox-panel.ts`, the bell sheet; it marks it read
   and closes the sheet; a row without a link is not interactive. Drop the «long address breaks

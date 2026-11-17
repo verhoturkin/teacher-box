@@ -63,7 +63,9 @@ untracked files cost a run). So stage everything, then run `verify.sh <part>` af
 Linux container; setup script `scripts/agent-setup.sh` — hooks path, `npm ci` in `frontend/`,
 `e2e/`.
 
-- No JDK 25, no Docker daemon, no E2E runs. Run what works (`./scripts/verify.sh
-  frontend|docs|e2e`, shellcheck when available); say in the reply and the PR what was not run and
-  why; never claim an unrun check green. Backend is verified by CI on the pull request; never weaken
-  a check to get green.
+- JDK 25 is installed (`java -version`), so `./scripts/verify.sh backend` runs here.
+- Docker is installed but its daemon is not started: run `(dockerd > /tmp/dockerd.log 2>&1 &)`
+  as root, wait for `docker info`; then try `./scripts/verify.sh docker` and `./scripts/e2e.sh`
+  (Chromium for Playwright is preinstalled; image pulls go through the proxy).
+- Run every part the change touches; if a step still cannot run, say in the reply and the PR
+  what was not run and why; never claim an unrun check green, never weaken a check to get green.

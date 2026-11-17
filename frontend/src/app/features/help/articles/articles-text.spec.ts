@@ -387,6 +387,47 @@ const DATE_TIME: Readonly<Record<string, readonly (readonly [string, string, str
   ],
 };
 
+/** Two cards of Today, no debt rows (427.1): [topic, baseline, now] of the first-steps article. */
+const TWO_CARDS: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'first-steps',
+      'в конце карточки «Нужно сделать» есть список',
+      'под карточками дел есть список',
+    ],
+    [
+      'first-steps',
+      '- **Нужно сделать** — неотмеченные занятия, запросы учеников, работы на проверку и долги. Нажмите ' +
+        'на нужную запись, чтобы перейти к действию. Здесь же можно отметить занятие «Проведено» или ' +
+        '«Пропуск».\n- **Финансы** — поступления за месяц и долги учеников.',
+      '- **Отметить занятия** — прошедшие занятия без отметки и под ними запросы учеников на перенос или ' +
+        'отмену. Отметьте занятие «Проведено» или «Пропуск» прямо в строке, у группы — отметьте ' +
+        'посещаемость.\n- **Проверить работы** — сданные работы, которые ждут проверки. Нажмите ' +
+        '«Проверить», чтобы открыть работу.\n\nУ каждой карточки свой счётчик. Карточка без дел ' +
+        'скрывается; если дел нет совсем, вы увидите «Срочных дел нет». Длинный список показывает, ' +
+        'сколько записей ещё осталось.\n\n- **Финансы** — поступления за месяц, общий долг и число ' +
+        'должников. Кто именно должен, смотрите в разделе «Оплаты».',
+    ],
+  ],
+  'teacher.en': [
+    ['first-steps', 'checklist under “To do” on', 'checklist under the task cards on'],
+    [
+      'first-steps',
+      '- **To do** brings together lessons awaiting an outcome, student requests, submissions to review ' +
+        'and outstanding balances. Choose “Completed” or “Missed” to record an outcome; for groups, ' +
+        'record attendance. Long lists show a count of additional items.\n- **The monthly summary** ' +
+        'shows payments received this month and outstanding balances.',
+      '- **Mark lessons** lists past lessons awaiting an outcome, with student requests to move or ' +
+        'cancel a lesson below them. Choose “Completed” or “Missed” in the row to record an outcome; ' +
+        'for groups, record attendance.\n- **Review submissions** lists work waiting for your review. ' +
+        'Choose “Review” to open it.\n\nEach card has its own count and disappears when there is ' +
+        'nothing in it; when both are clear, you will see “Nothing urgent”. Long lists show a count of ' +
+        'additional items.\n\n- **The monthly summary** shows payments received this month, the total ' +
+        'outstanding and how many students owe. See “Payments” for who they are.',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -475,6 +516,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(REVIEW_SHEET[name] ?? []),
       ...(PANE_HANDLE[name] ?? []),
       ...(DATE_TIME[name] ?? []),
+      ...(TWO_CARDS[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

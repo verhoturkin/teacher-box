@@ -15,7 +15,6 @@ import { Button, ButtonDirective } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { ProgressBar } from 'primeng/progressbar';
 import { AiApi } from '@features/ai/parts';
-import type { Debtor } from '@features/billing/parts';
 import { HomeworkApi } from '@features/homework/parts';
 import type { ReviewQueueItem } from '@features/homework/parts';
 import {
@@ -28,7 +27,6 @@ import {
 } from '@features/schedule/parts';
 import type { ChangeRequest, ScheduledLesson } from '@features/schedule/parts';
 import { injectMobile } from '@core/layout/mobile';
-import { formatMoney } from '@shared/money/money';
 import { hideHint, isHintHidden } from '@shared/storage/device-settings';
 import { Busy } from '@shared/ui/busy';
 import { EmptyState } from '@shared/ui/empty-state';
@@ -60,7 +58,7 @@ interface Step {
 /** One row of the queue: who it is about, what is to do and the action in place. */
 interface Row {
   readonly key: string;
-  readonly kind: 'lesson' | 'request' | 'review' | 'debt';
+  readonly kind: 'lesson' | 'request' | 'review';
   /** What is to do («Проверьте работу»), the name stays in the detail. */
   readonly title: string;
   /** Who and what: «Вера Орлова · ОГЭ: задание 20». */
@@ -73,10 +71,21 @@ interface Row {
   readonly groupLesson?: ScheduledLesson;
 }
 
+/** One card of the queue: its rows, what does not fit and the badge of its title. */
+interface QueueCard {
+  readonly id: 'lessons' | 'reviews';
+  readonly title: string;
+  readonly rows: readonly Row[];
+  readonly more: number;
+  readonly count: number;
+}
+
 /**
- * Teacher's Today, column two (spec §6): one queue of what waits for the teacher — unmarked lessons,
- * change requests, work to review, debts — each row with its action in place, and under it the
- * unfinished first-run steps (a dashed card with progress that disappears when done or hidden).
+ * Teacher's Today, column two (spec §6): what waits for the teacher in two cards — «Отметить занятия»
+ * (unmarked lessons, then the change requests: schedule work too) and «Проверить работы» (the review
+ * queue) — each row with its action in place. A card with nothing to do hides; when both are empty one
+ * compact empty state stands instead. Under them the unfinished first-run steps (a dashed card with
+ * progress that disappears when done or hidden). Debts are not here: the month card has the total.
  */
 @Component({
   selector: 'tb-todo-queue',
@@ -95,21 +104,18 @@ interface Row {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card>
-      <ng-template #title>
-        {{ t.title }}
-        @if (count() > 0) {
-          <span class="tb-queue__count" [attr.aria-label]="t.count(count())">{{ count() }}</span>
-        }
-      </ng-template>
-      @if (loaded() && debtors() !== null && rows().length === 0 && !setupVisible()) {
-        <tb-empty-state [compact]="true" icon="tb-i-check_circle" [title]="t.nothing" />
-      }
-      @if (rows().length > 0) {
+    @for (card of cards(); track card.id) {
+      <p-card [class]="'tb-queue__card tb-queue__card--' + card.id">
+        <ng-template #title>
+          {{ card.title }}
+          <span class="tb-queue__count" [attr.aria-label]="t.count(card.title, card.count)">{{
+            card.count
+          }}</span>
+        </ng-template>
         <ul class="tb-list tb-queue">
-          @for (row of rows(); track row.key) {
+          @for (row of card.rows; track row.key) {
             <li tbListRow>
-              <span class="tb-queue__icon" [class.tb-queue__icon--debt]="row.kind === 'debt'">
+              <span class="tb-queue__icon">
                 <i class="tb-i {{ row.icon }}" aria-hidden="true"></i>
               </span>
               <span class="tb-list__text">
@@ -165,44 +171,49 @@ interface Row {
             </li>
           }
         </ul>
-        @if (more() > 0) {
-          <small class="tb-muted">{{ t.more(more()) }}</small>
+        @if (card.more > 0) {
+          <small class="tb-muted">{{ t.more(card.more) }}</small>
         }
-      }
-      @if (setupVisible()) {
-        <section class="tb-queue__setup" [attr.aria-label]="t.setupTitle">
-          <strong>{{ t.setupTitle }}</strong>
-          <p-progressbar
-            [value]="percent()"
-            [showValue]="false"
-            styleClass="tb-queue__progress"
-            [tbProgressLabel]="t.progress(doneCount(), steps().length)"
-          />
-          <ol class="tb-queue__steps">
-            @for (step of steps(); track step.title) {
-              <li [class.tb-queue__step--done]="step.done">
-                <i
-                  class="tb-i"
-                  [class.tb-i-check_circle]="step.done"
-                  [class.tb-i-radio_button_unchecked]="!step.done"
-                  aria-hidden="true"
-                ></i>
-                <div>
-                  <a [routerLink]="step.link" [queryParams]="step.query" class="tb-link">{{
-                    step.title
-                  }}</a>
-                  <small class="tb-muted">{{ step.hint }}</small>
-                </div>
-              </li>
-            }
-          </ol>
-          <div class="tb-widget-footer">
-            <span class="tb-muted">{{ t.progress(doneCount(), steps().length) }}</span>
-            <p-button [label]="t.hide" severity="secondary" [text]="true" (onClick)="dismiss()" />
-          </div>
-        </section>
-      }
-    </p-card>
+      </p-card>
+    }
+    @if (loaded() && cards().length === 0 && !setupVisible()) {
+      <p-card class="tb-queue__card tb-queue__card--empty">
+        <tb-empty-state [compact]="true" icon="tb-i-check_circle" [title]="t.nothing" />
+      </p-card>
+    }
+    @if (setupVisible()) {
+      <section class="tb-queue__setup" [attr.aria-label]="t.setupTitle">
+        <strong>{{ t.setupTitle }}</strong>
+        <p-progressbar
+          [value]="percent()"
+          [showValue]="false"
+          styleClass="tb-queue__progress"
+          [tbProgressLabel]="t.progress(doneCount(), steps().length)"
+        />
+        <ol class="tb-queue__steps">
+          @for (step of steps(); track step.title) {
+            <li [class.tb-queue__step--done]="step.done">
+              <i
+                class="tb-i"
+                [class.tb-i-check_circle]="step.done"
+                [class.tb-i-radio_button_unchecked]="!step.done"
+                aria-hidden="true"
+              ></i>
+              <div>
+                <a [routerLink]="step.link" [queryParams]="step.query" class="tb-link">{{
+                  step.title
+                }}</a>
+                <small class="tb-muted">{{ step.hint }}</small>
+              </div>
+            </li>
+          }
+        </ol>
+        <div class="tb-widget-footer">
+          <span class="tb-muted">{{ t.progress(doneCount(), steps().length) }}</span>
+          <p-button [label]="t.hide" severity="secondary" [text]="true" (onClick)="dismiss()" />
+        </div>
+      </section>
+    }
 
     <tb-dialog
       kind="sheet"
@@ -238,6 +249,13 @@ interface Row {
     />
   `,
   styles: `
+    /* the two cards and the steps follow one another in the queue column, as the widgets of a stack */
+    :host {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-4);
+    }
+
     /* M3 large badge: error, Label Small, 16 dp high; ours: it stands after the title of the section */
     .tb-queue__count {
       display: inline-flex;
@@ -255,7 +273,7 @@ interface Row {
       vertical-align: middle;
     }
 
-    /* the tonal icon of a row (ours: 40 dp circle, secondary container; a debt — error container) */
+    /* the tonal icon of a row (ours: 40 dp circle, secondary container) */
     .tb-queue__icon {
       display: inline-flex;
       align-items: center;
@@ -265,11 +283,6 @@ interface Row {
       border-radius: var(--tb-shape-full);
       background: var(--p-md-secondary-container);
       color: var(--p-md-on-secondary-container);
-    }
-
-    .tb-queue__icon--debt {
-      background: var(--p-md-error-container);
-      color: var(--p-md-on-error-container);
     }
 
     .tb-queue__actions {
@@ -284,7 +297,6 @@ interface Row {
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-3);
-      margin-top: var(--tb-space-4);
       padding: var(--tb-space-4);
       border: 1px dashed var(--p-md-outline);
       border-radius: var(--tb-shape-lg);
@@ -343,9 +355,6 @@ export class TodoQueue implements OnInit {
   protected readonly sheet = signal<Row | null>(null);
 
   readonly progress = input.required<SetupProgress>();
-  /** `null` until the billing summary is known: the queue starts its own requests without it. */
-  readonly debtors = input<readonly Debtor[] | null>(null);
-  readonly currency = input('RUB');
   /** A lesson was marked: the schedule counters of the page are stale. */
   readonly marked = output();
 
@@ -359,7 +368,7 @@ export class TodoQueue implements OnInit {
   private readonly aiConnected = signal<boolean | null>(null);
   private readonly dismissed = signal(isHintHidden(CHECKLIST_DISMISSED_KEY));
 
-  private readonly all = computed((): Row[][] => [
+  private readonly lessonRows = computed((): Row[] =>
     this.lessons().map((lesson) => ({
       key: `lesson-${lesson.id}`,
       kind: 'lesson',
@@ -369,6 +378,8 @@ export class TodoQueue implements OnInit {
       link: '/teacher/schedule',
       ...(lesson.groupId === null ? { lessonId: lesson.id } : { groupLesson: lesson }),
     })),
+  );
+  private readonly requestRows = computed((): Row[] =>
     this.requests().map((request) => ({
       key: `request-${request.id}`,
       kind: 'request',
@@ -377,6 +388,8 @@ export class TodoQueue implements OnInit {
       icon: 'tb-i-swap_horiz',
       link: '/teacher/schedule',
     })),
+  );
+  private readonly reviewRows = computed((): Row[] =>
     this.reviews().map((item) => ({
       key: `review-${item.taskId}-${item.assignmentId}`,
       kind: 'review',
@@ -385,21 +398,13 @@ export class TodoQueue implements OnInit {
       icon: 'tb-i-rate_review',
       link: '/teacher/homework/review',
     })),
-    (this.debtors() ?? []).map((debtor) => ({
-      key: `debt-${debtor.studentId}`,
-      kind: 'debt',
-      title: T.queue.debt(formatMoney(-debtor.balance, this.currency())),
-      detail: debtor.displayName,
-      icon: 'tb-i-account_balance_wallet',
-      link: `/teacher/students/${debtor.studentId}`,
-      query: { tab: 'payments' },
-    })),
-  ]);
-  protected readonly rows = computed(() => this.all().flatMap((rows) => rows.slice(0, PER_SOURCE)));
-  /** What waits: the badge of the title (M3 large badge, error). */
-  protected readonly count = computed(() => this.rows().length + this.more());
-  protected readonly more = computed(() =>
-    this.all().reduce((sum, rows) => sum + Math.max(0, rows.length - PER_SOURCE), 0),
+  );
+  /** The cards with something to do, in order: the lessons (and the requests under them), the reviews. */
+  protected readonly cards = computed((): QueueCard[] =>
+    [
+      queueCard('lessons', T.queue.lessonsTitle, [this.lessonRows(), this.requestRows()]),
+      queueCard('reviews', T.queue.reviewsTitle, [this.reviewRows()]),
+    ].filter((card) => card.count > 0),
   );
 
   protected readonly steps = computed((): Step[] => {
@@ -466,7 +471,7 @@ export class TodoQueue implements OnInit {
     });
   }
 
-  /** The link of a row without an in-place action: «Отметить» a group lesson, «Ответить», «Проверить», «Открыть». */
+  /** The link of a row without an in-place action: «Отметить» a group lesson, «Ответить», «Проверить». */
   protected actionLabel(row: Row): string {
     switch (row.kind) {
       case 'lesson':
@@ -475,8 +480,6 @@ export class TodoQueue implements OnInit {
         return T.queue.reply;
       case 'review':
         return T.queue.check;
-      case 'debt':
-        return T.queue.open;
     }
   }
 
@@ -526,4 +529,15 @@ export class TodoQueue implements OnInit {
     hideHint(CHECKLIST_DISMISSED_KEY);
     this.dismissed.set(true);
   }
+}
+
+/** A card of the given sources: at most {@link PER_SOURCE} rows of each, the rest counted. */
+function queueCard(
+  id: QueueCard['id'],
+  title: string,
+  sources: readonly (readonly Row[])[],
+): QueueCard {
+  const rows = sources.flatMap((source) => source.slice(0, PER_SOURCE));
+  const more = sources.reduce((sum, source) => sum + Math.max(0, source.length - PER_SOURCE), 0);
+  return { id, title, rows, more, count: rows.length + more };
 }

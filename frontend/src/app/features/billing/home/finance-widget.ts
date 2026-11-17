@@ -9,7 +9,7 @@ const MONTH = new Intl.DateTimeFormat(locale(), { month: 'long', timeZone: 'UTC'
 
 /**
  * Teacher's home, the month (spec §6, the sketches): the title is the month, then one tonal block — «Поступило»
- * with the sum large and under it «Долг» (the debtors in the queue have their own rows).
+ * with the sum large and under it «Долг» with the debtor count — the only place of the debts on Today.
  */
 @Component({
   selector: 'tb-finance-widget',

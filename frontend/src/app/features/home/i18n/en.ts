@@ -4,10 +4,11 @@ import type { ru } from './ru';
 
 export const en: Translation<typeof ru> = {
   queue: {
-    title: 'To do',
+    lessonsTitle: 'Mark lessons',
+    reviewsTitle: 'Review submissions',
     nothing: 'Nothing urgent',
     more: (count: number) => `${String(count)} more`,
-    count: (count: number) => `To do: ${String(count)}`,
+    count: (title: string, count: number) => `${title}: ${String(count)}`,
     lessonTitle: 'Record lesson outcome',
     held: 'Completed',
     missed: 'Missed',
@@ -16,8 +17,6 @@ export const en: Translation<typeof ru> = {
     reply: 'Reply',
     reviewTitle: 'Review submission',
     check: 'Review',
-    debt: (amount: string) => `Amount due: ${amount}`,
-    open: 'Open',
     setupTitle: 'Getting started',
     progress: (done: number, total: number) => `${String(done)} of ${String(total)} complete`,
     hide: 'Hide',
