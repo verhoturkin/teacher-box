@@ -163,8 +163,9 @@ lines/statements/functions ≥ 90 %, branches ≥ 80 %. Never lower gates or lin
 
 ## 12. Developer environment — [`docs/agent-environment.md`](docs/agent-environment.md)
 
-Local Windows 11 + PowerShell; cloud Linux without JDK 25, Docker and E2E: run what works, say in
-the reply and the PR what was not run; never claim an unrun check green.
+Local Windows 11 + PowerShell; cloud Linux with JDK 25 and Docker (start the daemon yourself —
+`docs/agent-environment.md`): run every touched part; what still cannot run — say in the reply and
+the PR; never claim an unrun check green.
 
 ## 13. Up-to-date knowledge
 
