@@ -277,7 +277,7 @@ test('notification header keeps read-all beside close and uses compact corners a
   await expect(page.locator('.p-drawer-mask')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0.32)');
 });
 
-test('student calendar details adapt and upcoming sections stay contained on compact', async ({
+test('student calendar details adapt and upcoming sections sit on the page on compact', async ({
   page,
 }) => {
   const morning = new Date();
@@ -304,7 +304,10 @@ test('student calendar details adapt and upcoming sections stay contained on com
   await expect(page.locator('.p-drawer.tb-d--sheet')).toHaveCount(0);
   await dialog.getByRole('button', { name: 'Закрыть', exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(page.locator('.tb-my-schedule-section').first()).toHaveCSS('border-radius', '16px');
+  await expect(page.locator('.tb-my-schedule-section').first()).toHaveCSS(
+    'background-color',
+    'rgba(0, 0, 0, 0)',
+  );
   const day = new Intl.DateTimeFormat('ru-RU', {
     weekday: 'long',
     day: 'numeric',
