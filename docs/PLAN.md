@@ -51,6 +51,13 @@ Order: one substep per session, a commit each; the PR is opened once, after 431.
   in one column, rows stay one line. Tests: `todo-queue.spec.ts`, `teacher-home.spec.ts`. Docs:
   `docs/screens.md` «Today (teacher home)», wiki `Home`/first steps page, help article
   `teacher/first-steps` (ru, en).
+- [ ] 427.2 *simple* B F — the summary of payments no longer sends the debtors list, nobody reads
+  it after 427.1 (decided on 2026-11-17): drop `topDebtors` and the `Debtor` record from
+  `billing/application/BillingViews.java` `BillingSummary`, its building in
+  `BillingQueryService` (around `new Debtor(`), the assertions in `SummaryIntegrationTests`;
+  `totalDebt` and `debtors` (the count) stay for the month card. Frontend: `topDebtors` and
+  `Debtor` in `billing/data-access/billing.models.ts`, `testing/billing-fixtures.ts`,
+  `home/teacher-home.spec.ts`. Docs: `docs/modules/billing.md` if it lists the field.
 
 ### 428. Student: tonal schedule cards, home without materials
 
