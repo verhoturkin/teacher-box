@@ -67,20 +67,19 @@ Order: one substep per session, a commit each; the PR is opened once, after 431.
 
 ### 429. Notifications: no addresses in the portal, a tap opens the page
 
-- [ ] 429.1 *complex* B F — the inbox keeps the text without the address, messengers keep it.
-  Today a notice with a room (`meetings/notices/MeetingNotices.java` MEETING_LINK,
+- [ ] 429.1 *complex* B — the inbox keeps the text without the address; messengers stay as they
+  are. Today a notice with a room (`meetings/notices/MeetingNotices.java` MEETING_LINK,
   `schedule/notices/ScheduleNotices.java` SCHEDULE_REMINDER and the other `join(body)` with
   `t.meetingLink(room)`) puts the address into `NoticeText.body` (inbox) and the text without it
-  into `roomBody` (messengers, with a «Подключиться» button). Turn it over: `body` is the text
-  without the address for the inbox; the messenger text carries the address (and keeps the
-  buttons) — rename `roomBody` to what it now means (e.g. `chatBody`) in
-  `shared/notice/NoticeText.java`, `NoticeRequested`,
-  `notifications/application/NotificationService` and its producers. Every notice that refers to something has a portal `link` (check MEETING_LINK
-  and reminders: the lesson / the schedule). Old inbox rows that already hold an address stay as
-  they are (no migration; YAGNI) — *or* strip URLs in a Flyway migration of `notifications` if the
-  teacher wants a clean inbox (decide in the session, note it). Tests: notices tests of meetings
-  and schedule, `NotificationServiceTest` (inbox body has no `https://`, the messenger text has
-  it).
+  into `roomBody` (messengers, with a «Подключиться» button). Messengers do not change (decided
+  on 2026-11-17: the text without the address and the button). The inbox `body` becomes that
+  same text without the address; where `body` and `roomBody` then match, drop `roomBody` from
+  `shared/notice/NoticeText.java`, `NoticeRequested` and
+  `notifications/application/NotificationService` (KISS). Every notice that refers to something
+  has a portal `link` (check MEETING_LINK and reminders: the lesson / the schedule). Old inbox
+  rows that already hold an address stay as they are (no migration; YAGNI). Tests: notices tests
+  of meetings and schedule, `NotificationServiceTest` (inbox body has no `https://`, messengers
+  get the same text and the button as before).
 - [ ] 429.2 *simple* F — the whole notification row opens its `link` (not only the title button):
   `notifications/inbox/notification-list.ts`, `inbox-panel.ts`, the bell sheet; it marks it read
   and closes the sheet; a row without a link is not interactive. Drop the «long address breaks
