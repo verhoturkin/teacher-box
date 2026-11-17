@@ -14,8 +14,9 @@ one board and one textbook, hidden when none. No FAB.
 
 `schedule/student/my-schedule-page.ts`: the teacher's grid ([schedule](schedule.md)) with a
 supporting pane — mini-month, upcoming lessons, requests, history and the calendar subscription;
-compact starts with the day agenda, and there the sections are top-level cards of the page (no
-tonal block: titles and list items stand on the page; the subscription is the plain outlined card). The history shows only the shared summary (no plan, no private note). The «lesson summary»
+compact starts with the day agenda, and there the sections have no tonal block of their own: titles
+and list items stand on the page, the subscription is the plain outlined card. The history shows
+only the shared summary (no plan, no private note). The «lesson summary»
 notification opens `/cabinet/schedule?lesson=<id>`, the lesson's card.
 
 ## Homework
