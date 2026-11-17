@@ -35,7 +35,7 @@ sheet. KISS: remove before adding. No new ADR unless the call change needs one.
   a third of the viewport, the rest is empty. Find why the host gets no height
   (`boards/editor/board-page.ts`, `board-canvas.ts`, `excalidraw-host.ts`); fix the root cause in
   the layout, not a fixed pixel height. Check the full and mobile widths.
-- [ ] 421.2 *complex* F — calls: one floating mode instead of two. Today the call can float in the
+- [x] 421.2 *complex* F — calls: one floating mode instead of two. Today the call can float in the
   Document Picture-in-Picture window (`meetings/call/call-pip.ts`) or in the in-portal mini window
   (`call-mini.ts`, `call-corner.ts`, `call-host.ts`, `call-session.ts`). Keep only the mode that
   floats over everything (PiP); delete the other one with its tests, labels and help text; where

@@ -21,7 +21,7 @@ overlays in `body` — the call in `features/meetings/call/`); third-party CSS a
 are a style bundle of `angular.json` with `inject: false`, loaded by name through
 `core/theme/style-bundles.ts` — `excalidraw` (the editor's loader) and `calendar` (the schedule
 routes, `withStyleBundle`); a new bundle gets its `no-cache` location in nginx. A sheet that depends
-on another one's order names both classes instead (`.tb-call-mini__tile.tb-call-tile`). A class
+on another one's order names both classes instead. A class
 used by two features stays global. **Gallery** (ADR-0059): `npm start`, then `/gallery` — every
 part below links its section; a sample is one file `features/gallery/<section>/<sample>.ts` built
 from these components and tokens, with the class, component or token named beside it. Take a
@@ -357,7 +357,7 @@ for the active navigation item and checked states.
   | Calls, camera | `videocam` / `videocam_off` |
   | Microphone | `mic` / `mic_off` |
   | End the call / share the screen | `call_end` / `present_to_all` |
-  | Full window / minimise the call | `open_in_full` / `close_fullscreen` |
+  | Back to the tab (floating call) | `open_in_full` |
   | Weak connection | `network_wifi_1_bar` |
   | Statistics, reports | `bar_chart` |
   | Billing / receipt | `account_balance_wallet` / `receipt_long` |

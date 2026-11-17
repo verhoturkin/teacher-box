@@ -155,11 +155,14 @@ describe('CallWindow', () => {
     expect(send).toHaveBeenCalledTimes(1);
   });
 
-  it('minimizes on Esc', async () => {
-    const minimize = vi.spyOn(session, 'minimize');
+  it('closes an ended call on Esc and keeps a live one', async () => {
+    const close = vi.spyOn(session, 'close');
     host.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(close).not.toHaveBeenCalled();
+    session.phase.set('ended');
     await fixture.whenStable();
-    expect(minimize).toHaveBeenCalled();
+    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(close).toHaveBeenCalled();
   });
 
   it('removes a participant only after the teacher confirms', async () => {
@@ -190,6 +193,7 @@ describe('CallWindow in Picture-in-Picture', () => {
     TestBed.configureTestingModule({ imports: [CallWindow], providers: testProviders() });
     const session = TestBed.inject(CallSession);
     session.phase.set('connected');
+    session.target.set({ ownerId: 'g-1', title: 'ОГЭ' });
     session.participants.set([aParticipant()]);
     const fixture = TestBed.createComponent(CallWindow);
     const place = document.createElement('div');
@@ -207,7 +211,8 @@ describe('CallWindow in Picture-in-Picture', () => {
       document.styleSheets.length,
     );
     expect(host.classList).toContain('tb-call-window--pip');
-    expect(button('Свернуть')).toBeNull();
+    expect(floating.document.title).toBe('ОГЭ — Teacher Box');
+    expect(host.querySelector('.tb-call-window__title')?.textContent).toContain('ОГЭ');
 
     button('Вернуть во вкладку')?.click();
     await fixture.whenStable();

@@ -8,7 +8,6 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { CallMini } from './call-mini';
 import { CallPrejoin } from './call-prejoin';
 import { CallSession } from './call-session';
 import { CallWindow } from './call-window';
@@ -18,23 +17,20 @@ import { elapsedText } from './call-layout';
 const EXPANDED_CLASS = 'tb-call-expanded';
 
 /**
- * The call above every page (mounted once in the root component, ADR-0030): the pre-join sheet, the
- * full window or the mini window. Lives across routes, the board editor included.
+ * The call above every page (mounted once in the root component, ADR-0030): the pre-join sheet and
+ * the call window, in the tab or floating over everything (Picture-in-Picture). Lives across routes,
+ * the board editor included.
  */
 @Component({
   selector: 'tb-call-host',
-  imports: [CallMini, CallPrejoin, CallWindow],
+  imports: [CallPrejoin, CallWindow],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (session.prejoin(); as target) {
       <tb-call-prejoin [target]="target" [switching]="switching()" />
     }
     @if (session.phase() !== 'idle') {
-      @if (session.mode() === 'expanded') {
-        <tb-call-window [elapsed]="elapsed()" />
-      } @else {
-        <tb-call-mini [elapsed]="elapsed()" />
-      }
+      <tb-call-window [elapsed]="elapsed()" />
     }
   `,
 })
@@ -59,12 +55,7 @@ export class CallHost {
       }
     }, 1000);
     effect(() => {
-      root.classList.toggle(
-        EXPANDED_CLASS,
-        this.session.phase() !== 'idle' &&
-          this.session.mode() === 'expanded' &&
-          !this.session.pip(),
-      );
+      root.classList.toggle(EXPANDED_CLASS, this.session.phase() !== 'idle' && !this.session.pip());
     });
     inject(DestroyRef).onDestroy(() => {
       clearInterval(timer);

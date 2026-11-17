@@ -17,7 +17,7 @@ interface Drag {
 }
 
 /**
- * Moving a floating part of a call (the mini window, the own camera) between corners: dragged, it follows
+ * Moving a floating part of a call (the own camera) between corners: dragged, it follows
  * the pointer (`offset` for `translate`); dropped, it snaps to the corner nearest to its middle within its
  * positioning parent (the screen for a fixed element). The corner is remembered on the device under `key`.
  */

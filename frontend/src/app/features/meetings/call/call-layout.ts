@@ -59,21 +59,6 @@ export function gridSize(count: number, portrait: boolean): { columns: number; r
   return { columns, rows: Math.ceil(Math.max(count, 1) / columns) };
 }
 
-/** Who the mini window shows: a shared screen, whoever speaks, a camera, anyone, then this user. */
-export function miniView(participants: readonly CallParticipant[]): StageView | null {
-  const others = participants.filter((person) => !person.local);
-  const sharing = others.find((person) => person.screen !== null);
-  if (sharing !== undefined) {
-    return { participant: sharing, screen: true };
-  }
-  const shown =
-    others.find((person) => person.speaking) ??
-    others.find((person) => person.camera !== null) ??
-    others[0] ??
-    participants.find((person) => person.local);
-  return shown === undefined ? null : { participant: shown, screen: false };
-}
-
 /** `m:ss` or `h:mm:ss` of the call. */
 export function elapsedText(milliseconds: number): string {
   const total = Math.max(0, Math.floor(milliseconds / 1000));

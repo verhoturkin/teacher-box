@@ -16,6 +16,7 @@ import { Message } from 'primeng/message';
 import { LoadingIndicator } from '@shared/ui/loading-indicator';
 import { injectMobile } from '@core/layout/mobile';
 import { AuthService } from '@core/auth/auth.service';
+import { Portal } from '@core/portal/portal';
 import { Confirm } from '@shared/ui/confirm';
 import { CallChat } from './call-chat';
 import { CallParticipant } from './call-engine';
@@ -30,9 +31,9 @@ import { SHARED_T } from '@shared/i18n/texts';
 
 /**
  * The full call window over the portal: the stage (see `stageLayout`), the floating toolbar, the
- * states «Подключение…», «Переподключение…» and the end of the call. Esc minimizes it. In a
- * floating window (Picture-in-Picture) only the stage and the compact controls stay: menus and
- * dialogs open in the tab.
+ * states «Подключение…», «Переподключение…» and the end of the call. Esc closes an ended call. In a
+ * floating window (Picture-in-Picture, Chromium) the title bar, the stage and the compact controls
+ * stay: menus and dialogs open in the tab. Elsewhere the call stays in the tab.
  */
 @Component({
   selector: 'tb-call-window',
@@ -153,6 +154,7 @@ export class CallWindow implements AfterViewInit {
   protected readonly t = T.window;
   protected readonly session = inject(CallSession);
   private readonly confirm = inject(Confirm);
+  private readonly portal = inject(Portal);
   protected readonly teacher = inject(AuthService).role() === 'TEACHER';
 
   /** The time in the call, `m:ss`. */
@@ -176,7 +178,7 @@ export class CallWindow implements AfterViewInit {
   private floating: Window | null = null;
 
   constructor() {
-    // «Вернуть во вкладку», minimizing or the end of the call close the floating window
+    // «Вернуть во вкладку» or leaving the call closes the floating window
     effect(() => {
       if (!this.session.pip()) {
         this.floating?.close();
@@ -206,14 +208,13 @@ export class CallWindow implements AfterViewInit {
       this.floating = null;
       this.session.pip.set(false);
     });
+    this.floating.document.title = `${this.session.target()?.title ?? ''} — ${this.portal.name()}`;
     this.session.pip.set(true);
   }
 
   protected escape(): void {
     if (this.session.phase() === 'ended') {
       this.session.close();
-    } else {
-      this.session.minimize();
     }
   }
 }

@@ -12,11 +12,6 @@ export const en: Translation<typeof ru> = {
     busy: 'Another app is using the camera or microphone.',
     failed: 'Could not turn on the camera or the microphone.',
   },
-  mini: {
-    call: 'Call',
-    reconnecting: 'Reconnecting…',
-    move: 'Move the call window',
-  },
   self: {
     move: 'Drag to another corner, or use the arrow keys',
   },
@@ -87,8 +82,6 @@ export const en: Translation<typeof ru> = {
     camera: 'Camera',
     screen: 'Share screen',
     settings: 'Call settings',
-    minimize: 'Minimise',
-    expand: 'Expand',
     pip: 'Float over other windows',
     back: 'Back to the tab',
     leave: 'Leave call',

@@ -230,14 +230,13 @@ describe('CallSession', () => {
     expect(session.announcement()).toBe('Анна вышел из звонка');
   });
 
-  it('expands the call that is going on instead of joining again', async () => {
+  it('keeps the call that is going on instead of joining again', async () => {
     await joined();
-    session.minimize();
-    expect(session.mode()).toBe('minimized');
 
     session.open('s-1');
 
-    expect(session.mode()).toBe('expanded');
+    expect(session.prejoin()).toBeNull();
+    expect(session.target()?.ownerId).toBe('s-1');
   });
 
   it('leaves the current call before joining another one', async () => {
@@ -266,14 +265,12 @@ describe('CallSession', () => {
 
   it('ends when the server closes the room, and closes', async () => {
     await joined();
-    session.minimize();
     engine.update(snapshot({ state: 'reconnecting' }));
     expect(session.phase()).toBe('reconnecting');
 
     engine.update(snapshot({ state: 'disconnected', endReason: 'removed' }));
 
     expect(session.phase()).toBe('ended');
-    expect(session.mode()).toBe('expanded');
     expect(session.endText()).toBe(END_TEXTS.removed);
     session.close();
     expect(session.phase()).toBe('idle');
@@ -397,10 +394,10 @@ describe('CallSession', () => {
 
     engine.message({ from: 'Анна', text: 'Видно' });
     expect(session.unread()).toBe(0);
-    session.minimize();
+    session.pip.set(true);
     engine.message({ from: 'Анна', text: 'Вы тут?' });
     expect(session.unread()).toBe(1);
-    session.expand();
+    session.back();
     expect(session.unread()).toBe(0);
 
     connection.failWith = new Error('closed');
@@ -422,8 +419,7 @@ describe('CallSession', () => {
     await joining;
     old({ from: 'Анна', text: 'поздно' });
     expect(session.messages()).toEqual([]);
-    session.minimize();
-    session.expand();
+    session.back();
     expect(session.unread()).toBe(0);
   });
 
