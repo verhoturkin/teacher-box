@@ -203,10 +203,12 @@ export class StudentContext {
       font: var(--tb-type-label-m);
     }
 
+    /* contain: a long chip never widens the panel or the sheet; it ends with «…» (its title holds the text) */
     .tb-ai-context__chips {
       display: flex;
       flex-wrap: wrap;
       gap: var(--tb-space-2);
+      contain: inline-size;
     }
 
     /* the phone sheet: one row that scrolls (M3 allows a horizontally scrollable list of input chips) */

@@ -37,3 +37,6 @@ portal time zone; search in the remaining long lists and list-detail for the rev
 - [x] *simple* F — buttons render at 16px: the `.p-button { font-size: 0.875rem }` rule never
   applied and was removed in 400.1 (ADR-0065); decided on 2026-11-16: M3 Label Large 14px, done
   in the button `css` of `teacher-box-preset.ts` (`sm` / `lg` keep their own size).
+- [x] *simple* F — student tags: the free-text tag field is a textarea that grows with the text and
+  takes two thirds of the row (`students/student-tags-tab.ts`); a long tag no longer widens the AI
+  panel or the review sheet (`ai/student-context.ts`, `contain: inline-size` on the chips).

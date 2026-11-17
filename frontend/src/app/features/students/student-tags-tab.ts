@@ -13,7 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ButtonDirective, ButtonIcon, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
-import { InputText } from 'primeng/inputtext';
+import { Textarea } from 'primeng/textarea';
 import { Select } from 'primeng/select';
 import { Tag } from 'primeng/tag';
 import { quietContext } from '@core/http/api-error.interceptor';
@@ -43,7 +43,7 @@ export const TAGS_SETTINGS = '/teacher/settings/students';
     Card,
     EmptyState,
     FormsModule,
-    InputText,
+    Textarea,
     LoadStateView,
     RouterLink,
     Select,
@@ -87,18 +87,20 @@ export const TAGS_SETTINGS = '/teacher/settings/students';
                     }}</span>
                   </span>
                   @if (tag.kind === 'TEXT') {
-                    <div class="tb-field tb-student-tags__text">
+                    <div class="tb-field tb-student-tags__field">
                       <label [for]="'tag-text-' + tag.id">{{ t.text }}</label>
-                      <input
-                        pInputText
+                      <textarea
+                        pTextarea
                         #field
+                        rows="1"
+                        [autoResize]="true"
                         [id]="'tag-text-' + tag.id"
                         maxlength="120"
                         autocomplete="off"
                         [value]="values()[tag.id] ?? ''"
                         (blur)="write(tag, field)"
-                        (keydown.enter)="field.blur()"
-                      />
+                        (keydown.enter)="$event.preventDefault(); field.blur()"
+                      ></textarea>
                     </div>
                   } @else {
                     <p-select
@@ -205,10 +207,11 @@ export const TAGS_SETTINGS = '/teacher/settings/students';
       inline-size: 10.5rem;
     }
 
-    /* a free text needs more room than a value (ours) */
-    .tb-student-tags__text {
-      flex: 0 1 16rem;
+    /* a free text needs more room than a value: it takes two thirds of the row and wraps onto new lines (ours) */
+    .tb-student-tags__field {
+      flex: 2 1 0;
       min-inline-size: 0;
+      max-inline-size: 32rem;
     }
 
     .tb-student-tags__foot {
@@ -237,7 +240,11 @@ export const TAGS_SETTINGS = '/teacher/settings/students';
       margin-block-end: var(--tb-space-3);
     }
 
+    /* a long value wraps inside the card instead of pushing it wider */
     .tb-student-tags__chip {
+      max-inline-size: 100%;
+      overflow-wrap: anywhere;
+      white-space: normal;
       background: var(--p-md-tertiary-container);
       color: var(--p-md-on-tertiary-container);
     }
@@ -292,7 +299,7 @@ export class StudentTagsTab implements OnInit {
   }
 
   /** Saves the text of a text tag once it changed; a blank one clears the tag. */
-  protected write(tag: StudentTag, field: HTMLInputElement): void {
+  protected write(tag: StudentTag, field: HTMLTextAreaElement): void {
     const text = field.value.trim();
     field.value = text;
     if (text !== (this.values()[tag.id] ?? '')) {

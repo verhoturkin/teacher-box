@@ -108,7 +108,7 @@ describe('StudentTagsTab', () => {
 
     expect(readableText(host)).toContain('Заметка Заметка для вас');
     expect(host.querySelector('.tb-student-tags__chip')?.textContent).toContain('Интересы: футбол');
-    const field = host.querySelector<HTMLInputElement>('#tag-text-hobby');
+    const field = host.querySelector<HTMLTextAreaElement>('#tag-text-hobby');
     if (field === null) {
       throw new Error('no text field');
     }
