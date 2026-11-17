@@ -620,4 +620,15 @@ describe('nextMonday', () => {
     expect(toIsoDate(nextMonday(new Date(2026, 9, 1, 23, 30)))).toBe('2026-10-05');
     expect(toIsoDate(nextMonday(new Date(2026, 9, 4, 0, 5)))).toBe('2026-10-05');
   });
+
+  it('keeps the rows tonal on a phone: the lightest container only on the wide tonal pane', () => {
+    const cmp: unknown = Reflect.get(MySchedulePage, 'ɵcmp');
+    const styles: unknown = typeof cmp === 'object' && cmp ? Reflect.get(cmp, 'styles') : [];
+    const css = Array.isArray(styles) ? styles.map(String).join('') : '';
+    const lowest = css.indexOf('--tb-list-item: var(--p-md-surface-container-lowest)');
+    const wide = css.lastIndexOf('@media (width >= 37.5em)', lowest);
+    expect(lowest).toBeGreaterThan(-1);
+    expect(wide).toBeGreaterThan(-1);
+    expect(css.slice(wide, lowest)).not.toContain('}');
+  });
 });

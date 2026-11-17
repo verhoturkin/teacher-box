@@ -54,7 +54,7 @@ Order: one substep per session, a commit each; the PR is opened once, after 431.
 
 ### 428. Student: tonal schedule cards, home without materials
 
-- [ ] 428.1 *simple* F — the student's schedule on a phone shows white cards: the list items take
+- [x] 428.1 *simple* F — the student's schedule on a phone shows white cards: the list items take
   `--p-md-surface-container-lowest` (`schedule/student/my-schedule-page.ts`, styles near
   `--tb-list-item`); make them tonal like the teacher's schedule and the rest of the portal (the
   same `--tb-list-item` / lesson-card surface as `schedule/teacher`), light and dark; check the
