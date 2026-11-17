@@ -39,6 +39,18 @@ describe('ReportingErrorHandler', () => {
     expect(console.error).toHaveBeenCalled();
   });
 
+  it('ignores the browser note about undelivered resize observations', () => {
+    const note = 'ResizeObserver loop completed with undelivered notifications.';
+
+    handler.handleError(
+      new Error(`An ErrorEvent with no error occurred. See Error.cause for details: ${note}`),
+    );
+    handler.handleError(new Error('ResizeObserver loop limit exceeded'));
+
+    backend.expectNone('/api/client-errors');
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
   it('describes errors that are not Error objects', () => {
     handler.handleError('just text');
     handler.handleError({ odd: true });

@@ -144,8 +144,8 @@ elevation with their values; springs —
     springs and delays, measured on the video (~130 ms to open, no bounce). Reduced motion: the
     container fades in and out, nothing grows.
   - The navigation rail (**M3**: the expanded rail is the «default spatial» example)
-    springs its width between 96 and 280 px on default spatial when the page collapses it or the
-    window crosses 1600 px; the page and the top strip beside it follow, and the labels fade in on
+    springs its width between 96 and 280 px on default spatial when the window crosses 1600 px (a
+    page never collapses it); the page and the top strip beside it follow, and the labels fade in on
     fast effects (*ours*: an item's own layout switches at once).
   - PrimeNG controls (fields, selects, checkboxes, tables, tabs, the paginator) change colour,
     outline and shadow on the fast effects spring: the semantic `transitionDuration` of the preset

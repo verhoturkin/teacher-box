@@ -242,10 +242,8 @@ export class Shell {
   );
   /** The bottom navigation bar: a phone's, unless the page hides it (the review of a work, spec §9). */
   protected readonly bar = computed(() => this.compact() && !this.railState.bottomBarHidden());
-  /** The expanded rail: extra-large, unless the page collapses it (the review of a work, spec §9). */
-  protected readonly expanded = computed(
-    () => this.size() === 'extra-large' && !this.railState.collapsed(),
-  );
+  /** The expanded rail: extra-large. */
+  protected readonly expanded = computed(() => this.size() === 'extra-large');
 
   constructor() {
     // `?notifications=…` (old links to the notifications page) opens the bell's sheet

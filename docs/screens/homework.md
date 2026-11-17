@@ -39,17 +39,17 @@ student's side is in [cabinet](cabinet.md#homework).
   column (container query). «Remind» is for not handed in or on rework. No «overdue» tag anywhere,
   teacher or student: the status line says it. The aside shows the task read-only — materials change
   only in the editor.
-- **Large and up:** the task takes the main column (72ch, stops at 48 rem; the students follow it so
-  free space stays at the end) and the students a narrow column (320–380 px, *ours*) grouped by
-  status, empty groups hidden.
+- **Large and up:** the task takes the main column (the text fills it, the materials and the test
+  line stay list-wide) and the students a narrow column (320–380 px, *ours*) at the trailing edge,
+  grouped by status, empty groups hidden.
 - **Compact:** tabs students / task / mistakes, the main button stuck to the bottom.
 
 ## Review page (boards 14–16)
 
-- The form (`review-form.ts` in `review-sheet.ts`): from large a side sheet beside the work and the
-  rail collapses (`RailState`); below large it sits under the answer. A grade set before is a chip
-  of its own; with a quiz «N of M» is chosen until the teacher picks another. *Ours:* rework stays
-  tonal, not the board's error container — red means destruction only ([design-system
+- The form (`review-form.ts` in `review-sheet.ts`): from large a side sheet beside the work (the
+  rail stays as it is; the sheet is part of the page transition); below large it sits under the
+  answer. A grade set before is a chip of its own; with a quiz «N of M» is chosen until the
+  teacher picks another. *Ours:* rework stays tonal, not the board's error container — red means destruction only ([design-system
   §8](../design-system.md)).
 - Compact: an **M3** floating toolbar (sizes *ours*); comment, draft, phrases and grade live in a
   bottom sheet; the bottom bar hides (`RailState.bottomBarHidden`).

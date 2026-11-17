@@ -111,14 +111,26 @@ describe('TabIndicator', () => {
     expect(edges()).toEqual(['16px', '244px', 'left']);
   });
 
-  it('jumps when the bar is resized', async () => {
+  it('jumps when the bar is resized after the slide', async () => {
+    const { fixture, list, edges } = await render();
+    await choose(fixture, 'C');
+    requireElement(list, '.p-tab-active .tb-tab-label', HTMLElement).dataset['w'] = '90';
+    const now = performance.now();
+    vi.spyOn(performance, 'now').mockReturnValue(now + 1_000);
+
+    resize();
+
+    expect(edges()).toEqual(['200px', '10px', 'none']);
+  });
+
+  it('keeps sliding when the labels resize during the slide', async () => {
     const { fixture, list, edges } = await render();
     await choose(fixture, 'C');
     requireElement(list, '.p-tab-active .tb-tab-label', HTMLElement).dataset['w'] = '90';
 
     resize();
 
-    expect(edges()).toEqual(['200px', '10px', 'none']);
+    expect(edges()).toEqual(['200px', '10px', 'right']);
   });
 
   it('stays where it is without an active tab or a change', async () => {

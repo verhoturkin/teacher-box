@@ -21,7 +21,7 @@ import { Menu } from 'primeng/menu';
 import { Select } from 'primeng/select';
 import { IdentityApi, OwnerOption } from '@features/identity/parts';
 import { injectMobile, injectWindowSize } from '@core/layout/mobile';
-import { collapseRail, hideBottomBar, RailState } from '@core/layout/rail-state';
+import { hideBottomBar, RailState } from '@core/layout/rail-state';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { openOnCreate } from '@core/routing/create-param';
 import { readQuery, writeQuery } from '@core/routing/query-state';
@@ -415,7 +415,7 @@ export class AssignmentsPage implements OnInit {
       ? task
       : null;
   });
-  /** From large the review is a side sheet beside the work (sketch 14); the rail gives it room. */
+  /** From large the review is a side sheet beside the work (sketch 14); the rail stays as it is. */
   protected readonly sheetOpen = computed(
     () => (this.size() === 'large' || this.size() === 'extra-large') && this.reviewing() !== null,
   );
@@ -578,7 +578,6 @@ export class AssignmentsPage implements OnInit {
   protected readonly chips = computed<FilterChip<Filter>[]>(() => this.segments());
 
   constructor() {
-    collapseRail(() => this.sheetOpen());
     // a phone: the view switch is one icon of the top app bar (the work under review has its own toolbar)
     effect(() => {
       const journal = this.view() === 'journal';

@@ -1,5 +1,8 @@
 import { DestroyRef, Directive, ElementRef, afterNextRender, inject } from '@angular/core';
 
+/** The slide (slow spatial spring, 0.6 s, plus the 50 ms trailing delay) with a margin: a resize inside it keeps the direction. */
+const MOVE_MS = 700;
+
 /**
  * The one active indicator of a `<p-tabs class="tb-tabs" tbTabIndicator>` bar (M3 tabs, 413.1):
  * `styles/_sheets.scss` draws it as the `::after` of the tab list, this directive places it under the
@@ -13,6 +16,7 @@ export class TabIndicator {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private start?: number;
   private end?: number;
+  private movedAt = -MOVE_MS;
 
   constructor() {
     const destroyRef = inject(DestroyRef);
@@ -58,12 +62,19 @@ export class TabIndicator {
     if (start === this.start && end === this.end) {
       return;
     }
-    list.dataset['tbTabMove'] =
+    const move =
       !moves || this.start === undefined || start === this.start
         ? 'none'
         : start > this.start
           ? 'right'
           : 'left';
+    if (move !== 'none') {
+      this.movedAt = performance.now();
+    }
+    // the labels change width while the tab turns active: that resize must not cut the slide short
+    if (moves || performance.now() - this.movedAt >= MOVE_MS) {
+      list.dataset['tbTabMove'] = move;
+    }
     list.style.setProperty('--tb-tab-start', `${String(start)}px`);
     list.style.setProperty('--tb-tab-end', `${String(end)}px`);
     this.start = start;

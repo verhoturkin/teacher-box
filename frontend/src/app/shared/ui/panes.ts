@@ -4,6 +4,7 @@ import {
   Component,
   Directive,
   DestroyRef,
+  DOCUMENT,
   TemplateRef,
   ViewContainerRef,
   Signal,
@@ -14,6 +15,7 @@ import {
   signal,
 } from '@angular/core';
 import { WindowSize, injectWindowSize } from '@core/layout/mobile';
+import { PAGE_MOTION_ATTRIBUTE } from '@core/routing/page-transitions';
 
 /**
  * The kind of a pane (M3 panes, redesign spec §3.3): `fixed` keeps the M3 default width of its
@@ -293,8 +295,18 @@ export class Pane {
       ? `calc(-1 * (${basis} + var(--tb-panes-spacer)))`
       : null;
   });
-  protected readonly enter = computed(() =>
-    this.panes.settled() ? (this.dock() === null ? 'tb-pane--enter' : 'tb-pane--dock-in') : '',
+  /**
+   * A pane that appears while a page transition runs (the side sheet of a review, which comes with the
+   * loaded work) is part of that page: it has no motion of its own, so only one thing moves.
+   */
+  private readonly withPage = inject(DOCUMENT).documentElement.hasAttribute(PAGE_MOTION_ATTRIBUTE);
+  /** The class of its entrance (`tb-pane--enter`, `tb-pane--dock-in`) or none. */
+  readonly enter = computed(() =>
+    this.panes.settled() && !this.withPage
+      ? this.dock() === null
+        ? 'tb-pane--enter'
+        : 'tb-pane--dock-in'
+      : '',
   );
   /** Beside other panes only: one pane on compact gives its place at once (the route changes it). */
   protected readonly leave = computed(() =>

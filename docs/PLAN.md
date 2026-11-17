@@ -167,6 +167,24 @@ and duration, sequential fades, coplanar panes, list rows; updates design-system
   student card 176 → 54 ms, billing 73 → 30, materials 68 → 22, students 57 → 41, AI settings
   56 → 45, account 56 → 42, `/teacher` 47 → 26.
 
+### 420. Fixes from the browser check
+
+- [x] 420.1 **F** *simple* — the tab indicator vanished (0 px for ~3 frames) when moving to the first
+  tab: while the tab turned active its label changed width, the resize observer of
+  `shared/ui/tab-indicator.ts` set `data-tb-tab-move` to `none` mid-slide, `right` jumped to its end
+  value while `left` still ran. A resize inside the slide (700 ms) now keeps the direction.
+- [x] 420.2 **F** *simple* — `ResizeObserver loop completed with undelivered notifications` (the
+  browser's note, not an error) reached the console and `/api/client-errors`;
+  `ReportingErrorHandler` ignores it.
+- [x] 420.3 **F** *complex* — opening the review of a work ran the page slide, the side sheet's own
+  dock-in and the rail collapse (280 → 96 px, with the top strip and the work pane following) at
+  once. The rail no longer reacts to a page (`RailState.collapsed`, `collapseRail` removed: it stays
+  expanded from 1600 px); a pane that appears while a page transition runs has no enter motion of
+  its own (`shared/ui/panes.ts`, `PAGE_MOTION_ATTRIBUTE`), so one motion plays.
+- [x] 420.4 **F** *simple* — the assignment page (`/teacher/homework/:id`) from large left a third
+  of the pane empty: the task column was fixed at 48 rem with the text at 72ch. The column now
+  takes what the students column leaves (`assignment-page.ts`).
+
 ### 418. Release 0.53.0
 
 - [ ] 418.1 *simple* — skill `release`.

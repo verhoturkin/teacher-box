@@ -343,19 +343,18 @@ const FOLD_LINES = 3;
       gap: var(--tb-space-6);
     }
 
-    /* the task column stops at a readable measure and the students follow it, so a very wide window
-       leaves the free space at the end rather than between the two (our decision) */
+    /* the task column takes what the narrow students column leaves, so the text fills the pane up to
+       the students at its trailing edge (our decision; it was a fixed 48 rem with the space left empty) */
     .tb-asg__task {
-      flex: 0 1 48rem;
+      flex: 1 1 48rem;
       min-width: 0;
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-4);
     }
 
-    /* the text keeps a readable measure; the materials and the test line stay as wide as a list */
+    /* the text fills its column; the materials and the test line stay as wide as a list */
     .tb-asg__body {
-      max-inline-size: 72ch;
       font: var(--tb-type-body-l);
     }
 

@@ -2,13 +2,11 @@ import { DestroyRef, Injectable, effect, inject, signal } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 
 /**
- * Whether the page asks the expanded navigation rail to collapse to 96 dp (redesign spec §9: the review
- * of a work gets the room of its third pane). Only the extra-large window has the expanded rail; elsewhere
- * the rail is collapsed anyway. Set by {@link collapseRail}.
+ * What a page tells the navigation frame: the bottom bar of a phone, the top app bar of a phone. The
+ * rail never changes because of a page: it is expanded from 1600 px and collapsed below.
  */
 @Injectable({ providedIn: 'root' })
 export class RailState {
-  readonly collapsed = signal(false);
   /** Whether the page hides the bottom navigation bar of a phone (the work under review, spec §9). */
   readonly bottomBarHidden = signal(false);
   /** The page's own top app bar on compact (spec §10.2): its title and actions in place of the section's. */
@@ -44,16 +42,5 @@ export function hideBottomBar(hidden: () => boolean): void {
   });
   inject(DestroyRef).onDestroy(() => {
     state.bottomBarHidden.set(false);
-  });
-}
-
-/** Collapses the rail while the page lives and `collapsed` is true: call it in the constructor of the page. */
-export function collapseRail(collapsed: () => boolean): void {
-  const state = inject(RailState);
-  effect(() => {
-    state.collapsed.set(collapsed());
-  });
-  inject(DestroyRef).onDestroy(() => {
-    state.collapsed.set(false);
   });
 }
