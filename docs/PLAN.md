@@ -31,7 +31,7 @@ sheet. KISS: remove before adding. No new ADR unless the call change needs one.
 
 ### 421. Fixes from the 0.53.0 review
 
-- [ ] 421.1 *complex* F — the board is cut off at the bottom: the Excalidraw canvas stops at about
+- [x] 421.1 *complex* F — the board is cut off at the bottom: the Excalidraw canvas stops at about
   a third of the viewport, the rest is empty. Find why the host gets no height
   (`boards/editor/board-page.ts`, `board-canvas.ts`, `excalidraw-host.ts`); fix the root cause in
   the layout, not a fixed pixel height. Check the full and mobile widths.
