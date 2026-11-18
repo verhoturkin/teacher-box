@@ -38,8 +38,9 @@ Order: one substep per session, a commit each; the PR is opened once, after 438.
 
 ### 432. Today: one lesson, one row
 
-Sketches: [«Сегодня — один урок»](https://claude.ai/artifact/LoYZXoqAaCHaAYfpi9c9NM), boards 1–3
-(lesson live with the join button; nearest lesson with a call; nearest lesson without a call).
+Sketches: [«Сегодня — один урок»](https://claude.ai/artifact/LoYZXoqAaCHaAYfpi9c9NM), boards 1–4
+(phone: lesson live with «Позвать» and the join button; nearest lesson with a call; nearest
+lesson without a call; wide screen: lesson live).
 
 - [ ] 432.1 *simple* — sketches agreed with the user; copy the canvas into
   `docs/sketches/today/` with a row in `docs/sketches/README.md`.
@@ -47,7 +48,9 @@ Sketches: [«Сегодня — один урок»](https://claude.ai/artifact/
   teacher's Today (`home/teacher-home.ts`, the `tb-feed__lead` column): the current or nearest
   lesson is the expanded row of `home/today-lessons.ts` — time and its state from
   `schedule/home/lesson-clock.ts` («Идёт · ещё N мин» / «Через N мин»), the end time, avatar,
-  name, title and topic, and the join button (`tb-join-lesson-button`, «Начать урок» / «Войти в
+  name, title and topic, one board link — the student's or group's last opened board
+  (`boards/manage/board-links.ts` gets a one-board mode; the backend list may need its order or
+  a `lastOpenedAt`), and the join button (`tb-join-lesson-button`, «Начать урок» / «Войти в
   урок») only when the lesson has `joinUrl`; other rows stay one line; the label «Следующее»
   goes (`home/i18n` `todayLessons.next`, both languages). Today without lessons today but with a
   nearest one later: decide with the sketches (keep the widget only for that case, or a one-row
@@ -55,6 +58,17 @@ Sketches: [«Сегодня — один урок»](https://claude.ai/artifact/
   says otherwise. `over` → `loadSchedule()` still refreshes. Tests: `today-lessons.spec.ts`,
   `teacher-home.spec.ts`. Docs: `docs/screens.md` «Today», wiki `Home`, help
   `teacher/first-steps` (ru, en) if it names the card.
+- [ ] 432.3 *complex* B F — «Позвать»: while the lesson runs and the student is not in the
+  portal call, the expanded row shows «<Имя> ещё не в звонке» with a small text button
+  «Позвать» on that line, apart from the join button (boards 1 and 4); a group — «Позвать
+  остальных» for those not in the call. Presence comes from `CallServer.occupiedRooms()`
+  (`GET /api/teacher/meetings/calls`); a Telemost or other external room shows no button
+  (presence unknown). Backend: `POST /api/teacher/meetings/calls/{ownerId}/summon` in
+  `meetings/web/CallsController.java` → a new `MeetingNoticeKind` (inbox, push and messengers,
+  with the call link, ru/en texts in `MeetingNoticeTexts`), rate-limited (one per student per
+  few minutes), controller test with role checks first (a student gets 403). Frontend: the
+  button in `home/today-lessons.ts`, a snackbar «Ученику отправлено приглашение». Docs:
+  `docs/modules/meetings.md`, `docs/screens.md` «Today», help `teacher/calls` (ru, en), wiki.
 
 ### 433. Student payments without all-time totals
 
