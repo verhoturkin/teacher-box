@@ -71,11 +71,6 @@ export const ru = {
     left: (minutes: number) => `ещё ${String(minutes)} мин`,
     duration: (minutes: number) => `${String(minutes)} мин`,
   },
-  upcoming: {
-    title: 'Следующее занятие',
-    start: 'Начать урок',
-    join: 'Войти в урок',
-  },
   summary: {
     excused: 'Вы предупредили, что не придёте',
     pending: (kind: string) => `Запрос «${kind}» ждёт ответа учителя`,

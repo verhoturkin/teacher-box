@@ -455,6 +455,45 @@ const TWO_CARDS: Readonly<Record<string, readonly (readonly [string, string, str
   ],
 };
 
+/** One lesson, one row on Today (432.2): [topic, baseline, now] of the first-steps article. */
+const ONE_ROW: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'first-steps',
+      'Это главная страница учителя: ближайшее занятие,',
+      'Это главная страница учителя: занятия на сегодня,',
+    ],
+    [
+      'first-steps',
+      '- **Следующее занятие** — время начала и длительность, ученик или группа, тема и доски. Нажмите ' +
+        '«Начать урок» (во время занятия — «Войти в урок»). После окончания карточка покажет следующее ' +
+        'занятие.\n- **Занятия сегодня** — список под карточкой следующего занятия: время, с кем и ' +
+        'статус; ближайшее занятие выделено. На телефоне этот список и итоги недели тоже доступны в ' +
+        'общей ленте.',
+      '- **Занятия сегодня** — время, с кем и статус каждого занятия. Текущее или ближайшее раскрыто: ' +
+        '«Идёт · ещё 25 мин» или «Через 40 мин», время окончания, ученик или группа, тема и последняя ' +
+        'доска. Если у занятия есть звонок, там же кнопка «Начать урок» (во время занятия — «Войти в ' +
+        'урок»). После окончания раскроется следующее. Если сегодня занятий нет, список называется ' +
+        '«Ближайшее занятие» и показывает его день.',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'first-steps',
+      'Your next lesson appears first, with its time, duration, topic, boards and “Start lesson” ' +
+        'button. The button changes to “Join lesson” while the lesson is running. Before and during a ' +
+        'lesson, the card shows a countdown or the time remaining. After it ends, the next lesson ' +
+        'appears automatically.\n\n- **Lessons today** lists the day’s lessons and their status, with ' +
+        'the next one highlighted.',
+      '- **Lessons today** lists the day’s lessons and their status. The current or next lesson is ' +
+        'expanded: a countdown or the time remaining, the end time, the student or group, the topic and ' +
+        'the last board used. If the lesson has a call, “Start lesson” is there too (“Join lesson” ' +
+        'while it is running). When it ends, the next lesson expands. With no lessons today, the card ' +
+        'is called “Next lesson” and shows its day.',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -545,6 +584,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(DATE_TIME[name] ?? []),
       ...(TWO_CARDS[name] ?? []),
       ...(TAP_ROW[name] ?? []),
+      ...(ONE_ROW[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

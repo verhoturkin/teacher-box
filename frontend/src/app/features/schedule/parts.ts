@@ -13,7 +13,8 @@ export type {
   ScheduledLesson,
 } from './data-access/schedule.models';
 export { NextLessonWidget } from './home/next-lesson-widget';
-export { UpcomingLessonWidget } from './home/upcoming-lesson-widget';
+export { injectLessonClock } from './home/lesson-clock';
+export type { LessonTime } from './home/lesson-clock';
 export { LessonDialog } from './teacher/lesson-dialog';
 export { AttendanceDialog } from './teacher/attendance-dialog';
 export { StudentLessonsCard } from './teacher/student-lessons-card';

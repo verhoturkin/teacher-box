@@ -176,7 +176,7 @@ test('notifications have no icons, a swipe on a phone marks one read', async ({ 
 
 test('the teacher’s home has no «Сегодня»', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  await expect(page.locator('tb-upcoming-lesson-widget')).toBeVisible();
+  await expect(page.locator('tb-today-lessons .tb-today-lesson--next')).toBeVisible();
   await expect(page.locator('tb-today-lessons-widget')).toHaveCount(0);
 });
 

@@ -55,4 +55,22 @@ describe('BoardLinks', () => {
     expect(host.querySelector('[role="group"]')?.getAttribute('aria-label')).toBe('Доски');
     expect(host.querySelectorAll('a.tb-board-chip')).toHaveLength(2);
   });
+
+  it('keeps only the board changed last', async () => {
+    fixture.componentRef.setInput('groupId', 'g-1');
+    fixture.componentRef.setInput('latest', true);
+    await fixture.whenStable();
+    backend
+      .expectOne('/api/teacher/boards?groupId=g-1')
+      .flush([
+        aBoard({ updatedAt: '2026-10-01T10:00:00Z' }),
+        aLinkBoard({ title: 'Свежая', updatedAt: '2026-10-03T10:00:00Z' }),
+        aBoard({ id: 'board-2', title: 'Старая', updatedAt: '2026-09-01T10:00:00Z' }),
+      ]);
+    await fixture.whenStable();
+
+    const links = hostElement(fixture).querySelectorAll('a');
+    expect(links).toHaveLength(1);
+    expect(links[0]?.textContent).toContain('Свежая');
+  });
 });

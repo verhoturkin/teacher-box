@@ -74,11 +74,6 @@ export const en: Translation<typeof ru> = {
     left: (minutes: number) => `${String(minutes)} min left`,
     duration: (minutes: number) => `${String(minutes)} min`,
   },
-  upcoming: {
-    title: 'Next lesson',
-    start: 'Start lesson',
-    join: 'Join lesson',
-  },
   summary: {
     excused: 'You have let your teacher know you cannot attend',
     pending: (kind: string) => `${kind} request awaiting your teacher’s response`,

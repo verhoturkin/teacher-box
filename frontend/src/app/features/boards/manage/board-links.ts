@@ -17,14 +17,15 @@ import { T } from '../i18n/texts';
 /**
  * Links to the boards of a lesson's student (with their groups' boards) or group; nothing while there
  * are none. An Excalidraw board opens in the portal, an external one in a new tab. As `chips` (the
- * nearest lesson on the home page) the boards are chips without the «Доски:» caption.
+ * nearest lesson on the home page) the boards are chips without the «Доски:» caption; `latest` keeps
+ * only the board changed last.
  */
 @Component({
   selector: 'tb-board-links',
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (boards().length > 0) {
+    @if (shown().length > 0) {
       <div
         class="tb-board-links"
         [class.tb-board-chips]="chips()"
@@ -34,7 +35,7 @@ import { T } from '../i18n/texts';
         @if (!chips()) {
           <span class="tb-muted" aria-hidden="true">{{ t.boards }}</span>
         }
-        @for (board of boards(); track board.id) {
+        @for (board of shown(); track board.id) {
           @if (board.kind === 'EXCALIDRAW') {
             <a [class]="linkClass()" [routerLink]="route(board.id)"
               ><i class="tb-i tb-i-co_present" aria-hidden="true"></i> {{ board.title }}</a
@@ -66,6 +67,8 @@ export class BoardLinks {
   readonly groupId = input<string | null>(null);
   /** The boards as chips, without the caption. */
   readonly chips = input(false);
+  /** Only the board changed last (the expanded lesson row of Today). */
+  readonly latest = input(false);
 
   protected readonly boards = signal<Board[]>([]);
 
@@ -84,6 +87,19 @@ export class BoardLinks {
         });
     });
   }
+
+  // shortcut: «last opened» is the last change (`updatedAt`); a `lastOpenedAt` if teachers open without drawing
+  protected readonly shown = computed(() => {
+    const boards = this.boards();
+    if (!this.latest() || boards.length < 2) {
+      return boards;
+    }
+    return [
+      boards.reduce((last, board) =>
+        Date.parse(board.updatedAt) > Date.parse(last.updatedAt) ? board : last,
+      ),
+    ];
+  });
 
   protected readonly linkClass = computed(() => (this.chips() ? 'tb-board-chip' : 'tb-link'));
 

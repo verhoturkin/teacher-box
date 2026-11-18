@@ -42,7 +42,7 @@ describe('TeacherHome', () => {
     backend.expectOne('/api/teacher/homework/review-queue').flush([reviewQueueItem()]);
     backend.expectOne('/api/teacher/schedule/summary').flush(
       scheduleSummary({
-        today: [scheduledLesson()],
+        today: [scheduledLesson({ title: 'Степени' })],
         next: scheduledLesson({ title: 'Степени' }),
         unmarked: 1,
         pendingRequests: 1,
@@ -72,8 +72,9 @@ describe('TeacherHome', () => {
     const text = readableText(hostElement(fixture));
     // the date is the title of the page («Четверг, 1 октября»)
     expect(hostElement(fixture).querySelector('h1')?.textContent).toMatch(/\S+, \d+ \S+/);
-    expect(text).toContain('Следующее занятие');
+    // the nearest lesson is the expanded row of today's lessons, no card of its own
     expect(text).toContain('Степени');
+    expect(hostElement(fixture).querySelectorAll('.tb-today-lesson--next')).toHaveLength(1);
     expect(text).toContain('С чего начать');
     expect(text).toContain('Сделано 0 из 4');
     expect(text).toContain('Иван Петров');
@@ -89,13 +90,12 @@ describe('TeacherHome', () => {
     expect(text).toContain('Занятий 4');
     expect(text).toContain('Выдано заданий 5');
     expect(text).toContain('Сдано вовремя 3');
-    // the hero and the lessons of today, the queue, the figures
+    // the lessons of today, the queue, the figures
     const widgets = Array.from(
       hostElement(fixture).querySelectorAll('.tb-feed > .tb-stack > *'),
       (widget) => widget.tagName.toLowerCase(),
     );
     expect(widgets).toEqual([
-      'tb-upcoming-lesson-widget',
       'tb-today-lessons',
       'tb-push-onboarding-card',
       'tb-todo-queue',

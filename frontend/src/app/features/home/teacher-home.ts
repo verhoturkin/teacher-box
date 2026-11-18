@@ -18,7 +18,7 @@ import { HomeworkApi } from '@features/homework/parts';
 import type { HomeworkSummary } from '@features/homework/parts';
 import { NotificationsApi, PushOnboardingCard } from '@features/notifications/parts';
 import type { TeacherNotificationsSummary } from '@features/notifications/parts';
-import { ScheduleApi, UpcomingLessonWidget } from '@features/schedule/parts';
+import { ScheduleApi } from '@features/schedule/parts';
 import type { ScheduleSummary } from '@features/schedule/parts';
 import { FabMenu } from '@shared/ui/fab-menu';
 import { Pane, Panes } from '@shared/ui/panes';
@@ -39,8 +39,8 @@ function dayTitle(date: Date): string {
 }
 
 /**
- * Teacher's «Сегодня» (spec §6): the feed in three columns (extra-large), two (large) or one — the hero and
- * the lessons of today, the queue («Отметить занятия», «Проверить работы»), the month and the week figures. On a phone the same sections follow one another.
+ * Teacher's «Сегодня» (spec §6): the feed in three columns (extra-large), two (large) or one — the lessons
+ * of today with the nearest one expanded, the queue («Отметить занятия», «Проверить работы»), the month and the week figures. On a phone the same sections follow one another.
  */
 @Component({
   selector: 'tb-teacher-home',
@@ -48,7 +48,6 @@ function dayTitle(date: Date): string {
     HelpButton,
     FabMenu,
     FinanceWidget,
-    UpcomingLessonWidget,
     LoadStateView,
     Pane,
     PageHeader,
@@ -78,12 +77,13 @@ function dayTitle(date: Date): string {
             />
           }
           <div class="tb-stack tb-feed__lead">
-            @if (schedule()?.next; as next) {
-              <tb-upcoming-lesson-widget [lesson]="next" (over)="loadSchedule()" />
-            }
             @if (schedule(); as schedule) {
-              @if (schedule.today.length > 0) {
-                <tb-today-lessons [all]="schedule.today" [next]="schedule.next" />
+              @if (schedule.today.length > 0 || schedule.next !== null) {
+                <tb-today-lessons
+                  [all]="schedule.today"
+                  [next]="schedule.next"
+                  (over)="loadSchedule()"
+                />
               }
             }
             <tb-push-onboarding-card [teacher]="true" />
