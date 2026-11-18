@@ -593,10 +593,10 @@ Gallery: [`/gallery/buttons`](../frontend/src/app/features/gallery/buttons/).
 Variant = **weight**, colour = **one accent** (ADR-0045): filled is primary (the portal colour),
 tonal is neutral secondary, red only destroys; green and amber are statuses, never buttons.
 40 px pill (icon button 40×40, 48 px target), Label Large (14 / 20, set in the preset), 16 px
-sides, 20 px icon (**M3E** small); icon buttons 24 px icon; shape morphs to 8 px while pressed. Never `size="small"`, `success`,
-`warn`, `info`, `help`, `contrast`. Outlined (**M3** medium emphasis: 1 dp outline, primary label,
-no container) only as `variant="outlined"`, for the secondary action beside a page's filled main
-action — «Изменить» next to «Проверить N работ» (homework sketches, stages 339–342) — and for
+sides, 20 px icon (**M3E** small); icon buttons 24 px icon; shape morphs to 8 px while pressed.
+Never `size="small"` (32 px is `tb-button-xs`), `success`, `warn`, `info`, `help`, `contrast`.
+Outlined (**M3** medium emphasis: 1 dp outline, primary label, no container) only as
+`variant="outlined"`, for the secondary action beside a page's filled main action — «Изменить» next to «Проверить N работ» (homework sketches, stages 339–342) — and for
 «Сегодня» of the calendar; never a second outlined button in the same bar.
 
 | Role | Variant | PrimeNG |
@@ -621,6 +621,10 @@ action — «Изменить» next to «Проверить N работ» (hom
 - **Loading:** an action that sends a request shows `[loading]` (`shared/ui/busy.ts`); a submit is
   never disabled for invalid fields — only while the request runs. A button whose label changes
   («Отменить» / «Не приду») keeps its width (`tb-button-steady`).
+- **Size XS** `tb-button-xs` (**M3E** ButtonXSmall): 32 px, full corners, 8 px pressed, 16 px
+  sides, Label Large; the 48 px target is an invisible `::before` 8 px above and below (**M3**).
+  Only a text button on a status line inside a row — «Позвать» of the teacher's Today (sketch
+  «Сегодня — один урок»; the sketch's 12 px sides gave way to M3's 16).
 - **Size M** `tb-button-m` (ADR-0045, **M3E** ButtonMedium): 56 px, full corners, 12 px pressed, 24
   px icon, 24 px sides, 8 px gap, Title Medium label (*ours*); split `tb-split--m` (trailing 56 px,
   26 px chevron, inner corners 4 px, 12 px pressed — *ours*). Only in the hero.

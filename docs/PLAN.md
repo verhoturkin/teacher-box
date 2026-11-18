@@ -58,7 +58,7 @@ lesson without a call; wide screen: lesson live).
   says otherwise. `over` → `loadSchedule()` still refreshes. Tests: `today-lessons.spec.ts`,
   `teacher-home.spec.ts`. Docs: `docs/screens.md` «Today», wiki `Home`, help
   `teacher/first-steps` (ru, en) if it names the card.
-- [ ] 432.3 *complex* B F — «Позвать»: while the lesson runs and the student is not in the
+- [x] 432.3 *complex* B F — «Позвать»: while the lesson runs and the student is not in the
   portal call, the expanded row shows «<Имя> ещё не в звонке» with a small text button
   «Позвать» on that line, apart from the join button (boards 1 and 4); a group — «Позвать
   остальных» for those not in the call. Presence comes from `CallServer.occupiedRooms()`

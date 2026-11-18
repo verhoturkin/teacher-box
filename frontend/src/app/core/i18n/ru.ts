@@ -305,6 +305,9 @@ export const ru = {
       'schedule.google-origin-invalid': 'Не удалось определить адрес портала',
       'meetings.link-invalid': 'Ссылка должна начинаться с http:// или https://',
       'meetings.room-not-found': 'Такой комнаты уже нет',
+      'meetings.summoned-recently': 'Уже позвали — подождите пару минут',
+      'meetings.everyone-in-call': 'Все уже в звонке',
+      'meetings.room-external': 'Уроки идут по внешней ссылке: портал не знает, кто в звонке',
       'meetings.no-recipients':
         'Ссылку некому отправить: у ученика нет доступа или в группе никого нет',
       'meetings.client-missing': 'Сначала укажите ClientID и Client secret приложения',

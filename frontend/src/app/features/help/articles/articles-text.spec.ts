@@ -494,6 +494,24 @@ const ONE_ROW: Readonly<Record<string, readonly (readonly [string, string, strin
   ],
 };
 
+/** «Позвать» on Today (432.3): [topic, baseline, now] of the calls article. */
+const SUMMON: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'calls',
+      '## Во время звонка',
+      '## Позвать ученика\n\nЕсли урок уже идёт, а ученика в звонке нет, на главной странице в строке урока появится «… ещё не в звонке» и кнопка «Позвать» (у группы — «Позвать остальных»). Ученик получит уведомление в кабинет и мессенджеры с кнопкой входа в звонок. Позвать одного ученика можно раз в три минуты. Если уроки идут по внешней ссылке, кнопки нет: портал не знает, кто в звонке.\n\n## Во время звонка',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'calls',
+      '## Call controls',
+      '## Call in a student\n\nIf a lesson has started and a student hasn’t joined the call, their lesson row on the home page shows “… hasn’t joined the call yet” with “Call in” (“Call in the rest” for a group). The student gets a notification in their account and messengers with a button to join. You can call in the same student once every three minutes. Lessons with an external link have no button, as the portal can’t tell who is in the call.\n\n## Call controls',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -585,6 +603,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(TWO_CARDS[name] ?? []),
       ...(TAP_ROW[name] ?? []),
       ...(ONE_ROW[name] ?? []),
+      ...(SUMMON[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

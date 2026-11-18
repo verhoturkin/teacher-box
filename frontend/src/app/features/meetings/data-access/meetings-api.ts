@@ -48,6 +48,13 @@ export class MeetingsApi {
     return this.http.post<CallJoin>(`/api/meetings/calls/${ownerId}/token`, null);
   }
 
+  /** The teacher: «Позвать» — those of the room not in the call get a notice; the number of them. */
+  summon(ownerId: string): Observable<number> {
+    return this.http
+      .post<{ recipients: number }>(`/api/teacher/meetings/calls/${ownerId}/summon`, null)
+      .pipe(map((response) => response.recipients));
+  }
+
   /** The teacher: turns the microphone of a participant off. */
   muteParticipant(ownerId: string, userId: string): Observable<null> {
     return this.http.post<null>(

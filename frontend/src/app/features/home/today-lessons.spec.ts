@@ -93,6 +93,35 @@ describe('TodayLessons', () => {
     expect(ended).toHaveBeenCalledTimes(1);
   });
 
+  it('offers «Позвать» while a lesson runs in the portal’s room and someone is not in it', async () => {
+    const live = groupLesson({ joinUrl: 'https://school.example.org/call/g-1' });
+    await render([live], live);
+    backend.expectOne('/api/teacher/boards?groupId=g-1').flush([]);
+
+    tick(18, 10);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/meetings/calls').flush({
+      status: 'OK',
+      rooms: [
+        {
+          ownerId: 'g-1',
+          ownerType: 'GROUP',
+          name: 'ОГЭ',
+          members: 2,
+          waiting: [],
+          teacherPresent: true,
+          externalLink: false,
+          avatar: null,
+        },
+      ],
+    });
+    fixture.detectChanges();
+
+    expect(readableText(hostElement(fixture))).toContain(
+      'Ещё не в звонке: 2 из 2 Позвать остальных',
+    );
+  });
+
   it('shows the duration beyond the hour and no join button without a call', async () => {
     const host = await render([groupLesson()], groupLesson());
     backend.expectOne('/api/teacher/boards?groupId=g-1').flush([]);

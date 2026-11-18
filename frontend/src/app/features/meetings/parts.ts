@@ -6,4 +6,5 @@ export type { RoomOwnerRef } from './data-access/meetings.models';
 export { RoomLink } from './rooms/room-link';
 export { RoomPanel } from './rooms/room-panel';
 export { MeetingsSettingsPanel } from './settings/meetings-settings-panel';
+export { CallSummon } from './ui/call-summon';
 export { JoinLessonButton } from './ui/join-lesson-button';

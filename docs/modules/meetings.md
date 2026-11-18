@@ -31,7 +31,8 @@ on: `shared`, `identity::api`. Schema `meetings`. ADRs: [0012](../adr/0012-meeti
 
 ## Contract (`meetings::api`)
 
-Facade `MeetingRooms.links(ownerIds)` (read-only, used by `schedule`); event `MeetingLinkShared`.
+Facade `MeetingRooms.links(ownerIds)` (read-only, used by `schedule`); events `MeetingLinkShared`,
+`CallSummoned`.
 Consumes `identity::api` events `StudentDeactivated`, `GroupChanged`, `GroupArchived`.
 
 **Notices (`notices/`, ADR-0061, 380.3):** `MeetingNotices` listens to `MeetingLinkShared`
@@ -39,7 +40,11 @@ synchronously (`@EventListener`, in the transaction that published it) and publi
 `shared.notice.NoticeRequested` for every recipient: kind `MEETING_LINK`, the texts in every
 language (`MeetingNoticeTexts`), link `/cabinet/schedule`, the room address as `joinUrl` — in
 messengers it is the «Подключиться» button; the text carries no address, neither in messengers nor
-in the inbox (429.1).
+in the inbox (429.1). «Позвать» (432.3): `CallService.summon` publishes `meetings::api`
+`CallSummoned` (inside a `TransactionTemplate`; the media server is asked outside it) and
+`MeetingNotices` writes kind `CALL_SUMMONED` (topic `REMINDERS`) — «Урок начался» / «Учитель ждёт
+вас в звонке[ группы «…»].», link `/call/<ownerId>` (the inbox opens the call), the absolute call
+address as `joinUrl` when the portal address is set.
 
 ## Data, REST, bot
 
@@ -52,7 +57,13 @@ and active groups with `teacherPresent`. Moderation, teacher only (204; calls of
 `meetings.calls-disabled` / `meetings.call-server-unreachable`):
 `POST /api/teacher/meetings/calls/{ownerId}/participants/{userId}/mute` — `GetParticipant`, then `MutePublishedTrack` of
 each open microphone track (only the participant can unmute), `DELETE …/participants/{userId}` — `RemoveParticipant`
-(they may join again); a user not in the room is no error. Bot action:
+(they may join again); a user not in the room is no error.
+`POST /api/teacher/meetings/calls/{ownerId}/summon` → `{recipients}`: the current students of the
+room (the student, or the active members of the group) not in the call get `CallSummoned`; each
+student at most once per 3 min (`SUMMON_PAUSE`, in memory — a restart forgets it). 422:
+`meetings.room-external` (an external link: presence unknown), `meetings.everyone-in-call`,
+`meetings.summoned-recently` (everyone absent was called a moment ago), calls off / media server
+down as above; an unknown, former or archived owner — 404. Bot action:
 join the lesson (`JoinLessonChatAction`).
 
 ## Frontend

@@ -12,6 +12,12 @@ Each student and group has a permanent call room. Calls run in the browser witho
 Choose “Start lesson”, follow a room link or open a reminder. In the preview, check your camera and microphone, choose devices or turn them off, then \
 select “Join”. Allow camera and microphone access when your browser asks.
 
+## Call in a student
+
+If a lesson has started and a student hasn’t joined the call, their lesson row on the home page shows “… hasn’t joined the call yet” with “Call in” \
+(“Call in the rest” for a group). The student gets a notification in their account and messengers with a button to join. You can call in the same \
+student once every three minutes. Lessons with an external link have no button, as the portal can’t tell who is in the call.
+
 ## Call controls
 
 - **Microphone and camera:** turn either on or off. A red, crossed-out control means it is off.

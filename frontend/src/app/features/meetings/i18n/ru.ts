@@ -155,6 +155,15 @@ export const ru = {
     label: 'Войти в урок',
     inBrowser: 'Открыть в браузере',
   },
+  summon: {
+    absent: (name: string) => `${name} ещё не в звонке`,
+    groupAbsent: (absent: number, members: number) =>
+      `Ещё не в звонке: ${String(absent)} из ${String(members)}`,
+    summon: 'Позвать',
+    summonRest: 'Позвать остальных',
+    sent: 'Ученику отправлено приглашение',
+    sentGroup: (count: number) => `Приглашение отправлено, учеников: ${String(count)}`,
+  },
   roomLink: {
     title: 'Видеовстреча',
     what: 'видеовстречу',

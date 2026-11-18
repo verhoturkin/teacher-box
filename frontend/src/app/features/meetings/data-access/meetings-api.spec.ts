@@ -58,6 +58,17 @@ describe('MeetingsApi', () => {
     expect(joins).toEqual([{ token: 'jwt', room: 'tb-s-1', title: 'Мария' }]);
   });
 
+  it('summons the students not in the call', () => {
+    let recipients = 0;
+    api.summon('g-1').subscribe((count) => (recipients = count));
+
+    backend
+      .expectOne({ method: 'POST', url: '/api/teacher/meetings/calls/g-1/summon' })
+      .flush({ recipients: 2 });
+
+    expect(recipients).toBe(2);
+  });
+
   it('mutes and removes a participant', () => {
     api.muteParticipant('s-1', 'u-2').subscribe();
     api.removeParticipant('s-1', 'u-2').subscribe();

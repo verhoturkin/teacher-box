@@ -36,6 +36,15 @@ since 0.57.0 — the lesson is shown once.
   only when the lesson has `joinUrl`, «Начать урок», «Войти в урок» while it runs. On a phone-wide
   card (≤ 30rem, container query) the button is full width at the end (`tb-join-wide`); wider it
   ends the head line (board 4). When the lesson ends the card asks the home page to reload.
+- **«Позвать»** (432.3, boards 1 and 4): while the lesson runs in the portal's own room (its
+  `joinUrl` is `/call/…`), `tb-call-summon` (`@features/meetings/parts`) asks
+  `GET /api/teacher/meetings/calls` now and every 30 s; when the presence is known (`OK`, no
+  external link) and somebody is not in the room, a Body Small line with `person_off` — «Ира ещё не
+  в звонке» (the first word of the name) or «Ещё не в звонке: 2 из 3» for a group — and an
+  extra-small text button «Позвать» / «Позвать остальных» (`tb-button-xs`) that sends them a notice;
+  snackbar «Ученику отправлено приглашение» / «Приглашение отправлено, учеников: N». On a phone the
+  line follows the board chip on its own row, apart from the join button; wider it ends the board's
+  row. A Telemost or other external link, calls off or the media server down — no line.
 - A nearest lesson of another day follows today's rows, expanded with its day. No lessons today
   but one later: the same card titled «Ближайшее занятие» with that one row (decision of 432.2:
   no second widget for this case). No lesson at all: no card.

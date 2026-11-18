@@ -3,7 +3,7 @@ import { ListRow } from '@shared/ui/list-row';
 import { Card } from 'primeng/card';
 import { locale } from '@core/i18n/language';
 import { BoardLinks } from '@features/boards/parts';
-import { JoinLessonButton } from '@features/meetings/parts';
+import { CallSummon, JoinLessonButton } from '@features/meetings/parts';
 import { STATUS_LABELS, injectLessonClock, lessonWith } from '@features/schedule/parts';
 import type { LessonTime, ScheduledLesson } from '@features/schedule/parts';
 import { Avatar } from '@shared/ui/avatar';
@@ -19,7 +19,7 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
  */
 @Component({
   selector: 'tb-today-lessons',
-  imports: [ListRow, Card, Avatar, BoardLinks, JoinLessonButton],
+  imports: [ListRow, Card, Avatar, BoardLinks, CallSummon, JoinLessonButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card [header]="all().length > 0 ? t.title : t.nearest">
@@ -51,12 +51,17 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
                   }
                 </div>
               </div>
-              <tb-board-links
-                [chips]="true"
-                [latest]="true"
-                [studentId]="lesson.groupId === null ? lesson.studentId : null"
-                [groupId]="lesson.groupId"
-              />
+              <div class="tb-today-lesson__tools">
+                <tb-board-links
+                  [chips]="true"
+                  [latest]="true"
+                  [studentId]="lesson.groupId === null ? lesson.studentId : null"
+                  [groupId]="lesson.groupId"
+                />
+                @if (time.phase === 'live' && portalRoom(lesson); as ownerId) {
+                  <tb-call-summon [ownerId]="ownerId" />
+                }
+              </div>
               @if (lesson.joinUrl; as url) {
                 <tb-join-lesson-button
                   class="tb-join-wide tb-today-lesson__join"
@@ -161,6 +166,23 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
       display: none;
     }
 
+    /* the board, then «… ещё не в звонке · Позвать» on its own line (board 1) */
+    .tb-today-lesson__tools {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--tb-space-2) var(--tb-space-3);
+      min-width: 0;
+
+      &:not(:has(> :not(:empty))) {
+        display: none;
+      }
+
+      > tb-call-summon {
+        flex: 1 1 100%;
+      }
+    }
+
     .tb-today-lesson__head,
     .tb-today-lesson__who {
       display: flex;
@@ -202,6 +224,12 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
           grid-row: 1;
         }
       }
+
+      /* board 4: the summon line ends the board's line */
+      .tb-today-lesson__tools > tb-call-summon {
+        flex: 0 1 auto;
+        margin-inline-start: auto;
+      }
     }
   `,
 })
@@ -227,6 +255,13 @@ export class TodayLessons {
     this.over.emit();
   });
   protected readonly with = lessonWith;
+
+  /** The owner of the portal's own room of the lesson; `null` for an external link (presence unknown). */
+  protected portalRoom(lesson: ScheduledLesson): string | null {
+    return lesson.joinUrl?.includes('/call/') === true
+      ? (lesson.groupId ?? lesson.studentId)
+      : null;
+  }
 
   protected clockTime(moment: string): string {
     return TIME.format(new Date(moment));

@@ -313,6 +313,10 @@ export const en: Translation<typeof ru> = {
       'schedule.google-origin-invalid': 'The portal address could not be determined',
       'meetings.link-invalid': 'The link must start with http:// or https://',
       'meetings.room-not-found': 'This room no longer exists',
+      'meetings.summoned-recently': 'Already called — give it a couple of minutes',
+      'meetings.everyone-in-call': 'Everyone is already in the call',
+      'meetings.room-external':
+        'Lessons use an external link, so the portal can’t tell who is in the call',
       'meetings.no-recipients':
         'No recipients available. The student’s account is disabled or the group is empty',
       'meetings.client-missing': 'Enter the app’s Client ID and Client secret first',

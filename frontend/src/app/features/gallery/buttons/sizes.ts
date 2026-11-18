@@ -17,6 +17,10 @@ import { ButtonModule } from 'primeng/button';
         <code class="tb-gallery-name">styleClass="tb-button-m" — 56 px, the hero</code>
       </li>
       <li class="tb-gallery-cell">
+        <p-button label="Call" [text]="true" styleClass="tb-button-xs" />
+        <code class="tb-gallery-name">styleClass="tb-button-xs" — 32 px, a row's status line</code>
+      </li>
+      <li class="tb-gallery-cell">
         <p-button
           class="tb-button-steady"
           severity="secondary"
