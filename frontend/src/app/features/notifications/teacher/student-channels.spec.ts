@@ -53,7 +53,7 @@ describe('StudentChannels', () => {
   it('reminds a student without a messenger to connect one', async () => {
     await render(studentMessengers());
     const success = vi.spyOn(TestBed.inject(Snackbar), 'success');
-    expect(rows()).toEqual(['Telegram Не подключён', 'ВКонтакте Не подключён', 'MAX Не подключён']);
+    expect(rows()).toEqual(['Мессенджер не подключён Отправить ссылку на подключение']);
 
     buttonByText(hostElement(fixture), 'Отправить ссылку на подключение').click();
     const request = backend.expectOne('/api/teacher/notifications/remind-connect');

@@ -229,6 +229,7 @@ export const en: Translation<typeof ru> = {
     since: (date: string) => `since ${date}`,
     paused: 'notifications paused',
     notConnected: 'Not connected',
+    noMessenger: 'No messenger connected',
     remind: 'Send the connection link',
     reminded: 'Reminder sent',
     failed: (count: number) => `Not delivered: ${String(count)}`,

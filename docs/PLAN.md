@@ -95,7 +95,7 @@ lesson without a call; wide screen: lesson live).
   balance card `billing/teacher/student-balance-card.ts` shows the sum next to the last
   operations) and not on «Оплаты»; the roster row keeps its sum. Tests:
   `student-card.spec.ts`. Docs: `docs/screens.md` «Student card».
-- [ ] 435.2 *simple* F — `notifications/teacher/student-channels.ts`: when no messenger is
+- [x] 435.2 *simple* F — `notifications/teacher/student-channels.ts`: when no messenger is
   connected, one row («Мессенджер не подключён» or the like, `notifications/i18n`) with the
   action «Отправить ссылку на подключение» instead of three rows «Не подключён» plus the
   separate button; with at least one connected the list stays as it is. Tests:

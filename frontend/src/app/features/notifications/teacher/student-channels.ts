@@ -38,29 +38,44 @@ const ALL_CHANNELS: readonly ChannelType[] = ['TELEGRAM', 'VK', 'MAX'];
     <tb-load-state [state]="state" [what]="t.what" (retry)="load()">
       @if (messengers(); as messengers) {
         <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
-          @for (row of rows(messengers); track row.type) {
+          @if (messengers.channels.length === 0) {
             <li>
-              <span class="tb-list__lead" aria-hidden="true"
-                ><i [class]="icons[row.type]"></i
-              ></span>
+              <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-share"></i></span>
               <div class="tb-list__text">
-                <span class="tb-list__title">{{ names[row.type] }}</span>
-                <span class="tb-list__supporting">
-                  @if (row.channel; as channel) {
-                    @if (channel.displayName) {
-                      {{ channel.displayName }} ·
-                    }
-                    @if (!channel.enabled) {
-                      {{ t.paused }}
-                    } @else if (channel.linkedAt !== null) {
-                      {{ t.since((channel.linkedAt | date: 'd MMMM') ?? '') }}
-                    }
-                  } @else {
-                    {{ t.notConnected }}
-                  }
-                </span>
+                <span class="tb-list__title">{{ t.noMessenger }}</span>
               </div>
+              <p-button
+                [label]="t.remind"
+                severity="secondary"
+                [loading]="pending()"
+                (onClick)="remind(messengers.studentId)"
+              />
             </li>
+          } @else {
+            @for (row of rows(messengers); track row.type) {
+              <li>
+                <span class="tb-list__lead" aria-hidden="true"
+                  ><i [class]="icons[row.type]"></i
+                ></span>
+                <div class="tb-list__text">
+                  <span class="tb-list__title">{{ names[row.type] }}</span>
+                  <span class="tb-list__supporting">
+                    @if (row.channel; as channel) {
+                      @if (channel.displayName) {
+                        {{ channel.displayName }} ·
+                      }
+                      @if (!channel.enabled) {
+                        {{ t.paused }}
+                      } @else if (channel.linkedAt !== null) {
+                        {{ t.since((channel.linkedAt | date: 'd MMMM') ?? '') }}
+                      }
+                    } @else {
+                      {{ t.notConnected }}
+                    }
+                  </span>
+                </div>
+              </li>
+            }
           }
           @if (messengers.failedDeliveries > 0) {
             <li>
@@ -74,14 +89,16 @@ const ALL_CHANNELS: readonly ChannelType[] = ['TELEGRAM', 'VK', 'MAX'];
             </li>
           }
         </ul>
-        <p-button
-          class="tb-student-channels__remind"
-          [label]="t.remind"
-          icon="tb-i tb-i-share"
-          severity="secondary"
-          [loading]="pending()"
-          (onClick)="remind(messengers.studentId)"
-        />
+        @if (messengers.channels.length > 0) {
+          <p-button
+            class="tb-student-channels__remind"
+            [label]="t.remind"
+            icon="tb-i tb-i-share"
+            severity="secondary"
+            [loading]="pending()"
+            (onClick)="remind(messengers.studentId)"
+          />
+        }
       }
     </tb-load-state>
   `,
