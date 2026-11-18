@@ -34,7 +34,7 @@ messengers; an empty off-time list is one command; the Google Calendar instructi
 Changed specs: `docs/screens.md` «Today (teacher home)», «Student card», «Student cabinet»
 (payments), «Schedule», «Settings» (Lessons); `docs/design-system.md` if a pattern changes.
 
-Order: one substep per session, a commit each; the PR is opened once, after 438.
+Order: one substep per session, a commit each; the PR is opened once, after 439.
 
 ### 432. Today: one lesson, one row
 
@@ -122,11 +122,23 @@ lesson without a call; wide screen: lesson live).
   `google-calendar-panel.spec.ts`. Docs: `docs/screens.md` «Settings», wiki and help
   `teacher/calendar` (ru, en) — the steps now start with «Подключить».
 
-### 438. Release 0.57.0
+### 438. Tabs: no stuck focus, M3 press
 
-- [ ] 438.1 *simple* — browser check of the changed screens (phone and desktop, both roles),
+- [ ] 438.1 *simple* F — tabs (`p-tabs` with `tbTabIndicator`, `shared/ui/tab-indicator.ts`;
+  styles `frontend/src/styles/_sheets.scss` around `.p-tab`, the ripple from
+  `core/theme/aura-base.ts` / `app.config.ts`): on a phone a tapped tab keeps a dark focus
+  layer — show the focus state only for keyboard focus (`:focus-visible`), never after a tap or
+  click; everywhere the press ripple fills a square — clip it to the M3 tab state layer (the
+  tab's shape per M3 primary/secondary tabs, `overflow: hidden` with the tab's radius), same
+  hover/press opacities as the M3 state layers in `docs/design-system.md`. Check every tab bar
+  (student card, settings, homework, schedule phone screens). Tests: `tab-indicator.spec.ts` if
+  it pins the classes. Docs: `docs/design-system.md` tabs section.
+
+### 439. Release 0.57.0
+
+- [ ] 439.1 *simple* — browser check of the changed screens (phone and desktop, both roles),
   small defects fixed, the rest listed.
-- [ ] 438.2 *simple* — skill `release`: help articles checked, E2E spec of the changed journeys,
+- [ ] 439.2 *simple* — skill `release`: help articles checked, E2E spec of the changed journeys,
   CHANGELOG, version bump, plan archived.
 
 ## Backlog
