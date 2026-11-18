@@ -370,8 +370,6 @@ export const ru = {
     offTime: 'Нерабочее время',
     addOffTime: 'Добавить нерабочее время',
     whatOffTime: 'нерабочее время',
-    noOffTimeTitle: 'Нерабочее время не отмечено',
-    noOffTimeHint: 'Отметьте обед, выходные или отпуск — ученики увидят это время занятым.',
     notWorking: 'Не работаю',
     actions: (name: string) => `Действия: ${name}`,
     editItem: 'Изменить',

@@ -103,7 +103,7 @@ lesson without a call; wide screen: lesson live).
 
 ### 436. Schedule: empty off-time is one command
 
-- [ ] 436.1 *simple* F — `schedule/teacher/schedule-page.ts` section «Нерабочее время»: while
+- [x] 436.1 *simple* F — `schedule/teacher/schedule-page.ts` section «Нерабочее время»: while
   `offTimes()` is empty, no title, icon, hint and «Добавить» — one text button «Добавить
   нерабочее время» (`t.addOffTime`) opening the same dialog; with periods — the title and the
   list with dates as now. Phone screen `offTime` the same. Unused texts (`noOffTimeTitle`,

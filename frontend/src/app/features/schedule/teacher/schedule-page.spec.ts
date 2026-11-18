@@ -147,7 +147,9 @@ describe('SchedulePage', () => {
         .unmarked(),
     ).toHaveLength(1);
     expect(text).not.toContain('Регулярные');
-    expect(text).toContain('Нерабочее время');
+    expect(text).toContain('Добавить нерабочее время');
+    expect(text).not.toContain('Нерабочее время не отмечено');
+    expect(text).not.toContain('Отметьте обед');
     expect(text).not.toContain('часовому поясу этого устройства');
   });
 
@@ -225,8 +227,10 @@ describe('SchedulePage', () => {
     ).toHaveLength(1);
   });
 
-  it('says what off time is for while there is none', async () => {
-    expect(await render()).toContain('Отметьте обед, выходные или отпуск');
+  it('shows only the add command while there is no off time', async () => {
+    const text = await render();
+    expect(text).toContain('Добавить нерабочее время');
+    expect(text).not.toContain('Отметьте обед');
   });
 
   it('adds, changes and deletes off time', async () => {
@@ -272,7 +276,7 @@ describe('SchedulePage', () => {
       .flush(null);
     backend.expectOne('/api/teacher/schedule/off-times').flush([]);
     await fixture.whenStable();
-    expect(readableText(hostElement(fixture))).toContain('Отметьте обед');
+    expect(readableText(hostElement(fixture))).toContain('Добавить нерабочее время');
   });
 
   it('explains times when the portal is in another time zone', async () => {

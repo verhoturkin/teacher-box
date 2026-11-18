@@ -53,7 +53,6 @@ import { LessonDialog, LessonSlot, LessonStudent } from './lesson-dialog';
 import { LessonGroup } from './lesson-owner';
 import { OffTimeDialog } from './off-time-dialog';
 import { RequestAnswerDialog } from './request-answer-dialog';
-import { EmptyState } from '@shared/ui/empty-state';
 import { Avatar } from '@shared/ui/avatar';
 import { TeacherColors } from '@features/identity/parts';
 import { FilterChip, FilterChips } from '@shared/ui/filter-chips';
@@ -121,7 +120,6 @@ const ALL_DAY_START_HOUR = 10;
     ScheduleCalendar,
     Tooltip,
     PageHeader,
-    EmptyState,
     LoadStateView,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -281,7 +279,9 @@ const ALL_DAY_START_HOUR = 10;
 
           @if (!mobile() || tabsScreen()) {
             <section class="tb-schedule-section">
-              <h2 class="tb-schedule-section__title">{{ t.offTime }}</h2>
+              @if (offTimes().length > 0) {
+                <h2 class="tb-schedule-section__title">{{ t.offTime }}</h2>
+              }
 
               <tb-load-state
                 [state]="offTimesState"
@@ -289,13 +289,7 @@ const ALL_DAY_START_HOUR = 10;
                 [compact]="true"
                 (retry)="loadOffTimes()"
               >
-                @if (offTimes().length === 0) {
-                  <tb-empty-state
-                    icon="tb-i-dark_mode"
-                    [title]="t.noOffTimeTitle"
-                    [hint]="t.noOffTimeHint"
-                  />
-                } @else {
+                @if (offTimes().length > 0) {
                   <ul class="tb-list tb-list--no-phone-lead">
                     @for (item of offTimes(); track item.id) {
                       <li tbListRow>
@@ -327,15 +321,26 @@ const ALL_DAY_START_HOUR = 10;
                 }
               </tb-load-state>
 
-              <p-button
-                class="tb-schedule-side__add"
-                [label]="t.add"
-                icon="tb-i tb-i-add"
-                severity="secondary"
-                [fluid]="true"
-                [ariaLabel]="t.addOffTime"
-                (onClick)="newOffTime()"
-              />
+              @if (offTimes().length > 0) {
+                <p-button
+                  class="tb-schedule-side__add"
+                  [label]="t.add"
+                  icon="tb-i tb-i-add"
+                  severity="secondary"
+                  [fluid]="true"
+                  [ariaLabel]="t.addOffTime"
+                  (onClick)="newOffTime()"
+                />
+              } @else {
+                <p-button
+                  class="tb-schedule-side__add"
+                  [label]="t.addOffTime"
+                  icon="tb-i tb-i-add"
+                  [text]="true"
+                  [fluid]="true"
+                  (onClick)="newOffTime()"
+                />
+              }
             </section>
           }
         </tb-pane>

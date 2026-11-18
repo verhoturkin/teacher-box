@@ -371,9 +371,6 @@ export const en: Translation<typeof ru> = {
     offTime: 'Time off',
     addOffTime: 'Add time off',
     whatOffTime: 'the time off',
-    noOffTimeTitle: 'No time off scheduled',
-    noOffTimeHint:
-      'Add lunch breaks, days off or holidays so students can see when you are unavailable.',
     notWorking: 'Not working',
     actions: (name: string) => `Actions: ${name}`,
     editItem: 'Edit',

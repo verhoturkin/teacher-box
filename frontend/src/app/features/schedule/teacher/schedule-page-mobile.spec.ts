@@ -223,7 +223,8 @@ describe('SchedulePage on a phone', () => {
     expect(readableText(host)).toContain('Запросы учеников');
 
     await pickScreen('Нерабочее время');
-    expect(readableText(host)).toContain('Нерабочее время не отмечено');
+    expect(readableText(host)).toContain('Добавить нерабочее время');
+    expect(readableText(host)).not.toContain('Нерабочее время не отмечено');
     expect(host.querySelector('.tb-page-title')?.textContent.trim()).toBe('Нерабочее время');
   });
 });
