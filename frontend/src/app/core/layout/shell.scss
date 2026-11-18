@@ -105,11 +105,11 @@
   min-width: 0;
   max-width: var(--tb-content-max);
   margin: 0 auto;
-  padding: var(--tb-space-2) var(--tb-space-6) var(--tb-space-8);
+  padding: var(--tb-space-2) var(--tb-margin) var(--tb-space-8);
   box-sizing: border-box;
 
   @media (width < 37.5em) {
-    padding: var(--tb-space-2) var(--tb-space-3) var(--tb-space-4);
+    padding-bottom: var(--tb-space-4);
   }
 }
 

@@ -182,7 +182,7 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
 
 ### 443. One screen margin on a phone
 
-- [ ] 443.1 *simple* F — `core/layout/shell.scss` (content without panes: 12 px at the sides) →
+- [x] 443.1 *simple* F — `core/layout/shell.scss` (content without panes: 12 px at the sides) →
   `--tb-margin`; `styles/_tables.scss` (phone card in `.tb-stack`, card with a list or search)
   so the text stands 16 px from the edge as in panes. Check the homework pages without panes
   (`my-task-page.ts`, `assignment-page.ts`, `editor/*`, `task-review-page.ts`).
