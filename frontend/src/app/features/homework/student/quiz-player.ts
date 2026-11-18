@@ -300,7 +300,7 @@ export interface QuizEdit {
       display: flex;
       flex: 1;
       flex-wrap: wrap;
-      gap: var(--tb-space-8);
+      gap: var(--tb-gap-section);
       justify-content: center;
     }
 
@@ -308,7 +308,7 @@ export interface QuizEdit {
       display: flex;
       flex: 1 1 35rem;
       flex-direction: column;
-      gap: var(--tb-space-5);
+      gap: var(--tb-gap-section);
       max-inline-size: 45rem;
       min-inline-size: 0;
     }
@@ -480,7 +480,7 @@ export interface QuizEdit {
       /* the dots and the buttons at the bottom of the screen */
       .tb-qp__dots {
         display: flex;
-        gap: 6px;
+        gap: var(--tb-space-1-5);
         justify-content: center;
         margin-block-start: auto;
       }

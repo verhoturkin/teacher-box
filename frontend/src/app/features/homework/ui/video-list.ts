@@ -52,7 +52,7 @@ export function videoName(video: { readonly title: string | null }, index: numbe
   styles: `
     .tb-video-list {
       display: grid;
-      gap: var(--tb-space-6);
+      gap: var(--tb-gap-section);
       margin: 0;
       padding: 0;
       list-style: none;

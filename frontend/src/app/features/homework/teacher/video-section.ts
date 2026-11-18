@@ -414,7 +414,7 @@ interface TranscriptNote {
     /* Ours: tiles of a list group (4 px inside, the container's nested corner outside, 2 px gap) */
     .tb-video-tiles {
       display: grid;
-      gap: 2px;
+      gap: var(--tb-space-half);
       margin: 0;
       padding: 0;
       list-style: none;

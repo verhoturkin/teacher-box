@@ -192,7 +192,7 @@ export type EditorMode = 'edit' | 'preview';
     .tb-editor__layout {
       display: flex;
       align-items: flex-start;
-      gap: var(--tb-space-6);
+      gap: var(--tb-gap-section);
     }
 
     .tb-editor__nav {
@@ -226,7 +226,7 @@ export type EditorMode = 'edit' | 'preview';
       .tb-editor__columns {
         flex-direction: row;
         align-items: flex-start;
-        gap: var(--tb-space-6);
+        gap: var(--tb-gap-section);
       }
 
       .tb-editor__main,

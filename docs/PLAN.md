@@ -215,7 +215,7 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
 
 ### 448. Screens on the shared rhythm
 
-- [ ] 448.1 *simple* F — homework: `assignment-page.ts`, `my-task-page.ts`, `quiz-player.ts`,
+- [x] 448.1 *simple* F — homework: `assignment-page.ts`, `my-task-page.ts`, `quiz-player.ts`,
   `editor-task.ts`, `question-editor.ts`, `question-section.ts`, `video-list.ts`,
   `video-section.ts`, `assignments-page.ts` — own gaps → `.tb-stack` / tokens.
 - [ ] 448.2 *simple* F — homes and status: `home/teacher-home.ts`, `home/student-home.ts`,
