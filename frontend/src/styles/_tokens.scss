@@ -15,6 +15,20 @@
   --tb-space-7: 1.75rem;
   --tb-space-8: 2rem;
   --tb-space-16: 4rem;
+  /* M3 nested units (0.25×, 0.75×, 1.25× of 8 dp): segmented gaps, tags, list rows */
+  --tb-space-half: 2px;
+  --tb-space-1-5: 0.375rem;
+  --tb-space-2-5: 0.625rem;
+  /* Page rhythm (ADR-0068): the M3 window margin, ours where M3 publishes no value */
+  --tb-margin: var(--tb-space-4);
+
+  @media (width >= 37.5em) {
+    --tb-margin: var(--tb-space-6);
+  }
+  --tb-gap-section: var(--tb-space-6);
+  --tb-gap-title: var(--tb-space-3);
+  --tb-gap-header: var(--tb-space-4);
+  --tb-top-gap: var(--tb-space-2);
   --tb-content-max: 1440px;
   --tb-content-narrow: 56rem;
   /* The frame in px: a larger font grows the text, not the bars (ADR-0024). The top bar is the M3 small

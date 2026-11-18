@@ -53,8 +53,12 @@ Gallery: [`/gallery/tokens`](../frontend/src/app/features/gallery/tokens/) — s
 elevation with their values; springs —
 [`/gallery/motion`](../frontend/src/app/features/gallery/motion/).
 
-- **Spacing** — 4 px grid, `--tb-space-N` = N × 4 px. Component styles take spacing only from
-  tokens; preset tokens reference `--tb-*`; no literal values in component styles.
+- **Spacing** — 4 px grid, `--tb-space-N` = N × 4 px, plus the **M3** nested units
+  `--tb-space-half` (2 px), `--tb-space-1-5` (6), `--tb-space-2-5` (10); no other off-grid values.
+  Component styles take spacing only from tokens; preset tokens reference `--tb-*`; no literal
+  values in component styles. Padding and gap sit on the parent, not margins on the children
+  (**M3**). Sources in the order **M3E** → **M3** → *ours* (ADR-0068): a component keeps its own
+  M3E or M3 values (list rows §10, dialogs §11); places of the page take the rhythm tokens (§7).
 - **Shape** — radii only from this scale:
 
   | Token | Use |
@@ -536,6 +540,17 @@ Gallery: [`/gallery/frame`](../frontend/src/app/features/gallery/frame/).
   keeps surface-container. The gap under the top bar is 8 px (*ours*, M3 compact: the bar has its
   own): the pane header and scroll area (`shared/ui/panes.ts`) and the shell content
   (`core/layout/shell.scss`) take 8 px on top, 16 px at the sides and the bottom.
+- **Page rhythm** (ADR-0068; screens move over in stages 442–448): one value per place.
+
+  | Place | Value | Token | Source |
+  |---|---|---|---|
+  | Screen margin | 16 px compact, 24 px wider | `--tb-margin` | **M3** |
+  | Section → section (page and pane) | 24 px | `--tb-gap-section` | *ours* |
+  | Page header → first content | 16 px | `--tb-gap-header` | *ours* |
+  | Section title → its content, block → block in a section | 12 px | `--tb-gap-title` | *ours* |
+  | Under the top bar | 8 px | `--tb-top-gap` | *ours* |
+  | Inside an element (title and supporting lines) | 2–4 px | `--tb-space-half`, `--tb-space-1` | *ours* |
+
 - **One column inside a pane** (ADR-0021, ADR-0048): a pane is never narrower than 360 dp; inside it
   sections are stacked (`tb-stack`) by importance (what needs action first); running text at most
   66 ch; no card grids except the feeds named in [`screens.md`](screens.md), with a fixed column
@@ -830,14 +845,17 @@ Gallery: [`/gallery/fields`](../frontend/src/app/features/gallery/fields/) (chip
 
 ## 10. Lists, tables, chips, cards
 
-Gallery: [`/gallery/lists`](../frontend/src/app/features/gallery/lists/).
+Gallery: [`/gallery/lists`](../frontend/src/app/features/gallery/lists/). Rows, chips and cards
+keep their own **M3E** / **M3** spacing (ADR-0068), not the page rhythm of §7.
 
 - **Every list of data in a card, pane or dialog is a segmented list** `ul.tb-list` (CSS subgrid:
   lead, text and trail columns shared by all rows, so buttons line up): tiles `--tb-list-item`, 2 px
   gap, inner corners 4 px, outer `--tb-list-outer` (§1; a single tile has it on all corners), height
-  ≥ 56 px, padding 12 / 16 px. No custom row markup for data. Lists that read as one (the
-  editor's textbooks and files) sit in `tb-list-group`: 2 px apart, no margins, the outer corners
-  only on the first row of the group and the last.
+  ≥ 56 px, padding 10 / 16 px, 12 px between lead, text and trail (**M3E** `List`:
+  `ItemTopSpace` 10, `ItemLeadingSpace` 16, `ItemBetweenSpace` 12, as menu items; the settings
+  rows `tb-tile` and the phone rows of `tb-cards` the same). No custom row markup for data. Lists
+  that read as one (the editor's textbooks and files) sit in `tb-list-group`: 2 px apart, no
+  margins, the outer corners only on the first row of the group and the last.
   - `tb-list__lead` — 40 px secondary-container circle: people `tb-avatar` (`@shared/ui/avatar`:
     photo cut to a circle, otherwise initials; `size`: only 1.5rem in a chip, 2rem in a dense journal row, 40 px by default in a list;
     the account photo is a picture, not an avatar), an icon for things. A list whose
