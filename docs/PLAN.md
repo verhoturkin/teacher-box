@@ -124,7 +124,7 @@ lesson without a call; wide screen: lesson live).
 
 ### 438. Tabs: no stuck focus, M3 press
 
-- [ ] 438.1 *simple* F — tabs (`p-tabs` with `tbTabIndicator`, `shared/ui/tab-indicator.ts`;
+- [x] 438.1 *simple* F — tabs (`p-tabs` with `tbTabIndicator`, `shared/ui/tab-indicator.ts`;
   styles `frontend/src/styles/_sheets.scss` around `.p-tab`, the ripple from
   `core/theme/aura-base.ts` / `app.config.ts`): on a phone a tapped tab keeps a dark focus
   layer — show the focus state only for keyboard focus (`:focus-visible`), never after a tap or

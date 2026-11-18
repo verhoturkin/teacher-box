@@ -488,7 +488,10 @@ for the active navigation item and checked states.
   20 dp icon before the label. Tabs keep the width of their label from the start edge and scroll
   (**M3** scrollable tabs, sketches 11, 21); `tb-tabs--fixed` — two or three short labels that
   share the width (**M3** fixed tabs), as the bell's «Входящие · Отправленные» and the editor on a
-  phone. The tab is in the address (`?tab=`), the default one left out.
+  phone. The state layer (hover 8 %, keyboard focus 10 %) and the press ripple are clipped to the
+  tab's pill shape (*ours*: **M3** gives tabs no shape token); hover only where a pointer hovers,
+  focus only on `:focus-visible`, so a tap leaves no dark layer on a phone. The tab is in the
+  address (`?tab=`), the default one left out.
 
 ## 7. Panes and page anatomy
 
