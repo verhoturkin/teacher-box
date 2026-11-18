@@ -113,7 +113,7 @@ lesson without a call; wide screen: lesson live).
 
 ### 437. Settings › Lessons: Google Calendar as a state
 
-- [ ] 437.1 *complex* F — `schedule/teacher/google-calendar-panel.ts` (in
+- [x] 437.1 *complex* F — `schedule/teacher/google-calendar-panel.ts` (in
   `settings/settings-page.ts` case `lessons`) shows only the calendar's state: connected — the
   account and its actions as now; not connected — one line and the button «Подключить» that
   opens a dialog with the steps (Google Cloud, redirect URI) and the client fields; the last

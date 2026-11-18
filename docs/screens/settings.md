@@ -22,7 +22,10 @@ the account leads the list as its own row.
   time-zone select shows region and current offset (*ours*: browsers have no localised zone names),
   the device's zone first. The currency locks once a charge or payment exists. Reminders are chips,
   longest first, at most three. Numbers save on leaving the field or Enter; a refused value returns
-  to the saved one.
+  to the saved one. Google Calendar (`schedule/teacher/google-calendar-panel.ts`) shows only its
+  state: connected — the account, sync and «Отключить»; not connected — one line, the last error and
+  «Подключить Google», which opens a form dialog with the Google Cloud steps, the redirect URI and
+  the OAuth client; once the client is saved the same button goes to Google's consent page.
 - **Students** (`identity/tags/tags-panel.ts`, ADR-0055, board 16): reorderable tags (drag or arrow
   keys); templates on the empty state create a tag with AI on. The tag dialog reads the students on
   open: the kind is locked on a tag a student has (409 `tag.kind-used` shows in the dialog); removed

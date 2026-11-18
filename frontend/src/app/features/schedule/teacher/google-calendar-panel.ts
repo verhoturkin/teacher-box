@@ -29,7 +29,10 @@ import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { GoogleCalendarStatus } from '../data-access/schedule.models';
 import { PasswordToggle } from '@shared/ui/password-toggle';
-import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { FieldErrors } from '@shared/ui/field-errors';
+import { TbDialog } from '@shared/ui/dialog/dialog';
+import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
+import { openedOnce } from '@shared/ui/dialog/opened-once';
 import { guardUnsaved } from '@core/routing/unsaved-changes';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { Busy } from '@shared/ui/busy';
@@ -54,8 +57,9 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
   };
 
 /**
- * The teacher's Google Calendar: step-by-step setup of an OAuth client in Google Cloud, connecting
- * with Google's consent page, the sync state and disconnecting.
+ * The teacher's Google Calendar as a state: connected — the account, sync and disconnecting; not
+ * connected — one line and «Подключить Google», which opens the Google Cloud steps and the OAuth
+ * client in a dialog (once the client is saved, it goes to Google's consent page).
  */
 @Component({
   selector: 'tb-google-calendar-panel',
@@ -74,6 +78,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
     Tag,
     PasswordToggle,
     FieldErrors,
+    TbDialog,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -135,101 +140,103 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
             @if (status.status === 'NEEDS_RECONNECT') {
               <p-message severity="warn" styleClass="tb-form-message">{{ t.reconnect }}</p-message>
             }
-            @if (status.clientConfigured && !editingClient()) {
+            @if (status.clientConfigured) {
               <p>{{ t.willCreate(portalName()) }}</p>
               <label class="tb-switch" for="google-busy">
                 <p-checkbox [(ngModel)]="busy" [binary]="true" inputId="google-busy" />
                 <span>{{ t.showBusy }}</span>
               </label>
-              @if (status.lastError !== null) {
-                <p class="tb-error">{{ status.lastError }}</p>
-              }
-              <div class="tb-actions">
-                <p-button
-                  [label]="t.connect"
-                  severity="secondary"
-                  icon="tb-i tb-i-link"
-                  [loading]="pending()"
-                  (onClick)="connect()"
-                />
+            } @else {
+              <p class="tb-muted">{{ t.notConnected }}</p>
+            }
+            @if (status.lastError !== null) {
+              <p class="tb-error">{{ status.lastError }}</p>
+            }
+            <div class="tb-actions">
+              <p-button
+                [label]="t.connect"
+                severity="secondary"
+                icon="tb-i tb-i-link"
+                [loading]="pending()"
+                (onClick)="status.clientConfigured ? connect() : setupOpen.set(true)"
+              />
+              @if (status.clientConfigured) {
                 <p-button
                   [label]="t.editClient"
                   severity="secondary"
                   [text]="true"
-                  (onClick)="editingClient.set(true)"
+                  (onClick)="setupOpen.set(true)"
                 />
-              </div>
-            } @else {
-              <ol class="tb-google-steps">
-                <li>
-                  {{ t.open }}
-                  <a href="https://console.cloud.google.com/" target="_blank" rel="noopener"
-                    >Google Cloud Console</a
-                  >
-                  {{ t.createProject }}
-                </li>
-                <li>{{ t.enableApi }} <strong>Google Calendar API</strong>.</li>
-                <li>
-                  {{ t.consentBefore }} <strong>External</strong>{{ t.consentMiddle }}
-                  <strong>Publish app</strong> {{ t.consentAfter }}
-                </li>
-                <li>
-                  {{ t.clientBefore }} <strong>Web application</strong>{{ t.clientAfter }}
-                  <tb-copy-field
-                    class="tb-google-uri"
-                    [value]="redirectUri()"
-                    [copyLabel]="t.copyAddress"
-                    [copiedText]="t.copied"
-                  />
-                  <small class="tb-muted">{{ t.httpsHint }}</small>
-                </li>
-                <li>{{ t.copyClient }}</li>
-              </ol>
-              <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="saveClient()">
-                <div class="tb-field">
-                  <label for="google-client-id">Client ID</label>
-                  <input
-                    pInputText
-                    id="google-client-id"
-                    formControlName="clientId"
-                    autocomplete="off"
-                  />
-                </div>
-                <div class="tb-field">
-                  <label for="google-client-secret">Client secret</label>
-                  <p-password
-                    inputId="google-client-secret"
-                    formControlName="clientSecret"
-                    [feedback]="false"
-                    [toggleMask]="true"
-                    [fluid]="true"
-                  >
-                    <ng-template #showicon><tb-password-toggle /></ng-template>
-                    <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
-                  </p-password>
-                </div>
-                <div class="tb-form-actions">
-                  @if (status.clientConfigured) {
-                    <p-button
-                      [label]="c.cancel"
-                      severity="secondary"
-                      [text]="true"
-                      (onClick)="editingClient.set(false)"
-                    />
-                  }
-                  <p-button
-                    type="submit"
-                    [label]="c.save"
-                    severity="secondary"
-                    [loading]="pending()"
-                  />
-                </div>
-              </form>
-            }
+              }
+            </div>
           }
         }
       }
     </p-card>
+    @if (setupBuilt()) {
+      <tb-dialog
+        kind="form"
+        width="wide"
+        [(visible)]="setupOpen"
+        [headline]="t.setup"
+        [confirmLabel]="c.save"
+        formId="google-client-form"
+        [pending]="submit.pending()"
+        [error]="submit.error()"
+        [dirty]="submit.dirty()"
+      >
+        <ol class="tb-google-steps">
+          <li>
+            {{ t.open }}
+            <a href="https://console.cloud.google.com/" target="_blank" rel="noopener"
+              >Google Cloud Console</a
+            >
+            {{ t.createProject }}
+          </li>
+          <li>{{ t.enableApi }} <strong>Google Calendar API</strong>.</li>
+          <li>
+            {{ t.consentBefore }} <strong>External</strong>{{ t.consentMiddle }}
+            <strong>Publish app</strong> {{ t.consentAfter }}
+          </li>
+          <li>
+            {{ t.clientBefore }} <strong>Web application</strong>{{ t.clientAfter }}
+            <tb-copy-field
+              class="tb-google-uri"
+              [value]="redirectUri()"
+              [copyLabel]="t.copyAddress"
+              [copiedText]="t.copied"
+            />
+            <small class="tb-muted">{{ t.httpsHint }}</small>
+          </li>
+          <li>{{ t.copyClient }}</li>
+        </ol>
+        <form
+          id="google-client-form"
+          tbFieldErrors
+          class="tb-form"
+          [formGroup]="form"
+          (ngSubmit)="submit.run()"
+        >
+          <div class="tb-field">
+            <label for="google-client-id">Client ID</label>
+            <input pInputText id="google-client-id" formControlName="clientId" autocomplete="off" />
+          </div>
+          <div class="tb-field">
+            <label for="google-client-secret">Client secret</label>
+            <p-password
+              inputId="google-client-secret"
+              formControlName="clientSecret"
+              [feedback]="false"
+              [toggleMask]="true"
+              [fluid]="true"
+            >
+              <ng-template #showicon><tb-password-toggle /></ng-template>
+              <ng-template #hideicon><tb-password-toggle [shown]="true" /></ng-template>
+            </p-password>
+          </div>
+        </form>
+      </tb-dialog>
+    }
   `,
   styles: `
     .tb-google-state {
@@ -240,6 +247,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-2);
+      margin: 0 0 var(--tb-space-4);
       padding-left: var(--tb-space-5);
     }
 
@@ -266,7 +274,9 @@ export class GoogleCalendarPanel implements OnInit {
 
   protected readonly status = signal<GoogleCalendarStatus | null>(null);
   protected readonly pending = signal(false);
-  protected readonly editingClient = signal(false);
+  /** The setup dialog: the Google Cloud steps and the OAuth client. */
+  protected readonly setupOpen = signal(false);
+  protected readonly setupBuilt = openedOnce(this.setupOpen);
   protected readonly busy = signal(false);
   protected readonly result = computed(() => {
     const code = this.resultCode();
@@ -287,34 +297,25 @@ export class GoogleCalendarPanel implements OnInit {
     }),
   });
 
+  protected readonly submit = dialogSubmit({
+    visible: this.setupOpen,
+    form: this.form,
+    failed: T.google.saveFailed,
+    request: (value) => this.api.saveGoogleClient(value.clientId.trim(), value.clientSecret.trim()),
+    done: (status) => {
+      this.status.set(status);
+    },
+  });
+
   private readonly resultCode = signal<string | null>(null);
 
   constructor() {
-    guardUnsaved(() => this.editingClient() && this.form.dirty);
+    guardUnsaved(() => this.setupOpen() && this.form.dirty);
   }
 
   ngOnInit(): void {
     this.resultCode.set(this.route.snapshot.queryParamMap.get('google'));
     this.load();
-  }
-
-  saveClient(): void {
-    if (!revealErrors(this.form) || this.pending()) {
-      return;
-    }
-    const value = this.form.getRawValue();
-    this.pending.set(true);
-    this.api.saveGoogleClient(value.clientId.trim(), value.clientSecret.trim()).subscribe({
-      next: (status) => {
-        this.pending.set(false);
-        this.editingClient.set(false);
-        this.form.reset();
-        this.status.set(status);
-      },
-      error: () => {
-        this.pending.set(false);
-      },
-    });
   }
 
   connect(): void {

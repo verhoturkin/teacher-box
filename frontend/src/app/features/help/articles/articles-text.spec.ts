@@ -512,6 +512,24 @@ const SUMMON: Readonly<Record<string, readonly (readonly [string, string, string
   ],
 };
 
+/** Google Calendar setup in a dialog (437.1): [topic, baseline, now] of the calendars article. */
+const CALENDAR_SETUP: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'calendars',
+      '«Настройки» → «Занятия» → «Google Календарь» → подключите аккаунт. Тогда:',
+      '«Настройки» → «Занятия» → «Google Календарь» → «Подключить Google». В первый раз откроется окно с шагами в Google Cloud: выполните их, вставьте Client ID и Client secret и сохраните. Затем снова нажмите «Подключить Google» и разрешите доступ. Тогда:',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'calendars',
+      'Open “Settings” → “Lessons” → “Google Calendar” and connect your account.',
+      'Open “Settings” → “Lessons” → “Google Calendar” and click “Connect Google”. The first time, a window shows the Google Cloud steps: follow them, paste the Client ID and Client secret, and save. Then click “Connect Google” again and allow access.',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -604,6 +622,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(TAP_ROW[name] ?? []),
       ...(ONE_ROW[name] ?? []),
       ...(SUMMON[name] ?? []),
+      ...(CALENDAR_SETUP[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];
