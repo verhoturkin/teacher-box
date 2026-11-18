@@ -539,7 +539,8 @@ Gallery: [`/gallery/frame`](../frontend/src/app/features/gallery/frame/).
   take `surface` (`SystemBars` the same), the pane's own 16 px are the side room; the bottom bar
   keeps surface-container. The gap under the top bar is 8 px (*ours*, M3 compact: the bar has its
   own): the pane header and scroll area (`shared/ui/panes.ts`) and the shell content
-  (`core/layout/shell.scss`) take 8 px on top, 16 px at the sides and the bottom.
+  (`core/layout/shell.scss`) take 8 px on top, 16 px at the sides and the bottom. On a phone a
+  card stands on the 16 px margin with 16 px inside (**M3**), a card with a list or search too.
 - **Page rhythm** (ADR-0068; screens move over in stages 442–448): one value per place.
 
   | Place | Value | Token | Source |

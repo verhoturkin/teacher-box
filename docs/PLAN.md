@@ -184,7 +184,8 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
 
 - [x] 443.1 *simple* F — `core/layout/shell.scss` (content without panes: 12 px at the sides) →
   `--tb-margin`; `styles/_tables.scss` (phone card in `.tb-stack`, card with a list or search)
-  so the text stands 16 px from the edge as in panes. Check the homework pages without panes
+  so a card stands on the 16 px margin and keeps 16 px inside (M3: text 32 px from the edge, the
+  card with a list or search too). Check the homework pages without panes
   (`my-task-page.ts`, `assignment-page.ts`, `editor/*`, `task-review-page.ts`).
 
 ### 444. The gap under the top bar as one rule

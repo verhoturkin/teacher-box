@@ -95,21 +95,14 @@
     width: 100%;
   }
 
-  /* Cards of a page take 16 px at the sides (M3 compact), so their titles line up with the lists' */
-  :where(.tb-stack) .p-card > .p-card-body {
-    padding-inline: var(--tb-space-4);
-  }
-
   /*
-   * The card around a list keeps its frame; the tiles lie on it with less room (ADR-0020). A card with a
-   * search keeps that room when nothing is found too: its search does not move
+   * M3: a card stands on the 16 px screen margin and keeps 16 px inside, so its text is 32 px from the edge
+   * everywhere; a card with a list or search (it keeps that room when nothing is found too: its search does
+   * not move) has the same inner padding
    */
-  .p-card:has(.p-datatable.tb-cards),
-  .p-card:has(.tb-list),
-  .p-card:has(tb-search-field) {
-    > .p-card-body {
-      padding-inline: var(--tb-space-3);
-    }
+  :where(.tb-stack) .p-card > .p-card-body,
+  .p-card:has(.p-datatable.tb-cards, .tb-list, tb-search-field) > .p-card-body {
+    padding-inline: var(--tb-space-4);
   }
 
   .p-datatable.tb-cards {
