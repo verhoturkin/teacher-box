@@ -172,7 +172,7 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
 
 ### 442. List rows on the M3E `List` tokens
 
-- [ ] 442.1 *simple* F — `frontend/src/styles/_lists.scss` (`.tb-tile`, `.tb-list`, `> li`):
+- [x] 442.1 *simple* F — `frontend/src/styles/_lists.scss` (`.tb-tile`, `.tb-list`, `> li`):
   padding `--tb-space-2-5` (10) / `--tb-space-4` (**M3E** `ItemTopSpace` / `ItemLeadingSpace`),
   column gap `--tb-space-3` (**M3E** `ItemBetweenSpace` 12); check subgrid alignment, `tb-cards`
   (`_tables.scss` row cards), gallery `/gallery/lists`. Docs: `docs/design-system.md` §10. Needs

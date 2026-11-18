@@ -851,9 +851,11 @@ keep their own **M3E** / **M3** spacing (ADR-0068), not the page rhythm of §7.
 - **Every list of data in a card, pane or dialog is a segmented list** `ul.tb-list` (CSS subgrid:
   lead, text and trail columns shared by all rows, so buttons line up): tiles `--tb-list-item`, 2 px
   gap, inner corners 4 px, outer `--tb-list-outer` (§1; a single tile has it on all corners), height
-  ≥ 56 px, padding 12 / 16 px. No custom row markup for data. Lists that read as one (the
-  editor's textbooks and files) sit in `tb-list-group`: 2 px apart, no margins, the outer corners
-  only on the first row of the group and the last.
+  ≥ 56 px, padding 10 / 16 px, 12 px between lead, text and trail (**M3E** `List`:
+  `ItemTopSpace` 10, `ItemLeadingSpace` 16, `ItemBetweenSpace` 12, as menu items; the settings
+  rows `tb-tile` and the phone rows of `tb-cards` the same). No custom row markup for data. Lists
+  that read as one (the editor's textbooks and files) sit in `tb-list-group`: 2 px apart, no
+  margins, the outer corners only on the first row of the group and the last.
   - `tb-list__lead` — 40 px secondary-container circle: people `tb-avatar` (`@shared/ui/avatar`:
     photo cut to a circle, otherwise initials; `size`: only 1.5rem in a chip, 2rem in a dense journal row, 40 px by default in a list;
     the account photo is a picture, not an avatar), an icon for things. A list whose
