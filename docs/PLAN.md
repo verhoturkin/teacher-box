@@ -34,7 +34,7 @@ messengers; an empty off-time list is one command; the Google Calendar instructi
 Changed specs: `docs/screens.md` «Today (teacher home)», «Student card», «Student cabinet»
 (payments), «Schedule», «Settings» (Lessons); `docs/design-system.md` if a pattern changes.
 
-Order: one substep per session, a commit each; the PR is opened once, after 439.
+Order: one substep per session, a commit each; the PR is opened once, after 440.
 
 ### 432. Today: one lesson, one row
 
@@ -44,7 +44,7 @@ lesson without a call; wide screen: lesson live).
 
 - [x] 432.1 *simple* — sketches agreed with the user; copy the canvas into
   `docs/sketches/today/` with a row in `docs/sketches/README.md`.
-- [ ] 432.2 *complex* F — the big card `schedule/home/upcoming-lesson-widget.ts` leaves the
+- [x] 432.2 *complex* F — the big card `schedule/home/upcoming-lesson-widget.ts` leaves the
   teacher's Today (`home/teacher-home.ts`, the `tb-feed__lead` column): the current or nearest
   lesson is the expanded row of `home/today-lessons.ts` — time and its state from
   `schedule/home/lesson-clock.ts` («Идёт · ещё N мин» / «Через N мин»), the end time, avatar,
@@ -134,11 +134,26 @@ lesson without a call; wide screen: lesson live).
   (student card, settings, homework, schedule phone screens). Tests: `tab-indicator.spec.ts` if
   it pins the classes. Docs: `docs/design-system.md` tabs section.
 
-### 439. Release 0.57.0
+### 439. View switches as outlined segmented buttons
 
-- [ ] 439.1 *simple* — browser check of the changed screens (phone and desktop, both roles),
+- [ ] 439.1 *simple* F — «Доски · Учебники» in Materials (`materials/materials-page.ts`, both
+  `tb-segment-group` uses) and the calendar views «Неделя · Месяц · Список»
+  (`schedule/ui/schedule-calendar.ts`, `buttonGroupClass` → `tb-fc-segments`, its styles) take
+  the outlined variant of `docs/design-system.md` (`tb-segment-group [outlined]`, M3 segmented
+  buttons, as the homework list «Списком · По ученикам»): one 1 dp outline pill, dividers, the
+  chosen segment `secondary-container` with a leading check. FullCalendar renders its own
+  buttons: restyle `tb-fc-segments` to the same look, or hide its view buttons and drive
+  `changeView` from a `tb-segment-group` — the cheaper one that keeps keyboard and
+  `aria-pressed`. Check both roles (student materials `my-materials-page.ts` if it has the
+  switch) and phone. Tests: `materials-page.spec.ts`, `schedule-calendar.spec.ts`. Docs:
+  `docs/design-system.md` — move «Доски · Учебники» and the calendar views to the outlined
+  examples (decided with the user on 2026-11-18).
+
+### 440. Release 0.57.0
+
+- [ ] 440.1 *simple* — browser check of the changed screens (phone and desktop, both roles),
   small defects fixed, the rest listed.
-- [ ] 439.2 *simple* — skill `release`: help articles checked, E2E spec of the changed journeys,
+- [ ] 440.2 *simple* — skill `release`: help articles checked, E2E spec of the changed journeys,
   CHANGELOG, version bump, plan archived.
 
 ## Backlog
