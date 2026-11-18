@@ -223,16 +223,26 @@ export interface AgendaMark {
     .tb-agenda__list {
       display: flex;
       flex-direction: column;
-      gap: var(--tb-space-2);
+      gap: var(--tb-space-half);
       margin: 0;
       padding: 0;
       list-style: none;
     }
 
     .tb-agenda__item {
-      border-radius: var(--tb-shape-md);
-      background: var(--p-md-surface-container-low);
+      border-radius: var(--tb-list-inner);
+      background: var(--tb-list-item);
       overflow: hidden;
+
+      &:first-child {
+        border-start-start-radius: var(--tb-list-outer);
+        border-start-end-radius: var(--tb-list-outer);
+      }
+
+      &:last-child {
+        border-end-start-radius: var(--tb-list-outer);
+        border-end-end-radius: var(--tb-list-outer);
+      }
     }
 
     .tb-agenda__row {
@@ -240,7 +250,7 @@ export interface AgendaMark {
       align-items: center;
       gap: var(--tb-space-3);
       inline-size: 100%;
-      padding: var(--tb-space-3) var(--tb-space-4);
+      padding: var(--tb-space-2-5) var(--tb-space-4);
       border: 0;
       background: transparent;
       color: inherit;

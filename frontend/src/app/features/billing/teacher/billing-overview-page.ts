@@ -338,7 +338,7 @@ const NUMBER = new Intl.NumberFormat(locale());
 
       @if (!mobile()) {
         <tb-pane kind="fixed" resizeKey="billing" [label]="t.byStudents">
-          <div tbPaneHeader class="tb-ops__bar tb-ops__bar--pane">
+          <div tbPaneHeader class="tb-ops__bar">
             <h2 class="tb-ops__pane-title">{{ t.byStudents }}</h2>
             <a class="tb-link tb-ops__all" routerLink="/teacher/students">{{ t.allInStudents }}</a>
           </div>
@@ -476,10 +476,6 @@ const NUMBER = new Intl.NumberFormat(locale());
       align-items: center;
       justify-content: space-between;
       gap: var(--tb-space-3);
-    }
-
-    .tb-ops__bar--pane {
-      margin-block-end: var(--tb-space-4);
     }
 
     .tb-ops__filters {

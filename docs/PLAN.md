@@ -233,8 +233,14 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
 
 ### 449. Release 0.57.0
 
-- [ ] 449.1 *simple* — browser check of the spacing changes (441–448) on compact / medium /
-  expanded, both roles; small defects fixed, the rest listed.
+- [x] 449.1 *simple* — browser check of the spacing changes (441–448) on compact / medium /
+  expanded, both roles; small defects fixed, the rest listed. Fixed: 32 px (not 16) under the title of
+  the right pane of Payments; messenger cards 24 px apart; flat cards of a pane on a phone lost the
+  16 px inset (rows of Today and the student payments were narrower than the tiles); schedule agenda
+  rows on a phone take the list colour, 10/16 and a connected shape. *Left: the student card actions
+  (3 buttons, 371 px) overflow 343 px on a 375 px phone; the schedule toolbar → calendar 16 px and
+  `.tb-ops` section margins are child margins, not parent gap; lesson rows, cards with data on the
+  student side and the teacher homework / Materials lists were measured only empty.*
 - [ ] 449.2 *simple* — skill `release`: help articles checked, E2E spec of the changed journeys,
   CHANGELOG, version bump, plan archived.
 

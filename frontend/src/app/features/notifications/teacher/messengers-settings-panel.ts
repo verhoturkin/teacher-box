@@ -24,7 +24,7 @@ import { StudentMessengersPanel } from './student-messengers-panel';
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(min(22.5rem, 100%), 1fr));
       align-items: start;
-      gap: var(--tb-space-4);
+      gap: var(--tb-gap-section);
     }
   `,
 })

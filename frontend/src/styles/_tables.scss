@@ -98,10 +98,11 @@
   /*
    * M3: a card stands on the 16 px screen margin and keeps 16 px inside, so its text is 32 px from the edge
    * everywhere; a card with a list or search (it keeps that room when nothing is found too: its search does
-   * not move) has the same inner padding
+   * not move) has the same inner padding. A flat card of a pane (transparent, `_panes.scss`) is no surface: its
+   * content stands on the screen margin like the tiles beside it, so `:where` keeps this below that rule
    */
   :where(.tb-stack) .p-card > .p-card-body,
-  .p-card:has(.p-datatable.tb-cards, .tb-list, tb-search-field) > .p-card-body {
+  .p-card:where(:has(.p-datatable.tb-cards, .tb-list, tb-search-field)) > .p-card-body {
     padding-inline: var(--tb-space-4);
   }
 
