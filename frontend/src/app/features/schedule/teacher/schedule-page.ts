@@ -321,26 +321,15 @@ const ALL_DAY_START_HOUR = 10;
                 }
               </tb-load-state>
 
-              @if (offTimes().length > 0) {
-                <p-button
-                  class="tb-schedule-side__add"
-                  [label]="t.add"
-                  icon="tb-i tb-i-add"
-                  severity="secondary"
-                  [fluid]="true"
-                  [ariaLabel]="t.addOffTime"
-                  (onClick)="newOffTime()"
-                />
-              } @else {
-                <p-button
-                  class="tb-schedule-side__add"
-                  [label]="t.addOffTime"
-                  icon="tb-i tb-i-add"
-                  [text]="true"
-                  [fluid]="true"
-                  (onClick)="newOffTime()"
-                />
-              }
+              <p-button
+                class="tb-schedule-side__add"
+                [label]="offTimes().length > 0 ? t.add : t.addOffTime"
+                icon="tb-i tb-i-add"
+                severity="secondary"
+                [fluid]="true"
+                [ariaLabel]="t.addOffTime"
+                (onClick)="newOffTime()"
+              />
             </section>
           }
         </tb-pane>
@@ -415,6 +404,13 @@ const ALL_DAY_START_HOUR = 10;
          (container lowest on container low; in the dark theme container high), 2 dp apart (SegmentedGap), the
          group's outer corners large (16), the others extra small (4): tb-list does it */
       --tb-list-item: var(--p-md-surface-container-lowest);
+    }
+
+    /* on a phone the pane lies right on the window, no tonal band across the screen */
+    @media (width < 37.5em) {
+      .tb-schedule-side {
+        background: none;
+      }
     }
 
     :host-context(.tb-dark) .tb-schedule-side {

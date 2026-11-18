@@ -153,9 +153,10 @@ lesson without a call; wide screen: lesson live).
 
 - [x] 440.1 *simple* — browser check of the changed screens (phone and desktop, both roles),
   small defects fixed, the rest listed. Fixed: 24 px (not 8) under the top bar on phone pages with
-  a title-less header; the messenger link button overlapped its text on a phone. *Not checked:
-  student cabinet (433.1, no student login), Today with a running lesson (board link, join,
-  «Позвать»: no such data), empty off-time (436.1), tab ripple on touch.*
+  a title-less header; the messenger link button overlapped its text on a phone; the empty time-off
+  command was a flat text button on a full-width tonal band on a phone. Checked: Today (running
+  lesson, board link, join), student payments and Materials, Settings dialog, empty time off.
+  *Not checked live: «Позвать» (needs the media server; unit tests only), tab ripple on touch.*
 - [ ] 440.2 *simple* — skill `release`: help articles checked, E2E spec of the changed journeys,
   CHANGELOG, version bump, plan archived.
 
