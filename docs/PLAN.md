@@ -23,6 +23,98 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
+## v0.57.0
+
+Goals: the teacher's Today on a phone shows a lesson once — the current or nearest one opens in
+place in «Занятия сегодня»; the student's payments lose the all-time totals; less space between
+the top bar and the content on a phone; the student card stops repeating the balance and the
+messengers; an empty off-time list is one command; the Google Calendar instructions hide behind
+«Подключить».
+
+Changed specs: `docs/screens.md` «Today (teacher home)», «Student card», «Student cabinet»
+(payments), «Schedule», «Settings» (Lessons); `docs/design-system.md` if a pattern changes.
+
+Order: one substep per session, a commit each; the PR is opened once, after 438.
+
+### 432. Today: one lesson, one row
+
+Sketches: [«Сегодня — один урок»](https://claude.ai/artifact/LoYZXoqAaCHaAYfpi9c9NM), boards 1–3
+(lesson live with the join button; nearest lesson with a call; nearest lesson without a call).
+
+- [ ] 432.1 *simple* — sketches agreed with the user; copy the canvas into
+  `docs/sketches/today/` with a row in `docs/sketches/README.md`.
+- [ ] 432.2 *complex* F — the big card `schedule/home/upcoming-lesson-widget.ts` leaves the
+  teacher's Today (`home/teacher-home.ts`, the `tb-feed__lead` column): the current or nearest
+  lesson is the expanded row of `home/today-lessons.ts` — time and its state from
+  `schedule/home/lesson-clock.ts` («Идёт · ещё N мин» / «Через N мин»), the end time, avatar,
+  name, title and topic, and the join button (`tb-join-lesson-button`, «Начать урок» / «Войти в
+  урок») only when the lesson has `joinUrl`; other rows stay one line; the label «Следующее»
+  goes (`home/i18n` `todayLessons.next`, both languages). Today without lessons today but with a
+  nearest one later: decide with the sketches (keep the widget only for that case, or a one-row
+  list) — note the decision in `docs/screens.md`. All widths, not only the phone, unless M3
+  says otherwise. `over` → `loadSchedule()` still refreshes. Tests: `today-lessons.spec.ts`,
+  `teacher-home.spec.ts`. Docs: `docs/screens.md` «Today», wiki `Home`, help
+  `teacher/first-steps` (ru, en) if it names the card.
+
+### 433. Student payments without all-time totals
+
+- [ ] 433.1 *simple* F — `billing/student/my-billing-page.ts` drops the figures «Начислено за всё
+  время» and «Оплачено за всё время» (`totals.charged` / `totals.paid`, texts
+  `studentLedger.charged` / `paid` in `billing/i18n` ru and en if nothing else uses them); the
+  balance and the history stay. Backend fields stay (the teacher's tab may read them — check
+  `student-payments-tab.ts` before deleting anything). Tests: `my-billing-page.spec.ts`. Docs:
+  `docs/screens.md` student payments, wiki and help `student/billing` if they name the totals.
+
+### 434. Phone: less space under the top bar
+
+- [ ] 434.1 *simple* F — on a phone the gap between the top bar and the first content is too
+  big: find where the pane header and the page padding add up (`core/layout/shell.scss` around
+  the `max-width` rules, `shared/ui/panes.ts` pane padding, `shared/ui/page-header.ts`) and
+  reduce it to one M3 step (16 → 8 px or as M3 compact says) in one shared place, not per page.
+  Check Today, Students, Schedule, Homework, Payments for both roles. Tests: the shell/panes
+  specs if they pin the padding. Docs: `docs/design-system.md` spacing/layout section.
+
+### 435. Student card: balance and messengers once
+
+- [ ] 435.1 *simple* F — `students/student-card.ts` `tags`: the balance tag (debt / prepaid) is
+  shown only on the tabs where the balance is not visible otherwise — not on «Обзор» (the
+  balance card `billing/teacher/student-balance-card.ts` shows the sum next to the last
+  operations) and not on «Оплаты»; the roster row keeps its sum. Tests:
+  `student-card.spec.ts`. Docs: `docs/screens.md` «Student card».
+- [ ] 435.2 *simple* F — `notifications/teacher/student-channels.ts`: when no messenger is
+  connected, one row («Мессенджер не подключён» or the like, `notifications/i18n`) with the
+  action «Отправить ссылку на подключение» instead of three rows «Не подключён» plus the
+  separate button; with at least one connected the list stays as it is. Tests:
+  `student-channels.spec.ts`. Docs: `docs/screens.md` «Student card».
+
+### 436. Schedule: empty off-time is one command
+
+- [ ] 436.1 *simple* F — `schedule/teacher/schedule-page.ts` section «Нерабочее время»: while
+  `offTimes()` is empty, no title, icon, hint and «Добавить» — one text button «Добавить
+  нерабочее время» (`t.addOffTime`) opening the same dialog; with periods — the title and the
+  list with dates as now. Phone screen `offTime` the same. Unused texts (`noOffTimeTitle`,
+  `noOffTimeHint`) go from `schedule/i18n` ru and en. Tests: `schedule-page.spec.ts`,
+  `schedule-page-mobile.spec.ts`. Docs: `docs/screens.md` «Schedule», wiki if it names the
+  empty state.
+
+### 437. Settings › Lessons: Google Calendar as a state
+
+- [ ] 437.1 *complex* F — `schedule/teacher/google-calendar-panel.ts` (in
+  `settings/settings-page.ts` case `lessons`) shows only the calendar's state: connected — the
+  account and its actions as now; not connected — one line and the button «Подключить» that
+  opens a dialog with the steps (Google Cloud, redirect URI) and the client fields; the last
+  error stays visible in the panel. Look at `settings/backups/drive-panel.ts` (the same Google
+  Cloud steps) and use one pattern for both if it is cheap; otherwise only the calendar. Tests:
+  `google-calendar-panel.spec.ts`. Docs: `docs/screens.md` «Settings», wiki and help
+  `teacher/calendar` (ru, en) — the steps now start with «Подключить».
+
+### 438. Release 0.57.0
+
+- [ ] 438.1 *simple* — browser check of the changed screens (phone and desktop, both roles),
+  small defects fixed, the rest listed.
+- [ ] 438.2 *simple* — skill `release`: help articles checked, E2E spec of the changed journeys,
+  CHANGELOG, version bump, plan archived.
+
 ## Backlog
 
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,
