@@ -163,7 +163,7 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
 
 ### 441. Rhythm tokens and the page-rhythm rule
 
-- [ ] 441.1 *simple* F — `frontend/src/styles/_tokens.scss`: the **M3** nested units
+- [x] 441.1 *simple* F — `frontend/src/styles/_tokens.scss`: the **M3** nested units
   `--tb-space-half` (2 px), `--tb-space-1-5` (6), `--tb-space-2-5` (10); semantic
   `--tb-margin` (16 compact / 24 wider), `--tb-gap-section` (24), `--tb-gap-title` (12),
   `--tb-gap-header` (16), `--tb-top-gap` (8 compact). Gallery `/gallery/tokens`
