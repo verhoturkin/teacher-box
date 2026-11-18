@@ -69,7 +69,8 @@ run() {
 tree_fingerprint() {
     local idx tmp out status=0
     idx="${GIT_INDEX_FILE:-$(git -C "$ROOT" rev-parse --git-path index)}"
-    case "$idx" in /*) ;; *) idx="$ROOT/$idx" ;; esac
+    # a worktree on Windows gives a drive path (D:/...), which is absolute too
+    case "$idx" in /* | [A-Za-z]:/*) ;; *) idx="$ROOT/$idx" ;; esac
     tmp="$(mktemp)" || return 1
     cp "$idx" "$tmp" 2>/dev/null || : >"$tmp"
     out="$(GIT_INDEX_FILE="$tmp" git -C "$ROOT" add -A >/dev/null 2>&1 &&
