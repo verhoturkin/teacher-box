@@ -53,7 +53,7 @@ export interface Segment<T extends string> {
   styles: `
     :host {
       display: flex;
-      gap: 2px;
+      gap: var(--tb-space-half);
     }
 
     .tb-segment {

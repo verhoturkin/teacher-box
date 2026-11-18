@@ -5,7 +5,7 @@
  */
 .tb-split {
   display: inline-flex;
-  gap: 2px;
+  gap: var(--tb-space-half);
 
   /* the popup menu lives in <body>: its empty host takes no place, so no gap after the chevron */
   > p-menu {
@@ -156,7 +156,7 @@
  * pressed, a button squares as usual).
  */
 .tb-button-group--connected {
-  gap: 2px;
+  gap: var(--tb-space-half);
 
   > p-button:not(:last-child) .p-button {
     border-start-end-radius: var(--tb-shape-sm);

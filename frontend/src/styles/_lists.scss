@@ -7,7 +7,7 @@
 .tb-tiles {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--tb-space-half);
   overflow: hidden;
   border-radius: var(--tb-shape-lg);
 }
@@ -188,7 +188,7 @@
  */
 .tb-list-group {
   display: grid;
-  gap: 2px;
+  gap: var(--tb-space-half);
 
   > :empty {
     display: none;
@@ -500,7 +500,7 @@ p-button.tb-list__stretched .p-button {
   display: inline-flex;
   align-items: center;
   vertical-align: top;
-  gap: 0.75rem;
+  gap: var(--tb-space-3);
 }
 
 .tb-label-swatch {
@@ -528,7 +528,7 @@ p-button.tb-list__stretched .p-button {
   flex: 1;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: var(--tb-space-half);
   min-width: 0;
 }
 

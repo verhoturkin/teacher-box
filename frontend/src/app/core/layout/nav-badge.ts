@@ -19,11 +19,11 @@ const MAX = 999;
     :host {
       position: absolute;
       inset-block-start: 0;
-      inset-inline-start: calc(50% + 2px);
+      inset-inline-start: calc(50% + var(--tb-space-half));
       box-sizing: border-box;
       min-width: 1rem;
       height: 1rem;
-      padding: 0 0.25rem;
+      padding: 0 var(--tb-space-1);
       border-radius: var(--tb-shape-full);
       background: var(--p-md-error);
       color: var(--p-md-on-error);

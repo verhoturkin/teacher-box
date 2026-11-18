@@ -224,7 +224,7 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
   `portal-settings-card.ts`, `admin/settings/settings-page.ts`, `google-calendar-panel.ts`,
   `calendar-feed-panel.ts`, `drive-panel.ts`, `bot-wizard-dialog.ts`,
   `identity/account/account-panel.ts`; one hint indent (a token).
-- [ ] 448.4 *simple* F — shared component leftovers: `schedule/ui/schedule-calendar.scss`,
+- [x] 448.4 *simple* F — shared component leftovers: `schedule/ui/schedule-calendar.scss`,
   `shared/ui/steps.ts`, `filter-chips.ts`, `material-card.ts`, `styles/_lists.scss` literal gap,
   `boards/editor/board-page.ts` (fallback 2rem ≠ token), badges `shell.scss` / `side-nav.scss` /
   `nav-badge.ts` to one value; 2 px gaps → `--tb-space-half`.

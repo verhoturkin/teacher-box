@@ -86,7 +86,7 @@ export interface SectionNavPress {
     .tb-section-nav__list {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: var(--tb-space-half);
       margin: 0;
       padding: 0;
       list-style: none;

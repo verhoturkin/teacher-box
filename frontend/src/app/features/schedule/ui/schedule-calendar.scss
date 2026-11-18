@@ -285,7 +285,7 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.125rem;
+  gap: var(--tb-space-4);
   border-radius: inherit;
   background: color-mix(in srgb, var(--p-md-surface-container-lowest) 88%, transparent);
 
@@ -493,7 +493,7 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
 
 .tb-cal-pill.tb-cal-pill {
   border-radius: var(--tb-shape-sm);
-  margin-block: 1px;
+  margin-block: var(--tb-space-half);
   font: var(--tb-type-label-m);
 }
 

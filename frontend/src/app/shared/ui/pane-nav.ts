@@ -54,7 +54,7 @@ export interface PaneNavItem {
     .tb-pane-nav__list {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: var(--tb-space-half);
       margin: var(--tb-space-4) 0 0;
       padding: 0;
       list-style: none;
