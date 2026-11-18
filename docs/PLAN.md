@@ -42,7 +42,7 @@ Sketches: [«Сегодня — один урок»](https://claude.ai/artifact/
 (phone: lesson live with «Позвать» and the join button; nearest lesson with a call; nearest
 lesson without a call; wide screen: lesson live).
 
-- [ ] 432.1 *simple* — sketches agreed with the user; copy the canvas into
+- [x] 432.1 *simple* — sketches agreed with the user; copy the canvas into
   `docs/sketches/today/` with a row in `docs/sketches/README.md`.
 - [ ] 432.2 *complex* F — the big card `schedule/home/upcoming-lesson-widget.ts` leaves the
   teacher's Today (`home/teacher-home.ts`, the `tb-feed__lead` column): the current or nearest
