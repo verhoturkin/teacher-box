@@ -443,7 +443,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     /* «Тонкая настройка»: the card's head is the fold button (the sketch) */
     @media (width >= 37.5em) {
       .tb-portal-fine ::ng-deep .p-card-header {
-        padding: var(--tb-space-5) var(--tb-space-5) 0;
+        padding: var(--tb-surface-padding) var(--tb-surface-padding) 0;
       }
     }
 

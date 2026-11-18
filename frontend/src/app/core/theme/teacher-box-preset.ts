@@ -531,7 +531,7 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
         borderRadius: 'var(--tb-shape-lg-plus)',
         shadow: 'none',
       },
-      body: { padding: '1.25rem 1.5rem', gap: '0.75rem' },
+      body: { padding: 'var(--tb-surface-padding)', gap: '0.75rem' },
       title: { fontSize: '1.375rem', fontWeight: '500' },
       subtitle: { color: '{md.on.surface.variant}' },
     },

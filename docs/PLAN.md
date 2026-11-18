@@ -209,7 +209,7 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
 
 ### 447. One surface padding
 
-- [ ] 447.1 *simple* F — token `--tb-surface-padding` (20 section card / 16 compact) for
+- [x] 447.1 *simple* F — token `--tb-surface-padding` (20 section card / 16 compact) for
   `styles/_panes.scss` (`tb-section-card`), `settings/setup/steps/done-step.ts`, `portal-step.ts`,
   `settings/portal-settings-card.ts`, the preset card.
 

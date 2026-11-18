@@ -101,7 +101,7 @@ export class SetupPortalStep {
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-3);
-      padding: var(--tb-space-5);
+      padding: var(--tb-surface-padding);
       border-radius: var(--tb-shape-lg-increased, 1.25rem);
       background: var(--p-md-surface-container);
     }
@@ -117,7 +117,7 @@ export class SetupPortalStep {
       align-items: center;
       width: 100%;
       max-width: 20rem;
-      padding: var(--tb-space-5);
+      padding: var(--tb-surface-padding);
       border-radius: var(--tb-shape-lg-increased, 1.25rem);
       background: var(--p-md-surface);
       text-align: center;

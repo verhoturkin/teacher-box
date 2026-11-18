@@ -10,6 +10,7 @@ const RHYTHM = [
   '--tb-gap-header',
   '--tb-gap-title',
   '--tb-top-gap',
+  '--tb-surface-padding',
 ];
 
 /**

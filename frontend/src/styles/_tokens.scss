@@ -29,6 +29,12 @@
   --tb-gap-title: var(--tb-space-3);
   --tb-gap-header: var(--tb-space-4);
   --tb-top-gap: var(--tb-space-2);
+  /* Inside a card surface: 16 px compact (M3 card), 20 px wider (ours, the section card) */
+  --tb-surface-padding: var(--tb-space-4);
+
+  @media (width >= 37.5em) {
+    --tb-surface-padding: var(--tb-space-5);
+  }
   --tb-content-max: 1440px;
   --tb-content-narrow: 56rem;
   /* The frame in px: a larger font grows the text, not the bars (ADR-0024). The top bar is the M3 small
