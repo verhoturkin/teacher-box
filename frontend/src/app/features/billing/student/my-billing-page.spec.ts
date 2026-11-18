@@ -26,6 +26,7 @@ describe('MyBillingPage', () => {
     expect(text).toContain('Столько нужно оплатить');
     expect(text).toContain('Цена занятия 1 500 ₽');
     expect(text).not.toContain('Отменить занятие');
+    expect(text).not.toContain('за всё время');
   });
 
   it('explains a prepayment', async () => {
@@ -36,7 +37,7 @@ describe('MyBillingPage', () => {
     expect(await render(ledger({ balance: 0 }))).toContain('Всё оплачено');
   });
 
-  it('filters its journal without changing the balance or totals', async () => {
+  it('filters its journal without changing the balance', async () => {
     TestBed.configureTestingModule({ imports: [MyBillingPage], providers: testProviders() });
     const fixture = TestBed.createComponent(MyBillingPage);
     await fixture.whenStable();

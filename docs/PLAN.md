@@ -58,7 +58,7 @@ Sketches: [«Сегодня — один урок»](https://claude.ai/artifact/
 
 ### 433. Student payments without all-time totals
 
-- [ ] 433.1 *simple* F — `billing/student/my-billing-page.ts` drops the figures «Начислено за всё
+- [x] 433.1 *simple* F — `billing/student/my-billing-page.ts` drops the figures «Начислено за всё
   время» and «Оплачено за всё время» (`totals.charged` / `totals.paid`, texts
   `studentLedger.charged` / `paid` in `billing/i18n` ru and en if nothing else uses them); the
   balance and the history stay. Backend fields stay (the teacher's tab may read them — check
