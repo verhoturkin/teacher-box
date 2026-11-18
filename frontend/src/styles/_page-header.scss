@@ -47,6 +47,7 @@ tb-not-found,
 
 .tb-page-header__back {
   flex-shrink: 0;
+  /* spacing-ok: no token — centres the line on the action button */
   margin-top: calc((var(--tb-page-header-line) - 2.5rem) / 2);
   margin-left: calc(-1 * var(--tb-space-2));
 }

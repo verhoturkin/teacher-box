@@ -182,7 +182,7 @@ export interface AgendaMark {
       flex: 1;
       flex-direction: column;
       align-items: center;
-      gap: 2px;
+      gap: var(--tb-space-half);
       min-inline-size: 0;
       padding: var(--tb-space-2) 0;
       border: 0;

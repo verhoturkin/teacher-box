@@ -340,6 +340,7 @@ const VIEWS: readonly View[] = ['list', 'journal'];
 
     :host ::ng-deep .tb-hw__select .p-select-label {
       padding-block: 0;
+      /* spacing-ok: no token — room for the leading control */
       padding-inline: 2.5rem var(--tb-space-2);
       font: var(--tb-type-body-m);
       line-height: 2.25rem;

@@ -59,6 +59,9 @@ elevation with their values; springs —
   values in component styles. Padding and gap sit on the parent, not margins on the children
   (**M3**). Sources in the order **M3E** → **M3** → *ours* (ADR-0068): a component keeps its own
   M3E or M3 values (list rows §10, dialogs §11); places of the page take the rhythm tokens (§7).
+  Guard: `scripts/spacing.mjs` (in `npm run lint`) fails on a px/rem literal in
+  `padding|margin|gap|inset` outside `_tokens.scss` and the preset; a needed one (touch-target inset,
+  value without a token) takes `/* spacing-ok: reason */` on its line or the line before.
 - **Shape** — radii only from this scale:
 
   | Token | Use |

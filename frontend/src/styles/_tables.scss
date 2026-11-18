@@ -191,6 +191,7 @@
 
   /* The page keeps room at its end for the FAB (or the FAB menu of the home page) */
   main.tb-shell__content--nav:has(.tb-page-fab, tb-fab-menu) {
+    /* spacing-ok: no token — scroll room above the floating bulk bar */
     padding-bottom: calc(10rem + env(safe-area-inset-bottom));
   }
 }

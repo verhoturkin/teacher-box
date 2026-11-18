@@ -207,6 +207,7 @@ import { NextWork, ReviewSheet } from './review-sheet';
 
     /* the floating toolbar: 64 dp and the 16 dp margins under it, and the same over it */
     .tb-task__room {
+      /* spacing-ok: no token — clears the sticky action bar */
       padding-block-end: calc(5rem + var(--tb-space-4) + env(safe-area-inset-bottom));
     }
 

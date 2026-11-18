@@ -119,7 +119,7 @@ export function formatDuration(seconds: number): string {
     .tb-voice-pill__track::-webkit-slider-thumb {
       inline-size: 0.25rem;
       block-size: 1rem;
-      margin-block-start: -0.375rem;
+      margin-block-start: calc(-1 * var(--tb-space-1-5));
       border: 0;
       border-radius: var(--tb-shape-full);
       background: var(--p-md-primary);

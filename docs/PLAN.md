@@ -228,7 +228,7 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
   `shared/ui/steps.ts`, `filter-chips.ts`, `material-card.ts`, `styles/_lists.scss` literal gap,
   `boards/editor/board-page.ts` (fallback 2rem ≠ token), badges `shell.scss` / `side-nav.scss` /
   `nav-badge.ts` to one value; 2 px gaps → `--tb-space-half`.
-- [ ] 448.5 *simple* F — lint guard: Stylelint forbids px/rem literals in
+- [x] 448.5 *simple* F — lint guard: Stylelint forbids px/rem literals in
   `padding|margin|gap|inset` outside `_tokens.scss` and the preset (touch-target insets excepted).
 
 ### 449. Release 0.57.0
