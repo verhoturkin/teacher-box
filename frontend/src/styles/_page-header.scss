@@ -122,7 +122,7 @@ tb-not-found,
 .tb-stack {
   display: flex;
   flex-direction: column;
-  gap: var(--tb-space-4);
+  gap: var(--tb-gap-section);
 
   /* a hidden widget (no boards, a dismissed hint) leaves no double gap */
   > :is(

@@ -225,7 +225,12 @@ const ALL_DAY_START_HOUR = 10;
       </tb-pane>
 
       @if (sideShown()) {
-        <tb-pane kind="fixed" resizeKey="schedule" class="tb-schedule-side" [label]="t.sidePane">
+        <tb-pane
+          kind="fixed"
+          resizeKey="schedule"
+          class="tb-schedule-side tb-pane--stack"
+          [label]="t.sidePane"
+        >
           @if (!mobile()) {
             <tb-mini-month
               tbPaneHeader
@@ -417,16 +422,10 @@ const ALL_DAY_START_HOUR = 10;
       --tb-list-item: var(--p-md-surface-container-high);
     }
 
-    /* 16 dp between the list and «Регулярное занятие», as between the other blocks of the pane */
+    /* 16 dp between the list and «Регулярное занятие» inside their section */
     .tb-schedule-side__add {
       display: block;
       margin-top: var(--tb-space-4);
-    }
-
-    :host ::ng-deep .tb-schedule-side .tb-pane__scroll {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-4);
     }
 
     .tb-schedule-toolbar {

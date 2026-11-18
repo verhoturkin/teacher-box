@@ -197,7 +197,7 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
 
 ### 445. `.tb-stack` as the one section rhythm
 
-- [ ] 445.1 *complex* F — `styles/_page-header.scss` `.tb-stack` → `gap: var(--tb-gap-section)`;
+- [x] 445.1 *complex* F — `styles/_page-header.scss` `.tb-stack` → `gap: var(--tb-gap-section)`;
   the same token in a pane through `tb-pane__scroll`; drop own gaps in
   `schedule/teacher/schedule-page.ts`, `schedule/student/my-schedule-page.ts`. *Open:* 16 or 24
   between sections (M3 publishes none; the audit recommends 24 between sections, 12 inside).

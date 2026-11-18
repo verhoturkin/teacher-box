@@ -229,6 +229,13 @@ export class Panes {
       overscroll-behavior: contain;
     }
 
+    /* a pane of stacked sections keeps the page's rhythm, as .tb-stack (ADR-0068) */
+    :host(.tb-pane--stack) .tb-pane__scroll {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-gap-section);
+    }
+
     /* Portal decision: dark panes need a raised tone above the window's surface. */
     :host-context(.tb-dark),
     :host(.tb-pane--sheet) {

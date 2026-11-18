@@ -556,7 +556,8 @@ Gallery: [`/gallery/frame`](../frontend/src/app/features/gallery/frame/).
   | Inside an element (title and supporting lines) | 2–4 px | `--tb-space-half`, `--tb-space-1` | *ours* |
 
 - **One column inside a pane** (ADR-0021, ADR-0048): a pane is never narrower than 360 dp; inside it
-  sections are stacked (`tb-stack`) by importance (what needs action first); running text at most
+  sections are stacked (`tb-stack`, or `tb-pane--stack` on the pane itself; 24 px apart, *ours*,
+  445.1) by importance (what needs action first); running text at most
   66 ch; no card grids except the feeds named in [`screens.md`](screens.md), with a fixed column
   order that is also the reading order. Columns only inside one row of data (name — value, table
   columns, row buttons, filter fields).
