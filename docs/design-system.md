@@ -530,7 +530,9 @@ Gallery: [`/gallery/frame`](../frontend/src/app/features/gallery/frame/).
   window's scroll.
 - **Phone page of panes** (*ours*): the pane has no surface and corners, the window and the top bar
   take `surface` (`SystemBars` the same), the pane's own 16 px are the side room; the bottom bar
-  keeps surface-container.
+  keeps surface-container. The gap under the top bar is 8 px (*ours*, M3 compact: the bar has its
+  own): the pane header and scroll area (`shared/ui/panes.ts`) and the shell content
+  (`core/layout/shell.scss`) take 8 px on top, 16 px at the sides and the bottom.
 - **One column inside a pane** (ADR-0021, ADR-0048): a pane is never narrower than 360 dp; inside it
   sections are stacked (`tb-stack`) by importance (what needs action first); running text at most
   66 ch; no card grids except the feeds named in [`screens.md`](screens.md), with a fixed column

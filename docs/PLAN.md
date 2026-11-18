@@ -81,7 +81,7 @@ lesson without a call; wide screen: lesson live).
 
 ### 434. Phone: less space under the top bar
 
-- [ ] 434.1 *simple* F — on a phone the gap between the top bar and the first content is too
+- [x] 434.1 *simple* F — on a phone the gap between the top bar and the first content is too
   big: find where the pane header and the page padding add up (`core/layout/shell.scss` around
   the `max-width` rules, `shared/ui/panes.ts` pane padding, `shared/ui/page-header.ts`) and
   reduce it to one M3 step (16 → 8 px or as M3 compact says) in one shared place, not per page.

@@ -241,11 +241,12 @@ export class Panes {
 
     @media (width < 37.5em) {
       .tb-pane__header:not(:empty) {
-        padding: var(--tb-space-4);
+        padding: var(--tb-space-2) var(--tb-space-4) var(--tb-space-4);
       }
 
+      /* 8 px under the top bar (M3 compact: the bar already has its own 8 px), 16 px at the sides */
       .tb-pane__scroll {
-        padding: var(--tb-space-4);
+        padding: var(--tb-space-2) var(--tb-space-4) var(--tb-space-4);
       }
 
       /* the sketches: on a phone the page lies right on the window (no big card on the background): the pane has
