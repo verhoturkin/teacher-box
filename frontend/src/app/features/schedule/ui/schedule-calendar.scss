@@ -150,45 +150,51 @@
   font: var(--tb-type-headline-s);
 }
 
-/* The connected group: 2 px apart, small inner corners, round outer ones, the selected one round */
+/*
+ * The views as the outlined segmented buttons of `tb-segment-group [outlined]` (M3): one 1 px outline
+ * pill, 1 px dividers, the chosen view secondary container with a leading check
+ */
 .tb-fc-segments.tb-fc-segments {
   display: inline-flex;
-  gap: 2px;
+  overflow: hidden;
+  border: 1px solid var(--p-md-outline);
+  border-radius: var(--tb-shape-full);
 
   .tb-fc-segment {
-    border-radius: var(--tb-shape-sm);
+    border-width: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--p-md-on-surface);
 
-    &:first-child {
-      border-start-start-radius: var(--tb-shape-button);
-      border-end-start-radius: var(--tb-shape-button);
+    & + .tb-fc-segment {
+      border-inline-start: 1px solid var(--p-md-outline);
     }
 
-    &:last-child {
-      border-start-end-radius: var(--tb-shape-button);
-      border-end-end-radius: var(--tb-shape-button);
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-hover), transparent);
     }
 
-    /* pressed, the outer corners square to 8 px as any button, the inner ones narrow to 4 px (M3E) */
     &:active:not(:disabled) {
-      border-radius: var(--tb-shape-sm);
+      border-radius: 0;
+      background: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-pressed), transparent);
     }
 
-    &:not(:last-child):active:not(:disabled) {
-      border-start-end-radius: var(--tb-shape-xs);
-      border-end-end-radius: var(--tb-shape-xs);
-    }
-
-    &:not(:first-child):active:not(:disabled) {
-      border-start-start-radius: var(--tb-shape-xs);
-      border-end-start-radius: var(--tb-shape-xs);
+    &:focus-visible {
+      outline-offset: -3px;
     }
 
     &[aria-selected='true'],
     &[aria-pressed='true'] {
-      border-color: var(--p-md-primary);
-      border-radius: var(--tb-shape-button);
-      background: var(--p-md-primary);
-      color: var(--p-md-on-primary);
+      background: var(--p-md-secondary-container);
+      color: var(--p-md-on-secondary-container);
+
+      /* not by colour alone: the check the segment group has */
+      &::before {
+        @include icon-font;
+        @include glyph('tb-i-check');
+        margin-inline-end: var(--tb-space-2);
+        font-size: 1.125rem;
+      }
     }
   }
 }

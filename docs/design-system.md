@@ -631,16 +631,18 @@ Outlined (**M3** medium emphasis: 1 dp outline, primary label, no container) onl
 - **Size M** `tb-button-m` (ADR-0045, **M3E** ButtonMedium): 56 px, full corners, 12 px pressed, 24
   px icon, 24 px sides, 8 px gap, Title Medium label (*ours*); split `tb-split--m` (trailing 56 px,
   26 px chevron, inner corners 4 px, 12 px pressed — *ours*). Only in the hero.
-- **Connected button group** `tb-button-group--connected`, `p-selectbutton`, `tb-segment-group`, the
-  calendar views `tb-fc-segments` — **toggles only** (a value, a view, a filter; **M3**: never when
+- **Connected button group** `tb-button-group--connected`, `p-selectbutton`, `tb-segment-group` —
+  **toggles only** (a value, a view, a filter; **M3**: never when
   no button can be toggled): 40 dp, 2 dp gap (**M3** ConnectedButtonGroupSmall), inner corners 8 dp
   (4 dp pressed), outer full; unselected tonal (secondary-container), selected primary and fully
   round; no outline. `tb-segment-group` (`@shared/ui/segment-group`) is the list-view variant:
   `role="group"` with a name, `aria-pressed`, a count after the label, takes the whole width
   (*ours*). Examples: «Итог» of a lesson, a member's attendance, «На проверку · Активные · Готовые»,
-  «Доски · Учебники», «Ученик · Группа», the calendar views, «Согласовать | Отклонить».
-  **Outlined variant** (`tb-segment-group [outlined]`, **M3** segmented buttons; the homework list's
-  «Списком · По ученикам» and «Активные · Черновики · Готовые», sketch `.seg`): 40 dp, no gap, the
+  «Ученик · Группа», «Согласовать | Отклонить».
+  **Outlined variant** (`tb-segment-group [outlined]`, **M3** segmented buttons, and the calendar
+  views `tb-fc-segments` restyled to it; the homework list's «Списком · По ученикам» and
+  «Активные · Черновики · Готовые», «Доски · Учебники» of Materials, «Неделя · Месяц · Список» of
+  the calendar, sketch `.seg`): 40 dp, no gap, the
   whole group in one 1 dp `outline` border with a full pill outer shape and a 1 dp divider between
   buttons; the chosen button `secondary-container` with a leading 18 dp check (it replaces the
   button's own icon; `[checkmark]="false"` leaves it to the colour — the filter «Активные ·

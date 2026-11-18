@@ -136,7 +136,7 @@ lesson without a call; wide screen: lesson live).
 
 ### 439. View switches as outlined segmented buttons
 
-- [ ] 439.1 *simple* F — «Доски · Учебники» in Materials (`materials/materials-page.ts`, both
+- [x] 439.1 *simple* F — «Доски · Учебники» in Materials (`materials/materials-page.ts`, both
   `tb-segment-group` uses) and the calendar views «Неделя · Месяц · Список»
   (`schedule/ui/schedule-calendar.ts`, `buttonGroupClass` → `tb-fc-segments`, its styles) take
   the outlined variant of `docs/design-system.md` (`tb-segment-group [outlined]`, M3 segmented

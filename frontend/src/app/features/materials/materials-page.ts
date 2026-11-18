@@ -77,6 +77,7 @@ interface MemberOption {
                 [label]="t.tabs"
                 [segments]="segments()"
                 [value]="active()"
+                [outlined]="true"
                 (valueChange)="selectTab($event)"
               />
             }
@@ -97,6 +98,7 @@ interface MemberOption {
               [label]="t.tabs"
               [segments]="segments()"
               [value]="active()"
+              [outlined]="true"
               (valueChange)="selectTab($event)"
             />
           }
