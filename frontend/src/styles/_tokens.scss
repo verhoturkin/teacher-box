@@ -35,6 +35,10 @@
   @media (width >= 37.5em) {
     --tb-surface-padding: var(--tb-space-5);
   }
+
+  /* A hint under a field or a list: indented from the card edge (20 px, ADR-0068) */
+  --tb-hint-indent: var(--tb-space-5);
+
   --tb-content-max: 1440px;
   --tb-content-narrow: 56rem;
   /* The frame in px: a larger font grows the text, not the bars (ADR-0024). The top bar is the M3 small

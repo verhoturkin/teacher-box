@@ -11,6 +11,7 @@ const RHYTHM = [
   '--tb-gap-title',
   '--tb-top-gap',
   '--tb-surface-padding',
+  '--tb-hint-indent',
 ];
 
 /**

@@ -300,7 +300,7 @@ export const DRIVE_RESULTS: Readonly<Record<string, { severity: Severity; text: 
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-2);
-      padding-left: var(--tb-space-5);
+      padding-left: var(--tb-hint-indent);
     }
 
     .tb-drive-uri {

@@ -220,7 +220,7 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
   `video-section.ts`, `assignments-page.ts` — own gaps → `.tb-stack` / tokens.
 - [x] 448.2 *simple* F — homes and status: `home/teacher-home.ts`, `home/student-home.ts`,
   `admin/status/status-page.ts`, `my-deadlines-widget.ts`.
-- [ ] 448.3 *simple* F — settings and integrations: `settings/settings-page.ts`,
+- [x] 448.3 *simple* F — settings and integrations: `settings/settings-page.ts`,
   `portal-settings-card.ts`, `admin/settings/settings-page.ts`, `google-calendar-panel.ts`,
   `calendar-feed-panel.ts`, `drive-panel.ts`, `bot-wizard-dialog.ts`,
   `identity/account/account-panel.ts`; one hint indent (a token).

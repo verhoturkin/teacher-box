@@ -248,7 +248,7 @@ export const AUTHORIZATION_RESULTS: Readonly<Record<string, { severity: Severity
       flex-direction: column;
       gap: var(--tb-space-2);
       margin: 0 0 var(--tb-space-4);
-      padding-left: var(--tb-space-5);
+      padding-left: var(--tb-hint-indent);
     }
 
     .tb-google-uri {

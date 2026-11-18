@@ -323,7 +323,7 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
     .tb-account {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(min(100%, 22.5rem), 1fr));
-      gap: var(--tb-space-4);
+      gap: var(--tb-gap-section);
       align-items: start;
     }
 
@@ -340,7 +340,7 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
     /* medium (sketch \`StudentTablet\`): the profile row and «Уведомления» across, then a pair of cards */
     .tb-account--medium {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--tb-space-3);
+      gap: var(--tb-gap-section);
 
       > .tb-account__wide,
       ::ng-deep tb-notifications-section > p-card {

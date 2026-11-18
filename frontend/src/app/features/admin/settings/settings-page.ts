@@ -498,7 +498,7 @@ function dailyCron(time: string): string {
 
       ul {
         margin: 0;
-        padding-inline-start: var(--tb-space-5);
+        padding-inline-start: var(--tb-hint-indent);
       }
     }
 

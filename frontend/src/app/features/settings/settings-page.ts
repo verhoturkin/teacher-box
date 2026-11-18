@@ -253,7 +253,7 @@ import { T } from './i18n/texts';
      */
     .tb-settings__cols {
       display: flex;
-      gap: var(--tb-space-6);
+      gap: var(--tb-gap-section);
       align-items: flex-start;
     }
 
@@ -290,7 +290,7 @@ import { T } from './i18n/texts';
     .tb-settings__list {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: var(--tb-space-half);
       margin: 0;
       padding: 0;
       list-style: none;

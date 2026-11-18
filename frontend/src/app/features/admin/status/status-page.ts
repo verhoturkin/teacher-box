@@ -304,7 +304,7 @@ export const ARCHIVE_NAME = 'teacher-box-diagnostics.zip';
       flex-direction: column;
       gap: var(--tb-space-2);
       margin: 0;
-      padding-left: var(--tb-space-5);
+      padding-left: var(--tb-hint-indent);
     }
   `,
 })

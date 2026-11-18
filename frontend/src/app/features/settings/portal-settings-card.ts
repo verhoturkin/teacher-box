@@ -384,7 +384,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: var(--tb-space-1-5);
       min-width: 0;
       padding: 0;
       border: 0;
@@ -494,7 +494,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 6px;
+      gap: var(--tb-space-1-5);
       min-width: 0;
       padding: var(--tb-space-2);
       border: 1px solid var(--p-md-outline-variant);
@@ -519,7 +519,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
 
     .tb-scheme__sample {
       display: flex;
-      gap: 2px;
+      gap: var(--tb-space-half);
       width: 100%;
       height: 1.25rem;
       overflow: hidden;
@@ -551,7 +551,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     .tb-look__bar {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: var(--tb-space-2-5);
       padding: var(--tb-space-3) var(--tb-space-4);
       font: var(--tb-type-title-s);
     }
@@ -567,7 +567,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 10px;
+      gap: var(--tb-space-2-5);
       padding: var(--tb-space-4);
       border-radius: var(--tb-shape-lg);
     }

@@ -554,6 +554,7 @@ Gallery: [`/gallery/frame`](../frontend/src/app/features/gallery/frame/).
   | Section title → its content, block → block in a section | 12 px | `--tb-gap-title` | *ours* |
   | Under the top bar | 8 px | `--tb-top-gap` | *ours* |
   | Inside a card surface (section card, setup and portal cards, preset card) | 20 px; 16 px compact | `--tb-surface-padding` | *ours* / **M3** |
+  | A hint under a field or a list (indent from the card edge) | 20 px | `--tb-hint-indent` | *ours* |
   | Inside an element (title and supporting lines) | 2–4 px | `--tb-space-half`, `--tb-space-1` | *ours* |
 
 - **One column inside a pane** (ADR-0021, ADR-0048): a pane is never narrower than 360 dp; inside it
