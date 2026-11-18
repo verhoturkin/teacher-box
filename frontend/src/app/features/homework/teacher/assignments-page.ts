@@ -346,10 +346,6 @@ const VIEWS: readonly View[] = ['list', 'journal'];
     }
 
     /* the search takes the free room, «Кому» and the filter after it (ADR-0018) */
-    .tb-hw__toolbar {
-      margin-block-start: var(--tb-space-4);
-    }
-
     .tb-hw__toolbar tb-search-field {
       flex: 1 1 16rem;
     }

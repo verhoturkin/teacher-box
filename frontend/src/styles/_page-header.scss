@@ -10,7 +10,6 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--tb-space-4);
-  margin-bottom: var(--tb-space-4);
 
   > .tb-actions {
     align-items: center;
@@ -19,6 +18,23 @@
 
   > .tb-actions:empty {
     display: none;
+  }
+}
+
+/*
+ * Header → content is the gap of the parent (--tb-gap-header, ADR-0068), not a margin of the header: the pane
+ * header, its `tbPaneHeader` wrapper and a page without panes (or outside the shell) stack their parts with it
+ */
+.tb-pane__header,
+[tbPaneHeader],
+.tb-shell__content > *,
+tb-not-found,
+.tb-offline-page,
+.tb-gallery {
+  &:has(> .tb-page-header) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tb-gap-header);
   }
 }
 

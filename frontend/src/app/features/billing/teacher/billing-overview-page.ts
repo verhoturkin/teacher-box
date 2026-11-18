@@ -424,7 +424,8 @@ const NUMBER = new Intl.NumberFormat(locale());
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: var(--tb-space-3);
-      margin: 0 0 var(--tb-space-6);
+      /* 24 px to the operations bar: the header's 16 px gap + 8 */
+      margin: 0 0 var(--tb-space-2);
     }
 
     .tb-ops-figure {
@@ -462,6 +463,11 @@ const NUMBER = new Intl.NumberFormat(locale());
       flex-direction: column;
       gap: var(--tb-space-3);
       margin-block-end: var(--tb-space-6);
+    }
+
+    /* the debtors on a phone stand in the pane header: 24 px to the operations bar are its 16 px gap + 8 */
+    [tbPaneHeader] > .tb-ops {
+      margin-block-end: var(--tb-space-2);
     }
 
     .tb-ops__bar {
@@ -604,7 +610,7 @@ const NUMBER = new Intl.NumberFormat(locale());
 
       .tb-ops-figures {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        margin-block-end: var(--tb-space-4);
+        margin-block-end: 0;
       }
 
       .tb-ops-figure {

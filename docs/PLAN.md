@@ -190,10 +190,10 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
 
 ### 444. The gap under the top bar as one rule
 
-- [ ] 444.1 *complex* F — `core/layout/shell.scss`, `shared/ui/panes.ts`,
+- [x] 444.1 *complex* F — `core/layout/shell.scss`, `shared/ui/panes.ts`,
   `styles/_page-header.scss`, `styles/_phone.scss`: one `--tb-top-gap`; header → content is the
-  parent's gap (`--tb-gap-header`), not the header's margin. *Open:* on desktop panes flush (0)
-  or the same 8 px — decide here and mark it *ours*.
+  parent's gap (`--tb-gap-header`), not the header's margin. Decided: on desktop panes flush (0),
+  *ours* (ADR-0068 «Изменения»).
 
 ### 445. `.tb-stack` as the one section rhythm
 

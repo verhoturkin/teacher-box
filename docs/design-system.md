@@ -537,17 +537,20 @@ Gallery: [`/gallery/frame`](../frontend/src/app/features/gallery/frame/).
   window's scroll.
 - **Phone page of panes** (*ours*): the pane has no surface and corners, the window and the top bar
   take `surface` (`SystemBars` the same), the pane's own 16 px are the side room; the bottom bar
-  keeps surface-container. The gap under the top bar is 8 px (*ours*, M3 compact: the bar has its
-  own): the pane header and scroll area (`shared/ui/panes.ts`) and the shell content
-  (`core/layout/shell.scss`) take 8 px on top, 16 px at the sides and the bottom. On a phone a
-  card stands on the 16 px margin with 16 px inside (**M3**), a card with a list or search too.
+  keeps surface-container. The gap under the top bar is one `--tb-top-gap`, 8 px (*ours*, M3
+  compact: the bar has its own): the pane header and scroll area (`shared/ui/panes.ts`), a pane
+  header that takes no room (`styles/_phone.scss`) and the shell content (`core/layout/shell.scss`)
+  take it on top, 16 px at the sides and the bottom. From medium a page without panes takes the
+  same 8 px; the pane sheets stand flush under the top strip (0, *ours*, 444.1: M3 publishes only
+  the side margins and the spacer). On a phone a card stands on the 16 px margin with 16 px inside
+  (**M3**), a card with a list or search too.
 - **Page rhythm** (ADR-0068; screens move over in stages 442–448): one value per place.
 
   | Place | Value | Token | Source |
   |---|---|---|---|
   | Screen margin | 16 px compact, 24 px wider | `--tb-margin` | **M3** |
   | Section → section (page and pane) | 24 px | `--tb-gap-section` | *ours* |
-  | Page header → first content | 16 px | `--tb-gap-header` | *ours* |
+  | Page header → first content (the parent's gap, 444.1) | 16 px | `--tb-gap-header` | *ours* |
   | Section title → its content, block → block in a section | 12 px | `--tb-gap-title` | *ours* |
   | Under the top bar | 8 px | `--tb-top-gap` | *ours* |
   | Inside an element (title and supporting lines) | 2–4 px | `--tb-space-half`, `--tb-space-1` | *ours* |

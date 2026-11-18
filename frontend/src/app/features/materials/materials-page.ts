@@ -163,10 +163,6 @@ interface MemberOption {
       margin-inline-start: auto;
     }
 
-    .tb-materials__tabs {
-      margin-block-end: var(--tb-space-3);
-    }
-
     @media (width < 37.5em) {
       .tb-materials__bar > tb-search-field {
         flex-basis: 100%;
