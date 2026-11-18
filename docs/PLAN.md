@@ -30,11 +30,14 @@ place in «Занятия сегодня»; the student's payments lose the all-
 the top bar and the content on a phone; the student card stops repeating the balance and the
 messengers; an empty off-time list is one command; the Google Calendar instructions hide behind
 «Подключить».
+Then one spacing system on every screen, in the order **M3E** → **M3** → *ours* (audit
+[`notes/spacing-audit-2026-11-18.md`](notes/spacing-audit-2026-11-18.md)).
 
 Changed specs: `docs/screens.md` «Today (teacher home)», «Student card», «Student cabinet»
 (payments), «Schedule», «Settings» (Lessons); `docs/design-system.md` if a pattern changes.
+Spacing: new ADR 0068 «page rhythm» (441.1); `docs/design-system.md` §1, §7, §10, §11.
 
-Order: one substep per session, a commit each; the PR is opened once, after 440.
+Order: one substep per session, a commit each; the PR is opened once, after 449.
 
 ### 432. Today: one lesson, one row
 
@@ -149,14 +152,87 @@ lesson without a call; wide screen: lesson live).
   `docs/design-system.md` — move «Доски · Учебники» and the calendar views to the outlined
   examples (decided with the user on 2026-11-18).
 
-### 440. Release 0.57.0
+### 440. Browser check of 432–439
 
 - [x] 440.1 *simple* — browser check of the changed screens (phone and desktop, both roles),
   small defects fixed, the rest listed. Fixed: 24 px (not 8) under the top bar on phone pages with
   a title-less header; the messenger link button overlapped its text on a phone. *Not checked:
   student cabinet (433.1, no student login), Today with a running lesson (board link, join,
   «Позвать»: no such data), empty off-time (436.1), tab ripple on touch.*
-- [ ] 440.2 *simple* — skill `release`: help articles checked, E2E spec of the changed journeys,
+Spacing (441–448): shared rules before screens, every substep with the `m3-expressive` skill.
+
+### 441. Rhythm tokens and the page-rhythm rule
+
+- [ ] 441.1 *simple* F — `frontend/src/styles/_tokens.scss`: the **M3** nested units
+  `--tb-space-half` (2 px), `--tb-space-1-5` (6), `--tb-space-2-5` (10); semantic
+  `--tb-margin` (16 compact / 24 wider), `--tb-gap-section` (24), `--tb-gap-title` (12),
+  `--tb-gap-header` (16), `--tb-top-gap` (8 compact). Gallery `/gallery/tokens`
+  (`features/gallery/tokens/spacing.ts`). Docs: ADR-0068 «page rhythm», `docs/design-system.md` §1
+  and §7 (the rhythm table of the audit).
+
+### 442. List rows on the M3E `List` tokens
+
+- [ ] 442.1 *simple* F — `frontend/src/styles/_lists.scss` (`.tb-tile`, `.tb-list`, `> li`):
+  padding `--tb-space-2-5` (10) / `--tb-space-4` (**M3E** `ItemTopSpace` / `ItemLeadingSpace`),
+  column gap `--tb-space-3` (**M3E** `ItemBetweenSpace` 12); check subgrid alignment, `tb-cards`
+  (`_tables.scss` row cards), gallery `/gallery/lists`. Docs: `docs/design-system.md` §10. Needs
+  441.1.
+
+### 443. One screen margin on a phone
+
+- [ ] 443.1 *simple* F — `core/layout/shell.scss` (content without panes: 12 px at the sides) →
+  `--tb-margin`; `styles/_tables.scss` (phone card in `.tb-stack`, card with a list or search)
+  so the text stands 16 px from the edge as in panes. Check the homework pages without panes
+  (`my-task-page.ts`, `assignment-page.ts`, `editor/*`, `task-review-page.ts`).
+
+### 444. The gap under the top bar as one rule
+
+- [ ] 444.1 *complex* F — `core/layout/shell.scss`, `shared/ui/panes.ts`,
+  `styles/_page-header.scss`, `styles/_phone.scss`: one `--tb-top-gap`; header → content is the
+  parent's gap (`--tb-gap-header`), not the header's margin. *Open:* on desktop panes flush (0)
+  or the same 8 px — decide here and mark it *ours*.
+
+### 445. `.tb-stack` as the one section rhythm
+
+- [ ] 445.1 *complex* F — `styles/_page-header.scss` `.tb-stack` → `gap: var(--tb-gap-section)`;
+  the same token in a pane through `tb-pane__scroll`; drop own gaps in
+  `schedule/teacher/schedule-page.ts`, `schedule/student/my-schedule-page.ts`. *Open:* 16 or 24
+  between sections (M3 publishes none; the audit recommends 24 between sections, 12 inside).
+
+### 446. PrimeNG preset on tokens
+
+- [ ] 446.1 *simple* F — `core/theme/teacher-box-preset.ts`: spacing literals → `var(--tb-space-*)`
+  / `{…}`; toast content `0.875rem` → 12 or 16; card body → `--tb-surface-padding` (447.1).
+
+### 447. One surface padding
+
+- [ ] 447.1 *simple* F — token `--tb-surface-padding` (20 section card / 16 compact) for
+  `styles/_panes.scss` (`tb-section-card`), `settings/setup/steps/done-step.ts`, `portal-step.ts`,
+  `settings/portal-settings-card.ts`, the preset card.
+
+### 448. Screens on the shared rhythm
+
+- [ ] 448.1 *simple* F — homework: `assignment-page.ts`, `my-task-page.ts`, `quiz-player.ts`,
+  `editor-task.ts`, `question-editor.ts`, `question-section.ts`, `video-list.ts`,
+  `video-section.ts`, `assignments-page.ts` — own gaps → `.tb-stack` / tokens.
+- [ ] 448.2 *simple* F — homes and status: `home/teacher-home.ts`, `home/student-home.ts`,
+  `admin/status/status-page.ts`, `my-deadlines-widget.ts`.
+- [ ] 448.3 *simple* F — settings and integrations: `settings/settings-page.ts`,
+  `portal-settings-card.ts`, `admin/settings/settings-page.ts`, `google-calendar-panel.ts`,
+  `calendar-feed-panel.ts`, `drive-panel.ts`, `bot-wizard-dialog.ts`,
+  `identity/account/account-panel.ts`; one hint indent (a token).
+- [ ] 448.4 *simple* F — shared component leftovers: `schedule/ui/schedule-calendar.scss`,
+  `shared/ui/steps.ts`, `filter-chips.ts`, `material-card.ts`, `styles/_lists.scss` literal gap,
+  `boards/editor/board-page.ts` (fallback 2rem ≠ token), badges `shell.scss` / `side-nav.scss` /
+  `nav-badge.ts` to one value; 2 px gaps → `--tb-space-half`.
+- [ ] 448.5 *simple* F — lint guard: Stylelint forbids px/rem literals in
+  `padding|margin|gap|inset` outside `_tokens.scss` and the preset (touch-target insets excepted).
+
+### 449. Release 0.57.0
+
+- [ ] 449.1 *simple* — browser check of the spacing changes (441–448) on compact / medium /
+  expanded, both roles; small defects fixed, the rest listed.
+- [ ] 449.2 *simple* — skill `release`: help articles checked, E2E spec of the changed journeys,
   CHANGELOG, version bump, plan archived.
 
 ## Backlog
