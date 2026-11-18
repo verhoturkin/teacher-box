@@ -812,14 +812,21 @@ describe('StudentsPage', () => {
           requireElement(host, 'tb-pane:last-child .tb-pane__header header', HTMLElement),
         );
       expect(header()).toContain('Telegram');
-      expect(header()).toMatch(/Долг 3\s000\s₽/);
+      // Обзор shows the balance in its own card, not in the header
+      expect(header()).not.toContain('Долг');
       expect(card.tab()).toBe('overview');
+      fixture.componentRef.setInput('tab', 'lessons');
+      await fixture.whenStable();
+      // the reads of the lessons tab: its own spec answers them
+      backend.match((request) => request.urlWithParams.includes('schedule/students/'));
+      expect(header()).toMatch(/Долг 3\s000\s₽/);
 
       card.changed.emit();
       flushExtras([MARIA], { balances: { m: 0 } });
       await fixture.whenStable();
       expect(header()).not.toContain('Долг');
       expect(header()).toContain('Без мессенджера');
+      backend.match((request) => request.urlWithParams.includes('schedule/students/'));
     });
 
     it('opens a group card', async () => {

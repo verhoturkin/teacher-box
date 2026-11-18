@@ -27,6 +27,9 @@
   [studentId]`: who fixed, default title and length); a deactivated student keeps only payment.
   Group actions message (hidden without members), new lesson, archive; an archived group has none. A
   payment or lesson made here re-reads the balance and the lessons.
+- The student header tag with the balance (debt / prepaid) is shown only on tabs where the balance
+  is not visible otherwise: not on Обзор (the balance card) and not on Оплаты; the roster row keeps
+  its sum.
 
 ## Student tabs (`card-tabs.ts`, `CARD_TABS`, `?tab=`)
 

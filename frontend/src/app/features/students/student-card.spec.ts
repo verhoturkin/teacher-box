@@ -45,7 +45,12 @@ describe('StudentCard', () => {
 
   async function render(
     student: StudentRow,
-    inputs: Partial<{ channels: readonly string[] | null; single: boolean; busy: boolean }> = {},
+    inputs: Partial<{
+      channels: readonly string[] | null;
+      single: boolean;
+      busy: boolean;
+      tab: string;
+    }> = {},
     phone = false,
   ): Promise<void> {
     TestBed.configureTestingModule({
@@ -86,7 +91,7 @@ describe('StudentCard', () => {
   it('heads the card with the avatar, the name, «since» and the tags', async () => {
     await render(
       row({ status: 'INVITED', color: 'BLUE', createdAt: '2025-09-01T10:00:00Z' }, 150_000),
-      { channels: channelNames(['TELEGRAM', 'VK']) },
+      { channels: channelNames(['TELEGRAM', 'VK']), tab: 'lessons' },
     );
 
     const avatar = requireElement(host, 'tb-avatar', HTMLElement);
@@ -100,8 +105,14 @@ describe('StudentCard', () => {
   });
 
   it('tags a debt and a missing messenger; a deactivated student gets only «Оплата»', async () => {
-    await render(row({}, -300_000), { channels: [] });
+    await render(row({}, -300_000), { channels: [], tab: 'lessons' });
     expect(header()).toContain('Без мессенджера Долг 3 000 ₽');
+
+    for (const tab of ['overview', 'payments']) {
+      fixture.componentRef.setInput('tab', tab);
+      await fixture.whenStable();
+      expect(header()).not.toContain('Долг');
+    }
 
     fixture.componentRef.setInput('student', row({ status: 'DEACTIVATED' }, 0));
     await fixture.whenStable();

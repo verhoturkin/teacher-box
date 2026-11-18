@@ -90,7 +90,7 @@ lesson without a call; wide screen: lesson live).
 
 ### 435. Student card: balance and messengers once
 
-- [ ] 435.1 *simple* F — `students/student-card.ts` `tags`: the balance tag (debt / prepaid) is
+- [x] 435.1 *simple* F — `students/student-card.ts` `tags`: the balance tag (debt / prepaid) is
   shown only on the tabs where the balance is not visible otherwise — not on «Обзор» (the
   balance card `billing/teacher/student-balance-card.ts` shows the sum next to the last
   operations) and not on «Оплаты»; the roster row keeps its sum. Tests:
