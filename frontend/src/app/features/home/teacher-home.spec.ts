@@ -51,7 +51,13 @@ describe('TeacherHome', () => {
         hasLessons: false,
       }),
     );
-    backend.expectOne('/api/teacher/billing/summary').flush(billingSummary({ income: 300_000 }));
+    backend.expectOne('/api/teacher/billing/summary').flush(
+      billingSummary({
+        income: 300_000,
+        totalDebt: 150_000,
+        debtors: 1,
+      }),
+    );
     backend
       .expectOne('/api/teacher/homework/summary')
       .flush(homeworkSummary({ toReview: 2, weekAssigned: 5, weekOnTime: 3 }));
@@ -71,9 +77,13 @@ describe('TeacherHome', () => {
     expect(text).toContain('С чего начать');
     expect(text).toContain('Сделано 0 из 4');
     expect(text).toContain('Иван Петров');
-    expect(text).toContain('Нужно сделать');
+    // two cards of the queue; the debts are only in the month card
+    expect(text).toContain('Отметить занятия');
+    expect(text).toContain('Проверить работы');
     expect(text).toContain('Проверьте работу');
     expect(text).toContain('Поступило 3 000 ₽');
+    expect(text).toContain('Долг 1 500 ₽');
+    expect(text).not.toContain('Пётр');
     expect(text).toContain('Занятия сегодня');
     expect(text).toContain('1 занятие · 2 работы на проверку · 1 запрос');
     expect(text).toContain('Занятий 4');
@@ -108,7 +118,7 @@ describe('TeacherHome', () => {
 
     const text = readableText(hostElement(fixture));
     expect(text).toContain('Не удалось загрузить занятия, задания, уведомления и финансы');
-    expect(text).not.toContain('Нужно сделать');
+    expect(hostElement(fixture).querySelector('tb-todo-queue')).toBeNull();
   });
 
   it('reloads the schedule counters', async () => {
@@ -128,7 +138,7 @@ describe('TeacherHome', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(readableText(hostElement(fixture))).toContain('Нужно сделать');
+    expect(hostElement(fixture).querySelector('tb-todo-queue')).not.toBeNull();
   });
 });
 

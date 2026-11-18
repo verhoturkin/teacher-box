@@ -46,9 +46,8 @@ class MeetingNoticesIntegrationTests {
         assertThat(notices(events, boris)).singleElement().satisfies(notice -> {
             assertThat(notice.kind()).isEqualTo("MEETING_LINK");
             assertThat(ru(notice).title()).isEqualTo("Ссылка на урок");
-            assertThat(ru(notice).body())
-                    .isEqualTo("По этой ссылке проходят уроки группы «ОГЭ»: https://telemost.yandex.ru/j/5");
-            assertThat(en(notice).body()).isEqualTo("Join lessons for “ОГЭ” here: https://telemost.yandex.ru/j/5");
+            assertThat(ru(notice).body()).isEqualTo("Здесь проходят уроки группы «ОГЭ».");
+            assertThat(en(notice).body()).isEqualTo("Join lessons for “ОГЭ” in this room.");
         });
         assertThat(notices(events, anna)).hasSize(1);
     }
@@ -60,8 +59,7 @@ class MeetingNoticesIntegrationTests {
         NoticeRequested notice = single(events, vera,
                 new MeetingLinkShared(vera, null, List.of(vera), "https://zoom.us/j/1", Instant.now()));
 
-        assertThat(ru(notice).body()).isEqualTo("По этой ссылке проходят наши уроки: https://zoom.us/j/1");
-        assertThat(ru(notice).roomBody()).as("the address goes as a button in messengers")
+        assertThat(ru(notice).body()).as("the address goes as a button, never in the text")
                 .isEqualTo("Здесь проходят наши уроки.");
         assertThat(notice.joinUrl()).isEqualTo("https://zoom.us/j/1");
         assertThat(notice.link()).isEqualTo("/cabinet/schedule");

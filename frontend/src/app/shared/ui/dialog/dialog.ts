@@ -275,6 +275,10 @@ export class TbDialog {
   readonly confirm = output();
   /** The dialog went away (by any means). */
   readonly closed = output();
+  /** The dialog is shown and has set its focus: the content may move it (a picker's chosen day). */
+  readonly shown = output();
+  /** The leave animation is over and the dialog is out of the DOM: content kept for it may go. */
+  readonly gone = output();
 
   protected readonly headerActions = contentChild(DialogHeaderActions);
   protected readonly customFooter = contentChild(DialogFooter);
@@ -407,6 +411,7 @@ export class TbDialog {
           container.querySelector<HTMLElement>(`.tb-d__content :is(${FOCUSABLE})`))
         : null;
     (field ?? container.querySelector<HTMLElement>(`#${this.titleId}`))?.focus();
+    this.shown.emit();
 
     this.stopScrim?.();
     const scrim = this.dialog()?.wrapper ?? this.drawer()?.mask;
@@ -423,5 +428,6 @@ export class TbDialog {
     this.stopScrim?.();
     this.stopScrim = null;
     this.focusReturn.restore(this.container());
+    this.gone.emit();
   }
 }

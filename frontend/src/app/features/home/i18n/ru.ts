@@ -3,10 +3,11 @@ import { countOf } from '@shared/text/plural';
 /** Texts of the home pages of the teacher and the student (ADR-0035). */
 export const ru = {
   queue: {
-    title: 'Нужно сделать',
+    lessonsTitle: 'Отметить занятия',
+    reviewsTitle: 'Проверить работы',
     nothing: 'Срочных дел нет',
     more: (count: number) => `Ещё ${String(count)}`,
-    count: (count: number) => `Нужно сделать: ${String(count)}`,
+    count: (title: string, count: number) => `${title}: ${String(count)}`,
     lessonTitle: 'Отметьте занятие',
     held: 'Проведено',
     missed: 'Пропуск',
@@ -15,8 +16,6 @@ export const ru = {
     reply: 'Ответить',
     reviewTitle: 'Проверьте работу',
     check: 'Проверить',
-    debt: (amount: string) => `Долг ${amount}`,
-    open: 'Открыть',
     setupTitle: 'С чего начать',
     progress: (done: number, total: number) => `Сделано ${String(done)} из ${String(total)}`,
     hide: 'Скрыть',
@@ -35,7 +34,6 @@ export const ru = {
     hello: (name: string) => (name === '' ? 'Привет' : `Привет, ${name}`),
     next: (start: string) => `Следующее занятие: ${start}`,
     toHandIn: (count: number) => `Заданий к сдаче: ${String(count)}`,
-    materials: 'Материалы урока',
   },
   welcome: {
     title: (portal: string) => `Добро пожаловать в «${portal}»!`,

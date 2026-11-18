@@ -32,10 +32,9 @@ class NotificationsDomainTest {
         InboxNotification withLink = InboxNotification.create(UUID.randomUUID(), UUID.randomUUID(),
                 NotificationKind.MESSAGE, "Тема", "Текст", "/cabinet/billing", NOW);
 
-        assertThat(withLink.messengerText(withLink.body())).isEqualTo("Тема\nТекст");
-        assertThat(withLink.messengerText(" Другой ")).isEqualTo("Тема\nДругой");
-        assertThat(withLink.messengerText(null)).isEqualTo("Тема");
-        assertThat(withLink.messengerText(" ")).isEqualTo("Тема");
+        assertThat(withLink.messengerText()).isEqualTo("Тема\nТекст");
+        assertThat(create("Тема", null).messengerText()).isEqualTo("Тема");
+        assertThat(create("Тема", " ").messengerText()).isEqualTo("Тема");
     }
 
     @Test

@@ -52,7 +52,6 @@ enum ScheduleNoticeTexts {
         @Override String lateCharged() { return "Отмена поздняя, занятие засчитано как пропуск."; }
         @Override String teacherComment(String comment) { return "Комментарий учителя: " + comment; }
         @Override String in(String duration) { return "Через " + duration + "."; }
-        @Override String meetingLink(String url) { return "Ссылка на урок: " + url; }
         @Override String soonForStudent(String when) { return "Скоро занятие: " + when; }
         @Override String soonForTeacher(String with, String when) { return "Скоро урок: " + with + ", " + when; }
         @Override String lessonSummary(String date) { return "Итоги урока " + date; }
@@ -104,7 +103,6 @@ enum ScheduleNoticeTexts {
         @Override String lateCharged() { return "This was a late cancellation. The lesson has been marked as missed."; }
         @Override String teacherComment(String comment) { return "Teacher's comment: " + comment; }
         @Override String in(String duration) { return "In " + duration + "."; }
-        @Override String meetingLink(String url) { return "Lesson link: " + url; }
         @Override String soonForStudent(String when) { return "Upcoming lesson: " + when; }
         @Override String soonForTeacher(String with, String when) { return "Upcoming lesson: " + with + ", " + when; }
         @Override String lessonSummary(String date) { return "Lesson summary: " + date; }
@@ -198,8 +196,6 @@ enum ScheduleNoticeTexts {
     abstract String teacherComment(String comment);
 
     abstract String in(String duration);
-
-    abstract String meetingLink(String url);
 
     abstract String soonForStudent(String when);
 

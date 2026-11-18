@@ -20,8 +20,8 @@ import ru.teacherbox.shared.i18n.Language;
  * @param texts the notice in every {@link Language}
  * @param link path inside the portal the notice refers to
  * @param subject what the notice is about, for the buttons of the bot's actions
- * @param joinUrl the video room of the notice: messengers show it as a button and take
- *                {@link NoticeText#roomBody()} for the text
+ * @param joinUrl the video room of the notice: messengers show it as a «Подключиться» button; the
+ *                texts never hold the address
  */
 public record NoticeRequested(
         UUID id,

@@ -20,7 +20,6 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.teacherbox.billing.application.BillingViews.BillingSummary;
-import ru.teacherbox.billing.application.BillingViews.Debtor;
 import ru.teacherbox.billing.application.BillingViews.JournalLesson;
 import ru.teacherbox.billing.application.BillingViews.JournalPayment;
 import ru.teacherbox.billing.application.BillingViews.LessonView;
@@ -55,8 +54,6 @@ import ru.teacherbox.shared.time.InstanceTimeZone;
 @Service
 @Transactional(readOnly = true)
 public class BillingQueryService {
-
-    private static final int TOP_DEBTORS = 5;
 
     private final StudentAccountRepository accounts;
     private final LessonRepository lessons;
@@ -106,12 +103,7 @@ public class BillingQueryService {
     /** @param requested the month to total; {@code null}: the current one */
     public BillingSummary summary(@Nullable YearMonth requested) {
         Overview overview = overview();
-        List<Debtor> debtors = overview.students().stream()
-                .filter(student -> student.balance() < 0)
-                .sorted(Comparator.comparingLong(StudentBalance::balance))
-                .map(student -> new Debtor(student.studentId(), student.displayName(), student.avatar(),
-                        student.balance()))
-                .toList();
+        int debtors = (int) overview.students().stream().filter(student -> student.balance() < 0).count();
         YearMonth month = requested == null ? currentMonth() : requested;
         List<Payment> monthPayments = payments.findBetween(month.atDay(1), month.atEndOfMonth()).stream()
                 .filter(payment -> !payment.isVoided())
@@ -120,8 +112,7 @@ public class BillingQueryService {
         long income = monthPayments.stream().mapToLong(payment -> payment.amount().amountMinor()).sum();
         boolean priceSet = overview.defaultLessonPrice() > 0
                 || overview.students().stream().anyMatch(student -> student.lessonPrice() > 0);
-        return new BillingSummary(overview.currency(), overview.totalDebt(), debtors.size(),
-                debtors.stream().limit(TOP_DEBTORS).toList(), income, month.toString(), priceSet,
+        return new BillingSummary(overview.currency(), overview.totalDebt(), debtors, income, month.toString(), priceSet,
                 weeks(month, monthPayments, monthLessons));
     }
 

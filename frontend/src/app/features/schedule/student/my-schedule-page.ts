@@ -417,15 +417,19 @@ export function nextMonday(date: Date): Date {
       align-items: stretch;
     }
 
+    /* a phone: the pane is transparent, the rows keep the portal's tonal default (surface container), not white;
+       wider: the rows are lighter than the tonal pane, as in the teacher's schedule */
     .tb-my-schedule-side {
       @media (width >= 37.5em) {
         background: var(--p-md-surface-container-low);
+        --tb-list-item: var(--p-md-surface-container-lowest);
       }
-      --tb-list-item: var(--p-md-surface-container-lowest);
     }
 
     :host-context(.tb-dark) .tb-my-schedule-side {
-      --tb-list-item: var(--p-md-surface-container-high);
+      @media (width >= 37.5em) {
+        --tb-list-item: var(--p-md-surface-container-high);
+      }
     }
 
     :host ::ng-deep .tb-my-schedule-side .tb-pane__scroll {

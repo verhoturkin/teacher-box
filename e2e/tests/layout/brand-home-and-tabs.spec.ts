@@ -53,7 +53,7 @@ test('the rail brand stands in the row of the top strip', async ({ page }) => {
 test('Today shows the queue and the week', async ({ page }) => {
   await signIn(page);
   await page.goto('/teacher');
-  await expect(page.getByText('Нужно сделать').first()).toBeVisible();
+  await expect(page.locator('tb-todo-queue')).toBeVisible();
   await expect(page.getByText('Неделя').first()).toBeVisible();
 });
 

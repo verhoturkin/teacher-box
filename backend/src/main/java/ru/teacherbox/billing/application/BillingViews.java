@@ -155,18 +155,9 @@ public final class BillingViews {
     }
 
     /**
-     * A student who owes money; {@code balance} is negative.
-     *
-     * @param avatar address of the student's photo; {@code null}: none
-     */
-    public record Debtor(UUID studentId, String displayName, @Nullable String avatar, long balance) {
-    }
-
-    /**
      * Finances at a glance.
      *
      * @param debtors    number of students with a negative balance
-     * @param topDebtors the largest debts first
      * @param income     valid payments dated in the current month
      * @param month      the current month, {@code yyyy-MM}
      * @param priceSet   a lesson price is set (by default or for a student)
@@ -176,7 +167,6 @@ public final class BillingViews {
             String currency,
             long totalDebt,
             int debtors,
-            List<Debtor> topDebtors,
             long income,
             String month,
             boolean priceSet,

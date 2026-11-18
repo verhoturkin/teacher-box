@@ -17,14 +17,12 @@ import { FormsModule, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors } from 
 import { Button } from 'primeng/button';
 import { DatePicker } from 'primeng/datepicker';
 import { InputText } from 'primeng/inputtext';
-import { Overlay } from 'primeng/overlay';
 import { Tooltip } from 'primeng/tooltip';
 import { locale } from '@core/i18n/language';
-import { injectWindowSize } from '@core/layout/mobile';
 import { toIsoDate } from '@shared/dates/iso-date';
 import { formatDate, formatMonth, fullDate, parseDate, parseMonth } from '@shared/dates/typed-date';
 import { SHARED_T } from '@shared/i18n/texts';
-import { TbDialog } from './dialog/dialog';
+import { DialogFooter, TbDialog } from './dialog/dialog';
 import { TypedField } from './typed-field';
 
 /** A day of PrimeNG's grid (`#date` template): the month counts from 0. */
@@ -41,9 +39,10 @@ let nextId = 0;
 /**
  * The M3 date field (ADR-0067, design-system §9 «Date»): a filled field that takes a typed date
  * (`shared/dates/typed-date`, parsed on Enter or leaving the field) and a trailing «Выбрать дату»
- * icon button that opens the picker — docked under the field from medium, a full-screen dialog on
- * compact. The day grid is PrimeNG's inline `p-datepicker` with its header hidden; the M3 header,
- * the month and year lists and the year keys are ours. `month` — a month field (the first day of
+ * icon button that opens the M3 modal date picker — a dialog over the scrim on every window size,
+ * like the time picker (430.1): «Выберите дату», the chosen date, the picker, «Отмена» / «ОК». The
+ * day grid is PrimeNG's inline `p-datepicker` with its header hidden; the M3 header, the month and
+ * year lists and the year keys are ours. `month` — a month field (the first day of
  * the month): no grid, the year header and the month list. Value — a `Date` at midnight or `null`.
  *
  * ```html
@@ -61,9 +60,9 @@ let nextId = 0;
     Button,
     DatePicker,
     InputText,
-    Overlay,
     Tooltip,
     TbDialog,
+    DialogFooter,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
@@ -90,7 +89,7 @@ let nextId = 0;
       class="tb-typed-field__open"
       aria-haspopup="dialog"
       [attr.aria-label]="month() ? t.openMonth : t.open"
-      [attr.aria-expanded]="docked() || dialogOpen()"
+      [attr.aria-expanded]="dialogOpen()"
       [disabled]="disabled()"
       (click)="toggle()"
     >
@@ -98,7 +97,7 @@ let nextId = 0;
     </button>
 
     <ng-template #picker>
-      <div class="tb-date-picker" [id]="pickerId">
+      <div class="tb-date-picker" role="group" [id]="pickerId" [attr.aria-label]="label()">
         <div class="tb-date-picker__head" [class.tb-date-picker__head--open]="view() !== 'days'">
           @if (!month()) {
             <p-button
@@ -211,78 +210,43 @@ let nextId = 0;
       </div>
     </ng-template>
 
-    @if (compact()) {
-      <tb-dialog
-        kind="form"
-        [visible]="dialogOpen()"
-        (visibleChange)="dialogOpen.set($event)"
-        [headline]="label()"
-        [confirmLabel]="c.save"
-        (confirm)="save()"
-        (closed)="closed()"
-      >
-        @if (dialogOpen()) {
-          <div class="tb-date-field__sheet">
-            <p class="tb-date-field__support">{{ month() ? t.pickMonth : t.pick }}</p>
-            <p class="tb-date-field__chosen">{{ chosen() }}</p>
-          </div>
-          <ng-container *ngTemplateOutlet="picker" />
-        }
-      </tb-dialog>
-    } @else {
-      <p-overlay
-        [visible]="docked()"
-        (visibleChange)="docked.set($event)"
-        target="@parent"
-        appendTo="body"
-        (onEnter)="focusChoice()"
-      >
-        @if (docked()) {
-          <ng-container *ngTemplateOutlet="picker" />
-        }
-      </p-overlay>
-    }
+    <tb-dialog
+      kind="alert"
+      [visible]="dialogOpen()"
+      (visibleChange)="dialogOpen.set($event)"
+      [headline]="month() ? t.pickMonth : t.pick"
+      (shown)="focusChoice()"
+      (closed)="closed()"
+      (gone)="mounted.set(false)"
+    >
+      @if (mounted()) {
+        <p class="tb-date-field__chosen">{{ chosen() }}</p>
+        <ng-container *ngTemplateOutlet="picker" />
+      }
+      <ng-template tbDialogFooter>
+        <p-button [label]="c.cancel" [text]="true" (onClick)="dialogOpen.set(false)" />
+        <p-button [label]="ok" [text]="true" (onClick)="save()" />
+      </ng-template>
+    </tb-dialog>
   `,
   styles: `
-    /* the modal picker on compact: «Выберите дату» and the chosen date above the picker */
-    .tb-date-field__sheet {
-      margin-bottom: var(--tb-space-3);
-      border-bottom: 1px solid var(--p-md-outline-variant);
-    }
-
-    .tb-date-field__support {
-      margin: 0;
-      color: var(--p-md-on-surface-variant);
-      font: var(--tb-type-label-l);
-    }
-
+    /* M3 modal date picker: the chosen date (the headline of M3) over a divider; type ours */
     .tb-date-field__chosen {
       min-height: 2.5rem;
-      margin: var(--tb-space-4) 0 var(--tb-space-3);
+      margin: 0 0 var(--tb-space-3);
+      padding: 0 var(--tb-space-3) var(--tb-space-3);
+      border-bottom: 1px solid var(--p-md-outline-variant);
       color: var(--p-md-on-surface);
       font: var(--tb-type-headline-l);
     }
 
-    /* M3 docked date picker; ours: 360 dp, 12 dp padding, the dropdown's corners and shadow */
+    /* the body: 7 days of 48 dp (M3: not scaled with the window); the dialog gives the container */
     .tb-date-picker {
       box-sizing: border-box;
-      width: 22.5rem;
+      width: 21rem;
       max-width: 100%;
-      /* the overlay is as wide as the field: the picker keeps to the field's end (user choice) */
-      margin-inline-start: auto;
-      padding: var(--tb-space-3);
-      border-radius: var(--tb-shape-lg);
-      background: var(--p-md-surface-container-high);
-      box-shadow: var(--tb-elevation-2);
-      color: var(--p-md-on-surface);
-    }
-
-    /* on compact the body of the full-screen dialog, centred and not scaled (M3) */
-    .tb-date-field__sheet + .tb-date-picker {
       margin-inline: auto;
-      padding: 0;
-      background: none;
-      box-shadow: none;
+      color: var(--p-md-on-surface);
     }
 
     /* the header ‹ month ▾ › ‹ year ▾ ›, 48 dp: icon buttons 40 dp, the menu buttons share the rest */
@@ -396,11 +360,12 @@ let nextId = 0;
       .p-datepicker-day-view {
         width: 100%;
         margin: 0;
+        /* equal columns: 48 dp, a little less when a phone is narrower than the 360 dp picker */
+        table-layout: fixed;
         font: var(--tb-type-body-l);
       }
 
       :is(.p-datepicker-weekday-cell, .p-datepicker-day-cell) {
-        width: 3rem;
         height: 3rem;
         padding: 0;
       }
@@ -410,30 +375,30 @@ let nextId = 0;
 export class DateField extends TypedField<Date> {
   protected readonly t = SHARED_T.date;
   protected readonly c = SHARED_T.common;
+  protected readonly ok = SHARED_T.time.ok;
   private readonly document = inject(DOCUMENT);
   private readonly injector = inject(Injector);
   private readonly opener = viewChild.required<ElementRef<HTMLButtonElement>>('opener');
-  protected readonly compact = computed(() => this.windowSize() === 'compact');
-  private readonly windowSize = injectWindowSize();
   protected readonly pickerId = `tb-date-picker-${String(nextId++)}`;
 
   /** The `id` of the input, for the `<label for>` of the field. */
   readonly inputId = input.required<string>();
-  /** The name of the field: the headline of the picker on compact. */
+  /** The name of the field: screen readers hear it on the picker's body. */
   readonly label = input.required<string>();
   readonly minDate = input<Date | null>(null);
   readonly maxDate = input<Date | null>(null);
   /** A month field: the value is the first day of the month. */
   readonly month = input(false);
 
-  protected readonly docked = signal(false);
   protected readonly dialogOpen = signal(false);
+  /** The content stays until the leave animation ends: without it the dialog shrinks first. */
+  protected readonly mounted = signal(false);
   protected readonly view = signal<View>('days');
   /** The month the header shows (its first day); the grid's paging comes back here. */
   protected readonly shown = signal(new Date());
   /** The month the grid is told to show: changed by the header only (`defaultDate`). */
   protected readonly target = signal(new Date());
-  /** The date picked in the open picker, saved on compact by «Сохранить». */
+  /** The date picked in the open picker, kept by «ОК». */
   protected readonly draft = signal<Date | null>(null);
 
   protected readonly monthNames = Array.from({ length: 12 }, (_, month) => {
@@ -512,20 +477,13 @@ export class DateField extends TypedField<Date> {
   }
 
   protected toggle(): void {
-    if (this.docked()) {
-      this.docked.set(false);
-      return;
-    }
     const value = this.value();
     const start = value ?? new Date();
     this.draft.set(value);
     this.show(firstOf(start.getFullYear(), start.getMonth()));
     this.view.set(this.month() ? 'months' : 'days');
-    if (this.compact()) {
-      this.dialogOpen.set(true);
-    } else {
-      this.docked.set(true);
-    }
+    this.mounted.set(true);
+    this.dialogOpen.set(true);
   }
 
   /** Pages the header and the grid by months (12 — a year). */
@@ -562,7 +520,7 @@ export class DateField extends TypedField<Date> {
     this.pick(firstOf(date.getFullYear(), date.getMonth(), date.getDate()));
   }
 
-  /** «Сохранить» of the picker on compact. */
+  /** «ОК»: the picked date becomes the value. */
   protected save(): void {
     const draft = this.draft();
     if (draft !== null) {
@@ -576,10 +534,9 @@ export class DateField extends TypedField<Date> {
     this.opener().nativeElement.focus();
   }
 
-  /** The docked picker opens on the chosen day (or today) or the chosen month. */
+  /** The picker opens on the chosen day (or today) or the chosen month (M3). */
   protected focusChoice(): void {
     const panel = this.panel();
-    this.alignToEnd(panel);
     const day =
       panel?.querySelector<HTMLElement>('.p-datepicker-day-selected') ??
       panel?.querySelector<HTMLElement>('.p-datepicker-today > .p-datepicker-day') ??
@@ -588,16 +545,6 @@ export class DateField extends TypedField<Date> {
       panel?.querySelector<HTMLElement>('.tb-date-picker__item');
     if (day !== null && day !== undefined) {
       focusDay(day);
-    }
-  }
-
-  /** The overlay starts at the field's start; a picker wider than the field ends where the field does. */
-  private alignToEnd(panel: HTMLElement | null | undefined): void {
-    const overlay = panel?.closest<HTMLElement>('.p-overlay');
-    const field = this.opener().nativeElement.parentElement;
-    if (overlay && field) {
-      const end = field.getBoundingClientRect().right;
-      overlay.style.left = String(Math.max(end - overlay.offsetWidth, 8) + window.scrollX) + 'px';
     }
   }
 
@@ -618,15 +565,6 @@ export class DateField extends TypedField<Date> {
 
   private pick(date: Date): void {
     this.draft.set(date);
-    if (!this.compact()) {
-      this.choose(date);
-      this.closeDocked();
-    }
-  }
-
-  private closeDocked(): void {
-    this.docked.set(false);
-    this.closed();
   }
 
   private show(month: Date): void {
@@ -642,7 +580,7 @@ export class DateField extends TypedField<Date> {
     afterNextRender(run, { injector: this.injector });
   }
 
-  /** Shift+Page Up/Down, Shift+M / Shift+Y in the picker; Esc closes the docked one. */
+  /** Shift+Page Up/Down, Shift+M / Shift+Y in the picker (Esc is the dialog's). */
   private onKey(event: KeyboardEvent): void {
     const panel = this.panel();
     if (panel === null || !(event.target instanceof HTMLElement) || !panel.contains(event.target)) {
@@ -658,9 +596,6 @@ export class DateField extends TypedField<Date> {
     } else if (event.shiftKey && event.code === 'KeyY') {
       this.stop(event);
       this.toggleView('years');
-    } else if (event.key === 'Escape' && this.docked()) {
-      this.stop(event);
-      this.closeDocked();
     }
   }
 

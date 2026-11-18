@@ -131,22 +131,22 @@ public class NotificationService {
         }
         NoticeText text = notice.text(users.language(notice.recipientId()));
         notify(notice.id(), notice.recipientId(), NotificationKind.valueOf(notice.kind()), text.title(), text.body(),
-                notice.link(), notice.subject(),
-                notice.joinUrl() == null ? null : new JoinLink(notice.joinUrl(), text.roomBody()));
+                notice.link(), notice.subject(), notice.joinUrl());
     }
 
     /**
      * In messengers the links go as buttons, not in the text: «Подключиться» to the video room ({@code join}),
-     * «Открыть» to the portal page ({@code link}), then the buttons of the bot's actions.
+     * «Открыть» to the portal page ({@code link}), then the buttons of the bot's actions. The inbox and messengers
+     * show the same text.
      */
     private InboxNotification notify(UUID id, UUID recipientId, NotificationKind kind, String title,
-            @Nullable String body, @Nullable String link, @Nullable ChatSubject subject, @Nullable JoinLink join) {
+            @Nullable String body, @Nullable String link, @Nullable ChatSubject subject, @Nullable String join) {
         Instant now = clock.instant();
         InboxNotification notification = InboxNotification.create(id, recipientId, kind, title, body, link, now);
         inbox.insert(notification);
         Preferences settings = preferences.find(recipientId).orElse(Preferences.DEFAULT);
         if (mayUseMessengers(recipientId) && settings.sendsToMessengers(kind)) {
-            String text = truncate(notification.messengerText(join == null ? notification.body() : join.body()));
+            String text = truncate(notification.messengerText());
             List<OutgoingButton> linkButtons = linkButtons(recipientId, link, join);
             Instant notBefore = settings.deliverAt(now, zone());
             for (ChannelLink channelLink : links.findByRecipient(recipientId)) {
@@ -174,11 +174,11 @@ public class NotificationService {
     }
 
     /** «Подключиться» to the room and «Открыть» the portal page (when the portal address is known). */
-    private List<OutgoingButton> linkButtons(UUID recipientId, @Nullable String link, @Nullable JoinLink join) {
+    private List<OutgoingButton> linkButtons(UUID recipientId, @Nullable String link, @Nullable String join) {
         NotificationMessages t = NotificationMessages.of(users.language(recipientId));
         List<OutgoingButton> buttons = new ArrayList<>();
         if (join != null) {
-            buttons.add(new OutgoingButton(t.join(), null, join.url()));
+            buttons.add(new OutgoingButton(t.join(), null, join));
         }
         if (link != null) {
             portal.link(link).ifPresent(url -> buttons.add(new OutgoingButton(t.open(), null, url)));

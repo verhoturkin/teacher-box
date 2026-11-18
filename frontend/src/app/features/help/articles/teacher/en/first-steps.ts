@@ -21,7 +21,7 @@ AI provider: “Settings” → “AI”.
 
 You already chose the default lesson price during setup. To give one student a different price, open their “Profile” tab.
 
-The “Getting started” checklist under “To do” on your home page tracks these steps and keeps completed ones ticked.
+The “Getting started” checklist under the task cards on your home page tracks these steps and keeps completed ones ticked.
 
 ## Your Today page
 
@@ -29,9 +29,14 @@ Your next lesson appears first, with its time, duration, topic, boards and “St
 lesson is running. Before and during a lesson, the card shows a countdown or the time remaining. After it ends, the next lesson appears automatically.
 
 - **Lessons today** lists the day’s lessons and their status, with the next one highlighted.
-- **To do** brings together lessons awaiting an outcome, student requests, submissions to review and outstanding balances. Choose “Completed” or \
-“Missed” to record an outcome; for groups, record attendance. Long lists show a count of additional items.
-- **The monthly summary** shows payments received this month and outstanding balances.
+- **Mark lessons** lists past lessons awaiting an outcome, with student requests to move or cancel a lesson below them. Choose “Completed” or \
+“Missed” in the row to record an outcome; for groups, record attendance.
+- **Review submissions** lists work waiting for your review. Choose “Review” to open it.
+
+Each card has its own count and disappears when there is nothing in it; when both are clear, you will see “Nothing urgent”. Long lists show a \
+count of additional items.
+
+- **The monthly summary** shows payments received this month, the total outstanding and how many students owe. See “Payments” for who they are.
 - **Week** summarises completed lessons, absences, assignments set and work submitted on time, from Monday to Sunday.
 
 Use “Create” in the sidebar for common actions. On a phone, the + button on Today offers the same choices; other sections have their own action \

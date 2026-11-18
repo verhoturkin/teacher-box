@@ -17,7 +17,7 @@ Times when your teacher is unavailable are marked “Busy”. Below the date fie
 or type any time yourself. If the time is taken, a hint says so. \
 The portal will tell you if your suggested time is unavailable.
 
-Type the date and time (for example “17.11.2026”, “14:30” or “1430”) or pick them: the calendar opens under the field, and the clock icon opens a dial.
+Type the date and time (for example “17.11.2026”, “14:30” or “1430”) or pick them: the calendar icon opens a calendar in a dialog, and the clock icon opens a dial.
 
 Your teacher will receive the request and you will be notified of their response. Check its status in “My requests”. Until your teacher responds, you \
 can withdraw it with “Withdraw” or “Withdraw request”.

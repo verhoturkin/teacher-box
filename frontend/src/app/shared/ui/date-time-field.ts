@@ -79,7 +79,7 @@ export class DateTimeField implements ControlValueAccessor, Validator {
 
   /** The `id` of the date input; the time input gets `<inputId>-time`. */
   readonly inputId = input.required<string>();
-  /** The label of the date field and the headline of its picker. */
+  /** The label of the date field; screen readers hear it on its picker. */
   readonly label = input.required<string>();
   readonly minDate = input<Date | null>(null);
   /** The minutes the dial snaps to. */

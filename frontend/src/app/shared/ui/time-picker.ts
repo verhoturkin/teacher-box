@@ -85,9 +85,10 @@ const MINUTE_MARKS = Array.from({ length: 12 }, (_, index) =>
       kind="alert"
       [visible]="visible()"
       (visibleChange)="visible.set($event)"
+      (gone)="mounted.set(false)"
       [headline]="view() === 'dial' ? t.pick : t.enter"
     >
-      @if (visible()) {
+      @if (mounted()) {
         <div class="tb-time-picker" [class.tb-time-picker--input]="view() === 'input'">
           @if (view() === 'dial') {
             <div class="tb-time-picker__time">
@@ -393,6 +394,8 @@ export class TimePicker {
   readonly picked = output<string>();
 
   protected readonly visible = signal(false);
+  /** The content stays until the leave animation ends: without it the dialog shrinks first. */
+  protected readonly mounted = signal(false);
   protected readonly view = signal<TimeView>('dial');
   protected readonly unit = signal<Unit>('hour');
   protected readonly hour = signal(0);
@@ -427,6 +430,7 @@ export class TimePicker {
     this.unit.set('hour');
     this.view.set(this.short() ? 'input' : lastView);
     this.syncText();
+    this.mounted.set(true);
     this.visible.set(true);
   }
 

@@ -12,7 +12,9 @@ so `core/` imports no feature.
   the content carry the gutter, so the scrollbar sits at the sheet's edge. The tabs are
   `tb-tabs--fixed` at every width.
 - **Tabs:** the teacher has Inbox and Sent; the student has the inbox only. Inbox: unread items
-  (titles emphasized, no dots), «show more», then the folded read ones. Marking read is a tick on a
+  (titles emphasized, no dots; a tap anywhere on a row with a link opens it, marks it read and
+  closes the sheet, the title stays its keyboard button; a row without a link is not interactive),
+  «show more», then the folded read ones. Marking read is a tick on a
   computer and a swipe on a phone (no tick there). Sent: a line of explanation with the new-message
   dialog, then the sent messages.
 - **Addresses:** `?notifications=inbox|sent` opens the sheet on any page and is dropped

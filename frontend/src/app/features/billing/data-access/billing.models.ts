@@ -124,23 +124,12 @@ export interface RecordPaymentRequest {
   readonly comment: string | null;
 }
 
-/** A student who owes money; `balance` is negative. */
-export interface Debtor {
-  readonly studentId: string;
-  readonly displayName: string;
-  /** Address of the student's photo; `null`: the initials. */
-  readonly avatar: string | null;
-  readonly balance: number;
-}
-
 /** Mirrors `BillingSummary`: finances at a glance. */
 export interface BillingSummary {
   readonly currency: string;
   readonly totalDebt: number;
   /** Number of students with a negative balance. */
   readonly debtors: number;
-  /** The largest debts first. */
-  readonly topDebtors: Debtor[];
   /** Valid payments dated in the current month. */
   readonly income: number;
   /** `yyyy-MM`. */

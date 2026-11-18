@@ -108,9 +108,11 @@ publications written before 0.29.0; nothing listens to them since ADR-0061.
 `ScheduleNotices` listens to the module's events synchronously (`@EventListener`, in the
 transaction that published them) and publishes `shared.notice.NoticeRequested` for each recipient:
 the texts in every language (`ScheduleNoticeTexts`, formats `ScheduleNoticeFormats`), a kind of
-`ScheduleNoticeKind`, the link (`/cabinet/schedule`, `/teacher/schedule`, a shared summary —
-`/cabinet/schedule?lesson=<id>`, a lost calendar — `/teacher/settings?open=calendar`), the bot
-subject of an unanswered request (`LessonChangeRequested.CHAT_SUBJECT`) and the room of a reminder.
+`ScheduleNoticeKind`, the link (`/cabinet/schedule`, `/teacher/schedule`, a shared summary and a
+student's reminder — `/cabinet/schedule?lesson=<id>`, a lost calendar —
+`/teacher/settings?open=calendar`), the bot subject of an unanswered request
+(`LessonChangeRequested.CHAT_SUBJECT`) and the room of a reminder (`joinUrl`: the «Подключиться»
+button in messengers; the text has no address — 429.1).
 `notifications` picks the recipient's language and delivers. The texts are compared with what
 `notifications` wrote before (`notices/schedule.txt`, `ScheduleNoticesGoldenTest`).
 

@@ -3,7 +3,6 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AuthService } from '@core/auth/auth.service';
 import { hostElement, readableText } from '@testing/dom';
-import { aMyBoard } from '@testing/boards-fixtures';
 import { myBillingSummary } from '@testing/billing-fixtures';
 import { myHomeworkSummary, myTask } from '@testing/homework-fixtures';
 import { channel } from '@testing/notification-fixtures';
@@ -15,7 +14,6 @@ import {
   dropFreeTimes,
 } from '@testing/schedule-fixtures';
 import { screenWidth, testProviders } from '@testing/setup';
-import { aMyTextbook } from '@testing/textbooks-fixtures';
 import { StudentHome } from './student-home';
 
 describe('StudentHome', () => {
@@ -38,24 +36,17 @@ describe('StudentHome', () => {
     fixture.detectChanges();
   }
 
-  /** The boards are asked by the feed and by the chips of the lesson. */
-  function flushMaterials(boards: unknown[], textbooks: unknown[]): void {
+  /** The boards are asked by the chips of the lesson. */
+  function flushMaterials(): void {
     backend.match('/api/me/schedule/settings').forEach((request: TestRequest) => {
       request.flush(scheduleSettings());
     });
     backend.match('/api/me/boards').forEach((request: TestRequest) => {
-      request.flush(boards);
+      request.flush([]);
     });
-    backend.expectOne('/api/me/textbooks').flush(textbooks);
   }
 
   afterEach(() => {
-    // the covers are asked once the cards are drawn
-    backend
-      .match((request) => request.url.endsWith('/cover'))
-      .forEach((request) => {
-        request.flush(new Blob());
-      });
     fixture.destroy();
     dropFreeTimes(backend);
     backend.verify();
@@ -63,7 +54,7 @@ describe('StudentHome', () => {
     vi.useRealTimers();
   });
 
-  it('collects the feed: the lesson, homework, the paid lessons and the materials', async () => {
+  it('collects the feed: the lesson, homework, the paid lessons, no materials', async () => {
     render();
     backend.expectOne('/api/me/channels').flush([channel()]);
     backend
@@ -89,10 +80,7 @@ describe('StudentHome', () => {
         reviewedAt: '2026-09-20T10:00:00Z',
       }),
     ]);
-    flushMaterials(
-      [aMyBoard({ title: 'Доска по алгебре' })],
-      [aMyTextbook({ title: 'Алгебра 9' })],
-    );
+    flushMaterials();
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -109,10 +97,8 @@ describe('StudentHome', () => {
     expect(text).toContain('Проценты');
     expect(text).toContain('Принято · 5');
     expect(text).toContain('3 занятия');
-    expect(text).toContain('Материалы урока');
-    expect(text).toContain('Доска по алгебре');
-    expect(text).toContain('Алгебра 9');
-    // two columns: the lesson and homework first, the payments and the materials on the right
+    expect(text).not.toContain('Материалы урока');
+    // two columns: the lesson and homework first, the payments on the right
     expect(host.querySelector('.tb-feed--2')).not.toBeNull();
     expect(
       Array.from(host.querySelectorAll('.tb-feed__lead > *'), (el) => el.tagName.toLowerCase()),
@@ -132,7 +118,7 @@ describe('StudentHome', () => {
     expect(readableText(host)).toContain('Ближайших занятий нет');
   });
 
-  it('is one column on a phone and hides the materials when there are none', async () => {
+  it('is one column on a phone', async () => {
     render(390);
     backend.expectOne('/api/me/channels').flush([channel()]);
     backend
@@ -142,7 +128,7 @@ describe('StudentHome', () => {
     backend.expectOne('/api/me/billing/summary').flush(myBillingSummary({ balance: 0 }));
     fixture.detectChanges();
     backend.expectOne('/api/me/homework').flush([]);
-    flushMaterials([], []);
+    flushMaterials();
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -150,7 +136,6 @@ describe('StudentHome', () => {
     const host = hostElement(fixture);
     expect(host.querySelector('.tb-feed--2')).toBeNull();
     expect(host.querySelector('tb-page-header [meta]')).toBeNull();
-    expect(host.querySelector<HTMLElement>('.tb-feed__materials')?.hidden).toBe(true);
     expect(readableText(host)).toContain('Открытых заданий нет');
   });
 
@@ -163,7 +148,7 @@ describe('StudentHome', () => {
       .expectOne('/api/me/schedule/summary')
       .flush(null, { status: 503, statusText: 'Unavailable' });
     fixture.detectChanges();
-    flushMaterials([], []);
+    flushMaterials();
     await fixture.whenStable();
 
     expect(readableText(hostElement(fixture))).toContain(

@@ -7,15 +7,17 @@ Routes under `/cabinet`. Boards: `docs/sketches/homework/` and `docs/sketches/se
 `features/home/student-home.ts`: two columns from expanded (1.8fr / 1fr, *ours*), one below in the
 same order. Lead: the [hero](today.md#nearest-lesson-hero), due tasks (`tb-my-deadlines-widget`),
 recently reviewed, welcome, messenger and push offers. Side: «paid lessons» (`tb-my-balance-widget`:
-balance ÷ price, a bar full at 8 lessons — *ours*; a debt or no price shows the balance alone) and
-one board and one textbook, hidden when none. No FAB.
+balance ÷ price, a bar full at 8 lessons — *ours*; a debt or no price shows the balance alone). The
+lesson materials are not on the home page: they stay in the lesson and in «Материалы». No FAB.
 
 ## Schedule
 
 `schedule/student/my-schedule-page.ts`: the teacher's grid ([schedule](schedule.md)) with a
 supporting pane — mini-month, upcoming lessons, requests, history and the calendar subscription;
 compact starts with the day agenda, and there the sections have no tonal block of their own: titles
-and list items stand on the page, the subscription is the plain outlined card. The history shows
+and list items stand on the page — the items are tonal (`surface-container`, not the white
+lowest container; the lowest one only on the wide tonal pane), the subscription is the plain
+outlined card. The history shows
 only the shared summary (no plan, no private note). The «lesson summary»
 notification opens `/cabinet/schedule?lesson=<id>`, the lesson's card.
 

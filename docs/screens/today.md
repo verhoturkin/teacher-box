@@ -7,10 +7,14 @@
   `today-lessons.ts`), queue (`todo-queue.ts`), figures (month + `week-figures.ts`, Monday–Sunday).
   Extra-large 3 columns (1.25 : 1 : 0.8), large 2 (figures under the queue, lead spans both rows),
   otherwise 1; an empty stack hides.
-- **Queue:** four sources — unmarked lessons, requests, works to review, debts — at most 5 rows
-  each, then «more N». Compact (*ours*): one line per row; one action runs at once, two (an unmarked
-  one-student lesson) open a sheet with both.
-- **First-run steps** replace the queue until done or hidden: student, messenger, AI (`GET
+- **Queue:** two cards, each with its own count badge (M3 large badge, error): «Отметить занятия»
+  (unmarked lessons with «Проведено | Пропуск» in place, then the change requests — schedule work
+  too) and «Проверить работы» (the review queue). At most 5 rows per source, then «more N». A card
+  with nothing to do hides; when both are empty one compact empty state («Срочных дел нет») stands
+  instead (*ours*: not while the first-run steps show). No debt rows: the month card keeps the total
+  debt and the debtor count. Compact (*ours*): the same two cards in one column, one line per row;
+  one action runs at once, two (an unmarked one-student lesson) open a sheet with both.
+- **First-run steps** stand under the two cards until done or hidden: student, messenger, AI (`GET
   /api/teacher/ai/status` → `enabled`), lesson. Finished steps hide; the price belongs to the [setup
   wizard](settings.md#first-run-setup).
 - Today's lessons select the nearest unfinished one. The push offer (`tb-push-onboarding-card`,

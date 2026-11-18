@@ -133,7 +133,6 @@ export function billingSummary(overrides: Partial<BillingSummary> = {}): Billing
     currency: 'RUB',
     totalDebt: 0,
     debtors: 0,
-    topDebtors: [],
     income: 0,
     month: '2026-09',
     priceSet: true,

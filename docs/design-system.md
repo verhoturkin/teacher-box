@@ -77,8 +77,8 @@ elevation with their values; springs —
   card, a dialog and a pane alike, the rows between 4 px — the list is a component with its own
   shape, and a 4 px outer corner hid the group.
 - **Elevation** — surfaces differ by tone, not shadow (**M3**). Shadows `--tb-elevation-1..3` only
-  on floating elements: bottom sheet (1), FAB, menus, dropdowns, date picker, floating toolbars (2),
-  dialogs (3).
+  on floating elements: bottom sheet (1), FAB, menus, dropdowns, floating toolbars (2), dialogs
+  and the date and time pickers (3).
 - **State layers** — the content colour over the element: hover `--tb-state-hover` 8 %, focus and
   pressed 10 %; disabled — container 12 %, content 38 % (`--tb-state-disabled*`) (**M3**). Hover
   only on things that act (§10). Ripple is on. Custom controls use `color-mix` with `--tb-state-*`,
@@ -99,8 +99,10 @@ elevation with their values; springs —
     on default effects; it closes at once with the scrim, fading while it collapses by a quarter
     towards its top edge (both on fast effects), its scrim fading on default effects and going
     last — PrimeNG replays a dialog's leave if its scrim ends first; with less motion it only
-    fades. Menus, dropdowns
-    and the date picker take no scale either (**M3**: scale implies an elevation change; they
+    fades. A picker (`tb-time-picker`, `tb-date-field`) keeps its content mounted until the
+    dialog's `gone` output: removing it on `visible = false` shrinks the window (506 → 162 px
+    for the time picker) in the first frame of the leave. Menus and dropdowns
+    take no scale either (**M3**: scale implies an elevation change; they
     expand along an axis, away from the anchor — videos of transition patterns 7-2): a clip
     with the surface's corners opens from the anchored edge, down under the field or up above
     it, on the standard fast spring with fast effects, the rows fade in from the anchor 30 ms
@@ -720,38 +722,41 @@ Gallery: [`/gallery/fields`](../frontend/src/app/features/gallery/fields/) (chip
   («ДД.ММ.ГГГГ», «ЧЧ:ММ») is the placeholder, shown while the label is small; no clear button.
 - **Date** `tb-date-field` (`@shared/ui`, value `Date`, `minDate` / `maxDate`, a month mode) — the
   filled field with a trailing `calendar_month` icon button «Выбрать дату».
-  - **Docked picker** (medium and up, **M3**) just below the field, in the overlay of dropdowns
-    (§1 «Motion»), aligned to the field's end (*ours*, user choice), above the field only when
-    there is no room below.
-    **M3:** container `surface-container-high`; days 40 dp round (`DateContainer*`), on-surface;
-    today 1 dp primary outline and primary text; selected primary / on-primary; outside-month days
-    on-surface-variant; header month and year menu buttons, each with previous / next icon buttons
+  - **Modal date picker** (**M3**) on every window size, the same shell as the time picker
+    (430.1, user choice, ADR-0067: one picker pattern for date and time; M3 recommends docked
+    from medium and full screen on compact): `tb-dialog kind="alert"` — a dialog over the scrim,
+    centred, CornerExtraLarge, `--tb-elevation-3`, the enter / leave motion of dialogs (§1
+    «Motion»); a click on the scrim, Esc or «Отмена» close without change, «ОК» keeps the picked
+    date (picking a day or a month only marks it).
+    **M3:** container `surface-container-high`, width 360 dp (not scaled with the window); the
+    supporting text «Выберите дату» / «Выберите месяц» on-surface-variant over the headline — the
+    picked date («пн, 17 авг.», a month field «август 2026 г.») on-surface — and a divider
+    outline-variant; days 40 dp round (`DateContainer*`), on-surface; today 1 dp primary outline
+    and primary text; selected primary / on-primary; outside-month days on-surface-variant;
+    header month and year menu buttons, each with previous / next icon buttons
     (on-surface-variant); the month or year list **replaces** the grid; weekdays on-surface, not
-    focusable; hover 8 %, focus and pressed 10 % state layers; disabled days 38 % on-surface; the
-    size never scales with the window.
-  - *Ours* (M3 publishes no docked measurements and no picker type roles): width 360 dp (the
-    modal's `ContainerWidth`), 12 dp padding, `--tb-shape-lg` like other dropdowns,
-    `--tb-elevation-2` (M3 drops the shadow, but on a dialog the `surface-container-high`
-    container would merge into it); rows 48 dp: header ‹ month ▾ › ‹ year ▾ › (icon buttons
-    40 dp in 48 dp targets, the two menu buttons share the rest; the month is short, «сент.»),
-    weekdays, days in 48×48 dp cells; a divider outline-variant under the header while a list is
-    open; type — menu buttons, list items Label Large, weekdays and days Body Large. Lists: the
-    12 months, the years from `minDate` (or this year − 10) to `maxDate` (or + 10), 48 dp items,
-    opened at the selected one; the selected item and a pressed menu button are **primary** /
-    on-primary (user choice, 424.2). Picking a day sets the value and closes (no «Отмена» /
-    «ОК»); Esc or a click outside closes without change. The day grid is PrimeNG
-    `p-datepicker [inline]` with its header hidden; our header shows a month through
-    `defaultDate`, paging in the grid comes back through `onMonthChange`. The month mode (monthly
-    report) has no grid: the year header and the month list.
-  - **Compact:** the full-screen dialog (§11 «Full-screen dialog»): «✕», the field label as the
-    headline, «Сохранить». Under the header (**M3** modal date picker) the supporting text «Выберите
-    дату» (Label Large, on-surface-variant) and the chosen date (Headline Large, on-surface) — type
-    *ours* —, a divider outline-variant, then the same 360 dp body centred (**M3**: not scaled). No
-    edit icon (*ours*): typing stays in the field itself.
+    focusable; hover 8 %, focus and pressed 10 % state layers; disabled days 38 % on-surface;
+    «Отмена» / «ОК» text buttons (primary) at the end.
+  - *Ours* (M3 publishes no date picker measurements and no picker type roles): 12 dp around the
+    day grid, 24 dp to the supporting text, the headline and the actions; on a phone narrower than
+    376 px the dialog keeps 8 px from the window edges and the 7 grid columns share the width
+    (below 48 dp); no edit icon — typing stays in the field itself; type — supporting text Label
+    Medium (as the time picker's headline), the picked date Headline Large, menu buttons and list
+    items Label Large, weekdays and days Body Large. Rows 48 dp: header ‹ month ▾ › ‹ year ▾ ›
+    (icon buttons 40 dp in 48 dp targets, the two menu buttons share the rest; the month is
+    short, «сент.»), weekdays, days in 48 dp cells; a divider outline-variant under the header
+    while a list is open. Lists: the 12 months, the years from `minDate` (or this year − 10) to
+    `maxDate` (or + 10), 48 dp items, opened at the selected one; the selected item and a pressed
+    menu button are **primary** / on-primary (user choice, 424.2). The picker body is a group
+    named by the field's label. The day grid is PrimeNG `p-datepicker [inline]` with its header
+    hidden; our header shows a month through `defaultDate`, paging in the grid comes back through
+    `onMonthChange`. The month mode (monthly report) has no grid: the year header and the month
+    list.
   - **Keyboard** (**M3**): the picker opens on the selected day (or today); arrows move by a day,
     Page Up/Down a month, Shift+Page Up/Down a year, Home/End the first and last day, Shift+M /
-    Shift+Y open the month and year lists, Enter picks and closes, Esc closes; focus returns to the
-    icon button. The previous / next tooltips name their keys («Следующий месяц (Page Down)»).
+    Shift+Y open the month and year lists, Enter picks, Esc closes without change; focus returns
+    to the icon button. The previous / next tooltips name their keys («Следующий месяц (Page
+    Down)»).
   - **Screen readers** (**M3**): the grid is `role="grid"`, weekdays column headers (full name in
     `abbr`, *ours*); each day is named by its full date («понедельник, 17 августа 2026 г.»); the
     menu buttons say what they choose and the current value, with `aria-expanded`.

@@ -323,3 +323,22 @@
     margin-inline-end: auto;
   }
 }
+
+/*
+ * The M3 modal date picker (`tb-date-field`, design-system §9 «Date»), the same shell as the time
+ * picker: M3 360 dp wide, 12 dp around the day grid, the headline and the actions 24 dp in (the
+ * chosen date adds the other 12 dp). Ours: 8 dp from the window edges on a narrow phone.
+ */
+.p-dialog.tb-d:has(.tb-date-picker) {
+  width: 22.5rem;
+  max-width: calc(100vw - var(--tb-space-4));
+
+  .tb-d__headline {
+    color: var(--p-md-on-surface-variant);
+    font: var(--tb-type-label-m);
+  }
+
+  .p-dialog-content {
+    padding-inline: var(--tb-space-3);
+  }
+}

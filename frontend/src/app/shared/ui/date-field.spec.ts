@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { DatePicker } from 'primeng/datepicker';
-import { Overlay } from 'primeng/overlay';
+import { Dialog } from 'primeng/dialog';
 import { buttonByText, hostElement, requireElement, typeInto } from '@testing/dom';
 import { screenWidth, testProviders } from '@testing/setup';
 import { DateField } from './date-field';
@@ -42,7 +42,7 @@ interface Rendered {
   opener: HTMLButtonElement;
   detect: () => Promise<void>;
   grid: () => DatePicker;
-  /** Opens the docked picker; jsdom plays no motion, so the overlay is told it is shown. */
+  /** Opens the modal picker; jsdom plays no motion, so the dialog is told it is shown. */
   open: () => Promise<void>;
 }
 
@@ -70,10 +70,8 @@ async function render(width = 1024, setup?: (host: Host) => void): Promise<Rende
         fixture.detectChanges();
         await fixture.whenStable();
       }
-      fixture.debugElement
-        .query(By.directive(Overlay))
-        .injector.get(Overlay)
-        .onEnter.emit({ element: document.body });
+      fixture.debugElement.query(By.directive(Dialog)).injector.get(Dialog).onShow.emit({});
+      await fixture.whenStable();
     },
   };
 }
@@ -152,10 +150,14 @@ describe('DateField', () => {
     expect(component.date.valid).toBe(true);
   });
 
-  it('opens the docked picker on the chosen day, names each day in full and picks one', async () => {
+  it('opens the modal picker on the chosen day, names each day in full, keeps one by «ОК»', async () => {
     const { component, input, opener, detect, open } = await render();
     await open();
     expect(opener.getAttribute('aria-expanded')).toBe('true');
+    expect(document.body.querySelector('.p-dialog')?.getAttribute('role')).toBe('alertdialog');
+    expect(document.body.querySelector('.tb-d__headline')?.textContent).toBe('Выберите дату');
+    expect(document.body.querySelector('.tb-date-field__chosen')?.textContent).toBe('пн, 17 авг.');
+    expect(panel().getAttribute('aria-label')).toBe('Дата');
     expect(document.activeElement).toBe(day('2026-7-17'));
     expect(panel().querySelector('.p-datepicker-header')).not.toBeNull();
     expect(buttonByText(panel(), 'Месяц: август').getAttribute('aria-expanded')).toBe('false');
@@ -164,10 +166,27 @@ describe('DateField', () => {
 
     day('2026-7-20').click();
     await detect();
+    expect(component.date.value).toEqual(new Date(2026, 7, 17));
+    expect(document.body.querySelector('.tb-date-field__chosen')?.textContent).toBe('чт, 20 авг.');
+    buttonByText(document.body, 'ОК').click();
+    await detect();
     expect(component.date.value).toEqual(new Date(2026, 7, 20));
     expect(input.value).toBe('20.08.2026');
     expect(document.body.querySelector('.tb-date-picker')).toBeNull();
+    expect(opener.getAttribute('aria-expanded')).toBe('false');
     expect(document.activeElement).toBe(opener);
+  });
+
+  it('is the same modal picker on compact', async () => {
+    const { component, detect, open } = await render(400);
+    await open();
+    expect(document.body.querySelector('.p-dialog')?.classList).not.toContain('tb-d--full');
+    expect(document.activeElement).toBe(day('2026-7-17'));
+    day('2026-7-21').click();
+    await detect();
+    buttonByText(document.body, 'ОК').click();
+    await detect();
+    expect(component.date.value).toEqual(new Date(2026, 7, 21));
   });
 
   it('pages months and years with the header and the year keys', async () => {
@@ -225,17 +244,34 @@ describe('DateField', () => {
     expect(component.date.value).toEqual(new Date(2026, 7, 17));
   });
 
-  it('closes on Esc without a change', async () => {
-    const { component, opener, detect, open } = await render();
+  it('closes on Esc and on «Отмена» without a change', async () => {
+    const { component, detect, open } = await render();
     await open();
+    day('2026-7-20').click();
+    await detect();
     key(day('2026-7-17'), { key: 'Escape' });
     await detect();
     expect(document.body.querySelector('.tb-date-picker')).toBeNull();
     expect(component.date.value).toEqual(new Date(2026, 7, 17));
-    opener.click();
+
+    await open();
+    day('2026-7-20').click();
     await detect();
-    opener.click();
+    buttonByText(document.body, 'Отмена').click();
     await detect();
+    expect(document.body.querySelector('.tb-date-picker')).toBeNull();
+    expect(component.date.value).toEqual(new Date(2026, 7, 17));
+  });
+
+  it('keeps no date by «ОК» when none is picked', async () => {
+    const { component, detect, open } = await render(1024, (page) => {
+      page.date.setValue(null);
+    });
+    await open();
+    expect(document.body.querySelector('.tb-date-field__chosen')?.textContent).toBe('');
+    buttonByText(document.body, 'ОК').click();
+    await detect();
+    expect(component.date.value).toBeNull();
     expect(document.body.querySelector('.tb-date-picker')).toBeNull();
   });
 
@@ -255,33 +291,18 @@ describe('DateField', () => {
     await open();
     expect(panel().querySelector('.p-datepicker')).toBeNull();
     expect(panel().textContent).not.toContain('Месяц:');
+    expect(document.body.querySelector('.tb-d__headline')?.textContent).toBe('Выберите месяц');
     expect(document.activeElement?.textContent.trim()).toBe('Сентябрь');
     buttonByText(panel(), 'Предыдущий год (Shift+Page Up)').click();
     await detect();
     expect(panel().querySelector('[aria-current="true"]')).toBeNull();
     buttonByText(panel(), 'Май').click();
     await detect();
+    expect(document.body.querySelector('.tb-date-field__chosen')?.textContent).toBe('май 2025 г.');
+    buttonByText(document.body, 'ОК').click();
+    await detect();
     expect(component.date.value).toEqual(new Date(2025, 4, 1));
     expect(input.value).toBe('05.2025');
-  });
-
-  it('is a full-screen dialog on compact: the day is saved by «Сохранить»', async () => {
-    const { component, input, opener, detect } = await render(400);
-    opener.click();
-    await detect();
-    expect(document.body.querySelector('.tb-d__headline')?.textContent).toBe('Дата');
-    expect(document.body.querySelector('.tb-date-field__support')?.textContent).toBe(
-      'Выберите дату',
-    );
-    expect(document.body.querySelector('.tb-date-field__chosen')?.textContent).toBe('пн, 17 авг.');
-    day('2026-7-21').click();
-    await detect();
-    expect(component.date.value).toEqual(new Date(2026, 7, 17));
-    expect(document.body.querySelector('.tb-date-field__chosen')?.textContent).toBe('пт, 21 авг.');
-    buttonByText(document.body, 'Сохранить').click();
-    await detect();
-    expect(component.date.value).toEqual(new Date(2026, 7, 21));
-    expect(input.value).toBe('21.08.2026');
   });
 
   it('is disabled with its form control', async () => {

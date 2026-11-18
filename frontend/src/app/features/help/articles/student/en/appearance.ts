@@ -20,8 +20,8 @@ The portal works in your phone’s browser. To give it its own app icon in Chrom
 The bottom bar contains “Home”, “Schedule”, “Homework”, “Materials” and “Payments”. Open ☰ at the top left for Help and your account. On a computer, \
 these sections are in the sidebar.
 
-Your home page starts with your next lesson and “Join lesson”. Below it you will find assignments to submit, recent feedback, your lesson credit and \
-materials. On wider screens these appear in two columns.
+Your home page starts with your next lesson and “Join lesson”. Below it you will find assignments to submit, recent feedback, and your lesson \
+credit. On wider screens these appear in two columns.
 
 Select a list entry to open its details. Forms with several fields open full screen, with the main action at the top right. If you close a form with \
 unsaved changes, choose “Discard” to lose them or “Cancel” to keep editing.

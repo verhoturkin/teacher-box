@@ -25,7 +25,7 @@ On a phone, the schedule starts in agenda view with a week strip and the selecte
 Drag a lesson to suggest a new time, then choose “Reschedule” to save or “Undo reschedule” to put it back. The portal warns about conflicts before \
 saving. In month view, selecting an empty day opens a lesson form at 10:00 with the default duration; adjust both as needed.
 
-**Date and time.** Type the date and time (for example “17.11.2026”, “14:30” or “1430”) or pick them: the calendar opens under the field, and the clock icon opens a dial.
+**Date and time.** Type the date and time (for example “17.11.2026”, “14:30” or “1430”) or pick them: the calendar icon opens a calendar in a dialog, and the clock icon opens a dial.
 
 ## Time off
 

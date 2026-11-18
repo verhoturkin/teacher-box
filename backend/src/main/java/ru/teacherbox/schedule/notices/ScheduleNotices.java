@@ -226,14 +226,8 @@ class ScheduleNotices {
             if (event.topic() != null) {
                 body.add(t.topic(event.topic()) + ".");
             }
-            String title = t.soonForStudent(formats.lessonTime(event.startsAt(), language));
-            if (room == null) {
-                return new NoticeText(title, join(body));
-            }
-            String withoutAddress = join(body);
-            body.add(t.meetingLink(room));
-            return new NoticeText(title, join(body), withoutAddress);
-        });
+            return new NoticeText(t.soonForStudent(formats.lessonTime(event.startsAt(), language)), join(body));
+        }, STUDENT_LINK + "?lesson=" + event.lessonId());
         if (event.lastBefore()) {
             events.publishEvent(NoticeRequested.of(users.teacherId(), ScheduleNoticeKind.SCHEDULE_REMINDER,
                     language -> {
@@ -241,10 +235,9 @@ class ScheduleNotices {
                         String with = groupName != null ? t.groupOf(groupName)
                                 : event.studentIds().isEmpty() ? t.aStudent()
                                         : name(event.studentIds().getFirst(), t);
-                        String in = t.in(formats.duration(event.before(), language));
                         return new NoticeText(
                                 t.soonForTeacher(with, formats.lessonTime(event.startsAt(), language)),
-                                room == null ? in : in + " " + t.meetingLink(room), room == null ? null : in);
+                                t.in(formats.duration(event.before(), language)));
                     }, TEACHER_LINK).withRoom(room));
         }
     }
@@ -271,9 +264,14 @@ class ScheduleNotices {
     /** Each student gets the notice, written in every language. */
     private void notifyStudents(Collection<UUID> studentIds, ScheduleNoticeKind kind, @Nullable String room,
             BiFunction<ScheduleNoticeTexts, Language, NoticeText> write) {
+        notifyStudents(studentIds, kind, room, write, STUDENT_LINK);
+    }
+
+    private void notifyStudents(Collection<UUID> studentIds, ScheduleNoticeKind kind, @Nullable String room,
+            BiFunction<ScheduleNoticeTexts, Language, NoticeText> write, String link) {
         for (UUID studentId : studentIds) {
             events.publishEvent(NoticeRequested.of(studentId, kind,
-                    language -> write.apply(ScheduleNoticeTexts.of(language), language), STUDENT_LINK)
+                    language -> write.apply(ScheduleNoticeTexts.of(language), language), link)
                     .withRoom(room));
         }
     }

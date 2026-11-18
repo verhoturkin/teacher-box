@@ -38,7 +38,8 @@ Consumes `identity::api` events `StudentDeactivated`, `GroupChanged`, `GroupArch
 synchronously (`@EventListener`, in the transaction that published it) and publishes
 `shared.notice.NoticeRequested` for every recipient: kind `MEETING_LINK`, the texts in every
 language (`MeetingNoticeTexts`), link `/cabinet/schedule`, the room address as `joinUrl` — in
-messengers it is the «Подключиться» button and the text carries no address.
+messengers it is the «Подключиться» button; the text carries no address, neither in messengers nor
+in the inbox (429.1).
 
 ## Data, REST, bot
 
