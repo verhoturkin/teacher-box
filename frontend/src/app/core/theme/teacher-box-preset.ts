@@ -422,10 +422,10 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
     disabledOpacity: '0.38',
     // M3 outlined text field: 56 px high (24 px line, 15 px padding, 1 px outline), ADR-0022
     formField: {
-      paddingX: '1rem',
+      paddingX: 'var(--tb-space-4)',
       paddingY: '0.9375rem',
-      sm: { fontSize: '0.875rem', paddingX: '0.75rem', paddingY: '0.375rem' },
-      lg: { fontSize: '1.125rem', paddingX: '1rem', paddingY: '0.875rem' },
+      sm: { fontSize: '0.875rem', paddingX: 'var(--tb-space-3)', paddingY: 'var(--tb-space-1-5)' },
+      lg: { fontSize: '1.125rem', paddingX: 'var(--tb-space-4)', paddingY: '0.875rem' },
       borderRadius: '{border.radius.xs}',
       focusRing: {
         width: '1px',
@@ -437,22 +437,43 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
     },
     // M3 Expressive menus (ADR-0022): the items are rounded tiles 2 px apart inside the container
     list: {
-      padding: '0.25rem',
-      gap: '2px',
-      header: { padding: '0.75rem 1rem 0.5rem' },
-      option: { padding: '0.625rem 1rem', borderRadius: '{border.radius.xs}' },
-      optionGroup: { padding: '0.75rem 1rem 0.5rem', fontWeight: '500' },
+      padding: 'var(--tb-space-1)',
+      gap: 'var(--tb-space-half)',
+      header: { padding: 'var(--tb-space-3) var(--tb-space-4) var(--tb-space-2)' },
+      option: {
+        padding: 'var(--tb-space-2-5) var(--tb-space-4)',
+        borderRadius: '{border.radius.xs}',
+      },
+      optionGroup: {
+        padding: 'var(--tb-space-3) var(--tb-space-4) var(--tb-space-2)',
+        fontWeight: '500',
+      },
     },
     content: { borderRadius: '{border.radius.md}' },
     navigation: {
-      list: { padding: '0.25rem', gap: '2px' },
-      item: { padding: '0.625rem 1rem', borderRadius: '{border.radius.xs}', gap: '0.75rem' },
-      submenuLabel: { padding: '0.75rem 1rem 0.5rem', fontWeight: '500' },
+      list: { padding: 'var(--tb-space-1)', gap: 'var(--tb-space-half)' },
+      item: {
+        padding: 'var(--tb-space-2-5) var(--tb-space-4)',
+        borderRadius: '{border.radius.xs}',
+        gap: 'var(--tb-space-3)',
+      },
+      submenuLabel: {
+        padding: 'var(--tb-space-3) var(--tb-space-4) var(--tb-space-2)',
+        fontWeight: '500',
+      },
     },
     overlay: {
       select: { borderRadius: '{border.radius.lg}', shadow: ELEVATION_2 },
-      popover: { borderRadius: '{border.radius.lg}', padding: '1rem', shadow: ELEVATION_2 },
-      modal: { borderRadius: '{border.radius.xl}', padding: '1.5rem', shadow: ELEVATION_3 },
+      popover: {
+        borderRadius: '{border.radius.lg}',
+        padding: 'var(--tb-space-4)',
+        shadow: ELEVATION_2,
+      },
+      modal: {
+        borderRadius: '{border.radius.xl}',
+        padding: 'var(--tb-space-6)',
+        shadow: ELEVATION_3,
+      },
       navigation: { shadow: ELEVATION_2 },
     },
   },
@@ -461,8 +482,8 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
       root: {
         borderRadius: BUTTON_SHAPE,
         roundedBorderRadius: BUTTON_SHAPE,
-        gap: '0.5rem',
-        paddingX: '1rem',
+        gap: 'var(--tb-space-2)',
+        paddingX: 'var(--tb-space-4)',
         // 9 + the line of 20 + 9 + the border of 1 on both sides: 40 px (M3, ADR-0018)
         paddingY: '0.5625rem',
         iconOnlyWidth: '2.5rem',
@@ -516,10 +537,13 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
     },
     dialog: {
       root: { background: '{overlay.modal.background}', borderColor: 'transparent' },
-      header: { padding: '1.5rem 1.5rem 1rem', gap: '0.5rem' },
+      header: {
+        padding: 'var(--tb-space-6) var(--tb-space-6) var(--tb-space-4)',
+        gap: 'var(--tb-space-2)',
+      },
       title: { fontSize: '1.5rem', fontWeight: '500' },
-      content: { padding: '0 1.5rem' },
-      footer: { padding: '1.5rem', gap: '0.5rem' },
+      content: { padding: '0 var(--tb-space-6)' },
+      footer: { padding: 'var(--tb-space-6)', gap: 'var(--tb-space-2)' },
     },
     drawer: {
       root: { background: '{content.background}', borderColor: 'transparent', shadow: ELEVATION_1 },
@@ -532,8 +556,12 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
         borderRadius: '{border.radius.lg}',
         shadow: ELEVATION_2,
       },
-      list: { padding: '0.25rem', gap: '2px' },
-      item: { padding: '0.625rem 1rem', borderRadius: '{border.radius.xs}', gap: '0.75rem' },
+      list: { padding: 'var(--tb-space-1)', gap: 'var(--tb-space-half)' },
+      item: {
+        padding: 'var(--tb-space-2-5) var(--tb-space-4)',
+        borderRadius: '{border.radius.xs}',
+        gap: 'var(--tb-space-3)',
+      },
       separator: { borderColor: '{md.outline.variant}' },
       /*
        * M3 menu: the corner is 4 px, the first and the last item (and the selected one) have 12 px. Our
@@ -557,8 +585,8 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
       root: {
         fontSize: '0.75rem',
         fontWeight: '600',
-        padding: '0 0.5rem',
-        gap: '0.375rem',
+        padding: '0 var(--tb-space-2)',
+        gap: 'var(--tb-space-1-5)',
         borderRadius: '{border.radius.sm}',
         roundedBorderRadius: PILL,
       },
@@ -566,7 +594,7 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
     },
     toast: {
       root: { width: '24rem', borderRadius: '{border.radius.xs}', borderWidth: '0' },
-      content: { padding: '0.875rem 1rem', gap: '0.75rem' },
+      content: { padding: 'var(--tb-space-3) var(--tb-space-4)', gap: 'var(--tb-space-3)' },
       summary: { fontWeight: '500', fontSize: '0.875rem' },
       detail: { fontWeight: '400', fontSize: '0.875rem' },
       colorScheme: { light: snackbar(), dark: snackbar() },
@@ -581,7 +609,7 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
         width: '3.25rem',
         height: '2rem',
         borderRadius: PILL,
-        gap: '0.375rem',
+        gap: 'var(--tb-space-1-5)',
         borderWidth: '2px',
         borderColor: '{md.outline}',
         hoverBorderColor: '{md.on.surface.variant}',
@@ -739,7 +767,7 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
     },
     tooltip: {
       root: {
-        padding: '0.25rem 0.5rem',
+        padding: 'var(--tb-space-1) var(--tb-space-2)',
         borderRadius: '{border.radius.xs}',
         shadow: 'none',
         maxWidth: '15rem',
@@ -775,7 +803,7 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
     badge: {
       root: {
         borderRadius: PILL,
-        padding: '0 0.25rem',
+        padding: '0 var(--tb-space-1)',
         fontSize: '0.6875rem',
         fontWeight: '500',
         minWidth: '1rem',
@@ -833,7 +861,11 @@ export const TeacherBoxPreset = definePreset(AuraBase, {
       },
     },
     chip: {
-      root: { borderRadius: '{border.radius.sm}', paddingX: '0.75rem', paddingY: '0.375rem' },
+      root: {
+        borderRadius: '{border.radius.sm}',
+        paddingX: 'var(--tb-space-3)',
+        paddingY: 'var(--tb-space-1-5)',
+      },
       colorScheme: { light: CHIP_SCHEME, dark: CHIP_SCHEME },
     },
     inputnumber: {

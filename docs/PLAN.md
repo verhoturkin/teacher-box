@@ -204,7 +204,7 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
 
 ### 446. PrimeNG preset on tokens
 
-- [ ] 446.1 *simple* F — `core/theme/teacher-box-preset.ts`: spacing literals → `var(--tb-space-*)`
+- [x] 446.1 *simple* F — `core/theme/teacher-box-preset.ts`: spacing literals → `var(--tb-space-*)`
   / `{…}`; toast content `0.875rem` → 12 or 16; card body → `--tb-surface-padding` (447.1).
 
 ### 447. One surface padding
