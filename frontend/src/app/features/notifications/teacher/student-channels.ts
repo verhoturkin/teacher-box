@@ -29,6 +29,18 @@ const ALL_CHANNELS: readonly ChannelType[] = ['TELEGRAM', 'VK', 'MAX'];
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display: block' },
   styles: `
+    /* one row; on a phone the button does not fit beside the text and drops under it */
+    .tb-student-channels__none {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--tb-space-2) var(--tb-space-3);
+
+      .tb-list__text {
+        flex: 1 1 auto;
+      }
+    }
+
     .tb-student-channels__remind {
       display: block;
       margin-top: var(--tb-space-3);
@@ -39,7 +51,7 @@ const ALL_CHANNELS: readonly ChannelType[] = ['TELEGRAM', 'VK', 'MAX'];
       @if (messengers(); as messengers) {
         <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
           @if (messengers.channels.length === 0) {
-            <li>
+            <li class="tb-student-channels__none">
               <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-share"></i></span>
               <div class="tb-list__text">
                 <span class="tb-list__title">{{ t.noMessenger }}</span>

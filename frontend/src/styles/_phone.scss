@@ -34,6 +34,14 @@
     }
   }
 
+  /* a pane header holding only such a title-less page header takes no room: 8 px under the bar come from the
+     scroll area (434.1) */
+  .tb-pane__header:has(> .tb-page-header:only-child):not(
+      :has(.tb-page-header__back, [meta], .tb-actions > :not(.tb-page-fab))
+    ) {
+    padding: 0;
+  }
+
   .tb-page-header {
     gap: var(--tb-space-3);
 
