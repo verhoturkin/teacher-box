@@ -271,7 +271,7 @@ export const ARCHIVE_NAME = 'teacher-box-diagnostics.zip';
     .tb-feed {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
-      gap: var(--tb-space-6) var(--tb-space-8);
+      gap: var(--tb-gap-section);
       align-items: start;
     }
 

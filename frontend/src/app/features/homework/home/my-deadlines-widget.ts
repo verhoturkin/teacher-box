@@ -100,13 +100,13 @@ const RECENT = 3;
     :host {
       display: flex;
       flex-direction: column;
-      gap: var(--tb-space-6);
+      gap: var(--tb-gap-section);
     }
 
     .tb-hw-section {
       display: flex;
       flex-direction: column;
-      gap: var(--tb-space-3);
+      gap: var(--tb-gap-title);
     }
 
     .tb-hw-section__title {

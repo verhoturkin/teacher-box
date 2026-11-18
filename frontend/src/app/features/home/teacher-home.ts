@@ -112,7 +112,7 @@ function dayTitle(date: Date): string {
   styles: `
     .tb-feed {
       display: grid;
-      gap: var(--tb-space-6) var(--tb-space-8);
+      gap: var(--tb-gap-section);
       align-items: start;
     }
 

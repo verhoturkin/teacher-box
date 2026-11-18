@@ -218,7 +218,7 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
 - [x] 448.1 *simple* F — homework: `assignment-page.ts`, `my-task-page.ts`, `quiz-player.ts`,
   `editor-task.ts`, `question-editor.ts`, `question-section.ts`, `video-list.ts`,
   `video-section.ts`, `assignments-page.ts` — own gaps → `.tb-stack` / tokens.
-- [ ] 448.2 *simple* F — homes and status: `home/teacher-home.ts`, `home/student-home.ts`,
+- [x] 448.2 *simple* F — homes and status: `home/teacher-home.ts`, `home/student-home.ts`,
   `admin/status/status-page.ts`, `my-deadlines-widget.ts`.
 - [ ] 448.3 *simple* F — settings and integrations: `settings/settings-page.ts`,
   `portal-settings-card.ts`, `admin/settings/settings-page.ts`, `google-calendar-panel.ts`,
