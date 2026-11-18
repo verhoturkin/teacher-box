@@ -151,8 +151,11 @@ lesson without a call; wide screen: lesson live).
 
 ### 440. Release 0.57.0
 
-- [ ] 440.1 *simple* — browser check of the changed screens (phone and desktop, both roles),
-  small defects fixed, the rest listed.
+- [x] 440.1 *simple* — browser check of the changed screens (phone and desktop, both roles),
+  small defects fixed, the rest listed. Fixed: 24 px (not 8) under the top bar on phone pages with
+  a title-less header; the messenger link button overlapped its text on a phone. *Not checked:
+  student cabinet (433.1, no student login), Today with a running lesson (board link, join,
+  «Позвать»: no such data), empty off-time (436.1), tab ripple on touch.*
 - [ ] 440.2 *simple* — skill `release`: help articles checked, E2E spec of the changed journeys,
   CHANGELOG, version bump, plan archived.
 
