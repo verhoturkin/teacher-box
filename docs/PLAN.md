@@ -86,7 +86,7 @@ once, after 455.
   `GuardianUnlinked` carries `deactivated`; a parent of only deactivated children is also refused at
   refresh and on the invite page; accepting a parent's invite sends the teacher no notice yet
   (notices — 453.1); `StudentAdminService` and the new service share `InviteIssuer`.*
-- [ ] 450.2 *complex* B — `platform/security/PlatformSecurityAutoConfiguration`: `/api/guardian/**`
+- [x] 450.2 *complex* B — `platform/security/PlatformSecurityAutoConfiguration`: `/api/guardian/**`
   → `GUARDIAN`; the guardian also reaches `/api/me`, `/api/me/password`, `/api/me/language`,
   `/api/me/avatar`, `/api/me/notifications/**`, `/api/me/channels/**`, `/api/me/push/**` (if it
   exists) and nothing else under `/api/me/**`; `/api/**` stays `TEACHER`/`STUDENT`. A matrix test
@@ -94,6 +94,11 @@ once, after 455.
   roles that pass the URL rules against a checked-in expectation, so a new endpoint without a
   guardian decision fails. Line in `backend/AGENTS.md`: every new student-data endpoint needs a
   guardian decision. Docs: `docs/modules/platform.md`.
+  *Done with these choices: `/api/me/push/**` exists (`PushController`) and is open to the parent;
+  `/api/me/profile` stays closed (renaming oneself is the student's own name, `User.renameSelf`);
+  the roles are computed with `WebInvocationPrivilegeEvaluator` (no handler is called), the
+  expectation is `backend/src/test/resources/security/endpoint-roles.txt` and the actual list is
+  written to `target/endpoint-roles.txt`; also a line in AGENTS.md §4.3.*
 
 ### 451. Guardian read endpoints
 

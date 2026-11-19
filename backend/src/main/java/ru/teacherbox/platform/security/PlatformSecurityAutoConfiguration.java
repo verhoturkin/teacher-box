@@ -38,8 +38,10 @@ import ru.teacherbox.shared.settings.LiveProperties;
  * Stateless API security based on HS256-signed access tokens.
  *
  * <p>URL conventions: {@code /api/auth/**} and {@code /api/public/**} are public, {@code /api/admin/**}
- * requires the administrator, {@code /api/teacher/**} the teacher, the rest of {@code /api/**} the teacher or
- * a student (the administrator only reaches their own account); everything else (SPA assets) is public.
+ * requires the administrator, {@code /api/teacher/**} the teacher, {@code /api/guardian/**} a guardian, the rest
+ * of {@code /api/**} the teacher or a student (the administrator only reaches their own account, a guardian also
+ * their photo, notices and messengers); everything else (SPA assets) is public. {@code EndpointRolesTest} keeps
+ * the roles of every endpoint against a checked-in list.
  */
 @AutoConfiguration(after = PlatformCoreAutoConfiguration.class, beforeName = {
         "org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration",
@@ -90,6 +92,16 @@ public class PlatformSecurityAutoConfiguration {
     static final String PERMISSIONS_POLICY =
             "camera=(self), microphone=(self), display-capture=(self), geolocation=()";
 
+    /** Every signed-in user, the administrator included, reaches their own account here. */
+    static final String[] OWN_ACCOUNT = {"/api/me", "/api/me/password", "/api/me/language"};
+
+    /**
+     * The part of {@code /api/me/**} a guardian shares with the teacher and students (ADR-0069); the rest of the
+     * cabinet is the student's own data, which a guardian reads through {@code /api/guardian/**}.
+     */
+    static final String[] GUARDIAN_CABINET = {"/api/me/avatar", "/api/me/notifications", "/api/me/notifications/**",
+            "/api/me/channels", "/api/me/channels/**", "/api/me/push/**"};
+
     @Bean
     SecurityFilterChain apiSecurityFilterChain(HttpSecurity http, Environment environment, Clock clock)
             throws Exception {
@@ -117,10 +129,12 @@ public class PlatformSecurityAutoConfiguration {
                         .requestMatchers(HttpMethod.POST, "/api/client-errors").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/teacher/**").hasRole("TEACHER")
-                        // A parent reads their children's data here only (ADR-0069); 450.2 adds the /api/me part.
+                        // A parent reads their children's data here only (ADR-0069).
                         .requestMatchers("/api/guardian/**").hasRole("GUARDIAN")
                         // The administrator has only their own account; the rest is for the teacher and students.
-                        .requestMatchers("/api/me", "/api/me/password", "/api/me/language").authenticated()
+                        .requestMatchers(OWN_ACCOUNT).authenticated()
+                        // Of the cabinet a parent has only their own account, photo, notices and messengers.
+                        .requestMatchers(GUARDIAN_CABINET).hasAnyRole("TEACHER", "STUDENT", "GUARDIAN")
                         .requestMatchers("/api/**").hasAnyRole("TEACHER", "STUDENT")
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
                         .requestMatchers("/actuator/**").denyAll()

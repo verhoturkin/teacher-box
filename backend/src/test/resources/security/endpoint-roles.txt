@@ -1,0 +1,306 @@
+# Roles that pass the URL rules of PlatformSecurityAutoConfiguration, per endpoint (ADR-0069).
+# Checked by EndpointRolesTest: "<method> <pattern> <PUBLIC | NOBODY | roles>", sorted.
+# A new endpoint fails the test until it is listed here. One with a student's data answers
+# "and a guardian?": the parent reads it under /api/guardian/students/{studentId}/**, never /api/me/**.
+# After an intended change copy target/endpoint-roles.txt over this file (keep this header).
+* /error PUBLIC
+DELETE /api/admin/loggers/{name} ADMIN
+DELETE /api/me/avatar GUARDIAN STUDENT TEACHER
+DELETE /api/me/channels/{channel} GUARDIAN STUDENT TEACHER
+DELETE /api/me/push/subscriptions/{id} GUARDIAN STUDENT TEACHER
+DELETE /api/me/schedule/feed STUDENT TEACHER
+DELETE /api/me/schedule/requests/{requestId} STUDENT TEACHER
+DELETE /api/teacher/ai/prompts/{promptId} TEACHER
+DELETE /api/teacher/ai/providers/{id} TEACHER
+DELETE /api/teacher/ai/providers/{id}/models/{modelId} TEACHER
+DELETE /api/teacher/ai/system-prompts/{feature} TEACHER
+DELETE /api/teacher/backups/google TEACHER
+DELETE /api/teacher/backups/{name} TEACHER
+DELETE /api/teacher/billing/payments/{paymentId}/receipt TEACHER
+DELETE /api/teacher/boards/{id} TEACHER
+DELETE /api/teacher/boards/{id}/backups/{backupId} TEACHER
+DELETE /api/teacher/boards/{id}/preview TEACHER
+DELETE /api/teacher/homework/assignments/{assignmentId} TEACHER
+DELETE /api/teacher/homework/assignments/{assignmentId}/attachments/{attachmentId} TEACHER
+DELETE /api/teacher/homework/assignments/{assignmentId}/textbooks/{textbookId} TEACHER
+DELETE /api/teacher/meetings/calls/{ownerId}/participants/{userId} TEACHER
+DELETE /api/teacher/meetings/rooms/{ownerId} TEACHER
+DELETE /api/teacher/notifications/channels/{channel} TEACHER
+DELETE /api/teacher/portal/logo TEACHER
+DELETE /api/teacher/schedule/google TEACHER
+DELETE /api/teacher/schedule/lessons/{lessonId} TEACHER
+DELETE /api/teacher/schedule/lessons/{lessonId}/outcome TEACHER
+DELETE /api/teacher/schedule/off-times/{offTimeId} TEACHER
+DELETE /api/teacher/students/{id}/guardians/{guardianId} TEACHER
+DELETE /api/teacher/tags/{id} TEACHER
+DELETE /api/teacher/textbooks/{id} TEACHER
+GET /api/admin/ai/providers ADMIN
+GET /api/admin/ai/requests ADMIN
+GET /api/admin/ai/status ADMIN
+GET /api/admin/ai/usage ADMIN
+GET /api/admin/backups ADMIN
+GET /api/admin/backups/google ADMIN
+GET /api/admin/backups/google/files ADMIN
+GET /api/admin/backups/restore ADMIN
+GET /api/admin/diagnostics ADMIN
+GET /api/admin/events ADMIN
+GET /api/admin/loggers ADMIN
+GET /api/admin/logs ADMIN
+GET /api/admin/notifications/deliveries ADMIN
+GET /api/admin/notifications/push ADMIN
+GET /api/admin/portal ADMIN
+GET /api/admin/settings ADMIN
+GET /api/admin/status ADMIN
+GET /api/auth/invites/{token} PUBLIC
+GET /api/boards/library STUDENT TEACHER
+GET /api/boards/{id} STUDENT TEACHER
+GET /api/boards/{id}/files/{fileId} STUDENT TEACHER
+GET /api/boards/{id}/preview STUDENT TEACHER
+GET /api/boards/{id}/scene STUDENT TEACHER
+GET /api/guardian/children GUARDIAN
+GET /api/me ADMIN GUARDIAN STUDENT TEACHER
+GET /api/me/billing STUDENT TEACHER
+GET /api/me/billing/payments/{paymentId}/receipt STUDENT TEACHER
+GET /api/me/billing/summary STUDENT TEACHER
+GET /api/me/boards STUDENT TEACHER
+GET /api/me/channels GUARDIAN STUDENT TEACHER
+GET /api/me/guardians STUDENT TEACHER
+GET /api/me/homework STUDENT TEACHER
+GET /api/me/homework/attachments/{attachmentId} STUDENT TEACHER
+GET /api/me/homework/limits STUDENT TEACHER
+GET /api/me/homework/summary STUDENT TEACHER
+GET /api/me/homework/tasks/{taskId} STUDENT TEACHER
+GET /api/me/homework/tasks/{taskId}/quiz STUDENT TEACHER
+GET /api/me/homework/tasks/{taskId}/textbooks/{textbookId} STUDENT TEACHER
+GET /api/me/meetings/calls STUDENT TEACHER
+GET /api/me/meetings/rooms STUDENT TEACHER
+GET /api/me/notifications GUARDIAN STUDENT TEACHER
+GET /api/me/notifications/preferences GUARDIAN STUDENT TEACHER
+GET /api/me/notifications/unread-count GUARDIAN STUDENT TEACHER
+GET /api/me/push/key GUARDIAN STUDENT TEACHER
+GET /api/me/push/subscriptions GUARDIAN STUDENT TEACHER
+GET /api/me/schedule/busy STUDENT TEACHER
+GET /api/me/schedule/feed STUDENT TEACHER
+GET /api/me/schedule/free-times STUDENT TEACHER
+GET /api/me/schedule/history STUDENT TEACHER
+GET /api/me/schedule/lessons STUDENT TEACHER
+GET /api/me/schedule/lessons/{lessonId} STUDENT TEACHER
+GET /api/me/schedule/requests STUDENT TEACHER
+GET /api/me/schedule/settings STUDENT TEACHER
+GET /api/me/schedule/summary STUDENT TEACHER
+GET /api/me/textbooks STUDENT TEACHER
+GET /api/me/textbooks/{id}/cover STUDENT TEACHER
+GET /api/me/textbooks/{id}/file STUDENT TEACHER
+GET /api/public/avatars/{key} PUBLIC
+GET /api/public/backups/google/callback PUBLIC
+GET /api/public/portal PUBLIC
+GET /api/public/portal/logo PUBLIC
+GET /api/public/portal/manifest.webmanifest PUBLIC
+GET /api/public/schedule/google/callback PUBLIC
+GET /api/public/schedule/{token}.ics PUBLIC
+GET /api/teacher/ai/prompts TEACHER
+GET /api/teacher/ai/providers TEACHER
+GET /api/teacher/ai/providers/{id}/models/available TEACHER
+GET /api/teacher/ai/requests TEACHER
+GET /api/teacher/ai/settings TEACHER
+GET /api/teacher/ai/status TEACHER
+GET /api/teacher/ai/system-prompts TEACHER
+GET /api/teacher/ai/usage TEACHER
+GET /api/teacher/backups TEACHER
+GET /api/teacher/backups/google TEACHER
+GET /api/teacher/backups/google/files TEACHER
+GET /api/teacher/backups/restore TEACHER
+GET /api/teacher/backups/{name} TEACHER
+GET /api/teacher/billing/currency TEACHER
+GET /api/teacher/billing/groups TEACHER
+GET /api/teacher/billing/operations TEACHER
+GET /api/teacher/billing/operations.csv TEACHER
+GET /api/teacher/billing/overview TEACHER
+GET /api/teacher/billing/payments/{paymentId}/receipt TEACHER
+GET /api/teacher/billing/reports/monthly TEACHER
+GET /api/teacher/billing/students/{studentId} TEACHER
+GET /api/teacher/billing/summary TEACHER
+GET /api/teacher/boards TEACHER
+GET /api/teacher/boards/{id}/backups TEACHER
+GET /api/teacher/groups TEACHER
+GET /api/teacher/groups/{id} TEACHER
+GET /api/teacher/guardians TEACHER
+GET /api/teacher/homework/assignments TEACHER
+GET /api/teacher/homework/assignments/{assignmentId} TEACHER
+GET /api/teacher/homework/assignments/{assignmentId}/quiz/stats TEACHER
+GET /api/teacher/homework/attachments/{attachmentId} TEACHER
+GET /api/teacher/homework/journal TEACHER
+GET /api/teacher/homework/review-queue TEACHER
+GET /api/teacher/homework/settings TEACHER
+GET /api/teacher/homework/students/{studentId}/tasks TEACHER
+GET /api/teacher/homework/summary TEACHER
+GET /api/teacher/homework/tasks/{taskId} TEACHER
+GET /api/teacher/meetings/calls TEACHER
+GET /api/teacher/meetings/rooms TEACHER
+GET /api/teacher/notifications/bot TEACHER
+GET /api/teacher/notifications/broadcasts TEACHER
+GET /api/teacher/notifications/channels TEACHER
+GET /api/teacher/notifications/status TEACHER
+GET /api/teacher/notifications/students TEACHER
+GET /api/teacher/notifications/students/{studentId} TEACHER
+GET /api/teacher/notifications/summary TEACHER
+GET /api/teacher/portal TEACHER
+GET /api/teacher/schedule/free-times TEACHER
+GET /api/teacher/schedule/google TEACHER
+GET /api/teacher/schedule/google/busy TEACHER
+GET /api/teacher/schedule/groups/{groupId}/history TEACHER
+GET /api/teacher/schedule/groups/{groupId}/upcoming TEACHER
+GET /api/teacher/schedule/lessons TEACHER
+GET /api/teacher/schedule/lessons/{lessonId} TEACHER
+GET /api/teacher/schedule/lessons/{lessonId}/following TEACHER
+GET /api/teacher/schedule/off-times TEACHER
+GET /api/teacher/schedule/off-times/periods TEACHER
+GET /api/teacher/schedule/requests TEACHER
+GET /api/teacher/schedule/settings TEACHER
+GET /api/teacher/schedule/students/{studentId}/history TEACHER
+GET /api/teacher/schedule/students/{studentId}/upcoming TEACHER
+GET /api/teacher/schedule/summary TEACHER
+GET /api/teacher/schedule/unmarked TEACHER
+GET /api/teacher/students TEACHER
+GET /api/teacher/students/{id} TEACHER
+GET /api/teacher/students/{id}/guardians TEACHER
+GET /api/teacher/tags TEACHER
+GET /api/teacher/textbooks TEACHER
+GET /api/teacher/textbooks/{id}/cover TEACHER
+GET /api/teacher/textbooks/{id}/file TEACHER
+GET /api/teacher/textbooks/{id}/pages/{page} TEACHER
+POST /api/admin/backups ADMIN
+POST /api/admin/backups/google/files/{id}/download ADMIN
+POST /api/admin/backups/google/uploads/{name} ADMIN
+POST /api/admin/backups/{name}/restore ADMIN
+POST /api/admin/events/resubmit ADMIN
+POST /api/admin/integrations/check ADMIN
+POST /api/admin/notifications/deliveries/retry ADMIN
+POST /api/auth/invites/{token}/accept PUBLIC
+POST /api/auth/login PUBLIC
+POST /api/auth/logout PUBLIC
+POST /api/auth/refresh PUBLIC
+POST /api/boards/{id}/live STUDENT TEACHER
+POST /api/client-errors PUBLIC
+POST /api/me/channels/{channel}/link-code GUARDIAN STUDENT TEACHER
+POST /api/me/homework/tasks/{taskId}/quiz/attempts STUDENT TEACHER
+POST /api/me/homework/tasks/{taskId}/quiz/attempts/{attemptId}/submit STUDENT TEACHER
+POST /api/me/homework/tasks/{taskId}/submissions STUDENT TEACHER
+POST /api/me/notifications/read-all GUARDIAN STUDENT TEACHER
+POST /api/me/notifications/{id}/read GUARDIAN STUDENT TEACHER
+POST /api/me/password ADMIN GUARDIAN STUDENT TEACHER
+POST /api/me/push/subscriptions GUARDIAN STUDENT TEACHER
+POST /api/me/schedule/feed STUDENT TEACHER
+POST /api/me/schedule/lessons/{lessonId}/requests STUDENT TEACHER
+POST /api/meetings/calls/{ownerId}/token STUDENT TEACHER
+POST /api/teacher/ai/homework-draft TEACHER
+POST /api/teacher/ai/lesson-summary TEACHER
+POST /api/teacher/ai/prompts TEACHER
+POST /api/teacher/ai/providers TEACHER
+POST /api/teacher/ai/providers/check TEACHER
+POST /api/teacher/ai/providers/{id}/check TEACHER
+POST /api/teacher/ai/providers/{id}/models TEACHER
+POST /api/teacher/ai/quiz-draft TEACHER
+POST /api/teacher/ai/review-draft TEACHER
+POST /api/teacher/backups TEACHER
+POST /api/teacher/backups/google/authorize TEACHER
+POST /api/teacher/backups/google/files/{id}/download TEACHER
+POST /api/teacher/backups/google/uploads/{name} TEACHER
+POST /api/teacher/backups/{name}/restore TEACHER
+POST /api/teacher/billing/lessons TEACHER
+POST /api/teacher/billing/lessons/{lessonId}/cancel TEACHER
+POST /api/teacher/billing/payments TEACHER
+POST /api/teacher/billing/payments/{paymentId}/void TEACHER
+POST /api/teacher/boards TEACHER
+POST /api/teacher/boards/{id}/backups TEACHER
+POST /api/teacher/boards/{id}/backups/{backupId}/restore TEACHER
+POST /api/teacher/groups TEACHER
+POST /api/teacher/groups/{id}/archive TEACHER
+POST /api/teacher/groups/{id}/restore TEACHER
+POST /api/teacher/homework/assignments TEACHER
+POST /api/teacher/homework/assignments/{assignmentId}/attachments TEACHER
+POST /api/teacher/homework/assignments/{assignmentId}/copy TEACHER
+POST /api/teacher/homework/assignments/{assignmentId}/students TEACHER
+POST /api/teacher/homework/assignments/{assignmentId}/students/{studentId}/remind TEACHER
+POST /api/teacher/homework/assignments/{assignmentId}/textbooks TEACHER
+POST /api/teacher/homework/tasks/{taskId}/review TEACHER
+POST /api/teacher/homework/videos/captions TEACHER
+POST /api/teacher/homework/videos/transcript TEACHER
+POST /api/teacher/meetings/calls/{ownerId}/participants/{userId}/mute TEACHER
+POST /api/teacher/meetings/calls/{ownerId}/summon TEACHER
+POST /api/teacher/meetings/rooms/{ownerId}/share TEACHER
+POST /api/teacher/notifications/broadcast TEACHER
+POST /api/teacher/notifications/channels/{channel}/test TEACHER
+POST /api/teacher/notifications/remind-connect TEACHER
+POST /api/teacher/portal/setup TEACHER
+POST /api/teacher/reset TEACHER
+POST /api/teacher/schedule/google/authorize TEACHER
+POST /api/teacher/schedule/google/sync TEACHER
+POST /api/teacher/schedule/lessons TEACHER
+POST /api/teacher/schedule/lessons/{lessonId}/cancel TEACHER
+POST /api/teacher/schedule/lessons/{lessonId}/restore TEACHER
+POST /api/teacher/schedule/lessons/{lessonId}/summary/share TEACHER
+POST /api/teacher/schedule/off-times TEACHER
+POST /api/teacher/schedule/requests/{requestId}/approve TEACHER
+POST /api/teacher/schedule/requests/{requestId}/decline TEACHER
+POST /api/teacher/students TEACHER
+POST /api/teacher/students/{id}/deactivate TEACHER
+POST /api/teacher/students/{id}/guardians TEACHER
+POST /api/teacher/students/{id}/guardians/link TEACHER
+POST /api/teacher/students/{id}/guardians/{guardianId}/invite TEACHER
+POST /api/teacher/students/{id}/invite TEACHER
+POST /api/teacher/students/{id}/reactivate TEACHER
+POST /api/teacher/tags TEACHER
+POST /api/teacher/textbooks TEACHER
+PUT /api/admin/loggers/{name} ADMIN
+PUT /api/admin/portal ADMIN
+PUT /api/admin/settings ADMIN
+PUT /api/boards/library STUDENT TEACHER
+PUT /api/boards/{id}/files/{fileId} STUDENT TEACHER
+PUT /api/boards/{id}/scene STUDENT TEACHER
+PUT /api/me/avatar GUARDIAN STUDENT TEACHER
+PUT /api/me/channels/{channel} GUARDIAN STUDENT TEACHER
+PUT /api/me/homework/tasks/{taskId}/quiz/attempts/{attemptId}/answers/{questionId} STUDENT TEACHER
+PUT /api/me/language ADMIN GUARDIAN STUDENT TEACHER
+PUT /api/me/notifications/preferences GUARDIAN STUDENT TEACHER
+PUT /api/me/profile STUDENT TEACHER
+PUT /api/teacher/ai/prompts/{promptId} TEACHER
+PUT /api/teacher/ai/providers/{id} TEACHER
+PUT /api/teacher/ai/providers/{id}/models/order TEACHER
+PUT /api/teacher/ai/providers/{id}/models/{modelId} TEACHER
+PUT /api/teacher/ai/settings TEACHER
+PUT /api/teacher/ai/system-prompts/{feature} TEACHER
+PUT /api/teacher/backups/google/client TEACHER
+PUT /api/teacher/billing/currency TEACHER
+PUT /api/teacher/billing/default-price TEACHER
+PUT /api/teacher/billing/groups/{groupId}/price TEACHER
+PUT /api/teacher/billing/payments/{paymentId}/receipt TEACHER
+PUT /api/teacher/billing/students/{studentId}/price TEACHER
+PUT /api/teacher/boards/{id} TEACHER
+PUT /api/teacher/boards/{id}/preview TEACHER
+PUT /api/teacher/groups/{id} TEACHER
+PUT /api/teacher/homework/assignments/{assignmentId} TEACHER
+PUT /api/teacher/homework/assignments/{assignmentId}/board TEACHER
+PUT /api/teacher/homework/assignments/{assignmentId}/draft-students TEACHER
+PUT /api/teacher/homework/settings TEACHER
+PUT /api/teacher/homework/tasks/{taskId}/quiz/answers/{questionId} TEACHER
+PUT /api/teacher/meetings/rooms TEACHER
+PUT /api/teacher/notifications/bot TEACHER
+PUT /api/teacher/notifications/channels/{channel} TEACHER
+PUT /api/teacher/portal TEACHER
+PUT /api/teacher/portal/logo TEACHER
+PUT /api/teacher/profile TEACHER
+PUT /api/teacher/schedule/google/client TEACHER
+PUT /api/teacher/schedule/lessons/{lessonId} TEACHER
+PUT /api/teacher/schedule/lessons/{lessonId}/attendance TEACHER
+PUT /api/teacher/schedule/lessons/{lessonId}/outcome TEACHER
+PUT /api/teacher/schedule/lessons/{lessonId}/summary TEACHER
+PUT /api/teacher/schedule/off-times/{offTimeId} TEACHER
+PUT /api/teacher/schedule/settings TEACHER
+PUT /api/teacher/settings/time-zone TEACHER
+PUT /api/teacher/students/{id} TEACHER
+PUT /api/teacher/students/{id}/tags TEACHER
+PUT /api/teacher/tags/order TEACHER
+PUT /api/teacher/tags/{id} TEACHER
+PUT /api/teacher/textbooks/{id} TEACHER
+PUT /api/teacher/textbooks/{id}/file TEACHER
