@@ -55,8 +55,11 @@ memory by `BillingCurrencySetting` between changes, forgotten by the full reset)
 
 `/api/teacher/billing/**` (overview, summary (`?month=yyyy-MM`, default the current one; `weeks` — Monday–Sunday weeks clipped to the month with `income` and `charged`), students/{id}, lessons, payments, `payments/{id}/receipt` —
 `PUT` multipart `file`, `DELETE`, `GET`, prices, groups, reports/monthly, operations), `/api/me/billing` (+ `/summary`,
-`/payments/{id}/receipt`). Bot actions (`billing/chat`): record a payment, record a
-lesson, the student's payments.
+`/payments/{id}/receipt`); the guardian (`GuardianBillingController`, 451.2):
+`/api/guardian/students/{studentId}/billing` (+ `/summary`, `/payments/{id}/receipt`) — the same
+`BillingQueryService` and `ReceiptService.downloadOwn` after `GuardianAccess.require` (not their
+child → 404 `student.not-found`, a student or the teacher → 403). Bot actions (`billing/chat`):
+record a payment, record a lesson, the student's payments.
 
 ### Operations journal (0.25.0)
 

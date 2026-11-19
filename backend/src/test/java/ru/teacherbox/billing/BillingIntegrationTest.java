@@ -11,13 +11,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import ru.teacherbox.billing.application.DefaultLessonPrice;
+import ru.teacherbox.testing.FakeGuardians;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 
 /**
- * Billing module bootstrapped alone; the identity facades are replaced by {@link FakeUserDirectory} and
- * {@link FakeStudentGroups}.
+ * Billing module bootstrapped alone; the identity facades are replaced by {@link FakeUserDirectory},
+ * {@link FakeStudentGroups} and {@link FakeGuardians}.
  * All test classes using this annotation share one context and database.
  */
 @Target(ElementType.TYPE)
@@ -33,6 +34,11 @@ public @interface BillingIntegrationTest {
         @Bean
         FakeUserDirectory userDirectory() {
             return new FakeUserDirectory();
+        }
+
+        @Bean
+        FakeGuardians guardians(FakeUserDirectory userDirectory) {
+            return new FakeGuardians(userDirectory);
         }
 
         @Bean

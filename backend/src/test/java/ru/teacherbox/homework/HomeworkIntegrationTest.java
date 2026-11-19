@@ -11,13 +11,15 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.test.context.TestPropertySource;
+import ru.teacherbox.testing.FakeGuardians;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeTextbooks;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 
 /**
- * Homework module bootstrapped alone; the identity facade is replaced by {@link FakeUserDirectory}.
+ * Homework module bootstrapped alone; the identity facades are replaced by {@link FakeUserDirectory} and
+ * {@link FakeGuardians}.
  * All test classes using this annotation share one context and database.
  */
 @Target(ElementType.TYPE)
@@ -37,6 +39,11 @@ public @interface HomeworkIntegrationTest {
         @Bean
         FakeUserDirectory userDirectory() {
             return new FakeUserDirectory();
+        }
+
+        @Bean
+        FakeGuardians guardians(FakeUserDirectory userDirectory) {
+            return new FakeGuardians(userDirectory);
         }
 
         @Bean

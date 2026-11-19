@@ -60,6 +60,15 @@ GET /api/boards/{id}/preview STUDENT TEACHER
 GET /api/boards/{id}/scene STUDENT TEACHER
 GET /api/guardian/children GUARDIAN
 GET /api/guardian/schedule/feed GUARDIAN
+GET /api/guardian/students/{studentId}/billing GUARDIAN
+GET /api/guardian/students/{studentId}/billing/payments/{paymentId}/receipt GUARDIAN
+GET /api/guardian/students/{studentId}/billing/summary GUARDIAN
+GET /api/guardian/students/{studentId}/homework GUARDIAN
+GET /api/guardian/students/{studentId}/homework/attachments/{attachmentId} GUARDIAN
+GET /api/guardian/students/{studentId}/homework/summary GUARDIAN
+GET /api/guardian/students/{studentId}/homework/tasks/{taskId} GUARDIAN
+GET /api/guardian/students/{studentId}/homework/tasks/{taskId}/quiz GUARDIAN
+GET /api/guardian/students/{studentId}/homework/tasks/{taskId}/textbooks/{textbookId} GUARDIAN
 GET /api/guardian/students/{studentId}/schedule/history GUARDIAN
 GET /api/guardian/students/{studentId}/schedule/lessons GUARDIAN
 GET /api/guardian/students/{studentId}/schedule/lessons/{lessonId} GUARDIAN

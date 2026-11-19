@@ -64,7 +64,7 @@ class ReceiptController {
     }
 
     /** Always a download, with the type recognized on upload and sniffing disabled. */
-    private static ResponseEntity<Resource> response(ReceiptFile file) {
+    static ResponseEntity<Resource> response(ReceiptFile file) {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(file.receipt().contentType()))
                 .contentLength(file.receipt().size())

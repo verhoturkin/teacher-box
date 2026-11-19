@@ -115,12 +115,16 @@ once, after 455.
   «Маша, Петя — Занятие группы «…»»; the calendar is «Занятия детей — …»; module tests use
   `testing/FakeGuardians` (both SPIs) and `TestUsers.guardian`, reusable by 451.2; the feed is
   covered by `GuardianScheduleIntegrationTests`.*
-- [ ] 451.2 *complex* B — homework and billing: `homework/web/GuardianHomeworkController`
+- [x] 451.2 *complex* B — homework and billing: `homework/web/GuardianHomeworkController`
   `/api/guardian/students/{studentId}/homework` — summary, task, quiz (read-only review),
   attachments, bound textbook pages of `MyHomeworkController`; no submissions, no attempts.
   `billing/web/GuardianBillingController` `/api/guardian/students/{studentId}/billing` — summary,
   history, receipt of `MyBillingController` / `ReceiptController`. Tests as in 451.1. Docs:
   `docs/modules/homework.md`, `billing.md`.
+  *Done with these choices: the guardian also gets the task list (`GET …/homework`, the cabinet
+  needs it); the quiz is the plain `GET` of `QuizService.quiz` (what the child sees now, no
+  separate review view); no `limits`; the receipt reuses `ReceiptController.response`; module tests
+  — `GuardianHomeworkIntegrationTests`, `GuardianBillingIntegrationTests` with `FakeGuardians`.*
 - [ ] 451.3 *complex* B — payments hidden from the student: `billing` keeps a per-student flag
   «оплаты видит только родитель» (migration in `db/migration/billing/`, e.g. a column of
   `student_accounts`), effective only while the student has a guardian

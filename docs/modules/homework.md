@@ -157,6 +157,14 @@ zone, for the Today page, 239.1),
 `GET students/{studentId}/tasks` — the student's tasks as the student's list shows them, for the student card
 (237.1); an unknown student has none);
 `/api/me/homework/**` (tasks, submissions, attachments, `tasks/{taskId}/textbooks/{textbookId}`, summary, `limits`).
+The guardian (`GuardianHomeworkController`, 451.2): `/api/guardian/students/{studentId}/homework`
+(the list), `summary`, `tasks/{taskId}` (texts, answers, grade and the teacher's comment),
+`tasks/{taskId}/quiz` (the quiz as the child sees it now — the key only as its reveal rule allows),
+`attachments/{attachmentId}` (materials and the child's answer files),
+`tasks/{taskId}/textbooks/{textbookId}` — the same `StudentHomeworkService`,
+`HomeworkSummaryService` and `QuizService` as `/api/me/homework` after `GuardianAccess.require`
+(not their child → 404 `student.not-found`, a student or the teacher → 403). Read-only: no
+submissions, no quiz attempts, no `limits`.
 
 ## Frontend
 
