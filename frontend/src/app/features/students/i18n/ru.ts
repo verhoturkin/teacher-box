@@ -120,7 +120,6 @@ export const ru = {
   students: {
     title: 'Ученики',
     add: 'Добавить ученика',
-    writeAll: 'Написать всем',
     list: 'Список учеников',
     search: 'Поиск по имени',
     what: 'учеников',

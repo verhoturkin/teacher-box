@@ -246,6 +246,8 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
   was tried first and turned down): the current lesson across the page, then three equal columns
   (lessons, queue, figures; two on large); the expanded lesson row is bright again
   (primary-container, as the hero).
+- [x] 448.11 *simple* F — the Students page loses «Написать всем»: a message to students is
+  «Создать» → «Сообщение» (the FAB or the rail); help articles updated.
 
 ### 449. Release 0.57.0
 

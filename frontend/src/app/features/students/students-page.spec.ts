@@ -19,7 +19,6 @@ import { aGroup, aStudent, aTag } from '@testing/identity-fixtures';
 import { channel, studentMessengers } from '@testing/notification-fixtures';
 import { scheduledLesson } from '@testing/schedule-fixtures';
 import { screenWidth, testProviders } from '@testing/setup';
-import { NewMessageState } from '@core/notifications/new-message';
 import { PageDetail } from '@core/routing/page-detail';
 import type { ScheduledLesson } from '@features/schedule/parts';
 import { Student, StudentGroup, StudentTag } from '@features/identity/parts';
@@ -232,15 +231,6 @@ describe('StudentsPage', () => {
   describe('the list', () => {
     beforeEach(async () => {
       await create();
-    });
-
-    it('opens the message to every student from «Написать всем»', async () => {
-      await load([MARIA], []);
-      const state = TestBed.inject(NewMessageState);
-
-      buttonByText(host, 'Написать всем').click();
-
-      expect(state.open()).toBe(true);
     });
 
     it('lists the current students and groups in one list with a supporting line', async () => {
@@ -877,8 +867,6 @@ describe('StudentsPage', () => {
 
         expect(panes()).toEqual(['Список учеников']);
         expect(host.querySelector('tb-page-header [meta]') !== null).toBe(width >= 600);
-        // on a phone «Написать всем» is an icon button beside the FAB
-        expect(buttonByText(host, 'Написать всем').textContent.trim() === '').toBe(width < 600);
         // one pane: the window scrolls, not the list
         expect(host.querySelector('tb-pane')?.classList).not.toContain('tb-roster__pane');
       });

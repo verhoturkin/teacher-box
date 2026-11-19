@@ -28,7 +28,7 @@ Choose the app your students use; one is enough. Students connect their own acco
 
 ## Message students
 
-Choose “Message all” on the Students page, “Create” → “Message”, or open the bell → “Sent” → “Message students”. Write your message and choose all \
+Choose “Create” → “Message” on any page, or open the bell → “Sent” → “Message students”. Write your message and choose all \
 students, individual students or groups. The message form opens over your current page and the result appears in Sent.
 
 ## Notification preferences

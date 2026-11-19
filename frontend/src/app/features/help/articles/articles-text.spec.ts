@@ -530,6 +530,24 @@ const CALENDAR_SETUP: Readonly<Record<string, readonly (readonly [string, string
   ],
 };
 
+/** «Написать всем» left the Students page for «Создать» (448.11): [topic, baseline, now] of the notifications article. */
+const WRITE_ALL: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'notifications',
+      '«Написать всем» на странице «Ученики», «Создать» → «Сообщение» на любой странице',
+      '«Создать» → «Сообщение» на любой странице',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'notifications',
+      'Choose “Message all” on the Students page, “Create” → “Message”,',
+      'Choose “Create” → “Message” on any page,',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -623,6 +641,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(ONE_ROW[name] ?? []),
       ...(SUMMON[name] ?? []),
       ...(CALENDAR_SETUP[name] ?? []),
+      ...(WRITE_ALL[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];
