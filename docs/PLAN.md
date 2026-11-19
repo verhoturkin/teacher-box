@@ -35,7 +35,10 @@ child's behalf. Roadmap [05](roadmap/05-parent-access.md), both of its releases 
 Decisions (settled with the user 2026-11-19): one parent → several children, a student → at most
 two parents; the student sees «Родитель: Анна» in «Мой аккаунт» and hides nothing in v1; the
 parent sees all homework content, read-only; «Я оплатил» (invoices, 04) and the progress report
-(02) are not built yet — out of scope; messages parent ↔ teacher — out of scope.
+(02) are not built yet — out of scope; messages parent ↔ teacher — out of scope. Added the same
+day: the teacher can hide payments from a student who has a parent (the parent pays) — a switch
+on the student card; the student then sees no payments and gets no payment notices; an adult
+student without parents is unaffected (451.3).
 
 New ADR: 0069 «Родители (опекуны)» (450.1) — amends ADR-0003 (roles) and AGENTS.md §4.3. Changed
 specs: `docs/modules/identity.md`, `schedule.md`, `homework.md`, `billing.md`,
@@ -107,6 +110,20 @@ once, after 455.
   `billing/web/GuardianBillingController` `/api/guardian/students/{studentId}/billing` — summary,
   history, receipt of `MyBillingController` / `ReceiptController`. Tests as in 451.1. Docs:
   `docs/modules/homework.md`, `billing.md`.
+- [ ] 451.3 *complex* B — payments hidden from the student: `billing` keeps a per-student flag
+  «оплаты видит только родитель» (migration in `db/migration/billing/`, e.g. a column of
+  `student_accounts`), effective only while the student has a guardian
+  (`identity::api.Guardians`; the last guardian unlinked → the student sees payments again).
+  Teacher: `PUT /api/teacher/students/{id}/billing/visibility` (or a field of the existing
+  teacher billing student endpoint) and the flag in its read. Student: `/api/me/billing/**`
+  (`MyBillingController`, `ReceiptController`) → 404 while hidden; a cheap
+  `GET /api/me/billing/visible` (or a field of an existing `/api/me` read) so the frontend hides
+  the section; the student's bot `PaymentsChatAction.availableTo` is false; payment and debt
+  notices of `billing/notices` for a hidden student are marked guardians-only (a
+  `NoticeRequested` field read by 453.1, so the student is skipped and guardians still get
+  them). The guardian's endpoints of 451.2 are unaffected. Tests: the flag, 404 for the student,
+  teacher role checks, no effect without a guardian. Docs: `docs/modules/billing.md`,
+  ADR-0069.
 
 ### 452. Family cabinet (frontend)
 
@@ -116,8 +133,10 @@ once, after 455.
   the invite link dialog (`invite-link-dialog.ts` reused), «Отвязать» with a confirm. Invite page
   `features/identity/invite/invite-page.ts`: the guardian variant («Вас пригласили как родителя
   Пети»). Student «Мой аккаунт»: «Родители: Анна». Role `GUARDIAN` in `core/auth`. Tests (Vitest)
-  and the gallery sample if a new shared part appears. Docs: `docs/screens.md`, wiki
-  `First-steps` / new `Parents`, help `teacher/*` (ru, en) about inviting a parent.
+  and the gallery sample if a new shared part appears. In the «Родители» block, while a parent
+  is linked, the switch «Оплаты видит только родитель» (451.3). Docs: `docs/screens.md`, wiki
+  `First-steps` / new `Parents`, help `teacher/*` (ru, en) about inviting a parent and hiding
+  payments.
 - [ ] 452.2 *complex* F — `m3-expressive`. Area `/family` in `app.routes.ts`
   (`roleGuard('GUARDIAN')`, a `FamilyLayout` beside `core/layout/student-layout.ts`): child
   switcher in the top bar (chips with the child's colour / avatar, the choice in the URL
@@ -127,7 +146,9 @@ once, after 455.
   `my-task-page.ts`, `billing/student/my-billing-page.ts`, `home/student-home.ts`) through their
   `parts.ts` with an `ApiScope` (student `/api/me/...` vs guardian
   `/api/guardian/students/{id}/...` base URL) and a read-only mode (no submit, no attempts, no
-  change requests until 453.3). Login redirects a guardian to `/family`. Tests (Vitest). Docs:
+  change requests until 453.3). Login redirects a guardian to `/family`. Student cabinet with
+  payments hidden (451.3): no «Оплаты» in the navigation, no balance on the student's home,
+  `/cabinet/billing` redirects home. Tests (Vitest). Docs:
   `docs/screens.md` «Family cabinet», ADR-0058 note if the direction rules change.
 
 ### 453. Notices and requests for parents
@@ -138,9 +159,9 @@ once, after 455.
   homework, reviewed works (the kind → category map in `notifications`); the text names the child
   (a «Петя · » prefix from `UserDirectory`, or a guardian variant of the texts — decide and
   record in ADR-0069); the link points into `/family/<studentId>/...`. `mayUseMessengers` and
-  link codes for a guardian; `ChatEngine.user` and `shared/chat/ChatUser` know a guardian.
-  Tests: `NotificationServiceTest`, preferences, link codes. Docs:
-  `docs/modules/notifications.md`, ADR-0061 note.
+  link codes for a guardian; `ChatEngine.user` and `shared/chat/ChatUser` know a guardian. A
+  guardians-only notice (451.3) skips the student. Tests: `NotificationServiceTest`,
+  preferences, link codes. Docs: `docs/modules/notifications.md`, ADR-0061 note.
 - [ ] 453.2 *complex* B — schedule: move / cancel requests on behalf — migration
   `db/migration/schedule/V8__change_requests_requested_by.sql` (`requested_by` UUID, the student
   for old rows), `GuardianScheduleController` POST / GET / DELETE requests via
@@ -163,8 +184,8 @@ once, after 455.
   goals is current.
 - [ ] 454.2 *complex* — E2E `e2e/tests/family/`: the teacher invites a parent → the parent accepts
   and logs in → sees the child's lessons, homework and payments, cannot open another student's
-  data (API 404) → asks to move a lesson → the teacher approves; a reminder reaches the
-  parent's inbox.
+  data (API 404) → asks to move a lesson → the teacher approves; a reminder reaches the parent's
+  inbox; the teacher hides payments → the student no longer sees them, the parent still does.
 
 ### 455. Release 0.58.0
 
