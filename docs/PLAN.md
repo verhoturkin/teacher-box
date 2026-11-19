@@ -102,13 +102,19 @@ once, after 455.
 
 ### 451. Guardian read endpoints
 
-- [ ] 451.1 *complex* B — schedule: `schedule/web/GuardianScheduleController`
+- [x] 451.1 *complex* B — schedule: `schedule/web/GuardianScheduleController`
   `/api/guardian/students/{studentId}/schedule` — the reads of `MyScheduleController` (settings,
   summary, lessons, lesson, history; no busy / free times) through `GuardianAccess.require`;
   the guardian's own ICS feed of all children's lessons (`/api/guardian/schedule/feed` GET / POST
   / DELETE, `FeedService` with a feed owned by the guardian, served by `PublicFeedController`,
   each event titled with the child's name). Tests: controller (another student → 404, roles),
   `FeedService`. Docs: `docs/modules/schedule.md`.
+  *Done with these choices: the feed owner is told apart by the data — not the teacher, not a
+  current student → the guardian branch (`ScheduleDirectory.childrenOf` over
+  `identity::api.Guardians`), no children → 404; a lesson shared by siblings is one event titled
+  «Маша, Петя — Занятие группы «…»»; the calendar is «Занятия детей — …»; module tests use
+  `testing/FakeGuardians` (both SPIs) and `TestUsers.guardian`, reusable by 451.2; the feed is
+  covered by `GuardianScheduleIntegrationTests`.*
 - [ ] 451.2 *complex* B — homework and billing: `homework/web/GuardianHomeworkController`
   `/api/guardian/students/{studentId}/homework` — summary, task, quiz (read-only review),
   attachments, bound textbook pages of `MyHomeworkController`; no submissions, no attempts.

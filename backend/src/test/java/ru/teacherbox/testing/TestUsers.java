@@ -22,6 +22,10 @@ public final class TestUsers {
         return as(studentId, Role.STUDENT, "Ученик");
     }
 
+    public static RequestPostProcessor guardian(UUID guardianId) {
+        return as(guardianId, Role.GUARDIAN, "Родитель");
+    }
+
     public static RequestPostProcessor admin(UUID adminId) {
         return as(adminId, Role.ADMIN, "Администратор");
     }

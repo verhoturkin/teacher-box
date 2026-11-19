@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.identity.api.GroupSummary;
+import ru.teacherbox.identity.api.Guardians;
 import ru.teacherbox.identity.api.StudentGroups;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
@@ -25,11 +26,13 @@ public class ScheduleDirectory {
     private final UserDirectory users;
     private final StudentGroups groups;
     private final MeetingRooms rooms;
+    private final Guardians guardians;
 
-    public ScheduleDirectory(UserDirectory users, StudentGroups groups, MeetingRooms rooms) {
+    public ScheduleDirectory(UserDirectory users, StudentGroups groups, MeetingRooms rooms, Guardians guardians) {
         this.users = users;
         this.groups = groups;
         this.rooms = rooms;
+        this.guardians = guardians;
     }
 
     /** Names for the participants and groups of the lessons and the links of their rooms. */
@@ -101,5 +104,10 @@ public class ScheduleDirectory {
 
     public boolean isCurrentStudent(UUID studentId) {
         return users.isCurrentStudent(studentId);
+    }
+
+    /** The guardian's current children (ADR-0069); empty for anyone else. */
+    public List<StudentSummary> childrenOf(UUID guardianId) {
+        return guardians.childrenOf(guardianId);
     }
 }

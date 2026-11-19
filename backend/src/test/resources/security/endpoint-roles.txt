@@ -5,6 +5,7 @@
 # After an intended change copy target/endpoint-roles.txt over this file (keep this header).
 * /error PUBLIC
 DELETE /api/admin/loggers/{name} ADMIN
+DELETE /api/guardian/schedule/feed GUARDIAN
 DELETE /api/me/avatar GUARDIAN STUDENT TEACHER
 DELETE /api/me/channels/{channel} GUARDIAN STUDENT TEACHER
 DELETE /api/me/push/subscriptions/{id} GUARDIAN STUDENT TEACHER
@@ -58,6 +59,12 @@ GET /api/boards/{id}/files/{fileId} STUDENT TEACHER
 GET /api/boards/{id}/preview STUDENT TEACHER
 GET /api/boards/{id}/scene STUDENT TEACHER
 GET /api/guardian/children GUARDIAN
+GET /api/guardian/schedule/feed GUARDIAN
+GET /api/guardian/students/{studentId}/schedule/history GUARDIAN
+GET /api/guardian/students/{studentId}/schedule/lessons GUARDIAN
+GET /api/guardian/students/{studentId}/schedule/lessons/{lessonId} GUARDIAN
+GET /api/guardian/students/{studentId}/schedule/settings GUARDIAN
+GET /api/guardian/students/{studentId}/schedule/summary GUARDIAN
 GET /api/me ADMIN GUARDIAN STUDENT TEACHER
 GET /api/me/billing STUDENT TEACHER
 GET /api/me/billing/payments/{paymentId}/receipt STUDENT TEACHER
@@ -182,6 +189,7 @@ POST /api/auth/logout PUBLIC
 POST /api/auth/refresh PUBLIC
 POST /api/boards/{id}/live STUDENT TEACHER
 POST /api/client-errors PUBLIC
+POST /api/guardian/schedule/feed GUARDIAN
 POST /api/me/channels/{channel}/link-code GUARDIAN STUDENT TEACHER
 POST /api/me/homework/tasks/{taskId}/quiz/attempts STUDENT TEACHER
 POST /api/me/homework/tasks/{taskId}/quiz/attempts/{attemptId}/submit STUDENT TEACHER
