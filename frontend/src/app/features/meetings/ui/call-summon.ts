@@ -23,8 +23,34 @@ export const SUMMON_REFRESH_MS = 10_000;
   selector: 'tb-call-summon',
   imports: [Button],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class.tb-call-summon--hero]': 'hero()' },
   template: `
-    @if (absent(); as card) {
+    @if (hero()) {
+      <span class="tb-button-group tb-call-summon__actions">
+        <ng-content />
+        @if (absent(); as card) {
+          <p-button
+            [label]="card.ownerType === 'GROUP' ? t.summonRest : t.summon"
+            icon="tb-i tb-i-notifications_active"
+            severity="secondary"
+            styleClass="tb-button-m"
+            [loading]="busy.is()"
+            (onClick)="summon(card)"
+          />
+        }
+      </span>
+      @if (absent(); as card) {
+        <span class="tb-call-summon__line">
+          <i class="tb-i tb-i-person_off" aria-hidden="true"></i>
+          <span class="tb-call-summon__text">{{ line(card) }}</span>
+        </span>
+      } @else if (waiting(); as card) {
+        <span class="tb-call-summon__line">
+          <i class="tb-i tb-i-video_call" aria-hidden="true"></i>
+          <span class="tb-call-summon__text" role="status">{{ waitingLine(card) }}</span>
+        </span>
+      }
+    } @else if (absent(); as card) {
       <i class="tb-i tb-i-person_off" aria-hidden="true"></i>
       <span class="tb-call-summon__text">{{ line(card) }}</span>
       <p-button
@@ -36,9 +62,7 @@ export const SUMMON_REFRESH_MS = 10_000;
       />
     } @else if (waiting(); as card) {
       <i class="tb-i tb-i-video_call" aria-hidden="true"></i>
-      <span class="tb-call-summon__text" role="status">{{
-        card.ownerType === 'GROUP' ? t.groupWaiting : t.waiting(firstName(card))
-      }}</span>
+      <span class="tb-call-summon__text" role="status">{{ waitingLine(card) }}</span>
     }
   `,
   styles: `
@@ -62,6 +86,28 @@ export const SUMMON_REFRESH_MS = 10_000;
       flex: 1;
       min-width: 0;
     }
+
+    /*
+     * The hero of the teacher's Today (board D): the host gives way to the hero's grid; the join button
+     * (content) and «Позвать» are its standard button group (area actions), the line goes under the
+     * name (area presence)
+     */
+    :host(.tb-call-summon--hero) {
+      display: contents;
+    }
+
+    .tb-call-summon__actions {
+      grid-area: actions;
+    }
+
+    .tb-call-summon__line {
+      grid-area: presence;
+      display: flex;
+      align-items: center;
+      gap: var(--tb-space-2);
+      min-width: 0;
+      font: var(--tb-type-body-m);
+    }
   `,
 })
 export class CallSummon {
@@ -72,6 +118,11 @@ export class CallSummon {
 
   /** The student or the group of the running lesson. */
   readonly ownerId = input.required<string>();
+  /**
+   * The hero of the teacher's Today: the projected join button and a medium «Позвать» form one button
+   * group, the line stands apart (the host takes no box of its own).
+   */
+  readonly hero = input(false);
 
   private readonly calls = signal<CallsOverview | null>(null);
   /** The room of the lesson while its presence is known. */
@@ -110,6 +161,10 @@ export class CallSummon {
     return card.ownerType === 'GROUP'
       ? this.t.groupAbsent(card.members - card.waiting.length, card.members)
       : this.t.absent(this.firstName(card));
+  }
+
+  protected waitingLine(card: CallCard): string {
+    return card.ownerType === 'GROUP' ? this.t.groupWaiting : this.t.waiting(this.firstName(card));
   }
 
   protected firstName(card: CallCard): string {

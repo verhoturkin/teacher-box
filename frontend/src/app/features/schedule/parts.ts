@@ -14,6 +14,7 @@ export type {
 } from './data-access/schedule.models';
 export { NextLessonWidget } from './home/next-lesson-widget';
 export { injectLessonClock } from './home/lesson-clock';
+export { LessonTimeTile } from './ui/lesson-time-tile';
 export type { LessonTime } from './home/lesson-clock';
 export { LessonDialog } from './teacher/lesson-dialog';
 export { AttendanceDialog } from './teacher/attendance-dialog';

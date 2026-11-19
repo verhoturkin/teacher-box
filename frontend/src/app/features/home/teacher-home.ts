@@ -39,8 +39,9 @@ function dayTitle(date: Date): string {
 }
 
 /**
- * Teacher's «Сегодня» (spec §6): the feed in three columns (extra-large), two (large) or one — the lessons
- * of today with the nearest one expanded, the queue («Отметить занятия», «Проверить работы»), the month and the week figures. On a phone the same sections follow one another.
+ * Teacher's «Сегодня» (spec «Today»): from large two panes (board D) — the lesson hero, then today's
+ * other lessons and the queue («Отметить занятия», «Проверить работы») side by side, and the month and
+ * the week figures in a fixed pane; narrower the same sections follow one another.
  */
 @Component({
   selector: 'tb-teacher-home',
@@ -67,7 +68,7 @@ function dayTitle(date: Date): string {
             <span meta class="tb-muted">{{ line }}</span>
           }
         </tb-page-header>
-        <div class="tb-feed" [class]="'tb-feed--' + columns()">
+        <div class="tb-feed" [class.tb-feed--wide]="wide()">
           @if (!state.ready()) {
             <tb-load-state
               class="tb-feed__state"
@@ -76,34 +77,37 @@ function dayTitle(date: Date): string {
               (retry)="load()"
             />
           }
-          @if (columns() > 1 && schedule(); as schedule) {
-            @if (schedule.next !== null) {
-              <tb-today-lessons
-                class="tb-feed__hero"
-                part="hero"
-                [all]="schedule.today"
-                [next]="schedule.next"
-                (over)="loadSchedule()"
-              />
-            }
-          }
-          <div class="tb-stack tb-feed__lead">
-            @if (schedule(); as schedule) {
-              @if (schedule.today.length > 0 || schedule.next !== null) {
+          <div class="tb-feed__main">
+            @if (wide() && schedule(); as schedule) {
+              @if (schedule.next !== null) {
                 <tb-today-lessons
-                  [part]="columns() > 1 ? 'rest' : 'all'"
+                  part="hero"
                   [all]="schedule.today"
                   [next]="schedule.next"
                   (over)="loadSchedule()"
                 />
               }
             }
-            <tb-push-onboarding-card [teacher]="true" />
-          </div>
-          <div class="tb-stack tb-feed__queue">
-            @if (state.error() === null) {
-              <tb-todo-queue [progress]="progress()" (marked)="loadSchedule()" />
-            }
+            <div class="tb-feed__columns">
+              <div class="tb-stack tb-feed__lead">
+                @if (schedule(); as schedule) {
+                  @if (schedule.today.length > 0 || schedule.next !== null) {
+                    <tb-today-lessons
+                      [part]="wide() ? 'rest' : 'all'"
+                      [all]="schedule.today"
+                      [next]="schedule.next"
+                      (over)="loadSchedule()"
+                    />
+                  }
+                }
+                <tb-push-onboarding-card [teacher]="true" />
+              </div>
+              <div class="tb-stack tb-feed__queue">
+                @if (state.error() === null) {
+                  <tb-todo-queue [progress]="progress()" (marked)="loadSchedule()" />
+                }
+              </div>
+            </div>
           </div>
           <div class="tb-stack tb-feed__figures">
             @if (billing(); as billing) {
@@ -124,33 +128,45 @@ function dayTitle(date: Date): string {
   styles: `
     .tb-feed {
       display: grid;
+      grid-template-columns: minmax(0, 1fr);
       gap: var(--tb-gap-section);
       align-items: start;
     }
 
+    /* below large the sections follow one another in one column */
+    .tb-feed__main,
+    .tb-feed__columns {
+      display: contents;
+    }
+
     /*
-     * From large (sketch «Главная учителя — варианты», variant C): the current lesson across the page, then
-     * three equal columns (lessons, queue, figures) on extra-large; on large two, the figures under the lessons
+     * From large (board D, M3 fixed-and-flexible layout): the flexible lead pane — the hero, then the
+     * other lessons and the queue in two equal columns — and the fixed 412 dp figures pane on surface
+     * container, 24 dp between them (M3 spacer); the pane's 28 dp corners and 16 dp padding are ours
+     * (the sketch)
      */
-    .tb-feed__hero {
-      grid-column: 1 / -1;
-    }
+    .tb-feed--wide {
+      grid-template-columns: minmax(0, 1fr) 25.75rem;
 
-    .tb-feed--3 {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .tb-feed--2 {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-
-      .tb-feed__queue {
-        grid-column: 2;
-        grid-row: span 2;
+      .tb-feed__main {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-gap-section);
+        min-width: 0;
       }
-    }
 
-    .tb-feed--1 {
-      grid-template-columns: minmax(0, 1fr);
+      .tb-feed__columns {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--tb-gap-section);
+        align-items: start;
+      }
+
+      .tb-feed__figures {
+        padding: var(--tb-space-4);
+        border-radius: var(--tb-shape-xl);
+        background: var(--p-md-surface-container);
+      }
     }
 
     .tb-feed__state {
@@ -170,16 +186,10 @@ export class TeacherHome implements OnInit {
   protected readonly today = signal(dayTitle(new Date()));
   protected readonly mobile = injectMobile();
   private readonly size = injectWindowSize();
-  /** Columns of the feed under the hero (spec §6): 3 on extra-large, 2 on large, else 1. */
-  protected readonly columns = computed(() => {
-    switch (this.size()) {
-      case 'extra-large':
-        return 3;
-      case 'large':
-        return 2;
-      default:
-        return 1;
-    }
+  /** From large the page is two panes with the lesson hero (spec «Today», board D). */
+  protected readonly wide = computed(() => {
+    const size = this.size();
+    return size === 'large' || size === 'extra-large';
   });
   protected readonly createItems = injectCreateItems()('/teacher');
   protected readonly createLabel = CORE_T.create.title;

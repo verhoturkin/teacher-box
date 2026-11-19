@@ -35,7 +35,7 @@ Goals: the teacher's Today stops stretching over a wide screen (sketch «Гла�
   «Позвать»; the teacher in too → nothing. Student (`schedule/home/next-lesson-widget.ts`, new
   `meetings/ui/teacher-waiting.ts` on `GET /api/me/meetings/calls`): «Учитель ждёт в звонке» while
   the lesson's portal room has the teacher. Both ask every 10 s instead of 30 s.
-- [ ] 450.2 **F** *complex* — Today as board D from large: a flexible lead pane (the lesson hero,
+- [x] 450.2 **F** *complex* — Today as board D from large: a flexible lead pane (the lesson hero,
   then the other rows and the queue in two columns) and a fixed 412 dp figures pane on surface
   container (`home/teacher-home.ts`); the hero (`home/today-lessons.ts`, `part="hero"`) on one line:
   the time tile (`schedule/ui/lesson-time-tile.ts`), avatar, name in an emphasized style, the join

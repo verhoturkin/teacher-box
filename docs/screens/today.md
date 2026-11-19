@@ -5,10 +5,13 @@
 
 - **Three stacks** in a fixed order that is also the reading order: lead (`today-lessons.ts` and
   the push offer), queue (`todo-queue.ts`), figures (month + `week-figures.ts`, Monday–Sunday).
-  From large (sketch «Главная учителя — варианты», variant C, 0.57.0): the expanded lesson across
-  the page (`tb-today-lessons part="hero"`), then equal columns: extra-large 3 (the other rows,
-  `part="rest"`, the queue, the figures), large 2 (the figures under the rows); otherwise 1
-  column in the reading order, the expanded row inside the list; an empty stack hides.
+  From large (sketch «Главная учителя — варианты», board D, 450.2) two panes, the M3
+  fixed-and-flexible layout: a flexible lead pane — the lesson hero (`tb-today-lessons
+  part="hero"`), then the other rows (`part="rest"`) with the push offer and the queue in two equal
+  columns — and a fixed 412 dp figures pane on surface container (28 dp corners, 16 dp padding:
+  *ours*, the sketch); 24 dp between them (**M3** spacer). Below large one column in the reading
+  order, the expanded row inside the list; an empty stack hides. The sketch's bar chart of the week
+  is not built: the summary has week totals only, no days.
 - **Queue:** two cards, each with its own count badge (M3 large badge, error): «Отметить занятия»
   (unmarked lessons with «Проведено | Пропуск» in place, then the change requests — schedule work
   too) and «Проверить работы» (the review queue). At most 5 rows per source, then «more N». A card
@@ -50,6 +53,17 @@ since 0.57.0 — the lesson is shown once.
   teacher in too: no line. On a phone the
   line follows the board chip on its own row, apart from the join button; wider it ends the board's
   row. A Telemost or other external link, calls off or the media server down — no line.
+- **The hero** (from large, board D): one primary-container card (28 dp, *ours*: the sketch) with
+  one line — the time tile (`schedule/ui/lesson-time-tile.ts`: the day or «Идёт сейчас», the start,
+  the countdown or «ещё 25 мин»), the 64 dp avatar, the name in Headline Medium emphasized with
+  «Название · тема» and «до 15:00» under it, and the actions: «Начать урок» / «Войти в урок» in
+  the medium size (`tb-button-m`) and, while somebody is not in the portal's room, a medium tonal
+  «Позвать» beside it. The two are a **standard** button group (12 dp), not the sketch's
+  connected one: **M3** keeps connected groups for toggles and never with a primary button.
+  Under the name the board chip and the presence line of `tb-call-summon [hero]` (Body Medium).
+  While the lesson runs a wavy progress bar of the elapsed time (`tb-wavy-progress`, «Прошло 35 из
+  60 мин» as its name) runs along the bottom. 20 dp between the line's parts, 16 dp between lines
+  (*ours*, the sketch). Below large the expanded row above stays as it is.
 - A nearest lesson of another day follows today's rows, expanded with its day. No lessons today
   but one later: the same card titled «Ближайшее занятие» with that one row (decision of 432.2:
   no second widget for this case). No lesson at all: no card.
