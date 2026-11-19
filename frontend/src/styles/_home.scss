@@ -180,8 +180,12 @@
   }
 }
 
-/* The main card of a page (the nearest lesson): the primary container (M3 filled card) */
-.p-card.tb-hero {
+/*
+ * The main card of a page (the nearest lesson; on the teacher's Today the expanded lesson row): the primary
+ * container (M3 filled card)
+ */
+.p-card.tb-hero,
+.tb-today-lesson--next {
   background: var(--p-md-primary-container);
   color: var(--p-md-on-primary-container);
 
@@ -250,4 +254,20 @@
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+/*
+ * The teacher's Today from large (variant B): the month's and the week's figures in one row of tiles across
+ * the top (the widgets' own markup, so here and not in `teacher-home.ts`)
+ */
+.tb-feed--2 .tb-feed__figures {
+  .tb-figures {
+    grid-template-columns: none;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+  }
+
+  .tb-figure--wide {
+    grid-column: auto;
+  }
 }

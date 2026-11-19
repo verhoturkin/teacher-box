@@ -9,6 +9,7 @@ files here again in the same branch.
 | `settings/` | [«Настройки и аккаунт — эскизы»](https://claude.ai/artifact/L3wuTYeXnspJ9AGwHRD6kx) | 1–25 |
 | `homework/` | [«Задания — эскизы»](https://claude.ai/artifact/X2SdNjSvCbgsnwwccToard) | 1–40 |
 | `today/` | [«Сегодня — один урок»](https://claude.ai/artifact/LoYZXoqAaCHaAYfpi9c9NM) | 1–4 |
+| `home/` | [«Главная учителя — варианты»](https://claude.ai/artifact/5Hiw8bjF4Zn6DQhJKypFXJ) | A–C (B chosen) |
 
 - `canvas.json` lists every board: its file, number and title (`boards.<file>.title`, «17. ИИ — …»)
   and its frame size. A plan item names a board by number and file, e.g. board 17

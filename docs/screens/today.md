@@ -5,8 +5,9 @@
 
 - **Three stacks** in a fixed order that is also the reading order: lead (`today-lessons.ts` and
   the push offer), queue (`todo-queue.ts`), figures (month + `week-figures.ts`, Monday–Sunday).
-  Extra-large 3 columns (1.25 : 1 : 0.8), large 2 (figures under the queue, lead spans both rows),
-  otherwise 1; an empty stack hides.
+  From large (sketch «Главная учителя — варианты», variant B, 0.57.0): the figures across the top,
+  one row of tiles (the month's two, the week's four), then the lead and the queue in two equal
+  columns; otherwise 1 column in the reading order; an empty stack hides.
 - **Queue:** two cards, each with its own count badge (M3 large badge, error): «Отметить занятия»
   (unmarked lessons with «Проведено | Пропуск» in place, then the change requests — schedule work
   too) and «Проверить работы» (the review queue). At most 5 rows per source, then «more N». A card
@@ -27,10 +28,11 @@ since 0.57.0 — the lesson is shown once.
 
 - Rows in start order, one line each: time, avatar, name and the outcome chip (scheduled lessons
   say nothing). The rows are a segmented list (`tb-list`).
-- The current or nearest unfinished lesson is the **expanded row** (secondary-container, the M3
-  selected list item): the start, its state from `lesson-clock.ts` («Идёт · ещё 25 мин» with an
-  error-coloured dot; «Через 40 мин» within the hour, the duration beyond it; another day —
-  «Завтра» / «чт, 16.10»), «до 15:00»; the avatar, name, title and topic; one board chip — the
+- The current or nearest unfinished lesson is the **expanded row** (primary-container, the
+  colour of the old hero and of the portal, *ours* after the user's review in 0.57.0): the
+  start, its state from `lesson-clock.ts` («Идёт · ещё 25 мин» with an error-coloured dot;
+  «Через 40 мин» within the hour, the duration beyond it; another day — «Завтра» /
+  «чт, 16.10»), «до 15:00»; the avatar, name, title and topic; one board chip — the
   board of the student or group changed last (`tb-board-links [latest]`, `updatedAt`); the join
   button (`tb-join-lesson-button`, default size — *M3*: the sketch's 48 px is no M3 button size)
   only when the lesson has `joinUrl`, «Начать урок», «Войти в урок» while it runs. On a phone-wide

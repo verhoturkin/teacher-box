@@ -242,6 +242,9 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
   auto-fit grids of 22 or 22.5 rem, 16 or 24 px gaps, so the column count followed the number of
   cards. Now `tb-settings-grid`: CSS columns, at most two of at least 360 dp, balanced by height
   (the user chose «columns by width»; an auto-fill grid gave too many narrow columns).
+- [x] 448.10 *complex* F — teacher Today, variant B of the sketch «Главная учителя — варианты»: the
+  figures across the top in one row of tiles, the lessons and the queue in two equal columns
+  below (from large); the expanded lesson row is bright again (primary-container, as the hero).
 
 ### 449. Release 0.57.0
 

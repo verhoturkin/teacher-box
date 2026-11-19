@@ -153,8 +153,7 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
       gap: var(--tb-space-3);
       align-items: center;
       padding: var(--tb-space-3);
-      background: var(--p-md-secondary-container);
-      color: var(--p-md-on-secondary-container);
+      /* the colour of the hero (styles/_home.scss): the portal colour, as the card «Идёт сейчас» was */
       overflow-wrap: anywhere;
     }
 
