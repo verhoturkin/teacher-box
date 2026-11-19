@@ -31,8 +31,15 @@ describe('StudentProfileTab', () => {
     await flushParts();
   }
 
-  /** The price card and the room panel read their own data: their specs check them. */
+  /** The price card, the room panel and «Родители» read their own data: their specs check them. */
   async function flushParts(): Promise<void> {
+    backend.match('/api/teacher/students/s-1/guardians').forEach((request) => {
+      request.flush([]);
+    });
+    await fixture.whenStable();
+    backend.match('/api/teacher/billing/students/s-1/visibility').forEach((request) => {
+      request.flush({ studentId: 's-1', guardiansOnly: false, hasGuardians: false });
+    });
     backend.match('/api/teacher/billing/students/s-1').forEach((request) => {
       request.flush(ledger({ studentId: 's-1' }));
     });
@@ -55,13 +62,19 @@ describe('StudentProfileTab', () => {
     return buttonByText(requireElement(host, 'form', HTMLFormElement), 'Сохранить');
   }
 
-  it('lays the profile out as cards: data, price, video meeting, sign-in', async () => {
+  it('lays the profile out as cards: data, price, video meeting, parents, sign-in', async () => {
     await render();
     const titles = Array.from(host.querySelectorAll('.p-card-title')).map((title) =>
       title.textContent.trim(),
     );
 
-    expect(titles).toEqual(['Данные ученика', 'Цена занятия', 'Видеовстреча', 'Вход в кабинет']);
+    expect(titles).toEqual([
+      'Данные ученика',
+      'Цена занятия',
+      'Видеовстреча',
+      'Родители',
+      'Вход в кабинет',
+    ]);
     expect(field('profile-name').value).toBe('Мария');
     expect(field('profile-email').value).toBe('maria@example.com');
     expect(requireElement(host, '#profile-note', HTMLTextAreaElement).value).toBe('5 класс');

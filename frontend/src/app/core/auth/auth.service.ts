@@ -51,13 +51,18 @@ export class AuthService {
     return state !== null && state.expiresAt - Date.now() > REFRESH_MARGIN_MS;
   }
 
-  /** Start page of the current user: the teacher, student or administrator area or the sign-in page. */
+  /**
+   * Start page of the current user: the teacher, student, family (a parent) or administrator area or the sign-in
+   * page.
+   */
   homeUrl(): string {
     switch (this.role()) {
       case 'TEACHER':
         return '/teacher';
       case 'STUDENT':
         return '/cabinet';
+      case 'GUARDIAN':
+        return '/family';
       case 'ADMIN':
         return '/admin';
       case null:

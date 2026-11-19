@@ -21,7 +21,9 @@ export { memberRecipients } from './groups/member-recipients';
 export type {
   Account,
   AccountStatus,
+  CreatedGuardian,
   CreatedStudent,
+  Guardian,
   GroupInput,
   GroupMember,
   InvitePurpose,

@@ -50,6 +50,10 @@ and medium are two pages (boards 37 → 25). Only the panes scroll, never the wi
 appearance and notifications (`notifications/account/notifications-section.ts`). The teacher's
 account category is the same panel.
 
+- **Parents:** a student with parents sees a tile «Родитель: Анна» / «Родители: Анна и Олег» in the
+  profile card (`GET /api/me/guardians`, names only; nothing when there are none or the read
+  fails). The teacher links parents; the student hides nothing in v1 (ADR-0069).
+
 - **Notifications:** one «where» list of the user's messengers and this device. Without a messenger
   an alert leads to connect; home cards lead here. `link-code-view` opens in a bottom sheet on
   compact, a dialog above.

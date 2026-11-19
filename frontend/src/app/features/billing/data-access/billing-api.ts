@@ -13,6 +13,7 @@ import {
   OperationKind,
   Operations,
   Payment,
+  PaymentVisibility,
   RecordPaymentRequest,
   StudentLedger,
 } from './billing.models';
@@ -55,6 +56,25 @@ export class BillingApi {
 
   myLedger(): Observable<StudentLedger> {
     return this.http.get<StudentLedger>('/api/me/billing', { context: quietContext() });
+  }
+
+  /** Whether only the student's parents see payments; the load is quiet (the card shows a failure itself). */
+  paymentVisibility(studentId: string): Observable<PaymentVisibility> {
+    return this.http.get<PaymentVisibility>(
+      `/api/teacher/billing/students/${studentId}/visibility`,
+      { context: quietContext() },
+    );
+  }
+
+  /** Refused (422 `billing.no-guardian`) while the student has no parent. */
+  changePaymentVisibility(
+    studentId: string,
+    guardiansOnly: boolean,
+  ): Observable<PaymentVisibility> {
+    return this.http.put<PaymentVisibility>(
+      `/api/teacher/billing/students/${studentId}/visibility`,
+      { guardiansOnly },
+    );
   }
 
   /** @returns the saved price in minor units */

@@ -35,7 +35,8 @@ the next six months. History loads 20 lessons at a time; choose “Show more” 
 - **Homework:** assignments and their status, with outstanding work first and accepted work below. Select a title to open it.
 - **Payments:** balance, total charges, total payments and transaction history. See [Payments](/teacher/help/billing).
 - **Profile:** name, email, phone, private note, default topic and colour. Save these fields together. The lesson price has its own Save button; \
-video meeting changes apply immediately. “Portal access” shows the read-only username and invitation or reset link details.
+video meeting changes apply immediately. “Parents” lists the student’s parents (see below). “Portal access” shows the read-only username and \
+invitation or reset link details.
 
 You always see the name you entered for the student, even if they choose a different display name for their account.
 
@@ -47,6 +48,22 @@ Open the student’s Profile tab to manage access:
 - **Reset password** creates a reset link for an existing account.
 - **Deactivate account…** prevents sign-in while keeping lesson, payment and homework history.
 - **Restore access** lets a deactivated student sign in again.
+
+## Parents
+
+A student can have up to two parents. A parent signs in with their own username and sees what the child sees: lessons, homework with answers \
+and comments, and payments. They cannot change anything.
+
+1. Open the student’s Profile tab → “Parents” → **Invite a parent**.
+2. **Someone new**: enter their name and choose “Invite”. Copy the invitation link and send it to the parent. The invitation names their \
+children; the parent chooses a username and password.
+3. **Already on the portal**: pick a parent of another student, such as a brother or sister, and choose “Link”. No link is needed.
+
+Each parent’s entry shows when their invitation expires or the username they sign in with. The link button issues a new invitation or a \
+password reset. **Unlink** removes the parent from this student; if they have no other children on the portal, their account is deactivated.
+
+While the student has a parent, the same card has the **Only parents see payments** switch. Turn it on if the parent pays: the student will \
+no longer see their balance, payment history or debt reminders. Students can see who their parents are in “My account”.
 
 ## Student tags
 

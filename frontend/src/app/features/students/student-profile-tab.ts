@@ -35,6 +35,7 @@ import {
   StudentProfileInput,
 } from '@features/identity/parts';
 import { T } from './i18n/texts';
+import { StudentGuardiansCard } from './student-guardians-card';
 
 /** The profile of a student as the form holds it: empty strings for missing values. */
 interface ProfileValue {
@@ -82,7 +83,8 @@ function inputOf(value: ProfileValue): StudentProfileInput {
  * The Профиль tab of a student's card (redesign spec §8): what the teacher knows of the student, changed in
  * place — cards one under another: «Данные ученика» (the name, the contacts, the note, the default topic, the
  * colour; the tonal «Сохранить» under the fields saves them, «Отмена» brings back the saved ones), the lesson
- * price, the video meeting and «Вход в кабинет» (the login the student chose, the invitation link).
+ * price, the video meeting, «Родители» (ADR-0069) and «Вход в кабинет» (the login the student chose, the
+ * invitation link).
  */
 @Component({
   selector: 'tb-student-profile-tab',
@@ -97,6 +99,7 @@ function inputOf(value: ProfileValue): StudentProfileInput {
     LabelColorField,
     RoomPanel,
     StudentPriceCard,
+    StudentGuardiansCard,
   ],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -187,6 +190,8 @@ function inputOf(value: ProfileValue): StudentProfileInput {
       <tb-student-price-card [studentId]="row.id" />
 
       <tb-room-panel [owner]="roomOwner()" />
+
+      <tb-student-guardians-card [student]="row" />
 
       <p-card [header]="t.access">
         <div class="tb-form">

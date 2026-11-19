@@ -51,6 +51,7 @@ describe('AccountPage', () => {
       language: 'ru',
     });
     await settle();
+    backend.expectOne('/api/me/guardians').flush([]);
     backend.expectOne('/api/me/channels').flush([]);
     backend.expectOne('/api/me/push/subscriptions').flush([]);
     backend.expectOne('/api/me/notifications/preferences').flush(preferences());

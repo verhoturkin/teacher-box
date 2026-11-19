@@ -566,6 +566,34 @@ const HERO_ROW: Readonly<Record<string, readonly (readonly [string, string, stri
   ],
 };
 
+/** Parents on the student card (452.1, ADR-0069). */
+const PARENTS: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'students',
+      '«Новое приглашение» или «Сбросить пароль».',
+      '«Новое приглашение» или «Сбросить пароль». Между видеовстречей и входом — карточка **«Родители»** (см. ниже).',
+    ],
+    [
+      'students',
+      '## Теги учеников',
+      '## Родители\n\nУ ученика может быть до двух родителей. Родитель входит в портал со своим логином и видит всё, что видит ребёнок, — расписание, задания с ответами и комментариями, оплаты, — но ничего не меняет.\n\n1. Откройте карточку ученика → «Профиль» → «Родители» → **Пригласить родителя**.\n2. **Нового** — впишите имя и нажмите «Пригласить»: портал покажет ссылку-приглашение, отправьте её родителю. По ссылке родитель увидит имена детей, придумает логин и пароль.\n3. **Уже в портале** — родитель другого ученика, например брата или сестры: выберите его и нажмите «Привязать». Ссылка не нужна.\n\nВ строке родителя видно «Приглашение до …» или «Входит как …». Кнопка со ссылкой выдаёт новое приглашение или сбрасывает пароль. **Отвязать** убирает родителя у этого ученика; если других детей у него нет, его вход отключается.\n\nПока у ученика есть родитель, в той же карточке есть переключатель **«Оплаты видит только родитель»**. Включите его, если платит родитель: ученик не увидит баланс и историю оплат и не получит напоминаний о долге. Ученик видит в «Моём аккаунте», кто его родители.\n\n## Теги учеников',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'students',
+      'video meeting changes apply immediately. “Portal access”',
+      'video meeting changes apply immediately. “Parents” lists the student’s parents (see below). “Portal access”',
+    ],
+    [
+      'students',
+      '## Student tags',
+      '## Parents\n\nA student can have up to two parents. A parent signs in with their own username and sees what the child sees: lessons, homework with answers and comments, and payments. They cannot change anything.\n\n1. Open the student’s Profile tab → “Parents” → **Invite a parent**.\n2. **Someone new**: enter their name and choose “Invite”. Copy the invitation link and send it to the parent. The invitation names their children; the parent chooses a username and password.\n3. **Already on the portal**: pick a parent of another student, such as a brother or sister, and choose “Link”. No link is needed.\n\nEach parent’s entry shows when their invitation expires or the username they sign in with. The link button issues a new invitation or a password reset. **Unlink** removes the parent from this student; if they have no other children on the portal, their account is deactivated.\n\nWhile the student has a parent, the same card has the **Only parents see payments** switch. Turn it on if the parent pays: the student will no longer see their balance, payment history or debt reminders. Students can see who their parents are in “My account”.\n\n## Student tags',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -661,6 +689,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(CALENDAR_SETUP[name] ?? []),
       ...(WRITE_ALL[name] ?? []),
       ...(HERO_ROW[name] ?? []),
+      ...(PARENTS[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

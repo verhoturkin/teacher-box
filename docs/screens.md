@@ -59,6 +59,14 @@ List, assignment, review, editor, AI pane — [screens/homework.md](screens/home
 
 Home, schedule, homework, payments, account — [screens/cabinet.md](screens/cabinet.md).
 
+## Invitation
+
+`/invite/:token` (`identity/invite/invite-page.ts`): a student or a parent chooses a username and
+password (activation) or a new password (reset). A parent's invitation (`InviteInfo.role` =
+`GUARDIAN`) adds a secondary-container block «Вас пригласили как родителя. Дети: Петя и Маша.»
+with what the parent will see; *ours*: names are not declined, so the Russian text lists them after
+«Ребёнок» / «Дети». A signed-in teacher sees the form locked, told who will open the link.
+
 ## Admin
 
 [screens/admin.md](screens/admin.md).

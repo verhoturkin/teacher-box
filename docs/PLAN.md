@@ -147,7 +147,7 @@ once, after 455.
 
 ### 452. Family cabinet (frontend)
 
-- [ ] 452.1 *complex* F — `m3-expressive`. Teacher: the student card
+- [x] 452.1 *complex* F — `m3-expressive`. Teacher: the student card
   (`features/students/student-card.ts`, profile tab) gets a «Родители» block — up to two parents
   with their status (invited / active), «Пригласить родителя» (new or an existing parent),
   the invite link dialog (`invite-link-dialog.ts` reused), «Отвязать» with a confirm. Invite page
@@ -157,6 +157,14 @@ once, after 455.
   is linked, the switch «Оплаты видит только родитель» (451.3). Docs: `docs/screens.md`, wiki
   `First-steps` / new `Parents`, help `teacher/*` (ru, en) about inviting a parent and hiding
   payments.
+  *Done: the card `students/student-guardians-card.ts` sits between the video room and «Вход в
+  кабинет»; the switch is `billing/teacher/payments-visibility-switch.ts` (`billing/parts`),
+  mounted by the card and reloaded when a parent is linked or unlinked. `homeUrl()` of a
+  `GUARDIAN` is `/family` already — until 452.2 adds the area it is the not-found page. Russian
+  copy does not decline names: «Вас пригласили как родителя. Дети: Петя и Маша.» instead of
+  «родителя Пети». The student's «Родитель: Анна» is a tile in the profile card of `AccountPanel`.
+  Help: a «Родители» section of `teacher/students` (no new topic). No shared part — no gallery
+  sample.*
 - [ ] 452.2 *complex* F — `m3-expressive`. Area `/family` in `app.routes.ts`
   (`roleGuard('GUARDIAN')`, a `FamilyLayout` beside `core/layout/student-layout.ts`): child
   switcher in the top bar (chips with the child's colour / avatar, the choice in the URL

@@ -11,6 +11,7 @@
 
 [Мессенджеры](Messengers) ·
 [Расписание](Schedule) ·
+[Родители](Parents) ·
 [Звонки](Calls) ·
 [Доски](Boards) ·
 [ИИ-помощник](AI-assistant) ·

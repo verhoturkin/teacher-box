@@ -149,6 +149,11 @@ export const en: Translation<typeof ru> = {
       'profile.email-invalid': 'Invalid email address',
       'profile.phone-invalid': 'The phone number is too long',
       'profile.note-invalid': 'The note is too long',
+      'guardian.not-found': 'Parent not found',
+      'guardian.limit': 'A student can have at most two parents',
+      'guardian.already-linked': 'This parent is already linked to the student',
+      'identity.guardian-no-students': 'Your teacher has turned off your parent account',
+      'billing.no-guardian': 'Invite a parent first: otherwise nobody would see the payments',
       'student.not-found': 'Student not found',
       'tag.kind-used':
         'This tag is already set for some students. Clear it for them first, then change the type',

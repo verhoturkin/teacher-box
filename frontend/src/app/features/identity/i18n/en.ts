@@ -43,6 +43,9 @@ export const en: Translation<typeof ru> = {
     signIn: 'Sign in',
     toCabinet: 'To my cabinet',
     teacherBanner: 'You are signed in as a teacher. A student will open this link',
+    teacherBannerGuardian: 'You are signed in as a teacher. A parent will open this link',
+    guardian: (_count: number, names: string) => `You have been invited as the parent of ${names}.`,
+    guardianHint: 'The parent account shows lessons, homework and payments, read-only.',
     created: 'Account created',
     passwordSaved: 'Password saved',
     failed: 'Could not save your changes. Try again later',
@@ -50,6 +53,7 @@ export const en: Translation<typeof ru> = {
   roles: {
     TEACHER: 'Teacher',
     STUDENT: 'Student',
+    GUARDIAN: 'Parent',
     ADMIN: 'Administrator',
   },
   account: {
@@ -64,6 +68,8 @@ export const en: Translation<typeof ru> = {
     name: 'Name',
     teacherNameHint: 'Students see this name in the portal and in bot messages.',
     ownName: 'What should we call you?',
+    guardians: (count: number) => (count === 1 ? 'Parent' : 'Parents'),
+    guardiansHint: 'Can see your lessons, homework and payments. Your teacher links parents.',
     ownNameHint: (profileName: string) => `Your teacher sees you as “${profileName}”.`,
     seenAs: (login: string, profileName: string) => `${login} · your teacher sees “${profileName}”`,
     edit: 'Edit',

@@ -2,10 +2,13 @@ import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AuthResponse } from '@core/auth/auth.models';
-import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
+import { SKIP_ERROR_TOAST, quietContext } from '@core/http/api-error.interceptor';
 import {
   Account,
+  CreatedGuardian,
   CreatedStudent,
+  Guardian,
+  GuardianName,
   GroupInput,
   InviteInfo,
   IssuedInvite,
@@ -38,6 +41,50 @@ export class IdentityApi {
 
   reissueInvite(id: string): Observable<IssuedInvite> {
     return this.http.post<IssuedInvite>(`/api/teacher/students/${id}/invite`, null);
+  }
+
+  /** The parents of a student (ADR-0069); the load is quiet (the card shows a failure itself). */
+  guardians(studentId: string): Observable<Guardian[]> {
+    return this.http.get<Guardian[]>(`/api/teacher/students/${studentId}/guardians`, {
+      context: quietContext(),
+    });
+  }
+
+  /** Every parent of the portal: «Уже есть в портале» picks one of them. */
+  allGuardians(): Observable<Guardian[]> {
+    return this.http.get<Guardian[]>('/api/teacher/guardians', { context: quietContext() });
+  }
+
+  /** A new parent with an activation link; refused (422 `guardian.limit`) over two parents. */
+  createGuardian(studentId: string, displayName: string): Observable<CreatedGuardian> {
+    return this.http.post<CreatedGuardian>(`/api/teacher/students/${studentId}/guardians`, {
+      displayName,
+    });
+  }
+
+  /** Links a parent of another student (a sibling's) without an invitation. */
+  linkGuardian(studentId: string, guardianId: string): Observable<Guardian> {
+    return this.http.post<Guardian>(`/api/teacher/students/${studentId}/guardians/link`, {
+      guardianId,
+    });
+  }
+
+  /** Activation until the parent signs up, a password reset afterwards. */
+  reissueGuardianInvite(studentId: string, guardianId: string): Observable<IssuedInvite> {
+    return this.http.post<IssuedInvite>(
+      `/api/teacher/students/${studentId}/guardians/${guardianId}/invite`,
+      null,
+    );
+  }
+
+  /** The last child unlinked deactivates the parent. */
+  unlinkGuardian(studentId: string, guardianId: string): Observable<unknown> {
+    return this.http.delete(`/api/teacher/students/${studentId}/guardians/${guardianId}`);
+  }
+
+  /** The student's parents: «Родители: Анна» in «Мой аккаунт». */
+  myGuardians(): Observable<GuardianName[]> {
+    return this.http.get<GuardianName[]>('/api/me/guardians', { context: quietContext() });
   }
 
   deactivate(id: string): Observable<Student> {

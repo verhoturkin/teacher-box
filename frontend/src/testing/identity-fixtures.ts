@@ -1,4 +1,9 @@
-import { Student, StudentGroup, StudentTag } from '@features/identity/data-access/identity.models';
+import {
+  Guardian,
+  Student,
+  StudentGroup,
+  StudentTag,
+} from '@features/identity/data-access/identity.models';
 
 /** A student as the teacher sees it, with overridable fields. */
 export function aStudent(overrides: Partial<Student> = {}): Student {
@@ -17,6 +22,19 @@ export function aStudent(overrides: Partial<Student> = {}): Student {
     version: 0,
     pendingInvite: null,
     tags: {},
+    ...overrides,
+  };
+}
+
+/** A parent as the teacher sees them (ADR-0069), with overridable fields. */
+export function aGuardian(overrides: Partial<Guardian> = {}): Guardian {
+  return {
+    id: 'guardian-1',
+    displayName: 'Анна',
+    status: 'ACTIVE',
+    login: 'anna',
+    pendingInvite: null,
+    studentIds: ['student-1'],
     ...overrides,
   };
 }

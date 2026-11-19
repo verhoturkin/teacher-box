@@ -156,6 +156,12 @@ export const en: Translation<typeof ru> = {
     receiptFailed:
       'The payment was recorded, but the receipt could not be attached. Add it from the student’s payment history.',
   },
+  paymentsVisibility: {
+    label: 'Only parents see payments',
+    hint: 'The student won’t see their balance, payment history or reminders about debts; their parents will.',
+    on: 'Only parents see payments now',
+    off: 'The student can see payments again',
+  },
   studentPrice: {
     lessonPrice: 'Lesson price',
     what: 'the lesson price',
