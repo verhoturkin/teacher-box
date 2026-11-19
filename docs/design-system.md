@@ -569,6 +569,10 @@ Gallery: [`/gallery/frame`](../frontend/src/app/features/gallery/frame/).
   66 ch; no card grids except the feeds named in [`screens.md`](screens.md), with a fixed column
   order that is also the reading order. Columns only inside one row of data (name — value, table
   columns, row buttons, filter fields).
+- **Settings grid** (`tb-settings-grid`, *ours*, 448.9): every section of Settings (teacher and
+  administrator, «Аккаунт» too) lays its cards in CSS columns: two while each gets 360 dp, else
+  one; the cards flow down and the browser balances the columns by height; 24 px between cards
+  and columns. A card never splits; cards that belong together go in one `tb-stack`.
 - **No wrapping cards in a pane** (*ours*): inside `tb-pane` a `p-card` has no surface, corner or
   padding — the section title stands on the pane (Title Medium emphasized), its rows or blocks
   (`tb-list`, `tb-figures`) lie under it, 12 px apart; the list group's outer corner is 16 px. The

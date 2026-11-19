@@ -75,7 +75,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     @if (settings(); as settings) {
       <form tbFieldErrors id="portal" [formGroup]="form" (ngSubmit)="save()">
         <!-- sketch Portal: the cards of the draft in one column, the preview beside them -->
-        <div class="tb-portal-grid">
+        <div class="tb-settings-grid">
           <div class="tb-stack">
             <p-card
               [header]="t.identityTitle"
@@ -363,14 +363,6 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     :host {
       display: block;
       container-type: inline-size;
-    }
-
-    /* sketch Portal: the draft and the preview side by side while each gets 360 px, else one column */
-    .tb-portal-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 22.5rem), 1fr));
-      align-items: start;
-      gap: var(--tb-space-4);
     }
 
     /* the colors: five in a row, the dot over its name (the sketch); ours: 40 px dots, 12 px apart */

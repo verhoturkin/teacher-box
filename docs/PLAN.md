@@ -238,8 +238,10 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
 - [x] 448.8 *complex* F — drag handle on the docked notifications sheet (extra-large): the sheet is
   an `aside` of the shell, not a `tb-pane`; the handle sits beside it in the host (not clipped by
   `overflow: hidden`) and takes its limits from the page beside it (`PaneHandle.beside`).
-- [ ] 448.9 *complex* F — one grid for Settings: every section the same columns and grid
-  (audit the sections first, the user agrees the grid, then implement).
+- [x] 448.9 *complex* F — one grid for Settings: every section the same columns and grid. Was:
+  auto-fit grids of 22 or 22.5 rem, 16 or 24 px gaps, so the column count followed the number of
+  cards. Now `tb-settings-grid`: CSS columns, at most two of at least 360 dp, balanced by height
+  (the user chose «columns by width»; an auto-fill grid gave too many narrow columns).
 
 ### 449. Release 0.57.0
 

@@ -292,13 +292,14 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
         <ng-container *ngTemplateOutlet="signInCard" />
       </div>
     } @else {
-      <div class="tb-account">
+      <div class="tb-account tb-settings-grid">
+        <ng-container *ngTemplateOutlet="profileCard" />
+        <ng-container *ngTemplateOutlet="signInCard" />
+        <ng-container *ngTemplateOutlet="appearanceCard" />
+        <!-- «Уведомления» are two cards (display: contents): together in one column -->
         <div class="tb-stack">
-          <ng-container *ngTemplateOutlet="profileCard" />
-          <ng-container *ngTemplateOutlet="signInCard" />
-          <ng-container *ngTemplateOutlet="appearanceCard" />
+          <ng-container *ngTemplateOutlet="notifications(); context: { $implicit: isTeacher() }" />
         </div>
-        <ng-container *ngTemplateOutlet="notifications(); context: { $implicit: isTeacher() }" />
       </div>
     }
     @if (passwordDialogBuilt()) {
@@ -319,14 +320,6 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
     }
   `,
   styles: `
-    /* the account and «Уведомления» side by side when both fit (sketch \`Main\`); one column below */
-    .tb-account {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 22.5rem), 1fr));
-      gap: var(--tb-gap-section);
-      align-items: start;
-    }
-
     .tb-account__name {
       overflow-wrap: anywhere;
     }
@@ -338,6 +331,12 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
     }
 
     /* medium (sketch \`StudentTablet\`): the profile row and «Уведомления» across, then a pair of cards */
+    .tb-account--medium,
+    .tb-account--list {
+      display: grid;
+      align-items: start;
+    }
+
     .tb-account--medium {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: var(--tb-gap-section);

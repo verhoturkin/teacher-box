@@ -13,19 +13,10 @@ import { StudentMessengersPanel } from './student-messengers-panel';
   imports: [BotsPanel, BotAbilitiesPanel, StudentMessengersPanel],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-messengers">
+    <div class="tb-settings-grid">
       <tb-bots-panel><tb-bot-abilities-panel /></tb-bots-panel>
       <tb-student-messengers-panel />
     </div>
-  `,
-  styles: `
-    /* sketch Messengers: two cards side by side while each gets 360 px, else one under the other */
-    .tb-messengers {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(22.5rem, 100%), 1fr));
-      align-items: start;
-      gap: var(--tb-gap-section);
-    }
   `,
 })
 export class MessengersSettingsPanel {}

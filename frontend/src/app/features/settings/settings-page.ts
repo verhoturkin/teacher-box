@@ -206,19 +206,17 @@ import { T } from './i18n/texts';
           <tb-portal-settings-card />
         }
         @case ('lessons') {
-          <div class="tb-settings__lessons">
+          <div class="tb-settings-grid">
             <tb-lesson-settings />
-            <div class="tb-stack">
-              <p-card [header]="t.calls" styleClass="tb-section-card tb-section-card--flow"
-                ><tb-meetings-settings-panel
-              /></p-card>
-              <tb-google-calendar-panel />
-              <tb-calendar-feed-panel />
-            </div>
+            <p-card [header]="t.calls" styleClass="tb-section-card tb-section-card--flow"
+              ><tb-meetings-settings-panel
+            /></p-card>
+            <tb-google-calendar-panel />
+            <tb-calendar-feed-panel />
           </div>
         }
         @case ('students') {
-          <div class="tb-stack">
+          <div class="tb-settings-grid">
             <tb-tags-panel />
           </div>
         }
@@ -235,12 +233,10 @@ import { T } from './i18n/texts';
           <tb-ai-settings-panel />
         }
         @case ('data') {
-          <div class="tb-settings__lessons">
+          <div class="tb-settings-grid">
             <tb-backups-card />
-            <div class="tb-stack">
-              <tb-drive-panel />
-              <tb-reset-card />
-            </div>
+            <tb-drive-panel />
+            <tb-reset-card />
           </div>
         }
       }
@@ -408,14 +404,6 @@ import { T } from './i18n/texts';
       .tb-settings__current .tb-settings__title {
         font: var(--tb-type-label-l-emphasized);
       }
-    }
-
-    /* «Занятия» (sketch Lessons): two columns of cards from medium up, one below 22 rem each */
-    .tb-settings__lessons {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
-      align-items: start;
-      gap: var(--tb-space-4);
     }
 
     /* the label of the portal's group on a phone (sketch PhoneSettings: the account row leads, tonal) */

@@ -120,6 +120,28 @@ tb-not-found,
   overflow-wrap: break-word;
 }
 
+/*
+ * One grid for every section of Settings (teacher and administrator): two columns while each gets
+ * 360 dp (M3 compact window), else one; the cards flow down the columns, which the browser balances
+ * by height, 24 px apart as sections (ADR-0068). Ours: M3 publishes no card grid.
+ */
+.tb-settings-grid {
+  columns: 2 22.5rem;
+  column-gap: var(--tb-gap-section);
+
+  /* a card never splits across columns; custom elements are inline by default */
+  > :where(*) {
+    display: block;
+    break-inside: avoid;
+    margin-block-end: var(--tb-gap-section);
+  }
+
+  /* a hidden widget (no calendar feed) leaves no gap */
+  > :empty {
+    display: none;
+  }
+}
+
 .tb-stack {
   display: flex;
   flex-direction: column;

@@ -233,7 +233,7 @@ function dailyCron(time: string): string {
                 t.restartNeeded
               }}</p-message>
             }
-            <div class="tb-admin-settings">
+            <div class="tb-settings-grid">
               @for (column of columns(); track $index; let last = $last) {
                 <div class="tb-stack">
                   @for (card of column; track card.key) {
@@ -464,14 +464,6 @@ function dailyCron(time: string): string {
     </tb-dialog>
   `,
   styles: `
-    /* Sketch AdminLive: three columns of cards on expanded widths, one below 22 rem each (as «Занятия») */
-    .tb-admin-settings {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
-      gap: var(--tb-space-4);
-      align-items: start;
-    }
-
     .tb-admin-settings__title {
       display: flex;
       align-items: center;

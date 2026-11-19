@@ -78,7 +78,7 @@ interface UsagePart {
   providers: [AiSetup],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tb-ai">
+    <div class="tb-settings-grid">
       <div class="tb-ai__stack">
         <tb-ai-connections-card />
         <p-card styleClass="tb-section-card tb-section-card--flow">
@@ -186,14 +186,6 @@ interface UsagePart {
     </div>
   `,
   styles: `
-    /* the sketch Ai: usage and requests beside the prompts while they fit */
-    .tb-ai {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 22.5rem), 1fr));
-      align-items: start;
-      gap: var(--tb-space-4);
-    }
-
     .tb-ai__stack {
       display: flex;
       flex-direction: column;
