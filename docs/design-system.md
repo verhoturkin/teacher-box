@@ -506,8 +506,9 @@ Gallery: [`/gallery/frame`](../frontend/src/app/features/gallery/frame/).
 
 - **Panes** (`shared/ui/panes.ts`, **M3** canonical layouts): `tb-panes` holds `tb-pane`s of kind
   `fixed` (360 dp on expanded, 412 dp from large — **M3**), `flexible` (the rest, at least one) or
-  `sheet` (standard side sheet ≤ 400 dp, surface-container-low — **M3**). A pane is a `surface`
-  sheet with 28 dp corners on the window, 24 dp inner padding (16 on compact) (*ours*); 24 dp
+  `sheet` (standard side sheet ≤ 400 dp — **M3**). Every pane, side sheets and supporting panes
+  too, is one tone with the same lists (M3 allows surface-container-low for a side sheet; one tone —
+  *ours*, 0.57.0). A pane is a `surface` sheet with 28 dp corners on the window, 24 dp inner padding (16 on compact) (*ours*); 24 dp
   between panes, 24 dp at the trailing edge and bottom, 16 dp at the sides on compact (**M3**). From
   expanded panes stand side by side and each scrolls on its own; below they follow one another and
   the window scrolls. Focus order = template order = visual order; `label` makes a pane a named

@@ -22,7 +22,7 @@ import { PaneHandle } from './pane-handle';
 /**
  * The kind of a pane (M3 panes, redesign spec §3.3): `fixed` keeps the M3 default width of its
  * breakpoint (360 dp on expanded, 412 dp from large), `flexible` takes the rest of the width, `sheet` is
- * the standard side sheet of the third pane (at most 400 dp, `surface container low`).
+ * the standard side sheet of the third pane (at most 400 dp, the same surface as the other panes: ours).
  */
 export type PaneKind = 'fixed' | 'flexible' | 'sheet';
 
@@ -131,7 +131,7 @@ export class Panes {
 }
 
 /**
- * One pane of {@link Panes}: a `surface` sheet (`surface container low` in dark, also for a side sheet) that scrolls on
+ * One pane of {@link Panes}: a `surface` sheet (`surface container low` in dark) that scrolls on
  * its own from expanded. With `label` it is a landmark region of that name. A pane that appears later
  * enters on `--tb-spring-default-spatial` and leaves on it beside other panes (no stagger).
  */
@@ -237,8 +237,7 @@ export class Panes {
     }
 
     /* Portal decision: dark panes need a raised tone above the window's surface. */
-    :host-context(.tb-dark),
-    :host(.tb-pane--sheet) {
+    :host-context(.tb-dark) {
       background: var(--p-md-surface-container-low);
     }
 
@@ -259,8 +258,7 @@ export class Panes {
       /* the sketches: on a phone the page lies right on the window (no big card on the background): the pane has
          neither its own surface nor corners; the window takes the surface tone (styles.scss) */
       :host,
-      :host-context(.tb-dark),
-      :host(.tb-pane--sheet) {
+      :host-context(.tb-dark) {
         border-radius: 0;
         background: transparent;
       }

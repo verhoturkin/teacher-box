@@ -230,6 +230,9 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
   `nav-badge.ts` to one value; 2 px gaps → `--tb-space-half`.
 - [x] 448.5 *simple* F — lint guard: Stylelint forbids px/rem literals in
   `padding|margin|gap|inset` outside `_tokens.scss` and the preset (touch-target insets excepted).
+- [x] 448.6 *simple* F — one tone for every pane: the schedule side pane, the review side sheet and
+  the AI assistant pane lose their surface-container-low fill and their own list colour; they look
+  and list like the main panes (`panes.ts`, `schedule-page.ts`, `assignment-editor-page.ts`).
 
 ### 449. Release 0.57.0
 

@@ -402,26 +402,6 @@ const ALL_DAY_START_HOUR = 10;
       margin-block-end: var(--tb-space-4);
     }
 
-    /* the supporting pane: M3 side-sheet surface (spec §7) */
-    .tb-schedule-side {
-      background: var(--p-md-surface-container-low);
-      /* M3 expressive segmented list on a tonal pane, the sketch's light rows: the items are lighter than the pane
-         (container lowest on container low; in the dark theme container high), 2 dp apart (SegmentedGap), the
-         group's outer corners large (16), the others extra small (4): tb-list does it */
-      --tb-list-item: var(--p-md-surface-container-lowest);
-    }
-
-    /* on a phone the pane lies right on the window, no tonal band across the screen */
-    @media (width < 37.5em) {
-      .tb-schedule-side {
-        background: none;
-      }
-    }
-
-    :host-context(.tb-dark) .tb-schedule-side {
-      --tb-list-item: var(--p-md-surface-container-high);
-    }
-
     /* 16 dp between the list and «Регулярное занятие» inside their section */
     .tb-schedule-side__add {
       display: block;
