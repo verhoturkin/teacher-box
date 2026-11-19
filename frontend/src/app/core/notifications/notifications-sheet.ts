@@ -6,6 +6,7 @@ import {
   ElementRef,
   Type,
   afterRenderEffect,
+  computed,
   effect,
   inject,
   input,
@@ -20,6 +21,7 @@ import { ButtonDirective, ButtonIcon } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
 import { CORE_T } from '@core/i18n/texts';
 import { ModalDrawer } from '@shared/ui/modal-drawer';
+import { PaneHandle } from '@shared/ui/pane-handle';
 import { NOTIFICATIONS_SHEET_CONTENT, NotificationsSheetState } from './notifications-sheet-state';
 
 const T = CORE_T.bell;
@@ -37,7 +39,15 @@ function pathOf(url: string): string {
  */
 @Component({
   selector: 'tb-notifications-sheet',
-  imports: [ButtonDirective, ButtonIcon, Drawer, ModalDrawer, NgComponentOutlet, NgTemplateOutlet],
+  imports: [
+    ButtonDirective,
+    ButtonIcon,
+    Drawer,
+    ModalDrawer,
+    NgComponentOutlet,
+    NgTemplateOutlet,
+    PaneHandle,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (docked()) {
@@ -71,6 +81,12 @@ function pathOf(url: string): string {
           </div>
           <ng-container *ngComponentOutlet="content()" />
         </aside>
+        <tb-pane-handle
+          [pane]="pane"
+          resizeKey="notifications"
+          controls="tb-notifications-sheet"
+          [beside]="page()"
+        />
       }
     } @else {
       <p-drawer
@@ -99,6 +115,14 @@ function pathOf(url: string): string {
        24 dp from the trailing edge and the bottom (as tb-pane kind="sheet") */
     :host {
       flex: none;
+      position: relative;
+      /* the page's trailing margin is the spacer the handle sits in */
+      --tb-panes-spacer: var(--tb-margin);
+    }
+
+    /* the handle beside the sheet, not over the top strip the sheet starts below */
+    tb-pane-handle {
+      inset-block: var(--tb-header-height) var(--tb-space-6);
     }
 
     .tb-notifications-pane {
@@ -106,9 +130,10 @@ function pathOf(url: string): string {
       flex-direction: column;
       position: sticky;
       top: var(--tb-header-height);
-      inline-size: 25rem;
+      /* 400 dp (M3) or the width the user set: 360 dp up to half the window, as a resizable pane */
+      --tb-sheet-width: clamp(360px, var(--tb-pane-width, 25rem), 50vw);
+      inline-size: var(--tb-sheet-width);
       box-sizing: border-box;
-      max-width: 25rem;
       height: calc(100dvh - var(--tb-header-height) - var(--tb-space-6));
       /* the rail runs up beside the top strip and the body is pulled up under it (shell.scss): the pane starts below the strip */
       margin: var(--tb-header-height) var(--tb-space-6) var(--tb-space-6) 0;
@@ -120,7 +145,7 @@ function pathOf(url: string): string {
       color: var(--p-md-on-surface);
       outline: none;
       /* a coplanar sheet (M3 video 7-5): its room grows from 0 and the page beside it narrows */
-      --tb-motion-dock: -25rem;
+      --tb-motion-dock: calc(-1 * var(--tb-sheet-width));
     }
 
     .tb-notifications-pane--enter {
@@ -162,6 +187,13 @@ export class NotificationsSheet {
 
   protected readonly content = signal<Type<unknown> | null>(null);
   private readonly pane = viewChild<ElementRef<HTMLElement>>('pane');
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  /** The page beside the docked sheet: it gives way to a wider sheet. */
+  protected readonly page = computed(() =>
+    this.state.open()
+      ? (this.host.parentElement?.querySelector<HTMLElement>('.tb-shell__content') ?? null)
+      : null,
+  );
   /** What had the focus when the docked sheet opened: it gets it back when the sheet closes. */
   private opener: HTMLElement | null = null;
 

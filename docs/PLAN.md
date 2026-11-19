@@ -235,9 +235,11 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
   and list like the main panes (`panes.ts`, `schedule-page.ts`, `assignment-editor-page.ts`).
 - [x] 448.7 *simple* F — review side sheet: it stands while a work of the queue loads (the panes
   no longer split after the work appears) and gets the drag handle (`resizeKey` on `kind="sheet"`).
-- [ ] 448.8 *complex* F — drag handle on the docked notifications sheet (extra-large): the sheet is
-  an `aside` of the shell, not a `tb-pane`; the handle needs its limits there and must not be
-  clipped by the sheet's `overflow: hidden`.
+- [x] 448.8 *complex* F — drag handle on the docked notifications sheet (extra-large): the sheet is
+  an `aside` of the shell, not a `tb-pane`; the handle sits beside it in the host (not clipped by
+  `overflow: hidden`) and takes its limits from the page beside it (`PaneHandle.beside`).
+- [ ] 448.9 *complex* F — one grid for Settings: every section the same columns and grid
+  (audit the sections first, the user agrees the grid, then implement).
 
 ### 449. Release 0.57.0
 
