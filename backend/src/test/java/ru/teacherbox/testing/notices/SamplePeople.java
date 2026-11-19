@@ -72,6 +72,12 @@ public final class SamplePeople implements UserDirectory, StudentGroups {
         return studentIds.stream().map(this::findStudent).flatMap(Optional::stream).toList();
     }
 
+    /** No guardians here: the identity module's tests cover them. */
+    @Override
+    public Optional<String> guardianName(UUID guardianId) {
+        return Optional.empty();
+    }
+
     @Override
     public List<StudentSummary> currentStudents() {
         return findStudents(STUDENTS.keySet());

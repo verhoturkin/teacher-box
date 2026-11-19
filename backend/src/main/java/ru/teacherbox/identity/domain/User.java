@@ -8,9 +8,10 @@ import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.security.Role;
 
 /**
- * User account: the teacher (exactly one per instance) or a student.
+ * User account: the teacher (exactly one per instance), a student, a student's guardian (ADR-0069) or the
+ * administrator.
  *
- * <p>Student lifecycle: {@code INVITED --activate--> ACTIVE --deactivate--> DEACTIVATED --reactivate-->
+ * <p>Student and guardian lifecycle: {@code INVITED --activate--> ACTIVE --deactivate--> DEACTIVATED --reactivate-->
  * ACTIVE} (or back to {@code INVITED} if the invitation was never accepted).
  */
 public final class User {
@@ -69,6 +70,12 @@ public final class User {
                 now, 0);
     }
 
+    /** A parent invited by the teacher from a student's card (ADR-0069). */
+    public static User newGuardian(UUID id, Profile profile, Instant now) {
+        return new User(id, Role.GUARDIAN, null, null, profile, null, null, AccountStatus.INVITED, 0, null, false, now,
+                now, 0);
+    }
+
     /** Restores a persisted user. */
     public static User restore(UUID id, Role role, @Nullable String login, @Nullable String passwordHash,
             Profile profile, @Nullable String ownName, @Nullable Avatar avatar, AccountStatus status,
@@ -78,9 +85,9 @@ public final class User {
                 passwordChangeRequired, createdAt, updatedAt, version);
     }
 
-    /** Student accepted the invitation: sets credentials. */
+    /** A student or a guardian accepted the invitation: sets credentials. */
     public void activate(String normalizedLogin, String newPasswordHash, Instant now) {
-        requireStudent();
+        requireInvitable();
         if (status != AccountStatus.INVITED) {
             throw new BusinessRuleException("account.not-invited", "Account is not waiting for activation");
         }
@@ -150,7 +157,7 @@ public final class User {
     }
 
     public void deactivate(Instant now) {
-        requireStudent();
+        requireInvitable();
         if (status == AccountStatus.DEACTIVATED) {
             throw new BusinessRuleException("account.already-deactivated", "Account is already deactivated");
         }
@@ -159,7 +166,7 @@ public final class User {
     }
 
     public void reactivate(Instant now) {
-        requireStudent();
+        requireInvitable();
         if (status != AccountStatus.DEACTIVATED) {
             throw new BusinessRuleException("account.not-deactivated", "Account is not deactivated");
         }
@@ -214,6 +221,10 @@ public final class User {
         return role == Role.TEACHER;
     }
 
+    public boolean isGuardian() {
+        return role == Role.GUARDIAN;
+    }
+
     private void requireAdministrator() {
         if (role != Role.ADMIN) {
             throw new BusinessRuleException("account.not-administrator", "Operation is only allowed for the administrator");
@@ -223,6 +234,13 @@ public final class User {
     private void requireStudent() {
         if (role != Role.STUDENT) {
             throw new BusinessRuleException("account.not-student", "Operation is only allowed for students");
+        }
+    }
+
+    /** Students and guardians sign up by an invitation and lose access when the teacher revokes it. */
+    private void requireInvitable() {
+        if (role != Role.STUDENT && role != Role.GUARDIAN) {
+            throw new BusinessRuleException("account.not-student", "Operation is only allowed for students and guardians");
         }
     }
 

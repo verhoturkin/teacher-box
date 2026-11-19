@@ -61,6 +61,12 @@ public final class FakeUserDirectory implements UserDirectory {
         return studentIds.stream().map(students::get).filter(s -> s != null).toList();
     }
 
+    /** No guardians here: the identity module's tests cover them. */
+    @Override
+    public Optional<String> guardianName(UUID guardianId) {
+        return Optional.empty();
+    }
+
     @Override
     public List<StudentSummary> currentStudents() {
         return students.values().stream().filter(StudentSummary::isCurrent).toList();

@@ -51,7 +51,7 @@ once, after 455.
 
 ### 450. Guardian accounts
 
-- [ ] 450.1 *complex* B — ADR-0069 (row in `docs/adr/README.md`): role, guardianship, invite,
+- [x] 450.1 *complex* B — ADR-0069 (row in `docs/adr/README.md`): role, guardianship, invite,
   access model «option A» of the roadmap (separate `/api/guardian/students/{studentId}/<module>/**`
   read endpoints, guard SPI; `/api/me/**` with an «acting as» header rejected). Code:
   `shared/security/Role.java` gains `GUARDIAN`; `CurrentUser.isGuardian()`; SPI
@@ -76,6 +76,13 @@ once, after 455.
   `GuardianUnlinked` in `identity/api`. `UserDirectory` resolves a guardian's name and language.
   Tests: service, controllers with role checks, invite accept, limit of two, deactivation,
   `ModularityTests`. Docs: `docs/modules/identity.md`, AGENTS.md §4.3 (the role row).
+  *Done with these choices: an «active child» is a current one (invited or active, as
+  `StudentSummary.isCurrent`); the `/api/guardian/**` → `GUARDIAN` URL rule is added now so that
+  `/api/guardian/children` works — the `/api/me/**` subset and the matrix test stay in 450.2; a
+  parent's invite reuses `invites` without a `kind` column (the role comes from the user);
+  `GuardianUnlinked` carries `deactivated`; a parent of only deactivated children is also refused at
+  refresh and on the invite page; accepting a parent's invite sends the teacher no notice yet
+  (notices — 453.1); `StudentAdminService` and the new service share `InviteIssuer`.*
 - [ ] 450.2 *complex* B — `platform/security/PlatformSecurityAutoConfiguration`: `/api/guardian/**`
   → `GUARDIAN`; the guardian also reaches `/api/me`, `/api/me/password`, `/api/me/language`,
   `/api/me/avatar`, `/api/me/notifications/**`, `/api/me/channels/**`, `/api/me/push/**` (if it

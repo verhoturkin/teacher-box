@@ -6,15 +6,15 @@ import org.springframework.stereotype.Component;
 import ru.teacherbox.shared.reset.DataReset;
 
 /**
- * Full reset (ADR-0014): students (their photos are deleted by the platform), invitations and sessions,
- * groups. The accounts of the teacher and the administrator stay with their passwords and sessions.
+ * Full reset (ADR-0014): students and their guardians (their photos are deleted by the platform), invitations
+ * and sessions, groups. The accounts of the teacher and the administrator stay with their passwords and sessions.
  */
 @Component
 class IdentityDataReset implements DataReset {
 
     private static final List<String> TABLES = List.of("identity.student_tags", "identity.tag_values",
-            "identity.tags", "identity.group_members", "identity.student_groups", "identity.invites",
-            "identity.refresh_tokens", "identity.users");
+            "identity.tags", "identity.group_members", "identity.student_groups", "identity.guardianships",
+            "identity.invites", "identity.refresh_tokens", "identity.users");
 
     private final JdbcClient jdbc;
 
@@ -34,11 +34,12 @@ class IdentityDataReset implements DataReset {
         jdbc.sql("delete from identity.tags").update();
         jdbc.sql("delete from identity.group_members").update();
         jdbc.sql("delete from identity.student_groups").update();
+        jdbc.sql("delete from identity.guardianships").update();
         jdbc.sql("delete from identity.invites").update();
         jdbc.sql("""
                 delete from identity.refresh_tokens
-                where user_id in (select id from identity.users where role = 'STUDENT')
+                where user_id in (select id from identity.users where role in ('STUDENT', 'GUARDIAN'))
                 """).update();
-        jdbc.sql("delete from identity.users where role = 'STUDENT'").update();
+        jdbc.sql("delete from identity.users where role in ('STUDENT', 'GUARDIAN')").update();
     }
 }

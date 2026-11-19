@@ -117,6 +117,8 @@ public class PlatformSecurityAutoConfiguration {
                         .requestMatchers(HttpMethod.POST, "/api/client-errors").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/teacher/**").hasRole("TEACHER")
+                        // A parent reads their children's data here only (ADR-0069); 450.2 adds the /api/me part.
+                        .requestMatchers("/api/guardian/**").hasRole("GUARDIAN")
                         // The administrator has only their own account; the rest is for the teacher and students.
                         .requestMatchers("/api/me", "/api/me/password", "/api/me/language").authenticated()
                         .requestMatchers("/api/**").hasAnyRole("TEACHER", "STUDENT")
