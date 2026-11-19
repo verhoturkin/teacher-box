@@ -107,6 +107,16 @@ describe('PaneHandle', () => {
     },
   );
 
+  it('resizes a side sheet too, without its 400 dp cap', async () => {
+    const { fixture, host, pane } = await render();
+    fixture.componentInstance.kind.set('sheet');
+    await fixture.whenStable();
+
+    expect(host.querySelector('[role="separator"]')).not.toBeNull();
+    expect(pane.style.flexBasis).toContain('--tb-pane-width');
+    expect(pane.style.maxWidth).toBe('');
+  });
+
   it('has no handle on a flexible pane', async () => {
     const { fixture, host } = await render();
     fixture.componentInstance.kind.set('flexible');

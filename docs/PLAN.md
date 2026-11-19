@@ -233,6 +233,11 @@ Spacing (441–448): shared rules before screens, every substep with the `m3-exp
 - [x] 448.6 *simple* F — one tone for every pane: the schedule side pane, the review side sheet and
   the AI assistant pane lose their surface-container-low fill and their own list colour; they look
   and list like the main panes (`panes.ts`, `schedule-page.ts`, `assignment-editor-page.ts`).
+- [x] 448.7 *simple* F — review side sheet: it stands while a work of the queue loads (the panes
+  no longer split after the work appears) and gets the drag handle (`resizeKey` on `kind="sheet"`).
+- [ ] 448.8 *complex* F — drag handle on the docked notifications sheet (extra-large): the sheet is
+  an `aside` of the shell, not a `tb-pane`; the handle needs its limits there and must not be
+  clipped by the sheet's `overflow: hidden`.
 
 ### 449. Release 0.57.0
 

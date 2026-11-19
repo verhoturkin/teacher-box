@@ -695,6 +695,21 @@ describe('AssignmentsPage with the review side sheet (from large)', () => {
     fixture.destroy();
   });
 
+  it('keeps the sheet while the next work of the queue loads: the panes do not split again', async () => {
+    const { backend, fixture, host } = await render();
+
+    fixture.componentRef.setInput('taskId', 't-2');
+    await fixture.whenStable();
+
+    expect(host.querySelector('tb-pane.tb-pane--sheet')).not.toBeNull();
+    expect(host.querySelector('tb-review-sheet')).toBeNull();
+    backend.expectOne('/api/teacher/homework/tasks/t-2').flush(taskDetails({ taskId: 't-2' }));
+    await fixture.whenStable();
+    expect(host.querySelector('tb-review-sheet')).not.toBeNull();
+    expect(host.querySelector('tb-pane.tb-pane--sheet [role="separator"]')).not.toBeNull();
+    fixture.destroy();
+  });
+
   it('names the next work and opens it from the header', async () => {
     const { host, navigate, fixture } = await render();
 

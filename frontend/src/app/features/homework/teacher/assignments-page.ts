@@ -111,14 +111,16 @@ const VIEWS: readonly View[] = ['list', 'journal'];
             (reviewed)="decide($event)"
           />
         </tb-pane>
-        @if (sheetOpen() && reviewing(); as task) {
-          <tb-pane kind="sheet" [label]="t.reviewSheet">
-            <tb-review-sheet
-              [task]="task"
-              [next]="next()"
-              (reviewed)="decide($event)"
-              (closed)="closeReview()"
-            />
+        @if (sheetOpen()) {
+          <tb-pane kind="sheet" resizeKey="review" [label]="t.reviewSheet">
+            @if (reviewing(); as task) {
+              <tb-review-sheet
+                [task]="task"
+                [next]="next()"
+                (reviewed)="decide($event)"
+                (closed)="closeReview()"
+              />
+            }
           </tb-pane>
         }
       </tb-panes>
@@ -412,9 +414,14 @@ export class AssignmentsPage implements OnInit {
       ? task
       : null;
   });
-  /** From large the review is a side sheet beside the work (sketch 14); the rail stays as it is. */
+  /**
+   * From large the review is a side sheet beside the work (sketch 14); the rail stays as it is. A work of
+   * the queue keeps the sheet while it loads, so the panes do not split after the work appears.
+   */
   protected readonly sheetOpen = computed(
-    () => (this.size() === 'large' || this.size() === 'extra-large') && this.reviewing() !== null,
+    () =>
+      (this.size() === 'large' || this.size() === 'extra-large') &&
+      (this.reviewing() !== null || (this.current()?.taskId !== this.taskId() && this.place() > 0)),
   );
   /** The work of the review on a phone (compact): the floating toolbar, no bottom bar (spec §9). */
   protected readonly phoneReview = computed(

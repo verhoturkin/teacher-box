@@ -307,7 +307,7 @@ export class Pane {
   /** The name of the pane for assistive technology (a landmark region); none — a plain block. */
   readonly label = input<string>();
   /**
-   * A fixed pane with a key gets the M3 drag handle while the panes stand side by side (from expanded); the
+   * A fixed pane or a side sheet with a key gets the M3 drag handle while the panes stand side by side (from expanded); the
    * width is remembered under the key (unique per page).
    */
   readonly resizeKey = input<string>();
@@ -317,7 +317,7 @@ export class Pane {
   protected readonly resizable = computed(
     () =>
       this.resizeKey() !== undefined &&
-      this.kind() === 'fixed' &&
+      this.kind() !== 'flexible' &&
       !this.panes.single() &&
       this.panes.size() !== 'medium',
   );
@@ -339,7 +339,9 @@ export class Pane {
           : width;
       }
       case 'sheet':
-        return SHEET_WIDTH;
+        return this.resizable()
+          ? `clamp(360px, var(--tb-pane-width, ${SHEET_WIDTH}), 50%)`
+          : SHEET_WIDTH;
       case 'flexible':
         return '0%';
     }
@@ -351,7 +353,7 @@ export class Pane {
       : null,
   );
   protected readonly maxWidth = computed(() =>
-    !this.panes.single() && this.kind() === 'sheet' ? SHEET_WIDTH : null,
+    !this.panes.single() && this.kind() === 'sheet' && !this.resizable() ? SHEET_WIDTH : null,
   );
   /** Its room beside the others when the width is known (fixed, sheet): it enters and leaves coplanar. */
   protected readonly dock = computed(() => {

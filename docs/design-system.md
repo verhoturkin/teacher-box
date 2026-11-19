@@ -513,9 +513,10 @@ Gallery: [`/gallery/frame`](../frontend/src/app/features/gallery/frame/).
   expanded panes stand side by side and each scrolls on its own; below they follow one another and
   the window scrolls. Focus order = template order = visual order; `label` makes a pane a named
   region. The shell drops its content padding for a page of panes.
-- **Drag handle** (`shared/ui/pane-handle.ts`, **M3** DragHandle): `tb-pane kind="fixed"
-  resizeKey="<page>"` gets a handle in the spacer on its flexible side while the panes stand side
-  by side (from expanded; none in `single`, none for `sheet`). Look: 4×48 dp, full corners;
+- **Drag handle** (`shared/ui/pane-handle.ts`, **M3** DragHandle): `tb-pane kind="fixed"`
+  or `kind="sheet"` with `resizeKey="<page>"` gets a handle in the spacer on its flexible side while
+  the panes stand side by side (from expanded; none in `single`); a resizable sheet drops its 400 dp
+  cap (360 dp up to half the panes, as a fixed pane). Look: 4×48 dp, full corners;
   pressed and dragged 12×52 dp, corner medium, morph on `--tb-spring-standard-fast-spatial`
   (no overshoot, ours: the bar must not bounce under a moving pane); outline-variant at rest,
   outline on hover, primary pressed and dragged, no tooltip; hit zone the 24 dp spacer plus 8 dp
