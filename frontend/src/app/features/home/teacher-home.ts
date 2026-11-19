@@ -76,10 +76,22 @@ function dayTitle(date: Date): string {
               (retry)="load()"
             />
           }
+          @if (columns() > 1 && schedule(); as schedule) {
+            @if (schedule.next !== null) {
+              <tb-today-lessons
+                class="tb-feed__hero"
+                part="hero"
+                [all]="schedule.today"
+                [next]="schedule.next"
+                (over)="loadSchedule()"
+              />
+            }
+          }
           <div class="tb-stack tb-feed__lead">
             @if (schedule(); as schedule) {
               @if (schedule.today.length > 0 || schedule.next !== null) {
                 <tb-today-lessons
+                  [part]="columns() > 1 ? 'rest' : 'all'"
                   [all]="schedule.today"
                   [next]="schedule.next"
                   (over)="loadSchedule()"
@@ -117,27 +129,23 @@ function dayTitle(date: Date): string {
     }
 
     /*
-     * From large (sketch «Главная учителя», variant B): the figures across the top, the lessons and the queue
-     * below in two equal columns
+     * From large (sketch «Главная учителя — варианты», variant C): the current lesson across the page, then
+     * three equal columns (lessons, queue, figures) on extra-large; on large two, the figures under the lessons
      */
+    .tb-feed__hero {
+      grid-column: 1 / -1;
+    }
+
+    .tb-feed--3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
     .tb-feed--2 {
       grid-template-columns: repeat(2, minmax(0, 1fr));
 
-      .tb-feed__figures {
-        grid-column: 1 / -1;
-        grid-row: 1;
-        flex-direction: row;
-
-        /* the month's two figures and the week's four: one row of tiles of about one width */
-        > tb-finance-widget {
-          flex: 2 1 0;
-          min-width: 0;
-        }
-
-        > tb-week-figures {
-          flex: 4 1 0;
-          min-width: 0;
-        }
+      .tb-feed__queue {
+        grid-column: 2;
+        grid-row: span 2;
       }
     }
 
@@ -162,10 +170,17 @@ export class TeacherHome implements OnInit {
   protected readonly today = signal(dayTitle(new Date()));
   protected readonly mobile = injectMobile();
   private readonly size = injectWindowSize();
-  /** Columns of the feed (spec §6): the figures across and two equal columns from large, else 1. */
-  protected readonly columns = computed(() =>
-    this.size() === 'large' || this.size() === 'extra-large' ? 2 : 1,
-  );
+  /** Columns of the feed under the hero (spec §6): 3 on extra-large, 2 on large, else 1. */
+  protected readonly columns = computed(() => {
+    switch (this.size()) {
+      case 'extra-large':
+        return 3;
+      case 'large':
+        return 2;
+      default:
+        return 1;
+    }
+  });
   protected readonly createItems = injectCreateItems()('/teacher');
   protected readonly createLabel = CORE_T.create.title;
   private readonly scheduleApi = inject(ScheduleApi);

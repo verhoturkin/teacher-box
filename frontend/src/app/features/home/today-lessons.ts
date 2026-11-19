@@ -22,75 +22,79 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
   imports: [ListRow, Card, Avatar, BoardLinks, CallSummon, JoinLessonButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p-card [header]="all().length > 0 ? t.title : t.nearest">
-      <ul class="tb-list">
-        @for (lesson of lessons(); track lesson.id) {
-          @if (lesson.id === nextId() && clock(); as time) {
-            <li tbListRow class="tb-today-lesson tb-today-lesson--next">
-              <div class="tb-today-lesson__head">
-                <time class="tb-today-lesson__time" [attr.datetime]="lesson.startsAt">{{
-                  time.start
-                }}</time>
-                <span class="tb-today-lesson__state">
-                  @if (time.phase === 'live') {
-                    <span class="tb-today-lesson__dot" aria-hidden="true"></span>
-                  }
-                  {{ state(time) }}
-                </span>
-                <span class="tb-today-lesson__end">{{ t.until(clockTime(lesson.endsAt)) }}</span>
-              </div>
-              <div class="tb-today-lesson__who">
-                <tb-avatar [name]="with(lesson)" [photo]="lesson.studentAvatar" />
-                <div class="tb-list__text">
-                  <strong>{{ with(lesson) }}</strong>
-                  @if (lesson.title !== null) {
-                    <span class="tb-list__supporting">{{ lesson.title }}</span>
-                  }
-                  @if (lesson.topic !== null) {
-                    <span class="tb-list__supporting">{{ lesson.topic }}</span>
+    @if (lessons().length > 0) {
+      <p-card [header]="part() === 'hero' ? undefined : all().length > 0 ? t.title : t.nearest">
+        <ul class="tb-list">
+          @for (lesson of lessons(); track lesson.id) {
+            @if (lesson.id === nextId() && clock(); as time) {
+              <li tbListRow class="tb-today-lesson tb-today-lesson--next">
+                <div class="tb-today-lesson__head">
+                  <time class="tb-today-lesson__time" [attr.datetime]="lesson.startsAt">{{
+                    time.start
+                  }}</time>
+                  <span class="tb-today-lesson__state">
+                    @if (time.phase === 'live') {
+                      <span class="tb-today-lesson__dot" aria-hidden="true"></span>
+                    }
+                    {{ state(time) }}
+                  </span>
+                  <span class="tb-today-lesson__end">{{ t.until(clockTime(lesson.endsAt)) }}</span>
+                </div>
+                <div class="tb-today-lesson__who">
+                  <tb-avatar [name]="with(lesson)" [photo]="lesson.studentAvatar" />
+                  <div class="tb-list__text">
+                    <strong>{{ with(lesson) }}</strong>
+                    @if (lesson.title !== null) {
+                      <span class="tb-list__supporting">{{ lesson.title }}</span>
+                    }
+                    @if (lesson.topic !== null) {
+                      <span class="tb-list__supporting">{{ lesson.topic }}</span>
+                    }
+                  </div>
+                </div>
+                <div class="tb-today-lesson__tools">
+                  <tb-board-links
+                    [chips]="true"
+                    [latest]="true"
+                    [studentId]="lesson.groupId === null ? lesson.studentId : null"
+                    [groupId]="lesson.groupId"
+                  />
+                  @if (time.phase === 'live' && portalRoom(lesson); as ownerId) {
+                    <tb-call-summon [ownerId]="ownerId" />
                   }
                 </div>
-              </div>
-              <div class="tb-today-lesson__tools">
-                <tb-board-links
-                  [chips]="true"
-                  [latest]="true"
-                  [studentId]="lesson.groupId === null ? lesson.studentId : null"
-                  [groupId]="lesson.groupId"
-                />
-                @if (time.phase === 'live' && portalRoom(lesson); as ownerId) {
-                  <tb-call-summon [ownerId]="ownerId" />
+                @if (lesson.joinUrl; as url) {
+                  <tb-join-lesson-button
+                    class="tb-join-wide tb-today-lesson__join"
+                    [url]="url"
+                    [label]="time.phase === 'live' ? t.join : t.start"
+                    [teacher]="true"
+                  />
                 }
-              </div>
-              @if (lesson.joinUrl; as url) {
-                <tb-join-lesson-button
-                  class="tb-join-wide tb-today-lesson__join"
-                  [url]="url"
-                  [label]="time.phase === 'live' ? t.join : t.start"
-                  [teacher]="true"
-                />
-              }
-            </li>
-          } @else {
-            <li tbListRow class="tb-today-lesson">
-              <time class="tb-today-lesson__time" [attr.datetime]="lesson.startsAt">{{
-                clockTime(lesson.startsAt)
-              }}</time>
-              <tb-avatar [name]="with(lesson)" [photo]="lesson.studentAvatar" />
-              <span class="tb-list__title">{{ with(lesson) }}</span>
-              @if (lesson.status !== 'SCHEDULED') {
-                <span class="tb-today-lesson__status tb-today-lesson__status--{{ lesson.status }}">
-                  @if (lesson.status === 'CONDUCTED') {
-                    <i class="tb-i tb-i-check" aria-hidden="true"></i>
-                  }
-                  {{ status(lesson).label }}
-                </span>
-              }
-            </li>
+              </li>
+            } @else {
+              <li tbListRow class="tb-today-lesson">
+                <time class="tb-today-lesson__time" [attr.datetime]="lesson.startsAt">{{
+                  clockTime(lesson.startsAt)
+                }}</time>
+                <tb-avatar [name]="with(lesson)" [photo]="lesson.studentAvatar" />
+                <span class="tb-list__title">{{ with(lesson) }}</span>
+                @if (lesson.status !== 'SCHEDULED') {
+                  <span
+                    class="tb-today-lesson__status tb-today-lesson__status--{{ lesson.status }}"
+                  >
+                    @if (lesson.status === 'CONDUCTED') {
+                      <i class="tb-i tb-i-check" aria-hidden="true"></i>
+                    }
+                    {{ status(lesson).label }}
+                  </span>
+                }
+              </li>
+            }
           }
-        }
-      </ul>
-    </p-card>
+        </ul>
+      </p-card>
+    }
   `,
   styles: `
     :host {
@@ -153,7 +157,10 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
       gap: var(--tb-space-3);
       align-items: center;
       padding: var(--tb-space-3);
-      /* the colour of the hero (styles/_home.scss): the portal colour, as the card «Идёт сейчас» was */
+      /* the hero's colour (its text roles: styles/_home.scss), the portal colour as the card «Идёт сейчас»
+         was; set here, as the list's own row colour would win over the global rule */
+      background: var(--p-md-primary-container);
+      color: var(--p-md-on-primary-container);
       overflow-wrap: anywhere;
     }
 
@@ -238,6 +245,11 @@ export class TodayLessons {
   readonly all = input.required<readonly ScheduledLesson[]>();
   /** The nearest lesson that has not ended (it may be on another day): the expanded row. */
   readonly next = input<ScheduledLesson | null>(null);
+  /**
+   * What it shows: everything (one column), only the expanded lesson (`hero`, across the page from large) or
+   * the other rows (`rest`, beside the hero).
+   */
+  readonly part = input<'all' | 'hero' | 'rest'>('all');
   /** The expanded lesson is over: the home page loads the next one. */
   readonly over = output();
 
@@ -247,11 +259,22 @@ export class TodayLessons {
   protected readonly lessons = computed(() => {
     const next = this.next();
     const today = [...this.all()].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-    return next === null || this.nextToday() ? today : [...today, next];
+    const lessons = next === null || this.nextToday() ? today : [...today, next];
+    switch (this.part()) {
+      case 'hero':
+        return lessons.filter((lesson) => lesson.id === next?.id);
+      case 'rest':
+        return lessons.filter((lesson) => lesson.id !== next?.id);
+      default:
+        return lessons;
+    }
   });
   protected readonly nextId = computed(() => this.next()?.id ?? null);
   protected readonly clock = injectLessonClock(this.next, () => {
-    this.over.emit();
+    // the rows beside the hero do not reload the page a second time
+    if (this.part() !== 'rest') {
+      this.over.emit();
+    }
   });
   protected readonly with = lessonWith;
 

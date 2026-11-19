@@ -164,7 +164,7 @@ describe('TeacherHome breakpoints', () => {
   }
 
   it.each([
-    [1700, 'tb-feed--2', true],
+    [1700, 'tb-feed--3', true],
     [1300, 'tb-feed--2', true],
     [900, 'tb-feed--1', true],
     [500, 'tb-feed--1', true],

@@ -75,6 +75,36 @@ describe('TodayLessons', () => {
     expect(text).not.toContain('Следующее');
   });
 
+  it('splits into the hero (only the expanded lesson, no title) and the rest beside it', async () => {
+    fixture.componentRef.setInput('part', 'hero');
+    let host = await render([next, done], next);
+    backend.expectOne('/api/teacher/boards?studentId=s-1').flush([]);
+
+    expect(host.querySelectorAll('li')).toHaveLength(1);
+    expect(host.querySelector('li.tb-today-lesson--next')).not.toBeNull();
+    expect(host.querySelector('.p-card-title')).toBeNull();
+
+    fixture.componentRef.setInput('part', 'rest');
+    host = await render([next, done], next);
+    expect(host.querySelectorAll('li')).toHaveLength(1);
+    expect(host.querySelector('li')?.textContent).toContain('Маша Козлова');
+    expect(host.querySelector('.tb-today-lesson--next')).toBeNull();
+
+    // only the expanded lesson today: nothing is left beside the hero
+    host = await render([next], next);
+    expect(host.querySelector('p-card')).toBeNull();
+  });
+
+  it('beside the hero does not report the end a second time', async () => {
+    fixture.componentRef.setInput('part', 'rest');
+    await render([next, done], next);
+    const ended = vi.fn();
+    fixture.componentInstance.over.subscribe(ended);
+
+    tick(19, 0);
+    expect(ended).not.toHaveBeenCalled();
+  });
+
   it('says «Идёт · ещё N мин» and «Войти в урок» while the lesson runs, reports its end', async () => {
     await render([next], next);
     backend.expectOne('/api/teacher/boards?studentId=s-1').flush([]);

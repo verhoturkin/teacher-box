@@ -5,9 +5,10 @@
 
 - **Three stacks** in a fixed order that is also the reading order: lead (`today-lessons.ts` and
   the push offer), queue (`todo-queue.ts`), figures (month + `week-figures.ts`, Monday–Sunday).
-  From large (sketch «Главная учителя — варианты», variant B, 0.57.0): the figures across the top,
-  one row of tiles (the month's two, the week's four), then the lead and the queue in two equal
-  columns; otherwise 1 column in the reading order; an empty stack hides.
+  From large (sketch «Главная учителя — варианты», variant C, 0.57.0): the expanded lesson across
+  the page (`tb-today-lessons part="hero"`), then equal columns: extra-large 3 (the other rows,
+  `part="rest"`, the queue, the figures), large 2 (the figures under the rows); otherwise 1
+  column in the reading order, the expanded row inside the list; an empty stack hides.
 - **Queue:** two cards, each with its own count badge (M3 large badge, error): «Отметить занятия»
   (unmarked lessons with «Проведено | Пропуск» in place, then the change requests — schedule work
   too) and «Проверить работы» (the review queue). At most 5 rows per source, then «more N». A card
