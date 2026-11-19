@@ -84,6 +84,27 @@ describe('CallSummon', () => {
     expect(success).toHaveBeenCalledWith('Приглашение отправлено, учеников: 2');
   });
 
+  it('says the student waits in the call while the teacher is not there', async () => {
+    await render({ status: 'OK', rooms: [aCard({ waiting: ['Ира'], teacherPresent: false })] });
+
+    expect(text()).toBe('Ира ждёт в звонке');
+    expect(hostElement(fixture).querySelector('button')).toBeNull();
+  });
+
+  it('says the whole group waits in the call', async () => {
+    const group = aCard({
+      ownerId: 'g-1',
+      ownerType: 'GROUP',
+      name: 'ОГЭ',
+      members: 2,
+      waiting: ['Анна', 'Петя'],
+      teacherPresent: false,
+    });
+    await render({ status: 'OK', rooms: [group] }, 'g-1');
+
+    expect(text()).toBe('Все ждут в звонке');
+  });
+
   it('shows nothing while everyone is in or the presence is unknown', async () => {
     await render({ status: 'OK', rooms: [aCard({ waiting: ['Ира'] })] });
     expect(text()).toBe('');

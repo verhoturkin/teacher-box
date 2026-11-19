@@ -156,6 +156,9 @@ export const ru = {
     inBrowser: 'Открыть в браузере',
   },
   summon: {
+    waiting: (name: string) => `${name} ждёт в звонке`,
+    groupWaiting: 'Все ждут в звонке',
+    teacherWaiting: 'Учитель ждёт в звонке',
     absent: (name: string) => `${name} ещё не в звонке`,
     groupAbsent: (absent: number, members: number) =>
       `Ещё не в звонке: ${String(absent)} из ${String(members)}`,

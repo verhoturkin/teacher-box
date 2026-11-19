@@ -41,11 +41,13 @@ since 0.57.0 — the lesson is shown once.
   ends the head line (board 4). When the lesson ends the card asks the home page to reload.
 - **«Позвать»** (432.3, boards 1 and 4): while the lesson runs in the portal's own room (its
   `joinUrl` is `/call/…`), `tb-call-summon` (`@features/meetings/parts`) asks
-  `GET /api/teacher/meetings/calls` now and every 30 s; when the presence is known (`OK`, no
+  `GET /api/teacher/meetings/calls` now and every 10 s (450.1); when the presence is known (`OK`, no
   external link) and somebody is not in the room, a Body Small line with `person_off` — «Ира ещё не
   в звонке» (the first word of the name) or «Ещё не в звонке: 2 из 3» for a group — and an
   extra-small text button «Позвать» / «Позвать остальных» (`tb-button-xs`) that sends them a notice;
-  snackbar «Ученику отправлено приглашение» / «Приглашение отправлено, учеников: N». On a phone the
+  snackbar «Ученику отправлено приглашение» / «Приглашение отправлено, учеников: N». Everybody in
+  and the teacher not: `video_call` and «Ира ждёт в звонке» / «Все ждут в звонке», no button; the
+  teacher in too: no line. On a phone the
   line follows the board chip on its own row, apart from the join button; wider it ends the board's
   row. A Telemost or other external link, calls off or the media server down — no line.
 - A nearest lesson of another day follows today's rows, expanded with its day. No lessons today
@@ -62,5 +64,9 @@ since 0.57.0 — the lesson is shown once.
   the time left while the lesson runs (`lesson-clock.ts`).
 - One join button (`tb-join-lesson-button [medium]`), full width under the tile on a narrow card
   (`tb-join-wide`). The student's requests sit under it and hide while the lesson runs.
+- While the lesson runs in the portal's room, `tb-teacher-waiting` (`@features/meetings/parts`,
+  450.1) asks `GET /api/me/meetings/calls` now and every 10 s and, while the teacher is in the room
+  of the lesson (the student's own or the group's), shows `video_call` and «Учитель ждёт в звонке»
+  under the boards.
 - No visible title (a screen-reader `h2`) and no schedule link. When the lesson ends the widget asks
   the home page to reload.

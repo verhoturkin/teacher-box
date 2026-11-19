@@ -10,13 +10,14 @@ import { CallCard, CallsOverview } from '../data-access/meetings.models';
 import { T } from '../i18n/texts';
 
 /** How often the presence in the room is asked again while the line is shown. */
-export const SUMMON_REFRESH_MS = 30_000;
+export const SUMMON_REFRESH_MS = 10_000;
 
 /**
  * «Позвать» (sketch «Сегодня — один урок», boards 1 and 4): while a lesson runs in the portal's room,
  * «<Имя> ещё не в звонке» with a small text button that sends the absent students a notice with the
- * call; a group — «Позвать остальных». Shows nothing while the presence is unknown (calls off, the
- * media server down, an external room) or everyone is in.
+ * call; a group — «Позвать остальных». Everybody in and the teacher not — «<Имя> ждёт в звонке» /
+ * «Все ждут в звонке». Shows nothing while the presence is unknown (calls off, the media server down,
+ * an external room) or everyone, the teacher too, is in.
  */
 @Component({
   selector: 'tb-call-summon',
@@ -33,6 +34,11 @@ export const SUMMON_REFRESH_MS = 30_000;
         [loading]="busy.is()"
         (onClick)="summon(card)"
       />
+    } @else if (waiting(); as card) {
+      <i class="tb-i tb-i-video_call" aria-hidden="true"></i>
+      <span class="tb-call-summon__text" role="status">{{
+        card.ownerType === 'GROUP' ? t.groupWaiting : t.waiting(firstName(card))
+      }}</span>
     }
   `,
   styles: `
@@ -68,14 +74,21 @@ export class CallSummon {
   readonly ownerId = input.required<string>();
 
   private readonly calls = signal<CallsOverview | null>(null);
-  /** The room while somebody of it is not in the call and the presence is known. */
-  protected readonly absent = computed(() => {
+  /** The room of the lesson while its presence is known. */
+  private readonly room = computed(() => {
     const calls = this.calls();
     const card = calls?.rooms.find((room) => room.ownerId === this.ownerId());
-    return calls?.status === 'OK' &&
-      card !== undefined &&
-      !card.externalLink &&
-      card.waiting.length < card.members
+    return calls?.status === 'OK' && card !== undefined && !card.externalLink ? card : null;
+  });
+  /** The room while somebody of it is not in the call. */
+  protected readonly absent = computed(() => {
+    const card = this.room();
+    return card !== null && card.waiting.length < card.members ? card : null;
+  });
+  /** The room while all of it is in the call and the teacher is not. */
+  protected readonly waiting = computed(() => {
+    const card = this.room();
+    return card !== null && card.waiting.length >= card.members && !card.teacherPresent
       ? card
       : null;
   });
@@ -96,7 +109,11 @@ export class CallSummon {
   protected line(card: CallCard): string {
     return card.ownerType === 'GROUP'
       ? this.t.groupAbsent(card.members - card.waiting.length, card.members)
-      : this.t.absent(card.name.split(' ')[0] ?? card.name);
+      : this.t.absent(this.firstName(card));
+  }
+
+  protected firstName(card: CallCard): string {
+    return card.name.split(' ')[0] ?? card.name;
   }
 
   protected summon(card: CallCard): void {
