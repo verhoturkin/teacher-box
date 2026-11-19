@@ -8,6 +8,7 @@ import ru.teacherbox.billing.application.BillingQueryService;
 import ru.teacherbox.billing.application.BillingViews.LessonView;
 import ru.teacherbox.billing.application.BillingViews.PaymentView;
 import ru.teacherbox.billing.application.BillingViews.StudentLedger;
+import ru.teacherbox.billing.application.PaymentVisibilityService;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatIcons;
 import ru.teacherbox.shared.chat.ChatInput;
@@ -26,9 +27,11 @@ class PaymentsChatAction implements ChatAction {
     static final int SHOWN = 5;
 
     private final BillingQueryService queries;
+    private final PaymentVisibilityService visibility;
 
-    PaymentsChatAction(BillingQueryService queries) {
+    PaymentsChatAction(BillingQueryService queries, PaymentVisibilityService visibility) {
         this.queries = queries;
+        this.visibility = visibility;
     }
 
     @Override
@@ -53,7 +56,7 @@ class PaymentsChatAction implements ChatAction {
 
     @Override
     public boolean availableTo(ChatUser user) {
-        return user.isStudent();
+        return user.isStudent() && !visibility.hiddenFromStudent(user.id());
     }
 
     @Override

@@ -125,7 +125,7 @@ once, after 455.
   needs it); the quiz is the plain `GET` of `QuizService.quiz` (what the child sees now, no
   separate review view); no `limits`; the receipt reuses `ReceiptController.response`; module tests
   — `GuardianHomeworkIntegrationTests`, `GuardianBillingIntegrationTests` with `FakeGuardians`.*
-- [ ] 451.3 *complex* B — payments hidden from the student: `billing` keeps a per-student flag
+- [x] 451.3 *complex* B — payments hidden from the student: `billing` keeps a per-student flag
   «оплаты видит только родитель» (migration in `db/migration/billing/`, e.g. a column of
   `student_accounts`), effective only while the student has a guardian
   (`identity::api.Guardians`; the last guardian unlinked → the student sees payments again).
@@ -139,6 +139,11 @@ once, after 455.
   them). The guardian's endpoints of 451.2 are unaffected. Tests: the flag, 404 for the student,
   teacher role checks, no effect without a guardian. Docs: `docs/modules/billing.md`,
   ADR-0069.
+  *Done as: a table `billing.payments_guardians_only` (V3) instead of a column — an account row
+  may be missing; `GET/PUT /api/teacher/billing/students/{id}/visibility` (next to `…/price`);
+  turning it on without a guardian → 422 `billing.no-guardian`; `GuardianUnlinked` with no
+  guardian left deletes the row; all four billing notices (each carries the balance or the debt)
+  get `NoticeRequested.guardiansOnly`; `GET /api/me/billing/visible` → `{visible}`.*
 
 ### 452. Family cabinet (frontend)
 

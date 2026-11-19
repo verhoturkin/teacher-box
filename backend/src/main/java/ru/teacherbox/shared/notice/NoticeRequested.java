@@ -22,6 +22,8 @@ import ru.teacherbox.shared.i18n.Language;
  * @param subject what the notice is about, for the buttons of the bot's actions
  * @param joinUrl the video room of the notice: messengers show it as a «Подключиться» button; the
  *                texts never hold the address
+ * @param guardiansOnly a notice about a student that only the student's guardians get, not the student
+ *                      (ADR-0069: «Оплаты видит только родитель»); {@code false} for every other notice
  */
 public record NoticeRequested(
         UUID id,
@@ -30,7 +32,8 @@ public record NoticeRequested(
         Map<Language, NoticeText> texts,
         @Nullable String link,
         @Nullable ChatSubject subject,
-        @Nullable String joinUrl) {
+        @Nullable String joinUrl,
+        boolean guardiansOnly) {
 
     public NoticeRequested {
         Objects.requireNonNull(id, "id");
@@ -44,6 +47,12 @@ public record NoticeRequested(
         }
     }
 
+    /** A notice for its recipient (not only for the recipient's guardians). */
+    public NoticeRequested(UUID id, UUID recipientId, String kind, Map<Language, NoticeText> texts,
+            @Nullable String link, @Nullable ChatSubject subject, @Nullable String joinUrl) {
+        this(id, recipientId, kind, texts, link, subject, joinUrl, false);
+    }
+
     /** A notice with a new id, written in every language. */
     public static NoticeRequested of(UUID recipientId, NoticeKind kind, Function<Language, NoticeText> write,
             @Nullable String link) {
@@ -53,12 +62,17 @@ public record NoticeRequested(
 
     /** The same notice with the buttons of the bot's actions about this subject. */
     public NoticeRequested about(@Nullable ChatSubject subject) {
-        return new NoticeRequested(id, recipientId, kind, texts, link, subject, joinUrl);
+        return new NoticeRequested(id, recipientId, kind, texts, link, subject, joinUrl, guardiansOnly);
     }
 
     /** The same notice with a video room. */
     public NoticeRequested withRoom(@Nullable String joinUrl) {
-        return new NoticeRequested(id, recipientId, kind, texts, link, subject, joinUrl);
+        return new NoticeRequested(id, recipientId, kind, texts, link, subject, joinUrl, guardiansOnly);
+    }
+
+    /** The same notice for the student's guardians only, when {@code guardiansOnly} holds. */
+    public NoticeRequested toGuardiansOnly(boolean guardiansOnly) {
+        return new NoticeRequested(id, recipientId, kind, texts, link, subject, joinUrl, guardiansOnly);
     }
 
     /** The notice in this language. */

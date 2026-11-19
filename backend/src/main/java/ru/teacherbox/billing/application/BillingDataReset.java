@@ -13,7 +13,8 @@ import ru.teacherbox.shared.reset.DataReset;
 class BillingDataReset implements DataReset {
 
     private static final List<String> TABLES = List.of("billing.lessons", "billing.payments",
-            "billing.student_accounts", "billing.group_prices", "billing.settings", "billing.pending_receipts");
+            "billing.student_accounts", "billing.group_prices", "billing.settings", "billing.pending_receipts",
+            "billing.payments_guardians_only");
 
     private final JdbcClient jdbc;
     private final BillingCurrencySetting currency;
@@ -35,6 +36,7 @@ class BillingDataReset implements DataReset {
         jdbc.sql("delete from billing.pending_receipts").update();
         jdbc.sql("delete from billing.student_accounts").update();
         jdbc.sql("delete from billing.group_prices").update();
+        jdbc.sql("delete from billing.payments_guardians_only").update();
         jdbc.sql("""
                 update billing.settings
                 set default_lesson_price = null, currency = null, updated_at = null, version = version + 1

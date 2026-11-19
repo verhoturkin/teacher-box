@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import ru.teacherbox.billing.application.PaymentVisibilityService;
 import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.testing.FakeGuardians;
 import ru.teacherbox.testing.FakeUserDirectory;
@@ -32,6 +33,9 @@ class GuardianBillingIntegrationTests {
 
     @Autowired
     FakeGuardians guardians;
+
+    @Autowired
+    PaymentVisibilityService visibility;
 
     @Test
     void aGuardianReadsTheChildsBalanceHistoryAndReceipt() throws Exception {
@@ -53,6 +57,25 @@ class GuardianBillingIntegrationTests {
         assertThat(receipt).hasStatusOk().hasContentType(MediaType.IMAGE_PNG)
                 .hasHeader("X-Content-Type-Options", "nosniff");
         assertThat(receipt.getResponse().getContentAsByteArray()).isEqualTo(ReceiptsIntegrationTests.PNG);
+    }
+
+    @Test
+    void theGuardianSeesPaymentsHiddenFromTheChild() throws Exception {
+        UUID child = directory.addStudent("Скрытые оплаты");
+        UUID parent = guardians.addGuardian("Плательщица", child);
+        String payment = payment(child);
+        assertThat(mvc.perform(MockMvcRequestBuilders
+                .multipart(HttpMethod.PUT, "/api/teacher/billing/payments/" + payment + "/receipt")
+                .file(new MockMultipartFile("file", "чек.png", "image/png", ReceiptsIntegrationTests.PNG))
+                .with(teacher()))).hasStatusOk();
+        visibility.change(child, true);
+        assertThat(mvc.get().uri("/api/me/billing").with(TestUsers.student(child))).hasStatus(HttpStatus.NOT_FOUND);
+        String base = "/api/guardian/students/" + child + "/billing";
+
+        assertThat(as(parent, base)).hasStatusOk().bodyJson().extractingPath("$.payments[0].id").isEqualTo(payment);
+        assertThat(as(parent, base + "/summary")).hasStatusOk();
+        assertThat(as(parent, base + "/payments/" + payment + "/receipt")).hasStatusOk()
+                .hasContentType(MediaType.IMAGE_PNG);
     }
 
     @Test

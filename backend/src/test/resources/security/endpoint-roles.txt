@@ -78,6 +78,7 @@ GET /api/me ADMIN GUARDIAN STUDENT TEACHER
 GET /api/me/billing STUDENT TEACHER
 GET /api/me/billing/payments/{paymentId}/receipt STUDENT TEACHER
 GET /api/me/billing/summary STUDENT TEACHER
+GET /api/me/billing/visible STUDENT TEACHER
 GET /api/me/boards STUDENT TEACHER
 GET /api/me/channels GUARDIAN STUDENT TEACHER
 GET /api/me/guardians STUDENT TEACHER
@@ -135,6 +136,7 @@ GET /api/teacher/billing/overview TEACHER
 GET /api/teacher/billing/payments/{paymentId}/receipt TEACHER
 GET /api/teacher/billing/reports/monthly TEACHER
 GET /api/teacher/billing/students/{studentId} TEACHER
+GET /api/teacher/billing/students/{studentId}/visibility TEACHER
 GET /api/teacher/billing/summary TEACHER
 GET /api/teacher/boards TEACHER
 GET /api/teacher/boards/{id}/backups TEACHER
@@ -293,6 +295,7 @@ PUT /api/teacher/billing/default-price TEACHER
 PUT /api/teacher/billing/groups/{groupId}/price TEACHER
 PUT /api/teacher/billing/payments/{paymentId}/receipt TEACHER
 PUT /api/teacher/billing/students/{studentId}/price TEACHER
+PUT /api/teacher/billing/students/{studentId}/visibility TEACHER
 PUT /api/teacher/boards/{id} TEACHER
 PUT /api/teacher/boards/{id}/preview TEACHER
 PUT /api/teacher/groups/{id} TEACHER

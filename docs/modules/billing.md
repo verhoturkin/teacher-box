@@ -31,31 +31,46 @@ schedule), [0011](../adr/0011-groups-and-group-lessons.md) (group prices), [0014
   without one
   takes the student's last lesson length, else 60 minutes.
 - Monthly report per student in the instance time zone.
+- **«Оплаты видит только родитель» (ADR-0069 item 10, 451.3)** — a row of
+  `payments_guardians_only` per student, set by the teacher in the student card
+  (`PaymentVisibilityService`). Turning it on needs a guardian (`identity::api.Guardians`, else
+  422 `billing.no-guardian`); it is effective only while the student has one
+  (`hiddenFromStudent` checks both), and `GuardianUnlinked` with no guardian left deletes the row,
+  so a guardian linked later does not hide the payments again. While hidden, the student's
+  `/api/me/billing/**` answers 404 `billing.hidden` (checked in `MyBillingController` /
+  `ReceiptController`, not in the shared services), the bot's «Оплаты» is not offered, and every
+  billing notice is marked `guardiansOnly`. The teacher and the guardian see everything.
 
 ## Contract (`billing::api`)
 
 Events only: `LessonRecorded`, `LessonCancelled`, `PaymentRecorded`, `PaymentVoided`. Listens
 to: `StudentRegistered` (account), `GroupCreated` (group price), `LessonCompleted`,
-`LessonCompletionRevoked`.
+`LessonCompletionRevoked`, `GuardianUnlinked` (payments shown again without a guardian).
 
 **Notices (`notices/`, ADR-0061, 380.3):** billing writes its own notifications. `BillingNotices`
 listens to these events synchronously (`@EventListener`, in the transaction that published them)
 and publishes `shared.notice.NoticeRequested` for the student with the texts in every language
 (`BillingNoticeTexts`), a kind of `BillingNoticeKind` and the link `/cabinet/billing`: a charged or
 missed lesson with its price, a removed charge, a payment and a voided payment — each with the new
-balance («Баланс» or, when negative, «Задолженность»).
+balance («Баланс» or, when negative, «Задолженность»). While the payments are hidden from the
+student, each of them is `NoticeRequested.guardiansOnly`: `notifications` skips the student and
+delivers it to the guardians (453.1).
 
 ## Data
 
-`student_accounts`, `lessons`, `payments` (+ receipt), `pending_receipts`, `group_prices`, `settings` (default
+`student_accounts`, `lessons`, `payments` (+ receipt), `pending_receipts`, `group_prices`,
+`payments_guardians_only` (V3, 451.3: `student_id`, `created_at`), `settings` (default
 lesson price; `currency` — filled once from `.env` by `BillingSettingsImport`, ADR-0056, kept in
 memory by `BillingCurrencySetting` between changes, forgotten by the full reset).
 
 ## REST and bot
 
 `/api/teacher/billing/**` (overview, summary (`?month=yyyy-MM`, default the current one; `weeks` — Monday–Sunday weeks clipped to the month with `income` and `charged`), students/{id}, lessons, payments, `payments/{id}/receipt` —
-`PUT` multipart `file`, `DELETE`, `GET`, prices, groups, reports/monthly, operations), `/api/me/billing` (+ `/summary`,
-`/payments/{id}/receipt`); the guardian (`GuardianBillingController`, 451.2):
+`PUT` multipart `file`, `DELETE`, `GET`, prices, groups, reports/monthly, operations;
+`GET/PUT students/{id}/visibility` — `{studentId, guardiansOnly, hasGuardians}`, `PUT` body
+`{guardiansOnly}`), `/api/me/billing` (+ `/summary`, `/payments/{id}/receipt`; 404
+`billing.hidden` while hidden) and `GET /api/me/billing/visible` (`{visible}`, never hidden); the
+guardian (`GuardianBillingController`, 451.2):
 `/api/guardian/students/{studentId}/billing` (+ `/summary`, `/payments/{id}/receipt`) — the same
 `BillingQueryService` and `ReceiptService.downloadOwn` after `GuardianAccess.require` (not their
 child → 404 `student.not-found`, a student or the teacher → 403). Bot actions (`billing/chat`):

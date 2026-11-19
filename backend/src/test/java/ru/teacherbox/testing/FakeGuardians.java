@@ -38,6 +38,11 @@ public final class FakeGuardians implements GuardianAccess, Guardians {
         return id;
     }
 
+    /** Removes the guardian from the student's card. */
+    public void unlink(UUID guardianId, UUID studentId) {
+        children.getOrDefault(guardianId, List.of()).remove(studentId);
+    }
+
     @Override
     public void require(CurrentUser user, UUID studentId) {
         if (!user.isGuardian()) {

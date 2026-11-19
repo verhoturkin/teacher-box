@@ -18,22 +18,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import ru.teacherbox.billing.application.BillingViews.PaymentView;
+import ru.teacherbox.billing.application.PaymentVisibilityService;
 import ru.teacherbox.billing.application.ReceiptService;
 import ru.teacherbox.billing.application.ReceiptService.ReceiptFile;
-import ru.teacherbox.shared.error.ForbiddenException;
 import ru.teacherbox.shared.security.CurrentUser;
 
 /**
  * Receipts of payments: the teacher attaches, removes and downloads them ({@code /api/teacher/**} requires the
- * teacher role); a student downloads the receipts of own payments.
+ * teacher role); a student downloads the receipts of own payments unless only the guardians see them.
  */
 @RestController
 class ReceiptController {
 
     private final ReceiptService receipts;
+    private final PaymentVisibilityService visibility;
 
-    ReceiptController(ReceiptService receipts) {
+    ReceiptController(ReceiptService receipts, PaymentVisibilityService visibility) {
         this.receipts = receipts;
+        this.visibility = visibility;
     }
 
     @PutMapping(path = "/api/teacher/billing/payments/{paymentId}/receipt",
@@ -57,10 +59,7 @@ class ReceiptController {
 
     @GetMapping("/api/me/billing/payments/{paymentId}/receipt")
     ResponseEntity<Resource> downloadOwn(CurrentUser user, @PathVariable UUID paymentId) {
-        if (user.isTeacher()) {
-            throw new ForbiddenException("billing.students-only", "Billing history is available to students only");
-        }
-        return response(receipts.downloadOwn(user.id(), paymentId));
+        return response(receipts.downloadOwn(MyBillingController.visibleStudentId(user, visibility), paymentId));
     }
 
     /** Always a download, with the type recognized on upload and sniffing disabled. */

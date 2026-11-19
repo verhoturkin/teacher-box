@@ -19,7 +19,9 @@ ADRs: [0005](../adr/0005-notifications.md), [0009](../adr/0009-external-integrat
 - **Modules write their notices (ADR-0061, stage 380).** A module publishes
   `shared.notice.NoticeRequested` in the transaction of the change: the recipient, the kind, the
   texts in every language (`NoticeText`: title and body, the same in the inbox and in messengers,
-  never an address — 429.1), the portal link, the bot subject (`ChatSubject`) and the room address.
+  never an address — 429.1), the portal link, the bot subject (`ChatSubject`), the room address
+  and `guardiansOnly` (ADR-0069: a notice about a student for the student's guardians only — billing
+  sets it while «Оплаты видит только родитель» is on; read from 453.1).
   `NoticeListener`
   (`@ApplicationModuleListener`: after the commit, in its own transaction, kept in the event
   registry until done) hands it to `NotificationService.notify(NoticeRequested)`, which picks the

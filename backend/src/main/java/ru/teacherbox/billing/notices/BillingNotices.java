@@ -11,6 +11,7 @@ import ru.teacherbox.billing.api.LessonCancelled;
 import ru.teacherbox.billing.api.LessonRecorded;
 import ru.teacherbox.billing.api.PaymentRecorded;
 import ru.teacherbox.billing.api.PaymentVoided;
+import ru.teacherbox.billing.application.PaymentVisibilityService;
 import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.money.Money;
 import ru.teacherbox.shared.money.MoneyFormat;
@@ -23,7 +24,9 @@ import ru.teacherbox.shared.notice.NoticeText;
  * {@code notifications} picks the student's.
  *
  * <p>The listeners run in the transaction that published the event, so a notice is saved with the
- * operation it tells about.
+ * operation it tells about. While the teacher has switched on «Оплаты видит только родитель» (ADR-0069) every
+ * billing notice is marked {@link NoticeRequested#guardiansOnly()}: the student's guardians get it, the student
+ * does not.
  */
 @Component
 class BillingNotices {
@@ -32,9 +35,11 @@ class BillingNotices {
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     private final ApplicationEventPublisher events;
+    private final PaymentVisibilityService visibility;
 
-    BillingNotices(ApplicationEventPublisher events) {
+    BillingNotices(ApplicationEventPublisher events, PaymentVisibilityService visibility) {
         this.events = events;
+        this.visibility = visibility;
     }
 
     @EventListener
@@ -74,7 +79,8 @@ class BillingNotices {
     private void notify(UUID studentId, BillingNoticeKind kind,
             BiFunction<BillingNoticeTexts, Language, NoticeText> write) {
         events.publishEvent(NoticeRequested.of(studentId, kind,
-                language -> write.apply(BillingNoticeTexts.of(language), language), LINK));
+                language -> write.apply(BillingNoticeTexts.of(language), language), LINK)
+                .toGuardiansOnly(visibility.hiddenFromStudent(studentId)));
     }
 
     /** "Баланс: 1 500 ₽" or "Задолженность: 1 500 ₽"; "Balance: ₽1,500" or "Amount due: ₽1,500". */
