@@ -15,6 +15,8 @@ export interface LessonTime {
   readonly start: string;
   /** «60 мин»; within an hour of the start «через 25 мин»; during the lesson «ещё 20 мин». */
   readonly note: string;
+  /** Whole minutes since the start while the lesson runs (the hero's progress bar); else 0. */
+  readonly elapsed: number;
 }
 
 /** Within this many minutes of the start the tile counts down instead of showing the duration. */
@@ -59,7 +61,13 @@ export function lessonTime(
   const end = new Date(lesson.endsAt).getTime();
   const startText = TIME.format(start);
   if (now >= end) {
-    return { phase: 'over', day: dayCaption(start, new Date(now)), start: startText, note: '' };
+    return {
+      phase: 'over',
+      day: dayCaption(start, new Date(now)),
+      start: startText,
+      note: '',
+      elapsed: 0,
+    };
   }
   if (now >= start.getTime()) {
     return {
@@ -67,6 +75,7 @@ export function lessonTime(
       day: T.clock.live,
       start: startText,
       note: T.clock.left(minutesUntil(end, now)),
+      elapsed: Math.floor((now - start.getTime()) / MINUTE_MS),
     };
   }
   const until = minutesUntil(start.getTime(), now);
@@ -75,6 +84,7 @@ export function lessonTime(
     day: dayCaption(start, new Date(now)),
     start: startText,
     note: until <= SOON_MINUTES ? T.clock.in(until) : T.clock.duration(lesson.durationMinutes),
+    elapsed: 0,
   };
 }
 

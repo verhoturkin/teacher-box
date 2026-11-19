@@ -4,19 +4,23 @@ import { ProgressBar } from 'primeng/progressbar';
 import { timer } from 'rxjs';
 import { Busy } from '@shared/ui/busy';
 import { ProgressLabel } from '@shared/ui/progress-label.directive';
+import { WavyProgress } from '@shared/ui/wavy-progress';
 
 /**
- * §12 Progress and busy actions: `p-progressbar` named by `tbProgressLabel`; `Busy` keeps a request action
+ * §12 Progress and busy actions: `p-progressbar` named by `tbProgressLabel`; the M3E wavy bar
+ * `tb-wavy-progress` (the elapsed time of the teacher's lesson hero); `Busy` keeps a request action
  * from being pressed twice and shows `[loading]` while the request runs (here a 2 s timer).
  */
 @Component({
   selector: 'tb-gallery-progress',
-  imports: [ButtonModule, ProgressBar, ProgressLabel],
+  imports: [ButtonModule, ProgressBar, ProgressLabel, WavyProgress],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tb-gallery-cell">
       <p-progressbar [value]="50" [showValue]="false" tbProgressLabel="Done 2 of 4" />
       <code class="tb-gallery-name">p-progressbar [value] [showValue]="false" tbProgressLabel</code>
+      <tb-wavy-progress [value]="58" label="35 of 60 minutes elapsed" />
+      <code class="tb-gallery-name">tb-wavy-progress [value] label</code>
       <p-button label="Send" severity="secondary" [loading]="busy.is('send')" (onClick)="send()" />
       <code class="tb-gallery-name"
         >busy = new Busy(); [loading]="busy.is('send')"; busy.guard('send', request)</code
@@ -24,7 +28,8 @@ import { ProgressLabel } from '@shared/ui/progress-label.directive';
     </div>
   `,
   styles: `
-    p-progressbar {
+    p-progressbar,
+    tb-wavy-progress {
       inline-size: 100%;
     }
   `,

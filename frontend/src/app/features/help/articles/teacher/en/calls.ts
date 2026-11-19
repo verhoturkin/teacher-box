@@ -16,7 +16,8 @@ select “Join”. Allow camera and microphone access when your browser asks.
 
 If a lesson has started and a student hasn’t joined the call, their lesson row on the home page shows “… hasn’t joined the call yet” with “Call in” \
 (“Call in the rest” for a group). The student gets a notification in their account and messengers with a button to join. You can call in the same \
-student once every three minutes. Lessons with an external link have no button, as the portal can’t tell who is in the call.
+student once every three minutes. Once they join, the row says “… is waiting in the call” \
+(“Everyone is waiting in the call” for a group) and the button goes; when you join too, the line disappears. Lessons with an external link have no button, as the portal can’t tell who is in the call.
 
 ## Call controls
 

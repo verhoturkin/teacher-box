@@ -64,6 +64,7 @@ export const en: Translation<typeof ru> = {
     until: (time: string) => `until ${time}`,
     start: 'Start lesson',
     join: 'Join lesson',
+    elapsed: (done: number, total: number) => `${String(done)} of ${String(total)} minutes elapsed`,
   },
   week: {
     title: 'Week',

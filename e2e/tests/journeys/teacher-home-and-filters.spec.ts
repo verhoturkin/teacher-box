@@ -2,7 +2,7 @@ import { startSession, bearer } from '../support/session';
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 
 /**
- * Version 0.15.0 (0.57.0: the nearest lesson is the bright row across the top of Today); the
+ * Version 0.15.0 (450.2: the nearest lesson heads the lead pane of Today, figures beside it); the
  * quick actions as a FAB menu on a phone; the help as a modal side sheet where linked articles open with «←»;
  * assignments in «Активные» / «Выполненные» with a search; a search of the boards; one M3 search bar with
  * «Очистить поиск»; «Назад» of a board returns where it was opened from.
@@ -59,14 +59,15 @@ test.beforeAll(async ({ request }) => {
   ({ id: boardId } = (await board.json()) as { id: string });
 });
 
-test('the nearest lesson stands across the top of Today, bright, the rest in equal columns', async ({
+test('the nearest lesson heads the lead pane of Today, bright, beside a fixed figures pane', async ({
   page,
 }) => {
-  // 448.10 (variant C): from large the expanded lesson is its own row above the columns
+  // 450.2 (board D): from large a flexible lead pane (the hero, then two equal columns) and a
+  // fixed 412 dp figures pane
   await signIn(page);
-  const hero = page.locator('.tb-feed__hero .tb-today-lesson--next');
+  const hero = page.locator('.tb-feed__main .tb-today-hero');
   await expect(hero).toBeVisible();
-  await expect(hero.locator('time').first()).toHaveText(/\d{2}:\d{2}/);
+  await expect(hero.locator('.tb-time-tile__start')).toHaveText(/\d{2}:\d{2}/);
   // the hero is not repeated in the list beside it
   await expect(page.locator('.tb-today-lesson--next')).toHaveCount(1);
   const look = await hero.evaluate((node) => {
@@ -78,8 +79,13 @@ test('the nearest lesson stands across the top of Today, bright, the rest in equ
     return { background: getComputedStyle(node).backgroundColor, primary };
   });
   expect(look.background).toBe(look.primary);
-  const columns = await page
+  const panes = await page
     .locator('.tb-feed')
+    .evaluate((node) => getComputedStyle(node).gridTemplateColumns.split(' '));
+  expect(panes).toHaveLength(2);
+  expect(panes[1]).toBe('412px');
+  const columns = await page
+    .locator('.tb-feed__columns')
     .evaluate((node) => getComputedStyle(node).gridTemplateColumns.split(' ').length);
   expect(columns).toBe(2);
 });

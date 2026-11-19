@@ -186,4 +186,22 @@ describe('NextLessonWidget', () => {
     fixture.detectChanges();
     expect(changed).toHaveBeenCalledTimes(1);
   });
+
+  it('says the teacher waits in the portal room of a running lesson', async () => {
+    await render(
+      myScheduleSummary({
+        next: scheduledLesson({ joinUrl: 'https://portal.example.com/call/student-1' }),
+      }),
+    );
+
+    vi.setSystemTime(new Date(at(2026, 10, 1, 18, 5)));
+    vi.advanceTimersByTime(15_000);
+    fixture.detectChanges();
+    backend
+      .expectOne('/api/me/meetings/calls')
+      .flush([{ ownerId: 'me', ownerType: 'STUDENT', title: 'Звонок', teacherPresent: true }]);
+    await fixture.whenStable();
+
+    expect(readableText(hostElement(fixture))).toContain('Учитель ждёт в звонке');
+  });
 });
