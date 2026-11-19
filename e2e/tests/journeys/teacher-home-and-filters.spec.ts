@@ -2,7 +2,7 @@ import { startSession, bearer } from '../support/session';
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 
 /**
- * Version 0.15.0: the nearest lesson as a calendar event (a time tile, no «Расписание» link, no visible title); the
+ * Version 0.15.0 (0.57.0: the nearest lesson is the bright row across the top of Today); the
  * quick actions as a FAB menu on a phone; the help as a modal side sheet where linked articles open with «←»;
  * assignments in «Активные» / «Выполненные» with a search; a search of the boards; one M3 search bar with
  * «Очистить поиск»; «Назад» of a board returns where it was opened from.
@@ -59,14 +59,29 @@ test.beforeAll(async ({ request }) => {
   ({ id: boardId } = (await board.json()) as { id: string });
 });
 
-test('the nearest lesson is a calendar event without a title or «Расписание»', async ({ page }) => {
+test('the nearest lesson stands across the top of Today, bright, the rest in equal columns', async ({
+  page,
+}) => {
+  // 448.10 (variant C): from large the expanded lesson is its own row above the columns
   await signIn(page);
-  const hero = page.locator('.p-card.tb-hero');
-  await expect(hero.locator('tb-lesson-time-tile')).toBeVisible();
-  await expect(hero.locator('tb-lesson-time-tile')).toHaveText(/\d{2}:\d{2}/);
-  await expect(hero.getByRole('link', { name: 'Расписание' })).toHaveCount(0);
-  // the title is for screen readers only
-  await expect(hero.getByRole('heading', { name: 'Следующее занятие' })).toHaveClass(/tb-sr-only/);
+  const hero = page.locator('.tb-feed__hero .tb-today-lesson--next');
+  await expect(hero).toBeVisible();
+  await expect(hero.locator('time').first()).toHaveText(/\d{2}:\d{2}/);
+  // the hero is not repeated in the list beside it
+  await expect(page.locator('.tb-today-lesson--next')).toHaveCount(1);
+  const look = await hero.evaluate((node) => {
+    const probe = document.createElement('div');
+    probe.style.background = 'var(--p-md-primary-container)';
+    document.body.append(probe);
+    const primary = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return { background: getComputedStyle(node).backgroundColor, primary };
+  });
+  expect(look.background).toBe(look.primary);
+  const columns = await page
+    .locator('.tb-feed')
+    .evaluate((node) => getComputedStyle(node).gridTemplateColumns.split(' ').length);
+  expect(columns).toBe(2);
 });
 
 test('on a phone «Создать» of the home page is a FAB menu', async ({ page }) => {

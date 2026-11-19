@@ -548,6 +548,24 @@ const WRITE_ALL: Readonly<Record<string, readonly (readonly [string, string, str
   ],
 };
 
+/** The current lesson across the top of Today (448.10): [topic, baseline, now] of the first-steps article. */
+const HERO_ROW: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'first-steps',
+      'После окончания раскроется следующее. Если',
+      'После окончания раскроется следующее. На широком экране оно стоит отдельной яркой карточкой во всю ширину над остальными. Если',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'first-steps',
+      'When it ends, the next lesson expands. With',
+      'When it ends, the next lesson expands. On a wide screen it sits in its own bright card across the top. With',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -642,6 +660,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(SUMMON[name] ?? []),
       ...(CALENDAR_SETUP[name] ?? []),
       ...(WRITE_ALL[name] ?? []),
+      ...(HERO_ROW[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];
