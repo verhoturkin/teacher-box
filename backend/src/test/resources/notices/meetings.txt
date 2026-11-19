@@ -35,6 +35,31 @@ room: https://telemost.yandex.ru/j/5
 ## room for nobody [RU]
 (nothing)
 
+## summoned: student [RU]
+to: Vera Smith
+kind: CALL_SUMMONED
+title: Урок начался
+body: Учитель ждёт вас в звонке.
+link: /call/00000000-0000-0000-0000-00000000000d
+room: https://school.example.org/call/00000000-0000-0000-0000-00000000000d
+--
+
+## summoned: group, no portal address [RU]
+to: Борис
+kind: CALL_SUMMONED
+title: Урок начался
+body: Учитель ждёт вас в звонке группы «ОГЭ».
+link: /call/00000000-0000-0000-0000-000000000015
+--
+
+## summoned: lost group [RU]
+to: Анна Иванова
+kind: CALL_SUMMONED
+title: Урок начался
+body: Учитель ждёт вас в звонке.
+link: /call/00000000-0000-0000-0000-00000000001d
+--
+
 ## room of a student [EN]
 to: Vera Smith
 kind: MEETING_LINK
@@ -71,4 +96,29 @@ room: https://telemost.yandex.ru/j/5
 
 ## room for nobody [EN]
 (nothing)
+
+## summoned: student [EN]
+to: Vera Smith
+kind: CALL_SUMMONED
+title: Your lesson has started
+body: Your teacher is waiting for you in the call.
+link: /call/00000000-0000-0000-0000-00000000000d
+room: https://school.example.org/call/00000000-0000-0000-0000-00000000000d
+--
+
+## summoned: group, no portal address [EN]
+to: Борис
+kind: CALL_SUMMONED
+title: Your lesson has started
+body: Your teacher is waiting for you in the “ОГЭ” call.
+link: /call/00000000-0000-0000-0000-000000000015
+--
+
+## summoned: lost group [EN]
+to: Анна Иванова
+kind: CALL_SUMMONED
+title: Your lesson has started
+body: Your teacher is waiting for you in the call.
+link: /call/00000000-0000-0000-0000-00000000001d
+--
 

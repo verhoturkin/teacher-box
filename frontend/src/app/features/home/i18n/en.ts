@@ -59,7 +59,11 @@ export const en: Translation<typeof ru> = {
   },
   todayLessons: {
     title: 'Lessons today',
-    next: 'Next',
+    nearest: 'Next lesson',
+    live: (left: string) => `Live · ${left}`,
+    until: (time: string) => `until ${time}`,
+    start: 'Start lesson',
+    join: 'Join lesson',
   },
   week: {
     title: 'Week',

@@ -213,6 +213,8 @@ describe('NotificationsSheet', () => {
       expect(pane.getAttribute('aria-labelledby')).toBe('tb-notifications-sheet-title');
       expect(pane.querySelector('h2')?.textContent).toContain('Уведомления');
       expect(pane.querySelector('tb-test-sheet-content')).not.toBeNull();
+      const handle = requireElement(hostElement(fixture), '[role="separator"]', HTMLElement);
+      expect(handle.getAttribute('aria-controls')).toBe('tb-notifications-sheet');
       expect(document.activeElement).toBe(pane);
       expect(document.body.querySelector('.p-drawer-mask')).toBeNull();
 

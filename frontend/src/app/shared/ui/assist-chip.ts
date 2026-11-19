@@ -47,6 +47,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       &::before {
         content: '';
         position: absolute;
+        /* spacing-ok: touch-target inset (M3 minimum target) */
         inset: -0.5rem 0;
       }
 

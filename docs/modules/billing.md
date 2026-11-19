@@ -77,7 +77,7 @@ included (the teacher's own data); no income-for-period or year range.
 four tonal summary tiles for balance, all-time charged, all-time paid and lesson price, in one row on wide
 screens and wrapping on compact screens, matching the teacher's payments overview; price editing lives in
 `student-price-card.ts` on the Profile tab; monthly report; the payment dialog takes an
-optional receipt), `student/` (own payments: a surface pane with balance, charged, paid and lesson-price figures; history filter chips for all operations, payments and charges), `ledger/` (the receipt opens from its payment row; the teacher
+optional receipt), `student/` (own payments: a surface pane with balance and lesson-price figures; history filter chips for all operations, payments and charges), `ledger/` (the receipt opens from its payment row; the teacher
 attaches, replaces and removes it from the «📎» menu), `home/` (finance widgets), `settings/default-price-card.ts`
 («Время и цена» of the settings category «Занятия», `/teacher/settings/lessons`, saved on change), `billing-labels.ts`.
 

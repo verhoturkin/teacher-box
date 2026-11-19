@@ -49,7 +49,7 @@ export const WELCOME_DISMISSED_KEY = 'tb.student-welcome.dismissed';
       flex-direction: column;
       gap: var(--tb-space-2);
       margin: 0 0 var(--tb-space-2);
-      padding-left: var(--tb-space-5);
+      padding-left: var(--tb-hint-indent);
     }
   `,
 })

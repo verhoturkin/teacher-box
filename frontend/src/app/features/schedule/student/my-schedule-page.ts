@@ -160,7 +160,7 @@ export function nextMonday(date: Date): Date {
       <tb-pane
         kind="fixed"
         resizeKey="my-schedule"
-        class="tb-my-schedule-side"
+        class="tb-my-schedule-side tb-pane--stack"
         [label]="t.upcoming"
       >
         @if (!mobile()) {
@@ -430,12 +430,6 @@ export function nextMonday(date: Date): Date {
       @media (width >= 37.5em) {
         --tb-list-item: var(--p-md-surface-container-high);
       }
-    }
-
-    :host ::ng-deep .tb-my-schedule-side .tb-pane__scroll {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-4);
     }
 
     tb-filter-chips {

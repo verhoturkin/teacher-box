@@ -180,8 +180,12 @@
   }
 }
 
-/* The main card of a page (the nearest lesson): the primary container (M3 filled card) */
-.p-card.tb-hero {
+/*
+ * The main card of a page (the nearest lesson; on the teacher's Today the expanded lesson row): the primary
+ * container (M3 filled card)
+ */
+.p-card.tb-hero,
+.tb-today-lesson--next {
   background: var(--p-md-primary-container);
   color: var(--p-md-on-primary-container);
 

@@ -80,7 +80,7 @@ import { T } from '../i18n/texts';
   styles: `
     .tb-feed-help {
       margin: var(--tb-space-3) 0 var(--tb-space-2);
-      padding-left: var(--tb-space-5);
+      padding-left: var(--tb-hint-indent);
     }
 
     .tb-actions {

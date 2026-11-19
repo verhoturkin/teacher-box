@@ -537,7 +537,7 @@ import {
     .tb-qe__bottom {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--tb-space-6);
+      gap: var(--tb-gap-section);
       align-items: flex-start;
     }
 

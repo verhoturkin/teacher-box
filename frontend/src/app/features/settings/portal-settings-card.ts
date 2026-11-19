@@ -75,7 +75,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     @if (settings(); as settings) {
       <form tbFieldErrors id="portal" [formGroup]="form" (ngSubmit)="save()">
         <!-- sketch Portal: the cards of the draft in one column, the preview beside them -->
-        <div class="tb-portal-grid">
+        <div class="tb-settings-grid">
           <div class="tb-stack">
             <p-card
               [header]="t.identityTitle"
@@ -365,14 +365,6 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       container-type: inline-size;
     }
 
-    /* sketch Portal: the draft and the preview side by side while each gets 360 px, else one column */
-    .tb-portal-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 22.5rem), 1fr));
-      align-items: start;
-      gap: var(--tb-space-4);
-    }
-
     /* the colors: five in a row, the dot over its name (the sketch); ours: 40 px dots, 12 px apart */
     .tb-swatches {
       display: grid;
@@ -384,7 +376,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: var(--tb-space-1-5);
       min-width: 0;
       padding: 0;
       border: 0;
@@ -443,7 +435,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     /* «Тонкая настройка»: the card's head is the fold button (the sketch) */
     @media (width >= 37.5em) {
       .tb-portal-fine ::ng-deep .p-card-header {
-        padding: var(--tb-space-5) var(--tb-space-5) 0;
+        padding: var(--tb-surface-padding) var(--tb-surface-padding) 0;
       }
     }
 
@@ -494,7 +486,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 6px;
+      gap: var(--tb-space-1-5);
       min-width: 0;
       padding: var(--tb-space-2);
       border: 1px solid var(--p-md-outline-variant);
@@ -519,7 +511,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
 
     .tb-scheme__sample {
       display: flex;
-      gap: 2px;
+      gap: var(--tb-space-half);
       width: 100%;
       height: 1.25rem;
       overflow: hidden;
@@ -551,7 +543,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
     .tb-look__bar {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: var(--tb-space-2-5);
       padding: var(--tb-space-3) var(--tb-space-4);
       font: var(--tb-type-title-s);
     }
@@ -567,7 +559,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 10px;
+      gap: var(--tb-space-2-5);
       padding: var(--tb-space-4);
       border-radius: var(--tb-shape-lg);
     }

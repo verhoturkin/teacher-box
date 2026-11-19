@@ -14,14 +14,15 @@ import { Pane, PaneHeader, Panes } from '@shared/ui/panes';
   template: `
     <p-button label="Toggle the sheet" severity="secondary" (onClick)="sheet.set(!sheet())" />
     <code class="tb-gallery-name"
-      >tb-panes > tb-pane kind="fixed" [resizeKey] (tb-pane-handle) | (flexible) |
-      kind="sheet"</code
+      >tb-panes > tb-pane kind="fixed" [resizeKey] (tb-pane-handle) | (flexible) | kind="sheet" |
+      class="tb-pane--stack"</code
     >
     <div class="window">
       <tb-panes>
-        <tb-pane kind="fixed" resizeKey="gallery" label="List"
-          ><p>kind="fixed" resizeKey: drag the handle</p></tb-pane
-        >
+        <tb-pane kind="fixed" resizeKey="gallery" label="List" class="tb-pane--stack">
+          <p>kind="fixed" resizeKey: drag the handle</p>
+          <p>tb-pane--stack: sections 24 px apart</p>
+        </tb-pane>
         <tb-pane label="Detail">
           <ng-template tbPaneHeader><h3>Detail: ng-template tbPaneHeader</h3></ng-template>
           <p>flexible (the default)</p>

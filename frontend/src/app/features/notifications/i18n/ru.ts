@@ -229,6 +229,7 @@ export const ru = {
     since: (date: string) => `с ${date}`,
     paused: 'уведомления на паузе',
     notConnected: 'Не подключён',
+    noMessenger: 'Мессенджер не подключён',
     remind: 'Отправить ссылку на подключение',
     reminded: 'Напоминание отправлено',
     failed: (count: number) => `Не доставлено: ${String(count)}`,

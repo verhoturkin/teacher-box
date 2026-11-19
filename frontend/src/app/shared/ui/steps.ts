@@ -129,10 +129,10 @@ export interface Step<T extends string | number = string> {
 
     .tb-steps__number {
       display: inline-flex;
-      flex: 0 0 1.75rem;
+      flex: 0 0 var(--tb-space-7);
       align-items: center;
       justify-content: center;
-      block-size: 1.75rem;
+      block-size: var(--tb-space-7);
       border: 1px solid currentColor;
       border-radius: var(--tb-shape-full);
       font: var(--tb-type-label-m);
@@ -159,7 +159,7 @@ export interface Step<T extends string | number = string> {
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-3);
-      margin: var(--tb-space-2) 0 var(--tb-space-3) calc(var(--tb-space-4) + 0.875rem);
+      margin: var(--tb-space-2) 0 var(--tb-space-3) calc(var(--tb-space-4) + var(--tb-space-7) / 2);
       padding-inline-start: var(--tb-space-6);
       border-inline-start: 1px solid var(--p-md-outline-variant);
     }

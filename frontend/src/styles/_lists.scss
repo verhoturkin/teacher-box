@@ -7,7 +7,7 @@
 .tb-tiles {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--tb-space-half);
   overflow: hidden;
   border-radius: var(--tb-shape-lg);
 }
@@ -15,10 +15,11 @@
 .tb-tile {
   display: flex;
   align-items: center;
-  gap: var(--tb-space-4);
+  /* M3E List: 12 between the icon and the text, 10 / 16 inside */
+  gap: var(--tb-space-3);
   min-block-size: 3.5rem;
   box-sizing: border-box;
-  padding: var(--tb-space-3) var(--tb-space-4);
+  padding: var(--tb-space-2-5) var(--tb-space-4);
   border-radius: var(--tb-shape-xs);
   background: var(--tb-list-item);
   color: var(--p-md-on-surface);
@@ -127,7 +128,8 @@
 .tb-list {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 2px var(--tb-space-4);
+  /* M3E List: SegmentedGap 2 between the rows, ItemBetweenSpace 12 between the columns */
+  gap: var(--tb-space-half) var(--tb-space-3);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -142,7 +144,8 @@
     row-gap: var(--tb-space-1);
     min-height: 3.5rem;
     box-sizing: border-box;
-    padding: var(--tb-space-3) var(--tb-space-4);
+    /* M3E List: ItemTopSpace / ItemBottomSpace 10, ItemLeadingSpace / ItemTrailingSpace 16 */
+    padding: var(--tb-space-2-5) var(--tb-space-4);
     border-radius: var(--tb-list-inner);
     background: var(--tb-list-item);
     transition: background var(--tb-spring-fast-effects);
@@ -167,7 +170,7 @@
 .tb-list.tb-list--own-trail > li {
   grid-template-columns: auto minmax(0, 1fr) auto;
   /* the list's own gap reaches a row only through a subgrid */
-  column-gap: var(--tb-space-4);
+  column-gap: var(--tb-space-3);
 
   &:not(:has(> .tb-list__trail)) {
     grid-template-areas: 'lead text text';
@@ -185,7 +188,7 @@
  */
 .tb-list-group {
   display: grid;
-  gap: 2px;
+  gap: var(--tb-space-half);
 
   > :empty {
     display: none;
@@ -497,7 +500,7 @@ p-button.tb-list__stretched .p-button {
   display: inline-flex;
   align-items: center;
   vertical-align: top;
-  gap: 0.75rem;
+  gap: var(--tb-space-3);
 }
 
 .tb-label-swatch {
@@ -525,7 +528,7 @@ p-button.tb-list__stretched .p-button {
   flex: 1;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: var(--tb-space-half);
   min-width: 0;
 }
 

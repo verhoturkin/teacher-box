@@ -333,14 +333,14 @@ const FOLD_LINES = 3;
     .tb-asg {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--tb-space-5);
+      gap: var(--tb-gap-section);
       align-items: flex-start;
     }
 
     /* sketch 4: the task takes the main column, the students a narrow one (320–380 px, our decision) */
     .tb-asg--wide {
       flex-wrap: nowrap;
-      gap: var(--tb-space-6);
+      gap: var(--tb-gap-section);
     }
 
     /* the task column takes what the narrow students column leaves, so the text fills the pane up to

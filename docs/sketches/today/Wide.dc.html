@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Сегодня — широкий экран</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.ic{font-family:'Material Symbols Rounded';font-size:24px;line-height:1;font-weight:normal;font-style:normal;letter-spacing:normal;text-transform:none;white-space:nowrap;-webkit-font-smoothing:antialiased}
+.app{width:1440px;height:900px;overflow:hidden;display:flex;font-family:'Roboto Flex',system-ui,sans-serif;color:#1B1B21;background:#F5F2FA}
+.rail{width:96px;flex:0 0 96px;display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:24px}
+.fab{width:56px;height:56px;border-radius:16px;background:#DCE1FF;color:#001550;border:0;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#45464F}
+.pill{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.on .pill{background:#DEE1F9;color:#171B2C}
+.pane{flex:1;margin:16px 16px 16px 0;background:#FBF8FF;border-radius:24px;padding:24px 32px;display:flex;flex-direction:column;gap:24px;min-width:0}
+.feed{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,0.8fr);gap:24px 32px;align-items:start}
+.card{background:#FFFFFF;border-radius:16px;padding:16px 0 8px}
+.card h2{margin:0 16px 8px;font-size:16px;font-weight:600}
+.rows{list-style:none;margin:0;padding:0 8px;display:flex;flex-direction:column;gap:2px}
+.row{display:flex;align-items:center;gap:12px;padding:8px 12px;min-height:40px;border-radius:4px;background:#F5F2FA}
+.rows .row:first-child{border-radius:12px 12px 4px 4px}
+.rows .row:last-child{border-radius:4px 4px 12px 12px}
+.time{font-size:14px;font-weight:500;min-width:44px;font-variant-numeric:tabular-nums}
+.av{width:32px;height:32px;border-radius:16px;background:#DCE1FF;color:#001550;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex:0 0 32px}
+.name{flex:1;min-width:0;font-size:15px}
+.chip{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 8px;border-radius:8px;font-size:12px;font-weight:600}
+.ok{background:#C8F0CF;color:#0B3A1A}
+.open{border-radius:12px !important;background:#DEE1F9;color:#171B2C;flex-direction:column;align-items:stretch;gap:12px;padding:16px 16px 12px}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#171B2C}
+.dot{width:8px;height:8px;border-radius:4px;background:#BA1A1A}
+.btn{height:40px;border-radius:20px;border:0;background:#4355B9;color:#FFFFFF;font:600 14px 'Roboto Flex',sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 20px;white-space:nowrap}
+.txt{height:32px;border-radius:16px;border:0;background:transparent;color:#4355B9;font:600 13px 'Roboto Flex',sans-serif;padding:0 12px}
+.bchip{height:32px;border-radius:8px;border:1px solid #C6C5D0;background:#FFFFFF;display:inline-flex;align-items:center;gap:6px;padding:0 12px;font-size:13px;font-weight:500;color:#45464F;text-decoration:none}
+.q{background:#FFFFFF;border-radius:16px;padding:16px}
+.q h2{margin:0 0 8px;font-size:16px;font-weight:600}
+.qrow{display:flex;align-items:center;gap:8px;padding:8px 0;font-size:14px}
+.tbtn{height:32px;border-radius:16px;border:1px solid #C6C5D0;background:transparent;font:500 13px 'Roboto Flex',sans-serif;color:#45464F;padding:0 12px}
+.fig{display:flex;justify-content:space-between;padding:6px 0;font-size:14px}
+.fig b{font-size:16px}
+</style>
+</helmet>
+<div class="app">
+  <nav class="rail">
+    <button class="fab" aria-label="Создать"><span class="ic">add</span></button>
+    <div class="ni on"><span class="pill"><span class="ic">home</span></span>Сегодня</div>
+    <div class="ni"><span class="pill"><span class="ic">calendar_month</span></span>Расписание</div>
+    <div class="ni"><span class="pill"><span class="ic">group</span></span>Ученики</div>
+    <div class="ni"><span class="pill"><span class="ic">assignment</span></span>Задания</div>
+    <div class="ni"><span class="pill"><span class="ic">payments</span></span>Оплаты</div>
+  </nav>
+  <main class="pane">
+    <header style="display:flex;align-items:baseline;gap:16px">
+      <h1 style="margin:0;font-size:28px;font-weight:500">Среда, 18 ноября</h1>
+      <span style="font-size:14px;color:#45464F">4 занятия · 2 работы на проверку · 1 запрос</span>
+    </header>
+    <div class="feed">
+      <section class="card">
+        <h2>Занятия сегодня</h2>
+        <ul class="rows">
+          <li class="row"><span class="time">10:00</span><span class="av">МК</span><span class="name">Маша Козлова</span><span class="chip ok"><span class="ic" style="font-size:16px">check</span>Проведено</span></li>
+          <li class="row open">
+            <div style="display:flex;align-items:center;gap:16px">
+              <span class="time" style="font-size:16px">14:00–15:00</span>
+              <span class="live"><span class="dot"></span>Идёт · ещё 25 мин</span>
+              <span style="flex:1"></span>
+              <button class="btn"><span class="ic" style="font-size:20px">videocam</span>Войти в урок</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <span class="av" style="background:#FFFFFF;width:40px;height:40px;flex-basis:40px;border-radius:20px">ИС</span>
+              <div style="display:flex;flex-direction:column;min-width:0">
+                <span style="font-size:16px;font-weight:600">Ира Смирнова</span>
+                <span style="font-size:14px;color:#45464F">Past Simple: неправильные глаголы</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <a class="bchip" href="#"><span class="ic" style="font-size:18px">draw</span>Неправильные глаголы</a>
+              <span style="flex:1"></span>
+              <span style="font-size:13px;color:#45464F;display:inline-flex;align-items:center;gap:6px"><span class="ic" style="font-size:18px">person_off</span>Ира ещё не в звонке</span>
+              <button class="txt">Позвать</button>
+            </div>
+          </li>
+          <li class="row"><span class="time">16:30</span><span class="av">ПО</span><span class="name">Петя Орлов</span></li>
+          <li class="row"><span class="time">18:00</span><span class="av">Г</span><span class="name">Группа «ОГЭ»</span></li>
+        </ul>
+      </section>
+      <div style="display:flex;flex-direction:column;gap:24px">
+        <section class="q">
+          <h2>Отметить занятия · 1</h2>
+          <div class="qrow"><span style="flex:1">Вчера 17:00 · Петя Орлов</span><button class="tbtn">Проведено</button><button class="tbtn">Пропуск</button></div>
+        </section>
+        <section class="q">
+          <h2>Проверить работы · 2</h2>
+          <div class="qrow"><span style="flex:1">Маша Козлова · Эссе</span><button class="tbtn">Проверить</button></div>
+          <div class="qrow"><span style="flex:1">Петя Орлов · Тест 4</span><button class="tbtn">Проверить</button></div>
+        </section>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:24px">
+        <section class="q">
+          <h2>Ноябрь</h2>
+          <div class="fig"><span>Получено</span><b>[СУММА]</b></div>
+          <div class="fig"><span>Долг учеников</span><b>[СУММА]</b></div>
+        </section>
+        <section class="q">
+          <h2>Неделя</h2>
+          <div class="fig"><span>Занятий</span><b>12</b></div>
+          <div class="fig"><span>Пропусков</span><b>1</b></div>
+          <div class="fig"><span>Выдано заданий</span><b>9</b></div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -214,3 +214,17 @@ test('a phone shows no section titles; nested pages keep theirs', async ({ page 
     page.locator('main').getByRole('link', { name: 'Оплаты', exact: true }),
   ).toBeVisible();
 });
+
+test('every settings section lays its cards in the same two balanced columns', async ({ page }) => {
+  // 448.9: CSS columns, at most two of at least 360 dp, whatever the number of cards
+  await signIn(page, 1920);
+  for (const section of ['account', 'lessons', 'data']) {
+    await page.goto(`/teacher/settings/${section}`);
+    const grid = page.locator('.tb-settings-grid').first();
+    await expect(grid).toBeVisible();
+    expect(await grid.evaluate((node) => getComputedStyle(node).columnCount)).toBe('2');
+  }
+  await page.goto('/teacher/students');
+  // 448.11: a message to students is «Создать» → «Сообщение», not a button of this page
+  await expect(page.getByRole('button', { name: 'Написать всем' })).toHaveCount(0);
+});

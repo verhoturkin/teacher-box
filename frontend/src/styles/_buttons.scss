@@ -5,7 +5,7 @@
  */
 .tb-split {
   display: inline-flex;
-  gap: 2px;
+  gap: var(--tb-space-half);
 
   /* the popup menu lives in <body>: its empty host takes no place, so no gap after the chevron */
   > p-menu {
@@ -87,6 +87,30 @@
 }
 
 /*
+ * M3E extra-small button (ButtonXSmall): 32 dp high, full corners, 16 dp at the sides, pressed 8 dp; a
+ * small action on a status line inside a row — «Позвать» on the teacher's Today. The 48 dp target is
+ * kept by an invisible pseudo-element around it (M3: the target of XS stays 48 dp).
+ */
+.p-button.tb-button-xs {
+  position: relative;
+  box-sizing: border-box;
+  height: 2rem;
+  padding-block: 0;
+  padding-inline: var(--tb-space-4);
+
+  &::before {
+    content: '';
+    position: absolute;
+    /* spacing-ok: touch-target inset (M3 minimum target) */
+    inset: -0.5rem 0;
+  }
+
+  &:not(:disabled):active {
+    border-radius: var(--tb-shape-sm);
+  }
+}
+
+/*
  * M3E SplitButtonMedium: 56 dp, the inner corners 4 dp as in the small one, the trailing part
  * 15 + the 26 dp chevron + 15. Pressed, the inner corners morph to 12 dp — our decision, the pressed
  * corner of ButtonMedium (M3 publishes none for the split button).
@@ -133,7 +157,7 @@
  * pressed, a button squares as usual).
  */
 .tb-button-group--connected {
-  gap: 2px;
+  gap: var(--tb-space-half);
 
   > p-button:not(:last-child) .p-button {
     border-start-end-radius: var(--tb-shape-sm);

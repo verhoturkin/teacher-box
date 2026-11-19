@@ -70,6 +70,7 @@ import { SHARED_T } from '@shared/i18n/texts';
     /* stronger than PrimeNG's .p-iconfield .p-inputtext:not(:last-child) that the «×» would bring in */
     :host .p-iconfield input.p-inputtext {
       width: 100%;
+      /* spacing-ok: no token — room for the trailing control */
       padding-inline-end: 3.5rem;
 
       /* the browser's «×» of a search field: the bar has its own */

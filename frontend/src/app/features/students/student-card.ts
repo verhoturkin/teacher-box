@@ -308,7 +308,9 @@ export class StudentCard {
           : { value: channels.join(', '), severity: 'secondary', icon: 'tb-i tb-i-send' },
       );
     }
-    if (row.balance !== null && row.balance !== 0) {
+    // the balance is on Обзор (balance card) and Оплаты already: the tag only where it is not
+    const tab = this.tab();
+    if (row.balance !== null && row.balance !== 0 && tab !== 'overview' && tab !== 'payments') {
       const amount = formatMoney(Math.abs(row.balance), this.currency());
       tags.push(
         row.balance < 0

@@ -200,7 +200,7 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
       align-items: flex-start;
       gap: var(--tb-space-3);
       max-width: 40rem;
-      margin: var(--tb-space-6, 2rem) auto;
+      margin: var(--tb-space-6) auto;
       padding: 0 var(--tb-space-4);
     }
   `,

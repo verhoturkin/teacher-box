@@ -203,8 +203,8 @@ export function fitChips(
     /* a phone: one row that scrolls sideways without a scrollbar (the padding keeps the focus ring) */
     :host(.tb-filter-chips--scroll) {
       flex-wrap: nowrap;
-      margin: -0.375rem;
-      padding: 0.375rem;
+      margin: calc(-1 * var(--tb-space-1-5));
+      padding: var(--tb-space-1-5);
       overflow-x: auto;
       scrollbar-width: none;
 
@@ -234,6 +234,7 @@ export function fitChips(
       &::before {
         content: '';
         position: absolute;
+        /* spacing-ok: touch-target inset (M3 minimum target) */
         inset: -0.5rem 0;
       }
 

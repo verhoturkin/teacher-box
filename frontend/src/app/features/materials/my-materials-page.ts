@@ -56,6 +56,7 @@ import { T } from './i18n/texts';
                 [label]="t.tabs"
                 [segments]="segments()"
                 [value]="active()"
+                [outlined]="true"
                 (valueChange)="selectTab($event)"
               />
             }
@@ -67,6 +68,7 @@ import { T } from './i18n/texts';
               [label]="t.tabs"
               [segments]="segments()"
               [value]="active()"
+              [outlined]="true"
               (valueChange)="selectTab($event)"
             />
           }

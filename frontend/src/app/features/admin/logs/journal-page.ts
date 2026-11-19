@@ -251,15 +251,10 @@ const VIEWS: readonly JournalView[] = ['log', 'events', 'errors'];
   `,
   styles: `
     /* from expanded the pane does not scroll as a whole: its list does (our decision, as the lists of homework) */
-    .tb-journal__chips {
-      margin-block-end: var(--tb-space-4);
-    }
-
     .tb-journal__filters {
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-3);
-      margin-block-end: var(--tb-space-4);
 
       input {
         width: 100%;

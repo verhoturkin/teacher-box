@@ -123,7 +123,7 @@ let nextId = 0;
       display: flex;
       flex: 1;
       flex-direction: column;
-      gap: 2px;
+      gap: var(--tb-space-half);
       min-width: 0;
     }
 

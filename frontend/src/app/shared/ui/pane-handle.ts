@@ -124,6 +124,8 @@ export class PaneHandle implements OnInit {
   readonly resizeKey = input.required<string>();
   /** The id of the pane (`aria-controls`). */
   readonly controls = input.required<string>();
+  /** What gives way when it is not a pane beside it (the page beside the docked notifications sheet). */
+  readonly beside = input<HTMLElement | null>(null);
 
   protected readonly label = SHARED_T.panes.resize;
   protected readonly now = signal(MIN_WIDTH);
@@ -161,16 +163,19 @@ export class PaneHandle implements OnInit {
   measure(): Limits {
     const pane = this.pane();
     const box = pane.getBoundingClientRect();
-    const panes = pane.parentElement;
+    const beside = this.beside();
+    const panes = beside?.parentElement ?? pane.parentElement;
     let max = Infinity;
     let spacer = 0;
     if (panes !== null) {
       const style = getComputedStyle(panes);
       spacer = px(style.columnGap);
       const inner = panes.clientWidth - px(style.paddingLeft) - px(style.paddingRight);
-      const flexible = Array.from(panes.children).find(
-        (el) => el !== pane && el.matches('.tb-pane:not(.tb-pane--sheet)'),
-      );
+      const flexible =
+        beside ??
+        Array.from(panes.children).find(
+          (el) => el !== pane && el.matches('.tb-pane:not(.tb-pane--sheet)'),
+        );
       const room = flexible ? box.width + flexible.getBoundingClientRect().width - MIN_WIDTH : max;
       max = Math.min(inner / 2, room);
     }

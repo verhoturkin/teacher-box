@@ -15,7 +15,9 @@ Students can create their own subscription links, which include only their lesso
 
 ## Google Calendar
 
-Open “Settings” → “Lessons” → “Google Calendar” and connect your account. Portal lessons appear in a separate calendar in Google Calendar. The portal \
+Open “Settings” → “Lessons” → “Google Calendar” and click “Connect Google”. The first time, a window shows \
+the Google Cloud steps: follow them, paste the Client ID and Client secret, and save. Then click “Connect Google” \
+again and allow access. Portal lessons appear in a separate calendar in Google Calendar. The portal \
 also shows when you are busy with other Google Calendar events so you can avoid scheduling conflicts.
 `,
 };

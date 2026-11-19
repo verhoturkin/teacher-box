@@ -74,11 +74,6 @@ export const en: Translation<typeof ru> = {
     left: (minutes: number) => `${String(minutes)} min left`,
     duration: (minutes: number) => `${String(minutes)} min`,
   },
-  upcoming: {
-    title: 'Next lesson',
-    start: 'Start lesson',
-    join: 'Join lesson',
-  },
   summary: {
     excused: 'You have let your teacher know you cannot attend',
     pending: (kind: string) => `${kind} request awaiting your teacher’s response`,
@@ -315,6 +310,9 @@ export const en: Translation<typeof ru> = {
     showBusy: 'Show busy time from my calendar in the schedule',
     connect: 'Connect Google',
     editClient: 'Change OAuth client',
+    notConnected: 'Not connected: lessons are not added to your Google Calendar.',
+    setup: 'Connect Google Calendar',
+    saveFailed: 'Could not save the OAuth client.',
     open: 'Open',
     createProject: 'and create a project.',
     enableApi: '“APIs & Services” → “Library”: enable',
@@ -376,9 +374,6 @@ export const en: Translation<typeof ru> = {
     offTime: 'Time off',
     addOffTime: 'Add time off',
     whatOffTime: 'the time off',
-    noOffTimeTitle: 'No time off scheduled',
-    noOffTimeHint:
-      'Add lunch breaks, days off or holidays so students can see when you are unavailable.',
     notWorking: 'Not working',
     actions: (name: string) => `Actions: ${name}`,
     editItem: 'Edit',

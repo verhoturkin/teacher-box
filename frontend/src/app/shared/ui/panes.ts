@@ -22,7 +22,7 @@ import { PaneHandle } from './pane-handle';
 /**
  * The kind of a pane (M3 panes, redesign spec §3.3): `fixed` keeps the M3 default width of its
  * breakpoint (360 dp on expanded, 412 dp from large), `flexible` takes the rest of the width, `sheet` is
- * the standard side sheet of the third pane (at most 400 dp, `surface container low`).
+ * the standard side sheet of the third pane (at most 400 dp, the same surface as the other panes: ours).
  */
 export type PaneKind = 'fixed' | 'flexible' | 'sheet';
 
@@ -131,7 +131,7 @@ export class Panes {
 }
 
 /**
- * One pane of {@link Panes}: a `surface` sheet (`surface container low` in dark, also for a side sheet) that scrolls on
+ * One pane of {@link Panes}: a `surface` sheet (`surface container low` in dark) that scrolls on
  * its own from expanded. With `label` it is a landmark region of that name. A pane that appears later
  * enters on `--tb-spring-default-spatial` and leaves on it beside other panes (no stagger).
  */
@@ -211,7 +211,7 @@ export class Panes {
     /* Optional persistent heading/actions; geometry is a portal decision using the pane padding. */
     .tb-pane__header:not(:empty) {
       flex: none;
-      padding: var(--tb-space-6) var(--tb-space-6) var(--tb-space-4);
+      padding: var(--tb-space-6) var(--tb-space-6) var(--tb-gap-header);
     }
 
     :host:has(.tb-pane__header:not(:empty)) .tb-pane__scroll {
@@ -229,9 +229,15 @@ export class Panes {
       overscroll-behavior: contain;
     }
 
+    /* a pane of stacked sections keeps the page's rhythm, as .tb-stack (ADR-0068) */
+    :host(.tb-pane--stack) .tb-pane__scroll {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-gap-section);
+    }
+
     /* Portal decision: dark panes need a raised tone above the window's surface. */
-    :host-context(.tb-dark),
-    :host(.tb-pane--sheet) {
+    :host-context(.tb-dark) {
       background: var(--p-md-surface-container-low);
     }
 
@@ -240,19 +246,19 @@ export class Panes {
     }
 
     @media (width < 37.5em) {
+      /* --tb-top-gap under the top bar (8 px: M3 compact, the bar already has its own 8 px), 16 px at the sides */
       .tb-pane__header:not(:empty) {
-        padding: var(--tb-space-4);
+        padding: var(--tb-top-gap) var(--tb-space-4) var(--tb-gap-header);
       }
 
       .tb-pane__scroll {
-        padding: var(--tb-space-4);
+        padding: var(--tb-top-gap) var(--tb-space-4) var(--tb-space-4);
       }
 
       /* the sketches: on a phone the page lies right on the window (no big card on the background): the pane has
          neither its own surface nor corners; the window takes the surface tone (styles.scss) */
       :host,
-      :host-context(.tb-dark),
-      :host(.tb-pane--sheet) {
+      :host-context(.tb-dark) {
         border-radius: 0;
         background: transparent;
       }
@@ -301,7 +307,7 @@ export class Pane {
   /** The name of the pane for assistive technology (a landmark region); none — a plain block. */
   readonly label = input<string>();
   /**
-   * A fixed pane with a key gets the M3 drag handle while the panes stand side by side (from expanded); the
+   * A fixed pane or a side sheet with a key gets the M3 drag handle while the panes stand side by side (from expanded); the
    * width is remembered under the key (unique per page).
    */
   readonly resizeKey = input<string>();
@@ -311,7 +317,7 @@ export class Pane {
   protected readonly resizable = computed(
     () =>
       this.resizeKey() !== undefined &&
-      this.kind() === 'fixed' &&
+      this.kind() !== 'flexible' &&
       !this.panes.single() &&
       this.panes.size() !== 'medium',
   );
@@ -333,7 +339,9 @@ export class Pane {
           : width;
       }
       case 'sheet':
-        return SHEET_WIDTH;
+        return this.resizable()
+          ? `clamp(360px, var(--tb-pane-width, ${SHEET_WIDTH}), 50%)`
+          : SHEET_WIDTH;
       case 'flexible':
         return '0%';
     }
@@ -345,7 +353,7 @@ export class Pane {
       : null,
   );
   protected readonly maxWidth = computed(() =>
-    !this.panes.single() && this.kind() === 'sheet' ? SHEET_WIDTH : null,
+    !this.panes.single() && this.kind() === 'sheet' && !this.resizable() ? SHEET_WIDTH : null,
   );
   /** Its room beside the others when the width is known (fixed, sheet): it enters and leaves coplanar. */
   protected readonly dock = computed(() => {

@@ -27,6 +27,7 @@ import ru.teacherbox.homework.api.HomeworkReminderRequested;
 import ru.teacherbox.homework.api.HomeworkReviewed;
 import ru.teacherbox.homework.api.HomeworkSubmitted;
 import ru.teacherbox.identity.api.StudentActivated;
+import ru.teacherbox.meetings.api.CallSummoned;
 import ru.teacherbox.meetings.api.MeetingLinkShared;
 import ru.teacherbox.schedule.api.CancelledBy;
 import ru.teacherbox.schedule.api.ChangeKind;
@@ -236,7 +237,13 @@ public final class NoticeSamples {
                         EARLIER)),
                 new Sample("room of a lost group", new MeetingLinkShared(LOST_GROUP, LOST_GROUP, List.of(ANNA), ROOM,
                         EARLIER)),
-                new Sample("room for nobody", new MeetingLinkShared(GROUP, GROUP, List.of(), ROOM, EARLIER)));
+                new Sample("room for nobody", new MeetingLinkShared(GROUP, GROUP, List.of(), ROOM, EARLIER)),
+                new Sample("summoned: student", new CallSummoned(VERA, null, List.of(VERA),
+                        "https://school.example.org/call/" + VERA, EARLIER)),
+                new Sample("summoned: group, no portal address", new CallSummoned(GROUP, GROUP, List.of(BORIS), null,
+                        EARLIER)),
+                new Sample("summoned: lost group", new CallSummoned(LOST_GROUP, LOST_GROUP, List.of(ANNA), null,
+                        EARLIER)));
     }
 
     public static List<Sample> identity() {

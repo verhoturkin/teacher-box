@@ -25,10 +25,9 @@ The “Getting started” checklist under the task cards on your home page track
 
 ## Your Today page
 
-Your next lesson appears first, with its time, duration, topic, boards and “Start lesson” button. The button changes to “Join lesson” while the \
-lesson is running. Before and during a lesson, the card shows a countdown or the time remaining. After it ends, the next lesson appears automatically.
-
-- **Lessons today** lists the day’s lessons and their status, with the next one highlighted.
+- **Lessons today** lists the day’s lessons and their status. The current or next lesson is expanded: a countdown or the time remaining, the \
+end time, the student or group, the topic and the last board used. If the lesson has a call, “Start lesson” is there too (“Join lesson” while it \
+is running). When it ends, the next lesson expands. On a wide screen it sits in its own bright card across the top. With no lessons today, the card is called “Next lesson” and shows its day.
 - **Mark lessons** lists past lessons awaiting an outcome, with student requests to move or cancel a lesson below them. Choose “Completed” or \
 “Missed” in the row to record an outcome; for groups, record attendance.
 - **Review submissions** lists work waiting for your review. Choose “Review” to open it.

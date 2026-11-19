@@ -455,6 +455,117 @@ const TWO_CARDS: Readonly<Record<string, readonly (readonly [string, string, str
   ],
 };
 
+/** One lesson, one row on Today (432.2): [topic, baseline, now] of the first-steps article. */
+const ONE_ROW: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'first-steps',
+      'Это главная страница учителя: ближайшее занятие,',
+      'Это главная страница учителя: занятия на сегодня,',
+    ],
+    [
+      'first-steps',
+      '- **Следующее занятие** — время начала и длительность, ученик или группа, тема и доски. Нажмите ' +
+        '«Начать урок» (во время занятия — «Войти в урок»). После окончания карточка покажет следующее ' +
+        'занятие.\n- **Занятия сегодня** — список под карточкой следующего занятия: время, с кем и ' +
+        'статус; ближайшее занятие выделено. На телефоне этот список и итоги недели тоже доступны в ' +
+        'общей ленте.',
+      '- **Занятия сегодня** — время, с кем и статус каждого занятия. Текущее или ближайшее раскрыто: ' +
+        '«Идёт · ещё 25 мин» или «Через 40 мин», время окончания, ученик или группа, тема и последняя ' +
+        'доска. Если у занятия есть звонок, там же кнопка «Начать урок» (во время занятия — «Войти в ' +
+        'урок»). После окончания раскроется следующее. Если сегодня занятий нет, список называется ' +
+        '«Ближайшее занятие» и показывает его день.',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'first-steps',
+      'Your next lesson appears first, with its time, duration, topic, boards and “Start lesson” ' +
+        'button. The button changes to “Join lesson” while the lesson is running. Before and during a ' +
+        'lesson, the card shows a countdown or the time remaining. After it ends, the next lesson ' +
+        'appears automatically.\n\n- **Lessons today** lists the day’s lessons and their status, with ' +
+        'the next one highlighted.',
+      '- **Lessons today** lists the day’s lessons and their status. The current or next lesson is ' +
+        'expanded: a countdown or the time remaining, the end time, the student or group, the topic and ' +
+        'the last board used. If the lesson has a call, “Start lesson” is there too (“Join lesson” ' +
+        'while it is running). When it ends, the next lesson expands. With no lessons today, the card ' +
+        'is called “Next lesson” and shows its day.',
+    ],
+  ],
+};
+
+/** «Позвать» on Today (432.3): [topic, baseline, now] of the calls article. */
+const SUMMON: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'calls',
+      '## Во время звонка',
+      '## Позвать ученика\n\nЕсли урок уже идёт, а ученика в звонке нет, на главной странице в строке урока появится «… ещё не в звонке» и кнопка «Позвать» (у группы — «Позвать остальных»). Ученик получит уведомление в кабинет и мессенджеры с кнопкой входа в звонок. Позвать одного ученика можно раз в три минуты. Если уроки идут по внешней ссылке, кнопки нет: портал не знает, кто в звонке.\n\n## Во время звонка',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'calls',
+      '## Call controls',
+      '## Call in a student\n\nIf a lesson has started and a student hasn’t joined the call, their lesson row on the home page shows “… hasn’t joined the call yet” with “Call in” (“Call in the rest” for a group). The student gets a notification in their account and messengers with a button to join. You can call in the same student once every three minutes. Lessons with an external link have no button, as the portal can’t tell who is in the call.\n\n## Call controls',
+    ],
+  ],
+};
+
+/** Google Calendar setup in a dialog (437.1): [topic, baseline, now] of the calendars article. */
+const CALENDAR_SETUP: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'calendars',
+      '«Настройки» → «Занятия» → «Google Календарь» → подключите аккаунт. Тогда:',
+      '«Настройки» → «Занятия» → «Google Календарь» → «Подключить Google». В первый раз откроется окно с шагами в Google Cloud: выполните их, вставьте Client ID и Client secret и сохраните. Затем снова нажмите «Подключить Google» и разрешите доступ. Тогда:',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'calendars',
+      'Open “Settings” → “Lessons” → “Google Calendar” and connect your account.',
+      'Open “Settings” → “Lessons” → “Google Calendar” and click “Connect Google”. The first time, a window shows the Google Cloud steps: follow them, paste the Client ID and Client secret, and save. Then click “Connect Google” again and allow access.',
+    ],
+  ],
+};
+
+/** «Написать всем» left the Students page for «Создать» (448.11): [topic, baseline, now] of the notifications article. */
+const WRITE_ALL: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'notifications',
+      '«Написать всем» на странице «Ученики», «Создать» → «Сообщение» на любой странице',
+      '«Создать» → «Сообщение» на любой странице',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'notifications',
+      'Choose “Message all” on the Students page, “Create” → “Message”,',
+      'Choose “Create” → “Message” on any page,',
+    ],
+  ],
+};
+
+/** The current lesson across the top of Today (448.10): [topic, baseline, now] of the first-steps article. */
+const HERO_ROW: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'first-steps',
+      'После окончания раскроется следующее. Если',
+      'После окончания раскроется следующее. На широком экране оно стоит отдельной яркой карточкой во всю ширину над остальными. Если',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'first-steps',
+      'When it ends, the next lesson expands. With',
+      'When it ends, the next lesson expands. On a wide screen it sits in its own bright card across the top. With',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -545,6 +656,11 @@ describe('help articles after the split into one file per topic', () => {
       ...(DATE_TIME[name] ?? []),
       ...(TWO_CARDS[name] ?? []),
       ...(TAP_ROW[name] ?? []),
+      ...(ONE_ROW[name] ?? []),
+      ...(SUMMON[name] ?? []),
+      ...(CALENDAR_SETUP[name] ?? []),
+      ...(WRITE_ALL[name] ?? []),
+      ...(HERO_ROW[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

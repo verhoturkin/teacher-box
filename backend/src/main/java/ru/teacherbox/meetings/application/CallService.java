@@ -1,5 +1,8 @@
 package ru.teacherbox.meetings.application;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -7,16 +10,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 import ru.teacherbox.identity.api.GroupSummary;
 import ru.teacherbox.identity.api.StudentGroups;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
+import ru.teacherbox.meetings.api.CallSummoned;
 import ru.teacherbox.meetings.domain.CallRooms;
 import ru.teacherbox.meetings.domain.Room;
 import ru.teacherbox.meetings.domain.RoomOwner;
@@ -24,6 +31,7 @@ import ru.teacherbox.meetings.persistence.RoomRepository;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.shared.i18n.Language;
+import ru.teacherbox.shared.portal.Portal;
 import ru.teacherbox.shared.security.CurrentUser;
 
 /** Built-in calls (ADR-0030): joining the room of a current student or an active group. */
@@ -81,16 +89,30 @@ public class CallService {
 
     private static final Logger log = LoggerFactory.getLogger(CallService.class);
 
+    /** A student is called once per this pause, whoever presses «Позвать». */
+    static final Duration SUMMON_PAUSE = Duration.ofMinutes(3);
+
     private final CallServer server;
     private final UserDirectory users;
     private final StudentGroups groups;
     private final RoomRepository links;
+    private final ApplicationEventPublisher events;
+    private final TransactionTemplate transactions;
+    private final Clock clock;
+    private final Portal portal;
+    /** shortcut: kept in memory, a restart forgets it — fine for a pause of minutes. */
+    private final Map<UUID, Instant> summoned = new ConcurrentHashMap<>();
 
-    public CallService(CallServer server, UserDirectory users, StudentGroups groups, RoomRepository links) {
+    public CallService(CallServer server, UserDirectory users, StudentGroups groups, RoomRepository links,
+            ApplicationEventPublisher events, TransactionTemplate transactions, Clock clock, Portal portal) {
         this.server = server;
         this.users = users;
         this.groups = groups;
         this.links = links;
+        this.events = events;
+        this.transactions = transactions;
+        this.clock = clock;
+        this.portal = portal;
     }
 
     /** Every room with who is in it; no transaction around the call to the media server. */
@@ -145,6 +167,46 @@ public class CallService {
         return new JoinView(token, room, title);
     }
 
+    /**
+     * «Позвать»: the students of the room who are not in the call get a notice with it; each once per
+     * {@link #SUMMON_PAUSE}. The media server is asked outside a transaction, the event is published in one.
+     *
+     * @return number of students called
+     */
+    public int summon(UUID ownerId) {
+        requireEnabled();
+        if (links.findByOwner(ownerId).isPresent()) {
+            throw new BusinessRuleException("meetings.room-external", "The lessons take place in an external room");
+        }
+        Optional<GroupSummary> group = groups.findGroup(ownerId).filter(found -> !found.archived());
+        List<UUID> members = group.map(found -> found.memberIds().stream().filter(users::isCurrentStudent).toList())
+                .orElseGet(() -> users.findStudent(ownerId).filter(StudentSummary::isCurrent)
+                        .map(found -> List.of(found.id())).orElse(List.of()));
+        if (members.isEmpty()) {
+            throw roomNotFound();
+        }
+        Set<String> inCall = occupied().orElseThrow(CallService::unreachable)
+                .getOrDefault(CallRooms.name(ownerId), List.of()).stream().map(CallServer.Participant::identity)
+                .collect(Collectors.toSet());
+        List<UUID> absent = members.stream().filter(id -> !inCall.contains(id.toString())).toList();
+        if (absent.isEmpty()) {
+            throw new BusinessRuleException("meetings.everyone-in-call", "Everyone is in the call");
+        }
+        Instant now = clock.instant();
+        List<UUID> called = absent.stream().filter(id -> {
+            Instant last = summoned.get(id);
+            return last == null || !now.isBefore(last.plus(SUMMON_PAUSE));
+        }).toList();
+        if (called.isEmpty()) {
+            throw new BusinessRuleException("meetings.summoned-recently", "The students were called a moment ago");
+        }
+        called.forEach(id -> summoned.put(id, now));
+        String joinUrl = portal.link(RoomService.CALL_PATH + ownerId).orElse(null);
+        transactions.executeWithoutResult(status -> events.publishEvent(
+                new CallSummoned(ownerId, group.map(GroupSummary::id).orElse(null), called, joinUrl, now)));
+        return called.size();
+    }
+
     /** The teacher mutes the microphone of a participant; a user not in the room is no error. */
     public void mute(UUID ownerId, UUID userId) {
         moderate(ownerId, userId, server::muteMicrophone);
@@ -161,8 +223,12 @@ public class CallService {
             action.accept(CallRooms.name(ownerId), userId.toString());
         } catch (CallServerException e) {
             log.warn("The media server did not answer: {}", e.getMessage());
-            throw new BusinessRuleException("meetings.call-server-unreachable", "The media server did not answer");
+            throw unreachable();
         }
+    }
+
+    private static BusinessRuleException unreachable() {
+        return new BusinessRuleException("meetings.call-server-unreachable", "The media server did not answer");
     }
 
     private void requireEnabled() {

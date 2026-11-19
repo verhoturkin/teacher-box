@@ -77,6 +77,7 @@ interface MemberOption {
                 [label]="t.tabs"
                 [segments]="segments()"
                 [value]="active()"
+                [outlined]="true"
                 (valueChange)="selectTab($event)"
               />
             }
@@ -97,6 +98,7 @@ interface MemberOption {
               [label]="t.tabs"
               [segments]="segments()"
               [value]="active()"
+              [outlined]="true"
               (valueChange)="selectTab($event)"
             />
           }
@@ -159,10 +161,6 @@ interface MemberOption {
 
     .tb-materials__sort {
       margin-inline-start: auto;
-    }
-
-    .tb-materials__tabs {
-      margin-block-end: var(--tb-space-3);
     }
 
     @media (width < 37.5em) {

@@ -158,6 +158,16 @@ export const en: Translation<typeof ru> = {
     label: 'Join lesson',
     inBrowser: 'Open in browser',
   },
+  summon: {
+    absent: (name: string) => `${name} hasn’t joined the call yet`,
+    groupAbsent: (absent: number, members: number) =>
+      `Not in the call yet: ${String(absent)} of ${String(members)}`,
+    summon: 'Call in',
+    summonRest: 'Call in the rest',
+    sent: 'Invitation sent to the student',
+    sentGroup: (count: number) =>
+      `Invitation sent to ${String(count)} ${count === 1 ? 'student' : 'students'}`,
+  },
   roomLink: {
     title: 'Video meeting',
     what: 'the video meeting',

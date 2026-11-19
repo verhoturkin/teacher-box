@@ -46,6 +46,15 @@ class CallsController {
         return calls.join(user, ownerId);
     }
 
+    /** «Позвать»: those of the room not in the call get a notice with it. */
+    @PostMapping("/api/teacher/meetings/calls/{ownerId}/summon")
+    SummonView summon(@PathVariable UUID ownerId) {
+        return new SummonView(calls.summon(ownerId));
+    }
+
+    record SummonView(int recipients) {
+    }
+
     @PostMapping("/api/teacher/meetings/calls/{ownerId}/participants/{userId}/mute")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void mute(@PathVariable UUID ownerId, @PathVariable UUID userId) {

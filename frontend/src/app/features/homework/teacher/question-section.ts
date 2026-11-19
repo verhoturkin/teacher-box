@@ -424,7 +424,7 @@ import { QuizSettings } from './quiz-settings';
     :host {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--tb-space-6);
+      gap: var(--tb-gap-section);
       align-items: flex-start;
     }
 
@@ -582,7 +582,7 @@ import { QuizSettings } from './quiz-settings';
     .tb-qb__rows {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
-      gap: 2px;
+      gap: var(--tb-space-half);
       margin: 0;
       padding: 0;
       list-style: none;

@@ -141,7 +141,7 @@ interface MiniDay {
       content: '';
       position: absolute;
       inset-inline: 0;
-      inset-block-end: 0.25rem;
+      inset-block-end: var(--tb-space-1);
       margin-inline: auto;
       inline-size: 0.25rem;
       block-size: 0.25rem;

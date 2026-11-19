@@ -81,11 +81,11 @@ describe('SettingsPage', () => {
     expect(readableText(host)).not.toContain('Не удалось загрузить');
   });
 
-  it('puts the settings in cards by purpose, in three columns', async () => {
+  it('puts the settings in cards by purpose, in three stacks of the settings grid', async () => {
     await render(adminSettings({ restartNeeded: true }));
 
     expect(readableText(host)).toContain('Применяются сразу, без перезапуска');
-    expect(host.querySelectorAll('.tb-admin-settings > .tb-stack')).toHaveLength(3);
+    expect(host.querySelectorAll('.tb-settings-grid > .tb-stack')).toHaveLength(3);
     expect(
       card('files').querySelector('#setting-TEACHERBOX_HOMEWORK_MAX_FILE_SIZE'),
     ).not.toBeNull();

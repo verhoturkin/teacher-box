@@ -176,7 +176,9 @@ test('students are list rows with the status on the right, access in Profile, wo
   ).toBeLessThanOrEqual(0);
 });
 
-test('the settings of the administrator are three columns of cards', async ({ page }) => {
+test('the settings of the administrator are the two columns of every settings page', async ({
+  page,
+}) => {
   await signIn(page, 1440, 'admin');
   await page.goto('/admin/settings');
 
@@ -185,7 +187,8 @@ test('the settings of the administrator are three columns of cards', async ({ pa
   const lefts = await cards.evaluateAll((items) =>
     items.map((item) => Math.round(item.getBoundingClientRect().left)),
   );
-  expect(new Set(lefts).size).toBe(3);
+  // 448.9: one settings grid, at most two columns balanced by height
+  expect(new Set(lefts).size).toBe(2);
 
   await page.goto('/admin/status');
   await expect(page.locator('.tb-feed').first()).toBeVisible();

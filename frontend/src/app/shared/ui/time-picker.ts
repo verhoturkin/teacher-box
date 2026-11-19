@@ -316,6 +316,7 @@ const MINUTE_MARKS = Array.from({ length: 12 }, (_, index) =>
       justify-content: center;
       width: 3rem;
       height: 3rem;
+      /* spacing-ok: no token — centres the clock handle on its point */
       margin: -1.5rem 0 0 -1.5rem;
       color: var(--p-md-on-surface);
       font: var(--tb-type-body-l);

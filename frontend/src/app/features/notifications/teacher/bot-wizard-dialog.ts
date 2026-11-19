@@ -284,7 +284,7 @@ function describeMessengerError(error: unknown, fallback: string): string {
       flex-direction: column;
       gap: var(--tb-space-2);
       margin: 0;
-      padding-left: var(--tb-space-5);
+      padding-left: var(--tb-hint-indent);
     }
   `,
 })

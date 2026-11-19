@@ -6,7 +6,7 @@ the rules are unchanged. Read the section you need: `grep -n '^##' docs/agent-en
 ## Repository layout
 
 ```
-docs/          PLAN.md, design-system.md, screens.md, glossary.md, writing.md, operations.md, modules/, adr/, archive/, wiki/, sketches/
+docs/          PLAN.md, design-system.md, screens.md, glossary.md, writing.md, operations.md, modules/, adr/, archive/, wiki/, sketches/, notes/ (research notes)
 backend/       Spring Boot app — src/main/java/ru/teacherbox/{shared,platform,<modules>}
 frontend/      Angular app — src/app/{core,shared,features/<module>}
 docker/        Dockerfile (targets backend, frontend), nginx

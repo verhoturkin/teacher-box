@@ -73,7 +73,7 @@ describe('PortalSettingsCard', () => {
 
   it('groups identity, colour, fine tuning and preview into four cards with appearance help', async () => {
     const host = await render();
-    expect(host.querySelectorAll('.tb-portal-grid .tb-section-card')).toHaveLength(4);
+    expect(host.querySelectorAll('.tb-settings-grid .tb-section-card')).toHaveLength(4);
     expect(readableText(requireElement(host, '.tb-portal-identity', HTMLElement))).toContain(
       'Название и логотип',
     );

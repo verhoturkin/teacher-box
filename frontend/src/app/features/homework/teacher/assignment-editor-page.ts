@@ -287,10 +287,6 @@ import { VideoDraft, videoDraft, videoInputs } from './video-section';
     }
   `,
   styles: `
-    .tb-editor__ai {
-      background: var(--p-md-surface-container-low);
-    }
-
     .tb-editor__ai-head {
       display: flex;
       align-items: center;

@@ -89,7 +89,7 @@ interface SummaryRow {
       gap: var(--tb-space-2);
       width: 100%;
       height: 100%;
-      padding: var(--tb-space-5);
+      padding: var(--tb-surface-padding);
       border: 1px solid var(--p-md-outline-variant);
       border-radius: var(--tb-shape-lg-increased, 1.25rem);
       background: var(--p-md-surface-container-lowest);

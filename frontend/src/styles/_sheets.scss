@@ -164,12 +164,25 @@
     color: var(--p-md-on-surface-variant);
     font: var(--tb-type-title-s);
     cursor: pointer;
+    /* the state layer and the press ripple are clipped to the tab's pill (ours: M3 gives tabs no shape token) */
+    border-radius: var(--tb-shape-full);
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
 
-    &:hover {
-      background: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
+    /* a tap leaves no sticky hover on a touch screen; focus shows only for the keyboard (:focus-visible) */
+    @media (hover: hover) {
+      &:hover {
+        background: color-mix(in srgb, var(--p-md-on-surface) 8%, transparent);
+      }
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: none;
+      background: transparent;
     }
 
     &:focus-visible {
+      background: color-mix(in srgb, var(--p-md-on-surface) 10%, transparent);
       outline: 2px solid var(--p-md-secondary);
       outline-offset: -2px;
     }

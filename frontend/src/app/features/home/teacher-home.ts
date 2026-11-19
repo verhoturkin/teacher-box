@@ -18,7 +18,7 @@ import { HomeworkApi } from '@features/homework/parts';
 import type { HomeworkSummary } from '@features/homework/parts';
 import { NotificationsApi, PushOnboardingCard } from '@features/notifications/parts';
 import type { TeacherNotificationsSummary } from '@features/notifications/parts';
-import { ScheduleApi, UpcomingLessonWidget } from '@features/schedule/parts';
+import { ScheduleApi } from '@features/schedule/parts';
 import type { ScheduleSummary } from '@features/schedule/parts';
 import { FabMenu } from '@shared/ui/fab-menu';
 import { Pane, Panes } from '@shared/ui/panes';
@@ -39,8 +39,8 @@ function dayTitle(date: Date): string {
 }
 
 /**
- * Teacher's «Сегодня» (spec §6): the feed in three columns (extra-large), two (large) or one — the hero and
- * the lessons of today, the queue («Отметить занятия», «Проверить работы»), the month and the week figures. On a phone the same sections follow one another.
+ * Teacher's «Сегодня» (spec §6): the feed in three columns (extra-large), two (large) or one — the lessons
+ * of today with the nearest one expanded, the queue («Отметить занятия», «Проверить работы»), the month and the week figures. On a phone the same sections follow one another.
  */
 @Component({
   selector: 'tb-teacher-home',
@@ -48,7 +48,6 @@ function dayTitle(date: Date): string {
     HelpButton,
     FabMenu,
     FinanceWidget,
-    UpcomingLessonWidget,
     LoadStateView,
     Pane,
     PageHeader,
@@ -77,13 +76,26 @@ function dayTitle(date: Date): string {
               (retry)="load()"
             />
           }
-          <div class="tb-stack tb-feed__lead">
-            @if (schedule()?.next; as next) {
-              <tb-upcoming-lesson-widget [lesson]="next" (over)="loadSchedule()" />
+          @if (columns() > 1 && schedule(); as schedule) {
+            @if (schedule.next !== null) {
+              <tb-today-lessons
+                class="tb-feed__hero"
+                part="hero"
+                [all]="schedule.today"
+                [next]="schedule.next"
+                (over)="loadSchedule()"
+              />
             }
+          }
+          <div class="tb-stack tb-feed__lead">
             @if (schedule(); as schedule) {
-              @if (schedule.today.length > 0) {
-                <tb-today-lessons [all]="schedule.today" [next]="schedule.next" />
+              @if (schedule.today.length > 0 || schedule.next !== null) {
+                <tb-today-lessons
+                  [part]="columns() > 1 ? 'rest' : 'all'"
+                  [all]="schedule.today"
+                  [next]="schedule.next"
+                  (over)="loadSchedule()"
+                />
               }
             }
             <tb-push-onboarding-card [teacher]="true" />
@@ -112,20 +124,28 @@ function dayTitle(date: Date): string {
   styles: `
     .tb-feed {
       display: grid;
-      gap: var(--tb-space-6) var(--tb-space-8);
+      gap: var(--tb-gap-section);
       align-items: start;
     }
 
-    .tb-feed--3 {
-      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 0.8fr);
+    /*
+     * From large (sketch «Главная учителя — варианты», variant C): the current lesson across the page, then
+     * three equal columns (lessons, queue, figures) on extra-large; on large two, the figures under the lessons
+     */
+    .tb-feed__hero {
+      grid-column: 1 / -1;
     }
 
-    /* large: the third column goes under the second */
-    .tb-feed--2 {
-      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    .tb-feed--3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 
-      .tb-feed__lead {
-        grid-row: 1 / span 2;
+    .tb-feed--2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+
+      .tb-feed__queue {
+        grid-column: 2;
+        grid-row: span 2;
       }
     }
 
@@ -150,7 +170,7 @@ export class TeacherHome implements OnInit {
   protected readonly today = signal(dayTitle(new Date()));
   protected readonly mobile = injectMobile();
   private readonly size = injectWindowSize();
-  /** Columns of the feed (spec §6): 3 on extra-large, 2 on large, else 1. */
+  /** Columns of the feed under the hero (spec §6): 3 on extra-large, 2 on large, else 1. */
   protected readonly columns = computed(() => {
     switch (this.size()) {
       case 'extra-large':

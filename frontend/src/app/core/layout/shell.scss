@@ -105,15 +105,17 @@
   min-width: 0;
   max-width: var(--tb-content-max);
   margin: 0 auto;
-  padding: var(--tb-space-2) var(--tb-space-6) var(--tb-space-8);
+  padding: var(--tb-top-gap) var(--tb-margin) var(--tb-space-8);
   box-sizing: border-box;
 
   @media (width < 37.5em) {
-    padding: var(--tb-space-4) var(--tb-space-3);
+    padding-bottom: var(--tb-space-4);
   }
 }
 
-/* A page of panes (shared/ui/panes.ts) takes the whole width: the panes keep their own margins */
+/* A page of panes (shared/ui/panes.ts) takes the whole width: the panes keep their own margins. From medium the
+   sheets stand flush under the top strip (ours, ADR-0068: M3 publishes no top margin); on a phone the pane's scroll
+   area takes --tb-top-gap */
 .tb-shell__content:has(> * > tb-panes) {
   max-width: none;
   padding-top: 0;
@@ -156,7 +158,7 @@
   gap: var(--tb-space-1);
   min-width: 0;
   min-height: var(--tb-bottom-nav-height);
-  padding: var(--tb-space-1) 2px;
+  padding: var(--tb-space-1) var(--tb-space-half);
   box-sizing: border-box;
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-label-m);

@@ -4,6 +4,7 @@ import { AuthService } from '@core/auth/auth.service';
 import { authResponse } from '@testing/auth';
 import { hostElement, requireElement } from '@testing/dom';
 import { screenWidth } from '@testing/setup';
+import { PaneHandle } from './pane-handle';
 import { Pane, PaneKind, Panes } from './panes';
 
 @Component({
@@ -20,6 +21,22 @@ import { Pane, PaneKind, Panes } from './panes';
 class ResizableHost {
   readonly kind = signal<PaneKind>('fixed');
 }
+
+@Component({
+  selector: 'tb-docked-host',
+  imports: [PaneHandle],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <div class="body">
+      <main #page>Страница</main>
+      <div class="host">
+        <aside #pane id="sheet">Уведомления</aside>
+        <tb-pane-handle [pane]="pane" resizeKey="sheet" controls="sheet" [beside]="page" />
+      </div>
+    </div>
+  `,
+})
+class DockedHost {}
 
 const KEY = 'tb.pane-width.018f0000-0000-7000-8000-000000000001.students';
 
@@ -106,6 +123,16 @@ describe('PaneHandle', () => {
       expect(zone).toBeNull();
     },
   );
+
+  it('resizes a side sheet too, without its 400 dp cap', async () => {
+    const { fixture, host, pane } = await render();
+    fixture.componentInstance.kind.set('sheet');
+    await fixture.whenStable();
+
+    expect(host.querySelector('[role="separator"]')).not.toBeNull();
+    expect(pane.style.flexBasis).toContain('--tb-pane-width');
+    expect(pane.style.maxWidth).toBe('');
+  });
 
   it('has no handle on a flexible pane', async () => {
     const { fixture, host } = await render();
@@ -249,5 +276,27 @@ describe('PaneHandle', () => {
     fixture.destroy();
 
     expect(host.querySelector('tb-panes')?.classList ?? []).not.toContain('tb-panes--resizing');
+  });
+
+  it('gives way with the element beside it when that is not a pane (the docked notifications)', async () => {
+    TestBed.configureTestingModule({ providers: [screenWidth(1600)] });
+    TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
+    const fixture = TestBed.createComponent(DockedHost);
+    await fixture.whenStable();
+    const host = hostElement(fixture);
+    const body = requireElement(host, '.body', HTMLElement);
+    const zone = requireElement(host, '[role="separator"]', HTMLElement);
+    Object.defineProperty(body, 'clientWidth', { configurable: true, value: 1600 });
+    requireElement(host, 'aside', HTMLElement).getBoundingClientRect = () =>
+      new DOMRect(1176, 0, 400, 600);
+    requireElement(host, 'main', HTMLElement).getBoundingClientRect = () =>
+      new DOMRect(0, 0, 500, 600);
+    zone.getBoundingClientRect = () => new DOMRect(1144, 0, 40, 600);
+
+    zone.dispatchEvent(new FocusEvent('focus'));
+    TestBed.tick();
+
+    // the page leaves 360: 400 + 500 − 360, less than half the body (800)
+    expect(zone.getAttribute('aria-valuemax')).toBe('540');
   });
 });

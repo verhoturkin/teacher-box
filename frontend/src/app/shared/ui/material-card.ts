@@ -121,7 +121,7 @@ import { BlobImage } from './blob-image';
       display: inline-flex;
       align-items: center;
       gap: var(--tb-space-1);
-      padding: 0.125rem var(--tb-space-3) 0.125rem var(--tb-space-2);
+      padding: var(--tb-space-half) var(--tb-space-3) var(--tb-space-half) var(--tb-space-2);
       border-radius: var(--tb-shape-sm);
       background: var(--p-md-secondary-container);
       color: var(--p-md-on-secondary-container);

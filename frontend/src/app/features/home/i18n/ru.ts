@@ -58,7 +58,11 @@ export const ru = {
   },
   todayLessons: {
     title: 'Занятия сегодня',
-    next: 'Следующее',
+    nearest: 'Ближайшее занятие',
+    live: (left: string) => `Идёт · ${left}`,
+    until: (time: string) => `до ${time}`,
+    start: 'Начать урок',
+    join: 'Войти в урок',
   },
   week: {
     title: 'Неделя',

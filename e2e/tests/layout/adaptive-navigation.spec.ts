@@ -1,3 +1,4 @@
+import { create } from '../support/create';
 import { startSession } from '../support/session';
 import { type Page, expect, test } from '@playwright/test';
 
@@ -168,17 +169,20 @@ test('messages are a snackbar at the bottom and buttons follow the portal color'
   await rename(current);
 
   // A filled button is the primary role: a tone of the portal color readable on white (ADR-0023).
-  // 0.26.0: the open button of the connected group of «Материалы»
-  await page.goto('/teacher/materials');
-  await expect(page.locator('.tb-segment[aria-pressed="true"]')).toBeVisible();
-  const [button, shade] = await page.evaluate(() => {
+  // 439.1: the switch of «Материалы» is outlined now; the filled one is «Сохранить» of a new student
+  await page.goto('/teacher/students');
+  await create(page, 'Ученик');
+  const dialog = page.getByRole('dialog', { name: 'Новый ученик' });
+  const save = dialog.getByRole('button', { name: 'Сохранить' });
+  await expect(save).toBeVisible();
+  const [button, shade] = await save.evaluate((filled) => {
     const probe = document.createElement('div');
     probe.style.color = 'var(--p-md-primary)';
     document.body.append(probe);
     const color = getComputedStyle(probe).color;
     probe.remove();
-    const filled = document.querySelector('.tb-segment[aria-pressed="true"]');
-    return [filled === null ? '' : getComputedStyle(filled).backgroundColor, color];
+    return [getComputedStyle(filled).backgroundColor, color];
   });
   expect(button).toBe(shade);
+  await dialog.getByRole('button', { name: 'Отмена' }).click();
 });

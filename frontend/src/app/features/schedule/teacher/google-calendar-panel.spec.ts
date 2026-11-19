@@ -3,7 +3,14 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
+import {
+  bodyText,
+  buttonByText,
+  hostElement,
+  readableText,
+  requireElement,
+  typeInto,
+} from '@testing/dom';
 import { Portal } from '@core/portal/portal';
 import { ExternalNavigation } from '@shared/navigation/external-navigation';
 import { GoogleCalendarStatus } from '../data-access/schedule.models';
@@ -64,19 +71,28 @@ describe('GoogleCalendarPanel', () => {
     return hostElement(fixture);
   }
 
-  it('guides through the Google Cloud setup and saves the client', async () => {
+  it('shows one line until the teacher opens the setup dialog, then saves the client', async () => {
     setUp();
-    const host = await render(googleStatus());
-    const text = readableText(host);
+    const host = await render(googleStatus({ lastError: 'Google token 400' }));
+    expect(readableText(host)).toContain('Не подключён');
+    expect(readableText(host)).toContain('Google token 400');
+    expect(bodyText()).not.toContain('Google Calendar API');
+
+    buttonByText(host, 'Подключить Google').click();
+    await fixture.whenStable();
+    expect(navigation.go).not.toHaveBeenCalled();
+    const text = bodyText();
+    expect(text).toContain('Подключение Google Календаря');
     expect(text).toContain('Google Calendar API');
     expect(text).toContain('Publish app');
-    expect(host.querySelector<HTMLInputElement>('tb-copy-field input')?.value).toBe(
+    expect(document.body.querySelector<HTMLInputElement>('tb-copy-field input')?.value).toBe(
       'https://school.example.com/api/public/schedule/google/callback',
     );
 
-    fixture.componentInstance.form.setValue({ clientId: ' id-1 ', clientSecret: 'secret' });
+    typeInto(requireElement(document.body, '#google-client-id', HTMLInputElement), ' id-1 ');
+    typeInto(requireElement(document.body, '#google-client-secret', HTMLInputElement), 'secret');
     await fixture.whenStable();
-    buttonByText(host, 'Сохранить').click();
+    buttonByText(document.body, 'Сохранить').click();
 
     const request = backend.expectOne({
       method: 'PUT',
@@ -85,15 +101,21 @@ describe('GoogleCalendarPanel', () => {
     expect(request.request.body).toEqual({ clientId: 'id-1', clientSecret: 'secret' });
     request.flush(googleStatus({ clientConfigured: true, clientId: 'id-1' }));
     await fixture.whenStable();
-    expect(readableText(host)).toContain('Подключить Google');
+    expect(readableText(host)).toContain('отдельный календарь «Уроки Марии»');
   });
 
   it('copies the redirect address', async () => {
     setUp();
     const copy = vi.spyOn(TestBed.inject(Clipboard), 'copy').mockReturnValue(true);
     const host = await render(googleStatus());
+    buttonByText(host, 'Подключить Google').click();
+    await fixture.whenStable();
 
-    requireElement(host, 'button[aria-label="Копировать адрес"]', HTMLButtonElement).click();
+    requireElement(
+      document.body,
+      'button[aria-label="Копировать адрес"]',
+      HTMLButtonElement,
+    ).click();
 
     expect(copy).toHaveBeenCalledWith(
       'https://school.example.com/api/public/schedule/google/callback',
@@ -118,7 +140,7 @@ describe('GoogleCalendarPanel', () => {
     );
   });
 
-  it('lets the teacher change the client unless it comes from the environment', async () => {
+  it('lets the teacher change the client in the dialog', async () => {
     setUp();
     const host = await render(
       googleStatus({ clientConfigured: true, lastError: 'Google token 400' }),
@@ -127,8 +149,8 @@ describe('GoogleCalendarPanel', () => {
 
     buttonByText(host, 'Изменить OAuth-клиент').click();
     await fixture.whenStable();
-    expect(readableText(host)).toContain('Client secret');
-    buttonByText(host, 'Отмена').click();
+    expect(bodyText()).toContain('Client secret');
+    buttonByText(document.body, 'Отмена').click();
     await fixture.whenStable();
     expect(readableText(host)).toContain('Подключить Google');
   });
@@ -189,14 +211,19 @@ describe('GoogleCalendarPanel', () => {
     backend
       .expectOne('/api/teacher/schedule/google/authorize')
       .flush(null, { status: 422, statusText: 'Unprocessable' });
-    fixture.componentInstance.saveClient();
     buttonByText(host, 'Изменить OAuth-клиент').click();
     await fixture.whenStable();
-    fixture.componentInstance.form.setValue({ clientId: 'id', clientSecret: 'secret' });
-    fixture.componentInstance.saveClient();
+    buttonByText(document.body, 'Сохранить').click();
+    backend.expectNone('/api/teacher/schedule/google/client');
+    typeInto(requireElement(document.body, '#google-client-id', HTMLInputElement), 'id');
+    typeInto(requireElement(document.body, '#google-client-secret', HTMLInputElement), 'secret');
+    await fixture.whenStable();
+    buttonByText(document.body, 'Сохранить').click();
     backend
       .expectOne('/api/teacher/schedule/google/client')
       .flush(null, { status: 422, statusText: 'Unprocessable' });
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Client ID');
     expect(navigation.go).not.toHaveBeenCalled();
   });
 

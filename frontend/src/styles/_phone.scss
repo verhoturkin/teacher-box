@@ -28,10 +28,18 @@
       position: absolute;
     }
 
-    /* only the FAB (fixed) or nothing left: the header takes no room */
+    /* only the FAB (fixed) or nothing left: the header leaves the flow, so the parent's gap skips it */
     &:not(:has([meta], > .tb-actions > :not(.tb-page-fab))) {
-      margin-bottom: 0;
+      position: absolute;
     }
+  }
+
+  /* a pane header holding only such a title-less page header takes no room but --tb-top-gap: the scroll area
+     under it has no top padding (434.1, 444.1) */
+  .tb-pane__header:has(> .tb-page-header:only-child):not(
+      :has(.tb-page-header__back, [meta], .tb-actions > :not(.tb-page-fab))
+    ) {
+    padding: var(--tb-top-gap) 0 0;
   }
 
   .tb-page-header {

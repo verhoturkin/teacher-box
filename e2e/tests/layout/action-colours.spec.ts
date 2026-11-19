@@ -46,13 +46,17 @@ test('a dialog submits with the portal colour, like the main action of the page'
   page,
 }) => {
   await signIn(page);
-  // 0.26.0: a primary button of the page — the open button of the group of «Материалы»
-  await page.goto('/teacher/materials');
-  const main = page.locator('main .tb-segment[aria-pressed="true"]');
-  await expect(main).toBeVisible();
-  const accent = await main.evaluate((node) => getComputedStyle(node).backgroundColor);
-
+  // the primary role of the portal colour (439.1: the switch of «Материалы» is outlined now, not filled)
   await page.goto('/teacher/students');
+  const accent = await page.evaluate(() => {
+    const probe = document.createElement('div');
+    probe.style.backgroundColor = 'var(--p-md-primary)';
+    document.body.append(probe);
+    const color = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return color;
+  });
+
   await create(page, 'Ученик');
   const dialog = page.getByRole('dialog', { name: 'Новый ученик' });
   await expect(dialog).toBeVisible();

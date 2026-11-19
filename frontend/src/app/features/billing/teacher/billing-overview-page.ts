@@ -338,7 +338,7 @@ const NUMBER = new Intl.NumberFormat(locale());
 
       @if (!mobile()) {
         <tb-pane kind="fixed" resizeKey="billing" [label]="t.byStudents">
-          <div tbPaneHeader class="tb-ops__bar tb-ops__bar--pane">
+          <div tbPaneHeader class="tb-ops__bar">
             <h2 class="tb-ops__pane-title">{{ t.byStudents }}</h2>
             <a class="tb-link tb-ops__all" routerLink="/teacher/students">{{ t.allInStudents }}</a>
           </div>
@@ -424,7 +424,8 @@ const NUMBER = new Intl.NumberFormat(locale());
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: var(--tb-space-3);
-      margin: 0 0 var(--tb-space-6);
+      /* 24 px to the operations bar: the header's 16 px gap + 8 */
+      margin: 0 0 var(--tb-space-2);
     }
 
     .tb-ops-figure {
@@ -464,16 +465,17 @@ const NUMBER = new Intl.NumberFormat(locale());
       margin-block-end: var(--tb-space-6);
     }
 
+    /* the debtors on a phone stand in the pane header: 24 px to the operations bar are its 16 px gap + 8 */
+    [tbPaneHeader] > .tb-ops {
+      margin-block-end: var(--tb-space-2);
+    }
+
     .tb-ops__bar {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: var(--tb-space-3);
-    }
-
-    .tb-ops__bar--pane {
-      margin-block-end: var(--tb-space-4);
     }
 
     .tb-ops__filters {
@@ -604,7 +606,7 @@ const NUMBER = new Intl.NumberFormat(locale());
 
       .tb-ops-figures {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        margin-block-end: var(--tb-space-4);
+        margin-block-end: 0;
       }
 
       .tb-ops-figure {

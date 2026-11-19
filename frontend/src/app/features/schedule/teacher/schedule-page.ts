@@ -53,7 +53,6 @@ import { LessonDialog, LessonSlot, LessonStudent } from './lesson-dialog';
 import { LessonGroup } from './lesson-owner';
 import { OffTimeDialog } from './off-time-dialog';
 import { RequestAnswerDialog } from './request-answer-dialog';
-import { EmptyState } from '@shared/ui/empty-state';
 import { Avatar } from '@shared/ui/avatar';
 import { TeacherColors } from '@features/identity/parts';
 import { FilterChip, FilterChips } from '@shared/ui/filter-chips';
@@ -121,7 +120,6 @@ const ALL_DAY_START_HOUR = 10;
     ScheduleCalendar,
     Tooltip,
     PageHeader,
-    EmptyState,
     LoadStateView,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -227,7 +225,12 @@ const ALL_DAY_START_HOUR = 10;
       </tb-pane>
 
       @if (sideShown()) {
-        <tb-pane kind="fixed" resizeKey="schedule" class="tb-schedule-side" [label]="t.sidePane">
+        <tb-pane
+          kind="fixed"
+          resizeKey="schedule"
+          class="tb-schedule-side tb-pane--stack"
+          [label]="t.sidePane"
+        >
           @if (!mobile()) {
             <tb-mini-month
               tbPaneHeader
@@ -281,7 +284,9 @@ const ALL_DAY_START_HOUR = 10;
 
           @if (!mobile() || tabsScreen()) {
             <section class="tb-schedule-section">
-              <h2 class="tb-schedule-section__title">{{ t.offTime }}</h2>
+              @if (offTimes().length > 0) {
+                <h2 class="tb-schedule-section__title">{{ t.offTime }}</h2>
+              }
 
               <tb-load-state
                 [state]="offTimesState"
@@ -289,13 +294,7 @@ const ALL_DAY_START_HOUR = 10;
                 [compact]="true"
                 (retry)="loadOffTimes()"
               >
-                @if (offTimes().length === 0) {
-                  <tb-empty-state
-                    icon="tb-i-dark_mode"
-                    [title]="t.noOffTimeTitle"
-                    [hint]="t.noOffTimeHint"
-                  />
-                } @else {
+                @if (offTimes().length > 0) {
                   <ul class="tb-list tb-list--no-phone-lead">
                     @for (item of offTimes(); track item.id) {
                       <li tbListRow>
@@ -329,7 +328,7 @@ const ALL_DAY_START_HOUR = 10;
 
               <p-button
                 class="tb-schedule-side__add"
-                [label]="t.add"
+                [label]="offTimes().length > 0 ? t.add : t.addOffTime"
                 icon="tb-i tb-i-add"
                 severity="secondary"
                 [fluid]="true"
@@ -403,29 +402,10 @@ const ALL_DAY_START_HOUR = 10;
       margin-block-end: var(--tb-space-4);
     }
 
-    /* the supporting pane: M3 side-sheet surface (spec §7) */
-    .tb-schedule-side {
-      background: var(--p-md-surface-container-low);
-      /* M3 expressive segmented list on a tonal pane, the sketch's light rows: the items are lighter than the pane
-         (container lowest on container low; in the dark theme container high), 2 dp apart (SegmentedGap), the
-         group's outer corners large (16), the others extra small (4): tb-list does it */
-      --tb-list-item: var(--p-md-surface-container-lowest);
-    }
-
-    :host-context(.tb-dark) .tb-schedule-side {
-      --tb-list-item: var(--p-md-surface-container-high);
-    }
-
-    /* 16 dp between the list and «Регулярное занятие», as between the other blocks of the pane */
+    /* 16 dp between the list and «Регулярное занятие» inside their section */
     .tb-schedule-side__add {
       display: block;
       margin-top: var(--tb-space-4);
-    }
-
-    :host ::ng-deep .tb-schedule-side .tb-pane__scroll {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-4);
     }
 
     .tb-schedule-toolbar {

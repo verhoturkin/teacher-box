@@ -59,14 +59,6 @@ import { T } from '../i18n/texts';
                 </dd>
               </div>
               <div class="tb-my-billing-figure">
-                <dt class="tb-figure__label">{{ totals.charged }}</dt>
-                <dd class="tb-figure__value">{{ ledger.charged | money: ledger.currency }}</dd>
-              </div>
-              <div class="tb-my-billing-figure">
-                <dt class="tb-figure__label">{{ totals.paid }}</dt>
-                <dd class="tb-figure__value">{{ ledger.paid | money: ledger.currency }}</dd>
-              </div>
-              <div class="tb-my-billing-figure">
                 <dt class="tb-figure__label">{{ t.lessonPrice }}</dt>
                 <dd class="tb-figure__value">{{ ledger.lessonPrice | money: ledger.currency }}</dd>
               </div>
@@ -88,7 +80,7 @@ import { T } from '../i18n/texts';
   styles: `
     .tb-my-billing-figures {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: var(--tb-space-3);
       margin: 0 0 var(--tb-space-6);
     }
@@ -126,12 +118,6 @@ import { T } from '../i18n/texts';
       }
     }
 
-    @media (width < 75em) {
-      .tb-my-billing-figures {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
     .tb-my-billing-figure .tb-figure__value {
       font: var(--tb-type-headline-s);
       overflow-wrap: anywhere;
@@ -140,7 +126,6 @@ import { T } from '../i18n/texts';
 })
 export class MyBillingPage implements OnInit {
   protected readonly t = T.myBilling;
-  protected readonly totals = T.studentLedger;
   protected readonly operations = T.overview;
   private readonly api = inject(BillingApi);
 
