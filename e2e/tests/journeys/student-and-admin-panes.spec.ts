@@ -73,7 +73,9 @@ test('student schedule adapts from calendar panes to a day agenda', async ({ pag
 test('student payments show figures and filter the history', async ({ page }) => {
   await signIn(page, LOGIN, PASSWORD);
   await page.goto('/cabinet/billing');
-  await expect(page.locator('.tb-my-billing-figure')).toHaveCount(4);
+  // 433.1: the balance figures only, no all-time «Начислено» / «Оплачено»
+  await expect(page.locator('.tb-my-billing-figure')).toHaveCount(2);
+  await expect(page.getByText('за всё время')).toHaveCount(0);
   const chips = page.getByRole('group', { name: 'Фильтр операций' });
   await chips.getByRole('button', { name: 'Оплаты', exact: true }).click();
   await expect(chips.getByRole('button', { name: 'Оплаты', exact: true })).toHaveAttribute(
