@@ -1,3 +1,4 @@
+import { courseId } from '../support/courses';
 import { startSession, bearer } from '../support/session';
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 
@@ -79,7 +80,7 @@ test.beforeAll(async ({ request }) => {
       file: { name: `${TEXTBOOK}.pdf`, mimeType: 'application/pdf', buffer: pdf(5) },
       kind: 'TEXTBOOK',
       title: TEXTBOOK,
-      course: 'Английский',
+      courseId: await courseId(request, headers, 'Английский'),
       studentIds: student.id,
     },
   });

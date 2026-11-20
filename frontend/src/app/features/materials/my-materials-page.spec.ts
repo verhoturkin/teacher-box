@@ -47,7 +47,7 @@ describe('MyMaterialsPage', () => {
         groupNames: [],
         hasCover: false,
         format: 'DOCUMENT',
-        course: null,
+        courseName: null,
       }),
     ]);
     await fixture.whenStable();

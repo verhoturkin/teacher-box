@@ -35,6 +35,7 @@ DELETE /api/teacher/schedule/lessons/{lessonId}/outcome TEACHER
 DELETE /api/teacher/schedule/off-times/{offTimeId} TEACHER
 DELETE /api/teacher/students/{id}/guardians/{guardianId} TEACHER
 DELETE /api/teacher/tags/{id} TEACHER
+DELETE /api/teacher/textbooks/courses/{id} TEACHER
 DELETE /api/teacher/textbooks/{id} TEACHER
 GET /api/admin/ai/providers ADMIN
 GET /api/admin/ai/requests ADMIN
@@ -189,6 +190,8 @@ GET /api/teacher/students/{id} TEACHER
 GET /api/teacher/students/{id}/guardians TEACHER
 GET /api/teacher/tags TEACHER
 GET /api/teacher/textbooks TEACHER
+GET /api/teacher/textbooks/course-links TEACHER
+GET /api/teacher/textbooks/courses TEACHER
 GET /api/teacher/textbooks/{id}/cover TEACHER
 GET /api/teacher/textbooks/{id}/file TEACHER
 GET /api/teacher/textbooks/{id}/pages/{page} TEACHER
@@ -275,6 +278,7 @@ POST /api/teacher/students/{id}/invite TEACHER
 POST /api/teacher/students/{id}/reactivate TEACHER
 POST /api/teacher/tags TEACHER
 POST /api/teacher/textbooks TEACHER
+POST /api/teacher/textbooks/courses TEACHER
 POST /api/teacher/textbooks/videos/captions TEACHER
 POST /api/teacher/textbooks/videos/transcript TEACHER
 PUT /api/admin/loggers/{name} ADMIN
@@ -329,5 +333,8 @@ PUT /api/teacher/students/{id} TEACHER
 PUT /api/teacher/students/{id}/tags TEACHER
 PUT /api/teacher/tags/order TEACHER
 PUT /api/teacher/tags/{id} TEACHER
+PUT /api/teacher/textbooks/courses/{id} TEACHER
+PUT /api/teacher/textbooks/groups/{groupId}/course TEACHER
+PUT /api/teacher/textbooks/students/{studentId}/course TEACHER
 PUT /api/teacher/textbooks/{id} TEACHER
 PUT /api/teacher/textbooks/{id}/file TEACHER

@@ -780,6 +780,8 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
       title: this.titleValue(),
       description: text.trim() === '' ? null : text,
       dueAt: dueAt === null ? null : dueAt.toISOString(),
+      // the editor has no «Курс» yet (460.2): a change keeps the assignment's course
+      ...(existing === null ? {} : { courseId: existing.courseId }),
       videos: videoInputs(this.videos()),
       ...this.quiz.input(),
     };

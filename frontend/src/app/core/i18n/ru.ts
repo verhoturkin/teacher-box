@@ -199,6 +199,7 @@ export const ru = {
       'assignment.not-found': 'Задание не найдено',
       'assignment.title-invalid': 'Название задания — от 1 до 200 символов',
       'assignment.description-invalid': 'Текст задания слишком длинный',
+      'assignment.course-not-found': 'Такого курса уже нет',
       'task.grade-invalid': 'Оценка слишком длинная — не больше 20 символов',
       'task.comment-invalid': 'Комментарий к работе слишком длинный',
       'submission.text-invalid': 'Текст ответа слишком длинный',
@@ -344,7 +345,9 @@ export const ru = {
       'boards.file-id-invalid': 'Картинку не удалось сохранить',
       'boards.file-not-found': 'Картинки уже нет',
       'textbooks.title-invalid': 'Название учебника — от 1 до 200 символов',
-      'textbooks.course-invalid': 'Курс — не длиннее 100 символов',
+      'textbooks.course-invalid': 'Название курса — от 1 до 100 символов',
+      'textbooks.course-exists': 'Курс с таким названием уже есть',
+      'textbooks.course-not-found': 'Такого курса уже нет',
       'textbooks.page-count-invalid': 'Число страниц — от 1 до 10 000',
       'textbooks.file-type-not-allowed':
         'Учебник — это PDF, Word (DOC, DOCX) или картинка PNG, JPEG, WebP, GIF',

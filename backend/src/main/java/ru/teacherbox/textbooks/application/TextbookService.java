@@ -59,12 +59,17 @@ public class TextbookService {
     public record Upload(@Nullable String filename, long size, InputStreamSource content) {
     }
 
-    /** A student or a group of a textbook; the name is missing when the student or group is gone. */
+    /** A student, a group or a course of a textbook; the name is missing when it is gone. */
     public record MemberView(MemberType type, UUID id, @Nullable String name) {
     }
 
-    /** @param hasCover a PDF and an image have a cover ({@link #cover}), a Word file has none */
-    public record TextbookView(UUID id, TextbookKind kind, String title, @Nullable String course,
+    /**
+     * @param courseId   the course of the textbook (ADR-0071); {@code null} — none
+     * @param courseName its name
+     * @param hasCover   a PDF and an image have a cover ({@link #cover}), a Word file has none
+     */
+    public record TextbookView(UUID id, TextbookKind kind, String title, @Nullable UUID courseId,
+            @Nullable String courseName,
             @Nullable Integer pageCount, TextbookFormat format, String filename, String contentType, long size,
             boolean hasCover, List<MemberView> members, Instant createdAt, Instant updatedAt, long version) {
     }
@@ -72,9 +77,10 @@ public class TextbookService {
     /**
      * A textbook of a student.
      *
+     * @param courseName the course of the textbook; {@code null} — none
      * @param groupNames the student's groups the textbook is shared with (empty when it is only the student's own)
      */
-    public record MyTextbookView(UUID id, TextbookKind kind, String title, @Nullable String course,
+    public record MyTextbookView(UUID id, TextbookKind kind, String title, @Nullable String courseName,
             @Nullable Integer pageCount, TextbookFormat format, String filename, long size, boolean hasCover,
             List<String> groupNames, Instant updatedAt) {
     }
@@ -92,10 +98,12 @@ public class TextbookService {
     private final PdfPages pdf;
     private final UserDirectory users;
     private final StudentGroups groups;
+    private final CourseService courses;
     private final Clock clock;
 
     public TextbookService(TextbookRepository textbooks, FileStorage storage, PdfPages pdf, UserDirectory users,
-            StudentGroups groups, Clock clock) {
+            StudentGroups groups, CourseService courses, Clock clock) {
+        this.courses = courses;
         this.textbooks = textbooks;
         this.storage = storage;
         this.pdf = pdf;
@@ -110,14 +118,19 @@ public class TextbookService {
         return views(textbooks.findAll());
     }
 
+    /**
+     * @param courseId  the course of the textbook; {@code null} — none
+     * @param courseIds the courses whose students get the textbook (ADR-0071)
+     */
     @Transactional
-    public TextbookView create(TextbookKind kind, String title, @Nullable String course, @Nullable Integer pageCount,
-            Upload upload, Collection<UUID> studentIds, Collection<UUID> groupIds) {
-        Set<TextbookMember> members = members(studentIds, groupIds);
+    public TextbookView create(TextbookKind kind, String title, @Nullable UUID courseId, @Nullable Integer pageCount,
+            Upload upload, Collection<UUID> studentIds, Collection<UUID> groupIds, Collection<UUID> courseIds) {
+        Set<TextbookMember> members = members(studentIds, groupIds, courseIds);
+        requireCourse(courseId);
         requireCurrent(members);
         StoredUpload stored = store(upload);
         try {
-            Textbook textbook = Textbook.created(Ids.newId(), kind, title, course, pageCount, stored.file(),
+            Textbook textbook = Textbook.created(Ids.newId(), kind, title, courseId, pageCount, stored.file(),
                     stored.pages(), clock.instant());
             textbooks.insert(textbook, members);
             makeCover(textbook);
@@ -129,21 +142,22 @@ public class TextbookService {
     }
 
     /**
-     * New members must be current students and active groups; the ones the textbook already has stay even
-     * if they left.
+     * New members must be current students, active groups and courses; the students and groups the textbook
+     * already has stay even if they left.
      *
      * @throws OptimisticLockingFailureException if the textbook was changed after {@code expectedVersion}
      */
     @Transactional
-    public TextbookView change(UUID textbookId, TextbookKind kind, String title, @Nullable String course,
+    public TextbookView change(UUID textbookId, TextbookKind kind, String title, @Nullable UUID courseId,
             @Nullable Integer pageCount, Collection<UUID> studentIds, Collection<UUID> groupIds,
-            long expectedVersion) {
+            Collection<UUID> courseIds, long expectedVersion) {
         Textbook textbook = expected(find(textbookId), expectedVersion);
-        Set<TextbookMember> members = members(studentIds, groupIds);
+        Set<TextbookMember> members = members(studentIds, groupIds, courseIds);
+        requireCourse(courseId);
         Set<TextbookMember> added = new LinkedHashSet<>(members);
         textbooks.findMembers(textbookId).forEach(added::remove);
         requireCurrent(added);
-        Textbook saved = textbooks.update(textbook.changed(kind, title, course, pageCount, clock.instant()),
+        Textbook saved = textbooks.update(textbook.changed(kind, title, courseId, pageCount, clock.instant()),
                 Optional.of(members));
         return views(List.of(saved)).getFirst();
     }
@@ -201,8 +215,9 @@ public class TextbookService {
     }
 
     /**
-     * The teacher opens any textbook; a student — one they are a member of, directly or through a current
-     * group. Anyone else gets 404, as if the textbook did not exist.
+     * The teacher opens any textbook; a student — one they are a member of, directly, through a current group
+     * or through the current course of either (ADR-0071). Anyone else gets 404, as if the textbook did not
+     * exist.
      */
     @Transactional(readOnly = true)
     public TextbookContent download(CurrentUser user, UUID textbookId) {
@@ -241,15 +256,21 @@ public class TextbookService {
                 textbook.file().contentType(), cut.length, new ByteArrayResource(cut));
     }
 
-    /** The student's own textbooks and those of their current groups, newest change first. */
+    /**
+     * The student's own textbooks, those of their current groups and those shared with the current course of
+     * either, newest change first.
+     */
     @Transactional(readOnly = true)
     public List<MyTextbookView> studentTextbooks(UUID studentId) {
         Map<UUID, String> mine = withGroups(studentId);
-        List<Textbook> found = textbooks.findByIds(textbooks.findIdsByMembers(mine.keySet()));
+        Set<UUID> memberIds = new HashSet<>(mine.keySet());
+        memberIds.addAll(courses.coursesOf(studentId, mine.keySet()));
+        List<Textbook> found = textbooks.findByIds(textbooks.findIdsByMembers(memberIds));
         Map<UUID, List<TextbookMember>> members = textbooks.findMembers(found.stream().map(Textbook::id).toList());
+        Map<UUID, String> courseNames = courseNames(found);
         return found.stream()
                 .map(textbook -> new MyTextbookView(textbook.id(), textbook.kind(), textbook.title(),
-                        textbook.course(), textbook.pageCount(), textbook.file().format(),
+                        textbook.courseId() == null ? null : courseNames.get(textbook.courseId()), textbook.pageCount(), textbook.file().format(),
                         textbook.file().filename(), textbook.file().size(), hasCover(textbook),
                         members.getOrDefault(textbook.id(), List.of()).stream()
                                 .filter(member -> member.type() == MemberType.GROUP)
@@ -271,6 +292,11 @@ public class TextbookService {
 
     List<Textbook> findAll(Collection<UUID> textbookIds) {
         return textbooks.findByIds(textbookIds);
+    }
+
+    /** The names of the textbooks' courses by course id. */
+    Map<UUID, String> coursesOf(List<Textbook> found) {
+        return courseNames(found);
     }
 
     static NotFoundException notFound() {
@@ -300,10 +326,27 @@ public class TextbookService {
         if (user.isTeacher()) {
             return true;
         }
+        if (user.role() != Role.STUDENT) {
+            return false;
+        }
         Set<UUID> memberIds = textbooks.findMembers(textbook.id()).stream().map(TextbookMember::id)
                 .collect(Collectors.toSet());
-        return user.role() == Role.STUDENT && (memberIds.contains(user.id())
-                || groups.groupsOf(user.id()).stream().anyMatch(group -> memberIds.contains(group.id())));
+        if (memberIds.contains(user.id())) {
+            return true;
+        }
+        List<UUID> groupIds = groups.groupsOf(user.id()).stream().map(GroupSummary::id).toList();
+        return groupIds.stream().anyMatch(memberIds::contains)
+                || courses.coursesOf(user.id(), groupIds).stream().anyMatch(memberIds::contains);
+    }
+
+    private Map<UUID, String> courseNames(List<Textbook> found) {
+        return courses.names(found.stream().map(Textbook::courseId).filter(Objects::nonNull).toList());
+    }
+
+    private void requireCourse(@Nullable UUID courseId) {
+        if (courseId != null) {
+            courses.find(courseId);
+        }
     }
 
     private static boolean hasCover(Textbook textbook) {
@@ -381,8 +424,12 @@ public class TextbookService {
         Map<UUID, String> names = new HashMap<>(users.findStudents(memberIds).stream()
                 .collect(Collectors.toMap(StudentSummary::id, StudentSummary::displayName)));
         groups.findGroups(memberIds).forEach(group -> names.put(group.id(), group.name()));
+        Map<UUID, String> courseNames = courseNames(found);
+        names.putAll(courses.names(memberIds));
         return found.stream()
-                .map(textbook -> new TextbookView(textbook.id(), textbook.kind(), textbook.title(), textbook.course(),
+                .map(textbook -> new TextbookView(textbook.id(), textbook.kind(), textbook.title(),
+                        textbook.courseId(),
+                        textbook.courseId() == null ? null : courseNames.get(textbook.courseId()),
                         textbook.pageCount(), textbook.file().format(), textbook.file().filename(),
                         textbook.file().contentType(), textbook.file().size(), hasCover(textbook),
                         members.getOrDefault(textbook.id(), List.of()).stream()
@@ -392,10 +439,12 @@ public class TextbookService {
                 .toList();
     }
 
-    private static Set<TextbookMember> members(Collection<UUID> studentIds, Collection<UUID> groupIds) {
+    private static Set<TextbookMember> members(Collection<UUID> studentIds, Collection<UUID> groupIds,
+            Collection<UUID> courseIds) {
         Set<TextbookMember> members = new LinkedHashSet<>();
         studentIds.forEach(id -> members.add(TextbookMember.student(id)));
         groupIds.forEach(id -> members.add(TextbookMember.group(id)));
+        courseIds.forEach(id -> members.add(TextbookMember.course(id)));
         return members;
     }
 
@@ -412,6 +461,7 @@ public class TextbookService {
         if (!active.containsAll(groupIds)) {
             throw new NotFoundException("textbooks.group-not-found", "Group not found");
         }
+        courses.requireAll(ids(members, MemberType.COURSE));
     }
 
     private static List<UUID> ids(Collection<TextbookMember> members, MemberType type) {

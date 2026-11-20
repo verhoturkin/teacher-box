@@ -17,6 +17,8 @@ export interface AssignmentSummary {
   readonly id: string;
   readonly title: string;
   readonly dueAt: string | null;
+  /** The course of the assignment (ADR-0071); `null` — none. */
+  readonly courseId: string | null;
   readonly createdAt: string;
   /** The names of its students, alphabetically. */
   readonly students: readonly string[];
@@ -61,7 +63,7 @@ export interface BoundTextbook {
   readonly textbookId: string;
   readonly kind: TextbookKind;
   readonly title: string;
-  readonly course: string | null;
+  readonly courseName: string | null;
   readonly format: TextbookFormat;
   readonly pageCount: number | null;
   readonly pages: string | null;
@@ -206,6 +208,8 @@ export interface AssignmentDetails {
   readonly title: string;
   readonly description: string | null;
   readonly dueAt: string | null;
+  /** The course of the assignment (ADR-0071); `null` — none. */
+  readonly courseId: string | null;
   /** The board the assignment was put on; `null` — none. */
   readonly boardId: string | null;
   readonly createdAt: string;
@@ -298,6 +302,8 @@ export interface AssignmentInput {
   readonly title: string;
   readonly description: string | null;
   readonly dueAt: string | null;
+  /** The course (ADR-0071); left out or `null` — none. */
+  readonly courseId?: string | null;
   /** The videos in place of the assignment's ones; left out — keep them. */
   readonly videos?: readonly VideoInput[];
   /** The questions in place of the assignment's ones; left out — keep them. */

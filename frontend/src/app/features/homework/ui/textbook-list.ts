@@ -10,7 +10,7 @@ import { T } from '../i18n/texts';
 export function boundPagesText(textbook: BoundTextbook): string {
   return [
     TEXTBOOK_KIND_LABELS[textbook.kind],
-    textbook.course,
+    textbook.courseName,
     textbook.pages === null ? T.textbooks.whole : T.textbooks.pages(textbook.pages),
   ]
     .filter((part) => part !== null)

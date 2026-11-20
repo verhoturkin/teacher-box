@@ -18,7 +18,7 @@ public class AssignmentRepository {
 
     private static final String SELECT =
             """
-            select id, title, description, due_at, board_id, quiz_reveal, quiz_attempts, created_at, updated_at, version
+            select id, title, description, due_at, board_id, course_id, quiz_reveal, quiz_attempts, created_at, updated_at, version
             from homework.assignments""";
 
     private final JdbcClient jdbc;
@@ -29,14 +29,16 @@ public class AssignmentRepository {
 
     public void insert(Assignment assignment) {
         jdbc.sql("""
-                insert into homework.assignments (id, title, description, due_at, quiz_reveal, quiz_attempts, created_at,
-                    updated_at, version)
-                values (:id, :title, :description, :dueAt, :quizReveal, :quizAttempts, :createdAt, :updatedAt, :version)
+                insert into homework.assignments (id, title, description, due_at, course_id, quiz_reveal, quiz_attempts,
+                    created_at, updated_at, version)
+                values (:id, :title, :description, :dueAt, :courseId, :quizReveal, :quizAttempts, :createdAt, :updatedAt,
+                    :version)
                 """)
                 .param("id", assignment.id())
                 .param("title", assignment.title())
                 .param("description", assignment.description())
                 .param("dueAt", assignment.dueAt())
+                .param("courseId", assignment.courseId())
                 .param("quizReveal", assignment.quizReveal().name())
                 .param("quizAttempts", assignment.quizAttempts())
                 .param("createdAt", assignment.createdAt())
@@ -48,7 +50,8 @@ public class AssignmentRepository {
     public void update(Assignment assignment) {
         int updated = jdbc.sql("""
                 update homework.assignments
-                set title = :title, description = :description, due_at = :dueAt, quiz_reveal = :quizReveal,
+                set title = :title, description = :description, due_at = :dueAt, course_id = :courseId,
+                    quiz_reveal = :quizReveal,
                     quiz_attempts = :quizAttempts, updated_at = :updatedAt, version = version + 1
                 where id = :id and version = :version
                 """)
@@ -57,6 +60,7 @@ public class AssignmentRepository {
                 .param("title", assignment.title())
                 .param("description", assignment.description())
                 .param("dueAt", assignment.dueAt())
+                .param("courseId", assignment.courseId())
                 .param("quizReveal", assignment.quizReveal().name())
                 .param("quizAttempts", assignment.quizAttempts())
                 .param("updatedAt", assignment.updatedAt())
@@ -97,6 +101,12 @@ public class AssignmentRepository {
                 .list();
     }
 
+    /** The course was deleted (ADR-0071): its assignments are left without one; the versions stay. */
+    public void clearCourse(UUID courseId) {
+        jdbc.sql("update homework.assignments set course_id = null where course_id = :id").param("id", courseId)
+                .update();
+    }
+
     /** Newest first. */
     public List<Assignment> findAll() {
         return jdbc.sql(SELECT + " order by created_at desc").query(AssignmentRepository::map).list();
@@ -109,6 +119,7 @@ public class AssignmentRepository {
                 rs.getString("description"),
                 rs.getObject("due_at", Instant.class),
                 rs.getObject("board_id", UUID.class),
+                rs.getObject("course_id", UUID.class),
                 RevealRule.valueOf(rs.getString("quiz_reveal")),
                 rs.getObject("quiz_attempts", Integer.class),
                 rs.getObject("created_at", Instant.class),

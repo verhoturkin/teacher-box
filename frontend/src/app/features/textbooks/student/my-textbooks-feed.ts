@@ -81,7 +81,7 @@ export class MyTextbooksFeed implements OnInit {
         (filter === 'all' || textbook.kind === filter) &&
         (query === '' ||
           textbook.title.toLocaleLowerCase('ru').includes(query) ||
-          (textbook.course?.toLocaleLowerCase('ru').includes(query) ?? false)),
+          (textbook.courseName?.toLocaleLowerCase('ru').includes(query) ?? false)),
     );
   });
 

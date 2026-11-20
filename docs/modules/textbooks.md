@@ -1,13 +1,23 @@
 # textbooks
 
 The teacher's textbooks, workbooks and other materials: one file each, shared with any number of students and
-groups; pages of a PDF cut out for homework and rendered as pictures for boards. Depends on: `shared`,
-`identity::api`. Schema `textbooks`. ADR: [0033](../adr/0033-textbooks.md).
+groups; pages of a PDF cut out for homework and rendered as pictures for boards; courses (460.1).
+Depends on: `shared`, `identity::api`. Schema `textbooks`. ADR: [0033](../adr/0033-textbooks.md),
+[0071](../adr/0071-courses-lesson-plans-and-bank.md).
 
 ## Rules
 
-- Kinds: `TEXTBOOK` «Учебник», `WORKBOOK` «Рабочая тетрадь», `OTHER` «Другое». Title 1–200, course (free text)
-  ≤ 100, blank — none.
+- Kinds: `TEXTBOOK` «Учебник», `WORKBOOK` «Рабочая тетрадь», `OTHER` «Другое». Title 1–200; the
+  course — `courseId` of an existing course (404 `textbooks.course-not-found`), `null` — none.
+- **Courses** (ADR-0071): a name 1–100 (`textbooks.course-invalid`), unique ignoring case (409
+  `textbooks.course-exists`, `name_key = lower(name)`), a new one goes last (`position`); renamed
+  with `version`. A student and a group have at most one current course (`student_courses`,
+  `group_courses`): given only to a current student / an active group (404
+  `textbooks.student-not-found` / `textbooks.group-not-found`), `null` always clears it. Deleting a
+  course clears the textbooks' course (a new version each), the students' and groups' links and
+  the `COURSE` members, then publishes `CourseDeleted`. Migration `V3`: the courses come from the
+  distinct trimmed non-blank `textbooks.course` values ignoring case (the oldest textbook's
+  spelling wins, positions by name), `course_id` filled, `course` dropped.
 - One file per textbook (`TextbookFiles`): png, jpeg, webp, gif, PDF — by the first bytes; DOC (OLE) and DOCX
   (ZIP) — by the first bytes and the extension; nothing else (no SVG). Empty — `textbooks.file-empty`, over
   100 MB — `textbooks.file-too-large`. The content type served is the one found, never the client's. Stored
@@ -19,8 +29,10 @@ groups; pages of a PDF cut out for homework and rendered as pictures for boards.
   replaced by another document.
 - Members: students and groups like boards — new ones must be current students and active groups
   (`textbooks.student-not-found`, `textbooks.group-not-found`); those the textbook has stay when they leave.
-- Access: the teacher — every textbook; a student — one they are a member of directly or through a current
-  group; anyone else — 404. `ADMIN` — none.
+  «Ученики курса» (`COURSE`, ADR-0071) — the students whose current course it is and the members of
+  current groups with that course, counted on every request; the course must exist.
+- Access: the teacher — every textbook; a student — one they are a member of directly, through a
+  current group or through the current course of either; anyone else — 404. `ADMIN` — none.
 - Pages (`api.PageRanges`): the teacher writes `1-3, 7` (commas, spaces, `-` / `–` / `—`); kept normalized,
   ≤ 500 pages, page ≤ 10 000 (`textbooks.pages-invalid`); past the textbook's end — `textbooks.pages-beyond`.
 - A page picture (`PdfPages.picture`): PNG at 150 dpi, at most 2000 px wide (a turned page counts its turned
@@ -35,9 +47,14 @@ groups; pages of a PDF cut out for homework and rendered as pictures for boards.
 
 ## Contract (`textbooks::api`)
 
-`Textbooks` facade (for `homework`): `find(id)`, `find(ids)` — `TextbookSummary` (kind, title, course, format,
-pages), deleted ones skipped; `content(id, pages)` — `TextbookContent`: a PDF cut to the pages (those past the end
-skipped, named `<file> (с. 1-3).pdf`), any other file whole. No events.
+`Textbooks` facade (for `homework`): `find(id)`, `find(ids)` — `TextbookSummary` (kind, title,
+`courseId`, `courseName`, format, pages), deleted ones skipped; `content(id, pages)` —
+`TextbookContent`: a PDF cut to the pages (those past the end skipped, named `<file> (с. 1-3).pdf`),
+any other file whole.
+
+`Courses` facade (ADR-0071; `homework` checks `assignments.course_id`): `find(id)`, `find(ids)` →
+`CourseSummary (id, name)`, deleted ones skipped; `ofStudent(id)`, `ofGroup(id)` — the current
+course. Event `CourseDeleted(courseId)` — after the course and its own links are gone.
 
 Videos (moved from `homework` in 0.60.0, [ADR-0047](../adr/0047-video-links-and-transcripts.md)):
 `VideoLink` — `parse(url)` → provider (`YOUTUBE`, `RUTUBE`, `VK`, `OTHER`), video ID, start; YouTube
@@ -54,18 +71,21 @@ kept for existing `.env` files; read live, ADR-0056).
 
 ## Data
 
-`textbooks` (kind, title, course, page_count, format, file_key, filename, content_type, size, cover_key, version),
-`textbook_members` (`member_type` `STUDENT` / `GROUP`, `member_id`). Both are in the full reset; files are in
-the portal backup.
+`textbooks` (kind, title, course_id, page_count, format, file_key, filename, content_type, size,
+cover_key, version), `textbook_members` (`member_type` `STUDENT` / `GROUP` / `COURSE`, `member_id`),
+`courses` (name, name_key, position, version), `student_courses`, `group_courses` (one current
+course each, cascade with the course). All are in the full reset; files are in the portal backup.
 
 ## REST
 
 | Endpoint | Who |
 |---|---|
-| `GET /api/teacher/textbooks` (newest first), `POST` (multipart: `file`, `kind`, `title`, `course`, `pageCount`, `studentIds`, `groupIds`) | teacher |
-| `PUT /api/teacher/textbooks/{id}` (JSON with `version`), `PUT /{id}/file` (multipart `file`, `version`), `DELETE /{id}` | teacher |
+| `GET /api/teacher/textbooks` (newest first; `courseId`, `courseName`), `POST` (multipart: `file`, `kind`, `title`, `courseId`, `pageCount`, `studentIds`, `groupIds`, `courseIds`) | teacher |
+| `GET /api/teacher/textbooks/courses` (in order), `POST {name}` (201), `PUT /courses/{id} {name, version}`, `DELETE /courses/{id}` (204) | teacher |
+| `PUT /api/teacher/textbooks/students/{studentId}/course`, `PUT …/groups/{groupId}/course` `{courseId \| null}` (204); `GET …/course-links` → `{students: [{studentId, courseId}], groups: [{groupId, courseId}]}` | teacher |
+| `PUT /api/teacher/textbooks/{id}` (JSON with `version`, `courseId`, `courseIds`), `PUT /{id}/file` (multipart `file`, `version`), `DELETE /{id}` | teacher |
 | `GET /api/teacher/textbooks/{id}/file`, `GET /{id}/pages/{n}` (picture), `GET /{id}/cover` | teacher |
-| `GET /api/me/textbooks` (with `groupNames`, newest change first), `GET /api/me/textbooks/{id}/file`, `GET /api/me/textbooks/{id}/cover` (404 for a textbook of others and for a Word file) | student |
+| `GET /api/me/textbooks` (with `groupNames`, `courseName`, newest change first), `GET /api/me/textbooks/{id}/file`, `GET /api/me/textbooks/{id}/cover` (404 for a textbook of others and for a Word file) | student |
 | `POST /api/teacher/textbooks/videos/captions` `{url}` → `{title, tracks: [{language, automatic}], suggested}`; `POST …/videos/transcript` `{url, language?, automatic?}` → `{title, language, automatic, transcript, truncated}` (nothing is saved) | teacher |
 
 Uploads up to 100 MB: Spring multipart limits and nginx `client_max_body_size` for `/api/teacher/textbooks`.

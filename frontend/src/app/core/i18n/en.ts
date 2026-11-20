@@ -203,6 +203,7 @@ export const en: Translation<typeof ru> = {
       'assignment.not-found': 'Assignment not found',
       'assignment.title-invalid': 'Assignment titles must be between 1 and 200 characters',
       'assignment.description-invalid': 'The assignment text is too long',
+      'assignment.course-not-found': 'This course no longer exists',
       'task.grade-invalid': 'The grade is too long — at most 20 characters',
       'task.comment-invalid': 'The feedback is too long',
       'submission.text-invalid': 'Your answer is too long',
@@ -355,7 +356,9 @@ export const en: Translation<typeof ru> = {
       'boards.file-id-invalid': 'The picture could not be saved',
       'boards.file-not-found': 'Image not found',
       'textbooks.title-invalid': 'Textbook titles must be between 1 and 200 characters',
-      'textbooks.course-invalid': 'Course names must be 100 characters or fewer',
+      'textbooks.course-invalid': 'Course names must be between 1 and 100 characters',
+      'textbooks.course-exists': 'A course with this name already exists',
+      'textbooks.course-not-found': 'This course no longer exists',
       'textbooks.page-count-invalid': 'Enter a page count between 1 and 10,000',
       'textbooks.file-type-not-allowed':
         'Use a PDF, Word document (DOC or DOCX), or PNG, JPEG, WebP or GIF image',

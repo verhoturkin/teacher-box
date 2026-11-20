@@ -128,7 +128,7 @@ class AssistantIntegrationTests {
     void draftsHomeworkFromTextbookPages() {
         UUID textbook = UUID.randomUUID();
         when(textbooks.find(textbook)).thenReturn(Optional.of(new TextbookSummary(textbook, TextbookKind.TEXTBOOK,
-                "Spotlight 5", null, TextbookFormat.PDF, 120)));
+                "Spotlight 5", null, null, TextbookFormat.PDF, 120)));
         when(textbooks.content(eq(textbook), any())).thenReturn(new TextbookContent("Spotlight 5.pdf",
                 "application/pdf", 4, new ByteArrayResource("%PDF".getBytes(StandardCharsets.UTF_8))));
         llm.answer("{\"title\": \"Т\", \"description\": \"О\"}", 1, 1);

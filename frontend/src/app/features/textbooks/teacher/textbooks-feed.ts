@@ -110,7 +110,6 @@ export type TextbooksFilter = 'all' | TextbookKind;
       [textbook]="editing()"
       [students]="students()"
       [groups]="groups()"
-      [courses]="courses()"
       (saved)="load()"
     />
   `,
@@ -146,7 +145,7 @@ export class TextbooksFeed {
         (filter === 'all' || textbook.kind === filter) &&
         (query === '' ||
           textbook.title.toLocaleLowerCase('ru').includes(query) ||
-          (textbook.course?.toLocaleLowerCase('ru').includes(query) ?? false) ||
+          (textbook.courseName?.toLocaleLowerCase('ru').includes(query) ?? false) ||
           textbook.members.some((item) => item.name?.toLocaleLowerCase('ru').includes(query))),
     );
     return sortMaterials(matching, this.sort());
@@ -167,13 +166,6 @@ export class TextbooksFeed {
     const textbook = this.menuFor();
     return textbook === null ? [] : this.actionsOf(textbook);
   });
-  /** Courses already used, offered in the dialog. */
-  protected readonly courses = computed(() =>
-    [...new Set(this.textbooks().flatMap((textbook) => textbook.course ?? []))].sort((a, b) =>
-      a.localeCompare(b, 'ru'),
-    ),
-  );
-
   /** The cover of a textbook (a stable function for `tb-blob-image`). */
   protected readonly loadCover = (id: string): Observable<Blob> => this.api.cover(id);
 

@@ -95,7 +95,7 @@ describe('TextbooksFeed', () => {
     expect(host.textContent).toContain('Ничего не найдено');
   });
 
-  it('adds a textbook with the current students, groups and courses', async () => {
+  it('adds a textbook with the current students and groups', async () => {
     await render([]);
     expect(host.textContent).toContain('Учебников пока нет');
     fixture.componentInstance.openCreate();
@@ -108,9 +108,9 @@ describe('TextbooksFeed', () => {
     dialog().saved.emit(aTextbook());
     backend
       .expectOne('/api/teacher/textbooks')
-      .flush([aTextbook({ hasCover: false }), aWorkbook({ hasCover: false, course: 'Алгебра' })]);
+      .flush([aTextbook({ hasCover: false }), aWorkbook({ hasCover: false })]);
     await fixture.whenStable();
-    expect(dialog().courses()).toEqual(['Алгебра', 'Английский']);
+    expect(host.textContent).toContain('Рабочая тетрадь');
   });
 
   it('changes, downloads and deletes from the row menu', async () => {

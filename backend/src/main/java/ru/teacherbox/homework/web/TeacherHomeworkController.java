@@ -121,11 +121,15 @@ class TeacherHomeworkController {
         }
     }
 
-    /** @param videos the videos by link, at most 5 */
+    /**
+     * @param courseId the course of the assignment (ADR-0071); {@code null} — none
+     * @param videos   the videos by link, at most 5
+     */
     record CreateAssignmentRequest(
             @NotBlank @Size(max = 200) String title,
             @Size(max = 20_000) @Nullable String description,
             @Nullable Instant dueAt,
+            @Nullable UUID courseId,
             @Nullable List<UUID> studentIds,
             @Size(max = AssignmentVideo.MAX_PER_ASSIGNMENT) @Nullable List<@Valid @NotNull VideoRequest> videos,
             @Size(max = Quiz.MAX_QUESTIONS) @Nullable List<@Valid @NotNull QuestionRequest> questions,
@@ -134,6 +138,7 @@ class TeacherHomeworkController {
     }
 
     /**
+     * @param courseId     the course of the assignment; {@code null} — none
      * @param videos       the videos in place of the assignment's ones; {@code null} — keep them
      * @param questions    the questions in place of the assignment's ones; {@code null} — keep them
      * @param quizReveal   {@code null} — keep
@@ -143,6 +148,7 @@ class TeacherHomeworkController {
             @NotBlank @Size(max = 200) String title,
             @Size(max = 20_000) @Nullable String description,
             @Nullable Instant dueAt,
+            @Nullable UUID courseId,
             @NotNull Long version,
             @Size(max = AssignmentVideo.MAX_PER_ASSIGNMENT) @Nullable List<@Valid @NotNull VideoRequest> videos,
             @Size(max = Quiz.MAX_QUESTIONS) @Nullable List<@Valid @NotNull QuestionRequest> questions,
@@ -213,7 +219,7 @@ class TeacherHomeworkController {
     @PostMapping("/assignments")
     @ResponseStatus(HttpStatus.CREATED)
     AssignmentDetails create(@Valid @RequestBody CreateAssignmentRequest request) {
-        return assignments.create(request.title(), request.description(), request.dueAt(),
+        return assignments.create(request.title(), request.description(), request.dueAt(), request.courseId(),
                 inputs(request.videos()), questions(request.questions()), request.quizReveal(),
                 request.quizAttempts(), request.studentIds() == null ? List.of() : request.studentIds());
     }
@@ -233,7 +239,7 @@ class TeacherHomeworkController {
     @PutMapping("/assignments/{assignmentId}")
     AssignmentDetails update(@PathVariable UUID assignmentId, @Valid @RequestBody UpdateAssignmentRequest request) {
         return assignments.update(assignmentId, request.title(), request.description(), request.dueAt(),
-                request.videos() == null ? null : inputs(request.videos()),
+                request.courseId(), request.videos() == null ? null : inputs(request.videos()),
                 request.questions() == null ? null : questions(request.questions()), request.quizReveal(),
                 request.quizAttempts(), request.version());
     }

@@ -39,11 +39,11 @@ public final class HomeworkViews {
      *
      * @param pages the bound pages ({@code 1-3, 7}); {@code null} — the whole textbook
      */
-    public record BoundTextbookView(UUID textbookId, TextbookKind kind, String title, @Nullable String course,
+    public record BoundTextbookView(UUID textbookId, TextbookKind kind, String title, @Nullable String courseName,
             TextbookFormat format, @Nullable Integer pageCount, @Nullable String pages) {
 
         static BoundTextbookView of(TextbookSummary textbook, @Nullable String pages) {
-            return new BoundTextbookView(textbook.id(), textbook.kind(), textbook.title(), textbook.course(),
+            return new BoundTextbookView(textbook.id(), textbook.kind(), textbook.title(), textbook.courseName(),
                     textbook.format(), textbook.pageCount(), pages);
         }
     }
@@ -81,6 +81,7 @@ public final class HomeworkViews {
      *
      * @param students   the names of its students, alphabetically
      * @param studentIds the ids of its students (the list filters by student or group)
+     * @param courseId   the course of the assignment (ADR-0071); {@code null} — none
      * @param boardId the board it was put on; {@code null} — none
      * @param textbooks the bound textbooks; files, questions, videos — how many materials of each kind it has
      */
@@ -88,6 +89,7 @@ public final class HomeworkViews {
             UUID id,
             String title,
             @Nullable Instant dueAt,
+            @Nullable UUID courseId,
             Instant createdAt,
             List<String> students,
             List<UUID> studentIds,
@@ -128,12 +130,16 @@ public final class HomeworkViews {
             @Nullable Integer quizMax) {
     }
 
-    /** @param boardId the board the assignment was put on; {@code null} — none */
+    /**
+     * @param courseId the course of the assignment (ADR-0071); {@code null} — none
+     * @param boardId  the board the assignment was put on; {@code null} — none
+     */
     public record AssignmentDetails(
             UUID id,
             String title,
             @Nullable String description,
             @Nullable Instant dueAt,
+            @Nullable UUID courseId,
             @Nullable UUID boardId,
             Instant createdAt,
             long version,

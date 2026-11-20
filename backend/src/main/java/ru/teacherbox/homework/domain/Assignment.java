@@ -9,7 +9,7 @@ import ru.teacherbox.shared.error.BusinessRuleException;
 
 /**
  * Homework created by the teacher: a text (Markdown) with optional files and deadline; the board it was put on, if
- * any (ADR-0041).
+ * any (ADR-0041); the course it belongs to, if any (ADR-0071).
  */
 public final class Assignment {
 
@@ -24,6 +24,7 @@ public final class Assignment {
     private @Nullable String description;
     private @Nullable Instant dueAt;
     private @Nullable UUID boardId;
+    private @Nullable UUID courseId;
     private RevealRule quizReveal;
     private @Nullable Integer quizAttempts;
     private final Instant createdAt;
@@ -31,13 +32,14 @@ public final class Assignment {
     private long version;
 
     private Assignment(UUID id, String title, @Nullable String description, @Nullable Instant dueAt,
-            @Nullable UUID boardId, RevealRule quizReveal, @Nullable Integer quizAttempts, Instant createdAt,
-            Instant updatedAt, long version) {
+            @Nullable UUID boardId, @Nullable UUID courseId, RevealRule quizReveal, @Nullable Integer quizAttempts,
+            Instant createdAt, Instant updatedAt, long version) {
         this.id = Objects.requireNonNull(id);
         this.title = title;
         this.description = description;
         this.dueAt = dueAt;
         this.boardId = boardId;
+        this.courseId = courseId;
         this.quizReveal = quizReveal;
         this.quizAttempts = quizAttempts;
         this.createdAt = Objects.requireNonNull(createdAt);
@@ -47,23 +49,24 @@ public final class Assignment {
 
     public static Assignment create(UUID id, String title, @Nullable String description, @Nullable Instant dueAt,
             Instant now) {
-        return new Assignment(id, validTitle(title), validDescription(description), dueAt, null, DEFAULT_REVEAL,
+        return new Assignment(id, validTitle(title), validDescription(description), dueAt, null, null, DEFAULT_REVEAL,
                 DEFAULT_ATTEMPTS, now, now, 0);
     }
 
     public static Assignment restore(UUID id, String title, @Nullable String description, @Nullable Instant dueAt,
-            @Nullable UUID boardId, RevealRule quizReveal, @Nullable Integer quizAttempts, Instant createdAt,
-            Instant updatedAt, long version) {
-        return new Assignment(id, title, description, dueAt, boardId, quizReveal, quizAttempts, createdAt, updatedAt,
-                version);
+            @Nullable UUID boardId, @Nullable UUID courseId, RevealRule quizReveal, @Nullable Integer quizAttempts,
+            Instant createdAt, Instant updatedAt, long version) {
+        return new Assignment(id, title, description, dueAt, boardId, courseId, quizReveal, quizAttempts, createdAt,
+                updatedAt, version);
     }
 
-    /** A draft made from this assignment: the same text, no deadline and no board. */
+    /** A draft made from this assignment: the same text and course, no deadline and no board. */
     public Assignment copy(UUID newId, String suffix, Instant now) {
         String copyTitle = title.length() + suffix.length() > MAX_TITLE
                 ? title.substring(0, MAX_TITLE - suffix.length()).stripTrailing() + suffix
                 : title + suffix;
-        return new Assignment(newId, copyTitle, description, null, null, quizReveal, quizAttempts, now, now, 0);
+        return new Assignment(newId, copyTitle, description, null, null, courseId, quizReveal, quizAttempts, now, now,
+                0);
     }
 
     public void update(String newTitle, @Nullable String newDescription, @Nullable Instant newDueAt, Instant now) {
@@ -88,6 +91,11 @@ public final class Assignment {
             }
             quizAttempts = attempts == 0 ? null : attempts;
         }
+    }
+
+    /** The course of the assignment (checked by the caller); {@code null} — none. */
+    public void changeCourse(@Nullable UUID course) {
+        courseId = course;
     }
 
     /** The assignment was put on this board (the student gets «Перейти на доску»); {@code null} forgets it. */
@@ -137,6 +145,10 @@ public final class Assignment {
 
     public @Nullable UUID boardId() {
         return boardId;
+    }
+
+    public @Nullable UUID courseId() {
+        return courseId;
     }
 
     public RevealRule quizReveal() {

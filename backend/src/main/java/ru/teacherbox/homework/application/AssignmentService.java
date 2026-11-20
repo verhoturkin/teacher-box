@@ -50,6 +50,7 @@ import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.error.NotFoundException;
+import ru.teacherbox.textbooks.api.Courses;
 
 /** The teacher's assignments: creating, editing, giving them to students, materials. */
 @Service
@@ -80,13 +81,15 @@ public class AssignmentService {
 
     private final DraftStudentRepository draftStudents;
     private final QuizAttemptRepository quizAttempts;
+    private final Courses courses;
 
     public AssignmentService(AssignmentRepository assignments, TaskRepository tasks,
             SubmissionRepository submissions, AttachmentService attachments, TextbookBindings textbooks,
             AssignmentVideos videos, AssignmentQuiz quiz, UserDirectory directory, ApplicationEventPublisher events, Clock clock,
             BoundTextbookRepository boundTextbooks, AttachmentRepository files, QuestionRepository questions,
             VideoRepository videoLinks, DraftStudentRepository draftStudents,
-            QuizAttemptRepository quizAttempts) {
+            QuizAttemptRepository quizAttempts, Courses courses) {
+        this.courses = courses;
         this.quizAttempts = quizAttempts;
         this.draftStudents = draftStudents;
         this.boundTextbooks = boundTextbooks;
@@ -116,10 +119,11 @@ public class AssignmentService {
     @Transactional
     public AssignmentDetails create(String title, @Nullable String description, @Nullable Instant dueAt,
             List<VideoInput> videoInputs, Collection<UUID> studentIds) {
-        return create(title, description, dueAt, videoInputs, List.of(), null, null, studentIds);
+        return create(title, description, dueAt, null, videoInputs, List.of(), null, null, studentIds);
     }
 
     /**
+     * @param courseId    the course of the assignment (ADR-0071); {@code null} — none
      * @param videoInputs the videos of the assignment by link (ADR-0047), at most 5
      * @param questions   auto-checked questions (ADR-0052); a draft (no students) keeps incomplete ones (ADR-0054)
      * @param reveal      when the student sees the right answers; {@code null} — after submitting
@@ -127,10 +131,11 @@ public class AssignmentService {
      */
     @Transactional
     public AssignmentDetails create(String title, @Nullable String description, @Nullable Instant dueAt,
-            List<VideoInput> videoInputs, List<QuestionDraft> questions, @Nullable RevealRule reveal,
-            @Nullable Integer attempts, Collection<UUID> studentIds) {
+            @Nullable UUID courseId, List<VideoInput> videoInputs, List<QuestionDraft> questions,
+            @Nullable RevealRule reveal, @Nullable Integer attempts, Collection<UUID> studentIds) {
         Instant now = clock.instant();
         Assignment assignment = Assignment.create(Ids.newId(), title, description, dueAt, now);
+        assignment.changeCourse(requireCourse(courseId));
         assignment.changeQuiz(reveal, attempts);
         assignments.insert(assignment);
         videos.replace(assignment.id(), videoInputs);
@@ -140,23 +145,29 @@ public class AssignmentService {
     }
 
     /**
+     * @param courseId    the course of the assignment (ADR-0071); {@code null} — none
      * @param videoInputs the videos in place of the assignment's ones; {@code null} — keep them
      * @param questions   the questions in place of the assignment's ones; {@code null} — keep them; a draft keeps
      *                    incomplete ones (ADR-0054)
      * @param reveal      {@code null} — keep
      * @param attempts    0 — unlimited; {@code null} — keep
      * @throws BusinessRuleException {@code homework.quiz-started} if the questions change after a student started
+     * @throws NotFoundException {@code assignment.course-not-found} if there is no such course
      * @throws OptimisticLockingFailureException if the assignment was changed after {@code expectedVersion}
      */
     @Transactional
     public AssignmentDetails update(UUID assignmentId, String title, @Nullable String description,
-            @Nullable Instant dueAt, @Nullable List<VideoInput> videoInputs, @Nullable List<QuestionDraft> questions,
-            @Nullable RevealRule reveal, @Nullable Integer attempts, long expectedVersion) {
+            @Nullable Instant dueAt, @Nullable UUID courseId, @Nullable List<VideoInput> videoInputs,
+            @Nullable List<QuestionDraft> questions, @Nullable RevealRule reveal, @Nullable Integer attempts,
+            long expectedVersion) {
         Assignment assignment = load(assignmentId);
         if (assignment.version() != expectedVersion) {
             throw new OptimisticLockingFailureException("Assignment " + assignmentId + " was modified");
         }
         assignment.update(title, description, dueAt, clock.instant());
+        if (!Objects.equals(courseId, assignment.courseId())) {
+            assignment.changeCourse(requireCourse(courseId));
+        }
         assignment.changeQuiz(reveal, attempts);
         assignments.update(assignment);
         if (videoInputs != null) {
@@ -169,7 +180,7 @@ public class AssignmentService {
     }
 
     /**
-     * A draft «title (копия)»: the text, files (new copies in the storage), textbooks with pages and videos with
+     * A draft «title (копия)»: the text, the course, files (new copies in the storage), textbooks with pages and videos with
      * transcripts; no students, no deadline, no board.
      */
     @Transactional
@@ -259,7 +270,7 @@ public class AssignmentService {
                     .sorted(String.CASE_INSENSITIVE_ORDER)
                     .toList();
             return new AssignmentSummary(assignment.id(), assignment.title(), assignment.dueAt(),
-                    assignment.createdAt(), students, studentsOf.getOrDefault(assignment.id(), List.of()),
+                    assignment.courseId(), assignment.createdAt(), students, studentsOf.getOrDefault(assignment.id(), List.of()),
                     assignment.boardId(), assigned + submitted + returned + accepted, assigned, submitted, returned,
                     accepted, textbookCounts.getOrDefault(assignment.id(), 0), fileCounts.getOrDefault(assignment.id(), 0),
                     questionCounts.getOrDefault(assignment.id(), 0), videoCounts.getOrDefault(assignment.id(), 0));
@@ -372,7 +383,8 @@ public class AssignmentService {
                     best == null ? null : best.scorePoints(), best == null ? null : best.maxPoints());
         };
         return new AssignmentDetails(assignment.id(), assignment.title(), assignment.description(),
-                assignment.dueAt(), assignment.boardId(), assignment.createdAt(), assignment.version(),
+                assignment.dueAt(), assignment.courseId(), assignment.boardId(), assignment.createdAt(),
+                assignment.version(),
                 attachments.of(AttachmentOwner.ASSIGNMENT, assignment.id()).stream().map(AttachmentView::of).toList(),
                 assignmentTasks.stream()
                         .map(summary)
@@ -392,6 +404,14 @@ public class AssignmentService {
         }
         String line = submission.text().strip().replaceAll("\\s+", " ");
         return line.length() <= PREVIEW_LENGTH ? line : line.substring(0, PREVIEW_LENGTH) + "…";
+    }
+
+    /** The course must exist (ADR-0071); {@code null} — none. */
+    private @Nullable UUID requireCourse(@Nullable UUID courseId) {
+        if (courseId != null && courses.find(courseId).isEmpty()) {
+            throw new NotFoundException("assignment.course-not-found", "Course not found");
+        }
+        return courseId;
     }
 
     private Assignment load(UUID assignmentId) {

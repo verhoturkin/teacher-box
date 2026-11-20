@@ -11,7 +11,7 @@ describe('textbooks labels', () => {
   it('describes a textbook in one line', () => {
     expect(textbookDetails(aTextbook())).toBe('Учебник · Английский · PDF, 120 с., 4,2 МБ');
     expect(textbookDetails(aWorkbook({ pageCount: null }))).toBe('Рабочая тетрадь · Word, 20 КБ');
-    expect(textbookDetails(aMyTextbook({ kind: 'OTHER', course: null }))).toBe(
+    expect(textbookDetails(aMyTextbook({ kind: 'OTHER', courseName: null }))).toBe(
       'Другое · PDF, 120 с., 4,2 МБ',
     );
     expect(fileText({ format: 'IMAGE', pageCount: 1, size: 100 })).toBe('картинка, 100 Б');

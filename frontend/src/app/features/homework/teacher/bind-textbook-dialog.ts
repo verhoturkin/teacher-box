@@ -75,7 +75,7 @@ export const PAGES_PATTERN = /^\s*\d+(\s*[-–—]\s*\d+)?(\s*[,;\s]\s*\d+(\s*[-
                   optionValue="id"
                   [placeholder]="t.chooseTextbook"
                   [filter]="true"
-                  filterBy="title,course"
+                  filterBy="title,courseName"
                   appendTo="body"
                   [fluid]="true"
                 />
@@ -212,7 +212,7 @@ export class BindTextbookDialog {
             textbookId,
             kind: textbook.kind,
             title: textbook.title,
-            course: textbook.course,
+            courseName: textbook.courseName,
             format: textbook.format,
             pageCount: textbook.pageCount,
             pages: null,

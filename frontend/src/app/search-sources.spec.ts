@@ -132,7 +132,7 @@ describe('searchSources', () => {
 
   it('lists the textbooks with their course and file name', async () => {
     const found = await entries('textbooks', '/api/teacher/textbooks', [
-      { id: 't1', title: 'Headway', course: 'B1', filename: 'headway.pdf' },
+      { id: 't1', title: 'Headway', courseName: 'B1', filename: 'headway.pdf' },
     ]);
 
     expect(found).toEqual([

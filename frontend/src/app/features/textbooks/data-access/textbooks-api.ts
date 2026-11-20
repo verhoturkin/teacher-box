@@ -19,13 +19,16 @@ export class TextbooksApi {
     form.append('file', file, file.name);
     form.append('kind', input.kind);
     form.append('title', input.title);
-    if (input.course !== null) form.append('course', input.course);
+    if (input.courseId !== null) form.append('courseId', input.courseId);
     if (input.pageCount !== null) form.append('pageCount', String(input.pageCount));
     input.studentIds.forEach((id) => {
       form.append('studentIds', id);
     });
     input.groupIds.forEach((id) => {
       form.append('groupIds', id);
+    });
+    input.courseIds.forEach((id) => {
+      form.append('courseIds', id);
     });
     return this.http.post<Textbook>('/api/teacher/textbooks', form);
   }

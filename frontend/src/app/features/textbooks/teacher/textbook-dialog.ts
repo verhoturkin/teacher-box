@@ -44,7 +44,7 @@ export interface MemberOption {
 }
 
 /**
- * Adds a textbook with its file (when `textbook` is null) or changes one: kind, title, course, pages of a Word
+ * Adds a textbook with its file (when `textbook` is null) or changes one: kind, title, pages of a Word
  * file, students and groups. The file of an existing textbook is replaced from the list.
  */
 @Component({
@@ -130,22 +130,6 @@ export interface MemberOption {
               aria-required="true"
             />
           </div>
-          <div class="tb-field">
-            <label for="textbook-course">{{ t.course }}</label>
-            <input
-              pInputText
-              id="textbook-course"
-              formControlName="course"
-              [placeholder]="t.coursePlaceholder"
-              autocomplete="off"
-              list="textbook-courses"
-            />
-            <datalist id="textbook-courses">
-              @for (course of courses(); track course) {
-                <option [value]="course"></option>
-              }
-            </datalist>
-          </div>
           @if (document()) {
             <div class="tb-field">
               <label for="textbook-pages">{{ t.pageCount }}</label>
@@ -199,8 +183,6 @@ export class TextbookDialog {
   /** Current students and active groups. */
   readonly students = input<readonly MemberOption[]>([]);
   readonly groups = input<readonly MemberOption[]>([]);
-  /** Courses of the other textbooks, offered while typing. */
-  readonly courses = input<readonly string[]>([]);
   readonly saved = output<Textbook>();
 
   protected readonly accept = TEXTBOOK_FILES;
@@ -214,7 +196,6 @@ export class TextbookDialog {
   readonly form = inject(NonNullableFormBuilder).group({
     kind: new FormControl<TextbookKind>('TEXTBOOK', { nonNullable: true }),
     title: ['', [Validators.required, Validators.maxLength(200)]],
-    course: ['', [Validators.maxLength(100)]],
     pageCount: new FormControl<number | null>(null, [Validators.min(1), Validators.max(10000)]),
     members: [[] as MemberSelection[]],
   });
@@ -271,12 +252,10 @@ export class TextbookDialog {
       this.form.reset({
         kind: textbook?.kind ?? 'TEXTBOOK',
         title: textbook?.title ?? '',
-        course: textbook?.course ?? '',
         pageCount: textbook?.format === 'DOCUMENT' ? textbook.pageCount : null,
-        members: (textbook?.members ?? []).map((member) => ({
-          kind: member.type,
-          id: member.id,
-        })),
+        members: (textbook?.members ?? []).flatMap((member): MemberSelection[] =>
+          member.type === 'COURSE' ? [] : [{ kind: member.type, id: member.id }],
+        ),
       });
     },
     request: (value) => {
@@ -284,13 +263,17 @@ export class TextbookDialog {
       const input: TextbookInput = {
         kind: value.kind,
         title: value.title.trim(),
-        course: value.course.trim() === '' ? null : value.course.trim(),
+        // the course and «Ученики курса» are kept as they are until the dialog edits them (460.2)
+        courseId: textbook?.courseId ?? null,
         pageCount: this.document() ? value.pageCount : null,
         studentIds: value.members
           .filter((member) => member.kind === 'STUDENT')
           .map((member) => member.id),
         groupIds: value.members
           .filter((member) => member.kind === 'GROUP')
+          .map((member) => member.id),
+        courseIds: (textbook?.members ?? [])
+          .filter((member) => member.type === 'COURSE')
           .map((member) => member.id),
       };
       const file = this.file();

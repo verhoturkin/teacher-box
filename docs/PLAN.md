@@ -62,7 +62,7 @@ section the substep names). New ADR: 0071 «Курсы, планы уроков 
 
 ### 460. Courses
 
-- [ ] 460.1 **B** *complex* — ADR-0071 (Russian, row in `docs/adr/README.md`); `textbooks`
+- [x] 460.1 **B** *complex* — ADR-0071 (Russian, row in `docs/adr/README.md`); `textbooks`
   migration: `courses`, `student_courses`, `group_courses`, `textbooks.course_id` from the free
   text, `member_type COURSE` (students of the course + members of its groups, current, in
   `TextbookAccess`); `textbooks::api.Courses`, `CourseDeleted`; REST `…/textbooks/courses`,
@@ -70,6 +70,10 @@ section the substep names). New ADR: 0071 «Курсы, планы уроков 
   (checked by `Courses`, cleared on `CourseDeleted`), in create / update / views; role tests,
   `EndpointRolesTest`; `docs/modules/textbooks.md`, `homework.md`. Spec: roadmap/11 «Entities»,
   «Contract», «REST».
+  *Done: `DELETE …/courses/{id}` takes no `version` (as a textbook's delete); student and group
+  links answer 204; the textbook dialog lost its free-text «Курс» field and keeps `courseId` and
+  the `COURSE` members as they are, the homework editor keeps `courseId` on an update — both get
+  their «Курс» select in 460.2; error texts of the new codes are in the dictionaries.*
 - [ ] 460.2 **F** *complex* — course filter (`?course=`) and the «Курсы» dialog in
   `materials/materials-page.ts`; textbook dialog «Курс» select and courses in the member picker;
   «Курс» in the student card Profile (`features/students`) and the group dialog

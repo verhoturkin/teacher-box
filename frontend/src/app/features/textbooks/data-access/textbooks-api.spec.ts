@@ -26,10 +26,11 @@ describe('TextbooksApi', () => {
         {
           kind: 'WORKBOOK',
           title: 'Тетрадь',
-          course: 'Английский',
+          courseId: 'c-1',
           pageCount: 48,
           studentIds: ['s-1', 's-2'],
           groupIds: ['g-1'],
+          courseIds: ['c-2'],
         },
         file,
       )
@@ -38,10 +39,11 @@ describe('TextbooksApi', () => {
     const form = formData(request.request.body);
     expect(form.get('file')).toBeInstanceOf(File);
     expect(form.get('kind')).toBe('WORKBOOK');
-    expect(form.get('course')).toBe('Английский');
+    expect(form.get('courseId')).toBe('c-1');
     expect(form.get('pageCount')).toBe('48');
     expect(form.getAll('studentIds')).toEqual(['s-1', 's-2']);
     expect(form.getAll('groupIds')).toEqual(['g-1']);
+    expect(form.getAll('courseIds')).toEqual(['c-2']);
     request.flush(aTextbook());
 
     api
@@ -49,16 +51,17 @@ describe('TextbooksApi', () => {
         {
           kind: 'OTHER',
           title: 'Скан',
-          course: null,
+          courseId: null,
           pageCount: null,
           studentIds: [],
           groupIds: [],
+          courseIds: [],
         },
         file,
       )
       .subscribe();
     const bare = backend.expectOne({ method: 'POST', url: '/api/teacher/textbooks' });
-    expect(formData(bare.request.body).has('course')).toBe(false);
+    expect(formData(bare.request.body).has('courseId')).toBe(false);
     expect(formData(bare.request.body).has('pageCount')).toBe(false);
     bare.flush(aTextbook());
   });
@@ -69,10 +72,11 @@ describe('TextbooksApi', () => {
       .change(textbook, {
         kind: 'TEXTBOOK',
         title: 'Новое',
-        course: null,
+        courseId: null,
         pageCount: null,
         studentIds: [],
         groupIds: [],
+        courseIds: [],
       })
       .subscribe();
     const change = backend.expectOne({ method: 'PUT', url: '/api/teacher/textbooks/tb-1' });

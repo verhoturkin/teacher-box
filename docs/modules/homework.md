@@ -67,10 +67,16 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   remembers whom a draft is meant for. It makes no task and no event, students never see it; unknown
   student → 404 `student.not-found`. `AssignmentDetails.draftStudentIds` returns them; giving the assignment
   out (`assign`) drops the ones that got a task. The assignment page opens «Добавить» with them chosen.
-- **Copy** (0.36.0): `POST /api/teacher/homework/assignments/{id}/copy` (`AssignmentService.copy`, 201) — a new
-  draft «<title> (копия)» (the title is cut to 200 characters) with the text, the files (new `FileStorage` keys, so
-  deleting the original keeps the copy's files), the bound textbooks with pages and the videos with transcripts; no
-  students, no deadline, no board.
+- **The course of an assignment** (460.1, [ADR-0071](../adr/0071-courses-lesson-plans-and-bank.md)):
+  `assignments.course_id` (`V6`, a UUID only) — `courseId` in the create and update bodies (`null` —
+  none; an update always sends it), checked through `textbooks::api.Courses` when it changes (404
+  `assignment.course-not-found`); `courseId` is in `AssignmentDetails` and `AssignmentSummary`; a
+  copy keeps it. `CourseListener` clears it on `textbooks::api.CourseDeleted` (no new version; a
+  redelivery changes nothing). A bound textbook shows its `courseName`.
+- **Copy** (0.36.0): `POST /api/teacher/homework/assignments/{id}/copy` (`AssignmentService.copy`,
+  201) — a new draft «<title> (копия)» (the title is cut to 200 characters) with the text, the
+  course, the files (new `FileStorage` keys, so deleting the original keeps the copy's files), the
+  bound textbooks with pages and the videos with transcripts; no students, no deadline, no board.
 - A student sees only own tasks and attachments (403/404 tests).
 - The teacher's assignment view gives each student entry (`TaskSummary`) a one-line `answerPreview` (the
   first 200 characters of the latest answer text, whitespace collapsed, `…` when cut), `answerFiles` (files of
@@ -99,10 +105,10 @@ file of the assignment's materials — name, type, size, content; another assign
 
 ## Data
 
-`assignments`, `tasks`, `submissions`, `attachments`, `assignment_textbooks` (assignment, textbook, pages),
-`assignment_videos` (position, url, provider, video ID, start, title, transcript, shown), `settings`
-(one row, ADR-0056: `due_soon_window` — filled once from `.env` by `HomeworkSettingsImport`, read
-by `DueSoonWindow`).
+`assignments` (`course_id` — ADR-0071), `tasks`, `submissions`, `attachments`,
+`assignment_textbooks` (assignment, textbook, pages), `assignment_videos` (position, url, provider,
+video ID, start, title, transcript, shown), `settings` (one row, ADR-0056: `due_soon_window` —
+filled once from `.env` by `HomeworkSettingsImport`, read by `DueSoonWindow`).
 
 Quizzes ([ADR-0052](../adr/0052-auto-checked-quizzes.md), `domain/quiz/`): `assignment_questions` (position, type,
 text, `options` and `answer` as JSON by type, points, explanation), `quiz_attempts` (task, start, submit, score),
