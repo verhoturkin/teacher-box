@@ -74,19 +74,27 @@ test('portal gallery previews appearance locally and persists named preferences'
     await page.getByRole('button', { name: 'Отменить', exact: true }).click();
     await expect(page.getByRole('radio', { name: 'Монохромная', exact: true })).toBeChecked();
     await page.setViewportSize({ width: 390, height: 844 });
-    const [compactIdentity, compactAppearance, compactPreview] = await Promise.all([
-      identity.boundingBox(),
-      appearance.boundingBox(),
-      preview.boundingBox(),
-    ]);
-    expect(
-      compactIdentity &&
-        compactAppearance &&
-        compactPreview &&
-        compactAppearance.y > compactIdentity.y &&
-        compactPreview.y > compactAppearance.y &&
-        compactPreview.x + compactPreview.width <= 390,
-    ).toBeTruthy();
+    // the layout settles after the resize: poll until every card has a box, then check the stack
+    await expect
+      .poll(
+        async () => {
+          const [compactIdentity, compactAppearance, compactPreview] = await Promise.all([
+            identity.boundingBox(),
+            appearance.boundingBox(),
+            preview.boundingBox(),
+          ]);
+          return !!(
+            compactIdentity &&
+            compactAppearance &&
+            compactPreview &&
+            compactAppearance.y > compactIdentity.y &&
+            compactPreview.y > compactAppearance.y &&
+            compactPreview.x + compactPreview.width <= 390
+          );
+        },
+        { message: 'identity, appearance and preview stack on a 390 px screen' },
+      )
+      .toBe(true);
   } finally {
     const response = await page.request.put('/api/teacher/portal', { headers, data: previous });
     expect(response.ok()).toBe(true);

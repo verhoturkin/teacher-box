@@ -51,5 +51,12 @@ edit, «⋮» or marks.
 `request-answer-dialog.ts`: an agree / decline toggle drives one confirm button's label and colour;
 the new time and «count as missed» only when agreeing; moving onto an overlap is `confirm.safe`. The
 student's `student/change-request-dialog.ts` never disables confirm: a hint says what is missing.
+A request a parent sent for the child (ADR-0069, 454.2) is marked «от родителя (Анна)» after the
+child's name in the teacher's request list and card and under the name in `request-answer-dialog.ts`
+(`parentRequest` / `fromParent` in `schedule-labels.ts`; the student's own request has no mark).
+In the family cabinet the dialog speaks of the child, not of «я» (the child is the one in the
+address), the group lesson's «Не приду» reads «Не придёт», and the calendar link in the feed panel
+is the parent's own (all the children's lessons). *Checked against the code 0.58.0: the
+parent-origin marks were missing here; added.*
 
 The student's schedule is in [cabinet](cabinet.md#schedule).

@@ -8,7 +8,7 @@ The shell (`core/layout/`: `shell.ts`, `teacher-layout.ts`, `student-layout.ts`,
 |---|---|---|---|
 | Teacher | Today (home), Schedule, Students, Homework, Materials, Payments | Settings, Help, Account | `TEACHER_BOTTOM_NAV` (five, without Materials) + «Создать» |
 | Student | Home, Schedule, Homework, Materials, Payments | Help, Account | `STUDENT_BOTTOM_NAV` (all five) |
-| Parent | Home, Schedule, Homework, Payments of the child in the address ([family](family.md)) | Help, Account | the four, no bell until 454.3 |
+| Parent | Home, Schedule, Homework, Payments of the child in the address ([family](family.md)) | Help, Account | the four + the bell (454.3; *checked against the code 0.58.0: «no bell» was stale*) |
 | Admin | Status, Journal, Integrations, Backups, Settings | Help, Account | all five (`ADMIN_MENU`) |
 
 - The bar is filled up from the menu in the order of the `*_BOTTOM_NAV` list.

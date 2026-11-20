@@ -108,7 +108,8 @@ reset removes students and parents. Housekeeping job removes expired tokens/invi
 `/api/teacher/groups/**`, `/api/teacher/profile`, `/api/teacher/tags`.
 
 Parents (ADR-0069): `GET /api/teacher/students/{id}/guardians` → `[GuardianView]` (`{id,
-displayName, status, login, pendingInvite, studentIds}`) in the order linked; `POST` `{displayName}`
+displayName, status, login, pendingInvite, studentIds}`, `studentIds` — all the parent's children in
+the order linked, deactivated ones included) in the order linked; `POST` `{displayName}`
 → 201 `{guardian, invite}`; `POST /link` `{guardianId}` → `GuardianView` (409
 `guardian.already-linked`, 404 `guardian.not-found`); `POST /{guardianId}/invite` → `IssuedInvite`;
 `DELETE /{guardianId}` → 204. Errors: 404 `student.not-found`, 422 `guardian.limit`,
