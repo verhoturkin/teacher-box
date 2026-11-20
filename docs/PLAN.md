@@ -23,6 +23,23 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
+## Next release
+
+Goals: voice answers and audio files of homework play in the deployed portal.
+
+### 458. Homework fixes
+
+- [x] 458.1 **B D** *simple* — voice answers did not play: `homework/ui/voice-player.ts` plays a
+  file from a `blob:` URL, and the CSP (`PlatformSecurityAutoConfiguration.CONTENT_SECURITY_POLICY`,
+  `docker/nginx/security-headers.conf`) had no `media-src`, so `default-src 'self'` blocked it
+  (`npm start` sends no CSP, so it played there). `media-src 'self' blob:` added to both;
+  `PlatformSecurityIntegrationTest` checks it and that nginx sends the backend's policy.
+- [x] 458.2 **B** *simple* — flaky `AvailabilityIntegrationTests` (409 instead of 201, by the date
+  and the order of the classes): `UpcomingLessonsIntegrationTests` kept a weekly series at 12:00 in
+  Moscow and a one-off lesson to 18:45, outside `Slots.SERIES_HOURS`, so a later future slot met
+  them; they are at 13:00 and 17:00 now. `GroupLessonsIntegrationTests` moves a lesson to
+  `Slots.next` instead of a day later at the same hour, for the same reason.
+
 ## Backlog
 
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,

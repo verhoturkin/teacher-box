@@ -273,13 +273,15 @@ class GroupLessonsIntegrationTests extends ScheduleHttpTestSupport {
         UUID group = groups.addGroup("Информатика", anna, boris);
         Instant start = Slots.next(clock);
         String lessonId = id(post("/api/teacher/schedule/lessons", groupLesson(group, start)));
+        // a slot of its own: a day later at the same hour may be another test's slot in the shared database
+        Instant moved = Slots.next(clock);
         String move = id(request(anna, lessonId, "{\"kind\":\"RESCHEDULE\",\"proposedStartsAt\":\"%s\"}"
-                .formatted(start.plus(Duration.ofDays(1)))));
+                .formatted(moved)));
         String other = id(request(boris, lessonId, "{\"kind\":\"RESCHEDULE\",\"proposedStartsAt\":\"%s\"}"
                 .formatted(start.plus(Duration.ofDays(2)))));
 
         assertThat(post("/api/teacher/schedule/requests/" + move + "/approve", "{}")).hasStatusOk()
-                .bodyJson().extractingPath("$.startsAt").isEqualTo(start.plus(Duration.ofDays(1)).toString());
+                .bodyJson().extractingPath("$.startsAt").isEqualTo(moved.toString());
 
         assertThat(events).contains(LessonRescheduled.class)
                 .matching(LessonRescheduled::requestedBy, anna)
