@@ -346,10 +346,6 @@ export const en: Translation<typeof ru> = {
     what: 'the assignment',
     title: 'Title',
     text: 'Assignment text',
-    write: 'Text',
-    preview: 'Preview',
-    editorMode: 'Editor mode',
-    markdownHint: 'Supports Markdown: **bold**, *italic*, lists and links.',
     members: 'Students and groups',
     students: 'Students',
     search: 'Search',
@@ -632,21 +628,6 @@ export const en: Translation<typeof ru> = {
   },
   bind: {
     newTitle: 'Attach textbook',
-    pagesTitle: 'Textbook pages',
-    noTextbooks: 'No more textbooks available to attach. Add one in Textbooks.',
-    textbook: 'Textbook',
-    chooseTextbook: 'Choose a textbook',
-    pages: 'Pages',
-    pagesPlaceholder: 'For example, 12-14, 20',
-    bind: 'Attach',
-    whole: 'Leave blank to include the whole textbook.',
-    wholeOf: (count: number) =>
-      `Leave blank to include the whole textbook (${String(count)} pages).`,
-    wordHint: (whole: string) =>
-      `${whole} Students receive the whole Word document. Page numbers are provided for reference.`,
-    pagesHint: (whole: string) => `${whole} Students receive only the selected pages.`,
-    failed: 'Could not attach the textbook',
-    beyond: 'These pages are outside the textbook’s page range',
   },
   review: {
     decision: 'Review decision',

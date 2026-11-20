@@ -1,0 +1,561 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+} from '@angular/core';
+import { Location } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, UrlTree } from '@angular/router';
+import { MenuItem } from 'primeng/api';
+import { Button } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { InputText } from 'primeng/inputtext';
+import { Menu } from 'primeng/menu';
+import { Message } from 'primeng/message';
+import { Select } from 'primeng/select';
+import { Tag } from 'primeng/tag';
+import { Observable, map, of, switchMap } from 'rxjs';
+import { quietContext } from '@core/http/api-error.interceptor';
+import { describeError } from '@core/http/error-messages';
+import { CanLeave } from '@core/routing/can-leave.guard';
+import { pageDetail } from '@core/routing/page-detail';
+import { Snackbar } from '@core/snackbar/snackbar';
+import { EditorAutosave, EditorWrite } from '@shared/forms/editor-autosave';
+import { Confirm } from '@shared/ui/confirm';
+import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
+import { LoadState } from '@shared/ui/load-state';
+import { LoadStateView } from '@shared/ui/load-state-view';
+import { MarkdownField } from '@shared/ui/markdown-field';
+import { PageHeader } from '@shared/ui/page-header';
+import { courseOptions } from '../course-options';
+import { CoursesApi } from '../data-access/courses-api';
+import { Course } from '../data-access/courses.models';
+import { LessonPlansApi } from '../data-access/lesson-plans-api';
+import { LessonPlan, LessonPlanInput } from '../data-access/lesson-plans.models';
+import { PickedTextbook } from '../data-access/textbooks.models';
+import { T } from '../i18n/texts';
+import {
+  MAX_VIDEOS,
+  VideoDraft,
+  VideoSection,
+  videoDraft,
+  videoInputs,
+} from '../videos/video-section';
+import { BindTextbookDialog } from './bind-textbook-dialog';
+import { PlanTextbooks } from './plan-textbooks';
+
+/** The most textbooks of one plan (the backend's limit). */
+export const MAX_PLAN_TEXTBOOKS = 20;
+
+/** The plan's textbooks as the editor lists them. */
+function pickedOf(plan: LessonPlan): PickedTextbook[] {
+  return plan.textbooks.map((textbook) => ({
+    textbookId: textbook.id,
+    kind: textbook.kind,
+    title: textbook.title,
+    courseName: null,
+    format: textbook.format,
+    pageCount: textbook.pageCount,
+    pages: textbook.pages,
+  }));
+}
+
+/**
+ * Teacher: the lesson plan editor (roadmap 11, `/teacher/materials/plans/new`, `…/plans/:planId`) — the title,
+ * «Курс», the Markdown plan, the textbook pages (of the course when one is set) and the videos with their
+ * automatic transcripts. The plan saves itself a moment after each change, as a draft of an assignment does;
+ * «Готово» saves what is left and finishes it (the first «Готово» of a lesson's plan puts its original into
+ * the bank). A lesson's plan has «⋮» «Сохранить в банк» / «Обновить в банке». A plan made here, in
+ * «Материалы», is a bank item from the start.
+ */
+@Component({
+  selector: 'tb-lesson-plan-editor-page',
+  imports: [
+    ReactiveFormsModule,
+    Button,
+    Card,
+    InputText,
+    Menu,
+    Message,
+    Select,
+    Tag,
+    FieldErrors,
+    LoadStateView,
+    MarkdownField,
+    PageHeader,
+    BindTextbookDialog,
+    PlanTextbooks,
+    VideoSection,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    @if (ready()) {
+      <tb-page-header
+        class="tb-page-header--one-line"
+        [title]="heading()"
+        [back]="back"
+        [backLabel]="t.back"
+      >
+        @if (plan()?.bank) {
+          <p-tag meta [value]="t.bankItem" severity="secondary" />
+        }
+        @if (savedAt(); as at) {
+          <span class="tb-plan-editor__saved" role="status">{{ t.savedAt(at) }}</span>
+        }
+        @if (menuItems().length > 0) {
+          <p-button
+            icon="tb-i tb-i-more_vert"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            [ariaLabel]="t.more"
+            [loading]="banking()"
+            (onClick)="menu.toggle($event)"
+          />
+          <p-menu #menu [model]="menuItems()" [popup]="true" appendTo="body" />
+        }
+        <p-button
+          [label]="t.done"
+          icon="tb-i tb-i-check"
+          [loading]="finishing()"
+          (onClick)="finish()"
+        />
+      </tb-page-header>
+
+      <form tbFieldErrors class="tb-plan-editor tb-form" [formGroup]="form" (ngSubmit)="finish()">
+        @if (error(); as message) {
+          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
+        }
+        @if (plan()?.bank) {
+          <p class="tb-hint">{{ t.bankItemHint }}</p>
+        }
+        <p-card styleClass="tb-section-card">
+          <div class="tb-plan-editor__fields">
+            <div class="tb-field">
+              <label for="plan-title">{{ t.title }}</label>
+              <input pInputText id="plan-title" formControlName="title" autocomplete="off" />
+            </div>
+            @if (courses().length > 0) {
+              <div class="tb-field">
+                <label for="plan-course">{{ t.course }}</label>
+                <p-select
+                  inputId="plan-course"
+                  formControlName="courseId"
+                  [options]="courseChoices()"
+                  optionLabel="label"
+                  optionValue="value"
+                  appendTo="body"
+                  [fluid]="true"
+                />
+                <small class="tb-hint">{{ t.courseHint }}</small>
+              </div>
+            }
+            <tb-markdown-field
+              fieldId="plan-body"
+              [control]="form.controls.body"
+              [label]="t.body"
+              [hint]="t.bodyHint"
+            />
+          </div>
+        </p-card>
+
+        <p-card styleClass="tb-section-card">
+          <div class="tb-plan-editor__head">
+            <h2 class="tb-subtitle">{{ t.textbooks }}</h2>
+            <span class="tb-hint">{{ t.textbookCount(textbooks().length, maxTextbooks) }}</span>
+          </div>
+          <tb-plan-textbooks
+            [textbooks]="textbooks()"
+            (edit)="editTextbook($event)"
+            (remove)="removeTextbook($event)"
+          />
+          @if (textbooks().length < maxTextbooks) {
+            <p-button
+              [label]="t.addTextbook"
+              icon="tb-i tb-i-add"
+              severity="secondary"
+              [text]="true"
+              (onClick)="addTextbook()"
+            />
+          }
+        </p-card>
+
+        <p-card styleClass="tb-section-card">
+          <div class="tb-plan-editor__head">
+            <h2 class="tb-subtitle">{{ t.videos }}</h2>
+            <span class="tb-hint">{{ t.videoCount(videos().length, maxVideos) }}</span>
+          </div>
+          <tb-video-section [videos]="videos()" (videosChange)="videos.set($event)" />
+        </p-card>
+      </form>
+
+      <tb-bind-textbook-dialog
+        [(visible)]="bindVisible"
+        [headline]="t.bindTitle"
+        [taken]="textbooks()"
+        [bound]="binding()"
+        [courseId]="courseId()"
+        (picked)="pickTextbook($event)"
+      />
+    } @else {
+      <tb-page-header [title]="t.newTitle" [back]="back" [backLabel]="t.back" />
+      <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
+    }
+  `,
+  styles: `
+    .tb-plan-editor {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-4);
+      max-width: 52rem;
+    }
+
+    .tb-plan-editor__fields {
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-4);
+    }
+
+    .tb-plan-editor__head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--tb-space-2) var(--tb-space-4);
+      margin-block-end: var(--tb-space-3);
+    }
+
+    .tb-plan-editor__saved {
+      color: var(--p-md-on-surface-variant);
+      font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
+    }
+  `,
+})
+export class LessonPlanEditorPage implements OnInit, CanLeave {
+  protected readonly t = T.planEditor;
+  protected readonly maxTextbooks = MAX_PLAN_TEXTBOOKS;
+  protected readonly maxVideos = MAX_VIDEOS;
+  private readonly api = inject(LessonPlansApi);
+  private readonly coursesApi = inject(CoursesApi);
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
+  private readonly confirm = inject(Confirm);
+  private readonly snackbar = inject(Snackbar);
+
+  /** Route parameter of `/teacher/materials/plans/:planId`; none — a new plan of the bank. */
+  readonly planId = input<string>();
+
+  /** «Материалы» on the tab «Планы». */
+  protected readonly back: UrlTree = this.router.createUrlTree(['/teacher/materials'], {
+    queryParams: { tab: 'plans' },
+  });
+  protected readonly state = new LoadState();
+  protected readonly plan = signal<LessonPlan | null>(null);
+  protected readonly ready = computed(() => this.planId() === undefined || this.plan() !== null);
+  protected readonly courses = signal<readonly Course[]>([]);
+  protected readonly courseChoices = computed(() => courseOptions(this.courses()));
+
+  readonly form = new FormGroup({
+    title: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(200)],
+    }),
+    body: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(20_000)] }),
+    courseId: new FormControl<string | null>(null),
+  });
+  private readonly value = toSignal(this.form.valueChanges, { initialValue: this.form.value });
+  protected readonly courseId = computed(() => this.value().courseId ?? null);
+  private readonly titleValue = computed(() => (this.value().title ?? '').trim());
+  protected readonly heading = computed(() => this.titleValue() || this.t.newTitle);
+
+  protected readonly textbooks = signal<readonly PickedTextbook[]>([]);
+  readonly videos = signal<readonly VideoDraft[]>([]);
+  protected readonly bindVisible = signal(false);
+  /** The textbook whose pages change; `null` — a new one. */
+  protected readonly binding = signal<PickedTextbook | null>(null);
+
+  protected readonly error = signal<string | null>(null);
+  protected readonly finishing = signal(false);
+  protected readonly banking = signal(false);
+  /** «Готово» went through: leaving saves nothing more. */
+  private done = false;
+
+  private readonly snapshot = computed(() =>
+    JSON.stringify([
+      this.titleValue(),
+      this.value().body ?? '',
+      this.courseId(),
+      this.textbooks().map((textbook) => [textbook.textbookId, textbook.pages]),
+      videoInputs(this.videos()),
+    ]),
+  );
+  /** The plan saves itself a moment after each change. */
+  private readonly drafts = new EditorAutosave<LessonPlan>({
+    canSave: () => !this.done && !this.finishing() && !this.banking() && this.form.valid,
+    snapshot: () => this.snapshot(),
+    write: () => this.write().pipe(map((plan) => ({ assignment: plan, complete: true }))),
+    saved: ({ assignment }: EditorWrite<LessonPlan>) => {
+      this.error.set(null);
+      this.remember(assignment);
+    },
+    failed: (error) => {
+      this.refresh();
+      this.error.set(describeError(error, T.planEditor.autosaveFailed));
+    },
+  });
+  protected readonly savedAt = this.drafts.savedAt;
+  /** Milliseconds of quiet before the plan saves itself. */
+  get autosaveDelay(): number {
+    return this.drafts.delay;
+  }
+  set autosaveDelay(delay: number) {
+    this.drafts.delay = delay;
+  }
+
+  /** A lesson's plan goes into the bank, or updates its original there. */
+  protected readonly menuItems = computed<MenuItem[]>(() => {
+    const plan = this.plan();
+    if (plan === null || plan.bank) {
+      return [];
+    }
+    const update = plan.sourceId !== null;
+    return [
+      {
+        label: update ? T.planEditor.updateBank : T.planEditor.toBank,
+        icon: 'tb-i tb-i-library_books',
+        command: () => {
+          void this.saveToBank(update);
+        },
+      },
+    ];
+  });
+
+  constructor() {
+    pageDetail(() => this.plan()?.title);
+    effect(() => {
+      const snapshot = this.snapshot();
+      untracked(() => {
+        if (this.ready() && this.drafts.differs(snapshot)) {
+          this.drafts.schedule();
+        }
+      });
+    });
+    inject(DestroyRef).onDestroy(() => {
+      this.drafts.cancel();
+    });
+  }
+
+  ngOnInit(): void {
+    // without the courses (a failed read) «Курс» is not offered and the plan keeps its own
+    this.coursesApi.list(quietContext()).subscribe((courses) => {
+      this.courses.set(courses);
+    });
+    if (this.planId() === undefined) {
+      this.drafts.mark(this.snapshot());
+    } else {
+      this.load();
+    }
+  }
+
+  protected load(): void {
+    const id = this.planId();
+    if (id === undefined) {
+      return;
+    }
+    this.api
+      .get(id, quietContext())
+      .pipe(this.state.track())
+      .subscribe((plan) => {
+        this.plan.set(plan);
+        this.form.reset({ title: plan.title, body: plan.body, courseId: plan.courseId });
+        this.textbooks.set(pickedOf(plan));
+        this.videos.set(plan.videos.map((video) => videoDraft(video)));
+        this.drafts.mark(this.snapshot());
+      });
+  }
+
+  protected addTextbook(): void {
+    this.binding.set(null);
+    this.bindVisible.set(true);
+  }
+
+  protected editTextbook(textbook: PickedTextbook): void {
+    this.binding.set(textbook);
+    this.bindVisible.set(true);
+  }
+
+  protected removeTextbook(textbook: PickedTextbook): void {
+    this.textbooks.update((list) => list.filter((item) => item.textbookId !== textbook.textbookId));
+  }
+
+  /** A new textbook goes last; changed pages stay in place. */
+  pickTextbook(textbook: PickedTextbook): void {
+    this.textbooks.update((list) =>
+      list.some((item) => item.textbookId === textbook.textbookId)
+        ? list.map((item) => (item.textbookId === textbook.textbookId ? textbook : item))
+        : [...list, textbook],
+    );
+  }
+
+  /** «Готово»: what is left is saved, the plan is finished and the editor goes back to «Материалы». */
+  finish(): void {
+    if (this.finishing() || !revealErrors(this.form)) {
+      return;
+    }
+    if (
+      this.drafts.busy(() => {
+        this.finish();
+      })
+    ) {
+      return;
+    }
+    this.drafts.cancel();
+    this.finishing.set(true);
+    this.saved()
+      .pipe(switchMap((plan) => this.api.finish(plan.id)))
+      .subscribe({
+        next: (plan) => {
+          this.plan.set(plan);
+          this.done = true;
+          this.finishing.set(false);
+          void this.router.navigateByUrl(this.back);
+        },
+        error: (error: unknown) => {
+          this.finishing.set(false);
+          this.refresh();
+          this.error.set(describeError(error, T.planEditor.finishFailed));
+        },
+      });
+  }
+
+  /** «Сохранить в банк» / «Обновить в банке» (asked first: the original's content is replaced). */
+  protected async saveToBank(update: boolean): Promise<void> {
+    if (
+      update &&
+      !(await this.confirm.safe({
+        header: T.planEditor.updateHeader,
+        message: T.planEditor.updateMessage,
+        acceptLabel: T.planEditor.update,
+      }))
+    ) {
+      return;
+    }
+    this.sendToBank(update);
+  }
+
+  /** Once a running autosave is through: the changes saved, then the plan goes into the bank. */
+  private sendToBank(update: boolean): void {
+    if (this.banking() || !revealErrors(this.form)) {
+      return;
+    }
+    if (
+      this.drafts.busy(() => {
+        this.sendToBank(update);
+      })
+    ) {
+      return;
+    }
+    this.drafts.cancel();
+    this.banking.set(true);
+    this.saved()
+      .pipe(switchMap((plan) => this.api.saveToBank(plan.id)))
+      .subscribe({
+        next: (plan) => {
+          this.banking.set(false);
+          this.plan.set(plan);
+          this.snackbar.success(update ? T.planEditor.updatedInBank : T.planEditor.savedToBank);
+          this.saveChanges();
+        },
+        error: (error: unknown) => {
+          this.banking.set(false);
+          this.refresh();
+          this.saveChanges();
+          this.snackbar.error(describeError(error, T.planEditor.bankFailed));
+        },
+      });
+  }
+
+  /** Changes made while the plan went into the bank save themselves now. */
+  private saveChanges(): void {
+    if (this.drafts.differs(this.snapshot())) {
+      this.drafts.schedule();
+    }
+  }
+
+  /** The plan as the server has it once the changes are saved. */
+  private saved(): Observable<LessonPlan> {
+    const plan = this.plan();
+    if (plan !== null && !this.drafts.differs(this.snapshot())) {
+      return of(plan);
+    }
+    const snapshot = this.snapshot();
+    return this.write().pipe(
+      map((written) => {
+        this.drafts.mark(snapshot);
+        this.remember(written);
+        return written;
+      }),
+    );
+  }
+
+  private write(): Observable<LessonPlan> {
+    const plan = this.plan();
+    const input = this.input();
+    return plan === null ? this.api.create(input, true) : this.api.update(plan, input);
+  }
+
+  private input(): LessonPlanInput {
+    const value = this.form.getRawValue();
+    return {
+      title: value.title.trim(),
+      body: value.body,
+      courseId: value.courseId,
+      textbooks: this.textbooks().map((textbook) => ({
+        textbookId: textbook.textbookId,
+        pages: textbook.pages,
+      })),
+      videos: videoInputs(this.videos()),
+    };
+  }
+
+  /** The saved plan and, for one just created, its address (the page stays as it is). */
+  private remember(plan: LessonPlan): void {
+    const created = this.plan() === null;
+    this.plan.set(plan);
+    if (created) {
+      this.location.replaceState(`/teacher/materials/plans/${plan.id}`);
+    }
+  }
+
+  /** After a failed save the version may have moved on: take the plan as the server has it. */
+  private refresh(): void {
+    const plan = this.plan();
+    if (plan !== null) {
+      this.api.get(plan.id, quietContext()).subscribe({
+        next: (current) => {
+          this.plan.set(current);
+        },
+        error: () => {
+          // the next save reports what is wrong
+        },
+      });
+    }
+  }
+
+  /** The plan saves what is left and lets go. */
+  canLeave(): boolean {
+    if (!this.done && this.drafts.differs(this.snapshot())) {
+      this.drafts.run();
+    }
+    return true;
+  }
+}

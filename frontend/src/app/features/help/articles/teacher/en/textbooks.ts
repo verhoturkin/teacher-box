@@ -44,5 +44,23 @@ students’ boards are offered; from Textbooks, you can choose any board.
 - **Delete…:** remove the textbook and its file, including its attachments to assignments.
 
 Students find shared resources under Materials and can download them. For assignment-specific page access, see [Homework](/teacher/help/homework).
+
+## Lesson plans
+
+The **Plans** tab of Materials is the bank of lesson plans: the originals a lesson takes its own copy from. Each card shows the title, the course \
+and how many times it was used. The course chips and the search work here too.
+
+1. Choose “New plan” to open the plan editor: a title, a **Course** and the plan text (Markdown, with “Text · Preview”).
+2. **Textbooks**: choose “Attach a textbook”, then the textbook and its pages (leave blank for the whole textbook). When the plan has a course, \
+only that course’s textbooks are offered. ✎ changes the pages, ✕ removes the textbook; up to 20 textbooks.
+3. **Videos**: paste a link (up to 5 videos). A YouTube video gets its transcript automatically, in the video’s language; “Change language” picks \
+other captions. Students see a transcript only when “Show transcript to students” is on.
+4. The plan saves itself a moment after each change (“saved · HH:MM”). **Done** saves the rest and takes you back to Materials.
+
+The card’s “⋮” menu has **Edit**, which opens the editor, and **Delete…**, which removes the plan from the bank after you confirm (lesson plans \
+made from it stay). Editing a bank original does not change the copies on lessons.
+
+A plan written for a lesson goes into the bank automatically the first time you choose Done. Its editor’s “⋮” menu has **Save to bank** (no \
+original yet) or **Update in bank** (the original is replaced with this plan after you confirm).
 `,
 };

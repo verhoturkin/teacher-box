@@ -62,3 +62,15 @@ export interface TextbookInput {
   /** Courses whose students get the textbook. */
   readonly courseIds: readonly string[];
 }
+
+/** A textbook chosen for a material (an assignment, a lesson plan) with its pages. */
+export interface PickedTextbook {
+  readonly textbookId: string;
+  readonly kind: TextbookKind;
+  readonly title: string;
+  readonly courseName: string | null;
+  readonly format: TextbookFormat;
+  readonly pageCount: number | null;
+  /** Normalized pages («3, 12-14»); `null` — the whole textbook. */
+  readonly pages: string | null;
+}

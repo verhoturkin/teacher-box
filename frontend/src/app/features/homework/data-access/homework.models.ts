@@ -1,6 +1,6 @@
 /** Mirrors `HomeworkViews` of the backend. Instants are ISO-8601 strings in UTC. */
 
-import type { TextbookFormat, TextbookKind, Video, VideoInput } from '@features/textbooks/parts';
+import type { PickedTextbook, Video, VideoInput } from '@features/textbooks/parts';
 
 export type TaskStatus = 'ASSIGNED' | 'SUBMITTED' | 'RETURNED' | 'ACCEPTED';
 export type ReviewDecision = 'ACCEPT' | 'RETURN';
@@ -59,15 +59,8 @@ export interface TaskSummary {
 }
 
 /** A textbook bound to an assignment (ADR-0033); `pages` — «1-3, 7», `null` — the whole textbook. */
-export interface BoundTextbook {
-  readonly textbookId: string;
-  readonly kind: TextbookKind;
-  readonly title: string;
-  readonly courseName: string | null;
-  readonly format: TextbookFormat;
-  readonly pageCount: number | null;
-  readonly pages: string | null;
-}
+/** A textbook bound to an assignment with its pages (the shape the textbooks feature picks). */
+export type BoundTextbook = PickedTextbook;
 
 export type { Video, VideoInput } from '@features/textbooks/parts';
 

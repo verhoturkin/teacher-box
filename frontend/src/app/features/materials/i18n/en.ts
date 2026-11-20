@@ -7,6 +7,7 @@ export const en: Translation<typeof ru> = {
   tabs: 'Material type',
   boards: 'Boards',
   textbooks: 'Textbooks',
+  plans: 'Plans',
   filters: 'Filter materials',
   chips: {
     all: 'All',
@@ -33,4 +34,5 @@ export const en: Translation<typeof ru> = {
   },
   newBoard: 'New board',
   newTextbook: 'New textbook',
+  newPlan: 'New plan',
 };

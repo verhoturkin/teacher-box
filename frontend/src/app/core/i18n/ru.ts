@@ -26,6 +26,8 @@ export const ru = {
     assignment: 'Задание',
     newAssignment: 'Новое задание',
     editAssignment: 'Изменить задание',
+    newLessonPlan: 'Новый план урока',
+    editLessonPlan: 'План урока',
     monthlyReport: 'Отчёт за месяц',
     help: 'Справка',
     account: 'Мой аккаунт',

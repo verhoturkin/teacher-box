@@ -61,7 +61,6 @@ import { T } from '../i18n/texts';
 import { titleOf } from './assignment-draft';
 import { assignmentBoard } from './assignment-board';
 import { AssignMoreDialog } from './assign-more-dialog';
-import { BindTextbookDialog } from './bind-textbook-dialog';
 import { UpcomingLessons } from './next-lesson';
 import { QuestionDraft, questionInputs } from './question-drafts';
 import { aiSources } from './editor/ai-sources';
@@ -76,7 +75,14 @@ import { brokenQuestions, withoutCreate } from './editor/editor-sections';
 import { EditorTab, EditorTabs } from './editor/editor-tabs';
 import { EditorTask } from './editor/editor-task';
 import { QuizSettings } from './quiz-settings';
-import { Course, CoursesApi, VideoDraft, videoDraft, videoInputs } from '@features/textbooks/parts';
+import {
+  BindTextbookDialog,
+  Course,
+  CoursesApi,
+  VideoDraft,
+  videoDraft,
+  videoInputs,
+} from '@features/textbooks/parts';
 
 /**
  * Teacher: the page that creates an assignment or edits one, on two tabs (sketches 11, 28): «Задание» in the
@@ -148,7 +154,6 @@ import { Course, CoursesApi, VideoDraft, videoDraft, videoInputs } from '@featur
             <tb-editor-task
               [form]="form"
               [mode]="mode"
-              [text]="textValue()"
               [(editorHeight)]="editorHeight"
               [draft]="draft()"
               [compact]="compact()"
@@ -279,6 +284,7 @@ import { Course, CoursesApi, VideoDraft, videoDraft, videoInputs } from '@featur
       <p-menu #boardMenu [model]="materials.boardItems()" [popup]="true" appendTo="body" />
       <tb-bind-textbook-dialog
         [(visible)]="materials.bindVisible"
+        [headline]="tb.newTitle"
         [taken]="materials.textbooks()"
         [bound]="materials.binding()"
         (picked)="pickTextbook($event)"
@@ -305,6 +311,7 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   protected readonly t = T.editor;
   protected readonly c = T.create;
   protected readonly tq = T.quiz;
+  protected readonly tb = T.bind;
   private readonly size = injectWindowSize();
   protected readonly compact = computed(() => this.size() === 'compact');
   protected readonly single = computed(() => this.size() === 'compact' || this.size() === 'medium');

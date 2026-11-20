@@ -112,6 +112,8 @@ const upcomingLessons = () => {
 
 /** Pages that several routes open: one loader each. */
 const assignmentEditorPage = () => import('@features/homework').then((m) => m.AssignmentEditorPage);
+const lessonPlanEditorPage = () =>
+  import('@features/textbooks').then((m) => m.LessonPlanEditorPage);
 const boardPage = () => import('@features/boards').then((m) => m.BoardPage);
 const notFoundPage = () => import('@core/pages/not-found').then((m) => m.NotFound);
 const accountPage = () => import('@features/account').then((m) => m.AccountPage);
@@ -218,6 +220,18 @@ export const routes: Routes = [
         path: 'materials',
         title: NAV.materials,
         loadComponent: () => import('@features/materials').then((m) => m.MaterialsPage),
+      },
+      {
+        path: 'materials/plans/new',
+        title: N.newLessonPlan,
+        loadComponent: lessonPlanEditorPage,
+        canDeactivate: [canLeaveGuard],
+      },
+      {
+        path: 'materials/plans/:planId',
+        title: N.editLessonPlan,
+        loadComponent: lessonPlanEditorPage,
+        canDeactivate: [canLeaveGuard],
       },
       // boards and textbooks are the two tabs of Materials (245.2); the filters of the address stay
       { path: 'boards', pathMatch: 'full', redirectTo: materialsTab('boards') },

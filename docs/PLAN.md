@@ -113,12 +113,19 @@ section the substep names). New ADR: 0071 «Курсы, планы уроков 
   the series «this and following» edit, cancel and delete also protect a prepared lesson
   (`LessonRepetitionService.protectedLesson`), not only `deleteUntouchedOfSeries`; the student's
   view hides a transcript unless `transcriptShown`; new codes in the dictionaries.*
-- [ ] 461.3 **F** *complex* — move `homework/teacher/bind-textbook-dialog.ts` to
+- [x] 461.3 **F** *complex* — move `homework/teacher/bind-textbook-dialog.ts` to
   `@features/textbooks/parts` and the Markdown field to `shared/`; plan editor
   `textbooks/teacher/lesson-plan-editor-page.ts` (`/teacher/materials/plans/new|:id`, autosave,
   «Готово», «Сохранить в банк» / «Обновить в банке», the course's textbooks, videos of 459.2);
   `LessonPlansFeed` — the «Планы» tab of «Материалы» (bank items, «Использовано N раз»); gallery
   samples; help, `docs/screens/materials.md`.
+  *Done: the dialog is a picker only (`picked`, `courseId`, `headline`; homework never used its
+  server bind), its texts moved to `textbooks`; the Markdown field is `shared/ui/markdown-field.ts`
+  (gallery `fields/markdown-field.ts`); a plan made at `/new` is a bank item (461.4 adds
+  `?lessonId=`); the tab order is «Доски · Учебники · Планы» (boards stay the default), «Новый
+  план» is a header button (the rail «Создать» has no plan item); the bank list has no
+  `createdAt`, so its sort offers «Сначала изменённые» and «По названию» only; plans help is a
+  section of the «Учебники» article; UI not checked live (no backend in the session).*
 - [ ] 461.4 **F** *complex* — direction `schedule` → `textbooks` (`eslint.config.js`,
   `frontend/AGENTS.md`); «План» in `schedule/ui/lesson-card.ts`: teacher — «Составить» (editor with
   `?lessonId=`, the route links it), «Из банка» (use), «Открыть», «Убрать из урока»; student and

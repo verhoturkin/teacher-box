@@ -28,6 +28,8 @@ export const en: Translation<typeof ru> = {
     assignment: 'Assignment',
     newAssignment: 'New assignment',
     editAssignment: 'Edit assignment',
+    newLessonPlan: 'New lesson plan',
+    editLessonPlan: 'Lesson plan',
     monthlyReport: 'Monthly report',
     help: 'Help',
     account: 'My account',

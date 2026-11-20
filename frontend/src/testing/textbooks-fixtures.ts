@@ -1,4 +1,10 @@
-import { Course, MyTextbook, Textbook } from '@features/textbooks/parts';
+import {
+  Course,
+  LessonPlan,
+  LessonPlanSummary,
+  MyTextbook,
+  Textbook,
+} from '@features/textbooks/parts';
 
 export function aTextbook(overrides: Partial<Textbook> = {}): Textbook {
   return {
@@ -61,4 +67,45 @@ export function aMyTextbook(overrides: Partial<MyTextbook> = {}): MyTextbook {
 
 export function aCourse(overrides: Partial<Course> = {}): Course {
   return { id: 'c-1', name: 'Английский', position: 0, version: 0, ...overrides };
+}
+
+export function aPlanSummary(overrides: Partial<LessonPlanSummary> = {}): LessonPlanSummary {
+  return {
+    id: 'p-1',
+    title: 'Present Simple',
+    courseId: 'c-1',
+    bank: true,
+    sourceId: null,
+    uses: 3,
+    updatedAt: '2026-11-01T10:00:00Z',
+    version: 0,
+    ...overrides,
+  };
+}
+
+export function aLessonPlan(overrides: Partial<LessonPlan> = {}): LessonPlan {
+  return {
+    id: 'p-1',
+    title: 'Present Simple',
+    body: '1. Разминка',
+    courseId: 'c-1',
+    bank: true,
+    sourceId: null,
+    uses: 0,
+    textbooks: [
+      {
+        id: 'tb-1',
+        title: 'Spotlight 5',
+        kind: 'TEXTBOOK',
+        format: 'PDF',
+        pageCount: 120,
+        pages: '12-14',
+      },
+    ],
+    videos: [],
+    createdAt: '2026-11-01T10:00:00Z',
+    updatedAt: '2026-11-01T10:00:00Z',
+    version: 0,
+    ...overrides,
+  };
 }

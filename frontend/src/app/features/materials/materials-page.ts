@@ -26,6 +26,7 @@ import {
   CourseFilter,
   CoursesApi,
   CoursesDialog,
+  LessonPlansFeed,
   TextbooksFeed,
   TextbooksFilter,
 } from '@features/textbooks/parts';
@@ -37,8 +38,8 @@ import { SearchField } from '@shared/ui/search-field';
 import { Segment, SegmentGroup } from '@shared/ui/segment-group';
 import { T } from './i18n/texts';
 
-/** The two kinds of materials the page switches between (`?tab=`). */
-export type MaterialsTab = 'boards' | 'textbooks';
+/** The kinds of materials the page switches between (`?tab=`). */
+export type MaterialsTab = 'boards' | 'textbooks' | 'plans';
 
 /** A student or a group the create dialogs of the feeds offer. */
 interface MemberOption {
@@ -50,8 +51,8 @@ interface MemberOption {
  * Teacher: «Материалы» (redesign spec §10.1, ADR-0049) — boards and textbooks as one feed of cards with
  * previews. The connected button group «Доски N · Учебники N» switches the kind (`?tab=boards|textbooks`),
  * the chips filter it («Все · На портале · Внешние»; for textbooks — by kind), one search field and
- * the sort menu. Textbooks also have the course filter (`?course=`, «Все · <курсы> · Без курса»,
- * ADR-0071), its «⋮» opens «Курсы». A card opens the material, «⋮» keeps its actions. The feeds belong to their modules
+ * the sort menu. Textbooks and the bank of lesson plans («Планы», roadmap 11) also have the course filter
+ * (`?course=`, «Все · <курсы> · Без курса», ADR-0071), its «⋮» opens «Курсы». A card opens the material, «⋮» keeps its actions. The feeds belong to their modules
  * (`@features/boards/parts`, `@features/textbooks/parts`); this page only composes them.
  */
 @Component({
@@ -59,6 +60,7 @@ interface MemberOption {
   imports: [
     BoardsFeed,
     CoursesDialog,
+    LessonPlansFeed,
     TextbooksFeed,
     Button,
     FilterChips,
@@ -81,6 +83,9 @@ interface MemberOption {
               help
               [topic]="active() === 'boards' ? 'teacher/boards' : 'teacher/textbooks'"
             />
+            @if (!mobile() && active() === 'plans') {
+              <p-button [label]="t.newPlan" icon="tb-i tb-i-add" (onClick)="openCreate()" />
+            }
             @if (!mobile()) {
               <tb-segment-group
                 [label]="t.tabs"
@@ -94,7 +99,7 @@ interface MemberOption {
             @if (mobile()) {
               <p-button
                 class="tb-page-fab"
-                [label]="active() === 'boards' ? t.newBoard : t.newTextbook"
+                [label]="createLabel()"
                 icon="tb-i tb-i-add"
                 (onClick)="openCreate()"
               />
@@ -114,12 +119,14 @@ interface MemberOption {
 
           <div class="tb-materials__bar">
             <tb-search-field [formControl]="search" [label]="t.search" />
-            <tb-filter-chips
-              [label]="t.filters"
-              [chips]="chips()"
-              [value]="chip()"
-              (valueChange)="chip.set($event)"
-            />
+            @if (active() !== 'plans') {
+              <tb-filter-chips
+                [label]="t.filters"
+                [chips]="chips()"
+                [value]="chip()"
+                (valueChange)="chip.set($event)"
+              />
+            }
             <p-button
               class="tb-materials__sort"
               icon="tb-i tb-i-sort"
@@ -182,6 +189,15 @@ interface MemberOption {
             [sort]="sort()"
             [students]="students()"
             [groups]="groups()"
+            [courses]="courses()"
+          />
+        </div>
+        <div [hidden]="active() !== 'plans'">
+          <tb-lesson-plans-feed
+            #plans
+            [query]="query()"
+            [course]="courseFilter()"
+            [sort]="sort()"
             [courses]="courses()"
           />
         </div>
@@ -249,10 +265,16 @@ export class MaterialsPage implements OnInit {
 
   protected readonly boards = viewChild<BoardsFeed>('boards');
   protected readonly textbooks = viewChild<TextbooksFeed>('textbooks');
+  protected readonly plans = viewChild<LessonPlansFeed>('plans');
 
-  protected readonly active = computed<MaterialsTab>(() =>
-    this.tab() === 'textbooks' ? 'textbooks' : 'boards',
-  );
+  protected readonly active = computed<MaterialsTab>(() => {
+    const tab = this.tab();
+    return tab === 'textbooks' || tab === 'plans' ? tab : 'boards';
+  });
+  protected readonly createLabel = computed(() => {
+    const tab = this.active();
+    return tab === 'boards' ? T.newBoard : tab === 'textbooks' ? T.newTextbook : T.newPlan;
+  });
   protected readonly students = signal<MemberOption[]>([]);
   protected readonly groups = signal<MemberOption[]>([]);
   /** The teacher's courses in their order; the dialog «Курсы» changes them. */
@@ -301,6 +323,7 @@ export class MaterialsPage implements OnInit {
   protected readonly segments = computed<readonly Segment<MaterialsTab>[]>(() => [
     { value: 'boards', label: T.boards, count: this.boards()?.total() ?? 0 },
     { value: 'textbooks', label: T.textbooks, count: this.textbooks()?.total() ?? 0 },
+    { value: 'plans', label: T.plans, count: this.plans()?.total() ?? 0 },
   ]);
   protected readonly chips = computed<readonly FilterChip<string>[]>(() => {
     const kinds: readonly FilterChip<string>[] =
@@ -315,8 +338,12 @@ export class MaterialsPage implements OnInit {
           }));
     return [{ value: 'all', label: T.chips.all }, ...kinds];
   });
+  /** A plan of the bank has no creation time in the list: «Сначала новые» is not offered. */
   protected readonly sortItems = computed<MenuItem[]>(() =>
-    (['changed', 'title', 'created'] as const).map((value) => ({
+    (this.active() === 'plans'
+      ? (['changed', 'title'] as const)
+      : (['changed', 'title', 'created'] as const)
+    ).map((value) => ({
       label: T.sort[value],
       icon: value === this.sort() ? 'tb-i tb-i-check' : undefined,
       command: () => {
@@ -371,19 +398,23 @@ export class MaterialsPage implements OnInit {
     });
   }
 
-  /** Renamed or deleted courses change the textbooks' course: the feed is read again. */
+  /** Renamed or deleted courses change the course of textbooks and plans: the feeds are read again. */
   protected coursesVisible(visible: boolean): void {
     this.coursesOpen.set(visible);
     if (!visible) {
       this.textbooks()?.load();
+      this.plans()?.load();
     }
   }
 
   protected openCreate(): void {
-    if (this.active() === 'boards') {
+    const tab = this.active();
+    if (tab === 'boards') {
       this.boards()?.openCreate();
-    } else {
+    } else if (tab === 'textbooks') {
       this.textbooks()?.openCreate();
+    } else {
+      this.plans()?.openCreate();
     }
   }
 }

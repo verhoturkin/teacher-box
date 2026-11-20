@@ -204,7 +204,7 @@ the due date — the start of the earliest scheduled lesson of the chosen studen
 `homework` does not import `schedule`, ADR-0058) until the teacher sets it; textbooks and files only for a new
 assignment (0.14.2: a saved one changes them on its page); picked files — `ui/file-picker.ts`, the same `tb-list` cards
 as the saved ones, the name of a PDF or a picture opens it in a tab (0.14.5)
-(`BindTextbookDialog` without an assignment emits `picked`, checked by `parsePages`). A new assignment is created
+(`BindTextbookDialog` of `@features/textbooks/parts` emits `picked`, checked by `parsePages`). A new assignment is created
 without students, gets its files and textbooks, then is given out — the notification goes with the materials in place;
 a material that fails leaves the assignment saved with an error toast. Header: «Выдать» / «Сохранить» (filled) and
 «Выдать и поместить на доску» / «Сохранить и поместить на доску» (tonal): it saves, then opens «На доску» for the

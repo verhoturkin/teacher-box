@@ -9,9 +9,13 @@ export type {
   Textbook,
   TextbookFormat,
   TextbookKind,
+  PickedTextbook,
 } from './data-access/textbooks.models';
+export { BindTextbookDialog } from './teacher/bind-textbook-dialog';
 export { TEXTBOOK_KIND_ICONS, TEXTBOOK_KIND_LABELS } from './textbooks-labels';
 export { TextbooksFeed, type CourseFilter, type TextbooksFilter } from './teacher/textbooks-feed';
+export { LessonPlansFeed } from './teacher/lesson-plans-feed';
+export type { LessonPlan, LessonPlanSummary } from './data-access/lesson-plans.models';
 export { CoursesApi } from './data-access/courses-api';
 export type { Course, CourseLinks } from './data-access/courses.models';
 export { courseOptions, type CourseOption } from './course-options';

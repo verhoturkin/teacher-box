@@ -829,6 +829,24 @@ const COURSES: Readonly<Record<string, readonly (readonly [string, string, strin
   ],
 };
 
+/** Lesson plans and their bank (461.3): [topic, baseline, now] of the textbooks article. */
+const PLANS: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'textbooks',
+      'Ученик видит открытые ему учебники в своём разделе «Материалы» и может их скачать.',
+      'Ученик видит открытые ему учебники в своём разделе «Материалы» и может их скачать.\n\n## Планы уроков\n\nВкладка **«Планы»** «Материалов» — банк планов уроков: оригиналы, из которых урок получает свою копию. На карточке — название, курс и «Использовано N раз» (сколько уроков взяли копию). Чипы курсов и поиск работают и здесь.\n\n1. «Новый план» — откроется редактор плана: название, **Курс**, текст плана (Markdown, переключатель «Текст · Просмотр»).\n2. **Учебники** — «Добавить учебник», выберите учебник и страницы (пусто — весь учебник). Если у плана есть курс, предлагаются только учебники этого курса. ✎ меняет страницы, ✕ убирает учебник; до 20 учебников.\n3. **Видео** — вставьте ссылку (до 5 видео). У видео YouTube расшифровка подставится сама, на языке видео; «Сменить язык» выбирает другие субтитры. Ученик видит расшифровку, только если включено «Показывать расшифровку ученику».\n4. План сохраняется сам через секунду-другую после каждой правки («сохранено · ЧЧ:ММ»). **«Готово»** сохраняет остальное и возвращает в «Материалы».\n\nВ меню «⋮» карточки: **Изменить** — открыть редактор; **Удалить…** — убрать план из банка после подтверждения (планы уроков, сделанные из него, останутся). Правка оригинала в банке не меняет копии на уроках.\n\nПлан, составленный для урока, попадает в банк сам при первом «Готово». В его редакторе в «⋮» — **«Сохранить в банк»** (оригинала ещё нет) или **«Обновить в банке»** (оригинал заменится этим планом, портал спросит подтверждение).',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'textbooks',
+      'Students find shared resources under Materials and can download them. For assignment-specific page access, see [Homework](/teacher/help/homework).',
+      'Students find shared resources under Materials and can download them. For assignment-specific page access, see [Homework](/teacher/help/homework).\n\n## Lesson plans\n\nThe **Plans** tab of Materials is the bank of lesson plans: the originals a lesson takes its own copy from. Each card shows the title, the course and how many times it was used. The course chips and the search work here too.\n\n1. Choose “New plan” to open the plan editor: a title, a **Course** and the plan text (Markdown, with “Text · Preview”).\n2. **Textbooks**: choose “Attach a textbook”, then the textbook and its pages (leave blank for the whole textbook). When the plan has a course, only that course’s textbooks are offered. ✎ changes the pages, ✕ removes the textbook; up to 20 textbooks.\n3. **Videos**: paste a link (up to 5 videos). A YouTube video gets its transcript automatically, in the video’s language; “Change language” picks other captions. Students see a transcript only when “Show transcript to students” is on.\n4. The plan saves itself a moment after each change (“saved · HH:MM”). **Done** saves the rest and takes you back to Materials.\n\nThe card’s “⋮” menu has **Edit**, which opens the editor, and **Delete…**, which removes the plan from the bank after you confirm (lesson plans made from it stay). Editing a bank original does not change the copies on lessons.\n\nA plan written for a lesson goes into the bank automatically the first time you choose Done. Its editor’s “⋮” menu has **Save to bank** (no original yet) or **Update in bank** (the original is replaced with this plan after you confirm).',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -931,6 +949,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(HERO_BAR[name] ?? []),
       ...(AUTO_CAPTIONS[name] ?? []),
       ...(COURSES[name] ?? []),
+      ...(PLANS[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

@@ -769,6 +769,11 @@ Gallery: [`/gallery/fields`](../frontend/src/app/features/gallery/fields/) (chip
 - **Copy field** `tb-copy-field` (`@shared/ui`) — a read-only field (a link, an address, a code with
   `mono`) with a round 40 px «Копировать» icon button centred on the 56 px field (*ours*); a
   snackbar confirms the copy.
+- **Markdown field** `tb-markdown-field` (`@shared/ui`; the assignment text, the lesson plan) —
+  the label with the connected «Текст · Просмотр» (`p-selectbutton`) beside it, the text area or
+  the preview (`tb-markdown`), the hint ending with what Markdown can do; the preview keeps the
+  height of the text area, so switching never moves the page (*ours*). Its own `tbFieldErrors`
+  shows the errors of its control.
 - **Typed entry** (dates and times, **M3**, ADR-0067): every date and time field takes typing;
   the parser (`shared/dates`) accepts dots, slashes, dashes and spaces, a leading 0 or none, a 2-
   or 4-digit year; times «14:30», «1430», «14.30», «14 30», «9» → 09:00. No input masks; the value
