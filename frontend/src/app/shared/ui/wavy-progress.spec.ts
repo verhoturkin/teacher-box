@@ -23,6 +23,43 @@ describe('WavyProgress', () => {
     expect(host.querySelector('.tb-wavy__track')).not.toBeNull();
   });
 
+  it('draws the wave as a dash of the active width less its two round caps', async () => {
+    const staticObserver = window.ResizeObserver;
+    type Report = (entries: readonly { contentRect: { width: number } }[]) => void;
+    let report: Report = () => undefined;
+    let observed = 0;
+    // test-setup defines it writable, not configurable
+    Reflect.set(
+      window,
+      'ResizeObserver',
+      class {
+        constructor(callback: Report) {
+          report = callback;
+        }
+        observe(): void {
+          observed++;
+        }
+        disconnect(): void {
+          observed--;
+        }
+      },
+    );
+    try {
+      const host = await render(50);
+      const wave = host.querySelector<SVGPathElement>('.tb-wavy__wave');
+      // jsdom lays nothing out: the first measure is 0, the wave a dot
+      expect(wave?.style.strokeDasharray).toMatch(/^0(px)?,? 8000/);
+
+      expect(observed).toBe(1);
+      report([{ contentRect: { width: 200 } }]);
+      TestBed.tick();
+
+      expect(wave?.style.strokeDasharray).toMatch(/^196(px)?,? 8000/);
+    } finally {
+      Reflect.set(window, 'ResizeObserver', staticObserver);
+    }
+  });
+
   it('keeps the value within 0–100 and drops the track when done', async () => {
     const host = await render(140);
 

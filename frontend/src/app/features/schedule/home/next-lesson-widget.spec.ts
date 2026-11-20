@@ -180,6 +180,10 @@ describe('NextLessonWidget', () => {
     expect(text).toContain('Идёт сейчас 18:00 ещё 55 мин');
     expect(text).toContain('Войти в урок');
     expect(() => buttonByText(hostElement(fixture), 'Перенести')).toThrow();
+    // the elapsed time as on the teacher's hero
+    const progress = hostElement(fixture).querySelector('tb-wavy-progress');
+    expect(progress?.getAttribute('aria-label')).toBe('Прошло 5 из 60 мин');
+    expect(progress?.getAttribute('aria-valuenow')).toBe('8');
 
     vi.setSystemTime(new Date(at(2026, 10, 1, 19, 1)));
     vi.advanceTimersByTime(15_000);

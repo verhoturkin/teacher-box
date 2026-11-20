@@ -82,6 +82,7 @@
   --tb-type-headline-s-emphasized: 500 1.5rem/2rem var(--tb-font);
   --tb-type-title-l-emphasized: 500 1.375rem/1.75rem var(--tb-font);
   --tb-type-title-m-emphasized: 700 1rem/1.5rem var(--tb-font);
+  --tb-type-title-s-emphasized: 700 0.875rem/1.25rem var(--tb-font);
   --tb-type-label-l-emphasized: 700 0.875rem/1.25rem var(--tb-font);
   --tb-type-label-m-emphasized: 700 0.75rem/1rem var(--tb-font);
   /*
@@ -107,6 +108,9 @@
   --tb-shape-full: 999px;
   /* A 40 px button: half its height, so that pressing it can morph the corners (Expressive) */
   --tb-shape-button: 1.25rem;
+  /* the 56 px (M) and 32 px (XS) buttons, the same reason: 999 px would morph unseen until 28 / 16 */
+  --tb-shape-button-m: 1.75rem;
+  --tb-shape-button-xs: 1rem;
 
   /* Cards, dialogs, dropdowns (§2 Surfaces) — the preset's content background as a role */
   --tb-card: var(--p-md-surface-container-lowest);

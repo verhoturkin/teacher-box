@@ -465,8 +465,10 @@ small,
 
 :root.tb-dark {
   color-scheme: dark;
-  /* light glyphs on a dark surface look bolder: grade −25 thins icons only (the text stays at grade 0) */
+  /* light glyphs on a dark surface look bolder: grade −25 thins icons and text without reflowing it
+     (M3; ADR-0070) */
   --tb-icon-grade: -25;
+  font-variation-settings: 'GRAD' -25;
   --tb-card: var(--p-md-surface-container);
   --tb-list-item: var(--p-md-surface-container-high);
 

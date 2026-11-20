@@ -300,8 +300,10 @@ themes, severities, the colours of students.
 Gallery: [`/gallery/typography`](../frontend/src/app/features/gallery/typography/) — every role
 with its value and tracking, Markdown.
 
-- Google Sans variable (400–700), bundled from `@fontsource-variable/google-sans` (no CDN);
-  monospace `var(--tb-font-mono)`.
+- Google Sans variable (400–700) with its grade axis, bundled from
+  `@fontsource-variable/google-sans/grad.css` (no CDN); dark theme: text grade −25 like the icons
+  (**M3**, ADR-0070); no optical-size axis (17–18 only in this font). Monospace
+  `var(--tb-font-mono)`.
 - Roles with the shorthand `font: var(--tb-type-<role>)` plus
   `letter-spacing: var(--tb-tracking-<role>)` (display, headline and title large have none; an
   emphasized role takes its baseline's tracking). Page text is Body Large. The scale has Display S
@@ -331,7 +333,7 @@ for the active navigation item and checked states.
   and builds the subset font `core/theme/symbols.woff2` with the map `core/theme/icons.scss`. In
   generated content — `@include icon-font; @include glyph('tb-i-<name>')`.
 - **Sizes:** 24 px (lists, navigation, icon buttons — **M3**), 20 px in labelled buttons (**M3E**
-  small), 18 px in chips; `--tb-icon-opsz` follows the size. Dark theme: grade −25, icons only.
+  small), 18 px in chips; `--tb-icon-opsz` follows the size. Dark theme: grade −25, icons and text (ADR-0070).
 - A glyph is a private code point with an empty alternative text: nothing shows before the font
   loads and screen readers skip it; the meaning is in the label or the tooltip.
 - **PrimeNG's own icons** are SVG components: `npm run icons` also writes our symbols as masks
@@ -1086,11 +1088,14 @@ Gallery: [`/gallery/states`](../frontend/src/app/features/gallery/states/).
   - ready — data or the empty state (only after a successful load; a bad link is an error).
 - **Wavy progress** `tb-wavy-progress` (`@shared/ui/wavy-progress`, 450.2; PrimeNG 21.1 has only
   the flat bar): determinate, a `progressbar` with `aria-valuenow` 0–100 and a name. The active
-  part a wave of 3 dp amplitude, 40 dp wavelength, 4 dp thick, 10 dp high, primary; 4 dp space,
-  then the flat 4 dp track in secondary-container ending in a 4 dp primary stop (**M3E**
-  `LinearProgressIndicator`). The wave drifts one wavelength in 2 s (*ours*: M3 publishes no speed);
-  reduced motion stops it. Only the elapsed time of the lesson hero on the teacher's Today; other
-  progress keeps `p-progressbar`.
+  part a wave of 3 dp amplitude, 40 dp wavelength, 4 dp thick, 10 dp high, primary, with round
+  ends that ride the wave (a dash of an SVG path, 457.1); 4 dp space, then the flat 4 dp track in
+  secondary-container ending in a 4 dp primary stop (**M3E** `LinearProgressIndicator`). The wave
+  drifts one wavelength in 2 s toward the end (*ours*: M3 publishes no speed); reduced motion stops
+  it. On a hero (primary container) the wave and the stop take on-primary-container and the track
+  that colour at 38 % (`--tb-wavy-active`, `--tb-wavy-track`; **M3**: the active indicator needs
+  3:1 against its container, primary there is about 1.3:1; the 38 % is *ours*). Only the elapsed
+  time of a running lesson on both heroes; other progress keeps `p-progressbar`.
 - Load requests are quiet (`quietContext()` / `SKIP_ERROR_TOAST`): the error shows in the section.
 - **Empty state** — only `tb-empty-state`: icon, what is empty, what will appear, a first-action
   button (omitted if the same action is the FAB or a section button); `compact` for home widgets and

@@ -201,6 +201,16 @@
   a:not(.p-button, .tb-board-chip) {
     text-decoration: underline;
   }
+
+  /*
+   * The wavy bar of the lesson: primary on the primary container is about 1.3:1, below the M3 3:1 of the
+   * active indicator, so it takes the container's text colour (M3: «the same color as its label text»);
+   * the track is that colour at 38 % (ours), the stop marks its end
+   */
+  tb-wavy-progress {
+    --tb-wavy-active: var(--p-md-on-primary-container);
+    --tb-wavy-track: color-mix(in srgb, var(--p-md-on-primary-container) 38%, transparent);
+  }
 }
 
 /*

@@ -8,7 +8,8 @@
   From large (sketch «Главная учителя — варианты», board D, 450.2) two panes, the M3
   fixed-and-flexible layout: a flexible lead pane — the lesson hero (`tb-today-lessons
   part="hero"`), then the other rows (`part="rest"`) with the push offer and the queue in two equal
-  columns — and a fixed 412 dp figures pane on surface container (28 dp corners, 16 dp padding:
+  columns (a column that shows nothing gives its width to the other, 457.1) — and a fixed 412 dp
+  figures pane on surface container (28 dp corners, 16 dp padding:
   *ours*, the sketch); 24 dp between them (**M3** spacer). Below large one column in the reading
   order, the expanded row inside the list; an empty stack hides. The sketch's bar chart of the week
   is not built: the summary has week totals only, no days.
@@ -53,17 +54,21 @@ since 0.57.0 — the lesson is shown once.
   teacher in too: no line. On a phone the
   line follows the board chip on its own row, apart from the join button; wider it ends the board's
   row. A Telemost or other external link, calls off or the media server down — no line.
-- **The hero** (from large, board D): one primary-container card (28 dp, *ours*: the sketch) with
-  one line — the time tile (`schedule/ui/lesson-time-tile.ts`: the day or «Идёт сейчас», the start,
-  the countdown or «ещё 25 мин»), the 64 dp avatar, the name in Headline Medium emphasized with
-  «Название · тема» and «до 15:00» under it, and the actions: «Начать урок» / «Войти в урок» in
-  the medium size (`tb-button-m`) and, while somebody is not in the portal's room, a medium tonal
-  «Позвать» beside it. The two are a **standard** button group (12 dp), not the sketch's
-  connected one: **M3** keeps connected groups for toggles and never with a primary button.
-  Under the name the board chip and the presence line of `tb-call-summon [hero]` (Body Medium).
-  While the lesson runs a wavy progress bar of the elapsed time (`tb-wavy-progress`, «Прошло 35 из
-  60 мин» as its name) runs along the bottom. 20 dp between the line's parts, 16 dp between lines
-  (*ours*, the sketch). Below large the expanded row above stays as it is.
+- **The hero** (from large, board D; 457.1 variant C, an **M3** card: content, then actions): one
+  primary-container card (28 dp, *ours*: the sketch) in three blocks.
+  - Content: the time tile (`schedule/ui/lesson-time-tile.ts`: the day or «Идёт сейчас», the
+    start, the countdown or «ещё 25 мин»), the 64 dp avatar, the name in Headline Medium
+    emphasized with «Название · тема» and «до 15:00» (Body Medium) under it.
+  - While the lesson runs, the wavy progress bar of the elapsed time (`tb-wavy-progress`,
+    «Прошло 35 из 60 мин» as its name).
+  - The action row: the board chip and the presence line of `tb-call-summon [hero]` (Body
+    Medium) at the start; at the end a **standard** button group (12 dp) — while somebody is not
+    in the portal's room a medium tonal «Позвать», then «Начать урок» / «Войти в урок» in the
+    medium size (`tb-button-m`), the primary action last (**M3**: the trailing edge). Not the
+    sketch's connected group: **M3** keeps those for toggles, never with a primary button. The
+    row wraps, so on a narrow hero the buttons go down, still at the end; an empty row hides.
+  20 dp between the content's parts, 16 dp between the blocks, 12 dp in the action row (*ours*).
+  Below large the expanded row above stays as it is.
 - A nearest lesson of another day follows today's rows, expanded with its day. No lessons today
   but one later: the same card titled «Ближайшее занятие» with that one row (decision of 432.2:
   no second widget for this case). No lesson at all: no card.
@@ -76,6 +81,8 @@ since 0.57.0 — the lesson is shown once.
 - The time tile (`schedule/ui/lesson-time-tile.ts`) uses a display style — *ours*: the portal's one
   hero moment; one line, the tile grows on a narrow card. It counts down within the hour and shows
   the time left while the lesson runs (`lesson-clock.ts`).
+- While the lesson runs, the wavy bar of the elapsed time (`tb-wavy-progress`, «Прошло 5 из 60
+  мин») spans the bottom of the card, as on the teacher's hero (457.1).
 - One join button (`tb-join-lesson-button [medium]`), full width under the tile on a narrow card
   (`tb-join-wide`). The student's requests sit under it and hide while the lesson runs.
 - While the lesson runs in the portal's room, `tb-teacher-waiting` (`@features/meetings/parts`,

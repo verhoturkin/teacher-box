@@ -69,7 +69,7 @@
   padding-block: 0;
   padding-inline: var(--tb-space-6);
   gap: var(--tb-space-2);
-  border-radius: var(--tb-shape-full);
+  border-radius: var(--tb-shape-button-m);
   font: var(--tb-type-title-m);
   letter-spacing: var(--tb-tracking-title-m);
 
@@ -97,6 +97,7 @@
   height: 2rem;
   padding-block: 0;
   padding-inline: var(--tb-space-4);
+  border-radius: var(--tb-shape-button-xs);
 
   &::before {
     content: '';
@@ -127,13 +128,13 @@
   }
 
   .p-button.tb-split__main:not(:disabled):active {
-    border-radius: var(--tb-shape-full);
+    border-radius: var(--tb-shape-button-m);
     border-start-end-radius: var(--tb-shape-md);
     border-end-end-radius: var(--tb-shape-md);
   }
 
   &:not(.tb-split--open) .p-button.tb-split__more:not(:disabled):active {
-    border-radius: var(--tb-shape-full);
+    border-radius: var(--tb-shape-button-m);
     border-start-start-radius: var(--tb-shape-md);
     border-end-start-radius: var(--tb-shape-md);
   }
