@@ -113,6 +113,7 @@ const RECENT = 3;
     .tb-hw-section__title {
       margin: 0;
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     .tb-hw-empty {

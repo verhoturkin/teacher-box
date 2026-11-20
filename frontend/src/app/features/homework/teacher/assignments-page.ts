@@ -345,6 +345,7 @@ const VIEWS: readonly View[] = ['list', 'journal'];
       /* spacing-ok: no token — room for the leading control */
       padding-inline: 2.5rem var(--tb-space-2);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
       line-height: 2.25rem;
     }
 

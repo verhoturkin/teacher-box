@@ -204,10 +204,12 @@ export interface AgendaMark {
 
     .tb-agenda__weekday {
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     .tb-agenda__date {
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     .tb-agenda__dot {
@@ -271,12 +273,14 @@ export interface AgendaMark {
 
     .tb-agenda__title {
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
       overflow-wrap: anywhere;
     }
 
     .tb-agenda__supporting {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     /* the group under its row: across the width, the buttons share it */

@@ -201,7 +201,7 @@ import { NextWork, ReviewSheet } from './review-sheet';
       margin: 0 0 var(--tb-space-2);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
-      letter-spacing: 0.04em;
+      letter-spacing: 0.04em; /* tracking-ok: caps label, removed in 457.4 */
       text-transform: uppercase;
     }
 
@@ -222,11 +222,13 @@ import { NextWork, ReviewSheet } from './review-sheet';
       margin: 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-task__place {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
       white-space: nowrap;
     }
 

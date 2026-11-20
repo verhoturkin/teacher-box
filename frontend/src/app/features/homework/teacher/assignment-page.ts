@@ -325,7 +325,7 @@ const FOLD_LINES = 3;
       margin: 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
-      letter-spacing: 0.04em;
+      letter-spacing: 0.04em; /* tracking-ok: caps label, removed in 457.4 */
       text-transform: uppercase;
     }
 
@@ -356,6 +356,7 @@ const FOLD_LINES = 3;
     /* the text fills its column; the materials and the test line stay as wide as a list */
     .tb-asg__body {
       font: var(--tb-type-body-l);
+      letter-spacing: var(--tb-tracking-body-l);
     }
 
     .tb-asg__block {
@@ -372,6 +373,7 @@ const FOLD_LINES = 3;
       border-radius: var(--tb-shape-lg-plus);
       background: var(--p-md-surface-container-low);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
 
       .tb-i {
         color: var(--p-md-primary);

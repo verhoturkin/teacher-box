@@ -58,6 +58,7 @@ const LINES = ['--p-md-outline', '--p-md-outline-variant'] as const;
       border-radius: var(--tb-shape-md);
       color: var(--p-md-on-surface);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
       overflow-wrap: anywhere;
     }
   `,

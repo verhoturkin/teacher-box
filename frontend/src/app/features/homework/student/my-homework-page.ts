@@ -178,6 +178,7 @@ interface Group {
       flex-wrap: wrap;
       gap: var(--tb-space-3);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
     .tb-hw__material {
       display: inline-flex;

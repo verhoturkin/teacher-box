@@ -40,11 +40,12 @@ stray weights or caps); the lesson heroes show the running lesson like the M3E p
   and the join button at the end (`meetings/ui/call-summon.ts` hero order). The wave is a cubic sine fit (quadratic halves read as a row of
   arcs). `--tb-type-title-s-emphasized` (read by the call window) declared. Buttons M / XS round
   to half their height (`--tb-shape-button-m`, `-xs`): from 999 px the pressed morph was unseen.
-- [ ] 457.2 **F** *complex* — tracking per role. `body` sets body-l tracking (0.5 px) and every
-  role inherits it: display and headline get 0.5 px instead of 0, labels 0.5 instead of 0.1. Add
-  the missing `--tb-tracking-*` (title-s 0.1, body-m 0.2, label-m/s 0.5; title-m is 0.2 in M3,
-  0.15 only emphasized), a `type(<role>)` mixin that sets `font` and `letter-spacing`, a codemod of
-  the ~400 `font: var(--tb-type-…)` and a `scripts/` check like `spacing.mjs`.
+- [x] 457.2 **F** *complex* — tracking per role. `body` set body-l tracking (0.5 px) and every
+  role inherited it: display and headline got 0.5 px instead of 0, labels 0.5 instead of 0.1. Every
+  role (emphasized too) has its `--tb-tracking-<role>` (M3 sp / 16; title-m 0.2, emphasized 0.15),
+  set next to each of the 344 `font: var(--tb-type-…)` by a codemod; the pair is written out
+  instead of a mixin, as component `styles` strings take no SCSS. `scripts/tracking.mjs` (lint)
+  fails on a role without its tracking; the caps labels keep theirs as `tracking-ok` until 457.4.
 - [ ] 457.3 **F** *simple* — strays: bare `font-weight: 600/700` (`question-section.ts` ×3,
   `_panes.scss` input number, `schedule-agenda.ts`, `schedule-calendar.scss`) → role tokens;
   odd sizes `0.85rem`/`0.8rem` (admin journal, events) → body-s / label-m.

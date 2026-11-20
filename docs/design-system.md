@@ -304,10 +304,16 @@ with its value and tracking, Markdown.
   `@fontsource-variable/google-sans/grad.css` (no CDN); dark theme: text grade −25 like the icons
   (**M3**, ADR-0070); no optical-size axis (17–18 only in this font). Monospace
   `var(--tb-font-mono)`.
-- Roles with the shorthand `font: var(--tb-type-<role>)` plus
-  `letter-spacing: var(--tb-tracking-<role>)` (display, headline and title large have none; an
-  emphasized role takes its baseline's tracking). Page text is Body Large. The scale has Display S
-  and Headline L besides the roles below.
+- Roles with the shorthand `font: var(--tb-type-<role>)` plus, in the same rule,
+  `letter-spacing: var(--tb-tracking-<role>)` — every role, emphasized ones too
+  (`--tb-tracking-<role>-emphasized`). Values from **M3** in rem (sp / 16): display, headline and
+  title large 0; title M 0.2 (emphasized 0.15), title S and label L 0.1, body L 0.5, body M 0.2,
+  body S 0.4, label M/S 0.5. The `font` shorthand resets no tracking, so a role without the pair
+  inherits its parent's (stage 457.2: everything had Body Large's 0.5 px). The pair is written
+  out, not a SCSS mixin, so that the same form works in `.scss` and in component `styles`
+  strings; `scripts/tracking.mjs` (`npm run lint`) fails on a role without its tracking, a
+  deliberate other value takes `/* tracking-ok: reason */` in the rule. Page text is Body Large
+  (`:root`). The scale has Display S and Headline L besides the roles below.
 - Page title — Headline Medium emphasized (phone: Headline Small emphasized); card and pane section
   title — Title Large emphasized (on a pane Title Medium emphasized, §7); dialog title — Headline
   Small emphasized; subtitles — Title Medium; field labels, buttons, menu items, options — Label

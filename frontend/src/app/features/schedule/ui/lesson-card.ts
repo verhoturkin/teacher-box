@@ -209,6 +209,7 @@ interface OutcomeOption {
     .tb-lesson-card__subtitle {
       margin: var(--tb-space-2) 0 0;
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     /* M3: tertiary marks the small element that needs attention (a request waits for an answer) */

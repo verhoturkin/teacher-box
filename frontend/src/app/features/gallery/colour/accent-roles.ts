@@ -57,6 +57,7 @@ const TEXT = ['on-surface', 'on-surface-variant', 'primary', 'secondary', 'terti
       padding: var(--tb-space-3);
       border-radius: var(--tb-shape-md);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
       overflow-wrap: anywhere;
     }
 
@@ -65,6 +66,7 @@ const TEXT = ['on-surface', 'on-surface-variant', 'primary', 'secondary', 'terti
       padding: 0;
       list-style: none;
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
   `,
 })

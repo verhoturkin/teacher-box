@@ -25,11 +25,13 @@
   &__title {
     margin: 0;
     font: var(--tb-type-title-l-emphasized);
+    letter-spacing: var(--tb-tracking-title-l-emphasized);
     outline-offset: 2px;
   }
 
   &__meta {
     font: var(--tb-type-body-m);
+    letter-spacing: var(--tb-tracking-body-m);
     color: var(--p-md-on-surface-variant);
     font-variant-numeric: tabular-nums;
   }
@@ -49,6 +51,7 @@
     gap: var(--tb-space-4);
     text-align: center;
     font: var(--tb-type-body-l);
+    letter-spacing: var(--tb-tracking-body-l);
   }
 
   &__end-icon {
@@ -101,6 +104,7 @@
 
     .tb-call-window__title {
       font: var(--tb-type-title-s-emphasized);
+      letter-spacing: var(--tb-tracking-title-s-emphasized);
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -214,6 +218,7 @@
   &__waiting {
     margin: 0;
     font: var(--tb-type-body-m);
+    letter-spacing: var(--tb-tracking-body-m);
     color: var(--p-md-on-surface-variant);
   }
 

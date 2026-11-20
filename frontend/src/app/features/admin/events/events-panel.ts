@@ -148,6 +148,7 @@ import { SHARED_T } from '@shared/i18n/texts';
     .tb-events__title {
       margin: 0;
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     .tb-mono {

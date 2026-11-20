@@ -82,12 +82,14 @@ export interface HeaderTag {
     .tb-card-head__name {
       margin: 0;
       font: var(--tb-type-headline-s);
+      letter-spacing: var(--tb-tracking-headline-s);
       overflow-wrap: anywhere;
     }
 
     .tb-card-head__line {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-card-head__tags {

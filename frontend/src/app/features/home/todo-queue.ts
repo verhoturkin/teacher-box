@@ -271,6 +271,7 @@ interface QueueCard {
       background: var(--p-md-error);
       color: var(--p-md-on-error);
       font: var(--tb-type-label-s);
+      letter-spacing: var(--tb-tracking-label-s);
       vertical-align: middle;
     }
 

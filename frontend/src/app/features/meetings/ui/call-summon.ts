@@ -72,6 +72,7 @@ export const SUMMON_REFRESH_MS = 10_000;
       gap: var(--tb-space-2);
       min-width: 0;
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     :host:empty {
@@ -106,6 +107,7 @@ export const SUMMON_REFRESH_MS = 10_000;
       gap: var(--tb-space-2);
       min-width: 0;
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
   `,
 })

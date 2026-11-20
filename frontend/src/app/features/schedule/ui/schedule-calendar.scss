@@ -58,6 +58,7 @@
   background: var(--p-md-secondary-container);
   color: var(--p-md-on-secondary-container);
   font: var(--tb-type-label-l);
+  letter-spacing: var(--tb-tracking-label-l);
   cursor: pointer;
   transition:
     background var(--tb-spring-fast-effects),
@@ -148,6 +149,7 @@
 /* The period of the week and the month, larger than the buttons around it (ours: headline small) */
 .tb-cal-title {
   font: var(--tb-type-headline-s);
+  letter-spacing: var(--tb-tracking-headline-s);
 }
 
 /*
@@ -426,6 +428,7 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
 .tb-cal-slot-label.tb-cal-slot-label {
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-label-s);
+  letter-spacing: var(--tb-tracking-label-s);
 }
 
 .tb-cal-day-header.tb-cal-day-header {
@@ -440,6 +443,7 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
   gap: var(--tb-space-1);
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-label-m);
+  letter-spacing: var(--tb-tracking-label-m);
   text-decoration: none;
 }
 
@@ -464,6 +468,7 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
   margin: var(--tb-space-1) var(--tb-space-2);
   color: var(--p-md-on-surface);
   font: var(--tb-type-label-m);
+  letter-spacing: var(--tb-tracking-label-m);
   text-decoration: none;
 }
 
@@ -491,22 +496,26 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
   border: 1px solid var(--tb-card);
   border-radius: var(--tb-shape-sm);
   font: var(--tb-type-label-m);
+  letter-spacing: var(--tb-tracking-label-m);
 }
 
 .tb-cal-pill.tb-cal-pill {
   border-radius: var(--tb-shape-sm);
   margin-block: var(--tb-space-half);
   font: var(--tb-type-label-m);
+  letter-spacing: var(--tb-tracking-label-m);
 }
 
 .tb-cal-more.tb-cal-more {
   color: var(--p-md-primary);
   font: var(--tb-type-label-m);
+  letter-spacing: var(--tb-tracking-label-m);
 }
 
 /* The week on a phone: the title fits in one line */
 .tb-calendar-title {
   font: var(--tb-type-title-m);
+  letter-spacing: var(--tb-tracking-title-m);
 }
 
 /* «Занятий нет» of the calendar: a compact empty state, not a grey frame (ADR-0018) */
@@ -522,6 +531,7 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
   padding: var(--tb-space-2) 0;
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-body-l);
+  letter-spacing: var(--tb-tracking-body-l);
 
   &::before {
     @include icon-font;
@@ -555,5 +565,6 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
     margin-top: var(--tb-space-2);
     color: var(--p-md-on-surface-variant);
     font: var(--tb-type-body-s);
+    letter-spacing: var(--tb-tracking-body-s);
   }
 }

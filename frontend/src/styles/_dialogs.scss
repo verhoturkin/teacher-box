@@ -28,6 +28,7 @@
   padding: 0 var(--tb-space-1) 0 var(--tb-space-4);
   color: var(--p-md-inverse-on-surface);
   font: var(--tb-type-body-m);
+  letter-spacing: var(--tb-tracking-body-m);
 }
 
 .tb-snackbar__text {
@@ -45,6 +46,7 @@
   background: none;
   color: var(--p-md-inverse-primary);
   font: var(--tb-type-label-l);
+  letter-spacing: var(--tb-tracking-label-l);
   cursor: pointer;
 
   &:hover {
@@ -239,6 +241,7 @@
     .tb-d__headline {
       overflow: hidden;
       font: var(--tb-type-title-l);
+      letter-spacing: var(--tb-tracking-title-l);
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -317,6 +320,7 @@
   .tb-d__headline {
     color: var(--p-md-on-surface-variant);
     font: var(--tb-type-label-m);
+    letter-spacing: var(--tb-tracking-label-m);
   }
 
   .tb-time-picker__switch {
@@ -336,6 +340,7 @@
   .tb-d__headline {
     color: var(--p-md-on-surface-variant);
     font: var(--tb-type-label-m);
+    letter-spacing: var(--tb-tracking-label-m);
   }
 
   .p-dialog-content {

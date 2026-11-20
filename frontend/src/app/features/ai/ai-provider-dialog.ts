@@ -289,7 +289,7 @@ interface Choice {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
       text-transform: uppercase;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.03em; /* tracking-ok: caps label, removed in 457.4 */
     }
 
     /* the kinds as selectable cards (sketch): two columns, one on a phone; ours — M3 publishes no
@@ -348,11 +348,13 @@ interface Choice {
 
       > b {
         font: var(--tb-type-label-l);
+        letter-spacing: var(--tb-tracking-label-l);
       }
 
       > small {
         color: var(--p-md-on-surface-variant);
         font: var(--tb-type-body-s);
+        letter-spacing: var(--tb-tracking-body-s);
       }
     }
 
@@ -400,6 +402,7 @@ interface Choice {
 
     .tb-ai-dialog__note {
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     tb-search-field,

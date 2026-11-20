@@ -315,6 +315,7 @@ export interface QuizEdit {
 
     .tb-qp__text {
       font: var(--tb-type-headline-s);
+      letter-spacing: var(--tb-tracking-headline-s);
     }
 
     .tb-qp__muted,
@@ -322,6 +323,7 @@ export interface QuizEdit {
       margin: 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-qp__options,
@@ -341,6 +343,7 @@ export interface QuizEdit {
       border-radius: var(--tb-shape-lg);
       background: var(--p-md-surface-container-low);
       font: var(--tb-type-body-l);
+      letter-spacing: var(--tb-tracking-body-l);
       cursor: pointer;
       overflow-wrap: anywhere;
     }
@@ -391,6 +394,7 @@ export interface QuizEdit {
       content: counter(item) '.';
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
     }
 
     .tb-qp__order-text {
@@ -398,6 +402,7 @@ export interface QuizEdit {
       min-width: 0;
       padding-block: var(--tb-space-3);
       font: var(--tb-type-body-l);
+      letter-spacing: var(--tb-tracking-body-l);
       overflow-wrap: anywhere;
     }
 
@@ -422,7 +427,7 @@ export interface QuizEdit {
     .tb-qp__label {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
-      letter-spacing: 0.04em;
+      letter-spacing: 0.04em; /* tracking-ok: caps label, removed in 457.4 */
       text-transform: uppercase;
     }
 
@@ -441,6 +446,7 @@ export interface QuizEdit {
       background: transparent;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       cursor: pointer;
     }
 

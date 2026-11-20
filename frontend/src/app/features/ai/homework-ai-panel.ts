@@ -662,6 +662,7 @@ export class HomeworkAiState {
       background: var(--p-md-secondary-container);
       color: var(--p-md-on-secondary-container);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     .tb-ai-panel__draft-title {
@@ -669,6 +670,7 @@ export class HomeworkAiState {
       min-width: 10rem;
       margin: 0;
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     .tb-ai-panel__draft-body {
@@ -705,6 +707,7 @@ export class HomeworkAiState {
       display: block;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     .tb-ai-pane {
@@ -741,6 +744,7 @@ export class HomeworkAiState {
     .tb-ai-pane__label {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     .tb-ai-pane__source {
@@ -753,6 +757,7 @@ export class HomeworkAiState {
       border-radius: var(--tb-shape-md);
       background: var(--p-md-surface-container-lowest);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
       cursor: pointer;
 
       .tb-i {
@@ -795,6 +800,7 @@ export class HomeworkAiState {
       background: var(--p-md-tertiary-container);
       color: var(--p-md-on-tertiary-container);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     .tb-ai-pane__draft-body {
@@ -802,11 +808,13 @@ export class HomeworkAiState {
       margin: 0;
       overflow: auto;
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-ai-pane__draft-title {
       margin: 0 0 var(--tb-space-1);
       font: var(--tb-type-title-s);
+      letter-spacing: var(--tb-tracking-title-s);
     }
 
     .tb-ai-pane__questions {
@@ -854,6 +862,7 @@ export class HomeworkAiState {
       background: var(--p-md-on-tertiary-container);
       color: var(--p-md-tertiary-container);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       cursor: pointer;
 
       &:disabled {
@@ -865,6 +874,7 @@ export class HomeworkAiState {
     .tb-ai-panel__question-text {
       display: block;
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
   `,
 })

@@ -194,6 +194,7 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
       background: var(--p-md-surface-container-highest);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
       line-height: 1.5rem;
     }
 
@@ -213,6 +214,7 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
 
     .tb-today-lesson__time {
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       min-width: 3rem;
       font-variant-numeric: tabular-nums;
     }
@@ -272,6 +274,7 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
       align-items: center;
       gap: var(--tb-space-2);
       font: var(--tb-type-label-m-emphasized);
+      letter-spacing: var(--tb-tracking-label-m-emphasized);
     }
 
     .tb-today-lesson__dot {
@@ -283,6 +286,7 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
 
     .tb-today-lesson__end {
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     /*
@@ -327,15 +331,18 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
       gap: var(--tb-space-1);
       min-width: 0;
       font: var(--tb-type-body-l);
+      letter-spacing: var(--tb-tracking-body-l);
     }
 
     /* the one name of the page in an emphasized headline (M3E: emphasized marks the hero) */
     .tb-today-hero__name {
       font: var(--tb-type-headline-m-emphasized);
+      letter-spacing: var(--tb-tracking-headline-m-emphasized);
     }
 
     .tb-today-hero__end {
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     /* the blocks' 16 dp as their own top margin: a missing bar (before the start) leaves no gap */

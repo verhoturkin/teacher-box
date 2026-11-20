@@ -24,6 +24,7 @@
   background: var(--tb-list-item);
   color: var(--p-md-on-surface);
   font: var(--tb-type-body-m);
+  letter-spacing: var(--tb-tracking-body-m);
   text-decoration: none;
 }
 
@@ -47,6 +48,7 @@
 
   b {
     font: var(--tb-type-title-m);
+    letter-spacing: var(--tb-tracking-title-m);
   }
 
   span {
@@ -80,6 +82,7 @@
   gap: var(--tb-space-2);
   margin-left: auto;
   font: var(--tb-type-body-m);
+  letter-spacing: var(--tb-tracking-body-m);
 }
 
 /* The buttons of a form in a section: at the end, under the fields (ADR-0018) */
@@ -425,6 +428,7 @@ p-button.tb-list__stretched .p-button {
   background: var(--p-md-secondary-container);
   color: var(--p-md-on-secondary-container);
   font: var(--tb-type-title-m);
+  letter-spacing: var(--tb-tracking-title-m);
 
   > .tb-i {
     font-size: 1.125rem;
@@ -539,12 +543,14 @@ p-button.tb-list__stretched .p-button {
   gap: var(--tb-space-1) var(--tb-space-2);
   color: var(--p-md-on-surface);
   font: var(--tb-type-body-l);
+  letter-spacing: var(--tb-tracking-body-l);
   overflow-wrap: break-word;
 }
 
 .tb-list__supporting {
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-body-m);
+  letter-spacing: var(--tb-tracking-body-m);
   overflow-wrap: break-word;
 }
 
@@ -570,6 +576,7 @@ p-button.tb-list__stretched .p-button {
   justify-content: flex-end;
   gap: var(--tb-space-1);
   font: var(--tb-type-title-m);
+  letter-spacing: var(--tb-tracking-title-m);
   white-space: nowrap;
 }
 

@@ -184,6 +184,7 @@ export const TAGS_SETTINGS = '/teacher/settings/students';
       gap: var(--tb-space-1);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
 
       > .tb-i {
         font-size: 1rem;
@@ -226,11 +227,13 @@ export const TAGS_SETTINGS = '/teacher/settings/students';
     .tb-student-tags__hint {
       margin: 0 0 var(--tb-space-3);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-student-tags__hint {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     .tb-student-tags__seen {

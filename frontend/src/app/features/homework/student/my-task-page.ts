@@ -339,6 +339,7 @@ import { QuizSection } from './quiz-section';
       margin: 0 0 var(--tb-space-2);
       color: var(--p-md-on-surface);
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     /* the task and the answer, the materials and the test beside; below on a narrow pane */
@@ -423,11 +424,13 @@ import { QuizSection } from './quiz-section';
     .tb-task__answer-title {
       margin: 0;
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     .tb-task__muted {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     .tb-task__spacer {
@@ -497,6 +500,7 @@ import { QuizSection } from './quiz-section';
     .tb-task__previous p {
       margin: 0;
       font: var(--tb-type-body-l);
+      letter-spacing: var(--tb-tracking-body-l);
     }
 
     .tb-task__grade-state {
@@ -504,14 +508,17 @@ import { QuizSection } from './quiz-section';
       align-items: center;
       gap: var(--tb-space-2);
       font: var(--tb-type-title-s);
+      letter-spacing: var(--tb-tracking-title-s);
     }
 
     .tb-task__grade-value {
       font: var(--tb-type-display-s);
+      letter-spacing: var(--tb-tracking-display-s);
     }
 
     .tb-task__small {
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     .tb-task__next {

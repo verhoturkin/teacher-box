@@ -103,6 +103,7 @@ export const SAMPLE_ROOT = 'frontend/src/app/features/gallery/';
     .tb-gallery__section-title {
       margin: 0;
       font: var(--tb-type-title-l-emphasized);
+      letter-spacing: var(--tb-tracking-title-l-emphasized);
     }
 
     .tb-gallery-sample {
@@ -136,6 +137,7 @@ export const SAMPLE_ROOT = 'frontend/src/app/features/gallery/';
       overflow-wrap: anywhere;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
       font-family: var(--tb-font-mono);
     }
 

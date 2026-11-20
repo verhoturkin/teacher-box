@@ -102,6 +102,7 @@ export interface SectionNavPress {
       border-radius: var(--tb-shape-full);
       color: var(--p-md-on-surface);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
 
       &:hover {
         background: color-mix(in srgb, var(--p-md-on-surface) var(--tb-state-hover), transparent);
@@ -125,6 +126,7 @@ export interface SectionNavPress {
       padding: var(--tb-space-2) var(--tb-space-4);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-title-s);
+      letter-spacing: var(--tb-tracking-title-s);
     }
 
     .tb-section-nav__action {
@@ -163,6 +165,7 @@ export interface SectionNavPress {
       background: var(--p-md-secondary-container);
       color: var(--p-md-on-secondary-container);
       font: var(--tb-type-label-l-emphasized);
+      letter-spacing: var(--tb-tracking-label-l-emphasized);
 
       .tb-i {
         color: inherit;

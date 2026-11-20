@@ -28,13 +28,14 @@
 .tb-figure__label {
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-label-s);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.08em; /* tracking-ok: caps label, removed in 457.4 */
   text-transform: uppercase;
 }
 
 .tb-figure__value {
   margin: 0;
   font: var(--tb-type-headline-s);
+  letter-spacing: var(--tb-tracking-headline-s);
 }
 
 /* The student filter of the payments journal sits among the chips: a chip's height and corner (ours) */
@@ -49,6 +50,7 @@
     padding-block: 0;
     align-self: center;
     font: var(--tb-type-label-l);
+    letter-spacing: var(--tb-tracking-label-l);
   }
 }
 
@@ -163,6 +165,7 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
 
   .p-card-title {
     font: var(--tb-type-title-m-emphasized);
+    letter-spacing: var(--tb-tracking-title-m-emphasized);
   }
 }
 
@@ -185,6 +188,7 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
 
   .p-card-title {
     font: var(--tb-type-title-m-emphasized);
+    letter-spacing: var(--tb-tracking-title-m-emphasized);
   }
 }
 
@@ -309,7 +313,7 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
     .p-card-title {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m-emphasized);
-      letter-spacing: 0.04em;
+      letter-spacing: 0.04em; /* tracking-ok: caps label, removed in 457.4 */
       text-transform: uppercase;
     }
   }
@@ -337,7 +341,7 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
   margin: var(--tb-space-1) 0 0;
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-label-m-emphasized);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.04em; /* tracking-ok: caps label, removed in 457.4 */
   text-transform: uppercase;
 }
 
@@ -428,16 +432,19 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
 
   small {
     font: var(--tb-type-body-s);
+    letter-spacing: var(--tb-tracking-body-s);
     color: var(--p-md-on-surface-variant);
   }
 }
 
 .p-dialog .p-dialog-title {
   font: var(--tb-type-headline-s-emphasized);
+  letter-spacing: var(--tb-tracking-headline-s-emphasized);
 }
 
 .p-drawer .p-drawer-title {
   font: var(--tb-type-title-l-emphasized);
+  letter-spacing: var(--tb-tracking-title-l-emphasized);
 }
 
 .p-tooltip .p-tooltip-text {
@@ -455,6 +462,7 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
 /* The weekdays of the date picker are Body Large, not bold */
 .p-datepicker .p-datepicker-weekday {
   font: var(--tb-type-body-l);
+  letter-spacing: var(--tb-tracking-body-l);
 }
 
 small,
@@ -489,7 +497,7 @@ textarea.p-textarea {
 /* Buttons, 40 px high: the line and tracking of Label Large (M3); the size stays PrimeNG's 1rem */
 .p-button {
   line-height: 1.25rem;
-  letter-spacing: 0.00625rem;
+  letter-spacing: var(--tb-tracking-label-l);
 }
 
 /* Less motion when the system asks for it */

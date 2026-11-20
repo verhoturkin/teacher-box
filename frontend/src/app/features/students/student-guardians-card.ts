@@ -219,6 +219,7 @@ type InviteKind = 'NEW' | 'EXISTING';
     .tb-guardians__empty {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-l);
+      letter-spacing: var(--tb-tracking-body-l);
     }
 
     .tb-guardians__actions {

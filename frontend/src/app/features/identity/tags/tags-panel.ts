@@ -156,6 +156,7 @@ const TEMPLATES: readonly Template[] = [
       margin: 0 0 var(--tb-space-3);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-tags__list {

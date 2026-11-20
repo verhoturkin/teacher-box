@@ -114,11 +114,13 @@ export interface PaneNavItem {
 
     .tb-pane-nav__title {
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     .tb-pane-nav__summary {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-pane-nav__current,
@@ -128,6 +130,7 @@ export interface PaneNavItem {
 
       .tb-pane-nav__title {
         font: var(--tb-type-title-m-emphasized);
+        letter-spacing: var(--tb-tracking-title-m-emphasized);
       }
 
       .tb-pane-nav__icon {

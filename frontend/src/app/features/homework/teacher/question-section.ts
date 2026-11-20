@@ -511,6 +511,7 @@ import { QuizSettings } from './quiz-settings';
       flex: 1;
       text-align: center;
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
       color: var(--p-md-on-surface-variant);
     }
 
@@ -530,6 +531,7 @@ import { QuizSettings } from './quiz-settings';
       background: transparent;
       color: var(--p-md-on-surface);
       font: var(--tb-type-body-l);
+      letter-spacing: var(--tb-tracking-body-l);
       text-align: start;
       cursor: pointer;
     }
@@ -574,7 +576,7 @@ import { QuizSettings } from './quiz-settings';
       padding-inline: var(--tb-space-1);
       font: var(--tb-type-label-m);
       text-transform: uppercase;
-      letter-spacing: 0.03rem;
+      letter-spacing: 0.03rem; /* tracking-ok: caps label, removed in 457.4 */
       color: var(--p-md-on-surface-variant);
     }
 
@@ -630,6 +632,7 @@ import { QuizSettings } from './quiz-settings';
       background: transparent;
       color: inherit;
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
       text-align: start;
       cursor: pointer;
     }
@@ -664,6 +667,7 @@ import { QuizSettings } from './quiz-settings';
       min-width: 1.25rem;
       text-align: end;
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     .tb-qb__add {
@@ -708,6 +712,7 @@ import { QuizSettings } from './quiz-settings';
     .tb-qb__sums,
     .tb-qb__problem {
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-qb__sums {

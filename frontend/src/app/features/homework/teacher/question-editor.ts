@@ -407,6 +407,7 @@ import {
     .tb-qe__title {
       margin: 0;
       font: var(--tb-type-title-m-emphasized);
+      letter-spacing: var(--tb-tracking-title-m-emphasized);
     }
 
     .tb-qe__spacer {
@@ -426,6 +427,7 @@ import {
 
     .tb-qe__label {
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
       color: var(--p-md-on-surface-variant);
     }
 
@@ -477,6 +479,7 @@ import {
 
     .tb-qe__correct {
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     .tb-qe__chips {
@@ -517,6 +520,7 @@ import {
       padding: var(--tb-space-2) var(--tb-space-3);
       border-radius: var(--tb-shape-md);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     .tb-qe__rule {

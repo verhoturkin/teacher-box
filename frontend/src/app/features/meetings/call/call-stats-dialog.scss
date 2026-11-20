@@ -3,6 +3,7 @@
   &__title {
     margin: var(--tb-space-4) 0 var(--tb-space-2);
     font: var(--tb-type-title-m);
+    letter-spacing: var(--tb-tracking-title-m);
 
     &:first-child {
       margin-top: 0;
@@ -15,6 +16,7 @@
     gap: var(--tb-space-1) var(--tb-space-4);
     margin: 0;
     font: var(--tb-type-body-m);
+    letter-spacing: var(--tb-tracking-body-m);
 
     dt {
       color: var(--p-md-on-surface-variant);

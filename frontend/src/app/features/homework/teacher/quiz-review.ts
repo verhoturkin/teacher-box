@@ -111,13 +111,14 @@ interface Row {
       margin: 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
-      letter-spacing: 0.04em;
+      letter-spacing: 0.04em; /* tracking-ok: caps label, removed in 457.4 */
       text-transform: uppercase;
     }
 
     .tb-qr__hint {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     /* a row: the pane's surface inside the block (12 dp corners) */
@@ -129,6 +130,7 @@ interface Row {
       border-radius: var(--tb-shape-md);
       background: var(--p-md-surface);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
       overflow-wrap: anywhere;
     }
 

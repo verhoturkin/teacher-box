@@ -86,6 +86,7 @@ import { T } from '@features/homework/i18n/texts';
     .tb-editor__saved {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
   `,
 })

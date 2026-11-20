@@ -67,21 +67,24 @@ const FULL_BAR = 8;
     .tb-paid__overline {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
-      letter-spacing: 0.08em;
+      letter-spacing: 0.08em; /* tracking-ok: caps label, removed in 457.4 */
       text-transform: uppercase;
     }
 
     .tb-paid__figure {
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     .tb-paid__number {
       font: var(--tb-type-display-s);
+      letter-spacing: var(--tb-tracking-display-s);
     }
 
     .tb-paid__line {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-paid__bar {
@@ -101,6 +104,7 @@ const FULL_BAR = 8;
     a {
       align-self: flex-start;
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
     }
   `,
 })

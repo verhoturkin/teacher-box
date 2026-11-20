@@ -174,6 +174,7 @@ function reached(student: StudentMessengers): boolean {
     /* our decision: the count is the card's headline number, M3 headline small */
     .tb-reach__count {
       font: var(--tb-type-headline-s);
+      letter-spacing: var(--tb-tracking-headline-s);
     }
 
     .tb-reach__ok {

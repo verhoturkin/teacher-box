@@ -276,6 +276,7 @@ import { T } from './i18n/texts';
       margin-inline-start: var(--tb-space-3);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
 
       .tb-i {
         font-size: 1.125rem;
@@ -352,12 +353,14 @@ import { T } from './i18n/texts';
 
     .tb-settings__title {
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     .tb-settings__summary {
       overflow: hidden;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -369,6 +372,7 @@ import { T } from './i18n/texts';
 
       .tb-settings__title {
         font: var(--tb-type-title-m-emphasized);
+        letter-spacing: var(--tb-tracking-title-m-emphasized);
       }
 
       .tb-settings__icon {
@@ -399,10 +403,12 @@ import { T } from './i18n/texts';
 
       .tb-settings__title {
         font: var(--tb-type-label-l);
+        letter-spacing: var(--tb-tracking-label-l);
       }
 
       .tb-settings__current .tb-settings__title {
         font: var(--tb-type-label-l-emphasized);
+        letter-spacing: var(--tb-tracking-label-l-emphasized);
       }
     }
 

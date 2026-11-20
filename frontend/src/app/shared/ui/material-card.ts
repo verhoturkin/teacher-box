@@ -126,6 +126,7 @@ import { BlobImage } from './blob-image';
       background: var(--p-md-secondary-container);
       color: var(--p-md-on-secondary-container);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
 
       .tb-i {
         font-size: 1rem;
@@ -154,6 +155,7 @@ import { BlobImage } from './blob-image';
       background: none;
       color: var(--p-md-on-surface);
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
       text-align: start;
       text-decoration: none;
       text-overflow: ellipsis;
@@ -176,6 +178,7 @@ import { BlobImage } from './blob-image';
       overflow: hidden;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
       text-overflow: ellipsis;
       white-space: nowrap;
     }

@@ -108,6 +108,7 @@ interface SummaryRow {
 
       b {
         font: var(--tb-type-title-m);
+        letter-spacing: var(--tb-tracking-title-m);
       }
     }
 
@@ -135,6 +136,7 @@ interface SummaryRow {
 
     .tb-setup__card-text {
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-setup__card-state {
@@ -143,6 +145,7 @@ interface SummaryRow {
       gap: var(--tb-space-1);
       margin-block-start: auto;
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
 
       .tb-i {
         font-size: 1.125rem;

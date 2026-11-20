@@ -216,6 +216,7 @@ function hasValues(control: AbstractControl<readonly TagValueInput[]>): Validati
       background: var(--p-md-secondary-container);
       color: var(--p-md-on-secondary-container);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-tag-delete {

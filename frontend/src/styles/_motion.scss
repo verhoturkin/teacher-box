@@ -497,9 +497,11 @@ $tb-overlay-rows: ':is(.p-menu-list, .p-tieredmenu-root-list, .p-select-list, .p
 .tb-page-title {
   margin: 0;
   font: var(--tb-type-headline-m-emphasized);
+  letter-spacing: var(--tb-tracking-headline-m-emphasized);
 
   @media (width < 37.5em) {
     font: var(--tb-type-headline-s-emphasized);
+    letter-spacing: var(--tb-tracking-headline-s-emphasized);
   }
 }
 

@@ -125,6 +125,7 @@ export class SetupPortalStep {
 
     .tb-setup__login-name {
       font: var(--tb-type-title-l);
+      letter-spacing: var(--tb-tracking-title-l);
     }
 
     .tb-setup__login-field {
@@ -144,6 +145,7 @@ export class SetupPortalStep {
       background: var(--p-md-primary);
       color: var(--p-md-on-primary);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
     }
 
     .tb-setup__bubble {
@@ -153,6 +155,7 @@ export class SetupPortalStep {
       border-radius: var(--tb-shape-lg) var(--tb-shape-lg) var(--tb-shape-lg) var(--tb-shape-xs);
       background: var(--p-md-surface-container-lowest);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
       overflow-wrap: anywhere;
     }
 

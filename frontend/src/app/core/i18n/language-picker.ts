@@ -41,6 +41,7 @@ import { LANGUAGES, Language, chooseLanguage, language } from './language';
       background: transparent;
       color: var(--p-md-primary);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       cursor: pointer;
     }
 

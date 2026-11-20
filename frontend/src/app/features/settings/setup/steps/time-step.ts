@@ -178,10 +178,12 @@ export class SetupTimeStep {
 
       small {
         font: var(--tb-type-label-m);
+        letter-spacing: var(--tb-tracking-label-m);
       }
 
       b {
         font: var(--tb-type-title-l-emphasized);
+        letter-spacing: var(--tb-tracking-title-l-emphasized);
       }
     }
 
@@ -197,6 +199,7 @@ export class SetupTimeStep {
 
       b {
         font: var(--tb-type-title-m);
+        letter-spacing: var(--tb-tracking-title-m);
       }
     }
 
@@ -208,6 +211,7 @@ export class SetupTimeStep {
       padding: var(--tb-space-3) var(--tb-space-4);
       border-radius: var(--tb-shape-lg);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
       background: var(--p-md-secondary-container);
       color: var(--p-md-on-secondary-container);
     }

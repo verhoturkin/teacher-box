@@ -191,6 +191,7 @@ import { SHARED_T } from '@shared/i18n/texts';
     .tb-load-state__title {
       margin: 0;
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     .tb-load-state__detail {
@@ -198,6 +199,7 @@ import { SHARED_T } from '@shared/i18n/texts';
       margin: 0 0 var(--tb-space-2);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
       overflow-wrap: break-word;
     }
   `,

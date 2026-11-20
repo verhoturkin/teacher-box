@@ -238,6 +238,7 @@ let nextId = 0;
       border-bottom: 1px solid var(--p-md-outline-variant);
       color: var(--p-md-on-surface);
       font: var(--tb-type-headline-l);
+      letter-spacing: var(--tb-tracking-headline-l);
     }
 
     /* the body: 7 days of 48 dp (M3: not scaled with the window); the dialog gives the container */
@@ -275,6 +276,7 @@ let nextId = 0;
       background: none;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       cursor: pointer;
       transition:
         background-color var(--tb-spring-fast-effects),
@@ -326,6 +328,7 @@ let nextId = 0;
       background: none;
       color: var(--p-md-on-surface);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       text-align: start;
       cursor: pointer;
 
@@ -363,6 +366,7 @@ let nextId = 0;
         /* equal columns: 48 dp, a little less when a phone is narrower than the 360 dp picker */
         table-layout: fixed;
         font: var(--tb-type-body-l);
+        letter-spacing: var(--tb-tracking-body-l);
       }
 
       :is(.p-datepicker-weekday-cell, .p-datepicker-day-cell) {

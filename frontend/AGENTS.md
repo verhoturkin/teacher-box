@@ -31,6 +31,8 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
   `scripts/tokens.mjs` fails on a `--tb-*` property declared but never read.
   `scripts/spacing.mjs` fails on a px/rem literal in `padding|margin|gap|inset` outside
   `_tokens.scss` and the preset; an exception needs `/* spacing-ok: reason */` on the line or the one before.
+  `scripts/tracking.mjs` fails on a `font: var(--tb-type-<role>)` without
+  `letter-spacing: var(--tb-tracking-<role>)` in the same rule (or `/* tracking-ok: reason */`).
 
   | Layer | Feature | May import |
   |---|---|---|

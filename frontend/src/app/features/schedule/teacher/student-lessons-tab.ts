@@ -216,6 +216,7 @@ function daysFrom(date: Date, days: number): Date {
     .tb-history__label {
       display: block;
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
       color: var(--p-md-on-surface-variant);
     }
   `,

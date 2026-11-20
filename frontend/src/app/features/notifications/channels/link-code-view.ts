@@ -75,6 +75,7 @@ import { T } from '../i18n/texts';
       gap: var(--tb-space-3);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
 
       &::before,
       &::after {

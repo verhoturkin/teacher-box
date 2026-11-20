@@ -72,6 +72,7 @@
   margin: var(--tb-space-5) 0 var(--tb-space-2);
   color: var(--p-md-on-surface);
   font: var(--tb-type-title-m);
+  letter-spacing: var(--tb-tracking-title-m);
 }
 
 .tb-field__header {
@@ -128,12 +129,14 @@
   h2 {
     margin: var(--tb-space-6) 0 var(--tb-space-3);
     font: var(--tb-type-title-l);
+    letter-spacing: var(--tb-tracking-title-l);
   }
 
   h3,
   h4 {
     margin: var(--tb-space-5) 0 var(--tb-space-2);
     font: var(--tb-type-title-m);
+    letter-spacing: var(--tb-tracking-title-m);
   }
 
   strong {
@@ -234,6 +237,7 @@
   background: color-mix(in srgb, currentColor 12%, transparent);
   color: inherit;
   font: var(--tb-type-label-l);
+  letter-spacing: var(--tb-tracking-label-l);
   text-decoration: none;
   overflow-wrap: anywhere;
 

@@ -54,6 +54,7 @@
   background: transparent;
   color: var(--p-md-on-surface);
   font: var(--tb-type-body-l);
+  letter-spacing: var(--tb-tracking-body-l);
 
   &::placeholder {
     color: var(--p-md-on-surface-variant);
@@ -69,7 +70,7 @@
   border-radius: var(--tb-shape-sm);
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-label-m);
-  letter-spacing: 0.03em;
+  letter-spacing: var(--tb-tracking-label-m);
 }
 
 /* A 48 px target around a 24 px icon: «назад» and «очистить» */
@@ -174,6 +175,7 @@
   padding: var(--tb-space-3) var(--tb-space-4) var(--tb-space-1);
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-label-l);
+  letter-spacing: var(--tb-tracking-label-l);
 }
 
 .tb-search__option {
@@ -218,6 +220,7 @@
 .tb-search__option-title {
   overflow: hidden;
   font: var(--tb-type-body-l);
+  letter-spacing: var(--tb-tracking-body-l);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -226,6 +229,7 @@
   overflow: hidden;
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-body-m);
+  letter-spacing: var(--tb-tracking-body-m);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -239,6 +243,7 @@
   padding-inline-start: calc(var(--tb-space-4) + var(--tb-space-6) + var(--tb-space-4));
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-body-m);
+  letter-spacing: var(--tb-tracking-body-m);
 }
 
 .tb-search__state {
@@ -246,6 +251,7 @@
   padding: var(--tb-space-4);
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-body-m);
+  letter-spacing: var(--tb-tracking-body-m);
 }
 
 .tb-search__state--error {

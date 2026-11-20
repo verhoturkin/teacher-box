@@ -151,6 +151,7 @@ import { AiModelChoice } from './model-choice';
 
       small {
         font: var(--tb-type-body-s);
+        letter-spacing: var(--tb-tracking-body-s);
         color: var(--p-md-on-surface-variant);
       }
     }

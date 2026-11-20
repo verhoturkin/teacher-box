@@ -190,6 +190,7 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
     .tb-fold__summary {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-system-prompts {

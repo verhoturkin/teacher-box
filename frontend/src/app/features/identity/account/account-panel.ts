@@ -388,6 +388,7 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
     .tb-account__subtitle {
       margin: 0;
       font: var(--tb-type-title-l);
+      letter-spacing: var(--tb-tracking-title-l);
     }
   `,
 })

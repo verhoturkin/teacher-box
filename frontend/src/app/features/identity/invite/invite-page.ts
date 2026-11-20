@@ -193,10 +193,12 @@ type InviteState =
         gap: var(--tb-space-1);
         margin: 0;
         font: var(--tb-type-body-m);
+        letter-spacing: var(--tb-tracking-body-m);
       }
 
       strong {
         font: var(--tb-type-title-s);
+        letter-spacing: var(--tb-tracking-title-s);
       }
 
       .tb-muted {
