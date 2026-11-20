@@ -12,6 +12,8 @@ export const en: Translation<typeof ru> = {
     placeholder: 'Choose students and groups',
     search: 'Search students and groups',
     unavailable: 'Unavailable',
+    courses: 'Students of a course',
+    course: 'Course',
   },
   login: {
     title: (portal: string) => `Sign in to ${portal}`,

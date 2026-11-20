@@ -20,6 +20,10 @@ describe('TextbookDialog', () => {
     fixture.componentInstance.saved.subscribe((textbook) => saved.push(textbook));
     fixture.componentRef.setInput('students', [{ id: 's-1', name: 'Мария' }]);
     fixture.componentRef.setInput('groups', [{ id: 'g-1', name: 'ОГЭ' }]);
+    fixture.componentRef.setInput('courses', [
+      { id: 'c-1', name: 'Английский' },
+      { id: 'c-2', name: 'ОГЭ' },
+    ]);
     await fixture.whenStable();
   });
 
@@ -99,6 +103,20 @@ describe('TextbookDialog', () => {
     expect(dialog.visible()).toBe(true);
   });
 
+  it('gives a new textbook a course and «Ученики курса»', async () => {
+    const dialog = await open();
+    expect(bodyText()).toContain('Курс');
+    await pick(new File(['%PDF-'], 'A2.pdf'));
+    dialog.form.patchValue({ courseId: 'c-1', members: [{ kind: 'COURSE', id: 'c-2' }] });
+    buttonByText(document.body, 'Добавить').click();
+    const create = backend.expectOne({ method: 'POST', url: '/api/teacher/textbooks' });
+    const form = formData(create.request.body);
+    expect(form.get('courseId')).toBe('c-1');
+    expect(form.getAll('courseIds')).toEqual(['c-2']);
+    expect(form.getAll('studentIds')).toEqual([]);
+    create.flush(aTextbook());
+  });
+
   it('changes a textbook, keeping members that left, its course and «Ученики курса»', async () => {
     const dialog = await open(
       aWorkbook({
@@ -118,7 +136,15 @@ describe('TextbookDialog', () => {
       { id: 'gone', name: 'Нет в списке' },
     ]);
     expect(dialog.form.controls.pageCount.value).toBe(48);
-    expect(dialog.form.controls.members.value).toEqual([{ kind: 'STUDENT', id: 'gone' }]);
+    expect(dialog.form.controls.members.value).toEqual([
+      { kind: 'STUDENT', id: 'gone' },
+      { kind: 'COURSE', id: 'c-2' },
+    ]);
+    expect(dialog.form.controls.courseId.value).toBe('c-1');
+    expect(dialog.courseMembers()).toEqual([
+      { id: 'c-1', name: 'Английский' },
+      { id: 'c-2', name: 'ОГЭ' },
+    ]);
     dialog.form.patchValue({ pageCount: 50 });
 
     buttonByText(document.body, 'Сохранить').click();

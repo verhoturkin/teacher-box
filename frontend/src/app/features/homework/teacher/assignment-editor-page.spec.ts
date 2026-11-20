@@ -7,6 +7,7 @@ import { assignmentDetails, attachment, boundTextbook } from '@testing/homework-
 import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { By } from '@angular/platform-browser';
 import { aBoard } from '@testing/boards-fixtures';
+import { aCourse } from '@testing/textbooks-fixtures';
 import { ToBoardDialog } from '@features/boards/parts';
 import { exactButton, lessonIn, useEditorHarness } from '@testing/homework-editor';
 import { AssignmentEditorPage } from './assignment-editor-page';
@@ -44,6 +45,7 @@ describe('AssignmentEditorPage', () => {
       title: 'Дроби',
       description: '## Дроби\nРешите **№1**',
       dueAt: next.startsAt,
+      courseId: null,
       videos: [],
     });
     created.flush(assignmentDetails({ id: 'a-9', tasks: [] }));
@@ -109,6 +111,28 @@ describe('AssignmentEditorPage', () => {
     await editor.settle();
     editor.backend.expectNone({ method: 'PUT', url: '/api/teacher/homework/assignments/a-7' });
     expect(page.canLeave()).toBe(true);
+  });
+
+  it('offers «Курс» and saves the draft with the chosen course', async () => {
+    const { page, host } = await editor.create([], false, [aCourse({ id: 'a2', name: 'A2' })]);
+    page.autosaveDelay = 0;
+    expect(host.querySelector('#editor-course')).not.toBeNull();
+    page.form.patchValue({ description: 'Дроби', courseId: 'a2' });
+    await editor.settle();
+    const created = editor.backend.expectOne({
+      method: 'POST',
+      url: '/api/teacher/homework/assignments',
+    });
+    expect(created.request.body).toMatchObject({ courseId: 'a2' });
+    created.flush(assignmentDetails({ id: 'a-7', tasks: [], courseId: 'a2' }));
+    await editor.settle();
+    expect(page.canLeave()).toBe(true);
+  });
+
+  it('shows the course of a saved assignment and no «Курс» without courses', async () => {
+    const { page, host } = await editor.edit(assignmentDetails({ courseId: 'a2' }));
+    expect(page.form.controls.courseId.value).toBe('a2');
+    expect(host.querySelector('#editor-course')).toBeNull();
   });
 
   it('saves nothing without a title and the rest when leaving', async () => {

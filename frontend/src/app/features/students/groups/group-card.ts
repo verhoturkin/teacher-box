@@ -18,6 +18,7 @@ import { TabIndicator } from '@shared/ui/tab-indicator';
 import { Tooltip } from 'primeng/tooltip';
 import { StudentTasksTab } from '@features/homework/parts';
 import { RoomLink } from '@features/meetings/parts';
+import { Course } from '@features/textbooks/parts';
 import { BroadcastDialog } from '@features/notifications/parts';
 import {
   LessonDialog,
@@ -151,7 +152,13 @@ import { GroupProfileTab } from './group-profile-tab';
         </p-tabpanel>
         <p-tabpanel value="profile">
           @if (tab() === 'profile') {
-            <tb-group-profile-tab [group]="item" (saved)="saved.emit($event)" />
+            <tb-group-profile-tab
+              [group]="item"
+              [courses]="courses()"
+              [courseId]="courseId()"
+              (courseChanged)="courseChanged.emit($event)"
+              (saved)="saved.emit($event)"
+            />
           }
         </p-tabpanel>
       </p-tabpanels>
@@ -221,6 +228,11 @@ export class GroupCard {
   /** An action of «⋮» is running. */
   readonly busy = input(false);
   readonly menuOpen = input(false);
+  /** The teacher's courses and the group's current one (ADR-0071): the header chip and Профиль. */
+  readonly courses = input<readonly Course[]>([]);
+  readonly courseId = input<string | null>(null);
+  /** Профиль saved the group's current course. */
+  readonly courseChanged = output<string | null>();
   /** «⋮»: the page opens its menu. */
   readonly more = output<Event>();
   /** A lesson was planned: the list reads the nearest lessons again. */
@@ -252,9 +264,17 @@ export class GroupCard {
       this.c.since(this.date.transform(group.createdAt, 'MMMM yyyy') ?? ''),
     ].join(' · ');
   });
-  protected readonly tags = computed<HeaderTag[]>(() =>
-    this.current() ? [] : [{ value: T.groups.archived, severity: 'secondary' }],
-  );
+  protected readonly tags = computed<HeaderTag[]>(() => {
+    const tags: HeaderTag[] = [];
+    const course = this.courses().find((entry) => entry.id === this.courseId());
+    if (course !== undefined) {
+      tags.push({ value: course.name, severity: 'secondary', icon: 'tb-i tb-i-school' });
+    }
+    if (!this.current()) {
+      tags.push({ value: T.groups.archived, severity: 'secondary' });
+    }
+    return tags;
+  });
   /** The members who can get a message. */
   protected readonly recipients = computed(() =>
     this.group().members.filter((member) => member.status !== 'DEACTIVATED'),

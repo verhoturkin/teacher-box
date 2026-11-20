@@ -84,6 +84,27 @@ class CoursesIntegrationTests {
     }
 
     @Test
+    void theTeacherPutsCoursesInOrder() throws Exception {
+        createCourse("Порядок 1");
+        createCourse("Порядок 2");
+        MvcTestResult listed = mvc.get().uri("/api/teacher/textbooks/courses").with(teacher()).exchange();
+        List<String> ids = JsonPath.read(listed.getResponse().getContentAsString(StandardCharsets.UTF_8), "$[*].id");
+        List<String> reversed = ids.reversed();
+
+        assertThat(put("/api/teacher/textbooks/courses/order", "{\"ids\":%s}".formatted(json(reversed))))
+                .hasStatusOk().bodyJson().extractingPath("$[*].id").asArray()
+                .containsExactlyElementsOf(reversed);
+        assertThat(mvc.get().uri("/api/teacher/textbooks/courses").with(teacher())).hasStatusOk().bodyJson()
+                .extractingPath("$[*].id").asArray().containsExactlyElementsOf(reversed);
+
+        assertThat(put("/api/teacher/textbooks/courses/order", "{\"ids\":%s}".formatted(json(reversed.subList(1,
+                reversed.size()))))).as("a course left out").hasStatus(HttpStatus.UNPROCESSABLE_CONTENT).bodyJson()
+                .extractingPath("$.code").isEqualTo("textbooks.course-order-invalid");
+        assertThat(mvc.put().uri("/api/teacher/textbooks/courses/order").with(TestUsers.student(UUID.randomUUID()))
+                .contentType(MediaType.APPLICATION_JSON).content("{\"ids\":[]}")).hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
     void studentsAndGroupsHaveOneCurrentCourse() throws Exception {
         UUID anna = directory.addStudent("Анна");
         UUID group = groups.addGroup("Группа A2", anna);
@@ -224,6 +245,10 @@ class CoursesIntegrationTests {
         MvcTestResult created = post("/api/teacher/textbooks/courses", "{\"name\":\"%s\"}".formatted(name));
         assertThat(created).hasStatus(HttpStatus.CREATED);
         return JsonPath.read(created.getResponse().getContentAsString(StandardCharsets.UTF_8), "$.id");
+    }
+
+    private static String json(List<String> ids) {
+        return ids.stream().map(id -> "\"" + id + "\"").collect(java.util.stream.Collectors.joining(",", "[", "]"));
     }
 
     private MvcTestResult link(String owner, UUID ownerId, UUID courseId) {

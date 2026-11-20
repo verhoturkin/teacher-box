@@ -11,17 +11,32 @@ images, up to 100 MB.
 
 1. Choose “Create” → “Textbook”, or open the Textbooks tab and choose “New textbook”.
 2. Select a file. The filename provides an initial title; edit it as needed.
-3. Choose Textbook, Workbook or Other, and optionally enter a course. Existing course names are suggested.
+3. Choose Textbook, Workbook or Other, and pick a **Course** from the list, or “No course”. Courses are managed in the Courses dialog (see below).
 4. PDF pages are counted automatically and an image counts as one page. You can enter a page count for a Word document.
 5. Select students and groups to share it with. Remove a chip to deselect a recipient, or clear the selection. Group sharing includes all current \
-members.
+members. Choose **Students of a course** to share it with everyone whose current course it is and with the members of groups on that course; a \
+student who joins the course sees it straight away. Setting the textbook’s course alone shares it with nobody.
+
+## Courses
+
+A course is a programme such as “English A2” or “GCSE Maths”. Textbooks, assignments, students and groups can be marked with one. Below the \
+search field in Materials, the course chips “All · <courses> · No course” filter the textbooks; the chosen course stays in the page address. Choose \
+⋮ next to the chips → **Courses** (or the Courses button while there are none) to:
+
+- add a course: type its name and choose “Add”; it goes to the end of the list;
+- rename it with ✎ (Enter saves, Esc cancels);
+- drag it by its handle, or use ↑ and ↓ on the handle, to set the order of the chips and lists;
+- delete it after confirming: its textbooks, assignments, students and groups stay without a course, and textbooks shared with its students \
+close to them.
+
+Set a student’s or a group’s current course on their Profile tab → “Course” ([Students and invitations](/teacher/help/students)).
 
 ## Open and manage resources
 
-Search by title and select a resource to open it. PDFs and images open in the browser; Word files download. The ⋮ menu provides:
+Search by title or course, filter by course and select a resource to open it. PDFs and images open in the browser; Word files download. The ⋮ menu provides:
 
 - **Download:** save the original file.
-- **Edit:** change its type, title, course, Word page count and sharing.
+- **Edit:** change its type, title, course, Word page count and sharing, including students of a course.
 - **Add to board:** place PDF pages or an image on an Excalidraw board. Enter a range such as 12-14, up to 30 pages at once. Pages appear in a frame \
 to the right of existing content; move the frame to move them together. Word documents cannot be added this way. From an assignment, only its \
 students’ boards are offered; from Textbooks, you can choose any board.

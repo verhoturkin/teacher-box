@@ -14,6 +14,13 @@ export const ru = {
     WORKBOOK: 'Рабочие тетради',
     OTHER: 'Другое',
   },
+  courses: {
+    filter: 'Фильтр по курсу',
+    all: 'Все',
+    none: 'Без курса',
+    manage: 'Курсы',
+    menu: 'Действия с курсами',
+  },
   search: 'Название, ученик или группа',
   searchMine: 'Название',
   sort: {

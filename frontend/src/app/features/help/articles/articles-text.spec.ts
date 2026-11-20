@@ -741,6 +741,94 @@ const AUTO_CAPTIONS: Readonly<Record<string, readonly (readonly [string, string,
   ],
 };
 
+/** Courses (460.2): [topic, baseline, now] of the textbooks, students, groups and homework articles. */
+const COURSES: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'textbooks',
+      '3. Выберите вид — «Учебник», «Рабочая тетрадь» или «Другое» — и курс (например, «Английский, 5 класс»): курсы других учебников портал подскажет.',
+      '3. Выберите вид — «Учебник», «Рабочая тетрадь» или «Другое» — и **Курс** из списка (или «Без курса»). Курсы заводятся в окне «Курсы» (см. ниже).',
+    ],
+    [
+      'textbooks',
+      '5. В общем поле «Ученики и группы» найдите и отметьте тех, кому открыт учебник. Метки можно убрать крестиком, весь выбор — очистить. Учебник группы видят все её ученики.',
+      '5. В общем поле «Ученики и группы» найдите и отметьте тех, кому открыт учебник. Метки можно убрать крестиком, весь выбор — очистить. Учебник группы видят все её ученики. Пункт **«Ученики курса»** открывает учебник всем, чей текущий курс — этот, и участникам групп с этим курсом; новый ученик курса увидит учебник сразу. Сам курс учебник никому не открывает.\n\n## Курсы\n\nКурс — программа вроде «Английский A2» или «ОГЭ математика». Им отмечают учебники, задания, учеников и группы. В «Материалах» под строкой поиска — чипы курсов «Все · <курсы> · Без курса»: они отбирают учебники, выбранный курс остаётся в адресе страницы. «⋮» рядом с чипами → **Курсы** (пока курсов нет — кнопка «Курсы»):\n\n- впишите название и нажмите «Добавить» — курс встанет в конец списка;\n- ✎ — переименовать (Enter сохраняет, Esc отменяет);\n- перетащите курс за ручку (или стрелками ↑ ↓ на ней) — в этом порядке идут чипы и списки;\n- 🗑 — удалить после подтверждения: учебники, задания, ученики и группы останутся, но без курса, а учебники «Ученикам курса» для них закроются.\n\nТекущий курс ученика или группы выбирается в их карточке: «Профиль» → «Курс» ([Ученики и приглашения](/teacher/help/students)).',
+    ],
+    [
+      'textbooks',
+      'Каждый учебник — карточка: сверху обложка (первая страница PDF или сама картинка; у файла Word обложки нет — там значок формата), под ней название, вид, курс и кому открыт. Фильтры — «Все», «Учебники», «Рабочие тетради», «Другое», поиск находит учебник по названию. Нажмите на название, чтобы открыть учебник в новой вкладке (PDF и картинки открываются в браузере, файл Word скачивается). В меню «⋮» карточки:',
+      'Каждый учебник — карточка: сверху обложка (первая страница PDF или сама картинка; у файла Word обложки нет — там значок формата), под ней название, вид, курс и кому открыт. Фильтры — «Все», «Учебники», «Рабочие тетради», «Другое» и чипы курсов, поиск находит учебник по названию и курсу. Нажмите на название, чтобы открыть учебник в новой вкладке (PDF и картинки открываются в браузере, файл Word скачивается). В меню «⋮» карточки:',
+    ],
+    [
+      'textbooks',
+      '- **Изменить** — вид, название, курс, страницы Word, учеников и группы;',
+      '- **Изменить** — вид, название, курс, страницы Word, учеников, группы и «Учеников курса»;',
+    ],
+    [
+      'students',
+      'Вкладка **Профиль** — всё, что вы знаете об ученике, меняется прямо на ней. «Данные ученика»: имя, почта, телефон, заметка (видна только вам), тема по умолчанию и цвет — поменяйте поля и нажмите «Сохранить» под ними («Отмена» вернёт сохранённое). Ниже — цена занятия (своя «Сохранить»), **видеовстреча** (действия в ней сохраняются сразу, [Видеовстречи](/teacher/help/meetings)) и «Вход в кабинет»: логин (его ученик выбирает сам, поэтому он только для просмотра), до какого дня действует ссылка и кнопка новой ссылки — «Новое приглашение» или «Сбросить пароль». Между видеовстречей и входом — карточка **«Родители»** (см. ниже).',
+      'Вкладка **Профиль** — всё, что вы знаете об ученике, меняется прямо на ней. «Данные ученика»: имя, почта, телефон, заметка (видна только вам), тема по умолчанию и цвет — поменяйте поля и нажмите «Сохранить» под ними («Отмена» вернёт сохранённое). Ниже — **Курс** (текущий курс ученика, сохраняется сразу после выбора, [Учебники](/teacher/help/textbooks); он же — чип в шапке карточки), цена занятия (своя «Сохранить»), **видеовстреча** (действия в ней сохраняются сразу, [Видеовстречи](/teacher/help/meetings)) и «Вход в кабинет»: логин (его ученик выбирает сам, поэтому он только для просмотра), до какого дня действует ссылка и кнопка новой ссылки — «Новое приглашение» или «Сбросить пароль». Между видеовстречей и входом — карточка **«Родители»** (см. ниже).',
+    ],
+    [
+      'groups',
+      '2. Впишите название, отметьте учеников и нажмите «Создать».',
+      '2. Впишите название, отметьте учеников, при желании выберите **Курс** и нажмите «Создать».',
+    ],
+    [
+      'groups',
+      '- **Профиль** — название, тема по умолчанию и цвет («Сохранить» под полями), цена занятия для каждого участника и видеовстреча.',
+      '- **Профиль** — название, тема по умолчанию и цвет («Сохранить» под полями), **курс** группы (сохраняется сразу, виден чипом в шапке; участникам открыты учебники «Ученикам курса»), цена занятия для каждого участника и видеовстреча.',
+    ],
+    [
+      'homework',
+      '3. В «Кому» добавьте учеников и группы. Ученик из нескольких групп получит задание один раз. Если снять группу, личный выбор ученика сохранится. «К следующему занятию» ставит срок на начало ближайшего занятия этих учеников — выберите другой срок, если нужно.',
+      '3. В «Кому» добавьте учеников и группы. Ученик из нескольких групп получит задание один раз. Если снять группу, личный выбор ученика сохранится. «К следующему занятию» ставит срок на начало ближайшего занятия этих учеников — выберите другой срок, если нужно. Под «Кому» — **Курс** задания (виден, когда в «Материалах» заведены курсы, [Учебники](/teacher/help/textbooks)); он сохраняется вместе с заданием.',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'textbooks',
+      '3. Choose Textbook, Workbook or Other, and optionally enter a course. Existing course names are suggested.',
+      '3. Choose Textbook, Workbook or Other, and pick a **Course** from the list, or “No course”. Courses are managed in the Courses dialog (see below).',
+    ],
+    [
+      'textbooks',
+      '5. Select students and groups to share it with. Remove a chip to deselect a recipient, or clear the selection. Group sharing includes all current members.',
+      '5. Select students and groups to share it with. Remove a chip to deselect a recipient, or clear the selection. Group sharing includes all current members. Choose **Students of a course** to share it with everyone whose current course it is and with the members of groups on that course; a student who joins the course sees it straight away. Setting the textbook’s course alone shares it with nobody.\n\n## Courses\n\nA course is a programme such as “English A2” or “GCSE Maths”. Textbooks, assignments, students and groups can be marked with one. Below the search field in Materials, the course chips “All · <courses> · No course” filter the textbooks; the chosen course stays in the page address. Choose ⋮ next to the chips → **Courses** (or the Courses button while there are none) to:\n\n- add a course: type its name and choose “Add”; it goes to the end of the list;\n- rename it with ✎ (Enter saves, Esc cancels);\n- drag it by its handle, or use ↑ and ↓ on the handle, to set the order of the chips and lists;\n- delete it after confirming: its textbooks, assignments, students and groups stay without a course, and textbooks shared with its students close to them.\n\nSet a student’s or a group’s current course on their Profile tab → “Course” ([Students and invitations](/teacher/help/students)).',
+    ],
+    [
+      'textbooks',
+      'Search by title and select a resource to open it. PDFs and images open in the browser; Word files download. The ⋮ menu provides:',
+      'Search by title or course, filter by course and select a resource to open it. PDFs and images open in the browser; Word files download. The ⋮ menu provides:',
+    ],
+    [
+      'textbooks',
+      '- **Edit:** change its type, title, course, Word page count and sharing.',
+      '- **Edit:** change its type, title, course, Word page count and sharing, including students of a course.',
+    ],
+    [
+      'students',
+      '- **Profile:** name, email, phone, private note, default topic and colour. Save these fields together. The lesson price has its own Save button; video meeting changes apply immediately. “Parents” lists the student’s parents (see below). “Portal access” shows the read-only username and invitation or reset link details.',
+      '- **Profile:** name, email, phone, private note, default topic and colour. Save these fields together. **Course** is the student’s current course: it saves as soon as you choose it and appears as a chip in the card header (see [Textbooks](/teacher/help/textbooks)). The lesson price has its own Save button; video meeting changes apply immediately. “Parents” lists the student’s parents (see below). “Portal access” shows the read-only username and invitation or reset link details.',
+    ],
+    [
+      'groups',
+      '2. Enter a name, select the students and choose “Create”.',
+      '2. Enter a name, select the students, optionally choose a **Course**, and choose “Create”.',
+    ],
+    [
+      'groups',
+      '- **Profile:** name, default topic, colour, price per member and video meeting link.',
+      '- **Profile:** name, default topic, colour, the group’s **course** (saved as soon as you choose it and shown as a chip in the header; members see textbooks shared with students of the course), price per member and video meeting link.',
+    ],
+    [
+      'homework',
+      '3. Under “To”, add students and groups. Students in more than one selected group receive the assignment once. Removing a group keeps any students also selected individually. “By the next lesson” sets the due date to the start of those students’ next lesson; pick another option if you prefer.',
+      '3. Under “To”, add students and groups. Students in more than one selected group receive the assignment once. Removing a group keeps any students also selected individually. “By the next lesson” sets the due date to the start of those students’ next lesson; pick another option if you prefer. Below “To”, choose the assignment’s **Course** (shown once you have courses in Materials, see [Textbooks](/teacher/help/textbooks)); it is saved with the assignment.',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -842,6 +930,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(PARENT_NOTES[name] ?? []),
       ...(HERO_BAR[name] ?? []),
       ...(AUTO_CAPTIONS[name] ?? []),
+      ...(COURSES[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

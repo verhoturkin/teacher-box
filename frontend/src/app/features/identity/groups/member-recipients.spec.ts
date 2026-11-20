@@ -29,6 +29,7 @@ describe('memberRecipients', () => {
           { kind: 'GROUP', id: 'old' },
           { kind: 'GROUP', id: 'missing' },
           { kind: 'STUDENT', id: 'unknown' },
+          { kind: 'COURSE', id: 'g-2' },
         ],
         groups,
         ['s-1', 's-2', 's-3'],

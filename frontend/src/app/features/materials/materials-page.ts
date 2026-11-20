@@ -21,7 +21,14 @@ import { openOnCreate } from '@core/routing/create-param';
 import { BoardsFeed, BoardsFilter } from '@features/boards/parts';
 import { HelpButton } from '@features/help/parts';
 import { IdentityApi } from '@features/identity/parts';
-import { TextbooksFeed, TextbooksFilter } from '@features/textbooks/parts';
+import {
+  Course,
+  CourseFilter,
+  CoursesApi,
+  CoursesDialog,
+  TextbooksFeed,
+  TextbooksFilter,
+} from '@features/textbooks/parts';
 import { FilterChip, FilterChips } from '@shared/ui/filter-chips';
 import { MaterialSort } from '@shared/ui/material-sort';
 import { PageHeader } from '@shared/ui/page-header';
@@ -43,13 +50,15 @@ interface MemberOption {
  * Teacher: «Материалы» (redesign spec §10.1, ADR-0049) — boards and textbooks as one feed of cards with
  * previews. The connected button group «Доски N · Учебники N» switches the kind (`?tab=boards|textbooks`),
  * the chips filter it («Все · На портале · Внешние»; for textbooks — by kind), one search field and
- * the sort menu. A card opens the material, «⋮» keeps its actions. The feeds belong to their modules
+ * the sort menu. Textbooks also have the course filter (`?course=`, «Все · <курсы> · Без курса»,
+ * ADR-0071), its «⋮» opens «Курсы». A card opens the material, «⋮» keeps its actions. The feeds belong to their modules
  * (`@features/boards/parts`, `@features/textbooks/parts`); this page only composes them.
  */
 @Component({
   selector: 'tb-materials-page',
   imports: [
     BoardsFeed,
+    CoursesDialog,
     TextbooksFeed,
     Button,
     FilterChips,
@@ -122,6 +131,37 @@ interface MemberOption {
             />
             <p-menu #sortPopup [model]="sortItems()" [popup]="true" appendTo="body" />
           </div>
+
+          @if (active() !== 'boards') {
+            <div class="tb-materials__courses">
+              @if (courses().length > 0) {
+                <tb-filter-chips
+                  [label]="t.courses.filter"
+                  [chips]="courseChips()"
+                  [value]="courseFilter()"
+                  [oneRow]="true"
+                  (valueChange)="selectCourse($event)"
+                />
+                <p-button
+                  icon="tb-i tb-i-more_vert"
+                  severity="secondary"
+                  [text]="true"
+                  [rounded]="true"
+                  [ariaLabel]="t.courses.menu"
+                  (onClick)="coursesPopup.toggle($event)"
+                />
+              } @else {
+                <p-button
+                  icon="tb-i tb-i-school"
+                  severity="secondary"
+                  [text]="true"
+                  [label]="t.courses.manage"
+                  (onClick)="coursesOpen.set(true)"
+                />
+              }
+              <p-menu #coursesPopup [model]="courseItems" [popup]="true" appendTo="body" />
+            </div>
+          }
         </div>
         <div [hidden]="active() !== 'boards'">
           <tb-boards-feed
@@ -138,13 +178,20 @@ interface MemberOption {
             #textbooks
             [query]="query()"
             [filter]="textbooksFilter()"
+            [course]="courseFilter()"
             [sort]="sort()"
             [students]="students()"
             [groups]="groups()"
+            [courses]="courses()"
           />
         </div>
       </tb-pane>
     </tb-panes>
+    <tb-courses-dialog
+      [visible]="coursesOpen()"
+      (visibleChange)="coursesVisible($event)"
+      [(courses)]="courses"
+    />
   `,
   styles: `
     .tb-materials__bar {
@@ -157,6 +204,18 @@ interface MemberOption {
 
     .tb-materials__bar > tb-search-field {
       flex: 0 1 22.75rem;
+    }
+
+    .tb-materials__courses {
+      display: flex;
+      align-items: center;
+      gap: var(--tb-space-1);
+      margin-block-end: var(--tb-space-4);
+    }
+
+    .tb-materials__courses > tb-filter-chips {
+      flex: 1 1 auto;
+      min-width: 0;
     }
 
     .tb-materials__sort {
@@ -179,11 +238,14 @@ export class MaterialsPage implements OnInit {
   protected readonly mobile = injectMobile();
   private readonly router = inject(Router);
   private readonly identity = inject(IdentityApi);
+  private readonly coursesApi = inject(CoursesApi);
 
   /** `?tab=` — boards (by default) or textbooks. */
   readonly tab = input<string | undefined>();
   /** `?q=` — the search text to start with (the call's «Доска ученика» passes the student's name). */
   readonly q = input<string | undefined>();
+  /** `?course=` — the course filter of the textbooks: a course id or `none` (ADR-0071). */
+  readonly course = input<string | undefined>();
 
   protected readonly boards = viewChild<BoardsFeed>('boards');
   protected readonly textbooks = viewChild<TextbooksFeed>('textbooks');
@@ -193,6 +255,29 @@ export class MaterialsPage implements OnInit {
   );
   protected readonly students = signal<MemberOption[]>([]);
   protected readonly groups = signal<MemberOption[]>([]);
+  /** The teacher's courses in their order; the dialog «Курсы» changes them. */
+  protected readonly courses = signal<readonly Course[]>([]);
+  protected readonly coursesOpen = signal(false);
+  /** A course of `?course=` that is gone (or not loaded yet) filters nothing. */
+  protected readonly courseFilter = computed<CourseFilter>(() => {
+    const course = this.course();
+    if (course === 'none') return 'none';
+    return this.courses().some((entry) => entry.id === course) ? (course ?? 'all') : 'all';
+  });
+  protected readonly courseChips = computed<readonly FilterChip<string>[]>(() => [
+    { value: 'all', label: T.courses.all },
+    ...this.courses().map((course) => ({ value: course.id, label: course.name })),
+    { value: 'none', label: T.courses.none },
+  ]);
+  protected readonly courseItems: MenuItem[] = [
+    {
+      label: T.courses.manage,
+      icon: 'tb-i tb-i-school',
+      command: () => {
+        this.coursesOpen.set(true);
+      },
+    },
+  ];
 
   protected readonly search = new FormControl('', { nonNullable: true });
   protected readonly query = toSignal(this.search.valueChanges, { initialValue: '' });
@@ -258,6 +343,9 @@ export class MaterialsPage implements OnInit {
           .map((student) => ({ id: student.id, name: student.displayName })),
       );
     });
+    this.coursesApi.list(quietContext()).subscribe((courses) => {
+      this.courses.set(courses);
+    });
     this.identity.listGroups(quietContext()).subscribe((groups) => {
       this.groups.set(
         groups
@@ -273,6 +361,22 @@ export class MaterialsPage implements OnInit {
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
+  }
+
+  protected selectCourse(course: string): void {
+    void this.router.navigate([], {
+      queryParams: { course: course === 'all' ? null : course },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  /** Renamed or deleted courses change the textbooks' course: the feed is read again. */
+  protected coursesVisible(visible: boolean): void {
+    this.coursesOpen.set(visible);
+    if (!visible) {
+      this.textbooks()?.load();
+    }
   }
 
   protected openCreate(): void {

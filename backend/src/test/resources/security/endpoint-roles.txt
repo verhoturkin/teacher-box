@@ -333,6 +333,7 @@ PUT /api/teacher/students/{id} TEACHER
 PUT /api/teacher/students/{id}/tags TEACHER
 PUT /api/teacher/tags/order TEACHER
 PUT /api/teacher/tags/{id} TEACHER
+PUT /api/teacher/textbooks/courses/order TEACHER
 PUT /api/teacher/textbooks/courses/{id} TEACHER
 PUT /api/teacher/textbooks/groups/{groupId}/course TEACHER
 PUT /api/teacher/textbooks/students/{studentId}/course TEACHER

@@ -5,7 +5,8 @@ import { aBoard, aLinkBoard } from '@testing/boards-fixtures';
 import { bodyText, buttonByText, hostElement, menuItemByText, typeInto } from '@testing/dom';
 import { aGroup, aStudent } from '@testing/identity-fixtures';
 import { screenWidth, testProviders } from '@testing/setup';
-import { aTextbook, aWorkbook } from '@testing/textbooks-fixtures';
+import { aCourse, aTextbook, aWorkbook } from '@testing/textbooks-fixtures';
+import { Course } from '@features/textbooks/parts';
 import { MaterialsPage } from './materials-page';
 
 describe('MaterialsPage', () => {
@@ -13,7 +14,11 @@ describe('MaterialsPage', () => {
   let backend: HttpTestingController;
   let host: HTMLElement;
 
-  async function render(inputs: { tab?: string; q?: string } = {}, width = 1280): Promise<void> {
+  async function render(
+    inputs: { tab?: string; q?: string; course?: string } = {},
+    width = 1280,
+    courses: Course[] = [],
+  ): Promise<void> {
     TestBed.configureTestingModule({
       imports: [MaterialsPage],
       providers: testProviders(screenWidth(width)),
@@ -30,6 +35,7 @@ describe('MaterialsPage', () => {
         aStudent({ id: 's-1', displayName: 'Мария' }),
         aStudent({ id: 'gone', status: 'DEACTIVATED' }),
       ]);
+    backend.expectOne('/api/teacher/textbooks/courses').flush(courses);
     backend
       .expectOne('/api/teacher/groups')
       .flush([
@@ -63,7 +69,9 @@ describe('MaterialsPage', () => {
   }
 
   function chips(): string[] {
-    return [...host.querySelectorAll('.tb-filter-chip')].map((chip) => chip.textContent.trim());
+    return [...host.querySelectorAll('.tb-materials__bar .tb-filter-chip')].map((chip) =>
+      chip.textContent.trim(),
+    );
   }
 
   function chip(label: string): HTMLButtonElement {
@@ -100,6 +108,75 @@ describe('MaterialsPage', () => {
     chip('Рабочие тетради').click();
     await fixture.whenStable();
     expect(shownTitles('textbooks')).toEqual(['Рабочая тетрадь']);
+  });
+
+  describe('course filter', () => {
+    const courses = [
+      aCourse({ id: 'c-1', name: 'Английский' }),
+      aCourse({ id: 'c-2', name: 'ОГЭ' }),
+    ];
+    const courseChips = (): string[] =>
+      [
+        ...host.querySelectorAll(
+          '.tb-materials__courses .tb-filter-chip:not(.tb-filter-chip--more)',
+        ),
+      ].map((item) => item.textContent.trim());
+
+    it('filters the textbooks by `?course=` and puts the chosen course into the address', async () => {
+      await render({ tab: 'textbooks', course: 'c-1' }, 1280, courses);
+      expect(courseChips()).toEqual(['Все', 'Английский', 'ОГЭ', 'Без курса']);
+      expect(shownTitles('textbooks')).toEqual(['Spotlight 5']);
+
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      chip('Без курса').click();
+      expect(navigate).toHaveBeenLastCalledWith([], {
+        queryParams: { course: 'none' },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+      fixture.componentRef.setInput('course', 'none');
+      await fixture.whenStable();
+      expect(shownTitles('textbooks')).toEqual(['Рабочая тетрадь']);
+
+      [
+        ...host.querySelectorAll<HTMLButtonElement>('.tb-materials__courses .tb-filter-chip'),
+      ][0]?.click();
+      expect(navigate).toHaveBeenLastCalledWith([], {
+        queryParams: { course: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    });
+
+    it('ignores a course that is gone and has no course row on boards', async () => {
+      await render({ course: 'gone' }, 1280, courses);
+      expect(host.querySelector('.tb-materials__courses')).toBeNull();
+      fixture.componentRef.setInput('tab', 'textbooks');
+      await fixture.whenStable();
+      expect(shownTitles('textbooks')).toHaveLength(2);
+    });
+
+    it('opens «Курсы» from «⋮» and reads the textbooks again after it closes', async () => {
+      await render({ tab: 'textbooks' }, 1280, courses);
+      host.querySelector<HTMLButtonElement>('button[aria-label="Действия с курсами"]')?.click();
+      await fixture.whenStable();
+      menuItemByText('Курсы').click();
+      await fixture.whenStable();
+      expect(bodyText()).toContain('Курс — программа');
+      buttonByText(document.body, 'Закрыть').click();
+      await fixture.whenStable();
+      backend.expectOne('/api/teacher/textbooks').flush([aTextbook({ hasCover: false })]);
+      await fixture.whenStable();
+      expect(shownTitles('textbooks')).toEqual(['Spotlight 5']);
+    });
+
+    it('offers «Курсы» as a button while there are none', async () => {
+      await render({ tab: 'textbooks' });
+      expect(courseChips()).toEqual([]);
+      buttonByText(host, 'Курсы').click();
+      await fixture.whenStable();
+      expect(bodyText()).toContain('Курсов пока нет.');
+    });
   });
 
   it('puts the tab into the address', async () => {

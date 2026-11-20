@@ -16,12 +16,15 @@ import {
   typeInto,
 } from '@testing/dom';
 import { aGroup, aStudent, aTag } from '@testing/identity-fixtures';
+import { aCourse } from '@testing/textbooks-fixtures';
+import type { Course, CourseLinks } from '@features/textbooks/parts';
 import { channel, studentMessengers } from '@testing/notification-fixtures';
 import { scheduledLesson } from '@testing/schedule-fixtures';
 import { screenWidth, testProviders } from '@testing/setup';
 import { PageDetail } from '@core/routing/page-detail';
 import type { ScheduledLesson } from '@features/schedule/parts';
 import { Student, StudentGroup, StudentTag } from '@features/identity/parts';
+import { GroupCard } from './groups/group-card';
 import { GroupFormDialog } from './groups/group-form-dialog';
 import { StudentFormDialog } from './student-form-dialog';
 import { StudentCard } from './student-card';
@@ -111,6 +114,15 @@ describe('StudentsPage', () => {
     backend.verify();
   });
 
+  /** Answers the reads of the courses and their links (ADR-0071). */
+  function flushCourses(
+    courses: Course[] = [],
+    links: CourseLinks = { students: [], groups: [] },
+  ): void {
+    backend.expectOne('/api/teacher/textbooks/courses').flush(courses);
+    backend.expectOne('/api/teacher/textbooks/course-links').flush(links);
+  }
+
   /** Answers the reads of balances, messengers and lessons. */
   function flushExtras(students: readonly Student[], extras: Extras = {}): void {
     const balances = extras.balances ?? {};
@@ -148,10 +160,13 @@ describe('StudentsPage', () => {
     groups: StudentGroup[] = [],
     extras: Extras = {},
     tags: StudentTag[] = [],
+    courses: Course[] = [],
+    links: CourseLinks = { students: [], groups: [] },
   ): Promise<void> {
     backend.expectOne('/api/teacher/students').flush(students);
     backend.expectOne('/api/teacher/groups').flush(groups);
     backend.expectOne('/api/teacher/tags').flush(tags);
+    flushCourses(courses, links);
     flushExtras(students, extras);
     await fixture.whenStable();
   }
@@ -346,6 +361,7 @@ describe('StudentsPage', () => {
       backend.expectOne('/api/teacher/students').flush([MARIA]);
       backend.expectOne('/api/teacher/groups').flush([OGE]);
       backend.expectOne('/api/teacher/tags').flush([]);
+      flushCourses();
       await fixture.whenStable();
       expect(rows()).toEqual([]);
       expect(host.querySelector('.tb-load-state__skeleton')).not.toBeNull();
@@ -361,6 +377,7 @@ describe('StudentsPage', () => {
       backend.expectOne('/api/teacher/students').flush([MARIA]);
       backend.expectOne('/api/teacher/groups').flush([OGE]);
       backend.expectOne('/api/teacher/tags').flush([]);
+      flushCourses();
       await fixture.whenStable();
       expect(rows()).toEqual([]);
 
@@ -399,6 +416,7 @@ describe('StudentsPage', () => {
       backend.expectOne('/api/teacher/students').flush(null, { status: 500, statusText: 'Error' });
       expect(groups.cancelled).toBe(true);
       backend.expectOne('/api/teacher/tags').flush([]);
+      flushCourses();
       flushExtras([]);
       await fixture.whenStable();
 
@@ -409,6 +427,7 @@ describe('StudentsPage', () => {
       backend.expectOne('/api/teacher/students').flush([]);
       backend.expectOne('/api/teacher/groups').flush([]);
       backend.expectOne('/api/teacher/tags').flush([]);
+      flushCourses();
       await fixture.whenStable();
       expect(host.textContent).toContain('Учеников пока нет');
     });
@@ -716,7 +735,7 @@ describe('StudentsPage', () => {
         .query(By.directive(GroupFormDialog))
         .injector.get(GroupFormDialog);
       expect(dialog.students()).toEqual([MARIA]);
-      dialog.created.emit(aGroup({ id: 'g3', name: 'Английский' }));
+      dialog.created.emit({ group: aGroup({ id: 'g3', name: 'Английский' }), courseId: null });
       await fixture.whenStable();
 
       expect(rows()[1]).toContain('Английский');
@@ -817,6 +836,33 @@ describe('StudentsPage', () => {
       expect(header()).not.toContain('Долг');
       expect(header()).toContain('Без мессенджера');
       backend.match((request) => request.urlWithParams.includes('schedule/students/'));
+    });
+
+    it('shows the current course in the card headers and takes the one Профиль saved', async () => {
+      await create({ studentId: 'm' }, screenWidth(1200));
+      await load([MARIA], [OGE], {}, [], [aCourse({ id: 'a2', name: 'A2' })], {
+        students: [{ studentId: 'm', courseId: 'a2' }],
+        groups: [],
+      });
+      const header = (): string =>
+        readableText(
+          requireElement(host, 'tb-pane:last-child .tb-pane__header header', HTMLElement),
+        );
+      expect(header()).toContain('A2');
+      const card = fixture.debugElement.query(By.directive(StudentCard)).injector.get(StudentCard);
+      expect(card.courses()).toHaveLength(1);
+      card.courseChanged.emit(null);
+      await fixture.whenStable();
+      expect(header()).not.toContain('A2');
+
+      fixture.componentRef.setInput('studentId', undefined);
+      fixture.componentRef.setInput('groupId', 'g');
+      await fixture.whenStable();
+      expect(header()).not.toContain('A2');
+      const group = fixture.debugElement.query(By.directive(GroupCard)).injector.get(GroupCard);
+      group.courseChanged.emit('a2');
+      await fixture.whenStable();
+      expect(header()).toContain('A2');
     });
 
     it('opens a group card', async () => {

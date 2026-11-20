@@ -1,4 +1,4 @@
-import { MyTextbook, Textbook } from '@features/textbooks/parts';
+import { Course, MyTextbook, Textbook } from '@features/textbooks/parts';
 
 export function aTextbook(overrides: Partial<Textbook> = {}): Textbook {
   return {
@@ -57,4 +57,8 @@ export function aMyTextbook(overrides: Partial<MyTextbook> = {}): MyTextbook {
     updatedAt: '2026-10-01T10:00:00Z',
     ...overrides,
   };
+}
+
+export function aCourse(overrides: Partial<Course> = {}): Course {
+  return { id: 'c-1', name: 'Английский', position: 0, version: 0, ...overrides };
 }

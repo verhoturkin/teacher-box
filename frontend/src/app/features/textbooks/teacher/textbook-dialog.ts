@@ -19,6 +19,7 @@ import { Button } from 'primeng/button';
 import { InputNumber } from 'primeng/inputnumber';
 import { InputText } from 'primeng/inputtext';
 import { MemberPicker, MemberSelection } from '@features/identity/parts';
+import { Select } from 'primeng/select';
 import { SelectButton } from 'primeng/selectbutton';
 import { checkFiles } from '@shared/files/check-files';
 import { formatFileSize } from '@shared/files/file-size';
@@ -27,7 +28,13 @@ import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { TextbooksApi } from '../data-access/textbooks-api';
-import { Textbook, TextbookInput, TextbookKind } from '../data-access/textbooks.models';
+import {
+  Textbook,
+  TextbookInput,
+  TextbookKind,
+  TextbookMemberType,
+} from '../data-access/textbooks.models';
+import { courseOptions } from '../course-options';
 import {
   TEXTBOOK_FILES,
   TEXTBOOK_KIND_LABELS,
@@ -44,8 +51,8 @@ export interface MemberOption {
 }
 
 /**
- * Adds a textbook with its file (when `textbook` is null) or changes one: kind, title, pages of a Word
- * file, students and groups. The file of an existing textbook is replaced from the list.
+ * Adds a textbook with its file (when `textbook` is null) or changes one: kind, title, course, pages of
+ * a Word file, students, groups and «Ученики курса» (ADR-0071). The file of an existing textbook is replaced from the list.
  */
 @Component({
   selector: 'tb-textbook-dialog',
@@ -56,6 +63,7 @@ export interface MemberOption {
     InputNumber,
     InputText,
     MemberPicker,
+    Select,
     SelectButton,
     FieldErrors,
   ],
@@ -130,6 +138,18 @@ export interface MemberOption {
               aria-required="true"
             />
           </div>
+          <div class="tb-field">
+            <label for="textbook-course">{{ t.course }}</label>
+            <p-select
+              inputId="textbook-course"
+              formControlName="courseId"
+              [options]="courseChoices()"
+              optionLabel="label"
+              optionValue="value"
+              appendTo="body"
+              [fluid]="true"
+            />
+          </div>
           @if (document()) {
             <div class="tb-field">
               <label for="textbook-pages">{{ t.pageCount }}</label>
@@ -150,6 +170,7 @@ export interface MemberOption {
               formControlName="members"
               [students]="studentOptions()"
               [groups]="groupOptions()"
+              [courses]="courseMembers()"
             />
           </div>
         </form>
@@ -183,6 +204,8 @@ export class TextbookDialog {
   /** Current students and active groups. */
   readonly students = input<readonly MemberOption[]>([]);
   readonly groups = input<readonly MemberOption[]>([]);
+  /** The teacher's courses: the «Курс» select and «Ученики курса» among the members (ADR-0071). */
+  readonly courses = input<readonly MemberOption[]>([]);
   readonly saved = output<Textbook>();
 
   protected readonly accept = TEXTBOOK_FILES;
@@ -196,6 +219,7 @@ export class TextbookDialog {
   readonly form = inject(NonNullableFormBuilder).group({
     kind: new FormControl<TextbookKind>('TEXTBOOK', { nonNullable: true }),
     title: ['', [Validators.required, Validators.maxLength(200)]],
+    courseId: new FormControl<string | null>(null),
     pageCount: new FormControl<number | null>(null, [Validators.min(1), Validators.max(10000)]),
     members: [[] as MemberSelection[]],
   });
@@ -210,6 +234,8 @@ export class TextbookDialog {
   /** Members the textbook already has stay choosable even when they left. */
   readonly studentOptions = computed(() => this.withMembers(this.students(), 'STUDENT'));
   readonly groupOptions = computed(() => this.withMembers(this.groups(), 'GROUP'));
+  readonly courseMembers = computed(() => this.withMembers(this.courses(), 'COURSE'));
+  protected readonly courseChoices = computed(() => courseOptions(this.courses()));
 
   protected async onPicked(element: HTMLInputElement): Promise<void> {
     const file = element.files?.[0] ?? null;
@@ -252,29 +278,26 @@ export class TextbookDialog {
       this.form.reset({
         kind: textbook?.kind ?? 'TEXTBOOK',
         title: textbook?.title ?? '',
+        courseId: textbook?.courseId ?? null,
         pageCount: textbook?.format === 'DOCUMENT' ? textbook.pageCount : null,
-        members: (textbook?.members ?? []).flatMap((member): MemberSelection[] =>
-          member.type === 'COURSE' ? [] : [{ kind: member.type, id: member.id }],
-        ),
+        members: (textbook?.members ?? []).map((member): MemberSelection => ({
+          kind: member.type,
+          id: member.id,
+        })),
       });
     },
     request: (value) => {
       const textbook = this.textbook();
+      const ids = (kind: MemberSelection['kind']): string[] =>
+        value.members.filter((member) => member.kind === kind).map((member) => member.id);
       const input: TextbookInput = {
         kind: value.kind,
         title: value.title.trim(),
-        // the course and «Ученики курса» are kept as they are until the dialog edits them (460.2)
-        courseId: textbook?.courseId ?? null,
+        courseId: value.courseId,
         pageCount: this.document() ? value.pageCount : null,
-        studentIds: value.members
-          .filter((member) => member.kind === 'STUDENT')
-          .map((member) => member.id),
-        groupIds: value.members
-          .filter((member) => member.kind === 'GROUP')
-          .map((member) => member.id),
-        courseIds: (textbook?.members ?? [])
-          .filter((member) => member.type === 'COURSE')
-          .map((member) => member.id),
+        studentIds: ids('STUDENT'),
+        groupIds: ids('GROUP'),
+        courseIds: ids('COURSE'),
       };
       const file = this.file();
       if (textbook !== null) {
@@ -288,7 +311,7 @@ export class TextbookDialog {
     },
   });
 
-  private withMembers(options: readonly MemberOption[], type: 'STUDENT' | 'GROUP'): MemberOption[] {
+  private withMembers(options: readonly MemberOption[], type: TextbookMemberType): MemberOption[] {
     const missing = (this.textbook()?.members ?? [])
       .filter(
         (member) => member.type === type && !options.some((option) => option.id === member.id),

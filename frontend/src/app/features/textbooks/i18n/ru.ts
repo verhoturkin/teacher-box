@@ -50,7 +50,6 @@ export const ru = {
     title: 'Название',
     titlePlaceholder: 'Например, Spotlight 5',
     course: 'Курс',
-    coursePlaceholder: 'Например, Английский, 5 класс',
     pageCount: 'Число страниц',
     pageCountHint: 'У PDF портал считает страницы сам, у Word — укажите.',
     members: 'Ученики и группы',
@@ -73,6 +72,32 @@ export const ru = {
     pagesHint: (count: number) =>
       `В учебнике ${String(count)} с. Страницы встанут в ряд во фрейме.`,
     title: (title: string, pages: string) => `${title}, с. ${pages}`,
+  },
+  courses: {
+    title: 'Курсы',
+    intro:
+      'Курс — программа вроде «Английский A2». Им отмечают учебники, задания, учеников и группы; в этом порядке идут чипы фильтра.',
+    none: 'Без курса',
+    empty: 'Курсов пока нет.',
+    newCourse: 'Новый курс',
+    newCoursePlaceholder: 'Например, Английский A2',
+    drag: (name: string) => `Переместить: ${name}`,
+    rename: (name: string) => `Переименовать: ${name}`,
+    renameLabel: (name: string) => `Новое название курса «${name}»`,
+    delete: (name: string) => `Удалить: ${name}`,
+    added: (name: string) => `Курс «${name}» добавлен`,
+    deleted: (name: string) => `Курс «${name}» удалён`,
+    deleteHeader: 'Удалить курс?',
+    deleteMessage: (name: string) =>
+      `Курс «${name}» будет удалён. Его учебники, задания, ученики и группы останутся, но без курса, а учебники, открытые «Ученикам курса», для них закроются.`,
+  },
+  current: {
+    title: 'Курс',
+    label: 'Текущий курс',
+    studentHint:
+      'Курс, который ученик проходит сейчас. Ему открыты учебники, которыми поделились с «Учениками курса».',
+    groupHint:
+      'Курс, который группа проходит сейчас. Участникам открыты учебники, которыми поделились с «Учениками курса».',
   },
   mine: {
     title: 'Учебники',

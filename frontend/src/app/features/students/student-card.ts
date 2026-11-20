@@ -33,6 +33,7 @@ import { SHARED_T } from '@shared/i18n/texts';
 import { formatMoney } from '@shared/money/money';
 import { Avatar } from '@shared/ui/avatar';
 import { T } from './i18n/texts';
+import { Course } from '@features/textbooks/parts';
 import { CardHead, HeaderTag } from './card-head';
 import { CARD_TABS, CardTab, DEFAULT_TAB, cardTab, showTab } from './card-tabs';
 import { StudentRow } from './roster';
@@ -182,6 +183,9 @@ import { Student } from '@features/identity/parts';
             <tb-student-profile-tab
               [student]="row.student"
               [busy]="busy()"
+              [courses]="courses()"
+              [courseId]="courseId()"
+              (courseChanged)="courseChanged.emit($event)"
               (saved)="saved.emit($event)"
               (invite)="invite.emit()"
               (deactivate)="deactivate.emit()"
@@ -261,6 +265,11 @@ export class StudentCard {
   readonly single = input(false);
   /** An access action in Profile is running. */
   readonly busy = input(false);
+  /** The teacher's courses and the student's current one (ADR-0071): the header chip and Профиль. */
+  readonly courses = input<readonly Course[]>([]);
+  readonly courseId = input<string | null>(null);
+  /** Профиль saved the student's current course. */
+  readonly courseChanged = output<string | null>();
   /** A payment or a lesson changed what the list knows of the student. */
   readonly changed = output();
   /** Профиль saved the student's data. */
@@ -294,6 +303,10 @@ export class StudentCard {
   protected readonly tags = computed<HeaderTag[]>(() => {
     const row = this.student();
     const tags: HeaderTag[] = [];
+    const course = this.courses().find((entry) => entry.id === this.courseId());
+    if (course !== undefined) {
+      tags.push({ value: course.name, severity: 'secondary', icon: 'tb-i tb-i-school' });
+    }
     if (row.student.status !== 'ACTIVE') {
       tags.push({
         value: STATUS_LABELS[row.student.status],

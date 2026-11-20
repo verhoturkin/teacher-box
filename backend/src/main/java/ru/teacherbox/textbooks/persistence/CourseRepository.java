@@ -77,6 +77,14 @@ public class CourseRepository {
         jdbc.sql("delete from textbooks.courses where id = :id").param("id", id).update();
     }
 
+    /** Puts the courses in the given order; a new position does not change a course's version. */
+    public void reorder(List<UUID> ids) {
+        for (int position = 0; position < ids.size(); position++) {
+            jdbc.sql("update textbooks.courses set position = :position where id = :id")
+                    .param("id", ids.get(position)).param("position", position).update();
+        }
+    }
+
     public Optional<Course> findById(UUID id) {
         return jdbc.sql(SELECT + " where id = :id").param("id", id).query(CourseRepository::map).optional();
     }

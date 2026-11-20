@@ -69,6 +69,9 @@ Tabs task / test (`?tab=quiz`, default left out, `Location.replaceState`); a pho
   has neither. The test is never a material. A new assignment shows only recipients, text, due date
   and material chips; other sections appear once they have content. Parts: `ui/recipients-field.ts`,
   `ui/due-chips.ts`, `ui/material-chips.ts`.
+- **Course** (ADR-0071): a card «Курс» in the aside under the recipients, only while the teacher
+  has courses (`…/textbooks/courses`, `@features/textbooks/parts`); a select with «Без курса» first.
+  The course is part of the draft's snapshot (autosave) and of every create / update.
 - **Videos** (`@features/textbooks/parts`: `videos/video-section.ts`, `video-list.ts`, shared with
   lesson plans): a tile's settings dialog saves every change at once; done and Esc only close. A
   YouTube link added with an empty transcript asks `…/textbooks/videos/transcript {url}` once (the

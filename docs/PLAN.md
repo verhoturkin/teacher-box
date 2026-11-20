@@ -74,11 +74,15 @@ section the substep names). New ADR: 0071 «Курсы, планы уроков 
   links answer 204; the textbook dialog lost its free-text «Курс» field and keeps `courseId` and
   the `COURSE` members as they are, the homework editor keeps `courseId` on an update — both get
   their «Курс» select in 460.2; error texts of the new codes are in the dictionaries.*
-- [ ] 460.2 **F** *complex* — course filter (`?course=`) and the «Курсы» dialog in
+- [x] 460.2 **F** *complex* — course filter (`?course=`) and the «Курсы» dialog in
   `materials/materials-page.ts`; textbook dialog «Курс» select and courses in the member picker;
   «Курс» in the student card Profile (`features/students`) and the group dialog
   (`identity/parts`), chip in the card header; «Курс» in the homework editor; help, wiki,
   `docs/screens/materials.md`, `students.md`, glossary.
+  *Done: the reorder needed `PUT …/courses/order {ids}` (backend, every course once, else 422
+  `textbooks.course-order-invalid`); the group dialog is `students/groups/group-form-dialog.ts`
+  (the course is set after the group is created) and Profile of both cards has the «Курс» card
+  (`CurrentCourseCard`); no new shared component, so no gallery sample.*
 
 ### 461. Lesson plans
 

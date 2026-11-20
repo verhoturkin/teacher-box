@@ -16,6 +16,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
+import { Select } from 'primeng/select';
 import { SelectButton } from 'primeng/selectbutton';
 import { Textarea } from 'primeng/textarea';
 import { MemberSelection } from '@features/identity/parts';
@@ -29,7 +30,7 @@ import {
 } from '@features/homework/data-access/homework.models';
 import { T } from '@features/homework/i18n/texts';
 import { QuestionDraft } from '../question-drafts';
-import { MAX_VIDEOS, VideoDraft } from '@features/textbooks/parts';
+import { Course, MAX_VIDEOS, VideoDraft, courseOptions } from '@features/textbooks/parts';
 import { EditorBoard, EditorVideos } from './editor-extras';
 import { EditorMaterials } from './editor-materials';
 import { EditorMaterialsState } from './editor-materials-state';
@@ -42,6 +43,8 @@ import { editorAdditions, editorSections } from './editor-sections';
 export type EditorForm = FormGroup<{
   description: FormControl<string>;
   members: FormControl<MemberSelection[]>;
+  /** The course (ADR-0071); `null` — none. */
+  courseId: FormControl<string | null>;
 }>;
 
 /** «Писать» or «Просмотр» of the text. */
@@ -57,6 +60,7 @@ export type EditorMode = 'edit' | 'preview';
     ReactiveFormsModule,
     Card,
     Message,
+    Select,
     SelectButton,
     Textarea,
     FieldErrors,
@@ -160,6 +164,24 @@ export type EditorMode = 'edit' | 'preview';
               (dateChange)="who().pickDue($event)"
               (more)="more.emit()"
             />
+
+            @if (courses().length > 0) {
+              <p-card id="editor-course" styleClass="tb-section-card" [header]="t.course">
+                <div class="tb-field">
+                  <label for="editor-course-select" class="tb-sr-only">{{ t.course }}</label>
+                  <p-select
+                    inputId="editor-course-select"
+                    formControlName="courseId"
+                    [options]="courseChoices()"
+                    optionLabel="label"
+                    optionValue="value"
+                    appendTo="body"
+                    [fluid]="true"
+                  />
+                  <small class="tb-hint">{{ t.courseHint }}</small>
+                </div>
+              </p-card>
+            }
 
             @if (draft() || extrasInMaterials()) {
               <tb-editor-materials
@@ -277,6 +299,9 @@ export class EditorTask implements OnInit {
   readonly error = input.required<string | null>();
   readonly who = input.required<EditorRecipientsState>();
   readonly materials = input.required<EditorMaterialsState>();
+  /** The teacher's courses: «Курс» of the assignment (ADR-0071); none — no card. */
+  readonly courses = input<readonly Course[]>([]);
+  protected readonly courseChoices = computed(() => courseOptions(this.courses()));
 
   readonly submitted = output();
   readonly videosChange = output<readonly VideoDraft[]>();

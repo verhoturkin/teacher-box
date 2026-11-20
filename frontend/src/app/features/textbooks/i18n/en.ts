@@ -52,7 +52,6 @@ export const en: Translation<typeof ru> = {
     title: 'Title',
     titlePlaceholder: 'For example, Spotlight 5',
     course: 'Course',
-    coursePlaceholder: 'For example, English, grade 5',
     pageCount: 'Number of pages',
     pageCountHint: 'PDF pages are counted automatically. For Word documents, enter the page count.',
     members: 'Students and groups',
@@ -75,6 +74,32 @@ export const en: Translation<typeof ru> = {
     pagesHint: (count: number) =>
       `This textbook has ${String(count)} pages. Selected pages will be arranged in a framed row.`,
     title: (title: string, pages: string) => `${title}, p. ${pages}`,
+  },
+  courses: {
+    title: 'Courses',
+    intro:
+      'A course is a programme such as “English A2”. Textbooks, assignments, students and groups are marked with it; the filter chips follow this order.',
+    none: 'No course',
+    empty: 'No courses yet.',
+    newCourse: 'New course',
+    newCoursePlaceholder: 'For example, English A2',
+    drag: (name: string) => `Move ${name}`,
+    rename: (name: string) => `Rename ${name}`,
+    renameLabel: (name: string) => `New name for the course “${name}”`,
+    delete: (name: string) => `Delete ${name}`,
+    added: (name: string) => `Course “${name}” added`,
+    deleted: (name: string) => `Course “${name}” deleted`,
+    deleteHeader: 'Delete the course?',
+    deleteMessage: (name: string) =>
+      `The course “${name}” will be deleted. Its textbooks, assignments, students and groups stay, without a course, and textbooks shared with “Students of the course” are no longer open to them.`,
+  },
+  current: {
+    title: 'Course',
+    label: 'Current course',
+    studentHint:
+      'The course the student is taking now. Textbooks shared with “Students of the course” are open to them.',
+    groupHint:
+      'The course the group is taking now. Textbooks shared with “Students of the course” are open to its members.',
   },
   mine: {
     title: 'Textbooks',

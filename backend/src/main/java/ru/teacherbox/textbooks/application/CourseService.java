@@ -18,6 +18,7 @@ import ru.teacherbox.identity.api.StudentGroups;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.shared.Ids;
+import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.textbooks.api.CourseDeleted;
@@ -86,6 +87,21 @@ public class CourseService {
         Course renamed = course.renamed(name);
         requireFree(renamed);
         return CourseView.of(courses.update(renamed));
+    }
+
+    /**
+     * Puts all courses in the given order.
+     *
+     * @throws BusinessRuleException {@code textbooks.course-order-invalid} unless the list names every course once
+     */
+    @Transactional
+    public List<CourseView> reorder(List<UUID> ids) {
+        Set<UUID> existing = courses.findAll().stream().map(Course::id).collect(Collectors.toSet());
+        if (ids.size() != existing.size() || !existing.equals(Set.copyOf(ids))) {
+            throw new BusinessRuleException("textbooks.course-order-invalid", "The order must list every course once");
+        }
+        courses.reorder(ids);
+        return list();
     }
 
     /**

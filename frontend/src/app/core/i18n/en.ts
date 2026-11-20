@@ -359,6 +359,7 @@ export const en: Translation<typeof ru> = {
       'textbooks.course-invalid': 'Course names must be between 1 and 100 characters',
       'textbooks.course-exists': 'A course with this name already exists',
       'textbooks.course-not-found': 'This course no longer exists',
+      'textbooks.course-order-invalid': 'The list of courses has changed — reload the page',
       'textbooks.page-count-invalid': 'Enter a page count between 1 and 10,000',
       'textbooks.file-type-not-allowed':
         'Use a PDF, Word document (DOC or DOCX), or PNG, JPEG, WebP or GIF image',

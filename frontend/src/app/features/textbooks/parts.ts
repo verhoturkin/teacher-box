@@ -11,7 +11,12 @@ export type {
   TextbookKind,
 } from './data-access/textbooks.models';
 export { TEXTBOOK_KIND_ICONS, TEXTBOOK_KIND_LABELS } from './textbooks-labels';
-export { TextbooksFeed, type TextbooksFilter } from './teacher/textbooks-feed';
+export { TextbooksFeed, type CourseFilter, type TextbooksFilter } from './teacher/textbooks-feed';
+export { CoursesApi } from './data-access/courses-api';
+export type { Course, CourseLinks } from './data-access/courses.models';
+export { courseOptions, type CourseOption } from './course-options';
+export { CoursesDialog } from './teacher/courses-dialog';
+export { CurrentCourseCard, type CourseOwner } from './teacher/current-course-card';
 export { MyTextbooksFeed } from './student/my-textbooks-feed';
 export { TextbookToBoardDialog } from './teacher/textbook-to-board-dialog';
 export type { BoardTextbook } from './teacher/textbook-to-board-dialog';

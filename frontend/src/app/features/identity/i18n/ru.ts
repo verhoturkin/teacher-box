@@ -10,6 +10,8 @@ export const ru = {
     placeholder: 'Выберите учеников и группы',
     search: 'Поиск учеников и групп',
     unavailable: 'Недоступно',
+    courses: 'Ученики курса',
+    course: 'Ученики курса',
   },
   login: {
     title: (portal: string) => `Вход в ${portal}`,

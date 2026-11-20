@@ -22,6 +22,7 @@ import {
 import { Location, NgTemplateOutlet } from '@angular/common';
 import { SHARED_T } from '@shared/i18n/texts';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { quietContext } from '@core/http/api-error.interceptor';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Observable, map, of, switchMap, tap } from 'rxjs';
@@ -75,7 +76,7 @@ import { brokenQuestions, withoutCreate } from './editor/editor-sections';
 import { EditorTab, EditorTabs } from './editor/editor-tabs';
 import { EditorTask } from './editor/editor-task';
 import { QuizSettings } from './quiz-settings';
-import { VideoDraft, videoDraft, videoInputs } from '@features/textbooks/parts';
+import { Course, CoursesApi, VideoDraft, videoDraft, videoInputs } from '@features/textbooks/parts';
 
 /**
  * Teacher: the page that creates an assignment or edits one, on two tabs (sketches 11, 28): «Задание» in the
@@ -161,6 +162,7 @@ import { VideoDraft, videoDraft, videoInputs } from '@features/textbooks/parts';
               [error]="error()"
               [who]="who"
               [materials]="materials"
+              [courses]="courses()"
               (submitted)="save()"
               (videosChange)="changeVideos($event)"
               (openQuiz)="choose('quiz')"
@@ -317,6 +319,7 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   private readonly aiState = inject(HomeworkAiState);
   private readonly location = inject(Location);
   private readonly injector = inject(Injector);
+  private readonly coursesApi = inject(CoursesApi);
 
   /** Route parameter of `/teacher/homework/:assignmentId/edit`; none — a new assignment. */
   readonly assignmentId = input<string>();
@@ -337,6 +340,12 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
       validators: [Validators.maxLength(20_000)],
     }),
     members: new FormControl<MemberSelection[]>([], { nonNullable: true }),
+    courseId: new FormControl<string | null>(null),
+  });
+  /** The teacher's courses for «Курс» (ADR-0071). */
+  protected readonly courses = signal<readonly Course[]>([]);
+  private readonly chosenCourse = toSignal(this.form.controls.courseId.valueChanges, {
+    initialValue: null,
   });
 
   protected readonly textValue = toSignal(this.form.controls.description.valueChanges, {
@@ -474,6 +483,7 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
     JSON.stringify([
       this.textValue(),
       this.chosenMembers(),
+      this.chosenCourse(),
       this.who.dueAt()?.toISOString() ?? null,
       videoInputs(this.videos()),
       questionInputs(this.questions()),
@@ -534,6 +544,10 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   }
 
   ngOnInit(): void {
+    // without the courses (a failed read) «Курс» is not offered and the assignment keeps its own
+    this.coursesApi.list(quietContext()).subscribe((courses) => {
+      this.courses.set(courses);
+    });
     if (this.isNew()) {
       this.drafts.mark(this.snapshot());
       this.who.load();
@@ -558,6 +572,7 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
           // the title is the first line of the text: a text that does not start with it gets it on top
           description:
             titleOf(text) === assignment.title ? text : `${assignment.title}\n\n${text}`.trimEnd(),
+          courseId: assignment.courseId,
         });
         this.who.showDue(assignment.dueAt);
         this.videos.set(assignment.videos.map((video) => videoDraft(video)));
@@ -780,8 +795,7 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
       title: this.titleValue(),
       description: text.trim() === '' ? null : text,
       dueAt: dueAt === null ? null : dueAt.toISOString(),
-      // the editor has no «Курс» yet (460.2): a change keeps the assignment's course
-      ...(existing === null ? {} : { courseId: existing.courseId }),
+      courseId: this.form.controls.courseId.value,
       videos: videoInputs(this.videos()),
       ...this.quiz.input(),
     };

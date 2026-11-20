@@ -27,6 +27,13 @@
   [studentId]`: who fixed, default title and length); a deactivated student keeps only payment.
   Group actions message (hidden without members), new lesson, archive; an archived group has none. A
   payment or lesson made here re-reads the balance and the lessons.
+- **Course** (ADR-0071): the page reads `…/textbooks/courses` and `…/course-links` with the roster
+  (a failed read leaves no chip and an empty select). The current course is the first header tag
+  of the student and the group (`school` icon, secondary). Profile of both has the card «Курс»
+  (`CurrentCourseCard`, `@features/textbooks/parts`) between the data and the price: a select
+  («Без курса» first) saved when chosen, a refused choice goes back; disabled for a deactivated
+  student and an archived group. The new-group form offers «Курс» while courses exist; a refused
+  course leaves the new group without one (a toast), the group is kept.
 - The student header tag with the balance (debt / prepaid) is shown only on tabs where the balance
   is not visible otherwise: not on Обзор (the balance card) and not on Оплаты; the roster row keeps
   its sum.

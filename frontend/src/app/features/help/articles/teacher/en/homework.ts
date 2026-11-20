@@ -13,7 +13,9 @@ deadline” or “Pick a date…”. Add textbooks, files, a photo, videos, a qu
 typing, the assignment saves itself as a draft with the students you chose; if you leave without writing anything, nothing is created. Markdown \
 supports bold text, lists and links; use Preview to check the result. The “AI assistant” button opens the assistant beside the text.
 3. Under “To”, add students and groups. Students in more than one selected group receive the assignment once. Removing a group keeps any students \
-also selected individually. “By the next lesson” sets the due date to the start of those students’ next lesson; pick another option if you prefer.
+also selected individually. “By the next lesson” sets the due date to the start of those students’ next lesson; pick another option if you prefer. \
+Below “To”, choose the assignment’s **Course** (shown once you have courses in Materials, see [Textbooks](/teacher/help/textbooks)); it is saved \
+with the assignment.
 4. Textbooks, files, videos and a board appear in the assignment only once you add them. Add textbooks and files with the buttons under “Materials”; \
 they show as one list. Select a name to open it (PDFs and images open in a new tab). Add a video or a board from the “Add” group in the menu on the \
 left (on a tablet, or with the AI assistant open, use the “Video” and “Board” buttons under “Materials” instead). “Board” opens a list of your \

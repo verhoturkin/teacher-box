@@ -234,6 +234,13 @@ describe('TextbooksFeed', () => {
     await fixture.whenStable();
     expect(titles()).toEqual(['Альфа']);
     fixture.componentRef.setInput('filter', 'all');
+    fixture.componentRef.setInput('course', 'c-1');
+    await fixture.whenStable();
+    expect(titles()).toEqual(['Spotlight 5']);
+    fixture.componentRef.setInput('course', 'none');
+    await fixture.whenStable();
+    expect(titles()).toEqual(['Альфа']);
+    fixture.componentRef.setInput('course', 'all');
     fixture.componentRef.setInput('query', 'английский');
     await fixture.whenStable();
     expect(titles()).toEqual(['Spotlight 5']);

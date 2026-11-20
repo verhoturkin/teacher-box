@@ -16,6 +16,13 @@ export const en: Translation<typeof ru> = {
     WORKBOOK: 'Workbooks',
     OTHER: 'Other',
   },
+  courses: {
+    filter: 'Filter by course',
+    all: 'All',
+    none: 'No course',
+    manage: 'Courses',
+    menu: 'Course actions',
+  },
   search: 'Title, student or group',
   searchMine: 'Title',
   sort: {

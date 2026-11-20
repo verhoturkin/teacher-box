@@ -9,6 +9,7 @@ export const ru = {
     namePlaceholder: 'Например, ОГЭ 9 класс',
     members: 'Ученики',
     membersPlaceholder: 'Кто занимается в группе',
+    course: 'Курс',
     search: 'Поиск',
     defaultTopic: 'Тема по умолчанию',
     defaultTopicHint: 'Подставится в новое занятие и серию с группой.',

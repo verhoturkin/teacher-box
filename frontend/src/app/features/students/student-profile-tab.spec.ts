@@ -70,6 +70,7 @@ describe('StudentProfileTab', () => {
 
     expect(titles).toEqual([
       'Данные ученика',
+      'Курс',
       'Цена занятия',
       'Видеовстреча',
       'Родители',

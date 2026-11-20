@@ -33,9 +33,15 @@ class TeacherCoursesController {
     record RenameRequest(@NotBlank @Size(max = Course.MAX_NAME) String name, @NotNull Long version) {
     }
 
+    record OrderRequest(@NotNull @Size(max = MAX_COURSES) List<@NotNull UUID> ids) {
+    }
+
     /** @param courseId {@code null} — no course */
     record LinkRequest(@Nullable UUID courseId) {
     }
+
+    /** The longest order a request may carry. */
+    private static final int MAX_COURSES = 1000;
 
     private final CourseService courses;
 
@@ -54,6 +60,12 @@ class TeacherCoursesController {
     @ResponseStatus(HttpStatus.CREATED)
     CourseView create(@Valid @RequestBody CreateRequest request) {
         return courses.create(request.name());
+    }
+
+    /** The list names every course once — else 422 {@code textbooks.course-order-invalid}. */
+    @PutMapping("/courses/order")
+    List<CourseView> reorder(@Valid @RequestBody OrderRequest request) {
+        return courses.reorder(request.ids());
     }
 
     @PutMapping("/courses/{id}")

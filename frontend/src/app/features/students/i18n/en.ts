@@ -11,6 +11,7 @@ export const en: Translation<typeof ru> = {
     namePlaceholder: 'e.g. Year 10 exam preparation',
     members: 'Students',
     membersPlaceholder: 'Choose group members',
+    course: 'Course',
     search: 'Search',
     defaultTopic: 'Default topic',
     defaultTopicHint: 'Used as the title when you schedule lessons for this group.',

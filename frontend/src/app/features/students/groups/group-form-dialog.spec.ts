@@ -1,6 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { aGroup, aStudent } from '@testing/identity-fixtures';
+import { aCourse } from '@testing/textbooks-fixtures';
 import { bodyText, buttonByText } from '@testing/dom';
 import { StudentGroup } from '@features/identity/parts';
 import { GroupFormDialog } from './group-form-dialog';
@@ -9,7 +10,7 @@ import { testProviders } from '@testing/setup';
 describe('GroupFormDialog', () => {
   let fixture: ComponentFixture<GroupFormDialog>;
   let backend: HttpTestingController;
-  let created: StudentGroup[];
+  let created: { group: StudentGroup; courseId: string | null }[];
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
@@ -19,7 +20,7 @@ describe('GroupFormDialog', () => {
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(GroupFormDialog);
     created = [];
-    fixture.componentInstance.created.subscribe((group) => created.push(group));
+    fixture.componentInstance.created.subscribe((value) => created.push(value));
     fixture.componentRef.setInput('students', [
       aStudent({ id: 'a', displayName: 'Анна' }),
       aStudent({ id: 'o', displayName: 'Олег', status: 'DEACTIVATED' }),
@@ -56,7 +57,37 @@ describe('GroupFormDialog', () => {
     create.flush(aGroup({ id: 'g', name: 'ОГЭ' }));
     await fixture.whenStable();
 
-    expect(created.map((group) => group.id)).toEqual(['g']);
+    expect(created.map(({ group }) => group.id)).toEqual(['g']);
+    expect(created[0]?.courseId).toBeNull();
+    expect(document.body.querySelector('#group-course')).toBeNull();
+    expect(dialog.visible()).toBe(false);
+  });
+
+  it('gives the new group its course; a refused course leaves the group without one', async () => {
+    fixture.componentRef.setInput('courses', [aCourse({ id: 'a2', name: 'A2' })]);
+    const dialog = await open();
+    expect(document.body.querySelector('#group-course')).not.toBeNull();
+    dialog.form.patchValue({ name: 'A2', courseId: 'a2' });
+    buttonByText(document.body, 'Создать').click();
+    backend.expectOne('/api/teacher/groups').flush(aGroup({ id: 'g' }));
+    const link = backend.expectOne({
+      method: 'PUT',
+      url: '/api/teacher/textbooks/groups/g/course',
+    });
+    expect(link.request.body).toEqual({ courseId: 'a2' });
+    link.flush(null, { status: 204, statusText: 'No Content' });
+    await fixture.whenStable();
+    expect(created.map(({ courseId }) => courseId)).toEqual(['a2']);
+
+    await open();
+    dialog.form.patchValue({ name: 'B1', courseId: 'a2' });
+    buttonByText(document.body, 'Создать').click();
+    backend.expectOne('/api/teacher/groups').flush(aGroup({ id: 'g2' }));
+    backend
+      .expectOne('/api/teacher/textbooks/groups/g2/course')
+      .flush(null, { status: 404, statusText: 'Not Found' });
+    await fixture.whenStable();
+    expect(created.map(({ courseId }) => courseId)).toEqual(['a2', null]);
     expect(dialog.visible()).toBe(false);
   });
 
@@ -78,7 +109,7 @@ describe('GroupFormDialog', () => {
     dialog.visible.set(false);
     await fixture.whenStable();
     await open();
-    expect(dialog.form.getRawValue()).toEqual({ name: '', memberIds: [] });
+    expect(dialog.form.getRawValue()).toEqual({ name: '', memberIds: [], courseId: null });
   });
 
   it('shows why the group was not created and stays open', async () => {

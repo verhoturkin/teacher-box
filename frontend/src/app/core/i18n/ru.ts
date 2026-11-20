@@ -348,6 +348,7 @@ export const ru = {
       'textbooks.course-invalid': 'Название курса — от 1 до 100 символов',
       'textbooks.course-exists': 'Курс с таким названием уже есть',
       'textbooks.course-not-found': 'Такого курса уже нет',
+      'textbooks.course-order-invalid': 'Список курсов изменился — обновите страницу',
       'textbooks.page-count-invalid': 'Число страниц — от 1 до 10 000',
       'textbooks.file-type-not-allowed':
         'Учебник — это PDF, Word (DOC, DOCX) или картинка PNG, JPEG, WebP, GIF',

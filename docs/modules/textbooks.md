@@ -81,7 +81,7 @@ course each, cascade with the course). All are in the full reset; files are in t
 | Endpoint | Who |
 |---|---|
 | `GET /api/teacher/textbooks` (newest first; `courseId`, `courseName`), `POST` (multipart: `file`, `kind`, `title`, `courseId`, `pageCount`, `studentIds`, `groupIds`, `courseIds`) | teacher |
-| `GET /api/teacher/textbooks/courses` (in order), `POST {name}` (201), `PUT /courses/{id} {name, version}`, `DELETE /courses/{id}` (204) | teacher |
+| `GET /api/teacher/textbooks/courses` (in order), `POST {name}` (201), `PUT /courses/{id} {name, version}`, `PUT /courses/order {ids}` (every course once, else 422 `textbooks.course-order-invalid`; positions without a new version), `DELETE /courses/{id}` (204) | teacher |
 | `PUT /api/teacher/textbooks/students/{studentId}/course`, `PUT …/groups/{groupId}/course` `{courseId \| null}` (204); `GET …/course-links` → `{students: [{studentId, courseId}], groups: [{groupId, courseId}]}` | teacher |
 | `PUT /api/teacher/textbooks/{id}` (JSON with `version`, `courseId`, `courseIds`), `PUT /{id}/file` (multipart `file`, `version`), `DELETE /{id}` | teacher |
 | `GET /api/teacher/textbooks/{id}/file`, `GET /{id}/pages/{n}` (picture), `GET /{id}/cover` | teacher |

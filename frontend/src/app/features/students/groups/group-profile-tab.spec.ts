@@ -60,7 +60,7 @@ describe('GroupProfileTab', () => {
       title.textContent.trim(),
     );
 
-    expect(titles).toEqual(['Данные группы', 'Цена занятия', 'Видеовстреча']);
+    expect(titles).toEqual(['Данные группы', 'Курс', 'Цена занятия', 'Видеовстреча']);
     expect(field('group-profile-name').value).toBe('ОГЭ');
     expect(field('group-profile-topic').value).toBe('Дроби');
     expect(
