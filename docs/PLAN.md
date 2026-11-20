@@ -70,6 +70,13 @@ once, after 456.
   container (`home/teacher-home.ts`); the hero (`home/today-lessons.ts`, `part="hero"`) on one line:
   the time tile (`schedule/ui/lesson-time-tile.ts`), avatar, name in an emphasized style, the join
   and call buttons as one connected group; a wavy bar of the lesson's elapsed time.
+- [ ] 450.3 **F** *simple* — browser check of the teacher's Today (`home/teacher-home.ts`,
+  `home/today-lessons.ts`, `docs/screens/today.md`, board D of the sketch «Главная учителя —
+  варианты») on compact / medium / expanded / large widths with data: a lesson live with the
+  hero, a nearest lesson later, several rows, the review queue, the figures pane, empty day;
+  layout defects fixed against `docs/design-system.md` and M3 (`m3-expressive`): overflow,
+  alignment, gaps, the hero on one line, the pane widths, the wavy bar; what stays is listed in
+  italics here. Tests of the changed parts (Vitest).
 
 ### 451. Guardian accounts
 
