@@ -1,3 +1,4 @@
+import { API_SCOPE } from '@core/http/api-scope';
 import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -53,7 +54,7 @@ import { T } from '../i18n/texts';
           } @else if (feed.enabled) {
             <p class="tb-muted">{{ t.created((feed.createdAt | date: 'dd.MM.yyyy') ?? '') }}</p>
           } @else {
-            <p class="tb-muted">{{ t.about }}</p>
+            <p class="tb-muted">{{ family ? t.familyAbout : t.about }}</p>
           }
           <div class="tb-actions">
             <p-button
@@ -90,6 +91,8 @@ import { T } from '../i18n/texts';
 })
 export class CalendarFeedPanel implements OnInit {
   protected readonly t = T.feed;
+  /** The parent's link: the lessons of all the children (ADR-0069). */
+  protected readonly family = inject(API_SCOPE).readOnly;
   protected readonly busy = new Busy();
   private readonly api = inject(ScheduleApi);
   private readonly portal = inject(Portal);

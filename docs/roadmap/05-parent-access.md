@@ -1,6 +1,8 @@
 # 05. Parent access
 
-Status: proposal. Size: XL (two releases). ADR: yes — «Родители (опекуны)», amends ADR-0003 (roles)
+Status: moved to [`PLAN.md`](../PLAN.md) v0.58.0 (stages 450–455; decisions settled there).
+
+Was: proposal. Size: XL (two releases). ADR: yes — «Родители (опекуны)», amends ADR-0003 (roles)
 and AGENTS.md §4.3 (roles and access).
 
 ## Goal

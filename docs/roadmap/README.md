@@ -20,7 +20,7 @@ How to use:
 | 02 | [Student progress report](02-progress-report.md) | schedule, homework, billing, frontend | L | yes | 01 (soft) |
 | 03 | [Lesson packages](03-lesson-packages.md) | billing, notifications | L | yes | — |
 | 04 | [Invoices with a payment QR](04-invoices.md) | billing, notifications | M | yes | 03 (soft) |
-| 05 | [Parent access](05-parent-access.md) | identity, every module, platform | XL | yes | — |
+| 05 | [Parent access](05-parent-access.md) — released in 0.58.0, see [plan archive](../archive/plans/v0.58.0.md) | identity, every module, platform | XL | yes | — |
 | 06 | Auto-checked quizzes — released in 0.39.0, see [plan archive](../archive/plans/v0.39.0.md) | homework, ai | L | yes | — |
 | 07 | Installable app and web push — released in 0.38.0, see [plan archive](../archive/plans/v0.38.0.md) | frontend, notifications | M | yes | — |
 | 08 | [Self-booking of free slots](08-self-booking.md) | schedule, notifications | L | yes | — |

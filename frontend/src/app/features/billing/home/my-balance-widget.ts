@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { API_SCOPE } from '@core/http/api-scope';
 import { RouterLink } from '@angular/router';
 import { MoneyPipe } from '@shared/money/money.pipe';
 import { MyBillingSummary } from '../data-access/billing.models';
@@ -46,7 +47,7 @@ const FULL_BAR = 8;
           <span [style.width.%]="(shown() / full) * 100"></span>
         </div>
       }
-      <a class="tb-link" routerLink="/cabinet/billing">{{ t.history }}</a>
+      <a class="tb-link" [routerLink]="history()">{{ t.history }}</a>
     </section>
   `,
   styles: `
@@ -105,6 +106,9 @@ const FULL_BAR = 8;
 })
 export class MyBalanceWidget {
   protected readonly t = T.myBalance;
+  private readonly scope = inject(API_SCOPE);
+  /** The payments of the cabinet: `/cabinet/billing` or `/family/<id>/billing`. */
+  protected readonly history = computed(() => `${this.scope.area()}/billing`);
   protected readonly full = FULL_BAR;
   readonly summary = input.required<MyBillingSummary>();
 

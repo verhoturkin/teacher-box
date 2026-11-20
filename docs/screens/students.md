@@ -49,6 +49,17 @@
 - **Profile** (`student-profile-tab.ts`): the price card is the one place to change a student's
   price; the video room saves at once. *Ours* (**M3** has no in-place edit pattern): fields stay
   editable instead of a read view with a pencil.
+- **Parents** (`student-guardians-card.ts`, ADR-0069), between the video room and «Вход в
+  кабинет»: a segmented list of up to two parents (avatar, name, state — «Приглашение до …»,
+  «Входит как …», a reset link), «Новое приглашение» / «Сбросить пароль» and «Отвязать» as icon
+  buttons at the end of a row; «Отвязать» asks first (danger confirmation: the last child unlinked
+  deactivates the parent). The tonal «Пригласить родителя» (hidden at two parents and for a
+  deactivated student) opens a form dialog: segmented buttons «Нового» / «Уже в портале» (only
+  when the portal has a parent not linked to this student — a sibling's), a name or a select;
+  a new parent gets the link at once in `invite-link-dialog.ts` (`forGuardian`). Under the list,
+  while a parent is linked, the settings tile «Оплаты видит только родитель»
+  (`billing/teacher/payments-visibility-switch.ts`, `GET/PUT …/billing/students/{id}/visibility`)
+  saves at once and reloads when a parent is linked or unlinked.
 
 ## Group tabs (`GROUP_TABS`)
 

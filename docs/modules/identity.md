@@ -1,10 +1,11 @@
 # identity
 
-Auth of the teacher, students and admin; student groups and tags. Depends on: `shared`.
+Auth of the teacher, students, their parents and admin; student groups and tags. Depends on:
+`shared`.
 Schema `identity`.
 ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrator-and-diagnostics.md) admin,
 [0011](../adr/0011-groups-and-group-lessons.md) groups,
-[0055](../adr/0055-student-tags.md) student tags.
+[0055](../adr/0055-student-tags.md) student tags, [0069](../adr/0069-guardians.md) parents.
 
 **Outline** — read only the section you need (`grep -n '^##'`, then Read with offset/limit):
 
@@ -22,6 +23,17 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
 - **Student** — created by the teacher (`INVITED`), gets a one-time invite link (TTL
   `TEACHERBOX_IDENTITY_INVITE_TTL`), sets login and password → `ACTIVE`. Deactivation revokes all refresh tokens
   and removes the student from all groups; reactivation restores access.
+- **Parent (guardian, 0.58.0, ADR-0069)** — role `GUARDIAN`, the same lifecycle as a student. The
+  teacher creates one from the student card (name → `INVITED` + `ACTIVATION` invite) or links an
+  existing parent (a sibling's) without an invite; a deactivated parent is reactivated by a new
+  link. A student has at most two parents (`guardian.limit`, checked by `GuardianAdminService`), a
+  parent any number of children (`guardianships`). Unlinking the last child deactivates the parent
+  and revokes their unused invites and refresh tokens. A student's deactivation keeps the link but
+  hides the child: a child is current while `INVITED` or `ACTIVE`. A parent without a current child
+  is refused at login (401 `identity.guardian-no-students`), at refresh and on the invite page
+  (422). Accepting a parent's invite publishes no `StudentActivated`. The guard of every guardian
+  endpoint is `shared.security.GuardianAccess` (`GuardianAccessService`): 403 `access.denied` for
+  anyone but a guardian, 404 `student.not-found` for a child who is not the guardian's current one.
 - Passwords — `DelegatingPasswordEncoder` (bcrypt), min length 8. Access token — JWT HS256, 15 min. Refresh token —
   random, only its hash stored, HttpOnly cookie, rotated on use. Brute force — per-account lock after
   `MAX_FAILED_LOGINS` for `LOCK_DURATION`, plus auth rate limit (`TEACHERBOX_SECURITY_AUTH_RATE_LIMIT_*`).
@@ -62,14 +74,18 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
   student's whole set. A tag has a `kind` (362.8): `LIST` (above) or `TEXT` — no values, a student
   gets free text of 1–120 characters (`student_tags.text`, exactly one of `value_id`/`text` is set).
   The kind of a tag set on any student cannot change (409 `tag.kind-used`).
-- Implements `shared.security.PasswordConfirmation`.
+- Implements `shared.security.PasswordConfirmation` and `shared.security.GuardianAccess`.
 
 ## Contract (`identity::api`)
 
-- Facades: `UserDirectory` (`teacherId`, `findStudent(s)`, `currentStudents`, `isCurrent`, `language`), `StudentGroups`
-  (`findGroup(s)`, `groupsOf`). DTOs `StudentSummary`, `GroupSummary`, enum `StudentStatus`.
-- Events: `StudentRegistered`, `StudentActivated`, `StudentDeactivated`, `StudentReactivated`, `GroupCreated`,
-  `GroupChanged` (name/members, who joined/left), `GroupArchived`.
+- Facades: `UserDirectory` (`teacherId`, `findStudent(s)`, `guardianName`, `currentStudents`,
+  `isCurrent`, `language` — of any user, a parent included), `StudentGroups` (`findGroup(s)`,
+  `groupsOf`), `Guardians` (`isGuardianOf`, `childrenOf` — current children, `guardiansOf` — at most
+  two, any status). DTOs `StudentSummary`, `GroupSummary`, `GuardianSummary`, enum `StudentStatus`.
+- Events: `StudentRegistered`, `StudentActivated`, `StudentDeactivated`, `StudentReactivated`,
+  `GroupCreated`, `GroupChanged` (name/members, who joined/left), `GroupArchived`,
+  `GuardianRegistered` (a new parent; `GuardianLinked` follows), `GuardianLinked`,
+  `GuardianUnlinked` (`deactivated`: it was the last child).
 - Consumers: `billing` (accounts, group prices), `schedule` (group changes), `meetings`.
 - **Notices (`notices/`, ADR-0061, 380.3):** `IdentityNotices` listens to `StudentActivated`
   synchronously (`@EventListener`, in the transaction that published it) and publishes
@@ -79,8 +95,10 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
 
 ## Data
 
-`users` (+ `own_name`, `avatar_key`, `avatar_type`, `language`, `color`), `invites`, `refresh_tokens`, `student_groups`,
-`group_members`, `tags`, `tag_values`, `student_tags`. Housekeeping job removes expired tokens/invites
+`users` (+ `own_name`, `avatar_key`, `avatar_type`, `language`, `color`; `role` also `GUARDIAN`
+since V5), `invites`, `refresh_tokens`, `student_groups`, `group_members`, `tags`, `tag_values`,
+`student_tags`, `guardianships` (`guardian_id`, `student_id`, `created_at`; PK of both). The full
+reset removes students and parents. Housekeeping job removes expired tokens/invites
 (`IdentityHousekeeping`). Photo files are removed with the rest of the files by the full reset.
 
 ## REST
@@ -88,6 +106,18 @@ ADRs: [0003](../adr/0003-authentication.md) auth, [0010](../adr/0010-administrat
 `/api/auth/**` (login, logout, refresh, invites), `/api/me` (+ `/password`, `/language`, `/profile` — a student's own name,
 `/avatar` PUT multipart / DELETE), `/api/public/avatars/{key}`, `/api/teacher/students/**`,
 `/api/teacher/groups/**`, `/api/teacher/profile`, `/api/teacher/tags`.
+
+Parents (ADR-0069): `GET /api/teacher/students/{id}/guardians` → `[GuardianView]` (`{id,
+displayName, status, login, pendingInvite, studentIds}`, `studentIds` — all the parent's children in
+the order linked, deactivated ones included) in the order linked; `POST` `{displayName}`
+→ 201 `{guardian, invite}`; `POST /link` `{guardianId}` → `GuardianView` (409
+`guardian.already-linked`, 404 `guardian.not-found`); `POST /{guardianId}/invite` → `IssuedInvite`;
+`DELETE /{guardianId}` → 204. Errors: 404 `student.not-found`, 422 `guardian.limit`,
+`account.deactivated` (a deactivated student). `GET /api/teacher/guardians` — every parent, for
+«link an existing one». The student's `GET /api/me/guardians` → `[{displayName}]` (403
+`identity.students-only` for others); the parent's `GET /api/guardian/children` → `[StudentSummary]`
+of the current children. `GET /api/auth/invites/{token}` answers `role` and `children` (first
+names).
 
 Tags: `GET /api/teacher/tags` → `[{id, name, kind, useInAi, values: [{id, label}], version}]` in order
 (`kind`: `LIST` | `TEXT`; a `TEXT` tag has `values: []`);

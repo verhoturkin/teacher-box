@@ -92,6 +92,8 @@ export interface BotAbilities {
   readonly teacherMenu: string[];
   /** A student's menu in the bot. */
   readonly studentMenu: string[];
+  /** A parent's menu in the bot (ADR-0069). */
+  readonly guardianMenu: string[];
 }
 
 /** A messenger bot of the instance, as the teacher sees it (mirrors `ChannelSetup`). */
@@ -141,6 +143,14 @@ export interface NotificationPreferences {
   /** `HH:mm` or `HH:mm:ss` in the instance time zone; both ends are set or both are `null`. */
   readonly quietFrom: string | null;
   readonly quietTo: string | null;
+}
+
+/** What of the child's notices a parent gets (ADR-0069): mirrors `GuardianCategory` of the backend. */
+export type GuardianCategory = 'PAYMENTS' | 'LESSONS' | 'HOMEWORK_DEADLINES' | 'REVIEWED_WORK';
+
+/** Mirrors `GuardianPreferencesView`: the categories switched off; empty — all on. */
+export interface GuardianPreferences {
+  readonly disabledCategories: GuardianCategory[];
 }
 
 /** Mirrors `TeacherNotificationsSummary`. */

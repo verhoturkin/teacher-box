@@ -10,11 +10,13 @@ const ARTICLES: Readonly<Record<Language, Readonly<Record<HelpArea, Articles>>>>
   ru: {
     teacher: async () => (await import('./articles/teacher/ru')).TEACHER_ARTICLES,
     cabinet: async () => (await import('./articles/student/ru')).STUDENT_ARTICLES,
+    guardian: async () => (await import('./articles/guardian/ru')).GUARDIAN_ARTICLES,
     admin: async () => (await import('./articles/admin/ru')).ADMIN_ARTICLES,
   },
   en: {
     teacher: async () => (await import('./articles/teacher/en')).TEACHER_ARTICLES,
     cabinet: async () => (await import('./articles/student/en')).STUDENT_ARTICLES,
+    guardian: async () => (await import('./articles/guardian/en')).GUARDIAN_ARTICLES,
     admin: async () => (await import('./articles/admin/en')).ADMIN_ARTICLES,
   },
 };
@@ -33,7 +35,7 @@ export class HelpLibrary {
   /** The article of a topic like `teacher/schedule`; `null` for an unknown one. */
   async article(topic: string): Promise<HelpArticle | null> {
     const [area, id] = topic.split('/');
-    if (area !== 'teacher' && area !== 'cabinet' && area !== 'admin') {
+    if (area !== 'teacher' && area !== 'cabinet' && area !== 'guardian' && area !== 'admin') {
       return null;
     }
     return (await this.articles(area)).find((article) => article.id === id) ?? null;

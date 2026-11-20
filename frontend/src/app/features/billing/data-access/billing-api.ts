@@ -1,5 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { API_SCOPE } from '@core/http/api-scope';
 import { Observable, map } from 'rxjs';
 import {
   BillingOverview,
@@ -13,6 +14,7 @@ import {
   OperationKind,
   Operations,
   Payment,
+  PaymentVisibility,
   RecordPaymentRequest,
   StudentLedger,
 } from './billing.models';
@@ -22,6 +24,8 @@ import { quietContext } from '@core/http/api-error.interceptor';
 @Injectable({ providedIn: 'root' })
 export class BillingApi {
   private readonly http = inject(HttpClient);
+  /** The student's own cabinet or a child's in the family cabinet (ADR-0069). */
+  private readonly scope = inject(API_SCOPE);
 
   /** The instance currency; the load is quiet (its card shows a failure itself). */
   currency(): Observable<CurrencySetting> {
@@ -54,7 +58,26 @@ export class BillingApi {
   }
 
   myLedger(): Observable<StudentLedger> {
-    return this.http.get<StudentLedger>('/api/me/billing', { context: quietContext() });
+    return this.http.get<StudentLedger>(`${this.scope.api()}/billing`, { context: quietContext() });
+  }
+
+  /** Whether only the student's parents see payments; the load is quiet (the card shows a failure itself). */
+  paymentVisibility(studentId: string): Observable<PaymentVisibility> {
+    return this.http.get<PaymentVisibility>(
+      `/api/teacher/billing/students/${studentId}/visibility`,
+      { context: quietContext() },
+    );
+  }
+
+  /** Refused (422 `billing.no-guardian`) while the student has no parent. */
+  changePaymentVisibility(
+    studentId: string,
+    guardiansOnly: boolean,
+  ): Observable<PaymentVisibility> {
+    return this.http.put<PaymentVisibility>(
+      `/api/teacher/billing/students/${studentId}/visibility`,
+      { guardiansOnly },
+    );
   }
 
   /** @returns the saved price in minor units */
@@ -97,10 +120,10 @@ export class BillingApi {
     return this.http.delete<Payment>(`/api/teacher/billing/payments/${paymentId}/receipt`);
   }
 
-  /** The receipt of a payment: the teacher's endpoint, or the student's own (`mine`). */
+  /** The receipt of a payment: the teacher's endpoint, or the cabinet's (`mine`: the student's own, a child's for a parent). */
   receipt(paymentId: string, mine: boolean): Observable<Blob> {
-    const area = mine ? 'me' : 'teacher';
-    return this.http.get(`/api/${area}/billing/payments/${paymentId}/receipt`, {
+    const base = mine ? this.scope.api() : '/api/teacher';
+    return this.http.get(`${base}/billing/payments/${paymentId}/receipt`, {
       responseType: 'blob',
     });
   }
@@ -153,6 +176,8 @@ export class BillingApi {
   }
 
   mySummary(): Observable<MyBillingSummary> {
-    return this.http.get<MyBillingSummary>('/api/me/billing/summary', { context: quietContext() });
+    return this.http.get<MyBillingSummary>(`${this.scope.api()}/billing/summary`, {
+      context: quietContext(),
+    });
   }
 }

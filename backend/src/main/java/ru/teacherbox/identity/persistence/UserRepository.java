@@ -155,6 +155,29 @@ public class UserRepository {
                 .list();
     }
 
+    public Optional<User> findGuardian(UUID id) {
+        return jdbc.sql(SELECT + " where id = :id and role = 'GUARDIAN'")
+                .param("id", id)
+                .query(UserRepository::map)
+                .optional();
+    }
+
+    public List<User> findGuardians() {
+        return jdbc.sql(SELECT + " where role = 'GUARDIAN' order by lower(display_name), id")
+                .query(UserRepository::map)
+                .list();
+    }
+
+    public List<User> findGuardiansByIds(Collection<UUID> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        return jdbc.sql(SELECT + " where role = 'GUARDIAN' and id in (:ids) order by lower(display_name), id")
+                .param("ids", ids)
+                .query(UserRepository::map)
+                .list();
+    }
+
     /** The photo with this storage key, if a user has it. */
     public Optional<Avatar> findAvatar(String key) {
         return jdbc.sql("select avatar_key, avatar_type from identity.users where avatar_key = :key")

@@ -55,9 +55,20 @@ describe('InvitePage', () => {
 
   const activation: InviteInfo = {
     purpose: 'ACTIVATION',
+    role: 'STUDENT',
     displayName: 'Алиса',
     login: null,
     expiresAt: '2026-10-01T10:00:00Z',
+    children: [],
+  };
+
+  const guardian: InviteInfo = {
+    purpose: 'ACTIVATION',
+    role: 'GUARDIAN',
+    displayName: 'Ольга',
+    login: null,
+    expiresAt: '2026-10-01T10:00:00Z',
+    children: ['Петя', 'Маша'],
   };
 
   it('shows an error for invalid links', async () => {
@@ -133,9 +144,11 @@ describe('InvitePage', () => {
   it('resets the password without asking for a login', async () => {
     await load({
       purpose: 'PASSWORD_RESET',
+      role: 'STUDENT',
       displayName: 'Борис',
       login: 'boris',
       expiresAt: '2026-10-01T10:00:00Z',
+      children: [],
     });
     expect(text()).toContain('Задайте новый пароль для логина boris');
     expect(hostElement(fixture).querySelector('#login')).toBeNull();
@@ -177,5 +190,37 @@ describe('InvitePage', () => {
     expect(text()).toContain('Вы вошли как учитель');
     expect(requireElement(hostElement(fixture), '#login', HTMLInputElement).disabled).toBe(true);
     expect(buttonByText(hostElement(fixture), 'Создать аккаунт').disabled).toBe(true);
+  });
+
+  it('greets a parent with their children and signs them in to the family cabinet', async () => {
+    await load(guardian);
+
+    expect(text()).toContain('Здравствуйте, Ольга!');
+    expect(text()).toContain('Вас пригласили как родителя. Дети: Петя и Маша.');
+    expect(text()).toContain('только для чтения');
+    await fill({ login: 'olga', password: 'olga-password', confirm: 'olga-password' });
+    buttonByText(hostElement(fixture), 'Создать аккаунт').click();
+
+    backend.expectOne('/api/auth/invites/tok-en/accept').flush(authResponse('GUARDIAN'));
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/family');
+  });
+
+  it('names one child in the singular', async () => {
+    await load({ ...guardian, children: ['Петя'] });
+
+    expect(text()).toContain('Ребёнок: Петя.');
+  });
+
+  it('shows no children line on a student invitation', async () => {
+    await load(activation);
+
+    expect(hostElement(fixture).querySelector('.tb-invite-guardian')).toBeNull();
+  });
+
+  it('tells a signed-in teacher that a parent will open the link', async () => {
+    TestBed.inject(AuthService).acceptSession(authResponse('TEACHER'));
+    await load(guardian);
+
+    expect(text()).toContain('Эту ссылку откроет родитель');
   });
 });

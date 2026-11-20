@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import ru.teacherbox.identity.api.GroupSummary;
+import ru.teacherbox.identity.api.GuardianSummary;
+import ru.teacherbox.identity.api.Guardians;
 import ru.teacherbox.identity.api.StudentGroups;
 import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.identity.api.StudentSummary;
@@ -15,10 +18,11 @@ import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.shared.i18n.Language;
 
 /**
- * The people of the notice samples, with fixed ids: a teacher, three students and a group. Everybody
+ * The people of the notice samples, with fixed ids: a teacher, three students, a group and Anna's mother
+ * (a guardian). Everybody
  * reads in {@link #language}.
  */
-public final class SamplePeople implements UserDirectory, StudentGroups {
+public final class SamplePeople implements UserDirectory, StudentGroups, Guardians {
 
     public static final UUID TEACHER = id(1);
     public static final UUID ANNA = id(11);
@@ -29,6 +33,10 @@ public final class SamplePeople implements UserDirectory, StudentGroups {
     public static final UUID GROUP = id(21);
     /** A group the directory does not know. */
     public static final UUID LOST_GROUP = id(29);
+    /** Anna's guardian (ADR-0069). */
+    public static final UUID OLGA = id(31);
+    /** A guardian no longer linked to anyone. */
+    public static final UUID LOST_GUARDIAN = id(39);
 
     private static final Map<UUID, String> STUDENTS = new LinkedHashMap<>();
 
@@ -72,6 +80,12 @@ public final class SamplePeople implements UserDirectory, StudentGroups {
         return studentIds.stream().map(this::findStudent).flatMap(Optional::stream).toList();
     }
 
+    /** No guardians here: the identity module's tests cover them. */
+    @Override
+    public Optional<String> guardianName(UUID guardianId) {
+        return Optional.empty();
+    }
+
     @Override
     public List<StudentSummary> currentStudents() {
         return findStudents(STUDENTS.keySet());
@@ -101,5 +115,20 @@ public final class SamplePeople implements UserDirectory, StudentGroups {
     @Override
     public List<GroupSummary> currentGroups() {
         return findGroup(GROUP).stream().toList();
+    }
+
+    @Override
+    public boolean isGuardianOf(UUID guardianId, UUID studentId) {
+        return OLGA.equals(guardianId) && ANNA.equals(studentId);
+    }
+
+    @Override
+    public List<StudentSummary> childrenOf(UUID guardianId) {
+        return OLGA.equals(guardianId) ? findStudents(Set.of(ANNA)) : List.of();
+    }
+
+    @Override
+    public List<GuardianSummary> guardiansOf(UUID studentId) {
+        return ANNA.equals(studentId) ? List.of(new GuardianSummary(OLGA, "Ольга", StudentStatus.ACTIVE)) : List.of();
     }
 }

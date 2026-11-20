@@ -244,6 +244,9 @@ class AnswerRequestsChatAction implements ChatAction {
         if (request.late()) {
             text.append(t.late());
         }
+        if (request.guardianId() != null) {
+            text.append(t.byGuardian(request.guardianName()));
+        }
         if (request.comment() != null) {
             text.append(t.quoted(request.comment()));
         }

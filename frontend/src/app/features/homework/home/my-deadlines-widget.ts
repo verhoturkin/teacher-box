@@ -10,6 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { API_SCOPE } from '@core/http/api-scope';
 import { Button } from 'primeng/button';
 import { Tag } from 'primeng/tag';
 import { HomeworkApi } from '../data-access/homework-api';
@@ -62,7 +63,7 @@ const RECENT = 3;
               </div>
               <div class="tb-list__trail">
                 <p-button
-                  [label]="task.status === 'RETURNED' ? t.fix : t.openTask"
+                  [label]="task.status === 'RETURNED' && !scope.readOnly ? t.fix : t.openTask"
                   [severity]="task.status === 'RETURNED' ? 'secondary' : 'primary'"
                   (onClick)="open(task)"
                 />
@@ -129,6 +130,7 @@ export class MyDeadlinesWidget implements OnInit {
   protected readonly t = T.deadlines;
   private readonly api = inject(HomeworkApi);
   private readonly router = inject(Router);
+  protected readonly scope = inject(API_SCOPE);
 
   readonly summary = input.required<MyHomeworkSummary>();
 
@@ -157,6 +159,6 @@ export class MyDeadlinesWidget implements OnInit {
   }
 
   protected open(task: MyTask): void {
-    void this.router.navigate(['/cabinet/homework', task.taskId]);
+    void this.router.navigate([`${this.scope.area()}/homework`, task.taskId]);
   }
 }

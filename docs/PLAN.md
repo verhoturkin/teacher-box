@@ -23,24 +23,6 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
-## Next release
-
-Goals: the teacher's Today stops stretching over a wide screen (sketch «Главная учителя —
-варианты», board D); both sides of a lesson see who is already waiting in the portal's call.
-
-### 450. Today on wide screens and call presence
-
-- [x] 450.1 **F** *simple* — Presence in the lesson card. Teacher (`meetings/ui/call-summon.ts`):
-  everybody in the room and the teacher not → «Ира ждёт в звонке» / «Все ждут в звонке» without
-  «Позвать»; the teacher in too → nothing. Student (`schedule/home/next-lesson-widget.ts`, new
-  `meetings/ui/teacher-waiting.ts` on `GET /api/me/meetings/calls`): «Учитель ждёт в звонке» while
-  the lesson's portal room has the teacher. Both ask every 10 s instead of 30 s.
-- [x] 450.2 **F** *complex* — Today as board D from large: a flexible lead pane (the lesson hero,
-  then the other rows and the queue in two columns) and a fixed 412 dp figures pane on surface
-  container (`home/teacher-home.ts`); the hero (`home/today-lessons.ts`, `part="hero"`) on one line:
-  the time tile (`schedule/ui/lesson-time-tile.ts`), avatar, name in an emphasized style, the join
-  and call buttons as one connected group; a wavy bar of the lesson's elapsed time.
-
 ## Backlog
 
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,

@@ -12,13 +12,17 @@ import { Card } from 'primeng/card';
 import { NotificationsApi } from '../data-access/notifications-api';
 import { ChannelState } from '../data-access/notifications.models';
 import { CHANNEL_NAMES } from '../notification-labels';
+import { API_SCOPE } from '@core/http/api-scope';
 import { hideHint, isHintHidden } from '@shared/storage/device-settings';
 import { T } from '../i18n/texts';
 
 /** Browser storage key: the student postponed connecting a messenger. */
 export const CONNECT_DISMISSED_KEY = 'tb.connect-messenger.dismissed';
 
-/** Student: invites to connect a messenger while none is connected. */
+/**
+ * A student — or a parent in the family cabinet (ADR-0069) — is invited to connect a messenger while
+ * none is connected; «Подключить» leads to the cabinet's «Мой аккаунт».
+ */
 @Component({
   selector: 'tb-connect-messenger-card',
   imports: [RouterLink, Button, ButtonDirective, ButtonIcon, ButtonLabel, Card],
@@ -26,9 +30,9 @@ export const CONNECT_DISMISSED_KEY = 'tb.connect-messenger.dismissed';
   template: `
     @if (visible()) {
       <p-card [header]="t.title" styleClass="tb-connect-card">
-        <p>{{ t.text(names()) }}</p>
+        <p>{{ scope.readOnly ? t.childText(names()) : t.text(names()) }}</p>
         <div class="tb-actions">
-          <a pButton routerLink="/cabinet/account" severity="secondary">
+          <a pButton [routerLink]="scope.area() + '/account'" severity="secondary">
             <i pButtonIcon aria-hidden="true" class="tb-i tb-i-link"></i>
             <span pButtonLabel>{{ t.connect }}</span>
           </a>
@@ -40,6 +44,7 @@ export const CONNECT_DISMISSED_KEY = 'tb.connect-messenger.dismissed';
 })
 export class ConnectMessengerCard implements OnInit {
   protected readonly t = T.connect;
+  protected readonly scope = inject(API_SCOPE);
   private readonly api = inject(NotificationsApi);
 
   private readonly channels = signal<ChannelState[]>([]);

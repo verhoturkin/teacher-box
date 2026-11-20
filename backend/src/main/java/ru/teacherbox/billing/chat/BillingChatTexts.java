@@ -10,6 +10,8 @@ enum BillingChatTexts {
         @Override String recordPayment() { return "Записать оплату"; }
         @Override String addLesson() { return "Добавить занятие"; }
         @Override String payments() { return "Оплаты"; }
+        @Override String balance() { return "Баланс"; }
+        @Override String noChildren() { return "Детей в портале пока нет."; }
         @Override String noStudents() { return "Учеников пока нет."; }
         @Override String studentGone() { return "Этого ученика уже нет среди текущих."; }
         @Override String groupGone() { return "Этой группы уже нет среди текущих."; }
@@ -70,6 +72,8 @@ enum BillingChatTexts {
         @Override String recordPayment() { return "Record a payment"; }
         @Override String addLesson() { return "Add a lesson"; }
         @Override String payments() { return "Payments"; }
+        @Override String balance() { return "Balance"; }
+        @Override String noChildren() { return "No children are linked to your account yet."; }
         @Override String noStudents() { return "No students yet."; }
         @Override String studentGone() { return "This student is no longer active."; }
         @Override String groupGone() { return "This group is no longer active."; }
@@ -127,6 +131,11 @@ enum BillingChatTexts {
     abstract String addLesson();
 
     abstract String payments();
+
+    /** A guardian's menu item: the children's balances (ADR-0069). */
+    abstract String balance();
+
+    abstract String noChildren();
 
     abstract String noStudents();
 

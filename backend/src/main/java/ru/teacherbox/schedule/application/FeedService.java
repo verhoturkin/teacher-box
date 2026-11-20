@@ -3,12 +3,17 @@ package ru.teacherbox.schedule.application;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.schedule.application.ScheduleViews.FeedView;
 import ru.teacherbox.schedule.domain.FeedTokens;
 import ru.teacherbox.schedule.domain.Lesson;
@@ -18,7 +23,9 @@ import ru.teacherbox.shared.portal.Portal;
 
 /**
  * Secret links to subscribe to the schedule from Google, Apple or Yandex Calendar: the teacher's
- * feed has all lessons, a student's feed only their own. The link is shown once when it is created.
+ * feed has all lessons, a student's feed only their own, a guardian's feed the lessons of all their
+ * current children, each event titled with the child's name (ADR-0069). The link is shown once when
+ * it is created.
  */
 @Service
 public class FeedService {
@@ -67,8 +74,8 @@ public class FeedService {
     }
 
     /**
-     * @return the calendar of the link's owner in their language, or empty for an unknown link or a
-     *         deactivated student
+     * @return the calendar of the link's owner in their language, or empty for an unknown link, a
+     *         deactivated student or a guardian without current children
      */
     @Transactional(readOnly = true)
     public Optional<String> calendar(String token) {
@@ -94,13 +101,37 @@ public class FeedService {
                     names::joinUrl, now, texts));
         }
         if (!directory.isCurrentStudent(ownerId)) {
-            return Optional.empty();
+            return family(ownerId, from, to, now, texts);
         }
         List<Lesson> own = lessons.findStartingBetween(ownerId, from, to);
         ScheduleNames names = directory.namesOf(own);
         return Optional.of(IcsWriter.calendar(texts.studentCalendar(portal.name()), own,
-                lesson -> (lesson.isGroup() ? texts.groupLesson(String.valueOf(names.group(lesson.groupId())))
-                        : texts.lesson()) + (lesson.title() == null ? "" : ": " + lesson.title()),
+                lesson -> studentSummary(lesson, names, texts),
                 names::joinUrl, now, texts));
+    }
+
+    /** A guardian's feed: every lesson of their children once, titled «Маша — Занятие». */
+    private Optional<String> family(UUID guardianId, Instant from, Instant to, Instant now, CalendarTexts texts) {
+        List<StudentSummary> children = directory.childrenOf(guardianId);
+        if (children.isEmpty()) {
+            return Optional.empty();
+        }
+        Map<UUID, Lesson> byId = new LinkedHashMap<>();
+        for (StudentSummary child : children) {
+            lessons.findStartingBetween(child.id(), from, to).forEach(lesson -> byId.putIfAbsent(lesson.id(), lesson));
+        }
+        List<Lesson> all = byId.values().stream().sorted(Comparator.comparing(Lesson::startsAt)).toList();
+        ScheduleNames names = directory.namesOf(all);
+        return Optional.of(IcsWriter.calendar(texts.familyCalendar(portal.name()), all,
+                lesson -> children.stream().filter(child -> lesson.studentIds().contains(child.id()))
+                        .map(StudentSummary::displayName).collect(Collectors.joining(", "))
+                        + " — " + studentSummary(lesson, names, texts),
+                names::joinUrl, now, texts));
+    }
+
+    /** A student's event: «Занятие: тема» or «Занятие группы «Б1»». */
+    private static String studentSummary(Lesson lesson, ScheduleNames names, CalendarTexts texts) {
+        return (lesson.isGroup() ? texts.groupLesson(String.valueOf(names.group(lesson.groupId())))
+                : texts.lesson()) + (lesson.title() == null ? "" : ": " + lesson.title());
     }
 }

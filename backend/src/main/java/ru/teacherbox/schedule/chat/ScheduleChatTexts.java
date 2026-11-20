@@ -16,6 +16,7 @@ enum ScheduleChatTexts {
         @Override String cancelLesson() { return "Отменить занятие"; }
         @Override String moveLesson() { return "Перенести занятие"; }
         @Override String myRequests() { return "Мои запросы"; }
+        @Override String familySchedule() { return "Расписание детей"; }
         @Override String requests() { return "Запросы"; }
 
         @Override String inGroup(String group) { return " — группа «" + group + "»"; }
@@ -122,6 +123,16 @@ enum ScheduleChatTexts {
         @Override String andMore(int count) { return "…и ещё " + count; }
         @Override String joinNearest() { return "Войти на ближайший урок"; }
 
+        @Override String whichChild() { return "Для кого? Выберите ребёнка."; }
+        @Override String childLessons(String child) { return child + ", ближайшие занятия:"; }
+        @Override String childNoLessons(String child) { return child + ": запланированных занятий нет."; }
+        @Override String childWontCome() { return " (не придёт)"; }
+        @Override String childRequestPending() { return " (запрос ждёт ответа)"; }
+        @Override String tellChildAbsence(String child, String group, String when) {
+            return "Сообщить учителю, что " + child + " не придёт на занятие группы «" + group + "» " + when + "?";
+        }
+        @Override String childAbsenceSent(String child) { return "Готово: учитель увидит, что " + child + " не придёт."; }
+
         @Override String noRequests() { return "Запросов пока нет."; }
         @Override String yourRequests() { return "Ваши запросы:"; }
         @Override String teacherAnswer(String answer) { return "Учитель: «" + answer + "»"; }
@@ -190,6 +201,9 @@ enum ScheduleChatTexts {
         @Override String asksToCancel(String student, String when) { return student + ": отменить занятие " + when; }
         @Override String late() { return " (поздно)"; }
         @Override String quoted(String comment) { return " — «" + comment + "»"; }
+        @Override String byGuardian(@Nullable String guardian) {
+            return guardian == null ? " — запрос от родителя" : " — запрос от родителя (" + guardian + ")";
+        }
         @Override String accept() { return "Принять"; }
         @Override String decline() { return "Отклонить"; }
     },
@@ -201,6 +215,7 @@ enum ScheduleChatTexts {
         @Override String cancelLesson() { return "Cancel a lesson"; }
         @Override String moveLesson() { return "Reschedule a lesson"; }
         @Override String myRequests() { return "My requests"; }
+        @Override String familySchedule() { return "Children's lessons"; }
         @Override String requests() { return "Requests"; }
 
         @Override String inGroup(String group) { return " — group “" + group + "”"; }
@@ -283,6 +298,16 @@ enum ScheduleChatTexts {
         @Override String andMore(int count) { return "…and " + count + " more"; }
         @Override String joinNearest() { return "Join next lesson"; }
 
+        @Override String whichChild() { return "Which child is this for?"; }
+        @Override String childLessons(String child) { return child + "'s upcoming lessons:"; }
+        @Override String childNoLessons(String child) { return child + " has no upcoming lessons."; }
+        @Override String childWontCome() { return " (not attending)"; }
+        @Override String childRequestPending() { return " (awaiting the teacher's reply)"; }
+        @Override String tellChildAbsence(String child, String group, String when) {
+            return "Let the teacher know " + child + " can't attend the “" + group + "” lesson on " + when + "?";
+        }
+        @Override String childAbsenceSent(String child) { return "Done. The teacher will see that " + child + " can't attend."; }
+
         @Override String noRequests() { return "No requests yet."; }
         @Override String yourRequests() { return "Your requests:"; }
         @Override String teacherAnswer(String answer) { return "Teacher: “" + answer + "”"; }
@@ -333,6 +358,9 @@ enum ScheduleChatTexts {
         }
         @Override String late() { return " (late)"; }
         @Override String quoted(String comment) { return " — “" + comment + "”"; }
+        @Override String byGuardian(@Nullable String guardian) {
+            return guardian == null ? " — sent by a parent" : " — sent by a parent (" + guardian + ")";
+        }
         @Override String accept() { return "Approve"; }
         @Override String decline() { return "Decline"; }
     };
@@ -357,6 +385,8 @@ enum ScheduleChatTexts {
     abstract String moveLesson();
 
     abstract String myRequests();
+
+    abstract String familySchedule();
 
     abstract String requests();
 
@@ -586,6 +616,25 @@ enum ScheduleChatTexts {
     abstract String late();
 
     abstract String quoted(String comment);
+
+    /** A parent sent the request on the child's behalf; {@code null}: their name is unknown. */
+    abstract String byGuardian(@Nullable String guardian);
+
+    // a guardian (ADR-0069)
+
+    abstract String whichChild();
+
+    abstract String childLessons(String child);
+
+    abstract String childNoLessons(String child);
+
+    abstract String childWontCome();
+
+    abstract String childRequestPending();
+
+    abstract String tellChildAbsence(String child, String group, String when);
+
+    abstract String childAbsenceSent(String child);
 
     abstract String accept();
 

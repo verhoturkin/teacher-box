@@ -1,5 +1,6 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { API_SCOPE } from '@core/http/api-scope';
 import { Observable, map } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import {
@@ -38,9 +39,11 @@ const QUIET = { context: new HttpContext().set(SKIP_ERROR_TOAST, true) };
 @Injectable({ providedIn: 'root' })
 export class ScheduleApi {
   private readonly http = inject(HttpClient);
+  /** The student's own cabinet or a child's in the family cabinet (ADR-0069). */
+  private readonly scope = inject(API_SCOPE);
 
   settings(): Observable<ScheduleSettings> {
-    return this.http.get<ScheduleSettings>('/api/me/schedule/settings', QUIET);
+    return this.http.get<ScheduleSettings>(`${this.scope.api()}/schedule/settings`, QUIET);
   }
 
   /** The teacher's lesson rules; the load is quiet (its card shows a failure itself). */
@@ -209,7 +212,7 @@ export class ScheduleApi {
   }
 
   myLessons(from: string, to: string): Observable<ScheduledLesson[]> {
-    return this.http.get<ScheduledLesson[]>('/api/me/schedule/lessons', {
+    return this.http.get<ScheduledLesson[]>(`${this.scope.api()}/schedule/lessons`, {
       ...QUIET,
       params: range(from, to),
     });
@@ -217,7 +220,10 @@ export class ScheduleApi {
 
   /** One lesson of the student with its shared summary. */
   myLesson(lessonId: string): Observable<ScheduledLesson> {
-    return this.http.get<ScheduledLesson>(`/api/me/schedule/lessons/${lessonId}`, QUIET);
+    return this.http.get<ScheduledLesson>(
+      `${this.scope.api()}/schedule/lessons/${lessonId}`,
+      QUIET,
+    );
   }
 
   /** Held lessons of the student with the shared summaries, newest first. */
@@ -226,36 +232,39 @@ export class ScheduleApi {
     if (before !== null) {
       params = params.set('before', before);
     }
-    return this.http.get<HistoryEntry[]>('/api/me/schedule/history', { ...QUIET, params });
+    return this.http.get<HistoryEntry[]>(`${this.scope.api()}/schedule/history`, {
+      ...QUIET,
+      params,
+    });
   }
 
   requestChange(lessonId: string, body: ChangeRequestBody): Observable<ChangeRequest> {
     return this.http.post<ChangeRequest>(
-      `/api/me/schedule/lessons/${lessonId}/requests`,
+      `${this.scope.api()}/schedule/lessons/${lessonId}/requests`,
       body,
       QUIET,
     );
   }
 
   myRequests(): Observable<ChangeRequest[]> {
-    return this.http.get<ChangeRequest[]>('/api/me/schedule/requests', QUIET);
+    return this.http.get<ChangeRequest[]>(`${this.scope.api()}/schedule/requests`, QUIET);
   }
 
   withdraw(requestId: string): Observable<unknown> {
-    return this.http.delete(`/api/me/schedule/requests/${requestId}`);
+    return this.http.delete(`${this.scope.api()}/schedule/requests/${requestId}`);
   }
 
   feed(): Observable<CalendarFeed> {
-    return this.http.get<CalendarFeed>('/api/me/schedule/feed', QUIET);
+    return this.http.get<CalendarFeed>(this.scope.feed, QUIET);
   }
 
   /** A new calendar link; the previous one stops working. */
   createFeed(): Observable<CalendarFeed> {
-    return this.http.post<CalendarFeed>('/api/me/schedule/feed', null);
+    return this.http.post<CalendarFeed>(this.scope.feed, null);
   }
 
   disableFeed(): Observable<unknown> {
-    return this.http.delete('/api/me/schedule/feed');
+    return this.http.delete(this.scope.feed);
   }
 
   googleStatus(): Observable<GoogleCalendarStatus> {
@@ -318,17 +327,24 @@ export class ScheduleApi {
     });
   }
 
-  /** For a student: when the teacher is busy in `[from, to)` (ISO instants), without whose lessons. */
+  /**
+   * For a student or a parent of the child: when the teacher is busy in `[from, to)` (ISO instants),
+   * without whose lessons.
+   */
   teacherBusy(from: string, to: string): Observable<BusyTime[]> {
-    return this.http.get<BusyTime[]>('/api/me/schedule/busy', {
+    return this.http.get<BusyTime[]>(`${this.scope.api()}/schedule/busy`, {
       ...QUIET,
       params: new HttpParams().set('from', from).set('to', to),
     });
   }
 
-  /** Free start times (ISO instants) of `date` to move a lesson to: the student's or the teacher's view. */
+  /**
+   * Free start times (ISO instants) of `date` to move a lesson to: the teacher's view, or the cabinet's
+   * (the student's own or a parent's of the child).
+   */
   freeTimes(lessonId: string, date: string, asTeacher: boolean): Observable<string[]> {
-    return this.http.get<string[]>(`/api/${asTeacher ? 'teacher' : 'me'}/schedule/free-times`, {
+    const base = asTeacher ? '/api/teacher' : this.scope.api();
+    return this.http.get<string[]>(`${base}/schedule/free-times`, {
       ...QUIET,
       params: new HttpParams().set('date', date).set('lessonId', lessonId),
     });
@@ -339,7 +355,7 @@ export class ScheduleApi {
   }
 
   mySummary(): Observable<MyScheduleSummary> {
-    return this.http.get<MyScheduleSummary>('/api/me/schedule/summary', QUIET);
+    return this.http.get<MyScheduleSummary>(`${this.scope.api()}/schedule/summary`, QUIET);
   }
 }
 

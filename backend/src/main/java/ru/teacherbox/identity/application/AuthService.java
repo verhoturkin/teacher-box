@@ -11,6 +11,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.teacherbox.identity.api.Guardians;
 import ru.teacherbox.identity.domain.AccountStatus;
 import ru.teacherbox.identity.domain.RefreshToken;
 import ru.teacherbox.identity.domain.User;
@@ -29,18 +30,20 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokens;
     private final SessionIssuer sessionIssuer;
     private final PasswordEncoder passwordEncoder;
+    private final Guardians guardians;
     /** Read on every use: the administrator changes the lifetimes and lock rules without a restart (ADR-0056). */
     private final LiveProperties<IdentityProperties> properties;
     private final Clock clock;
     /** Hash compared against when the login is unknown, so that response time does not reveal it. */
     private final String dummyHash;
 
-    public AuthService(UserRepository users, RefreshTokenRepository refreshTokens, SessionIssuer sessionIssuer,
-            PasswordEncoder passwordEncoder, Environment environment, Clock clock) {
+    AuthService(UserRepository users, RefreshTokenRepository refreshTokens, SessionIssuer sessionIssuer,
+            PasswordEncoder passwordEncoder, Guardians guardians, Environment environment, Clock clock) {
         this.users = users;
         this.refreshTokens = refreshTokens;
         this.sessionIssuer = sessionIssuer;
         this.passwordEncoder = passwordEncoder;
+        this.guardians = guardians;
         this.properties = new LiveProperties<>(environment, IdentityProperties.class);
         this.clock = clock;
         this.dummyHash = passwordEncoder.encode("dummy-password-for-timing");
@@ -49,8 +52,9 @@ public class AuthService {
     /**
      * Signs a user in.
      *
-     * @throws UnauthorizedException {@code auth.invalid-credentials}, {@code auth.locked} or
-     *                               {@code auth.deactivated}
+     * @throws UnauthorizedException {@code auth.invalid-credentials}, {@code auth.locked},
+     *                               {@code auth.deactivated} or {@code identity.guardian-no-students} (a guardian
+     *                               whose children are all deactivated, ADR-0069)
      */
     @Transactional(noRollbackFor = UnauthorizedException.class)
     public Session login(String login, String password) {
@@ -72,6 +76,10 @@ public class AuthService {
         }
         if (user.status() == AccountStatus.DEACTIVATED) {
             throw new UnauthorizedException("auth.deactivated", "Account is deactivated");
+        }
+        if (!hasChildren(user)) {
+            throw new UnauthorizedException("identity.guardian-no-students",
+                    "The parent has no students in the portal. Ask the teacher");
         }
         user.recordSuccessfulLogin(now);
         users.update(user);
@@ -100,6 +108,7 @@ public class AuthService {
         }
         User user = users.findById(token.userId())
                 .filter(u -> u.status() == AccountStatus.ACTIVE)
+                .filter(this::hasChildren)
                 .orElseThrow(AuthService::invalidRefresh);
         SessionIssuer.IssuedSession issued = sessionIssuer.continueSession(user, token.familyId());
         if (!token.isRevoked()) {
@@ -114,6 +123,11 @@ public class AuthService {
     public void logout(@Nullable String rawRefreshToken) {
         findRefreshToken(rawRefreshToken)
                 .ifPresent(token -> refreshTokens.revokeFamily(token.familyId(), clock.instant()));
+    }
+
+    /** Anyone but a guardian; a guardian while at least one child is invited or active. */
+    private boolean hasChildren(User user) {
+        return !user.isGuardian() || !guardians.childrenOf(user.id()).isEmpty();
     }
 
     Optional<RefreshToken> findRefreshToken(@Nullable String rawRefreshToken) {

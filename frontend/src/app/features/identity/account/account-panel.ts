@@ -22,7 +22,7 @@ import { InputText } from 'primeng/inputtext';
 import { Select } from 'primeng/select';
 import { SelectButton } from 'primeng/selectbutton';
 import { injectMobile, injectWindowSize } from '@core/layout/mobile';
-import { LANGUAGES, Language, chooseLanguage, language } from '@core/i18n/language';
+import { LANGUAGES, Language, chooseLanguage, language, locale } from '@core/i18n/language';
 import { ThemeChoice, ThemeMode } from '@core/theme/theme-mode';
 import { AuthService } from '@core/auth/auth.service';
 import { Avatar } from '@shared/ui/avatar';
@@ -40,6 +40,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { T } from '../i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
+const NAMES = new Intl.ListFormat(locale(), { type: 'conjunction' });
 const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
 
 /** Pictures the browser can cut into a square; the size is not limited — the result is scaled down. */
@@ -77,10 +78,14 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
         <p-card [header]="t.profile" styleClass="tb-section-card tb-section-card--flow">
           @if (hasPhoto()) {
             <tb-profile-photo [account]="account" (changed)="changed($event)" />
-          } @else {
+          }
+          <!-- the administrator's and a parent's name: the teacher and a student have it in a field -->
+          @if (!isTeacher() && !isStudent()) {
             <div class="tb-tiles">
               <div class="tb-tile">
-                <tb-avatar [name]="account.displayName" [photo]="account.avatar" size="2.5rem" />
+                @if (!hasPhoto()) {
+                  <tb-avatar [name]="account.displayName" [photo]="account.avatar" size="2.5rem" />
+                }
                 <span class="tb-tile__text">
                   <b class="tb-account__name">{{ account.displayName }}</b>
                   <span class="tb-account__role">{{ roleLabel() }}</span>
@@ -102,6 +107,19 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
                 (change)="renameSelf()"
               />
               <small class="tb-hint">{{ t.ownNameHint(account.profileName) }}</small>
+            </div>
+          }
+          @if (guardianNames(); as names) {
+            <div class="tb-tiles">
+              <div class="tb-tile">
+                <span class="tb-tile__icon" aria-hidden="true"
+                  ><i class="tb-i tb-i-family_restroom"></i
+                ></span>
+                <span class="tb-tile__text">
+                  <b>{{ t.guardians(guardianCount()) }}: {{ names }}</b>
+                  <span>{{ t.guardiansHint }}</span>
+                </span>
+              </div>
             </div>
           }
         </p-card>
@@ -396,12 +414,23 @@ export class AccountPanel implements OnInit {
   protected readonly account = signal<Account | null>(null);
   protected readonly isTeacher = computed(() => this.account()?.role === 'TEACHER');
   protected readonly isStudent = computed(() => this.account()?.role === 'STUDENT');
-  /** A student and the teacher choose a photo and notifications; the administrator has neither. */
-  protected readonly hasPhoto = computed(() => this.isStudent() || this.isTeacher());
+  /**
+   * A student, a parent and the teacher choose a photo and their notifications; the administrator
+   * has neither (ADR-0010).
+   */
+  protected readonly hasPhoto = computed(
+    () => this.isStudent() || this.isTeacher() || this.account()?.role === 'GUARDIAN',
+  );
   private readonly slot = contentChild(AccountNotifications);
   /** «Уведомления» the page projected, for the roles that have them. */
   protected readonly notifications = computed(() =>
     this.hasPhoto() ? (this.slot()?.template ?? null) : null,
+  );
+  /** The student's parents by name. */
+  private readonly guardians = signal<readonly string[]>([]);
+  protected readonly guardianCount = computed(() => this.guardians().length);
+  protected readonly guardianNames = computed(() =>
+    this.guardians().length === 0 ? null : NAMES.format(this.guardians()),
   );
   protected readonly roleLabel = computed(() => ROLE_LABELS[this.account()?.role ?? 'STUDENT']);
   protected readonly renaming = signal(false);
@@ -433,6 +462,21 @@ export class AccountPanel implements OnInit {
   ngOnInit(): void {
     this.api.account().subscribe((account) => {
       this.show(account);
+      if (account.role === 'STUDENT') {
+        this.loadGuardians();
+      }
+    });
+  }
+
+  /** «Родители: Анна»: who sees the student's data (ADR-0069); a failed load shows nothing. */
+  private loadGuardians(): void {
+    this.api.myGuardians().subscribe({
+      next: (guardians) => {
+        this.guardians.set(guardians.map((guardian) => guardian.displayName));
+      },
+      error: () => {
+        this.guardians.set([]);
+      },
     });
   }
 

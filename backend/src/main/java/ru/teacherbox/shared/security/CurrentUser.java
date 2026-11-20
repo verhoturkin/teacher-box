@@ -19,6 +19,11 @@ public record CurrentUser(UUID id, Role role, String displayName) {
         return role == Role.TEACHER;
     }
 
+    /** A parent (ADR-0069): reads their children's data through {@link GuardianAccess}. */
+    public boolean isGuardian() {
+        return role == Role.GUARDIAN;
+    }
+
     /**
      * Ensures that the user may access data of the given student: either the teacher or the student themself.
      */

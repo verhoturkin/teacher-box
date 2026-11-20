@@ -200,3 +200,12 @@ export interface GroupPrices {
   readonly currency: string;
   readonly prices: readonly GroupPrice[];
 }
+
+/** Mirrors `PaymentVisibilityService.PaymentVisibility` (ADR-0069): payments shown to parents only. */
+export interface PaymentVisibility {
+  readonly studentId: string;
+  /** The student sees no payments and gets no payment notices; their parents do. */
+  readonly guardiansOnly: boolean;
+  /** The switch makes sense only while the student has a parent (422 `billing.no-guardian` otherwise). */
+  readonly hasGuardians: boolean;
+}

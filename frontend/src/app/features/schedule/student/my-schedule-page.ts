@@ -9,6 +9,7 @@ import {
 import { ListRow } from '@shared/ui/list-row';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { API_SCOPE } from '@core/http/api-scope';
 import { NgTemplateOutlet } from '@angular/common';
 import { Button } from 'primeng/button';
 import { Tag } from 'primeng/tag';
@@ -30,6 +31,7 @@ import {
   formatLessonStart,
   formatLessonTime,
   lessonWith,
+  parentRequest,
   requestKindLabel,
   widen,
 } from '../schedule-labels';
@@ -236,7 +238,7 @@ export function nextMonday(date: Date): Date {
 
           @if (requests().length > 0) {
             <section class="tb-my-schedule-section">
-              <h2>{{ t.requests }}</h2>
+              <h2>{{ readOnly ? t.childRequests : t.requests }}</h2>
               @if (pendingRequests().length > 0) {
                 <ul class="tb-list tb-list--no-phone-lead tb-schedule-list">
                   @for (request of pendingRequests(); track request.id) {
@@ -286,6 +288,9 @@ export function nextMonday(date: Date): Date {
                     · {{ t.group(request.groupName) }}
                   }
                 </span>
+                @if (byParent(request); as parent) {
+                  <span class="tb-list__supporting">{{ parent }}</span>
+                }
                 @if (request.answer !== null) {
                   <span class="tb-list__supporting">{{ t.teacher(request.answer) }}</span>
                 }
@@ -357,7 +362,7 @@ export function nextMonday(date: Date): Date {
     >
       @if (sheetLesson(); as lesson) {
         <div class="tb-student-lesson">
-          <tb-lesson-card role="student" [lesson]="lesson" />
+          <tb-lesson-card role="student" [lesson]="cardLesson(lesson)" />
           @if (sheetSummary(); as summary) {
             <section class="tb-history__part">
               <span class="tb-history__label">{{ t.covered }}</span>
@@ -484,8 +489,14 @@ export class MySchedulePage implements OnInit {
   private readonly api = inject(ScheduleApi);
   private readonly snackbar = inject(Snackbar);
   private readonly route = inject(ActivatedRoute);
+  /**
+   * The family cabinet: the child's lessons, history and requests (the parent asks on the child's
+   * behalf, 454.3) without the link of the call.
+   */
+  protected readonly readOnly = inject(API_SCOPE).readOnly;
 
   protected readonly kind = requestKindLabel;
+  protected readonly byParent = parentRequest;
   protected readonly requestStatuses = REQUEST_STATUS_LABELS;
   protected readonly settings = signal<ScheduleSettings | null>(null);
   protected readonly upcomingLessons = signal<ScheduledLesson[]>([]);
@@ -653,12 +664,17 @@ export class MySchedulePage implements OnInit {
     return lesson.groupId === null ? 'tb-i tb-i-calendar_month' : 'tb-i tb-i-group';
   }
 
-  /** The meeting of a lesson that is still planned. */
-  protected joinUrl(lesson: ScheduledLesson): string | null {
-    return lesson.status === 'SCHEDULED' ? lesson.joinUrl : null;
+  /** The lesson of the sheet: in the family cabinet without the link of the call. */
+  protected cardLesson(lesson: ScheduledLesson): ScheduledLesson {
+    return this.readOnly ? { ...lesson, joinUrl: null } : lesson;
   }
 
-  /** Whether the student may ask to move or cancel the lesson. */
+  /** The meeting of a lesson that is still planned. */
+  protected joinUrl(lesson: ScheduledLesson): string | null {
+    return lesson.status === 'SCHEDULED' && !this.readOnly ? lesson.joinUrl : null;
+  }
+
+  /** Whether the student (or their parent) may ask to move or cancel the lesson. */
   protected canAsk(lesson: ScheduledLesson): boolean {
     return (
       lesson.status === 'SCHEDULED' && lesson.pendingRequests.length === 0 && !this.excused(lesson)
@@ -711,6 +727,7 @@ export class MySchedulePage implements OnInit {
     const widened = widen(range);
     forkJoin({
       lessons: this.api.myLessons(widened.from, widened.to),
+      // the teacher's busy time helps the student or the parent to pick a new time
       busy: this.api.teacherBusy(
         fromIsoDate(widened.from).toISOString(),
         fromIsoDate(widened.to).toISOString(),

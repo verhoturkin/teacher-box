@@ -95,4 +95,20 @@ describe('InviteLinkDialog', () => {
 
     expect(document.body.querySelector('#invite-link')).toBeNull();
   });
+
+  it('speaks of the parent on a parent’s link (ADR-0069)', async () => {
+    fixture.componentRef.setInput('forGuardian', true);
+    fixture.componentRef.setInput('studentName', 'Анна');
+    await fixture.whenStable();
+    expect(bodyText()).toContain('Ссылка для родителя: Анна');
+    expect(bodyText()).toContain('Отправьте родителю эту ссылку — по ней он придумает');
+
+    fixture.componentRef.setInput('invite', {
+      token: 'secret-token',
+      purpose: 'PASSWORD_RESET',
+      expiresAt: '2026-10-01T10:00:00Z',
+    });
+    await fixture.whenStable();
+    expect(bodyText()).toContain('по ней он задаст новый пароль');
+  });
 });

@@ -76,10 +76,16 @@ Module structure (4.1) — `backend/AGENTS.md`.
 - `TEACHER` — all data of the instance. `STUDENT` — own data only: every endpoint returning student
   data checks `studentId` == current user (or `TEACHER`) and has a test "another student gets
   403/404".
+- `GUARDIAN` (ADR-0069, UI «Родитель») — reads their current children's data only, through
+  `/api/guardian/students/{studentId}/**`: each endpoint calls `GuardianAccess.require` (404 for
+  another student) and then the student's own service. Of `/api/me/**` only the own account,
+  password, language, photo, notices, messengers and web push; `EndpointRolesTest` keeps the roles
+  of every endpoint, so each new student-data endpoint gets a guardian decision.
 - `ADMIN` (ADR-0010) — only `/api/admin/**`, `/api/me`, `/api/me/password`, `/api/me/language`;
   **no student data** — IDs and technical data only.
 - REST prefixes: `/api/auth/**` (public), `/api/public/**` (secret link, no login), `/api/teacher/**`,
-  `/api/admin/**` (`/api/admin/<module>/**`), `/api/me/**` (cabinet), `/api/<module>/**`.
+  `/api/admin/**` (`/api/admin/<module>/**`), `/api/me/**` (cabinet), `/api/guardian/**` (parent),
+  `/api/<module>/**`.
 - Logs hold no personal data (IDs only). Dangerous actions (restore, reset) need the user's
   password. Bot actions check rights like REST.
 

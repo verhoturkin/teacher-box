@@ -9,6 +9,7 @@ export { PriceField } from './settings/price-field';
 export { FinanceWidget } from './home/finance-widget';
 export { MyBalanceWidget } from './home/my-balance-widget';
 export { PaymentDialog } from './teacher/payment-dialog';
+export { PaymentsVisibilitySwitch } from './teacher/payments-visibility-switch';
 export { StudentBalanceCard } from './teacher/student-balance-card';
 export { StudentPaymentsTab } from './teacher/student-payments-tab';
 export { StudentPriceCard } from './teacher/student-price-card';

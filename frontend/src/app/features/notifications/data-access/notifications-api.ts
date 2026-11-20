@@ -7,6 +7,7 @@ import {
   BroadcastItem,
   BroadcastRequest,
   BotAbilities,
+  GuardianPreferences,
   ChannelSetup,
   ChannelState,
   ChannelType,
@@ -79,6 +80,18 @@ export class NotificationsApi {
   }
 
   /** Teacher: what the bots can do. */
+  /** What of the children's notices the signed-in parent gets (ADR-0069). */
+  guardianPreferences(): Observable<GuardianPreferences> {
+    return this.http.get<GuardianPreferences>('/api/guardian/notifications/preferences');
+  }
+
+  saveGuardianPreferences(preferences: GuardianPreferences): Observable<GuardianPreferences> {
+    return this.http.put<GuardianPreferences>(
+      '/api/guardian/notifications/preferences',
+      preferences,
+    );
+  }
+
   botAbilities(): Observable<BotAbilities> {
     return this.http.get<BotAbilities>('/api/teacher/notifications/bot');
   }

@@ -13,6 +13,7 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import ru.teacherbox.identity.api.Guardians;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.notifications.domain.ButtonSet;
@@ -69,16 +70,18 @@ public class ChatEngine {
     private final ChatRepository chat;
     private final ChatActions actions;
     private final UserDirectory users;
+    private final Guardians guardians;
     private final Portal portal;
     private final Clock clock;
 
     public ChatEngine(ChannelService channels, ChannelLinkRepository links, ChatRepository chat, ChatActions actions,
-            UserDirectory users, Portal portal, Clock clock) {
+            UserDirectory users, Guardians guardians, Portal portal, Clock clock) {
         this.channels = channels;
         this.links = links;
         this.chat = chat;
         this.actions = actions;
         this.users = users;
+        this.guardians = guardians;
         this.portal = portal;
         this.clock = clock;
     }
@@ -309,10 +312,23 @@ public class ChatEngine {
         }
         text.append("\n\n").append(t.commandsHelp());
         ChatReply plain = ChatReply.of(text.toString());
-        ChatReply reply = portal.link(user.isTeacher() ? "/teacher/help/bot" : "/cabinet/help/bot")
+        ChatReply reply = portal.link(helpPage(user))
                 .map(help -> plain.row(ChatButton.link(t.help(), help)))
                 .orElse(plain);
         return send(conversation, reply, List.of(menuButton(t)), null, ChatState.EMPTY, now);
+    }
+
+    /** The bot's help article; a guardian's family cabinet opens it for the first child. */
+    private String helpPage(ChatUser user) {
+        if (user.isTeacher()) {
+            return "/teacher/help/bot";
+        }
+        if (user.isGuardian()) {
+            return guardians.childrenOf(user.id()).stream().findFirst()
+                    .map(child -> "/family/" + child.id() + "/help/bot")
+                    .orElse("/family");
+        }
+        return "/cabinet/help/bot";
     }
 
     private OutgoingMessage failed(Conversation conversation, Instant now) {
@@ -407,21 +423,31 @@ public class ChatEngine {
                 : menu(conversation.get(), t.actingFor(name(chosen.get().recipientId(), t)), now);
     }
 
-    /** The teacher, or a current student, in the language of their account; nobody else may use the bot. */
+    /**
+     * The teacher, a current student or a guardian of a current student (ADR-0069), in the language of their
+     * account; nobody else may use the bot.
+     */
     private Optional<ChatUser> user(UUID recipientId) {
         if (recipientId.equals(users.teacherId())) {
             return Optional.of(new ChatUser(recipientId, Role.TEACHER, users.language(recipientId)));
         }
-        return users.findStudent(recipientId)
-                .filter(StudentSummary::isCurrent)
-                .map(student -> new ChatUser(recipientId, Role.STUDENT, users.language(recipientId)));
+        Optional<StudentSummary> student = users.findStudent(recipientId);
+        if (student.isPresent()) {
+            return student.filter(StudentSummary::isCurrent)
+                    .map(found -> new ChatUser(recipientId, Role.STUDENT, users.language(recipientId)));
+        }
+        return guardians.childrenOf(recipientId).isEmpty()
+                ? Optional.empty()
+                : Optional.of(new ChatUser(recipientId, Role.GUARDIAN, users.language(recipientId)));
     }
 
     private String name(UUID recipientId, BotMessages t) {
         if (recipientId.equals(users.teacherId())) {
             return t.teacher();
         }
-        return users.findStudent(recipientId).map(StudentSummary::displayName).orElse(t.unknownStudent());
+        return users.findStudent(recipientId).map(StudentSummary::displayName)
+                .or(() -> users.guardianName(recipientId))
+                .orElse(t.unknownStudent());
     }
 
     private static BotMessages texts(Conversation conversation) {

@@ -20,11 +20,14 @@ public interface UserDirectory {
     /** Summaries of the given students; unknown ids are skipped. */
     List<StudentSummary> findStudents(Collection<UUID> studentIds);
 
+    /** The name of a guardian (ADR-0069) as the teacher entered it; empty for anyone else. */
+    Optional<String> guardianName(UUID guardianId);
+
     /** Students that can currently use the system or are about to (invited). */
     List<StudentSummary> currentStudents();
 
     /**
-     * The language the user (the teacher or a student) chose in the interface: notifications, bot messages
+     * The language the user (the teacher, a student or a guardian) chose in the interface: notifications, bot messages
      * and calendars for them are written in it (ADR-0036). Russian for an unknown user.
      */
     Language language(UUID userId);

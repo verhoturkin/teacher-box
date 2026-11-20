@@ -24,6 +24,8 @@ can withdraw it with “Withdraw” or “Withdraw request”.
 
 A late cancellation may be charged as a missed lesson. A request for a recurring lesson applies only to the date you selected.
 
+Your parent may have sent a request too: it is marked “Parent’s request (Name)”. You can withdraw it just like your own, and your teacher’s reply goes to you both.
+
 ## Group lessons
 
 If you cannot attend a group lesson, choose “I can’t attend”. Let your teacher know in advance so you will not be charged for your absence.

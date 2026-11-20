@@ -11,6 +11,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.identity.api.GroupSummary;
+import ru.teacherbox.identity.api.GuardianSummary;
+import ru.teacherbox.identity.api.Guardians;
 import ru.teacherbox.identity.api.StudentGroups;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
@@ -35,7 +37,7 @@ import ru.teacherbox.shared.notice.NoticeText;
 /**
  * The schedule writes its notices (ADR-0061): students learn about new, moved and cancelled lessons
  * (all participants of a group lesson) and the answers to their requests; the teacher gets the
- * students' requests. Both get reminders (the teacher only the last one before a lesson). Every
+ * students' requests, a parent's request on a child's behalf naming the parent. Both get reminders (the teacher only the last one before a lesson). Every
  * notice is written in each language; {@code notifications} picks the recipient's.
  *
  * <p>The listeners run in the transaction that published the event, so a notice is saved with the
@@ -51,13 +53,15 @@ class ScheduleNotices {
     private final ScheduleNoticeFormats formats;
     private final UserDirectory users;
     private final StudentGroups groups;
+    private final Guardians guardians;
 
     ScheduleNotices(ApplicationEventPublisher events, ScheduleNoticeFormats formats, UserDirectory users,
-            StudentGroups groups) {
+            StudentGroups groups, Guardians guardians) {
         this.events = events;
         this.formats = formats;
         this.users = users;
         this.groups = groups;
+        this.guardians = guardians;
     }
 
     @EventListener
@@ -153,6 +157,12 @@ class ScheduleNotices {
         String groupName = group(event.groupId()).orElse(null);
         ChatSubject subject = event.accepted() ? null
                 : new ChatSubject(LessonChangeRequested.CHAT_SUBJECT, event.requestId());
+        UUID guardianId = event.guardianId();
+        String guardian = guardianId == null ? null : guardians.guardiansOf(event.studentId()).stream()
+                .filter(found -> found.id().equals(guardianId))
+                .map(GuardianSummary::displayName)
+                .findFirst()
+                .orElse(null);
         events.publishEvent(NoticeRequested.of(users.teacherId(), ScheduleNoticeKind.SCHEDULE_REQUEST, language -> {
             ScheduleNoticeTexts t = ScheduleNoticeTexts.of(language);
             String student = name(event.studentId(), t);
@@ -160,6 +170,9 @@ class ScheduleNotices {
             body.add(t.requestedLesson(formats.lessonTime(event.startsAt(), language), groupName));
             if (event.proposedStartsAt() != null) {
                 body.add(t.proposes(formats.lessonTime(event.proposedStartsAt(), language)));
+            }
+            if (guardianId != null) {
+                body.add(t.fromGuardian(guardian));
             }
             if (event.late()) {
                 body.add(groupName == null ? t.lateCancellation() : t.lateAbsence());

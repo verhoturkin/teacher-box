@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.notifications.domain.ChannelLink;
 import ru.teacherbox.notifications.domain.ChannelType;
+import ru.teacherbox.notifications.domain.GuardianCategory;
+import ru.teacherbox.notifications.domain.GuardianPreferences;
 import ru.teacherbox.notifications.domain.NotificationTopic;
 import ru.teacherbox.notifications.domain.Preferences;
 import ru.teacherbox.notifications.domain.InboxNotification;
@@ -142,6 +144,14 @@ public final class NotificationViews {
         static PreferencesView of(Preferences preferences) {
             return new PreferencesView(preferences.mutedTopics().stream().sorted().toList(), preferences.quietFrom(),
                     preferences.quietTo());
+        }
+    }
+
+    /** The categories of the children's notices a guardian has switched off (ADR-0069); empty — all on. */
+    public record GuardianPreferencesView(List<GuardianCategory> disabledCategories) {
+
+        static GuardianPreferencesView of(GuardianPreferences preferences) {
+            return new GuardianPreferencesView(preferences.off().stream().sorted().toList());
         }
     }
 }

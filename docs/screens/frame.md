@@ -1,13 +1,14 @@
 # Frame by role
 
-The shell (`core/layout/`: `shell.ts`, `teacher-layout.ts`, `student-layout.ts`, `admin-layout.ts`)
-holds the rail, the bottom bar and the top strip. Navigation rules are in [design-system
-§6](../design-system.md); each layout file holds its menu and bar order.
+The shell (`core/layout/`: `shell.ts`, `teacher-layout.ts`, `student-layout.ts`, `family-layout.ts`,
+`admin-layout.ts`) holds the rail, the bottom bar and the top strip. Navigation rules are in
+[design-system §6](../design-system.md); each layout file holds its menu and bar order.
 
 | Role | Destinations | Rail bottom group | Bottom bar |
 |---|---|---|---|
 | Teacher | Today (home), Schedule, Students, Homework, Materials, Payments | Settings, Help, Account | `TEACHER_BOTTOM_NAV` (five, without Materials) + «Создать» |
 | Student | Home, Schedule, Homework, Materials, Payments | Help, Account | `STUDENT_BOTTOM_NAV` (all five) |
+| Parent | Home, Schedule, Homework, Payments of the child in the address ([family](family.md)) | Help, Account | the four + the bell (454.3; *checked against the code 0.58.0: «no bell» was stale*) |
 | Admin | Status, Journal, Integrations, Backups, Settings | Help, Account | all five (`ADMIN_MENU`) |
 
 - The bar is filled up from the menu in the order of the `*_BOTTOM_NAV` list.
@@ -15,7 +16,8 @@ holds the rail, the bottom bar and the top strip. Navigation rules are in [desig
   after each navigation) with a screen-reader line for the count.
 - «Аккаунт» (avatar + name, last in the bottom group and in the ☰ drawer) replaces the avatar menu
   of the top bar; the top bar keeps only the bell (and the teacher's search). It leads to
-  `/teacher/settings/account`, `/cabinet/account` or `/admin/account`.
+  `/teacher/settings/account`, `/cabinet/account`, `/family/<id>/account` or `/admin/account`.
+- A student whose payments the teacher hid (452.3) has no Payments item ([family](family.md)).
 - There is no Notifications, Calls or AI section (ADR-0048): the inbox is the bell's sheet
   ([notifications](notifications.md)), integrations live in teacher [settings](settings.md).
 - Installed app: the service worker caches only the shell; without a network the app opens the

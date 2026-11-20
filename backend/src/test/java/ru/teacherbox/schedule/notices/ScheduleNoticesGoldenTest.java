@@ -21,7 +21,7 @@ class ScheduleNoticesGoldenTest {
     private final SamplePeople people = new SamplePeople();
     private final List<NoticeRequested> published = new ArrayList<>();
     private final ScheduleNotices notices = new ScheduleNotices(event -> published.add((NoticeRequested) event),
-            new ScheduleNoticeFormats(new InstanceTimeZone(NoticeSamples.ZONE)), people, people);
+            new ScheduleNoticeFormats(new InstanceTimeZone(NoticeSamples.ZONE)), people, people, people);
 
     @Test
     void writesWhatNotificationsWrote() {

@@ -3,6 +3,8 @@ package ru.teacherbox.billing.notices;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import ru.teacherbox.billing.application.PaymentVisibilityService;
 import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.notice.NoticeRequested;
 import ru.teacherbox.testing.notices.NoticeGolden;
@@ -17,7 +19,8 @@ import ru.teacherbox.testing.notices.NoticeSamples;
 class BillingNoticesGoldenTest {
 
     private final List<NoticeRequested> published = new ArrayList<>();
-    private final BillingNotices notices = new BillingNotices(event -> published.add((NoticeRequested) event));
+    private final BillingNotices notices = new BillingNotices(event -> published.add((NoticeRequested) event),
+            Mockito.mock(PaymentVisibilityService.class));
 
     @Test
     void writesWhatNotificationsWrote() {

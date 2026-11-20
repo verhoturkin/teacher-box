@@ -10,7 +10,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.core.env.Environment;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +18,6 @@ import ru.teacherbox.identity.api.StudentReactivated;
 import ru.teacherbox.identity.api.StudentRegistered;
 import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.identity.domain.AccountStatus;
-import ru.teacherbox.identity.domain.Invite;
 import ru.teacherbox.identity.domain.InvitePurpose;
 import ru.teacherbox.identity.domain.Profile;
 import ru.teacherbox.identity.domain.Tag;
@@ -29,9 +27,7 @@ import ru.teacherbox.identity.persistence.RefreshTokenRepository;
 import ru.teacherbox.identity.persistence.TagRepository;
 import ru.teacherbox.identity.persistence.UserRepository;
 import ru.teacherbox.shared.Ids;
-import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.NotFoundException;
-import ru.teacherbox.shared.settings.LiveProperties;
 
 /** Student management by the teacher. */
 @Service
@@ -46,20 +42,20 @@ public class StudentAdminService {
     private final RefreshTokenRepository refreshTokens;
     private final TagRepository tags;
     private final GroupService groups;
+    private final InviteIssuer inviteIssuer;
     private final ApplicationEventPublisher events;
-    /** Read on every use: the administrator changes the lifetimes and lock rules without a restart (ADR-0056). */
-    private final LiveProperties<IdentityProperties> properties;
     private final Clock clock;
 
-    public StudentAdminService(UserRepository users, InviteRepository invites, RefreshTokenRepository refreshTokens,
-            TagRepository tags, GroupService groups, ApplicationEventPublisher events, Environment environment, Clock clock) {
+    StudentAdminService(UserRepository users, InviteRepository invites, RefreshTokenRepository refreshTokens,
+            TagRepository tags, GroupService groups, InviteIssuer inviteIssuer, ApplicationEventPublisher events,
+            Clock clock) {
         this.users = users;
         this.invites = invites;
         this.refreshTokens = refreshTokens;
         this.tags = tags;
         this.groups = groups;
+        this.inviteIssuer = inviteIssuer;
         this.events = events;
-        this.properties = new LiveProperties<>(environment, IdentityProperties.class);
         this.clock = clock;
     }
 
@@ -68,7 +64,7 @@ public class StudentAdminService {
         Instant now = clock.instant();
         User student = User.newStudent(Ids.newId(), profile, now);
         users.insert(student);
-        IssuedInvite invite = issueInvite(student, InvitePurpose.ACTIVATION, now);
+        IssuedInvite invite = inviteIssuer.issue(student, InvitePurpose.ACTIVATION, now);
         events.publishEvent(new StudentRegistered(student.id(), profile.displayName(), now));
         return new CreatedStudent(view(student, now), invite);
     }
@@ -149,13 +145,7 @@ public class StudentAdminService {
     @Transactional
     public IssuedInvite reissueInvite(UUID studentId) {
         User student = load(studentId);
-        InvitePurpose purpose = switch (student.status()) {
-            case INVITED -> InvitePurpose.ACTIVATION;
-            case ACTIVE -> InvitePurpose.PASSWORD_RESET;
-            case DEACTIVATED -> throw new BusinessRuleException("account.deactivated",
-                    "Reactivate the student before issuing an invitation");
-        };
-        return issueInvite(student, purpose, clock.instant());
+        return inviteIssuer.issue(student, InviteIssuer.purposeFor(student), clock.instant());
     }
 
     @Transactional
@@ -180,15 +170,6 @@ public class StudentAdminService {
         StudentStatus status = student.status() == AccountStatus.ACTIVE ? StudentStatus.ACTIVE : StudentStatus.INVITED;
         events.publishEvent(new StudentReactivated(studentId, status, now));
         return view(student, now);
-    }
-
-    private IssuedInvite issueInvite(User student, InvitePurpose purpose, Instant now) {
-        invites.revokeUnusedByUser(student.id(), now);
-        String token = SecureTokens.generate();
-        Invite invite = Invite.issue(Ids.newId(), student.id(), purpose, SecureTokens.hash(token), now,
-                properties.get().inviteTtl());
-        invites.insert(invite);
-        return new IssuedInvite(token, purpose, invite.expiresAt());
     }
 
     private User load(UUID studentId) {

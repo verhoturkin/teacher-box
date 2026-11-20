@@ -19,7 +19,12 @@ guide for people — [`docs/operations.md`](../operations.md) (Russian).
 
 - `security/` — Spring Security 7 resource server (JWT HS256, `TEACHERBOX_SECURITY_JWT_SECRET`), role rules by
   prefix (root AGENTS.md §4.3), auth rate limit. `ADMIN` reaches only `/api/admin/**`, `/api/me`,
-  `/api/me/password` — enforced here, not in controllers.
+  `/api/me/password`, `/api/me/language`; `GUARDIAN` (ADR-0069) — `/api/guardian/**` and, of the
+  cabinet, those three plus `/api/me/avatar`, `/api/me/notifications/**`, `/api/me/channels/**`,
+  `/api/me/push/**`; the rest of `/api/**` — `TEACHER` and `STUDENT`. Enforced here, not in
+  controllers. `EndpointRolesTest` walks every handler mapping and compares the roles that pass the
+  URL rules (`WebInvocationPrivilegeEvaluator`) with the checked-in
+  `src/test/resources/security/endpoint-roles.txt`: a new endpoint fails until it is listed.
 - `web/` — `ProblemDetailsAdvice` (domain errors → RFC 9457 with `requestId`), `X-Request-Id` in MDC and
   response, `/api/client-errors` (browser errors, rate-limited). The SPA is served by nginx (ADR-0031).
 - `core/` — auto-configuration, `Clock` (UTC), `teacherbox.*` platform properties, `shared.persistence.MigrationConnection`

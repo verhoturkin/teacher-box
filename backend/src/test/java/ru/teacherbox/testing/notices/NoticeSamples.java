@@ -4,6 +4,8 @@ import static ru.teacherbox.testing.notices.SamplePeople.ANNA;
 import static ru.teacherbox.testing.notices.SamplePeople.BORIS;
 import static ru.teacherbox.testing.notices.SamplePeople.GROUP;
 import static ru.teacherbox.testing.notices.SamplePeople.LOST_GROUP;
+import static ru.teacherbox.testing.notices.SamplePeople.LOST_GUARDIAN;
+import static ru.teacherbox.testing.notices.SamplePeople.OLGA;
 import static ru.teacherbox.testing.notices.SamplePeople.STRANGER;
 import static ru.teacherbox.testing.notices.SamplePeople.TEACHER;
 import static ru.teacherbox.testing.notices.SamplePeople.VERA;
@@ -144,6 +146,10 @@ public final class NoticeSamples {
                         ChangeKind.CANCEL, START, null, null, true, false, EARLIER)),
                 new Sample("request: move of a group lesson", new LessonChangeRequested(id(176), id(172), ANNA, GROUP,
                         ChangeKind.RESCHEDULE, START, null, null, false, false, EARLIER)),
+                new Sample("request: move by a guardian", new LessonChangeRequested(id(178), id(172), ANNA, null,
+                        ChangeKind.RESCHEDULE, START, LATER, null, false, false, EARLIER, OLGA)),
+                new Sample("request: cancel by an unlinked guardian", new LessonChangeRequested(id(179), id(172), ANNA,
+                        null, ChangeKind.CANCEL, START, null, null, false, false, EARLIER, LOST_GUARDIAN)),
                 new Sample("request: cancel, stranger, lost group", new LessonChangeRequested(id(177), id(172),
                         STRANGER, LOST_GROUP, ChangeKind.CANCEL, START, null, "Не смогу", true, true, EARLIER)),
 

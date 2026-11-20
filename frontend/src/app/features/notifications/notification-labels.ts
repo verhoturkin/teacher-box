@@ -1,5 +1,6 @@
 import {
   ChannelType,
+  GuardianCategory,
   MessengerConnection,
   NotificationTopic,
 } from './data-access/notifications.models';
@@ -63,6 +64,21 @@ export const MUTABLE_TOPICS: readonly {
     teacherOnly: true,
   },
 ];
+
+/** A parent's categories of the children's notices (ADR-0069), in display order; all on by default. */
+export const GUARDIAN_CATEGORIES: readonly {
+  readonly category: GuardianCategory;
+  readonly label: string;
+  readonly hint: string;
+}[] = (['PAYMENTS', 'LESSONS', 'HOMEWORK_DEADLINES', 'REVIEWED_WORK'] as const).map((category) => ({
+  category,
+  label: T.categories[category],
+  hint: T.categories[`${category}_HINT`],
+}));
+
+export function isGuardianCategory(key: string): key is GuardianCategory {
+  return GUARDIAN_CATEGORIES.some((category) => category.category === key);
+}
 
 export const CONNECTION_TAGS: Record<
   MessengerConnection,

@@ -83,6 +83,8 @@ export function changeRequest(overrides: Partial<ChangeRequest> = {}): ChangeReq
     answer: null,
     createdAt: at(2026, 9, 28, 12),
     resolvedAt: null,
+    guardianId: null,
+    guardianName: null,
     ...overrides,
   };
 }

@@ -11,14 +11,15 @@ import org.springframework.context.annotation.Import;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.test.context.TestPropertySource;
 import ru.teacherbox.notifications.domain.ChannelType;
+import ru.teacherbox.testing.FakeGuardians;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 
 /**
- * Notifications module bootstrapped alone: users come from {@link FakeUserDirectory}, the only
- * messenger is a {@link FakeMessengerChannel} posing as Telegram. All test classes using this
- * annotation share one context and database.
+ * Notifications module bootstrapped alone: users come from {@link FakeUserDirectory}, guardians from
+ * {@link FakeGuardians}, the only messenger is a {@link FakeMessengerChannel} posing as Telegram. All test
+ * classes using this annotation share one context and database.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -38,6 +39,11 @@ public @interface NotificationsIntegrationTest {
         @Bean
         FakeUserDirectory userDirectory() {
             return new FakeUserDirectory();
+        }
+
+        @Bean
+        FakeGuardians guardians(FakeUserDirectory userDirectory) {
+            return new FakeGuardians(userDirectory);
         }
 
         @Bean

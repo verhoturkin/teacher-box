@@ -1,4 +1,6 @@
+import { Provider } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { CHILD_ID, familyScopeOf } from '@testing/family-fixtures';
 import { Router, provideRouter } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
 import { hostElement, readableText, requireElement, typeInto } from '@testing/dom';
@@ -16,13 +18,14 @@ describe('HelpPage', () => {
   let fixture: ComponentFixture<HelpPage>;
 
   async function render(
-    area: 'teacher' | 'cabinet' | 'admin',
+    area: 'teacher' | 'cabinet' | 'guardian' | 'admin',
     topic?: string,
     width = 1200,
+    extra: Provider[] = [],
   ): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [HelpPage],
-      providers: [provideRouter([]), providePrimeNG(), screenWidth(width)],
+      providers: [provideRouter([]), providePrimeNG(), screenWidth(width), ...extra],
     });
     fixture = TestBed.createComponent(HelpPage);
     fixture.componentRef.setInput('area', area);
@@ -43,6 +46,29 @@ describe('HelpPage', () => {
     expect(titles(host)).toContain('Первые шаги');
     expect(links[0]?.getAttribute('href')).toBe('/teacher/help/first-steps');
     expect(host.querySelector('h2')?.textContent).toBe('Первые шаги');
+  });
+
+  it('shows the parent’s articles in the family cabinet under its address (455.1)', async () => {
+    const host = await render('guardian', undefined, 1200, [familyScopeOf()]);
+
+    expect(titles(host)).toContain('Перенос и отмена');
+    expect(titles(host)).not.toContain('Расписание и перенос');
+    expect(host.querySelector('nav a')?.getAttribute('href')).toMatch(
+      new RegExp(`^/family/${CHILD_ID}/help/`),
+    );
+  });
+
+  it('follows a link of the parent’s article under the child’s address (455.1)', async () => {
+    const host = await render('guardian', 'start', 1200, [familyScopeOf()]);
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+    requireElement(
+      host,
+      '.tb-help-article a[href="/guardian/help/view"]',
+      HTMLAnchorElement,
+    ).click();
+
+    expect(navigate).toHaveBeenCalledWith(`/family/${CHILD_ID}/help/view`);
   });
 
   it('opens the article of the address and follows links inside the portal', async () => {
