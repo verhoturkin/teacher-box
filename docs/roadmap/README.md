@@ -26,7 +26,7 @@ How to use:
 | 08 | [Self-booking of free slots](08-self-booking.md) | schedule, notifications | L | yes | — |
 | 09 | [Calls: «ученик ждёт» and recording](09-calls-waiting-recording.md) | meetings, notifications, docker | L | yes | — |
 | 10 | [Spaced repetition](10-spaced-repetition.md) | new module `practice`, ai | XL | yes | 06 (soft) |
-| 11 | [Courses, lesson plans, homework bank, period summary](11-courses-and-lesson-plans.md) | textbooks, homework, schedule, ai, frontend | XL | yes | 02 (soft) |
+| 11 | [Courses, lesson plans, videos, bank, period summary](11-courses-and-lesson-plans.md) — scheduled: v0.60.0, v0.61.0 | textbooks, homework, schedule, ai, frontend | XL | yes | 02 (soft) |
 
 Sizes: S — one session, M — 2–3 substeps, L — a release of its own, XL — two releases.
 
