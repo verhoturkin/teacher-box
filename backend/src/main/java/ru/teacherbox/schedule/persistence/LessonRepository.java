@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.schedule.api.CancelledBy;
@@ -29,7 +30,7 @@ public class LessonRepository {
     private static final String SELECT = """
             select id, group_id, series_id, series_date, starts_at, duration_minutes, title, topic, meeting_url, status,
                    cancelled_by, cancel_reason, original_starts_at, created_at, updated_at, version, individually_changed,
-                   summary, next_plan, summary_updated_at
+                   summary, next_plan, summary_updated_at, plan_id
             from schedule.lessons
             """;
     private static final String ORDER = " order by starts_at, id";
@@ -44,7 +45,7 @@ public class LessonRepository {
             LessonStatus status, @Nullable CancelledBy cancelledBy, @Nullable String cancelReason,
             @Nullable Instant originalStartsAt, Instant createdAt, Instant updatedAt, long version, boolean individuallyChanged,
             @Nullable String summary, @Nullable String nextPlan, @Nullable Instant summaryUpdatedAt,
-            @Nullable String topic) {
+            @Nullable String topic, @Nullable UUID planId) {
     }
 
     private final JdbcClient jdbc;
@@ -233,6 +234,7 @@ public class LessonRepository {
                 select id from schedule.lessons
                 where series_id = :seriesId and series_date >= :from and status = 'SCHEDULED'
                   and original_starts_at is null and individually_changed = false
+                  and plan_id is null
                   and id not in (select lesson_id from schedule.lesson_participants where completion_id is not null)
                 """)
                 .param("seriesId", seriesId)
@@ -278,6 +280,23 @@ public class LessonRepository {
                 .param("nextPlan", lesson.nextPlan())
                 .param("updatedAt", lesson.summaryUpdatedAt())
                 .update();
+    }
+
+    /**
+     * Saves the plan of the lesson only: it is outside the lesson version used to lock time edits.
+     *
+     * @return {@code false} if the plan is already on another lesson (the unique index)
+     */
+    public boolean updatePlan(Lesson lesson) {
+        try {
+            jdbc.sql("update schedule.lessons set plan_id = :planId where id = :id")
+                    .param("id", lesson.id())
+                    .param("planId", lesson.planId())
+                    .update();
+            return true;
+        } catch (DuplicateKeyException exception) {
+            return false;
+        }
     }
 
     /** The nearest planned lesson after {@code lesson} with the same participants: one student or one group. */
@@ -405,7 +424,8 @@ public class LessonRepository {
                         row.seriesId(), row.seriesDate(), row.startsAt(), row.durationMinutes(), row.title(),
                         row.meetingUrl(), row.status(), row.cancelledBy(), row.cancelReason(),
                         row.originalStartsAt(), row.createdAt(), row.updatedAt(), row.version()).restoreException(row.individuallyChanged())
-                        .restoreSummary(row.summary(), row.nextPlan(), row.summaryUpdatedAt()).describe(row.topic()))
+                        .restoreSummary(row.summary(), row.nextPlan(), row.summaryUpdatedAt()).describe(row.topic())
+                        .restorePlan(row.planId()))
                 .toList();
     }
 

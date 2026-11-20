@@ -10,7 +10,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +24,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.schedule.api.ChangeKind;
 import ru.teacherbox.schedule.application.ChangeRequestService;
+import ru.teacherbox.schedule.application.LessonPlanLinks;
+import ru.teacherbox.schedule.application.LessonPlanLinks.StudentLessonPlan;
 import ru.teacherbox.schedule.application.FeedService;
 import ru.teacherbox.schedule.application.ScheduleQueries;
 import ru.teacherbox.schedule.application.TeacherAvailability;
@@ -53,9 +57,11 @@ class MyScheduleController {
     private final ChangeRequestService requests;
     private final FeedService feeds;
     private final TeacherAvailability availability;
+    private final LessonPlanLinks plans;
 
     MyScheduleController(ScheduleQueries queries, ChangeRequestService requests, FeedService feeds,
-            TeacherAvailability availability) {
+            TeacherAvailability availability, LessonPlanLinks plans) {
+        this.plans = plans;
         this.availability = availability;
         this.queries = queries;
         this.requests = requests;
@@ -80,6 +86,19 @@ class MyScheduleController {
     @GetMapping("/lessons/{lessonId}")
     LessonView lesson(CurrentUser user, @PathVariable UUID lessonId) {
         return queries.studentLesson(studentId(user), lessonId);
+    }
+
+    /** The lesson plan of the student's lesson (roadmap 11). */
+    @GetMapping("/lessons/{lessonId}/plan")
+    StudentLessonPlan plan(CurrentUser user, @PathVariable UUID lessonId) {
+        return plans.studentPlan(studentId(user), lessonId);
+    }
+
+    /** The bound pages of a textbook of the lesson plan, as homework gives them. */
+    @GetMapping("/lessons/{lessonId}/plan/textbooks/{textbookId}")
+    ResponseEntity<Resource> planTextbook(CurrentUser user, @PathVariable UUID lessonId,
+            @PathVariable UUID textbookId) {
+        return LessonPlanFiles.download(plans.studentTextbook(studentId(user), lessonId, textbookId));
     }
 
     /** The student's held lessons with the shared summaries, newest first. */

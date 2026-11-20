@@ -99,7 +99,7 @@ section the substep names). New ADR: 0071 «Курсы, планы уроков 
   (`POST` / `PUT` carry the whole lists, ≤ 20 textbooks) instead of separate bind endpoints;
   `bank` of a bank item — 409 `textbooks.plan-in-bank`, `use` of a working plan — 409
   `textbooks.plan-not-in-bank`; a deleted course or textbook leaves its plans.*
-- [ ] 461.2 **B** *complex* — `schedule`: `lessons.plan_id` (unique), `PUT
+- [x] 461.2 **B** *complex* — `schedule`: `lessons.plan_id` (unique), `PUT
   /api/teacher/schedule/lessons/{id}/plan` (checked by `LessonPlans.checkLinkable`, no `version`,
   not on a cancelled lesson), `planId` in the details; `deleteUntouchedOfSeries` keeps prepared
   lessons (test: a «this and following» edit keeps the lesson with a plan); the student's
@@ -107,6 +107,12 @@ section the substep names). New ADR: 0071 «Курсы, планы уроков 
   guardian's under `/api/guardian/students/{sid}/schedule/...` (`GuardianAccess.require`); module
   dependency `schedule` → `textbooks::api` in `package-info.java`; «another student gets 404»
   tests, `EndpointRolesTest`; `docs/modules/schedule.md`.
+  *Done: a bank original answers 409 `schedule.bank-item` (mapped from `textbooks.plan-in-bank`),
+  a plan on another lesson 409 `schedule.plan-linked` (the unique index), a cancelled lesson 422
+  `schedule.lesson-cancelled` (taking a plan off stays allowed); `planId` is in every lesson view;
+  the series «this and following» edit, cancel and delete also protect a prepared lesson
+  (`LessonRepetitionService.protectedLesson`), not only `deleteUntouchedOfSeries`; the student's
+  view hides a transcript unless `transcriptShown`; new codes in the dictionaries.*
 - [ ] 461.3 **F** *complex* — move `homework/teacher/bind-textbook-dialog.ts` to
   `@features/textbooks/parts` and the Markdown field to `shared/`; plan editor
   `textbooks/teacher/lesson-plan-editor-page.ts` (`/teacher/materials/plans/new|:id`, autosave,

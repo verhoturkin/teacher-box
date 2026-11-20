@@ -51,6 +51,7 @@ public final class Lesson {
     private @Nullable String summary;
     private @Nullable String nextPlan;
     private @Nullable Instant summaryUpdatedAt;
+    private @Nullable UUID planId;
 
     private Lesson(UUID id, @Nullable UUID groupId, Collection<Participant> participants, @Nullable UUID seriesId,
             @Nullable LocalDate seriesDate, Instant startsAt, int durationMinutes, @Nullable String title,
@@ -430,6 +431,28 @@ public final class Lesson {
 
     public @Nullable Instant summaryUpdatedAt() {
         return summaryUpdatedAt;
+    }
+
+    /** Restores the plan kept outside the optimistic lock of the lesson. */
+    public Lesson restorePlan(@Nullable UUID plan) {
+        planId = plan;
+        return this;
+    }
+
+    /**
+     * Puts a lesson plan on the lesson, or takes it off ({@code null}). Like the summary it does not touch the
+     * version; a cancelled lesson takes no new plan, but its plan can still be taken off.
+     */
+    public void linkPlan(@Nullable UUID plan) {
+        if (plan != null && status == LessonStatus.CANCELLED) {
+            throw new BusinessRuleException("schedule.lesson-cancelled", "A cancelled lesson takes no plan");
+        }
+        planId = plan;
+    }
+
+    /** The lesson plan of the lesson; {@code null} — none. */
+    public @Nullable UUID planId() {
+        return planId;
     }
 
     public Lesson restoreException(boolean changed) {

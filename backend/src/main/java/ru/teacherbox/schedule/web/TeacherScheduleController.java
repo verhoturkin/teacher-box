@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.schedule.application.ChangeRequestService;
+import ru.teacherbox.schedule.application.LessonPlanLinks;
 import ru.teacherbox.schedule.application.ScheduleQueries;
 import ru.teacherbox.schedule.application.TeacherAvailability;
 import ru.teacherbox.schedule.application.ScheduleService;
@@ -82,6 +83,10 @@ class TeacherScheduleController {
             @Size(max = Lesson.MAX_NEXT_PLAN) @Nullable String nextPlan) {
     }
 
+    /** @param planId a working lesson plan of {@code textbooks}; {@code null} takes the plan off */
+    record PlanRequest(@Nullable UUID planId) {
+    }
+
     record CancelRequest(@Size(max = 500) @Nullable String reason, @Nullable Boolean byStudent,
             @Nullable Boolean charge, @Nullable Scope scope, @Nullable Long version, @Nullable Long repeatVersion) {
     }
@@ -108,9 +113,11 @@ class TeacherScheduleController {
     private final ChangeRequestService requests;
     private final ScheduleQueries queries;
     private final TeacherAvailability availability;
+    private final LessonPlanLinks plans;
 
     TeacherScheduleController(ScheduleService schedule, ChangeRequestService requests, ScheduleQueries queries,
-            LessonRepetitionService repetition, TeacherAvailability availability) {
+            LessonRepetitionService repetition, TeacherAvailability availability, LessonPlanLinks plans) {
+        this.plans = plans;
         this.availability = availability;
         this.schedule = schedule;
         this.repetition = repetition;
@@ -168,6 +175,12 @@ class TeacherScheduleController {
             @RequestParam(required = false) @Nullable Long version,
             @RequestParam(required = false) @Nullable Long repeatVersion) {
         repetition.delete(lessonId, scope, version, repeatVersion);
+    }
+
+    /** Puts a lesson plan on the lesson or takes it off; no version, like the summary (roadmap 11). */
+    @PutMapping("/lessons/{lessonId}/plan")
+    LessonView plan(@PathVariable UUID lessonId, @RequestBody PlanRequest request) {
+        return plans.link(lessonId, request.planId());
     }
 
     @PutMapping("/lessons/{lessonId}/summary")

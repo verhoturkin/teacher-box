@@ -186,8 +186,9 @@ public class LessonRepetitionService {
         return ruleId == null ? List.of(selected) : lessons.repeatTail(ruleId, occurrence(selected));
     }
 
+    /** A lesson a series change leaves as it is: held, cancelled, changed by hand, charged or prepared (a plan). */
     private static boolean protectedLesson(Lesson lesson) {
-        return lesson.status() != LessonStatus.SCHEDULED || lesson.individuallyChanged()
+        return lesson.status() != LessonStatus.SCHEDULED || lesson.individuallyChanged() || lesson.planId() != null
                 || lesson.participants().stream().anyMatch(participant -> participant.completionId() != null);
     }
 

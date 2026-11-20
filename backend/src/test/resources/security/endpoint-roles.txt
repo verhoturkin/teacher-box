@@ -78,6 +78,8 @@ GET /api/guardian/students/{studentId}/schedule/free-times GUARDIAN
 GET /api/guardian/students/{studentId}/schedule/history GUARDIAN
 GET /api/guardian/students/{studentId}/schedule/lessons GUARDIAN
 GET /api/guardian/students/{studentId}/schedule/lessons/{lessonId} GUARDIAN
+GET /api/guardian/students/{studentId}/schedule/lessons/{lessonId}/plan GUARDIAN
+GET /api/guardian/students/{studentId}/schedule/lessons/{lessonId}/plan/textbooks/{textbookId} GUARDIAN
 GET /api/guardian/students/{studentId}/schedule/requests GUARDIAN
 GET /api/guardian/students/{studentId}/schedule/settings GUARDIAN
 GET /api/guardian/students/{studentId}/schedule/summary GUARDIAN
@@ -109,6 +111,8 @@ GET /api/me/schedule/free-times STUDENT TEACHER
 GET /api/me/schedule/history STUDENT TEACHER
 GET /api/me/schedule/lessons STUDENT TEACHER
 GET /api/me/schedule/lessons/{lessonId} STUDENT TEACHER
+GET /api/me/schedule/lessons/{lessonId}/plan STUDENT TEACHER
+GET /api/me/schedule/lessons/{lessonId}/plan/textbooks/{textbookId} STUDENT TEACHER
 GET /api/me/schedule/requests STUDENT TEACHER
 GET /api/me/schedule/settings STUDENT TEACHER
 GET /api/me/schedule/summary STUDENT TEACHER
@@ -332,6 +336,7 @@ PUT /api/teacher/schedule/google/client TEACHER
 PUT /api/teacher/schedule/lessons/{lessonId} TEACHER
 PUT /api/teacher/schedule/lessons/{lessonId}/attendance TEACHER
 PUT /api/teacher/schedule/lessons/{lessonId}/outcome TEACHER
+PUT /api/teacher/schedule/lessons/{lessonId}/plan TEACHER
 PUT /api/teacher/schedule/lessons/{lessonId}/summary TEACHER
 PUT /api/teacher/schedule/off-times/{offTimeId} TEACHER
 PUT /api/teacher/schedule/settings TEACHER

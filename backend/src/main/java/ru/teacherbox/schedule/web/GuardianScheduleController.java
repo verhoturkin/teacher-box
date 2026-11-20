@@ -8,7 +8,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.schedule.application.ChangeRequestService;
+import ru.teacherbox.schedule.application.LessonPlanLinks;
+import ru.teacherbox.schedule.application.LessonPlanLinks.StudentLessonPlan;
 import ru.teacherbox.schedule.application.FeedService;
 import ru.teacherbox.schedule.application.ScheduleQueries;
 import ru.teacherbox.schedule.application.TeacherAvailability;
@@ -49,9 +53,11 @@ class GuardianScheduleController {
 
     private final ChangeRequestService requests;
     private final TeacherAvailability availability;
+    private final LessonPlanLinks plans;
 
     GuardianScheduleController(GuardianAccess access, ScheduleQueries queries, FeedService feeds,
-            ChangeRequestService requests, TeacherAvailability availability) {
+            ChangeRequestService requests, TeacherAvailability availability, LessonPlanLinks plans) {
+        this.plans = plans;
         this.access = access;
         this.queries = queries;
         this.feeds = feeds;
@@ -85,6 +91,19 @@ class GuardianScheduleController {
     }
 
     /** The child's held lessons with the shared summaries, newest first. */
+    @GetMapping("/students/{studentId}/schedule/lessons/{lessonId}/plan")
+    StudentLessonPlan plan(CurrentUser user, @PathVariable UUID studentId, @PathVariable UUID lessonId) {
+        access.require(user, studentId);
+        return plans.studentPlan(studentId, lessonId);
+    }
+
+    @GetMapping("/students/{studentId}/schedule/lessons/{lessonId}/plan/textbooks/{textbookId}")
+    ResponseEntity<Resource> planTextbook(CurrentUser user, @PathVariable UUID studentId, @PathVariable UUID lessonId,
+            @PathVariable UUID textbookId) {
+        access.require(user, studentId);
+        return LessonPlanFiles.download(plans.studentTextbook(studentId, lessonId, textbookId));
+    }
+
     @GetMapping("/students/{studentId}/schedule/history")
     List<HistoryEntry> history(CurrentUser user, @PathVariable UUID studentId,
             @RequestParam(required = false) @Nullable Instant before,

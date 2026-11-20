@@ -2,7 +2,8 @@
 
 Lessons with optional weekly repetition (student or group), attendance, student reschedule/cancel requests, reminders,
 calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `shared`, `identity::api`,
-`meetings::api` (room links). Schema `schedule`. ADRs: [0008](../adr/0008-schedule.md),
+`meetings::api` (room links), `textbooks::api` (lesson plans, roadmap 11). Schema `schedule`.
+ADRs: [0008](../adr/0008-schedule.md),
 [0011](../adr/0011-groups-and-group-lessons.md), [0012](../adr/0012-meetings-and-boards.md),
 [0053](../adr/0053-lesson-title-and-topic.md).
 
@@ -28,8 +29,9 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
   run.
   Only-this edits preserve the immutable original occurrence date and mark an exception. This-and-following
   uses that original date as its boundary, ends the old rule and replaces untouched future occurrences.
-  Completed, charged, cancelled and individually edited lessons remain. Once keeps the selected lesson
-  and stops later repetition. Tombstones prevent deleted occurrences from regenerating. Unique
+  Completed, charged, cancelled, individually edited and prepared (with a plan, 461.2) lessons
+  remain. Once keeps the selected lesson and stops later repetition. Tombstones prevent deleted
+  occurrences from regenerating. Unique
   `(series_id, series_date)` remains an internal occurrence key; `repeat_rules` is generation metadata.
 - **Title and topic** (0.41.0, ADR-0053): `title` (≤ 500) names the lesson and repeats with
   its rule; `topic` (≤ 500) is what this lesson covers — only on `lessons`, never copied by a
@@ -146,6 +148,14 @@ decision) into the topic of the next planned lesson of the same student (or the 
 a filled topic is never overwritten, the title is never touched.
 Calendar lists, ICS and Google carry none of these fields.
 
+Lesson plan (461.2, [roadmap 11](../roadmap/11-courses-and-lesson-plans.md)): `lessons.plan_id`
+(unique index `ux_lessons_plan`, null = none) — a working plan of `textbooks`, one per lesson
+and a plan on at most one lesson. Saved by its own `UPDATE` without the lesson `version`, like the
+summary. A prepared lesson counts as touched: `deleteUntouchedOfSeries` (`and plan_id is null`) and
+the «this and following» edit, cancel and delete keep it, like a charged one. Moving keeps the
+link; deleting the lesson drops it and leaves the plan in `textbooks` (it cannot listen to
+`schedule`). A deleted plan leaves a dangling id: reads answer 404.
+
 ## REST and bot
 
 `/api/teacher/schedule/**` (lessons, requests, unmarked, summary — besides today's counters it has
@@ -174,6 +184,22 @@ audited at once through `AuditLog.bot`, the final step by the dialog (`lesson-su
 `lesson-summary-written`); a changed or refused lesson ends with a short «не получилось» answer.
 `PUT lessons/{id}/summary` (`summary`, `nextPlan`; blank clears) returns the lesson details: `GET lessons/{id}` of the teacher has `summary`, `nextPlan`, `summaryUpdatedAt`, `notes[]`;
 `GET /api/me/schedule/lessons/{id}` has `summary` only (a lesson the student is not in is 404); lists have none.
+Lesson plan (461.2, `LessonPlanLinks`):
+`PUT /api/teacher/schedule/lessons/{id}/plan {planId | null}` returns the details; no `version`;
+checked by `textbooks::api.LessonPlans.checkLinkable` — no plan 404
+`textbooks.plan-not-found`, a bank original 409 `schedule.bank-item` (mapped from
+`textbooks.plan-in-bank`), on another lesson 409 `schedule.plan-linked` (the unique index), a new
+plan on a cancelled lesson 422 `schedule.lesson-cancelled` (taking it off is allowed); the same plan
+again is a no-op, another plan replaces it. Every lesson view (lists and details, the student's
+and the guardian's too) has `planId`. The student of the lesson reads
+`GET /api/me/schedule/lessons/{id}/plan` (`id`, `title`, `body`, `textbooks[]` with `pages`,
+`videos[]` — `transcript` only with `transcriptShown`) and
+`GET …/plan/textbooks/{textbookId}` (the bound pages through `Textbooks.content`, a whole textbook
+through `Textbooks.file`, always a download); another student's lesson 404
+`schedule.lesson-not-found`, no or a deleted plan 404 `schedule.plan-not-found`, a textbook not in
+the plan 404 `schedule.textbook-not-found`, the teacher 403. The guardian — the same under
+`/api/guardian/students/{studentId}/schedule/lessons/{id}/plan[/textbooks/{textbookId}]` after
+`GuardianAccess.require`.
 History feeds of held lessons (`CONDUCTED`/`MISSED`, group lessons included, newest first, paged by the
 `before` instant = start of the last item, `limit` 1–100, default 20):
 `GET /api/teacher/schedule/students/{id}/history`
