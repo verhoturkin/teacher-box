@@ -348,7 +348,7 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
 
     /* wider than a phone (board 4): the join button ends the head line */
     @container (min-width: 30.0625rem) {
-      .tb-today-lesson--next {
+      .tb-today-lesson--next:not(.tb-today-hero) {
         grid-template-columns: minmax(0, 1fr) auto;
 
         > * {
