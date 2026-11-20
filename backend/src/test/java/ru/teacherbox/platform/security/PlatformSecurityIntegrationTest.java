@@ -96,6 +96,16 @@ class PlatformSecurityIntegrationTest {
     }
 
     @Test
+    void voiceAnswersMayPlayFromBlobUrls() throws java.io.IOException {
+        // the player loads a file with the session and plays it from a blob: URL; default-src 'self' would block it
+        assertThat(PlatformSecurityAutoConfiguration.CONTENT_SECURITY_POLICY).contains("media-src 'self' blob:;");
+        // nginx sends the same policy for the pages (plus worker-src)
+        String nginx = java.nio.file.Files.readString(java.nio.file.Path.of("../docker/nginx/security-headers.conf"));
+        assertThat(nginx).contains(PlatformSecurityAutoConfiguration.CONTENT_SECURITY_POLICY
+                .replace("connect-src 'self'; ", "connect-src 'self'; worker-src 'self'; "));
+    }
+
+    @Test
     void securityHeadersAreSent() {
         assertThat(mvc.get().uri("/api/auth/ping"))
                 .hasHeader("Content-Security-Policy", PlatformSecurityAutoConfiguration.CONTENT_SECURITY_POLICY)
