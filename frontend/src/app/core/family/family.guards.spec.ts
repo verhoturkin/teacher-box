@@ -48,6 +48,12 @@ describe('family guards', () => {
     expect(TestBed.inject(Family).current()).toBe(CHILD_ID);
   });
 
+  it('keeps the query on the way to the first child', async () => {
+    expect(await navigate('/family?notifications=inbox')).toBe(
+      `/family/${CHILD_ID}?notifications=inbox`,
+    );
+  });
+
   it('keeps /family without a child: the page says so', async () => {
     expect(await navigate('/family', [])).toBe('/family');
   });

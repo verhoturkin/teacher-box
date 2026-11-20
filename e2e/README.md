@@ -57,7 +57,8 @@ images once, shifts the ports per instance and writes logs and artifacts to `e2e
 ## Boundaries and setup
 
 - `identity/`, `schedule/`, `homework/`, `billing/`, `materials/`, `meetings/`,
-  `notifications/`, `ai/`, `settings/` and `admin/` own their functional regressions.
+  `notifications/`, `ai/`, `settings/` and `admin/` own their functional regressions; `family/` owns
+  the parent's cabinet (invite, the child's data, change requests, hidden payments).
 - `setup/` resets the instance and walks the first-run wizard, so it runs in the `operations`
   project, after the ordinary suites.
 - `layout/` and `accessibility/` cover shared browser rendering, geometry, keyboard and contrast.

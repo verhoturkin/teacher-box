@@ -281,10 +281,13 @@ once, after 456.
   got the cabinet's words. Specs checked against the code: ADR-0069 (prefix, help),
   `notifications.md`, `screens/family.md`; `identity`, `schedule`, `homework`, `billing`,
   `platform` and `screens.md` were not re-read — left to the release check (456.1).*
-- [ ] 455.2 *complex* — E2E `e2e/tests/family/`: the teacher invites a parent → the parent accepts
+- [x] 455.2 *complex* — E2E `e2e/tests/family/`: the teacher invites a parent → the parent accepts
   and logs in → sees the child's lessons, homework and payments, cannot open another student's
   data (API 404) → asks to move a lesson → the teacher approves; a reminder reaches the parent's
   inbox; the teacher hides payments → the student no longer sees them, the parent still does.
+  *Done: `e2e/tests/family/parent-cabinet.spec.ts` (5 serial scenarios). Fixed on the way:
+  `firstChildGuard` dropped the query on `/family` → `/family/<child>`, so
+  `/family?notifications=inbox` did not open the inbox.*
 
 ### 456. Release 0.58.0
 

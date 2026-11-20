@@ -3,12 +3,22 @@ import { CanActivateFn, Router } from '@angular/router';
 import { map } from 'rxjs';
 import { Family } from './family';
 
-/** `/family` leads to the first child; without a child it stays on the page that says so. */
-export const firstChildGuard: CanActivateFn = () => {
+/**
+ * `/family` leads to the first child; without a child it stays on the page that says so. The query
+ * survives the redirect: `/family?notifications=inbox` (the parent's bot and e-mail links) opens the
+ * inbox over the child's home.
+ */
+export const firstChildGuard: CanActivateFn = (route) => {
   const router = inject(Router);
   return inject(Family)
     .load()
-    .pipe(map(([first]) => (first === undefined ? true : router.parseUrl(`/family/${first.id}`))));
+    .pipe(
+      map(([first]) =>
+        first === undefined
+          ? true
+          : router.createUrlTree(['/family', first.id], { queryParams: route.queryParams }),
+      ),
+    );
 };
 
 /**
