@@ -42,7 +42,9 @@ and medium are two pages (boards 37 → 25). Only the panes scroll, never the wi
 
 ## Payments
 
-`billing/student/my-billing-page.ts`: figures and the ledger; receipts open from their rows.
+`billing/student/my-billing-page.ts`: figures and the ledger; receipts open from their rows. Hidden
+by the teacher (452.3): no menu item, no balance on the home page, `/cabinet/billing` leads home.
+The same pages serve the parent's [family cabinet](family.md) read-only.
 
 ## Account
 

@@ -30,11 +30,19 @@ export const ru = {
     help: 'Справка',
     account: 'Мой аккаунт',
     notFound: 'Страница не найдена',
+    family: 'Кабинет родителя',
   },
   shell: {
     accountOf: (name: string) => `Аккаунт: ${name}`,
     help: 'Справка',
     account: 'Аккаунт',
+  },
+  family: {
+    signOut: 'Выйти',
+    children: 'Дети',
+    switchFrom: (name: string) => `Ребёнок: ${name}. Выбрать другого`,
+    noneTitle: 'Нет учеников',
+    noneHint: 'Учитель ещё не открыл вам доступ к ученику или отключил его. Напишите учителю.',
   },
   search: {
     placeholder: 'Ученики, задания, доски',

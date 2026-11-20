@@ -291,6 +291,19 @@ describe('AccountPanel', () => {
     );
   });
 
+  it('lets a parent choose a photo, without the names of the teacher or the student (453.2)', async () => {
+    fixture.componentInstance.ngOnInit();
+    backend.expectOne('/api/me').flush({ ...ACCOUNT, role: 'GUARDIAN', displayName: 'Ольга' });
+    await fixture.whenStable();
+
+    const host = hostElement(fixture);
+    expect(host.textContent).toContain('Ольга');
+    expect(host.querySelector('#account-name')).toBeNull();
+    expect(host.querySelector('#account-own-name')).toBeNull();
+    expect(buttonByText(host, 'Загрузить')).toBeTruthy();
+    backend.expectNone('/api/me/guardians');
+  });
+
   it('shows the name of the administrator as text', async () => {
     fixture.componentInstance.ngOnInit();
     backend.expectOne('/api/me').flush({ ...ACCOUNT, role: 'ADMIN', displayName: 'Администратор' });

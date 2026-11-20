@@ -6,7 +6,10 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of, switchMap } from 'rxjs';
+import { API_SCOPE } from '@core/http/api-scope';
+import { Family, firstName } from '@core/family/family';
+import { PaymentsVisibility } from '@core/layout/payments-visibility';
 import { AuthService } from '@core/auth/auth.service';
 import { injectWindowSize } from '@core/layout/mobile';
 import { HelpButton } from '@features/help/parts';
@@ -69,9 +72,12 @@ import { T } from './i18n/texts';
             @if (homework(); as homework) {
               <tb-my-deadlines-widget [summary]="homework" />
             }
-            <tb-student-welcome-card />
-            <tb-connect-messenger-card />
-            <tb-push-onboarding-card />
+            <!-- the student's own hints; the parent's messengers come with 454.3 -->
+            @if (!readOnly) {
+              <tb-student-welcome-card [payments]="payments.visible()" />
+              <tb-connect-messenger-card />
+              <tb-push-onboarding-card />
+            }
           </div>
           <div class="tb-stack tb-feed__side">
             @if (billing(); as billing) {
@@ -110,6 +116,10 @@ export class StudentHome implements OnInit {
   private readonly homeworkApi = inject(HomeworkApi);
   private readonly billingApi = inject(BillingApi);
   private readonly auth = inject(AuthService);
+  private readonly family = inject(Family);
+  protected readonly payments = inject(PaymentsVisibility);
+  /** The family cabinet: the child's home without the student's own hints. */
+  protected readonly readOnly = inject(API_SCOPE).readOnly;
   protected readonly size = injectWindowSize();
 
   protected readonly schedule = signal<MyScheduleSummary | null>(null);
@@ -122,9 +132,11 @@ export class StudentHome implements OnInit {
     return size !== 'compact' && size !== 'medium';
   });
 
-  /** «Привет, Анна»: the first word of the name. */
+  /** «Привет, Анна»: the first word of the name; the parent sees the child's name («Петя»). */
   protected readonly greeting = computed(() =>
-    this.t.hello((this.auth.user()?.displayName ?? '').trim().split(/\s+/)[0] ?? ''),
+    this.readOnly
+      ? (this.family.child()?.displayName ?? '')
+      : this.t.hello(firstName(this.auth.user()?.displayName ?? '')),
   );
 
   /** «Следующее занятие: чт, 01.10, 18:00 · Заданий к сдаче: 2»: only the parts there are. */
@@ -147,7 +159,12 @@ export class StudentHome implements OnInit {
     forkJoin({
       schedule: this.scheduleApi.mySummary(),
       homework: this.homeworkApi.mySummary(),
-      billing: this.billingApi.mySummary(),
+      // the parent always sees the payments; a student only unless the teacher hid them (452.3)
+      billing: this.readOnly
+        ? this.billingApi.mySummary()
+        : this.payments
+            .load()
+            .pipe(switchMap((visible) => (visible ? this.billingApi.mySummary() : of(null)))),
     })
       .pipe(this.state.track())
       .subscribe(({ schedule, homework, billing }) => {

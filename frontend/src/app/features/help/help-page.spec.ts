@@ -1,4 +1,6 @@
+import { Provider } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { CHILD_ID, familyScopeOf } from '@testing/family-fixtures';
 import { Router, provideRouter } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
 import { hostElement, readableText, requireElement, typeInto } from '@testing/dom';
@@ -19,10 +21,11 @@ describe('HelpPage', () => {
     area: 'teacher' | 'cabinet' | 'admin',
     topic?: string,
     width = 1200,
+    extra: Provider[] = [],
   ): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [HelpPage],
-      providers: [provideRouter([]), providePrimeNG(), screenWidth(width)],
+      providers: [provideRouter([]), providePrimeNG(), screenWidth(width), ...extra],
     });
     fixture = TestBed.createComponent(HelpPage);
     fixture.componentRef.setInput('area', area);
@@ -43,6 +46,15 @@ describe('HelpPage', () => {
     expect(titles(host)).toContain('Первые шаги');
     expect(links[0]?.getAttribute('href')).toBe('/teacher/help/first-steps');
     expect(host.querySelector('h2')?.textContent).toBe('Первые шаги');
+  });
+
+  it('keeps the student’s articles in the family cabinet under its address (453.2)', async () => {
+    const host = await render('cabinet', undefined, 1200, [familyScopeOf()]);
+
+    expect(titles(host)).toContain('Расписание и перенос');
+    expect(host.querySelector('nav a')?.getAttribute('href')).toMatch(
+      new RegExp(`^/family/${CHILD_ID}/help/`),
+    );
   });
 
   it('opens the article of the address and follows links inside the portal', async () => {

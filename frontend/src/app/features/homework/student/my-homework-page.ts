@@ -17,6 +17,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { PageHeader } from '@shared/ui/page-header';
 import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
+import { API_SCOPE } from '@core/http/api-scope';
 import { HomeworkApi } from '../data-access/homework-api';
 import { MyTask } from '../data-access/homework.models';
 import { Material, materialLabel, materialsOf } from '../ui/materials';
@@ -86,7 +87,7 @@ interface Group {
                     }
                   </span>
 
-                  <a pButton [routerLink]="['/cabinet/homework', next.taskId]">{{ t.open }}</a>
+                  <a pButton [routerLink]="[list(), next.taskId]">{{ t.open }}</a>
                 </section>
               }
               @for (group of groups(); track group.key) {
@@ -102,7 +103,7 @@ interface Group {
                       <div class="tb-list__text">
                         <a
                           class="tb-list__title tb-list__link tb-hw__title"
-                          [routerLink]="['/cabinet/homework', task.taskId]"
+                          [routerLink]="[list(), task.taskId]"
                           [attr.aria-current]="taskId() === task.taskId ? 'page' : null"
                           >{{ task.title }}</a
                         >
@@ -137,7 +138,11 @@ interface Group {
               (changed)="refresh()"
             />
           } @else {
-            <tb-empty-state icon="tb-i-assignment" [title]="t.pickTitle" [hint]="t.pickHint" />
+            <tb-empty-state
+              icon="tb-i-assignment"
+              [title]="t.pickTitle"
+              [hint]="scope.readOnly ? t.childPickHint : t.pickHint"
+            />
           }
         </tb-pane>
       }
@@ -198,6 +203,9 @@ interface Group {
 export class MyHomeworkPage implements OnInit {
   protected readonly t = T.mine;
   private readonly api = inject(HomeworkApi);
+  protected readonly scope = inject(API_SCOPE);
+  /** `/cabinet/homework` or, in the family cabinet, `/family/<id>/homework`. */
+  protected readonly list = computed(() => `${this.scope.area()}/homework`);
   private readonly dates = new DatePipe(inject(LOCALE_ID));
 
   /** Route parameter: the task open beside the list. */

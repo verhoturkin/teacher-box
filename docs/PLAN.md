@@ -184,7 +184,7 @@ once, after 456.
   «родителя Пети». The student's «Родитель: Анна» is a tile in the profile card of `AccountPanel`.
   Help: a «Родители» section of `teacher/students` (no new topic). No shared part — no gallery
   sample.*
-- [ ] 453.2 *complex* F — `m3-expressive`. Area `/family` in `app.routes.ts`
+- [x] 453.2 *complex* F — `m3-expressive`. Area `/family` in `app.routes.ts`
   (`roleGuard('GUARDIAN')`, a `FamilyLayout` beside `core/layout/student-layout.ts`): child
   switcher in the top bar (chips with the child's colour / avatar, the choice in the URL
   `/family/:studentId/...`, one child → no switcher), sections «Главная», «Расписание»,
@@ -197,6 +197,19 @@ once, after 456.
   payments hidden (452.3): no «Оплаты» in the navigation, no balance on the student's home,
   `/cabinet/billing` redirects home. Tests (Vitest). Docs:
   `docs/screens.md` «Family cabinet», ADR-0058 note if the direction rules change.
+  *Done with these choices: `ApiScope` is the `API_SCOPE` token of `core/http/api-scope.ts`, not a
+  parts input: `/family/:studentId` provides the family scope, its child route
+  (`features/home/family.routes.ts`) its own `ScheduleApi` / `HomeworkApi` / `BillingApi`, and the
+  pages, widgets and help take the base URL, the link base and `readOnly` from it — the
+  directions of ADR-0058 are unchanged (no note). The child is in the address and in `Family`
+  (`core/family/`); the frame is rebuilt for another child, so no page keeps the previous child.
+  The teacher's student colours do not reach a parent: the switcher colours the children by
+  order from the palette; on compact it is one chip with a menu. «Уведомления» is not a section:
+  the bell, the inbox and the preferences of a parent come with 454.3 (until then no bell and no
+  notifications card in «Мой аккаунт»; the parent gets a photo). «Справка» shows the student's
+  articles under `/family/<id>/help` until 455.1. Read-only also hides the lesson link, call
+  presence, boards and the teacher's busy time; the parent's calendar link is the one of all
+  children. A guardian with no current child stays on a frameless «Нет учеников» page.*
 
 ### 454. Notices and requests for parents
 

@@ -10,6 +10,11 @@ import {
 import { guestGuard, redirectToHome, roleGuard } from '@core/auth/auth.guards';
 import { setupGuard } from '@core/portal/setup.guard';
 import { canLeaveGuard } from '@core/routing/can-leave.guard';
+import { myHomeworkMatcher } from '@core/routing/my-homework-matcher';
+import { familyChildGuard, firstChildGuard } from '@core/family/family.guards';
+import { familyScope } from '@core/family/family';
+import { API_SCOPE } from '@core/http/api-scope';
+import { paymentsVisibleGuard } from '@core/layout/payments-visibility';
 import { CORE_T } from '@core/i18n/texts';
 import { CALENDAR_STYLESHEET, withStyleBundle } from '@core/theme/style-bundles';
 import { defer, switchMap } from 'rxjs';
@@ -62,19 +67,6 @@ const homeworkMatcher: UrlMatcher = (segments): UrlMatchResult | null => {
   return second !== undefined || first.path === 'new' || first.path === 'review'
     ? null
     : { consumed: segments, posParams: { assignmentId: first } };
-};
-
-/**
- * The student's `/cabinet/homework` and `/cabinet/homework/:taskId` are one route: the list stays, the task beside
- * it changes (redesign spec §9).
- */
-const myHomeworkMatcher: UrlMatcher = (segments): UrlMatchResult | null => {
-  const [section, task, ...rest] = segments;
-  return section?.path !== 'homework' || rest.length > 0
-    ? null
-    : task === undefined
-      ? { consumed: segments }
-      : { consumed: segments, posParams: { taskId: task } };
 };
 
 /**
@@ -313,6 +305,8 @@ export const routes: Routes = [
       {
         path: 'billing',
         title: NAV.billing,
+        // the teacher may hide the payments from a student who has a parent (452.3)
+        canActivate: [paymentsVisibleGuard],
         loadComponent: () => import('@features/billing').then((m) => m.MyBillingPage),
       },
       {
@@ -342,6 +336,51 @@ export const routes: Routes = [
         path: '**',
         title: N.notFound,
         loadComponent: notFoundPage,
+      },
+    ],
+  },
+  {
+    // the family cabinet of a parent (453.2, ADR-0069): the child is in the address
+    path: 'family',
+    canActivate: [roleGuard('GUARDIAN')],
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        title: N.family,
+        canActivate: [firstChildGuard],
+        loadComponent: () => import('@core/pages/no-children').then((m) => m.NoChildrenPage),
+      },
+      {
+        path: ':studentId',
+        canActivate: [familyChildGuard],
+        // the child of the address, read-only: the pages below take their addresses from it
+        providers: [{ provide: API_SCOPE, useFactory: familyScope }],
+        loadComponent: () => import('@core/layout/family-layout').then((m) => m.FamilyLayout),
+        children: [
+          {
+            path: 'help',
+            title: N.help,
+            data: { area: 'cabinet' },
+            loadComponent: helpPage,
+          },
+          {
+            path: 'help/:topic',
+            title: N.help,
+            data: { area: 'cabinet' },
+            loadComponent: helpPage,
+          },
+          {
+            path: 'account',
+            title: N.account,
+            loadComponent: accountPage,
+          },
+          {
+            // the child's pages with the family scope (features/home)
+            path: '',
+            loadChildren: () => import('@features/home').then((m) => m.FAMILY_ROUTES),
+          },
+        ],
       },
     ],
   },

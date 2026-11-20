@@ -36,6 +36,27 @@ describe('AccountPage', () => {
     backend.verify();
   });
 
+  it('gives a parent the account without «Уведомления» until 454.3', async () => {
+    const { host, backend, settle } = await render('GUARDIAN');
+    backend.expectOne('/api/me').flush({
+      id: 'g1',
+      role: 'GUARDIAN',
+      displayName: 'Ольга',
+      profileName: 'Ольга',
+      avatar: null,
+      login: 'olga',
+      email: null,
+      phone: null,
+      passwordChangeRequired: false,
+      language: 'ru',
+    });
+    await settle();
+
+    expect(host.querySelector('tb-account-panel')).not.toBeNull();
+    expect(host.querySelector('tb-notifications-section')).toBeNull();
+    backend.verify();
+  });
+
   it('gives a student «Уведомления» next to the account', async () => {
     const { host, backend, settle } = await render('STUDENT');
     backend.expectOne('/api/me').flush({

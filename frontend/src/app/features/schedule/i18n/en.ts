@@ -343,6 +343,7 @@ export const en: Translation<typeof ru> = {
     refresh: 'Google refreshes subscriptions every few hours.',
     created: (date: string) => `The link was created on ${date}.`,
     about: 'Subscribe to see your lessons in your calendar app.',
+    familyAbout: 'All your children’s lessons can appear in one calendar on your phone.',
     renew: 'Generate new link',
     get: 'Get subscription link',
     disable: 'Disable subscription',

@@ -78,10 +78,14 @@ const ROLE_LABELS: Readonly<Record<Role, string>> = T.roles;
         <p-card [header]="t.profile" styleClass="tb-section-card tb-section-card--flow">
           @if (hasPhoto()) {
             <tb-profile-photo [account]="account" (changed)="changed($event)" />
-          } @else {
+          }
+          <!-- the administrator's and a parent's name: the teacher and a student have it in a field -->
+          @if (!isTeacher() && !isStudent()) {
             <div class="tb-tiles">
               <div class="tb-tile">
-                <tb-avatar [name]="account.displayName" [photo]="account.avatar" size="2.5rem" />
+                @if (!hasPhoto()) {
+                  <tb-avatar [name]="account.displayName" [photo]="account.avatar" size="2.5rem" />
+                }
                 <span class="tb-tile__text">
                   <b class="tb-account__name">{{ account.displayName }}</b>
                   <span class="tb-account__role">{{ roleLabel() }}</span>
@@ -410,12 +414,17 @@ export class AccountPanel implements OnInit {
   protected readonly account = signal<Account | null>(null);
   protected readonly isTeacher = computed(() => this.account()?.role === 'TEACHER');
   protected readonly isStudent = computed(() => this.account()?.role === 'STUDENT');
-  /** A student and the teacher choose a photo and notifications; the administrator has neither. */
-  protected readonly hasPhoto = computed(() => this.isStudent() || this.isTeacher());
+  /**
+   * A student, a parent and the teacher choose a photo; the administrator has none (ADR-0010). The
+   * parent's notifications come with 454.3: until then only the student and the teacher have them.
+   */
+  protected readonly hasPhoto = computed(
+    () => this.isStudent() || this.isTeacher() || this.account()?.role === 'GUARDIAN',
+  );
   private readonly slot = contentChild(AccountNotifications);
   /** «Уведомления» the page projected, for the roles that have them. */
   protected readonly notifications = computed(() =>
-    this.hasPhoto() ? (this.slot()?.template ?? null) : null,
+    this.isStudent() || this.isTeacher() ? (this.slot()?.template ?? null) : null,
   );
   /** The student's parents by name. */
   private readonly guardians = signal<readonly string[]>([]);

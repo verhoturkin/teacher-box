@@ -32,11 +32,20 @@ export const en: Translation<typeof ru> = {
     help: 'Help',
     account: 'My account',
     notFound: 'Page not found',
+    family: 'Parent area',
   },
   shell: {
     accountOf: (name: string) => `Account: ${name}`,
     help: 'Help',
     account: 'Account',
+  },
+  family: {
+    signOut: 'Sign out',
+    children: 'Children',
+    switchFrom: (name: string) => `Child: ${name}. Choose another`,
+    noneTitle: 'No students',
+    noneHint:
+      'Your teacher has not given you access to a student yet, or has turned it off. Please contact your teacher.',
   },
   search: {
     placeholder: 'Students, assignments, boards',

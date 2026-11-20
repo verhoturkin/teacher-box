@@ -59,6 +59,11 @@ List, assignment, review, editor, AI pane — [screens/homework.md](screens/home
 
 Home, schedule, homework, payments, account — [screens/cabinet.md](screens/cabinet.md).
 
+## Family cabinet
+
+A parent's `/family/:studentId`: the student's pages read-only, the child switcher —
+[screens/family.md](screens/family.md).
+
 ## Invitation
 
 `/invite/:token` (`identity/invite/invite-page.ts`): a student or a parent chooses a username and

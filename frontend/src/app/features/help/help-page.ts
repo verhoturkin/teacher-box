@@ -15,6 +15,7 @@ import { HelpArticleView } from './help-article-view';
 import { HelpLibrary, searchArticles } from './help-library';
 import { HelpArticle } from './help.models';
 import { HelpArea } from './help-topics';
+import { API_SCOPE } from '@core/http/api-scope';
 import { PageHeader } from '@shared/ui/page-header';
 import { EmptyState } from '@shared/ui/empty-state';
 import { T } from './i18n/texts';
@@ -53,7 +54,7 @@ import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
                 <li>
                   <a
                     class="tb-help__item"
-                    [routerLink]="['/', area(), 'help', article.id]"
+                    [routerLink]="[base(), 'help', article.id]"
                     [class.tb-help__current]="isCurrent(article)"
                     [attr.aria-current]="isCurrent(article) ? 'page' : null"
                   >
@@ -83,7 +84,7 @@ import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
             <tb-page-header
               tbPaneHeader
               [title]="t.help"
-              [back]="['/', area(), 'help']"
+              [back]="[base(), 'help']"
               [backLabel]="t.all"
             />
           }
@@ -176,9 +177,17 @@ import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
 export class HelpPage {
   protected readonly t = T;
   private readonly library = inject(HelpLibrary);
+  private readonly scope = inject(API_SCOPE);
 
   /** Route data: whose help. */
   readonly area = input.required<HelpArea>();
+  /**
+   * The address the links start with: `/teacher`, `/admin`, `/cabinet` or, for the student's articles
+   * in the family cabinet, `/family/<id>` (453.2).
+   */
+  protected readonly base = computed(() =>
+    this.area() === 'cabinet' ? this.scope.area() : `/${this.area()}`,
+  );
   /** Route parameter: the article. */
   readonly topic = input<string>();
 

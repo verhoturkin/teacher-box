@@ -8,7 +8,8 @@ import {
 } from '@angular/core';
 import { ListRow } from '@shared/ui/list-row';
 import { ActivatedRoute } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { API_SCOPE } from '@core/http/api-scope';
 import { NgTemplateOutlet } from '@angular/common';
 import { Button } from 'primeng/button';
 import { Tag } from 'primeng/tag';
@@ -215,7 +216,7 @@ export function nextMonday(date: Date): Date {
                             [group]="lesson.groupId !== null"
                             (ask)="ask(lesson, $event)"
                           />
-                          @if (lesson.pendingRequests[0]; as request) {
+                          @if (readOnly ? null : lesson.pendingRequests[0]; as request) {
                             <p-button
                               severity="danger"
                               [label]="t.withdraw"
@@ -357,7 +358,7 @@ export function nextMonday(date: Date): Date {
     >
       @if (sheetLesson(); as lesson) {
         <div class="tb-student-lesson">
-          <tb-lesson-card role="student" [lesson]="lesson" />
+          <tb-lesson-card role="student" [lesson]="cardLesson(lesson)" />
           @if (sheetSummary(); as summary) {
             <section class="tb-history__part">
               <span class="tb-history__label">{{ t.covered }}</span>
@@ -371,7 +372,7 @@ export function nextMonday(date: Date): Date {
             rescheduleIcon="tb-i tb-i-calendar_month"
             (ask)="closeSheet(); ask(lesson, $event)"
           />
-          @if (lesson.pendingRequests[0]; as request) {
+          @if (readOnly ? null : lesson.pendingRequests[0]; as request) {
             <p-button
               severity="secondary"
               [label]="t.withdrawRequest"
@@ -484,6 +485,8 @@ export class MySchedulePage implements OnInit {
   private readonly api = inject(ScheduleApi);
   private readonly snackbar = inject(Snackbar);
   private readonly route = inject(ActivatedRoute);
+  /** The family cabinet: the child's lessons and history without requests, links and busy time. */
+  protected readonly readOnly = inject(API_SCOPE).readOnly;
 
   protected readonly kind = requestKindLabel;
   protected readonly requestStatuses = REQUEST_STATUS_LABELS;
@@ -653,15 +656,23 @@ export class MySchedulePage implements OnInit {
     return lesson.groupId === null ? 'tb-i tb-i-calendar_month' : 'tb-i tb-i-group';
   }
 
+  /** The lesson of the sheet: in the family cabinet without the link of the call. */
+  protected cardLesson(lesson: ScheduledLesson): ScheduledLesson {
+    return this.readOnly ? { ...lesson, joinUrl: null } : lesson;
+  }
+
   /** The meeting of a lesson that is still planned. */
   protected joinUrl(lesson: ScheduledLesson): string | null {
-    return lesson.status === 'SCHEDULED' ? lesson.joinUrl : null;
+    return lesson.status === 'SCHEDULED' && !this.readOnly ? lesson.joinUrl : null;
   }
 
   /** Whether the student may ask to move or cancel the lesson. */
   protected canAsk(lesson: ScheduledLesson): boolean {
     return (
-      lesson.status === 'SCHEDULED' && lesson.pendingRequests.length === 0 && !this.excused(lesson)
+      !this.readOnly &&
+      lesson.status === 'SCHEDULED' &&
+      lesson.pendingRequests.length === 0 &&
+      !this.excused(lesson)
     );
   }
 
@@ -692,7 +703,8 @@ export class MySchedulePage implements OnInit {
     forkJoin({
       settings: this.api.settings(),
       lessons: this.api.myLessons(toIsoDate(today), toIsoDate(nextMonday(today))),
-      requests: this.api.myRequests(),
+      // the parent's requests come with 454.3
+      requests: this.readOnly ? of([]) : this.api.myRequests(),
     })
       .pipe(this.upcomingState.track())
       .subscribe(({ settings, lessons, requests }) => {
@@ -711,10 +723,13 @@ export class MySchedulePage implements OnInit {
     const widened = widen(range);
     forkJoin({
       lessons: this.api.myLessons(widened.from, widened.to),
-      busy: this.api.teacherBusy(
-        fromIsoDate(widened.from).toISOString(),
-        fromIsoDate(widened.to).toISOString(),
-      ),
+      // the teacher's busy time helps to pick a new time: the student's only (ADR-0069)
+      busy: this.readOnly
+        ? of([])
+        : this.api.teacherBusy(
+            fromIsoDate(widened.from).toISOString(),
+            fromIsoDate(widened.to).toISOString(),
+          ),
     })
       .pipe(this.calendarState.track())
       .subscribe(({ lessons, busy }) => {

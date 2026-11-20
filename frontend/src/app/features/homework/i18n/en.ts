@@ -343,6 +343,7 @@ export const en: Translation<typeof ru> = {
     submitted: (date: string) => `handed in ${date}`,
     pickTitle: 'Choose an assignment',
     pickHint: 'The assignment and your submissions will appear here',
+    childPickHint: 'The assignment and your child’s answers will appear here',
   },
   myTask: {
     back: 'Homework',
@@ -351,6 +352,7 @@ export const en: Translation<typeof ru> = {
     assignment: 'Assignment',
     textbooks: 'Textbooks',
     myAnswer: 'My answer',
+    answer: 'Answer',
     answerText: 'Write your answer…',
     draftSaved: 'draft saved',
     photo: 'Photo of your notebook',

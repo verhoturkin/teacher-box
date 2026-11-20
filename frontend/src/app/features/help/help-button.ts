@@ -9,6 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { API_SCOPE } from '@core/http/api-scope';
 import { Button } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
 import { Tooltip } from 'primeng/tooltip';
@@ -112,7 +113,12 @@ export class HelpButton {
       }
     });
   }
-  protected readonly url = computed(() => helpUrl(this.topic()));
+  private readonly scope = inject(API_SCOPE);
+  /** «Вся справка»: in the family cabinet the student's articles open under `/family/<id>/help`. */
+  protected readonly url = computed(() => {
+    const url = helpUrl(this.topic());
+    return url.startsWith('/cabinet/') ? url.replace('/cabinet', this.scope.area()) : url;
+  });
   /** «Справка: Расписание и запросы»: the buttons of a page are told apart (ADR-0026). */
   protected readonly name = computed(() => T.helpOf(HELP_TITLES[this.topic()]));
 

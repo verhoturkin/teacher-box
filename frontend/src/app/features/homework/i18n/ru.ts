@@ -342,6 +342,7 @@ export const ru = {
     submitted: (date: string) => `сдано ${date}`,
     pickTitle: 'Выберите задание',
     pickHint: 'Здесь откроется задание с вашими ответами',
+    childPickHint: 'Здесь откроется задание с ответами ребёнка',
   },
   myTask: {
     back: 'Задания',
@@ -350,6 +351,7 @@ export const ru = {
     assignment: 'Задание',
     textbooks: 'Учебники',
     myAnswer: 'Мой ответ',
+    answer: 'Ответ',
     answerText: 'Написать ответ…',
     draftSaved: 'черновик сохранён',
     photo: 'Фото тетради',
