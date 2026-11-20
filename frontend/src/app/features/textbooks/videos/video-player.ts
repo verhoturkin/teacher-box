@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { VideoProvider } from '../data-access/homework.models';
+import { VideoProvider } from '../data-access/videos.models';
 import { T } from '../i18n/texts';
 import { embedUrl } from './video-links';
 

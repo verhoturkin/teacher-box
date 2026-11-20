@@ -723,6 +723,24 @@ const HERO_BAR: Readonly<Record<string, readonly (readonly [string, string, stri
   ],
 };
 
+/** Automatic YouTube captions of a new link (459.2): [topic, baseline, now] of the homework article. */
+const AUTO_CAPTIONS: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'homework',
+      '«Настроить» открывает окно видео поверх редактора (на телефоне — во весь экран): название, «Субтитры YouTube» (если субтитров несколько — на разных языках, авторские и автоматические, — выберите нужные',
+      'Для ссылки YouTube портал сразу берёт субтитры на языке ролика (авторские, иначе автоматические) — под плиткой появится «Субтитры: английский, автоматические · Сменить язык». «Сменить язык» открывает меню дорожек; расшифровку, которую вы правили, портал заменит только после вопроса, а готовую никогда не перезапрашивает. Если субтитров нет или их не удалось получить, под плиткой будет «У видео нет субтитров» или «Не удалось получить субтитры · Повторить». «Настроить» открывает окно видео поверх редактора (на телефоне — во весь экран): название, «Субтитры YouTube» (выбрать дорожку',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'homework',
+      'Select the settings button on a tile to open the video in a window over the editor (full screen on a phone). There you can rename the video, import YouTube captions (if several tracks are available, choose one',
+      'For a YouTube link, the portal imports the captions in the video’s language straight away (the creator’s, otherwise auto-generated ones), and the tile shows “Captions: English, auto-generated · Change language”. “Change language” lists the tracks; if you have edited the transcript, the portal asks before replacing it, and it never re-imports an existing transcript. If there are no captions or they can’t be fetched, the tile says “This video has no captions” or “Couldn’t get the captions · Retry”. Select the settings button on a tile to open the video in a window over the editor (full screen on a phone). There you can rename the video, import YouTube captions (choose a track',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -823,6 +841,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(PARENT_REQUESTS[name] ?? []),
       ...(PARENT_NOTES[name] ?? []),
       ...(HERO_BAR[name] ?? []),
+      ...(AUTO_CAPTIONS[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

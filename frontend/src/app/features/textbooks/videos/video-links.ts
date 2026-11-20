@@ -1,4 +1,4 @@
-import { VideoProvider } from '../data-access/homework.models';
+import { VideoProvider } from '../data-access/videos.models';
 
 /** What a link plays (ADR-0047); mirrors `VideoLink.parse` of the backend. */
 export interface ParsedVideo {

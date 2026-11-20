@@ -21,8 +21,12 @@ boards: the one you choose shows in the Board section (the × clears it), and on
 that board selected. A quiz is not a material: add questions on the Quiz tab. You can remove anything you added, and empty sections take up no room.
 5. For a video, use “Video” (up to five) and paste a link: the video appears as a tile. YouTube, Rutube and VK videos play within the assignment; \
 other links open in a new tab. Students see the videos in the order of the tiles, so drag them to reorder. Each tile shows whether it has a \
-transcript and whether students can see it. Select the settings button on a tile to open the video in a window over the editor (full screen on a \
-phone). There you can rename the video, import YouTube captions (if several tracks are available, choose one from the menu), load an .srt or .vtt \
+transcript and whether students can see it. For a YouTube link, the portal imports the captions in the video’s language straight away (the \
+creator’s, otherwise auto-generated ones), and the tile shows “Captions: English, auto-generated · Change language”. “Change language” lists the \
+tracks; if you have edited the transcript, the portal asks before replacing it, and it never re-imports an existing transcript. If there are no \
+captions or they can’t be fetched, the tile says “This video has no captions” or “Couldn’t get the captions · Retry”. Select the settings button \
+on a tile to open the video in a window over the editor (full screen on a phone). There you can rename the video, import YouTube captions (choose \
+a track from the menu), load an .srt or .vtt \
 file, edit the transcript or remove the video. The arrows move between the assignment’s videos without closing the window. Changes are saved straight \
 away, so “Done” and Esc just close it. The AI uses the transcript; students see it only if “Show transcript to students” is enabled.
 6. Choose “Assign”. Students are notified once the materials are ready and reminded before the due date. You return to where you opened the editor \

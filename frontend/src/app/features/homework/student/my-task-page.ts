@@ -26,7 +26,7 @@ import { HomeworkApi } from '../data-access/homework-api';
 import { Attachment, BoundTextbook, TaskDetails } from '../data-access/homework.models';
 import { AttachmentList } from '../ui/attachment-list';
 import { TextbookList, boundTextbookFilename } from '../ui/textbook-list';
-import { VideoList } from '../ui/video-list';
+import { VideoList } from '@features/textbooks/parts';
 import { FilePicker } from '../ui/file-picker';
 import { canRecord, VoiceRecorder } from '../ui/voice-recorder';
 import { AssistChip } from '@shared/ui/assist-chip';

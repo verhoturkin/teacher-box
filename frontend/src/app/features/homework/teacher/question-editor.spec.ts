@@ -10,7 +10,7 @@ import {
 } from '@testing/dom';
 import { testProviders } from '@testing/setup';
 import { QuestionDraft, questionDraft } from './question-drafts';
-import { QuestionEditor, arrowStep, reordered } from './question-editor';
+import { QuestionEditor } from './question-editor';
 
 describe('QuestionEditor', () => {
   let fixture: ComponentFixture<QuestionEditor>;
@@ -168,15 +168,5 @@ describe('QuestionEditor', () => {
     expect(host.querySelector('.tb-drag-handle')).toBeNull();
     await show(questionDraft('ORDERING'));
     expect(host.querySelector('.tb-drag-handle')).not.toBeNull();
-  });
-});
-
-describe('reordering helpers', () => {
-  it('move an item and read the arrow keys', () => {
-    expect(reordered(['a', 'b', 'c'], 0, 2)).toEqual(['b', 'c', 'a']);
-    expect(reordered(['a'], 3, 0)).toEqual(['a']);
-    expect(arrowStep(new KeyboardEvent('keydown', { key: 'ArrowUp' }))).toBe(-1);
-    expect(arrowStep(new KeyboardEvent('keydown', { key: 'ArrowDown' }))).toBe(1);
-    expect(arrowStep(new KeyboardEvent('keydown', { key: 'Enter' }))).toBeNull();
   });
 });

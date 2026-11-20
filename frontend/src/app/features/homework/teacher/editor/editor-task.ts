@@ -29,7 +29,7 @@ import {
 } from '@features/homework/data-access/homework.models';
 import { T } from '@features/homework/i18n/texts';
 import { QuestionDraft } from '../question-drafts';
-import { MAX_VIDEOS, VideoDraft } from '../video-section';
+import { MAX_VIDEOS, VideoDraft } from '@features/textbooks/parts';
 import { EditorBoard, EditorVideos } from './editor-extras';
 import { EditorMaterials } from './editor-materials';
 import { EditorMaterialsState } from './editor-materials-state';

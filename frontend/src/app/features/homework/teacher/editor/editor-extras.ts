@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input, output, viewChild } from '@a
 import { Card } from 'primeng/card';
 import { InputChip } from '@shared/ui/input-chip';
 import { T } from '@features/homework/i18n/texts';
-import { MAX_VIDEOS, VideoDraft, VideoSection } from '../video-section';
+import { MAX_VIDEOS, VideoDraft, VideoSection } from '@features/textbooks/parts';
 
 /** «Видео» of the assignment editor: the videos by link (ADR-0047) and how many more fit. */
 @Component({

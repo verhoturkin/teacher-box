@@ -53,7 +53,7 @@ section the substep names). New ADR: 0071 «Курсы, планы уроков 
   `HomeworkViews` over the api; `SettingsCatalog` text of `TEACHERBOX_HOMEWORK_YOUTUBE_PROXY` (name
   kept); tests move with the code; `docs/modules/homework.md`, `textbooks.md`. Spec: roadmap/11
   «Videos and automatic transcripts».
-- [ ] 459.2 **F** *complex* — `homework/teacher/video-section.ts`, `ui/video-links.ts`,
+- [x] 459.2 **F** *complex* — `homework/teacher/video-section.ts`, `ui/video-links.ts`,
   `ui/video-list.ts` and the caption calls of `homework-api.ts` move to `@features/textbooks/parts`;
   automatic transcript on adding / changing a YouTube link with an empty transcript (one
   `…/videos/transcript {url}`), the tile note «Субтитры: <язык>, автоматические · Сменить язык»

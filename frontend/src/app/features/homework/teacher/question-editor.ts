@@ -23,6 +23,7 @@ import { RadioButton } from 'primeng/radiobutton';
 import { Textarea } from 'primeng/textarea';
 import { Confirm } from '@shared/ui/confirm';
 import { InputChip } from '@shared/ui/input-chip';
+import { arrowStep, reordered } from '@shared/ui/reorder';
 import { QuestionType } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
 import {
@@ -754,22 +755,4 @@ export class QuestionEditor {
       { injector: this.injector },
     );
   }
-}
-
-/** −1 for ↑, 1 for ↓, `null` for any other key. */
-export function arrowStep(event: KeyboardEvent): -1 | 1 | null {
-  if (event.key === 'ArrowUp') {
-    return -1;
-  }
-  return event.key === 'ArrowDown' ? 1 : null;
-}
-
-/** The list with the item moved from one place to another (a drop of CDK drag-drop). */
-export function reordered<A>(list: readonly A[], from: number, to: number): readonly A[] {
-  const copy = [...list];
-  const [item] = copy.splice(from, 1);
-  if (item !== undefined) {
-    copy.splice(to, 0, item);
-  }
-  return copy;
 }

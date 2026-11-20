@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core
 import { ListRow } from '@shared/ui/list-row';
 import { Button } from 'primeng/button';
 import { ButtonAttributes } from '@shared/ui/button-attributes';
-import { Video } from '../data-access/homework.models';
+import { Video } from '../data-access/videos.models';
 import { T } from '../i18n/texts';
 import { PlayableVideo, VideoPlayer } from './video-player';
 

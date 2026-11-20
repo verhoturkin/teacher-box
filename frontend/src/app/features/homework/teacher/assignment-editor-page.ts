@@ -75,7 +75,7 @@ import { brokenQuestions, withoutCreate } from './editor/editor-sections';
 import { EditorTab, EditorTabs } from './editor/editor-tabs';
 import { EditorTask } from './editor/editor-task';
 import { QuizSettings } from './quiz-settings';
-import { VideoDraft, videoDraft, videoInputs } from './video-section';
+import { VideoDraft, videoDraft, videoInputs } from '@features/textbooks/parts';
 
 /**
  * Teacher: the page that creates an assignment or edits one, on two tabs (sketches 11, 28): «Задание» in the

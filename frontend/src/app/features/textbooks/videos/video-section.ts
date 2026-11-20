@@ -21,20 +21,28 @@ import { Tag } from 'primeng/tag';
 import { Textarea } from 'primeng/textarea';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { describeError } from '@core/http/error-messages';
+import { problemCode } from '@core/http/problem-detail';
 import { locale } from '@core/i18n/language';
 import { AssistChip } from '@shared/ui/assist-chip';
 import { Busy } from '@shared/ui/busy';
 import { Confirm } from '@shared/ui/confirm';
 import { DialogFooter, DialogHeaderActions, TbDialog } from '@shared/ui/dialog/dialog';
 import { injectWindowSize } from '@core/layout/mobile';
+import { SHARED_T } from '@shared/i18n/texts';
 import { RowType } from '@shared/ui/row-type.directive';
-import { HomeworkApi } from '../data-access/homework-api';
-import { CaptionTrack, CaptionTracks, Video, VideoInput } from '../data-access/homework.models';
+import { VideosApi } from '../data-access/videos-api';
+import {
+  CaptionTrack,
+  CaptionTracks,
+  Video,
+  VideoInput,
+  VideoTranscript,
+} from '../data-access/videos.models';
 import { T } from '../i18n/texts';
-import { videoName } from '../ui/video-list';
-import { ParsedVideo, clock, parseVideoLink, subtitlesToTranscript } from '../ui/video-links';
-import { PlayableVideo, VideoPlayer } from '../ui/video-player';
-import { arrowStep, reordered } from './question-editor';
+import { videoName } from './video-list';
+import { ParsedVideo, clock, parseVideoLink, subtitlesToTranscript } from './video-links';
+import { PlayableVideo, VideoPlayer } from './video-player';
+import { arrowStep, reordered } from '@shared/ui/reorder';
 
 /** A video being written in the editor. */
 export interface VideoDraft {
@@ -109,19 +117,25 @@ export function transcriptLines(transcript: string): TranscriptLine[] {
     });
 }
 
-/** A note under a transcript: where it came from, or why it did not come. */
+/** A note under a tile and its transcript: where the transcript came from, or why it did not come. */
 interface TranscriptNote {
   readonly severity: 'info' | 'warn' | 'error';
   readonly text: string;
+  /** «Сменить язык» after YouTube captions, «Повторить» after a failed automatic request. */
+  readonly action?: 'language' | 'retry';
 }
 
 /**
- * The videos of an assignment (ADR-0047) as tiles: preview, name, source, whether there is a transcript and whether
+ * The videos of a material (ADR-0047) as tiles: preview, name, source, whether there is a transcript and whether
  * the student sees it; the tiles reorder by drag (or the arrow keys on the handle), one link field under them adds
  * the next video. «Настроить» opens the settings of a video — player, title, the
  * transcript as timed lines («Субтитры YouTube» with a menu of tracks, «Из файла», «Править текст»), «Показывать
  * расшифровку ученику», «Убрать видео» and ‹ › between videos. «Настроить» opens a dialog over the editor (sketch 39;
  * a phone: full screen, sketch 40); every change is saved at once, so «Готово» and Esc only close it.
+ *
+ * A YouTube link added with no transcript takes its captions at once (one request, the suggested track — the
+ * author's in the spoken language, else the recognized one); the tile says which and offers «Сменить язык». No
+ * captions or a failure is a quiet note under the tile, never a toast. A written transcript is never refetched.
  */
 @Component({
   selector: 'tb-video-section',
@@ -185,6 +199,10 @@ interface TranscriptNote {
                   <p-tag severity="secondary" [value]="t.noTranscript" />
                 }
               </span>
+              <ng-container
+                [ngTemplateOutlet]="noteView"
+                [ngTemplateOutletContext]="{ $implicit: draft }"
+              />
             </span>
             <p-button
               icon="tb-i tb-i-tune"
@@ -304,13 +322,10 @@ interface TranscriptNote {
               (change)="loadFile(draft, file)"
             />
           </div>
-          <div role="status" aria-live="polite">
-            @if (notes().get(draft.key); as note) {
-              <small [class]="note.severity === 'error' ? 'tb-field__error' : 'tb-hint'">{{
-                note.text
-              }}</small>
-            }
-          </div>
+          <ng-container
+            [ngTemplateOutlet]="noteView"
+            [ngTemplateOutletContext]="{ $implicit: draft }"
+          />
 
           @if (editing() || draft.transcript.trim() === '') {
             <div class="tb-field">
@@ -364,6 +379,39 @@ interface TranscriptNote {
         </div>
       }
     </tb-dialog>
+
+    <!-- Where the transcript came from or why it did not, with «Сменить язык» / «Повторить»: under the tile and in the dialog -->
+    <ng-template #noteView let-draft [tbRowType]="videos()">
+      <span class="tb-video-note" role="status" aria-live="polite">
+        @if (notes().get(draft.key); as note) {
+          <small [class]="note.severity === 'error' ? 'tb-field__error' : 'tb-hint'"
+            >{{ note.text }}
+            @if (note.action === 'language') {
+              ·
+              <button
+                type="button"
+                class="tb-link-button tb-video-note__action"
+                [attr.aria-busy]="taking(draft.key) || null"
+                (click)="fromYoutube(draft, $event)"
+              >
+                {{ t.changeLanguage }}
+              </button>
+            } @else if (note.action === 'retry') {
+              ·
+              <button
+                type="button"
+                class="tb-link-button tb-video-note__action"
+                (click)="autoTranscript(draft.key)"
+              >
+                {{ retry }}
+              </button>
+            }
+          </small>
+        } @else if (taking(draft.key)) {
+          <small class="tb-hint">{{ t.fetching }}</small>
+        }
+      </span>
+    </ng-template>
 
     <!-- ‹ › leaf through the videos without closing: in the headline, on a phone beside «Убрать видео» -->
     <ng-template #stepButtons>
@@ -494,6 +542,15 @@ interface TranscriptNote {
       gap: var(--tb-space-2);
     }
 
+    .tb-video-note:empty {
+      display: none;
+    }
+
+    /* A link inside supporting text (M3: primary, underlined) */
+    .tb-video-note__action {
+      text-decoration: underline;
+    }
+
     .tb-video-link-field input {
       width: 100%;
     }
@@ -583,7 +640,8 @@ export class VideoSection {
   protected readonly t = T.videos;
   protected readonly max = MAX_VIDEOS;
   protected readonly clock = clock;
-  private readonly api = inject(HomeworkApi);
+  protected readonly retry = SHARED_T.common.retry;
+  private readonly api = inject(VideosApi);
   private readonly confirm = inject(Confirm);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
@@ -617,6 +675,8 @@ export class VideoSection {
   protected readonly notes = signal<ReadonlyMap<number, TranscriptNote>>(new Map());
   /** The tracks of «Субтитры YouTube» for the menu. */
   protected readonly trackItems = signal<MenuItem[]>([]);
+  /** The transcript as it came from YouTube or a file, by draft key: a different one is the teacher's edit. */
+  private readonly taken = new Map<number, string>();
 
   protected name(draft: VideoDraft, index: number): string {
     return videoName({ title: draft.title }, index);
@@ -702,9 +762,46 @@ export class VideoSection {
       field.value = '';
     }
     this.linkInvalid.set(false);
-    this.videos.update((videos) =>
-      videos.length < MAX_VIDEOS ? [...videos, videoDraft({ url })] : videos,
-    );
+    if (this.videos().length >= MAX_VIDEOS) {
+      return;
+    }
+    const draft = videoDraft({ url });
+    this.videos.update((videos) => [...videos, draft]);
+    this.autoTranscript(draft.key);
+  }
+
+  /**
+   * The captions of a YouTube video with no transcript, of the suggested track: one request, no menu. A transcript
+   * written meanwhile is kept; no captions or a failure is a quiet note.
+   */
+  autoTranscript(key: number): void {
+    const draft = this.draft(key);
+    if (draft === undefined || !this.isYoutube(draft) || this.written(key)) {
+      return;
+    }
+    this.note(key, null);
+    this.busy.guard(`transcript-${String(key)}`, this.api.transcript(draft.url.trim())).subscribe({
+      next: (found) => {
+        if (this.draft(key) !== undefined && !this.written(key)) {
+          this.took(key, found);
+        }
+      },
+      error: (error: unknown) => {
+        if (this.draft(key) === undefined) {
+          return;
+        }
+        this.note(
+          key,
+          problemCode(error) === 'video.captions-none'
+            ? { severity: 'info', text: this.t.none }
+            : { severity: 'error', text: this.t.failed, action: 'retry' },
+        );
+      },
+    });
+  }
+
+  private draft(key: number): VideoDraft | undefined {
+    return this.videos().find((video) => video.key === key);
   }
 
   remove(key: number): void {
@@ -713,6 +810,7 @@ export class VideoSection {
     }
     this.videos.update((videos) => videos.filter((video) => video.key !== key));
     this.note(key, null);
+    this.taken.delete(key);
   }
 
   change(key: number, patch: Partial<Omit<VideoDraft, 'key'>>): void {
@@ -761,30 +859,34 @@ export class VideoSection {
   }
 
   /**
-   * «Субтитры YouTube»: one track is taken at once (asking before replacing a transcript); several open a menu of
-   * tracks — the suggested one first, the note says the transcript will be replaced.
+   * «Субтитры YouTube» and «Сменить язык»: one track is taken at once; several open a menu of tracks — the suggested
+   * one first, a heading says the transcript will be replaced. A transcript the teacher edited is replaced only after
+   * asking.
    */
   fromYoutube(draft: VideoDraft, event: Event): void {
     const target = event.currentTarget;
-    this.busy.guard(`captions-${String(draft.key)}`, this.api.videoCaptions(draft.url)).subscribe({
-      next: (found) => {
-        const [only, ...others] = found.tracks;
-        if (only !== undefined && others.length === 0) {
-          void this.replacing(draft, () => {
-            this.take(draft.key, only);
-          });
-        } else {
-          this.trackItems.set(this.menuOf(draft.key, found));
-          this.tracksMenu().show({ currentTarget: target });
-        }
-      },
-      error: (error: unknown) => {
-        this.failed(draft.key, error);
-      },
-    });
+    this.busy
+      .guard(`captions-${String(draft.key)}`, this.api.captions(draft.url.trim()))
+      .subscribe({
+        next: (found) => {
+          const [only, ...others] = found.tracks;
+          if (only !== undefined && others.length === 0) {
+            void this.replacing(draft, () => {
+              this.take(draft.key, only);
+            });
+          } else {
+            this.trackItems.set(this.menuOf(draft, found));
+            this.tracksMenu().show({ currentTarget: target });
+          }
+        },
+        error: (error: unknown) => {
+          this.failed(draft.key, error);
+        },
+      });
   }
 
-  private menuOf(key: number, found: CaptionTracks): MenuItem[] {
+  private menuOf(draft: VideoDraft, found: CaptionTracks): MenuItem[] {
+    const key = draft.key;
     const suggested = found.suggested;
     const items = [
       suggested,
@@ -795,7 +897,9 @@ export class VideoSection {
       label: capitalized(languageName(track.language)),
       title: track.automatic ? this.t.automatic : this.t.author,
       command: () => {
-        this.take(key, track);
+        void this.replacing(draft, () => {
+          this.take(key, track);
+        });
       },
     }));
     return this.written(key) ? [{ label: this.t.replacing, items }] : items;
@@ -807,24 +911,31 @@ export class VideoSection {
   }
 
   private take(key: number, track: CaptionTrack): void {
-    const url = this.videos().find((video) => video.key === key)?.url ?? '';
-    this.busy.guard(`transcript-${String(key)}`, this.api.videoTranscript(url, track)).subscribe({
+    const url = this.draft(key)?.url.trim() ?? '';
+    this.busy.guard(`transcript-${String(key)}`, this.api.transcript(url, track)).subscribe({
       next: (found) => {
-        const title = this.videos().find((video) => video.key === key)?.title ?? '';
-        this.change(key, {
-          transcript: found.transcript,
-          title: title.trim() === '' ? (found.title ?? '') : title,
-        });
-        this.editing.set(false);
-        const fetched = this.t.fetched(languageName(found.language), found.automatic);
-        this.note(key, {
-          severity: found.truncated ? 'warn' : 'info',
-          text: found.truncated ? `${fetched}. ${this.t.truncated}` : fetched,
-        });
+        this.took(key, found);
       },
       error: (error: unknown) => {
         this.failed(key, error);
       },
+    });
+  }
+
+  /** The captions become the transcript (and the title, when there is none); the note offers «Сменить язык». */
+  private took(key: number, found: VideoTranscript): void {
+    const title = this.draft(key)?.title ?? '';
+    this.change(key, {
+      transcript: found.transcript,
+      title: title.trim() === '' ? (found.title ?? '') : title,
+    });
+    this.taken.set(key, found.transcript);
+    this.editing.set(false);
+    const fetched = this.t.fetched(languageName(found.language), found.automatic);
+    this.note(key, {
+      severity: found.truncated ? 'warn' : 'info',
+      text: found.truncated ? `${fetched}. ${this.t.truncated}` : fetched,
+      action: 'language',
     });
   }
 
@@ -841,7 +952,9 @@ export class VideoSection {
     }
     void this.replacing(draft, () => {
       void file.text().then((text) => {
-        this.change(draft.key, { transcript: subtitlesToTranscript(text).slice(0, 100_000) });
+        const transcript = subtitlesToTranscript(text).slice(0, 100_000);
+        this.change(draft.key, { transcript });
+        this.taken.set(draft.key, transcript);
         this.editing.set(false);
         this.note(draft.key, { severity: 'info', text: this.t.loaded(file.name) });
       });
@@ -856,8 +969,13 @@ export class VideoSection {
     );
   }
 
+  /** The transcript is there and is not the one YouTube or a file gave: the teacher wrote or edited it. */
+  private edited(key: number): boolean {
+    return this.written(key) && this.draft(key)?.transcript !== this.taken.get(key);
+  }
+
   private async replacing(draft: VideoDraft, replace: () => void): Promise<void> {
-    if (!this.written(draft.key)) {
+    if (!this.edited(draft.key)) {
       replace();
       return;
     }

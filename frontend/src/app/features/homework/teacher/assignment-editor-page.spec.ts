@@ -11,7 +11,7 @@ import { ToBoardDialog } from '@features/boards/parts';
 import { exactButton, lessonIn, useEditorHarness } from '@testing/homework-editor';
 import { AssignmentEditorPage } from './assignment-editor-page';
 import { questionDraft } from './question-drafts';
-import { videoDraft } from './video-section';
+import { videoDraft } from '@features/textbooks/parts';
 
 describe('AssignmentEditorPage', () => {
   const editor = useEditorHarness();

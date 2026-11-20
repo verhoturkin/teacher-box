@@ -10,7 +10,7 @@ import {
   typeInto,
 } from '@testing/dom';
 import { screenWidth, testProviders } from '@testing/setup';
-import { CaptionTrack, CaptionTracks } from '../data-access/homework.models';
+import { CaptionTrack, CaptionTracks } from '../data-access/videos.models';
 import {
   MAX_VIDEOS,
   VideoDraft,
@@ -101,7 +101,19 @@ describe('VideoSection', () => {
     expect(host.querySelector('img')?.getAttribute('src')).toBe(
       'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
     );
-    expect(readableText(host)).toContain('Видео 1 YouTube · с 0:45 Без расшифровки');
+    expect(readableText(host)).toContain(
+      'Видео 1 YouTube · с 0:45 Без расшифровки Получаю субтитры…',
+    );
+    // the captions are asked at once, of the suggested track; none — a quiet note under the tile
+    const automatic = backend.expectOne('/api/teacher/textbooks/videos/transcript');
+    expect(automatic.request.body).toEqual({ url: `${YOUTUBE}?t=45` });
+    automatic.flush(
+      { status: 422, code: 'video.captions-none' },
+      { status: 422, statusText: 'Unprocessable' },
+    );
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Без расшифровки У видео нет субтитров');
+    expect(host.querySelector('.tb-video-note__action')).toBeNull();
 
     typeInto(link, 'https://example.com/lesson');
     await fixture.whenStable();
@@ -184,7 +196,7 @@ describe('VideoSection', () => {
       title: 'Present Simple',
       transcript: '[0:05] We play\nno time',
     });
-    expect(readableText(sheet)).toContain('Субтитры YouTube: английский, автоматические');
+    expect(readableText(sheet)).toContain('Субтитры: английский, автоматические · Сменить язык');
     expect(readableText(sheet)).toContain('0:05 We play');
     expect(confirmation.confirm).not.toHaveBeenCalled();
 
@@ -192,12 +204,132 @@ describe('VideoSection', () => {
     await fixture.whenStable();
     expect(sheet.querySelector('iframe')?.getAttribute('src')).toContain('?start=5');
 
-    // A transcript is there and the video has one track: replacing it is asked; «Отмена» keeps it.
+    // The captions as they came are replaced without asking.
+    buttonByText(sheet, 'Субтитры YouTube').click();
+    backend.expectOne('/api/teacher/textbooks/videos/captions').flush(tracks([EN_AUTO]));
+    backend.expectOne('/api/teacher/textbooks/videos/transcript').flush({
+      title: null,
+      language: 'en',
+      automatic: true,
+      transcript: '[0:05] We',
+      truncated: false,
+    });
+    await fixture.whenStable();
+    expect(confirmation.confirm).not.toHaveBeenCalled();
+
+    // The teacher edited them: replacing is asked; «Отмена» keeps the text.
+    buttonByText(sheet, 'Править текст').click();
+    await fixture.whenStable();
+    typeInto(requireElement(sheet, 'textarea', HTMLTextAreaElement), '[0:05] We play, mine');
     answer = false;
     buttonByText(sheet, 'Субтитры YouTube').click();
     backend.expectOne('/api/teacher/textbooks/videos/captions').flush(tracks([EN_AUTO]));
     backend.expectNone('/api/teacher/textbooks/videos/transcript');
     expect(confirmation.confirm).toHaveBeenCalledOnce();
+    expect(first(section).transcript).toBe('[0:05] We play, mine');
+  });
+
+  it('takes the captions of a new YouTube link itself and offers «Сменить язык» under the tile', async () => {
+    const { section, host } = await render();
+    typeInto(requireElement(host, '#video-link', HTMLInputElement), YOUTUBE);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/textbooks/videos/transcript').flush({
+      title: 'Present Simple',
+      language: 'en',
+      automatic: true,
+      transcript: '[0:05] We play',
+      truncated: false,
+    });
+    await fixture.whenStable();
+    expect(first(section)).toMatchObject({
+      title: 'Present Simple',
+      transcript: '[0:05] We play',
+      transcriptShown: false,
+    });
+    expect(readableText(host)).toContain(
+      'Present Simple YouTube Расшифровка Субтитры: английский, автоматические · Сменить язык',
+    );
+
+    buttonByText(host, 'Сменить язык').click();
+    backend
+      .expectOne('/api/teacher/textbooks/videos/captions')
+      .flush(tracks([RU, EN_AUTO], EN_AUTO));
+    await fixture.whenStable();
+    expect(readableText(document.body)).toContain('Заменит текущую расшифровку');
+    menuItemByText('Русский').click();
+    const chosen = backend.expectOne('/api/teacher/textbooks/videos/transcript');
+    expect(chosen.request.body).toEqual({ url: YOUTUBE, language: 'ru', automatic: false });
+    chosen.flush({
+      title: null,
+      language: 'ru',
+      automatic: false,
+      transcript: '[0:05] Мы играем',
+      truncated: false,
+    });
+    await fixture.whenStable();
+    expect(confirmation.confirm).not.toHaveBeenCalled();
+    expect(first(section).transcript).toBe('[0:05] Мы играем');
+    expect(readableText(host)).toContain('Субтитры: русский · Сменить язык');
+  });
+
+  it('never overwrites a transcript and retries a failed request quietly', async () => {
+    const { section, host } = await render();
+    const link = requireElement(host, '#video-link', HTMLInputElement);
+    typeInto(link, YOUTUBE);
+    await fixture.whenStable();
+    // a transcript written while the captions were on their way stays
+    section.change(first(section).key, { transcript: '[0:00] Моё' });
+    backend.expectOne('/api/teacher/textbooks/videos/transcript').flush({
+      title: 'Чужое',
+      language: 'en',
+      automatic: true,
+      transcript: '[0:00] Theirs',
+      truncated: false,
+    });
+    await fixture.whenStable();
+    expect(first(section)).toMatchObject({ title: '', transcript: '[0:00] Моё' });
+    section.autoTranscript(first(section).key);
+    backend.expectNone('/api/teacher/textbooks/videos/transcript');
+
+    // a failure: «Не удалось получить субтитры · Повторить», no toast
+    section.remove(first(section).key);
+    typeInto(link, 'https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+    await fixture.whenStable();
+    backend
+      .expectOne('/api/teacher/textbooks/videos/transcript')
+      .flush(
+        { status: 422, code: 'video.captions-failed' },
+        { status: 422, statusText: 'Unprocessable' },
+      );
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Не удалось получить субтитры · Повторить');
+    buttonByText(host, 'Повторить').click();
+    backend.expectOne('/api/teacher/textbooks/videos/transcript').flush({
+      title: null,
+      language: 'en',
+      automatic: false,
+      transcript: '[0:00] Hi',
+      truncated: false,
+    });
+    await fixture.whenStable();
+    expect(readableText(host)).toContain('Субтитры: английский · Сменить язык');
+
+    // removed before the answer: nothing comes back to it; other hosts ask nothing
+    typeInto(link, 'https://youtu.be/aaaaaaaaaaa');
+    await fixture.whenStable();
+    const late = backend.expectOne('/api/teacher/textbooks/videos/transcript');
+    section.remove(section.videos()[1]?.key ?? 0);
+    late.flush({ status: 500 }, { status: 500, statusText: 'Error' });
+    typeInto(link, 'https://youtu.be/bbbbbbbbbbb');
+    await fixture.whenStable();
+    const gone = backend.expectOne('/api/teacher/textbooks/videos/transcript');
+    section.remove(section.videos()[1]?.key ?? 0);
+    gone.flush({ title: null, language: 'en', automatic: true, transcript: 'x', truncated: false });
+    typeInto(link, 'https://rutube.ru/video/0123456789abcdef0123456789abcdef/');
+    await fixture.whenStable();
+    backend.expectNone('/api/teacher/textbooks/videos/transcript');
+    expect(section.videos()).toHaveLength(2);
+    expect(host.querySelectorAll('.tb-field__error')).toHaveLength(0);
   });
 
   it('offers a menu of caption tracks, the suggested one first', async () => {
@@ -219,7 +351,10 @@ describe('VideoSection', () => {
     expect(text.indexOf('Английский')).toBeLessThan(text.indexOf('Русский'));
     expect(confirmation.confirm).not.toHaveBeenCalled();
 
+    // the transcript came with the assignment: the teacher's own, replaced after asking
     menuItemByText('Русский').click();
+    await fixture.whenStable();
+    expect(confirmation.confirm).toHaveBeenCalledOnce();
     const request = backend.expectOne('/api/teacher/textbooks/videos/transcript');
     expect(request.request.body).toEqual({ url: YOUTUBE, language: 'ru', automatic: false });
     request.flush({
@@ -231,7 +366,7 @@ describe('VideoSection', () => {
     });
     await fixture.whenStable();
     expect(first(section)).toMatchObject({ title: 'Мой', transcript: '[0:00] Длинно' });
-    expect(readableText(sheet)).toContain('Субтитры YouTube: русский. Расшифровка длинная');
+    expect(readableText(sheet)).toContain('Субтитры: русский. Расшифровка длинная');
   });
 
   it('says why the captions did not come', async () => {

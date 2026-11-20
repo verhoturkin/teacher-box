@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { providePrimeNG } from 'primeng/config';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
-import { Video } from '../data-access/homework.models';
+import { Video } from '../data-access/videos.models';
 import { VideoList, videoName } from './video-list';
 import { VideoPlayer } from './video-player';
 

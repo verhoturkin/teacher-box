@@ -19,14 +19,10 @@ import {
   QuizStats,
   QuizView,
   TaskDetails,
-  VideoTranscript,
-  CaptionTrack,
-  CaptionTracks,
 } from './homework.models';
 import { quietContext } from '@core/http/api-error.interceptor';
 
 const TEACHER = '/api/teacher/homework';
-const TEXTBOOKS = '/api/teacher/textbooks';
 const ME = '/api/me/homework';
 
 /** HTTP client of the homework module. */
@@ -75,24 +71,6 @@ export class HomeworkApi {
     version: number,
   ): Observable<AssignmentDetails> {
     return this.http.put<AssignmentDetails>(`${TEACHER}/assignments/${id}`, { ...input, version });
-  }
-
-  /** «Взять субтитры с YouTube» (ADR-0047): the caption tracks; errors are shown by the video card, not a toast. */
-  videoCaptions(url: string): Observable<CaptionTracks> {
-    return this.http.post<CaptionTracks>(
-      `${TEXTBOOKS}/videos/captions`,
-      { url },
-      { context: quietContext() },
-    );
-  }
-
-  /** The captions of the chosen track as a transcript; errors are shown by the video card, not a toast. */
-  videoTranscript(url: string, track: CaptionTrack): Observable<VideoTranscript> {
-    return this.http.post<VideoTranscript>(
-      `${TEXTBOOKS}/videos/transcript`,
-      { url, language: track.language, automatic: track.automatic },
-      { context: quietContext() },
-    );
   }
 
   /** Deletes the assignment with the students' answers and every file. */

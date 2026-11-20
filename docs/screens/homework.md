@@ -69,8 +69,13 @@ Tabs task / test (`?tab=quiz`, default left out, `Location.replaceState`); a pho
   has neither. The test is never a material. A new assignment shows only recipients, text, due date
   and material chips; other sections appear once they have content. Parts: `ui/recipients-field.ts`,
   `ui/due-chips.ts`, `ui/material-chips.ts`.
-- **Videos** (`video-section.ts`): a tile's settings dialog saves every change at once; done and Esc
-  only close.
+- **Videos** (`@features/textbooks/parts`: `videos/video-section.ts`, `video-list.ts`, shared with
+  lesson plans): a tile's settings dialog saves every change at once; done and Esc only close. A
+  YouTube link added with an empty transcript asks `…/textbooks/videos/transcript {url}` once (the
+  suggested track); the tile note says «Субтитры: <язык>, автоматические · Сменить язык» (the tracks
+  menu; an edited transcript is replaced only after asking), or quietly «У видео нет субтитров» /
+  «Не удалось получить субтитры · Повторить» — no toast. A non-empty transcript is never refetched
+  (load, copy); «Показывать ученику» stays off.
 - **Recipients:** a draft edits `draftStudentIds`; an issued assignment has read-only chips and
   «issue more» (`assign-more-dialog.ts`).
 - **Test tab** (`question-section.ts`, `question-editor.ts`, `quiz-settings.ts`): outline, open

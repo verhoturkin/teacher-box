@@ -36,7 +36,7 @@ import {
 } from '../data-access/homework.models';
 import { AttachmentList } from '../ui/attachment-list';
 import { TextbookList } from '../ui/textbook-list';
-import { VideoList } from '../ui/video-list';
+import { VideoList } from '@features/textbooks/parts';
 import { AssignMoreDialog } from './assign-more-dialog';
 import { PageHeader } from '@shared/ui/page-header';
 import { Confirm } from '@shared/ui/confirm';
