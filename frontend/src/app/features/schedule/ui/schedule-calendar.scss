@@ -474,7 +474,8 @@ full-calendar [role='gridcell']:has(.tb-lesson--moving) {
 
 .tb-cal-date--today.tb-cal-date--today {
   color: var(--p-md-primary);
-  font-weight: 700;
+  font: var(--tb-type-label-m-emphasized);
+  letter-spacing: var(--tb-tracking-label-m-emphasized);
 }
 
 /* The «now» line is an `error` line with a dot at the start of the time column, as in Google Calendar */

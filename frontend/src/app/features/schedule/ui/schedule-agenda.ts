@@ -199,7 +199,8 @@ export interface AgendaMark {
 
     .tb-agenda__day--today:not([aria-pressed='true']) .tb-agenda__date {
       color: var(--p-md-primary);
-      font-weight: 700;
+      font: var(--tb-type-title-m-emphasized);
+      letter-spacing: var(--tb-tracking-title-m-emphasized);
     }
 
     .tb-agenda__weekday {

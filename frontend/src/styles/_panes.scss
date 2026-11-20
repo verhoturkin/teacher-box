@@ -406,7 +406,8 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
     background: transparent;
     box-shadow: none;
     text-align: center;
-    font-weight: 600;
+    font: var(--tb-type-title-m-emphasized);
+    letter-spacing: var(--tb-tracking-title-m-emphasized);
   }
 
   .p-inputnumber-button {

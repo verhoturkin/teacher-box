@@ -46,7 +46,7 @@ stray weights or caps); the lesson heroes show the running lesson like the M3E p
   set next to each of the 344 `font: var(--tb-type-…)` by a codemod; the pair is written out
   instead of a mixin, as component `styles` strings take no SCSS. `scripts/tracking.mjs` (lint)
   fails on a role without its tracking; the caps labels keep theirs as `tracking-ok` until 457.4.
-- [ ] 457.3 **F** *simple* — strays: bare `font-weight: 600/700` (`question-section.ts` ×3,
+- [x] 457.3 **F** *simple* — strays: bare `font-weight: 600/700` (`question-section.ts` ×3,
   `_panes.scss` input number, `schedule-agenda.ts`, `schedule-calendar.scss`) → role tokens;
   odd sizes `0.85rem`/`0.8rem` (admin journal, events) → body-s / label-m.
 - [ ] 457.4 **F** *simple* — no caps overlines (M3 has no overline role): ~20 uppercase labels with

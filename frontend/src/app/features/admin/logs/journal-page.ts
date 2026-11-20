@@ -335,8 +335,9 @@ const VIEWS: readonly JournalView[] = ['log', 'events', 'errors'];
     }
 
     .tb-mono {
+      font: var(--tb-type-body-s);
       font-family: var(--tb-font-mono);
-      font-size: 0.85rem;
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     .tb-journal__subtitle {
@@ -352,7 +353,9 @@ const VIEWS: readonly JournalView[] = ['log', 'events', 'errors'];
       overflow: auto;
       border-radius: var(--tb-shape-md);
       background: var(--p-md-surface-container-low);
-      font-size: 0.8rem;
+      font: var(--tb-type-label-m);
+      font-family: var(--tb-font-mono);
+      letter-spacing: var(--tb-tracking-label-m);
     }
   `,
 })

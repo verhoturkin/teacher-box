@@ -467,7 +467,8 @@ import { QuizSettings } from './quiz-settings';
 
     .tb-qb__problems .tb-qb__note {
       align-items: center;
-      font-weight: 600;
+      font: var(--tb-type-label-l-emphasized);
+      letter-spacing: var(--tb-tracking-label-l-emphasized);
     }
 
     .tb-qb__empty {
@@ -724,7 +725,8 @@ import { QuizSettings } from './quiz-settings';
 
     .tb-qb__sums dd {
       margin: 0;
-      font-weight: 600;
+      font: var(--tb-type-label-l-emphasized);
+      letter-spacing: var(--tb-tracking-label-l-emphasized);
     }
 
     .tb-qb__problem {
@@ -740,7 +742,8 @@ import { QuizSettings } from './quiz-settings';
 
     .tb-qb__problem a {
       color: inherit;
-      font-weight: 600;
+      font: var(--tb-type-label-l-emphasized);
+      letter-spacing: var(--tb-tracking-label-l-emphasized);
     }
   `,
 })

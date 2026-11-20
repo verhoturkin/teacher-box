@@ -152,8 +152,9 @@ import { SHARED_T } from '@shared/i18n/texts';
     }
 
     .tb-mono {
+      font: var(--tb-type-body-s);
       font-family: var(--tb-font-mono);
-      font-size: 0.85rem;
+      letter-spacing: var(--tb-tracking-body-s);
       overflow-wrap: anywhere;
     }
 
