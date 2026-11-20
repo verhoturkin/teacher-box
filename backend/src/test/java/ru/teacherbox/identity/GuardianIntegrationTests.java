@@ -168,7 +168,8 @@ class GuardianIntegrationTests {
         assertThat(link(child, grandma)).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
                 .bodyJson().extractingPath("$.code").isEqualTo("guardian.limit");
         assertThat(get("/api/teacher/students/" + child + "/guardians", teacher)).hasStatusOk()
-                .bodyJson().extractingPath("$[*].displayName").asArray().containsExactly("Мама", "Папа");
+                // linked within the same instant here, so the link order (created_at, then the random id) is not fixed
+                .bodyJson().extractingPath("$[*].displayName").asArray().containsExactlyInAnyOrder("Мама", "Папа");
     }
 
     @Test

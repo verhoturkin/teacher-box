@@ -76,8 +76,9 @@ class LessonRepeatsIntegrationTests {
         post("/lessons", input(student, start, 0));
         post("/lessons", input(student, start, 1));
         post("/lessons", input(student, start, 2));
+        // the three lessons start at the same time, so their order among themselves is not defined
         assertThat(list(student, start).stream().limit(3).map(row -> row.get("repeatWeeks")).toList())
-                .containsExactly(0, 1, 2);
+                .containsExactlyInAnyOrder(0, 1, 2);
     }
 
     @Test
