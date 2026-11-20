@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { Card } from 'primeng/card';
 import { MyBoardLinks } from '@features/boards/parts';
+import { TeacherWaiting } from '@features/meetings/parts';
 import { LessonActions } from '../ui/lesson-actions';
 import { ScheduleApi } from '../data-access/schedule-api';
 import {
@@ -33,7 +34,15 @@ import { T } from '../i18n/texts';
  */
 @Component({
   selector: 'tb-next-lesson-widget',
-  imports: [EmptyState, Card, ChangeRequestDialog, LessonActions, LessonTimeTile, MyBoardLinks],
+  imports: [
+    EmptyState,
+    Card,
+    ChangeRequestDialog,
+    LessonActions,
+    LessonTimeTile,
+    MyBoardLinks,
+    TeacherWaiting,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p-card styleClass="tb-hero">
@@ -51,6 +60,9 @@ import { T } from '../i18n/texts';
               <span>{{ lesson.topic }}</span>
             }
             <tb-my-board-links [groupName]="lesson.groupId === null ? null : lesson.groupName" />
+            @if (time()?.phase === 'live' && lesson.joinUrl?.includes('/call/')) {
+              <tb-teacher-waiting [groupId]="lesson.groupId" />
+            }
             @if (lesson.pendingRequests[0]; as request) {
               <small class="tb-muted">{{ t.requestSent(kind(request)) }}</small>
             }

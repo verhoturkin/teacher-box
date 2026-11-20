@@ -95,6 +95,58 @@ describe('TodayLessons', () => {
     expect(host.querySelector('p-card')).toBeNull();
   });
 
+  it('as the hero is one line: the time tile, who, the join button; the wavy bar while live', async () => {
+    fixture.componentRef.setInput('part', 'hero');
+    const host = await render([next], next);
+    backend.expectOne('/api/teacher/boards?studentId=s-1').flush([]);
+
+    expect(host.querySelector('.tb-today-hero tb-lesson-time-tile')?.textContent).toContain(
+      '18:00',
+    );
+    expect(host.querySelector('.tb-today-hero__name')?.textContent).toContain('Иван Петров');
+    expect(readableText(host)).toContain('Степени · Показатель и основание');
+    expect(host.querySelector('.tb-today-hero__join .p-button.tb-button-m')).not.toBeNull();
+    expect(readableText(host)).toContain('Начать урок');
+    expect(host.querySelector('tb-wavy-progress')).toBeNull();
+
+    tick(18, 35);
+    const bar = host.querySelector('tb-wavy-progress');
+    expect(bar?.getAttribute('aria-valuenow')).toBe('58');
+    expect(bar?.getAttribute('aria-label')).toBe('Прошло 35 из 60 мин');
+    expect(readableText(host)).toContain('Войти в урок');
+  });
+
+  it('as the hero puts «Позвать» into one group with the join button', async () => {
+    fixture.componentRef.setInput('part', 'hero');
+    const live = scheduledLesson({ joinUrl: 'https://school.example.org/call/s-1' });
+    const host = await render([live], live);
+    backend.expectOne('/api/teacher/boards?studentId=s-1').flush([]);
+
+    tick(18, 10);
+    await fixture.whenStable();
+    backend.expectOne('/api/teacher/meetings/calls').flush({
+      status: 'OK',
+      rooms: [
+        {
+          ownerId: 's-1',
+          ownerType: 'STUDENT',
+          name: 'Иван Петров',
+          members: 1,
+          waiting: [],
+          teacherPresent: false,
+          externalLink: false,
+          avatar: null,
+        },
+      ],
+    });
+    fixture.detectChanges();
+
+    const group = host.querySelector<HTMLElement>('tb-call-summon .tb-button-group');
+    expect(group?.querySelector('tb-join-lesson-button')).not.toBeNull();
+    expect(group?.textContent).toMatch(/Войти в урок\s*Позвать/);
+    expect(readableText(host)).toContain('Иван ещё не в звонке');
+  });
+
   it('beside the hero does not report the end a second time', async () => {
     fixture.componentRef.setInput('part', 'rest');
     await render([next, done], next);

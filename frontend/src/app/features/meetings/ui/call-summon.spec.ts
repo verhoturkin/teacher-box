@@ -24,11 +24,16 @@ describe('CallSummon', () => {
   let fixture: ComponentFixture<CallSummon>;
   let backend: HttpTestingController;
 
-  async function render(calls: CallsOverview | null, ownerId = 'student-1'): Promise<void> {
+  async function render(
+    calls: CallsOverview | null,
+    ownerId = 'student-1',
+    hero = false,
+  ): Promise<void> {
     TestBed.configureTestingModule({ imports: [CallSummon], providers: testProviders() });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(CallSummon);
     fixture.componentRef.setInput('ownerId', ownerId);
+    fixture.componentRef.setInput('hero', hero);
     await answer(calls);
   }
 
@@ -66,6 +71,33 @@ describe('CallSummon', () => {
     expect(success).toHaveBeenCalledWith('Ученику отправлено приглашение');
   });
 
+  it('in the hero puts a medium «Позвать» into the button group and the line apart', async () => {
+    await render({ status: 'OK', rooms: [aCard()] }, 'student-1', true);
+    const host = hostElement(fixture);
+
+    expect(host.classList).toContain('tb-call-summon--hero');
+    expect(
+      host.querySelector('.tb-call-summon__actions .p-button.tb-button-m')?.textContent,
+    ).toContain('Позвать');
+    expect(host.querySelector('.tb-call-summon__line')?.textContent).toContain(
+      'Ира ещё не в звонке',
+    );
+  });
+
+  it('in the hero says who waits without «Позвать»', async () => {
+    await render(
+      { status: 'OK', rooms: [aCard({ waiting: ['Ира'], teacherPresent: false })] },
+      'student-1',
+      true,
+    );
+    const host = hostElement(fixture);
+
+    expect(host.querySelector('.tb-call-summon__actions .p-button')).toBeNull();
+    expect(host.querySelector('.tb-call-summon__line [role="status"]')?.textContent).toContain(
+      'Ира ждёт в звонке',
+    );
+  });
+
   it('calls the rest of a group', async () => {
     const group = aCard({
       ownerId: 'g-1',
@@ -82,6 +114,27 @@ describe('CallSummon', () => {
     backend.expectOne('/api/teacher/meetings/calls/g-1/summon').flush({ recipients: 2 });
 
     expect(success).toHaveBeenCalledWith('Приглашение отправлено, учеников: 2');
+  });
+
+  it('says the student waits in the call while the teacher is not there', async () => {
+    await render({ status: 'OK', rooms: [aCard({ waiting: ['Ира'], teacherPresent: false })] });
+
+    expect(text()).toBe('Ира ждёт в звонке');
+    expect(hostElement(fixture).querySelector('button')).toBeNull();
+  });
+
+  it('says the whole group waits in the call', async () => {
+    const group = aCard({
+      ownerId: 'g-1',
+      ownerType: 'GROUP',
+      name: 'ОГЭ',
+      members: 2,
+      waiting: ['Анна', 'Петя'],
+      teacherPresent: false,
+    });
+    await render({ status: 'OK', rooms: [group] }, 'g-1');
+
+    expect(text()).toBe('Все ждут в звонке');
   });
 
   it('shows nothing while everyone is in or the presence is unknown', async () => {

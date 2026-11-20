@@ -4,9 +4,15 @@ import { Card } from 'primeng/card';
 import { locale } from '@core/i18n/language';
 import { BoardLinks } from '@features/boards/parts';
 import { CallSummon, JoinLessonButton } from '@features/meetings/parts';
-import { STATUS_LABELS, injectLessonClock, lessonWith } from '@features/schedule/parts';
+import {
+  LessonTimeTile,
+  STATUS_LABELS,
+  injectLessonClock,
+  lessonWith,
+} from '@features/schedule/parts';
 import type { LessonTime, ScheduledLesson } from '@features/schedule/parts';
 import { Avatar } from '@shared/ui/avatar';
+import { WavyProgress } from '@shared/ui/wavy-progress';
 import { T } from './i18n/texts';
 
 const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-digit' });
@@ -19,14 +25,76 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
  */
 @Component({
   selector: 'tb-today-lessons',
-  imports: [ListRow, Card, Avatar, BoardLinks, CallSummon, JoinLessonButton],
+  imports: [
+    ListRow,
+    Card,
+    Avatar,
+    BoardLinks,
+    CallSummon,
+    JoinLessonButton,
+    LessonTimeTile,
+    WavyProgress,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (lessons().length > 0) {
       <p-card [header]="part() === 'hero' ? undefined : all().length > 0 ? t.title : t.nearest">
         <ul class="tb-list">
           @for (lesson of lessons(); track lesson.id) {
-            @if (lesson.id === nextId() && clock(); as time) {
+            @if (lesson.id === nextId() && part() === 'hero' && clock(); as time) {
+              <!-- board D: the time tile, who, the actions on one line; the board and the presence
+                   under the name; the elapsed time along the bottom -->
+              <li class="tb-today-lesson--next tb-today-hero">
+                <tb-lesson-time-tile class="tb-today-hero__tile" [time]="time" />
+                <tb-avatar
+                  class="tb-today-hero__avatar"
+                  size="4rem"
+                  [name]="with(lesson)"
+                  [photo]="lesson.studentAvatar"
+                />
+                <div class="tb-today-hero__who">
+                  <strong class="tb-today-hero__name">{{ with(lesson) }}</strong>
+                  @if (subject(lesson); as subject) {
+                    <span>{{ subject }}</span>
+                  }
+                  <span class="tb-today-lesson__end">{{ t.until(clockTime(lesson.endsAt)) }}</span>
+                </div>
+                <tb-board-links
+                  class="tb-today-hero__board"
+                  [chips]="true"
+                  [latest]="true"
+                  [studentId]="lesson.groupId === null ? lesson.studentId : null"
+                  [groupId]="lesson.groupId"
+                />
+                @if (lesson.joinUrl; as url) {
+                  @if (time.phase === 'live' && portalRoom(lesson); as ownerId) {
+                    <tb-call-summon [ownerId]="ownerId" [hero]="true">
+                      <tb-join-lesson-button
+                        [url]="url"
+                        [label]="t.join"
+                        [teacher]="true"
+                        [medium]="true"
+                      />
+                    </tb-call-summon>
+                  } @else {
+                    <tb-join-lesson-button
+                      class="tb-today-hero__join"
+                      [url]="url"
+                      [label]="time.phase === 'live' ? t.join : t.start"
+                      [teacher]="true"
+                      [medium]="true"
+                    />
+                  }
+                }
+                @if (time.phase === 'live') {
+                  <tb-wavy-progress
+                    class="tb-today-hero__progress"
+                    [value]="(time.elapsed / lesson.durationMinutes) * 100"
+                    [label]="t.elapsed(time.elapsed, lesson.durationMinutes)"
+                  />
+                }
+              </li>
+            } @else if (lesson.id === nextId() && clock(); as time) {
               <li tbListRow class="tb-today-lesson tb-today-lesson--next">
                 <div class="tb-today-lesson__head">
                   <time class="tb-today-lesson__time" [attr.datetime]="lesson.startsAt">{{
@@ -216,6 +284,68 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
       font: var(--tb-type-body-s);
     }
 
+    /*
+     * The hero from large (board D): tile, avatar, who and the actions on one line; the board and the
+     * presence (tb-call-summon's line, area presence) under the name; the wavy bar of the elapsed time
+     * along the bottom. 20 dp between the line's parts and 16 dp between the lines (the sketch; ours)
+     */
+    .tb-today-hero {
+      display: grid;
+      grid-template-columns: auto auto auto minmax(0, 1fr) auto;
+      grid-template-areas:
+        'tile avatar who who actions'
+        '. . board presence .'
+        'bar bar bar bar bar';
+      gap: var(--tb-space-4) var(--tb-space-5);
+      align-items: center;
+      padding: var(--tb-space-5) var(--tb-space-6) var(--tb-space-4);
+      overflow-wrap: anywhere;
+    }
+
+    /* the hero card (M3 filled card, 28 dp: the sketch), not the list row's 16 dp */
+    .tb-list > .tb-today-hero {
+      border-radius: var(--tb-shape-xl);
+    }
+
+    .tb-today-hero__tile {
+      grid-area: tile;
+    }
+
+    .tb-today-hero__avatar {
+      grid-area: avatar;
+      background: var(--p-md-surface);
+    }
+
+    .tb-today-hero__who {
+      grid-area: who;
+      display: flex;
+      flex-direction: column;
+      gap: var(--tb-space-1);
+      min-width: 0;
+      font: var(--tb-type-body-l);
+    }
+
+    /* the one name of the page in an emphasized headline (M3E: emphasized marks the hero) */
+    .tb-today-hero__name {
+      font: var(--tb-type-headline-m-emphasized);
+    }
+
+    .tb-today-hero__board {
+      grid-area: board;
+
+      &:empty {
+        display: none;
+      }
+    }
+
+    .tb-today-hero__join {
+      grid-area: actions;
+    }
+
+    .tb-today-hero__progress {
+      grid-area: bar;
+    }
+
     /* wider than a phone (board 4): the join button ends the head line */
     @container (min-width: 30.0625rem) {
       .tb-today-lesson--next {
@@ -283,6 +413,11 @@ export class TodayLessons {
     return lesson.joinUrl?.includes('/call/') === true
       ? (lesson.groupId ?? lesson.studentId)
       : null;
+  }
+
+  /** «Английский · Past Simple»: the title and the topic of the hero, either may be missing. */
+  protected subject(lesson: ScheduledLesson): string {
+    return [lesson.title, lesson.topic].filter((part) => part !== null).join(' · ');
   }
 
   protected clockTime(moment: string): string {

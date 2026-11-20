@@ -7,7 +7,8 @@ export const lessonArticle: HelpArticleText = {
 ## Join a lesson
 
 Choose “Join lesson” on your home page or in the schedule. Your next lesson appears first on the home page, with its date, start time and duration. \
-Shortly before it starts, the card shows a countdown; during the lesson, it shows the time remaining. Once a lesson has started, you cannot request \
+Shortly before it starts, the card shows a countdown; during the lesson, it shows the time remaining. If your teacher \
+is already in the portal call, the card says “Your teacher is waiting in the call”. Once a lesson has started, you cannot request \
 to reschedule or cancel it.
 
 For a portal call, check your camera and microphone in the preview, allow browser access when prompted, then choose “Join”. During the call you can:

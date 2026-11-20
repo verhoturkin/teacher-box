@@ -15,6 +15,7 @@ describe('lessonTime', () => {
       day: 'Сегодня',
       start: '18:00',
       note: '60 мин',
+      elapsed: 0,
     });
   });
 
@@ -37,6 +38,7 @@ describe('lessonTime', () => {
       day: 'Идёт сейчас',
       start: '18:00',
       note: 'ещё 20 мин',
+      elapsed: 40,
     });
   });
 
