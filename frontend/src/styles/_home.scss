@@ -3,6 +3,13 @@
   white-space: nowrap;
 }
 
+/* Money and figures: digits of one width, so columns and changing values do not jitter (457.4) */
+.tb-amount,
+.tb-figure__value,
+.tb-ops__amount {
+  font-variant-numeric: tabular-nums;
+}
+
 /* Money */
 .tb-amount,
 .p-datatable .tb-amount {

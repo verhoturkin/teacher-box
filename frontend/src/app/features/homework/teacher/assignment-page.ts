@@ -325,8 +325,7 @@ const FOLD_LINES = 3;
       margin: 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
-      letter-spacing: 0.04em; /* tracking-ok: caps label, removed in 457.4 */
-      text-transform: uppercase;
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     /* the students and the aside side by side; the aside wraps under the students when they would be narrower than 560px (as the sketch) */

@@ -201,8 +201,7 @@ import { NextWork, ReviewSheet } from './review-sheet';
       margin: 0 0 var(--tb-space-2);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
-      letter-spacing: 0.04em; /* tracking-ok: caps label, removed in 457.4 */
-      text-transform: uppercase;
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     /* the floating toolbar: 64 dp and the 16 dp margins under it, and the same over it */

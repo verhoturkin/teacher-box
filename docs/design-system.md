@@ -313,7 +313,10 @@ with its value and tracking, Markdown.
   out, not a SCSS mixin, so that the same form works in `.scss` and in component `styles`
   strings; `scripts/tracking.mjs` (`npm run lint`) fails on a role without its tracking, a
   deliberate other value takes `/* tracking-ok: reason */` in the rule. Page text is Body Large
-  (`:root`). The scale has Display S and Headline L besides the roles below.
+  (`:root`). No caps overlines — M3 has no overline role: a small label is Label M/L,
+  on-surface-variant, sentence case (457.4). Money and figures (`.tb-amount`, `.tb-figure__value`)
+  take `tabular-nums` from one rule in `_home.scss`. The scale has Display S and Headline L besides
+  the roles below.
 - Page title — Headline Medium emphasized (phone: Headline Small emphasized); card and pane section
   title — Title Large emphasized (on a pane Title Medium emphasized, §7); dialog title — Headline
   Small emphasized; subtitles — Title Medium; field labels, buttons, menu items, options — Label
@@ -609,7 +612,7 @@ Gallery: [`/gallery/frame`](../frontend/src/app/features/gallery/frame/).
   Home End move. In the rail (`variant` `rail` / `extended`) the list opens 8 px under the FAB,
   start-aligned (*ours*).
 - **Key figures** `tb-figures`: one tonal block (`--tb-list-item`, corner 16), two columns, each a
-  `tb-figure__label` overline (Label Small, upper case) over `tb-figure__value` (Headline Small);
+  `tb-figure__label` (Label Small, sentence case) over `tb-figure__value` (Headline Small);
   `tb-figure--wide` spans both (*ours*). Name — value pairs: `tb-stats` / `tb-stat` (name left,
   number right, details below).
 - **Hero** `tb-hero` — the filled primary-container card of the nearest lesson, the portal's one

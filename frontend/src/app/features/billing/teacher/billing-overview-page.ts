@@ -496,8 +496,7 @@ const NUMBER = new Intl.NumberFormat(locale());
     .tb-ops__overline {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-s);
-      letter-spacing: 0.08em; /* tracking-ok: caps label, removed in 457.4 */
-      text-transform: uppercase;
+      letter-spacing: var(--tb-tracking-label-s);
     }
 
     .tb-ops__pane-title {
@@ -531,7 +530,6 @@ const NUMBER = new Intl.NumberFormat(locale());
     .tb-ops__amount {
       font: var(--tb-type-title-s);
       letter-spacing: var(--tb-tracking-title-s);
-      font-variant-numeric: tabular-nums;
       white-space: nowrap;
     }
 

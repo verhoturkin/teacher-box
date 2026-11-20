@@ -288,8 +288,7 @@ interface Choice {
       margin-block-end: var(--tb-space-2);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
-      text-transform: uppercase;
-      letter-spacing: 0.03em; /* tracking-ok: caps label, removed in 457.4 */
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     /* the kinds as selectable cards (sketch): two columns, one on a phone; ours — M3 publishes no

@@ -355,7 +355,6 @@ const STEPS: readonly Step<StepId>[] = [
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
       letter-spacing: var(--tb-tracking-label-m);
-      text-transform: uppercase;
     }
 
     /* compact and medium (sketch OnbPhone): the window is the surface, one column, «Далее» at the bottom */

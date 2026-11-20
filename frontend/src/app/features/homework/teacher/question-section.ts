@@ -576,8 +576,7 @@ import { QuizSettings } from './quiz-settings';
       margin: 0;
       padding-inline: var(--tb-space-1);
       font: var(--tb-type-label-m);
-      text-transform: uppercase;
-      letter-spacing: 0.03rem; /* tracking-ok: caps label, removed in 457.4 */
+      letter-spacing: var(--tb-tracking-label-m);
       color: var(--p-md-on-surface-variant);
     }
 

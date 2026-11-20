@@ -45,11 +45,11 @@ stray weights or caps); the lesson heroes show the running lesson like the M3E p
   role (emphasized too) has its `--tb-tracking-<role>` (M3 sp / 16; title-m 0.2, emphasized 0.15),
   set next to each of the 344 `font: var(--tb-type-…)` by a codemod; the pair is written out
   instead of a mixin, as component `styles` strings take no SCSS. `scripts/tracking.mjs` (lint)
-  fails on a role without its tracking; the caps labels keep theirs as `tracking-ok` until 457.4.
+  fails on a role without its tracking.
 - [x] 457.3 **F** *simple* — strays: bare `font-weight: 600/700` (`question-section.ts` ×3,
   `_panes.scss` input number, `schedule-agenda.ts`, `schedule-calendar.scss`) → role tokens;
   odd sizes `0.85rem`/`0.8rem` (admin journal, events) → body-s / label-m.
-- [ ] 457.4 **F** *simple* — no caps overlines (M3 has no overline role): ~20 uppercase labels with
+- [x] 457.4 **F** *simple* — no caps overlines (M3 has no overline role): ~20 uppercase labels with
   0.04–0.08 em tracking («Поступило», «Оплачено», homework labels) → label-m / label-l,
   on-surface-variant, sentence case. Tabular figures on money and figures (`.tb-amount`,
   `.tb-figure__value`).

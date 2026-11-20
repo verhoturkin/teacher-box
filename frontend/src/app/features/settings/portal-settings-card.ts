@@ -571,8 +571,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
 
     .tb-look__overline {
       font: var(--tb-type-label-m-emphasized);
-      letter-spacing: 0.04em; /* tracking-ok: caps label, removed in 457.4 */
-      text-transform: uppercase;
+      letter-spacing: var(--tb-tracking-label-m-emphasized);
     }
 
     .tb-look__student {
