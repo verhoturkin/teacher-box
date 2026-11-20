@@ -182,11 +182,11 @@ export class HelpPage {
   /** Route data: whose help. */
   readonly area = input.required<HelpArea>();
   /**
-   * The address the links start with: `/teacher`, `/admin`, `/cabinet` or, for the student's articles
-   * in the family cabinet, `/family/<id>` (453.2).
+   * The address the links start with: `/teacher`, `/admin`, `/cabinet` or, in the family
+   * cabinet, `/family/<id>` (the parent's own articles, 455.1).
    */
   protected readonly base = computed(() =>
-    this.area() === 'cabinet' ? this.scope.area() : `/${this.area()}`,
+    this.area() === 'cabinet' || this.area() === 'guardian' ? this.scope.area() : `/${this.area()}`,
   );
   /** Route parameter: the article. */
   readonly topic = input<string>();

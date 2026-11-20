@@ -361,13 +361,13 @@ export const routes: Routes = [
           {
             path: 'help',
             title: N.help,
-            data: { area: 'cabinet' },
+            data: { area: 'guardian' },
             loadComponent: helpPage,
           },
           {
             path: 'help/:topic',
             title: N.help,
-            data: { area: 'cabinet' },
+            data: { area: 'guardian' },
             loadComponent: helpPage,
           },
           {

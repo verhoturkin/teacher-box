@@ -165,7 +165,7 @@ public class NotificationService {
             }
             NoticeText text = notice.text(users.language(guardian.id()));
             // the child's buttons and video room stay the child's: the guardian opens the family cabinet
-            notify(id, guardian.id(), kind, childTitle(child.get().displayName(), text.title()), text.body(),
+            notify(id, guardian.id(), kind, childTitle(firstName(child.get().displayName()), text.title()), text.body(),
                     familyLink(child.get().id(), notice.link()), null, null);
         }
     }
@@ -173,6 +173,13 @@ public class NotificationService {
     /** The guardian's copy of a notice: the same for every delivery of it, different for each guardian. */
     static UUID guardianNoticeId(UUID noticeId, UUID guardianId) {
         return UUID.nameUUIDFromBytes((noticeId + ":" + guardianId).getBytes(StandardCharsets.UTF_8));
+    }
+
+    /** The child's name for the prefix: the first word of the display name («Петя Смирнов» → «Петя»). */
+    static String firstName(String displayName) {
+        String stripped = displayName.strip();
+        int space = stripped.indexOf(' ');
+        return space < 0 ? stripped : stripped.substring(0, space);
     }
 
     /** «Петя · Занятие перенесено»: a guardian of several children sees whose notice it is (ADR-0069). */

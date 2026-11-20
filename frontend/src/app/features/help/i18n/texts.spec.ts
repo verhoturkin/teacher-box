@@ -1,5 +1,6 @@
 import { expectComplete } from '@testing/i18n';
 import { ADMIN_ARTICLES } from '../articles/admin/en';
+import { GUARDIAN_ARTICLES } from '../articles/guardian/en';
 import { STUDENT_ARTICLES } from '../articles/student/en';
 import { TEACHER_ARTICLES } from '../articles/teacher/en';
 import { HELP_TOPICS, isHelpArea } from '../help-topics';
@@ -10,6 +11,7 @@ import { ru } from './ru';
 const ENGLISH: Readonly<Record<string, Readonly<Record<string, HelpArticleText>>>> = {
   teacher: TEACHER_ARTICLES,
   cabinet: STUDENT_ARTICLES,
+  guardian: GUARDIAN_ARTICLES,
   admin: ADMIN_ARTICLES,
 };
 

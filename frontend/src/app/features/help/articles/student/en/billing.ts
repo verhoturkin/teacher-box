@@ -4,7 +4,8 @@ export const billingArticle: HelpArticleText = {
   title: 'Payments',
   summary: 'Check your balance, lesson price and payment history',
   body: `
-“Payments” shows your balance, lesson price and transaction history. Filter the history to see all transactions, payments only or lesson charges only.
+“Payments” shows your balance, lesson price and transaction history. If your teacher has hidden payments (a parent sees them instead), there is no “Payments” section. Filter the \
+history to see all transactions, payments only or lesson charges only.
 
 - **Credit** is money you have paid towards future lessons.
 - **Outstanding balance** is the amount still to pay for past lessons.

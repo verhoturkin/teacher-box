@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { en } from './i18n/en';
 import { ADMIN_ARTICLES as ADMIN_EN } from './articles/admin/en';
+import { GUARDIAN_ARTICLES as GUARDIAN_EN } from './articles/guardian/en';
+import { GUARDIAN_ARTICLES } from './articles/guardian/ru';
 import { STUDENT_ARTICLES as STUDENT_EN } from './articles/student/en';
 import { TEACHER_ARTICLES as TEACHER_EN } from './articles/teacher/en';
 import { ADMIN_ARTICLES } from './articles/admin/ru';
@@ -13,12 +15,14 @@ import { HELP_TITLES, HELP_TOPICS, HelpArea, helpUrl, isHelpArea } from './help-
 const TEXTS: Record<HelpArea, Readonly<Record<string, HelpArticleText>>> = {
   teacher: TEACHER_ARTICLES,
   cabinet: STUDENT_ARTICLES,
+  guardian: GUARDIAN_ARTICLES,
   admin: ADMIN_ARTICLES,
 };
 
 const ENGLISH_TEXTS: Record<HelpArea, Readonly<Record<string, HelpArticleText>>> = {
   teacher: TEACHER_EN,
   cabinet: STUDENT_EN,
+  guardian: GUARDIAN_EN,
   admin: ADMIN_EN,
 };
 
@@ -30,7 +34,7 @@ describe('HelpLibrary', () => {
   });
 
   it('has an article for every topic of every area, in the order of the contents', async () => {
-    for (const area of ['teacher', 'cabinet', 'admin'] as const) {
+    for (const area of ['teacher', 'cabinet', 'guardian', 'admin'] as const) {
       const articles = await library.articles(area);
       expect(articles.map((article) => article.id)).toEqual([...HELP_TOPICS[area]]);
       for (const article of articles) {
@@ -53,7 +57,7 @@ describe('HelpLibrary', () => {
   });
 
   it('keeps English help topics and titles aligned with navigation', () => {
-    for (const area of ['teacher', 'cabinet', 'admin'] as const) {
+    for (const area of ['teacher', 'cabinet', 'guardian', 'admin'] as const) {
       expect(Object.keys(ENGLISH_TEXTS[area]).sort()).toEqual([...HELP_TOPICS[area]].sort());
       for (const topic of HELP_TOPICS[area]) {
         const article = ENGLISH_TEXTS[area][topic];
@@ -85,6 +89,7 @@ describe('HelpLibrary', () => {
   it('finds an article by its topic', async () => {
     expect((await library.article('teacher/groups'))?.title).toBe('Группы');
     expect((await library.article('cabinet/bot'))?.title).toBe('Бот в мессенджере');
+    expect((await library.article('guardian/bot'))?.title).toBe('Бот в мессенджере');
     expect((await library.article('admin/diagnostics'))?.id).toBe('diagnostics');
     expect(await library.article('teacher/missing')).toBeNull();
     expect(await library.article('other/faq')).toBeNull();

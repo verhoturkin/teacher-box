@@ -97,7 +97,7 @@ class GuardianNoticesIntegrationTests {
 
     @Test
     void aChildsNoticeReachesTheGuardiansNamedWithTheChildAndLinkedIntoTheFamilyCabinet() {
-        UUID child = directory.addStudent("Петя");
+        UUID child = directory.addStudent("Петя Смирнов");
         UUID mother = guardians.addGuardian("Анна", child);
         UUID father = guardians.addGuardian("John", child);
         directory.setLanguage(father, Language.EN);

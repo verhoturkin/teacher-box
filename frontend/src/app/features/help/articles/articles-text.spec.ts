@@ -1,8 +1,11 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { HelpArticleText } from '../help.models';
+import { GUARDIAN_TOPICS } from '../help-topics';
 import { ADMIN_ARTICLES as ADMIN_EN } from './admin/en';
 import { ADMIN_ARTICLES as ADMIN_RU } from './admin/ru';
+import { GUARDIAN_ARTICLES as GUARDIAN_EN } from './guardian/en';
+import { GUARDIAN_ARTICLES as GUARDIAN_RU } from './guardian/ru';
 import { STUDENT_ARTICLES as STUDENT_EN } from './student/en';
 import { STUDENT_ARTICLES as STUDENT_RU } from './student/ru';
 import { TEACHER_ARTICLES as TEACHER_EN } from './teacher/en';
@@ -626,6 +629,34 @@ const PARENTS: Readonly<Record<string, readonly (readonly [string, string, strin
   ],
 };
 
+/** Parents in the student's schedule and payments articles (455.1): [topic, baseline, now] per edition. */
+const PARENT_NOTES: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'student.ru': [
+    [
+      'schedule',
+      'даже если оно повторяется каждую неделю.',
+      'даже если оно повторяется каждую неделю.\n\nЗапрос мог отправить и ваш родитель: тогда у него пометка «Запрос родителя (Имя)». Отозвать его можно так же, как свой, а ответ учителя придёт вам обоим.',
+    ],
+    [
+      'billing',
+      '«Оплаты» показывает сводку вверху и историю ниже.',
+      '«Оплаты» показывает сводку вверху и историю ниже. Если учитель скрыл оплаты (их тогда видит родитель), раздела «Оплаты» в кабинете нет.',
+    ],
+  ],
+  'student.en': [
+    [
+      'schedule',
+      'applies only to the date you selected.',
+      'applies only to the date you selected.\n\nYour parent may have sent a request too: it is marked “Parent’s request (Name)”. You can withdraw it just like your own, and your teacher’s reply goes to you both.',
+    ],
+    [
+      'billing',
+      '“Payments” shows your balance, lesson price and transaction history.',
+      '“Payments” shows your balance, lesson price and transaction history. If your teacher has hidden payments (a parent sees them instead), there is no “Payments” section.',
+    ],
+  ],
+};
+
 /** Parents' requests, notifications and bot menu (454.3): [topic, baseline, now] per edition. */
 const PARENT_REQUESTS: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
   'teacher.ru': [
@@ -762,6 +793,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(CALL_PRESENCE[name] ?? []),
       ...(PARENTS[name] ?? []),
       ...(PARENT_REQUESTS[name] ?? []),
+      ...(PARENT_NOTES[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];
@@ -771,6 +803,18 @@ describe('help articles after the split into one file per topic', () => {
       }
     }
     expect(texts).toEqual(expected);
+  });
+
+  it('has the parent’s articles in both languages with links to existing articles (455.1)', () => {
+    for (const texts of [GUARDIAN_RU, GUARDIAN_EN]) {
+      expect(Object.keys(texts).sort()).toEqual([...GUARDIAN_TOPICS].sort());
+      for (const text of Object.values(texts)) {
+        expect(text.title).not.toBe('');
+        for (const [, topic] of text.body.matchAll(/\]\(\/guardian\/help\/([\w-]+)\)/g)) {
+          expect(GUARDIAN_TOPICS as readonly string[]).toContain(topic);
+        }
+      }
+    }
   });
 
   it('has no source line longer than 200 characters', () => {

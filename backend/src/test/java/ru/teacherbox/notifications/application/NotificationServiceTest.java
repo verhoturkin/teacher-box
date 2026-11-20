@@ -36,6 +36,12 @@ class NotificationServiceTest {
     }
 
     @Test
+    void theChildIsNamedByTheFirstWordOfTheDisplayName() {
+        assertThat(NotificationService.firstName(" Петя Смирнов ")).isEqualTo("Петя");
+        assertThat(NotificationService.firstName("Соня")).isEqualTo("Соня");
+    }
+
+    @Test
     void eachGuardianHasOneCopyOfANotice() {
         UUID notice = Ids.newId();
         UUID guardian = Ids.newId();

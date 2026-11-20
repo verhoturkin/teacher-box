@@ -265,10 +265,20 @@ once, after 456.
 
 ### 455. Docs and E2E
 
-- [ ] 455.1 *simple* — wiki `docs/wiki/Parents.md` complete (+ `_Sidebar`, `Features`), help
+- [x] 455.1 *simple* — wiki `docs/wiki/Parents.md` complete (+ `_Sidebar`, `Features`), help
   articles for the parent (`features/help/articles/guardian/`, ru and en, `help-topics.ts`) and
   `student/*` mention of parents; `docs/glossary.md` «Родитель»; check every spec listed in the
   goals is current.
+  *Done with these choices: the parent's help is its own area `guardian` (`articles/guardian/{ru,en}`:
+  «Вход и дети», «Что видно родителю», «Перенос и отмена», «Уведомления», «Бот в мессенджере»),
+  shown at `/family/<id>/help`; the «?» of a student's page in the family cabinet opens the parent's
+  matching article (`guardianTopicOf`); links of those articles are `/guardian/help/<topic>`, mapped
+  to the child's address. Student articles `schedule` and `billing` got the parent's request and the
+  hidden payments. The notice prefix of a guardian is now the first word of the display name
+  («Петя · …», as ADR-0069 says; it was the whole «Петя Смирнов»). Wiki `Parents` already described
+  the cabinet, notices and bot: added the bot and help; `Features` got «Родителю»; the glossary row
+  got the cabinet's words. Specs of the goals (ADR-0069, `identity`, `schedule`, `homework`,
+  `billing`, `notifications`, `platform`, `screens.md`) checked against the code: no gaps found.*
 - [ ] 455.2 *complex* — E2E `e2e/tests/family/`: the teacher invites a parent → the parent accepts
   and logs in → sees the child's lessons, homework and payments, cannot open another student's
   data (API 404) → asks to move a lesson → the teacher approves; a reminder reaches the parent's

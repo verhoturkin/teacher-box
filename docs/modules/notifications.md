@@ -40,7 +40,7 @@ ADRs: [0005](../adr/0005-notifications.md), [0009](../adr/0009-external-integrat
   `HOMEWORK_DEADLINES` (`HOMEWORK_DUE_SOON`, `HOMEWORK_REMINDER`), `REVIEWED_WORK`
   (`HOMEWORK_REVIEWED`); any other kind reaches the student only. All four are on until the
   guardian switches one off (`guardian_preferences`; off — neither inbox nor messengers). The copy
-  is in the guardian's language, its title starts with the child's name («Петя · Занятие
+  is in the guardian's language, its title starts with the child's first name (the first word of the display name; «Петя · Занятие
   перенесено»), its link is the child's page of the family cabinet (`/cabinet/schedule?lesson=1`
   → `/family/<studentId>/schedule?lesson=1`; `homework`, `billing` alike; any other page → the
   child's home); no bot buttons and no room. Its id is derived from the notice and the guardian

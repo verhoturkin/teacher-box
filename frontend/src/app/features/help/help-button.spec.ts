@@ -88,7 +88,7 @@ describe('HelpButton', () => {
     expect(navigate).toHaveBeenCalled();
   });
 
-  it('leads «Вся справка» of a student’s article into the family cabinet', async () => {
+  it('opens the parent’s article instead of the student’s one in the family cabinet (455.1)', async () => {
     fixture.destroy();
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
@@ -104,6 +104,7 @@ describe('HelpButton', () => {
     const all = Array.from(document.body.querySelectorAll('a')).find((link) =>
       link.textContent.includes('Вся справка'),
     );
-    expect(all?.getAttribute('href')).toBe(`/family/${CHILD_ID}/help/homework`);
+    expect(all?.getAttribute('href')).toBe(`/family/${CHILD_ID}/help/view`);
+    expect(document.body.textContent).toContain('Что видно родителю');
   });
 });

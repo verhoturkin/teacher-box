@@ -17,7 +17,7 @@ child's behalf and their own notification settings.
   (`features/home/family.routes.ts`) provides its own `ScheduleApi`, `HomeworkApi`, `BillingApi`,
   which read the scope, and opens the student's pages — no page is copied. The student's cabinet
   keeps the default scope (`/api/me`, `/cabinet`).
-- Help (`/family/<id>/help`) shows the student's articles until the parent's own come (455.1);
+- Help (`/family/<id>/help`) shows the parent's own articles (area `guardian`: «Вход и дети», «Что видно родителю», «Перенос и отмена», «Уведомления», «Бот в мессенджере»); the «?» of a reused student's page opens the matching one (`guardianTopicOf`);
   account (`/family/<id>/account`) is `AccountPage` with «Уведомления» (below).
 - `readOnly` of the scope means «the family cabinet»: no hand-in, attempts, call link, boards or
   call presence, and the texts speak of the child («Не придёт»). *Ours*: change requests are not
