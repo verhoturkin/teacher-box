@@ -94,10 +94,20 @@ test('the nearest lesson heads the lead pane of Today, bright, beside a fixed fi
     .evaluate((node) => getComputedStyle(node).gridTemplateColumns.split(' '));
   expect(panes).toHaveLength(2);
   expect(panes[1]).toBe('412px');
-  const columns = await page
-    .locator('.tb-feed__columns')
-    .evaluate((node) => getComputedStyle(node).gridTemplateColumns.split(' ').length);
-  expect(columns).toBe(2);
+  // 457.1: equal flex columns side by side; a column that shows nothing hides and gives its width
+  const columns = await page.locator('.tb-feed__columns').evaluate((node) =>
+    [...node.children]
+      .filter((child) => getComputedStyle(child).display !== 'none')
+      .map((child) => {
+        const rect = child.getBoundingClientRect();
+        return { left: rect.left, right: rect.right, width: Math.round(rect.width) };
+      }),
+  );
+  expect(columns.length).toBeGreaterThan(0);
+  expect(new Set(columns.map((column) => column.width)).size).toBe(1);
+  for (let i = 1; i < columns.length; i++) {
+    expect(columns[i - 1]?.right ?? 0).toBeLessThanOrEqual(columns[i]?.left ?? 0);
+  }
 });
 
 test('on a phone «Создать» of the home page is a FAB menu', async ({ page }) => {
