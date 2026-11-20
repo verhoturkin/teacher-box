@@ -34,6 +34,10 @@ Goals: voice answers and audio files of homework play in the deployed portal.
   `docker/nginx/security-headers.conf`) had no `media-src`, so `default-src 'self'` blocked it
   (`npm start` sends no CSP, so it played there). `media-src 'self' blob:` added to both;
   `PlatformSecurityIntegrationTest` checks it and that nginx sends the backend's policy.
+- [x] 458.2 **B** *simple* — flaky `AvailabilityIntegrationTests` (409 instead of 201, by the hour
+  of the build): `GroupLessonsIntegrationTests.anApprovedMoveMovesTheLessonForEverybody` moved a
+  lesson a day later at the same hour, outside `Slots`, onto another test's slot; it moves to
+  `Slots.next` now.
 
 ## Backlog
 
