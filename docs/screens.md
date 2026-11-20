@@ -61,7 +61,8 @@ Home, schedule, homework, payments, account — [screens/cabinet.md](screens/cab
 
 ## Family cabinet
 
-A parent's `/family/:studentId`: the student's pages read-only, the child switcher —
+A parent's `/family/:studentId`: the student's pages read-only, the child switcher, the bell,
+change requests on the child's behalf, the parent's notification categories —
 [screens/family.md](screens/family.md).
 
 ## Invitation

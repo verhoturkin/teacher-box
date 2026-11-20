@@ -415,8 +415,8 @@ export class AccountPanel implements OnInit {
   protected readonly isTeacher = computed(() => this.account()?.role === 'TEACHER');
   protected readonly isStudent = computed(() => this.account()?.role === 'STUDENT');
   /**
-   * A student, a parent and the teacher choose a photo; the administrator has none (ADR-0010). The
-   * parent's notifications come with 454.3: until then only the student and the teacher have them.
+   * A student, a parent and the teacher choose a photo and their notifications; the administrator
+   * has neither (ADR-0010).
    */
   protected readonly hasPhoto = computed(
     () => this.isStudent() || this.isTeacher() || this.account()?.role === 'GUARDIAN',
@@ -424,7 +424,7 @@ export class AccountPanel implements OnInit {
   private readonly slot = contentChild(AccountNotifications);
   /** «Уведомления» the page projected, for the roles that have them. */
   protected readonly notifications = computed(() =>
-    this.isStudent() || this.isTeacher() ? (this.slot()?.template ?? null) : null,
+    this.hasPhoto() ? (this.slot()?.template ?? null) : null,
   );
   /** The student's parents by name. */
   private readonly guardians = signal<readonly string[]>([]);

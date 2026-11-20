@@ -54,13 +54,17 @@ describe('FamilyLayout', () => {
   }
 
   afterEach(() => {
+    // the bell asks for the parent's unread count (454.3)
+    for (const request of backend.match('/api/me/notifications/unread-count')) {
+      if (!request.cancelled) request.flush({ count: 0 });
+    }
     backend.verify();
   });
 
   it.each([
     [599, 'nav.tb-bottom-nav a'],
     [1600, 'tb-side-nav ul:not(.tb-side-nav__footer) a'],
-  ])('at %i px has the four sections of the child, no bell', async (width, links) => {
+  ])('at %i px has the four sections of the child and the bell', async (width, links) => {
     const host = await render(width);
 
     const items = Array.from(host.querySelectorAll(links));
@@ -76,7 +80,7 @@ describe('FamilyLayout', () => {
       `/family/${CHILD_ID}/homework`,
       `/family/${CHILD_ID}/billing`,
     ]);
-    expect(host.querySelector('tb-notification-bell')).toBeNull();
+    expect(host.querySelector('tb-notification-bell')).not.toBeNull();
     expect(host.querySelector('tb-nav-badge')).toBeNull();
   });
 

@@ -4,16 +4,17 @@ import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { channel } from '@testing/notification-fixtures';
 import { ChannelState } from '../data-access/notifications.models';
 import { CONNECT_DISMISSED_KEY, ConnectMessengerCard } from './connect-messenger-card';
+import { CHILD_ID, familyScopeOf } from '@testing/family-fixtures';
 import { testProviders } from '@testing/setup';
 
 describe('ConnectMessengerCard', () => {
   let fixture: ComponentFixture<ConnectMessengerCard>;
   let backend: HttpTestingController;
 
-  function create(): void {
+  function create(family = false): void {
     TestBed.configureTestingModule({
       imports: [ConnectMessengerCard],
-      providers: testProviders(),
+      providers: testProviders(...(family ? [familyScopeOf()] : [])),
     });
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(ConnectMessengerCard);
@@ -44,6 +45,17 @@ describe('ConnectMessengerCard', () => {
     expect(text()).toContain('Подключите Telegram, ВКонтакте или MAX');
     const link = hostElement(fixture).querySelector('a');
     expect(link?.getAttribute('href')).toBe('/cabinet/account');
+  });
+
+  it('invites a parent and leads to the account of the family cabinet', async () => {
+    create(true);
+    backend.expectOne('/api/me/channels').flush([channel()]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(text()).toContain('напоминания о занятиях ребёнка');
+    const link = hostElement(fixture).querySelector('a');
+    expect(link?.getAttribute('href')).toBe(`/family/${CHILD_ID}/account`);
   });
 
   it('names the only messenger', async () => {

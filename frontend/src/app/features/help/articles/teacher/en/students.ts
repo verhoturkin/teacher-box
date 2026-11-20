@@ -52,7 +52,8 @@ Open the student’s Profile tab to manage access:
 ## Parents
 
 A student can have up to two parents. A parent signs in with their own username and sees what the child sees: lessons, homework with answers \
-and comments, and payments. They cannot change anything.
+and comments, and payments, and gets the child’s notifications (choosing which ones). They cannot hand in work, but they can request a \
+reschedule or cancellation.
 
 1. Open the student’s Profile tab → “Parents” → **Invite a parent**.
 2. **Someone new**: enter their name and choose “Invite”. Copy the invitation link and send it to the parent. The invitation names their \

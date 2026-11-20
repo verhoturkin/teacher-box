@@ -240,11 +240,21 @@ once, after 456.
   the teacher's notice gets a line «Запрос от родителя (Анна).»; the answer stays one notice to
   the child, which `notifications` copies to the guardians (454.1). `BotView.guardianMenu` for
   the «Что умеет бот» panel (shown with 454.3).*
-- [ ] 454.3 *complex* F — `m3-expressive`. `/family` notifications: inbox, the four preferences,
+- [x] 454.3 *complex* F — `m3-expressive`. `/family` notifications: inbox, the four preferences,
   messenger linking (`features/notifications` parts reused); the change request dialog
   (`schedule/student/change-request-dialog.ts`) in the family schedule; the teacher's request row
   shows «от родителя». Tests (Vitest). Docs: `docs/screens.md`, wiki `Parents`,
   `Notifications` if it exists.
+  *Done: the bell of `FamilyLayout` and «Уведомления» of «Мой аккаунт» are the common ones; the
+  four categories replace the topics in «Что присылать» of a parent (`NotificationsSection` reads
+  the role; the parent's muted topics are left as they are, not shown), quiet hours and messengers
+  stay. `readOnly` is not split: requests no longer depend on it — `ScheduleApi` sends requests,
+  `busy` and `free-times` to the scope's base, so the family schedule and home ask, withdraw and
+  show the teacher's busy time as the student's; the texts speak of the child («Не придёт»).
+  The home page of a parent also shows the messenger and push cards. «Запрос родителя (Анна)» /
+  «от родителя (Анна)» on every teacher's request place (list, home queue, lesson card, answer
+  dialog) and in the child's own list; «Что умеет бот» gets «Родителям». No wiki `Notifications`
+  page exists: wiki `Parents` and `Messengers`, teacher help `students`, `schedule`, `bot`.*
 
 ### 455. Docs and E2E
 

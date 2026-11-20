@@ -4,7 +4,13 @@
  */
 export { ScheduleApi } from './data-access/schedule-api';
 export { LessonMarkUndo } from './data-access/lesson-mark-undo';
-export { STATUS_LABELS, formatLessonStart, lessonWith, requestKindLabel } from './schedule-labels';
+export {
+  STATUS_LABELS,
+  formatLessonStart,
+  fromParent,
+  lessonWith,
+  requestKindLabel,
+} from './schedule-labels';
 export type {
   ChangeRequest,
   LessonRules,

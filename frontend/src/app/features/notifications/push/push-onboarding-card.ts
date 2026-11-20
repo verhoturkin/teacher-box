@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { API_SCOPE } from '@core/http/api-scope';
 import { WebPush } from '@core/push/web-push';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { hideHint, isHintHidden } from '@shared/storage/device-settings';
@@ -29,7 +30,7 @@ export const PUSH_DISMISSED_KEY = 'tb.push.dismissed';
   template: `
     @if (visible()) {
       <p-card [header]="push.needsHomeScreen ? t.homeScreenTitle : t.title">
-        <p>{{ push.needsHomeScreen ? p.homeScreen : teacher() ? t.teacher : t.student }}</p>
+        <p>{{ push.needsHomeScreen ? p.homeScreen : text() }}</p>
         <div class="tb-actions">
           @if (push.needsHomeScreen) {
             <p-button [label]="t.ok" severity="secondary" (onClick)="dismiss()" />
@@ -57,6 +58,14 @@ export class PushOnboardingCard implements OnInit {
 
   /** The teacher's text names what the teacher gets. */
   readonly teacher = input(false);
+  /** The family cabinet: the parent's text names the child's notices (ADR-0069). */
+  private readonly family = inject(API_SCOPE).readOnly;
+  protected readonly text = computed(() => {
+    if (this.teacher()) {
+      return T.pushCard.teacher;
+    }
+    return this.family ? T.pushCard.child : T.pushCard.student;
+  });
 
   protected readonly visible = computed(
     () =>

@@ -6,6 +6,11 @@ export const ru = {
     MISSED: 'Пропуск',
     CANCELLED: 'Отменено',
   },
+  /** Who asked (ADR-0069): a parent on the child's behalf. */
+  parentRequest: 'Запрос родителя',
+  parentRequestNamed: (name: string) => `Запрос родителя (${name})`,
+  fromParent: 'от родителя',
+  fromParentNamed: (name: string) => `от родителя (${name})`,
   kinds: {
     RESCHEDULE: 'Перенос',
     CANCEL: 'Отмена',
@@ -80,6 +85,7 @@ export const ru = {
     reschedule: 'Перенести',
     join: 'Войти в урок',
     wontCome: 'Не приду',
+    childWontCome: 'Не придёт',
     cancel: 'Отменить',
   },
   freeTimes: {
@@ -102,6 +108,10 @@ export const ru = {
     send: 'Отправить учителю',
     rescheduleTitle: 'Перенести занятие',
     absenceTitle: 'Не приду на занятие',
+    childAbsenceTitle: 'Не придёт на занятие',
+    childGroupAbsence: (group: string) =>
+      `Занятие группы «${group}» пройдёт без ребёнка. Предупредите заранее — тогда учитель сразу узнает, а пропуск не засчитается.`,
+    childLate: 'До занятия осталось мало времени: учитель может засчитать его ребёнку как пропуск.',
     cancelTitle: 'Отменить занятие',
     failed: 'Не удалось отправить запрос',
   },
@@ -115,6 +125,7 @@ export const ru = {
     withdraw: 'Отозвать',
     withdrawOf: (time: string) => `Отозвать запрос: ${time}`,
     requests: 'Мои запросы',
+    childRequests: 'Запросы',
     noPendingRequests: 'Запросов, ждущих ответа учителя, нет',
     resolved: 'Решённые запросы',
     resolvedRequests: (count: number) => `Решённые: ${String(count)}`,

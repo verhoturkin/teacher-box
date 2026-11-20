@@ -72,12 +72,12 @@ import { T } from './i18n/texts';
             @if (homework(); as homework) {
               <tb-my-deadlines-widget [summary]="homework" />
             }
-            <!-- the student's own hints; the parent's messengers come with 454.3 -->
+            <!-- the welcome is the student's own; the parent is invited to messengers and push too -->
             @if (!readOnly) {
               <tb-student-welcome-card [payments]="payments.visible()" />
-              <tb-connect-messenger-card />
-              <tb-push-onboarding-card />
             }
+            <tb-connect-messenger-card />
+            <tb-push-onboarding-card />
           </div>
           <div class="tb-stack tb-feed__side">
             @if (billing(); as billing) {
@@ -118,7 +118,7 @@ export class StudentHome implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly family = inject(Family);
   protected readonly payments = inject(PaymentsVisibility);
-  /** The family cabinet: the child's home without the student's own hints. */
+  /** The family cabinet: the child's home without the student's welcome. */
   protected readonly readOnly = inject(API_SCOPE).readOnly;
   protected readonly size = injectWindowSize();
 

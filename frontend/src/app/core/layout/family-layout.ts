@@ -40,8 +40,9 @@ export function familyMenu(childId: string): NavItem[] {
 
 /**
  * Frame of the family cabinet (`/family/:studentId/**`, ADR-0069): the student's frame with the child
- * switcher in the top strip. Another child rebuilds the frame and its pages, so nothing of the previous
- * child stays on the screen. *Our decision:* no bell until the parent's notifications come (454.3).
+ * switcher and the bell in the top strip. The bell's inbox is the parent's own, of all the children
+ * («Петя · …», 454.3); its links lead into the child's pages. Another child rebuilds the frame and its
+ * pages, so nothing of the previous child stays on the screen.
  */
 @Component({
   selector: 'tb-family-layout',
@@ -49,7 +50,7 @@ export function familyMenu(childId: string): NavItem[] {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @for (child of shown(); track child) {
-      <tb-shell [items]="menu()" [homeLink]="home()" [notifications]="false">
+      <tb-shell [items]="menu()" [homeLink]="home()">
         <tb-child-switcher [compact]="size() === 'compact'" />
       </tb-shell>
     }

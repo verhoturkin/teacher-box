@@ -68,6 +68,15 @@ import { T } from '../i18n/texts';
             </div>
           </li>
           <li>
+            <span class="tb-list__lead" aria-hidden="true"
+              ><i class="tb-i tb-i-family_restroom"></i
+            ></span>
+            <div class="tb-list__text">
+              <span class="tb-list__title">{{ t.parents }}</span>
+              <span class="tb-list__supporting">{{ menu(bot.guardianMenu) }}</span>
+            </div>
+          </li>
+          <li>
             <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-person"></i></span>
             <div class="tb-list__text">
               <span class="tb-list__title">{{ t.you }}</span>

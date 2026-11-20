@@ -19,6 +19,7 @@ import { Select } from 'primeng/select';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import { Subscription, interval, switchMap } from 'rxjs';
+import { AuthService } from '@core/auth/auth.service';
 import { describeError } from '@core/http/error-messages';
 import { injectMobile, injectWindowSize } from '@core/layout/mobile';
 import { WebPush } from '@core/push/web-push';
@@ -31,12 +32,20 @@ import { NotificationsApi } from '../data-access/notifications-api';
 import {
   BotAbilities,
   ChannelState,
+  GuardianCategory,
+  GuardianPreferences,
   ChannelType,
   LinkCode,
   NotificationPreferences,
   NotificationTopic,
 } from '../data-access/notifications.models';
-import { CHANNEL_ICONS, CHANNEL_NAMES, MUTABLE_TOPICS } from '../notification-labels';
+import {
+  CHANNEL_ICONS,
+  CHANNEL_NAMES,
+  GUARDIAN_CATEGORIES,
+  MUTABLE_TOPICS,
+  isGuardianCategory,
+} from '../notification-labels';
 import { LinkCodeView } from '../channels/link-code-view';
 import { deviceName } from '../push/device-name';
 import { T } from '../i18n/texts';
@@ -52,6 +61,14 @@ export const QUIET_TIMES: readonly string[] = Array.from({ length: 48 }, (_, ind
 
 const DEFAULT_QUIET_FROM = '22:00';
 const DEFAULT_QUIET_TO = '08:00';
+
+/** A switch of «Что присылать». */
+interface SendOption {
+  readonly key: NotificationTopic | GuardianCategory;
+  readonly label: string;
+  readonly hint: string;
+  readonly on: boolean;
+}
 
 /** `HH:mm` of a backend time (`HH:mm` or `HH:mm:ss`). */
 function shortTime(time: string): string {
@@ -87,7 +104,7 @@ function shortTime(time: string): string {
         <p-message severity="info" icon="tb-i tb-i-send">
           <div class="tb-connect-alert__body">
             <span class="tb-connect-alert__text">
-              <strong>{{ t.alertTitle }}</strong> {{ t.alertText }}
+              <strong>{{ t.alertTitle }}</strong> {{ guardian ? t.childAlertText : t.alertText }}
             </span>
             <p-button [label]="t.connectTo(names[first])" (onClick)="connect(first)" />
           </div>
@@ -278,47 +295,47 @@ function shortTime(time: string): string {
         @if (medium()) {
           <!-- medium (sketch StudentTablet): the topics are filter chips, the pressed ones are sent -->
           <div class="tb-notify__chips" role="group" [attr.aria-label]="t.what">
-            @for (topic of topics(); track topic.topic) {
+            @for (option of options(); track option.key) {
               <button
                 type="button"
                 class="tb-notify__chip"
-                [class.tb-notify__chip--on]="!saved.mutedTopics.includes(topic.topic)"
-                [attr.aria-pressed]="!saved.mutedTopics.includes(topic.topic)"
-                [title]="topic.hint"
-                (click)="setTopic(topic.topic, saved.mutedTopics.includes(topic.topic))"
+                [class.tb-notify__chip--on]="option.on"
+                [attr.aria-pressed]="option.on"
+                [title]="option.hint"
+                (click)="setOption(option.key, !option.on)"
               >
-                @if (!saved.mutedTopics.includes(topic.topic)) {
+                @if (option.on) {
                   <i class="tb-i tb-i-check" aria-hidden="true"></i>
                 }
-                {{ topic.label }}
+                {{ option.label }}
               </button>
             }
           </div>
-          @if (!teacher()) {
+          @if (!teacher() && !guardian) {
             <p class="tb-muted tb-notify__always">{{ t.teacherAlways }}</p>
           }
         } @else {
           <ul class="tb-list">
-            @for (topic of topics(); track topic.topic) {
+            @for (option of options(); track option.key) {
               <li>
                 <div class="tb-list__text">
-                  <label class="tb-list__title" [for]="'notify-topic-' + topic.topic">{{
-                    topic.label
+                  <label class="tb-list__title" [for]="'notify-topic-' + option.key">{{
+                    option.label
                   }}</label>
                   @if (!mobile()) {
-                    <span class="tb-list__supporting">{{ topic.hint }}</span>
+                    <span class="tb-list__supporting">{{ option.hint }}</span>
                   }
                 </div>
                 <div class="tb-list__trail">
                   <p-toggleswitch
-                    [inputId]="'notify-topic-' + topic.topic"
-                    [ngModel]="!saved.mutedTopics.includes(topic.topic)"
-                    (ngModelChange)="setTopic(topic.topic, $event)"
+                    [inputId]="'notify-topic-' + option.key"
+                    [ngModel]="option.on"
+                    (ngModelChange)="setOption(option.key, $event)"
                   />
                 </div>
               </li>
             }
-            @if (!teacher()) {
+            @if (!teacher() && !guardian) {
               <li>
                 <div class="tb-list__text">
                   <span class="tb-list__title">{{ tr.teacherMessages }}</span>
@@ -572,6 +589,12 @@ export class NotificationsSection implements OnInit {
 
   /** The teacher gets the teacher topics and «Действия учителя в боте»; a student gets the alert. */
   readonly teacher = input(false);
+  /**
+   * A parent (ADR-0069) chooses which of the children's notices come — the four categories of
+   * `GuardianPreferences` — instead of the topics; quiet hours and messengers are their own.
+   */
+  protected readonly guardian = inject(AuthService).user()?.role === 'GUARDIAN';
+  protected readonly guardianPreferences = signal<GuardianPreferences | null>(null);
 
   protected readonly names = CHANNEL_NAMES;
   protected readonly icons = CHANNEL_ICONS;
@@ -584,9 +607,29 @@ export class NotificationsSection implements OnInit {
   protected readonly abilities = signal<BotAbilities | null>(null);
   protected readonly linkCode = signal<LinkCode | null>(null);
 
-  protected readonly topics = computed(() =>
-    MUTABLE_TOPICS.filter((topic) => (this.teacher() ? !topic.studentOnly : !topic.teacherOnly)),
-  );
+  /** The switches of «Что присылать»: the topics, or a parent's categories. */
+  protected readonly options = computed<readonly SendOption[]>(() => {
+    if (this.guardian) {
+      const disabled = this.guardianPreferences()?.disabledCategories;
+      return disabled === undefined
+        ? []
+        : GUARDIAN_CATEGORIES.map((category) => ({
+            key: category.category,
+            label: category.label,
+            hint: category.hint,
+            on: !disabled.includes(category.category),
+          }));
+    }
+    const muted = this.preferences()?.mutedTopics ?? [];
+    return MUTABLE_TOPICS.filter((topic) =>
+      this.teacher() ? !topic.studentOnly : !topic.teacherOnly,
+    ).map((topic) => ({
+      key: topic.topic,
+      label: topic.label,
+      hint: topic.hint,
+      on: !muted.includes(topic.topic),
+    }));
+  });
   /** A student with messengers to connect and none connected: the first one, for the alert. */
   protected readonly connectFirst = computed(() => {
     const channels = this.channels() ?? [];
@@ -632,6 +675,11 @@ export class NotificationsSection implements OnInit {
     this.api.preferences().subscribe((preferences) => {
       this.preferences.set(preferences);
     });
+    if (this.guardian) {
+      this.api.guardianPreferences().subscribe((preferences) => {
+        this.guardianPreferences.set(preferences);
+      });
+    }
     if (this.teacher()) {
       this.api.botAbilities().subscribe((abilities) => {
         this.abilities.set(abilities);
@@ -707,6 +755,39 @@ export class NotificationsSection implements OnInit {
       error: () => {
         // the device is still there
         toggle?.control.setValue(true, { emitViewToModelChange: false });
+      },
+    });
+  }
+
+  /** A switch of «Что присылать»: a topic, or a parent's category. */
+  setOption(key: NotificationTopic | GuardianCategory, send: boolean): void {
+    if (isGuardianCategory(key)) {
+      this.setCategory(key, send);
+    } else {
+      this.setTopic(key, send);
+    }
+  }
+
+  /** Saves at once; a failure puts the switches back. */
+  setCategory(category: GuardianCategory, send: boolean): void {
+    const saved = this.guardianPreferences();
+    if (saved === null) {
+      return;
+    }
+    const next: GuardianPreferences = {
+      disabledCategories: send
+        ? saved.disabledCategories.filter((disabled) => disabled !== category)
+        : [...saved.disabledCategories, category],
+    };
+    this.guardianPreferences.set(next);
+    this.api.saveGuardianPreferences(next).subscribe({
+      next: (stored) => {
+        this.guardianPreferences.set(stored);
+        this.snackbar.success(T.preferences.saved);
+      },
+      error: (error: unknown) => {
+        this.guardianPreferences.set({ ...saved });
+        this.snackbar.error(describeError(error, T.preferences.failed));
       },
     });
   }

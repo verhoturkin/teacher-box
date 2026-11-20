@@ -20,6 +20,11 @@ Send /menu to see the available actions. The bot uses your account language.
 Students can view their schedule, join a lesson, open boards, request a cancellation or reschedule, report a group absence, check requests and view \
 payments.
 
+## Parent actions
+
+Parents can view their children’s schedules and balances, and request a reschedule or cancellation for a child. If they have more than one \
+child, the bot asks which one.
+
 ## Using the bot
 
 The bot asks for confirmation before changing data. Choose “Cancel” or send /cancel to stop at any point. Search for students using part of their \

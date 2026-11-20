@@ -72,7 +72,8 @@ occurrences are preserved. Deleted occurrences are not generated again.
 
 ## Respond to student requests
 
-Students can request a reschedule or cancellation in the portal or bot. Requests appear in “Student requests” and arrive as notifications with \
+Students and their parents can request a reschedule or cancellation in the portal or bot. A parent’s request is marked “from a parent” with \
+their name, and both the student and the parent get your reply. Requests appear in “Student requests” and arrive as notifications with \
 “Approve” and “Decline” buttons. In the portal, open a request to respond.
 
 - **Reschedule:** approve the suggested time or pick another: the free windows of the day such as “9:00–11:30” fill in the start, or type any time yourself; a hint warns if it is \

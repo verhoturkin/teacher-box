@@ -10,7 +10,13 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { buttonByText, hostElement, readableText, requireElement } from '@testing/dom';
 import { channel, linkCode, preferences } from '@testing/notification-fixtures';
 import { testProviders } from '@testing/setup';
-import { ChannelState, NotificationPreferences } from '../data-access/notifications.models';
+import { AuthService } from '@core/auth/auth.service';
+import { authResponse } from '@testing/auth';
+import {
+  ChannelState,
+  GuardianCategory,
+  NotificationPreferences,
+} from '../data-access/notifications.models';
 import { LINK_POLL_INTERVAL_MS, NotificationsSection, QUIET_TIMES } from './notifications-section';
 
 const THIS_DEVICE: PushDevice = {
@@ -21,13 +27,15 @@ const THIS_DEVICE: PushDevice = {
   failing: false,
 };
 const OTHER: PushDevice = { ...THIS_DEVICE, id: 'd2', userAgent: null, failing: true };
-const BOT = { teacherActions: true, teacherMenu: [], studentMenu: [] };
+const BOT = { teacherActions: true, teacherMenu: [], studentMenu: [], guardianMenu: [] };
 
 interface Setup {
   channels?: ChannelState[];
   devices?: PushDevice[];
   saved?: NotificationPreferences;
   teacher?: boolean;
+  /** A parent (ADR-0069) and the categories they switched off. */
+  guardian?: GuardianCategory[];
   push?: boolean;
   permission?: string;
   size?: WindowSize;
@@ -74,6 +82,9 @@ describe('NotificationsSection', () => {
         },
       ),
     });
+    if (setup.guardian !== undefined) {
+      TestBed.inject(AuthService).acceptSession(authResponse('GUARDIAN'));
+    }
     backend = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(NotificationsSection);
     fixture.componentRef.setInput('teacher', setup.teacher ?? false);
@@ -86,6 +97,11 @@ describe('NotificationsSection', () => {
     backend.expectOne('/api/me/notifications/preferences').flush(setup.saved ?? preferences());
     if (setup.teacher === true) {
       backend.expectOne('/api/teacher/notifications/bot').flush(BOT);
+    }
+    if (setup.guardian !== undefined) {
+      backend
+        .expectOne('/api/guardian/notifications/preferences')
+        .flush({ disabledCategories: setup.guardian });
     }
     await fixture.whenStable();
   }
@@ -316,6 +332,75 @@ describe('NotificationsSection', () => {
       expect(text()).toContain('Сообщения учителя Приходят всегда');
       expect(text()).toContain('Тихие часы Не присылать ночью');
       expect(text()).not.toContain('Действия учителя в боте');
+    });
+
+    it('gives a parent the four categories of the children’s notices instead of the topics', async () => {
+      await render({ guardian: ['PAYMENTS'], channels: [channel()] });
+      expect(text()).toContain('Оплаты и долги');
+      expect(text()).toContain('Занятия');
+      expect(text()).toContain('Сроки заданий');
+      expect(text()).toContain('Проверенные работы');
+      expect(text()).not.toContain('Итоги урока');
+      expect(text()).not.toContain('Сообщения учителя');
+      expect(text()).toContain('Тихие часы');
+      expect(text()).toContain('оплате и проверенной работе ребёнка');
+      expect(toggle('notify-topic-PAYMENTS').checked).toBe(false);
+      expect(toggle('notify-topic-LESSONS').checked).toBe(true);
+      const success = vi.spyOn(TestBed.inject(Snackbar), 'success');
+
+      await click('notify-topic-PAYMENTS');
+      const on = backend.expectOne({
+        method: 'PUT',
+        url: '/api/guardian/notifications/preferences',
+      });
+      expect(on.request.body).toEqual({ disabledCategories: [] });
+      on.flush({ disabledCategories: [] });
+      await fixture.whenStable();
+      expect(success).toHaveBeenCalledWith('Настройки уведомлений сохранены');
+      expect(toggle('notify-topic-PAYMENTS').checked).toBe(true);
+
+      await click('notify-topic-REVIEWED_WORK');
+      const off = backend.expectOne('/api/guardian/notifications/preferences');
+      expect(off.request.body).toEqual({ disabledCategories: ['REVIEWED_WORK'] });
+      off.flush({ disabledCategories: ['REVIEWED_WORK'] });
+      await fixture.whenStable();
+      expect(toggle('notify-topic-REVIEWED_WORK').checked).toBe(false);
+    });
+
+    it('puts a parent’s category back when it is not saved', async () => {
+      await render({ guardian: [] });
+      const error = vi.spyOn(TestBed.inject(Snackbar), 'error');
+
+      await click('notify-topic-LESSONS');
+      backend
+        .expectOne('/api/guardian/notifications/preferences')
+        .flush(null, { status: 500, statusText: 'Server Error' });
+      await fixture.whenStable();
+
+      expect(error).toHaveBeenCalled();
+      expect(toggle('notify-topic-LESSONS').checked).toBe(true);
+    });
+
+    it('shows a parent’s categories as chips on medium', async () => {
+      await render({ size: 'medium', guardian: ['LESSONS'] });
+      const chips = [
+        ...hostElement(fixture).querySelectorAll<HTMLButtonElement>('.tb-notify__chip'),
+      ];
+      expect(chips.map((chip) => chip.getAttribute('aria-pressed'))).toEqual([
+        'true',
+        'false',
+        'true',
+        'true',
+      ]);
+      expect(text()).not.toContain('Сообщения учителя');
+
+      chips[1]?.click();
+      await fixture.whenStable();
+      backend
+        .expectOne('/api/guardian/notifications/preferences')
+        .flush({ disabledCategories: [] });
+      await fixture.whenStable();
+      expect(chips[1]?.getAttribute('aria-pressed')).toBe('true');
     });
 
     it('mutes a topic at once', async () => {
