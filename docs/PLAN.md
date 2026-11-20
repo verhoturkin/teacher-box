@@ -23,43 +23,6 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
-## Next release
-
-Goals: the type of the portal follows the M3 Expressive scale exactly (tracking per role, no
-stray weights or caps); the lesson heroes show the running lesson like the M3E progress indicator.
-
-### 457. M3E typography and the lesson heroes
-
-- [x] 457.1 **F** *simple* — the heroes. `shared/ui/wavy-progress.ts`: the wave is a dash of an SVG
-  path, so both ends are round caps riding the wave (as the M3 progress-indicator video); on a hero
-  it takes on-primary-container (primary was 1.3:1 on the container). `schedule/home/
-  next-lesson-widget.ts`: the student's hero gets the bar too. `home/today-lessons.ts`: the hero's
-  empty board line no longer leaves a 32 px band; `home/teacher-home.ts`: an empty lead column no
-  longer leaves the left half empty under the hero; the hero is an M3 card (variant C of the
-  mockups): content, the bar, then an action row — board and presence at the start, «Позвать»
-  and the join button at the end (`meetings/ui/call-summon.ts` hero order). The wave is a cubic sine fit (quadratic halves read as a row of
-  arcs). `--tb-type-title-s-emphasized` (read by the call window) declared. Buttons M / XS round
-  to half their height (`--tb-shape-button-m`, `-xs`): from 999 px the pressed morph was unseen.
-- [x] 457.2 **F** *complex* — tracking per role. `body` set body-l tracking (0.5 px) and every
-  role inherited it: display and headline got 0.5 px instead of 0, labels 0.5 instead of 0.1. Every
-  role (emphasized too) has its `--tb-tracking-<role>` (M3 sp / 16; title-m 0.2, emphasized 0.15),
-  set next to each of the 344 `font: var(--tb-type-…)` by a codemod; the pair is written out
-  instead of a mixin, as component `styles` strings take no SCSS. `scripts/tracking.mjs` (lint)
-  fails on a role without its tracking.
-- [x] 457.3 **F** *simple* — strays: bare `font-weight: 600/700` (`question-section.ts` ×3,
-  `_panes.scss` input number, `schedule-agenda.ts`, `schedule-calendar.scss`) → role tokens;
-  odd sizes `0.85rem`/`0.8rem` (admin journal, events) → body-s / label-m.
-- [x] 457.4 **F** *simple* — no caps overlines (M3 has no overline role): ~20 uppercase labels with
-  0.04–0.08 em tracking («Поступило», «Оплачено», homework labels) → label-m / label-l,
-  on-surface-variant, sentence case. Tabular figures on money and figures (`.tb-amount`,
-  `.tb-figure__value`).
-- [x] 457.5 **F** *simple* — one hierarchy for both heroes: the student's lesson title in Headline
-  Small/Medium emphasized like the teacher's name (now a body `strong`); docs: the emphasized
-  tokens the design system lists but `_tokens.scss` lacks (headline-l, label-s).
-- [x] 457.6 **F** *simple* — dark-theme text grade −25 (ADR-0070, changes 0044 item 6):
-  `styles/_icons.scss` loads `google-sans/grad.css` (+18 KB), `:root.tb-dark` in
-  `styles/_panes.scss` sets `GRAD -25`. Google Sans Flex has no Cyrillic; opsz is 17–18 only.
-
 ## Backlog
 
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,

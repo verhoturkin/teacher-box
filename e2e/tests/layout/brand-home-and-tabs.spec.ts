@@ -55,6 +55,16 @@ test('Today shows the queue and the week', async ({ page }) => {
   await page.goto('/teacher');
   await expect(page.locator('tb-todo-queue')).toBeVisible();
   await expect(page.getByText('Неделя').first()).toBeVisible();
+  // 457: M3 has no overline role — no caps labels on Today
+  const caps = await page
+    .locator('.tb-feed')
+    .evaluate(
+      (node) =>
+        [...node.querySelectorAll('*')].filter(
+          (child) => getComputedStyle(child).textTransform === 'uppercase',
+        ).length,
+    );
+  expect(caps).toBe(0);
 });
 
 test('the student card has M3 tabs', async ({ page }) => {
