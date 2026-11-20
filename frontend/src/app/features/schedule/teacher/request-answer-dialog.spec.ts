@@ -163,6 +163,11 @@ describe('RequestAnswerDialog', () => {
     expect(bodyText()).toContain('Новое время');
   });
 
+  it('says a parent asked on the child’s behalf', async () => {
+    await open(changeRequest({ guardianId: 'g-1', guardianName: 'Анна' }));
+    expect(bodyText()).toContain('Запрос родителя (Анна)');
+  });
+
   it('explains requests about group lessons', async () => {
     await open(
       changeRequest({

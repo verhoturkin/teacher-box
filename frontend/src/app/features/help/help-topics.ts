@@ -35,28 +35,34 @@ export const STUDENT_TOPICS = [
   'bot',
   'appearance',
 ] as const;
+export const GUARDIAN_TOPICS = ['start', 'view', 'requests', 'notifications', 'bot'] as const;
 export const ADMIN_TOPICS = ['diagnostics', 'backups', 'settings'] as const;
 
 export type TeacherTopic = (typeof TEACHER_TOPICS)[number];
 export type StudentTopic = (typeof STUDENT_TOPICS)[number];
+export type GuardianTopic = (typeof GUARDIAN_TOPICS)[number];
 export type AdminTopic = (typeof ADMIN_TOPICS)[number];
 
-/** Areas of the portal with their own help: the teacher, the student's cabinet, the administrator. */
-export type HelpArea = 'teacher' | 'cabinet' | 'admin';
+/** Areas of the portal with their own help: the teacher, the student's cabinet, the parent's family cabinet, the administrator. */
+export type HelpArea = 'teacher' | 'cabinet' | 'guardian' | 'admin';
 
 /** An article: its area and topic, e.g. `teacher/schedule`. */
 export type HelpTopic =
-  `teacher/${TeacherTopic}` | `cabinet/${StudentTopic}` | `admin/${AdminTopic}`;
+  | `teacher/${TeacherTopic}`
+  | `cabinet/${StudentTopic}`
+  | `guardian/${GuardianTopic}`
+  | `admin/${AdminTopic}`;
 
 /** The topics of an area in the order of the contents. */
 export const HELP_TOPICS: Readonly<Record<HelpArea, readonly string[]>> = {
   teacher: TEACHER_TOPICS,
   cabinet: STUDENT_TOPICS,
+  guardian: GUARDIAN_TOPICS,
   admin: ADMIN_TOPICS,
 };
 
 export function isHelpArea(value: unknown): value is HelpArea {
-  return value === 'teacher' || value === 'cabinet' || value === 'admin';
+  return value === 'teacher' || value === 'cabinet' || value === 'guardian' || value === 'admin';
 }
 
 /** `teacher/schedule` → `/teacher/help/schedule`. */
@@ -65,9 +71,29 @@ export function helpUrl(topic: HelpTopic): string {
   return `/${area ?? ''}/help/${id ?? ''}`;
 }
 
+/**
+ * The parent's article for a «?» of the student's page shown in the family cabinet: the login and
+ * account → «Вход и дети», the schedule → «Перенос и отмена», the rest → «Что видно родителю».
+ */
+export function guardianTopicOf(topic: HelpTopic): HelpTopic {
+  if (!topic.startsWith('cabinet/')) {
+    return topic;
+  }
+  switch (topic) {
+    case 'cabinet/login':
+      return 'guardian/start';
+    case 'cabinet/schedule':
+      return 'guardian/requests';
+    case 'cabinet/bot':
+      return 'guardian/bot';
+    default:
+      return 'guardian/view';
+  }
+}
+
 /** `/teacher/help/schedule` → `teacher/schedule`; `null` for any other link. */
 export function helpTopicOf(href: string): string | null {
-  const match = /^\/(teacher|cabinet|admin)\/help\/([\w-]+)$/.exec(href);
+  const match = /^\/(teacher|cabinet|guardian|admin)\/help\/([\w-]+)$/.exec(href);
   const area = match?.[1];
   const id = match?.[2];
   return isHelpArea(area) && id !== undefined && HELP_TOPICS[area].includes(id)

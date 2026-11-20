@@ -41,6 +41,10 @@ export const ru = {
     signIn: 'Войти',
     toCabinet: 'В кабинет',
     teacherBanner: 'Вы вошли как учитель. Эту ссылку откроет ученик',
+    teacherBannerGuardian: 'Вы вошли как учитель. Эту ссылку откроет родитель',
+    guardian: (count: number, names: string) =>
+      `Вас пригласили как родителя. ${count === 1 ? 'Ребёнок' : 'Дети'}: ${names}.`,
+    guardianHint: 'В кабинете родителя видно расписание, задания и оплаты — только для чтения.',
     created: 'Аккаунт создан',
     passwordSaved: 'Пароль сохранён',
     failed: 'Не удалось сохранить. Попробуйте позже',
@@ -48,6 +52,7 @@ export const ru = {
   roles: {
     TEACHER: 'Учитель',
     STUDENT: 'Ученик',
+    GUARDIAN: 'Родитель',
     ADMIN: 'Администратор',
   },
   account: {
@@ -62,6 +67,8 @@ export const ru = {
     name: 'Имя',
     teacherNameHint: 'Так вас видят ученики в портале и в сообщениях бота.',
     ownName: 'Как к вам обращаться',
+    guardians: (count: number) => (count === 1 ? 'Родитель' : 'Родители'),
+    guardiansHint: 'Видит ваше расписание, задания и оплаты. Привязывает родителей учитель.',
     ownNameHint: (profileName: string) => `Учитель видит вас как «${profileName}».`,
     seenAs: (login: string, profileName: string) => `${login} · учитель видит «${profileName}»`,
     edit: 'Изменить',

@@ -99,6 +99,8 @@ const BAR_ITEMS = 5;
         <!-- the M3 search bar of the top strip (spec §3.2, 248.2) -->
         <tb-global-search />
       }
+      <!-- the area's own part of the top strip: the child switcher of the family cabinet (453.2) -->
+      <ng-content />
       <div class="tb-shell__user">
         @if (pageBar(); as bar) {
           <!-- the page's own actions before the bell (spec §10.2) -->

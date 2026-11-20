@@ -77,7 +77,9 @@ types (`JwtEncoder`, `PasswordEncoder`, `Clock`, `FileStorage`, `CurrentUser`).
   `platform.settings.SettingsCatalog` with an owner (ADR-0056); `.env.example` only for `ENV_ONLY`
   ones (a test compares them) + the wiki page (skill `new-setting`).
 - Input validation — Jakarta Validation in `web`. REST prefixes and role checks — root §4.3; every endpoint
-  returning student data has a test "another student gets 403/404".
+  returning student data has a test "another student gets 403/404" and a guardian decision
+  (ADR-0069): the parent reads it under `/api/guardian/students/{studentId}/**` or not at all; a new
+  endpoint is listed in `src/test/resources/security/endpoint-roles.txt` (`EndpointRolesTest`).
 - Logs — IDs, never names or texts.
 - Write Russian and British English server copy together from the same intent, independently in
   each language. Match the UI terminology in `docs/glossary.md`; keep bot confirmations,

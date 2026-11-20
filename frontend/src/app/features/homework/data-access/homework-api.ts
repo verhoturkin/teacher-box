@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { API_SCOPE } from '@core/http/api-scope';
 import { Observable, shareReplay } from 'rxjs';
 import {
   HomeworkSettings,
@@ -31,6 +32,8 @@ const ME = '/api/me/homework';
 @Injectable({ providedIn: 'root' })
 export class HomeworkApi {
   private readonly http = inject(HttpClient);
+  /** The student's own cabinet or a child's in the family cabinet (ADR-0069). */
+  private readonly scope = inject(API_SCOPE);
   private limitsRequest: Observable<HomeworkLimits> | undefined;
 
   // --- teacher ---
@@ -204,12 +207,19 @@ export class HomeworkApi {
 
   // --- student ---
 
+  /** `/api/me/homework` or, in the family cabinet, `/api/guardian/students/<id>/homework` (reads only). */
+  private mine(): string {
+    return `${this.scope.api()}/homework`;
+  }
+
   myTasks(): Observable<MyTask[]> {
-    return this.http.get<MyTask[]>(ME, { context: quietContext() });
+    return this.http.get<MyTask[]>(this.mine(), { context: quietContext() });
   }
 
   myTask(taskId: string): Observable<TaskDetails> {
-    return this.http.get<TaskDetails>(`${ME}/tasks/${taskId}`, { context: quietContext() });
+    return this.http.get<TaskDetails>(`${this.mine()}/tasks/${taskId}`, {
+      context: quietContext(),
+    });
   }
 
   submit(taskId: string, text: string | null, files: readonly File[]): Observable<TaskDetails> {
@@ -221,7 +231,9 @@ export class HomeworkApi {
   }
 
   myQuiz(taskId: string): Observable<QuizView> {
-    return this.http.get<QuizView>(`${ME}/tasks/${taskId}/quiz`, { context: quietContext() });
+    return this.http.get<QuizView>(`${this.mine()}/tasks/${taskId}/quiz`, {
+      context: quietContext(),
+    });
   }
 
   startQuizAttempt(taskId: string): Observable<QuizView> {
@@ -248,11 +260,13 @@ export class HomeworkApi {
 
   /** The bound pages of a textbook (a PDF cut to them). */
   myTextbook(taskId: string, textbookId: string): Observable<Blob> {
-    return this.http.get(`${ME}/tasks/${taskId}/textbooks/${textbookId}`, { responseType: 'blob' });
+    return this.http.get(`${this.mine()}/tasks/${taskId}/textbooks/${textbookId}`, {
+      responseType: 'blob',
+    });
   }
 
   myFile(attachmentId: string): Observable<Blob> {
-    return this.http.get(`${ME}/attachments/${attachmentId}`, { responseType: 'blob' });
+    return this.http.get(`${this.mine()}/attachments/${attachmentId}`, { responseType: 'blob' });
   }
 
   summary(): Observable<HomeworkSummary> {
@@ -281,7 +295,7 @@ export class HomeworkApi {
   }
 
   mySummary(): Observable<MyHomeworkSummary> {
-    return this.http.get<MyHomeworkSummary>('/api/me/homework/summary', {
+    return this.http.get<MyHomeworkSummary>(`${this.mine()}/summary`, {
       context: quietContext(),
     });
   }

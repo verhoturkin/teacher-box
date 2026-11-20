@@ -6,8 +6,8 @@ import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.security.Role;
 
 /**
- * Who talks to the bot: the teacher or a current student whose messenger account is connected to
- * the portal.
+ * Who talks to the bot: the teacher, a current student or a guardian of a current student (ADR-0069) whose
+ * messenger account is connected to the portal.
  *
  * @param language the language the user chose in the interface: the bot answers in it (ADR-0036)
  */
@@ -30,5 +30,10 @@ public record ChatUser(UUID id, Role role, Language language) {
 
     public boolean isStudent() {
         return role == Role.STUDENT;
+    }
+
+    /** A parent: acts on behalf of a child, never as the child. */
+    public boolean isGuardian() {
+        return role == Role.GUARDIAN;
     }
 }

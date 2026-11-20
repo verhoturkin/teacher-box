@@ -22,7 +22,7 @@ import { StudentTagsTab } from './student-tags-tab';
 
 /** What the cards of Обзор read: answered by their own specs. */
 const OVERVIEW_READS =
-  /schedule\/(lessons|students\/[^/]+\/(history|upcoming))|homework\/students\/|billing\/students\/|notifications\/students\/|meetings\/(rooms|calls)/;
+  /schedule\/(lessons|students\/[^/]+\/(history|upcoming))|homework\/students\/|billing\/students\/|notifications\/students\/|meetings\/(rooms|calls)|teacher\/students\/[^/]+\/guardians$/;
 
 function row(student: Partial<Student> = {}, balance: number | null = null): StudentRow {
   const value = aStudent({ id: 'm', displayName: 'Мария', ...student });

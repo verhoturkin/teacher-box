@@ -86,4 +86,16 @@ describe('StudentLayout', () => {
     await fixture.whenStable();
     expect(host.querySelector('tb-nav-badge')?.textContent.trim()).toBe('3');
   });
+
+  it('has no «Оплаты» when the teacher hid the payments from the student (452.3)', async () => {
+    const host = await render(1600);
+    backend.expectOne('/api/me/billing/visible').flush({ visible: false });
+    await fixture.whenStable();
+
+    const labels = Array.from(
+      host.querySelectorAll('tb-side-nav ul:not(.tb-side-nav__footer) a'),
+      (a) => a.querySelector('[class$="__label"]')?.textContent.trim(),
+    );
+    expect(labels).toEqual(['Главная', 'Расписание', 'Задания', 'Материалы']);
+  });
 });

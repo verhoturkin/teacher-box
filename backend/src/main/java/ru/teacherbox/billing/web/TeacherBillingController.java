@@ -29,6 +29,8 @@ import ru.teacherbox.billing.application.BillingQueryService;
 import ru.teacherbox.billing.application.BillingService;
 import ru.teacherbox.billing.application.DefaultLessonPrice;
 import ru.teacherbox.billing.application.GroupPriceService;
+import ru.teacherbox.billing.application.PaymentVisibilityService;
+import ru.teacherbox.billing.application.PaymentVisibilityService.PaymentVisibility;
 import ru.teacherbox.billing.application.GroupPriceService.GroupPrices;
 import ru.teacherbox.billing.application.GroupPriceService.GroupPriceView;
 import ru.teacherbox.billing.application.BillingViews.LessonView;
@@ -74,17 +76,22 @@ class TeacherBillingController {
     record DefaultPriceResponse(long lessonPrice) {
     }
 
+    record VisibilityRequest(@NotNull Boolean guardiansOnly) {
+    }
+
     private final BillingService billing;
     private final BillingQueryService queries;
     private final GroupPriceService groupPrices;
     private final DefaultLessonPrice defaultLessonPrice;
+    private final PaymentVisibilityService visibility;
 
     TeacherBillingController(BillingService billing, BillingQueryService queries, GroupPriceService groupPrices,
-            DefaultLessonPrice defaultLessonPrice) {
+            DefaultLessonPrice defaultLessonPrice, PaymentVisibilityService visibility) {
         this.billing = billing;
         this.queries = queries;
         this.groupPrices = groupPrices;
         this.defaultLessonPrice = defaultLessonPrice;
+        this.visibility = visibility;
     }
 
     @GetMapping("/overview")
@@ -137,6 +144,17 @@ class TeacherBillingController {
     @PutMapping("/students/{studentId}/price")
     PriceResponse changePrice(@PathVariable UUID studentId, @Valid @RequestBody PriceRequest request) {
         return new PriceResponse(studentId, billing.changeLessonPrice(studentId, request.lessonPrice()));
+    }
+
+    /** «Оплаты видит только родитель» of the student card (ADR-0069). */
+    @GetMapping("/students/{studentId}/visibility")
+    PaymentVisibility visibility(@PathVariable UUID studentId) {
+        return visibility.of(studentId);
+    }
+
+    @PutMapping("/students/{studentId}/visibility")
+    PaymentVisibility changeVisibility(@PathVariable UUID studentId, @Valid @RequestBody VisibilityRequest request) {
+        return visibility.change(studentId, request.guardiansOnly());
     }
 
     @GetMapping("/groups")

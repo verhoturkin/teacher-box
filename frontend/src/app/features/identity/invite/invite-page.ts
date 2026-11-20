@@ -28,14 +28,20 @@ import { PasswordToggle } from '@shared/ui/password-toggle';
 import { FieldErrors, revealErrors, showAtField } from '@shared/ui/field-errors';
 import { T } from '../i18n/texts';
 import { LanguagePicker } from '@core/i18n/language-picker';
+import { locale } from '@core/i18n/language';
 import { Snackbar } from '@core/snackbar/snackbar';
+
+const CHILDREN = new Intl.ListFormat(locale(), { type: 'conjunction' });
 
 type InviteState =
   | { readonly kind: 'loading' }
   | { readonly kind: 'invalid' }
   | { readonly kind: 'ready'; readonly invite: InviteInfo };
 
-/** `/invite/:token`: the student sets up credentials (first sign-up) or a new password (reset). */
+/**
+ * `/invite/:token`: the student or a parent sets up credentials (first sign-up) or a new password (reset); a
+ * parent's invitation names their children (ADR-0069).
+ */
 @Component({
   selector: 'tb-invite-page',
   imports: [
@@ -92,9 +98,18 @@ type InviteState =
                 }
                 {{ t.validUntil((invite.expiresAt | date: 'dd.MM.yyyy HH:mm') ?? '') }}
               </p>
+              @if (children(); as children) {
+                <div class="tb-invite-guardian">
+                  <i class="tb-i tb-i-family_restroom" aria-hidden="true"></i>
+                  <p>
+                    <strong>{{ t.guardian(invite.children.length, children) }}</strong>
+                    <span class="tb-muted">{{ t.guardianHint }}</span>
+                  </p>
+                </div>
+              }
               @if (isTeacher()) {
                 <p-message severity="warn" styleClass="tb-form-message">{{
-                  t.teacherBanner
+                  isGuardian() ? t.teacherBannerGuardian : t.teacherBanner
                 }}</p-message>
               }
               <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="submit()">
@@ -155,6 +170,40 @@ type InviteState =
       <tb-language-picker />
     </main>
   `,
+  styles: `
+    /* a parent's invitation: who the parent is, in a secondary container (M3: secondary for what needs no
+       immediate action; ours: the block, its corner and spacing) */
+    .tb-invite-guardian {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--tb-space-3);
+      margin-block-end: var(--tb-space-4);
+      padding: var(--tb-space-3) var(--tb-space-4);
+      border-radius: var(--tb-radius-m);
+      background: var(--p-md-secondary-container);
+      color: var(--p-md-on-secondary-container);
+
+      .tb-i {
+        font-size: 1.5rem;
+      }
+
+      p {
+        display: flex;
+        flex-direction: column;
+        gap: var(--tb-space-1);
+        margin: 0;
+        font: var(--tb-type-body-m);
+      }
+
+      strong {
+        font: var(--tb-type-title-s);
+      }
+
+      .tb-muted {
+        color: inherit;
+      }
+    }
+  `,
 })
 export class InvitePage implements OnInit {
   protected readonly t = T.invite;
@@ -174,6 +223,14 @@ export class InvitePage implements OnInit {
     return state.kind === 'ready' ? state.invite : null;
   });
   protected readonly isActivation = computed(() => this.invite()?.purpose === 'ACTIVATION');
+  protected readonly isGuardian = computed(() => this.invite()?.role === 'GUARDIAN');
+  /** A parent's children joined for the greeting («Петя и Маша»); `null` for a student. */
+  protected readonly children = computed(() => {
+    const invite = this.invite();
+    return invite?.role === 'GUARDIAN' && invite.children.length > 0
+      ? CHILDREN.format(invite.children)
+      : null;
+  });
   protected readonly isTeacher = computed(() => this.auth.role() === 'TEACHER');
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);

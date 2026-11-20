@@ -18,7 +18,7 @@ import ru.teacherbox.shared.persistence.OptimisticLock;
 public class ChangeRequestRepository {
 
     private static final String SELECT = """
-            select id, lesson_id, student_id, kind, proposed_starts_at, comment, status, resolution_comment,
+            select id, lesson_id, student_id, requested_by, kind, proposed_starts_at, comment, status, resolution_comment,
                    created_at, resolved_at, version
             from schedule.change_requests
             """;
@@ -31,14 +31,15 @@ public class ChangeRequestRepository {
 
     public void insert(ChangeRequest request) {
         jdbc.sql("""
-                insert into schedule.change_requests (id, lesson_id, student_id, kind, proposed_starts_at, comment,
-                    status, resolution_comment, created_at, resolved_at, version)
-                values (:id, :lessonId, :studentId, :kind, :proposed, :comment, :status, :resolution, :createdAt,
+                insert into schedule.change_requests (id, lesson_id, student_id, requested_by, kind, proposed_starts_at,
+                    comment, status, resolution_comment, created_at, resolved_at, version)
+                values (:id, :lessonId, :studentId, :requestedBy, :kind, :proposed, :comment, :status, :resolution, :createdAt,
                     :resolvedAt, :version)
                 """)
                 .param("id", request.id())
                 .param("lessonId", request.lessonId())
                 .param("studentId", request.studentId())
+                .param("requestedBy", request.requestedBy())
                 .param("kind", request.kind().name())
                 .param("proposed", request.proposedStartsAt())
                 .param("comment", request.comment())
@@ -117,6 +118,7 @@ public class ChangeRequestRepository {
                 rs.getObject("id", UUID.class),
                 rs.getObject("lesson_id", UUID.class),
                 rs.getObject("student_id", UUID.class),
+                rs.getObject("requested_by", UUID.class),
                 ChangeKind.valueOf(rs.getString("kind")),
                 rs.getObject("proposed_starts_at", Instant.class),
                 rs.getString("comment"),

@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
 import { bodyText, buttonByText, hostElement } from '@testing/dom';
+import { CHILD_ID, familyScopeOf } from '@testing/family-fixtures';
 import { HelpButton } from './help-button';
 
 describe('HelpButton', () => {
@@ -85,5 +86,25 @@ describe('HelpButton', () => {
 
     expect(fixture.componentInstance.visible()).toBe(false);
     expect(navigate).toHaveBeenCalled();
+  });
+
+  it('opens the parent’s article instead of the student’s one in the family cabinet (455.1)', async () => {
+    fixture.destroy();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [HelpButton],
+      providers: [provideRouter([]), providePrimeNG(), familyScopeOf()],
+    });
+    fixture = TestBed.createComponent(HelpButton);
+    fixture.componentRef.setInput('topic', 'cabinet/homework');
+    await fixture.whenStable();
+    await fixture.componentInstance.open();
+    await fixture.whenStable();
+
+    const all = Array.from(document.body.querySelectorAll('a')).find((link) =>
+      link.textContent.includes('Вся справка'),
+    );
+    expect(all?.getAttribute('href')).toBe(`/family/${CHILD_ID}/help/view`);
+    expect(document.body.textContent).toContain('Что видно родителю');
   });
 });

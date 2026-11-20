@@ -162,6 +162,31 @@ export function requestKindLabel(request: Pick<ChangeRequest, 'groupId' | 'kind'
     : KIND_LABELS[request.kind];
 }
 
+/**
+ * «Запрос родителя (Анна)» of a request a parent sent on the child's behalf (ADR-0069); `null`: the
+ * student asked. A parent no longer linked has no name.
+ */
+export function parentRequest(
+  request: Pick<ChangeRequest, 'guardianId' | 'guardianName'>,
+): string | null {
+  if (request.guardianId === null) {
+    return null;
+  }
+  return request.guardianName === null
+    ? T.parentRequest
+    : T.parentRequestNamed(request.guardianName);
+}
+
+/** «от родителя (Анна)» after the student's name; `null`: the student asked. */
+export function fromParent(
+  request: Pick<ChangeRequest, 'guardianId' | 'guardianName'>,
+): string | null {
+  if (request.guardianId === null) {
+    return null;
+  }
+  return request.guardianName === null ? T.fromParent : T.fromParentNamed(request.guardianName);
+}
+
 /** Whether the student said they would not come to this group lesson. */
 export function excusedFrom(lesson: ScheduledLesson): boolean {
   return lesson.participants.some((participant) => participant.attendance === 'EXCUSED');

@@ -1,5 +1,8 @@
-/** `ADMIN` is a technical account without access to students' data (ADR-0010). */
-export type Role = 'TEACHER' | 'STUDENT' | 'ADMIN';
+/**
+ * `ADMIN` is a technical account without access to students' data (ADR-0010); `GUARDIAN` is a parent who reads
+ * their children's data in the family cabinet (ADR-0069).
+ */
+export type Role = 'TEACHER' | 'STUDENT' | 'GUARDIAN' | 'ADMIN';
 
 /** The signed-in user as returned by the backend. */
 export interface SessionUser {

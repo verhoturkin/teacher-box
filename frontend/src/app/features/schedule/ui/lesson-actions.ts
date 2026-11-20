@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { API_SCOPE } from '@core/http/api-scope';
 import { Button } from 'primeng/button';
 import { JoinLessonButton } from '@features/meetings/parts';
 import { ChangeKind } from '../data-access/schedule.models';
@@ -72,7 +73,12 @@ export class LessonActions {
   readonly rescheduleIcon = input<string | undefined>(undefined);
   readonly ask = output<ChangeKind>();
 
-  protected readonly cancelLabel = computed(() =>
-    this.group() ? T.actions.wontCome : T.actions.cancel,
-  );
+  /** The family cabinet: the parent says the child will not come. */
+  private readonly family = inject(API_SCOPE).readOnly;
+  protected readonly cancelLabel = computed(() => {
+    if (!this.group()) {
+      return T.actions.cancel;
+    }
+    return this.family ? T.actions.childWontCome : T.actions.wontCome;
+  });
 }

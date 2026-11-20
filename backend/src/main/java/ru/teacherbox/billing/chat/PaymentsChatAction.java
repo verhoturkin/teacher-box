@@ -8,6 +8,7 @@ import ru.teacherbox.billing.application.BillingQueryService;
 import ru.teacherbox.billing.application.BillingViews.LessonView;
 import ru.teacherbox.billing.application.BillingViews.PaymentView;
 import ru.teacherbox.billing.application.BillingViews.StudentLedger;
+import ru.teacherbox.billing.application.PaymentVisibilityService;
 import ru.teacherbox.shared.chat.ChatAction;
 import ru.teacherbox.shared.chat.ChatIcons;
 import ru.teacherbox.shared.chat.ChatInput;
@@ -26,9 +27,11 @@ class PaymentsChatAction implements ChatAction {
     static final int SHOWN = 5;
 
     private final BillingQueryService queries;
+    private final PaymentVisibilityService visibility;
 
-    PaymentsChatAction(BillingQueryService queries) {
+    PaymentsChatAction(BillingQueryService queries, PaymentVisibilityService visibility) {
         this.queries = queries;
+        this.visibility = visibility;
     }
 
     @Override
@@ -53,14 +56,17 @@ class PaymentsChatAction implements ChatAction {
 
     @Override
     public boolean availableTo(ChatUser user) {
-        return user.isStudent();
+        return user.isStudent() && !visibility.hiddenFromStudent(user.id());
     }
 
     @Override
     public ChatStep start(ChatUser user) {
-        StudentLedger ledger = queries.ledger(user.id());
+        return ChatStep.done(describe(queries.ledger(user.id()), user.language()));
+    }
+
+    /** The balance, the lesson price, the latest payments and charged lessons of a ledger. */
+    static String describe(StudentLedger ledger, Language language) {
         Currency currency = Currency.getInstance(ledger.currency());
-        Language language = user.language();
         BillingChatTexts t = BillingChatTexts.of(language);
         StringBuilder text = new StringBuilder();
         long balance = ledger.balance();
@@ -92,7 +98,7 @@ class PaymentsChatAction implements ChatAction {
             charged.forEach(lesson -> text.append("\n• ").append(ChatText.date(lesson.date())).append(" — ")
                     .append(money(lesson.price(), currency, language)));
         }
-        return ChatStep.done(text.toString());
+        return text.toString();
     }
 
     @Override

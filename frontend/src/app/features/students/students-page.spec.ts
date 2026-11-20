@@ -62,7 +62,7 @@ const SOON = new Date(Date.now() + 2 * 3_600_000);
 
 /** What the tabs of a student's or a group's card read. */
 const OVERVIEW_READS =
-  /schedule\/lessons\?.*(studentId|groupId)=|homework\/students\/|billing\/(students\/|groups$)|notifications\/students\/|meetings\/(rooms|calls)/;
+  /schedule\/lessons\?.*(studentId|groupId)=|homework\/students\/|billing\/(students\/|groups$)|notifications\/students\/|meetings\/(rooms|calls)|teacher\/students\/[^/]+\/guardians$/;
 
 interface Extras {
   readonly balances?: Record<string, number>;

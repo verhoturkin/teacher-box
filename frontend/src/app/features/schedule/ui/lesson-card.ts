@@ -25,6 +25,8 @@ import {
   excusedFrom,
   formatLessonStart,
   formatLessonTime,
+  fromParent,
+  parentRequest,
   requestKindLabel,
 } from '../schedule-labels';
 import { T } from '../i18n/texts';
@@ -317,10 +319,14 @@ export class LessonCard {
     if (!this.teacher()) {
       return this.summary.pending(kind);
     }
+    const parent = fromParent(request);
+    const name = request.studentName ?? this.c.student;
     const who =
       this.lesson().groupId === null
-        ? this.t.studentRequest
-        : (request.studentName ?? this.c.student);
+        ? (parentRequest(request) ?? this.t.studentRequest)
+        : parent === null
+          ? name
+          : `${name}, ${parent}`;
     const when =
       request.proposedStartsAt === null
         ? ''

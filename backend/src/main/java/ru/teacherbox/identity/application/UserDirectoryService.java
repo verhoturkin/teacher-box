@@ -42,6 +42,11 @@ class UserDirectoryService implements UserDirectory {
     }
 
     @Override
+    public Optional<String> guardianName(UUID guardianId) {
+        return users.findGuardian(guardianId).map(guardian -> guardian.profile().displayName());
+    }
+
+    @Override
     public List<StudentSummary> currentStudents() {
         return users.findStudents().stream()
                 .map(UserDirectoryService::summary)
@@ -54,7 +59,7 @@ class UserDirectoryService implements UserDirectory {
         return users.findLanguage(userId);
     }
 
-    private static StudentSummary summary(User user) {
+    static StudentSummary summary(User user) {
         return new StudentSummary(user.id(), user.profile().displayName(), StudentStatus.valueOf(user.status().name()),
                 AccountService.avatarUrl(user.avatar()));
     }

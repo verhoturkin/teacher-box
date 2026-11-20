@@ -48,6 +48,18 @@ class NoticeRequestedTest {
     }
 
     @Test
+    void aNoticeForTheGuardiansOnlyKeepsTheMarkThroughItsCopies() {
+        NoticeRequested notice = NoticeRequested.of(UUID.randomUUID(), Kind.SAMPLE,
+                language -> new NoticeText("Заголовок", null), "/cabinet");
+        assertThat(notice.guardiansOnly()).isFalse();
+
+        NoticeRequested hidden = notice.toGuardiansOnly(true).about(null).withRoom("https://room.example");
+
+        assertThat(hidden.guardiansOnly()).isTrue();
+        assertThat(hidden.toGuardiansOnly(false).withRoom(null)).isEqualTo(notice);
+    }
+
+    @Test
     void aNoticeWithoutALanguageIsRefused() {
         UUID id = UUID.randomUUID();
         assertThatThrownBy(() -> new NoticeRequested(id, id, "SAMPLE",

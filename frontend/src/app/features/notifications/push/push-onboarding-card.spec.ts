@@ -5,6 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 import { PUSH_DEVICE_KEY, PushDevice } from '@core/push/web-push';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { buttonByText, hostElement, readableText } from '@testing/dom';
+import { familyScopeOf } from '@testing/family-fixtures';
 import { testProviders } from '@testing/setup';
 import { PUSH_DISMISSED_KEY, PushOnboardingCard } from './push-onboarding-card';
 
@@ -24,13 +25,13 @@ describe('PushOnboardingCard', () => {
 
   async function render(
     devices: PushDevice[],
-    options: { enabled?: boolean; permission?: string; teacher?: boolean } = {},
+    options: { enabled?: boolean; permission?: string; teacher?: boolean; family?: boolean } = {},
   ): Promise<void> {
     vi.stubGlobal('PushManager', () => undefined);
     vi.stubGlobal('Notification', { permission: options.permission ?? 'default' });
     TestBed.configureTestingModule({
       imports: [PushOnboardingCard],
-      providers: testProviders({
+      providers: testProviders(...(options.family === true ? [familyScopeOf()] : []), {
         provide: SwPush,
         useValue: {
           isEnabled: options.enabled ?? true,
@@ -90,6 +91,12 @@ describe('PushOnboardingCard', () => {
 
     expect(success).toHaveBeenCalledWith('Уведомления на этом устройстве включены');
     expect(text()).toBe('');
+  });
+
+  it('names what a parent gets of the child', async () => {
+    await render([], { family: true });
+
+    expect(text()).toContain('Напоминания о занятиях ребёнка');
   });
 
   it('names what the teacher gets', async () => {

@@ -14,6 +14,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import ru.teacherbox.shared.i18n.Language;
 import ru.teacherbox.shared.notice.NoticeRequested;
 import ru.teacherbox.shared.notice.NoticeText;
+import ru.teacherbox.billing.application.PaymentVisibilityService;
+import ru.teacherbox.testing.FakeGuardians;
 import ru.teacherbox.testing.FakeUserDirectory;
 import java.time.LocalDate;
 import java.util.Currency;
@@ -37,6 +39,12 @@ class BillingNoticesIntegrationTests {
 
     @Autowired
     TransactionTemplate transactions;
+
+    @Autowired
+    FakeGuardians guardians;
+
+    @Autowired
+    PaymentVisibilityService visibility;
 
     @Test
     void lessonsAndPayments(AssertablePublishedEvents events) {
@@ -77,6 +85,30 @@ class BillingNoticesIntegrationTests {
         assertThat(cancelledLesson.kind()).isEqualTo("LESSON_CANCELLED");
         assertThat(ru(cancelledLesson).title()).isEqualTo("Начисление за занятие 24.09.2026 снято");
         assertThat(ru(cancelledLesson).body()).isEqualTo("Занятие не оплачивается. Баланс: 0 ₽");
+    }
+
+    @Test
+    void whilePaymentsAreHiddenEveryNoticeIsForTheGuardiansOnly(AssertablePublishedEvents events) {
+        LocalDate date = LocalDate.of(2026, 9, 24);
+        UUID child = directory.addStudent("Ребёнок");
+        UUID parent = guardians.addGuardian("Мама", child);
+        visibility.change(child, true);
+
+        publish(new LessonRecorded(UUID.randomUUID(), child, date, 60, rub(150_000), false, rub(-150_000),
+                Instant.now()));
+        publish(new LessonCancelled(UUID.randomUUID(), child, date, rub(0), Instant.now()));
+        publish(new PaymentRecorded(UUID.randomUUID(), child, rub(300_000), date, rub(150_000), Instant.now()));
+        publish(new PaymentVoided(UUID.randomUUID(), child, rub(300_000), rub(-10_000), Instant.now()));
+        assertThat(notices(events, child)).hasSize(4).allMatch(NoticeRequested::guardiansOnly);
+
+        guardians.unlink(parent, child);
+        publish(new PaymentRecorded(UUID.randomUUID(), child, rub(100_000), date, rub(0), Instant.now()));
+        assertThat(notices(events, child)).hasSize(5).last().as("the last guardian unlinked")
+                .extracting(NoticeRequested::guardiansOnly).isEqualTo(false);
+
+        UUID adult = directory.addStudent("Взрослый");
+        assertThat(single(events, adult, new PaymentRecorded(UUID.randomUUID(), adult, rub(300_000), date,
+                rub(150_000), Instant.now())).guardiansOnly()).as("a student without a guardian").isFalse();
     }
 
     @Test

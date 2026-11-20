@@ -9,6 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { Card } from 'primeng/card';
+import { API_SCOPE } from '@core/http/api-scope';
 import { MyBoardLinks } from '@features/boards/parts';
 import { TeacherWaiting } from '@features/meetings/parts';
 import { LessonActions } from '../ui/lesson-actions';
@@ -59,8 +60,10 @@ import { T } from '../i18n/texts';
             @if (lesson.topic !== null) {
               <span>{{ lesson.topic }}</span>
             }
-            <tb-my-board-links [groupName]="lesson.groupId === null ? null : lesson.groupName" />
-            @if (time()?.phase === 'live' && lesson.joinUrl?.includes('/call/')) {
+            @if (!readOnly) {
+              <tb-my-board-links [groupName]="lesson.groupId === null ? null : lesson.groupName" />
+            }
+            @if (!readOnly && time()?.phase === 'live' && lesson.joinUrl?.includes('/call/')) {
               <tb-teacher-waiting [groupId]="lesson.groupId" />
             }
             @if (lesson.pendingRequests[0]; as request) {
@@ -68,9 +71,10 @@ import { T } from '../i18n/texts';
             }
             <small class="tb-muted">{{ t.week(summary().weekLessons) }}</small>
           </div>
+          <!-- the family cabinet does not join the lesson, but asks to move it (ADR-0069, 454.3) -->
           <div class="tb-lesson-event__actions">
             <tb-lesson-actions
-              [joinUrl]="lesson.joinUrl"
+              [joinUrl]="readOnly ? null : lesson.joinUrl"
               [requests]="lesson.pendingRequests.length === 0 && time()?.phase !== 'live'"
               [group]="lesson.groupId !== null"
               [stacked]="true"
@@ -152,6 +156,8 @@ export class NextLessonWidget implements OnInit {
   protected readonly t = T.next;
   private readonly snackbar = inject(Snackbar);
   private readonly api = inject(ScheduleApi);
+  /** The family cabinet: the lesson without its link and boards; the parent may ask to move it. */
+  protected readonly readOnly = inject(API_SCOPE).readOnly;
 
   readonly summary = input.required<MyScheduleSummary>();
   /** A request was sent, or the lesson is over: the home page reloads the summary. */

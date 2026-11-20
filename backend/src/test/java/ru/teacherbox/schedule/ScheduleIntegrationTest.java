@@ -11,13 +11,15 @@ import org.springframework.context.annotation.Import;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.test.context.TestPropertySource;
 import ru.teacherbox.schedule.application.LessonRulesService;
+import ru.teacherbox.testing.FakeGuardians;
 import ru.teacherbox.testing.FakeMeetingRooms;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 
 /**
- * Schedule module bootstrapped alone; the identity facade is replaced by {@link FakeUserDirectory}.
+ * Schedule module bootstrapped alone; the identity facades are replaced by {@link FakeUserDirectory} and
+ * {@link FakeGuardians}.
  * All test classes using this annotation share one context, database and clock, so every test takes
  * its own time slots ({@link Slots}).
  */
@@ -37,6 +39,11 @@ public @interface ScheduleIntegrationTest {
         @Bean
         FakeUserDirectory userDirectory() {
             return new FakeUserDirectory();
+        }
+
+        @Bean
+        FakeGuardians guardians(FakeUserDirectory userDirectory) {
+            return new FakeGuardians(userDirectory);
         }
 
         @Bean

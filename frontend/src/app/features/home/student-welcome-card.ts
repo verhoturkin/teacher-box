@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
@@ -27,10 +27,12 @@ export const WELCOME_DISMISSED_KEY = 'tb.student-welcome.dismissed';
             <a routerLink="/cabinet/homework" class="tb-link">{{ t.homework }}</a>
             {{ t.homeworkText }}
           </li>
-          <li>
-            <a routerLink="/cabinet/billing" class="tb-link">{{ t.billing }}</a>
-            {{ t.billingText }}
-          </li>
+          @if (payments()) {
+            <li>
+              <a routerLink="/cabinet/billing" class="tb-link">{{ t.billing }}</a>
+              {{ t.billingText }}
+            </li>
+          }
           <li>
             {{ t.helpBefore }}
             <a routerLink="/cabinet/help" class="tb-link">{{ t.help }}</a> {{ t.helpAfter }}
@@ -55,6 +57,8 @@ export const WELCOME_DISMISSED_KEY = 'tb.student-welcome.dismissed';
 })
 export class StudentWelcomeCard {
   protected readonly t = T.welcome;
+  /** The student sees their payments (452.3): otherwise no line about «Оплаты». */
+  readonly payments = input(true);
   protected readonly portalName = inject(Portal).name;
   protected readonly dismissed = signal(isHintHidden(WELCOME_DISMISSED_KEY));
 

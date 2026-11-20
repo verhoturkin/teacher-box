@@ -85,7 +85,7 @@ describe('TodoQueue', () => {
   it('splits the work into lessons to mark and work to review, each with its action', async () => {
     await render(done, {
       lessons: [scheduledLesson(), groupLesson()],
-      requests: [changeRequest({ studentName: 'Мария' })],
+      requests: [changeRequest({ studentName: 'Мария', guardianId: 'g-1', guardianName: 'Ольга' })],
       reviews: [reviewQueueItem({ title: 'Дроби', studentName: 'Анна' })],
     });
 
@@ -97,7 +97,7 @@ describe('TodoQueue', () => {
     expect(lessons?.rows).toHaveLength(3);
     expect(lessons?.rows[0]).toContain('Иван Петров');
     expect(lessons?.rows[1]).toContain('Группа «ОГЭ»');
-    expect(lessons?.rows[2]).toContain('Мария');
+    expect(lessons?.rows[2]).toContain('Мария · от родителя (Ольга)');
     expect(reviews?.title).toContain('Проверить работы');
     expect(reviews?.badge).toBe('Проверить работы: 1');
     expect(reviews?.rows).toEqual([expect.stringContaining('Анна · Дроби')]);

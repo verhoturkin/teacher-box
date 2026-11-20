@@ -56,11 +56,38 @@ export interface StudentProfileInput {
   readonly color: LabelColor | null;
 }
 
+/** Mirrors `InviteService.InviteInfo`: a parent's invitation names their children (ADR-0069). */
 export interface InviteInfo {
   readonly purpose: InvitePurpose;
+  /** `STUDENT` or `GUARDIAN`. */
+  readonly role: Role;
   readonly displayName: string;
   readonly login: string | null;
   readonly expiresAt: string;
+  /** First names of a parent's children in the order they were linked; empty for a student. */
+  readonly children: readonly string[];
+}
+
+/** Mirrors `GuardianView`: a parent as the teacher sees them on a student's card (ADR-0069). */
+export interface Guardian {
+  readonly id: string;
+  readonly displayName: string;
+  readonly status: AccountStatus;
+  readonly login: string | null;
+  readonly pendingInvite: PendingInvite | null;
+  /** The parent's children in the order they were linked, deactivated ones included. */
+  readonly studentIds: readonly string[];
+}
+
+/** Mirrors `GuardianAdminService.CreatedGuardian`. */
+export interface CreatedGuardian {
+  readonly guardian: Guardian;
+  readonly invite: IssuedInvite;
+}
+
+/** A parent as the student sees them: the name only (`GET /api/me/guardians`). */
+export interface GuardianName {
+  readonly displayName: string;
 }
 
 export interface Account {

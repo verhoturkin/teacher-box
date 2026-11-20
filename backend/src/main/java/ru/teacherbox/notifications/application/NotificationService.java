@@ -1,5 +1,6 @@
 package ru.teacherbox.notifications.application;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -9,12 +10,16 @@ import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.teacherbox.identity.api.GuardianSummary;
+import ru.teacherbox.identity.api.Guardians;
+import ru.teacherbox.identity.api.StudentStatus;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.notifications.application.NotificationViews.BroadcastView;
@@ -28,6 +33,7 @@ import ru.teacherbox.notifications.application.NotificationViews.TeacherNotifica
 import ru.teacherbox.notifications.domain.ChannelLink;
 import ru.teacherbox.notifications.domain.ChannelType;
 import ru.teacherbox.notifications.domain.Delivery;
+import ru.teacherbox.notifications.domain.GuardianCategory;
 import ru.teacherbox.notifications.domain.InboxNotification;
 import ru.teacherbox.notifications.domain.NotificationKind;
 import ru.teacherbox.notifications.domain.Preferences;
@@ -61,6 +67,9 @@ public class NotificationService {
     static final int FAILED_DELIVERIES = 50;
     static final int BROADCAST_HISTORY = 20;
     static final Duration PROBLEMS_WINDOW = Duration.ofDays(30);
+    static final String CHILD_SEPARATOR = " · ";
+    /** The pages of the student's cabinet the family cabinet shows too (453.2). */
+    static final List<String> FAMILY_PAGES = List.of("schedule", "homework", "billing");
 
     private final InboxRepository inbox;
     private final ChannelLinkRepository links;
@@ -68,9 +77,11 @@ public class NotificationService {
     private final MessengerChannels channels;
     private final MessengerHealth health;
     private final PreferencesRepository preferences;
+    private final GuardianPreferencesService guardianPreferences;
     private final PushSubscriptionRepository pushSubscriptions;
     private final BroadcastRepository broadcasts;
     private final UserDirectory users;
+    private final Guardians guardians;
     private final ChatEngine chat;
     private final KeyboardCodec keyboards;
     private final Portal portal;
@@ -79,18 +90,21 @@ public class NotificationService {
 
     public NotificationService(InboxRepository inbox, ChannelLinkRepository links, DeliveryRepository deliveries,
             MessengerChannels channels, MessengerHealth health, PreferencesRepository preferences,
-            PushSubscriptionRepository pushSubscriptions, BroadcastRepository broadcasts, UserDirectory users,
-            ChatEngine chat, KeyboardCodec keyboards, Portal portal, InstanceTimeZone timeZone, Clock clock) {
+            GuardianPreferencesService guardianPreferences, PushSubscriptionRepository pushSubscriptions,
+            BroadcastRepository broadcasts, UserDirectory users, Guardians guardians, ChatEngine chat,
+            KeyboardCodec keyboards, Portal portal, InstanceTimeZone timeZone, Clock clock) {
         this.inbox = inbox;
         this.links = links;
         this.deliveries = deliveries;
         this.channels = channels;
         this.health = health;
         this.preferences = preferences;
+        this.guardianPreferences = guardianPreferences;
         this.pushSubscriptions = pushSubscriptions;
         this.broadcasts = broadcasts;
         this.timeZone = timeZone;
         this.users = users;
+        this.guardians = guardians;
         this.chat = chat;
         this.keyboards = keyboards;
         this.portal = portal;
@@ -98,7 +112,7 @@ public class NotificationService {
     }
 
     /**
-     * Notifies a user (the teacher or a student).
+     * Notifies a user (the teacher, a student or a guardian).
      *
      * @param link path inside the portal the notification refers to
      */
@@ -121,17 +135,76 @@ public class NotificationService {
     }
 
     /**
-     * Notifies the user a module asked to (ADR-0061), in the user's language. The notice keeps its id in the
-     * inbox, so one delivered again (the event registry resends after a failure or a restart) notifies once.
+     * Notifies the user a module asked to (ADR-0061), in the user's language, and the student's guardians
+     * (ADR-0069) by their categories; a guardians-only notice skips the student. Every recipient's record keeps an
+     * id derived from the notice, so one delivered again (the event registry resends after a failure or a
+     * restart) notifies each of them once.
      */
     @Transactional
     public void notify(NoticeRequested notice) {
-        if (inbox.findById(notice.id()).isPresent()) {
+        NotificationKind kind = NotificationKind.valueOf(notice.kind());
+        if (!notice.guardiansOnly() && inbox.findById(notice.id()).isEmpty()) {
+            NoticeText text = notice.text(users.language(notice.recipientId()));
+            notify(notice.id(), notice.recipientId(), kind, text.title(), text.body(), notice.link(), notice.subject(),
+                    notice.joinUrl());
+        }
+        Optional<GuardianCategory> category = GuardianCategory.of(kind);
+        if (category.isEmpty()) {
             return;
         }
-        NoticeText text = notice.text(users.language(notice.recipientId()));
-        notify(notice.id(), notice.recipientId(), NotificationKind.valueOf(notice.kind()), text.title(), text.body(),
-                notice.link(), notice.subject(), notice.joinUrl());
+        Optional<StudentSummary> child = users.findStudent(notice.recipientId()).filter(StudentSummary::isCurrent);
+        if (child.isEmpty()) {
+            return;
+        }
+        for (GuardianSummary guardian : guardians.guardiansOf(child.get().id())) {
+            UUID id = guardianNoticeId(notice.id(), guardian.id());
+            if (guardian.status() == StudentStatus.DEACTIVATED
+                    || !guardianPreferences.find(guardian.id()).receives(category.get())
+                    || inbox.findById(id).isPresent()) {
+                continue;
+            }
+            NoticeText text = notice.text(users.language(guardian.id()));
+            // the child's buttons and video room stay the child's: the guardian opens the family cabinet
+            notify(id, guardian.id(), kind, childTitle(firstName(child.get().displayName()), text.title()), text.body(),
+                    familyLink(child.get().id(), notice.link()), null, null);
+        }
+    }
+
+    /** The guardian's copy of a notice: the same for every delivery of it, different for each guardian. */
+    static UUID guardianNoticeId(UUID noticeId, UUID guardianId) {
+        return UUID.nameUUIDFromBytes((noticeId + ":" + guardianId).getBytes(StandardCharsets.UTF_8));
+    }
+
+    /** The child's name for the prefix: the first word of the display name («Петя Смирнов» → «Петя»). */
+    static String firstName(String displayName) {
+        String stripped = displayName.strip();
+        int space = stripped.indexOf(' ');
+        return space < 0 ? stripped : stripped.substring(0, space);
+    }
+
+    /** «Петя · Занятие перенесено»: a guardian of several children sees whose notice it is (ADR-0069). */
+    static String childTitle(String child, String title) {
+        String named = child.strip() + CHILD_SEPARATOR + title.strip();
+        return named.length() <= InboxNotification.MAX_TITLE ? named
+                : named.substring(0, InboxNotification.MAX_TITLE - 1) + "…";
+    }
+
+    /**
+     * The student's page in the family cabinet: {@code /cabinet/schedule?lesson=1} →
+     * {@code /family/<child>/schedule?lesson=1}; the child's home for any other page of the student's cabinet.
+     */
+    static @Nullable String familyLink(UUID childId, @Nullable String link) {
+        if (link == null) {
+            return null;
+        }
+        String family = "/family/" + childId;
+        for (String page : FAMILY_PAGES) {
+            String cabinet = "/cabinet/" + page;
+            if (link.equals(cabinet) || link.startsWith(cabinet + "/") || link.startsWith(cabinet + "?")) {
+                return family + link.substring("/cabinet".length());
+            }
+        }
+        return family;
     }
 
     /**
@@ -316,9 +389,13 @@ public class NotificationService {
         return new NotificationsStatus(channels.available().stream().map(health::status).toList(), views);
     }
 
-    /** Deactivated students keep their inbox but get nothing in messengers. */
+    /**
+     * Deactivated students keep their inbox but get nothing in messengers; nor does a guardian without current
+     * children (ADR-0069).
+     */
     private boolean mayUseMessengers(UUID recipientId) {
-        return recipientId.equals(users.teacherId()) || users.isCurrentStudent(recipientId);
+        return recipientId.equals(users.teacherId()) || users.isCurrentStudent(recipientId)
+                || !guardians.childrenOf(recipientId).isEmpty();
     }
 
     private List<UUID> allCurrentStudents() {

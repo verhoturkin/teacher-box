@@ -18,7 +18,7 @@ class NotificationsDataReset implements DataReset {
             "notifications.channel_links", "notifications.link_codes", "notifications.channel_settings",
             "notifications.preferences", "notifications.broadcasts", "notifications.chat_dialogs",
             "notifications.chat_buttons", "notifications.chat_settings", "notifications.webpush_keys",
-            "notifications.push_subscriptions");
+            "notifications.push_subscriptions", "notifications.guardian_preferences");
 
     private final JdbcClient jdbc;
     private final ChannelSettingsService channels;

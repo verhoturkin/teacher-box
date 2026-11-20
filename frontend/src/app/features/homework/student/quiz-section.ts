@@ -12,6 +12,7 @@ import {
 import { Button } from 'primeng/button';
 import { firstValueFrom } from 'rxjs';
 import { describeError } from '@core/http/error-messages';
+import { API_SCOPE } from '@core/http/api-scope';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { MarkdownView } from '@shared/ui/markdown-view';
 import { HomeworkApi } from '../data-access/homework-api';
@@ -99,7 +100,9 @@ export function keyLines(question: Question): string[] {
                 }}.
                 {{ revealHint(quiz) }}
               </p>
-              @if (quiz.openAttempt) {
+              @if (readOnly) {
+                <!-- the family cabinet reads the results, never takes the test (ADR-0069) -->
+              } @else if (quiz.openAttempt) {
                 <p-button [label]="t.continue" (onClick)="playing.set(true)" />
               } @else if (quiz.canStart) {
                 <p-button
@@ -149,7 +152,7 @@ export function keyLines(question: Question): string[] {
             </div>
           }
         </section>
-        @if (quiz.openAttempt; as attempt) {
+        @if (readOnly ? null : quiz.openAttempt; as attempt) {
           <tb-quiz-player
             [(visible)]="playing"
             [questions]="quiz.questions"
@@ -265,6 +268,8 @@ export class QuizSection implements OnDestroy {
   protected readonly t = T.quizTake;
   private readonly api = inject(HomeworkApi);
   private readonly snackbar = inject(Snackbar);
+  /** The family cabinet: the card and the results without «Начать тест». */
+  protected readonly readOnly = inject(API_SCOPE).readOnly;
 
   readonly taskId = input.required<string>();
   /** The assignment's title for the test's header. */

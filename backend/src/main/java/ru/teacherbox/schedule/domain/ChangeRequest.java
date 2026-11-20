@@ -7,12 +7,17 @@ import org.jspecify.annotations.Nullable;
 import ru.teacherbox.schedule.api.ChangeKind;
 import ru.teacherbox.shared.error.BusinessRuleException;
 
-/** A student's request to move a lesson to another time or to cancel it; the teacher answers it. */
+/**
+ * A student's request to move a lesson to another time or to cancel it; the teacher answers it. A guardian may
+ * send it on the child's behalf (ADR-0069): the request is still the child's, {@link #requestedBy()} names the
+ * guardian.
+ */
 public final class ChangeRequest {
 
     private final UUID id;
     private final UUID lessonId;
     private final UUID studentId;
+    private final UUID requestedBy;
     private final ChangeKind kind;
     private final @Nullable Instant proposedStartsAt;
     private final @Nullable String comment;
@@ -22,12 +27,13 @@ public final class ChangeRequest {
     private @Nullable Instant resolvedAt;
     private long version;
 
-    private ChangeRequest(UUID id, UUID lessonId, UUID studentId, ChangeKind kind, @Nullable Instant proposedStartsAt,
+    private ChangeRequest(UUID id, UUID lessonId, UUID studentId, UUID requestedBy, ChangeKind kind, @Nullable Instant proposedStartsAt,
             @Nullable String comment, RequestStatus status, @Nullable String resolutionComment, Instant createdAt,
             @Nullable Instant resolvedAt, long version) {
         this.id = Objects.requireNonNull(id);
         this.lessonId = Objects.requireNonNull(lessonId);
         this.studentId = Objects.requireNonNull(studentId);
+        this.requestedBy = Objects.requireNonNull(requestedBy);
         this.kind = Objects.requireNonNull(kind);
         this.proposedStartsAt = proposedStartsAt;
         this.comment = comment;
@@ -44,6 +50,14 @@ public final class ChangeRequest {
      */
     public static ChangeRequest open(UUID id, Lesson lesson, UUID studentId, ChangeKind kind,
             @Nullable Instant proposedStartsAt, @Nullable String comment, Instant now) {
+        return open(id, lesson, studentId, studentId, kind, proposedStartsAt, comment, now);
+    }
+
+    /**
+     * @param requestedBy the student themselves or a guardian acting on their behalf
+     */
+    public static ChangeRequest open(UUID id, Lesson lesson, UUID studentId, UUID requestedBy, ChangeKind kind,
+            @Nullable Instant proposedStartsAt, @Nullable String comment, Instant now) {
         if (!lesson.hasParticipant(studentId)) {
             throw new IllegalArgumentException("The student does not take part in the lesson");
         }
@@ -57,14 +71,15 @@ public final class ChangeRequest {
         if (kind == ChangeKind.CANCEL && proposedStartsAt != null) {
             throw new BusinessRuleException("schedule.proposed-time-invalid", "A cancellation has no new time");
         }
-        return new ChangeRequest(id, lesson.id(), studentId, kind, proposedStartsAt, Texts.optional(comment),
+        return new ChangeRequest(id, lesson.id(), studentId, requestedBy, kind, proposedStartsAt, Texts.optional(comment),
                 RequestStatus.PENDING, null, now, null, 0);
     }
 
-    public static ChangeRequest restore(UUID id, UUID lessonId, UUID studentId, ChangeKind kind,
+    public static ChangeRequest restore(UUID id, UUID lessonId, UUID studentId, UUID requestedBy, ChangeKind kind,
             @Nullable Instant proposedStartsAt, @Nullable String comment, RequestStatus status,
             @Nullable String resolutionComment, Instant createdAt, @Nullable Instant resolvedAt, long version) {
-        return new ChangeRequest(id, lessonId, studentId, kind, proposedStartsAt, comment, status, resolutionComment,
+        return new ChangeRequest(id, lessonId, studentId, requestedBy, kind, proposedStartsAt, comment, status,
+                resolutionComment,
                 createdAt, resolvedAt, version);
     }
 
@@ -104,6 +119,16 @@ public final class ChangeRequest {
 
     public UUID studentId() {
         return studentId;
+    }
+
+    /** Who sent the request: the student, or a guardian on their behalf. */
+    public UUID requestedBy() {
+        return requestedBy;
+    }
+
+    /** The guardian who sent the request on the child's behalf; {@code null}: the student did. */
+    public @Nullable UUID guardianId() {
+        return requestedBy.equals(studentId) ? null : requestedBy;
     }
 
     public ChangeKind kind() {

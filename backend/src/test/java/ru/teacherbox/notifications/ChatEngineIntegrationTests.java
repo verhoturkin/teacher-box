@@ -271,6 +271,7 @@ class ChatEngineIntegrationTests {
                     assertThat(json).extractingPath("$.teacherActions").isEqualTo(true);
                     assertThat(json).extractingPath("$.teacherMenu").asArray().containsExactly("Отзыв", "Для учителя");
                     assertThat(json).extractingPath("$.studentMenu").asArray().containsExactly("Отзыв", "Сломано");
+                    assertThat(json).extractingPath("$.guardianMenu").asArray().containsExactly("Отзыв");
                 });
         OutgoingMessage oldMenu = say("8601", "/menu");
         assertThat(mvc.put().uri("/api/teacher/notifications/bot").with(TestUsers.teacher(directory.teacherId()))

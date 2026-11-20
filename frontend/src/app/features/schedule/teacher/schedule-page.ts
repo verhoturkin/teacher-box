@@ -37,6 +37,7 @@ import {
   formatLessonTime,
   formatOffTime,
   lessonWith,
+  fromParent,
   requestKindLabel,
   widen,
 } from '../schedule-labels';
@@ -267,6 +268,9 @@ const ALL_DAY_START_HOUR = 10;
                           → {{ start(request.proposedStartsAt) }}
                         }
                       </span>
+                      @if (fromParent(request); as parent) {
+                        <span class="tb-list__supporting">{{ parent }}</span>
+                      }
                     </div>
                     <div class="tb-list__trail">
                       <p-button
@@ -455,6 +459,7 @@ export class SchedulePage implements OnInit {
 
   protected readonly mobile = injectMobile();
   protected readonly kind = requestKindLabel;
+  protected readonly fromParent = fromParent;
   protected readonly with = lessonWith;
   protected readonly settings = signal<ScheduleSettings | null>(null);
   protected readonly students = signal<LessonStudent[]>([]);

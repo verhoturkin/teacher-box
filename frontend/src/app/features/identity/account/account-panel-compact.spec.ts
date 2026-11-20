@@ -30,6 +30,7 @@ describe('AccountPanel on a phone', () => {
     fixture = TestBed.createComponent(AccountPanel);
     await fixture.whenStable();
     backend.expectOne('/api/me').flush(STUDENT);
+    backend.expectOne('/api/me/guardians').flush([]);
     await fixture.whenStable();
   });
 

@@ -34,12 +34,26 @@ class ChangeRequestTest {
         assertThatThrownBy(() -> ChangeRequest.open(UUID.randomUUID(), lesson, UUID.randomUUID(), ChangeKind.CANCEL,
                 null, null, NOW)).isInstanceOf(IllegalArgumentException.class);
         assertThat(request.comment()).isEqualTo("Можно в пятницу?");
+        assertThat(request.requestedBy()).isEqualTo(STUDENT);
+        assertThat(request.guardianId()).isNull();
         assertRule(() -> ChangeRequest.open(UUID.randomUUID(), lesson, STUDENT, ChangeKind.RESCHEDULE, null, null, NOW),
                 "schedule.proposed-time-invalid");
         assertRule(() -> ChangeRequest.open(UUID.randomUUID(), lesson, STUDENT, ChangeKind.RESCHEDULE, NOW, null, NOW),
                 "schedule.proposed-time-invalid");
         assertRule(() -> ChangeRequest.open(UUID.randomUUID(), lesson, STUDENT, ChangeKind.CANCEL, START, null, NOW),
                 "schedule.proposed-time-invalid");
+    }
+
+    @Test
+    void aGuardianAsksOnTheChildsBehalf() {
+        UUID guardian = UUID.randomUUID();
+
+        ChangeRequest request = ChangeRequest.open(UUID.randomUUID(), lesson(), STUDENT, guardian, ChangeKind.CANCEL,
+                null, null, NOW);
+
+        assertThat(request.studentId()).isEqualTo(STUDENT);
+        assertThat(request.requestedBy()).isEqualTo(guardian);
+        assertThat(request.guardianId()).isEqualTo(guardian);
     }
 
     @Test

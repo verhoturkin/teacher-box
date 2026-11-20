@@ -3,14 +3,15 @@ package ru.teacherbox.schedule.application;
 import ru.teacherbox.shared.i18n.Language;
 
 /**
- * Texts of the calendars — the feed of a teacher or a student and the events in Google Calendar — in the
- * language of the calendar's owner (ADR-0036).
+ * Texts of the calendars — the feed of a teacher, a student or a guardian and the events in Google
+ * Calendar — in the language of the calendar's owner (ADR-0036).
  */
 public enum CalendarTexts {
 
     RU {
         @Override String teacherCalendar(String portal) { return portal + " — занятия"; }
         @Override String studentCalendar(String portal) { return "Занятия — " + portal; }
+        @Override String familyCalendar(String portal) { return "Занятия детей — " + portal; }
         @Override public String lessonWith(String who) { return "Урок: " + who; }
         @Override String aGroup() { return "группа"; }
         @Override public String aStudent() { return "ученик"; }
@@ -27,6 +28,7 @@ public enum CalendarTexts {
     EN {
         @Override String teacherCalendar(String portal) { return portal + " — lessons"; }
         @Override String studentCalendar(String portal) { return "Lessons — " + portal; }
+        @Override String familyCalendar(String portal) { return "Children's lessons — " + portal; }
         @Override public String lessonWith(String who) { return "Lesson with " + who; }
         @Override String aGroup() { return "a group"; }
         @Override public String aStudent() { return "a student"; }
@@ -52,6 +54,9 @@ public enum CalendarTexts {
 
     /** The name of a student's feed. */
     abstract String studentCalendar(String portal);
+
+    /** The name of a guardian's feed: the lessons of all their children (ADR-0069). */
+    abstract String familyCalendar(String portal);
 
     /** The teacher's event: «Урок: Мария». */
     public abstract String lessonWith(String who);

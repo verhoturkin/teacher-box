@@ -71,6 +71,16 @@ public class ChangeRequestService {
     @Transactional
     public RequestView request(UUID studentId, UUID lessonId, ChangeKind kind, @Nullable Instant proposedStartsAt,
             @Nullable String comment) {
+        return request(studentId, studentId, lessonId, kind, proposedStartsAt, comment);
+    }
+
+    /**
+     * A request about one of the student's lessons, sent by the student or by a guardian on their behalf
+     * (ADR-0069; the caller has checked the guardianship). The rules are the same: it is the child's request.
+     */
+    @Transactional
+    public RequestView request(UUID studentId, UUID requestedBy, UUID lessonId, ChangeKind kind,
+            @Nullable Instant proposedStartsAt, @Nullable String comment) {
         Lesson lesson = lessons.findById(lessonId)
                 .filter(found -> found.hasParticipant(studentId))
                 .orElseThrow(ChangeRequestService::lessonNotFound);
@@ -82,8 +92,8 @@ public class ChangeRequestService {
             throw new ConflictException("schedule.request-pending", "The lesson already has an unanswered request");
         }
         Instant now = clock.instant();
-        ChangeRequest request = ChangeRequest.open(Ids.newId(), lesson, studentId, kind, proposedStartsAt, comment,
-                now);
+        ChangeRequest request = ChangeRequest.open(Ids.newId(), lesson, studentId, requestedBy, kind, proposedStartsAt,
+                comment, now);
         Instant proposed = request.proposedStartsAt();
         if (proposed != null) {
             availability.requireFree(proposed, proposed.plus(Duration.ofMinutes(lesson.durationMinutes())), lesson.id());
@@ -97,7 +107,8 @@ public class ChangeRequestService {
         }
         requests.insert(request);
         events.publishEvent(new LessonChangeRequested(request.id(), lesson.id(), studentId, lesson.groupId(), kind,
-                lesson.startsAt(), request.proposedStartsAt(), request.comment(), late, accepted, now));
+                lesson.startsAt(), request.proposedStartsAt(), request.comment(), late, accepted, now,
+                request.guardianId()));
         return view(request, lesson);
     }
 
@@ -195,7 +206,8 @@ public class ChangeRequestService {
     private RequestView view(ChangeRequest request, Lesson lesson) {
         ScheduleNames names = directory.names(List.of(request.studentId()),
                 lesson.groupId() == null ? List.of() : List.of(lesson.groupId()));
-        return RequestView.of(request, lesson, names, rules.current().lateCancellation());
+        return RequestView.of(request, lesson, names, directory.requesterNames(List.of(request)),
+                rules.current().lateCancellation());
     }
 
     private ChangeRequest findRequest(UUID requestId) {

@@ -10,6 +10,7 @@ function abilities(overrides: Partial<BotAbilities> = {}): BotAbilities {
     teacherActions: true,
     teacherMenu: ['Сегодня'],
     studentMenu: ['Расписание', 'Оплаты'],
+    guardianMenu: ['Расписание детей', 'Баланс'],
     ...overrides,
   };
 }
@@ -32,7 +33,7 @@ describe('BotAbilitiesPanel', () => {
     backend.verify();
   });
 
-  it('is folded and unfolds to the menus of students and of the teacher', async () => {
+  it('is folded and unfolds to the menus of students, parents and the teacher', async () => {
     backend.expectOne('/api/teacher/notifications/bot').flush(abilities());
     await fixture.whenStable();
     const toggle = buttonByText(hostElement(fixture), 'Что умеет бот');
@@ -47,6 +48,7 @@ describe('BotAbilitiesPanel', () => {
 
     const text = readableText(hostElement(fixture));
     expect(text).toContain('Ученикам Расписание, Оплаты');
+    expect(text).toContain('Родителям Расписание детей, Баланс');
     expect(text).toContain('Вам Сегодня');
   });
 

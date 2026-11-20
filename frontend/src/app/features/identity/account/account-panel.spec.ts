@@ -121,13 +121,41 @@ describe('AccountPanel', () => {
     login: 'nika',
   };
 
-  async function showStudent(account: Account = STUDENT): Promise<HTMLElement> {
+  async function showStudent(
+    account: Account = STUDENT,
+    guardians: readonly string[] = [],
+  ): Promise<HTMLElement> {
     TestBed.inject(AuthService).acceptSession(authResponse('STUDENT'));
     fixture.componentInstance.ngOnInit();
     backend.expectOne('/api/me').flush(account);
+    backend.expectOne('/api/me/guardians').flush(guardians.map((displayName) => ({ displayName })));
     await fixture.whenStable();
     return hostElement(fixture);
   }
+
+  it('names the student’s parents (ADR-0069)', async () => {
+    const host = await showStudent(STUDENT, ['Анна', 'Олег']);
+
+    expect(host.textContent).toContain('Родители: Анна и Олег');
+    expect(host.textContent).toContain('Привязывает родителей учитель');
+  });
+
+  it('names a single parent in the singular and none when there is none', async () => {
+    expect((await showStudent(STUDENT, ['Анна'])).textContent).toContain('Родитель: Анна');
+
+    const host = await showStudent();
+    expect(host.textContent).not.toContain('Родител');
+  });
+
+  it('shows nothing when the parents cannot be read', async () => {
+    TestBed.inject(AuthService).acceptSession(authResponse('STUDENT'));
+    fixture.componentInstance.ngOnInit();
+    backend.expectOne('/api/me').flush(STUDENT);
+    backend.expectOne('/api/me/guardians').flush(null, { status: 500, statusText: 'Server Error' });
+    await fixture.whenStable();
+
+    expect(hostElement(fixture).textContent).not.toContain('Родител');
+  });
 
   it('lets a student choose the name the portal calls them', async () => {
     const host = await showStudent();
@@ -261,6 +289,19 @@ describe('AccountPanel', () => {
     expect(messages.add).not.toHaveBeenCalledWith(
       expect.objectContaining({ detail: PICTURE_ERROR }),
     );
+  });
+
+  it('lets a parent choose a photo, without the names of the teacher or the student (453.2)', async () => {
+    fixture.componentInstance.ngOnInit();
+    backend.expectOne('/api/me').flush({ ...ACCOUNT, role: 'GUARDIAN', displayName: 'Ольга' });
+    await fixture.whenStable();
+
+    const host = hostElement(fixture);
+    expect(host.textContent).toContain('Ольга');
+    expect(host.querySelector('#account-name')).toBeNull();
+    expect(host.querySelector('#account-own-name')).toBeNull();
+    expect(buttonByText(host, 'Загрузить')).toBeTruthy();
+    backend.expectNone('/api/me/guardians');
   });
 
   it('shows the name of the administrator as text', async () => {

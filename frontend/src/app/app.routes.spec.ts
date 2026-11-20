@@ -8,6 +8,7 @@ import { AuthService } from '@core/auth/auth.service';
 import { NotificationsSheetState } from '@core/notifications/notifications-sheet-state';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
 import { authResponse } from '@testing/auth';
+import { CHILD_ID, familyChild, pendingRequest } from '@testing/family-fixtures';
 import { aGroup, aStudent } from '@testing/identity-fixtures';
 import { portalSettings } from '@testing/portal-fixtures';
 import { testProvidersWithRouter } from '@testing/setup';
@@ -249,9 +250,72 @@ describe('app routes', { timeout: 20_000 }, () => {
     backend.match(() => true);
 
     auth.acceptSession(authResponse('STUDENT'));
-    await harness.navigateByUrl('/cabinet/billing');
+    let opened = harness.navigateByUrl('/cabinet/billing');
+    (await pendingRequest(backend, '/api/me/billing/visible')).flush({ visible: true });
+    await opened;
     backend.expectOne('/api/me/billing');
     expect(title()).toBe('Оплаты — Teacher Box');
+    backend.match(() => true);
+
+    // the teacher hid the payments from the student (452.3): another sign-in asks again
+    auth.acceptSession({
+      ...authResponse('STUDENT'),
+      user: { ...authResponse('STUDENT').user, id: 'hidden' },
+    });
+    // the same address is not opened again: leave it first
+    await harness.navigateByUrl('/cabinet/account');
+    backend.match(() => true);
+    opened = harness.navigateByUrl('/cabinet/billing');
+    (await pendingRequest(backend, '/api/me/billing/visible')).flush({ visible: false });
+    await opened;
+    expect(TestBed.inject(Router).url).toBe('/cabinet');
+    backend.match(() => true);
+  });
+
+  it('leads a parent into the family cabinet of their child (453.2)', async () => {
+    auth.acceptSession(authResponse('GUARDIAN'));
+    const backend = TestBed.inject(HttpTestingController);
+    const router = TestBed.inject(Router);
+
+    const opened = harness.navigateByUrl('/');
+    (await pendingRequest(backend, '/api/guardian/children')).flush([familyChild()]);
+    await opened;
+    expect(router.url).toBe(`/family/${CHILD_ID}`);
+    backend.match(() => true);
+
+    for (const [url, heading, request] of [
+      // the schedule takes the calendar's stylesheet, which jsdom does not load: not opened here
+      [`/family/${CHILD_ID}/account`, 'Мой аккаунт', '/api/me'],
+      [`/family/${CHILD_ID}/homework`, 'Задания', `/api/guardian/students/${CHILD_ID}/homework`],
+      [`/family/${CHILD_ID}/billing`, 'Оплаты', `/api/guardian/students/${CHILD_ID}/billing`],
+    ] as const) {
+      await harness.navigateByUrl(url);
+      expect(title()).toBe(`${heading} — Teacher Box`);
+      expect(backend.match(request).length).toBeGreaterThan(0);
+      backend.match(() => true);
+    }
+    await harness.navigateByUrl(`/family/${CHILD_ID}/help`);
+    expect(title()).toBe('Справка — Teacher Box');
+    await harness.navigateByUrl(`/family/${CHILD_ID}/nowhere`);
+    expect(title()).toBe('Страница не найдена — Teacher Box');
+
+    // another student's address and the student's cabinet lead back to the child
+    await harness.navigateByUrl('/family/someone-else');
+    expect(router.url).toBe(`/family/${CHILD_ID}`);
+    await harness.navigateByUrl('/cabinet');
+    expect(router.url).toBe(`/family/${CHILD_ID}`);
+    backend.match(() => true);
+  });
+
+  it('keeps a parent without a child on the page that says so', async () => {
+    auth.acceptSession(authResponse('GUARDIAN'));
+    const backend = TestBed.inject(HttpTestingController);
+    const opened = harness.navigateByUrl('/family');
+    (await pendingRequest(backend, '/api/guardian/children')).flush([]);
+    await opened;
+    expect(TestBed.inject(Router).url).toBe('/family');
+    expect(text()).toContain('Нет учеников');
+    expect(title()).toBe('Кабинет родителя — Teacher Box');
   });
 
   it('opens the homework pages', async () => {

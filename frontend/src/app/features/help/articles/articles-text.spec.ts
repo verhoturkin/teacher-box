@@ -1,8 +1,11 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { HelpArticleText } from '../help.models';
+import { GUARDIAN_TOPICS } from '../help-topics';
 import { ADMIN_ARTICLES as ADMIN_EN } from './admin/en';
 import { ADMIN_ARTICLES as ADMIN_RU } from './admin/ru';
+import { GUARDIAN_ARTICLES as GUARDIAN_EN } from './guardian/en';
+import { GUARDIAN_ARTICLES as GUARDIAN_RU } from './guardian/ru';
 import { STUDENT_ARTICLES as STUDENT_EN } from './student/en';
 import { STUDENT_ARTICLES as STUDENT_RU } from './student/ru';
 import { TEACHER_ARTICLES as TEACHER_EN } from './teacher/en';
@@ -598,6 +601,100 @@ const HERO_ROW: Readonly<Record<string, readonly (readonly [string, string, stri
   ],
 };
 
+/** Parents on the student card (453.1, ADR-0069). */
+const PARENTS: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'students',
+      '«Новое приглашение» или «Сбросить пароль».',
+      '«Новое приглашение» или «Сбросить пароль». Между видеовстречей и входом — карточка **«Родители»** (см. ниже).',
+    ],
+    [
+      'students',
+      '## Теги учеников',
+      '## Родители\n\nУ ученика может быть до двух родителей. Родитель входит в портал со своим логином и видит всё, что видит ребёнок, — расписание, задания с ответами и комментариями, оплаты, — но ничего не меняет.\n\n1. Откройте карточку ученика → «Профиль» → «Родители» → **Пригласить родителя**.\n2. **Нового** — впишите имя и нажмите «Пригласить»: портал покажет ссылку-приглашение, отправьте её родителю. По ссылке родитель увидит имена детей, придумает логин и пароль.\n3. **Уже в портале** — родитель другого ученика, например брата или сестры: выберите его и нажмите «Привязать». Ссылка не нужна.\n\nВ строке родителя видно «Приглашение до …» или «Входит как …». Кнопка со ссылкой выдаёт новое приглашение или сбрасывает пароль. **Отвязать** убирает родителя у этого ученика; если других детей у него нет, его вход отключается.\n\nПока у ученика есть родитель, в той же карточке есть переключатель **«Оплаты видит только родитель»**. Включите его, если платит родитель: ученик не увидит баланс и историю оплат и не получит напоминаний о долге. Ученик видит в «Моём аккаунте», кто его родители.\n\n## Теги учеников',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'students',
+      'video meeting changes apply immediately. “Portal access”',
+      'video meeting changes apply immediately. “Parents” lists the student’s parents (see below). “Portal access”',
+    ],
+    [
+      'students',
+      '## Student tags',
+      '## Parents\n\nA student can have up to two parents. A parent signs in with their own username and sees what the child sees: lessons, homework with answers and comments, and payments. They cannot change anything.\n\n1. Open the student’s Profile tab → “Parents” → **Invite a parent**.\n2. **Someone new**: enter their name and choose “Invite”. Copy the invitation link and send it to the parent. The invitation names their children; the parent chooses a username and password.\n3. **Already on the portal**: pick a parent of another student, such as a brother or sister, and choose “Link”. No link is needed.\n\nEach parent’s entry shows when their invitation expires or the username they sign in with. The link button issues a new invitation or a password reset. **Unlink** removes the parent from this student; if they have no other children on the portal, their account is deactivated.\n\nWhile the student has a parent, the same card has the **Only parents see payments** switch. Turn it on if the parent pays: the student will no longer see their balance, payment history or debt reminders. Students can see who their parents are in “My account”.\n\n## Student tags',
+    ],
+  ],
+};
+
+/** Parents in the student's schedule and payments articles (455.1): [topic, baseline, now] per edition. */
+const PARENT_NOTES: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'student.ru': [
+    [
+      'schedule',
+      'даже если оно повторяется каждую неделю.',
+      'даже если оно повторяется каждую неделю.\n\nЗапрос мог отправить и ваш родитель: тогда у него пометка «Запрос родителя (Имя)». Отозвать его можно так же, как свой, а ответ учителя придёт вам обоим.',
+    ],
+    [
+      'billing',
+      '«Оплаты» показывает сводку вверху и историю ниже.',
+      '«Оплаты» показывает сводку вверху и историю ниже. Если учитель скрыл оплаты (их тогда видит родитель), раздела «Оплаты» в кабинете нет.',
+    ],
+  ],
+  'student.en': [
+    [
+      'schedule',
+      'applies only to the date you selected.',
+      'applies only to the date you selected.\n\nYour parent may have sent a request too: it is marked “Parent’s request (Name)”. You can withdraw it just like your own, and your teacher’s reply goes to you both.',
+    ],
+    [
+      'billing',
+      '“Payments” shows your balance, lesson price and transaction history.',
+      '“Payments” shows your balance, lesson price and transaction history. If your teacher has hidden payments (a parent sees them instead), there is no “Payments” section.',
+    ],
+  ],
+};
+
+/** Parents' requests, notifications and bot menu (454.3): [topic, baseline, now] per edition. */
+const PARENT_REQUESTS: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'students',
+      'оплаты, — но ничего не меняет.',
+      'оплаты, — и получает уведомления ребёнка (что именно — выбирает сам). Сдать задание за ребёнка он не может, а попросить перенести или отменить занятие — может.',
+    ],
+    [
+      'schedule',
+      'Ученик может попросить отменить или перенести занятие — в личном кабинете или через бота. Запрос',
+      'Ученик или его родитель может попросить отменить или перенести занятие — в личном кабинете или через бота; запрос родителя помечен «от родителя» с его именем, а ваш ответ получат и ученик, и родитель. Запрос',
+    ],
+    [
+      'bot',
+      '## Как пользоваться',
+      '## Для родителей\n\nРасписание детей, баланс каждого ребёнка, перенос и отмена занятия ребёнка — если детей несколько, бот спросит, для кого.\n\n## Как пользоваться',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'students',
+      'and payments. They cannot change anything.',
+      'and payments, and gets the child’s notifications (choosing which ones). They cannot hand in work, but they can request a reschedule or cancellation.',
+    ],
+    [
+      'schedule',
+      'Students can request a reschedule or cancellation in the portal or bot. Requests',
+      'Students and their parents can request a reschedule or cancellation in the portal or bot. A parent’s request is marked “from a parent” with their name, and both the student and the parent get your reply. Requests',
+    ],
+    [
+      'bot',
+      '## Using the bot',
+      '## Parent actions\n\nParents can view their children’s schedules and balances, and request a reschedule or cancellation for a child. If they have more than one child, the bot asks which one.\n\n## Using the bot',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -694,6 +791,9 @@ describe('help articles after the split into one file per topic', () => {
       ...(WRITE_ALL[name] ?? []),
       ...(HERO_ROW[name] ?? []),
       ...(CALL_PRESENCE[name] ?? []),
+      ...(PARENTS[name] ?? []),
+      ...(PARENT_REQUESTS[name] ?? []),
+      ...(PARENT_NOTES[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];
@@ -703,6 +803,18 @@ describe('help articles after the split into one file per topic', () => {
       }
     }
     expect(texts).toEqual(expected);
+  });
+
+  it('has the parent’s articles in both languages with links to existing articles (455.1)', () => {
+    for (const texts of [GUARDIAN_RU, GUARDIAN_EN]) {
+      expect(Object.keys(texts).sort()).toEqual([...GUARDIAN_TOPICS].sort());
+      for (const text of Object.values(texts)) {
+        expect(text.title).not.toBe('');
+        for (const [, topic] of text.body.matchAll(/\]\(\/guardian\/help\/([\w-]+)\)/g)) {
+          expect(GUARDIAN_TOPICS as readonly string[]).toContain(topic);
+        }
+      }
+    }
   });
 
   it('has no source line longer than 200 characters', () => {

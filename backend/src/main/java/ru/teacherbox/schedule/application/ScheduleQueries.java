@@ -299,12 +299,13 @@ public class ScheduleQueries {
         Map<UUID, List<ChangeRequest>> pending = requests.findPendingForLessons(found.stream().map(Lesson::id).toList())
                 .stream()
                 .collect(Collectors.groupingBy(ChangeRequest::lessonId));
+        Map<UUID, String> guardians = directory.requesterNames(pending.values().stream().flatMap(List::stream).toList());
         Duration late = rules.current().lateCancellation();
         Map<UUID, RepeatRule> repeats = series.findByIds(found.stream().map(Lesson::seriesId)
                 .filter(Objects::nonNull).collect(Collectors.toSet()));
         return found.stream()
                 .map(lesson -> LessonView.of(lesson, names, pending.getOrDefault(lesson.id(), List.of()).stream()
-                        .map(request -> RequestView.of(request, lesson, names, late))
+                        .map(request -> RequestView.of(request, lesson, names, guardians, late))
                         .toList(), lesson.seriesId() == null ? null : repeats.get(lesson.seriesId())))
                 .toList();
     }
@@ -321,9 +322,10 @@ public class ScheduleQueries {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         ScheduleNames names = directory.names(students, groups);
+        Map<UUID, String> guardians = directory.requesterNames(found);
         Duration late = rules.current().lateCancellation();
         return found.stream()
-                .map(request -> RequestView.of(request, byId.get(request.lessonId()), names, late))
+                .map(request -> RequestView.of(request, byId.get(request.lessonId()), names, guardians, late))
                 .toList();
     }
 

@@ -9,6 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { API_SCOPE } from '@core/http/api-scope';
 import { Button } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
 import { Tooltip } from 'primeng/tooltip';
@@ -16,7 +17,7 @@ import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { HelpArticleView } from './help-article-view';
 import { HelpLibrary } from './help-library';
 import { HelpArticle } from './help.models';
-import { HELP_TITLES, HelpTopic, helpUrl } from './help-topics';
+import { HELP_TITLES, HelpTopic, guardianTopicOf, helpUrl } from './help-topics';
 import { T } from './i18n/texts';
 import { SHARED_T } from '@shared/i18n/texts';
 
@@ -112,12 +113,24 @@ export class HelpButton {
       }
     });
   }
-  protected readonly url = computed(() => helpUrl(this.topic()));
+  private readonly scope = inject(API_SCOPE);
+  /**
+   * The article shown: the pages of the student's cabinet are reused in the family cabinet, where their
+   * «?» opens the parent's article instead (455.1).
+   */
+  protected readonly shown = computed<HelpTopic>(() =>
+    this.scope.readOnly ? guardianTopicOf(this.topic()) : this.topic(),
+  );
+  /** «Вся справка»: in the family cabinet the parent's articles open under `/family/<id>/help`. */
+  protected readonly url = computed(() => {
+    const url = helpUrl(this.shown());
+    return url.startsWith('/guardian/') ? url.replace('/guardian', this.scope.area()) : url;
+  });
   /** «Справка: Расписание и запросы»: the buttons of a page are told apart (ADR-0026). */
-  protected readonly name = computed(() => T.helpOf(HELP_TITLES[this.topic()]));
+  protected readonly name = computed(() => T.helpOf(HELP_TITLES[this.shown()]));
 
   async open(): Promise<void> {
-    const article = await this.library.article(this.topic());
+    const article = await this.library.article(this.shown());
     this.trail.set(article === null ? [] : [article]);
     this.visible.set(true);
   }

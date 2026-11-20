@@ -3,6 +3,7 @@ import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   input,
@@ -39,6 +40,7 @@ import { MyBoardButton } from '@features/boards/parts';
 import { HelpButton } from '@features/help/parts';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { pageDetail } from '@core/routing/page-detail';
+import { API_SCOPE } from '@core/http/api-scope';
 import {
   readDeviceSetting,
   removeDeviceSetting,
@@ -87,7 +89,7 @@ import { QuizSection } from './quiz-section';
       <ng-template tbPaneHeader
         ><tb-page-header
           [title]="task.assignment.title"
-          [back]="single() ? '/cabinet/homework' : null"
+          [back]="single() ? list() : null"
           [backLabel]="t.back"
         >
           <tb-help-button help topic="cabinet/homework" />
@@ -104,8 +106,8 @@ import { QuizSection } from './quiz-section';
           @if (!reviewed(task)) {
             <tb-task-status meta [status]="task.status" />
           }
-          @if (task.assignment.boardId; as boardId) {
-            <tb-my-board-button [boardId]="boardId" />
+          @if (!readOnly && task.assignment.boardId) {
+            <tb-my-board-button [boardId]="task.assignment.boardId" />
           }</tb-page-header
       ></ng-template>
 
@@ -211,7 +213,8 @@ import { QuizSection } from './quiz-section';
             </section>
           }
 
-          @if (task.status !== 'ACCEPTED') {
+          <!-- the family cabinet reads the work, never hands it in (ADR-0069) -->
+          @if (task.status !== 'ACCEPTED' && !readOnly) {
             <section
               class="tb-task__answer"
               [class.tb-task__answer--docked]="mobile()"
@@ -274,7 +277,7 @@ import { QuizSection } from './quiz-section';
           <!-- a returned work shows its one attempt above (sketch 27): no fold to repeat it -->
           @if (task.submissions.length > (task.status === 'RETURNED' ? 1 : 0)) {
             <tb-fold-card
-              [title]="t.myAnswer"
+              [title]="readOnly ? t.answer : t.myAnswer"
               [summary]="answerSummary(task)"
               [collapsible]="true"
               [single]="true"
@@ -301,9 +304,9 @@ import { QuizSection } from './quiz-section';
           @if (task.status === 'ACCEPTED' && next(); as nextId) {
             <div class="tb-task__next" [class.tb-bottom-actions]="mobile()">
               @if (mobile()) {
-                <a pButton [text]="true" routerLink="/cabinet/homework">{{ t.toList }}</a>
+                <a pButton [text]="true" [routerLink]="list()">{{ t.toList }}</a>
               }
-              <a pButton [routerLink]="['/cabinet/homework', nextId]"
+              <a pButton [routerLink]="[list(), nextId]"
                 >{{ mobile() ? t.nextShort : t.next }}
                 <i class="tb-i tb-i-arrow_forward" aria-hidden="true"></i
               ></a>
@@ -324,7 +327,7 @@ import { QuizSection } from './quiz-section';
       <ng-template tbPaneHeader
         ><tb-page-header
           [title]="t.assignment"
-          [back]="single() ? '/cabinet/homework' : null"
+          [back]="single() ? list() : null"
           [backLabel]="t.back"
       /></ng-template>
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
@@ -526,6 +529,11 @@ export class MyTaskPage {
   protected readonly t = T.myTask;
   protected readonly tv = T.videos;
   private readonly api = inject(HomeworkApi);
+  private readonly scope = inject(API_SCOPE);
+  /** The family cabinet: the task, the answers and the comments without the answer form. */
+  protected readonly readOnly = this.scope.readOnly;
+  /** The list of the cabinet's tasks: `/cabinet/homework` or `/family/<id>/homework`. */
+  protected readonly list = computed(() => `${this.scope.area()}/homework`);
   protected readonly canRecord = canRecord();
   protected readonly audio = (attachmentId: string) => this.api.myFile(attachmentId);
   private readonly snackbar = inject(Snackbar);
@@ -592,6 +600,9 @@ export class MyTaskPage {
 
   /** The unsent text of this device; a returned work without one starts from the previous answer. */
   private restoreDraft(task: TaskDetails): void {
+    if (this.readOnly) {
+      return;
+    }
     const draft = task.status === 'ACCEPTED' ? null : readDeviceSetting(this.draftKey());
     const previous = task.status === 'RETURNED' ? task.submissions[0]?.text : null;
     if (draft) {

@@ -10,10 +10,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.identity.api.GroupSummary;
+import ru.teacherbox.identity.api.GuardianSummary;
+import ru.teacherbox.identity.api.Guardians;
 import ru.teacherbox.identity.api.StudentGroups;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
 import ru.teacherbox.meetings.api.MeetingRooms;
+import ru.teacherbox.schedule.domain.ChangeRequest;
 import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.shared.error.NotFoundException;
 import ru.teacherbox.shared.i18n.Language;
@@ -25,11 +28,13 @@ public class ScheduleDirectory {
     private final UserDirectory users;
     private final StudentGroups groups;
     private final MeetingRooms rooms;
+    private final Guardians guardians;
 
-    public ScheduleDirectory(UserDirectory users, StudentGroups groups, MeetingRooms rooms) {
+    public ScheduleDirectory(UserDirectory users, StudentGroups groups, MeetingRooms rooms, Guardians guardians) {
         this.users = users;
         this.groups = groups;
         this.rooms = rooms;
+        this.guardians = guardians;
     }
 
     /** Names for the participants and groups of the lessons and the links of their rooms. */
@@ -101,5 +106,35 @@ public class ScheduleDirectory {
 
     public boolean isCurrentStudent(UUID studentId) {
         return users.isCurrentStudent(studentId);
+    }
+
+    /**
+     * Names of the guardians who sent some of the requests on a child's behalf (ADR-0069), by their ids; a guardian
+     * no longer linked to the child is left out.
+     */
+    public Map<UUID, String> requesterNames(Collection<ChangeRequest> requests) {
+        Map<UUID, String> names = new HashMap<>();
+        Map<UUID, List<GuardianSummary>> byStudent = new HashMap<>();
+        for (ChangeRequest request : requests) {
+            UUID guardianId = request.guardianId();
+            if (guardianId == null || names.containsKey(guardianId)) {
+                continue;
+            }
+            byStudent.computeIfAbsent(request.studentId(), guardians::guardiansOf).stream()
+                    .filter(guardian -> guardian.id().equals(guardianId))
+                    .findFirst()
+                    .ifPresent(guardian -> names.put(guardianId, guardian.displayName()));
+        }
+        return names;
+    }
+
+    /** {@code true} if the user is a guardian of this current student. */
+    public boolean isGuardianOf(UUID guardianId, UUID studentId) {
+        return guardians.isGuardianOf(guardianId, studentId);
+    }
+
+    /** The guardian's current children (ADR-0069); empty for anyone else. */
+    public List<StudentSummary> childrenOf(UUID guardianId) {
+        return guardians.childrenOf(guardianId);
     }
 }

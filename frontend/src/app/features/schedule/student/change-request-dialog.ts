@@ -14,6 +14,7 @@ import { FieldErrors } from '@shared/ui/field-errors';
 import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
 import { EMPTY } from 'rxjs';
+import { API_SCOPE } from '@core/http/api-scope';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { ChangeKind, ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
 import { formatLessonTime, optionalText } from '../schedule-labels';
@@ -25,8 +26,9 @@ import { TbDialog } from '@shared/ui/dialog/dialog';
 import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
 
 /**
- * A student asks to move a lesson to another time or to cancel it; the teacher answers. A late
- * cancellation may be charged as a missed lesson — the dialog says so beforehand.
+ * A student — or their parent on the child's behalf (ADR-0069, 454.3) — asks to move a lesson to
+ * another time or to cancel it; the teacher answers. A late cancellation may be charged as a missed
+ * lesson — the dialog says so beforehand. The requests go to the cabinet's base (`API_SCOPE`).
  */
 @Component({
   selector: 'tb-change-request-dialog',
@@ -52,7 +54,9 @@ import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
                 {{
                   kind() === 'RESCHEDULE'
                     ? t.groupReschedule(lesson.groupName ?? '')
-                    : t.groupAbsence(lesson.groupName ?? '')
+                    : family
+                      ? t.childGroupAbsence(lesson.groupName ?? '')
+                      : t.groupAbsence(lesson.groupName ?? '')
                 }}
               </p>
             }
@@ -79,7 +83,9 @@ import { dialogSubmit } from '@shared/ui/dialog/dialog-submit';
                 <small class="tb-field__error" role="alert">{{ t.pickTime }}</small>
               }
             } @else if (late()) {
-              <p-message severity="warn" styleClass="tb-form-message">{{ t.late }}</p-message>
+              <p-message severity="warn" styleClass="tb-form-message">{{
+                family ? t.childLate : t.late
+              }}</p-message>
             }
             <div class="tb-field">
               <label for="request-comment">{{ t.comment }}</label>
@@ -102,6 +108,8 @@ export class ChangeRequestDialog {
   protected readonly c = SHARED_T.common;
   protected readonly t = T.changeRequest;
   private readonly api = inject(ScheduleApi);
+  /** The family cabinet: the texts speak of the child, not of «я». */
+  protected readonly family = inject(API_SCOPE).readOnly;
 
   readonly visible = model(false);
   /** Built when first opened (`openedOnce`): hidden, its form is not built with the page. */
@@ -136,7 +144,10 @@ export class ChangeRequestDialog {
     if (this.kind() === 'RESCHEDULE') {
       return T.changeRequest.rescheduleTitle;
     }
-    return this.absence() ? T.changeRequest.absenceTitle : T.changeRequest.cancelTitle;
+    if (!this.absence()) {
+      return T.changeRequest.cancelTitle;
+    }
+    return this.family ? T.changeRequest.childAbsenceTitle : T.changeRequest.absenceTitle;
   });
   /** The day the free times are shown for: the chosen one, else the lesson's own. */
   protected readonly day = computed(

@@ -110,6 +110,12 @@ describe('AuthService', () => {
     expect(auth.homeUrl()).toBe('/cabinet');
   });
 
+  it('routes a parent to the family cabinet', () => {
+    auth.acceptSession(authResponse('GUARDIAN'));
+
+    expect(auth.homeUrl()).toBe('/family');
+  });
+
   it('routes the administrator to the administration area', () => {
     auth.acceptSession(authResponse('ADMIN'));
 

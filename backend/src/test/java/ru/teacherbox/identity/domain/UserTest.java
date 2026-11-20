@@ -74,6 +74,22 @@ class UserTest {
     }
 
     @Test
+    void guardianLifecycle() {
+        User guardian = User.newGuardian(UUID.randomUUID(), Profile.named("Анна"), NOW);
+        assertThat(guardian.role()).isEqualTo(Role.GUARDIAN);
+        assertThat(guardian.isGuardian()).isTrue();
+        assertThat(guardian.status()).isEqualTo(AccountStatus.INVITED);
+
+        guardian.activate("anna", "hash", NOW);
+        assertThat(guardian.status()).isEqualTo(AccountStatus.ACTIVE);
+        guardian.deactivate(NOW);
+        assertThat(guardian.status()).isEqualTo(AccountStatus.DEACTIVATED);
+        guardian.reactivate(NOW);
+        assertThat(guardian.status()).isEqualTo(AccountStatus.ACTIVE);
+        assertThatThrownBy(() -> guardian.renameSelf("Аня", NOW)).isInstanceOf(BusinessRuleException.class);
+    }
+
+    @Test
     void teacherCannotBeDeactivatedOrActivated() {
         User teacher = User.newTeacher(UUID.randomUUID(), "teacher", "hash", Profile.named("T"), NOW);
 

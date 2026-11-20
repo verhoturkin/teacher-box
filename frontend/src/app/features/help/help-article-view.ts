@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { Router } from '@angular/router';
 import { renderMarkdown } from '@shared/ui/markdown-view';
+import { API_SCOPE } from '@core/http/api-scope';
 import { helpTopicOf } from './help-topics';
 
 /** The text of an article; links inside the portal open without reloading the page. */
@@ -18,6 +19,7 @@ import { helpTopicOf } from './help-topics';
 })
 export class HelpArticleView {
   private readonly router = inject(Router);
+  private readonly scope = inject(API_SCOPE);
 
   readonly body = input('');
   /** In the help sheet: a link to another article opens it in the sheet, not on its page. */
@@ -49,7 +51,10 @@ export class HelpArticleView {
       this.article.emit(topic);
       return;
     }
-    void this.router.navigateByUrl(href);
+    // the parent's articles link to `/guardian/help/<topic>`: in the family cabinet that is under the child
+    void this.router.navigateByUrl(
+      href.startsWith('/guardian/') ? href.replace('/guardian', this.scope.area()) : href,
+    );
     this.navigated.emit(href);
   }
 }
