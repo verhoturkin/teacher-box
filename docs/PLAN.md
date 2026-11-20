@@ -213,7 +213,7 @@ once, after 456.
 
 ### 454. Notices and requests for parents
 
-- [ ] 454.1 *complex* B — `notifications`: a `NoticeRequested` for a student is also delivered to
+- [x] 454.1 *complex* B — `notifications`: a `NoticeRequested` for a student is also delivered to
   that student's guardians (`identity::api.Guardians`) by the guardian's preferences — four
   categories, on by default: payments and debts, lessons (reminders, cancels, moves), overdue
   homework, reviewed works (the kind → category map in `notifications`); the text names the child
@@ -222,6 +222,11 @@ once, after 456.
   link codes for a guardian; `ChatEngine.user` and `shared/chat/ChatUser` know a guardian. A
   guardians-only notice (452.3) skips the student. Tests: `NotificationServiceTest`,
   preferences, link codes. Docs: `docs/modules/notifications.md`, ADR-0061 note.
+  *Done: no «overdue» notice exists, so the homework category is `HOMEWORK_DEADLINES` — due soon
+  and the teacher's reminder of a task not handed in; lessons also take new lessons and the
+  answer to a change request. Settings — `GET|PUT /api/guardian/notifications/preferences`
+  (`disabledCategories`); quiet hours, inbox and messengers — the common `/api/me/**`. The
+  guardian's copy has no bot buttons and no room. Wiki `Parents` waits for 454.3 (no screen yet).*
 - [ ] 454.2 *complex* B — schedule: move / cancel requests on behalf — migration
   `db/migration/schedule/V8__change_requests_requested_by.sql` (`requested_by` UUID, the student
   for old rows), `GuardianScheduleController` POST / GET / DELETE requests via

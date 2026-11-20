@@ -59,6 +59,7 @@ GET /api/boards/{id}/files/{fileId} STUDENT TEACHER
 GET /api/boards/{id}/preview STUDENT TEACHER
 GET /api/boards/{id}/scene STUDENT TEACHER
 GET /api/guardian/children GUARDIAN
+GET /api/guardian/notifications/preferences GUARDIAN
 GET /api/guardian/schedule/feed GUARDIAN
 GET /api/guardian/students/{studentId}/billing GUARDIAN
 GET /api/guardian/students/{studentId}/billing/payments/{paymentId}/receipt GUARDIAN
@@ -277,6 +278,7 @@ PUT /api/admin/settings ADMIN
 PUT /api/boards/library STUDENT TEACHER
 PUT /api/boards/{id}/files/{fileId} STUDENT TEACHER
 PUT /api/boards/{id}/scene STUDENT TEACHER
+PUT /api/guardian/notifications/preferences GUARDIAN
 PUT /api/me/avatar GUARDIAN STUDENT TEACHER
 PUT /api/me/channels/{channel} GUARDIAN STUDENT TEACHER
 PUT /api/me/homework/tasks/{taskId}/quiz/attempts/{attemptId}/answers/{questionId} STUDENT TEACHER

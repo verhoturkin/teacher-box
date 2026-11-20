@@ -21,7 +21,7 @@ ADRs: [0005](../adr/0005-notifications.md), [0009](../adr/0009-external-integrat
   texts in every language (`NoticeText`: title and body, the same in the inbox and in messengers,
   never an address — 429.1), the portal link, the bot subject (`ChatSubject`), the room address
   and `guardiansOnly` (ADR-0069: a notice about a student for the student's guardians only — billing
-  sets it while «Оплаты видит только родитель» is on; read from 454.1).
+  sets it while «Оплаты видит только родитель» is on).
   `NoticeListener`
   (`@ApplicationModuleListener`: after the commit, in its own transaction, kept in the event
   registry until done) hands it to `NotificationService.notify(NoticeRequested)`, which picks the
@@ -31,6 +31,24 @@ ADRs: [0005](../adr/0005-notifications.md), [0009](../adr/0009-external-integrat
   notifies once. `notifications` holds no text of another module — only its own
   (`NotificationMessages`: the buttons «Открыть» / «Подключиться», the reminder to connect a
   messenger, the test message; `BotMessages`).
+- **Guardians get their children's notices (ADR-0069, 454.1).** After the student's own record
+  (skipped for a `guardiansOnly` notice) `notify(NoticeRequested)` copies a notice about a
+  current student to each of the student's guardians (`identity::api.Guardians.guardiansOf`, not
+  deactivated) whose category of the kind is on. `GuardianCategory.of(kind)`: `PAYMENTS`
+  (`LESSON_RECORDED`, `LESSON_CANCELLED`, `PAYMENT_RECORDED`, `PAYMENT_VOIDED`), `LESSONS`
+  (`SCHEDULE_REMINDER`, `_LESSON_PLANNED`, `_MOVED`, `_CANCELLED`, `_REQUEST_ANSWERED`),
+  `HOMEWORK_DEADLINES` (`HOMEWORK_DUE_SOON`, `HOMEWORK_REMINDER`), `REVIEWED_WORK`
+  (`HOMEWORK_REVIEWED`); any other kind reaches the student only. All four are on until the
+  guardian switches one off (`guardian_preferences`; off — neither inbox nor messengers). The copy
+  is in the guardian's language, its title starts with the child's name («Петя · Занятие
+  перенесено»), its link is the child's page of the family cabinet (`/cabinet/schedule?lesson=1`
+  → `/family/<studentId>/schedule?lesson=1`; `homework`, `billing` alike; any other page → the
+  child's home); no bot buttons and no room. Its id is derived from the notice and the guardian
+  (`guardianNoticeId`), so a notice delivered again notifies each guardian once. Quiet hours and
+  muted topics are the guardian's own `Preferences`. A guardian uses messengers and the bot
+  while they have a current child (`mayUseMessengers`, `ChatEngine.user` → `ChatUser` with
+  `Role.GUARDIAN`, `isGuardian()`); link codes work as for everyone; the bot's help leads to
+  `/family/<first child>/help/bot`. Guardian actions in the bot — 454.2.
 - **Kinds and preferences.** `NoticeRequested.kind` is the name of a `NotificationKind`; the
   modules declare their kinds as enums implementing `shared.notice.NoticeKind`
   (`ScheduleNoticeKind`, `HomeworkNoticeKind`, `BillingNoticeKind`, `MeetingNoticeKind`,
@@ -114,7 +132,8 @@ No `api` package: nothing depends on `notifications`.
 
 `inbox`, `deliveries`, `preferences`, `channel_settings`, `channel_links`, `link_codes`, `broadcasts`,
 `chat_dialogs`, `chat_buttons`, `chat_settings`, `webpush_keys` (the VAPID pair, one row, 0.38.0),
-`push_subscriptions` (the devices that get web push, 0.38.0). `ChannelSettingsImport` copies the
+`push_subscriptions` (the devices that get web push, 0.38.0), `guardian_preferences` (the categories
+a guardian switched off, 0.58.0). `ChannelSettingsImport` copies the
 `.env` bot tokens into `channel_settings` once (ADR-0056), unless the teacher entered that bot.
 `NotificationsHousekeeping` cleans old records.
 
@@ -125,6 +144,9 @@ ones; unread count, read, preferences), `/api/me/channels/**` (link code, unlink
 `/api/teacher/notifications/**` (status, summary, students, `students/{studentId}` — one student's messengers and
 failed deliveries for the student card, deactivated included, unknown → 404 (237.1), broadcast, remind-connect,
 `channels`, `bot`),
+`GET|PUT /api/guardian/notifications/preferences` (guardian only: `{"disabledCategories": [...]}` of
+`PAYMENTS`, `LESSONS`, `HOMEWORK_DEADLINES`, `REVIEWED_WORK`; empty — all on; the guardian's inbox,
+quiet hours and messengers are the common `/api/me/notifications/**` and `/api/me/channels/**`),
 `/api/admin/notifications/deliveries` (failed deliveries without texts, retry),
 `/api/admin/notifications/push` (counts of devices and failing ones, no users or addresses),
 `GET /api/me/push/key` (public VAPID key), `GET|POST /api/me/push/subscriptions` (own devices;
