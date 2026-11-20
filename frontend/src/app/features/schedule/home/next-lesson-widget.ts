@@ -56,7 +56,7 @@ import { T } from '../i18n/texts';
             <tb-lesson-time-tile [time]="time" />
           }
           <div class="tb-lesson-event__info">
-            <strong>{{
+            <strong class="tb-lesson-event__name">{{
               lesson.title ?? (lesson.groupId !== null ? with(lesson) : t.lesson)
             }}</strong>
             @if (lesson.topic !== null) {
@@ -133,6 +133,12 @@ import { T } from '../i18n/texts';
       gap: var(--tb-space-1);
       min-width: 0;
       overflow-wrap: anywhere;
+    }
+
+    /* the teacher's hero name is Headline Medium; the student's card is narrower: Headline Small */
+    .tb-lesson-event__name {
+      font: var(--tb-type-headline-s-emphasized);
+      letter-spacing: var(--tb-tracking-headline-s-emphasized);
     }
 
     .tb-lesson-event__actions {

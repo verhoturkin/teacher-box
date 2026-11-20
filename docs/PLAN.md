@@ -53,7 +53,7 @@ stray weights or caps); the lesson heroes show the running lesson like the M3E p
   0.04–0.08 em tracking («Поступило», «Оплачено», homework labels) → label-m / label-l,
   on-surface-variant, sentence case. Tabular figures on money and figures (`.tb-amount`,
   `.tb-figure__value`).
-- [ ] 457.5 **F** *simple* — one hierarchy for both heroes: the student's lesson title in Headline
+- [x] 457.5 **F** *simple* — one hierarchy for both heroes: the student's lesson title in Headline
   Small/Medium emphasized like the teacher's name (now a body `strong`); docs: the emphasized
   tokens the design system lists but `_tokens.scss` lacks (headline-l, label-s).
 - [x] 457.6 **F** *simple* — dark-theme text grade −25 (ADR-0070, changes 0044 item 6):

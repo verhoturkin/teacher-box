@@ -83,6 +83,9 @@ since 0.57.0 — the lesson is shown once.
   the time left while the lesson runs (`lesson-clock.ts`).
 - While the lesson runs, the wavy bar of the elapsed time (`tb-wavy-progress`, «Прошло 5 из 60
   мин») spans the bottom of the card, as on the teacher's hero (457.1).
+- The lesson title (group name, title or «Занятие») is Headline Small emphasized
+  (`.tb-lesson-event__name`) — the teacher's hero name is Headline Medium emphasized; the student's
+  card is narrower (457.5).
 - One join button (`tb-join-lesson-button [medium]`), full width under the tile on a narrow card
   (`tb-join-wide`). The student's requests sit under it and hide while the lesson runs.
 - While the lesson runs in the portal's room, `tb-teacher-waiting` (`@features/meetings/parts`,

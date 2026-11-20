@@ -322,7 +322,8 @@ with its value and tracking, Markdown.
   Small emphasized; subtitles — Title Medium; field labels, buttons, menu items, options — Label
   Large; tooltip, `small`, details — Body Small.
 - **Emphasized roles** (**M3E**, ADR-0044) — `--tb-type-<role>-emphasized`: same size and line,
-  heavier. Display S, Headline L/M/S, Title L — 500; Title M/S, Label L/M/S — Bold 700. Weights are
+  heavier. Display S, Headline M/S, Title L — 500; Title M/S, Label L/M — Bold 700 (Headline L and
+  Label S have no emphasized token: nothing uses them, `scripts/tokens.mjs`). Weights are
   400 and 500, and 700 only through those tokens (never a bare `font-weight: 600/700`). Emphasized
   marks the exception (titles, the hero time, the active navigation label, selected items).
 - Wrap between words (`overflow-wrap: break-word`); `anywhere` only for codes, URLs, paths, env
