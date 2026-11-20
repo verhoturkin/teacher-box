@@ -24,6 +24,7 @@ import ru.teacherbox.testing.TestUsers;
 @ScheduleIntegrationTest
 class UpcomingLessonsIntegrationTests extends ScheduleHttpTestSupport {
 
+    /** Every lesson here, moves and one-off ones included, stays inside {@link Slots#SERIES_HOURS}. */
     private static final ZoneId ZONE = ZoneId.of("Europe/Moscow");
     private static final String LESSONS = "/api/teacher/schedule/lessons";
 
@@ -70,18 +71,18 @@ class UpcomingLessonsIntegrationTests extends ScheduleHttpTestSupport {
     void movedAndCancelledOccurrencesAndOneOffLessonsAreOwnItems() throws Exception {
         UUID vera = directory.addStudent("Вера");
         LocalDate wednesday = nextWeek(DayOfWeek.WEDNESDAY);
-        String first = id(post(LESSONS, repeat(vera, at(wednesday, 12), wednesday.plusWeeks(4))));
+        String first = id(post(LESSONS, repeat(vera, at(wednesday, 13), wednesday.plusWeeks(4))));
         List<Map<String, Object>> dates = JsonPath.read(get(LESSONS + "?from=" + wednesday + "&to="
                 + wednesday.plusWeeks(5) + "&studentId=" + vera).getResponse().getContentAsString(), "$");
         String second = dates.get(1).get("id").toString();
         put(LESSONS + "/" + first, """
                 {"startsAt":"%s","durationMinutes":60,"repeatWeeks":1,"repeatUntil":"%s","scope":"ONLY",
-                 "title":"Английский","allowOverlap":true}""".formatted(at(wednesday.plusDays(1), 12),
+                 "title":"Английский","allowOverlap":true}""".formatted(at(wednesday.plusDays(1), 13),
                 wednesday.plusWeeks(4))).assertThat().hasStatusOk();
         post(LESSONS + "/" + second + "/cancel", "{\"scope\":\"ONLY\"}").assertThat().hasStatusOk();
         String single = id(post(LESSONS, """
                 {"studentId":"%s","startsAt":"%s","durationMinutes":45,"allowOverlap":true}"""
-                .formatted(vera, at(wednesday.plusDays(2), 18))));
+                .formatted(vera, at(wednesday.plusDays(2), 17))));
 
         assertThat(upcoming("students", vera)).bodyJson().satisfies(json -> {
             assertThat(json).extractingPath("$.series[0].remaining").isEqualTo(3);
