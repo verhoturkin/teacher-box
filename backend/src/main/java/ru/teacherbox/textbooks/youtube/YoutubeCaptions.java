@@ -1,4 +1,4 @@
-package ru.teacherbox.homework.youtube;
+package ru.teacherbox.textbooks.youtube;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -26,7 +26,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import ru.teacherbox.homework.application.VideoCaptions;
+import ru.teacherbox.textbooks.api.VideoCaptions;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;

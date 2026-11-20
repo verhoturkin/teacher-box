@@ -1,4 +1,4 @@
-package ru.teacherbox.homework.application;
+package ru.teacherbox.textbooks.api;
 
 import java.util.List;
 import org.jspecify.annotations.Nullable;

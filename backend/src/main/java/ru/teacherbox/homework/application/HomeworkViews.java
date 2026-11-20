@@ -8,7 +8,7 @@ import org.jspecify.annotations.Nullable;
 import ru.teacherbox.homework.domain.AssignmentVideo;
 import ru.teacherbox.homework.domain.Attachment;
 import ru.teacherbox.homework.domain.TaskStatus;
-import ru.teacherbox.homework.domain.VideoLink;
+import ru.teacherbox.textbooks.api.VideoLink;
 import ru.teacherbox.homework.application.QuizViews.QuizReview;
 import ru.teacherbox.homework.domain.quiz.Question;
 import ru.teacherbox.homework.domain.quiz.QuestionDraft;

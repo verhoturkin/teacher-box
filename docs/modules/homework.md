@@ -36,15 +36,12 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   (32-hex ID), VK Video (`video-<oid>_<id>`, `video_ext.php`); any other http(s) link is `OTHER` (a link, no
   player); not http(s) — `video.link-invalid`, over 5 — `video.too-many`. Transcript — lines `[m:ss] text`, up to
   100 000 characters; `AssignmentDetails.videos` has every transcript, the student's `AssignmentInfo.videos` only
-  those with `transcriptShown`. «Субтитры YouTube» (saves nothing): `POST /api/teacher/homework/videos/captions
-  {url}` → `{title, tracks: [{language, automatic}], suggested}` (0.19.1), then `POST …/videos/transcript {url,
-  language?, automatic}` — the chosen track, without `language` the suggested one. `VideoTranscripts` over the port
-  `VideoCaptions`, adapter `youtube/YoutubeCaptions` — the InnerTube player (client `ANDROID`); suggested: the author's
-  track in the spoken language, else the recognized one, else the first; timed text decoded as UTF-8 unless the answer
-  names a charset; cues merged into ~30-second paragraphs; `{title, language, automatic, transcript, truncated}`; a
-  track the video does not have — `video.captions-none`; errors
-  `video.not-youtube`, `video.captions-none`, `video.captions-failed` (422). Proxy
-  `TEACHERBOX_HOMEWORK_YOUTUBE_PROXY`. CSP `frame-src`: `youtube-nocookie.com`, `rutube.ru`, `vkvideo.ru`.
+  those with `transcriptShown`. «Субтитры YouTube» (saves nothing) — the endpoints, `VideoLink` parsing and the captions adapter
+  now belong to `textbooks` ([textbooks.md](textbooks.md), 0.60.0): `POST
+  /api/teacher/textbooks/videos/captions|transcript`, the same bodies and `video.*` errors.
+  `homework` keeps `assignment_videos` and uses `textbooks::api.VideoLink`; the proxy variable
+  `TEACHERBOX_HOMEWORK_YOUTUBE_PROXY` kept its name.
+  CSP `frame-src`: `youtube-nocookie.com`, `rutube.ru`, `vkvideo.ru`.
 - Due date; `DueSoonReminder` publishes `HomeworkDueSoon` once per unfinished task within the
   teacher's window (`DueSoonWindow`, read per run, 24 h by default, ADR-0056):
   `GET/PUT /api/teacher/homework/settings` (`dueSoonMinutes` 60–4320, else 422
@@ -146,7 +143,7 @@ how many students (of those with a submitted attempt) got it wrong in their best
 
 `/api/teacher/homework/**` (assignments — the list has the names of the students of each, `DELETE assignments/{id}`, `POST assignments/{id}/copy`, students, attachments,
 `PUT assignments/{id}/board`, `POST assignments/{id}/textbooks` `{textbookId, pages}`,
-`DELETE assignments/{id}/textbooks/{textbookId}`, `POST videos/transcript`, tasks/{id}/review, review-queue, `GET journal?from&to&who` (`from`/`to` — `yyyy-MM-dd`, whole days of the instance time zone, both
+`DELETE assignments/{id}/textbooks/{textbookId}`, tasks/{id}/review, review-queue, `GET journal?from&to&who` (`from`/`to` — `yyyy-MM-dd`, whole days of the instance time zone, both
 included; `who` — a group or a student id, none: every student with a task on these assignments):
 the assignments due in the range as columns and the current students as rows, one cell per column —
 `ACCEPTED` (+ `grade`), `TO_REVIEW` (+ the best quiz score), `RETURNED`, `OVERDUE` (+ `overdueDays`),

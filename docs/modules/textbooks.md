@@ -39,6 +39,19 @@ groups; pages of a PDF cut out for homework and rendered as pictures for boards.
 pages), deleted ones skipped; `content(id, pages)` — `TextbookContent`: a PDF cut to the pages (those past the end
 skipped, named `<file> (с. 1-3).pdf`), any other file whole. No events.
 
+Videos (moved from `homework` in 0.60.0, [ADR-0047](../adr/0047-video-links-and-transcripts.md)):
+`VideoLink` — `parse(url)` → provider (`YOUTUBE`, `RUTUBE`, `VK`, `OTHER`), video ID, start; YouTube
+(`watch`, `youtu.be`, `shorts`, `embed`, `live`, `t=`), Rutube (32-hex ID), VK Video
+(`video-<oid>_<id>`, `video_ext.php`); any other http(s) link is `OTHER`; not http(s) —
+`video.link-invalid`. `VideoTranscripts` over the port `VideoCaptions`: `youtubeTracks(url)` and
+`youtube(url, track?)` — the suggested track when none is chosen (the author's in the spoken
+language, else the recognized one, else the first); cues merged into ~30-second paragraphs `[m:ss]
+text`, up to `MAX_TRANSCRIPT` (100 000 characters, then `truncated`). Errors (422):
+`video.not-youtube`, `video.captions-none`, `video.captions-failed`. The adapter
+`youtube/YoutubeCaptions` is the InnerTube player (client `ANDROID`), timed text decoded as UTF-8
+unless the answer names a charset; the proxy is `TEACHERBOX_HOMEWORK_YOUTUBE_PROXY` (the name is
+kept for existing `.env` files; read live, ADR-0056).
+
 ## Data
 
 `textbooks` (kind, title, course, page_count, format, file_key, filename, content_type, size, cover_key, version),
@@ -53,6 +66,7 @@ the portal backup.
 | `PUT /api/teacher/textbooks/{id}` (JSON with `version`), `PUT /{id}/file` (multipart `file`, `version`), `DELETE /{id}` | teacher |
 | `GET /api/teacher/textbooks/{id}/file`, `GET /{id}/pages/{n}` (picture), `GET /{id}/cover` | teacher |
 | `GET /api/me/textbooks` (with `groupNames`, newest change first), `GET /api/me/textbooks/{id}/file`, `GET /api/me/textbooks/{id}/cover` (404 for a textbook of others and for a Word file) | student |
+| `POST /api/teacher/textbooks/videos/captions` `{url}` → `{title, tracks: [{language, automatic}], suggested}`; `POST …/videos/transcript` `{url, language?, automatic?}` → `{title, language, automatic, transcript, truncated}` (nothing is saved) | teacher |
 
 Uploads up to 100 MB: Spring multipart limits and nginx `client_max_body_size` for `/api/teacher/textbooks`.
 

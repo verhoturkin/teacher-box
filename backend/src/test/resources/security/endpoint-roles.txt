@@ -249,8 +249,6 @@ POST /api/teacher/homework/assignments/{assignmentId}/students TEACHER
 POST /api/teacher/homework/assignments/{assignmentId}/students/{studentId}/remind TEACHER
 POST /api/teacher/homework/assignments/{assignmentId}/textbooks TEACHER
 POST /api/teacher/homework/tasks/{taskId}/review TEACHER
-POST /api/teacher/homework/videos/captions TEACHER
-POST /api/teacher/homework/videos/transcript TEACHER
 POST /api/teacher/meetings/calls/{ownerId}/participants/{userId}/mute TEACHER
 POST /api/teacher/meetings/calls/{ownerId}/summon TEACHER
 POST /api/teacher/meetings/rooms/{ownerId}/share TEACHER
@@ -277,6 +275,8 @@ POST /api/teacher/students/{id}/invite TEACHER
 POST /api/teacher/students/{id}/reactivate TEACHER
 POST /api/teacher/tags TEACHER
 POST /api/teacher/textbooks TEACHER
+POST /api/teacher/textbooks/videos/captions TEACHER
+POST /api/teacher/textbooks/videos/transcript TEACHER
 PUT /api/admin/loggers/{name} ADMIN
 PUT /api/admin/portal ADMIN
 PUT /api/admin/settings ADMIN

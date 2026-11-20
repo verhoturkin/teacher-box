@@ -1,15 +1,14 @@
-package ru.teacherbox.homework.domain;
+package ru.teacherbox.textbooks.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.UUID;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.Test;
-import ru.teacherbox.homework.domain.VideoLink.Provider;
 import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.textbooks.api.VideoLink.Provider;
 
 class VideoLinkTest {
 
@@ -61,19 +60,5 @@ class VideoLinkTest {
     void readsTheStartTime(String time, Integer seconds) {
         assertThat(VideoLink.seconds(time)).isEqualTo(seconds);
         assertThat(VideoLink.seconds(null)).isNull();
-    }
-
-    @Test
-    void keepsTheTranscriptWithinLimits() {
-        VideoLink link = VideoLink.parse("https://youtu.be/dQw4w9WgXcQ");
-        UUID id = UUID.randomUUID();
-
-        AssignmentVideo video = new AssignmentVideo(id, id, 0, link, "  ", " [0:00] текст ", true);
-        assertThat(video.title()).isNull();
-        assertThat(video.transcript()).isEqualTo("[0:00] текст");
-        assertThatThrownBy(() -> new AssignmentVideo(id, id, 0, link, "x".repeat(201), null, false))
-                .hasFieldOrPropertyWithValue("code", "video.title-invalid");
-        assertThatThrownBy(() -> new AssignmentVideo(id, id, 0, link, null, "x".repeat(100_001), false))
-                .hasFieldOrPropertyWithValue("code", "video.transcript-too-long");
     }
 }

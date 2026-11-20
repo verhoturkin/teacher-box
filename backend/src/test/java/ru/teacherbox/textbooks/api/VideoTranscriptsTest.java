@@ -1,4 +1,4 @@
-package ru.teacherbox.homework.application;
+package ru.teacherbox.textbooks.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -6,10 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import ru.teacherbox.homework.FakeVideoCaptions;
-import ru.teacherbox.homework.application.VideoCaptions.Captions;
-import ru.teacherbox.homework.application.VideoCaptions.Cue;
-import ru.teacherbox.homework.domain.AssignmentVideo;
+import ru.teacherbox.textbooks.FakeVideoCaptions;
+import ru.teacherbox.textbooks.api.VideoCaptions.Captions;
+import ru.teacherbox.textbooks.api.VideoCaptions.Cue;
 
 class VideoTranscriptsTest {
 
@@ -31,7 +30,7 @@ class VideoTranscriptsTest {
         VideoTranscripts.Transcript transcript = transcripts.youtube("https://youtu.be/aaaaaaaaaaa", null);
 
         assertThat(transcript.truncated()).isTrue();
-        assertThat(transcript.transcript().length()).isLessThanOrEqualTo(AssignmentVideo.MAX_TRANSCRIPT);
+        assertThat(transcript.transcript().length()).isLessThanOrEqualTo(VideoTranscripts.MAX_TRANSCRIPT);
         assertThat(transcript.transcript()).startsWith("[0:00] xxx");
     }
 

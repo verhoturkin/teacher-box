@@ -1,4 +1,4 @@
-package ru.teacherbox.homework.youtube;
+package ru.teacherbox.textbooks.youtube;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -15,11 +15,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
-import ru.teacherbox.homework.application.VideoCaptions.Captions;
-import ru.teacherbox.homework.application.VideoCaptions.Cue;
-import ru.teacherbox.homework.application.VideoCaptions.Track;
-import ru.teacherbox.homework.application.VideoCaptions.Tracks;
-import ru.teacherbox.homework.youtube.YoutubeCaptions.Source;
+import ru.teacherbox.textbooks.api.VideoCaptions.Captions;
+import ru.teacherbox.textbooks.api.VideoCaptions.Cue;
+import ru.teacherbox.textbooks.api.VideoCaptions.Track;
+import ru.teacherbox.textbooks.api.VideoCaptions.Tracks;
+import ru.teacherbox.textbooks.youtube.YoutubeCaptions.Source;
 import tools.jackson.databind.json.JsonMapper;
 
 class YoutubeCaptionsTest {

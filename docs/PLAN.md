@@ -46,7 +46,7 @@ section the substep names). New ADR: 0071 «Курсы, планы уроков 
 
 ### 459. Videos in materials, automatic transcripts
 
-- [ ] 459.1 **B** *simple* — move `homework/domain/VideoLink`, `homework/application/VideoCaptions`,
+- [x] 459.1 **B** *simple* — move `homework/domain/VideoLink`, `homework/application/VideoCaptions`,
   `VideoTranscripts` and `homework/youtube/` to `textbooks` (`api` for `VideoLink` and
   `VideoTranscripts`, the adapter inside); `POST /api/teacher/homework/videos/captions|transcript`
   → `/api/teacher/textbooks/videos/*` (same bodies and `video.*` errors); `AssignmentVideos` /

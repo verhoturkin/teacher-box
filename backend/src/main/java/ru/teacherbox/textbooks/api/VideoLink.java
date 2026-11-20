@@ -1,4 +1,4 @@
-package ru.teacherbox.homework.domain;
+package ru.teacherbox.textbooks.api;
 
 import java.net.URI;
 import java.net.URISyntaxException;

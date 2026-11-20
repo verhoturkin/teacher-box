@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeUserDirectory;
@@ -32,6 +33,13 @@ public @interface TextbooksIntegrationTest {
         @Bean
         FakeStudentGroups studentGroups() {
             return new FakeStudentGroups();
+        }
+
+        /** Instead of YouTube: no network in tests. */
+        @Bean
+        @Primary
+        FakeVideoCaptions videoCaptions() {
+            return new FakeVideoCaptions();
         }
 
         @Bean

@@ -166,10 +166,10 @@ describe('VideoSection', () => {
     expect(sheet.querySelector('iframe')?.getAttribute('src')).toContain('dQw4w9WgXcQ');
 
     buttonByText(sheet, 'Субтитры YouTube').click();
-    const captions = backend.expectOne('/api/teacher/homework/videos/captions');
+    const captions = backend.expectOne('/api/teacher/textbooks/videos/captions');
     expect(captions.request.body).toEqual({ url: YOUTUBE });
     captions.flush(tracks([EN_AUTO]));
-    const request = backend.expectOne('/api/teacher/homework/videos/transcript');
+    const request = backend.expectOne('/api/teacher/textbooks/videos/transcript');
     expect(request.request.body).toEqual({ url: YOUTUBE, language: 'en', automatic: true });
     request.flush({
       title: 'Present Simple',
@@ -195,8 +195,8 @@ describe('VideoSection', () => {
     // A transcript is there and the video has one track: replacing it is asked; «Отмена» keeps it.
     answer = false;
     buttonByText(sheet, 'Субтитры YouTube').click();
-    backend.expectOne('/api/teacher/homework/videos/captions').flush(tracks([EN_AUTO]));
-    backend.expectNone('/api/teacher/homework/videos/transcript');
+    backend.expectOne('/api/teacher/textbooks/videos/captions').flush(tracks([EN_AUTO]));
+    backend.expectNone('/api/teacher/textbooks/videos/transcript');
     expect(confirmation.confirm).toHaveBeenCalledOnce();
   });
 
@@ -208,7 +208,7 @@ describe('VideoSection', () => {
 
     buttonByText(sheet, 'Субтитры YouTube').click();
     backend
-      .expectOne('/api/teacher/homework/videos/captions')
+      .expectOne('/api/teacher/textbooks/videos/captions')
       .flush(tracks([RU, EN_AUTO], EN_AUTO));
     await fixture.whenStable();
 
@@ -220,7 +220,7 @@ describe('VideoSection', () => {
     expect(confirmation.confirm).not.toHaveBeenCalled();
 
     menuItemByText('Русский').click();
-    const request = backend.expectOne('/api/teacher/homework/videos/transcript');
+    const request = backend.expectOne('/api/teacher/textbooks/videos/transcript');
     expect(request.request.body).toEqual({ url: YOUTUBE, language: 'ru', automatic: false });
     request.flush({
       title: 'Другое',
@@ -240,7 +240,7 @@ describe('VideoSection', () => {
 
     buttonByText(sheet, 'Субтитры YouTube').click();
     backend
-      .expectOne('/api/teacher/homework/videos/captions')
+      .expectOne('/api/teacher/textbooks/videos/captions')
       .flush(
         { status: 422, code: 'video.captions-failed' },
         { status: 422, statusText: 'Unprocessable' },
@@ -249,9 +249,9 @@ describe('VideoSection', () => {
     expect(readableText(sheet)).toContain('Не удалось получить субтитры с YouTube');
 
     buttonByText(sheet, 'Субтитры YouTube').click();
-    backend.expectOne('/api/teacher/homework/videos/captions').flush(tracks([RU]));
+    backend.expectOne('/api/teacher/textbooks/videos/captions').flush(tracks([RU]));
     backend
-      .expectOne('/api/teacher/homework/videos/transcript')
+      .expectOne('/api/teacher/textbooks/videos/transcript')
       .flush(
         { status: 422, code: 'video.captions-none' },
         { status: 422, statusText: 'Unprocessable' },

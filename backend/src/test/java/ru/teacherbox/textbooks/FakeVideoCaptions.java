@@ -1,10 +1,10 @@
-package ru.teacherbox.homework;
+package ru.teacherbox.textbooks;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
-import ru.teacherbox.homework.application.VideoCaptions;
+import ru.teacherbox.textbooks.api.VideoCaptions;
 import ru.teacherbox.shared.error.BusinessRuleException;
 
 /** Captions the tests put in place of YouTube's: the first track is the suggested one; a video without them has none. */

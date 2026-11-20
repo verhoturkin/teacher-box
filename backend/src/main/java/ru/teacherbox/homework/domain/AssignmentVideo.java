@@ -4,6 +4,8 @@ import java.util.Objects;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.textbooks.api.VideoLink;
+import ru.teacherbox.textbooks.api.VideoTranscripts;
 
 /**
  * A video of an assignment (ADR-0047): a link, its title and a transcript the AI reads and, when the teacher allows,
@@ -17,7 +19,7 @@ public record AssignmentVideo(UUID id, UUID assignmentId, int position, VideoLin
 
     public static final int MAX_PER_ASSIGNMENT = 5;
     public static final int MAX_TITLE = 200;
-    public static final int MAX_TRANSCRIPT = 100_000;
+    public static final int MAX_TRANSCRIPT = VideoTranscripts.MAX_TRANSCRIPT;
 
     public AssignmentVideo {
         Objects.requireNonNull(id);

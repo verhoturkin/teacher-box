@@ -1,20 +1,21 @@
-package ru.teacherbox.homework.application;
+package ru.teacherbox.textbooks.api;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
-import ru.teacherbox.homework.application.VideoCaptions.Captions;
-import ru.teacherbox.homework.application.VideoCaptions.Cue;
-import ru.teacherbox.homework.application.VideoCaptions.Track;
-import ru.teacherbox.homework.application.VideoCaptions.Tracks;
-import ru.teacherbox.homework.domain.AssignmentVideo;
-import ru.teacherbox.homework.domain.VideoLink;
+import ru.teacherbox.textbooks.api.VideoCaptions.Captions;
+import ru.teacherbox.textbooks.api.VideoCaptions.Cue;
+import ru.teacherbox.textbooks.api.VideoCaptions.Track;
+import ru.teacherbox.textbooks.api.VideoCaptions.Tracks;
 import ru.teacherbox.shared.error.BusinessRuleException;
 
 /** «Взять субтитры с YouTube» (ADR-0047): the captions of a video as a transcript the teacher edits. */
 @Service
 public class VideoTranscripts {
+
+    /** The longest transcript (characters); a longer one is cut off. */
+    public static final int MAX_TRANSCRIPT = 100_000;
 
     /** A new paragraph of the transcript starts this long after the previous one. */
     static final long PARAGRAPH_MILLIS = 30_000;
@@ -54,7 +55,7 @@ public class VideoTranscripts {
         boolean truncated = false;
         for (String paragraph : paragraphs(found.cues())) {
             int length = text.isEmpty() ? paragraph.length() : paragraph.length() + 1;
-            if (text.length() + length > AssignmentVideo.MAX_TRANSCRIPT) {
+            if (text.length() + length > MAX_TRANSCRIPT) {
                 truncated = true;
                 break;
             }
