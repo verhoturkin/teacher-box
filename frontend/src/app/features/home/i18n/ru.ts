@@ -63,6 +63,7 @@ export const ru = {
     until: (time: string) => `до ${time}`,
     start: 'Начать урок',
     join: 'Войти в урок',
+    elapsed: (done: number, total: number) => `Прошло ${String(done)} из ${String(total)} мин`,
   },
   week: {
     title: 'Неделя',

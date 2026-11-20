@@ -159,6 +159,9 @@ export const en: Translation<typeof ru> = {
     inBrowser: 'Open in browser',
   },
   summon: {
+    waiting: (name: string) => `${name} is waiting in the call`,
+    groupWaiting: 'Everyone is waiting in the call',
+    teacherWaiting: 'Your teacher is waiting in the call',
     absent: (name: string) => `${name} hasn’t joined the call yet`,
     groupAbsent: (absent: number, members: number) =>
       `Not in the call yet: ${String(absent)} of ${String(members)}`,

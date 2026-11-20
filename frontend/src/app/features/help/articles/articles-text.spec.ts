@@ -512,6 +512,38 @@ const SUMMON: Readonly<Record<string, readonly (readonly [string, string, string
   ],
 };
 
+/** Who waits in the call (450.1): [topic, baseline, now] of the calls and lesson articles. */
+const CALL_PRESENCE: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'calls',
+      'Позвать одного ученика можно раз в три минуты. Если уроки',
+      'Позвать одного ученика можно раз в три минуты. Когда ученик войдёт, строка сменится на «… ждёт в звонке» (у группы — «Все ждут в звонке»), а кнопка исчезнет; когда войдёте и вы, строка пропадёт. Если уроки',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'calls',
+      'student once every three minutes. Lessons with',
+      'student once every three minutes. Once they join, the row says “… is waiting in the call” (“Everyone is waiting in the call” for a group) and the button goes; when you join too, the line disappears. Lessons with',
+    ],
+  ],
+  'student.ru': [
+    [
+      'lesson',
+      'сколько осталось. Перенести',
+      'сколько осталось. Если учитель уже в звонке портала, на карточке появится «Учитель ждёт в звонке». Перенести',
+    ],
+  ],
+  'student.en': [
+    [
+      'lesson',
+      'during the lesson, it shows the time remaining. Once',
+      'during the lesson, it shows the time remaining. If your teacher is already in the portal call, the card says “Your teacher is waiting in the call”. Once',
+    ],
+  ],
+};
+
 /** Google Calendar setup in a dialog (437.1): [topic, baseline, now] of the calendars article. */
 const CALENDAR_SETUP: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
   'teacher.ru': [
@@ -566,7 +598,7 @@ const HERO_ROW: Readonly<Record<string, readonly (readonly [string, string, stri
   ],
 };
 
-/** Parents on the student card (452.1, ADR-0069). */
+/** Parents on the student card (453.1, ADR-0069). */
 const PARENTS: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
   'teacher.ru': [
     [
@@ -689,6 +721,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(CALENDAR_SETUP[name] ?? []),
       ...(WRITE_ALL[name] ?? []),
       ...(HERO_ROW[name] ?? []),
+      ...(CALL_PRESENCE[name] ?? []),
       ...(PARENTS[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn

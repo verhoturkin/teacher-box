@@ -21,7 +21,7 @@ ADRs: [0005](../adr/0005-notifications.md), [0009](../adr/0009-external-integrat
   texts in every language (`NoticeText`: title and body, the same in the inbox and in messengers,
   never an address — 429.1), the portal link, the bot subject (`ChatSubject`), the room address
   and `guardiansOnly` (ADR-0069: a notice about a student for the student's guardians only — billing
-  sets it while «Оплаты видит только родитель» is on; read from 453.1).
+  sets it while «Оплаты видит только родитель» is on; read from 454.1).
   `NoticeListener`
   (`@ApplicationModuleListener`: after the commit, in its own transaction, kept in the event
   registry until done) hands it to `NotificationService.notify(NoticeRequested)`, which picks the

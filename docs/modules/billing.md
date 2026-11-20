@@ -31,7 +31,7 @@ schedule), [0011](../adr/0011-groups-and-group-lessons.md) (group prices), [0014
   without one
   takes the student's last lesson length, else 60 minutes.
 - Monthly report per student in the instance time zone.
-- **«Оплаты видит только родитель» (ADR-0069 item 10, 451.3)** — a row of
+- **«Оплаты видит только родитель» (ADR-0069 item 10, 452.3)** — a row of
   `payments_guardians_only` per student, set by the teacher in the student card
   (`PaymentVisibilityService`). Turning it on needs a guardian (`identity::api.Guardians`, else
   422 `billing.no-guardian`); it is effective only while the student has one
@@ -54,12 +54,12 @@ and publishes `shared.notice.NoticeRequested` for the student with the texts in 
 missed lesson with its price, a removed charge, a payment and a voided payment — each with the new
 balance («Баланс» or, when negative, «Задолженность»). While the payments are hidden from the
 student, each of them is `NoticeRequested.guardiansOnly`: `notifications` skips the student and
-delivers it to the guardians (453.1).
+delivers it to the guardians (454.1).
 
 ## Data
 
 `student_accounts`, `lessons`, `payments` (+ receipt), `pending_receipts`, `group_prices`,
-`payments_guardians_only` (V3, 451.3: `student_id`, `created_at`), `settings` (default
+`payments_guardians_only` (V3, 452.3: `student_id`, `created_at`), `settings` (default
 lesson price; `currency` — filled once from `.env` by `BillingSettingsImport`, ADR-0056, kept in
 memory by `BillingCurrencySetting` between changes, forgotten by the full reset).
 
@@ -70,7 +70,7 @@ memory by `BillingCurrencySetting` between changes, forgotten by the full reset)
 `GET/PUT students/{id}/visibility` — `{studentId, guardiansOnly, hasGuardians}`, `PUT` body
 `{guardiansOnly}`), `/api/me/billing` (+ `/summary`, `/payments/{id}/receipt`; 404
 `billing.hidden` while hidden) and `GET /api/me/billing/visible` (`{visible}`, never hidden); the
-guardian (`GuardianBillingController`, 451.2):
+guardian (`GuardianBillingController`, 452.2):
 `/api/guardian/students/{studentId}/billing` (+ `/summary`, `/payments/{id}/receipt`) — the same
 `BillingQueryService` and `ReceiptService.downloadOwn` after `GuardianAccess.require` (not their
 child → 404 `student.not-found`, a student or the teacher → 403). Bot actions (`billing/chat`):

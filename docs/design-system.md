@@ -1084,6 +1084,13 @@ Gallery: [`/gallery/states`](../frontend/src/app/features/gallery/states/).
     Only list sections; the rest keep the indicator;
   - error — icon, «Не удалось загрузить …», the error with its code, «Повторить»;
   - ready — data or the empty state (only after a successful load; a bad link is an error).
+- **Wavy progress** `tb-wavy-progress` (`@shared/ui/wavy-progress`, 450.2; PrimeNG 21.1 has only
+  the flat bar): determinate, a `progressbar` with `aria-valuenow` 0–100 and a name. The active
+  part a wave of 3 dp amplitude, 40 dp wavelength, 4 dp thick, 10 dp high, primary; 4 dp space,
+  then the flat 4 dp track in secondary-container ending in a 4 dp primary stop (**M3E**
+  `LinearProgressIndicator`). The wave drifts one wavelength in 2 s (*ours*: M3 publishes no speed);
+  reduced motion stops it. Only the elapsed time of the lesson hero on the teacher's Today; other
+  progress keeps `p-progressbar`.
 - Load requests are quiet (`quietContext()` / `SKIP_ERROR_TOAST`): the error shows in the section.
 - **Empty state** — only `tb-empty-state`: icon, what is empty, what will appear, a first-action
   button (omitted if the same action is the FAB or a section button); `compact` for home widgets and

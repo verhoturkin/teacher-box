@@ -157,7 +157,7 @@ zone, for the Today page, 239.1),
 `GET students/{studentId}/tasks` — the student's tasks as the student's list shows them, for the student card
 (237.1); an unknown student has none);
 `/api/me/homework/**` (tasks, submissions, attachments, `tasks/{taskId}/textbooks/{textbookId}`, summary, `limits`).
-The guardian (`GuardianHomeworkController`, 451.2): `/api/guardian/students/{studentId}/homework`
+The guardian (`GuardianHomeworkController`, 452.2): `/api/guardian/students/{studentId}/homework`
 (the list), `summary`, `tasks/{taskId}` (texts, answers, grade and the teacher's comment),
 `tasks/{taskId}/quiz` (the quiz as the child sees it now — the key only as its reveal rule allows),
 `attachments/{attachmentId}` (materials and the child's answer files),

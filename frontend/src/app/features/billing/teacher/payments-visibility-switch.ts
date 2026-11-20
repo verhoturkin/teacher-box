@@ -15,7 +15,7 @@ import { PaymentVisibility } from '../data-access/billing.models';
 import { T } from '../i18n/texts';
 
 /**
- * «Оплаты видит только родитель» in the «Родители» card of a student (ADR-0069, 451.3): a settings tile with a
+ * «Оплаты видит только родитель» in the «Родители» card of a student (ADR-0069, 452.3): a settings tile with a
  * switch, shown only while the student has a parent; changed at once. A failed load shows nothing — the card
  * around it still works.
  */

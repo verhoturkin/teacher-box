@@ -78,7 +78,7 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
   from the old variables keep the old limits until the teacher changes them.
 - **ICS feed:** `/api/public/schedule/<token>.ics` (256-bit token, hash stored, shown once): the teacher's feed
   has all lessons with names, a student's — own lessons (incl. group ones, group name instead of
-  names), a guardian's (ADR-0069, 451.1) — every lesson of their current children once, titled
+  names), a guardian's (ADR-0069, 452.1) — every lesson of their current children once, titled
   «Маша — Занятие» («Маша, Петя — Занятие группы «Б1»» when siblings share it; calendar «Занятия
   детей — …»); a guardian without current children (all deactivated) gets 404, like a deactivated
   student.
@@ -147,10 +147,10 @@ time zone, for the Today page (239.1); `off-times`, `google`, `settings` (lesson
 `GET lessons?from&to` takes `studentId` — the student's lessons, group lessons included — or `groupId` for the
 student card (237.1); both at once → `schedule.filter-invalid`, an unknown id → an empty list),
 `/api/me/schedule/**` (lessons, requests, busy, feed, settings, summary), public ICS feed and Google callback.
-The guardian (`GuardianScheduleController`, 451.1): `/api/guardian/students/{studentId}/schedule/`
+The guardian (`GuardianScheduleController`, 452.1): `/api/guardian/students/{studentId}/schedule/`
 `settings`, `summary`, `lessons`, `lessons/{lessonId}`, `history` — the same `ScheduleQueries` as
 `/api/me/schedule` after `GuardianAccess.require` (not their child → 404 `student.not-found`, a
-student or the teacher → 403); no busy / free times and no requests (453.2 adds them on the child's
+student or the teacher → 403); no busy / free times and no requests (454.2 adds them on the child's
 behalf); own feed `/api/guardian/schedule/feed` (GET / POST / DELETE, `FeedService` keyed by the
 guardian's id).
 Bot actions (`schedule/chat`): schedule, mark lessons, answer requests (teacher); lesson change, my requests

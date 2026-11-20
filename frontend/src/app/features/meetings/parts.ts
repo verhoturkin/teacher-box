@@ -7,4 +7,5 @@ export { RoomLink } from './rooms/room-link';
 export { RoomPanel } from './rooms/room-panel';
 export { MeetingsSettingsPanel } from './settings/meetings-settings-panel';
 export { CallSummon } from './ui/call-summon';
+export { TeacherWaiting } from './ui/teacher-waiting';
 export { JoinLessonButton } from './ui/join-lesson-button';

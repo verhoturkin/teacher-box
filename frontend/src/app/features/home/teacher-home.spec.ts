@@ -92,7 +92,7 @@ describe('TeacherHome', () => {
     expect(text).toContain('Сдано вовремя 3');
     // the lessons of today, the queue, the figures
     const widgets = Array.from(
-      hostElement(fixture).querySelectorAll('.tb-feed > .tb-stack > *'),
+      hostElement(fixture).querySelectorAll('.tb-feed .tb-stack > *'),
       (widget) => widget.tagName.toLowerCase(),
     );
     expect(widgets).toEqual([
@@ -143,6 +143,13 @@ describe('TeacherHome', () => {
 });
 
 describe('TeacherHome breakpoints', () => {
+  // a lesson of another day that has not ended: the hero from large
+  const later = scheduledLesson({
+    id: 'l-9',
+    startsAt: at(2099, 1, 5, 18),
+    endsAt: at(2099, 1, 5, 19),
+  });
+
   async function render(width: number): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       imports: [TeacherHome],
@@ -153,7 +160,7 @@ describe('TeacherHome breakpoints', () => {
     fixture.detectChanges();
     backend
       .expectOne('/api/teacher/schedule/summary')
-      .flush(scheduleSummary({ today: [scheduledLesson()] }));
+      .flush(scheduleSummary({ today: [scheduledLesson()], next: later }));
     backend.expectOne('/api/teacher/billing/summary').flush(billingSummary());
     backend.expectOne('/api/teacher/homework/summary').flush(homeworkSummary());
     backend.expectOne('/api/teacher/notifications/summary').flush(teacherNotificationsSummary());
@@ -164,16 +171,17 @@ describe('TeacherHome breakpoints', () => {
   }
 
   it.each([
-    [1700, 'tb-feed--3', true],
-    [1300, 'tb-feed--2', true],
-    [900, 'tb-feed--1', true],
-    [500, 'tb-feed--1', true],
-  ])('at %i px the feed is %s (today list and week figures: %s)', async (width, cls, wide) => {
+    [1920, true],
+    [1300, true],
+    [900, false],
+    [500, false],
+  ])('at %i px the feed is two panes with the hero: %s', async (width, twoPanes) => {
     const host = await render(width);
 
-    expect(host.querySelector('.tb-feed')?.classList.contains(cls)).toBe(true);
-    expect(host.querySelector('tb-today-lessons') !== null).toBe(wide);
-    expect(host.querySelector('tb-week-figures') !== null).toBe(wide);
+    expect(host.querySelector('.tb-feed')?.classList.contains('tb-feed--wide')).toBe(twoPanes);
+    expect(host.querySelector('tb-today-lessons[part="hero"]') !== null).toBe(twoPanes);
+    expect(host.querySelector('.tb-feed__figures tb-week-figures')).not.toBeNull();
+    expect(host.querySelector('tb-today-lessons') !== null).toBe(true);
     expect(host.querySelector('tb-finance-widget')).not.toBeNull();
     expect(host.querySelector('tb-page-header [meta]') !== null).toBe(width >= 600);
   });
