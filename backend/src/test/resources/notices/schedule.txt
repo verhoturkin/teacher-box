@@ -259,6 +259,24 @@ link: /teacher/schedule
 subject: change-request 00000000-0000-0000-0000-0000000000b0
 --
 
+## request: move by a guardian [RU]
+to: teacher
+kind: SCHEDULE_REQUEST
+title: Анна Иванова просит перенести занятие
+body: Занятие: четверг, 01.10 в 18:00. Предлагает: пятница, 02.10 в 19:30. Запрос от родителя (Ольга).
+link: /teacher/schedule
+subject: change-request 00000000-0000-0000-0000-0000000000b2
+--
+
+## request: cancel by an unlinked guardian [RU]
+to: teacher
+kind: SCHEDULE_REQUEST
+title: Анна Иванова просит отменить занятие
+body: Занятие: четверг, 01.10 в 18:00. Запрос от родителя.
+link: /teacher/schedule
+subject: change-request 00000000-0000-0000-0000-0000000000b3
+--
+
 ## request: cancel, stranger, lost group [RU]
 to: teacher
 kind: SCHEDULE_REQUEST
@@ -712,6 +730,24 @@ title: Анна Иванова requested a lesson reschedule
 body: Lesson: Thursday, 01.10 at 18:00, group “ОГЭ”.
 link: /teacher/schedule
 subject: change-request 00000000-0000-0000-0000-0000000000b0
+--
+
+## request: move by a guardian [EN]
+to: teacher
+kind: SCHEDULE_REQUEST
+title: Анна Иванова requested a lesson reschedule
+body: Lesson: Thursday, 01.10 at 18:00. Suggested time: Friday, 02.10 at 19:30. Sent by a parent (Ольга).
+link: /teacher/schedule
+subject: change-request 00000000-0000-0000-0000-0000000000b2
+--
+
+## request: cancel by an unlinked guardian [EN]
+to: teacher
+kind: SCHEDULE_REQUEST
+title: Анна Иванова requested a lesson cancellation
+body: Lesson: Thursday, 01.10 at 18:00. Sent by a parent.
+link: /teacher/schedule
+subject: change-request 00000000-0000-0000-0000-0000000000b3
 --
 
 ## request: cancel, stranger, lost group [EN]

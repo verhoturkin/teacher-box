@@ -19,12 +19,17 @@ public class ChatSettingsService {
     /** Stands for any student when listing the actions of students. */
     static final UUID ANY_STUDENT = new UUID(0, 0);
 
+    /** Stands for any guardian when listing the actions of guardians (ADR-0069). */
+    static final UUID ANY_GUARDIAN = new UUID(0, 1);
+
     /**
      * @param teacherActions the teacher may manage the portal through the bot
      * @param teacherMenu    the teacher's menu in the bot
      * @param studentMenu    a student's menu in the bot
+     * @param guardianMenu   a parent's menu in the bot (ADR-0069)
      */
-    public record BotView(boolean teacherActions, List<String> teacherMenu, List<String> studentMenu) {
+    public record BotView(boolean teacherActions, List<String> teacherMenu, List<String> studentMenu,
+            List<String> guardianMenu) {
     }
 
     private final ChatRepository chat;
@@ -42,7 +47,7 @@ public class ChatSettingsService {
     @Transactional(readOnly = true)
     public BotView view() {
         return new BotView(chat.teacherActions(), titles(new ChatUser(users.teacherId(), Role.TEACHER)),
-                titles(new ChatUser(ANY_STUDENT, Role.STUDENT)));
+                titles(new ChatUser(ANY_STUDENT, Role.STUDENT)), titles(new ChatUser(ANY_GUARDIAN, Role.GUARDIAN)));
     }
 
     @Transactional

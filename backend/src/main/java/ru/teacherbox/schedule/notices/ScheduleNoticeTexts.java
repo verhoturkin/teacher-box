@@ -36,6 +36,9 @@ enum ScheduleNoticeTexts {
             return "Занятие: " + when + (group == null ? "" : ", группа «" + group + "»") + ".";
         }
         @Override String proposes(String when) { return "Предлагает: " + when + "."; }
+        @Override String fromGuardian(@Nullable String guardian) {
+            return guardian == null ? "Запрос от родителя." : "Запрос от родителя (" + guardian + ").";
+        }
         @Override String lateCancellation() { return "Поздняя отмена."; }
         @Override String lateAbsence() { return "Поздно — решите, засчитать ли пропуск."; }
         @Override String comment(String comment) { return "Комментарий: " + comment; }
@@ -87,6 +90,9 @@ enum ScheduleNoticeTexts {
             return "Lesson: " + when + (group == null ? "" : ", group “" + group + "”") + ".";
         }
         @Override String proposes(String when) { return "Suggested time: " + when + "."; }
+        @Override String fromGuardian(@Nullable String guardian) {
+            return guardian == null ? "Sent by a parent." : "Sent by a parent (" + guardian + ").";
+        }
         @Override String lateCancellation() { return "Late cancellation."; }
         @Override String lateAbsence() { return "This is short notice. Decide whether to mark the lesson as missed."; }
         @Override String comment(String comment) { return "Comment: " + comment; }
@@ -164,6 +170,9 @@ enum ScheduleNoticeTexts {
     abstract String requestedLesson(String when, @Nullable String group);
 
     abstract String proposes(String when);
+
+    /** A parent sent the request on the child's behalf; {@code null}: their name is unknown. */
+    abstract String fromGuardian(@Nullable String guardian);
 
     abstract String lateCancellation();
 

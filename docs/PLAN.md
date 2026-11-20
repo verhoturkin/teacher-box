@@ -227,7 +227,7 @@ once, after 456.
   answer to a change request. Settings — `GET|PUT /api/guardian/notifications/preferences`
   (`disabledCategories`); quiet hours, inbox and messengers — the common `/api/me/**`. The
   guardian's copy has no bot buttons and no room. Wiki `Parents` waits for 454.3 (no screen yet).*
-- [ ] 454.2 *complex* B — schedule: move / cancel requests on behalf — migration
+- [x] 454.2 *complex* B — schedule: move / cancel requests on behalf — migration
   `db/migration/schedule/V8__change_requests_requested_by.sql` (`requested_by` UUID, the student
   for old rows), `GuardianScheduleController` POST / GET / DELETE requests via
   `ChangeRequestService`; the teacher's request list and notice say «запрос от родителя
@@ -235,6 +235,11 @@ once, after 456.
   (`ChatSettingsService`) with «Расписание детей», «Баланс», «Перенести занятие» — chat actions in
   `schedule/chat`, `billing/chat`, child chosen when there are several. Tests: service,
   controller, chat actions. Docs: `docs/modules/schedule.md`, wiki `Messengers`.
+  *Done: the guardian also gets `busy` and `free-times` (the move dialog needs them) and the bot's
+  «Отменить занятие» too (the goals say move or cancel); `RequestView.guardianId` / `guardianName`,
+  the teacher's notice gets a line «Запрос от родителя (Анна).»; the answer stays one notice to
+  the child, which `notifications` copies to the guardians (454.1). `BotView.guardianMenu` for
+  the «Что умеет бот» panel (shown with 454.3).*
 - [ ] 454.3 *complex* F — `m3-expressive`. `/family` notifications: inbox, the four preferences,
   messenger linking (`features/notifications` parts reused); the change request dialog
   (`schedule/student/change-request-dialog.ts`) in the family schedule; the teacher's request row

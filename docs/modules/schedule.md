@@ -64,6 +64,13 @@ calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `share
   possible; per-weekday windows are roadmap/08.
   In a group lesson an early «Не приду» is accepted at once (excused); a move moves it for everyone. A teacher
   edit of a lesson with an open request makes it `OUTDATED`.
+- **Requests from a parent** (ADR-0069, 454.2): a guardian asks on a child's behalf, by the same
+  `ChangeRequestService.request` and rules — the request is the child's (`student_id`), its sender
+  is `requested_by` (V8; the student for older rows). `RequestView` adds `guardianId` /
+  `guardianName` (`null` when the student asked); `LessonChangeRequested.guardianId` makes the
+  teacher's notice say «Запрос от родителя (Анна).», the teacher's bot list «— запрос от родителя
+  (Анна)». The answer (`LessonChangeResolved`) is one notice to the child; `notifications` copies it
+  to the guardians (category lessons), so the asking parent gets it once.
 - **Availability:** the student sees the teacher's busy time without names (lessons, Google busy, off-time)
   and cannot ask to move onto it; the teacher may override. Off-time (`off_times`): one-off ranges or weekly
   windows, periods computed on the fly.
@@ -150,11 +157,16 @@ student card (237.1); both at once → `schedule.filter-invalid`, an unknown id 
 The guardian (`GuardianScheduleController`, 452.1): `/api/guardian/students/{studentId}/schedule/`
 `settings`, `summary`, `lessons`, `lessons/{lessonId}`, `history` — the same `ScheduleQueries` as
 `/api/me/schedule` after `GuardianAccess.require` (not their child → 404 `student.not-found`, a
-student or the teacher → 403); no busy / free times and no requests (454.2 adds them on the child's
-behalf); own feed `/api/guardian/schedule/feed` (GET / POST / DELETE, `FeedService` keyed by the
-guardian's id).
+student or the teacher → 403); on the child's behalf (454.2) `busy`, `free-times`,
+`POST lessons/{lessonId}/requests` (body as `/api/me`), `GET requests` (the child's latest, whoever
+sent them), `DELETE requests/{requestId}` (withdraws any unanswered request of the child) — the same
+`TeacherAvailability` / `ChangeRequestService` / `ScheduleQueries`; a lesson or request not the
+child's → 404; own feed `/api/guardian/schedule/feed` (GET / POST / DELETE, `FeedService` keyed by
+the guardian's id).
 Bot actions (`schedule/chat`): schedule, mark lessons, answer requests (teacher); lesson change, my requests
-(student).
+(student); «Расписание детей» (`schedule.family`: every child's upcoming lessons under their name,
+no join button) and the same lesson change (`schedule.move`, `schedule.cancel`) for a guardian —
+with several children the dialog first asks «Для кого?», each step checks the child is still theirs.
 After «Проведено» (or an attendance mark that leaves the lesson conducted) the mark-lessons dialog offers
 «Записать итоги» / «Пропустить»: the next text message (≤ 4000 characters) is saved with `updateSummary` (the
 portal's «Что дальше» is kept), then «Отправить ученику(ам)» (`shareSummary`) / «Готово». The marking is

@@ -48,7 +48,9 @@ ADRs: [0005](../adr/0005-notifications.md), [0009](../adr/0009-external-integrat
   muted topics are the guardian's own `Preferences`. A guardian uses messengers and the bot
   while they have a current child (`mayUseMessengers`, `ChatEngine.user` → `ChatUser` with
   `Role.GUARDIAN`, `isGuardian()`); link codes work as for everyone; the bot's help leads to
-  `/family/<first child>/help/bot`. Guardian actions in the bot — 454.2.
+  `/family/<first child>/help/bot`. Guardian actions in the bot (454.2): «Расписание детей»,
+  «Баланс», «Перенести занятие», «Отменить занятие» (`schedule/chat`, `billing/chat`);
+  `GET /api/teacher/notifications/bot` lists them in `guardianMenu`.
 - **Kinds and preferences.** `NoticeRequested.kind` is the name of a `NotificationKind`; the
   modules declare their kinds as enums implementing `shared.notice.NoticeKind`
   (`ScheduleNoticeKind`, `HomeworkNoticeKind`, `BillingNoticeKind`, `MeetingNoticeKind`,

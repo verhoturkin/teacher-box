@@ -61,9 +61,12 @@ class PaymentsChatAction implements ChatAction {
 
     @Override
     public ChatStep start(ChatUser user) {
-        StudentLedger ledger = queries.ledger(user.id());
+        return ChatStep.done(describe(queries.ledger(user.id()), user.language()));
+    }
+
+    /** The balance, the lesson price, the latest payments and charged lessons of a ledger. */
+    static String describe(StudentLedger ledger, Language language) {
         Currency currency = Currency.getInstance(ledger.currency());
-        Language language = user.language();
         BillingChatTexts t = BillingChatTexts.of(language);
         StringBuilder text = new StringBuilder();
         long balance = ledger.balance();
@@ -95,7 +98,7 @@ class PaymentsChatAction implements ChatAction {
             charged.forEach(lesson -> text.append("\n• ").append(ChatText.date(lesson.date())).append(" — ")
                     .append(money(lesson.price(), currency, language)));
         }
-        return ChatStep.done(text.toString());
+        return text.toString();
     }
 
     @Override

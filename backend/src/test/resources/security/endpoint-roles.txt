@@ -6,6 +6,7 @@
 * /error PUBLIC
 DELETE /api/admin/loggers/{name} ADMIN
 DELETE /api/guardian/schedule/feed GUARDIAN
+DELETE /api/guardian/students/{studentId}/schedule/requests/{requestId} GUARDIAN
 DELETE /api/me/avatar GUARDIAN STUDENT TEACHER
 DELETE /api/me/channels/{channel} GUARDIAN STUDENT TEACHER
 DELETE /api/me/push/subscriptions/{id} GUARDIAN STUDENT TEACHER
@@ -70,9 +71,12 @@ GET /api/guardian/students/{studentId}/homework/summary GUARDIAN
 GET /api/guardian/students/{studentId}/homework/tasks/{taskId} GUARDIAN
 GET /api/guardian/students/{studentId}/homework/tasks/{taskId}/quiz GUARDIAN
 GET /api/guardian/students/{studentId}/homework/tasks/{taskId}/textbooks/{textbookId} GUARDIAN
+GET /api/guardian/students/{studentId}/schedule/busy GUARDIAN
+GET /api/guardian/students/{studentId}/schedule/free-times GUARDIAN
 GET /api/guardian/students/{studentId}/schedule/history GUARDIAN
 GET /api/guardian/students/{studentId}/schedule/lessons GUARDIAN
 GET /api/guardian/students/{studentId}/schedule/lessons/{lessonId} GUARDIAN
+GET /api/guardian/students/{studentId}/schedule/requests GUARDIAN
 GET /api/guardian/students/{studentId}/schedule/settings GUARDIAN
 GET /api/guardian/students/{studentId}/schedule/summary GUARDIAN
 GET /api/me ADMIN GUARDIAN STUDENT TEACHER
@@ -202,6 +206,7 @@ POST /api/auth/refresh PUBLIC
 POST /api/boards/{id}/live STUDENT TEACHER
 POST /api/client-errors PUBLIC
 POST /api/guardian/schedule/feed GUARDIAN
+POST /api/guardian/students/{studentId}/schedule/lessons/{lessonId}/requests GUARDIAN
 POST /api/me/channels/{channel}/link-code GUARDIAN STUDENT TEACHER
 POST /api/me/homework/tasks/{taskId}/quiz/attempts STUDENT TEACHER
 POST /api/me/homework/tasks/{taskId}/quiz/attempts/{attemptId}/submit STUDENT TEACHER

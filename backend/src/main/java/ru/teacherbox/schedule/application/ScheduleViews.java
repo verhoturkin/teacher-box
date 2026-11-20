@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.schedule.api.CancelledBy;
@@ -151,6 +152,9 @@ public final class ScheduleViews {
      * @param groupId  the group of a group lesson
      * @param late     a cancellation asked for later than the cancellation policy allows
      * @param answer   the teacher's comment on the decision
+     * @param guardianId   the parent who sent the request on the child's behalf (ADR-0069); {@code null}: the
+     *                     student did
+     * @param guardianName that parent's name, for «запрос от родителя (Анна)»
      */
     public record RequestView(
             UUID id,
@@ -168,14 +172,22 @@ public final class ScheduleViews {
             boolean late,
             @Nullable String answer,
             Instant createdAt,
-            @Nullable Instant resolvedAt) {
+            @Nullable Instant resolvedAt,
+            @Nullable UUID guardianId,
+            @Nullable String guardianName) {
 
-        static RequestView of(ChangeRequest request, Lesson lesson, ScheduleNames names, Duration lateCancellation) {
+        /**
+         * @param guardians names of the guardians who sent some of the requests (ADR-0069)
+         */
+        static RequestView of(ChangeRequest request, Lesson lesson, ScheduleNames names, Map<UUID, String> guardians,
+                Duration lateCancellation) {
+            UUID guardianId = request.guardianId();
             return new RequestView(request.id(), request.lessonId(), request.studentId(),
                     names.student(request.studentId()), names.avatar(request.studentId()), lesson.groupId(), names.group(lesson.groupId()),
                     request.kind(), lesson.startsAt(), request.proposedStartsAt(), request.comment(), request.status(),
                     isLate(request.kind(), lesson.startsAt(), request.createdAt(), lateCancellation),
-                    request.resolutionComment(), request.createdAt(), request.resolvedAt());
+                    request.resolutionComment(), request.createdAt(), request.resolvedAt(), guardianId,
+                    guardianId == null ? null : guardians.get(guardianId));
         }
     }
 

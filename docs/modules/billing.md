@@ -74,7 +74,8 @@ guardian (`GuardianBillingController`, 452.2):
 `/api/guardian/students/{studentId}/billing` (+ `/summary`, `/payments/{id}/receipt`) — the same
 `BillingQueryService` and `ReceiptService.downloadOwn` after `GuardianAccess.require` (not their
 child → 404 `student.not-found`, a student or the teacher → 403). Bot actions (`billing/chat`):
-record a payment, record a lesson, the student's payments.
+record a payment, record a lesson, the student's payments; a guardian's «Баланс» (`billing.family`,
+454.2) — the same text for each child under their name, hidden payments included.
 
 ### Operations journal (0.25.0)
 

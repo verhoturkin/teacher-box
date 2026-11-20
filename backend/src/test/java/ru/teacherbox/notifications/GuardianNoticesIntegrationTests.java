@@ -48,7 +48,8 @@ import ru.teacherbox.testing.TestUsers;
 class GuardianNoticesIntegrationTests {
 
     private enum Kind implements NoticeKind {
-        SCHEDULE_REMINDER, PAYMENT_RECORDED, HOMEWORK_ASSIGNED, HOMEWORK_DUE_SOON, HOMEWORK_REVIEWED, SCHEDULE_REQUEST
+        SCHEDULE_REMINDER, PAYMENT_RECORDED, HOMEWORK_ASSIGNED, HOMEWORK_DUE_SOON, HOMEWORK_REVIEWED, SCHEDULE_REQUEST,
+        SCHEDULE_REQUEST_ANSWERED
     }
 
     @Autowired
@@ -129,6 +130,29 @@ class GuardianNoticesIntegrationTests {
         notifications.notify(reminder);
         assertThat(inbox.findPage(mother, 0, 10)).as("delivered again: once").hasSize(1);
         assertThat(inbox.findPage(child, 0, 10)).hasSize(1);
+        assertThat(deliveries.findByRecipient(mother)).hasSize(1);
+    }
+
+    @Test
+    void theAnswerToARequestReachesTheChildAndEachGuardianOnce() {
+        UUID child = directory.addStudent("Соня");
+        UUID mother = guardians.addGuardian("Мама Сони", child);
+        connect(child, "9611");
+        connect(mother, "9612");
+        // the schedule writes one answer to the child, whoever sent the request (454.2)
+        NoticeRequested answer = notice(child, Kind.SCHEDULE_REQUEST_ANSWERED, "/cabinet/schedule");
+
+        notifications.notify(answer);
+        notifications.notify(answer);
+
+        assertThat(inbox.findPage(child, 0, 10)).singleElement().extracting(InboxNotification::title)
+                .isEqualTo("Заголовок");
+        assertThat(inbox.findPage(mother, 0, 10)).singleElement().satisfies(notification -> {
+            assertThat(notification.kind()).isEqualTo(NotificationKind.SCHEDULE_REQUEST_ANSWERED);
+            assertThat(notification.title()).isEqualTo("Соня · Заголовок");
+            assertThat(notification.link()).isEqualTo("/family/" + child + "/schedule");
+        });
+        assertThat(deliveries.findByRecipient(child)).hasSize(1);
         assertThat(deliveries.findByRecipient(mother)).hasSize(1);
     }
 
