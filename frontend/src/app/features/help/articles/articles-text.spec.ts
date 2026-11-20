@@ -695,6 +695,34 @@ const PARENT_REQUESTS: Readonly<Record<string, readonly (readonly [string, strin
   ],
 };
 
+/** The lesson heroes show the elapsed bar and an action row (457.1): [topic, baseline, now]. */
+const HERO_BAR: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'first-steps',
+      'над остальными. Если',
+      'над остальными: во время урока на ней полоса прошедшего времени, внизу — доска, «Позвать» и кнопка входа. Если',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'first-steps',
+      'across the top. With',
+      'across the top: during the lesson it shows a bar of the time passed, and below are the board, “Call in” and the join button. With',
+    ],
+  ],
+  'student.ru': [
+    ['lesson', 'сколько осталось. Если', 'сколько осталось и полосу прошедшего времени. Если'],
+  ],
+  'student.en': [
+    [
+      'lesson',
+      'it shows the time remaining. If',
+      'it shows the time remaining and a bar of the time passed. If',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -794,6 +822,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(PARENTS[name] ?? []),
       ...(PARENT_REQUESTS[name] ?? []),
       ...(PARENT_NOTES[name] ?? []),
+      ...(HERO_BAR[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

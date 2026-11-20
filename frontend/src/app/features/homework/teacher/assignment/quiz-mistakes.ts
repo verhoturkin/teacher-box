@@ -36,8 +36,7 @@ import { T } from '@features/homework/i18n/texts';
       margin: 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     .tb-asg__side {
@@ -70,6 +69,7 @@ import { T } from '@features/homework/i18n/texts';
     .tb-asg-stats__count {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
       white-space: nowrap;
     }
 

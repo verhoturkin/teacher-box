@@ -67,6 +67,7 @@ export const en: Translation<typeof ru> = {
     lesson: 'Lesson',
     requestSent: (kind: string) => `${kind}: request sent. Waiting for your teacher’s response.`,
     nothing: 'No upcoming lessons',
+    elapsed: (done: number, total: number) => `${String(done)} of ${String(total)} minutes elapsed`,
     week: (count: number) => `Lessons this week: ${String(count)}`,
     sent: 'Request sent to your teacher',
   },

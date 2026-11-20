@@ -84,6 +84,7 @@ export class SetupRulesStep {
       padding: var(--tb-space-4);
       border-radius: var(--tb-shape-lg-increased, 1.25rem);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
       background: var(--p-md-surface-container);
 
       .tb-i {
@@ -94,6 +95,7 @@ export class SetupRulesStep {
         display: block;
         margin-block-end: var(--tb-space-1);
         font: var(--tb-type-title-s);
+        letter-spacing: var(--tb-tracking-title-s);
       }
     }
   `,

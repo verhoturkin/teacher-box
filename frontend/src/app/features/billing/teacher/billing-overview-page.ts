@@ -456,6 +456,7 @@ const NUMBER = new Intl.NumberFormat(locale());
     .tb-ops-figure__note {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     .tb-ops {
@@ -489,22 +490,24 @@ const NUMBER = new Intl.NumberFormat(locale());
     .tb-ops__overline {
       margin: 0;
       font: var(--tb-type-title-m-emphasized);
+      letter-spacing: var(--tb-tracking-title-m-emphasized);
     }
 
     .tb-ops__overline {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-s);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      letter-spacing: var(--tb-tracking-label-s);
     }
 
     .tb-ops__pane-title {
       margin: 0;
       font: var(--tb-type-title-l-emphasized);
+      letter-spacing: var(--tb-tracking-title-l-emphasized);
     }
 
     .tb-ops__all {
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
     }
 
     .tb-ops__list,
@@ -526,7 +529,7 @@ const NUMBER = new Intl.NumberFormat(locale());
 
     .tb-ops__amount {
       font: var(--tb-type-title-s);
-      font-variant-numeric: tabular-nums;
+      letter-spacing: var(--tb-tracking-title-s);
       white-space: nowrap;
     }
 
@@ -557,6 +560,7 @@ const NUMBER = new Intl.NumberFormat(locale());
       position: relative;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-s);
+      letter-spacing: var(--tb-tracking-label-s);
     }
 
     .tb-ops__week-bar {
@@ -615,6 +619,7 @@ const NUMBER = new Intl.NumberFormat(locale());
 
       .tb-ops-figure .tb-figure__value {
         font: var(--tb-type-headline-s);
+        letter-spacing: var(--tb-tracking-headline-s);
         overflow-wrap: anywhere;
       }
 

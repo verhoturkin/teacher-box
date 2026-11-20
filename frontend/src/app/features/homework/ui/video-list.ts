@@ -66,6 +66,7 @@ export function videoName(video: { readonly title: string | null }, index: numbe
 
     .tb-video-list__title {
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
       overflow-wrap: anywhere;
     }
 

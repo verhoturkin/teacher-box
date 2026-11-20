@@ -34,6 +34,7 @@
   padding: 0 var(--tb-space-4);
   color: var(--p-md-on-surface);
   font: var(--tb-type-title-l-emphasized);
+  letter-spacing: var(--tb-tracking-title-l-emphasized);
   overflow-wrap: anywhere;
 
   tb-portal-logo {
@@ -63,6 +64,7 @@
   border-radius: var(--tb-shape-full);
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-label-l);
+  letter-spacing: var(--tb-tracking-label-l);
   text-decoration: none;
 
   &:hover {
@@ -163,6 +165,7 @@
     min-height: 0;
     border-radius: 0;
     font: var(--tb-type-label-m);
+    letter-spacing: var(--tb-tracking-label-m);
     text-align: center;
   }
 
@@ -236,6 +239,7 @@
   .tb-side-nav__item--active {
     color: var(--p-md-secondary);
     font: var(--tb-type-label-m-emphasized);
+    letter-spacing: var(--tb-tracking-label-m-emphasized);
   }
 
   .tb-side-nav__item--active .tb-side-nav__icon {

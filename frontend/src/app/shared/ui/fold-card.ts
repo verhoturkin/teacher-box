@@ -87,6 +87,7 @@ let nextId = 0;
       margin: 0;
       padding: var(--tb-space-5) var(--tb-space-6) var(--tb-space-3);
       font: var(--tb-type-title-l-emphasized);
+      letter-spacing: var(--tb-tracking-title-l-emphasized);
     }
 
     :host(.tb-fold-card--collapsible) .tb-fold-card__heading {
@@ -137,6 +138,7 @@ let nextId = 0;
     .tb-fold-card__summary {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-fold-card__chevron {
@@ -207,6 +209,7 @@ let nextId = 0;
 
       .p-card-title {
         font: var(--tb-type-title-m);
+        letter-spacing: var(--tb-tracking-title-m);
       }
 
       .tb-stack > * + * {

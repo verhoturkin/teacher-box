@@ -189,6 +189,7 @@ interface CellView {
     .tb-journal__range {
       margin: 0;
       font: var(--tb-type-title-l);
+      letter-spacing: var(--tb-tracking-title-l);
     }
 
     .tb-journal__legend {
@@ -199,6 +200,7 @@ interface CellView {
       padding: 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
       list-style: none;
     }
 
@@ -256,6 +258,7 @@ interface CellView {
       padding: var(--tb-space-1) var(--tb-space-2);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
       text-align: start;
       vertical-align: bottom;
     }
@@ -296,6 +299,7 @@ interface CellView {
       overflow: hidden;
       color: var(--p-md-on-surface);
       font: var(--tb-type-title-s);
+      letter-spacing: var(--tb-tracking-title-s);
       text-decoration: none;
       overflow-wrap: anywhere;
       -webkit-box-orient: vertical;
@@ -308,6 +312,7 @@ interface CellView {
 
     .tb-journal__due {
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     /* the student column stays while the grid scrolls sideways */
@@ -342,6 +347,7 @@ interface CellView {
       background: var(--p-md-surface-container);
       color: var(--p-md-on-surface);
       font: var(--tb-type-title-s);
+      letter-spacing: var(--tb-tracking-title-s);
       white-space: nowrap;
     }
 
@@ -356,6 +362,7 @@ interface CellView {
       border: 0;
       border-radius: var(--tb-shape-sm);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       text-align: start;
       cursor: pointer;
     }
@@ -382,6 +389,7 @@ interface CellView {
     .tb-journal__total span {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
   `,
 })

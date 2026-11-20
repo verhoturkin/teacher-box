@@ -27,6 +27,7 @@ import { SUMMON_REFRESH_MS } from './call-summon';
       align-items: center;
       gap: var(--tb-space-2);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     :host:empty {

@@ -280,6 +280,7 @@ const STEPS: readonly Step<StepId>[] = [
     .tb-setup__title {
       flex: 1;
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     /* the pane: a surface sheet with 28 dp corners, three columns from large (our decision) */
@@ -322,12 +323,14 @@ const STEPS: readonly Step<StepId>[] = [
     .tb-setup__heading {
       margin: 0;
       font: var(--tb-type-headline-l);
+      letter-spacing: var(--tb-tracking-headline-l);
     }
 
     .tb-setup__lead {
       margin: 0 0 var(--tb-space-5);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-l);
+      letter-spacing: var(--tb-tracking-body-l);
     }
 
     .tb-setup__actions {
@@ -351,7 +354,7 @@ const STEPS: readonly Step<StepId>[] = [
     .tb-setup__cap {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
-      text-transform: uppercase;
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     /* compact and medium (sketch OnbPhone): the window is the surface, one column, «Далее» at the bottom */
@@ -382,11 +385,13 @@ const STEPS: readonly Step<StepId>[] = [
 
       .tb-setup__heading {
         font: var(--tb-type-headline-s);
+        letter-spacing: var(--tb-tracking-headline-s);
       }
 
       .tb-setup__lead {
         margin-block-end: var(--tb-space-1);
         font: var(--tb-type-body-m);
+        letter-spacing: var(--tb-tracking-body-m);
       }
 
       .tb-setup__aside {

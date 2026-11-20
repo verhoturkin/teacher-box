@@ -438,11 +438,13 @@ const ALL_DAY_START_HOUR = 10;
       border-radius: var(--tb-shape-sm);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
     }
 
     .tb-schedule-section__title {
       margin: 0 0 var(--tb-space-2);
       font: var(--tb-type-title-s);
+      letter-spacing: var(--tb-tracking-title-s);
     }
   `,
 })

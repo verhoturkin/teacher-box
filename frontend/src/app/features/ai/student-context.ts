@@ -201,6 +201,7 @@ export class StudentContext {
     .tb-ai-context__label {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     /* contain: a long chip never widens the panel or the sheet; it ends with «…» (its title holds the text) */

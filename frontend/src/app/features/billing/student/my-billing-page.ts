@@ -102,6 +102,7 @@ import { T } from '../i18n/texts';
     .tb-my-billing-figure__note {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     .tb-my-billing-history__bar {
@@ -115,11 +116,13 @@ import { T } from '../i18n/texts';
       h2 {
         margin: 0;
         font: var(--tb-type-title-m-emphasized);
+        letter-spacing: var(--tb-tracking-title-m-emphasized);
       }
     }
 
     .tb-my-billing-figure .tb-figure__value {
       font: var(--tb-type-headline-s);
+      letter-spacing: var(--tb-tracking-headline-s);
       overflow-wrap: anywhere;
     }
   `,

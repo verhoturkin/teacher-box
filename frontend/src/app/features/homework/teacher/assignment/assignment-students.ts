@@ -124,6 +124,7 @@ const GROUPS: readonly Omit<StudentGroup, 'tasks'>[] = [
       gap: var(--tb-space-2);
       margin: 0;
       font: var(--tb-type-title-s);
+      letter-spacing: var(--tb-tracking-title-s);
 
       .tb-i {
         font-size: 1.125rem;
@@ -293,12 +294,14 @@ export class AssignmentGroups {
 
     .tb-asg-tile__name {
       font: var(--tb-type-title-s);
+      letter-spacing: var(--tb-tracking-title-s);
       overflow-wrap: anywhere;
     }
 
     .tb-asg-tile__line {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     /* the inset is a transparent border, not padding: the clamp cuts the text at the content edge, so no
@@ -310,6 +313,7 @@ export class AssignmentGroups {
       border-radius: 12px;
       background: var(--p-md-surface);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
       overflow: hidden;
       overflow-wrap: anywhere;
       -webkit-box-orient: vertical;
@@ -331,6 +335,7 @@ export class AssignmentGroups {
       gap: var(--tb-space-1);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
   `,
 })

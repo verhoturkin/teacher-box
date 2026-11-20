@@ -187,6 +187,7 @@ type Section = 'connections' | 'ai';
     .tb-integrations__heading {
       margin: 0 0 var(--tb-space-4);
       font: var(--tb-type-headline-s-emphasized);
+      letter-spacing: var(--tb-tracking-headline-s-emphasized);
     }
 
     /* a check: the service and its state on the first line, the details and the time under them */

@@ -477,6 +477,7 @@ interface TranscriptNote {
     .tb-video-tile__title {
       overflow: hidden;
       font: var(--tb-type-body-l);
+      letter-spacing: var(--tb-tracking-body-l);
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -484,6 +485,7 @@ interface TranscriptNote {
     .tb-video-tile__source {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     .tb-video-tile__tags {
@@ -533,6 +535,7 @@ interface TranscriptNote {
       background: var(--p-md-surface);
       list-style: none;
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
 
       li {
         display: flex;
@@ -548,6 +551,7 @@ interface TranscriptNote {
       background: none;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       font-variant-numeric: tabular-nums;
       text-align: start;
     }

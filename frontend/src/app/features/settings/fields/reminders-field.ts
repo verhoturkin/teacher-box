@@ -63,6 +63,7 @@ export function reminderLabel(minutes: number): string {
     .tb-reminders__label {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     .tb-reminders__chips {

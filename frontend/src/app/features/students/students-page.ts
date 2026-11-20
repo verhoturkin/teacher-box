@@ -362,6 +362,7 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
     .tb-roster__debt {
       color: var(--p-md-error);
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
       white-space: nowrap;
     }
   `,

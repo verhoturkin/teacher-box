@@ -201,8 +201,7 @@ import { NextWork, ReviewSheet } from './review-sheet';
       margin: 0 0 var(--tb-space-2);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     /* the floating toolbar: 64 dp and the 16 dp margins under it, and the same over it */
@@ -222,11 +221,13 @@ import { NextWork, ReviewSheet } from './review-sheet';
       margin: 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-task__place {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
       white-space: nowrap;
     }
 

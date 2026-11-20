@@ -138,11 +138,13 @@ import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
 
     .tb-help__item-title {
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     .tb-help__item-summary {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-help__current,
@@ -152,6 +154,7 @@ import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
 
       .tb-help__item-title {
         font: var(--tb-type-title-m-emphasized);
+        letter-spacing: var(--tb-tracking-title-m-emphasized);
       }
 
       .tb-help__item-summary {
@@ -166,6 +169,7 @@ import { Pane, Panes, injectListDetail } from '@shared/ui/panes';
     .tb-help__title {
       margin: 0;
       font: var(--tb-type-headline-s-emphasized);
+      letter-spacing: var(--tb-tracking-headline-s-emphasized);
     }
 
     .tb-help__summary {

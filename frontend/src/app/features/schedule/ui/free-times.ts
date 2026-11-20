@@ -68,6 +68,7 @@ interface Window {
     .tb-free-times__label {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
     }
   `,
 })

@@ -57,6 +57,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     .tb-empty-state__title {
       margin: 0;
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     /* compact: a row with a 40 px icon, for widgets, the calendar and dialogs */
@@ -81,6 +82,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
       .tb-empty-state__title {
         font: var(--tb-type-body-l);
+        letter-spacing: var(--tb-tracking-body-l);
       }
 
       .tb-empty-state__hint {
@@ -93,6 +95,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       margin: 0 0 var(--tb-space-2);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
   `,
 })

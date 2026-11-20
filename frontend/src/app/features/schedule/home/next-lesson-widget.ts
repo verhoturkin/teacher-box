@@ -26,12 +26,13 @@ import { injectLessonClock } from './lesson-clock';
 import { ChangeRequestDialog } from '../student/change-request-dialog';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { EmptyState } from '@shared/ui/empty-state';
+import { WavyProgress } from '@shared/ui/wavy-progress';
 import { T } from '../i18n/texts';
 
 /**
  * Student's home: the nearest lesson as a calendar event, as the teacher's card — the time tile, the group
  * (or «Занятие»), the topic and the boards of the lesson as chips, the lessons of the week; the lesson link and a request to move or cancel it
- * (not while it runs) at the end. The title «Ближайшее занятие» is for screen readers only.
+ * (not while it runs) at the end; while it runs, the wavy bar of the elapsed time along the bottom. The title «Ближайшее занятие» is for screen readers only.
  */
 @Component({
   selector: 'tb-next-lesson-widget',
@@ -43,6 +44,7 @@ import { T } from '../i18n/texts';
     LessonTimeTile,
     MyBoardLinks,
     TeacherWaiting,
+    WavyProgress,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -54,7 +56,7 @@ import { T } from '../i18n/texts';
             <tb-lesson-time-tile [time]="time" />
           }
           <div class="tb-lesson-event__info">
-            <strong>{{
+            <strong class="tb-lesson-event__name">{{
               lesson.title ?? (lesson.groupId !== null ? with(lesson) : t.lesson)
             }}</strong>
             @if (lesson.topic !== null) {
@@ -83,6 +85,16 @@ import { T } from '../i18n/texts';
               (ask)="ask(lesson, $event)"
             />
           </div>
+          <!-- the elapsed time along the bottom, as on the teacher's hero -->
+          @if (time(); as time) {
+            @if (time.phase === 'live') {
+              <tb-wavy-progress
+                class="tb-lesson-event__progress"
+                [value]="(time.elapsed / lesson.durationMinutes) * 100"
+                [label]="t.elapsed(time.elapsed, lesson.durationMinutes)"
+              />
+            }
+          }
         </div>
       } @else {
         <tb-empty-state [compact]="true" icon="tb-i-calendar_month" [title]="t.nothing" />
@@ -123,12 +135,22 @@ import { T } from '../i18n/texts';
       overflow-wrap: anywhere;
     }
 
+    /* the teacher's hero name is Headline Medium; the student's card is narrower: Headline Small */
+    .tb-lesson-event__name {
+      font: var(--tb-type-headline-s-emphasized);
+      letter-spacing: var(--tb-tracking-headline-s-emphasized);
+    }
+
     .tb-lesson-event__actions {
       grid-column: 1 / -1;
       display: grid;
       justify-content: stretch;
       align-items: center;
       gap: var(--tb-space-2);
+    }
+
+    .tb-lesson-event__progress {
+      grid-column: 1 / -1;
     }
 
     tb-my-board-links:not(:empty) {

@@ -220,6 +220,7 @@ const MINUTE_MARKS = Array.from({ length: 12 }, (_, index) =>
       height: 5rem;
       color: var(--p-md-on-surface);
       font: var(--tb-type-display-s);
+      letter-spacing: var(--tb-tracking-display-s);
     }
 
     /* M3 selectors: 114×80 dp (24 h), CornerSmall; the selected one primary-container */
@@ -232,6 +233,7 @@ const MINUTE_MARKS = Array.from({ length: 12 }, (_, index) =>
       background: var(--p-md-surface-container-highest);
       color: var(--p-md-on-surface);
       font: var(--tb-type-display-s);
+      letter-spacing: var(--tb-tracking-display-s);
       cursor: pointer;
       transition:
         background-color var(--tb-spring-fast-effects),
@@ -320,6 +322,7 @@ const MINUTE_MARKS = Array.from({ length: 12 }, (_, index) =>
       margin: -1.5rem 0 0 -1.5rem;
       color: var(--p-md-on-surface);
       font: var(--tb-type-body-l);
+      letter-spacing: var(--tb-tracking-body-l);
       pointer-events: none;
       transition: color var(--tb-spring-fast-effects);
     }
@@ -335,6 +338,7 @@ const MINUTE_MARKS = Array.from({ length: 12 }, (_, index) =>
       gap: var(--tb-space-2);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
 
       input {
         box-sizing: border-box;
@@ -345,6 +349,7 @@ const MINUTE_MARKS = Array.from({ length: 12 }, (_, index) =>
         background: var(--p-md-surface-container-highest);
         color: var(--p-md-on-surface);
         font: var(--tb-type-display-s);
+        letter-spacing: var(--tb-tracking-display-s);
         text-align: center;
         transition:
           background-color var(--tb-spring-fast-effects),

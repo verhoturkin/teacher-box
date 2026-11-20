@@ -42,8 +42,8 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
         <ul class="tb-list">
           @for (lesson of lessons(); track lesson.id) {
             @if (lesson.id === nextId() && part() === 'hero' && clock(); as time) {
-              <!-- board D: the time tile, who, the actions on one line; the board and the presence
-                   under the name; the elapsed time along the bottom -->
+              <!-- an M3 card (variant C): the content (tile, avatar, the text), the elapsed time, then
+                   the action row — the board and the presence at the start, the buttons at the end -->
               <li class="tb-today-lesson--next tb-today-hero">
                 <tb-lesson-time-tile class="tb-today-hero__tile" [time]="time" />
                 <tb-avatar
@@ -57,35 +57,8 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
                   @if (subject(lesson); as subject) {
                     <span>{{ subject }}</span>
                   }
-                  <span class="tb-today-lesson__end">{{ t.until(clockTime(lesson.endsAt)) }}</span>
+                  <span class="tb-today-hero__end">{{ t.until(clockTime(lesson.endsAt)) }}</span>
                 </div>
-                <tb-board-links
-                  class="tb-today-hero__board"
-                  [chips]="true"
-                  [latest]="true"
-                  [studentId]="lesson.groupId === null ? lesson.studentId : null"
-                  [groupId]="lesson.groupId"
-                />
-                @if (lesson.joinUrl; as url) {
-                  @if (time.phase === 'live' && portalRoom(lesson); as ownerId) {
-                    <tb-call-summon [ownerId]="ownerId" [hero]="true">
-                      <tb-join-lesson-button
-                        [url]="url"
-                        [label]="t.join"
-                        [teacher]="true"
-                        [medium]="true"
-                      />
-                    </tb-call-summon>
-                  } @else {
-                    <tb-join-lesson-button
-                      class="tb-today-hero__join"
-                      [url]="url"
-                      [label]="time.phase === 'live' ? t.join : t.start"
-                      [teacher]="true"
-                      [medium]="true"
-                    />
-                  }
-                }
                 @if (time.phase === 'live') {
                   <tb-wavy-progress
                     class="tb-today-hero__progress"
@@ -93,6 +66,34 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
                     [label]="t.elapsed(time.elapsed, lesson.durationMinutes)"
                   />
                 }
+                <div class="tb-today-hero__actions">
+                  <tb-board-links
+                    [chips]="true"
+                    [latest]="true"
+                    [studentId]="lesson.groupId === null ? lesson.studentId : null"
+                    [groupId]="lesson.groupId"
+                  />
+                  @if (lesson.joinUrl; as url) {
+                    @if (time.phase === 'live' && portalRoom(lesson); as ownerId) {
+                      <tb-call-summon [ownerId]="ownerId" [hero]="true">
+                        <tb-join-lesson-button
+                          [url]="url"
+                          [label]="t.join"
+                          [teacher]="true"
+                          [medium]="true"
+                        />
+                      </tb-call-summon>
+                    } @else {
+                      <tb-join-lesson-button
+                        class="tb-today-hero__join"
+                        [url]="url"
+                        [label]="time.phase === 'live' ? t.join : t.start"
+                        [teacher]="true"
+                        [medium]="true"
+                      />
+                    }
+                  }
+                </div>
               </li>
             } @else if (lesson.id === nextId() && clock(); as time) {
               <li tbListRow class="tb-today-lesson tb-today-lesson--next">
@@ -193,6 +194,7 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
       background: var(--p-md-surface-container-highest);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
       line-height: 1.5rem;
     }
 
@@ -212,6 +214,7 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
 
     .tb-today-lesson__time {
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       min-width: 3rem;
       font-variant-numeric: tabular-nums;
     }
@@ -271,6 +274,7 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
       align-items: center;
       gap: var(--tb-space-2);
       font: var(--tb-type-label-m-emphasized);
+      letter-spacing: var(--tb-tracking-label-m-emphasized);
     }
 
     .tb-today-lesson__dot {
@@ -282,21 +286,25 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
 
     .tb-today-lesson__end {
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     /*
-     * The hero from large (board D): tile, avatar, who and the actions on one line; the board and the
-     * presence (tb-call-summon's line, area presence) under the name; the wavy bar of the elapsed time
-     * along the bottom. 20 dp between the line's parts and 16 dp between the lines (the sketch; ours)
+     * The hero from large (board D) as an M3 card, variant C: the content — the tile, the avatar and
+     * the text (headline, subhead, «до 15:00») — then the wavy bar of the elapsed time, then the action
+     * row: the board and the presence at the start, the buttons at the end (the primary one last, M3:
+     * the trailing edge). The row wraps, so a narrow hero moves the buttons down, still at the end. 20 dp
+     * between the content's parts, 16 dp between the blocks, 12 dp in the action row (ours; the row
+     * as a button group's spacing)
      */
     .tb-today-hero {
       display: grid;
-      grid-template-columns: auto auto auto minmax(0, 1fr) auto;
+      grid-template-columns: auto auto minmax(0, 1fr);
       grid-template-areas:
-        'tile avatar who who actions'
-        '. . board presence .'
-        'bar bar bar bar bar';
-      gap: var(--tb-space-4) var(--tb-space-5);
+        'tile avatar who'
+        'bar bar bar'
+        'actions actions actions';
+      gap: 0 var(--tb-space-5);
       align-items: center;
       padding: var(--tb-space-5) var(--tb-space-6) var(--tb-space-4);
       overflow-wrap: anywhere;
@@ -323,27 +331,47 @@ const TIME = new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-dig
       gap: var(--tb-space-1);
       min-width: 0;
       font: var(--tb-type-body-l);
+      letter-spacing: var(--tb-tracking-body-l);
     }
 
     /* the one name of the page in an emphasized headline (M3E: emphasized marks the hero) */
     .tb-today-hero__name {
       font: var(--tb-type-headline-m-emphasized);
+      letter-spacing: var(--tb-tracking-headline-m-emphasized);
     }
 
-    .tb-today-hero__board {
-      grid-area: board;
+    .tb-today-hero__end {
+      font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
+    }
 
-      &:empty {
+    /* the blocks' 16 dp as their own top margin: a missing bar (before the start) leaves no gap */
+    .tb-today-hero__progress {
+      grid-area: bar;
+      margin-block-start: var(--tb-space-4);
+    }
+
+    .tb-today-hero__actions {
+      grid-area: actions;
+      margin-block-start: var(--tb-space-4);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--tb-space-3);
+      min-width: 0;
+
+      /* nothing to show (no board, no link): no empty row */
+      &:not(:has(> :not(:empty))) {
+        display: none;
+      }
+
+      > tb-board-links:empty {
         display: none;
       }
     }
 
     .tb-today-hero__join {
-      grid-area: actions;
-    }
-
-    .tb-today-hero__progress {
-      grid-area: bar;
+      margin-inline-start: auto;
     }
 
     /* wider than a phone (board 4): the join button ends the head line */

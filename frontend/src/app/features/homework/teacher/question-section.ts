@@ -467,7 +467,8 @@ import { QuizSettings } from './quiz-settings';
 
     .tb-qb__problems .tb-qb__note {
       align-items: center;
-      font-weight: 600;
+      font: var(--tb-type-label-l-emphasized);
+      letter-spacing: var(--tb-tracking-label-l-emphasized);
     }
 
     .tb-qb__empty {
@@ -511,6 +512,7 @@ import { QuizSettings } from './quiz-settings';
       flex: 1;
       text-align: center;
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
       color: var(--p-md-on-surface-variant);
     }
 
@@ -530,6 +532,7 @@ import { QuizSettings } from './quiz-settings';
       background: transparent;
       color: var(--p-md-on-surface);
       font: var(--tb-type-body-l);
+      letter-spacing: var(--tb-tracking-body-l);
       text-align: start;
       cursor: pointer;
     }
@@ -573,8 +576,7 @@ import { QuizSettings } from './quiz-settings';
       margin: 0;
       padding-inline: var(--tb-space-1);
       font: var(--tb-type-label-m);
-      text-transform: uppercase;
-      letter-spacing: 0.03rem;
+      letter-spacing: var(--tb-tracking-label-m);
       color: var(--p-md-on-surface-variant);
     }
 
@@ -630,6 +632,7 @@ import { QuizSettings } from './quiz-settings';
       background: transparent;
       color: inherit;
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
       text-align: start;
       cursor: pointer;
     }
@@ -664,6 +667,7 @@ import { QuizSettings } from './quiz-settings';
       min-width: 1.25rem;
       text-align: end;
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     .tb-qb__add {
@@ -708,6 +712,7 @@ import { QuizSettings } from './quiz-settings';
     .tb-qb__sums,
     .tb-qb__problem {
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-qb__sums {
@@ -719,7 +724,8 @@ import { QuizSettings } from './quiz-settings';
 
     .tb-qb__sums dd {
       margin: 0;
-      font-weight: 600;
+      font: var(--tb-type-label-l-emphasized);
+      letter-spacing: var(--tb-tracking-label-l-emphasized);
     }
 
     .tb-qb__problem {
@@ -735,7 +741,8 @@ import { QuizSettings } from './quiz-settings';
 
     .tb-qb__problem a {
       color: inherit;
-      font-weight: 600;
+      font: var(--tb-type-label-l-emphasized);
+      letter-spacing: var(--tb-tracking-label-l-emphasized);
     }
   `,
 })

@@ -227,6 +227,7 @@ export function fitChips(
       background: transparent;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       cursor: pointer;
       transition: background var(--tb-spring-fast-effects);
 
@@ -308,6 +309,7 @@ export function fitChips(
 
     .tb-filter-chip__count {
       font: var(--tb-type-label-l-emphasized);
+      letter-spacing: var(--tb-tracking-label-l-emphasized);
     }
   `,
 })

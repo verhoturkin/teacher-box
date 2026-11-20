@@ -535,6 +535,7 @@ function shortTime(time: string): string {
       background: transparent;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       cursor: pointer;
 
       > .tb-i {

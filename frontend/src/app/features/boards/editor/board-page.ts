@@ -170,6 +170,7 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
       margin: 0;
       overflow: hidden;
       font: var(--tb-type-title-l);
+      letter-spacing: var(--tb-tracking-title-l);
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -177,6 +178,7 @@ const STATUS_LABELS: Readonly<Record<SaveStatus, string>> = {
     .tb-board-page__status {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m, inherit);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-board-page__status--offline {

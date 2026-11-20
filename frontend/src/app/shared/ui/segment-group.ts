@@ -71,6 +71,7 @@ export interface Segment<T extends string> {
       background: var(--p-md-secondary-container);
       color: var(--p-md-on-secondary-container);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       white-space: nowrap;
       cursor: pointer;
       transition:
@@ -187,6 +188,7 @@ export interface Segment<T extends string> {
 
     .tb-segment__count {
       font: var(--tb-type-label-l-emphasized);
+      letter-spacing: var(--tb-tracking-label-l-emphasized);
     }
   `,
 })

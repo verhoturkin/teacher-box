@@ -262,8 +262,7 @@ export interface RowMenu {
       margin: 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     .tb-hw__label.tb-error {
@@ -308,6 +307,7 @@ export interface RowMenu {
       gap: var(--tb-space-3);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     .tb-hw__material {
@@ -377,6 +377,7 @@ export interface RowMenu {
 
     .tb-hw__tile-handed .tb-muted {
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     /* the badge and «⋮» side by side */

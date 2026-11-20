@@ -1,20 +1,20 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TokenValue } from '../token-value';
 
-/** A role and its tracking (display, headline and title large have none). */
+/** The baseline roles; each has its tracking token, zero for display, headline and title large. */
 const ROLES = [
-  { role: 'display-s', tracking: null },
-  { role: 'headline-l', tracking: null },
-  { role: 'headline-s', tracking: null },
-  { role: 'title-l', tracking: null },
-  { role: 'title-m', tracking: 'title-m' },
-  { role: 'title-s', tracking: 'title-s' },
-  { role: 'body-l', tracking: 'body-l' },
-  { role: 'body-m', tracking: 'body-m' },
-  { role: 'body-s', tracking: 'body-s' },
-  { role: 'label-l', tracking: 'label-l' },
-  { role: 'label-m', tracking: 'label-m' },
-  { role: 'label-s', tracking: 'label-s' },
+  'display-s',
+  'headline-l',
+  'headline-s',
+  'title-l',
+  'title-m',
+  'title-s',
+  'body-l',
+  'body-m',
+  'body-s',
+  'label-l',
+  'label-m',
+  'label-s',
 ] as const;
 
 /** §3 Type scale: `font: var(--tb-type-<role>)` with `letter-spacing: var(--tb-tracking-<role>)`. */
@@ -24,24 +24,18 @@ const ROLES = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ul class="tb-gallery-cell type">
-      @for (item of roles; track item.role) {
+      @for (role of roles; track role) {
         <li>
           <p
             class="line"
-            [style.font]="'var(--tb-type-' + item.role + ')'"
-            [style.letter-spacing]="
-              item.tracking ? 'var(--tb-tracking-' + item.tracking + ')' : null
-            "
+            [style.font]="'var(--tb-type-' + role + ')'"
+            [style.letter-spacing]="'var(--tb-tracking-' + role + ')'"
           >
             Lesson at 14:00
           </p>
-          <code class="tb-gallery-name">font: var(--tb-type-{{ item.role }})</code>
-          <span class="tb-gallery-name"> — {{ '--tb-type-' + item.role | tbTokenValue }}</span>
-          @if (item.tracking) {
-            <code class="tb-gallery-name"
-              >; letter-spacing: var(--tb-tracking-{{ item.tracking }})</code
-            >
-          }
+          <code class="tb-gallery-name">font: var(--tb-type-{{ role }})</code>
+          <span class="tb-gallery-name"> — {{ '--tb-type-' + role | tbTokenValue }}</span>
+          <code class="tb-gallery-name">; letter-spacing: var(--tb-tracking-{{ role }})</code>
         </li>
       }
     </ul>

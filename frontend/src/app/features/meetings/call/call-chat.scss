@@ -22,6 +22,7 @@
   &__title {
     margin: 0;
     font: var(--tb-type-title-l);
+    letter-spacing: var(--tb-tracking-title-l);
   }
 
   &__scroll {
@@ -57,12 +58,14 @@
   &__from {
     display: block;
     font: var(--tb-type-label-m);
+    letter-spacing: var(--tb-tracking-label-m);
     opacity: 0.8;
   }
 
   &__text {
     margin: 0;
     font: var(--tb-type-body-m);
+    letter-spacing: var(--tb-tracking-body-m);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
@@ -70,6 +73,7 @@
   &__empty {
     margin: 0;
     font: var(--tb-type-body-m);
+    letter-spacing: var(--tb-tracking-body-m);
     color: var(--p-md-on-surface-variant);
   }
 
@@ -92,6 +96,7 @@
     color: var(--p-md-on-surface);
     caret-color: var(--p-md-primary);
     font: var(--tb-type-body-l);
+    letter-spacing: var(--tb-tracking-body-l);
 
     &::placeholder {
       color: var(--p-md-on-surface-variant);

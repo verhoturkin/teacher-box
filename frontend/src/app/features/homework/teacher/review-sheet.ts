@@ -321,6 +321,7 @@ export interface NextWork {
       flex: 1;
       margin: 0;
       font: var(--tb-type-headline-s);
+      letter-spacing: var(--tb-tracking-headline-s);
     }
 
     .tb-sheet__form {
@@ -353,6 +354,7 @@ export interface NextWork {
       background: var(--p-md-tertiary-container);
       color: var(--p-md-on-tertiary-container);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     .tb-sheet__tag .tb-i {
@@ -366,6 +368,7 @@ export interface NextWork {
       background: none;
       color: var(--p-md-primary);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       cursor: pointer;
     }
 
@@ -378,6 +381,7 @@ export interface NextWork {
       margin: var(--tb-space-3) 0 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
       white-space: pre-line;
     }
 
@@ -385,6 +389,7 @@ export interface NextWork {
       margin: var(--tb-space-2) 0 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     .tb-sheet__field {
@@ -397,6 +402,7 @@ export interface NextWork {
     .tb-sheet__label {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     /* the decision stays at the foot of the sheet however long the comment is */
@@ -420,6 +426,7 @@ export interface NextWork {
       min-inline-size: 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     /* under the answer (below large): the form is a bordered block on the pane (sketch 15) */
@@ -434,8 +441,7 @@ export interface NextWork {
     :host(.tb-sheet--inline) .tb-sheet__title {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      letter-spacing: var(--tb-tracking-label-m);
     }
   `,
 })

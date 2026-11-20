@@ -199,11 +199,13 @@ export function keyLines(question: Question): string[] {
       gap: var(--tb-space-2);
       margin: 0;
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     .tb-quiz__hint {
       margin: 0;
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     /* the result of sketch 24: a surface-container-low block, the mistakes as rows on the surface */
@@ -227,14 +229,14 @@ export function keyLines(question: Question): string[] {
       margin: 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     .tb-quiz__muted {
       margin: 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     .tb-quiz__mistake {

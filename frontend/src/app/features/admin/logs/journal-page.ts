@@ -274,6 +274,7 @@ const VIEWS: readonly JournalView[] = ['log', 'events', 'errors'];
       margin-block-end: var(--tb-space-3);
       color: var(--p-md-primary);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       cursor: pointer;
     }
 
@@ -309,6 +310,7 @@ const VIEWS: readonly JournalView[] = ['log', 'events', 'errors'];
     .tb-journal__text {
       margin: 0;
       font: var(--tb-type-body-l);
+      letter-spacing: var(--tb-tracking-body-l);
       overflow-wrap: anywhere;
       white-space: pre-line;
     }
@@ -323,6 +325,7 @@ const VIEWS: readonly JournalView[] = ['log', 'events', 'errors'];
       dt {
         color: var(--p-md-on-surface-variant);
         font: var(--tb-type-label-l);
+        letter-spacing: var(--tb-tracking-label-l);
       }
 
       dd {
@@ -332,13 +335,15 @@ const VIEWS: readonly JournalView[] = ['log', 'events', 'errors'];
     }
 
     .tb-mono {
+      font: var(--tb-type-body-s);
       font-family: var(--tb-font-mono);
-      font-size: 0.85rem;
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     .tb-journal__subtitle {
       margin: var(--tb-space-3) 0 0;
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     .tb-journal__trace {
@@ -348,7 +353,9 @@ const VIEWS: readonly JournalView[] = ['log', 'events', 'errors'];
       overflow: auto;
       border-radius: var(--tb-shape-md);
       background: var(--p-md-surface-container-low);
-      font-size: 0.8rem;
+      font: var(--tb-type-label-m);
+      font-family: var(--tb-font-mono);
+      letter-spacing: var(--tb-tracking-label-m);
     }
   `,
 })

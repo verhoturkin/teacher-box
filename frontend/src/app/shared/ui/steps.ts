@@ -95,6 +95,7 @@ export interface Step<T extends string | number = string> {
       background: transparent;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       text-align: start;
     }
 
@@ -136,6 +137,7 @@ export interface Step<T extends string | number = string> {
       border: 1px solid currentColor;
       border-radius: var(--tb-shape-full);
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
 
       .tb-i {
         font-size: 1.125rem;

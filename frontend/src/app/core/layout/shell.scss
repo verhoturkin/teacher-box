@@ -70,6 +70,7 @@
   overflow: hidden;
   color: var(--p-md-on-surface);
   font: var(--tb-type-title-l);
+  letter-spacing: var(--tb-tracking-title-l);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -162,6 +163,7 @@
   box-sizing: border-box;
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-label-m);
+  letter-spacing: var(--tb-tracking-label-m);
   text-decoration: none;
 
   &:hover {
@@ -241,6 +243,7 @@
 .tb-bottom-nav__item--active {
   color: var(--p-md-secondary);
   font: var(--tb-type-label-m-emphasized);
+  letter-spacing: var(--tb-tracking-label-m-emphasized);
 
   .tb-bottom-nav__icon {
     --tb-icon-fill: 1;

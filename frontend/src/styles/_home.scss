@@ -3,6 +3,13 @@
   white-space: nowrap;
 }
 
+/* Money and figures: digits of one width, so columns and changing values do not jitter (457.4) */
+.tb-amount,
+.tb-figure__value,
+.tb-ops__amount {
+  font-variant-numeric: tabular-nums;
+}
+
 /* Money */
 .tb-amount,
 .p-datatable .tb-amount {
@@ -72,6 +79,7 @@
   margin: var(--tb-space-5) 0 var(--tb-space-2);
   color: var(--p-md-on-surface);
   font: var(--tb-type-title-m);
+  letter-spacing: var(--tb-tracking-title-m);
 }
 
 .tb-field__header {
@@ -128,12 +136,14 @@
   h2 {
     margin: var(--tb-space-6) 0 var(--tb-space-3);
     font: var(--tb-type-title-l);
+    letter-spacing: var(--tb-tracking-title-l);
   }
 
   h3,
   h4 {
     margin: var(--tb-space-5) 0 var(--tb-space-2);
     font: var(--tb-type-title-m);
+    letter-spacing: var(--tb-tracking-title-m);
   }
 
   strong {
@@ -201,6 +211,16 @@
   a:not(.p-button, .tb-board-chip) {
     text-decoration: underline;
   }
+
+  /*
+   * The wavy bar of the lesson: primary on the primary container is about 1.3:1, below the M3 3:1 of the
+   * active indicator, so it takes the container's text colour (M3: «the same color as its label text»);
+   * the track is that colour at 38 % (ours), the stop marks its end
+   */
+  tb-wavy-progress {
+    --tb-wavy-active: var(--p-md-on-primary-container);
+    --tb-wavy-track: color-mix(in srgb, var(--p-md-on-primary-container) 38%, transparent);
+  }
 }
 
 /*
@@ -224,6 +244,7 @@
   background: color-mix(in srgb, currentColor 12%, transparent);
   color: inherit;
   font: var(--tb-type-label-l);
+  letter-spacing: var(--tb-tracking-label-l);
   text-decoration: none;
   overflow-wrap: anywhere;
 

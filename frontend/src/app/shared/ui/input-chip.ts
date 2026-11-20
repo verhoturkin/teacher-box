@@ -52,6 +52,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
       border-radius: var(--tb-shape-sm);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
     }
 
     /* one line, the full text is the host's title */

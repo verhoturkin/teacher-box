@@ -86,6 +86,7 @@ interface MiniDay {
     .tb-mini-month__title {
       flex: 1;
       font: var(--tb-type-title-s);
+      letter-spacing: var(--tb-tracking-title-s);
       text-transform: capitalize;
     }
 
@@ -98,6 +99,7 @@ interface MiniDay {
 
     .tb-mini-month__weekday {
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
       color: var(--p-md-on-surface-variant);
       text-transform: capitalize;
     }
@@ -111,6 +113,7 @@ interface MiniDay {
       background: transparent;
       color: var(--p-md-on-surface);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
       cursor: pointer;
 
       &:hover {

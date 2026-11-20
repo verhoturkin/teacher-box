@@ -26,19 +26,6 @@ export const SUMMON_REFRESH_MS = 10_000;
   host: { '[class.tb-call-summon--hero]': 'hero()' },
   template: `
     @if (hero()) {
-      <span class="tb-button-group tb-call-summon__actions">
-        <ng-content />
-        @if (absent(); as card) {
-          <p-button
-            [label]="card.ownerType === 'GROUP' ? t.summonRest : t.summon"
-            icon="tb-i tb-i-notifications_active"
-            severity="secondary"
-            styleClass="tb-button-m"
-            [loading]="busy.is()"
-            (onClick)="summon(card)"
-          />
-        }
-      </span>
       @if (absent(); as card) {
         <span class="tb-call-summon__line">
           <i class="tb-i tb-i-person_off" aria-hidden="true"></i>
@@ -50,6 +37,19 @@ export const SUMMON_REFRESH_MS = 10_000;
           <span class="tb-call-summon__text" role="status">{{ waitingLine(card) }}</span>
         </span>
       }
+      <span class="tb-button-group tb-call-summon__actions">
+        @if (absent(); as card) {
+          <p-button
+            [label]="card.ownerType === 'GROUP' ? t.summonRest : t.summon"
+            icon="tb-i tb-i-notifications_active"
+            severity="secondary"
+            styleClass="tb-button-m"
+            [loading]="busy.is()"
+            (onClick)="summon(card)"
+          />
+        }
+        <ng-content />
+      </span>
     } @else if (absent(); as card) {
       <i class="tb-i tb-i-person_off" aria-hidden="true"></i>
       <span class="tb-call-summon__text">{{ line(card) }}</span>
@@ -72,6 +72,7 @@ export const SUMMON_REFRESH_MS = 10_000;
       gap: var(--tb-space-2);
       min-width: 0;
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
     }
 
     :host:empty {
@@ -88,25 +89,25 @@ export const SUMMON_REFRESH_MS = 10_000;
     }
 
     /*
-     * The hero of the teacher's Today (board D): the host gives way to the hero's grid; the join button
-     * (content) and «Позвать» are its standard button group (area actions), the line goes under the
-     * name (area presence)
+     * The hero of the teacher's Today: the host gives way to the hero's action row (a wrapping flex
+     * row); the line stands by the board, then «Позвать» and the join button (content) — a standard
+     * button group at the row's end, the primary action last (M3: the trailing edge)
      */
     :host(.tb-call-summon--hero) {
       display: contents;
     }
 
     .tb-call-summon__actions {
-      grid-area: actions;
+      margin-inline-start: auto;
     }
 
     .tb-call-summon__line {
-      grid-area: presence;
       display: flex;
       align-items: center;
       gap: var(--tb-space-2);
       min-width: 0;
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
   `,
 })

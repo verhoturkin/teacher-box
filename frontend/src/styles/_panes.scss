@@ -28,13 +28,13 @@
 .tb-figure__label {
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-label-s);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: var(--tb-tracking-label-s);
 }
 
 .tb-figure__value {
   margin: 0;
   font: var(--tb-type-headline-s);
+  letter-spacing: var(--tb-tracking-headline-s);
 }
 
 /* The student filter of the payments journal sits among the chips: a chip's height and corner (ours) */
@@ -49,6 +49,7 @@
     padding-block: 0;
     align-self: center;
     font: var(--tb-type-label-l);
+    letter-spacing: var(--tb-tracking-label-l);
   }
 }
 
@@ -163,6 +164,7 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
 
   .p-card-title {
     font: var(--tb-type-title-m-emphasized);
+    letter-spacing: var(--tb-tracking-title-m-emphasized);
   }
 }
 
@@ -185,6 +187,7 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
 
   .p-card-title {
     font: var(--tb-type-title-m-emphasized);
+    letter-spacing: var(--tb-tracking-title-m-emphasized);
   }
 }
 
@@ -309,8 +312,7 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
     .p-card-title {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m-emphasized);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      letter-spacing: var(--tb-tracking-label-m-emphasized);
     }
   }
 }
@@ -337,8 +339,7 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
   margin: var(--tb-space-1) 0 0;
   color: var(--p-md-on-surface-variant);
   font: var(--tb-type-label-m-emphasized);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: var(--tb-tracking-label-m-emphasized);
 }
 
 /* The filled variant of the section card («Итого», sketch 28): M3 filled card, surface-container-low */
@@ -402,7 +403,8 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
     background: transparent;
     box-shadow: none;
     text-align: center;
-    font-weight: 600;
+    font: var(--tb-type-title-m-emphasized);
+    letter-spacing: var(--tb-tracking-title-m-emphasized);
   }
 
   .p-inputnumber-button {
@@ -428,16 +430,19 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
 
   small {
     font: var(--tb-type-body-s);
+    letter-spacing: var(--tb-tracking-body-s);
     color: var(--p-md-on-surface-variant);
   }
 }
 
 .p-dialog .p-dialog-title {
   font: var(--tb-type-headline-s-emphasized);
+  letter-spacing: var(--tb-tracking-headline-s-emphasized);
 }
 
 .p-drawer .p-drawer-title {
   font: var(--tb-type-title-l-emphasized);
+  letter-spacing: var(--tb-tracking-title-l-emphasized);
 }
 
 .p-tooltip .p-tooltip-text {
@@ -455,6 +460,7 @@ tb-pane .p-card:not(.tb-hero, .tb-section-card),
 /* The weekdays of the date picker are Body Large, not bold */
 .p-datepicker .p-datepicker-weekday {
   font: var(--tb-type-body-l);
+  letter-spacing: var(--tb-tracking-body-l);
 }
 
 small,
@@ -465,8 +471,10 @@ small,
 
 :root.tb-dark {
   color-scheme: dark;
-  /* light glyphs on a dark surface look bolder: grade −25 thins icons only (the text stays at grade 0) */
+  /* light glyphs on a dark surface look bolder: grade −25 thins icons and text without reflowing it
+     (M3; ADR-0070) */
   --tb-icon-grade: -25;
+  font-variation-settings: 'GRAD' -25;
   --tb-card: var(--p-md-surface-container);
   --tb-list-item: var(--p-md-surface-container-high);
 
@@ -487,7 +495,7 @@ textarea.p-textarea {
 /* Buttons, 40 px high: the line and tracking of Label Large (M3); the size stays PrimeNG's 1rem */
 .p-button {
   line-height: 1.25rem;
-  letter-spacing: 0.00625rem;
+  letter-spacing: var(--tb-tracking-label-l);
 }
 
 /* Less motion when the system asks for it */

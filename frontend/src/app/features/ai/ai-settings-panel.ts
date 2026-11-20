@@ -203,6 +203,7 @@ interface UsagePart {
     /* our decision: the share of the limit is the card's headline number, M3 headline small */
     .tb-ai__percent {
       font: var(--tb-type-headline-s);
+      letter-spacing: var(--tb-tracking-headline-s);
     }
 
     /* a 6 dp track, one segment per feature (the sketch's bar) */
@@ -225,6 +226,7 @@ interface UsagePart {
       padding: 0;
       list-style: none;
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
 
       > li {
         display: inline-flex;

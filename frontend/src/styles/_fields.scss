@@ -99,6 +99,7 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
     background: transparent;
     color: var(--p-md-on-surface-variant);
     font: var(--tb-type-body-s);
+    letter-spacing: var(--tb-tracking-body-s);
     text-overflow: ellipsis;
     white-space: nowrap;
     pointer-events: none;
@@ -155,6 +156,7 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
   box-shadow: var(--tb-filled-shadow);
   color: var(--p-md-on-surface);
   font: var(--tb-type-body-l);
+  letter-spacing: var(--tb-tracking-body-l);
   caret-color: var(--p-md-primary);
   transition: box-shadow var(--tb-spring-fast-effects);
 }
@@ -213,6 +215,7 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
 #{field-abs(' :is(.p-select-label, .p-multiselect-label)', $field-hosts)} {
   padding: var(--tb-space-6) var(--tb-space-4) var(--tb-space-2);
   font: var(--tb-type-body-l);
+  letter-spacing: var(--tb-tracking-body-l);
 }
 
 #{field-abs(' input', $field-hosts)} {
@@ -226,6 +229,7 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
   box-shadow: none;
   color: var(--p-md-on-surface);
   font: var(--tb-type-body-l);
+  letter-spacing: var(--tb-tracking-body-l);
 }
 
 #{field-abs(' :is(.p-select-dropdown, .p-multiselect-dropdown, .p-datepicker-dropdown, .p-autocomplete-dropdown)', $field-hosts)} {
@@ -248,6 +252,7 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
   > label:first-child {
     margin-top: var(--tb-space-4);
     font: var(--tb-type-body-l);
+    letter-spacing: var(--tb-tracking-body-l);
   }
   &:has(> textarea) > label:first-child::before {
     background: transparent;
@@ -316,6 +321,7 @@ $field: '.tb-field:is(:has(> label:first-child + :is(#{$field-controls}, tb-memb
 .tb-field__error {
   color: var(--p-md-error);
   font: var(--tb-type-body-s);
+  letter-spacing: var(--tb-tracking-body-s);
 }
 
 .tb-field:has(> .tb-field__error) > :is(.tb-hint, small:not(.tb-field__error)) {

@@ -172,6 +172,7 @@ function pathOf(url: string): string {
       flex: 1;
       margin: 0;
       font: var(--tb-type-headline-s);
+      letter-spacing: var(--tb-tracking-headline-s);
     }
   `,
 })

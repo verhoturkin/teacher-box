@@ -62,6 +62,7 @@ tb-not-found,
   > [meta] {
     color: var(--p-md-on-surface-variant);
     font: var(--tb-type-body-m);
+    letter-spacing: var(--tb-tracking-body-m);
   }
 
   > .tb-negative[meta] {
@@ -189,6 +190,7 @@ tb-not-found,
 
   .p-card-title {
     font: var(--tb-type-headline-s-emphasized);
+    letter-spacing: var(--tb-tracking-headline-s-emphasized);
   }
 
   .tb-form {
@@ -221,6 +223,7 @@ tb-not-found,
   > span:first-child {
     color: var(--p-md-on-surface-variant);
     font: var(--tb-type-label-l);
+    letter-spacing: var(--tb-tracking-label-l);
   }
 
   /* a read-only field (a student's login) shows its value, not an invitation to type */
@@ -232,5 +235,6 @@ tb-not-found,
   > .tb-hint,
   > small {
     font: var(--tb-type-body-s);
+    letter-spacing: var(--tb-tracking-body-s);
   }
 }

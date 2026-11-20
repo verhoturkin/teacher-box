@@ -40,6 +40,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       background: transparent;
       color: var(--p-md-on-surface);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       cursor: pointer;
       transition: background var(--tb-spring-fast-effects);
 

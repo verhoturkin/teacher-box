@@ -282,11 +282,13 @@ export const ARCHIVE_NAME = 'teacher-box-diagnostics.zip';
     .tb-feed__title {
       margin: 0 0 var(--tb-space-3);
       font: var(--tb-type-title-m);
+      letter-spacing: var(--tb-tracking-title-m);
     }
 
     .tb-feed__subtitle {
       margin: var(--tb-space-4) 0 var(--tb-space-2);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
     }
 
     .tb-feed__about,

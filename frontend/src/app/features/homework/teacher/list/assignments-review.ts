@@ -92,8 +92,7 @@ const SHOWN_WORKS_MEDIUM = 2;
       margin: 0;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-m);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      letter-spacing: var(--tb-tracking-label-m);
     }
 
     .tb-hw__review {
@@ -150,6 +149,7 @@ const SHOWN_WORKS_MEDIUM = 2;
       background: none;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
       text-align: center;
     }
 
@@ -174,6 +174,7 @@ const SHOWN_WORKS_MEDIUM = 2;
 
     .tb-hw__card-task {
       font: var(--tb-type-title-s);
+      letter-spacing: var(--tb-tracking-title-s);
     }
 
     .tb-hw__card-foot {

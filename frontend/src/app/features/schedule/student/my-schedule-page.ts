@@ -449,12 +449,14 @@ export function nextMonday(date: Date): Date {
     .tb-history__label {
       display: block;
       font: var(--tb-type-label-m);
+      letter-spacing: var(--tb-tracking-label-m);
       color: var(--p-md-on-surface-variant);
     }
 
     .tb-my-schedule-section h2 {
       margin: 0 0 var(--tb-space-3);
       font: var(--tb-type-title-m-emphasized);
+      letter-spacing: var(--tb-tracking-title-m-emphasized);
     }
 
     /* «Решённые»: apart from the pending ones, without a line */

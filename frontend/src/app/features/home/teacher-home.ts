@@ -155,11 +155,16 @@ function dayTitle(date: Date): string {
         min-width: 0;
       }
 
+      /* two equal columns; a hidden one gives its width to the other (no empty half under the hero) */
       .tb-feed__columns {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        display: flex;
         gap: var(--tb-gap-section);
-        align-items: start;
+        align-items: flex-start;
+
+        > * {
+          flex: 1 1 0;
+          min-width: 0;
+        }
       }
 
       .tb-feed__figures {
@@ -173,8 +178,9 @@ function dayTitle(date: Date): string {
       grid-column: 1 / -1;
     }
 
-    .tb-feed__lead:empty,
-    .tb-feed__queue:empty,
+    /* a column whose widgets show nothing (only comments of their @if) is gone */
+    .tb-feed__lead:not(:has(> :not(:empty))),
+    .tb-feed__queue:not(:has(> :not(:empty))),
     .tb-feed__figures:empty {
       display: none;
     }

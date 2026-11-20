@@ -383,6 +383,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       background: transparent;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
       text-align: center;
       overflow-wrap: anywhere;
       cursor: pointer;
@@ -467,11 +468,13 @@ const MAX_LOGO_SIZE = 1024 * 1024;
 
       b {
         font: var(--tb-type-title-m-emphasized);
+        letter-spacing: var(--tb-tracking-title-m-emphasized);
       }
 
       span {
         color: var(--p-md-on-surface-variant);
         font: var(--tb-type-body-m);
+        letter-spacing: var(--tb-tracking-body-m);
       }
     }
 
@@ -494,6 +497,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       background: transparent;
       color: var(--p-md-on-surface);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       text-align: start;
       cursor: pointer;
 
@@ -546,6 +550,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       gap: var(--tb-space-2-5);
       padding: var(--tb-space-3) var(--tb-space-4);
       font: var(--tb-type-title-s);
+      letter-spacing: var(--tb-tracking-title-s);
     }
 
     .tb-look__body {
@@ -566,12 +571,12 @@ const MAX_LOGO_SIZE = 1024 * 1024;
 
     .tb-look__overline {
       font: var(--tb-type-label-m-emphasized);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      letter-spacing: var(--tb-tracking-label-m-emphasized);
     }
 
     .tb-look__student {
       font: var(--tb-type-title-m-emphasized);
+      letter-spacing: var(--tb-tracking-title-m-emphasized);
     }
 
     .tb-look__button {
@@ -581,6 +586,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       padding: 0 var(--tb-space-4);
       border-radius: var(--tb-shape-full);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       white-space: nowrap;
     }
 
@@ -592,6 +598,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       padding: var(--tb-space-2) var(--tb-space-4);
       border-radius: var(--tb-shape-lg);
       font: var(--tb-type-body-l);
+      letter-spacing: var(--tb-tracking-body-l);
     }
 
     .tb-look__icon {
@@ -606,6 +613,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
 
     .tb-look__link {
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
     }
 
     /* the save row under the color (sketch Portal): the text takes the room, the buttons wrap under it */
@@ -620,6 +628,7 @@ const MAX_LOGO_SIZE = 1024 * 1024;
       flex: 1 1 10rem;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
     }
 
     @container (width < 26rem) {

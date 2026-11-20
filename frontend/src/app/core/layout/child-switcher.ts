@@ -107,6 +107,7 @@ export function childAddress(url: string, childId: string): string {
       background: transparent;
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
       text-decoration: none;
       cursor: pointer;
       transition: background var(--tb-spring-fast-effects);
@@ -142,6 +143,7 @@ export function childAddress(url: string, childId: string): string {
       background: var(--p-md-secondary-container);
       color: var(--p-md-on-secondary-container);
       font: var(--tb-type-label-l-emphasized);
+      letter-spacing: var(--tb-tracking-label-l-emphasized);
 
       &:hover {
         background: color-mix(

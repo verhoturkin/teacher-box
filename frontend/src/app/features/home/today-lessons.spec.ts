@@ -143,8 +143,9 @@ describe('TodayLessons', () => {
 
     const group = host.querySelector<HTMLElement>('tb-call-summon .tb-button-group');
     expect(group?.querySelector('tb-join-lesson-button')).not.toBeNull();
-    expect(group?.textContent).toMatch(/Войти в урок\s*Позвать/);
-    expect(readableText(host)).toContain('Иван ещё не в звонке');
+    // the primary action last, at the trailing edge (M3); the presence by the board, before the buttons
+    expect(group?.textContent).toMatch(/Позвать\s*Войти в урок/);
+    expect(readableText(host)).toMatch(/Иван ещё не в звонке\s*Позвать/);
   });
 
   it('beside the hero does not report the end a second time', async () => {

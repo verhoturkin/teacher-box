@@ -18,7 +18,13 @@ const ROLES = [
     <ul class="tb-gallery-cell type">
       @for (item of roles; track item.role) {
         <li>
-          <p class="line" [style.font]="'var(--tb-type-' + item.role + ')'">Lesson at 14:00</p>
+          <p
+            class="line"
+            [style.font]="'var(--tb-type-' + item.role + ')'"
+            [style.letter-spacing]="'var(--tb-tracking-' + item.role + ')'"
+          >
+            Lesson at 14:00
+          </p>
           <code class="tb-gallery-name">font: var(--tb-type-{{ item.role }})</code>
           <span class="tb-gallery-name"> — {{ item.use }}</span>
         </li>

@@ -65,6 +65,7 @@ export const ru = {
     lesson: 'Занятие',
     requestSent: (kind: string) => `${kind}: запрос отправлен, ждём ответа учителя.`,
     nothing: 'Ближайших занятий нет',
+    elapsed: (done: number, total: number) => `Прошло ${String(done)} из ${String(total)} мин`,
     week: (count: number) => `Занятий на неделе: ${String(count)}`,
     sent: 'Учитель получит ваш запрос',
   },

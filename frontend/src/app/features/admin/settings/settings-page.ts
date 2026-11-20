@@ -532,6 +532,7 @@ function dailyCron(time: string): string {
     .tb-setting__name {
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-s);
+      letter-spacing: var(--tb-tracking-body-s);
       font-family: var(--tb-font-mono);
       overflow-wrap: anywhere;
     }

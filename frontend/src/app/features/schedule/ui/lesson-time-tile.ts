@@ -31,11 +31,13 @@ import { LessonTime } from '../home/lesson-clock';
     .tb-time-tile__day,
     .tb-time-tile__note {
       font: var(--tb-type-label-l);
+      letter-spacing: var(--tb-tracking-label-l);
     }
 
     /* the one hero moment of the portal (ADR-0044): the start in Display Small emphasized */
     .tb-time-tile__start {
       font: var(--tb-type-display-s-emphasized);
+      letter-spacing: var(--tb-tracking-display-s-emphasized);
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
     }

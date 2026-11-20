@@ -54,6 +54,7 @@ import { T } from './i18n/texts';
       margin-inline-start: var(--tb-space-3);
       color: var(--p-md-on-surface-variant);
       font: var(--tb-type-body-m);
+      letter-spacing: var(--tb-tracking-body-m);
 
       .tb-i {
         font-size: 1.125rem;
