@@ -11,12 +11,14 @@ The teacher prepares and reviews work around **lessons**, grouped by **course**:
 
 1. Materials (textbooks, plans, homework) are grouped by course.
 2. A student has the course they are studying now.
-3. A lesson has a plan: a Markdown text with textbook pages (from the course's textbooks when
-   there is a course). The AI drafts a plan from a request, the student's tags and materials.
-   Every saved plan stays in the bank for reuse.
+3. A lesson has a plan: a Markdown text with textbook pages (from the course's textbooks when there
+   is a course) and videos by link (lessons are often built on a video). The AI drafts a plan from a
+   request, the student's tags and materials. Every saved plan stays in the bank for reuse.
 4. Homework belongs to a course and to the lesson where it was given; it is created from a held
    lesson in one tap or linked to a lesson; every new assignment is in the bank for reuse.
 5. The AI summarizes a student's period: what was covered, what was done, successes, difficulties.
+6. A YouTube video added to a plan or an assignment gets its transcript at once, in the
+   video's original language, with a way to pick another language; the AI reads it.
 
 ## Principles
 
@@ -53,6 +55,8 @@ The teacher prepares and reviews work around **lessons**, grouped by **course**:
 | Student's current course | `textbooks` | `student_courses (student_id PK, course_id)` | One per student (Q1). |
 | Lesson plan | `textbooks` | `lesson_plans (id, title 1–200, body ≤ 20 000 Markdown, course_id, created_at, updated_at, version)` | Teacher-only. |
 | Plan's textbook pages | `textbooks` | `lesson_plan_textbooks (plan_id, textbook_id, pages)` | Same rules as `assignment_textbooks` (`PageRanges`). |
+| Plan's videos | `textbooks` | `lesson_plan_videos` — the shape of `assignment_videos` without `transcript_shown` | Up to 5, `VideoLink.parse`. |
+| Video link rules, captions | `textbooks` (moved from `homework`) | code only: `VideoLink`, `VideoTranscripts`, `youtube/` | One implementation for plans and homework. |
 | Assignment's course | `homework` | `assignments.course_id` | Checked by `textbooks::api.Courses`. |
 | Assignment's origin | `homework` | `assignments.source_id` (null = original) | Set by copy; always the root original. |
 | Lesson's plan | `schedule` | `lessons.plan_id` (null = none) | One plan per lesson; one plan may serve many lessons (Q3). |
@@ -78,6 +82,38 @@ The ids are opaque to `schedule`, as `assignments.board_id` is to `homework` (AD
 backend dependency. A deleted plan or assignment leaves a dangling id that every read skips
 (`LessonPlans.find(ids)` and `Assignments.find(ids)` skip missing rows, as `Textbooks.find` does).
 
+## Videos and automatic transcripts
+
+Today (ADR-0047) an assignment keeps up to 5 videos with a transcript, and the teacher fetches
+YouTube captions by hand: «Субтитры YouTube» → a list of tracks → one is taken. The change:
+
+- **One implementation.** `VideoLink`, `VideoCaptions`, `VideoTranscripts` and the adapter
+  `youtube/YoutubeCaptions` move from `homework` to `textbooks` (the materials module) and are
+  published in `textbooks::api`; `homework` keeps `assignment_videos` and calls the api — it already
+  depends on `textbooks::api`, so no new edge. The endpoints move to
+  `POST /api/teacher/textbooks/videos/captions` and `…/videos/transcript` (same bodies, same
+  `video.*` errors). The variable `TEACHERBOX_HOMEWORK_YOUTUBE_PROXY` keeps its name, so existing
+  `.env` files keep working; its catalog entry says it serves plans too.
+- **Automatic, original language.** When a YouTube link is added (or changed) and the transcript is
+  empty, the editor calls `POST …/videos/transcript {url}` without a language: the server already
+  takes the suggested track — the author's track in the spoken language, else the recognized
+  (automatic) one, which is always in the spoken language, else the first. One request, no menu.
+  The tile shows «Субтитры: английский, автоматические · Сменить язык»; «Сменить язык» lists the
+  tracks (`…/videos/captions`) and replaces the transcript, asking first when the teacher has edited
+  it (the existing `replacing` check).
+- **Never silently overwritten.** A non-empty transcript is never refetched: not on load, not on a
+  copy, not when a plan's videos go into homework (they carry their transcripts). No captions or a
+  failure — a quiet note under the tile («У видео нет субтитров» / «Не удалось получить
+  субтитры · Повторить»), never a toast; pasting a transcript by hand stays.
+- **Stored with the owner.** The transcript is saved in `assignment_videos` / `lesson_plan_videos`,
+  so the AI and copies never go to YouTube again. Students see a homework transcript only with
+  «Показывать ученику» (`transcript_shown`, default off, unchanged); plans are teacher-only.
+- **Other hosts.** Rutube, VK Video and other links get a player or a link, and the transcript is
+  pasted by hand (Q7).
+- **AI.** A plan's videos go into the plan draft as `VIDEO` sources (existing `DraftSources`
+  type, transcript from the frontend, counted among the 5); the period summary lists the titles of
+  the videos of the lessons' plans.
+
 ## Module dependencies
 
 | Module | Today | After |
@@ -100,7 +136,9 @@ exists already.
 
 - `Courses`: `find(id)`, `find(ids)` → `CourseSummary (id, name)`; `ofStudent(studentId)`.
 - `LessonPlans`: `find(ids)` → `LessonPlanView (id, title, body, courseId, textbooks [{id, title,
-  pages}])`, deleted ones skipped.
+  pages}], videos [{url, title, transcript}])`, deleted ones skipped.
+- Videos (moved from `homework`): `VideoLink.parse`, `VideoTranscripts.tracks(url)`,
+  `VideoTranscripts.transcript(url, language?, automatic)`.
 
 `homework::api` (new or extended):
 
@@ -112,8 +150,8 @@ exists already.
 `schedule::api` (new):
 
 - `LessonJournal.ofStudent(studentId, from, to)` → lessons in the period (instance time zone):
-  start, title, topic, the student's outcome, summary, next plan, `planId`, `assignmentIds`. Shared with
-  roadmap 02 stage B.
+  start, title, topic, the student's outcome, summary, next plan, `planId`, `assignmentIds`. Shared
+  with roadmap 02 stage B.
 
 Events: none new. Course deletion is local (`textbooks`) plus `homework` clearing `course_id` — via
 `textbooks::api.CourseDeleted` (`homework` already depends on `textbooks::api`), the only new event.
@@ -147,9 +185,9 @@ The student's cabinet does not change in v1: no course, no plans (YAGNI, Q6).
 
 - Request `{prompt ≤ 4000, courseName?, lesson? {topic, previousSummary, previousNextPlan},
   sources?, context?, modelId?}` — JSON or `multipart/form-data` exactly as `homework-draft`
-  (`DraftSources`: up to 5 textbook pages / files, 20 pages, 20 MB). `context` — the recipients'
-  AI tags (ADR-0055), sent by the frontend. The lesson texts come from the frontend (as for
-  `lesson-summary`), so this feature needs no new dependency.
+  (`DraftSources`: up to 5 textbook pages / files / videos with transcripts, 20 pages, 20 MB).
+  `context` — the recipients' AI tags (ADR-0055), sent by the frontend. The lesson texts come from
+  the frontend (as for `lesson-summary`), so this feature needs no new dependency.
 - Answer `{title, body, textbooks: [{source, pages}]}`: `source` — the index of a given textbook
   source; pages validated by `PageRanges` and the source's own page range; invalid ones dropped.
   The AI cannot point at a textbook it was not given.
@@ -159,10 +197,10 @@ The student's cabinet does not change in v1: no course, no plans (YAGNI, Q6).
 
 - Request `{studentId, from, to, prompt?, context?, modelId?}`; period ≤ 6 months.
 - `ai` gathers the data on the server: `LessonJournal.ofStudent` → `LessonPlans.find(planIds)`
-  (titles and pages, not bodies) → `HomeworkJournal.ofStudent`. Texts cut to fixed budgets (lesson summary
-  1000, review comment 500, at most 60 lessons and 60 tasks — newest kept), all as data between
-  tags. Why not from the frontend (as `lesson-summary` does): the server already has everything,
-  the payload is large, and the token limit is enforced here anyway.
+  (titles, pages, video titles; not bodies or transcripts) → `HomeworkJournal.ofStudent`. Texts cut
+  to fixed budgets (lesson summary 1000, review comment 500, at most 60 lessons and 60 tasks —
+  newest kept), all as data between tags. Why not from the frontend (as `lesson-summary` does): the
+  server already has everything, the payload is large, and the token limit is enforced here anyway.
 - Answer `{summary}` — Markdown with fixed sections: «Что прошли», «Задания», «Получается»,
   «Трудности», «Что дальше». `ai.requests` keeps metadata only.
 
@@ -177,9 +215,11 @@ gets a «Курс» select instead of the free-text field.
 
 **Plan editor** (`textbooks/teacher/lesson-plan-editor-page.ts`, `/teacher/materials/plans/new`,
 `…/plans/:id`): title, «Курс», the Markdown field, textbook pages (the picker shows the course's
-textbooks when a course is set, else all), the AI pane. DRY: `bind-textbook-dialog.ts` and the
-Markdown field move from `homework` to `@features/textbooks/parts` / `shared/` and both editors use
-them. «Сделать копию» in «⋮» for a plan used by several lessons. Autosave as the homework draft.
+textbooks when a course is set, else all), videos with automatic transcripts, the AI pane. DRY:
+`bind-textbook-dialog.ts`, the video parts (`teacher/video-section.ts`, `ui/video-links.ts`,
+`ui/video-list.ts` and the caption calls of `homework-api.ts`) and the Markdown field move from
+`homework` to `@features/textbooks/parts` / `shared/`, and both editors use them. «Сделать копию» in
+«⋮» for a plan used by several lessons. Autosave as the homework draft.
 
 **Lesson card** (`schedule/ui/lesson-card.ts`, teacher only) — two sections above the summary:
 
@@ -189,9 +229,9 @@ them. «Сделать копию» in «⋮» for a plan used by several lesson
   tags, topic, previous lesson's summary and next plan); on save the route links the plan.
 - «Домашнее задание»: linked assignments (title, status); «Задать» opens the homework editor with
   `?lessonId=` — students = the lesson's participants, course = the plan's or the student's,
-  textbook pages = the plan's (removable chips), deadline = the next lesson (existing `next-lesson.ts`); AI
-  context adds the topic, plan and summary. «Привязать» — a picker of the participants' recent
-  unlinked assignments plus «Из банка» (copy for these students).
+  textbook pages and videos (with transcripts) = the plan's (removable chips), deadline = the next
+  lesson (existing `next-lesson.ts`); AI context adds the topic, plan and summary. «Привязать» — a
+  picker of the participants' recent unlinked assignments plus «Из банка» (copy for these students).
 - The editor stays a `homework` page; the route (`app.routes.ts`) passes it the lesson input and a
   `linkToLesson(assignmentId)` callback from schedule data-access (ADR-0058 composition, as
   `upcomingLessons` today).
@@ -232,8 +272,23 @@ samples for new shared parts (ADR-0059); wiki pages and help articles in every l
    student / parent (needs an owner module, storage and roadmap 02 phase 2)? Only individual
    students in v1, groups later?
 6. **Plans for students:** teacher-only (proposed) or shown to the lesson's students?
+7. **Transcripts beyond YouTube:** Rutube and VK Video give no captions to us. Proposed for now:
+   paste by hand. The alternative — speech recognition (Whisper or a provider's audio API) — means
+   downloading the video's audio, a new paid dependency and minutes of work per video; worth it
+   only if those hosts are frequent in your lessons. Which hosts do you use most?
+8. **Homework transcript for students:** keep «Показывать ученику» off by default (proposed) now
+   that every YouTube video gets one automatically, or turn it on?
 
 ## Stages
+
+### V — Videos in materials, automatic transcripts (B, F) · release 1, can ship first
+
+- [ ] **V.1** **B** *simple* — move `VideoLink`, `VideoCaptions`, `VideoTranscripts`, `youtube/` to
+  `textbooks` (`api` + adapter), endpoints to `/api/teacher/textbooks/videos/*`, `homework` over the
+  api; catalog text of the proxy variable; tests move with the code.
+- [ ] **V.2** **F** *complex* — video parts to `@features/textbooks/parts`; automatic transcript on
+  adding a YouTube link (one request, suggested track), «Сменить язык», quiet notes, no overwrite;
+  homework editor first; help articles («Видео в задании») in every language.
 
 ### A — Courses (B, F) · release 1
 
@@ -244,10 +299,12 @@ samples for new shared parts (ADR-0059); wiki pages and help articles in every l
 
 ### B — Lesson plans (B, F) · release 1
 
-- [ ] **B.1** **B** *complex* — `lesson_plans`, `lesson_plan_textbooks`, `LessonPlans`, REST
+- [ ] **B.1** **B** *complex* — `lesson_plans`, `lesson_plan_textbooks`, `lesson_plan_videos`,
+  `LessonPlans`, REST
   (incl. copy); `schedule` `lessons.plan_id`, `PUT …/plan`, protection in
   `deleteUntouchedOfSeries`, tests for a series edit keeping a prepared lesson.
-- [ ] **B.2** **F** *complex* — move `bind-textbook-dialog` and the Markdown field; plan editor;
+- [ ] **B.2** **F** *complex* — move `bind-textbook-dialog` and the Markdown field; plan editor
+  (with the video section of V.2);
   «Планы» tab; lesson card «План»; ESLint direction `schedule` → `textbooks`, `textbooks` → `ai`.
 
 ### C — Homework and lessons, homework bank (B, F) · release 1
@@ -279,5 +336,7 @@ samples for new shared parts (ADR-0059); wiki pages and help articles in every l
 
 - A plan shared by many lessons shows its current text on past lessons; the lesson summary stays
   the record of what happened.
+- YouTube may change or block the InnerTube player answer (ADR-0047); then automatic transcripts
+  fail quietly and the teacher pastes one — nothing else depends on them.
 - Out of scope: course syllabus / ordered topics, course progress percentages, automatic plan
   generation for a whole series, student-facing plans, sending the period summary.
