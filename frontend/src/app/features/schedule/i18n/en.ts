@@ -9,6 +9,10 @@ export const en: Translation<typeof ru> = {
     MISSED: 'Missed',
     CANCELLED: 'Cancelled',
   },
+  parentRequest: 'Parent’s request',
+  parentRequestNamed: (name: string) => `Parent’s request (${name})`,
+  fromParent: 'from a parent',
+  fromParentNamed: (name: string) => `from a parent (${name})`,
   kinds: {
     RESCHEDULE: 'Reschedule',
     CANCEL: 'Cancel',
@@ -83,6 +87,7 @@ export const en: Translation<typeof ru> = {
     reschedule: 'Reschedule',
     join: 'Join lesson',
     wontCome: 'I can’t attend',
+    childWontCome: 'Can’t attend',
     cancel: 'Cancel',
   },
   freeTimes: {
@@ -105,6 +110,11 @@ export const en: Translation<typeof ru> = {
     send: 'Send request',
     rescheduleTitle: 'Reschedule lesson',
     absenceTitle: 'Report an absence',
+    childAbsenceTitle: 'Report an absence',
+    childGroupAbsence: (group: string) =>
+      `The group “${group}” will have the lesson without your child. Let the teacher know in advance so the absence is not charged.`,
+    childLate:
+      'This lesson starts soon. The teacher may charge your child for a late cancellation.',
     cancelTitle: 'Request cancellation',
     failed: 'Could not send the request',
   },
@@ -118,6 +128,7 @@ export const en: Translation<typeof ru> = {
     withdraw: 'Withdraw',
     withdrawOf: (time: string) => `Withdraw request for ${time}`,
     requests: 'My requests',
+    childRequests: 'Requests',
     noPendingRequests: 'No requests awaiting a response',
     resolved: 'Resolved requests',
     resolvedRequests: (count: number) => `Resolved: ${String(count)}`,

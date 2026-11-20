@@ -3,7 +3,7 @@ import { Provider, signal } from '@angular/core';
 import { Family } from '@core/family/family';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AuthService } from '@core/auth/auth.service';
-import { hostElement, readableText } from '@testing/dom';
+import { buttonByText, hostElement, readableText } from '@testing/dom';
 import { familyScopeOf } from '@testing/family-fixtures';
 import { myBillingSummary } from '@testing/billing-fixtures';
 import { myHomeworkSummary, myTask } from '@testing/homework-fixtures';
@@ -185,11 +185,13 @@ describe('StudentHome', () => {
     ).not.toBeNull();
   });
 
-  it('shows a child in the family cabinet: their name, their data, no student hints', async () => {
+  it('shows a child in the family cabinet: their name, their data, the parent’s hints', async () => {
     render(1920, [
       familyScopeOf('s-1'),
       { provide: Family, useValue: { child: signal({ displayName: 'Петя Смирнов' }) } },
     ]);
+    // the parent's own messengers (454.3)
+    backend.expectOne('/api/me/channels').flush([channel()]);
     backend
       .expectOne('/api/guardian/students/s-1/schedule/summary')
       .flush(myScheduleSummary({ next: scheduledLesson({ title: 'Дроби' }) }));
@@ -206,7 +208,6 @@ describe('StudentHome', () => {
       request.flush(scheduleSettings());
     });
     backend.expectNone('/api/me/boards');
-    backend.expectNone('/api/me/channels');
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -222,7 +223,11 @@ describe('StudentHome', () => {
     );
     expect(host.querySelector('tb-my-deadlines-widget')).not.toBeNull();
     expect(host.querySelector('tb-student-welcome-card')).toBeNull();
-    expect(host.querySelector('tb-connect-messenger-card')).toBeNull();
-    expect(host.querySelector('tb-lesson-actions')).toBeNull();
+    const connect = host.querySelector('tb-connect-messenger-card');
+    expect(connect?.textContent).toContain('о занятиях ребёнка');
+    expect(connect?.querySelector('a')?.getAttribute('href')).toBe('/family/s-1/account');
+    // the parent asks to move or cancel the child's lesson, but does not join it
+    expect(buttonByText(host, 'Перенести')).not.toBeNull();
+    expect(host.querySelector('tb-join-lesson-button')).toBeNull();
   });
 });

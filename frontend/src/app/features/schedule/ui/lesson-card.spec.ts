@@ -179,6 +179,32 @@ describe('LessonCard', () => {
     expect(root.textContent).toContain('Мария: Не придёт');
   });
 
+  it('says a parent asked on the child’s behalf', async () => {
+    const root = await show(
+      scheduledLesson({
+        pendingRequests: [changeRequest({ guardianId: 'g-1', guardianName: 'Анна' })],
+      }),
+    );
+    expect(root.textContent).toContain('Запрос родителя (Анна): Перенос');
+  });
+
+  it('names the student and the parent of a request in a group', async () => {
+    const root = await show(
+      groupLesson({
+        pendingRequests: [
+          changeRequest({
+            kind: 'CANCEL',
+            groupId: 'g-1',
+            studentName: 'Мария',
+            guardianId: 'g-1',
+            guardianName: null,
+          }),
+        ],
+      }),
+    );
+    expect(root.textContent).toContain('Мария, от родителя: Не придёт');
+  });
+
   describe('for the student', () => {
     it('shows the facts, the own pending request and no teacher’s controls', async () => {
       const root = await show(

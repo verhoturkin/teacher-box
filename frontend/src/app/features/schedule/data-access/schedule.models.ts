@@ -38,6 +38,10 @@ export interface ChangeRequest {
   readonly answer: string | null;
   readonly createdAt: string;
   readonly resolvedAt: string | null;
+  /** The parent who asked on the child's behalf (ADR-0069); `null`: the student asked. */
+  readonly guardianId: string | null;
+  /** The parent's name; `null` when the student asked or the parent is no longer linked. */
+  readonly guardianName: string | null;
 }
 
 /** Mirrors `ParticipantView` of the backend. */

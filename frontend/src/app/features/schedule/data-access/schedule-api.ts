@@ -240,18 +240,18 @@ export class ScheduleApi {
 
   requestChange(lessonId: string, body: ChangeRequestBody): Observable<ChangeRequest> {
     return this.http.post<ChangeRequest>(
-      `/api/me/schedule/lessons/${lessonId}/requests`,
+      `${this.scope.api()}/schedule/lessons/${lessonId}/requests`,
       body,
       QUIET,
     );
   }
 
   myRequests(): Observable<ChangeRequest[]> {
-    return this.http.get<ChangeRequest[]>('/api/me/schedule/requests', QUIET);
+    return this.http.get<ChangeRequest[]>(`${this.scope.api()}/schedule/requests`, QUIET);
   }
 
   withdraw(requestId: string): Observable<unknown> {
-    return this.http.delete(`/api/me/schedule/requests/${requestId}`);
+    return this.http.delete(`${this.scope.api()}/schedule/requests/${requestId}`);
   }
 
   feed(): Observable<CalendarFeed> {
@@ -327,17 +327,24 @@ export class ScheduleApi {
     });
   }
 
-  /** For a student: when the teacher is busy in `[from, to)` (ISO instants), without whose lessons. */
+  /**
+   * For a student or a parent of the child: when the teacher is busy in `[from, to)` (ISO instants),
+   * without whose lessons.
+   */
   teacherBusy(from: string, to: string): Observable<BusyTime[]> {
-    return this.http.get<BusyTime[]>('/api/me/schedule/busy', {
+    return this.http.get<BusyTime[]>(`${this.scope.api()}/schedule/busy`, {
       ...QUIET,
       params: new HttpParams().set('from', from).set('to', to),
     });
   }
 
-  /** Free start times (ISO instants) of `date` to move a lesson to: the student's or the teacher's view. */
+  /**
+   * Free start times (ISO instants) of `date` to move a lesson to: the teacher's view, or the cabinet's
+   * (the student's own or a parent's of the child).
+   */
   freeTimes(lessonId: string, date: string, asTeacher: boolean): Observable<string[]> {
-    return this.http.get<string[]>(`/api/${asTeacher ? 'teacher' : 'me'}/schedule/free-times`, {
+    const base = asTeacher ? '/api/teacher' : this.scope.api();
+    return this.http.get<string[]>(`${base}/schedule/free-times`, {
       ...QUIET,
       params: new HttpParams().set('date', date).set('lessonId', lessonId),
     });

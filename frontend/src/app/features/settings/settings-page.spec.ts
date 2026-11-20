@@ -90,7 +90,7 @@ describe('SettingsPage', () => {
         backend.expectOne('/api/teacher/notifications/channels').flush([channelSetup()]);
         backend
           .expectOne('/api/teacher/notifications/bot')
-          .flush({ teacherActions: true, teacherMenu: [], studentMenu: [] });
+          .flush({ teacherActions: true, teacherMenu: [], studentMenu: [], guardianMenu: [] });
         backend.expectOne('/api/teacher/notifications/students').flush([studentMessengers()]);
         break;
       case 'ai':

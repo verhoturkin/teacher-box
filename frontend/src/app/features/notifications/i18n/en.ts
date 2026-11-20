@@ -17,6 +17,16 @@ export const en: Translation<typeof ru> = {
     ACCOUNT: 'Students, calendar and backups',
     ACCOUNT_HINT: 'Accepted invitations, Google Calendar connection issues and failed backups',
   },
+  categories: {
+    PAYMENTS: 'Payments and balance',
+    PAYMENTS_HINT: 'Lesson charges, payments and their reversal',
+    LESSONS: 'Lessons',
+    LESSONS_HINT: 'Reminders, new, moved and cancelled lessons, replies to requests',
+    HOMEWORK_DEADLINES: 'Homework deadlines',
+    HOMEWORK_DEADLINES_HINT: 'Work due soon and the teacher’s reminders about work not handed in',
+    REVIEWED_WORK: 'Marked work',
+    REVIEWED_WORK_HINT: 'The teacher has marked your child’s work',
+  },
   connections: {
     OK: 'Working',
     PENDING: 'Connecting',
@@ -41,6 +51,8 @@ export const en: Translation<typeof ru> = {
     title: 'Get notifications in your messaging app',
     text: (names: string) =>
       `Connect ${names} to get lesson reminders, new assignments and messages from your teacher without opening the portal.`,
+    childText: (names: string) =>
+      `Connect ${names} to get your child’s lesson reminders, payments and marked work without opening the portal.`,
     or: (first: string, last: string) => `${first} or ${last}`,
     connect: 'Connect',
     later: 'Not now',
@@ -62,6 +74,8 @@ export const en: Translation<typeof ru> = {
     title: 'Notifications on this device',
     student:
       'Get lesson reminders, new assignments and messages from your teacher even when the portal is closed.',
+    child:
+      'Get your child’s lesson reminders, payments and marked work even when the portal is closed.',
     teacher:
       'Get submission alerts, reschedule requests and reminders even when the portal is closed.',
     enable: 'Turn on',
@@ -122,6 +136,8 @@ export const en: Translation<typeof ru> = {
     alertTitle: 'Connect a messaging app:',
     alertText:
       'hear about rescheduled lessons and marked work straight away, without opening the portal.',
+    childAlertText:
+      'hear about moved lessons, payments and your child’s marked work straight away, without opening the portal.',
     connectTo: (name: string) => `Connect ${name}`,
     moreMessenger: 'Another messaging app',
     teacherAlways: 'Teacher’s messages are always sent.',
@@ -141,6 +157,7 @@ export const en: Translation<typeof ru> = {
     commandsTitle: 'Commands',
     commands: ['/menu — menu', '/cancel — cancel', '/help — help', '/stop — turn off'],
     students: 'For students',
+    parents: 'For parents',
     you: 'For you',
     onlyNotifications: 'Notifications only.',
   },

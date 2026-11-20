@@ -71,20 +71,18 @@ import { T } from '../i18n/texts';
             }
             <small class="tb-muted">{{ t.week(summary().weekLessons) }}</small>
           </div>
-          <!-- the family cabinet neither joins the lesson nor asks to move it (ADR-0069, 454.3) -->
-          @if (!readOnly) {
-            <div class="tb-lesson-event__actions">
-              <tb-lesson-actions
-                [joinUrl]="lesson.joinUrl"
-                [requests]="lesson.pendingRequests.length === 0 && time()?.phase !== 'live'"
-                [group]="lesson.groupId !== null"
-                [stacked]="true"
-                [hero]="true"
-                rescheduleIcon="tb-i tb-i-calendar_month"
-                (ask)="ask(lesson, $event)"
-              />
-            </div>
-          }
+          <!-- the family cabinet does not join the lesson, but asks to move it (ADR-0069, 454.3) -->
+          <div class="tb-lesson-event__actions">
+            <tb-lesson-actions
+              [joinUrl]="readOnly ? null : lesson.joinUrl"
+              [requests]="lesson.pendingRequests.length === 0 && time()?.phase !== 'live'"
+              [group]="lesson.groupId !== null"
+              [stacked]="true"
+              [hero]="true"
+              rescheduleIcon="tb-i tb-i-calendar_month"
+              (ask)="ask(lesson, $event)"
+            />
+          </div>
         </div>
       } @else {
         <tb-empty-state [compact]="true" icon="tb-i-calendar_month" [title]="t.nothing" />
@@ -158,7 +156,7 @@ export class NextLessonWidget implements OnInit {
   protected readonly t = T.next;
   private readonly snackbar = inject(Snackbar);
   private readonly api = inject(ScheduleApi);
-  /** The family cabinet: the lesson without its link, boards and requests. */
+  /** The family cabinet: the lesson without its link and boards; the parent may ask to move it. */
   protected readonly readOnly = inject(API_SCOPE).readOnly;
 
   readonly summary = input.required<MyScheduleSummary>();

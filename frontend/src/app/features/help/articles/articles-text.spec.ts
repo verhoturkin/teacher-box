@@ -626,6 +626,44 @@ const PARENTS: Readonly<Record<string, readonly (readonly [string, string, strin
   ],
 };
 
+/** Parents' requests, notifications and bot menu (454.3): [topic, baseline, now] per edition. */
+const PARENT_REQUESTS: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'students',
+      'оплаты, — но ничего не меняет.',
+      'оплаты, — и получает уведомления ребёнка (что именно — выбирает сам). Сдать задание за ребёнка он не может, а попросить перенести или отменить занятие — может.',
+    ],
+    [
+      'schedule',
+      'Ученик может попросить отменить или перенести занятие — в личном кабинете или через бота. Запрос',
+      'Ученик или его родитель может попросить отменить или перенести занятие — в личном кабинете или через бота; запрос родителя помечен «от родителя» с его именем, а ваш ответ получат и ученик, и родитель. Запрос',
+    ],
+    [
+      'bot',
+      '## Как пользоваться',
+      '## Для родителей\n\nРасписание детей, баланс каждого ребёнка, перенос и отмена занятия ребёнка — если детей несколько, бот спросит, для кого.\n\n## Как пользоваться',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'students',
+      'and payments. They cannot change anything.',
+      'and payments, and gets the child’s notifications (choosing which ones). They cannot hand in work, but they can request a reschedule or cancellation.',
+    ],
+    [
+      'schedule',
+      'Students can request a reschedule or cancellation in the portal or bot. Requests',
+      'Students and their parents can request a reschedule or cancellation in the portal or bot. A parent’s request is marked “from a parent” with their name, and both the student and the parent get your reply. Requests',
+    ],
+    [
+      'bot',
+      '## Using the bot',
+      '## Parent actions\n\nParents can view their children’s schedules and balances, and request a reschedule or cancellation for a child. If they have more than one child, the bot asks which one.\n\n## Using the bot',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -723,6 +761,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(HERO_ROW[name] ?? []),
       ...(CALL_PRESENCE[name] ?? []),
       ...(PARENTS[name] ?? []),
+      ...(PARENT_REQUESTS[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

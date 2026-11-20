@@ -23,6 +23,7 @@ import {
   AttendanceDialog,
   formatLessonStart,
   lessonWith,
+  fromParent,
   requestKindLabel,
 } from '@features/schedule/parts';
 import type { ChangeRequest, ScheduledLesson } from '@features/schedule/parts';
@@ -384,7 +385,9 @@ export class TodoQueue implements OnInit {
       key: `request-${request.id}`,
       kind: 'request',
       title: T.queue.request(requestKindLabel(request)),
-      detail: request.groupName ?? request.studentName ?? '',
+      detail: [request.groupName ?? request.studentName, fromParent(request)]
+        .filter((part) => part !== null && part !== '')
+        .join(' · '),
       icon: 'tb-i-swap_horiz',
       link: '/teacher/schedule',
     })),

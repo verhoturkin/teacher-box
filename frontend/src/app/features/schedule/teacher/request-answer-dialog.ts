@@ -20,7 +20,7 @@ import { describeError } from '@core/http/error-messages';
 import { problemCode } from '@core/http/problem-detail';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { ChangeRequest } from '../data-access/schedule.models';
-import { formatLessonStart, optionalText } from '../schedule-labels';
+import { formatLessonStart, optionalText, parentRequest } from '../schedule-labels';
 import { T } from '../i18n/texts';
 import { FreeTimes } from '../ui/free-times';
 import { SHARED_T } from '@shared/i18n/texts';
@@ -75,6 +75,9 @@ import { TbDialog } from '@shared/ui/dialog/dialog';
                 }
               }
             </p>
+            @if (parentRequest(request); as parent) {
+              <p class="tb-muted">{{ parent }}</p>
+            }
             @if (request.comment !== null) {
               <p class="tb-muted">«{{ request.comment }}»</p>
             }
@@ -139,6 +142,7 @@ import { TbDialog } from '@shared/ui/dialog/dialog';
 export class RequestAnswerDialog {
   protected readonly c = SHARED_T.common;
   protected readonly t = T.answer;
+  protected readonly parentRequest = parentRequest;
   private readonly api = inject(ScheduleApi);
   private readonly confirm = inject(Confirm);
 

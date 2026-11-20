@@ -77,7 +77,9 @@ describe('SchedulePage', () => {
 
   function flushSidePanels(unmarked: ScheduledLesson[] = [], offTimes: OffTime[] = []): void {
     backend.expectOne('/api/teacher/schedule/off-times').flush(offTimes);
-    backend.expectOne('/api/teacher/schedule/requests').flush([changeRequest({ late: true })]);
+    backend
+      .expectOne('/api/teacher/schedule/requests')
+      .flush([changeRequest({ late: true, guardianId: 'g-1', guardianName: 'Анна' })]);
     backend.expectOne('/api/teacher/schedule/unmarked').flush(unmarked);
   }
 
@@ -138,6 +140,7 @@ describe('SchedulePage', () => {
 
     expect(text).toContain('Запросы учеников');
     expect(text).toContain('Перенос');
+    expect(text).toContain('от родителя (Анна)');
     expect(text).not.toContain('Отметьте прошедшие занятия');
     expect(text).not.toContain('Мария');
     expect(
