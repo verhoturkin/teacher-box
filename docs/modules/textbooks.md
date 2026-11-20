@@ -1,7 +1,8 @@
 # textbooks
 
 The teacher's textbooks, workbooks and other materials: one file each, shared with any number of students and
-groups; pages of a PDF cut out for homework and rendered as pictures for boards; courses (460.1).
+groups; pages of a PDF cut out for homework and rendered as pictures for boards; courses (460.1);
+lesson plans and their bank (461.1).
 Depends on: `shared`, `identity::api`. Schema `textbooks`. ADR: [0033](../adr/0033-textbooks.md),
 [0071](../adr/0071-courses-lesson-plans-and-bank.md).
 
@@ -18,6 +19,23 @@ Depends on: `shared`, `identity::api`. Schema `textbooks`. ADR: [0033](../adr/00
   the `COURSE` members, then publishes `CourseDeleted`. Migration `V3`: the courses come from the
   distinct trimmed non-blank `textbooks.course` values ignoring case (the oldest textbook's
   spelling wins, positions by name), `course_id` filled, `course` dropped.
+- **Lesson plans** (461.1, roadmap 11 «Bank»): title 1–200 (`textbooks.plan-title-invalid`),
+  Markdown body ≤ 20 000 (`textbooks.plan-body-too-long`), an existing course or none, saved with
+  `version`. Textbooks — the rules of homework's bound textbooks: an existing textbook (404
+  `textbooks.textbook-not-found`), pages normalized by `PageRanges` (blank — the whole textbook),
+  each once (`textbooks.plan-textbook-twice`), ≤ 20, in the teacher's order; a deleted textbook
+  leaves its plans (cascade). Videos — the shape of homework's: ≤ 5, `video.*` errors,
+  `transcriptShown` off unless set. A deleted course leaves its plans without one (a new version
+  each). Two kinds of rows: a **bank item** (`bank`, an original, never on a lesson, no
+  `source_id`) and a **working plan** (a plan of one lesson; `source_id` — the bank item it came
+  from or was saved as). «Готово» (`finish`): a working plan without `source_id` saves its copy
+  into the bank and takes it as `source_id`; any other plan is left as it is. `bank` of a working
+  plan: no original (never saved or deleted) — a new one, else the original's content (title,
+  body, course, textbooks, videos) is replaced; a bank item — 409 `textbooks.plan-in-bank`. `use`
+  of a bank item makes a working copy with `source_id` (transcripts carried) and never adds to the
+  bank; a working plan — 409 `textbooks.plan-not-in-bank`; the `lessonId` is only echoed — the
+  link is `schedule`'s (461.2). Editing a bank item never changes its copies; deleting it keeps
+  them (`source_id` → null). `uses` — the working plans with this `source_id`.
 - One file per textbook (`TextbookFiles`): png, jpeg, webp, gif, PDF — by the first bytes; DOC (OLE) and DOCX
   (ZIP) — by the first bytes and the extension; nothing else (no SVG). Empty — `textbooks.file-empty`, over
   100 MB — `textbooks.file-too-large`. The content type served is the one found, never the client's. Stored
@@ -56,6 +74,12 @@ any other file whole.
 `CourseSummary (id, name)`, deleted ones skipped; `ofStudent(id)`, `ofGroup(id)` — the current
 course. Event `CourseDeleted(courseId)` — after the course and its own links are gone.
 
+`LessonPlans` facade (roadmap 11; for `schedule` in 461.2): `find(ids)` → `LessonPlanView (id,
+title, body, courseId, bank, textbooks [{id, title, kind, format, pages}], videos [{url, provider,
+videoId, startSeconds, title, transcript, transcriptShown}])`, deleted plans and textbooks skipped,
+every transcript included (the caller hides one unless `transcriptShown`); `checkLinkable(id)` —
+404 `textbooks.plan-not-found`, a bank item — 409 `textbooks.plan-in-bank`.
+
 Videos (moved from `homework` in 0.60.0, [ADR-0047](../adr/0047-video-links-and-transcripts.md)):
 `VideoLink` — `parse(url)` → provider (`YOUTUBE`, `RUTUBE`, `VK`, `OTHER`), video ID, start; YouTube
 (`watch`, `youtu.be`, `shorts`, `embed`, `live`, `t=`), Rutube (32-hex ID), VK Video
@@ -74,7 +98,10 @@ kept for existing `.env` files; read live, ADR-0056).
 `textbooks` (kind, title, course_id, page_count, format, file_key, filename, content_type, size,
 cover_key, version), `textbook_members` (`member_type` `STUDENT` / `GROUP` / `COURSE`, `member_id`),
 `courses` (name, name_key, position, version), `student_courses`, `group_courses` (one current
-course each, cascade with the course). All are in the full reset; files are in the portal backup.
+course each, cascade with the course), `lesson_plans` (title, body, course_id, bank, source_id —
+`on delete set null`, created_at, updated_at, version), `lesson_plan_textbooks` (plan_id,
+textbook_id, position, pages), `lesson_plan_videos` (the columns of `assignment_videos`), `V4`. All
+are in the full reset; files are in the portal backup.
 
 ## REST
 
@@ -86,6 +113,7 @@ course each, cascade with the course). All are in the full reset; files are in t
 | `PUT /api/teacher/textbooks/{id}` (JSON with `version`, `courseId`, `courseIds`), `PUT /{id}/file` (multipart `file`, `version`), `DELETE /{id}` | teacher |
 | `GET /api/teacher/textbooks/{id}/file`, `GET /{id}/pages/{n}` (picture), `GET /{id}/cover` | teacher |
 | `GET /api/me/textbooks` (with `groupNames`, `courseName`, newest change first), `GET /api/me/textbooks/{id}/file`, `GET /api/me/textbooks/{id}/cover` (404 for a textbook of others and for a Word file) | student |
+| `GET /api/teacher/textbooks/plans` (`?bank=true` — the bank with `uses`, else the working plans; last changed first), `POST {title, body, courseId, bank, textbooks: [{textbookId, pages}], videos}` (201), `GET/PUT/DELETE …/plans/{id}` (`PUT` — the whole content with `version`; `DELETE` 204), `POST …/{id}/finish` («Готово»), `POST …/{id}/bank` (save / update the original), `POST …/{id}/use {lessonId}` → 201 `{lessonId, plan}` | teacher |
 | `POST /api/teacher/textbooks/videos/captions` `{url}` → `{title, tracks: [{language, automatic}], suggested}`; `POST …/videos/transcript` `{url, language?, automatic?}` → `{title, language, automatic, transcript, truncated}` (nothing is saved) | teacher |
 
 Uploads up to 100 MB: Spring multipart limits and nginx `client_max_body_size` for `/api/teacher/textbooks`.

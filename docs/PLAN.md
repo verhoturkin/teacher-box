@@ -86,13 +86,19 @@ section the substep names). New ADR: 0071 «Курсы, планы уроков 
 
 ### 461. Lesson plans
 
-- [ ] 461.1 **B** *complex* — `textbooks`: `lesson_plans` (`bank`, `source_id`),
+- [x] 461.1 **B** *complex* — `textbooks`: `lesson_plans` (`bank`, `source_id`),
   `lesson_plan_textbooks`, `lesson_plan_videos`; `LessonPlanService` — CRUD, `finish` (first
   «Готово» of an item without `source_id` saves the bank original), `bank` (save / update the
   original), `use {lessonId}` (a working copy), the bank list with `uses`; REST
   `/api/teacher/textbooks/plans/**`; `textbooks::api.LessonPlans` (`find`, `checkLinkable`); tests
   incl. «use never adds to the bank» and «a deleted original keeps its copies». Spec: roadmap/11
   «Bank».
+  *Done: `checkLinkable` throws 404 `textbooks.plan-not-found` and 409 `textbooks.plan-in-bank`
+  (461.2 may answer `schedule.bank-item` instead); `use` answers 201 `{lessonId, plan}` — the
+  lesson id is only echoed, the link is made by 461.2; textbooks and videos are saved with the plan
+  (`POST` / `PUT` carry the whole lists, ≤ 20 textbooks) instead of separate bind endpoints;
+  `bank` of a bank item — 409 `textbooks.plan-in-bank`, `use` of a working plan — 409
+  `textbooks.plan-not-in-bank`; a deleted course or textbook leaves its plans.*
 - [ ] 461.2 **B** *complex* — `schedule`: `lessons.plan_id` (unique), `PUT
   /api/teacher/schedule/lessons/{id}/plan` (checked by `LessonPlans.checkLinkable`, no `version`,
   not on a cancelled lesson), `planId` in the details; `deleteUntouchedOfSeries` keeps prepared

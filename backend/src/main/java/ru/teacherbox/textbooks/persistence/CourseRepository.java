@@ -66,11 +66,14 @@ public class CourseRepository {
 
     /**
      * Deletes the course with its links: the current courses of students and groups (cascade), the textbooks'
-     * course (a new version of each) and the textbooks shared with its students.
+     * course and the lesson plans' (a new version of each) and the textbooks shared with its students.
      */
     public void delete(UUID id) {
         jdbc.sql("""
                 update textbooks.textbooks set course_id = null, version = version + 1 where course_id = :id
+                """).param("id", id).update();
+        jdbc.sql("""
+                update textbooks.lesson_plans set course_id = null, version = version + 1 where course_id = :id
                 """).param("id", id).update();
         jdbc.sql("delete from textbooks.textbook_members where member_type = 'COURSE' and member_id = :id")
                 .param("id", id).update();

@@ -360,6 +360,12 @@ export const en: Translation<typeof ru> = {
       'textbooks.course-exists': 'A course with this name already exists',
       'textbooks.course-not-found': 'This course no longer exists',
       'textbooks.course-order-invalid': 'The list of courses has changed — reload the page',
+      'textbooks.plan-not-found': 'This plan no longer exists',
+      'textbooks.plan-title-invalid': 'Plan titles must be between 1 and 200 characters',
+      'textbooks.plan-body-too-long': 'The plan is too long — at most 20,000 characters',
+      'textbooks.plan-textbook-twice': 'This textbook is already in the plan',
+      'textbooks.plan-in-bank': 'This plan is already in the bank',
+      'textbooks.plan-not-in-bank': 'Only a plan from the bank can be used',
       'textbooks.page-count-invalid': 'Enter a page count between 1 and 10,000',
       'textbooks.file-type-not-allowed':
         'Use a PDF, Word document (DOC or DOCX), or PNG, JPEG, WebP or GIF image',

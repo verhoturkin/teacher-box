@@ -349,6 +349,12 @@ export const ru = {
       'textbooks.course-exists': 'Курс с таким названием уже есть',
       'textbooks.course-not-found': 'Такого курса уже нет',
       'textbooks.course-order-invalid': 'Список курсов изменился — обновите страницу',
+      'textbooks.plan-not-found': 'Такого плана уже нет',
+      'textbooks.plan-title-invalid': 'Название плана — от 1 до 200 символов',
+      'textbooks.plan-body-too-long': 'План слишком длинный — не больше 20 000 символов',
+      'textbooks.plan-textbook-twice': 'Этот учебник уже есть в плане',
+      'textbooks.plan-in-bank': 'Этот план уже в банке',
+      'textbooks.plan-not-in-bank': 'Использовать можно только план из банка',
       'textbooks.page-count-invalid': 'Число страниц — от 1 до 10 000',
       'textbooks.file-type-not-allowed':
         'Учебник — это PDF, Word (DOC, DOCX) или картинка PNG, JPEG, WebP, GIF',

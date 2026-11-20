@@ -6,14 +6,15 @@ import org.springframework.stereotype.Component;
 import ru.teacherbox.shared.reset.DataReset;
 
 /**
- * Full reset (ADR-0014): textbooks with their members, courses with their students and groups (ADR-0071); the files
- * are deleted by the platform.
+ * Full reset (ADR-0014): textbooks with their members, courses with their students and groups (ADR-0071), lesson
+ * plans with their textbooks and videos; the files are deleted by the platform.
  */
 @Component
 class TextbooksDataReset implements DataReset {
 
-    private static final List<String> TABLES = List.of("textbooks.textbook_members", "textbooks.textbooks",
-            "textbooks.student_courses", "textbooks.group_courses", "textbooks.courses");
+    private static final List<String> TABLES = List.of("textbooks.lesson_plan_videos",
+            "textbooks.lesson_plan_textbooks", "textbooks.lesson_plans", "textbooks.textbook_members",
+            "textbooks.textbooks", "textbooks.student_courses", "textbooks.group_courses", "textbooks.courses");
 
     private final JdbcClient jdbc;
 
