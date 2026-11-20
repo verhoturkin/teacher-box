@@ -79,6 +79,16 @@ test('the nearest lesson heads the lead pane of Today, bright, beside a fixed fi
     return { background: getComputedStyle(node).backgroundColor, primary };
   });
   expect(look.background).toBe(look.primary);
+  // 450.3: the parts of the hero stand side by side in the line, none over another
+  const line = await hero.evaluate((node) => {
+    const box = (selector: string): [number, number] => {
+      const rect = (node.querySelector(selector) as HTMLElement).getBoundingClientRect();
+      return [rect.left, rect.right];
+    };
+    return [box('.tb-today-hero__tile'), box('.tb-today-hero__avatar'), box('.tb-today-hero__who')];
+  });
+  expect(line[0]?.[1]).toBeLessThanOrEqual(line[1]?.[0] ?? 0);
+  expect(line[1]?.[1]).toBeLessThanOrEqual(line[2]?.[0] ?? 0);
   const panes = await page
     .locator('.tb-feed')
     .evaluate((node) => getComputedStyle(node).gridTemplateColumns.split(' '));

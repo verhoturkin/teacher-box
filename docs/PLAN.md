@@ -70,13 +70,13 @@ once, after 456.
   container (`home/teacher-home.ts`); the hero (`home/today-lessons.ts`, `part="hero"`) on one line:
   the time tile (`schedule/ui/lesson-time-tile.ts`), avatar, name in an emphasized style, the join
   and call buttons as one connected group; a wavy bar of the lesson's elapsed time.
-- [ ] 450.3 **F** *simple* — browser check of the teacher's Today (`home/teacher-home.ts`,
-  `home/today-lessons.ts`, `docs/screens/today.md`, board D of the sketch «Главная учителя —
-  варианты») on compact / medium / expanded / large widths with data: a lesson live with the
-  hero, a nearest lesson later, several rows, the review queue, the figures pane, empty day;
-  layout defects fixed against `docs/design-system.md` and M3 (`m3-expressive`): overflow,
-  alignment, gaps, the hero on one line, the pane widths, the wavy bar; what stays is listed in
-  italics here. Tests of the changed parts (Vitest).
+- [x] 450.3 **F** *simple* — Check Today in the browser at 375 / 700 / 1000 / 1440 / 1920 / 2560 px
+  (running lesson, a later one, several rows, review queue, a day without lessons). Fixed: the
+  list's «expanded row» container rule (`> * { grid-column: 1 }`) overrode the hero's grid areas, so
+  the time tile, name and join button lay over each other from large (`home/today-lessons.ts`,
+  rule now `:not(.tb-today-hero)`); e2e asserts tile, avatar and name do not overlap. *Not checked:
+  the presence line and «Позвать» (need a LiveKit room); the figures pane does not stretch to the
+  lead pane's height — kept, as in the sketch.*
 
 ### 451. Guardian accounts
 
