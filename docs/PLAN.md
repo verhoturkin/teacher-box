@@ -269,7 +269,8 @@ once, after 456.
   articles for the parent (`features/help/articles/guardian/`, ru and en, `help-topics.ts`) and
   `student/*` mention of parents; `docs/glossary.md` «Родитель»; check every spec listed in the
   goals is current.
-  *Done with these choices: the parent's help is its own area `guardian` (`articles/guardian/{ru,en}`:
+  *Done with these choices: the parent's help is its own area `guardian`
+  (`articles/guardian/{ru,en}`:
   «Вход и дети», «Что видно родителю», «Перенос и отмена», «Уведомления», «Бот в мессенджере»),
   shown at `/family/<id>/help`; the «?» of a student's page in the family cabinet opens the parent's
   matching article (`guardianTopicOf`); links of those articles are `/guardian/help/<topic>`, mapped
