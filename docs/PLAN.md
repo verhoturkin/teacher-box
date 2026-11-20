@@ -277,8 +277,9 @@ once, after 456.
   hidden payments. The notice prefix of a guardian is now the first word of the display name
   («Петя · …», as ADR-0069 says; it was the whole «Петя Смирнов»). Wiki `Parents` already described
   the cabinet, notices and bot: added the bot and help; `Features` got «Родителю»; the glossary row
-  got the cabinet's words. Specs of the goals (ADR-0069, `identity`, `schedule`, `homework`,
-  `billing`, `notifications`, `platform`, `screens.md`) checked against the code: no gaps found.*
+  got the cabinet's words. Specs checked against the code: ADR-0069 (prefix, help),
+  `notifications.md`, `screens/family.md`; `identity`, `schedule`, `homework`, `billing`,
+  `platform` and `screens.md` were not re-read — left to the release check (456.1).*
 - [ ] 455.2 *complex* — E2E `e2e/tests/family/`: the teacher invites a parent → the parent accepts
   and logs in → sees the child's lessons, homework and payments, cannot open another student's
   data (API 404) → asks to move a lesson → the teacher approves; a reminder reaches the parent's
