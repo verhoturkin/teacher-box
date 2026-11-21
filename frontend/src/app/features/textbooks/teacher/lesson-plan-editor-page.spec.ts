@@ -1,7 +1,9 @@
 import { Location } from '@angular/common';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { Observable, of, throwError } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { bodyText, buttonByText, hostElement, menuItemByText } from '@testing/dom';
 import { ConfirmHost, testProviders } from '@testing/setup';
@@ -243,6 +245,96 @@ describe('LessonPlanEditorPage', () => {
     await settle();
     expect(host.textContent).toContain('Не удалось завершить план');
     expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  /** Opens a new plan of a lesson; `link` stands for the route's link to the lesson. */
+  async function openForLesson(
+    owner: { studentId: string } | { groupId: string },
+    link: (lessonId: string, planId: string) => Observable<unknown>,
+  ): Promise<void> {
+    fixture = TestBed.createComponent(LessonPlanEditorPage);
+    fixture.componentRef.setInput('lessonId', 'l-1');
+    for (const [key, value] of Object.entries(owner)) fixture.componentRef.setInput(key, value);
+    fixture.componentRef.setInput('linkToLesson', link);
+    page = fixture.componentInstance;
+    page.autosaveDelay = 0;
+    fixture.detectChanges();
+    backend
+      .expectOne('/api/teacher/textbooks/courses')
+      .flush([aCourse({ id: 'c-1' }), aCourse({ id: 'c-2' })]);
+    backend.expectOne('/api/teacher/textbooks/course-links').flush({
+      students: [{ studentId: 's-1', courseId: 'c-2' }],
+      groups: [{ groupId: 'g-1', courseId: 'c-1' }],
+    });
+    await settle();
+    host = hostElement(fixture);
+  }
+
+  it('makes a lesson its working plan with the student’s course and puts it on the lesson once', async () => {
+    const link = vi.fn<(lessonId: string, planId: string) => Observable<unknown>>(() => of({}));
+    await openForLesson({ studentId: 's-1' }, link);
+    expect(page.form.controls.courseId.value).toBe('c-2');
+    expect(host.textContent).toContain('План этого урока');
+    expect(host.querySelector('[aria-label="К расписанию"]')).not.toBeNull();
+
+    page.form.patchValue({ title: 'Present Simple' });
+    await settle();
+    const created = backend.expectOne({ method: 'POST', url: '/api/teacher/textbooks/plans' });
+    expect(created.request.body).toEqual(
+      expect.objectContaining({ title: 'Present Simple', courseId: 'c-2', bank: false }),
+    );
+    created.flush(aLessonPlan({ id: 'p-9', bank: false, courseId: 'c-2' }));
+    await settle();
+    expect(link).toHaveBeenCalledWith('l-1', 'p-9');
+    expect(TestBed.inject(Location).path()).toBe('/teacher/materials/plans/p-9?lessonId=l-1');
+
+    buttonByText(host, 'Готово').click();
+    backend
+      .expectOne({ method: 'POST', url: '/api/teacher/textbooks/plans/p-9/finish' })
+      .flush(aLessonPlan({ id: 'p-9', bank: false, sourceId: 'p-10' }));
+    await settle();
+    expect(link).toHaveBeenCalledTimes(1);
+    expect(navigateByUrl).toHaveBeenCalledWith(
+      TestBed.inject(Router).createUrlTree(['/teacher/schedule']),
+    );
+  });
+
+  it('keeps a plan whose link failed and links it at the next save; a group lesson takes the group’s course', async () => {
+    const link = vi
+      .fn<(lessonId: string, planId: string) => Observable<unknown>>()
+      .mockReturnValueOnce(
+        throwError(
+          () =>
+            new HttpErrorResponse({
+              status: 422,
+              error: { status: 422, code: 'schedule.lesson-cancelled' },
+            }),
+        ),
+      )
+      .mockReturnValue(of({}));
+    await openForLesson({ groupId: 'g-1' }, link);
+    expect(page.form.controls.courseId.value).toBe('c-1');
+
+    page.form.patchValue({ title: 'Present' });
+    await settle();
+    backend
+      .expectOne({ method: 'POST', url: '/api/teacher/textbooks/plans' })
+      .flush(aLessonPlan({ id: 'p-9', bank: false }));
+    backend
+      .expectOne('/api/teacher/textbooks/plans/p-9')
+      .flush(aLessonPlan({ id: 'p-9', bank: false }));
+    await settle();
+    expect(host.querySelector('p-message')).not.toBeNull();
+
+    page.form.patchValue({ title: 'Present Simple' });
+    await settle();
+    backend
+      .expectOne({ method: 'PUT', url: '/api/teacher/textbooks/plans/p-9' })
+      .flush(aLessonPlan({ id: 'p-9', bank: false, version: 1 }));
+    await settle();
+    expect(link).toHaveBeenCalledTimes(2);
+    expect(link).toHaveBeenLastCalledWith('l-1', 'p-9');
+    expect(host.querySelector('p-message')).toBeNull();
   });
 
   it('saves what is left when the teacher leaves', async () => {

@@ -56,4 +56,16 @@ describe('LessonPlansApi', () => {
       .expectOne({ method: 'POST', url: '/api/teacher/textbooks/plans/p-1/bank' })
       .flush(aLessonPlan());
   });
+
+  it('uses a bank item for a lesson', () => {
+    let used: unknown;
+    api.use('p-1', 'l-1').subscribe((answer) => (used = answer));
+    const request = backend.expectOne({
+      method: 'POST',
+      url: '/api/teacher/textbooks/plans/p-1/use',
+    });
+    expect(request.request.body).toEqual({ lessonId: 'l-1' });
+    request.flush({ lessonId: 'l-1', plan: aLessonPlan({ id: 'p-2', bank: false }) });
+    expect(used).toEqual({ lessonId: 'l-1', plan: aLessonPlan({ id: 'p-2', bank: false }) });
+  });
 });

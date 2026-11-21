@@ -158,6 +158,7 @@ export const en: Translation<typeof ru> = {
   planEditor: {
     newTitle: 'New lesson plan',
     back: 'Back to Materials',
+    backToSchedule: 'Back to schedule',
     what: 'the lesson plan',
     title: 'Title',
     body: 'Plan',
@@ -177,6 +178,7 @@ export const en: Translation<typeof ru> = {
     bankItem: 'In the bank',
     bankItemHint:
       'This is the bank original. Lessons get a copy of it, and editing a copy does not change it.',
+    lessonPlanHint: 'This is the plan of one lesson. Editing it does not change the bank original.',
     savedAt: (time: string) => `saved · ${time}`,
     done: 'Done',
     more: 'More',

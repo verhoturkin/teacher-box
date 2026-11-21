@@ -39,8 +39,13 @@ wrapping toolbar (search, filter chips, sort menu) and the `tb-material-grid` of
   `BindTextbookDialog [courseId]` (the course's textbooks when a course is set, else all);
   «Видео» with «N из 5» — `VideoSection` of 459.2 (automatic YouTube transcripts). The plan saves
   itself 1.5 s after a change (a new one once it has a title — a bank item, as it is made in
-  «Материалы»; the address becomes `…/plans/:id`); «Готово» saves the rest, `POST …/{id}/finish`
-  and goes back; leaving saves what is left. A save during an autosave waits for it.
+  «Материалы»; the address becomes `…/plans/:id`). With `?lessonId=` (from the lesson card,
+  461.4) it is the lesson's working plan: the hint «План этого урока…» instead of «В банке», the
+  course prefilled from `?studentId=` / `?groupId=` (`course-links`), the first save links it to
+  the lesson through the route's `linkToLesson` (a failed link is retried by the next save, the
+  address keeps `?lessonId=`), back and «Готово» lead to the schedule; «Готово» saves the rest,
+  `POST …/{id}/finish` and goes back; leaving saves what is left. A save during an autosave waits
+  for it.
 - «Создать» leads to `?tab=…&create=board|textbook`; `/teacher/boards` and `/teacher/textbooks`
   redirect to the tabs.
 - **Student** (`/cabinet/materials`, `MyMaterialsPage`): the same feeds without actions

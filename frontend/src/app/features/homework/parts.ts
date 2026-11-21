@@ -13,3 +13,4 @@ export type {
 export { MyDeadlinesWidget } from './home/my-deadlines-widget';
 export { StudentTasksCard } from './teacher/student-tasks-card';
 export { StudentTasksTab } from './teacher/student-tasks-tab';
+export { TextbookList, boundTextbookFilename } from './ui/textbook-list';

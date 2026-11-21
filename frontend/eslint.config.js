@@ -73,7 +73,7 @@ const BUSINESS_FEATURES = {
   textbooks: ['boards'],
   billing: ['notifications'],
   homework: ['ai', 'boards', 'textbooks'],
-  schedule: ['ai', 'boards', 'homework', 'meetings'],
+  schedule: ['ai', 'boards', 'homework', 'meetings', 'textbooks'],
 };
 const COMPOSITION_FEATURES = {
   account: [],

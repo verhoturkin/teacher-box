@@ -22,7 +22,7 @@ import { Menu } from 'primeng/menu';
 import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
 import { Tag } from 'primeng/tag';
-import { Observable, map, of, switchMap } from 'rxjs';
+import { Observable, map, of, switchMap, tap } from 'rxjs';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { describeError } from '@core/http/error-messages';
 import { CanLeave } from '@core/routing/can-leave.guard';
@@ -52,6 +52,12 @@ import {
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { PlanTextbooks } from './plan-textbooks';
 
+/**
+ * Puts a working plan on a lesson. `schedule` owns the link and `textbooks` does not import it (ADR-0058): the
+ * route passes the function (`app.routes.ts`).
+ */
+export type LinkToLesson = (lessonId: string, planId: string) => Observable<unknown>;
+
 /** The most textbooks of one plan (the backend's limit). */
 export const MAX_PLAN_TEXTBOOKS = 20;
 
@@ -73,8 +79,9 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
  * «Курс», the Markdown plan, the textbook pages (of the course when one is set) and the videos with their
  * automatic transcripts. The plan saves itself a moment after each change, as a draft of an assignment does;
  * «Готово» saves what is left and finishes it (the first «Готово» of a lesson's plan puts its original into
- * the bank). A lesson's plan has «⋮» «Сохранить в банк» / «Обновить в банке». A plan made here, in
- * «Материалы», is a bank item from the start.
+ * the bank). A lesson's plan has «⋮» «Сохранить в банк» / «Обновить в банке». A plan made in «Материалы» is a
+ * bank item from the start; one made from a lesson card (`?lessonId=`) is the lesson's working plan: its course is
+ * the student's or the group's, the first save puts it on the lesson and the editor goes back to the schedule.
  */
 @Component({
   selector: 'tb-lesson-plan-editor-page',
@@ -101,8 +108,8 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
       <tb-page-header
         class="tb-page-header--one-line"
         [title]="heading()"
-        [back]="back"
-        [backLabel]="t.back"
+        [back]="back()"
+        [backLabel]="lessonId() === undefined ? t.back : t.backToSchedule"
       >
         @if (plan()?.bank) {
           <p-tag meta [value]="t.bankItem" severity="secondary" />
@@ -136,6 +143,8 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
         }
         @if (plan()?.bank) {
           <p class="tb-hint">{{ t.bankItemHint }}</p>
+        } @else if (lessonId() !== undefined) {
+          <p class="tb-hint">{{ t.lessonPlanHint }}</p>
         }
         <p-card styleClass="tb-section-card">
           <div class="tb-plan-editor__fields">
@@ -206,7 +215,11 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
         (picked)="pickTextbook($event)"
       />
     } @else {
-      <tb-page-header [title]="t.newTitle" [back]="back" [backLabel]="t.back" />
+      <tb-page-header
+        [title]="t.newTitle"
+        [back]="back()"
+        [backLabel]="lessonId() === undefined ? t.back : t.backToSchedule"
+      />
       <tb-load-state [state]="state" [what]="t.what" (retry)="load()" />
     }
   `,
@@ -251,13 +264,24 @@ export class LessonPlanEditorPage implements OnInit, CanLeave {
   private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
 
-  /** Route parameter of `/teacher/materials/plans/:planId`; none — a new plan of the bank. */
+  /** Route parameter of `/teacher/materials/plans/:planId`; none — a new plan. */
   readonly planId = input<string>();
+  /** Query `?lessonId=`: the plan of this lesson, a working plan, not a bank item. */
+  readonly lessonId = input<string>();
+  /** Query `?studentId=` / `?groupId=` of a new lesson plan: the course is prefilled with theirs. */
+  readonly studentId = input<string>();
+  readonly groupId = input<string>();
+  /** Route data: puts a new lesson plan on its lesson. */
+  readonly linkToLesson = input<LinkToLesson>();
 
-  /** «Материалы» on the tab «Планы». */
-  protected readonly back: UrlTree = this.router.createUrlTree(['/teacher/materials'], {
-    queryParams: { tab: 'plans' },
-  });
+  /** «Материалы» on the tab «Планы»; a lesson's plan — the schedule. */
+  protected readonly back = computed<UrlTree>(() =>
+    this.lessonId() === undefined
+      ? this.router.createUrlTree(['/teacher/materials'], { queryParams: { tab: 'plans' } })
+      : this.router.createUrlTree(['/teacher/schedule']),
+  );
+  /** A plan opened by its id is on its lesson already; a new one is put there by its first save. */
+  private linked = true;
   protected readonly state = new LoadState();
   protected readonly plan = signal<LessonPlan | null>(null);
   protected readonly ready = computed(() => this.planId() === undefined || this.plan() !== null);
@@ -359,11 +383,32 @@ export class LessonPlanEditorPage implements OnInit, CanLeave {
     this.coursesApi.list(quietContext()).subscribe((courses) => {
       this.courses.set(courses);
     });
+    this.linked = this.planId() !== undefined || this.lessonId() === undefined;
     if (this.planId() === undefined) {
       this.drafts.mark(this.snapshot());
+      this.prefillCourse();
     } else {
       this.load();
     }
+  }
+
+  /** A new lesson plan takes the current course of the lesson's student or group, unless one is chosen. */
+  private prefillCourse(): void {
+    const studentId = this.studentId();
+    const groupId = this.groupId();
+    if (this.lessonId() === undefined || (studentId === undefined && groupId === undefined)) {
+      return;
+    }
+    this.coursesApi.links(quietContext()).subscribe((links) => {
+      const courseId =
+        groupId === undefined
+          ? links.students.find((link) => link.studentId === studentId)?.courseId
+          : links.groups.find((link) => link.groupId === groupId)?.courseId;
+      const control = this.form.controls.courseId;
+      if (courseId !== undefined && control.value === null && !control.dirty) {
+        control.setValue(courseId);
+      }
+    });
   }
 
   protected load(): void {
@@ -427,7 +472,7 @@ export class LessonPlanEditorPage implements OnInit, CanLeave {
           this.plan.set(plan);
           this.done = true;
           this.finishing.set(false);
-          void this.router.navigateByUrl(this.back);
+          void this.router.navigateByUrl(this.back());
         },
         error: (error: unknown) => {
           this.finishing.set(false);
@@ -507,10 +552,36 @@ export class LessonPlanEditorPage implements OnInit, CanLeave {
     );
   }
 
+  /**
+   * Saves the plan; a new lesson plan is remembered at once and then put on its lesson, so a failed link never
+   * makes a second plan — the next save tries the link again.
+   */
   private write(): Observable<LessonPlan> {
     const plan = this.plan();
     const input = this.input();
-    return plan === null ? this.api.create(input, true) : this.api.update(plan, input);
+    const written =
+      plan === null
+        ? this.api.create(input, this.lessonId() === undefined).pipe(
+            tap((created) => {
+              this.remember(created);
+            }),
+          )
+        : this.api.update(plan, input);
+    return written.pipe(switchMap((saved) => this.link(saved)));
+  }
+
+  private link(plan: LessonPlan): Observable<LessonPlan> {
+    const lessonId = this.lessonId();
+    const link = this.linkToLesson();
+    if (this.linked || lessonId === undefined || link === undefined) {
+      return of(plan);
+    }
+    return link(lessonId, plan.id).pipe(
+      map(() => {
+        this.linked = true;
+        return plan;
+      }),
+    );
   }
 
   private input(): LessonPlanInput {
@@ -532,7 +603,14 @@ export class LessonPlanEditorPage implements OnInit, CanLeave {
     const created = this.plan() === null;
     this.plan.set(plan);
     if (created) {
-      this.location.replaceState(`/teacher/materials/plans/${plan.id}`);
+      const lessonId = this.lessonId();
+      this.location.replaceState(
+        this.router.serializeUrl(
+          this.router.createUrlTree(['/teacher/materials/plans', plan.id], {
+            queryParams: lessonId === undefined ? {} : { lessonId },
+          }),
+        ),
+      );
     }
   }
 

@@ -66,6 +66,32 @@ describe('ScheduleApi', () => {
     expect(backend.expectOne('/api/teacher/schedule/unmarked').request.method).toBe('GET');
   });
 
+  it('puts a plan on a lesson, takes it off and reads the student’s plan with its pages', () => {
+    api.linkPlan('l-1', 'p-1').subscribe();
+    const linked = backend.expectOne({
+      method: 'PUT',
+      url: '/api/teacher/schedule/lessons/l-1/plan',
+    });
+    expect(linked.request.body).toEqual({ planId: 'p-1' });
+    linked.flush({});
+    api.linkPlan('l-1', null).subscribe();
+    const taken = backend.expectOne({
+      method: 'PUT',
+      url: '/api/teacher/schedule/lessons/l-1/plan',
+    });
+    expect(taken.request.body).toEqual({ planId: null });
+    taken.flush({});
+
+    api.myPlan('l-1').subscribe();
+    backend.expectOne('/api/me/schedule/lessons/l-1/plan').flush({});
+    let pages: Blob | undefined;
+    api.myPlanTextbook('l-1', 'tb-1').subscribe((blob) => (pages = blob));
+    const file = backend.expectOne('/api/me/schedule/lessons/l-1/plan/textbooks/tb-1');
+    expect(file.request.responseType).toBe('blob');
+    file.flush(new Blob(['%PDF']));
+    expect(pages).toBeInstanceOf(Blob);
+  });
+
   it('calls the request endpoints', () => {
     api.pendingRequests().subscribe();
     api

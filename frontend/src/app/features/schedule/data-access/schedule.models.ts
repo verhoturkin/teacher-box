@@ -1,3 +1,5 @@
+import type { TextbookFormat, TextbookKind, Video } from '@features/textbooks/parts';
+
 export type ScheduleLessonStatus = 'SCHEDULED' | 'CONDUCTED' | 'MISSED' | 'CANCELLED';
 export type LessonOutcome = Extract<ScheduleLessonStatus, 'CONDUCTED' | 'MISSED'>;
 export type CancelledBy = 'TEACHER' | 'STUDENT';
@@ -90,6 +92,8 @@ export interface ScheduledLesson {
   readonly originalStartsAt: string | null;
   /** Unanswered requests of the participants (a student sees only their own). */
   readonly pendingRequests: readonly ChangeRequest[];
+  /** The lesson's working plan (`textbooks`, roadmap 11); `null` — none. */
+  readonly planId: string | null;
   /** «Что прошли», Markdown; filled in the details of one lesson. */
   readonly summary?: string | null;
   /** «Что дальше»; the teacher's details only. */
@@ -97,6 +101,27 @@ export interface ScheduledLesson {
   readonly summaryUpdatedAt?: string | null;
   /** The teacher's private notes per student; the teacher's details only. */
   readonly notes?: readonly LessonNote[];
+}
+
+/** Mirrors `StudentLessonPlan` of the backend: the plan of a lesson as its student (or a parent) reads it. */
+export interface StudentLessonPlan {
+  readonly id: string;
+  readonly title: string;
+  /** Markdown. */
+  readonly body: string;
+  /** The bound textbooks that still exist, each with its pages. */
+  readonly textbooks: readonly StudentPlanTextbook[];
+  /** A transcript only when the teacher shows it. */
+  readonly videos: readonly Video[];
+}
+
+/** A textbook of a lesson plan; `pages` `null` — the whole textbook. */
+export interface StudentPlanTextbook {
+  readonly id: string;
+  readonly title: string;
+  readonly kind: TextbookKind;
+  readonly format: TextbookFormat;
+  readonly pages: string | null;
 }
 
 /** Mirrors `NoteView` of the backend: the teacher's private note about a student's part in a lesson. */

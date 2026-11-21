@@ -110,6 +110,19 @@ const upcomingLessons = () => {
     );
 };
 
+/**
+ * Puts a new working plan on its lesson (`?lessonId=` of the plan editor): `textbooks` does not import
+ * `schedule` (ADR-0058), so the editor takes the link as an input. Resolves at once; the schedule's parts load
+ * when the editor links the plan.
+ */
+const linkToLesson = () => {
+  const injector = inject(Injector);
+  return (lessonId: string, planId: string) =>
+    defer(() => import('@features/schedule/parts')).pipe(
+      switchMap((parts) => injector.get(parts.ScheduleApi).linkPlan(lessonId, planId)),
+    );
+};
+
 /** Pages that several routes open: one loader each. */
 const assignmentEditorPage = () => import('@features/homework').then((m) => m.AssignmentEditorPage);
 const lessonPlanEditorPage = () =>
@@ -225,12 +238,14 @@ export const routes: Routes = [
         path: 'materials/plans/new',
         title: N.newLessonPlan,
         loadComponent: lessonPlanEditorPage,
+        resolve: { linkToLesson },
         canDeactivate: [canLeaveGuard],
       },
       {
         path: 'materials/plans/:planId',
         title: N.editLessonPlan,
         loadComponent: lessonPlanEditorPage,
+        resolve: { linkToLesson },
         canDeactivate: [canLeaveGuard],
       },
       // boards and textbooks are the two tabs of Materials (245.2); the filters of the address stay

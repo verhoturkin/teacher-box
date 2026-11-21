@@ -42,7 +42,7 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
   | business | `textbooks` | base, `boards` |
   | business | `billing` | base, `notifications` |
   | business | `homework` | base, `ai`, `boards`, `textbooks` |
-  | business | `schedule` | base, `ai`, `boards`, `homework`, `meetings` |
+  | business | `schedule` | base, `ai`, `boards`, `homework`, `meetings`, `textbooks` |
   | composition | `account`, `admin`, `home`, `materials`, `settings`, `students` (`gallery` from stage 371) | base, any business feature; `admin` also `settings` |
 
   Nothing imports a composition feature (except `admin` → `settings`). A new feature gets a row; a

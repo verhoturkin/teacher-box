@@ -46,6 +46,31 @@ edit, «⋮» or marks.
   students (assignments are not bound to lessons — *ours*). Save is enabled only on a difference;
   send saves first; the card stays open. Model switch: [homework](homework.md#ai-pane).
 
+## Lesson plan
+
+`schedule/ui/lesson-plan-section.ts` (teacher) and `ui/my-lesson-plan.ts` (student, parent) end
+the lesson card, above the summary (roadmap 11 «Lesson card», 461.4). The direction `schedule` →
+`textbooks` (ADR-0058) gives the card `LessonPlansApi`, `CoursesApi` and `VideoList`; the editor
+of `textbooks` does not import `schedule`: the route (`app.routes.ts`, `linkToLesson`) passes it
+`ScheduleApi.linkPlan`.
+
+- **Teacher, no plan** (not on a cancelled lesson — it takes no new plan): the title «План урока»
+  (title medium), a muted hint and two buttons — «Составить» (secondary, the stronger of the two)
+  opens `/teacher/materials/plans/new?lessonId=…&studentId=…|groupId=…`: a working plan, the
+  course of the student or the group prefilled, the first save links it
+  (`PUT …/lessons/{id}/plan`), back and «Готово» lead to `/teacher/schedule`; «Из банка»
+  (outlined) turns the row into an inline picker — a filtered `p-select` of the bank items by
+  title with the course under each, «Отмена» and «Взять» (`POST …/plans/{id}/use`, then the link;
+  a copy the link refuses is deleted, the error is a snackbar). *Ours*: inline instead of a dialog
+  — a window does not open over the sheet (ADR-0026).
+- **Teacher, a plan**: the header keeps «Открыть» (text, → the editor with `?lessonId=`) and «⋮»
+  «Убрать из урока» (`confirm.danger`; unlink, then delete the working copy, the bank original
+  stays); the list — the title, each textbook with «Учебник · с. 12-14», each video by name. A
+  dangling plan id shows the compact load error with «Повторить»; «⋮» still takes it off.
+- **Student and parent**: only with a plan — the title, the Markdown text, «Учебники» (the homework
+  `TextbookList`: open the bound pages, download) and «Видео» (`VideoList` with the player,
+  transcripts only when shown). Addresses follow `API_SCOPE`; the plan is read once per lesson.
+
 ## Requests
 
 `request-answer-dialog.ts`: an agree / decline toggle drives one confirm button's label and colour;

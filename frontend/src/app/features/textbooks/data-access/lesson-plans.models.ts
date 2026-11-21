@@ -53,3 +53,9 @@ export interface LessonPlanInput {
   readonly textbooks: readonly { readonly textbookId: string; readonly pages: string | null }[];
   readonly videos: readonly VideoInput[];
 }
+
+/** The answer of «Использовать»: the working copy; the lesson id is only echoed. */
+export interface UsedPlan {
+  readonly lessonId: string;
+  readonly plan: LessonPlan;
+}

@@ -26,6 +26,11 @@ A late cancellation may be charged as a missed lesson. A request for a recurring
 
 Your parent may have sent a request too: it is marked “Parent’s request (Name)”. You can withdraw it just like your own, and your teacher’s reply goes to you both.
 
+## Lesson plan
+
+If your teacher has prepared a plan for a lesson, you’ll find it in the lesson details under Lesson plan: the plan text, the textbook pages \
+(open or download them) and the videos with a player. A video transcript appears only when your teacher shows it.
+
 ## Group lessons
 
 If you cannot attend a group lesson, choose “I can’t attend”. Let your teacher know in advance so you will not be charged for your absence.

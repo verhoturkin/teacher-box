@@ -16,6 +16,8 @@ describe('ScheduleApi in the family cabinet', () => {
     api.myLessons('2026-10-01', '2026-10-08').subscribe();
     api.myLesson('l-1').subscribe();
     api.myHistory(null, 20).subscribe();
+    api.myPlan('l-1').subscribe();
+    api.myPlanTextbook('l-1', 'tb-1').subscribe();
     api.feed().subscribe();
     api.createFeed().subscribe();
     api.disableFeed().subscribe();
@@ -25,6 +27,8 @@ describe('ScheduleApi in the family cabinet', () => {
     backend.expectOne((r) => r.url === `${base}/lessons`);
     backend.expectOne(`${base}/lessons/l-1`);
     backend.expectOne((r) => r.url === `${base}/history`);
+    backend.expectOne(`${base}/lessons/l-1/plan`);
+    backend.expectOne(`${base}/lessons/l-1/plan/textbooks/tb-1`);
     backend.expectOne((r) => r.url === '/api/guardian/schedule/feed' && r.method === 'GET');
     backend.expectOne((r) => r.url === '/api/guardian/schedule/feed' && r.method === 'POST');
     backend.expectOne((r) => r.url === '/api/guardian/schedule/feed' && r.method === 'DELETE');

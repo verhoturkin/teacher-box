@@ -60,7 +60,8 @@ other captions. Students see a transcript only when “Show transcript to studen
 The card’s “⋮” menu has **Edit**, which opens the editor, and **Delete…**, which removes the plan from the bank after you confirm (lesson plans \
 made from it stay). Editing a bank original does not change the copies on lessons.
 
-A plan written for a lesson goes into the bank automatically the first time you choose Done. Its editor’s “⋮” menu has **Save to bank** (no \
+Lesson plans are made from a lesson’s details (Write or From bank; see Schedule and requests). A plan written for a lesson goes into \
+the bank automatically the first time you choose Done. Its editor’s “⋮” menu has **Save to bank** (no \
 original yet) or **Update in bank** (the original is replaced with this plan after you confirm).
 `,
 };

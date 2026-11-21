@@ -157,6 +157,7 @@ export const ru = {
   planEditor: {
     newTitle: 'Новый план урока',
     back: 'К материалам',
+    backToSchedule: 'К расписанию',
     what: 'план урока',
     title: 'Название',
     body: 'План',
@@ -175,6 +176,7 @@ export const ru = {
     videoCount: (count: number, max: number) => `${String(count)} из ${String(max)}`,
     bankItem: 'В банке',
     bankItemHint: 'Это оригинал из банка: уроки получают его копию, правки копий его не меняют.',
+    lessonPlanHint: 'План этого урока: правки не меняют оригинал в банке.',
     savedAt: (time: string) => `сохранено · ${time}`,
     done: 'Готово',
     more: 'Ещё',

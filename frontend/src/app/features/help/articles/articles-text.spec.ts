@@ -847,6 +847,48 @@ const PLANS: Readonly<Record<string, readonly (readonly [string, string, string]
   ],
 };
 
+/** The lesson plan in the lesson card (461.4): [topic, baseline, now] of the schedule and textbooks articles. */
+const LESSON_PLAN: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'schedule',
+      '## Итоги урока',
+      '## План урока\n\nВ карточке занятия — раздел «План урока». Пока плана нет, нажмите **«Составить»** — откроется редактор плана этого урока; курс подставится из курса ученика или группы. План сохраняется сам и сразу привязывается к уроку; «Готово» возвращает в расписание. **«Из банка»** — выберите план из банка и нажмите «Взять»: урок получит свою копию, оригинал в банке не изменится. У отменённого занятия нового плана не бывает.\n\nКогда план есть, в карточке видны его название, страницы учебников и видео. «Открыть» — редактор плана урока; «⋮» → **«Убрать из урока»** после подтверждения убирает план и удаляет копию этого урока (оригинал в банке остаётся). Ученики занятия и их родители видят план в своей карточке занятия: текст, страницы учебников и видео; расшифровку — только если вы её показываете. Подробнее о планах — в статье «Учебники».\n\n## Итоги урока',
+    ],
+    [
+      'textbooks',
+      'План, составленный для урока, попадает в банк сам при первом «Готово».',
+      'План урока составляют из карточки занятия («Составить» или «Из банка», см. «Расписание и запросы»). План, составленный для урока, попадает в банк сам при первом «Готово».',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'schedule',
+      '## Share a lesson summary',
+      '## Lesson plan\n\nA lesson’s details have a Lesson plan section. With no plan yet, choose **Write** to open the editor of this lesson’s plan; the course is filled in from the student’s or group’s course. The plan saves itself and is attached to the lesson straight away; Done takes you back to the schedule. Choose **From bank**, pick a plan and choose Use: the lesson gets its own copy and the bank original stays as it is. A cancelled lesson cannot take a new plan.\n\nOnce a lesson has a plan, its details show the title, the textbook pages and the videos. Open takes you to the plan editor. In the “⋮” menu, **Remove from lesson** removes the plan after you confirm and deletes this lesson’s copy; the bank original stays. Students in the lesson and their parents see the plan in their lesson details: the text, the textbook pages and the videos, with a transcript only when you show it. See Textbooks for more about plans.\n\n## Share a lesson summary',
+    ],
+    [
+      'textbooks',
+      'A plan written for a lesson goes into the bank automatically the first time you choose Done.',
+      'Lesson plans are made from a lesson’s details (Write or From bank; see Schedule and requests). A plan written for a lesson goes into the bank automatically the first time you choose Done.',
+    ],
+  ],
+  'student.ru': [
+    [
+      'schedule',
+      '## Групповые занятия',
+      '## План урока\n\nЕсли учитель подготовил план занятия, он виден в карточке занятия в разделе «План урока»: текст плана, страницы учебников (их можно открыть или скачать) и видео с плеером. Расшифровку видео видно, только если учитель её показывает.\n\n## Групповые занятия',
+    ],
+  ],
+  'student.en': [
+    [
+      'schedule',
+      '## Group lessons',
+      '## Lesson plan\n\nIf your teacher has prepared a plan for a lesson, you’ll find it in the lesson details under Lesson plan: the plan text, the textbook pages (open or download them) and the videos with a player. A video transcript appears only when your teacher shows it.\n\n## Group lessons',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -950,6 +992,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(AUTO_CAPTIONS[name] ?? []),
       ...(COURSES[name] ?? []),
       ...(PLANS[name] ?? []),
+      ...(LESSON_PLAN[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

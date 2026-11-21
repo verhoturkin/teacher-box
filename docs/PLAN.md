@@ -126,11 +126,20 @@ section the substep names). New ADR: 0071 «Курсы, планы уроков 
   план» is a header button (the rail «Создать» has no plan item); the bank list has no
   `createdAt`, so its sort offers «Сначала изменённые» and «По названию» only; plans help is a
   section of the «Учебники» article; UI not checked live (no backend in the session).*
-- [ ] 461.4 **F** *complex* — direction `schedule` → `textbooks` (`eslint.config.js`,
+- [x] 461.4 **F** *complex* — direction `schedule` → `textbooks` (`eslint.config.js`,
   `frontend/AGENTS.md`); «План» in `schedule/ui/lesson-card.ts`: teacher — «Составить» (editor with
   `?lessonId=`, the route links it), «Из банка» (use), «Открыть», «Убрать из урока»; student and
   guardian — read-only text, textbook pages, videos (transcripts only when shown); help (teacher,
   student), `docs/screens/schedule.md`, `cabinet.md`, `family.md`.
+  *Done: no backend change — `POST …/plans` with `bank: false` already makes a working plan; the
+  editor takes `?lessonId=` and `?studentId=` / `?groupId=` (course prefill from `course-links`)
+  and the route's `linkToLesson` (`ScheduleApi.linkPlan`), links on the first save and retries a
+  failed link on the next one; «Из банка» is an inline picker in the card, not a dialog (no window
+  over the sheet); a copy the link refuses is deleted; the sections are
+  `ui/lesson-plan-section.ts` and `ui/my-lesson-plan.ts` (feature parts, no gallery sample);
+  `TextbookList` is exported by `homework/parts`; back from a lesson plan leads to the schedule,
+  not to the lesson's card; guardian help — a line in «Что видно родителю»; UI not checked live
+  (no backend in the session).*
 
 ### 462. Homework at lessons, homework bank
 

@@ -1,7 +1,7 @@
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { LessonPlan, LessonPlanInput, LessonPlanSummary } from './lesson-plans.models';
+import { LessonPlan, LessonPlanInput, LessonPlanSummary, UsedPlan } from './lesson-plans.models';
 
 const PLANS = '/api/teacher/textbooks/plans';
 
@@ -22,7 +22,7 @@ export class LessonPlansApi {
     return this.http.get<LessonPlan>(`${PLANS}/${id}`, { context });
   }
 
-  /** `bank` — a bank item from the start («Материалы» → «Создать»). */
+  /** `bank` — a bank item from the start («Материалы» → «Создать»), else a lesson's working plan. */
   create(input: LessonPlanInput, bank: boolean): Observable<LessonPlan> {
     return this.http.post<LessonPlan>(PLANS, { ...input, bank });
   }
@@ -33,8 +33,8 @@ export class LessonPlansApi {
   }
 
   /** A bank item's copies stay, without a source. */
-  remove(id: string): Observable<void> {
-    return this.http.delete(`${PLANS}/${id}`).pipe(map(() => undefined));
+  remove(id: string, context?: HttpContext): Observable<void> {
+    return this.http.delete(`${PLANS}/${id}`, { context }).pipe(map(() => undefined));
   }
 
   /** «Готово»: the first time a working plan saves its original into the bank. */
@@ -45,5 +45,10 @@ export class LessonPlansApi {
   /** «Сохранить в банк» / «Обновить в банке» of a working plan. */
   saveToBank(id: string): Observable<LessonPlan> {
     return this.http.post<LessonPlan>(`${PLANS}/${id}/bank`, null);
+  }
+
+  /** «Из банка»: a working copy of a bank item for the lesson; `schedule` puts it on the lesson. */
+  use(id: string, lessonId: string): Observable<UsedPlan> {
+    return this.http.post<UsedPlan>(`${PLANS}/${id}/use`, { lessonId });
   }
 }

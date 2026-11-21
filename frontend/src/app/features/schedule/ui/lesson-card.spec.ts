@@ -1,11 +1,13 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { buttonByText, hostElement } from '@testing/dom';
 import { testProviders } from '@testing/setup';
 import { at, changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { aBoard } from '@testing/boards-fixtures';
 import { ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
 import { LessonCard, OutcomeChange } from './lesson-card';
+import { LessonPlanSection } from './lesson-plan-section';
 
 const BEFORE = new Date(2026, 8, 30, 12);
 const AFTER = new Date(2026, 9, 1, 19);
@@ -167,6 +169,30 @@ describe('LessonCard', () => {
     expect(root.querySelector('.tb-lesson-card__request')).not.toBeNull();
     buttonByText(root, 'Ответить').click();
     expect(answered).toEqual([request]);
+  });
+
+  it('ends with the lesson plan: the teacher’s section hands the changed lesson on, the student reads it', async () => {
+    const planChanges: ScheduledLesson[] = [];
+    fixture.componentInstance.planChange.subscribe((lesson) => planChanges.push(lesson));
+    let root = await show(scheduledLesson({ id: 'l-1' }));
+    expect(root.querySelector('tb-lesson-plan-section')?.textContent).toContain('Составить');
+    fixture.debugElement
+      .query(By.directive(LessonPlanSection))
+      .injector.get(LessonPlanSection)
+      .changed.emit(scheduledLesson({ id: 'l-1', planId: 'p-1' }));
+    expect(planChanges).toEqual([expect.objectContaining({ planId: 'p-1' })]);
+
+    root = await show(scheduledLesson({ id: 'l-1', planId: 'p-1' }), { role: 'student' });
+    expect(root.querySelector('tb-lesson-plan-section')).toBeNull();
+    backend.expectOne('/api/me/schedule/lessons/l-1/plan').flush({
+      id: 'p-1',
+      title: 'Present Simple',
+      body: '',
+      textbooks: [],
+      videos: [],
+    });
+    await fixture.whenStable();
+    expect(root.querySelector('tb-my-lesson-plan')?.textContent).toContain('Present Simple');
   });
 
   it('names the student of a request in a group', async () => {

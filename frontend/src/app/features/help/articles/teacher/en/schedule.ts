@@ -47,6 +47,18 @@ outcome again to clear it, or select another to change it. For groups, use “Cl
 
 Past lessons without an outcome are outlined in red. You can record outcomes from the calendar, the phone agenda or “To do” on your home page.
 
+## Lesson plan
+
+A lesson’s details have a Lesson plan section. With no plan yet, choose **Write** to open the editor of this lesson’s plan; the course is \
+filled in from the student’s or group’s course. The plan saves itself and is attached to the lesson straight away; Done takes you back to the \
+schedule. Choose **From bank**, pick a plan and choose Use: the lesson gets its own copy and the bank original stays as it is. A cancelled \
+lesson cannot take a new plan.
+
+Once a lesson has a plan, its details show the title, the textbook pages and the videos. Open takes you to the plan editor. In the “⋮” menu, \
+**Remove from lesson** removes the plan after you confirm and deletes this lesson’s copy; the bank original stays. Students in the lesson and \
+their parents see the plan in their lesson details: the text, the textbook pages and the videos, with a transcript only when you show it. \
+See Textbooks for more about plans.
+
 ## Share a lesson summary
 
 Once a lesson has started, add a summary in its details. Summaries are unavailable for cancelled lessons and individual lessons marked Missed.
