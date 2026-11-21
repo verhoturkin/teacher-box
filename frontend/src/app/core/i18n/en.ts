@@ -292,7 +292,8 @@ export const en: Translation<typeof ru> = {
       'schedule.lesson-not-scheduled': 'This lesson has already been completed or cancelled',
       'schedule.lesson-cancelled': 'The lesson is cancelled',
       'schedule.plan-linked': 'This plan is already on another lesson',
-      'schedule.bank-item': 'A plan from the bank can’t go on a lesson — use a copy of it',
+      'schedule.bank-item': 'Nothing from the bank goes on a lesson — use a copy of it',
+      'schedule.assignment-linked': 'This assignment is already on another lesson',
       'schedule.plan-not-found': 'The lesson has no plan',
       'schedule.textbook-not-found': 'This textbook isn’t in the lesson plan',
       'schedule.lesson-not-started': 'The lesson has not started yet',
@@ -387,6 +388,8 @@ export const en: Translation<typeof ru> = {
       'textbooks.pages-beyond': 'One or more page numbers are beyond the end of the textbook',
       'textbooks.students-only': 'Textbooks are only available to student accounts',
       'homework.textbook-not-found': 'This textbook is no longer attached to the assignment',
+      'homework.bank-item': 'An assignment from the bank can’t be assigned — use a copy of it',
+      'homework.not-in-bank': 'Only an assignment from the bank can be used',
       'homework.quiz-started': 'A student has started the quiz: the questions cannot be changed',
       'homework.quiz-too-many-questions': 'An assignment can have up to 50 questions',
       'homework.quiz-text-invalid':

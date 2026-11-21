@@ -2,7 +2,8 @@
 
 Lessons with optional weekly repetition (student or group), attendance, student reschedule/cancel requests, reminders,
 calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `shared`, `identity::api`,
-`meetings::api` (room links), `textbooks::api` (lesson plans, roadmap 11). Schema `schedule`.
+`meetings::api` (room links), `textbooks::api` (lesson plans), `homework::api` (lesson homework;
+roadmap 11). Schema `schedule`.
 ADRs: [0008](../adr/0008-schedule.md),
 [0011](../adr/0011-groups-and-group-lessons.md), [0012](../adr/0012-meetings-and-boards.md),
 [0053](../adr/0053-lesson-title-and-topic.md).
@@ -29,9 +30,9 @@ ADRs: [0008](../adr/0008-schedule.md),
   run.
   Only-this edits preserve the immutable original occurrence date and mark an exception. This-and-following
   uses that original date as its boundary, ends the old rule and replaces untouched future occurrences.
-  Completed, charged, cancelled, individually edited and prepared (with a plan, 461.2) lessons
-  remain. Once keeps the selected lesson and stops later repetition. Tombstones prevent deleted
-  occurrences from regenerating. Unique
+  Completed, charged, cancelled, individually edited and prepared (with a plan, 461.2, or
+  homework, 462.1) lessons remain. Once keeps the selected lesson and stops later repetition.
+  Tombstones prevent deleted occurrences from regenerating. Unique
   `(series_id, series_date)` remains an internal occurrence key; `repeat_rules` is generation metadata.
 - **Title and topic** (0.41.0, ADR-0053): `title` (≤ 500) names the lesson and repeats with
   its rule; `topic` (≤ 500) is what this lesson covers — only on `lessons`, never copied by a
@@ -131,7 +132,8 @@ button in messengers; the text has no address — 429.1).
 
 ## Data
 
-`repeat_rules`, `repeat_exceptions`, `lessons`, `lesson_participants`, `change_requests`, `lesson_notes`, `reminders_sent`, `feeds`,
+`repeat_rules`, `repeat_exceptions`, `lessons`, `lesson_participants`, `lesson_assignments`,
+`change_requests`, `lesson_notes`, `reminders_sent`, `feeds`,
 `off_times`, `google_connection`, `google_events`, `google_oauth_states`, `settings` (one row,
 ADR-0056: default duration in minutes, late cancellation, reminders, horizon — ISO-8601, empty =
 default; filled once from `.env` by `ScheduleSettingsImport`, read by `LessonRulesService`).
@@ -155,6 +157,14 @@ summary. A prepared lesson counts as touched: `deleteUntouchedOfSeries` (`and pl
 the «this and following» edit, cancel and delete keep it, like a charged one. Moving keeps the
 link; deleting the lesson drops it and leaves the plan in `textbooks` (it cannot listen to
 `schedule`). A deleted plan leaves a dangling id: reads answer 404.
+
+Lesson homework (462.1, roadmap 11): `lesson_assignments (assignment_id PK, lesson_id → lessons on
+delete cascade, position)` — working assignments of `homework`, many per lesson in the order
+linked, an assignment on at most one lesson; no lesson `version`. Loaded with the lesson
+(`Lesson.assignmentIds`); a lesson with homework is prepared like one with a plan:
+`deleteUntouchedOfSeries` (`and id not in (select lesson_id from schedule.lesson_assignments)`)
+and `LessonRepetitionService.protectedLesson` (`Lesson.prepared()`) keep it. Deleting the lesson
+drops the links, the assignments stay; a deleted assignment leaves a dangling id.
 
 ## REST and bot
 
@@ -200,6 +210,14 @@ through `Textbooks.file`, always a download); another student's lesson 404
 the plan 404 `schedule.textbook-not-found`, the teacher 403. The guardian — the same under
 `/api/guardian/students/{studentId}/schedule/lessons/{id}/plan[/textbooks/{textbookId}]` after
 `GuardianAccess.require`.
+Lesson homework (462.1, `LessonHomeworkLinks`): `POST /api/teacher/schedule/lessons/{id}/homework
+{assignmentId}` and `DELETE …/homework/{assignmentId}` return the details; no `version`. Checked by
+`homework::api.Assignments.checkLinkable` — no assignment 404 `assignment.not-found`, a bank
+original 409 `schedule.bank-item` (mapped from `homework.bank-item`), on another lesson 409
+`schedule.assignment-linked`, a new link on a cancelled lesson 422 `schedule.lesson-cancelled`
+(taking it off is allowed); the same assignment again and removing one that is not there are
+no-ops. The teacher's lesson views (lists and details) have `assignmentIds`; the student's and the
+guardian's have an empty list.
 History feeds of held lessons (`CONDUCTED`/`MISSED`, group lessons included, newest first, paged by the
 `before` instant = start of the last item, `limit` 1–100, default 20):
 `GET /api/teacher/schedule/students/{id}/history`

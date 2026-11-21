@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.teacherbox.schedule.application.ChangeRequestService;
+import ru.teacherbox.schedule.application.LessonHomeworkLinks;
 import ru.teacherbox.schedule.application.LessonPlanLinks;
 import ru.teacherbox.schedule.application.ScheduleQueries;
 import ru.teacherbox.schedule.application.TeacherAvailability;
@@ -87,6 +88,10 @@ class TeacherScheduleController {
     record PlanRequest(@Nullable UUID planId) {
     }
 
+    /** @param assignmentId a working assignment of {@code homework} */
+    record HomeworkRequest(@NotNull UUID assignmentId) {
+    }
+
     record CancelRequest(@Size(max = 500) @Nullable String reason, @Nullable Boolean byStudent,
             @Nullable Boolean charge, @Nullable Scope scope, @Nullable Long version, @Nullable Long repeatVersion) {
     }
@@ -114,10 +119,13 @@ class TeacherScheduleController {
     private final ScheduleQueries queries;
     private final TeacherAvailability availability;
     private final LessonPlanLinks plans;
+    private final LessonHomeworkLinks homework;
 
     TeacherScheduleController(ScheduleService schedule, ChangeRequestService requests, ScheduleQueries queries,
-            LessonRepetitionService repetition, TeacherAvailability availability, LessonPlanLinks plans) {
+            LessonRepetitionService repetition, TeacherAvailability availability, LessonPlanLinks plans,
+            LessonHomeworkLinks homework) {
         this.plans = plans;
+        this.homework = homework;
         this.availability = availability;
         this.schedule = schedule;
         this.repetition = repetition;
@@ -181,6 +189,18 @@ class TeacherScheduleController {
     @PutMapping("/lessons/{lessonId}/plan")
     LessonView plan(@PathVariable UUID lessonId, @RequestBody PlanRequest request) {
         return plans.link(lessonId, request.planId());
+    }
+
+    /** Links homework to the lesson; no version, like the plan (roadmap 11). */
+    @PostMapping("/lessons/{lessonId}/homework")
+    LessonView linkHomework(@PathVariable UUID lessonId, @Valid @RequestBody HomeworkRequest request) {
+        return homework.link(lessonId, request.assignmentId());
+    }
+
+    /** Takes homework off the lesson; the assignment stays. */
+    @DeleteMapping("/lessons/{lessonId}/homework/{assignmentId}")
+    LessonView unlinkHomework(@PathVariable UUID lessonId, @PathVariable UUID assignmentId) {
+        return homework.unlink(lessonId, assignmentId);
     }
 
     @PutMapping("/lessons/{lessonId}/summary")

@@ -15,6 +15,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
@@ -55,6 +57,8 @@ import ru.teacherbox.textbooks.api.Courses;
 /** The teacher's assignments: creating, editing, giving them to students, materials. */
 @Service
 public class AssignmentService {
+
+    private static final Logger log = LoggerFactory.getLogger(AssignmentService.class);
 
     private static final String COPY_SUFFIX = " (копия)";
 
@@ -133,14 +137,29 @@ public class AssignmentService {
     public AssignmentDetails create(String title, @Nullable String description, @Nullable Instant dueAt,
             @Nullable UUID courseId, List<VideoInput> videoInputs, List<QuestionDraft> questions,
             @Nullable RevealRule reveal, @Nullable Integer attempts, Collection<UUID> studentIds) {
+        return create(title, description, dueAt, courseId, videoInputs, questions, reveal, attempts, false,
+                studentIds);
+    }
+
+    /**
+     * @param bank a bank item («Материалы» → «Создать», roadmap 11): content only, no deadline, never given out
+     * @throws ConflictException {@code homework.bank-item} for a bank item with students
+     */
+    @Transactional
+    public AssignmentDetails create(String title, @Nullable String description, @Nullable Instant dueAt,
+            @Nullable UUID courseId, List<VideoInput> videoInputs, List<QuestionDraft> questions,
+            @Nullable RevealRule reveal, @Nullable Integer attempts, boolean bank, Collection<UUID> studentIds) {
         Instant now = clock.instant();
-        Assignment assignment = Assignment.create(Ids.newId(), title, description, dueAt, now);
+        Assignment assignment = Assignment.create(Ids.newId(), title, description, dueAt, bank, now);
+        if (!studentIds.isEmpty()) {
+            assignment.requireWorking();
+        }
         assignment.changeCourse(requireCourse(courseId));
         assignment.changeQuiz(reveal, attempts);
         assignments.insert(assignment);
         videos.replace(assignment.id(), videoInputs);
         quiz.replace(assignment.id(), questions, !studentIds.isEmpty());
-        assignTo(assignment, studentIds, now);
+        assignTo(assignment, studentIds, true, now);
         return details(assignment);
     }
 
@@ -189,10 +208,55 @@ public class AssignmentService {
         Instant now = clock.instant();
         Assignment copy = source.copy(Ids.newId(), COPY_SUFFIX, now);
         assignments.insert(copy);
-        attachments.copyAll(AttachmentOwner.ASSIGNMENT, source.id(), copy.id(), now);
-        textbooks.copy(source.id(), copy.id());
-        videos.copy(source.id(), copy.id());
-        quiz.copy(source.id(), copy.id());
+        copyMaterials(source.id(), copy.id(), now);
+        return details(copy);
+    }
+
+    /**
+     * «Сохранить в банк» / «Обновить в банке» (roadmap 11 «Bank»): a working assignment without an original (never
+     * saved, or the original was deleted) gets a new one; else the original's content and materials are replaced by
+     * this assignment's. Copies of the original keep theirs.
+     *
+     * @throws ConflictException {@code homework.bank-item} for a bank item
+     */
+    @Transactional
+    public AssignmentDetails bank(UUID assignmentId) {
+        Assignment assignment = load(assignmentId);
+        assignment.requireWorking();
+        UUID sourceId = assignment.sourceId();
+        if (sourceId == null) {
+            saveOriginal(assignment, clock.instant());
+            return details(assignment);
+        }
+        Instant now = clock.instant();
+        Assignment original = load(sourceId);
+        original.replaceContent(assignment, now);
+        assignments.update(original);
+        attachments.deleteAll(AttachmentOwner.ASSIGNMENT, List.of(original.id()));
+        copyMaterials(assignment.id(), original.id(), now);
+        log.info("Assignment {} updated bank item {}", assignment.id(), original.id());
+        return details(assignment);
+    }
+
+    /**
+     * «Использовать»: a working draft of a bank item for these students (kept as the draft's students, nobody gets it
+     * until «Выдать»); its source is the bank item, so nothing is added to the bank.
+     *
+     * @throws ConflictException {@code homework.not-in-bank} unless the assignment is a bank item
+     * @throws NotFoundException {@code student.not-found} for an unknown student
+     */
+    @Transactional
+    public AssignmentDetails use(UUID assignmentId, Collection<UUID> studentIds) {
+        Assignment original = load(assignmentId);
+        if (!original.bank()) {
+            throw new ConflictException("homework.not-in-bank", "Only a bank item can be used");
+        }
+        Instant now = clock.instant();
+        Assignment copy = original.use(Ids.newId(), now);
+        assignments.insert(copy);
+        copyMaterials(original.id(), copy.id(), now);
+        saveDraftStudents(copy.id(), studentIds);
+        log.info("Assignment {} used as {}", original.id(), copy.id());
         return details(copy);
     }
 
@@ -204,13 +268,15 @@ public class AssignmentService {
     @Transactional
     public AssignmentDetails assign(UUID assignmentId, Collection<UUID> studentIds) {
         Assignment assignment = load(assignmentId);
+        assignment.requireWorking();
         Set<UUID> assigned = tasks.findByAssignment(assignmentId).stream()
                 .map(HomeworkTask::studentId)
                 .collect(Collectors.toSet());
         if (!studentIds.isEmpty()) {
             quiz.requireComplete(assignmentId);
         }
-        assignTo(assignment, studentIds.stream().filter(id -> !assigned.contains(id)).toList(), clock.instant());
+        assignTo(assignment, studentIds.stream().filter(id -> !assigned.contains(id)).toList(), assigned.isEmpty(),
+                clock.instant());
         return details(assignment);
     }
 
@@ -240,6 +306,9 @@ public class AssignmentService {
     @Transactional
     public AssignmentDetails saveDraftStudents(UUID assignmentId, Collection<UUID> studentIds) {
         Assignment assignment = load(assignmentId);
+        if (!studentIds.isEmpty()) {
+            assignment.requireWorking();
+        }
         for (UUID studentId : new LinkedHashSet<>(studentIds)) {
             directory.findStudent(studentId)
                     .orElseThrow(() -> new NotFoundException("student.not-found", "Student not found"));
@@ -248,8 +317,16 @@ public class AssignmentService {
         return details(assignment);
     }
 
+    /** The working assignments. */
     @Transactional(readOnly = true)
     public List<AssignmentSummary> list() {
+        return list(false);
+    }
+
+    /** @param bank the bank items («Материалы» → «Задания», roadmap 11), else the working assignments */
+    @Transactional(readOnly = true)
+    public List<AssignmentSummary> list(boolean bank) {
+        Map<UUID, Integer> uses = bank ? assignments.uses() : Map.of();
         Map<UUID, Map<TaskStatus, Integer>> counts = tasks.statusCounts();
         Map<UUID, List<UUID>> studentsOf = tasks.studentsByAssignment();
         Map<UUID, String> names = directory
@@ -259,7 +336,7 @@ public class AssignmentService {
         Map<UUID, Integer> fileCounts = files.countsByAssignment();
         Map<UUID, Integer> questionCounts = questions.countsByAssignment();
         Map<UUID, Integer> videoCounts = videoLinks.countsByAssignment();
-        return assignments.findAll().stream().map(assignment -> {
+        return assignments.findAll(bank).stream().map(assignment -> {
             Map<TaskStatus, Integer> byStatus = counts.getOrDefault(assignment.id(), Map.of());
             int assigned = byStatus.getOrDefault(TaskStatus.ASSIGNED, 0);
             int submitted = byStatus.getOrDefault(TaskStatus.SUBMITTED, 0);
@@ -273,13 +350,14 @@ public class AssignmentService {
                     assignment.courseId(), assignment.createdAt(), students, studentsOf.getOrDefault(assignment.id(), List.of()),
                     assignment.boardId(), assigned + submitted + returned + accepted, assigned, submitted, returned,
                     accepted, textbookCounts.getOrDefault(assignment.id(), 0), fileCounts.getOrDefault(assignment.id(), 0),
-                    questionCounts.getOrDefault(assignment.id(), 0), videoCounts.getOrDefault(assignment.id(), 0));
+                    questionCounts.getOrDefault(assignment.id(), 0), videoCounts.getOrDefault(assignment.id(), 0),
+                    assignment.bank(), assignment.sourceId(), uses.getOrDefault(assignment.id(), 0));
         }).toList();
     }
 
     /**
      * Deletes the assignment: the files of the assignment and of the answers, the answers, the tasks and the
-     * assignment (bound textbooks go with it).
+     * assignment (bound textbooks go with it). The copies of a bank item stay without a source.
      */
     @Transactional
     public void delete(UUID assignmentId) {
@@ -296,6 +374,9 @@ public class AssignmentService {
     @Transactional
     public AssignmentDetails placeOnBoard(UUID assignmentId, @Nullable UUID boardId) {
         Assignment assignment = load(assignmentId);
+        if (boardId != null) {
+            assignment.requireWorking();
+        }
         assignment.placeOnBoard(boardId);
         assignments.updateBoard(assignment);
         return details(assignment);
@@ -348,7 +429,15 @@ public class AssignmentService {
         return attachments.download(attachments.load(attachmentId));
     }
 
-    private void assignTo(Assignment assignment, Collection<UUID> studentIds, Instant now) {
+    /**
+     * @param first no student has the assignment yet: the first «Выдать» of an assignment without a source saves its
+     *              original into the bank (roadmap 11 «Bank»)
+     */
+    private void assignTo(Assignment assignment, Collection<UUID> studentIds, boolean first, Instant now) {
+        if (studentIds.isEmpty()) {
+            return;
+        }
+        assignment.requireWorking();
         for (UUID studentId : new LinkedHashSet<>(studentIds)) {
             StudentSummary student = directory.findStudent(studentId)
                     .orElseThrow(() -> new NotFoundException("student.not-found", "Student not found"));
@@ -362,6 +451,27 @@ public class AssignmentService {
                     assignment.dueAt(), now));
         }
         draftStudents.remove(assignment.id(), studentIds);
+        if (first && assignment.sourceId() == null) {
+            saveOriginal(assignment, now);
+        }
+    }
+
+    /** Saves the bank original of the working assignment, with copies of its files, and makes it its source. */
+    private void saveOriginal(Assignment assignment, Instant now) {
+        Assignment original = assignment.original(Ids.newId(), now);
+        assignments.insert(original);
+        copyMaterials(assignment.id(), original.id(), now);
+        assignment.saveAs(original.id());
+        assignments.updateSource(assignment);
+        log.info("Assignment {} saved as bank item {}", assignment.id(), original.id());
+    }
+
+    /** Files (new copies in the storage), textbooks with pages, videos with transcripts and questions. */
+    private void copyMaterials(UUID fromId, UUID toId, Instant now) {
+        attachments.copyAll(AttachmentOwner.ASSIGNMENT, fromId, toId, now);
+        textbooks.copy(fromId, toId);
+        videos.copy(fromId, toId);
+        quiz.copy(fromId, toId);
     }
 
     private AssignmentDetails details(Assignment assignment) {
@@ -393,7 +503,8 @@ public class AssignmentService {
                 textbooks.of(assignment.id()),
                 videos.of(assignment.id()),
                 quiz.of(assignment.id()), assignment.quizReveal(), assignment.quizAttempts(),
-                draftStudents.findByAssignment(assignment.id()));
+                draftStudents.findByAssignment(assignment.id()), assignment.bank(), assignment.sourceId(),
+                assignment.bank() ? assignments.countUses(assignment.id()) : 0);
     }
 
     /** The answer text on one line, cut to {@value #PREVIEW_LENGTH} characters. */

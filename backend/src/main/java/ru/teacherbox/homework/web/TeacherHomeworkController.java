@@ -124,6 +124,8 @@ class TeacherHomeworkController {
     /**
      * @param courseId the course of the assignment (ADR-0071); {@code null} — none
      * @param videos   the videos by link, at most 5
+     * @param bank     a bank item («Материалы» → «Создать», roadmap 11): no students, no deadline; {@code null} —
+     *                 a working assignment
      */
     record CreateAssignmentRequest(
             @NotBlank @Size(max = 200) String title,
@@ -134,7 +136,8 @@ class TeacherHomeworkController {
             @Size(max = AssignmentVideo.MAX_PER_ASSIGNMENT) @Nullable List<@Valid @NotNull VideoRequest> videos,
             @Size(max = Quiz.MAX_QUESTIONS) @Nullable List<@Valid @NotNull QuestionRequest> questions,
             @Nullable RevealRule quizReveal,
-            @Nullable Integer quizAttempts) {
+            @Nullable Integer quizAttempts,
+            @Nullable Boolean bank) {
     }
 
     /**
@@ -164,6 +167,10 @@ class TeacherHomeworkController {
     }
 
     record AssignStudentsRequest(@NotNull @Size(min = 1) List<UUID> studentIds) {
+    }
+
+    /** @param studentIds whom the working draft is for (kept for «Выдать»); may be empty */
+    record UseRequest(@NotNull @Size(max = 500) List<UUID> studentIds) {
     }
 
     /** @param pages {@code 1-3, 7}; blank — the whole textbook */
@@ -205,9 +212,10 @@ class TeacherHomeworkController {
         return summaries.journal(from, to, who);
     }
 
+    /** @param bank the bank items («Материалы» → «Задания»), else the working assignments */
     @GetMapping("/assignments")
-    List<AssignmentSummary> list() {
-        return assignments.list();
+    List<AssignmentSummary> list(@RequestParam(defaultValue = "false") boolean bank) {
+        return assignments.list(bank);
     }
 
     /** The tasks of one student, as the student's own list shows them; an unknown student has none. */
@@ -221,7 +229,7 @@ class TeacherHomeworkController {
     AssignmentDetails create(@Valid @RequestBody CreateAssignmentRequest request) {
         return assignments.create(request.title(), request.description(), request.dueAt(), request.courseId(),
                 inputs(request.videos()), questions(request.questions()), request.quizReveal(),
-                request.quizAttempts(), request.studentIds() == null ? List.of() : request.studentIds());
+                request.quizAttempts(), Boolean.TRUE.equals(request.bank()), request.studentIds() == null ? List.of() : request.studentIds());
     }
 
     /** A draft copy of the assignment with its materials; no students, deadline or board. */
@@ -229,6 +237,19 @@ class TeacherHomeworkController {
     @ResponseStatus(HttpStatus.CREATED)
     AssignmentDetails copy(@PathVariable UUID assignmentId) {
         return assignments.copy(assignmentId);
+    }
+
+    /** «Сохранить в банк» / «Обновить в банке»: saves the original of a working assignment or replaces its content. */
+    @PostMapping("/assignments/{assignmentId}/bank")
+    AssignmentDetails bank(@PathVariable UUID assignmentId) {
+        return assignments.bank(assignmentId);
+    }
+
+    /** «Использовать»: a working draft of a bank item for these students; the bank stays as it is. */
+    @PostMapping("/assignments/{assignmentId}/use")
+    @ResponseStatus(HttpStatus.CREATED)
+    AssignmentDetails use(@PathVariable UUID assignmentId, @Valid @RequestBody UseRequest request) {
+        return assignments.use(assignmentId, request.studentIds());
     }
 
     @GetMapping("/assignments/{assignmentId}")

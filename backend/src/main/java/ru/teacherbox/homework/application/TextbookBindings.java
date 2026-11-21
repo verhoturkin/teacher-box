@@ -45,8 +45,9 @@ class TextbookBindings {
         bound.save(new BoundTextbook(assignmentId, textbookId, normalized, clock.instant()));
     }
 
-    /** Binds the same textbooks with the same pages to another assignment. */
+    /** Binds the same textbooks with the same pages to another assignment in place of its own. */
     void copy(UUID fromAssignmentId, UUID toAssignmentId) {
+        bound.deleteByAssignment(toAssignmentId);
         Instant now = clock.instant();
         for (BoundTextbook source : bound.findByAssignment(fromAssignmentId)) {
             bound.save(new BoundTextbook(toAssignmentId, source.textbookId(), source.pages(), now));

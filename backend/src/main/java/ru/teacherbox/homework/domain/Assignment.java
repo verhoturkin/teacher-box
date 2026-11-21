@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.homework.domain.quiz.RevealRule;
 import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.error.ConflictException;
 
 /**
  * Homework created by the teacher: a text (Markdown) with optional files and deadline; the board it was put on, if
@@ -27,14 +28,18 @@ public final class Assignment {
     private @Nullable UUID courseId;
     private RevealRule quizReveal;
     private @Nullable Integer quizAttempts;
+    private final boolean bank;
+    private @Nullable UUID sourceId;
     private final Instant createdAt;
     private Instant updatedAt;
     private long version;
 
     private Assignment(UUID id, String title, @Nullable String description, @Nullable Instant dueAt,
             @Nullable UUID boardId, @Nullable UUID courseId, RevealRule quizReveal, @Nullable Integer quizAttempts,
-            Instant createdAt, Instant updatedAt, long version) {
+            boolean bank, @Nullable UUID sourceId, Instant createdAt, Instant updatedAt, long version) {
         this.id = Objects.requireNonNull(id);
+        this.bank = bank;
+        this.sourceId = sourceId;
         this.title = title;
         this.description = description;
         this.dueAt = dueAt;
@@ -47,33 +52,80 @@ public final class Assignment {
         this.version = version;
     }
 
+    /** A working assignment. */
     public static Assignment create(UUID id, String title, @Nullable String description, @Nullable Instant dueAt,
             Instant now) {
-        return new Assignment(id, validTitle(title), validDescription(description), dueAt, null, null, DEFAULT_REVEAL,
-                DEFAULT_ATTEMPTS, now, now, 0);
+        return create(id, title, description, dueAt, false, now);
+    }
+
+    /** @param bank a bank item (roadmap 11): content only, it gets no deadline */
+    public static Assignment create(UUID id, String title, @Nullable String description, @Nullable Instant dueAt,
+            boolean bank, Instant now) {
+        return new Assignment(id, validTitle(title), validDescription(description), bank ? null : dueAt, null, null,
+                DEFAULT_REVEAL, DEFAULT_ATTEMPTS, bank, null, now, now, 0);
     }
 
     public static Assignment restore(UUID id, String title, @Nullable String description, @Nullable Instant dueAt,
             @Nullable UUID boardId, @Nullable UUID courseId, RevealRule quizReveal, @Nullable Integer quizAttempts,
-            Instant createdAt, Instant updatedAt, long version) {
-        return new Assignment(id, title, description, dueAt, boardId, courseId, quizReveal, quizAttempts, createdAt,
-                updatedAt, version);
+            boolean bank, @Nullable UUID sourceId, Instant createdAt, Instant updatedAt, long version) {
+        return new Assignment(id, title, description, dueAt, boardId, courseId, quizReveal, quizAttempts, bank,
+                sourceId, createdAt, updatedAt, version);
     }
 
-    /** A draft made from this assignment: the same text and course, no deadline and no board. */
+    /**
+     * A draft made from this assignment: the same text and course, no deadline and no board, no source. A copy of a
+     * bank item stays in the bank.
+     */
     public Assignment copy(UUID newId, String suffix, Instant now) {
         String copyTitle = title.length() + suffix.length() > MAX_TITLE
                 ? title.substring(0, MAX_TITLE - suffix.length()).stripTrailing() + suffix
                 : title + suffix;
-        return new Assignment(newId, copyTitle, description, null, null, courseId, quizReveal, quizAttempts, now, now,
-                0);
+        return new Assignment(newId, copyTitle, description, null, null, courseId, quizReveal, quizAttempts, bank, null,
+                now, now, 0);
     }
 
+    /** The bank original of this working assignment (roadmap 11 «Bank»): its content, no deadline and no board. */
+    public Assignment original(UUID newId, Instant now) {
+        return new Assignment(newId, title, description, null, null, courseId, quizReveal, quizAttempts, true, null,
+                now, now, 0);
+    }
+
+    /** «Использовать»: a working draft of this bank item, its source is this item. */
+    public Assignment use(UUID newId, Instant now) {
+        return new Assignment(newId, title, description, null, null, courseId, quizReveal, quizAttempts, false, id,
+                now, now, 0);
+    }
+
+    /** «Обновить в банке»: this original takes the content of its working assignment. */
+    public void replaceContent(Assignment working, Instant now) {
+        title = working.title;
+        description = working.description;
+        courseId = working.courseId;
+        quizReveal = working.quizReveal;
+        quizAttempts = working.quizAttempts;
+        updatedAt = now;
+    }
+
+    /** The bank item this working assignment was saved as. */
+    public void saveAs(UUID original) {
+        sourceId = original;
+    }
+
+    /** A bank item keeps no deadline. */
     public void update(String newTitle, @Nullable String newDescription, @Nullable Instant newDueAt, Instant now) {
         title = validTitle(newTitle);
         description = validDescription(newDescription);
-        dueAt = newDueAt;
+        dueAt = bank ? null : newDueAt;
         updatedAt = now;
+    }
+
+    /**
+     * A bank item is never given out, put on a board or kept for students (409 {@code homework.bank-item}).
+     */
+    public void requireWorking() {
+        if (bank) {
+            throw new ConflictException("homework.bank-item", "A bank item is never given out");
+        }
     }
 
     /**
@@ -158,6 +210,16 @@ public final class Assignment {
     /** {@code null} — unlimited. */
     public @Nullable Integer quizAttempts() {
         return quizAttempts;
+    }
+
+    /** A bank item (roadmap 11): an original kept for reuse. */
+    public boolean bank() {
+        return bank;
+    }
+
+    /** The bank item it came from or was saved as; {@code null} — none. */
+    public @Nullable UUID sourceId() {
+        return sourceId;
     }
 
     public Instant createdAt() {

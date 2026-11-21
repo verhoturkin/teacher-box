@@ -286,7 +286,8 @@ export const ru = {
       'schedule.lesson-not-scheduled': 'Занятие уже проведено или отменено',
       'schedule.lesson-cancelled': 'Занятие отменено',
       'schedule.plan-linked': 'Этот план уже на другом занятии',
-      'schedule.bank-item': 'План из банка нельзя поставить на занятие — возьмите его копию',
+      'schedule.bank-item': 'Из банка на занятие ничего не ставится — возьмите копию',
+      'schedule.assignment-linked': 'Это задание уже привязано к другому занятию',
       'schedule.plan-not-found': 'У занятия нет плана',
       'schedule.textbook-not-found': 'Этого учебника нет в плане занятия',
       'schedule.lesson-not-started': 'Занятие ещё не началось',
@@ -376,6 +377,8 @@ export const ru = {
       'textbooks.pages-beyond': 'В учебнике меньше страниц',
       'textbooks.students-only': 'Учебники в личном кабинете есть только у учеников',
       'homework.textbook-not-found': 'Этого учебника в задании уже нет',
+      'homework.bank-item': 'Задание из банка не выдаётся — возьмите его копию',
+      'homework.not-in-bank': 'Использовать можно только задание из банка',
       'homework.quiz-started': 'Ученик уже начал тест: вопросы изменить нельзя',
       'homework.quiz-too-many-questions': 'В задании — не больше 50 вопросов',
       'homework.quiz-text-invalid':

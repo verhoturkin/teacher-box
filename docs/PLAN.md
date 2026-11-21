@@ -143,13 +143,21 @@ section the substep names). New ADR: 0071 «Курсы, планы уроков 
 
 ### 462. Homework at lessons, homework bank
 
-- [ ] 462.1 **B** *complex* — `homework`: `assignments.bank`, `source_id`; the first «Выдать» of an
+- [x] 462.1 **B** *complex* — `homework`: `assignments.bank`, `source_id`; the first «Выдать» of an
   assignment without `source_id` saves the bank original (files copied as `AssignmentService.copy`);
   `POST …/assignments/{id}/bank`, `POST …/{id}/use {studentIds}` (a draft), `bank` / `sourceId` /
   `uses` in the views; a bank item is never given out (409 `homework.bank-item`);
   `homework::api.Assignments` (`find`, `checkLinkable`). `schedule`: `lesson_assignments`, `POST /
   DELETE …/lessons/{id}/homework`, `assignmentIds` in the details, prepared-lesson protection,
   dependency `schedule` → `homework::api`; tests; `docs/modules/homework.md`, `schedule.md`.
+  *Done: `POST assignments` takes `bank: true` (a bank item from «Создать»); a bank item takes no
+  deadline, draft students or board either (409 `homework.bank-item`); `use` of a working
+  assignment — 409 `homework.not-in-bank`, the students of `use` become draft students; the
+  original is saved without a new version of the working assignment (`updateSource`); a copy of a
+  bank item stays in the bank; `GET assignments` lists working ones, `?bank=true` the bank;
+  repeating a link or removing a missing one is a no-op; `assignmentIds` is in every teacher lesson
+  view, empty for the student and the guardian; `schedule.bank-item` text is now generic (plans and
+  assignments); new codes in the dictionaries.*
 - [ ] 462.2 **F** *complex* — «Домашнее задание» in the lesson card: «Задать» (`/teacher/homework/new
   ?lessonId=` — participants, course, the plan's textbook pages and videos with transcripts,
   deadline from `next-lesson.ts`; the route passes the lesson input and `linkToLesson`),

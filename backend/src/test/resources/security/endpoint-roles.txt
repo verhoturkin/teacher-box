@@ -31,6 +31,7 @@ DELETE /api/teacher/notifications/channels/{channel} TEACHER
 DELETE /api/teacher/portal/logo TEACHER
 DELETE /api/teacher/schedule/google TEACHER
 DELETE /api/teacher/schedule/lessons/{lessonId} TEACHER
+DELETE /api/teacher/schedule/lessons/{lessonId}/homework/{assignmentId} TEACHER
 DELETE /api/teacher/schedule/lessons/{lessonId}/outcome TEACHER
 DELETE /api/teacher/schedule/off-times/{offTimeId} TEACHER
 DELETE /api/teacher/students/{id}/guardians/{guardianId} TEACHER
@@ -254,10 +255,12 @@ POST /api/teacher/groups/{id}/archive TEACHER
 POST /api/teacher/groups/{id}/restore TEACHER
 POST /api/teacher/homework/assignments TEACHER
 POST /api/teacher/homework/assignments/{assignmentId}/attachments TEACHER
+POST /api/teacher/homework/assignments/{assignmentId}/bank TEACHER
 POST /api/teacher/homework/assignments/{assignmentId}/copy TEACHER
 POST /api/teacher/homework/assignments/{assignmentId}/students TEACHER
 POST /api/teacher/homework/assignments/{assignmentId}/students/{studentId}/remind TEACHER
 POST /api/teacher/homework/assignments/{assignmentId}/textbooks TEACHER
+POST /api/teacher/homework/assignments/{assignmentId}/use TEACHER
 POST /api/teacher/homework/tasks/{taskId}/review TEACHER
 POST /api/teacher/meetings/calls/{ownerId}/participants/{userId}/mute TEACHER
 POST /api/teacher/meetings/calls/{ownerId}/summon TEACHER
@@ -271,6 +274,7 @@ POST /api/teacher/schedule/google/authorize TEACHER
 POST /api/teacher/schedule/google/sync TEACHER
 POST /api/teacher/schedule/lessons TEACHER
 POST /api/teacher/schedule/lessons/{lessonId}/cancel TEACHER
+POST /api/teacher/schedule/lessons/{lessonId}/homework TEACHER
 POST /api/teacher/schedule/lessons/{lessonId}/restore TEACHER
 POST /api/teacher/schedule/lessons/{lessonId}/summary/share TEACHER
 POST /api/teacher/schedule/off-times TEACHER

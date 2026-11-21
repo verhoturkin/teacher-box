@@ -52,6 +52,7 @@ public final class Lesson {
     private @Nullable String nextPlan;
     private @Nullable Instant summaryUpdatedAt;
     private @Nullable UUID planId;
+    private List<UUID> assignmentIds = List.of();
 
     private Lesson(UUID id, @Nullable UUID groupId, Collection<Participant> participants, @Nullable UUID seriesId,
             @Nullable LocalDate seriesDate, Instant startsAt, int durationMinutes, @Nullable String title,
@@ -453,6 +454,32 @@ public final class Lesson {
     /** The lesson plan of the lesson; {@code null} — none. */
     public @Nullable UUID planId() {
         return planId;
+    }
+
+    /** Restores the homework links, kept outside the optimistic lock of the lesson like the plan. */
+    public Lesson restoreAssignments(List<UUID> assignments) {
+        assignmentIds = List.copyOf(assignments);
+        return this;
+    }
+
+    /**
+     * Checks that homework can be linked to the lesson: a cancelled lesson takes no new homework, but its homework can
+     * still be taken off.
+     */
+    public void requireHomeworkLinkable() {
+        if (status == LessonStatus.CANCELLED) {
+            throw new BusinessRuleException("schedule.lesson-cancelled", "A cancelled lesson takes no homework");
+        }
+    }
+
+    /** The assignments of homework linked to the lesson, in the order they were linked. */
+    public List<UUID> assignmentIds() {
+        return assignmentIds;
+    }
+
+    /** Prepared: it has a plan or homework, so a series change keeps it (roadmap 11). */
+    public boolean prepared() {
+        return planId != null || !assignmentIds.isEmpty();
     }
 
     public Lesson restoreException(boolean changed) {

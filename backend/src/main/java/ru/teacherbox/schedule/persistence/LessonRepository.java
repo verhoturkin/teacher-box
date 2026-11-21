@@ -225,7 +225,8 @@ public class LessonRepository {
 
     /**
      * Removes the planned lessons of a series from {@code from} on, except the ones moved
-     * individually (they are arranged separately and stay) and the ones with a charged participant.
+     * individually (they are arranged separately and stay), the ones with a charged participant and the prepared
+     * ones (a plan or homework, roadmap 11).
      *
      * @return ids of the removed lessons
      */
@@ -235,6 +236,7 @@ public class LessonRepository {
                 where series_id = :seriesId and series_date >= :from and status = 'SCHEDULED'
                   and original_starts_at is null and individually_changed = false
                   and plan_id is null
+                  and id not in (select lesson_id from schedule.lesson_assignments)
                   and id not in (select lesson_id from schedule.lesson_participants where completion_id is not null)
                 """)
                 .param("seriesId", seriesId)
@@ -279,6 +281,35 @@ public class LessonRepository {
                 .param("summary", lesson.summary())
                 .param("nextPlan", lesson.nextPlan())
                 .param("updatedAt", lesson.summaryUpdatedAt())
+                .update();
+    }
+
+    /**
+     * Links an assignment to the lesson after its other assignments; no lesson version.
+     *
+     * @return {@code false} if the assignment is already on a lesson (the primary key)
+     */
+    public boolean linkAssignment(UUID lessonId, UUID assignmentId) {
+        try {
+            jdbc.sql("""
+                    insert into schedule.lesson_assignments (assignment_id, lesson_id, position)
+                    values (:assignmentId, :lessonId,
+                        (select coalesce(max(position) + 1, 0) from schedule.lesson_assignments where lesson_id = :lessonId))
+                    """)
+                    .param("assignmentId", assignmentId)
+                    .param("lessonId", lessonId)
+                    .update();
+            return true;
+        } catch (DuplicateKeyException exception) {
+            return false;
+        }
+    }
+
+    /** Takes the assignment off the lesson; nothing happens if it is not there. */
+    public void unlinkAssignment(UUID lessonId, UUID assignmentId) {
+        jdbc.sql("delete from schedule.lesson_assignments where lesson_id = :lessonId and assignment_id = :assignmentId")
+                .param("lessonId", lessonId)
+                .param("assignmentId", assignmentId)
                 .update();
     }
 
@@ -404,6 +435,7 @@ public class LessonRepository {
             return List.of();
         }
         Map<UUID, List<Participant>> participants = new HashMap<>();
+        Map<UUID, List<UUID>> assignments = new HashMap<>();
         for (List<UUID> chunk : chunks(rows.stream().map(Row::id).toList())) {
             jdbc.sql("""
                     select lesson_id, student_id, attendance, completion_id from schedule.lesson_participants
@@ -418,6 +450,17 @@ public class LessonRepository {
                     .list()
                     .forEach(entry -> participants.computeIfAbsent(entry.getKey(), key -> new ArrayList<>())
                             .add(entry.getValue()));
+            jdbc.sql("""
+                    select lesson_id, assignment_id from schedule.lesson_assignments
+                    where lesson_id in (:ids)
+                    order by lesson_id, position
+                    """)
+                    .param("ids", chunk)
+                    .query((rs, rowNum) -> Map.entry(rs.getObject("lesson_id", UUID.class),
+                            rs.getObject("assignment_id", UUID.class)))
+                    .list()
+                    .forEach(entry -> assignments.computeIfAbsent(entry.getKey(), key -> new ArrayList<>())
+                            .add(entry.getValue()));
         }
         return rows.stream()
                 .map(row -> Lesson.restore(row.id(), row.groupId(), participants.getOrDefault(row.id(), List.of()),
@@ -425,7 +468,8 @@ public class LessonRepository {
                         row.meetingUrl(), row.status(), row.cancelledBy(), row.cancelReason(),
                         row.originalStartsAt(), row.createdAt(), row.updatedAt(), row.version()).restoreException(row.individuallyChanged())
                         .restoreSummary(row.summary(), row.nextPlan(), row.summaryUpdatedAt()).describe(row.topic())
-                        .restorePlan(row.planId()))
+                        .restorePlan(row.planId())
+                        .restoreAssignments(assignments.getOrDefault(row.id(), List.of())))
                 .toList();
     }
 

@@ -4,7 +4,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -18,7 +20,8 @@ public class AssignmentRepository {
 
     private static final String SELECT =
             """
-            select id, title, description, due_at, board_id, course_id, quiz_reveal, quiz_attempts, created_at, updated_at, version
+            select id, title, description, due_at, board_id, course_id, quiz_reveal, quiz_attempts, bank, source_id,
+                created_at, updated_at, version
             from homework.assignments""";
 
     private final JdbcClient jdbc;
@@ -30,9 +33,9 @@ public class AssignmentRepository {
     public void insert(Assignment assignment) {
         jdbc.sql("""
                 insert into homework.assignments (id, title, description, due_at, course_id, quiz_reveal, quiz_attempts,
-                    created_at, updated_at, version)
-                values (:id, :title, :description, :dueAt, :courseId, :quizReveal, :quizAttempts, :createdAt, :updatedAt,
-                    :version)
+                    bank, source_id, created_at, updated_at, version)
+                values (:id, :title, :description, :dueAt, :courseId, :quizReveal, :quizAttempts, :bank, :sourceId,
+                    :createdAt, :updatedAt, :version)
                 """)
                 .param("id", assignment.id())
                 .param("title", assignment.title())
@@ -41,6 +44,8 @@ public class AssignmentRepository {
                 .param("courseId", assignment.courseId())
                 .param("quizReveal", assignment.quizReveal().name())
                 .param("quizAttempts", assignment.quizAttempts())
+                .param("bank", assignment.bank())
+                .param("sourceId", assignment.sourceId())
                 .param("createdAt", assignment.createdAt())
                 .param("updatedAt", assignment.updatedAt())
                 .param("version", assignment.version())
@@ -69,11 +74,19 @@ public class AssignmentRepository {
         assignment.markSaved(assignment.version() + 1);
     }
 
-    /** The board is not part of the teacher's edits: it changes without a new version. */
     public void delete(UUID id) {
         jdbc.sql("delete from homework.assignments where id = :id").param("id", id).update();
     }
 
+    /** The bank original is not part of the teacher's edits: it changes without a new version. */
+    public void updateSource(Assignment assignment) {
+        jdbc.sql("update homework.assignments set source_id = :sourceId where id = :id")
+                .param("id", assignment.id())
+                .param("sourceId", assignment.sourceId())
+                .update();
+    }
+
+    /** The board is not part of the teacher's edits: it changes without a new version. */
     public void updateBoard(Assignment assignment) {
         jdbc.sql("update homework.assignments set board_id = :boardId where id = :id")
                 .param("id", assignment.id())
@@ -107,9 +120,27 @@ public class AssignmentRepository {
                 .update();
     }
 
-    /** Newest first. */
-    public List<Assignment> findAll() {
-        return jdbc.sql(SELECT + " order by created_at desc").query(AssignmentRepository::map).list();
+    /** Working assignments ({@code bank = false}) or the bank items, newest first. */
+    public List<Assignment> findAll(boolean bank) {
+        return jdbc.sql(SELECT + " where bank = :bank order by created_at desc").param("bank", bank)
+                .query(AssignmentRepository::map).list();
+    }
+
+    /** Bank item id → how many working assignments came from it or were saved as it. */
+    public Map<UUID, Integer> uses() {
+        Map<UUID, Integer> counts = new HashMap<>();
+        jdbc.sql("select source_id, count(*) as total from homework.assignments where source_id is not null"
+                + " group by source_id")
+                .query((ResultSet rs) -> {
+                    counts.put(rs.getObject("source_id", UUID.class), rs.getInt("total"));
+                });
+        return counts;
+    }
+
+    /** How many working assignments came from the bank item or were saved as it. */
+    public int countUses(UUID bankItemId) {
+        return jdbc.sql("select count(*) from homework.assignments where source_id = :id").param("id", bankItemId)
+                .query(Integer.class).single();
     }
 
     private static Assignment map(ResultSet rs, int rowNum) throws SQLException {
@@ -122,6 +153,8 @@ public class AssignmentRepository {
                 rs.getObject("course_id", UUID.class),
                 RevealRule.valueOf(rs.getString("quiz_reveal")),
                 rs.getObject("quiz_attempts", Integer.class),
+                rs.getBoolean("bank"),
+                rs.getObject("source_id", UUID.class),
                 rs.getObject("created_at", Instant.class),
                 rs.getObject("updated_at", Instant.class),
                 rs.getLong("version"));

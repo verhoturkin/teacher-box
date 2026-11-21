@@ -24,7 +24,8 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   `homework` does not know `boards`); `PUT /api/teacher/homework/assignments/{id}/board {boardId}` (`null` forgets it)
   changes no version. `boardId` is in `AssignmentDetails`, `AssignmentSummary` and the student's `AssignmentInfo`.
   `AssignmentSummary.studentIds` (0.41.0) lets the teacher's list filter by student or group on the
-  client; the list endpoint still returns every assignment (paging of «Готовые» is client-side).
+  client; the list endpoint still returns every working assignment (paging of «Готовые» is
+  client-side; the bank — `?bank=true`, 462.1).
   For the list's material icons (339.1) it also carries `textbooks`, `files`, `questions` and
   `videos` — how many the assignment has (grouped counts in the repositories, one query per kind); a
   `ReviewQueueItem` carries `quizScore` / `quizMax` — the points of the best submitted quiz attempt
@@ -77,6 +78,26 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   201) — a new draft «<title> (копия)» (the title is cut to 200 characters) with the text, the
   course, the files (new `FileStorage` keys, so deleting the original keeps the copy's files), the
   bound textbooks with pages and the videos with transcripts; no students, no deadline, no board.
+- **The bank of assignments** (462.1, roadmap 11 «Bank», ADR-0071): `assignments.bank`,
+  `assignments.source_id` (`V7`; the migration puts nothing into the bank). A bank item is content
+  only: no tasks, no deadline (`dueAt` is dropped), no board, no draft students — giving it out,
+  create with `bank: true` and `studentIds`, draft students and a board answer 409
+  `homework.bank-item`. `POST assignments` with `bank: true` makes one («Материалы» → «Создать»).
+  The first «Выдать» (the first tasks, by create with `studentIds` or `POST …/students`) of a
+  working assignment without `source_id` saves its original into the bank — the text, course, quiz
+  settings and questions, files (new `FileStorage` keys, as copy does), textbooks with pages,
+  videos with transcripts — and sets `source_id` without a new version. `POST
+  assignments/{id}/bank` («Сохранить в банк» / «Обновить в банке»): no original (never saved, or
+  deleted) — a new one; else the original takes this assignment's content and materials (its files
+  are replaced by new copies); a bank item — 409 `homework.bank-item`. `POST assignments/{id}/use
+  {studentIds}` («Использовать», 201): a working draft with the same title and materials,
+  `source_id` = the bank item, the students kept as draft students (unknown — 404
+  `student.not-found`); nothing is added to the bank, its «Выдать» saves nothing; a working
+  assignment — 409 `homework.not-in-bank`. Deleting an original keeps its copies (`source_id` →
+  null, `on delete set null`). A copy (`…/copy`) of a bank item stays in the bank, without a
+  source. `GET assignments` lists the working assignments, `?bank=true` the bank items; `bank`,
+  `sourceId` and `uses` (a bank item: working assignments with this `source_id`) are in
+  `AssignmentSummary` and `AssignmentDetails`.
 - A student sees only own tasks and attachments (403/404 tests).
 - The teacher's assignment view gives each student entry (`TaskSummary`) a one-line `answerPreview` (the
   first 200 characters of the latest answer text, whitespace collapsed, `…` when cut), `answerFiles` (files of
@@ -100,12 +121,18 @@ page) publishes `HomeworkReminderRequested` for a task that is `ASSIGNED` or `RE
 `task.not-remindable`, an unknown task 404, a second one within an hour 409 `task.reminded-recently`
 (kept in memory: a restart forgets it). Teacher only.
 
+`Assignments` (for `schedule`, roadmap 11): `find(ids)` → `AssignmentSummary (id, title, dueAt,
+courseId, bank, studentIds)` in the order of the ids, deleted ones skipped; `checkLinkable(id)` —
+404 `assignment.not-found`, a bank item 409 `homework.bank-item` (`schedule` answers
+`schedule.bank-item`).
+
 `AssignmentFiles.file(assignmentId, attachmentId)` (for `ai`, [ADR-0039](../adr/0039-ai-reads-homework-sources.md)): a
 file of the assignment's materials — name, type, size, content; another assignment's file — 404 `file.not-found`.
 
 ## Data
 
-`assignments` (`course_id` — ADR-0071), `tasks`, `submissions`, `attachments`,
+`assignments` (`course_id` — ADR-0071; `bank`, `source_id` → `assignments`, on delete set null —
+roadmap 11), `tasks`, `submissions`, `attachments`,
 `assignment_textbooks` (assignment, textbook, pages), `assignment_videos` (position, url, provider,
 video ID, start, title, transcript, shown), `settings` (one row, ADR-0056: `due_soon_window` —
 filled once from `.env` by `HomeworkSettingsImport`, read by `DueSoonWindow`).
@@ -147,7 +174,9 @@ how many students (of those with a submitted attempt) got it wrong in their best
 
 ## REST
 
-`/api/teacher/homework/**` (assignments — the list has the names of the students of each, `DELETE assignments/{id}`, `POST assignments/{id}/copy`, students, attachments,
+`/api/teacher/homework/**` (assignments — the list has the names of the students of each,
+`?bank=true` — the bank, `DELETE assignments/{id}`, `POST assignments/{id}/copy`,
+`POST assignments/{id}/bank`, `POST assignments/{id}/use {studentIds}`, students, attachments,
 `PUT assignments/{id}/board`, `POST assignments/{id}/textbooks` `{textbookId, pages}`,
 `DELETE assignments/{id}/textbooks/{textbookId}`, tasks/{id}/review, review-queue, `GET journal?from&to&who` (`from`/`to` — `yyyy-MM-dd`, whole days of the instance time zone, both
 included; `who` — a group or a student id, none: every student with a task on these assignments):
