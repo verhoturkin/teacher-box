@@ -229,6 +229,7 @@ export class SystemPromptsCard implements OnInit {
     REVIEW_DRAFT: 'tb-i-rate_review',
     LESSON_SUMMARY: 'tb-i-summarize',
     QUIZ_DRAFT: 'tb-i-quiz',
+    LESSON_PLAN: 'tb-i-list_alt',
   };
   protected readonly open = signal(true);
   protected readonly prompts = signal<readonly SystemPrompt[]>([]);

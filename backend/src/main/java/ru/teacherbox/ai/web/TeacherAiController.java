@@ -27,6 +27,9 @@ import ru.teacherbox.ai.application.AiViews.AiStatus;
 import ru.teacherbox.ai.application.AiViews.RequestPage;
 import ru.teacherbox.ai.application.AiViews.HomeworkBrief;
 import ru.teacherbox.ai.application.AiViews.HomeworkDraft;
+import ru.teacherbox.ai.application.AiViews.LessonFacts;
+import ru.teacherbox.ai.application.AiViews.LessonPlanBrief;
+import ru.teacherbox.ai.application.AiViews.LessonPlanDraft;
 import ru.teacherbox.ai.application.AiViews.LessonSummaryBrief;
 import ru.teacherbox.ai.application.AiViews.LessonSummaryDraft;
 import ru.teacherbox.ai.application.AiViews.QuizDraft;
@@ -115,6 +118,31 @@ class TeacherAiController {
     private static final int MAX_CONTEXT = 10;
 
     /**
+     * The lesson a plan is for: the frontend sends its topic and what the previous lesson left (the limits are those
+     * of a lesson in {@code schedule}).
+     */
+    record LessonRequest(
+            @Size(max = 500) @Nullable String topic,
+            @Size(max = 4_000) @Nullable String previousSummary,
+            @Size(max = 1_000) @Nullable String previousNextPlan) {
+    }
+
+    /**
+     * @param courseName the plan's course
+     * @param sources    textbook pages, files and video transcripts of the plan to base the draft on
+     * @param context    tags of the lesson's students
+     * @param modelId    a configured model, the default one when absent
+     */
+    record LessonPlanRequest(
+            @NotBlank @Size(max = SavedPrompt.MAX_TEXT) String prompt,
+            @Size(max = 100) @Nullable String courseName,
+            @Valid @Nullable LessonRequest lesson,
+            @Size(max = DraftSources.MAX_SOURCES) @Nullable List<@Valid @NotNull SourceRequest> sources,
+            @Size(max = MAX_CONTEXT) @Nullable List<@Valid @NotNull ContextRequest> context,
+            @Nullable UUID modelId) {
+    }
+
+    /**
      * At least one of the topic and the words must say something; the titles are those of the lesson's assignments.
      *
      * @param modelId a configured model, the default one when absent
@@ -156,9 +184,7 @@ class TeacherAiController {
     @PostMapping(path = "/homework-draft", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     HomeworkDraft homeworkDraftWithFiles(@Valid @RequestPart("brief") HomeworkDraftRequest request,
             @RequestPart(name = "files", required = false) @Nullable List<MultipartFile> files) {
-        return homeworkDraft(request, files == null ? List.of() : files.stream()
-                .map(TeacherAiController::upload)
-                .toList());
+        return homeworkDraft(request, uploads(files));
     }
 
     @PostMapping(path = "/quiz-draft", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -170,9 +196,28 @@ class TeacherAiController {
     @PostMapping(path = "/quiz-draft", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     QuizDraft quizDraftWithFiles(@Valid @RequestPart("brief") HomeworkDraftRequest request,
             @RequestPart(name = "files", required = false) @Nullable List<MultipartFile> files) {
-        return assistant.quizDraft(brief(request, files == null ? List.of() : files.stream()
-                .map(TeacherAiController::upload)
-                .toList()));
+        return assistant.quizDraft(brief(request, uploads(files)));
+    }
+
+    /** A draft of a lesson plan; the textbook pages of the answer name their source by its index in {@code sources}. */
+    @PostMapping(path = "/lesson-plan", consumes = MediaType.APPLICATION_JSON_VALUE)
+    LessonPlanDraft lessonPlan(@Valid @RequestBody LessonPlanRequest request) {
+        return lessonPlan(request, List.of());
+    }
+
+    /** The same with files sent along, as the homework draft takes them; they come after the {@code sources}. */
+    @PostMapping(path = "/lesson-plan", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    LessonPlanDraft lessonPlanWithFiles(@Valid @RequestPart("brief") LessonPlanRequest request,
+            @RequestPart(name = "files", required = false) @Nullable List<MultipartFile> files) {
+        return lessonPlan(request, uploads(files));
+    }
+
+    private LessonPlanDraft lessonPlan(LessonPlanRequest request, List<DraftSources.Source> uploads) {
+        LessonRequest lesson = request.lesson();
+        return assistant.lessonPlan(new LessonPlanBrief(request.prompt(), request.courseName(),
+                lesson == null ? null : new LessonFacts(lesson.topic(), lesson.previousSummary(),
+                        lesson.previousNextPlan()),
+                sources(request.sources(), uploads), notes(request.context()), request.modelId()));
     }
 
     private HomeworkDraft homeworkDraft(HomeworkDraftRequest request, List<DraftSources.Source> uploads) {
@@ -180,13 +225,22 @@ class TeacherAiController {
     }
 
     private static HomeworkBrief brief(HomeworkDraftRequest request, List<DraftSources.Source> uploads) {
-        List<SourceRequest> sources = request.sources();
+        return new HomeworkBrief(request.prompt(), request.title(), sources(request.sources(), uploads),
+                notes(request.context()), request.modelId());
+    }
+
+    private static List<DraftSources.Source> sources(@Nullable List<SourceRequest> sources,
+            List<DraftSources.Source> uploads) {
         List<DraftSources.Source> all = new ArrayList<>();
         if (sources != null) {
             sources.stream().map(SourceRequest::toSource).forEach(all::add);
         }
         all.addAll(uploads);
-        return new HomeworkBrief(request.prompt(), request.title(), all, notes(request.context()), request.modelId());
+        return all;
+    }
+
+    private static List<DraftSources.Source> uploads(@Nullable List<MultipartFile> files) {
+        return files == null ? List.of() : files.stream().map(TeacherAiController::upload).toList();
     }
 
     private static List<StudentNote> notes(@Nullable List<ContextRequest> context) {

@@ -86,6 +86,52 @@ public final class AiViews {
         }
     }
 
+    /**
+     * What the teacher wants of a lesson plan; the frontend sends the texts (roadmap 11).
+     *
+     * @param courseName the plan's course, if any
+     * @param lesson     the lesson the plan is for, if any
+     * @param sources    textbook pages, files and videos of the plan to base the draft on
+     * @param context    the AI tags of the lesson's students (ADR-0055)
+     * @param modelId    the configured model to ask; {@code null} — the default one
+     */
+    public record LessonPlanBrief(String prompt, @Nullable String courseName, @Nullable LessonFacts lesson,
+            List<DraftSources.Source> sources, List<StudentNote> context, @Nullable UUID modelId) {
+
+        public LessonPlanBrief {
+            sources = List.copyOf(sources);
+            context = List.copyOf(context);
+        }
+    }
+
+    /** The lesson a plan is for: its topic and what the previous lesson left. */
+    public record LessonFacts(@Nullable String topic, @Nullable String previousSummary,
+            @Nullable String previousNextPlan) {
+    }
+
+    /**
+     * A draft of a lesson plan for the plan editor; nothing is saved.
+     *
+     * @param body      the plan in Markdown
+     * @param textbooks the pages of the given textbooks the plan works with
+     */
+    public record LessonPlanDraft(String title, String body, List<PlanPages> textbooks) {
+
+        public LessonPlanDraft {
+            textbooks = List.copyOf(textbooks);
+        }
+    }
+
+    /**
+     * Pages of a given textbook, within those sent to the model.
+     *
+     * @param source     the index of the textbook among the request's sources
+     * @param textbookId the textbook
+     * @param pages      normalized, {@code 1-3, 7}
+     */
+    public record PlanPages(int source, UUID textbookId, String pages) {
+    }
+
     /** A draft of the lesson summary in Markdown. */
     public record LessonSummaryDraft(String summary) {
     }

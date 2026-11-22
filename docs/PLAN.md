@@ -31,7 +31,7 @@ summarizes a student's period. Starts only after the v0.60.0 PR is merged. Spec 
 
 ### 464. AI lesson plan
 
-- [ ] 464.1 **B** *complex* — `ai`: feature `LESSON_PLAN` (enum migration, `SystemPrompts`,
+- [x] 464.1 **B** *complex* — `ai`: feature `LESSON_PLAN` (enum migration, `SystemPrompts`,
   resources `lesson-plan.system.v1`, `lesson-plan.user.v1`), `POST /api/teacher/ai/lesson-plan`
   (JSON / multipart as `homework-draft`, `DraftSources` with videos, student context), the answer's
   textbook pages checked against the given sources; tests on `FakeProvider`; `docs/modules/ai.md`.

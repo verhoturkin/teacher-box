@@ -30,6 +30,7 @@ const FEATURE_ICONS: Record<AiFeature, string> = {
   REVIEW_DRAFT: 'tb-i tb-i-rate_review',
   LESSON_SUMMARY: 'tb-i tb-i-summarize',
   QUIZ_DRAFT: 'tb-i tb-i-quiz',
+  LESSON_PLAN: 'tb-i tb-i-list_alt',
 };
 
 type TagSeverity = 'success' | 'danger' | 'secondary';

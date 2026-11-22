@@ -244,6 +244,7 @@ export const ru = {
       REVIEW_DRAFT: 'Черновик проверки',
       LESSON_SUMMARY: 'Итоги урока',
       QUIZ_DRAFT: 'Черновик теста',
+      LESSON_PLAN: 'Черновик плана урока',
     },
     resetHint: 'Изменённый промт можно вернуть к исходному в окне правки.',
     custom: 'Изменён',

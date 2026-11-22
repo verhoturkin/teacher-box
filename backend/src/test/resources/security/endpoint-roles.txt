@@ -230,6 +230,7 @@ POST /api/me/schedule/feed STUDENT TEACHER
 POST /api/me/schedule/lessons/{lessonId}/requests STUDENT TEACHER
 POST /api/meetings/calls/{ownerId}/token STUDENT TEACHER
 POST /api/teacher/ai/homework-draft TEACHER
+POST /api/teacher/ai/lesson-plan TEACHER
 POST /api/teacher/ai/lesson-summary TEACHER
 POST /api/teacher/ai/prompts TEACHER
 POST /api/teacher/ai/providers TEACHER

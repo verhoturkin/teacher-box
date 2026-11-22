@@ -1,15 +1,23 @@
 package ru.teacherbox.ai.application;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import ru.teacherbox.ai.application.AiViews.HomeworkBrief;
 import ru.teacherbox.ai.application.AiViews.HomeworkDraft;
+import ru.teacherbox.ai.application.AiViews.LessonFacts;
+import ru.teacherbox.ai.application.AiViews.LessonPlanBrief;
+import ru.teacherbox.ai.application.AiViews.LessonPlanDraft;
+import ru.teacherbox.ai.application.AiViews.PlanPages;
 import ru.teacherbox.ai.application.AiViews.LessonSummaryBrief;
 import ru.teacherbox.ai.application.AiViews.LessonSummaryDraft;
 import ru.teacherbox.ai.application.AiViews.ReviewBrief;
@@ -21,11 +29,12 @@ import ru.teacherbox.ai.domain.RequestStatus;
 import ru.teacherbox.homework.api.QuizDrafts;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.ConflictException;
+import ru.teacherbox.textbooks.api.PageRanges;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * The teacher's assistant: drafts of homework and of reviews. Answers are always drafts that the
+ * The teacher's assistant: drafts of homework, quizzes, reviews, lesson summaries and lesson plans. Answers are always drafts that the
  * teacher edits. No transaction is held while the model is working; every call is logged.
  */
 @Service
@@ -35,8 +44,12 @@ public class AiAssistant {
     static final String REVIEW_PROMPT = "review-draft.user.v2";
     static final String LESSON_SUMMARY_PROMPT = "lesson-summary.user.v1";
     static final String QUIZ_PROMPT = "quiz-draft.user.v2";
+    static final String LESSON_PLAN_PROMPT = "lesson-plan.user.v1";
+    static final String LESSON_PROMPT = "lesson-context.v1";
     static final String STUDENTS_PROMPT = "student-context.v1";
     static final int MAX_TITLE = 200;
+    /** As a plan of the {@code textbooks} module keeps them. */
+    static final int MAX_PLAN_BODY = 20_000;
 
     static final Map<String, Object> HOMEWORK_SCHEMA = object(
             "title", property("string", "Короткое название задания"),
@@ -66,6 +79,20 @@ public class AiAssistant {
 
     static final Map<String, Object> LESSON_SUMMARY_SCHEMA = object(
             "summary", property("string", "Итоги урока в Markdown: что прошли"));
+
+    static final Map<String, Object> LESSON_PLAN_SCHEMA = object(
+            "title", property("string", "Короткое название плана, обычно тема урока"),
+            "body", property("string", "План урока в Markdown"),
+            "textbooks", array(object(
+                    "source", property("integer", "Номер учебника из списка в запросе"),
+                    "pages", property("string", "Страницы этого учебника, например 12-13, 15"))));
+
+    private record PlanAnswer(@Nullable String title, @Nullable String body,
+            @Nullable List<@Nullable PagesAnswer> textbooks) {
+    }
+
+    private record PagesAnswer(@Nullable Integer source, @Nullable String pages) {
+    }
 
     private record QuizAnswer(@Nullable List<QuizDrafts.Draft> questions) {
     }
@@ -139,6 +166,88 @@ public class AiAssistant {
                     answer.questions() == null ? List.of() : answer.questions());
             return questions.isEmpty() ? null : new QuizDraft(questions);
         });
+    }
+
+    /**
+     * A draft of a lesson plan from the teacher's request, the lesson and the materials it names; the textbook pages
+     * of the answer are kept only within the pages sent.
+     */
+    public LessonPlanDraft lessonPlan(LessonPlanBrief brief) {
+        List<DraftSources.Material> materials = sources.materials(brief.sources());
+        List<String> textbooks = new ArrayList<>();
+        for (int i = 0; i < materials.size(); i++) {
+            DraftSources.SentPages sent = materials.get(i).textbook();
+            if (sent != null) {
+                textbooks.add(i + " — «" + sent.title() + "», с. " + sent.pages().text());
+            }
+        }
+        Map<String, String> values = Map.of(
+                "students", students(brief.context()),
+                "lesson", lesson(brief.lesson()),
+                "course", orDash(brief.courseName()),
+                "sources", materials.isEmpty() ? "—"
+                        : materials.stream().map(material -> material.source().name())
+                                .collect(Collectors.joining("; ")),
+                "textbooks", textbooks.isEmpty() ? "—" : String.join("\n", textbooks),
+                "prompt", brief.prompt().strip());
+        LlmRequest request = new LlmRequest(systemPrompts.text(AiFeature.LESSON_PLAN),
+                prompts.render(LESSON_PLAN_PROMPT, values), "lesson_plan", LESSON_PLAN_SCHEMA,
+                materials.stream().map(DraftSources.Material::source).toList());
+        return call(AiFeature.LESSON_PLAN, brief.modelId(), request, PlanAnswer.class, answer -> {
+            String title = answer.title() == null ? "" : answer.title().strip();
+            String body = answer.body() == null ? "" : answer.body().strip();
+            if (title.isEmpty() || body.isEmpty()) {
+                return null;
+            }
+            return new LessonPlanDraft(cut(title, MAX_TITLE), cut(body, MAX_PLAN_BODY),
+                    pages(answer.textbooks(), materials));
+        });
+    }
+
+    /** The {@code <lesson>} block of the plan's user prompt; empty without a lesson. */
+    private String lesson(@Nullable LessonFacts lesson) {
+        return lesson == null ? "" : prompts.render(LESSON_PROMPT, Map.of(
+                "topic", orDash(lesson.topic()),
+                "previousSummary", orDash(lesson.previousSummary()),
+                "previousNextPlan", orDash(lesson.previousNextPlan())));
+    }
+
+    /**
+     * The pages the model pointed at, one entry per textbook in the order named: a source that is not a textbook
+     * sent by pages, pages that do not parse or lie outside those sent are dropped.
+     */
+    private static List<PlanPages> pages(@Nullable List<@Nullable PagesAnswer> answered, List<DraftSources.Material> materials) {
+        if (answered == null) {
+            return List.of();
+        }
+        Map<Integer, Set<Integer>> chosen = new LinkedHashMap<>();
+        for (PagesAnswer pages : answered) {
+            Integer source = pages == null ? null : pages.source();
+            if (source == null || source < 0 || source >= materials.size()) {
+                continue;
+            }
+            DraftSources.SentPages sent = materials.get(source).textbook();
+            if (sent == null) {
+                continue;
+            }
+            List<Integer> parsed;
+            try {
+                parsed = PageRanges.parse(pages.pages()).pages();
+            } catch (BusinessRuleException e) {
+                continue;
+            }
+            if (sent.pages().pages().containsAll(parsed)) {
+                chosen.computeIfAbsent(source, key -> new TreeSet<>()).addAll(parsed);
+            }
+        }
+        return chosen.entrySet().stream().map(entry -> new PlanPages(entry.getKey(),
+                Objects.requireNonNull(materials.get(entry.getKey()).textbook()).textbookId(),
+                PageRanges.parse(entry.getValue().stream().map(String::valueOf)
+                        .collect(Collectors.joining(","))).text())).toList();
+    }
+
+    private static String cut(String text, int max) {
+        return text.length() > max ? text.substring(0, max).strip() : text;
     }
 
     public ReviewDraft reviewDraft(ReviewBrief brief) {

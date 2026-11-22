@@ -21,7 +21,7 @@ import ru.teacherbox.textbooks.api.TextbookSummary;
 import ru.teacherbox.textbooks.api.Textbooks;
 
 /**
- * The sources of a homework draft (ADR-0039, ADR-0042, ADR-0047): pages of a textbook or a file of an assignment, read
+ * The sources of a draft (ADR-0039, ADR-0042, ADR-0047): pages of a textbook or a file of an assignment, read
  * through their modules' facades, a file the teacher picked for an assignment not saved yet or the transcript of a
  * video, sent with the request; all kept within what a request may carry.
  */
@@ -65,25 +65,42 @@ public class DraftSources {
     }
 
     /**
+     * A source as read for the model.
+     *
+     * @param textbook the PDF textbook it is, with the pages sent, a draft may point at; {@code null} for others
+     */
+    public record Material(LlmSource source, @Nullable SentPages textbook) {
+    }
+
+    /** The pages of a PDF textbook sent to the model. */
+    public record SentPages(UUID textbookId, String title, PageRanges pages) {
+    }
+
+    /**
      * @throws BusinessRuleException {@code ai.source-unsupported} (a Word file, an unknown type),
      *                               {@code ai.source-too-large} (over 20 pages or 20 MB in all)
      * @throws NotFoundException     {@code ai.source-not-found} if a textbook or a file is gone
      */
     public List<LlmSource> read(List<Source> sources) {
+        return materials(sources).stream().map(Material::source).toList();
+    }
+
+    /** As {@link #read}, in the order of the sources, telling which ones are textbook pages. */
+    public List<Material> materials(List<Source> sources) {
         if (sources.size() > MAX_SOURCES) {
             throw tooLarge();
         }
-        List<LlmSource> read = new ArrayList<>();
+        List<Material> read = new ArrayList<>();
         long total = 0;
         for (Source source : sources) {
-            LlmSource material = switch (source) {
+            Material material = switch (source) {
                 case TextbookPages pages -> textbook(pages);
-                case AssignmentFileRef file -> file(file);
-                case Upload upload -> material(upload.filename(), upload.contentType(), upload.size(),
-                        upload.content());
-                case VideoTranscript video -> video(video);
+                case AssignmentFileRef file -> new Material(file(file), null);
+                case Upload upload -> new Material(material(upload.filename(), upload.contentType(), upload.size(),
+                        upload.content()), null);
+                case VideoTranscript video -> new Material(video(video), null);
             };
-            total += material.content().length;
+            total += material.source().content().length;
             if (total > MAX_BYTES) {
                 throw tooLarge();
             }
@@ -92,16 +109,16 @@ public class DraftSources {
         return read;
     }
 
-    private LlmSource textbook(TextbookPages source) {
+    private Material textbook(TextbookPages source) {
         TextbookSummary summary = textbooks.find(source.textbookId()).orElseThrow(DraftSources::notFound);
         return switch (summary.format()) {
             case DOCUMENT -> throw unsupported();
-            case IMAGE -> material(summary.title(), textbooks.file(summary.id()));
+            case IMAGE -> new Material(material(summary.title(), textbooks.file(summary.id())), null);
             case PDF -> {
                 PageRanges pages = pages(source.pages(), summary);
                 boolean whole = source.pages() == null || source.pages().isBlank();
-                yield material(whole ? summary.title() : summary.title() + ", с. " + pages.text(),
-                        textbooks.content(summary.id(), pages));
+                yield new Material(material(whole ? summary.title() : summary.title() + ", с. " + pages.text(),
+                        textbooks.content(summary.id(), pages)), new SentPages(summary.id(), summary.title(), pages));
             }
         };
     }

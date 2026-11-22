@@ -88,6 +88,7 @@ public class SystemPrompts {
             case REVIEW_DRAFT -> "review-draft.system.v1";
             case LESSON_SUMMARY -> "lesson-summary.system.v1";
             case QUIZ_DRAFT -> "quiz-draft.system.v1";
+            case LESSON_PLAN -> "lesson-plan.system.v1";
         };
     }
 }

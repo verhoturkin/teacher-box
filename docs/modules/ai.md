@@ -1,7 +1,7 @@
 # ai
 
-LLM features for the teacher: homework draft, quiz questions draft, review draft and lesson summary draft. Depends on: `shared`,
-`textbooks::api`,
+LLM features for the teacher: homework draft, quiz questions draft, review draft, lesson summary
+draft and lesson plan draft. Depends on: `shared`, `textbooks::api`,
 `homework::api` — only to read the sources of a draft ([ADR-0039](../adr/0039-ai-reads-homework-sources.md)); other
 texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integration.md),
 [0009](../adr/0009-external-integrations.md). **Load the `claude-api` skill before changing LLM code.**
@@ -22,11 +22,11 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
   (provider, model, `LlmClient`); clients are kept per provider and built anew when the provider's
   or the model's version or the proxy in force changes. A provider that cannot be called (no key, no
   address, a bad proxy) gets a client whose calls fail with the reason.
-- Model per request (since 364.3): `homework-draft`, `quiz-draft` (JSON and multipart `brief`),
-  `review-draft` and `lesson-summary` take an optional `modelId` (a configured model's id); none —
-  the default model (none configured — 422 `ai.disabled`). An unknown or removed model is 409
-  `ai.model.unknown` with `defaultModelId` and `defaultModel` (its label) when a default exists;
-  nothing is sent to a provider and nothing is logged.
+- Model per request (since 364.3): `homework-draft`, `quiz-draft`, `lesson-plan` (JSON and multipart
+  `brief`), `review-draft` and `lesson-summary` take an optional `modelId` (a configured model's
+  id); none — the default model (none configured — 422 `ai.disabled`). An unknown or removed model
+  is 409 `ai.model.unknown` with `defaultModelId` and `defaultModel` (its label) when a default
+  exists; nothing is sent to a provider and nothing is logged.
 - Connections over REST (`application.AiProviders`, since 364.2): a new connection needs what its
   kind needs (a key — `ai.provider.key-required`; an OpenAI-compatible address —
   `ai.provider.address-required`; a usable proxy), its name defaults to the kind's. The key is
@@ -82,12 +82,15 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
   names. It pings the connection's default model, else its first one; a connection without models
   is asked for its list («Подключение отвечает, моделей в нём пока нет»). No connection — one
   `NOT_CONFIGURED` line. The diagnostics do not change the teacher's check state of a connection.
-- System prompts (`SystemPrompts`, `ai.system_prompts`, [ADR-0043](../adr/0043-editable-system-prompts.md), since
-  0.14.6): the teacher rewrites the system prompt of a feature (`HOMEWORK_DRAFT`, `QUIZ_DRAFT`, `REVIEW_DRAFT`, `LESSON_SUMMARY`; 1–10000 characters,
-  `ai.system-prompt-invalid`); a feature without a row uses its resource (`homework-draft.system.v4`,
-  `quiz-draft.system.v1`, `review-draft.system.v1`, `lesson-summary.system.v1`). The teacher's text goes to the model as is (no placeholders). Optimistic locking — the
-  default prompt has version 0; in the UI (0.34.0) «Вернуть стандартный» is in the «⋮» of the edit dialog's header; `DELETE` returns to the default; in the full reset. The user prompts (`*.user.*`,
-  with `<request>` / `<answer>`) stay resources.
+- System prompts (`SystemPrompts`, `ai.system_prompts`,
+  [ADR-0043](../adr/0043-editable-system-prompts.md), since 0.14.6): the teacher rewrites the system
+  prompt of a feature (`HOMEWORK_DRAFT`, `QUIZ_DRAFT`, `REVIEW_DRAFT`, `LESSON_SUMMARY`,
+  `LESSON_PLAN`; 1–10000 characters, `ai.system-prompt-invalid`); a feature without a row uses its
+  resource (`homework-draft.system.v4`, `quiz-draft.system.v1`, `review-draft.system.v1`,
+  `lesson-summary.system.v1`, `lesson-plan.system.v1`). The teacher's text goes to the model as is
+  (no placeholders). Optimistic locking — the default prompt has version 0; in the UI (0.34.0)
+  «Вернуть стандартный» is in the «⋮» of the edit dialog's header; `DELETE` returns to the default;
+  in the full reset. The user prompts (`*.user.*`, with `<request>` / `<answer>`) stay resources.
 - Homework draft (`POST homework-draft` `{prompt ≤ 4000, title?, sources?, context?}`, prompts
   `homework-draft.system.v4`, `homework-draft.user.v4`): always
   `{title, description}` — a Markdown text with numbered tasks; no kinds and no HTML pages since 0.14.1
@@ -117,20 +120,35 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 - Review draft (`POST review-draft` `{title ≤ 200, description ≤ 20000?, answer ≤ 20000, context?}` →
   `{comment, grade?, accept}`, prompts `review-draft.system.v1`, `review-draft.user.v2`): the answer goes between
   `<answer>` tags as data.
-- Student context ([ADR-0055](../adr/0055-student-tags.md), stage 362): `context` — up to 10
-  `{name ≤ 60, value ≤ 120}` (both non-blank; 400 beyond the limits) in `homework-draft`, `quiz-draft`
-  (also in the `brief` part of `multipart/form-data`) and `review-draft`. The frontend collects the
-  recipients' tags marked «Учитывать в ИИ» and joins several values of one tag as «7 · 8»; `ai` does
-  not depend on `identity`. `AiAssistant` renders the pairs as `name: value` lines through
-  `student-context.v1` into the `{{students}}` placeholder at the top of the user prompt: between
-  `<students>` tags, as data, with the rule «defaults; the teacher's request wins». The rule lives in
-  the user prompt, so a rewritten system prompt keeps it. No context — no block. `ai.requests` keeps
-  no context.
+- Student context ([ADR-0055](../adr/0055-student-tags.md), stage 362): `context` — up to 10 `{name
+  ≤ 60, value ≤ 120}` (both non-blank; 400 beyond the limits) in `homework-draft`, `quiz-draft`,
+  `lesson-plan` (also in the `brief` part of `multipart/form-data`) and `review-draft`. The frontend
+  collects the recipients' tags marked «Учитывать в ИИ» and joins several values of one tag as «7 ·
+  8»; `ai` does not depend on `identity`. `AiAssistant` renders the pairs as `name: value` lines
+  through `student-context.v1` into the `{{students}}` placeholder at the top of the user prompt:
+  between `<students>` tags, as data, with the rule «defaults; the teacher's request wins». The rule
+  lives in the user prompt, so a rewritten system prompt keeps it. No context — no block.
+  `ai.requests` keeps no context.
 - Lesson summary draft (`POST lesson-summary` `{topic ≤ 200?, words ≤ 2000?, assignmentTitles[≤ 20]?}` → `{summary}`,
   prompts `lesson-summary.*.v1`, since 0.37.0): a short Markdown «Что прошли» from the topic, the titles of the
   assignments given at the lesson and the teacher's words (between `<words>` tags, data only); at least the topic or the
   words must be non-blank. `ai` does not depend on `schedule`: the frontend sends the texts. The enum value
   `LESSON_SUMMARY` is allowed in `system_prompts` by migration `V2__lesson_summary_feature.sql`.
+- Lesson plan draft (464.1, roadmap 11 «AI»; `POST lesson-plan` `{prompt ≤ 4000, courseName ≤ 100?,
+  lesson? {topic ≤ 500?, previousSummary ≤ 4000?, previousNextPlan ≤ 1000?}, sources?, context?,
+  modelId?}`, JSON or `multipart/form-data` as the homework draft — the same `sources`, uploads
+  after them; prompts `lesson-plan.system.v1`, `lesson-plan.user.v1`, the lesson through
+  `lesson-context.v1` between `<lesson>` tags as data, no lesson — no block) → `{title ≤ 200, body ≤
+  20000, textbooks: [{source, textbookId, pages}]}`: `body` — the plan in Markdown (goal, stages
+  with minutes, the `[m:ss]` of a video, a homework idea). The user prompt lists the PDF textbook
+  sources by their index in `sources` with the pages sent (`DraftSources.materials` →
+  `Material.textbook`, `SentPages`); the model answers `{source, pages}` and `AiAssistant` keeps an
+  entry only if `source` is such a textbook and every page (`PageRanges.parse`) is among those sent
+  — a picture, a file, a video or pages beyond are dropped; entries of one textbook are merged and
+  normalized (`1-3, 7`). `ai` knows no plans and no lessons: the frontend sends the texts (`ai` →
+  `schedule::api` comes only with `PERIOD_SUMMARY`). The answer is never saved: the plan editor
+  shows the draft. `LESSON_PLAN` is allowed in `system_prompts` by migration
+  `V5__lesson_plan_feature.sql`.
 - Tests: Anthropic adapter against a local HTTP server (SDK uses OkHttp); OpenAI-compatible — `MockRestServiceServer`.
   Module tests run on `FakeProvider` (an OpenAI-compatible row whose adapter returns
   `FakeLlmClient`). E2E (`e2e/tests/ai/providers.spec.ts`) runs against `e2e/ai-mock`, an
@@ -140,15 +158,15 @@ texts come from the frontend. Schema `ai`. ADRs: [0006](../adr/0006-ai-integrati
 
 `requests`, `prompts`, `system_prompts`, `providers`, `models`, `settings` (all in the full reset).
 `/api/teacher/ai/**` (status, usage — with `models`, requests, homework-draft, quiz-draft,
-review-draft, lesson-summary — each with an optional `modelId`, `prompts` CRUD, `system-prompts`
-list / `PUT` / `DELETE` by feature, `providers` —
-list, `POST /providers/check` (an unsaved connection: state and its models), `POST` (saved and
-checked, 201), `PUT /{id}`, `POST /{id}/check`, `DELETE /{id}`; `/providers/{id}/models` — `POST`,
-`PUT /{modelId}` (with `version`), `DELETE /{modelId}`, `PUT /order` (every model once), `GET
-/available` (the provider's list with `added`; empty when it keeps none; 422
-`ai.provider.unavailable`); `GET` / `PUT settings` — default model (`null` — AI off) and monthly
-limit, versioned), `/api/admin/ai/**` (status, usage, requests — metadata; `providers` — kind,
-`keySet`, check state, number of models; no keys, names, addresses or proxies).
+review-draft, lesson-summary, lesson-plan — each with an optional `modelId`, `prompts` CRUD,
+`system-prompts` list / `PUT` / `DELETE` by feature, `providers` — list, `POST /providers/check` (an
+unsaved connection: state and its models), `POST` (saved and checked, 201), `PUT /{id}`, `POST
+/{id}/check`, `DELETE /{id}`; `/providers/{id}/models` — `POST`, `PUT /{modelId}` (with `version`),
+`DELETE /{modelId}`, `PUT /order` (every model once), `GET /available` (the provider's list with
+`added`; empty when it keeps none; 422 `ai.provider.unavailable`); `GET` / `PUT settings` — default
+model (`null` — AI off) and monthly limit, versioned), `/api/admin/ai/**` (status, usage, requests —
+metadata; `providers` — kind, `keySet`, check state, number of models; no keys, names, addresses or
+proxies).
 
 ## Frontend
 

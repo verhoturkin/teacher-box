@@ -47,14 +47,18 @@ class SystemPromptsIntegrationTests {
         assertThat(mvc.get().uri(URI).with(TestUsers.teacher(TEACHER))).hasStatusOk()
                 .bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$[*].feature").asArray()
-                            .containsExactly("HOMEWORK_DRAFT", "REVIEW_DRAFT", "LESSON_SUMMARY", "QUIZ_DRAFT");
+                            .containsExactly("HOMEWORK_DRAFT", "REVIEW_DRAFT", "LESSON_SUMMARY", "QUIZ_DRAFT",
+                                    "LESSON_PLAN");
                     assertThat(json).extractingPath("$[0].text").asString().startsWith("Ты помогаешь репетитору");
                     assertThat(json).extractingPath("$[0].custom").isEqualTo(false);
                     assertThat(json).extractingPath("$[0].version").isEqualTo(0);
                     assertThat(json).extractingPath("$[0].updatedAt").isNull();
                     assertThat(json).extractingPath("$[1].text").asString().contains("<answer>");
                     assertThat(json).extractingPath("$[2].text").asString().contains("<words>");
+                    assertThat(json).extractingPath("$[4].text").asString().contains("планы уроков", "textbooks");
                 });
+        assertThat(put("LESSON_PLAN", "{\"text\":\"Планы короче\",\"version\":0}"))
+                .as("the migration allows the feature").hasStatusOk();
     }
 
     @Test
