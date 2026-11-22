@@ -1,5 +1,6 @@
 package ru.teacherbox.ai.application;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -17,6 +18,8 @@ import ru.teacherbox.ai.application.AiViews.HomeworkDraft;
 import ru.teacherbox.ai.application.AiViews.LessonFacts;
 import ru.teacherbox.ai.application.AiViews.LessonPlanBrief;
 import ru.teacherbox.ai.application.AiViews.LessonPlanDraft;
+import ru.teacherbox.ai.application.AiViews.PeriodSummaryBrief;
+import ru.teacherbox.ai.application.AiViews.PeriodSummaryDraft;
 import ru.teacherbox.ai.application.AiViews.PlanPages;
 import ru.teacherbox.ai.application.AiViews.LessonSummaryBrief;
 import ru.teacherbox.ai.application.AiViews.LessonSummaryDraft;
@@ -34,7 +37,7 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * The teacher's assistant: drafts of homework, quizzes, reviews, lesson summaries and lesson plans. Answers are always drafts that the
+ * The teacher's assistant: drafts of homework, quizzes, reviews, lesson summaries, lesson plans and period summaries. Answers are always drafts that the
  * teacher edits. No transaction is held while the model is working; every call is logged.
  */
 @Service
@@ -46,10 +49,15 @@ public class AiAssistant {
     static final String QUIZ_PROMPT = "quiz-draft.user.v2";
     static final String LESSON_PLAN_PROMPT = "lesson-plan.user.v1";
     static final String LESSON_PROMPT = "lesson-context.v1";
+    static final String PERIOD_SUMMARY_PROMPT = "period-summary.user.v1";
     static final String STUDENTS_PROMPT = "student-context.v1";
     static final int MAX_TITLE = 200;
     /** As a plan of the {@code textbooks} module keeps them. */
     static final int MAX_PLAN_BODY = 20_000;
+    static final int MAX_PERIOD_SUMMARY = 20_000;
+    /** The longest period a summary covers. */
+    static final int MAX_PERIOD_MONTHS = 6;
+    private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     static final Map<String, Object> HOMEWORK_SCHEMA = object(
             "title", property("string", "Короткое название задания"),
@@ -87,6 +95,12 @@ public class AiAssistant {
                     "source", property("integer", "Номер учебника из списка в запросе"),
                     "pages", property("string", "Страницы этого учебника, например 12-13, 15"))));
 
+    static final Map<String, Object> PERIOD_SUMMARY_SCHEMA = object(
+            "summary", property("string", "Итоги периода в Markdown по разделам"));
+
+    private record PeriodSummaryAnswer(@Nullable String summary) {
+    }
+
     private record PlanAnswer(@Nullable String title, @Nullable String body,
             @Nullable List<@Nullable PagesAnswer> textbooks) {
     }
@@ -112,10 +126,12 @@ public class AiAssistant {
     private final SystemPrompts systemPrompts;
     private final AiUsage usage;
     private final DraftSources sources;
+    private final PeriodFacts periods;
     private final JsonMapper json;
 
     public AiAssistant(LlmClients llm, PromptTemplates prompts, SystemPrompts systemPrompts,
-            AiUsage usage, DraftSources sources, JsonMapper json, QuizDrafts quizDrafts) {
+            AiUsage usage, DraftSources sources, PeriodFacts periods, JsonMapper json, QuizDrafts quizDrafts) {
+        this.periods = periods;
         this.quizDrafts = quizDrafts;
         this.llm = llm;
         this.prompts = prompts;
@@ -246,7 +262,35 @@ public class AiAssistant {
                         .collect(Collectors.joining(","))).text())).toList();
     }
 
-    private static String cut(String text, int max) {
+    /**
+     * A draft of a student's period summary from the lessons and the homework of the period, read on the server; the
+     * period is whole days of the instance time zone, at most {@value #MAX_PERIOD_MONTHS} months.
+     */
+    public PeriodSummaryDraft periodSummary(PeriodSummaryBrief brief) {
+        if (brief.to().isBefore(brief.from()) || brief.to().isAfter(brief.from().plusMonths(MAX_PERIOD_MONTHS))) {
+            throw new BusinessRuleException("ai.period-invalid",
+                    "The period must end after it starts and last at most " + MAX_PERIOD_MONTHS + " months");
+        }
+        PeriodFacts.Facts facts = periods.of(brief.studentId(), brief.from(), brief.to());
+        if (facts.isEmpty()) {
+            throw new BusinessRuleException("ai.period-empty", "The student has no lessons or homework in the period");
+        }
+        Map<String, String> values = Map.of(
+                "students", students(brief.context()),
+                "from", DAY.format(brief.from()),
+                "to", DAY.format(brief.to()),
+                "lessons", facts.lessons().isEmpty() ? "—" : facts.lessons(),
+                "homework", facts.homework().isEmpty() ? "—" : facts.homework(),
+                "prompt", orDash(brief.prompt()));
+        LlmRequest request = new LlmRequest(systemPrompts.text(AiFeature.PERIOD_SUMMARY),
+                prompts.render(PERIOD_SUMMARY_PROMPT, values), "period_summary", PERIOD_SUMMARY_SCHEMA);
+        return call(AiFeature.PERIOD_SUMMARY, brief.modelId(), request, PeriodSummaryAnswer.class, answer -> {
+            String summary = answer.summary() == null ? "" : answer.summary().strip();
+            return summary.isEmpty() ? null : new PeriodSummaryDraft(cut(summary, MAX_PERIOD_SUMMARY));
+        });
+    }
+
+    static String cut(String text, int max) {
         return text.length() > max ? text.substring(0, max).strip() : text;
     }
 

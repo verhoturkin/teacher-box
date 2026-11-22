@@ -39,6 +39,7 @@ import ru.teacherbox.schedule.application.ScheduleViews.HistoryEntry;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSummary;
+import ru.teacherbox.schedule.application.ScheduleViews.StudentReport;
 import ru.teacherbox.schedule.application.ScheduleViews.UpcomingLessons;
 import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.Lesson;
@@ -220,6 +221,16 @@ class TeacherScheduleController {
             @RequestParam(required = false) @Nullable Instant before,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {
         return queries.studentHistory(studentId, before, limit);
+    }
+
+    /**
+     * The schedule part of the student's period report: lessons starting on the days {@code [from, to]} of the
+     * instance time zone; an unknown student has an empty one.
+     */
+    @GetMapping("/students/{studentId}/report")
+    StudentReport studentReport(@PathVariable UUID studentId, @RequestParam LocalDate from,
+            @RequestParam LocalDate to) {
+        return queries.report(studentId, from, to);
     }
 
     @GetMapping("/groups/{groupId}/history")

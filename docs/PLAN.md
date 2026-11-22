@@ -42,7 +42,7 @@ summarizes a student's period. Starts only after the v0.60.0 PR is merged. Spec 
 
 ### 465. Period summary
 
-- [ ] 465.1 **B** *complex* — ADR-0072; `schedule::api.LessonJournal`, `homework::api.HomeworkJournal`
+- [x] 465.1 **B** *complex* — ADR-0072; `schedule::api.LessonJournal`, `homework::api.HomeworkJournal`
   and the report endpoints of roadmap 02 stage B (`GET /api/teacher/schedule/students/{id}/report`,
   `…/homework/students/{id}/report`); `ai` → `schedule::api`; feature `PERIOD_SUMMARY`, `POST
   /api/teacher/ai/period-summary`, budgets; tests incl. the time-zone boundary of the period and

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,8 @@ import ru.teacherbox.ai.application.AiViews.LessonPlanBrief;
 import ru.teacherbox.ai.application.AiViews.LessonPlanDraft;
 import ru.teacherbox.ai.application.AiViews.LessonSummaryBrief;
 import ru.teacherbox.ai.application.AiViews.LessonSummaryDraft;
+import ru.teacherbox.ai.application.AiViews.PeriodSummaryBrief;
+import ru.teacherbox.ai.application.AiViews.PeriodSummaryDraft;
 import ru.teacherbox.ai.application.AiViews.QuizDraft;
 import ru.teacherbox.ai.application.AiViews.ReviewBrief;
 import ru.teacherbox.ai.application.AiViews.ReviewDraft;
@@ -159,6 +162,22 @@ class TeacherAiController {
         }
     }
 
+    /**
+     * @param from    the first day of the period (instance time zone)
+     * @param to      its last day, at most 6 months later
+     * @param prompt  the teacher's wishes
+     * @param context tags of the student
+     * @param modelId a configured model, the default one when absent
+     */
+    record PeriodSummaryRequest(
+            @NotNull UUID studentId,
+            @NotNull LocalDate from,
+            @NotNull LocalDate to,
+            @Size(max = SavedPrompt.MAX_TEXT) @Nullable String prompt,
+            @Size(max = MAX_CONTEXT) @Nullable List<@Valid @NotNull ContextRequest> context,
+            @Nullable UUID modelId) {
+    }
+
     private final AiAssistant assistant;
     private final AiUsage usage;
 
@@ -266,6 +285,13 @@ class TeacherAiController {
     LessonSummaryDraft lessonSummary(@Valid @RequestBody LessonSummaryRequest request) {
         return assistant.lessonSummary(new LessonSummaryBrief(request.topic(), request.words(),
                 request.assignmentTitles() == null ? List.of() : request.assignmentTitles(), request.modelId()));
+    }
+
+    /** A draft of a student's period summary; the lessons and homework of the period are read on the server. */
+    @PostMapping("/period-summary")
+    PeriodSummaryDraft periodSummary(@Valid @RequestBody PeriodSummaryRequest request) {
+        return assistant.periodSummary(new PeriodSummaryBrief(request.studentId(), request.from(), request.to(),
+                request.prompt(), notes(request.context()), request.modelId()));
     }
 
     /** @param month {@code yyyy-MM}, the current month by default */

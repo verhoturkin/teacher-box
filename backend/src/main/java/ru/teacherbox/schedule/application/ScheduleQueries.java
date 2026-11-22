@@ -22,16 +22,21 @@ import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.teacherbox.schedule.api.JournalLesson;
+import ru.teacherbox.schedule.api.LessonJournal;
+import ru.teacherbox.schedule.api.LessonOutcome;
 import ru.teacherbox.schedule.application.ScheduleViews.HistoryEntry;
 import ru.teacherbox.schedule.application.ScheduleViews.LessonView;
 import ru.teacherbox.schedule.application.ScheduleViews.MyScheduleSummary;
 import ru.teacherbox.schedule.application.ScheduleViews.RequestView;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSettings;
 import ru.teacherbox.schedule.application.ScheduleViews.ScheduleSummary;
+import ru.teacherbox.schedule.application.ScheduleViews.StudentReport;
 import ru.teacherbox.schedule.application.ScheduleViews.UpcomingKind;
 import ru.teacherbox.schedule.application.ScheduleViews.UpcomingLesson;
 import ru.teacherbox.schedule.application.ScheduleViews.UpcomingLessons;
 import ru.teacherbox.schedule.application.ScheduleViews.UpcomingSeries;
+import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.ChangeRequest;
 import ru.teacherbox.schedule.domain.Lesson;
 import ru.teacherbox.schedule.domain.LessonNote;
@@ -47,11 +52,11 @@ import ru.teacherbox.shared.time.InstanceTimeZone;
 
 /**
  * Reading the schedule: the teacher sees everything, a student only their own lessons (alone and
- * with their groups) and requests.
+ * with their groups) and requests; other modules read a student's lessons of a period ({@link LessonJournal}).
  */
 @Service
 @Transactional(readOnly = true)
-public class ScheduleQueries {
+public class ScheduleQueries implements LessonJournal {
 
     /** Longest period of one calendar request. */
     static final int MAX_RANGE_DAYS = 400;
@@ -119,6 +124,40 @@ public class ScheduleQueries {
                 .filter(found -> found.hasParticipant(studentId))
                 .orElseThrow(ScheduleQueries::lessonNotFound);
         return views(List.of(lesson)).getFirst().forStudent(studentId).withStudentSummary(lesson);
+    }
+
+    @Override
+    public List<JournalLesson> ofStudent(UUID studentId, LocalDate from, LocalDate to) {
+        return lessons.findStartingBetween(studentId, start(from, to.plusDays(1)), start(to.plusDays(1))).stream()
+                .map(lesson -> journalLesson(lesson, studentId))
+                .toList();
+    }
+
+    /** The schedule part of the student's report on the days {@code [from, to]} (roadmap 02 stage B). */
+    public StudentReport report(UUID studentId, LocalDate from, LocalDate to) {
+        return StudentReport.of(ofStudent(studentId, from, to));
+    }
+
+    private static JournalLesson journalLesson(Lesson lesson, UUID studentId) {
+        LessonOutcome outcome = outcome(lesson, lesson.participant(studentId).orElseThrow().attendance());
+        return new JournalLesson(lesson.id(), lesson.startsAt(), lesson.durationMinutes(), lesson.title(),
+                lesson.topic(), lesson.groupId(), outcome,
+                outcome == LessonOutcome.CANCELLED || outcome == LessonOutcome.LATE_CANCELLED ? lesson.cancelledBy()
+                        : null,
+                lesson.summary(), lesson.nextPlan(), lesson.planId(), lesson.assignmentIds());
+    }
+
+    private static LessonOutcome outcome(Lesson lesson, Attendance attendance) {
+        if (lesson.status() == LessonStatus.CANCELLED) {
+            return LessonOutcome.CANCELLED;
+        }
+        return switch (attendance) {
+            case EXPECTED -> LessonOutcome.PLANNED;
+            case ATTENDED -> LessonOutcome.ATTENDED;
+            case EXCUSED -> LessonOutcome.EXCUSED;
+            case MISSED -> !lesson.isGroup() && lesson.cancelledBy() != null ? LessonOutcome.LATE_CANCELLED
+                    : LessonOutcome.MISSED;
+        };
     }
 
     /** Held lessons of a student for the teacher: with the summary, the plan and the own private note. */

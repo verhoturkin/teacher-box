@@ -162,6 +162,7 @@ GET /api/teacher/homework/attachments/{attachmentId} TEACHER
 GET /api/teacher/homework/journal TEACHER
 GET /api/teacher/homework/review-queue TEACHER
 GET /api/teacher/homework/settings TEACHER
+GET /api/teacher/homework/students/{studentId}/report TEACHER
 GET /api/teacher/homework/students/{studentId}/tasks TEACHER
 GET /api/teacher/homework/summary TEACHER
 GET /api/teacher/homework/tasks/{taskId} TEACHER
@@ -188,6 +189,7 @@ GET /api/teacher/schedule/off-times/periods TEACHER
 GET /api/teacher/schedule/requests TEACHER
 GET /api/teacher/schedule/settings TEACHER
 GET /api/teacher/schedule/students/{studentId}/history TEACHER
+GET /api/teacher/schedule/students/{studentId}/report TEACHER
 GET /api/teacher/schedule/students/{studentId}/upcoming TEACHER
 GET /api/teacher/schedule/summary TEACHER
 GET /api/teacher/schedule/unmarked TEACHER
@@ -232,6 +234,7 @@ POST /api/meetings/calls/{ownerId}/token STUDENT TEACHER
 POST /api/teacher/ai/homework-draft TEACHER
 POST /api/teacher/ai/lesson-plan TEACHER
 POST /api/teacher/ai/lesson-summary TEACHER
+POST /api/teacher/ai/period-summary TEACHER
 POST /api/teacher/ai/prompts TEACHER
 POST /api/teacher/ai/providers TEACHER
 POST /api/teacher/ai/providers/check TEACHER

@@ -2,6 +2,7 @@ package ru.teacherbox.ai.application;
 
 import ru.teacherbox.homework.api.QuizDrafts;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -130,6 +131,27 @@ public final class AiViews {
      * @param pages      normalized, {@code 1-3, 7}
      */
     public record PlanPages(int source, UUID textbookId, String pages) {
+    }
+
+    /**
+     * What the teacher wants of a student's period summary (ADR-0072): the facts are read on the server.
+     *
+     * @param from    the first day of the period, instance time zone
+     * @param to      its last day
+     * @param prompt  the teacher's wishes, if any
+     * @param context the student's AI tags (ADR-0055)
+     * @param modelId the configured model to ask; {@code null} — the default one
+     */
+    public record PeriodSummaryBrief(UUID studentId, LocalDate from, LocalDate to, @Nullable String prompt,
+            List<StudentNote> context, @Nullable UUID modelId) {
+
+        public PeriodSummaryBrief {
+            context = List.copyOf(context);
+        }
+    }
+
+    /** A draft of a student's period summary in Markdown; nothing is saved or sent. */
+    public record PeriodSummaryDraft(String summary) {
     }
 
     /** A draft of the lesson summary in Markdown. */

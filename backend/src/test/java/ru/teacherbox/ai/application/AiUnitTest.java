@@ -32,7 +32,8 @@ class AiUnitTest {
         AiUsage usage = mock(AiUsage.class);
         LlmClients clients = mock(LlmClients.class);
         when(clients.forDefault()).thenReturn(java.util.Optional.empty());
-        AiAssistant assistant = new AiAssistant(clients, prompts, mock(SystemPrompts.class), usage, mock(DraftSources.class), JsonMapper.builder().build(),
+        AiAssistant assistant = new AiAssistant(clients, prompts, mock(SystemPrompts.class), usage, mock(DraftSources.class), mock(PeriodFacts.class),
+                JsonMapper.builder().build(),
                 mock(ru.teacherbox.homework.api.QuizDrafts.class));
 
         assertThatThrownBy(() -> assistant.homeworkDraft(

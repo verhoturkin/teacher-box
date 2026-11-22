@@ -1,5 +1,10 @@
 export type AiFeature =
-  'HOMEWORK_DRAFT' | 'REVIEW_DRAFT' | 'LESSON_SUMMARY' | 'QUIZ_DRAFT' | 'LESSON_PLAN';
+  | 'HOMEWORK_DRAFT'
+  | 'REVIEW_DRAFT'
+  | 'LESSON_SUMMARY'
+  | 'QUIZ_DRAFT'
+  | 'LESSON_PLAN'
+  | 'PERIOD_SUMMARY';
 export type AiRequestStatus = 'SUCCEEDED' | 'FAILED' | 'REFUSED';
 
 /** Mirrors `AiStatus` of the backend. */

@@ -48,7 +48,7 @@ class SystemPromptsIntegrationTests {
                 .bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$[*].feature").asArray()
                             .containsExactly("HOMEWORK_DRAFT", "REVIEW_DRAFT", "LESSON_SUMMARY", "QUIZ_DRAFT",
-                                    "LESSON_PLAN");
+                                    "LESSON_PLAN", "PERIOD_SUMMARY");
                     assertThat(json).extractingPath("$[0].text").asString().startsWith("Ты помогаешь репетитору");
                     assertThat(json).extractingPath("$[0].custom").isEqualTo(false);
                     assertThat(json).extractingPath("$[0].version").isEqualTo(0);
@@ -56,8 +56,11 @@ class SystemPromptsIntegrationTests {
                     assertThat(json).extractingPath("$[1].text").asString().contains("<answer>");
                     assertThat(json).extractingPath("$[2].text").asString().contains("<words>");
                     assertThat(json).extractingPath("$[4].text").asString().contains("планы уроков", "textbooks");
+                    assertThat(json).extractingPath("$[5].text").asString().contains("итоги", "<lessons>");
                 });
         assertThat(put("LESSON_PLAN", "{\"text\":\"Планы короче\",\"version\":0}"))
+                .as("the migration allows the feature").hasStatusOk();
+        assertThat(put("PERIOD_SUMMARY", "{\"text\":\"Итоги короче\",\"version\":0}"))
                 .as("the migration allows the feature").hasStatusOk();
     }
 

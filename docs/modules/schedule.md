@@ -114,6 +114,17 @@ Events: `LessonScheduled`, `LessonRepeatScheduled`, `LessonRepeatStopped`, `Less
 Lesson events carry `groupId` and participants; `LessonScheduled`, `LessonStartingSoon` and
 `LessonCompleted` carry `title` (`null` = default), the first two also `topic`.
 Consumers: `billing` (completion); the schedule itself (`notices/`, below).
+
+**Lesson journal (465.1, [ADR-0072](../adr/0072-ai-reads-the-period-journal.md)):**
+`LessonJournal.ofStudent(studentId, from, to)` (implemented by `ScheduleQueries`) — the student's
+lessons, alone or in a group and whatever the outcome, starting on the days `[from, to]` of the
+instance time zone, oldest first, as `JournalLesson` (start, minutes, title, topic, `groupId`,
+`LessonOutcome` for this student, `cancelledBy` of a cancelled or late-cancelled one, summary,
+next plan, `planId`, `assignmentIds`; no private notes). The outcome: a cancelled lesson —
+`CANCELLED`; else by the attendance — `EXPECTED` → `PLANNED`, `ATTENDED`, `EXCUSED`, `MISSED` →
+`LATE_CANCELLED` for a lesson with one student cancelled late and charged (`cancelledBy` set),
+`MISSED` otherwise. An unknown student — none; more than 400 days or `to` before `from` — 422
+`schedule.range-invalid`. Consumer: `ai` (period summary).
 Repeat events aggregate notifications; generation itself does not notify per occurrence. The
 deprecated `SeriesScheduled`/`SeriesStopped` records stay only so that the event registry can read
 publications written before 0.29.0; nothing listens to them since ADR-0061.
@@ -224,6 +235,12 @@ History feeds of held lessons (`CONDUCTED`/`MISSED`, group lessons included, new
 (date, title, topic, status, attendance, `summary`, `nextPlan`, the student's own private `note`),
 `GET /api/teacher/schedule/groups/{id}/history` (same without private notes and attendance) and
 `GET /api/me/schedule/history` (own lessons only, `summary` only — no plan, no note).
+The student's period report (465.1, roadmap 02 stage B, ADR-0072):
+`GET /api/teacher/schedule/students/{id}/report?from&to` — the lesson journal of the days `[from,
+to]` (instance time zone) with counts `held` (attended), `missed`, `excused`, `cancelledByStudent`,
+`lateCancellations` and `lessons` (`JournalLesson`, oldest first); a group lesson counts for each
+participant with their attendance; an unknown student — zeros; teacher only (the guardian has no
+report yet).
 Lessons ahead, grouped (0.41.0): `GET /api/teacher/schedule/students/{id}/upcoming` (group lessons
 included) and `GET /api/teacher/schedule/groups/{id}/upcoming` read up to 400 days of lessons that
 have not ended. `series[]` — repeat rules alike but for the weekday (owner, time, duration,

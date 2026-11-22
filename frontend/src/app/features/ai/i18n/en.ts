@@ -269,6 +269,7 @@ export const en: Translation<typeof ru> = {
       LESSON_SUMMARY: 'Lesson summary',
       QUIZ_DRAFT: 'Quiz draft',
       LESSON_PLAN: 'Lesson plan draft',
+      PERIOD_SUMMARY: 'Period summary',
     },
     resetHint: 'A changed prompt can be restored to the standard one in the edit window.',
     custom: 'Custom',

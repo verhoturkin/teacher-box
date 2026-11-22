@@ -230,6 +230,7 @@ export class SystemPromptsCard implements OnInit {
     LESSON_SUMMARY: 'tb-i-summarize',
     QUIZ_DRAFT: 'tb-i-quiz',
     LESSON_PLAN: 'tb-i-list_alt',
+    PERIOD_SUMMARY: 'tb-i-bar_chart',
   };
   protected readonly open = signal(true);
   protected readonly prompts = signal<readonly SystemPrompt[]>([]);

@@ -266,6 +266,7 @@ export const ru = {
       LESSON_SUMMARY: 'Итоги урока',
       QUIZ_DRAFT: 'Черновик теста',
       LESSON_PLAN: 'Черновик плана урока',
+      PERIOD_SUMMARY: 'Итоги периода',
     },
     resetHint: 'Изменённый промт можно вернуть к исходному в окне правки.',
     custom: 'Изменён',

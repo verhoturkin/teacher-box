@@ -32,6 +32,7 @@ import ru.teacherbox.homework.application.HomeworkViews.AssignmentDetails;
 import ru.teacherbox.homework.application.HomeworkViews.Journal;
 import ru.teacherbox.homework.application.HomeworkViews.AssignmentSummary;
 import ru.teacherbox.homework.application.HomeworkViews.AttachmentView;
+import ru.teacherbox.homework.application.HomeworkViews.HomeworkReport;
 import ru.teacherbox.homework.application.HomeworkViews.HomeworkSummary;
 import ru.teacherbox.homework.application.HomeworkViews.MyTask;
 import ru.teacherbox.homework.application.HomeworkViews.ReviewQueueItem;
@@ -222,6 +223,17 @@ class TeacherHomeworkController {
     @GetMapping("/students/{studentId}/tasks")
     List<MyTask> studentTasks(@PathVariable UUID studentId) {
         return students.tasks(studentId);
+    }
+
+    /**
+     * The homework part of the student's period report: tasks given on the days {@code [from, to]} of the instance
+     * time zone; an unknown student has an empty one.
+     */
+    @GetMapping("/students/{studentId}/report")
+    HomeworkReport studentReport(@PathVariable UUID studentId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return summaries.report(studentId, from, to);
     }
 
     @PostMapping("/assignments")
