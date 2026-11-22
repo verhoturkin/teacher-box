@@ -1,7 +1,8 @@
 # 11. Courses, lesson plans, videos, bank, period summary
 
-Status: **decided 2026-11-20**, scheduled in [`PLAN.md`](../PLAN.md) as v0.60.0 (stages 459–463)
-and v0.61.0 (stages 464–466). This file is the design spec both releases build from; the release
+Status: **decided 2026-11-20**; v0.60.0 (stages 459–463) released —
+[`archive/plans/v0.60.0.md`](../archive/plans/v0.60.0.md); v0.61.0 (stages 464–466) scheduled in
+[`PLAN.md`](../PLAN.md). This file is the design spec both releases build from; the release
 of v0.61.0 moves its facts into `docs/modules/*.md`, ADR-0071 and ADR-0072 and deletes it. ADRs:
 0071 «Курсы, планы уроков и банк» (courses and plans in `textbooks`, the lesson as the hub of its
 plan and homework, the bank), 0072 «ИИ читает журнал периода» (`ai` → `schedule::api`).
