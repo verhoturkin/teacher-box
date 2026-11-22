@@ -1,7 +1,7 @@
 # 11. Courses, lesson plans, videos, bank, period summary
 
 Status: **decided 2026-11-20**; v0.60.0 (stages 459–463) released —
-[`archive/plans/v0.60.0.md`](../archive/plans/v0.60.0.md); v0.61.0 (stages 464–466) scheduled in
+[`archive/plans/v0.60.0.md`](../archive/plans/v0.60.0.md); v0.61.0 (stages 464–467) scheduled in
 [`PLAN.md`](../PLAN.md). This file is the design spec both releases build from; the release
 of v0.61.0 moves its facts into `docs/modules/*.md`, ADR-0071 and ADR-0072 and deletes it. ADRs:
 0071 «Курсы, планы уроков и банк» (courses and plans in `textbooks`, the lesson as the hub of its
@@ -49,6 +49,28 @@ The teacher prepares and reviews work around **lessons**, grouped by **course**:
 6. **Students see the plan** of their lesson.
 7. Automatic transcripts — YouTube only; other hosts — pasted by hand.
 8. «Показывать ученику» of a transcript stays off by default.
+
+### UI review of 0.60.0 (teacher, 2026-11-22; stage 466)
+
+9. «Материалы» becomes a list-detail layout (M3 canonical): the pane on the left lists «Все
+   материалы», the courses in their order (drag to reorder, «⋮» rename / delete), «+ Новый курс»
+   (an inline field), «Без курса» and «Доски»; the right pane has the tabs «Учебники · Планы ·
+   Задания» with search, a filter menu (the textbook kind) and the sort — one row, no course
+   chips. On a phone the list and the detail are two screens. `CoursesDialog` goes away.
+10. One create action per screen: «Создать ▾» in the header (the FAB on a phone) — Учебник ·
+    План урока · Задание · Доска — with the selected course prefilled; no separate buttons.
+11. The course icon is `collections_bookmark`, not the portal logo `school`.
+12. The bank is called **«Шаблоны»** in the UI (ru «шаблон», en «template»): «Сохранить как
+    шаблон», «Обновить шаблон», «Из шаблонов». Inside «Материалы» the tabs «Планы» and «Задания»
+    are the templates; code names (`bank`, `homework.bank-item`) stay.
+13. The lesson card follows time: a future lesson shows the plan and the homework first, a past
+    one — the outcome, the summary and the homework. The plan and the homework collapse into
+    one-line rows («План: … ›», «ДЗ: 2 задания · 1 на проверке ›»); an empty one is a small
+    «+ План» / «+ ДЗ».
+14. With a plan on the lesson, the summary's «Что прошли» is hidden and reads «Прошли по плану»;
+    «Не всё по плану» opens a field for the deviations. The period summary reads the plan and the
+    deviations.
+15. In the homework editor «⋮» is the last item of the header actions.
 
 ## Glossary (new terms, ru / en)
 

@@ -51,9 +51,27 @@ summarizes a student's period. Starts only after the v0.60.0 PR is merged. Spec 
   student card): period picker, facts (sections as feature parts), «Составить с ИИ», editable
   draft, «Копировать», print stylesheet; help, `docs/screens/students.md`.
 
-### 466. Release 0.61.0
+### 466. UI review of 0.60.0
 
-- [ ] 466.1 *simple* — skill `release`: help, wiki, E2E (the AI mock drafts a plan and a summary),
+Decisions 9–15 of roadmap/11 «UI review of 0.60.0»; every interface change with `m3-expressive`.
+
+- [ ] 466.1 **F** *complex* — «Материалы» as list-detail (decisions 9–12): the course pane with
+  inline create / rename / delete / reorder (drop `CoursesDialog`), the tabs «Учебники · Планы ·
+  Задания» with one toolbar row (the textbook kind in a filter menu), one «Создать ▾» / FAB with
+  the course prefilled, the icon `collections_bookmark`; «банк» → «шаблоны» in every UI text,
+  help article (ru/en), wiki, `docs/glossary.md`, `docs/screens/materials.md`; the lesson card's
+  «Из банка» → «Из шаблонов».
+- [ ] 466.2 **F** *complex* — the lesson card by time with one-line rows for the plan and the
+  homework (decision 13); «⋮» last in the homework editor header (decision 15); help, wiki,
+  `docs/screens/schedule.md`, `docs/screens/homework.md`.
+- [ ] 466.3 **B** **F** *complex* — «Прошли по плану» (decision 14): with a plan the summary's
+  «Что прошли» holds only the deviations (hidden behind «Не всё по плану»); `LessonJournal` and
+  the period-summary facts give the plan's title and the deviations; tests, `docs/modules/*.md`,
+  help, wiki.
+
+### 467. Release 0.61.0
+
+- [ ] 467.1 *simple* — skill `release`: help, wiki, E2E (the AI mock drafts a plan and a summary),
   CHANGELOG 0.61.0, versions, archive; move the facts of roadmap/11 into the module docs and ADRs,
   delete it and mark row 11 of `roadmap/README.md` released.
 
