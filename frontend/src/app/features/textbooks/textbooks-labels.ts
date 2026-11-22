@@ -55,7 +55,7 @@ export function textbookMembersText(textbook: Textbook): string {
 
 /** «Учебник · Английский · PDF, 120 с., 4,2 МБ». */
 export function textbookDetails(textbook: Textbook | MyTextbook): string {
-  return [TEXTBOOK_KIND_LABELS[textbook.kind], textbook.course, fileText(textbook)]
+  return [TEXTBOOK_KIND_LABELS[textbook.kind], textbook.courseName, fileText(textbook)]
     .filter((part) => part !== null)
     .join(' · ');
 }

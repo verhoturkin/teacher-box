@@ -2,8 +2,9 @@ import { startSession } from '../support/session';
 import { expect, test, type Page } from '@playwright/test';
 
 /**
- * «Субтитры YouTube» in the side sheet of a video offers a menu of tracks when a video has several. No network
- * to YouTube here: the browser gets the tracks and the transcript from routed answers of the portal's API.
+ * A YouTube link takes its captions at once (the suggested track, 459.2); «Сменить язык» under the tile offers a
+ * menu of tracks. No network to YouTube here: the browser gets the tracks and the transcripts from routed answers
+ * of the portal's API.
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -13,7 +14,7 @@ async function signIn(page: Page, login: string, password: string): Promise<void
 }
 
 test('the teacher picks the language of YouTube captions', async ({ page }) => {
-  await page.route('**/api/teacher/homework/videos/captions', (route) =>
+  await page.route('**/api/teacher/textbooks/videos/captions', (route) =>
     route.fulfill({
       json: {
         title: 'Present Simple',
@@ -25,17 +26,27 @@ test('the teacher picks the language of YouTube captions', async ({ page }) => {
       },
     }),
   );
-  let chosen: unknown = null;
-  await page.route('**/api/teacher/homework/videos/transcript', (route) => {
-    chosen = route.request().postDataJSON();
+  const asked: unknown[] = [];
+  await page.route('**/api/teacher/textbooks/videos/transcript', (route) => {
+    const body = route.request().postDataJSON() as { language?: string };
+    asked.push(body);
     return route.fulfill({
-      json: {
-        title: 'Present Simple',
-        language: 'ru',
-        automatic: false,
-        transcript: '[0:05] Мы играем',
-        truncated: false,
-      },
+      json:
+        body.language === 'ru'
+          ? {
+              title: 'Present Simple',
+              language: 'ru',
+              automatic: false,
+              transcript: '[0:05] Мы играем',
+              truncated: false,
+            }
+          : {
+              title: 'Present Simple',
+              language: 'en',
+              automatic: true,
+              transcript: '[0:05] We play',
+              truncated: false,
+            },
     });
   });
 
@@ -43,9 +54,10 @@ test('the teacher picks the language of YouTube captions', async ({ page }) => {
   await page.goto('/teacher/homework/new');
   await page.getByRole('button', { name: 'Видео', exact: true }).click();
   await page.getByLabel('Ссылка на видео').fill('https://youtu.be/dQw4w9WgXcQ');
-  await page.getByRole('button', { name: 'Настроить видео: Видео 1' }).click();
-  const sheet = page.getByRole('dialog', { name: 'Видео 1 из 1' });
-  await sheet.getByRole('button', { name: 'Субтитры YouTube' }).click();
+  const section = page.locator('tb-video-section');
+  await expect(section).toContainText('Субтитры: английский, автоматические · Сменить язык');
+  await expect(section).toContainText('Present Simple');
+  await section.getByRole('button', { name: 'Сменить язык' }).click();
 
   const menu = page.getByRole('menu', { name: 'Субтитры на каком языке взять?' });
   const tracks = menu.getByRole('menuitem');
@@ -55,9 +67,14 @@ test('the teacher picks the language of YouTube captions', async ({ page }) => {
   await tracks.filter({ hasText: 'Русский' }).click();
 
   await expect(menu).toBeHidden();
+  await expect(section).toContainText('Субтитры: русский · Сменить язык');
+  expect(asked).toEqual([
+    { url: 'https://youtu.be/dQw4w9WgXcQ' },
+    { url: 'https://youtu.be/dQw4w9WgXcQ', language: 'ru', automatic: false },
+  ]);
+  await page.getByRole('button', { name: 'Настроить видео: Present Simple' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Видео 1 из 1' });
   await expect(sheet.getByRole('list', { name: 'Расшифровка' })).toContainText('Мы играем');
-  await expect(sheet.getByText('Субтитры YouTube: русский')).toBeVisible();
-  expect(chosen).toEqual({ url: 'https://youtu.be/dQw4w9WgXcQ', language: 'ru', automatic: false });
 
   // 354.3: the settings are a dialog over the editor; the change is kept, «Готово» only closes it
   await sheet.getByRole('button', { name: 'Готово' }).click();

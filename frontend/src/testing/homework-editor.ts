@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { AssignmentEditorPage } from '@features/homework/teacher/assignment-editor-page';
 import { UpcomingLesson } from '@features/homework/teacher/next-lesson';
+import type { Course } from '@features/textbooks/parts';
 import { aiStatus } from './ai-fixtures';
 import { hostElement } from './dom';
 import { assignmentDetails } from './homework-fixtures';
@@ -73,6 +74,13 @@ export class EditorHarness {
     }
   }
 
+  /** The courses of «Курс» (ADR-0071); none by default — no card. */
+  flushCourses(courses: readonly Course[] = []): void {
+    for (const request of this.backend.match('/api/teacher/textbooks/courses')) {
+      request.flush(courses);
+    }
+  }
+
   flushGroups(): void {
     for (const request of this.backend.match((r) => r.url.startsWith('/api/teacher/groups'))) {
       request.flush([]);
@@ -93,7 +101,7 @@ export class EditorHarness {
   }
 
   /** A new assignment with the students, these lessons ahead and the AI on or off. */
-  async create(lessons = [scheduledLesson()], ai = false) {
+  async create(lessons = [scheduledLesson()], ai = false, courses: readonly Course[] = []) {
     this.open();
     await this.fixture.whenStable();
     this.backend.expectOne('/api/teacher/students').flush(EDITOR_STUDENTS);
@@ -102,17 +110,19 @@ export class EditorHarness {
       .flush(lessons);
     this.flushStatus(ai);
     this.flushGroups();
+    this.flushCourses(courses);
     await this.fixture.whenStable();
     return { page: this.fixture.componentInstance, host: hostElement(this.fixture) };
   }
 
   /** The editor of a saved assignment. */
-  async edit(details = assignmentDetails()) {
+  async edit(details = assignmentDetails(), courses: readonly Course[] = []) {
     this.fixture = TestBed.createComponent(AssignmentEditorPage);
     this.fixture.componentRef.setInput('assignmentId', details.id);
     await this.fixture.whenStable();
     this.backend.expectOne(`/api/teacher/homework/assignments/${details.id}`).flush(details);
     this.flushStatus(false);
+    this.flushCourses(courses);
     await this.fixture.whenStable();
     return { page: this.fixture.componentInstance, host: hostElement(this.fixture) };
   }

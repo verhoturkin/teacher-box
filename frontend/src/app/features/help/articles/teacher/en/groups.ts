@@ -9,7 +9,7 @@ A group brings together students who attend the same lessons. Its lesson price i
 ## Create and manage a group
 
 1. Choose “Create” → “Student”, or the add button in Students on a phone, then select “Group”.
-2. Enter a name, select the students and choose “Create”.
+2. Enter a name, select the students, optionally choose a **Course**, and choose “Create”.
 3. Set the price per student on the group’s Profile tab. You can also add a default topic and colour.
 
 Groups appear in the Students list with a group icon, member count and next lesson. Use the Groups filter to find them.
@@ -21,7 +21,8 @@ from archive”.
 - **Lessons:** upcoming and past group lessons and their outcomes.
 - **Homework:** members’ assignments, with each student’s name and status.
 - **Members:** add or remove students. Select a name to open that student’s details.
-- **Profile:** name, default topic, colour, price per member and video meeting link.
+- **Profile:** name, default topic, colour, the group’s **course** (saved as soon as you choose it and \
+shown as a chip in the header; members see textbooks shared with students of the course), price per member and video meeting link.
 
 ## Attendance and membership
 

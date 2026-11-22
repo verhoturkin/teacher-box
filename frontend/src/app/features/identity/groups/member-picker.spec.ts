@@ -19,6 +19,7 @@ import { FieldErrors } from '@shared/ui/field-errors';
         [formControl]="control"
         [students]="students"
         [groups]="groups"
+        [courses]="courses"
         [selectionLimit]="limit"
       />
     </div>
@@ -35,6 +36,7 @@ class Host {
     { id: 'old', name: 'Борис', unavailable: true },
   ];
   groups: MemberPickerOption[] = [{ id: 'same', name: 'Анна' }];
+  courses: MemberPickerOption[] = [];
   limit: number | undefined;
 }
 
@@ -86,6 +88,24 @@ describe('MemberPicker', () => {
     await choose('anna2');
     expect(control.value).toHaveLength(3);
     expect(hostElement(fixture).textContent).toContain('Группа: Анна');
+  });
+
+  it('offers the students of a course only when courses are given', async () => {
+    await open();
+    expect(document.body.textContent).not.toContain('Ученики курса');
+    await open();
+    fixture.componentInstance.courses = [{ id: 'a2', name: 'A2' }];
+    fixture.changeDetectorRef.markForCheck();
+    await fixture.whenStable();
+    await open();
+    await choose('Ученики курса: A2');
+    expect(control.value).toEqual([{ kind: 'COURSE', id: 'a2' }]);
+  });
+
+  it('keeps a chosen course that is gone as unavailable', async () => {
+    control.setValue([{ kind: 'COURSE', id: 'gone' }]);
+    await fixture.whenStable();
+    expect(hostElement(fixture).textContent).toContain('Ученики курса: gone — Недоступно');
   });
 
   it('preserves prefilled unavailable values, deduplicates typed IDs and clears them', async () => {

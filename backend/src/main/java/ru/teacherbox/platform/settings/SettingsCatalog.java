@@ -123,8 +123,10 @@ public final class SettingsCatalog {
                 .add("TEACHERBOX_HOMEWORK_DUE_SOON_WINDOW", w("Напоминание о сроке сдачи за", "Homework reminder lead time"),
                         DURATION, w("Например 24h.", "E.g. 24h."))
                 .add("TEACHERBOX_HOMEWORK_YOUTUBE_PROXY", w("Прокси для субтитров YouTube", "Proxy for YouTube captions"),
-                        PROXY, w("Из России YouTube замедлен; пусто — напрямую.",
-                                "YouTube access is throttled in Russia. Leave blank to connect directly."));
+                        PROXY, w("Для субтитров видео в домашних заданиях и планах занятий. Из России YouTube "
+                                + "замедлен; пусто — напрямую.",
+                                "For the captions of videos in homework and lesson plans. YouTube access is "
+                                        + "throttled in Russia. Leave blank to connect directly."));
 
         b.group("schedule", w("Расписание", "Schedule"))
                 .add("TEACHERBOX_SCHEDULE_DEFAULT_DURATION",

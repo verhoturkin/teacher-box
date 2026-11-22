@@ -9,7 +9,7 @@ import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import ru.teacherbox.homework.domain.AssignmentVideo;
-import ru.teacherbox.homework.domain.VideoLink;
+import ru.teacherbox.textbooks.api.VideoLink;
 
 /** Videos of assignments (ADR-0047); they go with their assignment (cascade). */
 @Repository

@@ -24,6 +24,7 @@ import { Message } from 'primeng/message';
 import { Textarea } from 'primeng/textarea';
 import { StudentPriceCard } from '@features/billing/parts';
 import { RoomOwnerRef, RoomPanel } from '@features/meetings/parts';
+import { Course, CurrentCourseCard } from '@features/textbooks/parts';
 import { describeError } from '@core/http/error-messages';
 import { LabelColor } from '@core/theme/label-colors';
 import { SHARED_T } from '@shared/i18n/texts';
@@ -82,8 +83,8 @@ function inputOf(value: ProfileValue): StudentProfileInput {
 /**
  * The Профиль tab of a student's card (redesign spec §8): what the teacher knows of the student, changed in
  * place — cards one under another: «Данные ученика» (the name, the contacts, the note, the default topic, the
- * colour; the tonal «Сохранить» under the fields saves them, «Отмена» brings back the saved ones), the lesson
- * price, the video meeting, «Родители» (ADR-0069) and «Вход в кабинет» (the login the student chose, the
+ * colour; the tonal «Сохранить» under the fields saves them, «Отмена» brings back the saved ones), «Курс»
+ * (ADR-0071, saved when chosen), the lesson price, the video meeting, «Родители» (ADR-0069) and «Вход в кабинет» (the login the student chose, the
  * invitation link).
  */
 @Component({
@@ -100,6 +101,7 @@ function inputOf(value: ProfileValue): StudentProfileInput {
     RoomPanel,
     StudentPriceCard,
     StudentGuardiansCard,
+    CurrentCourseCard,
   ],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -187,6 +189,14 @@ function inputOf(value: ProfileValue): StudentProfileInput {
         </form>
       </p-card>
 
+      <tb-current-course-card
+        [owner]="{ kind: 'STUDENT', id: row.id }"
+        [courses]="courses()"
+        [courseId]="courseId()"
+        [disabled]="row.status === 'DEACTIVATED'"
+        (changed)="courseChanged.emit($event)"
+      />
+
       <tb-student-price-card [studentId]="row.id" />
 
       <tb-room-panel [owner]="roomOwner()" />
@@ -265,6 +275,10 @@ export class StudentProfileTab {
   readonly student = input.required<Student>();
   /** The page is issuing the invitation link. */
   readonly busy = input(false);
+  /** The teacher's courses and the student's current one (ADR-0071). */
+  readonly courses = input<readonly Course[]>([]);
+  readonly courseId = input<string | null>(null);
+  readonly courseChanged = output<string | null>();
   /** The profile was saved: the page puts the student in its list. */
   readonly saved = output<Student>();
   /** «Новое приглашение» / «Сбросить пароль»: the page issues the link and shows it. */

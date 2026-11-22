@@ -35,7 +35,8 @@ import {
   questionDraft,
   quizMinutes,
 } from './question-drafts';
-import { QuestionEditor, arrowStep, reordered } from './question-editor';
+import { arrowStep, reordered } from '@shared/ui/reorder';
+import { QuestionEditor } from './question-editor';
 import { QuizSettings } from './quiz-settings';
 
 /**

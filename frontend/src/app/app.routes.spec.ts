@@ -1,9 +1,11 @@
-import { HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, TestRequest } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { Title } from '@angular/platform-browser';
+import { By, Title } from '@angular/platform-browser';
 import { Router, TitleStrategy, provideRouter, withComponentInputBinding } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from './app.routes';
+import { AssignmentEditorPage } from '@features/homework';
+import { LessonPlanEditorPage } from '@features/textbooks';
 import { AuthService } from '@core/auth/auth.service';
 import { NotificationsSheetState } from '@core/notifications/notifications-sheet-state';
 import { AppTitleStrategy } from '@core/routing/app-title-strategy';
@@ -358,6 +360,74 @@ describe('app routes', { timeout: 20_000 }, () => {
     await harness.navigateByUrl('/cabinet/homework/t-1');
     backend.expectOne('/api/me/homework/tasks/t-1');
     expect(title()).toBe('Задания — Teacher Box');
+  });
+
+  it('gives the lesson plan editor the link to its lesson (ADR-0058)', async () => {
+    auth.acceptSession(authResponse('TEACHER'));
+    const backend = TestBed.inject(HttpTestingController);
+
+    await harness.navigateByUrl('/teacher/materials/plans/new?lessonId=l-1&studentId=s-1');
+    expect(title()).toBe('Новый план урока — Teacher Box');
+    const editor = harness.fixture.debugElement
+      .query(By.directive(LessonPlanEditorPage))
+      .injector.get(LessonPlanEditorPage);
+    expect(editor.lessonId()).toBe('l-1');
+    let linked = false;
+    editor
+      .linkToLesson()?.('l-1', 'p-1')
+      .subscribe(() => (linked = true));
+    let request: TestRequest | undefined;
+    await vi.waitFor(() => {
+      request ??= backend.match({
+        method: 'PUT',
+        url: '/api/teacher/schedule/lessons/l-1/plan',
+      })[0];
+      expect(request).toBeDefined();
+    });
+    expect(request?.request.body).toEqual({ planId: 'p-1' });
+    request?.flush({});
+    expect(linked).toBe(true);
+    backend.match(() => true);
+  });
+
+  it('gives the homework editor the lesson of `?lessonId=` and the link to it (ADR-0058)', async () => {
+    auth.acceptSession(authResponse('TEACHER'));
+    const backend = TestBed.inject(HttpTestingController);
+
+    await harness.navigateByUrl('/teacher/homework/new?lessonId=l-1');
+    const editor = harness.fixture.debugElement
+      .query(By.directive(AssignmentEditorPage))
+      .injector.get(AssignmentEditorPage);
+    expect(editor.lessonId()).toBe('l-1');
+    let request: TestRequest | undefined;
+    await vi.waitFor(() => {
+      request ??= backend.match('/api/teacher/schedule/lessons/l-1')[0];
+      expect(request).toBeDefined();
+    });
+    request?.flush({
+      id: 'l-1',
+      startsAt: '2026-11-30T10:00:00Z',
+      studentId: 's-1',
+      groupId: null,
+      participants: [{ studentId: 's-1' }],
+      planId: null,
+    });
+    let linked = false;
+    editor
+      .linkToLesson()?.('l-1', 'a-1')
+      .subscribe(() => (linked = true));
+    let link: TestRequest | undefined;
+    await vi.waitFor(() => {
+      link ??= backend.match({
+        method: 'POST',
+        url: '/api/teacher/schedule/lessons/l-1/homework',
+      })[0];
+      expect(link).toBeDefined();
+    });
+    expect(link?.request.body).toEqual({ assignmentId: 'a-1' });
+    link?.flush({});
+    expect(linked).toBe(true);
+    backend.match(() => true);
   });
 
   it('leads the teacher from the account page to its category of the settings', async () => {

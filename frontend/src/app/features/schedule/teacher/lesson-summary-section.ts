@@ -224,22 +224,25 @@ export class LessonSummarySection {
   }
 
   /**
-   * Assignments are not bound to lessons: those given the same day to a student of the lesson are
-   * taken as given at it. The list is read once; a failure just leaves the titles out.
+   * The titles of the assignments linked to the lesson (roadmap 11), in the order linked. The list is read once
+   * and only when the lesson has homework; a failure just leaves the titles out.
    */
   private givenAt(lesson: ScheduledLesson): Observable<string[]> {
-    const names = new Set(lesson.participants.map((participant) => participant.studentName));
-    const day = new Date(lesson.startsAt).toDateString();
-    const titles = (all: readonly AssignmentSummary[]): string[] =>
-      all
-        .filter(
-          (assignment) =>
-            new Date(assignment.createdAt).toDateString() === day &&
-            assignment.students.some((student) => names.has(student)),
-        )
-        .map((assignment) => assignment.title)
+    const ids = lesson.assignmentIds;
+    const titles = (all: readonly AssignmentSummary[]): string[] => {
+      const byId = new Map(all.map((assignment) => [assignment.id, assignment.title]));
+      return ids
+        .map((id) => byId.get(id))
+        .filter((title): title is string => title !== undefined)
         .slice(0, 20);
-    if (this.assignments !== null) {
+    };
+    if (ids.length === 0) {
+      return of([]);
+    }
+    if (
+      this.assignments !== null &&
+      ids.every((id) => this.assignments?.some((a) => a.id === id))
+    ) {
       return of(titles(this.assignments));
     }
     return this.homework.assignments().pipe(

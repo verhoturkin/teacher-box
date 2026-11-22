@@ -56,7 +56,7 @@ Module structure (4.1) — `backend/AGENTS.md`.
    | `homework` | `shared`, `identity::api`, `textbooks::api` (summaries and pages of bound textbooks) |
    | `notifications` | `shared`, `identity::api` (recipients and their languages; ADR-0061) |
    | `ai` | `shared`, `textbooks::api`, `homework::api` (sources of drafts, ADR-0039) |
-   | `schedule` | `shared`, `identity::api`, `meetings::api` (room links) |
+   | `schedule` | `shared`, `identity::api`, `meetings::api` (room links), `textbooks::api` (lesson plans), `homework::api` (lesson homework; roadmap 11) |
 
    Business modules never depend on `platform`; `platform` knows no business module (it collects SPI
    beans).

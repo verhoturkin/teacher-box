@@ -69,8 +69,16 @@ Tabs task / test (`?tab=quiz`, default left out, `Location.replaceState`); a pho
   has neither. The test is never a material. A new assignment shows only recipients, text, due date
   and material chips; other sections appear once they have content. Parts: `ui/recipients-field.ts`,
   `ui/due-chips.ts`, `ui/material-chips.ts`.
-- **Videos** (`video-section.ts`): a tile's settings dialog saves every change at once; done and Esc
-  only close.
+- **Course** (ADR-0071): a card «Курс» in the aside under the recipients, only while the teacher
+  has courses (`…/textbooks/courses`, `@features/textbooks/parts`); a select with «Без курса» first.
+  The course is part of the draft's snapshot (autosave) and of every create / update.
+- **Videos** (`@features/textbooks/parts`: `videos/video-section.ts`, `video-list.ts`, shared with
+  lesson plans): a tile's settings dialog saves every change at once; done and Esc only close. A
+  YouTube link added with an empty transcript asks `…/textbooks/videos/transcript {url}` once (the
+  suggested track); the tile note says «Субтитры: <язык>, автоматические · Сменить язык» (the tracks
+  menu; an edited transcript is replaced only after asking), or quietly «У видео нет субтитров» /
+  «Не удалось получить субтитры · Повторить» — no toast. A non-empty transcript is never refetched
+  (load, copy); «Показывать ученику» stays off.
 - **Recipients:** a draft edits `draftStudentIds`; an issued assignment has read-only chips and
   «issue more» (`assign-more-dialog.ts`).
 - **Test tab** (`question-section.ts`, `question-editor.ts`, `quiz-settings.ts`): outline, open
@@ -90,6 +98,23 @@ Tabs task / test (`?tab=quiz`, default left out, `Location.replaceState`); a pho
   changes. Issuing checks the questions first (problems → test tab; `homework.quiz-incomplete` names
   them) and returns to the opening page. Back uses `previousNavigation.finalUrl` without `?create=`;
   opened by a link — the assignment or the list.
+- **Lesson homework** (`?lessonId=`, roadmap 11, 462.2): the route gives the editor `lessonOf`
+  (`ScheduleApi.lesson`) and `linkToLesson` (`ScheduleApi.linkHomework`, ADR-0058). A new
+  assignment takes the lesson's students (participants of a group lesson, as single students), the
+  course of the lesson's plan, else of the student or the group (`…/course-links`), the plan's
+  textbook pages (picked, removable chips) and videos, and the due date «к следующему занятию»
+  counted after the lesson's start; what the teacher chose stays. The hint «Задание к уроку…»
+  under the header; the first save links it (`POST …/lessons/{id}/homework`), a failed link is
+  tried again by the next save; back and «Выдать» lead to `/teacher/schedule`.
+- **Bank item** (`?bank=true` on `new`, or a loaded item with `bank`): the heading «Новое задание
+  для банка», the chip «В банке» in the header, a hint under it; no recipients, due date or board
+  (the «add» group and the chips drop the board); autosave as a draft, the create sends `bank:
+  true`, `dueAt: null`, never draft students; «Готово» (filled, in place of «Выдать») saves what is
+  left and leads to `/teacher/materials?tab=assignments`.
+- **«⋮» of the header** (a saved working assignment): «Сохранить в банк», or «Обновить в банке»
+  when `sourceId` is set (`confirm.safe` first) — `POST …/assignments/{id}/bank`; a draft saves its
+  changes first, an issued assignment goes in as saved. *Ours:* a text icon button before the
+  main action, as in the plan editor.
 
 ## AI pane
 

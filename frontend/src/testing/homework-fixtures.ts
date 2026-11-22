@@ -21,7 +21,7 @@ export function boundTextbook(overrides: Partial<BoundTextbook> = {}): BoundText
     textbookId: 'tb-1',
     kind: 'TEXTBOOK',
     title: 'Spotlight 5',
-    course: 'Английский',
+    courseName: 'Английский',
     format: 'PDF',
     pageCount: 120,
     pages: '12-14',
@@ -45,6 +45,7 @@ export function assignmentSummary(overrides: Partial<AssignmentSummary> = {}): A
     id: 'a-1',
     title: 'Дроби',
     dueAt: '2026-09-10T15:00:00Z',
+    courseId: null,
     createdAt: '2026-09-01T10:00:00Z',
     students: ['Анна', 'Борис'],
     studentIds: ['s-1', 's-2'],
@@ -58,6 +59,9 @@ export function assignmentSummary(overrides: Partial<AssignmentSummary> = {}): A
     files: 0,
     questions: 0,
     videos: 0,
+    bank: false,
+    sourceId: null,
+    uses: 0,
     ...overrides,
   };
 }
@@ -68,6 +72,7 @@ export function assignmentDetails(overrides: Partial<AssignmentDetails> = {}): A
     title: 'Дроби',
     description: 'Решить **№1-5**',
     dueAt: '2026-09-10T15:00:00Z',
+    courseId: null,
     boardId: null,
     createdAt: '2026-09-01T10:00:00Z',
     version: 0,
@@ -78,6 +83,9 @@ export function assignmentDetails(overrides: Partial<AssignmentDetails> = {}): A
     quizReveal: 'AFTER_SUBMIT',
     quizAttempts: 1,
     draftStudentIds: [],
+    bank: false,
+    sourceId: null,
+    uses: 0,
     tasks: [
       {
         taskId: 't-1',

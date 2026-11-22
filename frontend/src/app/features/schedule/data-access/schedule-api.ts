@@ -26,6 +26,7 @@ import {
   ScheduleSettings,
   ScheduleSummary,
   ScheduledLesson,
+  StudentLessonPlan,
   UpcomingLessons,
 } from './schedule.models';
 
@@ -179,6 +180,38 @@ export class ScheduleApi {
     );
   }
 
+  /**
+   * Puts a working plan on the lesson, or takes it off (`null`); no lesson version. Errors are the caller's to
+   * show: a bank item, a plan on another lesson, a cancelled lesson.
+   */
+  linkPlan(lessonId: string, planId: string | null): Observable<ScheduledLesson> {
+    return this.http.put<ScheduledLesson>(
+      `/api/teacher/schedule/lessons/${lessonId}/plan`,
+      { planId },
+      QUIET,
+    );
+  }
+
+  /**
+   * Links a working assignment to the lesson (repeating it is a no-op); no lesson version. Errors are the
+   * caller's to show: a bank item, an assignment on another lesson, a cancelled lesson.
+   */
+  linkHomework(lessonId: string, assignmentId: string): Observable<ScheduledLesson> {
+    return this.http.post<ScheduledLesson>(
+      `/api/teacher/schedule/lessons/${lessonId}/homework`,
+      { assignmentId },
+      QUIET,
+    );
+  }
+
+  /** Takes the assignment off the lesson; the assignment stays. */
+  unlinkHomework(lessonId: string, assignmentId: string): Observable<ScheduledLesson> {
+    return this.http.delete<ScheduledLesson>(
+      `/api/teacher/schedule/lessons/${lessonId}/homework/${assignmentId}`,
+      QUIET,
+    );
+  }
+
   /** Sends the summary to the participants as «Итоги урока». */
   shareSummary(lessonId: string): Observable<void> {
     return this.http
@@ -223,6 +256,22 @@ export class ScheduleApi {
     return this.http.get<ScheduledLesson>(
       `${this.scope.api()}/schedule/lessons/${lessonId}`,
       QUIET,
+    );
+  }
+
+  /** The plan of the student's lesson (a transcript only when the teacher shows it). */
+  myPlan(lessonId: string): Observable<StudentLessonPlan> {
+    return this.http.get<StudentLessonPlan>(
+      `${this.scope.api()}/schedule/lessons/${lessonId}/plan`,
+      QUIET,
+    );
+  }
+
+  /** The bound pages of a textbook of the lesson plan (a PDF cut to them, or the whole file). */
+  myPlanTextbook(lessonId: string, textbookId: string): Observable<Blob> {
+    return this.http.get(
+      `${this.scope.api()}/schedule/lessons/${lessonId}/plan/textbooks/${textbookId}`,
+      { responseType: 'blob' },
     );
   }
 

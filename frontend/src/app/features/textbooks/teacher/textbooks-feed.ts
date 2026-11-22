@@ -40,6 +40,9 @@ import { T } from '../i18n/texts';
 /** Which textbooks the feed shows: all or one kind of them. */
 export type TextbooksFilter = 'all' | TextbookKind;
 
+/** The course filter of «Материалы» (`?course=`): all, those without a course or the id of one (ADR-0071). */
+export type CourseFilter = 'all' | 'none' | (string & {});
+
 /**
  * Teacher: the textbooks of the Materials feed (ADR-0033, redesign spec §10.1) as cards — the cover is the
  * first page of the file (a Word file has none: the icon of its kind). The page of Materials gives the
@@ -126,10 +129,13 @@ export class TextbooksFeed {
   /** The search text of the page: the title, the course, a student's or a group's name. */
   readonly query = input('');
   readonly filter = input<TextbooksFilter>('all');
+  readonly course = input<CourseFilter>('all');
   readonly sort = input<MaterialSort>('changed');
   /** The students and the groups the dialog offers. */
   readonly students = input<readonly MemberOption[]>([]);
   readonly groups = input<readonly MemberOption[]>([]);
+  /** The teacher's courses the dialog offers. */
+  readonly courses = input<readonly MemberOption[]>([]);
 
   protected readonly icons = TEXTBOOK_KIND_ICONS;
   protected readonly accept = TEXTBOOK_FILES;
@@ -140,13 +146,15 @@ export class TextbooksFeed {
   /** The textbooks of the filter and the search, in the order of the sort. */
   protected readonly shown = computed(() => {
     const filter = this.filter();
+    const course = this.course();
     const query = this.query().trim().toLocaleLowerCase('ru');
     const matching = this.textbooks().filter(
       (textbook) =>
         (filter === 'all' || textbook.kind === filter) &&
+        (course === 'all' || textbook.courseId === (course === 'none' ? null : course)) &&
         (query === '' ||
           textbook.title.toLocaleLowerCase('ru').includes(query) ||
-          (textbook.course?.toLocaleLowerCase('ru').includes(query) ?? false) ||
+          (textbook.courseName?.toLocaleLowerCase('ru').includes(query) ?? false) ||
           textbook.members.some((item) => item.name?.toLocaleLowerCase('ru').includes(query))),
     );
     return sortMaterials(matching, this.sort());
@@ -167,13 +175,6 @@ export class TextbooksFeed {
     const textbook = this.menuFor();
     return textbook === null ? [] : this.actionsOf(textbook);
   });
-  /** Courses already used, offered in the dialog. */
-  protected readonly courses = computed(() =>
-    [...new Set(this.textbooks().flatMap((textbook) => textbook.course ?? []))].sort((a, b) =>
-      a.localeCompare(b, 'ru'),
-    ),
-  );
-
   /** The cover of a textbook (a stable function for `tb-blob-image`). */
   protected readonly loadCover = (id: string): Observable<Blob> => this.api.cover(id);
 

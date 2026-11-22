@@ -55,12 +55,17 @@ class TextbooksIntegrationTests {
         UUID anna = directory.addStudent("Анна");
         UUID boris = directory.addStudent("Борис");
         UUID group = groups.addGroup("ОГЭ", boris);
+        MvcTestResult course = mvc.post().uri("/api/teacher/textbooks/courses").with(teacher())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Английский 5\"}").exchange();
+        assertThat(course).hasStatus(HttpStatus.CREATED);
+        String courseId = JsonPath.read(course.getResponse().getContentAsString(), "$.id");
 
         MvcTestResult created = create(file("Spotlight 5.pdf", TestFiles.pdf(3)), "TEXTBOOK", " Spotlight 5 ",
-                "Английский", anna, group);
+                courseId, anna, group);
         assertThat(created).hasStatus(HttpStatus.CREATED).bodyJson().satisfies(json -> {
             assertThat(json).extractingPath("$.title").isEqualTo("Spotlight 5");
-            assertThat(json).extractingPath("$.course").isEqualTo("Английский");
+            assertThat(json).extractingPath("$.courseId").isEqualTo(courseId);
+            assertThat(json).extractingPath("$.courseName").isEqualTo("Английский 5");
             assertThat(json).extractingPath("$.format").isEqualTo("PDF");
             assertThat(json).extractingPath("$.pageCount").isEqualTo(3);
             assertThat(json).extractingPath("$.contentType").isEqualTo("application/pdf");
@@ -74,7 +79,7 @@ class TextbooksIntegrationTests {
         assertThat(workbook).hasStatus(HttpStatus.CREATED).bodyJson().satisfies(json -> {
             assertThat(json).extractingPath("$.format").isEqualTo("DOCUMENT");
             assertThat(json).extractingPath("$.pageCount").isEqualTo(48);
-            assertThat(json).extractingPath("$.course").isNull();
+            assertThat(json).extractingPath("$.courseId").isNull();
         });
 
         assertThat(mvc.get().uri("/api/teacher/textbooks").with(teacher())).hasStatusOk().bodyJson()
@@ -84,6 +89,7 @@ class TextbooksIntegrationTests {
                     assertThat(json).extractingPath("$[*].title").asArray().containsExactly("Тетрадь", "Spotlight 5");
                     assertThat(json).extractingPath("$[0].groupNames").asArray().isEmpty();
                     assertThat(json).extractingPath("$[1].groupNames").asArray().containsExactly("ОГЭ");
+                    assertThat(json).extractingPath("$[1].courseName").isEqualTo("Английский 5");
                 });
 
         MvcTestResult download = mvc.get().uri("/api/me/textbooks/" + id + "/file").with(TestUsers.student(anna))
@@ -100,12 +106,13 @@ class TextbooksIntegrationTests {
         assertThat(mvc.get().uri("/api/teacher/textbooks/" + id + "/file").with(teacher())).hasStatusOk();
 
         assertThat(put(id, """
-                {"kind":"WORKBOOK","title":"Spotlight 5 WB","course":" ","pageCount":99,"groupIds":["%s"],
+                {"kind":"WORKBOOK","title":"Spotlight 5 WB","courseId":null,"pageCount":99,"groupIds":["%s"],
                  "version":0}""".formatted(group)))
                 .hasStatusOk().bodyJson().satisfies(json -> {
                     assertThat(json).extractingPath("$.version").isEqualTo(1);
                     assertThat(json).extractingPath("$.kind").isEqualTo("WORKBOOK");
-                    assertThat(json).extractingPath("$.course").isNull();
+                    assertThat(json).extractingPath("$.courseId").isNull();
+                    assertThat(json).extractingPath("$.courseName").isNull();
                     assertThat(json).extractingPath("$.pageCount").as("a PDF counts its own").isEqualTo(3);
                     assertThat(json).extractingPath("$.members[*].name").asArray().containsExactly("ОГЭ");
                 });
@@ -260,12 +267,12 @@ class TextbooksIntegrationTests {
         return JsonPath.read(created.getResponse().getContentAsString(), "$.id");
     }
 
-    private MvcTestResult create(MockMultipartFile file, String kind, String title, String course, UUID studentId,
+    private MvcTestResult create(MockMultipartFile file, String kind, String title, String courseId, UUID studentId,
             UUID groupId, String... more) {
         var request = mvc.post().uri("/api/teacher/textbooks").with(teacher()).multipart().file(file)
                 .param("kind", kind).param("title", title);
-        if (course != null) {
-            request = request.param("course", course);
+        if (courseId != null) {
+            request = request.param("courseId", courseId);
         }
         if (studentId != null) {
             request = request.param("studentIds", studentId.toString());

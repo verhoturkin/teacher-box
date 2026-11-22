@@ -22,6 +22,7 @@ import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { StudentPriceCard } from '@features/billing/parts';
 import { RoomOwnerRef, RoomPanel } from '@features/meetings/parts';
+import { Course, CurrentCourseCard } from '@features/textbooks/parts';
 import { describeError } from '@core/http/error-messages';
 import { LabelColor } from '@core/theme/label-colors';
 import { SHARED_T } from '@shared/i18n/texts';
@@ -53,7 +54,7 @@ function trimmed(value: DetailsValue): {
 /**
  * The Профиль tab of a group's card (redesign spec §8), changed in place as a student's: «Данные группы» (the
  * name, the default topic, the colour; the tonal «Сохранить» under the fields), the lesson price of each
- * member and the video meeting of the group.
+ * member, «Курс» (ADR-0071, saved when chosen) and the video meeting of the group.
  */
 @Component({
   selector: 'tb-group-profile-tab',
@@ -67,6 +68,7 @@ function trimmed(value: DetailsValue): {
     LabelColorField,
     RoomPanel,
     StudentPriceCard,
+    CurrentCourseCard,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -119,6 +121,14 @@ function trimmed(value: DetailsValue): {
         </form>
       </p-card>
 
+      <tb-current-course-card
+        [owner]="{ kind: 'GROUP', id: group().id }"
+        [courses]="courses()"
+        [courseId]="courseId()"
+        [disabled]="group().archivedAt !== null"
+        (changed)="courseChanged.emit($event)"
+      />
+
       <tb-student-price-card [groupId]="group().id" />
 
       <tb-room-panel [owner]="roomOwner()" />
@@ -139,6 +149,10 @@ export class GroupProfileTab {
   private readonly api = inject(IdentityApi);
 
   readonly group = input.required<StudentGroup>();
+  /** The teacher's courses and the group's current one (ADR-0071). */
+  readonly courses = input<readonly Course[]>([]);
+  readonly courseId = input<string | null>(null);
+  readonly courseChanged = output<string | null>();
   /** The fields were saved: the page puts the group in its list. */
   readonly saved = output<StudentGroup>();
 

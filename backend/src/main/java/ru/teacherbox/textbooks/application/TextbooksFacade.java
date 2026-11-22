@@ -2,6 +2,7 @@ package ru.teacherbox.textbooks.application;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -25,13 +26,13 @@ class TextbooksFacade implements Textbooks {
     @Override
     @Transactional(readOnly = true)
     public Optional<TextbookSummary> find(UUID textbookId) {
-        return textbooks.findOptional(textbookId).map(TextbooksFacade::summary);
+        return textbooks.findOptional(textbookId).map(textbook -> summaries(List.of(textbook)).getFirst());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<TextbookSummary> find(Collection<UUID> textbookIds) {
-        return textbooks.findAll(textbookIds).stream().map(TextbooksFacade::summary).toList();
+        return summaries(textbooks.findAll(textbookIds));
     }
 
     @Override
@@ -45,8 +46,12 @@ class TextbooksFacade implements Textbooks {
         return textbooks.whole(textbookId);
     }
 
-    private static TextbookSummary summary(Textbook textbook) {
-        return new TextbookSummary(textbook.id(), textbook.kind(), textbook.title(), textbook.course(),
-                textbook.file().format(), textbook.pageCount());
+    private List<TextbookSummary> summaries(List<Textbook> found) {
+        Map<UUID, String> courses = textbooks.coursesOf(found);
+        return found.stream()
+                .map(textbook -> new TextbookSummary(textbook.id(), textbook.kind(), textbook.title(),
+                        textbook.courseId(), textbook.courseId() == null ? null : courses.get(textbook.courseId()),
+                        textbook.file().format(), textbook.pageCount()))
+                .toList();
     }
 }

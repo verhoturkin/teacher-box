@@ -40,10 +40,8 @@ import ru.teacherbox.homework.application.HomeworkViews.VideoInput;
 import ru.teacherbox.homework.application.QuizViews;
 import ru.teacherbox.homework.application.ReviewService;
 import ru.teacherbox.homework.application.StudentHomeworkService;
-import ru.teacherbox.homework.application.VideoCaptions;
-import ru.teacherbox.homework.application.VideoTranscripts;
 import ru.teacherbox.homework.domain.AssignmentVideo;
-import ru.teacherbox.homework.domain.VideoLink;
+import ru.teacherbox.textbooks.api.VideoLink;
 import ru.teacherbox.homework.domain.quiz.QuestionDraft;
 import ru.teacherbox.homework.domain.quiz.QuestionDraft.Item;
 import ru.teacherbox.homework.domain.quiz.QuestionDraft.Match;
@@ -123,19 +121,27 @@ class TeacherHomeworkController {
         }
     }
 
-    /** @param videos the videos by link, at most 5 */
+    /**
+     * @param courseId the course of the assignment (ADR-0071); {@code null} — none
+     * @param videos   the videos by link, at most 5
+     * @param bank     a bank item («Материалы» → «Создать», roadmap 11): no students, no deadline; {@code null} —
+     *                 a working assignment
+     */
     record CreateAssignmentRequest(
             @NotBlank @Size(max = 200) String title,
             @Size(max = 20_000) @Nullable String description,
             @Nullable Instant dueAt,
+            @Nullable UUID courseId,
             @Nullable List<UUID> studentIds,
             @Size(max = AssignmentVideo.MAX_PER_ASSIGNMENT) @Nullable List<@Valid @NotNull VideoRequest> videos,
             @Size(max = Quiz.MAX_QUESTIONS) @Nullable List<@Valid @NotNull QuestionRequest> questions,
             @Nullable RevealRule quizReveal,
-            @Nullable Integer quizAttempts) {
+            @Nullable Integer quizAttempts,
+            @Nullable Boolean bank) {
     }
 
     /**
+     * @param courseId     the course of the assignment; {@code null} — none
      * @param videos       the videos in place of the assignment's ones; {@code null} — keep them
      * @param questions    the questions in place of the assignment's ones; {@code null} — keep them
      * @param quizReveal   {@code null} — keep
@@ -145,27 +151,12 @@ class TeacherHomeworkController {
             @NotBlank @Size(max = 200) String title,
             @Size(max = 20_000) @Nullable String description,
             @Nullable Instant dueAt,
+            @Nullable UUID courseId,
             @NotNull Long version,
             @Size(max = AssignmentVideo.MAX_PER_ASSIGNMENT) @Nullable List<@Valid @NotNull VideoRequest> videos,
             @Size(max = Quiz.MAX_QUESTIONS) @Nullable List<@Valid @NotNull QuestionRequest> questions,
             @Nullable RevealRule quizReveal,
             @Nullable Integer quizAttempts) {
-    }
-
-    record CaptionsRequest(@NotBlank @Size(max = VideoLink.MAX_URL) String url) {
-    }
-
-    /**
-     * @param language  the code of the chosen caption track; {@code null} — the suggested track
-     * @param automatic the chosen track is recognized by YouTube
-     */
-    record TranscriptRequest(@NotBlank @Size(max = VideoLink.MAX_URL) String url,
-            @Size(max = 35) @Nullable String language, @Nullable Boolean automatic) {
-
-        VideoCaptions.@Nullable Track track() {
-            return language == null || language.isBlank() ? null
-                    : new VideoCaptions.Track(language, Boolean.TRUE.equals(automatic));
-        }
     }
 
     /** @param boardId the board the assignment was put on; {@code null} — none */
@@ -176,6 +167,10 @@ class TeacherHomeworkController {
     }
 
     record AssignStudentsRequest(@NotNull @Size(min = 1) List<UUID> studentIds) {
+    }
+
+    /** @param studentIds whom the working draft is for (kept for «Выдать»); may be empty */
+    record UseRequest(@NotNull @Size(max = 500) List<UUID> studentIds) {
     }
 
     /** @param pages {@code 1-3, 7}; blank — the whole textbook */
@@ -194,28 +189,14 @@ class TeacherHomeworkController {
     private final AssignmentService assignments;
     private final ReviewService reviews;
     private final HomeworkSummaryService summaries;
-    private final VideoTranscripts transcripts;
     private final StudentHomeworkService students;
 
     TeacherHomeworkController(AssignmentService assignments, ReviewService reviews,
-            HomeworkSummaryService summaries, VideoTranscripts transcripts, StudentHomeworkService students) {
+            HomeworkSummaryService summaries, StudentHomeworkService students) {
         this.assignments = assignments;
         this.reviews = reviews;
         this.summaries = summaries;
-        this.transcripts = transcripts;
         this.students = students;
-    }
-
-    /** «Взять субтитры с YouTube» (ADR-0047): the caption tracks of the video to choose from. */
-    @PostMapping("/videos/captions")
-    VideoCaptions.Tracks captions(@Valid @RequestBody CaptionsRequest request) {
-        return transcripts.youtubeTracks(request.url());
-    }
-
-    /** «Взять субтитры с YouTube» (ADR-0047): the captions of the video as a transcript; nothing is saved. */
-    @PostMapping("/videos/transcript")
-    VideoTranscripts.Transcript transcript(@Valid @RequestBody TranscriptRequest request) {
-        return transcripts.youtube(request.url(), request.track());
     }
 
     @GetMapping("/summary")
@@ -231,9 +212,10 @@ class TeacherHomeworkController {
         return summaries.journal(from, to, who);
     }
 
+    /** @param bank the bank items («Материалы» → «Задания»), else the working assignments */
     @GetMapping("/assignments")
-    List<AssignmentSummary> list() {
-        return assignments.list();
+    List<AssignmentSummary> list(@RequestParam(defaultValue = "false") boolean bank) {
+        return assignments.list(bank);
     }
 
     /** The tasks of one student, as the student's own list shows them; an unknown student has none. */
@@ -245,9 +227,9 @@ class TeacherHomeworkController {
     @PostMapping("/assignments")
     @ResponseStatus(HttpStatus.CREATED)
     AssignmentDetails create(@Valid @RequestBody CreateAssignmentRequest request) {
-        return assignments.create(request.title(), request.description(), request.dueAt(),
+        return assignments.create(request.title(), request.description(), request.dueAt(), request.courseId(),
                 inputs(request.videos()), questions(request.questions()), request.quizReveal(),
-                request.quizAttempts(), request.studentIds() == null ? List.of() : request.studentIds());
+                request.quizAttempts(), Boolean.TRUE.equals(request.bank()), request.studentIds() == null ? List.of() : request.studentIds());
     }
 
     /** A draft copy of the assignment with its materials; no students, deadline or board. */
@@ -255,6 +237,19 @@ class TeacherHomeworkController {
     @ResponseStatus(HttpStatus.CREATED)
     AssignmentDetails copy(@PathVariable UUID assignmentId) {
         return assignments.copy(assignmentId);
+    }
+
+    /** «Сохранить в банк» / «Обновить в банке»: saves the original of a working assignment or replaces its content. */
+    @PostMapping("/assignments/{assignmentId}/bank")
+    AssignmentDetails bank(@PathVariable UUID assignmentId) {
+        return assignments.bank(assignmentId);
+    }
+
+    /** «Использовать»: a working draft of a bank item for these students; the bank stays as it is. */
+    @PostMapping("/assignments/{assignmentId}/use")
+    @ResponseStatus(HttpStatus.CREATED)
+    AssignmentDetails use(@PathVariable UUID assignmentId, @Valid @RequestBody UseRequest request) {
+        return assignments.use(assignmentId, request.studentIds());
     }
 
     @GetMapping("/assignments/{assignmentId}")
@@ -265,7 +260,7 @@ class TeacherHomeworkController {
     @PutMapping("/assignments/{assignmentId}")
     AssignmentDetails update(@PathVariable UUID assignmentId, @Valid @RequestBody UpdateAssignmentRequest request) {
         return assignments.update(assignmentId, request.title(), request.description(), request.dueAt(),
-                request.videos() == null ? null : inputs(request.videos()),
+                request.courseId(), request.videos() == null ? null : inputs(request.videos()),
                 request.questions() == null ? null : questions(request.questions()), request.quizReveal(),
                 request.quizAttempts(), request.version());
     }

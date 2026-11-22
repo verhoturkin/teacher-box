@@ -112,6 +112,12 @@ export const en: Translation<typeof ru> = {
   panes: {
     resize: 'Resize pane',
   },
+  markdown: {
+    write: 'Text',
+    preview: 'Preview',
+    mode: 'Editor mode',
+    hint: 'Supports Markdown: **bold**, *italic*, lists and links.',
+  },
   fileCheck: {
     tooLarge: (name: string, max: string) => `“${name}” is larger than ${max}`,
     unsupported: (name: string) => `“${name}”: this file type is not allowed`,

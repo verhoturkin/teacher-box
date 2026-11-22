@@ -41,7 +41,7 @@ class DraftSourcesTest {
     private UUID textbook(TextbookFormat format, Integer pageCount) {
         UUID id = UUID.randomUUID();
         when(textbooks.find(id)).thenReturn(Optional.of(
-                new TextbookSummary(id, TextbookKind.TEXTBOOK, "Spotlight 5", null, format, pageCount)));
+                new TextbookSummary(id, TextbookKind.TEXTBOOK, "Spotlight 5", null, null, format, pageCount)));
         return id;
     }
 

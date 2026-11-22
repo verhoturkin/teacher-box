@@ -5,7 +5,7 @@ import { bodyText, buttonByText, requireElement, typeInto } from '@testing/dom';
 import { AiProvider } from '@features/ai/parts';
 import { aiModel, aiProvider, answerModels } from '@testing/ai-fixtures';
 import { assignmentSummary } from '@testing/homework-fixtures';
-import { at, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
+import { groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { testProviders } from '@testing/setup';
 import { ScheduledLesson } from '../data-access/schedule.models';
 import { LessonSummarySection } from './lesson-summary-section';
@@ -191,35 +191,25 @@ describe('LessonSummarySection', () => {
         ai = true;
       });
 
-      it('drafts from the topic, the words and the assignments of the day, in place of the topic', async () => {
-        await open(scheduledLesson({ topic: 'Past Simple' }));
+      it('drafts from the topic, the words and the linked assignments, in place of the topic', async () => {
+        await open(scheduledLesson({ topic: 'Past Simple', assignmentIds: ['a-2', 'a-1', 'a-9'] }));
         await openDraft();
         await type('#lesson-summary-words', 'ошибки в глаголах');
 
         await press('Составить');
-        backend.expectOne(ASSIGNMENTS).flush([
-          assignmentSummary({
-            title: 'Глаголы',
-            createdAt: at(2026, 10, 1, 9),
-            students: ['Иван Петров'],
-          }),
-          assignmentSummary({
-            title: 'Чужое',
-            createdAt: at(2026, 10, 1, 9),
-            students: ['Другой'],
-          }),
-          assignmentSummary({
-            title: 'Вчера',
-            createdAt: at(2026, 9, 30, 9),
-            students: ['Иван Петров'],
-          }),
-        ]);
+        backend
+          .expectOne(ASSIGNMENTS)
+          .flush([
+            assignmentSummary({ id: 'a-1', title: 'Глаголы' }),
+            assignmentSummary({ id: 'a-2', title: 'Слова' }),
+            assignmentSummary({ id: 'a-3', title: 'Чужое' }),
+          ]);
         await fixture.whenStable();
         const request = backend.expectOne(DRAFT);
         expect(request.request.body).toEqual({
           topic: 'Past Simple',
           words: 'ошибки в глаголах',
-          assignmentTitles: ['Глаголы'],
+          assignmentTitles: ['Слова', 'Глаголы'],
         });
         request.flush({ summary: 'Разобрали **Past Simple**' });
         await fixture.whenStable();
@@ -229,13 +219,13 @@ describe('LessonSummarySection', () => {
       });
 
       it('goes after the text already written and reads the assignments once', async () => {
-        await open(scheduledLesson({ topic: 'Тема', summary: 'Было' }));
+        await open(scheduledLesson({ topic: 'Тема', summary: 'Было', assignmentIds: ['a-1'] }));
         await openDraft();
 
         for (const answer of ['Первый', 'Второй']) {
           await press(answer === 'Первый' ? 'Составить' : 'Ещё раз');
           if (answer === 'Первый') {
-            backend.expectOne(ASSIGNMENTS).flush([]);
+            backend.expectOne(ASSIGNMENTS).flush([assignmentSummary()]);
             await fixture.whenStable();
           }
           backend.expectOne(DRAFT).flush({ summary: answer });
@@ -256,7 +246,7 @@ describe('LessonSummarySection', () => {
       });
 
       it('tells a failed draft next to the field and leaves the text alone', async () => {
-        await open(scheduledLesson({ topic: 'Тема' }));
+        await open(scheduledLesson({ topic: 'Тема', assignmentIds: ['a-1'] }));
         await openDraft();
 
         await press('Составить');
@@ -282,7 +272,6 @@ describe('LessonSummarySection', () => {
         ).toContain('Claude Sonnet 5');
 
         await press('Составить');
-        backend.expectOne(ASSIGNMENTS).flush([]);
         await fixture.whenStable();
         backend
           .expectOne(DRAFT)

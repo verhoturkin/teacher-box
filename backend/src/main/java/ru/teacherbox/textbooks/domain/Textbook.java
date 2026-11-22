@@ -9,17 +9,17 @@ import ru.teacherbox.textbooks.api.TextbookFormat;
 import ru.teacherbox.textbooks.api.TextbookKind;
 
 /**
- * A textbook (ADR-0033): a kind, a title, a course and one file. Its members are kept apart
+ * A textbook (ADR-0033): a kind, a title, a course (ADR-0071) and one file. Its members are kept apart
  * ({@link TextbookMember}).
  *
+ * @param courseId  the course it belongs to; {@code null} — none
  * @param pageCount pages of the file: counted for a PDF, 1 for an image, the teacher's number (or none) for a
  *                  document
  */
-public record Textbook(UUID id, TextbookKind kind, String title, @Nullable String course,
+public record Textbook(UUID id, TextbookKind kind, String title, @Nullable UUID courseId,
         @Nullable Integer pageCount, TextbookFile file, Instant createdAt, Instant updatedAt, long version) {
 
     public static final int MAX_TITLE = 200;
-    public static final int MAX_COURSE = 100;
     public static final int MAX_PAGE_COUNT = 10_000;
 
     public Textbook {
@@ -27,7 +27,6 @@ public record Textbook(UUID id, TextbookKind kind, String title, @Nullable Strin
         Objects.requireNonNull(kind);
         Objects.requireNonNull(file);
         title = validTitle(title);
-        course = validCourse(course);
         pageCount = validPageCount(pageCount);
     }
 
@@ -35,22 +34,22 @@ public record Textbook(UUID id, TextbookKind kind, String title, @Nullable Strin
      * @param pageCount the teacher's number of pages, used only for a document
      * @param filePages the pages counted in a PDF
      */
-    public static Textbook created(UUID id, TextbookKind kind, String title, @Nullable String course,
+    public static Textbook created(UUID id, TextbookKind kind, String title, @Nullable UUID courseId,
             @Nullable Integer pageCount, TextbookFile file, int filePages, Instant now) {
-        return new Textbook(id, kind, title, course, pages(file.format(), pageCount, filePages), file, now, now, 0);
+        return new Textbook(id, kind, title, courseId, pages(file.format(), pageCount, filePages), file, now, now, 0);
     }
 
     /** The file stays; the teacher's number of pages counts only for a document. */
-    public Textbook changed(TextbookKind newKind, String newTitle, @Nullable String newCourse,
+    public Textbook changed(TextbookKind newKind, String newTitle, @Nullable UUID newCourseId,
             @Nullable Integer newPageCount, Instant now) {
-        return new Textbook(id, newKind, newTitle, newCourse,
+        return new Textbook(id, newKind, newTitle, newCourseId,
                 file.format() == TextbookFormat.DOCUMENT ? newPageCount : pageCount, file, createdAt, now, version);
     }
 
     /** A new file; a document keeps the teacher's number of pages only when it replaces a document. */
     public Textbook withFile(TextbookFile newFile, int filePages, Instant now) {
         Integer kept = file.format() == TextbookFormat.DOCUMENT ? pageCount : null;
-        return new Textbook(id, kind, title, course, pages(newFile.format(), kept, filePages), newFile, createdAt,
+        return new Textbook(id, kind, title, courseId, pages(newFile.format(), kept, filePages), newFile, createdAt,
                 now, version);
     }
 
@@ -74,15 +73,6 @@ public record Textbook(UUID id, TextbookKind kind, String title, @Nullable Strin
                     "The title must be 1-" + MAX_TITLE + " characters");
         }
         return title;
-    }
-
-    private static @Nullable String validCourse(@Nullable String value) {
-        String course = value == null ? "" : value.strip();
-        if (course.length() > MAX_COURSE) {
-            throw new BusinessRuleException("textbooks.course-invalid",
-                    "The course must be at most " + MAX_COURSE + " characters");
-        }
-        return course.isEmpty() ? null : course;
     }
 
     private static @Nullable Integer validPageCount(@Nullable Integer value) {

@@ -1,8 +1,7 @@
 import { SourceOption } from '@features/ai/parts';
 import { AssignmentDetails, BoundTextbook } from '@features/homework/data-access/homework.models';
 import { T } from '@features/homework/i18n/texts';
-import { videoName } from '@features/homework/ui/video-list';
-import { VideoDraft } from '../video-section';
+import { VideoDraft, videoName } from '@features/textbooks/parts';
 
 /** Files the AI reads (ADR-0039). */
 const AI_READABLE = /^(application\/pdf|image\/(png|jpeg|webp|gif))$/;

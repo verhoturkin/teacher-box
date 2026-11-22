@@ -4,7 +4,7 @@ import { expect, test, type Page } from '@playwright/test';
 /**
  * Videos by link in homework (ADR-0047): a tile per video, its side sheet with the player, the title and a
  * transcript from YouTube captions or an .srt / .vtt file; the AI reads the transcripts. No network to YouTube here:
- * the transcript comes from a file.
+ * the automatic captions are routed to «no captions» and the transcript comes from a file.
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -16,6 +16,9 @@ async function signIn(page: Page, login: string, password: string): Promise<void
 }
 
 test('the teacher gives homework with a video and its transcript', async ({ page, request }) => {
+  await page.route('**/api/teacher/textbooks/videos/transcript', (route) =>
+    route.fulfill({ status: 422, json: { status: 422, code: 'video.captions-none' } }),
+  );
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.goto('/teacher/homework/new');
   const created = page.waitForResponse(
@@ -36,6 +39,8 @@ test('the teacher gives homework with a video and its transcript', async ({ page
   const tiles = page.locator('tb-video-section').getByRole('list', { name: 'Видео задания' });
   await expect(tiles).toContainText('YouTube · с 0:35');
   await expect(tiles).toContainText('Без расшифровки');
+  // 459.2: the captions are asked at once; none — a quiet note under the tile
+  await expect(page.locator('tb-video-section')).toContainText('У видео нет субтитров');
   await expect(tiles.locator('img')).toHaveAttribute(
     'src',
     'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg',

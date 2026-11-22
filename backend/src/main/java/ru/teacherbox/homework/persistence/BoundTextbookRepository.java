@@ -58,6 +58,13 @@ public class BoundTextbookRepository {
                 .update() > 0;
     }
 
+    /** Unbinds every textbook of the assignment. */
+    public void deleteByAssignment(UUID assignmentId) {
+        jdbc.sql("delete from homework.assignment_textbooks where assignment_id = :assignmentId")
+                .param("assignmentId", assignmentId)
+                .update();
+    }
+
     /** In the order they were bound. */
     public List<BoundTextbook> findByAssignment(UUID assignmentId) {
         return jdbc.sql(SELECT + " where assignment_id = :assignmentId order by bound_at, textbook_id")

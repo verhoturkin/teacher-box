@@ -46,14 +46,25 @@ class TextbookTest {
                 PNG, 1, NOW)).isInstanceOf(BusinessRuleException.class);
         assertThatThrownBy(() -> Textbook.created(UUID.randomUUID(), TextbookKind.OTHER, null, null, null, PNG, 1,
                 NOW)).isInstanceOf(BusinessRuleException.class);
-        assertThatThrownBy(() -> Textbook.created(UUID.randomUUID(), TextbookKind.OTHER, "T", "к".repeat(101), null,
-                PNG, 1, NOW)).hasFieldOrPropertyWithValue("code", "textbooks.course-invalid");
         assertThatThrownBy(() -> created(DOCX, 0, 1)).hasFieldOrPropertyWithValue("code",
                 "textbooks.page-count-invalid");
         assertThatThrownBy(() -> created(DOCX, 10_001, 1)).isInstanceOf(BusinessRuleException.class);
-        assertThat(Textbook.created(UUID.randomUUID(), TextbookKind.OTHER, "T", "  Алгебра ", null, PNG, 1, NOW)
-                .course()).isEqualTo("Алгебра");
+        UUID course = UUID.randomUUID();
+        assertThat(Textbook.created(UUID.randomUUID(), TextbookKind.OTHER, "T", course, null, PNG, 1, NOW)
+                .courseId()).isEqualTo(course);
     }
+
+    @Test
+    void namesACourse() {
+        Course course = new Course(UUID.randomUUID(), "  Английский A2 ", 0, 0);
+        assertThat(course.name()).isEqualTo("Английский A2");
+        assertThat(course.renamed(" ОГЭ ").name()).isEqualTo("ОГЭ");
+        assertThatThrownBy(() -> new Course(UUID.randomUUID(), "к".repeat(101), 0, 0))
+                .hasFieldOrPropertyWithValue("code", "textbooks.course-invalid");
+        assertThatThrownBy(() -> new Course(UUID.randomUUID(), " ", 0, 0))
+                .hasFieldOrPropertyWithValue("code", "textbooks.course-invalid");
+        assertThatThrownBy(() -> new Course(UUID.randomUUID(), null, 0, 0))
+                .isInstanceOf(BusinessRuleException.class);    }
 
     @Test
     void findsTheTypeByTheFirstBytes() {

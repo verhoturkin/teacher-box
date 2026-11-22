@@ -32,8 +32,17 @@ describe('HomeworkApi', () => {
     api.task('t-1').subscribe();
     api.review('t-1', 'ACCEPT', '5', null).subscribe();
     api.teacherFile('f-1').subscribe();
+    api.assignments(true).subscribe();
+    api.saveToBank('a-1').subscribe();
+    api.use('a-1', ['s-1']).subscribe();
 
     backend.expectOne({ method: 'GET', url: '/api/teacher/homework/assignments' });
+    backend.expectOne({ method: 'GET', url: '/api/teacher/homework/assignments?bank=true' });
+    backend.expectOne({ method: 'POST', url: '/api/teacher/homework/assignments/a-1/bank' });
+    expect(
+      backend.expectOne({ method: 'POST', url: '/api/teacher/homework/assignments/a-1/use' })
+        .request.body,
+    ).toEqual({ studentIds: ['s-1'] });
     backend.expectOne({ method: 'GET', url: '/api/teacher/homework/assignments/a-1' });
     expect(
       backend.expectOne({ method: 'POST', url: '/api/teacher/homework/assignments' }).request.body,

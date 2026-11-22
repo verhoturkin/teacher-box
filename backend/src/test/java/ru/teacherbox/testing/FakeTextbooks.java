@@ -27,7 +27,8 @@ public class FakeTextbooks implements Textbooks {
 
     public UUID add(String title, TextbookFormat format, @Nullable Integer pageCount) {
         UUID id = UUID.randomUUID();
-        textbooks.put(id, new TextbookSummary(id, TextbookKind.TEXTBOOK, title, "Курс", format, pageCount));
+        textbooks.put(id, new TextbookSummary(id, TextbookKind.TEXTBOOK, title, null, "Курс", format,
+                pageCount));
         return id;
     }
 

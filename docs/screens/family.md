@@ -54,7 +54,9 @@ task (`/family/<a>/homework/<t>` → `/family/<b>/homework`).
   The section «Запросы» (not «Мои запросы») lists the child's requests; one a parent sent has a
   line «Запрос родителя (Анна)» — the student sees it too. The request dialog
   (`change-request-dialog.ts`) speaks of the child: «Не придёт на занятие», «пройдёт без ребёнка».
-  The calendar link is the parent's one of all the children («Занятия всех ваших детей…»).
+  The calendar link is the parent's one of all the children («Занятия всех ваших детей…»). The
+  lesson sheet shows the child's «План урока» read-only
+  (`/api/guardian/students/<id>/schedule/lessons/<id>/plan`, [schedule](schedule.md#lesson-plan)).
 - **Homework** (`my-homework-page.ts`, `my-task-page.ts`, `quiz-section.ts`): the task, materials,
   answers («Ответ») and the teacher's comments; no answer form, draft, board or «Начать тест».
 - **Payments** (`my-billing-page.ts`): the child's ledger and receipts.

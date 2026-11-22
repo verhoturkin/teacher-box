@@ -7,6 +7,8 @@ export const en: Translation<typeof ru> = {
   tabs: 'Material type',
   boards: 'Boards',
   textbooks: 'Textbooks',
+  plans: 'Plans',
+  assignments: 'Assignments',
   filters: 'Filter materials',
   chips: {
     all: 'All',
@@ -15,6 +17,13 @@ export const en: Translation<typeof ru> = {
     TEXTBOOK: 'Textbooks',
     WORKBOOK: 'Workbooks',
     OTHER: 'Other',
+  },
+  courses: {
+    filter: 'Filter by course',
+    all: 'All',
+    none: 'No course',
+    manage: 'Courses',
+    menu: 'Course actions',
   },
   search: 'Title, student or group',
   searchMine: 'Title',
@@ -26,4 +35,6 @@ export const en: Translation<typeof ru> = {
   },
   newBoard: 'New board',
   newTextbook: 'New textbook',
+  newPlan: 'New plan',
+  newAssignment: 'New assignment',
 };

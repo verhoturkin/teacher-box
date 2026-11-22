@@ -1,11 +1,18 @@
-import { MyTextbook, Textbook } from '@features/textbooks/parts';
+import {
+  Course,
+  LessonPlan,
+  LessonPlanSummary,
+  MyTextbook,
+  Textbook,
+} from '@features/textbooks/parts';
 
 export function aTextbook(overrides: Partial<Textbook> = {}): Textbook {
   return {
     id: 'tb-1',
     kind: 'TEXTBOOK',
     title: 'Spotlight 5',
-    course: 'Английский',
+    courseId: 'c-1',
+    courseName: 'Английский',
     pageCount: 120,
     format: 'PDF',
     filename: 'Spotlight 5.pdf',
@@ -28,7 +35,8 @@ export function aWorkbook(overrides: Partial<Textbook> = {}): Textbook {
     id: 'tb-2',
     kind: 'WORKBOOK',
     title: 'Рабочая тетрадь',
-    course: null,
+    courseId: null,
+    courseName: null,
     pageCount: 48,
     format: 'DOCUMENT',
     filename: 'Тетрадь.docx',
@@ -45,7 +53,7 @@ export function aMyTextbook(overrides: Partial<MyTextbook> = {}): MyTextbook {
     id: 'tb-1',
     kind: 'TEXTBOOK',
     title: 'Spotlight 5',
-    course: 'Английский',
+    courseName: 'Английский',
     pageCount: 120,
     format: 'PDF',
     filename: 'Spotlight 5.pdf',
@@ -53,6 +61,51 @@ export function aMyTextbook(overrides: Partial<MyTextbook> = {}): MyTextbook {
     hasCover: true,
     groupNames: ['ОГЭ'],
     updatedAt: '2026-10-01T10:00:00Z',
+    ...overrides,
+  };
+}
+
+export function aCourse(overrides: Partial<Course> = {}): Course {
+  return { id: 'c-1', name: 'Английский', position: 0, version: 0, ...overrides };
+}
+
+export function aPlanSummary(overrides: Partial<LessonPlanSummary> = {}): LessonPlanSummary {
+  return {
+    id: 'p-1',
+    title: 'Present Simple',
+    courseId: 'c-1',
+    bank: true,
+    sourceId: null,
+    uses: 3,
+    updatedAt: '2026-11-01T10:00:00Z',
+    version: 0,
+    ...overrides,
+  };
+}
+
+export function aLessonPlan(overrides: Partial<LessonPlan> = {}): LessonPlan {
+  return {
+    id: 'p-1',
+    title: 'Present Simple',
+    body: '1. Разминка',
+    courseId: 'c-1',
+    bank: true,
+    sourceId: null,
+    uses: 0,
+    textbooks: [
+      {
+        id: 'tb-1',
+        title: 'Spotlight 5',
+        kind: 'TEXTBOOK',
+        format: 'PDF',
+        pageCount: 120,
+        pages: '12-14',
+      },
+    ],
+    videos: [],
+    createdAt: '2026-11-01T10:00:00Z',
+    updatedAt: '2026-11-01T10:00:00Z',
+    version: 0,
     ...overrides,
   };
 }

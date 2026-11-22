@@ -17,7 +17,8 @@ import { T } from '../i18n/texts';
 
 /** Keep explicit choices separate from any students resolved from group membership. */
 export interface MemberSelection {
-  readonly kind: 'STUDENT' | 'GROUP';
+  /** `COURSE` — the students of a course and the members of its groups (ADR-0071), only where offered. */
+  readonly kind: 'STUDENT' | 'GROUP' | 'COURSE';
   readonly id: string;
 }
 
@@ -94,6 +95,8 @@ export class MemberPicker implements ControlValueAccessor, OnInit {
   readonly placeholder = input('');
   readonly students = input<readonly MemberPickerOption[]>([]);
   readonly groups = input<readonly MemberPickerOption[]>([]);
+  /** Courses whose students can be chosen as one member; no section without them (ADR-0071). */
+  readonly courses = input<readonly MemberPickerOption[]>([]);
   /** Undefined permits any number; one supports callers with a single recipient. */
   readonly selectionLimit = input<number>();
   /** No visible field: the caller shows the chosen ones and calls `open()`. */
@@ -116,10 +119,13 @@ export class MemberPicker implements ControlValueAccessor, OnInit {
     });
   }
 
-  protected readonly sections = computed(() =>
-    (['STUDENT', 'GROUP'] as const).map((kind) => {
-      const type = kind === 'STUDENT' ? this.t.student : this.t.group;
-      const options = kind === 'STUDENT' ? this.students() : this.groups();
+  protected readonly sections = computed(() => {
+    const kinds: MemberSelection['kind'][] = ['STUDENT', 'GROUP'];
+    if (this.courses().length > 0 || this.selected().some((member) => member.kind === 'COURSE')) {
+      kinds.push('COURSE');
+    }
+    return kinds.map((kind) => {
+      const { section, type, options } = this.kind(kind);
       const byId = new Map(options.map((option) => [option.id, option]));
       for (const member of this.selected()) {
         if (member.kind === kind && !byId.has(member.id)) {
@@ -127,15 +133,30 @@ export class MemberPicker implements ControlValueAccessor, OnInit {
         }
       }
       return {
-        label: kind === 'STUDENT' ? this.t.students : this.t.groups,
+        label: section,
         items: [...byId.values()].map((option) => ({
           member: { kind, id: option.id },
           label: `${type}: ${option.name}${option.detail ? ` (${option.detail})` : ''}${option.unavailable ? ` — ${this.t.unavailable}` : ''}`,
           disabled: option.unavailable === true,
         })),
       };
-    }),
-  );
+    });
+  });
+
+  private kind(kind: MemberSelection['kind']): {
+    section: string;
+    type: string;
+    options: readonly MemberPickerOption[];
+  } {
+    switch (kind) {
+      case 'STUDENT':
+        return { section: this.t.students, type: this.t.student, options: this.students() };
+      case 'GROUP':
+        return { section: this.t.groups, type: this.t.group, options: this.groups() };
+      case 'COURSE':
+        return { section: this.t.courses, type: this.t.course, options: this.courses() };
+    }
+  }
 
   writeValue(value: readonly MemberSelection[] | null): void {
     this.selected.set(this.unique(value ?? []));

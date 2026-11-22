@@ -13,7 +13,9 @@ deadline” or “Pick a date…”. Add textbooks, files, a photo, videos, a qu
 typing, the assignment saves itself as a draft with the students you chose; if you leave without writing anything, nothing is created. Markdown \
 supports bold text, lists and links; use Preview to check the result. The “AI assistant” button opens the assistant beside the text.
 3. Under “To”, add students and groups. Students in more than one selected group receive the assignment once. Removing a group keeps any students \
-also selected individually. “By the next lesson” sets the due date to the start of those students’ next lesson; pick another option if you prefer.
+also selected individually. “By the next lesson” sets the due date to the start of those students’ next lesson; pick another option if you prefer. \
+Below “To”, choose the assignment’s **Course** (shown once you have courses in Materials, see [Textbooks](/teacher/help/textbooks)); it is saved \
+with the assignment.
 4. Textbooks, files, videos and a board appear in the assignment only once you add them. Add textbooks and files with the buttons under “Materials”; \
 they show as one list. Select a name to open it (PDFs and images open in a new tab). Add a video or a board from the “Add” group in the menu on the \
 left (on a tablet, or with the AI assistant open, use the “Video” and “Board” buttons under “Materials” instead). “Board” opens a list of your \
@@ -21,8 +23,12 @@ boards: the one you choose shows in the Board section (the × clears it), and on
 that board selected. A quiz is not a material: add questions on the Quiz tab. You can remove anything you added, and empty sections take up no room.
 5. For a video, use “Video” (up to five) and paste a link: the video appears as a tile. YouTube, Rutube and VK videos play within the assignment; \
 other links open in a new tab. Students see the videos in the order of the tiles, so drag them to reorder. Each tile shows whether it has a \
-transcript and whether students can see it. Select the settings button on a tile to open the video in a window over the editor (full screen on a \
-phone). There you can rename the video, import YouTube captions (if several tracks are available, choose one from the menu), load an .srt or .vtt \
+transcript and whether students can see it. For a YouTube link, the portal imports the captions in the video’s language straight away (the \
+creator’s, otherwise auto-generated ones), and the tile shows “Captions: English, auto-generated · Change language”. “Change language” lists the \
+tracks; if you have edited the transcript, the portal asks before replacing it, and it never re-imports an existing transcript. If there are no \
+captions or they can’t be fetched, the tile says “This video has no captions” or “Couldn’t get the captions · Retry”. Select the settings button \
+on a tile to open the video in a window over the editor (full screen on a phone). There you can rename the video, import YouTube captions (choose \
+a track from the menu), load an .srt or .vtt \
 file, edit the transcript or remove the video. The arrows move between the assignment’s videos without closing the window. Changes are saved straight \
 away, so “Done” and Esc just close it. The AI uses the transcript; students see it only if “Show transcript to students” is enabled.
 6. Choose “Assign”. Students are notified once the materials are ready and reminded before the due date. You return to where you opened the editor \
@@ -99,6 +105,15 @@ downloaded in full, with page numbers provided for reference. The pencil changes
 
 “Open board” in the “⋮” menu opens a linked board. “Delete…” in the same menu removes the assignment, submissions and files; recovery requires a \
 portal backup.
+
+## Assignment bank
+
+The bank keeps assignment originals for reuse, on the Assignments tab of Materials (with the course filter). An assignment goes into the \
+bank automatically the first time you set it; one taken from the bank adds no new original. In the editor’s “⋮” menu, choose **Save to \
+bank**, or **Update in bank** when an original exists: after you confirm, the original is replaced with this assignment, and copies \
+already set stay as they are. New assignment in Materials creates a bank assignment straight away: it has no students or due date, and \
+Done takes you back to Materials. Each card shows how many times it was used; its “⋮” menu has Edit and Delete… (students’ assignments \
+made from it stay). To use a bank assignment for a lesson, choose Link in the lesson’s details (see Schedule and requests).
 
 ## Add a quiz
 

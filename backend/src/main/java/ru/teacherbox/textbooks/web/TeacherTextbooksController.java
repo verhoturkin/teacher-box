@@ -35,12 +35,15 @@ import ru.teacherbox.textbooks.domain.Textbook;
 @RequestMapping("/api/teacher/textbooks")
 class TeacherTextbooksController {
 
-    /** @param pageCount the teacher's number of pages; used only for a Word file */
+    /**
+     * @param courseId  the course of the textbook; {@code null} — none
+     * @param pageCount the teacher's number of pages; used only for a Word file
+     * @param courseIds the courses whose students get the textbook (ADR-0071)
+     */
     record ChangeRequest(@NotNull TextbookKind kind, @NotBlank @Size(max = Textbook.MAX_TITLE) String title,
-            @Size(max = Textbook.MAX_COURSE) @Nullable String course,
-            @Min(1) @Max(Textbook.MAX_PAGE_COUNT) @Nullable Integer pageCount,
+            @Nullable UUID courseId, @Min(1) @Max(Textbook.MAX_PAGE_COUNT) @Nullable Integer pageCount,
             @Size(max = 200) @Nullable List<UUID> studentIds, @Size(max = 100) @Nullable List<UUID> groupIds,
-            @NotNull Long version) {
+            @Size(max = 100) @Nullable List<UUID> courseIds, @NotNull Long version) {
     }
 
     private final TextbookService textbooks;
@@ -55,22 +58,24 @@ class TeacherTextbooksController {
         return textbooks.list();
     }
 
-    /** The fields are checked by the textbook itself (title, course, pages) and by the members' rules. */
+    /** The fields are checked by the textbook itself (title, pages), the course and the members' rules. */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     TextbookView create(@RequestParam("file") MultipartFile file, @RequestParam TextbookKind kind,
-            @RequestParam String title, @RequestParam(required = false) @Nullable String course,
+            @RequestParam String title, @RequestParam(required = false) @Nullable UUID courseId,
             @RequestParam(required = false) @Nullable Integer pageCount,
             @RequestParam(required = false) @Nullable List<UUID> studentIds,
-            @RequestParam(required = false) @Nullable List<UUID> groupIds) {
-        return textbooks.create(kind, title, course, pageCount, TextbookResponses.upload(file), orEmpty(studentIds),
-                orEmpty(groupIds));
+            @RequestParam(required = false) @Nullable List<UUID> groupIds,
+            @RequestParam(required = false) @Nullable List<UUID> courseIds) {
+        return textbooks.create(kind, title, courseId, pageCount, TextbookResponses.upload(file), orEmpty(studentIds),
+                orEmpty(groupIds), orEmpty(courseIds));
     }
 
     @PutMapping("/{id}")
     TextbookView change(@PathVariable UUID id, @Valid @RequestBody ChangeRequest request) {
-        return textbooks.change(id, request.kind(), request.title(), request.course(), request.pageCount(),
-                orEmpty(request.studentIds()), orEmpty(request.groupIds()), request.version());
+        return textbooks.change(id, request.kind(), request.title(), request.courseId(), request.pageCount(),
+                orEmpty(request.studentIds()), orEmpty(request.groupIds()), orEmpty(request.courseIds()),
+                request.version());
     }
 
     @PutMapping(path = "/{id}/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

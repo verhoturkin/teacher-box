@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import ru.teacherbox.homework.application.HomeworkViews.VideoInput;
 import ru.teacherbox.homework.application.HomeworkViews.VideoView;
 import ru.teacherbox.homework.domain.AssignmentVideo;
-import ru.teacherbox.homework.domain.VideoLink;
+import ru.teacherbox.textbooks.api.VideoLink;
 import ru.teacherbox.homework.persistence.VideoRepository;
 import ru.teacherbox.shared.Ids;
 import ru.teacherbox.shared.error.BusinessRuleException;

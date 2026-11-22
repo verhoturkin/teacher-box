@@ -1,6 +1,5 @@
 package ru.teacherbox.homework.application;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.util.unit.DataSize;
@@ -12,13 +11,11 @@ import org.springframework.util.unit.DataSize;
  *
  * @param maxFileSize       maximum size of one attached file; at most {@link #FILE_SIZE_CEILING} applies
  * @param maxFilesPerUpload maximum number of files in one submission
- * @param youtubeProxy      the proxy for YouTube captions (ADR-0047); blank — direct
  */
 @ConfigurationProperties("teacherbox.homework")
 public record HomeworkProperties(
         @DefaultValue("20MB") DataSize maxFileSize,
-        @DefaultValue("10") int maxFilesPerUpload,
-        @Nullable String youtubeProxy) {
+        @DefaultValue("10") int maxFilesPerUpload) {
 
     /**
      * The largest file a homework request can carry: nginx takes requests up to 30 MB
@@ -30,7 +27,4 @@ public record HomeworkProperties(
     public DataSize fileSizeLimit() {
         return maxFileSize.compareTo(FILE_SIZE_CEILING) > 0 ? FILE_SIZE_CEILING : maxFileSize;
     }
-
-    /** The variable of {@link #youtubeProxy()}. */
-    public static final String YOUTUBE_PROXY = "TEACHERBOX_HOMEWORK_YOUTUBE_PROXY";
 }

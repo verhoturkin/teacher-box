@@ -113,6 +113,12 @@ export const ru = {
   panes: {
     resize: 'Изменить ширину панели',
   },
+  markdown: {
+    write: 'Текст',
+    preview: 'Просмотр',
+    mode: 'Режим редактора',
+    hint: 'Поддерживается Markdown: **жирный**, *курсив*, списки, ссылки.',
+  },
   fileCheck: {
     tooLarge: (name: string, max: string) => `«${name}» больше ${max}`,
     unsupported: (name: string) => `«${name}»: такой тип файла загружать нельзя`,

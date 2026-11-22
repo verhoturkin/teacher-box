@@ -8,9 +8,9 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.test.context.TestPropertySource;
+import ru.teacherbox.testing.FakeCourses;
 import ru.teacherbox.testing.FakeGuardians;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.FakeTextbooks;
@@ -56,11 +56,9 @@ public @interface HomeworkIntegrationTest {
             return new FakeTextbooks();
         }
 
-        /** Instead of YouTube: no network in tests. */
         @Bean
-        @Primary
-        FakeVideoCaptions videoCaptions() {
-            return new FakeVideoCaptions();
+        FakeCourses courses() {
+            return new FakeCourses();
         }
 
         @Bean

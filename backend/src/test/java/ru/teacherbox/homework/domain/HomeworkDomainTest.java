@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import ru.teacherbox.shared.error.BusinessRuleException;
+import ru.teacherbox.shared.error.ConflictException;
 
 class HomeworkDomainTest {
 
@@ -55,6 +56,41 @@ class HomeworkDomainTest {
         Assignment longTitle = Assignment.create(UUID.randomUUID(), "я".repeat(Assignment.MAX_TITLE), null, null, now);
         assertThat(longTitle.copy(UUID.randomUUID(), " (копия)", now).title())
                 .hasSize(Assignment.MAX_TITLE).endsWith(" (копия)");
+    }
+
+    @Test
+    void theBankKeepsContentOnlyAndUseGivesAWorkingDraft() {
+        Assignment working = Assignment.create(UUID.randomUUID(), "Времена", "Текст", NOW.plusSeconds(60), NOW);
+        working.changeCourse(UUID.randomUUID());
+        working.placeOnBoard(UUID.randomUUID());
+        assertThatCode(working::requireWorking).doesNotThrowAnyException();
+
+        Assignment original = working.original(UUID.randomUUID(), NOW);
+        assertThat(original.bank()).isTrue();
+        assertThat(original.sourceId()).isNull();
+        assertThat(original.title()).isEqualTo("Времена");
+        assertThat(original.courseId()).isEqualTo(working.courseId());
+        assertThat(original.dueAt()).isNull();
+        assertThat(original.boardId()).isNull();
+        assertThatThrownBy(original::requireWorking).isInstanceOf(ConflictException.class)
+                .hasFieldOrPropertyWithValue("code", "homework.bank-item");
+        original.update("Банк", null, NOW.plusSeconds(60), NOW);
+        assertThat(original.dueAt()).as("a bank item keeps no deadline").isNull();
+        assertThat(original.copy(UUID.randomUUID(), " (копия)", NOW).bank()).isTrue();
+
+        working.saveAs(original.id());
+        assertThat(working.sourceId()).isEqualTo(original.id());
+        working.update("Новое", "Новый текст", null, NOW.plusSeconds(1));
+        original.replaceContent(working, NOW.plusSeconds(2));
+        assertThat(original.title()).isEqualTo("Новое");
+        assertThat(original.description()).isEqualTo("Новый текст");
+        assertThat(original.updatedAt()).isEqualTo(NOW.plusSeconds(2));
+
+        Assignment used = original.use(UUID.randomUUID(), NOW);
+        assertThat(used.bank()).isFalse();
+        assertThat(used.sourceId()).isEqualTo(original.id());
+        assertThat(used.title()).isEqualTo("Новое");
+        assertThat(Assignment.create(UUID.randomUUID(), "Сразу в банк", null, NOW, true, NOW).dueAt()).isNull();
     }
 
     @Test

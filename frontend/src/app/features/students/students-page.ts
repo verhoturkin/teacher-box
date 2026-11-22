@@ -23,6 +23,7 @@ import { BillingApi } from '@features/billing/parts';
 import { HelpButton } from '@features/help/parts';
 import { NotificationsApi } from '@features/notifications/parts';
 import { ScheduleApi, ScheduledLesson } from '@features/schedule/parts';
+import { Course, CourseLinks, CoursesApi } from '@features/textbooks/parts';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { injectMobile } from '@core/layout/mobile';
 import { openOnCreate } from '@core/routing/create-param';
@@ -80,6 +81,21 @@ const DAY_MS = 86_400_000;
  * there: the rows appear whole, not filling in; a slow extra read does not hold the list longer.
  */
 const EXTRAS_WAIT_MS = 300;
+
+/** The links with the owner's current course set; `null` — none. */
+function withLink(
+  links: ReadonlyMap<string, string>,
+  ownerId: string,
+  courseId: string | null,
+): ReadonlyMap<string, string> {
+  const next = new Map(links);
+  if (courseId === null) {
+    next.delete(ownerId);
+  } else {
+    next.set(ownerId, courseId);
+  }
+  return next;
+}
 
 /** The short name of a tag on the chip: «Уровень английского» → «Уровень». */
 function shortName(name: string): string {
@@ -292,6 +308,9 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
                 [tab]="cardTab()"
                 [single]="layout.single()"
                 [busy]="busy.is(row.id)"
+                [courses]="courses()"
+                [courseId]="studentCourses().get(row.id) ?? null"
+                (courseChanged)="setStudentCourse(row.id, $event)"
                 (changed)="loadExtras()"
                 (saved)="onUpdated($event)"
                 (tagsSaved)="replaceStudent($event)"
@@ -307,6 +326,9 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
                 [single]="layout.single()"
                 [busy]="busy.is(row.id)"
                 [menuOpen]="menuFor() === row"
+                [courses]="courses()"
+                [courseId]="groupCourses().get(row.id) ?? null"
+                (courseChanged)="setGroupCourse(row.id, $event)"
                 (more)="openMenu(row, $event)"
                 (changed)="loadExtras()"
                 (saved)="onGroupSaved($event)"
@@ -347,7 +369,8 @@ function orNull<T>(source: Observable<T>): Observable<T | null> {
     <tb-group-form-dialog
       [(visible)]="groupFormVisible"
       [students]="students()"
-      (created)="onGroupCreated($event)"
+      [courses]="courses()"
+      (created)="onGroupCreated($event.group, $event.courseId)"
     />
   `,
   styles: `
@@ -376,6 +399,7 @@ export class StudentsPage implements OnInit {
   private readonly billing = inject(BillingApi);
   private readonly notifications = inject(NotificationsApi);
   private readonly schedule = inject(ScheduleApi);
+  private readonly coursesApi = inject(CoursesApi);
   private readonly colors = inject(TeacherColors);
   private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
@@ -396,6 +420,10 @@ export class StudentsPage implements OnInit {
 
   protected readonly students = signal<Student[]>([]);
   protected readonly groups = signal<StudentGroup[]>([]);
+  /** The teacher's courses and the current ones of students and groups (ADR-0071). */
+  protected readonly courses = signal<readonly Course[]>([]);
+  protected readonly studentCourses = signal<ReadonlyMap<string, string>>(new Map());
+  protected readonly groupCourses = signal<ReadonlyMap<string, string>>(new Map());
   protected readonly extras = signal<Extras>({
     balances: null,
     currency: 'RUB',
@@ -571,6 +599,14 @@ export class StudentsPage implements OnInit {
         this.students.set(students);
         this.groups.set(groups);
       });
+    // without the courses (a failed read) the cards have no «Курс» chip and an empty select
+    forkJoin({
+      courses: orNull(this.coursesApi.list(quietContext())),
+      links: orNull(this.coursesApi.links(quietContext())),
+    }).subscribe(({ courses, links }) => {
+      this.courses.set(courses ?? []);
+      this.setLinks(links);
+    });
     // without the tags (a failed read) the chip is simply missing, the list works; text tags filter nothing
     orNull(this.api.listTags(quietContext())).subscribe((tags) => {
       this.tags.set((tags ?? []).filter((tag) => tag.kind === 'LIST'));
@@ -744,8 +780,26 @@ export class StudentsPage implements OnInit {
     this.snackbar.success(this.t.saved(student.displayName));
   }
 
+  protected setStudentCourse(studentId: string, courseId: string | null): void {
+    this.studentCourses.update((links) => withLink(links, studentId, courseId));
+  }
+
+  protected setGroupCourse(groupId: string, courseId: string | null): void {
+    this.groupCourses.update((links) => withLink(links, groupId, courseId));
+  }
+
+  private setLinks(links: CourseLinks | null): void {
+    this.studentCourses.set(
+      new Map((links?.students ?? []).map((link) => [link.studentId, link.courseId])),
+    );
+    this.groupCourses.set(
+      new Map((links?.groups ?? []).map((link) => [link.groupId, link.courseId])),
+    );
+  }
+
   /** A new group: its card opens on Профиль to set the price and the rest. */
-  protected onGroupCreated(group: StudentGroup): void {
+  protected onGroupCreated(group: StudentGroup, courseId: string | null = null): void {
+    this.setGroupCourse(group.id, courseId);
     this.groups.update((groups) => [...groups, group]);
     this.colors.rememberGroup(group);
     this.snackbar.success(this.tg.saved);

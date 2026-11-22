@@ -9,7 +9,8 @@ or cancel a lesson \
 ([Rescheduling and cancelling](/guardian/help/requests)).
 
 - **Home** shows the next lesson, work due and recently marked work, and the balance.
-- **Schedule** shows your child’s lessons, the “Lesson history” with what was covered, and the “Requests” section.
+- **Schedule** shows your child’s lessons, with the lesson plan when the teacher has prepared one, the “Lesson history” with what was \
+covered, and the “Requests” section.
 - **Homework** shows the task text, materials and textbooks, your child’s answers, the mark and the teacher’s comment, and quiz results.
 - **Payments** shows the balance, history and receipts.
 - **Help** and **My account** cover your password, photo, language, theme and notifications.

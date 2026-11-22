@@ -110,8 +110,44 @@ const upcomingLessons = () => {
     );
 };
 
+/**
+ * Puts a new working plan on its lesson (`?lessonId=` of the plan editor): `textbooks` does not import
+ * `schedule` (ADR-0058), so the editor takes the link as an input. Resolves at once; the schedule's parts load
+ * when the editor links the plan.
+ */
+const linkToLesson = () => {
+  const injector = inject(Injector);
+  return (lessonId: string, planId: string) =>
+    defer(() => import('@features/schedule/parts')).pipe(
+      switchMap((parts) => injector.get(parts.ScheduleApi).linkPlan(lessonId, planId)),
+    );
+};
+
+/**
+ * The homework of a lesson (`/teacher/homework/new?lessonId=`, roadmap 11): `homework` does not import `schedule`
+ * (ADR-0058), so the editor takes the lesson and the link as inputs. Both resolve at once; the schedule's parts
+ * load when the editor reads the lesson or links the assignment.
+ */
+const lessonOf = () => {
+  const injector = inject(Injector);
+  return (lessonId: string) =>
+    defer(() => import('@features/schedule/parts')).pipe(
+      switchMap((parts) => injector.get(parts.ScheduleApi).lesson(lessonId)),
+    );
+};
+
+const linkHomework = () => {
+  const injector = inject(Injector);
+  return (lessonId: string, assignmentId: string) =>
+    defer(() => import('@features/schedule/parts')).pipe(
+      switchMap((parts) => injector.get(parts.ScheduleApi).linkHomework(lessonId, assignmentId)),
+    );
+};
+
 /** Pages that several routes open: one loader each. */
 const assignmentEditorPage = () => import('@features/homework').then((m) => m.AssignmentEditorPage);
+const lessonPlanEditorPage = () =>
+  import('@features/textbooks').then((m) => m.LessonPlanEditorPage);
 const boardPage = () => import('@features/boards').then((m) => m.BoardPage);
 const notFoundPage = () => import('@core/pages/not-found').then((m) => m.NotFound);
 const accountPage = () => import('@features/account').then((m) => m.AccountPage);
@@ -205,7 +241,7 @@ export const routes: Routes = [
         path: 'homework/new',
         title: N.newAssignment,
         loadComponent: assignmentEditorPage,
-        resolve: { upcomingLessons },
+        resolve: { upcomingLessons, lessonOf, linkToLesson: linkHomework },
         canDeactivate: [canLeaveGuard],
       },
       {
@@ -218,6 +254,20 @@ export const routes: Routes = [
         path: 'materials',
         title: NAV.materials,
         loadComponent: () => import('@features/materials').then((m) => m.MaterialsPage),
+      },
+      {
+        path: 'materials/plans/new',
+        title: N.newLessonPlan,
+        loadComponent: lessonPlanEditorPage,
+        resolve: { linkToLesson },
+        canDeactivate: [canLeaveGuard],
+      },
+      {
+        path: 'materials/plans/:planId',
+        title: N.editLessonPlan,
+        loadComponent: lessonPlanEditorPage,
+        resolve: { linkToLesson },
+        canDeactivate: [canLeaveGuard],
       },
       // boards and textbooks are the two tabs of Materials (245.2); the filters of the address stay
       { path: 'boards', pathMatch: 'full', redirectTo: materialsTab('boards') },

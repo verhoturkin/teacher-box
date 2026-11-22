@@ -27,7 +27,7 @@ import ru.teacherbox.textbooks.domain.TextbookMember;
 public class TextbookRepository {
 
     private static final String SELECT = """
-            select id, kind, title, course, page_count, format, file_key, filename, content_type, size, created_at,
+            select id, kind, title, course_id, page_count, format, file_key, filename, content_type, size, created_at,
                    updated_at, version
             from textbooks.textbooks
             """;
@@ -41,9 +41,9 @@ public class TextbookRepository {
 
     public void insert(Textbook textbook, Collection<TextbookMember> members) {
         jdbc.sql("""
-                insert into textbooks.textbooks (id, kind, title, course, page_count, format, file_key, filename,
+                insert into textbooks.textbooks (id, kind, title, course_id, page_count, format, file_key, filename,
                     content_type, size, created_at, updated_at, version)
-                values (:id, :kind, :title, :course, :pageCount, :format, :fileKey, :filename, :contentType, :size,
+                values (:id, :kind, :title, :courseId, :pageCount, :format, :fileKey, :filename, :contentType, :size,
                     :createdAt, :updatedAt, :version)
                 """)
                 .params(params(textbook))
@@ -60,7 +60,7 @@ public class TextbookRepository {
      */
     public Textbook update(Textbook textbook, Optional<? extends Collection<TextbookMember>> members) {
         int updated = jdbc.sql("""
-                update textbooks.textbooks set kind = :kind, title = :title, course = :course,
+                update textbooks.textbooks set kind = :kind, title = :title, course_id = :courseId,
                     page_count = :pageCount, format = :format, file_key = :fileKey, filename = :filename,
                     content_type = :contentType, size = :size, updated_at = :updatedAt, version = version + 1
                 where id = :id and version = :version
@@ -73,7 +73,7 @@ public class TextbookRepository {
                     .update();
             insertMembers(textbook.id(), list);
         });
-        return new Textbook(textbook.id(), textbook.kind(), textbook.title(), textbook.course(),
+        return new Textbook(textbook.id(), textbook.kind(), textbook.title(), textbook.courseId(),
                 textbook.pageCount(), textbook.file(), textbook.createdAt(), textbook.updatedAt(),
                 textbook.version() + 1);
     }
@@ -112,7 +112,7 @@ public class TextbookRepository {
                 .list();
     }
 
-    /** Ids of the textbooks any of the students or groups is a member of. */
+    /** Ids of the textbooks any of the students, groups or courses is a member of. */
     public List<UUID> findIdsByMembers(Collection<UUID> memberIds) {
         if (memberIds.isEmpty()) {
             return List.of();
@@ -164,7 +164,7 @@ public class TextbookRepository {
         params.put("id", textbook.id());
         params.put("kind", textbook.kind().name());
         params.put("title", textbook.title());
-        params.put("course", textbook.course());
+        params.put("courseId", textbook.courseId());
         params.put("pageCount", textbook.pageCount());
         params.put("format", textbook.file().format().name());
         params.put("fileKey", textbook.file().key());
@@ -181,7 +181,7 @@ public class TextbookRepository {
                 rs.getObject("id", UUID.class),
                 TextbookKind.valueOf(rs.getString("kind")),
                 rs.getString("title"),
-                rs.getString("course"),
+                rs.getObject("course_id", UUID.class),
                 rs.getObject("page_count", Integer.class),
                 new TextbookFile(rs.getString("file_key"), rs.getString("filename"), rs.getString("content_type"),
                         rs.getLong("size"), TextbookFormat.valueOf(rs.getString("format"))),

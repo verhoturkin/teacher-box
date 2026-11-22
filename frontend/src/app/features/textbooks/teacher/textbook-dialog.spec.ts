@@ -20,7 +20,10 @@ describe('TextbookDialog', () => {
     fixture.componentInstance.saved.subscribe((textbook) => saved.push(textbook));
     fixture.componentRef.setInput('students', [{ id: 's-1', name: 'Мария' }]);
     fixture.componentRef.setInput('groups', [{ id: 'g-1', name: 'ОГЭ' }]);
-    fixture.componentRef.setInput('courses', ['Английский']);
+    fixture.componentRef.setInput('courses', [
+      { id: 'c-1', name: 'Английский' },
+      { id: 'c-2', name: 'ОГЭ' },
+    ]);
     await fixture.whenStable();
   });
 
@@ -47,7 +50,6 @@ describe('TextbookDialog', () => {
   it('adds a textbook only with a file; the title comes from the file name', async () => {
     const dialog = await open();
     expect(bodyText()).toContain('Новый учебник');
-    expect(document.body.querySelector('option[value="Английский"]')).not.toBeNull();
 
     buttonByText(document.body, 'Добавить').click();
     await fixture.whenStable();
@@ -59,7 +61,6 @@ describe('TextbookDialog', () => {
     expect(bodyText()).toContain('Spotlight 5.pdf');
     expect(document.body.querySelector('#textbook-pages')).toBeNull();
     dialog.form.patchValue({
-      course: ' Английский ',
       members: [
         { kind: 'STUDENT', id: 's-1' },
         { kind: 'GROUP', id: 'g-1' },
@@ -70,7 +71,7 @@ describe('TextbookDialog', () => {
     const create = backend.expectOne({ method: 'POST', url: '/api/teacher/textbooks' });
     const form = formData(create.request.body);
     expect(form.get('title')).toBe('Spotlight 5');
-    expect(form.get('course')).toBe('Английский');
+    expect(form.has('courseId')).toBe(false);
     expect(form.has('pageCount')).toBe(false);
     expect(form.getAll('studentIds')).toEqual(['s-1']);
     expect(form.getAll('groupIds')).toEqual(['g-1']);
@@ -102,11 +103,29 @@ describe('TextbookDialog', () => {
     expect(dialog.visible()).toBe(true);
   });
 
-  it('changes a textbook, keeping members that left', async () => {
+  it('gives a new textbook a course and «Ученики курса»', async () => {
+    const dialog = await open();
+    expect(bodyText()).toContain('Курс');
+    await pick(new File(['%PDF-'], 'A2.pdf'));
+    dialog.form.patchValue({ courseId: 'c-1', members: [{ kind: 'COURSE', id: 'c-2' }] });
+    buttonByText(document.body, 'Добавить').click();
+    const create = backend.expectOne({ method: 'POST', url: '/api/teacher/textbooks' });
+    const form = formData(create.request.body);
+    expect(form.get('courseId')).toBe('c-1');
+    expect(form.getAll('courseIds')).toEqual(['c-2']);
+    expect(form.getAll('studentIds')).toEqual([]);
+    create.flush(aTextbook());
+  });
+
+  it('changes a textbook, keeping members that left, its course and «Ученики курса»', async () => {
     const dialog = await open(
       aWorkbook({
-        members: [{ type: 'STUDENT', id: 'gone', name: null }],
-        course: 'Английский',
+        members: [
+          { type: 'STUDENT', id: 'gone', name: null },
+          { type: 'COURSE', id: 'c-2', name: 'ОГЭ' },
+        ],
+        courseId: 'c-1',
+        courseName: 'Английский',
         version: 2,
       }),
     );
@@ -117,17 +136,27 @@ describe('TextbookDialog', () => {
       { id: 'gone', name: 'Нет в списке' },
     ]);
     expect(dialog.form.controls.pageCount.value).toBe(48);
-    dialog.form.patchValue({ course: '  ', pageCount: 50 });
+    expect(dialog.form.controls.members.value).toEqual([
+      { kind: 'STUDENT', id: 'gone' },
+      { kind: 'COURSE', id: 'c-2' },
+    ]);
+    expect(dialog.form.controls.courseId.value).toBe('c-1');
+    expect(dialog.courseMembers()).toEqual([
+      { id: 'c-1', name: 'Английский' },
+      { id: 'c-2', name: 'ОГЭ' },
+    ]);
+    dialog.form.patchValue({ pageCount: 50 });
 
     buttonByText(document.body, 'Сохранить').click();
     const change = backend.expectOne({ method: 'PUT', url: '/api/teacher/textbooks/tb-2' });
     expect(change.request.body).toEqual({
       kind: 'WORKBOOK',
       title: 'Рабочая тетрадь',
-      course: null,
+      courseId: 'c-1',
       pageCount: 50,
       studentIds: ['gone'],
       groupIds: [],
+      courseIds: ['c-2'],
       version: 2,
     });
     change.flush(aWorkbook());

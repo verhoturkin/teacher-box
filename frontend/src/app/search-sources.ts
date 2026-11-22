@@ -104,7 +104,7 @@ export async function searchSources(): Promise<readonly SearchSource[]> {
               id: book.id,
               group: 'textbooks',
               title: book.title,
-              subtitle: book.course,
+              subtitle: book.courseName,
               link: MATERIALS,
               query: { tab: 'textbooks' },
               keywords: [book.filename],

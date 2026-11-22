@@ -19,9 +19,6 @@ import {
   QuizStats,
   QuizView,
   TaskDetails,
-  VideoTranscript,
-  CaptionTrack,
-  CaptionTracks,
 } from './homework.models';
 import { quietContext } from '@core/http/api-error.interceptor';
 
@@ -38,8 +35,10 @@ export class HomeworkApi {
 
   // --- teacher ---
 
-  assignments(): Observable<AssignmentSummary[]> {
+  /** The working assignments; `bank` — the originals of the bank instead (roadmap 11). */
+  assignments(bank = false): Observable<AssignmentSummary[]> {
     return this.http.get<AssignmentSummary[]>(`${TEACHER}/assignments`, {
+      params: bank ? { bank: true } : {},
       context: quietContext(),
     });
   }
@@ -68,30 +67,22 @@ export class HomeworkApi {
     return this.http.post<AssignmentDetails>(`${TEACHER}/assignments/${id}/copy`, {});
   }
 
+  /** «Сохранить в банк» / «Обновить в банке»: a new original, or the original's content replaced by this one. */
+  saveToBank(id: string): Observable<AssignmentDetails> {
+    return this.http.post<AssignmentDetails>(`${TEACHER}/assignments/${id}/bank`, {});
+  }
+
+  /** «Использовать»: a working draft of a bank item for these students; the bank stays as it is. */
+  use(id: string, studentIds: readonly string[]): Observable<AssignmentDetails> {
+    return this.http.post<AssignmentDetails>(`${TEACHER}/assignments/${id}/use`, { studentIds });
+  }
+
   updateAssignment(
     id: string,
     input: AssignmentInput,
     version: number,
   ): Observable<AssignmentDetails> {
     return this.http.put<AssignmentDetails>(`${TEACHER}/assignments/${id}`, { ...input, version });
-  }
-
-  /** «Взять субтитры с YouTube» (ADR-0047): the caption tracks; errors are shown by the video card, not a toast. */
-  videoCaptions(url: string): Observable<CaptionTracks> {
-    return this.http.post<CaptionTracks>(
-      `${TEACHER}/videos/captions`,
-      { url },
-      { context: quietContext() },
-    );
-  }
-
-  /** The captions of the chosen track as a transcript; errors are shown by the video card, not a toast. */
-  videoTranscript(url: string, track: CaptionTrack): Observable<VideoTranscript> {
-    return this.http.post<VideoTranscript>(
-      `${TEACHER}/videos/transcript`,
-      { url, language: track.language, automatic: track.automatic },
-      { context: quietContext() },
-    );
   }
 
   /** Deletes the assignment with the students' answers and every file. */

@@ -12,7 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
-import ru.teacherbox.homework.application.VideoCaptions;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.TestUsers;
 
@@ -33,9 +32,6 @@ class AssignmentVideosIntegrationTests {
 
     @Autowired
     FakeUserDirectory directory;
-
-    @Autowired
-    FakeVideoCaptions captions;
 
     @Test
     void savesVideosWithTheAssignment() {
@@ -95,52 +91,6 @@ class AssignmentVideosIntegrationTests {
                 .toList());
         assertThat(post("/api/teacher/homework/assignments", "{\"title\":\"Много\",\"videos\":[" + six + "]}"))
                 .hasStatus(HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
-    void takesTheCaptionsOfAYoutubeVideo() {
-        captions.put("aaaaaaaaaaa", new VideoCaptions.Captions("Урок", "en", true, List.of(
-                new VideoCaptions.Cue(1_000, "Hello"), new VideoCaptions.Cue(5_000, "class"),
-                new VideoCaptions.Cue(40_000, "Bye"))), new VideoCaptions.Captions("Урок", "ru", false, List.of(
-                new VideoCaptions.Cue(2_000, "Привет"))));
-
-        assertThat(post("/api/teacher/homework/videos/captions", "{\"url\":\"https://youtu.be/aaaaaaaaaaa\"}"))
-                .hasStatusOk().bodyJson().satisfies(json -> {
-                    assertThat(json).extractingPath("$.title").isEqualTo("Урок");
-                    assertThat(json).extractingPath("$.tracks[1].language").isEqualTo("ru");
-                    assertThat(json).extractingPath("$.tracks[1].automatic").isEqualTo(false);
-                    assertThat(json).extractingPath("$.suggested.language").isEqualTo("en");
-                });
-        assertThat(post("/api/teacher/homework/videos/transcript",
-                "{\"url\":\"https://youtu.be/aaaaaaaaaaa\",\"language\":\"ru\",\"automatic\":false}"))
-                .hasStatusOk().bodyJson().extractingPath("$.transcript").isEqualTo("[0:02] Привет");
-        assertThat(post("/api/teacher/homework/videos/transcript",
-                "{\"url\":\"https://youtu.be/aaaaaaaaaaa\",\"language\":\"de\",\"automatic\":false}"))
-                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
-                .bodyJson().extractingPath("$.code").isEqualTo("video.captions-none");
-
-        assertThat(post("/api/teacher/homework/videos/transcript", "{\"url\":\"https://youtu.be/aaaaaaaaaaa\"}"))
-                .hasStatusOk().bodyJson().satisfies(json -> {
-                    assertThat(json).extractingPath("$.title").isEqualTo("Урок");
-                    assertThat(json).extractingPath("$.language").isEqualTo("en");
-                    assertThat(json).extractingPath("$.automatic").isEqualTo(true);
-                    assertThat(json).extractingPath("$.transcript").isEqualTo("[0:01] Hello class\n[0:40] Bye");
-                    assertThat(json).extractingPath("$.truncated").isEqualTo(false);
-                });
-        assertThat(post("/api/teacher/homework/videos/transcript", "{\"url\":\"https://youtu.be/bbbbbbbbbbb\"}"))
-                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
-                .bodyJson().extractingPath("$.code").isEqualTo("video.captions-none");
-        assertThat(post("/api/teacher/homework/videos/transcript", "{\"url\":\"https://rutube.ru/video/1/\"}"))
-                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
-                .bodyJson().extractingPath("$.code").isEqualTo("video.not-youtube");
-
-        UUID student = directory.addStudent("Сева");
-        assertThat(mvc.post().uri("/api/teacher/homework/videos/transcript").with(TestUsers.student(student))
-                .contentType(MediaType.APPLICATION_JSON).content("{\"url\":\"https://youtu.be/aaaaaaaaaaa\"}"))
-                .hasStatus(HttpStatus.FORBIDDEN);
-        assertThat(mvc.post().uri("/api/teacher/homework/videos/captions").with(TestUsers.student(student))
-                .contentType(MediaType.APPLICATION_JSON).content("{\"url\":\"https://youtu.be/aaaaaaaaaaa\"}"))
-                .hasStatus(HttpStatus.FORBIDDEN);
     }
 
     private RequestPostProcessor teacher() {

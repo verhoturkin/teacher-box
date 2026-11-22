@@ -24,7 +24,8 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   `homework` does not know `boards`); `PUT /api/teacher/homework/assignments/{id}/board {boardId}` (`null` forgets it)
   changes no version. `boardId` is in `AssignmentDetails`, `AssignmentSummary` and the student's `AssignmentInfo`.
   `AssignmentSummary.studentIds` (0.41.0) lets the teacher's list filter by student or group on the
-  client; the list endpoint still returns every assignment (paging of «Готовые» is client-side).
+  client; the list endpoint still returns every working assignment (paging of «Готовые» is
+  client-side; the bank — `?bank=true`, 462.1).
   For the list's material icons (339.1) it also carries `textbooks`, `files`, `questions` and
   `videos` — how many the assignment has (grouped counts in the repositories, one query per kind); a
   `ReviewQueueItem` carries `quizScore` / `quizMax` — the points of the best submitted quiz attempt
@@ -36,15 +37,12 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   (32-hex ID), VK Video (`video-<oid>_<id>`, `video_ext.php`); any other http(s) link is `OTHER` (a link, no
   player); not http(s) — `video.link-invalid`, over 5 — `video.too-many`. Transcript — lines `[m:ss] text`, up to
   100 000 characters; `AssignmentDetails.videos` has every transcript, the student's `AssignmentInfo.videos` only
-  those with `transcriptShown`. «Субтитры YouTube» (saves nothing): `POST /api/teacher/homework/videos/captions
-  {url}` → `{title, tracks: [{language, automatic}], suggested}` (0.19.1), then `POST …/videos/transcript {url,
-  language?, automatic}` — the chosen track, without `language` the suggested one. `VideoTranscripts` over the port
-  `VideoCaptions`, adapter `youtube/YoutubeCaptions` — the InnerTube player (client `ANDROID`); suggested: the author's
-  track in the spoken language, else the recognized one, else the first; timed text decoded as UTF-8 unless the answer
-  names a charset; cues merged into ~30-second paragraphs; `{title, language, automatic, transcript, truncated}`; a
-  track the video does not have — `video.captions-none`; errors
-  `video.not-youtube`, `video.captions-none`, `video.captions-failed` (422). Proxy
-  `TEACHERBOX_HOMEWORK_YOUTUBE_PROXY`. CSP `frame-src`: `youtube-nocookie.com`, `rutube.ru`, `vkvideo.ru`.
+  those with `transcriptShown`. «Субтитры YouTube» (saves nothing) — the endpoints, `VideoLink` parsing and the captions adapter
+  now belong to `textbooks` ([textbooks.md](textbooks.md), 0.60.0): `POST
+  /api/teacher/textbooks/videos/captions|transcript`, the same bodies and `video.*` errors.
+  `homework` keeps `assignment_videos` and uses `textbooks::api.VideoLink`; the proxy variable
+  `TEACHERBOX_HOMEWORK_YOUTUBE_PROXY` kept its name.
+  CSP `frame-src`: `youtube-nocookie.com`, `rutube.ru`, `vkvideo.ru`.
 - Due date; `DueSoonReminder` publishes `HomeworkDueSoon` once per unfinished task within the
   teacher's window (`DueSoonWindow`, read per run, 24 h by default, ADR-0056):
   `GET/PUT /api/teacher/homework/settings` (`dueSoonMinutes` 60–4320, else 422
@@ -70,10 +68,36 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   remembers whom a draft is meant for. It makes no task and no event, students never see it; unknown
   student → 404 `student.not-found`. `AssignmentDetails.draftStudentIds` returns them; giving the assignment
   out (`assign`) drops the ones that got a task. The assignment page opens «Добавить» with them chosen.
-- **Copy** (0.36.0): `POST /api/teacher/homework/assignments/{id}/copy` (`AssignmentService.copy`, 201) — a new
-  draft «<title> (копия)» (the title is cut to 200 characters) with the text, the files (new `FileStorage` keys, so
-  deleting the original keeps the copy's files), the bound textbooks with pages and the videos with transcripts; no
-  students, no deadline, no board.
+- **The course of an assignment** (460.1, [ADR-0071](../adr/0071-courses-lesson-plans-and-bank.md)):
+  `assignments.course_id` (`V6`, a UUID only) — `courseId` in the create and update bodies (`null` —
+  none; an update always sends it), checked through `textbooks::api.Courses` when it changes (404
+  `assignment.course-not-found`); `courseId` is in `AssignmentDetails` and `AssignmentSummary`; a
+  copy keeps it. `CourseListener` clears it on `textbooks::api.CourseDeleted` (no new version; a
+  redelivery changes nothing). A bound textbook shows its `courseName`.
+- **Copy** (0.36.0): `POST /api/teacher/homework/assignments/{id}/copy` (`AssignmentService.copy`,
+  201) — a new draft «<title> (копия)» (the title is cut to 200 characters) with the text, the
+  course, the files (new `FileStorage` keys, so deleting the original keeps the copy's files), the
+  bound textbooks with pages and the videos with transcripts; no students, no deadline, no board.
+- **The bank of assignments** (462.1, roadmap 11 «Bank», ADR-0071): `assignments.bank`,
+  `assignments.source_id` (`V7`; the migration puts nothing into the bank). A bank item is content
+  only: no tasks, no deadline (`dueAt` is dropped), no board, no draft students — giving it out,
+  create with `bank: true` and `studentIds`, draft students and a board answer 409
+  `homework.bank-item`. `POST assignments` with `bank: true` makes one («Материалы» → «Создать»).
+  The first «Выдать» (the first tasks, by create with `studentIds` or `POST …/students`) of a
+  working assignment without `source_id` saves its original into the bank — the text, course, quiz
+  settings and questions, files (new `FileStorage` keys, as copy does), textbooks with pages,
+  videos with transcripts — and sets `source_id` without a new version. `POST
+  assignments/{id}/bank` («Сохранить в банк» / «Обновить в банке»): no original (never saved, or
+  deleted) — a new one; else the original takes this assignment's content and materials (its files
+  are replaced by new copies); a bank item — 409 `homework.bank-item`. `POST assignments/{id}/use
+  {studentIds}` («Использовать», 201): a working draft with the same title and materials,
+  `source_id` = the bank item, the students kept as draft students (unknown — 404
+  `student.not-found`); nothing is added to the bank, its «Выдать» saves nothing; a working
+  assignment — 409 `homework.not-in-bank`. Deleting an original keeps its copies (`source_id` →
+  null, `on delete set null`). A copy (`…/copy`) of a bank item stays in the bank, without a
+  source. `GET assignments` lists the working assignments, `?bank=true` the bank items; `bank`,
+  `sourceId` and `uses` (a bank item: working assignments with this `source_id`) are in
+  `AssignmentSummary` and `AssignmentDetails`.
 - A student sees only own tasks and attachments (403/404 tests).
 - The teacher's assignment view gives each student entry (`TaskSummary`) a one-line `answerPreview` (the
   first 200 characters of the latest answer text, whitespace collapsed, `…` when cut), `answerFiles` (files of
@@ -97,15 +121,21 @@ page) publishes `HomeworkReminderRequested` for a task that is `ASSIGNED` or `RE
 `task.not-remindable`, an unknown task 404, a second one within an hour 409 `task.reminded-recently`
 (kept in memory: a restart forgets it). Teacher only.
 
+`Assignments` (for `schedule`, roadmap 11): `find(ids)` → `AssignmentSummary (id, title, dueAt,
+courseId, bank, studentIds)` in the order of the ids, deleted ones skipped; `checkLinkable(id)` —
+404 `assignment.not-found`, a bank item 409 `homework.bank-item` (`schedule` answers
+`schedule.bank-item`).
+
 `AssignmentFiles.file(assignmentId, attachmentId)` (for `ai`, [ADR-0039](../adr/0039-ai-reads-homework-sources.md)): a
 file of the assignment's materials — name, type, size, content; another assignment's file — 404 `file.not-found`.
 
 ## Data
 
-`assignments`, `tasks`, `submissions`, `attachments`, `assignment_textbooks` (assignment, textbook, pages),
-`assignment_videos` (position, url, provider, video ID, start, title, transcript, shown), `settings`
-(one row, ADR-0056: `due_soon_window` — filled once from `.env` by `HomeworkSettingsImport`, read
-by `DueSoonWindow`).
+`assignments` (`course_id` — ADR-0071; `bank`, `source_id` → `assignments`, on delete set null —
+roadmap 11), `tasks`, `submissions`, `attachments`,
+`assignment_textbooks` (assignment, textbook, pages), `assignment_videos` (position, url, provider,
+video ID, start, title, transcript, shown), `settings` (one row, ADR-0056: `due_soon_window` —
+filled once from `.env` by `HomeworkSettingsImport`, read by `DueSoonWindow`).
 
 Quizzes ([ADR-0052](../adr/0052-auto-checked-quizzes.md), `domain/quiz/`): `assignment_questions` (position, type,
 text, `options` and `answer` as JSON by type, points, explanation), `quiz_attempts` (task, start, submit, score),
@@ -144,9 +174,11 @@ how many students (of those with a submitted attempt) got it wrong in their best
 
 ## REST
 
-`/api/teacher/homework/**` (assignments — the list has the names of the students of each, `DELETE assignments/{id}`, `POST assignments/{id}/copy`, students, attachments,
+`/api/teacher/homework/**` (assignments — the list has the names of the students of each,
+`?bank=true` — the bank, `DELETE assignments/{id}`, `POST assignments/{id}/copy`,
+`POST assignments/{id}/bank`, `POST assignments/{id}/use {studentIds}`, students, attachments,
 `PUT assignments/{id}/board`, `POST assignments/{id}/textbooks` `{textbookId, pages}`,
-`DELETE assignments/{id}/textbooks/{textbookId}`, `POST videos/transcript`, tasks/{id}/review, review-queue, `GET journal?from&to&who` (`from`/`to` — `yyyy-MM-dd`, whole days of the instance time zone, both
+`DELETE assignments/{id}/textbooks/{textbookId}`, tasks/{id}/review, review-queue, `GET journal?from&to&who` (`from`/`to` — `yyyy-MM-dd`, whole days of the instance time zone, both
 included; `who` — a group or a student id, none: every student with a task on these assignments):
 the assignments due in the range as columns and the current students as rows, one cell per column —
 `ACCEPTED` (+ `grade`), `TO_REVIEW` (+ the best quiz score), `RETURNED`, `OVERDUE` (+ `overdueDays`),
@@ -201,7 +233,7 @@ the due date — the start of the earliest scheduled lesson of the chosen studen
 `homework` does not import `schedule`, ADR-0058) until the teacher sets it; textbooks and files only for a new
 assignment (0.14.2: a saved one changes them on its page); picked files — `ui/file-picker.ts`, the same `tb-list` cards
 as the saved ones, the name of a PDF or a picture opens it in a tab (0.14.5)
-(`BindTextbookDialog` without an assignment emits `picked`, checked by `parsePages`). A new assignment is created
+(`BindTextbookDialog` of `@features/textbooks/parts` emits `picked`, checked by `parsePages`). A new assignment is created
 without students, gets its files and textbooks, then is given out — the notification goes with the materials in place;
 a material that fails leaves the assignment saved with an error toast. Header: «Выдать» / «Сохранить» (filled) and
 «Выдать и поместить на доску» / «Сохранить и поместить на доску» (tonal): it saves, then opens «На доску» for the

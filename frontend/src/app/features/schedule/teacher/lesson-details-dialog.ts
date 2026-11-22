@@ -115,6 +115,7 @@ function withDetails(lesson: ScheduledLesson, details: ScheduledLesson): Schedul
             [busy]="busy.is('outcome')"
             (outcomeChange)="mark($event)"
             (answer)="answerRequest($event)"
+            (planChange)="onSummarySaved($event)"
           />
           @if (summarizable()) {
             <tb-lesson-summary [lesson]="item" (saved)="onSummarySaved($event)" />
@@ -305,7 +306,7 @@ export class LessonDetailsDialog {
     }
   }
 
-  /** A save of the summary: the card keeps the lesson it returned; the page needs no reload. */
+  /** A save of the summary or of the plan: the card keeps the lesson it returned; the page needs no reload. */
   protected onSummarySaved(lesson: ScheduledLesson): void {
     this.details.set(lesson);
     this.shown.set(lesson);

@@ -42,9 +42,56 @@ edit, «⋮» or marks.
 - **Summary** (`lesson-summary-section.ts`): only for a started, not cancelled lesson (an individual
   lesson marked missed has none), edited in place. «What we covered» is prefilled with the topic and
   visible to the lesson's students; «next topic» fills the next lesson's empty topic. The AI draft
-  uses the topic, the teacher's words and the titles of that day's assignments for the lesson's
-  students (assignments are not bound to lessons — *ours*). Save is enabled only on a difference;
+  uses the topic, the teacher's words and the titles of the lesson's linked assignments
+  (`assignmentIds`, in the order linked). Save is enabled only on a difference;
   send saves first; the card stays open. Model switch: [homework](homework.md#ai-pane).
+
+## Lesson plan
+
+`schedule/ui/lesson-plan-section.ts` (teacher) and `ui/my-lesson-plan.ts` (student, parent) end
+the lesson card, above the summary (roadmap 11 «Lesson card», 461.4). The direction `schedule` →
+`textbooks` (ADR-0058) gives the card `LessonPlansApi`, `CoursesApi` and `VideoList`; the editor
+of `textbooks` does not import `schedule`: the route (`app.routes.ts`, `linkToLesson`) passes it
+`ScheduleApi.linkPlan`.
+
+- **Teacher, no plan** (not on a cancelled lesson — it takes no new plan): the title «План урока»
+  (title medium), a muted hint and two buttons — «Составить» (secondary, the stronger of the two)
+  opens `/teacher/materials/plans/new?lessonId=…&studentId=…|groupId=…`: a working plan, the
+  course of the student or the group prefilled, the first save links it
+  (`PUT …/lessons/{id}/plan`), back and «Готово» lead to `/teacher/schedule`; «Из банка»
+  (outlined) turns the row into an inline picker — a filtered `p-select` of the bank items by
+  title with the course under each, «Отмена» and «Взять» (`POST …/plans/{id}/use`, then the link;
+  a copy the link refuses is deleted, the error is a snackbar). *Ours*: inline instead of a dialog
+  — a window does not open over the sheet (ADR-0026).
+- **Teacher, a plan**: the header keeps «Открыть» (text, → the editor with `?lessonId=`) and «⋮»
+  «Убрать из урока» (`confirm.danger`; unlink, then delete the working copy, the bank original
+  stays); the list — the title, each textbook with «Учебник · с. 12-14», each video by name. A
+  dangling plan id shows the compact load error with «Повторить»; «⋮» still takes it off.
+- **Student and parent**: only with a plan — the title, the Markdown text, «Учебники» (the homework
+  `TextbookList`: open the bound pages, download) and «Видео» (`VideoList` with the player,
+  transcripts only when shown). Addresses follow `API_SCOPE`; the plan is read once per lesson.
+
+## Lesson homework
+
+`schedule/ui/lesson-homework-section.ts` (teacher only) follows the plan in the lesson card
+(roadmap 11 «Lesson card», 462.2); the direction `schedule` → `homework` gives it `HomeworkApi`
+and `assignmentProgress`. The homework editor does not import `schedule`: the route passes it
+`lessonOf` and `linkToLesson` ([homework](homework.md), «Assignment editor»).
+
+- **List:** «Домашнее задание» (title medium); each linked assignment (`assignmentIds`, read from
+  `GET …/homework/assignments` once the lesson has one) — `assignment` icon, the title as a link (a
+  draft → its editor, an issued one → its page), the progress tag of the homework list («Не
+  выдано», «Выдано», «На проверке: N», «Принято»), «⋮» «Отвязать» (`DELETE
+  …/lessons/{id}/homework/{assignmentId}`; the assignment stays). A dangling id reads «Задание
+  удалено» and can still be unlinked.
+- **Actions** (not on a cancelled lesson — it keeps what it has): «Задать» (secondary, the
+  stronger) → `/teacher/homework/new?lessonId=…`; «Привязать» (outlined) turns the row into an
+  inline picker — a filtered, grouped `p-select`: «Недавние задания участников» (working
+  assignments of the last 30 days with a lesson student, not linked to any lesson of ±90 days)
+  and «Из банка» (by title), «Отмена» and «Привязать». A bank item is used for the lesson's
+  students (`POST …/assignments/{id}/use`), then linked; a draft the link refuses is deleted. The
+  snackbar of a used item has «Открыть» (its editor). *Ours:* drafts are not offered among the
+  recent ones — a summary carries no draft students; inline instead of a dialog, as the plan.
 
 ## Requests
 

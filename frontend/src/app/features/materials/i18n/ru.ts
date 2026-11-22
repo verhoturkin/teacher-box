@@ -5,6 +5,8 @@ export const ru = {
   tabs: 'Раздел материалов',
   boards: 'Доски',
   textbooks: 'Учебники',
+  plans: 'Планы',
+  assignments: 'Задания',
   filters: 'Фильтр материалов',
   chips: {
     all: 'Все',
@@ -13,6 +15,13 @@ export const ru = {
     TEXTBOOK: 'Учебники',
     WORKBOOK: 'Рабочие тетради',
     OTHER: 'Другое',
+  },
+  courses: {
+    filter: 'Фильтр по курсу',
+    all: 'Все',
+    none: 'Без курса',
+    manage: 'Курсы',
+    menu: 'Действия с курсами',
   },
   search: 'Название, ученик или группа',
   searchMine: 'Название',
@@ -24,4 +33,6 @@ export const ru = {
   },
   newBoard: 'Новая доска',
   newTextbook: 'Новый учебник',
+  newPlan: 'Новый план',
+  newAssignment: 'Новое задание',
 };
