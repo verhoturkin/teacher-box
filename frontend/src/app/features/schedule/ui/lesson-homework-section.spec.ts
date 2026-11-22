@@ -50,6 +50,24 @@ describe('LessonHomeworkSection', () => {
     fixture.detectChanges();
   }
 
+  /** «+ ДЗ» → an item of its menu. */
+  async function add(root: HTMLElement, item: string): Promise<void> {
+    root
+      .querySelector<HTMLButtonElement>('button[aria-label="Добавить домашнее задание"]')
+      ?.click();
+    await fixture.whenStable();
+    menuItemByText(item).click();
+    await fixture.whenStable();
+  }
+
+  /** Opens the row «ДЗ: …». */
+  async function expand(root: HTMLElement): Promise<HTMLButtonElement | null> {
+    const toggle = root.querySelector<HTMLButtonElement>('button[aria-expanded]');
+    toggle?.click();
+    await fixture.whenStable();
+    return toggle;
+  }
+
   function lastMessage(): unknown {
     return messages.mock.lastCall?.[0];
   }
@@ -65,9 +83,9 @@ describe('LessonHomeworkSection', () => {
 
   it('offers to set homework for the lesson in the editor', async () => {
     const root = await show(scheduledLesson({ id: 'l-1' }));
-    expect(root.textContent).toContain('Домашнее задание');
-    expect(root.textContent).toContain('К уроку пока нет задания');
-    buttonByText(root, 'Задать').click();
+    const chip = root.querySelector('button[aria-label="Добавить домашнее задание"]');
+    expect(chip?.textContent.trim()).toBe('ДЗ');
+    await add(root, 'Задать');
     expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new'], {
       queryParams: { lessonId: 'l-1' },
     });
@@ -75,28 +93,33 @@ describe('LessonHomeworkSection', () => {
 
   it('offers nothing on a cancelled lesson without homework', async () => {
     const root = await show(scheduledLesson({ status: 'CANCELLED' }));
-    expect(root.querySelector('section')).toBeNull();
+    expect(root.querySelector('button')).toBeNull();
   });
 
   it('shows the linked assignments with their status and takes one off', async () => {
     const root = await show(scheduledLesson({ id: 'l-1', assignmentIds: ['a-2', 'a-1', 'gone'] }));
+    const toggle = root.querySelector('button[aria-expanded]');
+    expect(toggle?.textContent.trim()).toBe('ДЗ: 3\u00A0задания');
+    expect(await expand(root)).toBe(toggle);
+    expect(toggle?.getAttribute('aria-expanded')).toBe('true');
     expect(root.textContent).toContain('Загрузка');
     backend
       .expectOne(ASSIGNMENTS)
       .flush([
         assignmentSummary({ id: 'a-1', title: 'Дроби' }),
-        assignmentSummary({ id: 'a-2', title: 'Черновик', totalTasks: 0 }),
+        assignmentSummary({ id: 'a-2', title: 'Черновик', totalTasks: 0, submitted: 0 }),
       ]);
     await fixture.whenStable();
+    expect(toggle?.textContent.trim()).toBe('ДЗ: 3\u00A0задания · 1 на проверке');
     const titles = [...root.querySelectorAll('.tb-list__title')].map((title) =>
       title.textContent.trim(),
     );
-    expect(titles).toEqual(['Черновик', 'Дроби', 'Задание удалено']);
+    expect(titles).toEqual([toggle?.textContent.trim(), 'Черновик', 'Дроби', 'Задание удалено']);
+    expect(buttonByText(root, 'Задать')).toBeTruthy();
     expect(root.textContent).toContain('Не выдано');
     expect(root.textContent).toContain('На проверке: 1');
     expect(root.querySelector('a[href="/teacher/homework/a-2/edit"]')).not.toBeNull();
     expect(root.querySelector('a[href="/teacher/homework/a-1"]')).not.toBeNull();
-    expect(root.textContent).not.toContain('К уроку пока нет задания');
 
     root
       .querySelector<HTMLButtonElement>('button[aria-label="Действия с заданием «Дроби»"]')
@@ -118,6 +141,7 @@ describe('LessonHomeworkSection', () => {
     const root = await show(scheduledLesson({ status: 'CANCELLED', assignmentIds: ['a-1'] }));
     backend.expectOne(ASSIGNMENTS).flush([assignmentSummary()]);
     await fixture.whenStable();
+    await expand(root);
     expect(() => buttonByText(root, 'Задать')).toThrow();
     root
       .querySelector<HTMLButtonElement>('button[aria-label="Действия с заданием «Дроби»"]')
@@ -136,12 +160,13 @@ describe('LessonHomeworkSection', () => {
     const root = await show(scheduledLesson({ assignmentIds: ['a-1'] }));
     backend.expectOne(ASSIGNMENTS).error(new ProgressEvent('offline'));
     await fixture.whenStable();
+    await expand(root);
     expect(root.textContent).toContain('Задание удалено');
   });
 
   it('links a recent assignment of the participants that no lesson has', async () => {
     const root = await show(groupLesson({ id: 'l-1' }));
-    buttonByText(root, 'Привязать').click();
+    await add(root, 'Привязать');
     lessonsRequest().flush([scheduledLesson({ id: 'other', assignmentIds: ['taken'] })]);
     backend
       .expectOne(ASSIGNMENTS)
@@ -182,7 +207,7 @@ describe('LessonHomeworkSection', () => {
 
   it('takes a bank item: its draft for the participants goes on the lesson', async () => {
     const root = await show(scheduledLesson({ id: 'l-1' }));
-    buttonByText(root, 'Привязать').click();
+    await add(root, 'Привязать');
     lessonsRequest().error(new ProgressEvent('offline'));
     backend.expectOne(ASSIGNMENTS).error(new ProgressEvent('offline'));
     backend.expectOne(BANK).flush([assignmentSummary({ id: 'b-1', title: 'Буквы', bank: true })]);
@@ -205,7 +230,7 @@ describe('LessonHomeworkSection', () => {
 
   it('deletes the draft that could not go on the lesson, and the picker can be closed', async () => {
     const root = await show(scheduledLesson({ id: 'l-1' }));
-    buttonByText(root, 'Привязать').click();
+    await add(root, 'Привязать');
     lessonsRequest().flush([]);
     backend.expectOne(ASSIGNMENTS).flush([]);
     backend.expectOne(BANK).flush([assignmentSummary({ id: 'b-1', bank: true })]);
@@ -224,14 +249,15 @@ describe('LessonHomeworkSection', () => {
     expect(changed).toEqual([]);
     expect(lastMessage()).toMatchObject({ severity: 'error' });
 
+    expect(fixture.nativeElement).toHaveProperty('className', 'tb-lesson-prep--row');
     buttonByText(root, 'Отмена').click();
     await fixture.whenStable();
-    expect(buttonByText(root, 'Задать')).toBeTruthy();
+    expect(root.querySelector('button[aria-label="Добавить домашнее задание"]')).not.toBeNull();
   });
 
   it('reports a bank that cannot be read and a link that is refused', async () => {
     const root = await show(scheduledLesson({ id: 'l-1' }));
-    buttonByText(root, 'Привязать').click();
+    await add(root, 'Привязать');
     lessonsRequest().flush([]);
     backend
       .expectOne(ASSIGNMENTS)

@@ -71,7 +71,7 @@ the summary of the previous lesson and the AI tags of the lesson’s students. �
 (a replace also narrows the attached textbooks to the pages the AI chose); nothing changes until you press it. The button appears only \
 when a model is connected (Settings → AI assistant).
 
-Lesson plans are made from a lesson’s details (Write or From templates; see Schedule and requests). A plan written for a lesson becomes \
+Lesson plans are made from a lesson’s details (+ Plan, then Write or From templates; see Schedule and requests). A plan written for a lesson becomes \
 a template automatically the first time you choose Done. Its editor’s “⋮” menu has **Save as template** (no \
 template yet) or **Update template** (the template is replaced with this plan after you confirm).
 `,

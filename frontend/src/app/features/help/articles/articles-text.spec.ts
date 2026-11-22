@@ -1155,6 +1155,58 @@ const MATERIALS_PANES: Readonly<Record<string, readonly (readonly [string, strin
   ],
 };
 
+/** The lesson card by time with one-line rows for the plan and the homework (466.2). */
+const LESSON_CARD: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'schedule',
+      'В карточке занятия — раздел «План урока». Пока плана нет, нажмите **«Составить»** — откроется редактор плана этого урока; курс подставится из курса ученика или группы. План сохраняется сам и сразу привязывается к уроку; «Готово» возвращает в расписание. **«Из шаблонов»** — выберите шаблон плана и нажмите «Взять»: урок получит свою копию, шаблон не изменится. У отменённого занятия нового плана не бывает.\n\nКогда план есть, в карточке видны его название, страницы учебников и видео. «Открыть» — редактор плана урока; «⋮» → **«Убрать из урока»** после подтверждения убирает план и удаляет копию этого урока (шаблон остаётся). Ученики занятия и их родители видят план в своей карточке занятия: текст, страницы учебников и видео; расшифровку — только если вы её показываете. Подробнее о планах — в статье «Учебники».',
+      'Карточка занятия меняется со временем. До начала урока сразу под временем и темой — план и домашнее задание; после начала сначала идут отметка и итоги урока, а под ними — домашнее задание и план. План и задание — по одной строке: «План: Present Simple», «ДЗ: 2 задания · 1 на проверке». Нажмите на строку, чтобы раскрыть её на месте, и ещё раз, чтобы свернуть.\n\nПока плана нет, в карточке — кнопка **«+ План»**. **«Составить»** откроет редактор плана этого урока; курс подставится из курса ученика или группы. План сохраняется сам и сразу привязывается к уроку; «Готово» возвращает в расписание. **«С ИИ»** (если включён ИИ-помощник) откроет тот же редактор с помощником. **«Из шаблонов»** — выберите шаблон плана и нажмите «Взять»: урок получит свою копию, шаблон не изменится. У отменённого занятия нового плана не бывает.\n\nРаскрытый план показывает текст, страницы учебников и видео. В меню «⋮» строки плана: **«Открыть в редакторе»** и **«Убрать из урока»** — после подтверждения план убирается и копия этого урока удаляется (шаблон остаётся). Ученики занятия и их родители видят план в своей карточке занятия той же строкой; раскрыв её, они видят текст, страницы учебников и видео; расшифровку — только если вы её показываете. Подробнее о планах — в статье «Учебники».',
+    ],
+    [
+      'schedule',
+      'В карточке занятия под планом — раздел «Домашнее задание»: привязанные к уроку задания с их состоянием («Не выдано», «Выдано», «На проверке»). **«Задать»** открывает редактор задания для этого урока: ученики занятия уже выбраны, курс взят из плана (или из курса ученика или группы), страницы учебников и видео плана уже добавлены — уберите лишнее, срок — к следующему занятию. Задание привязывается к уроку при первом сохранении. **«Привязать»** — выберите недавнее задание учеников занятия, которое ещё не привязано ни к одному уроку, или шаблон задания: из шаблона ученикам занятия создаётся черновик-копия, его можно открыть, поправить и выдать. «⋮» → **«Отвязать»** убирает задание из урока, само задание остаётся. У отменённого занятия новых заданий не бывает.',
+      'Пока задания нет, в карточке — кнопка **«+ ДЗ»** с пунктами «Задать» и «Привязать». Когда задания есть, строка «ДЗ: …» говорит, сколько их и сколько работ ждёт проверки; раскрытая, она показывает привязанные к уроку задания с их состоянием («Не выдано», «Выдано», «На проверке») и кнопки «Задать» и «Привязать». **«Задать»** открывает редактор задания для этого урока: ученики занятия уже выбраны, курс взят из плана (или из курса ученика или группы), страницы учебников и видео плана уже добавлены — уберите лишнее, срок — к следующему занятию. Задание привязывается к уроку при первом сохранении. **«Привязать»** — выберите недавнее задание учеников занятия, которое ещё не привязано ни к одному уроку, или шаблон задания: из шаблона ученикам занятия создаётся черновик-копия, его можно открыть, поправить и выдать. «⋮» → **«Отвязать»** убирает задание из урока, само задание остаётся. У отменённого занятия новых заданий не бывает.',
+    ],
+    [
+      'textbooks',
+      'План урока составляют из карточки занятия («Составить» или «Из шаблонов», см. «Расписание и запросы»). План, составленный для урока, становится шаблоном сам при первом «Готово». В его редакторе в «⋮» — **«Сохранить как шаблон»** (шаблона ещё нет) или **«Обновить шаблон»** (шаблон заменится этим планом, портал спросит подтверждение).',
+      'План урока составляют из карточки занятия («+ План» → «Составить» или «Из шаблонов», см. «Расписание и запросы»). План, составленный для урока, становится шаблоном сам при первом «Готово». В его редакторе в «⋮» — **«Сохранить как шаблон»** (шаблона ещё нет) или **«Обновить шаблон»** (шаблон заменится этим планом, портал спросит подтверждение).',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'schedule',
+      'A lesson’s details have a Lesson plan section. With no plan yet, choose **Write** to open the editor of this lesson’s plan; the course is filled in from the student’s or group’s course. The plan saves itself and is attached to the lesson straight away; Done takes you back to the schedule. Choose **From templates**, pick a plan and choose Use: the lesson gets its own copy and the template stays as it is. A cancelled lesson cannot take a new plan.\n\nOnce a lesson has a plan, its details show the title, the textbook pages and the videos. Open takes you to the plan editor. In the “⋮” menu, **Remove from lesson** removes the plan after you confirm and deletes this lesson’s copy; the template stays. Students in the lesson and their parents see the plan in their lesson details: the text, the textbook pages and the videos, with a transcript only when you show it. See Textbooks for more about plans.',
+      'Lesson details change with time. Before a lesson starts, the plan and the homework come straight after the time and the topic; once it has started, the outcome and the lesson summary come first, then the homework and the plan. The plan and the homework take one line each, such as “Plan: Present Simple” or “Homework: 2 assignments · 1 to review”. Select a line to expand it in place, and again to collapse it.\n\nWith no plan yet, the details show **+ Plan**. **Write** opens the editor of this lesson’s plan; the course is filled in from the student’s or group’s course. The plan saves itself and is attached to the lesson straight away; Done takes you back to the schedule. **With AI** (when the AI assistant is on) opens the same editor with the assistant. Choose **From templates**, pick a plan and choose Use: the lesson gets its own copy and the template stays as it is. A cancelled lesson cannot take a new plan.\n\nAn expanded plan shows its text, the textbook pages and the videos. The plan’s “⋮” menu has **Open in editor** and **Remove from lesson**, which removes the plan after you confirm and deletes this lesson’s copy; the template stays. Students in the lesson and their parents see the same line in their lesson details; when they expand it, they see the text, the textbook pages and the videos, with a transcript only when you show it. See Textbooks for more about plans.',
+    ],
+    [
+      'schedule',
+      'Below the plan, a lesson’s details have a Homework section listing the assignments linked to the lesson and their status (Not set, Set, To review). **Set** opens the assignment editor for this lesson: the lesson’s students are already chosen, the course comes from the plan (or from the student’s or group’s course), the plan’s textbook pages and videos are already added — remove what you don’t need — and the due date is the next lesson. The assignment is linked to the lesson when it is first saved. **Link** lets you pick a recent assignment of the lesson’s students that isn’t linked to any lesson yet, or an assignment template: a template becomes a draft copy for the lesson’s students, which you can open, edit and set. In the “⋮” menu, **Unlink** takes the assignment off the lesson; the assignment itself stays. A cancelled lesson cannot take new homework.',
+      'With no homework yet, the details show **+ Homework** with Set and Link. Once there is homework, the “Homework: …” line says how many assignments there are and how many pieces of work are waiting for review; expanded, it lists the assignments linked to the lesson with their status (Not set, Set, To review) and the Set and Link buttons. **Set** opens the assignment editor for this lesson: the lesson’s students are already chosen, the course comes from the plan (or from the student’s or group’s course), the plan’s textbook pages and videos are already added — remove what you don’t need — and the due date is the next lesson. The assignment is linked to the lesson when it is first saved. **Link** lets you pick a recent assignment of the lesson’s students that isn’t linked to any lesson yet, or an assignment template: a template becomes a draft copy for the lesson’s students, which you can open, edit and set. In the “⋮” menu, **Unlink** takes the assignment off the lesson; the assignment itself stays. A cancelled lesson cannot take new homework.',
+    ],
+    [
+      'textbooks',
+      'Lesson plans are made from a lesson’s details (Write or From templates; see Schedule and requests). A plan written for a lesson becomes a template automatically the first time you choose Done. Its editor’s “⋮” menu has **Save as template** (no template yet) or **Update template** (the template is replaced with this plan after you confirm).',
+      'Lesson plans are made from a lesson’s details (+ Plan, then Write or From templates; see Schedule and requests). A plan written for a lesson becomes a template automatically the first time you choose Done. Its editor’s “⋮” menu has **Save as template** (no template yet) or **Update template** (the template is replaced with this plan after you confirm).',
+    ],
+  ],
+  'student.ru': [
+    [
+      'schedule',
+      'Если учитель подготовил план занятия, он виден в карточке занятия в разделе «План урока»: текст плана, страницы учебников (их можно открыть или скачать) и видео с плеером. Расшифровку видео видно, только если учитель её показывает.',
+      'Если учитель подготовил план занятия, в карточке занятия есть строка «План: …». Нажмите на неё — план раскроется: текст, страницы учебников (их можно открыть или скачать) и видео с плеером. Расшифровку видео видно, только если учитель её показывает.',
+    ],
+  ],
+  'student.en': [
+    [
+      'schedule',
+      'If your teacher has prepared a plan for a lesson, you’ll find it in the lesson details under Lesson plan: the plan text, the textbook pages (open or download them) and the videos with a player. A video transcript appears only when your teacher shows it.',
+      'If your teacher has prepared a plan for a lesson, its details have a “Plan: …” line. Select it to expand the plan: the text, the textbook pages (open or download them) and the videos with a player. A video transcript appears only when your teacher shows it.',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -1263,6 +1315,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(LESSON_HOMEWORK[name] ?? []),
       ...(PERIOD_SUMMARY[name] ?? []),
       ...(MATERIALS_PANES[name] ?? []),
+      ...(LESSON_CARD[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

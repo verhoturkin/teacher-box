@@ -1,0 +1,82 @@
+/*
+ * The plan and the homework of a lesson card (466.2, roadmap 11 decision 13): each is one list row that
+ * opens in place (M3 list «expand»: the trailing chevron turns over), or a dashed assist chip «+ План» /
+ * «+ ДЗ» when there is nothing yet. The card lays the hosts out (`.tb-lesson-card__prep`).
+ */
+
+/* the row's title is the button that opens it; the row's state layer and focus ring are the list's */
+button.tb-lesson-prep__toggle {
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: start;
+  cursor: pointer;
+}
+
+.tb-lesson-prep__chevron {
+  font-size: 1.5rem;
+  color: var(--p-md-on-surface-variant);
+  /* M3: a spatial change of a small element — the fast spatial spring */
+  transition: transform var(--tb-spring-fast-spatial);
+}
+
+.tb-lesson-prep__row--open .tb-lesson-prep__chevron {
+  transform: rotate(180deg);
+}
+
+/* ours: the opened part is one tile of the same list, its content in a column */
+.tb-list > li.tb-lesson-prep__body {
+  display: flex;
+  flex-direction: column;
+  /* a row centres its columns; the opened text starts at the tile's edge */
+  align-items: stretch;
+  gap: var(--tb-space-2);
+}
+
+.tb-lesson-prep__item {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  margin: 0;
+
+  > .tb-i {
+    font-size: 1.25rem;
+    color: var(--p-md-on-surface-variant);
+  }
+}
+
+.tb-lesson-prep__pick {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-2);
+}
+
+.tb-lesson-prep__choice {
+  display: flex;
+  flex-direction: column;
+}
+
+.tb-lesson-prep__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--tb-space-2);
+}
+
+.tb-lesson-prep__actions--start {
+  justify-content: flex-start;
+}
+
+/* the parts of an opened plan of the student (textbooks, videos) */
+.tb-my-lesson-plan__label {
+  margin: var(--tb-space-2) 0 0;
+  font: var(--tb-type-title-s);
+  letter-spacing: var(--tb-tracking-title-s);
+  color: var(--p-md-on-surface-variant);
+}
+
+.tb-my-lesson-plan__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-2);
+}

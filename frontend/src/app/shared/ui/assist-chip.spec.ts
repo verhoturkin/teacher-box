@@ -9,6 +9,9 @@ import { AssistChip } from './assist-chip';
   template: `
     <tb-assist-chip icon="attach_file" (click)="clicks = clicks + 1">Файл</tb-assist-chip>
     <tb-assist-chip [dashed]="true" [disabled]="true">Ещё</tb-assist-chip>
+    <tb-assist-chip icon="add" [dashed]="true" [menu]="true" ariaLabel="Добавить план"
+      >План</tb-assist-chip
+    >
   `,
 })
 class Host {
@@ -28,6 +31,10 @@ describe('AssistChip', () => {
     expect(more.querySelector('.tb-i')).toBeNull();
     expect(more.classList).toContain('tb-assist-chip--dashed');
     expect(more.disabled).toBe(true);
+    expect(file.getAttribute('aria-haspopup')).toBeNull();
+    expect(buttons.item(2).getAttribute('aria-haspopup')).toBe('menu');
+    expect(buttons.item(2).getAttribute('aria-label')).toBe('Добавить план');
+    expect(file.hasAttribute('aria-label')).toBe(false);
 
     file.click();
     expect(fixture.componentInstance.clicks).toBe(1);

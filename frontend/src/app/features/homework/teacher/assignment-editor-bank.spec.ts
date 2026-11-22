@@ -232,6 +232,9 @@ describe('AssignmentEditorPage for a lesson and for the bank', () => {
   it('saves a given-out assignment to the bank from «⋮», and updates its original after asking', async () => {
     const success = vi.spyOn(TestBed.inject(Snackbar), 'success');
     const { host } = await editor.edit(assignmentDetails({ id: 'a-1' }));
+    // M3: the overflow menu is the last of the header actions (466.2)
+    const actions = [...host.querySelectorAll('tb-page-header button')];
+    expect(actions.at(-1)?.getAttribute('aria-label')).toBe('Ещё');
     buttonByText(host, 'Ещё').click();
     await editor.fixture.whenStable();
     menuItemByText('Сохранить как шаблон').click();

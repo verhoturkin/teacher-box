@@ -3,13 +3,20 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 /**
  * An M3 assist chip: a smart, optional action next to a field («Файл», «Учебник», «Ученик или группа»).
  * 32 dp, 8 dp corners, outline-variant border, a leading 18 dp primary icon; `dashed` — the chip that adds
- * something not there yet. The click is the host's: `<tb-assist-chip icon="attach_file" (click)="pick()">`.
+ * something not there yet; `menu` — the chip opens the host's menu (`aria-haspopup`). The click is the host's:
+ * `<tb-assist-chip icon="attach_file" (click)="pick()">`.
  */
 @Component({
   selector: 'tb-assist-chip',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <button type="button" [class.tb-assist-chip--dashed]="dashed()" [disabled]="disabled()">
+    <button
+      type="button"
+      [class.tb-assist-chip--dashed]="dashed()"
+      [disabled]="disabled()"
+      [attr.aria-haspopup]="menu() ? 'menu' : null"
+      [attr.aria-label]="ariaLabel() ?? null"
+    >
       @if (icon(); as name) {
         <i class="tb-i" [class]="'tb-i-' + name" aria-hidden="true"></i>
       }
@@ -78,4 +85,8 @@ export class AssistChip {
   readonly icon = input<string>();
   readonly dashed = input(false);
   readonly disabled = input(false);
+  /** The name when the short label needs more words («+ План» — «Добавить план»). */
+  readonly ariaLabel = input<string>();
+  /** The chip opens a menu of the host. */
+  readonly menu = input(false);
 }

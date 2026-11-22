@@ -67,8 +67,9 @@
 - **Plan editor** (`LessonPlanEditorPage`, `features/textbooks/teacher/lesson-plan-editor-page.ts`,
   `/teacher/materials/plans/new` and `…/plans/:planId`, `canLeaveGuard`): the page header (the
   title as typed, back to «Материалы» on «Планы»; the chip «Шаблон» on a bank item, «сохранено ·
-  HH:mm», «⋮» of a lesson's plan with «Сохранить как шаблон» / «Обновить шаблон» — the latter asks
-  (`safe` confirmation) — and the filled «Готово»), then one column of section cards, at most
+  HH:mm», «С ИИ», the filled «Готово» and last «⋮» of a lesson's plan with «Сохранить как шаблон» /
+  «Обновить шаблон» — the latter asks (`safe` confirmation); **M3**: the overflow menu ends the
+  row, 466.2), then one column of section cards, at most
   52rem wide: «Название», «Курс» (a select while there are courses; its hint says the plan takes
   only the course's textbooks) and the Markdown field «План» (`tb-markdown-field`); «Учебники» with
   «N из 20» — rows with ✎ (pages, `BindTextbookDialog`) and ✕, «Добавить учебник» opens

@@ -187,6 +187,9 @@ describe('LessonPlanEditorPage', () => {
   it('saves a lesson plan into the bank, and updates the original after asking', async () => {
     await open('p-3', aLessonPlan({ id: 'p-3', bank: false }));
     expect(host.textContent).not.toContain('Шаблон');
+    // M3: the overflow menu is the last of the header actions (466.2)
+    const actions = [...host.querySelectorAll('tb-page-header button')];
+    expect(actions.at(-1)?.getAttribute('aria-label')).toBe('Ещё');
     host.querySelector<HTMLButtonElement>('button[aria-label="Ещё"]')?.click();
     await settle();
     menuItemByText('Сохранить как шаблон').click();

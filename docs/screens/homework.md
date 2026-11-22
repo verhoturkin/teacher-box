@@ -114,8 +114,9 @@ Tabs task / test (`?tab=quiz`, default left out, `Location.replaceState`); a pho
   left and leads to `/teacher/materials?tab=assignments`.
 - **«⋮» of the header** (a saved working assignment): «Сохранить как шаблон», or «Обновить шаблон»
   when `sourceId` is set (`confirm.safe` first) — `POST …/assignments/{id}/bank`; a draft saves its
-  changes first, an issued assignment goes in as saved. *Ours:* a text icon button before the
-  main action, as in the plan editor.
+  changes first, an issued assignment goes in as saved. A text icon button, the **last** of the
+  header actions (**M3**: the overflow menu ends the row of actions; decision 15, 466.2), after
+  «Выдать» / «Сохранить» / «Готово», as in the plan editor.
 
 ## AI pane
 

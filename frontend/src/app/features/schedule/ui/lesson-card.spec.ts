@@ -1,4 +1,5 @@
 import { HttpTestingController } from '@angular/common/http/testing';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { buttonByText, hostElement } from '@testing/dom';
@@ -8,6 +9,7 @@ import { at, changeRequest, groupLesson, scheduledLesson } from '@testing/schedu
 import { aBoard } from '@testing/boards-fixtures';
 import { ChangeRequest, ScheduledLesson } from '../data-access/schedule.models';
 import { LessonCard, OutcomeChange } from './lesson-card';
+import { LessonHomeworkSection } from './lesson-homework-section';
 import { LessonPlanSection } from './lesson-plan-section';
 
 const BEFORE = new Date(2026, 8, 30, 12);
@@ -175,19 +177,35 @@ describe('LessonCard', () => {
     expect(answered).toEqual([request]);
   });
 
-  it('ends with the lesson plan: the teacher’s section hands the changed lesson on, the student reads it', async () => {
+  it('leads with the plan and the homework before the lesson, with the homework after it', async () => {
     const planChanges: ScheduledLesson[] = [];
     fixture.componentInstance.planChange.subscribe((lesson) => planChanges.push(lesson));
     let root = await show(scheduledLesson({ id: 'l-1' }));
-    expect(root.querySelector('tb-lesson-plan-section')?.textContent).toContain('Составить');
+    const order = (): string[] =>
+      Array.from(root.querySelector('.tb-lesson-card__prep')?.children ?? []).map((child) =>
+        child.tagName.toLowerCase(),
+      );
+    expect(order()).toEqual(['tb-lesson-plan-section', 'tb-lesson-homework-section']);
+    expect(root.querySelector('button[aria-label="Добавить план"]')).not.toBeNull();
+    expect(root.querySelector('button[aria-label="Добавить домашнее задание"]')).not.toBeNull();
     fixture.debugElement
       .query(By.directive(LessonPlanSection))
       .injector.get(LessonPlanSection)
       .changed.emit(scheduledLesson({ id: 'l-1', planId: 'p-1' }));
-    expect(planChanges).toEqual([expect.objectContaining({ planId: 'p-1' })]);
+    fixture.debugElement
+      .query(By.directive(LessonHomeworkSection))
+      .injector.get(LessonHomeworkSection)
+      .changed.emit(scheduledLesson({ id: 'l-1', assignmentIds: ['a-1'] }));
+    expect(planChanges).toEqual([
+      expect.objectContaining({ planId: 'p-1' }),
+      expect.objectContaining({ assignmentIds: ['a-1'] }),
+    ]);
+
+    root = await show(scheduledLesson({ id: 'l-1' }), { now: AFTER });
+    expect(order()).toEqual(['tb-lesson-homework-section', 'tb-lesson-plan-section']);
 
     root = await show(scheduledLesson({ id: 'l-1', planId: 'p-1' }), { role: 'student' });
-    expect(root.querySelector('tb-lesson-plan-section')).toBeNull();
+    expect(order()).toEqual(['tb-my-lesson-plan']);
     backend.expectOne('/api/me/schedule/lessons/l-1/plan').flush({
       id: 'p-1',
       title: 'Present Simple',
@@ -196,7 +214,7 @@ describe('LessonCard', () => {
       videos: [],
     });
     await fixture.whenStable();
-    expect(root.querySelector('tb-my-lesson-plan')?.textContent).toContain('Present Simple');
+    expect(root.querySelector('tb-my-lesson-plan')?.textContent).toContain('План: Present Simple');
   });
 
   it('names the student of a request in a group', async () => {
@@ -261,5 +279,45 @@ describe('LessonCard', () => {
       expect(root.textContent).not.toContain('Участники');
       expect(root.textContent).toContain('Вы предупредили, что не придёте');
     });
+  });
+});
+
+@Component({
+  imports: [LessonCard],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <tb-lesson-card [lesson]="lesson()" [now]="now()">
+      <p class="summary">Итоги</p>
+    </tb-lesson-card>
+  `,
+})
+class SummaryHost {
+  readonly lesson = signal(scheduledLesson({ id: 'l-1' }));
+  readonly now = signal(BEFORE);
+}
+
+describe('LessonCard with a summary', () => {
+  it('puts the projected summary of a held lesson before its homework and plan', async () => {
+    TestBed.configureTestingModule({ providers: testProviders() });
+    const backend = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(SummaryHost);
+    fixture.componentInstance.now.set(AFTER);
+    await fixture.whenStable();
+    backend
+      .match(() => true)
+      .forEach((request) => {
+        request.flush(
+          request.request.url.endsWith('/ai/status') ? aiStatus({ enabled: false }) : [],
+        );
+      });
+    await fixture.whenStable();
+    const root = hostElement(fixture);
+    const summary = root.querySelector('.summary');
+    const prep = root.querySelector('.tb-lesson-card__prep');
+    expect(summary).not.toBeNull();
+    expect(prep).not.toBeNull();
+    expect(
+      (summary?.compareDocumentPosition(prep ?? root) ?? 0) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 });

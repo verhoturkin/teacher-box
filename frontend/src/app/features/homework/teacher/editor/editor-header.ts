@@ -50,19 +50,6 @@ import { T } from '@features/homework/i18n/texts';
           (onClick)="toggleAi.emit()"
         />
       }
-      @if (moreItems().length > 0) {
-        <p-button
-          icon="tb-i tb-i-more_vert"
-          [text]="true"
-          [rounded]="true"
-          severity="secondary"
-          [ariaLabel]="b.more"
-          aria-haspopup="menu"
-          [loading]="banking()"
-          (onClick)="more.toggle($event)"
-        />
-        <p-menu #more [model]="moreItems()" [popup]="true" appendTo="body" />
-      }
       @if (bank()) {
         @if (savedAt(); as at) {
           <span class="tb-editor__saved" role="status">{{ t.savedAt(at) }}</span>
@@ -107,6 +94,20 @@ import { T } from '@features/homework/i18n/texts';
           [loading]="pending()"
           (onClick)="save.emit(false)"
         />
+      }
+      <!-- M3: the overflow menu is the last of the header actions -->
+      @if (moreItems().length > 0) {
+        <p-button
+          icon="tb-i tb-i-more_vert"
+          [text]="true"
+          [rounded]="true"
+          severity="secondary"
+          [ariaLabel]="b.more"
+          aria-haspopup="menu"
+          [loading]="banking()"
+          (onClick)="more.toggle($event)"
+        />
+        <p-menu #more [model]="moreItems()" [popup]="true" appendTo="body" />
       }
     </tb-page-header>
   `,

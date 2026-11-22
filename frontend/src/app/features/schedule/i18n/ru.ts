@@ -1,3 +1,5 @@
+import { countOf } from '@shared/text/plural';
+
 /** Texts of `schedule` (ADR-0035). */
 export const ru = {
   statuses: {
@@ -289,11 +291,14 @@ export const ru = {
   lessonPlan: {
     title: 'План урока',
     what: 'план урока',
-    empty: 'Плана пока нет. Составьте его или возьмите из шаблонов.',
+    add: 'План',
+    addLabel: 'Добавить план',
+    row: (title: string) => `План: ${title}`,
+    rowLoading: 'План: …',
     compose: 'Составить',
     composeWithAi: 'С ИИ',
     fromBank: 'Из шаблонов',
-    open: 'Открыть',
+    open: 'Открыть в редакторе',
     more: 'Действия с планом',
     remove: 'Убрать из урока',
     removeHeader: 'Убрать план из урока?',
@@ -316,7 +321,11 @@ export const ru = {
   },
   lessonHomework: {
     title: 'Домашнее задание',
-    empty: 'К уроку пока нет задания. Задайте новое или привяжите готовое.',
+    add: 'ДЗ',
+    addLabel: 'Добавить домашнее задание',
+    row: (count: number, toReview: number) =>
+      `ДЗ: ${countOf(count, 'задание', 'задания', 'заданий')}` +
+      (toReview > 0 ? ` · ${String(toReview)} на проверке` : ''),
     loading: 'Загрузка…',
     deleted: 'Задание удалено',
     give: 'Задать',

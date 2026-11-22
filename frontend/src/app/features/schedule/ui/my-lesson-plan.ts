@@ -19,9 +19,12 @@ import { ScheduleApi } from '../data-access/schedule-api';
 import { ScheduledLesson, StudentLessonPlan } from '../data-access/schedule.models';
 import { T } from '../i18n/texts';
 
+let nextId = 0;
+
 /**
- * Student and parent: «План урока» of the lesson card, read-only (roadmap 11 «Lesson card»): the text, the
- * textbook pages to open or save and the videos with the player — a transcript only when the teacher shows it.
+ * Student and parent: the plan of the lesson card, read-only (roadmap 11 «Lesson card», decision 13): one row
+ * «План: <title>» that opens in place — the text, the textbook pages to open or save and the videos with the
+ * player (a transcript only when the teacher shows it).
  * The addresses follow the cabinet (`API_SCOPE`): the student's own or a child's in the family cabinet.
  */
 @Component({
@@ -30,56 +33,53 @@ import { T } from '../i18n/texts';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (lesson().planId !== null) {
-      <section class="tb-my-lesson-plan" [attr.aria-label]="t.title">
-        <h3 class="tb-my-lesson-plan__title">{{ t.title }}</h3>
-        <tb-load-state [state]="state" [what]="t.what" [compact]="true" (retry)="load()">
-          @if (plan(); as item) {
-            <p class="tb-strong tb-my-lesson-plan__name">{{ item.title }}</p>
-            @if (item.body.trim() !== '') {
-              <tb-markdown [text]="item.body" />
+      <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
+        <li class="tb-lesson-prep__row" [class.tb-lesson-prep__row--open]="expanded()">
+          <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-list_alt"></i></span>
+          <div class="tb-list__text">
+            <button
+              type="button"
+              class="tb-list__title tb-list__link tb-lesson-prep__toggle"
+              [attr.aria-expanded]="expanded()"
+              [attr.aria-controls]="bodyId"
+              (click)="expanded.set(!expanded())"
+            >
+              {{ plan() === null ? t.rowLoading : t.row(plan()?.title ?? '') }}
+            </button>
+          </div>
+          <div class="tb-list__trail tb-list__trail--icons">
+            <i class="tb-i tb-i-expand_more tb-lesson-prep__chevron" aria-hidden="true"></i>
+          </div>
+        </li>
+      </ul>
+      <!-- the textbooks and the videos are lists of their own: the opened plan lies on the card -->
+      @if (expanded()) {
+        <div class="tb-my-lesson-plan__body" [id]="bodyId">
+          <tb-load-state [state]="state" [what]="t.what" [compact]="true" (retry)="load()">
+            @if (plan(); as item) {
+              @if (item.body.trim() !== '') {
+                <tb-markdown [text]="item.body" />
+              }
+              @if (textbooks().length > 0) {
+                <h4 class="tb-my-lesson-plan__label">{{ t.textbooks }}</h4>
+                <tb-textbook-list
+                  [textbooks]="textbooks()"
+                  [downloadable]="true"
+                  (opened)="openTextbook($event)"
+                  (download)="downloadTextbook($event)"
+                />
+              }
+              @if (item.videos.length > 0) {
+                <h4 class="tb-my-lesson-plan__label">{{ t.videos }}</h4>
+                <tb-video-list [videos]="item.videos" />
+              }
             }
-            @if (textbooks().length > 0) {
-              <h4 class="tb-my-lesson-plan__label">{{ t.textbooks }}</h4>
-              <tb-textbook-list
-                [textbooks]="textbooks()"
-                [downloadable]="true"
-                (opened)="openTextbook($event)"
-                (download)="downloadTextbook($event)"
-              />
-            }
-            @if (item.videos.length > 0) {
-              <h4 class="tb-my-lesson-plan__label">{{ t.videos }}</h4>
-              <tb-video-list [videos]="item.videos" />
-            }
-          }
-        </tb-load-state>
-      </section>
+          </tb-load-state>
+        </div>
+      }
     }
   `,
-  styles: `
-    .tb-my-lesson-plan {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-2);
-    }
-
-    .tb-my-lesson-plan__title {
-      margin: var(--tb-space-2) 0 0;
-      font: var(--tb-type-title-m);
-      letter-spacing: var(--tb-tracking-title-m);
-    }
-
-    .tb-my-lesson-plan__name {
-      margin: 0;
-    }
-
-    .tb-my-lesson-plan__label {
-      margin: var(--tb-space-2) 0 0;
-      font: var(--tb-type-title-s);
-      letter-spacing: var(--tb-tracking-title-s);
-      color: var(--p-md-on-surface-variant);
-    }
-  `,
+  styleUrl: './lesson-prep.scss',
 })
 export class MyLessonPlan {
   protected readonly t = T.lessonPlan;
@@ -91,6 +91,9 @@ export class MyLessonPlan {
 
   protected readonly state = new LoadState();
   protected readonly plan = signal<StudentLessonPlan | null>(null);
+  /** The row is open. */
+  readonly expanded = signal(false);
+  protected readonly bodyId = `tb-my-lesson-plan-${String(++nextId)}`;
   /** The plan's textbooks as the homework list shows them. */
   protected readonly textbooks = computed<PickedTextbook[]>(() =>
     (this.plan()?.textbooks ?? []).map((textbook) => ({

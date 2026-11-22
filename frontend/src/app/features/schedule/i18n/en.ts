@@ -288,11 +288,14 @@ export const en: Translation<typeof ru> = {
   lessonPlan: {
     title: 'Lesson plan',
     what: 'the lesson plan',
-    empty: 'No plan yet. Write one or start from a template.',
+    add: 'Plan',
+    addLabel: 'Add a plan',
+    row: (title: string) => `Plan: ${title}`,
+    rowLoading: 'Plan: …',
     compose: 'Write',
     composeWithAi: 'With AI',
     fromBank: 'From templates',
-    open: 'Open',
+    open: 'Open in editor',
     more: 'Plan actions',
     remove: 'Remove from lesson',
     removeHeader: 'Remove the plan from this lesson?',
@@ -315,7 +318,11 @@ export const en: Translation<typeof ru> = {
   },
   lessonHomework: {
     title: 'Homework',
-    empty: 'No homework for this lesson yet. Set a new assignment or link an existing one.',
+    add: 'Homework',
+    addLabel: 'Add homework',
+    row: (count: number, toReview: number) =>
+      `Homework: ${countOf(count, 'assignment', 'assignments', 'assignments')}` +
+      (toReview > 0 ? ` · ${String(toReview)} to review` : ''),
     loading: 'Loading…',
     deleted: 'Assignment deleted',
     give: 'Set',

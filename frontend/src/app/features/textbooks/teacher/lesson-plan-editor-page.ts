@@ -151,6 +151,13 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
             (onClick)="aiOpen.set(true)"
           />
         }
+        <p-button
+          [label]="t.done"
+          icon="tb-i tb-i-check"
+          [loading]="finishing()"
+          (onClick)="finish()"
+        />
+        <!-- M3: the overflow menu is the last of the header actions -->
         @if (menuItems().length > 0) {
           <p-button
             icon="tb-i tb-i-more_vert"
@@ -158,17 +165,12 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
             [rounded]="true"
             severity="secondary"
             [ariaLabel]="t.more"
+            aria-haspopup="menu"
             [loading]="banking()"
             (onClick)="menu.toggle($event)"
           />
           <p-menu #menu [model]="menuItems()" [popup]="true" appendTo="body" />
         }
-        <p-button
-          [label]="t.done"
-          icon="tb-i tb-i-check"
-          [loading]="finishing()"
-          (onClick)="finish()"
-        />
       </tb-page-header>
 
       <form tbFieldErrors class="tb-plan-editor tb-form" [formGroup]="form" (ngSubmit)="finish()">

@@ -949,8 +949,10 @@ keep their own **M3E** / **M3** spacing (ADR-0068), not the page rhythm of §7.
   optional action next to a field — «Файл», «Учебник», «Видео» under a text): 32 dp, 8 dp corners, 1 dp
   outline-variant, on-surface Label Large, a leading 18 dp primary icon (`icon="attach_file"`); hover
   state layer; disabled 38 %. `[dashed]="true"` — the chip that adds a missing entity («Ученик или
-  группа»; dashed border, *ours*). A 48 dp target as in filter chips. Not an outlined button (§8): it
-  needs no filled action beside it.
+  группа», «+ План» / «+ ДЗ» of the lesson card; dashed border, *ours*); `[menu]="true"` — it opens
+  the host's menu (`aria-haspopup="menu"`), `ariaLabel` names a short label («Добавить план»). A
+  48 dp target as in filter chips. Not an outlined button (§8): it needs no filled action beside
+  it.
 - **Input chips** `tb-input-chip` (`@shared/ui/input-chip`, **M3** input chip: a chosen entity the user
   can remove): 32 dp, 8 dp corners, outline-variant border, a leading 24 dp `tb-avatar` or 18 dp icon
   (`<… lead>`), the label, a trailing 18 dp «×» button named «Убрать: <name>». With a dashed assist chip

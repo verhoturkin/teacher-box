@@ -55,7 +55,7 @@ describe('MyLessonPlan', () => {
   it('shows nothing for a lesson without a plan', async () => {
     create();
     const root = await show(scheduledLesson({ planId: null }));
-    expect(root.querySelector('section')).toBeNull();
+    expect(root.querySelector('ul')).toBeNull();
   });
 
   it('reads the plan once and shows its text, textbook pages and videos', async () => {
@@ -66,8 +66,12 @@ describe('MyLessonPlan', () => {
     const root = await show(lesson);
     backend.expectOne('/api/me/schedule/lessons/l-1/plan').flush(PLAN);
     await fixture.whenStable();
-    expect(root.textContent).toContain('План урока');
-    expect(root.textContent).toContain('Present Simple');
+    const toggle = root.querySelector<HTMLButtonElement>('button[aria-expanded]');
+    expect(toggle?.textContent.trim()).toBe('План: Present Simple');
+    expect(root.textContent).not.toContain('Spotlight 5');
+    toggle?.click();
+    await fixture.whenStable();
+    expect(toggle?.getAttribute('aria-expanded')).toBe('true');
     expect(root.querySelector('strong')?.textContent).toBe('Разминка');
     expect(root.textContent).toContain('Spotlight 5');
     expect(root.textContent).toContain('Song');
@@ -95,7 +99,7 @@ describe('MyLessonPlan', () => {
     expect(saver).toHaveBeenCalledWith(expect.any(Blob), 'Spotlight 5 (с. 12-14).pdf');
 
     await show({ ...lesson, planId: null });
-    expect(root.querySelector('section')).toBeNull();
+    expect(root.querySelector('ul')).toBeNull();
   });
 
   it('reads a child’s plan in the family cabinet and retries a failed read', async () => {
@@ -103,6 +107,9 @@ describe('MyLessonPlan', () => {
     const root = await show(scheduledLesson({ id: 'l-1', planId: 'p-7' }));
     const url = `/api/guardian/students/${CHILD_ID}/schedule/lessons/l-1/plan`;
     backend.expectOne(url).flush({ status: 500 }, { status: 500, statusText: 'Server Error' });
+    await fixture.whenStable();
+    expect(root.textContent).toContain('План: …');
+    root.querySelector<HTMLButtonElement>('button[aria-expanded]')?.click();
     await fixture.whenStable();
     buttonByText(root, 'Повторить').click();
     backend.expectOne(url).flush({ ...PLAN, body: '', textbooks: [], videos: [] });

@@ -61,7 +61,7 @@ Decisions 9–15 of roadmap/11 «UI review of 0.60.0»; every interface change w
   the course prefilled, the icon `collections_bookmark`; «банк» → «шаблоны» in every UI text,
   help article (ru/en), wiki, `docs/glossary.md`, `docs/screens/materials.md`; the lesson card's
   «Из банка» → «Из шаблонов».
-- [ ] 466.2 **F** *complex* — the lesson card by time with one-line rows for the plan and the
+- [x] 466.2 **F** *complex* — the lesson card by time with one-line rows for the plan and the
   homework (decision 13); «⋮» last in the homework editor header (decision 15); help, wiki,
   `docs/screens/schedule.md`, `docs/screens/homework.md`.
 - [ ] 466.3 **B** **F** *complex* — «Прошли по плану» (decision 14): with a plan the summary's

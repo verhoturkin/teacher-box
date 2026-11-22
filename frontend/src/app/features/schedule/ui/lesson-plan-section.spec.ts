@@ -48,6 +48,14 @@ describe('LessonPlanSection', () => {
     await fixture.whenStable();
   }
 
+  /** «+ План» → an item of its menu. */
+  async function add(root: HTMLElement, item: string): Promise<void> {
+    root.querySelector<HTMLButtonElement>('button[aria-label="Добавить план"]')?.click();
+    await settle();
+    menuItemByText(item).click();
+    await settle();
+  }
+
   /** Chooses a bank item in the picker (its PrimeNG select is not driven here). */
   function choose(id: string): void {
     fixture.componentInstance.chosen.set(id);
@@ -56,15 +64,17 @@ describe('LessonPlanSection', () => {
 
   it('offers to write a plan for the student’s lesson, or the group’s, in the editor', async () => {
     const root = await show(scheduledLesson({ id: 'l-1', studentId: 's-1' }));
-    expect(root.textContent).toContain('План урока');
-    expect(root.textContent).toContain('Плана пока нет');
-    buttonByText(root, 'Составить').click();
+    const chip = root.querySelector<HTMLButtonElement>('button[aria-label="Добавить план"]');
+    expect(chip?.textContent.trim()).toBe('План');
+    expect(chip?.getAttribute('aria-haspopup')).toBe('menu');
+    expect(fixture.nativeElement).toHaveProperty('className', '');
+    await add(root, 'Составить');
     expect(navigate).toHaveBeenCalledWith(['/teacher/materials/plans/new'], {
       queryParams: { lessonId: 'l-1', studentId: 's-1' },
     });
 
     await show(groupLesson({ id: 'l-2', groupId: 'g-1' }));
-    buttonByText(root, 'Составить').click();
+    await add(root, 'Составить');
     expect(navigate).toHaveBeenLastCalledWith(['/teacher/materials/plans/new'], {
       queryParams: { lessonId: 'l-2', groupId: 'g-1' },
     });
@@ -72,10 +82,9 @@ describe('LessonPlanSection', () => {
 
   it('opens the editor with the assistant when AI is on', async () => {
     const root = await show(scheduledLesson({ id: 'l-1', studentId: 's-1' }));
-    expect(root.textContent).not.toContain('С ИИ');
     backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: true }));
     await fixture.whenStable();
-    buttonByText(root, 'С ИИ').click();
+    await add(root, 'С ИИ');
     expect(navigate).toHaveBeenCalledWith(['/teacher/materials/plans/new'], {
       queryParams: { lessonId: 'l-1', studentId: 's-1', ai: '1' },
     });
@@ -83,12 +92,12 @@ describe('LessonPlanSection', () => {
 
   it('offers nothing on a cancelled lesson without a plan', async () => {
     const root = await show(scheduledLesson({ status: 'CANCELLED' }));
-    expect(root.querySelector('section')).toBeNull();
+    expect(root.querySelector('button')).toBeNull();
   });
 
   it('takes a plan from the bank: its copy goes on the lesson', async () => {
     const root = await show(scheduledLesson({ id: 'l-1' }));
-    buttonByText(root, 'Из шаблонов').click();
+    await add(root, 'Из шаблонов');
     backend.expectOne('/api/teacher/textbooks/courses').flush([aCourse({ id: 'c-1', name: 'A2' })]);
     backend
       .expectOne('/api/teacher/textbooks/plans?bank=true')
@@ -124,7 +133,7 @@ describe('LessonPlanSection', () => {
 
   it('deletes the copy that could not go on the lesson, and the picker can be closed', async () => {
     const root = await show(scheduledLesson({ id: 'l-1' }));
-    buttonByText(root, 'Из шаблонов').click();
+    await add(root, 'Из шаблонов');
     backend
       .expectOne('/api/teacher/textbooks/courses')
       .flush({ status: 500 }, { status: 500, statusText: 'Server Error' });
@@ -148,14 +157,15 @@ describe('LessonPlanSection', () => {
     expect(changed).toEqual([]);
     expect(messages).toHaveBeenLastCalledWith(expect.objectContaining({ severity: 'error' }));
 
+    expect(fixture.nativeElement).toHaveProperty('className', 'tb-lesson-prep--row');
     buttonByText(root, 'Отмена').click();
     await settle();
-    expect(buttonByText(root, 'Из шаблонов')).toBeTruthy();
+    expect(root.querySelector('button[aria-label="Добавить план"]')).not.toBeNull();
   });
 
   it('reports a bank that cannot be read', async () => {
     const root = await show(scheduledLesson({ id: 'l-1' }));
-    buttonByText(root, 'Из шаблонов').click();
+    await add(root, 'Из шаблонов');
     backend.expectOne('/api/teacher/textbooks/courses').flush([]);
     backend
       .expectOne('/api/teacher/textbooks/plans?bank=true')
@@ -185,12 +195,21 @@ describe('LessonPlanSection', () => {
       }),
     );
     await settle();
-    expect(root.textContent).toContain('Present Simple');
+    const toggle = root.querySelector<HTMLButtonElement>('button[aria-expanded]');
+    expect(toggle?.textContent.trim()).toBe('План: Present Simple');
+    expect(toggle?.getAttribute('aria-expanded')).toBe('false');
+    expect(root.textContent).not.toContain('Spotlight 5');
+    toggle?.click();
+    await settle();
+    expect(toggle?.getAttribute('aria-expanded')).toBe('true');
+    expect(root.querySelector(`#${toggle?.getAttribute('aria-controls') ?? ''}`)).not.toBeNull();
     expect(root.textContent).toContain('Spotlight 5');
     expect(root.textContent).toContain('Учебник · с. 12-14');
     expect(root.textContent).toContain('Видео 1');
 
-    buttonByText(root, 'Открыть').click();
+    root.querySelector<HTMLButtonElement>('button[aria-label="Действия с планом"]')?.click();
+    await settle();
+    menuItemByText('Открыть в редакторе').click();
     expect(navigate).toHaveBeenCalledWith(['/teacher/materials/plans', 'p-7'], {
       queryParams: { lessonId: 'l-1' },
     });
@@ -216,7 +235,8 @@ describe('LessonPlanSection', () => {
     );
 
     await show(scheduledLesson({ id: 'l-1', planId: null }));
-    expect(root.textContent).toContain('Плана пока нет');
+    expect(root.querySelector('button[aria-expanded]')).toBeNull();
+    expect(root.querySelector('button[aria-label="Добавить план"]')).not.toBeNull();
   });
 
   it('keeps the plan when taking it off fails, and retries a plan that cannot be read', async () => {
@@ -225,8 +245,13 @@ describe('LessonPlanSection', () => {
       .expectOne('/api/teacher/textbooks/plans/p-7')
       .flush({ status: 500 }, { status: 500, statusText: 'Server Error' });
     await settle();
+    expect(root.querySelector('button[aria-expanded]')?.textContent.trim()).toBe('План: …');
+    root.querySelector<HTMLButtonElement>('button[aria-expanded]')?.click();
+    await settle();
     buttonByText(root, 'Повторить').click();
-    backend.expectOne('/api/teacher/textbooks/plans/p-7').flush(aLessonPlan({ id: 'p-7' }));
+    backend
+      .expectOne('/api/teacher/textbooks/plans/p-7')
+      .flush(aLessonPlan({ id: 'p-7', body: '' }));
     await settle();
 
     root.querySelector<HTMLButtonElement>('button[aria-label="Действия с планом"]')?.click();
