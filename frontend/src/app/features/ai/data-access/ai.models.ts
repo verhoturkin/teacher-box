@@ -321,3 +321,19 @@ export interface LessonPlanDraft {
   readonly body: string;
   readonly textbooks: readonly DraftedTextbook[];
 }
+
+/** What the teacher wants of a student's period summary (ADR-0072); the facts are read on the server. */
+export interface PeriodSummaryBrief {
+  readonly studentId: string;
+  /** ISO dates: the first and the last day of the period, the teacher's time zone. */
+  readonly from: string;
+  readonly to: string;
+  readonly prompt?: string;
+  readonly context?: readonly ContextItem[];
+  readonly modelId?: string;
+}
+
+/** A draft of the period summary in Markdown; nothing is saved or sent. */
+export interface PeriodSummaryDraft {
+  readonly summary: string;
+}

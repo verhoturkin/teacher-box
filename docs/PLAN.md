@@ -47,7 +47,7 @@ summarizes a student's period. Starts only after the v0.60.0 PR is merged. Spec 
   `…/homework/students/{id}/report`); `ai` → `schedule::api`; feature `PERIOD_SUMMARY`, `POST
   /api/teacher/ai/period-summary`, budgets; tests incl. the time-zone boundary of the period and
   group lessons; `docs/modules/*.md`.
-- [ ] 465.2 **F** *complex* — `/teacher/students/:id/summary?from&to` («Итоги за период» in the
+- [x] 465.2 **F** *complex* — `/teacher/students/:id/summary?from&to` («Итоги за период» in the
   student card): period picker, facts (sections as feature parts), «Составить с ИИ», editable
   draft, «Копировать», print stylesheet; help, `docs/screens/students.md`.
 

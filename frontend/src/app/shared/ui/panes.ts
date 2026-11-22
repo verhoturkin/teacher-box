@@ -96,6 +96,17 @@ const SHEET_WIDTH = '25rem';
       user-select: none;
     }
 
+    /* print: the panes flow on the paper instead of filling the window (ours) */
+    @media print {
+      :host,
+      :host(.tb-panes--single) {
+        display: block;
+        padding: 0;
+        block-size: auto;
+        overflow: visible;
+      }
+    }
+
     :host(.tb-panes--single) {
       flex-direction: column;
       block-size: auto;
@@ -193,6 +204,19 @@ export class Panes {
       min-height: 0;
       overflow: clip;
       border-radius: inherit;
+    }
+
+    /* print: the sheet and its scrolling area grow with the content, the paper is the surface (ours) */
+    @media print {
+      :host {
+        border-radius: 0;
+        background: none;
+      }
+
+      .tb-pane__sheet,
+      .tb-pane__scroll {
+        overflow: visible;
+      }
     }
 
     /* the width the user set moves on a spring when it snaps or a key changes it */

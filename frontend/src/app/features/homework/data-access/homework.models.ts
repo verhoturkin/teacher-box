@@ -392,3 +392,28 @@ export interface Journal {
   assignments: JournalColumn[];
   students: JournalRow[];
 }
+
+/** Mirrors `JournalTask` of `homework::api`: one assignment given to the student in the period (ADR-0072). */
+export interface PeriodTask {
+  readonly taskId: string;
+  readonly assignmentId: string;
+  readonly title: string;
+  readonly assignedAt: string;
+  readonly dueAt: string | null;
+  readonly status: TaskStatus;
+  readonly submittedAt: string | null;
+  readonly reviewedAt: string | null;
+  readonly grade: string | null;
+  readonly teacherComment: string | null;
+}
+
+/** Mirrors `HomeworkReport`: the homework of a student's period report, oldest first (roadmap 02 stage B). */
+export interface TasksReport {
+  readonly assigned: number;
+  readonly submitted: number;
+  readonly onTime: number;
+  readonly late: number;
+  readonly accepted: number;
+  readonly returned: number;
+  readonly tasks: readonly PeriodTask[];
+}

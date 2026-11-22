@@ -10,6 +10,8 @@ import {
   BoundTextbook,
   MyHomeworkSummary,
   MyTask,
+  PeriodTask,
+  TasksReport,
   ReviewQueueItem,
   Submission,
   TaskDetails,
@@ -244,4 +246,33 @@ export function configureHomework(): { backend: HttpTestingController; saved: st
   });
   vi.spyOn(TestBed.inject(MessageService), 'add');
   return { backend: TestBed.inject(HttpTestingController), saved };
+}
+
+export function periodTask(overrides: Partial<PeriodTask> = {}): PeriodTask {
+  return {
+    taskId: 't-1',
+    assignmentId: 'a-1',
+    title: 'Дроби',
+    assignedAt: '2026-10-05T16:00:00Z',
+    dueAt: '2026-10-08T15:00:00Z',
+    status: 'ACCEPTED',
+    submittedAt: '2026-10-07T12:00:00Z',
+    reviewedAt: '2026-10-07T18:00:00Z',
+    grade: '5',
+    teacherComment: null,
+    ...overrides,
+  };
+}
+
+export function tasksReport(overrides: Partial<TasksReport> = {}): TasksReport {
+  return {
+    assigned: 1,
+    submitted: 1,
+    onTime: 1,
+    late: 0,
+    accepted: 1,
+    returned: 0,
+    tasks: [periodTask()],
+    ...overrides,
+  };
 }

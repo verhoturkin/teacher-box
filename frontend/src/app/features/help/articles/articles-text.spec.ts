@@ -909,6 +909,44 @@ const PLAN_AI: Readonly<Record<string, readonly (readonly [string, string, strin
   ],
 };
 
+/** «Итоги за период» (465.2): [topic, baseline, now] of the students and AI articles. */
+const PERIOD_SUMMARY: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'students',
+      'Рядом три кнопки: **Написать**',
+      'Рядом кнопки: **Итоги за период** (значок со списком, см. ниже), **Написать**',
+    ],
+    [
+      'students',
+      '## Ссылки и доступ',
+      '## Итоги за период\n\nКнопка **Итоги за период** в шапке карточки открывает страницу с итогами ученика. Вверху — даты «С» и «По»: сначала это прошлый полный месяц, период — не длиннее 6 месяцев (если конец раньше начала или период длиннее, страница скажет об этом). Ниже — факты: **Занятия** (сколько проведено и пропущено, кто предупредил или отменил, каждое занятие с итогом и «Что прошли») и **Задания** (выдано, сдано — в срок и с опозданием, принято, на доработке; название открывает задание).\n\nЕсли подключён ИИ-помощник, кнопка **Составить с ИИ** напишет черновик итогов по занятиям, их планам и заданиям периода — разделы «Что прошли», «Задания», «Получается», «Трудности», «Что дальше». В «Пожеланиях» можно попросить, например, коротко и для родителей (на каком языке пожелания — на том и черновик). Черновик правится прямо на странице; **Копировать** кладёт текст в буфер обмена, **Печать** печатает факты и черновик без меню и кнопок. Итоги не сохраняются и никому не отправляются — скопируйте их, например, в сообщение родителям.\n\n## Ссылки и доступ',
+    ],
+    [
+      'ai',
+      '\n\n## Системные промты',
+      '\n- **Итоги за период** — в карточке ученика: «Итоги за период» → «Составить с ИИ». ИИ сам читает занятия, планы и задания выбранных дат (до 6 месяцев) и пишет черновик, который можно поправить, скопировать и распечатать; он не сохраняется ([Ученики](/teacher/help/students)).\n\n## Системные промты',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'students',
+      'record a payment or schedule a lesson.\n',
+      'record a payment or schedule a lesson; the list icon opens their period summary.\n',
+    ],
+    [
+      'students',
+      '## Invitations and access',
+      '## Period summary\n\nChoose **Period summary** (the list icon in the student’s header) to see how a period went. Set the “From” and “To” dates: the page opens on the last full month, and a period can be up to six months long. **Lessons** shows how many were completed or missed, which were excused or cancelled, and each lesson with what was covered. **Homework** shows what was set, handed in on time or late, accepted and returned; select a title to open the work.\n\nIf the AI assistant is connected, **Write with AI** drafts a summary from the period’s lessons, lesson plans and homework: what was covered, the homework, what is going well, the difficulties and the next steps. Add your wishes if you like, for example “short, for the parents”; the draft is written in the language of your wishes, or in Russian without any. Edit the draft on the page, then choose **Copy** to put it on the clipboard or **Print** to print the facts and the draft without menus or buttons. The summary is neither saved nor sent to anyone.\n\n## Invitations and access',
+    ],
+    [
+      'ai',
+      '\n\n## Customise system prompts',
+      '\n\nFor a student’s **period summary**, open their card and choose “Period summary” → “Write with AI”. The AI reads the lessons, lesson plans and homework of the chosen dates (up to six months) itself; you can edit, copy and print the draft, which is not saved ([Students](/teacher/help/students)).\n\n## Customise system prompts',
+    ],
+  ],
+};
+
 /** Homework at lessons and the bank of assignments (462.2): [topic, baseline, now] of the schedule and homework articles. */
 const LESSON_HOMEWORK: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
   'teacher.ru': [
@@ -1053,6 +1091,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(LESSON_PLAN[name] ?? []),
       ...(PLAN_AI[name] ?? []),
       ...(LESSON_HOMEWORK[name] ?? []),
+      ...(PERIOD_SUMMARY[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

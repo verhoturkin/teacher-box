@@ -1,5 +1,7 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import {
+  LessonsReport,
+  PeriodLesson,
   CalendarFeed,
   ChangeRequest,
   LessonRules,
@@ -186,4 +188,34 @@ export function dropFreeTimes(backend: HttpTestingController): void {
     .forEach((r) => {
       r.flush(r.request.url.endsWith('/free-times') ? [] : scheduledLesson());
     });
+}
+
+export function periodLesson(overrides: Partial<PeriodLesson> = {}): PeriodLesson {
+  return {
+    lessonId: 'l-1',
+    startsAt: '2026-10-05T15:00:00Z',
+    durationMinutes: 60,
+    title: null,
+    topic: 'Дроби',
+    groupId: null,
+    outcome: 'ATTENDED',
+    cancelledBy: null,
+    summary: null,
+    nextPlan: null,
+    planId: null,
+    assignmentIds: [],
+    ...overrides,
+  };
+}
+
+export function lessonsReport(overrides: Partial<LessonsReport> = {}): LessonsReport {
+  return {
+    held: 1,
+    missed: 0,
+    excused: 0,
+    cancelledByStudent: 0,
+    lateCancellations: 0,
+    lessons: [periodLesson()],
+    ...overrides,
+  };
 }

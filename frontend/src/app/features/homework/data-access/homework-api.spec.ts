@@ -1,5 +1,6 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { SKIP_ERROR_TOAST } from '@core/http/api-error.interceptor';
 import { HomeworkApi } from './homework-api';
 import { testProviders } from '@testing/setup';
 
@@ -133,5 +134,17 @@ describe('HomeworkApi', () => {
 
     expect(backend.expectOne('/api/teacher/homework/summary').request.method).toBe('GET');
     expect(backend.expectOne('/api/me/homework/summary').request.method).toBe('GET');
+  });
+
+  it("reads the student's period report for the days given, quietly", () => {
+    api.studentReport('s-1', '2026-10-01', '2026-10-31').subscribe();
+
+    const request = backend.expectOne(
+      (req) => req.url === '/api/teacher/homework/students/s-1/report',
+    );
+    expect(request.request.params.get('from')).toBe('2026-10-01');
+    expect(request.request.params.get('to')).toBe('2026-10-31');
+    expect(request.request.context.get(SKIP_ERROR_TOAST)).toBe(true);
+    request.flush({});
   });
 });

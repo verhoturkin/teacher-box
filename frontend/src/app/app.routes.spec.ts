@@ -212,6 +212,29 @@ describe('app routes', { timeout: 20_000 }, () => {
     expect(text()).toContain('Страница не найдена');
   });
 
+  it('opens the period summary of a student with the period of the address (465.2)', async () => {
+    auth.acceptSession(authResponse('TEACHER'));
+    const backend = TestBed.inject(HttpTestingController);
+
+    await harness.navigateByUrl('/teacher/students/s-1/summary?from=2026-10-01&to=2026-10-31');
+    for (const request of backend.match(() => true)) {
+      request.flush(
+        request.request.url === '/api/teacher/students'
+          ? [aStudent({ id: 's-1', displayName: 'Мария' })]
+          : [],
+      );
+    }
+    await harness.fixture.whenStable();
+
+    expect(title()).toBe('Итоги за период — Teacher Box');
+    const report = backend.expectOne(
+      (request) => request.url === '/api/teacher/schedule/students/s-1/report',
+    );
+    expect(report.request.params.get('from')).toBe('2026-10-01');
+    expect(report.request.params.get('to')).toBe('2026-10-31');
+    backend.match(() => true);
+  });
+
   it('leads a student to the personal area and account page', async () => {
     auth.acceptSession(authResponse('STUDENT'));
 

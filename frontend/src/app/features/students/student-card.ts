@@ -9,9 +9,9 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { catchError, of } from 'rxjs';
-import { Button } from 'primeng/button';
+import { Button, ButtonDirective, ButtonIcon } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { TabIndicator } from '@shared/ui/tab-indicator';
@@ -56,10 +56,13 @@ import { Student } from '@features/identity/parts';
     Avatar,
     BroadcastDialog,
     Button,
+    ButtonDirective,
+    ButtonIcon,
     Card,
     CardHead,
     LessonDialog,
     PaymentDialog,
+    RouterLink,
     RoomLink,
     StudentBalanceCard,
     StudentChannels,
@@ -108,6 +111,17 @@ import { Student } from '@features/identity/parts';
             (onClick)="writeVisible.set(true)"
           />
         }
+        <!-- «Итоги за период» (roadmap 11 «AI»): a navigation, so a link; icon-only beside the labelled
+             actions, its name in the tooltip (M3 icon button; the place is our decision) -->
+        <a
+          pButton
+          class="tb-student-card__summary"
+          severity="secondary"
+          [routerLink]="['/teacher/students', row.id, 'summary']"
+          [attr.aria-label]="t.summary"
+          [pTooltip]="t.summary"
+          ><i pButtonIcon aria-hidden="true" class="tb-i tb-i-summarize"></i
+        ></a>
         <p-button
           [label]="t.payment"
           icon="tb-i tb-i-payments"

@@ -186,4 +186,17 @@ describe('AiApi', () => {
     }
     await Promise.all(calls.map(([call]) => call));
   });
+
+  it('asks for a period summary quietly: the page shows its errors', () => {
+    const brief = { studentId: 's-1', from: '2026-10-01', to: '2026-10-31', prompt: 'Коротко' };
+    let summary = '';
+    api.periodSummary(brief).subscribe((draft) => (summary = draft.summary));
+
+    const request = backend.expectOne('/api/teacher/ai/period-summary');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual(brief);
+    expect(request.request.context.get(SKIP_ERROR_TOAST)).toBe(true);
+    request.flush({ summary: '## Что прошли' });
+    expect(summary).toBe('## Что прошли');
+  });
 });

@@ -19,6 +19,8 @@ import {
   LessonSummaryBrief,
   LessonSummaryDraft,
   ModelInput,
+  PeriodSummaryBrief,
+  PeriodSummaryDraft,
   PromptInput,
   QuizDraft,
   RequestPage,
@@ -138,6 +140,13 @@ export class AiApi {
   /** Errors are shown by the caller next to the field. */
   lessonSummary(brief: LessonSummaryBrief): Observable<LessonSummaryDraft> {
     return this.http.post<LessonSummaryDraft>('/api/teacher/ai/lesson-summary', brief, {
+      context: new HttpContext().set(SKIP_ERROR_TOAST, true),
+    });
+  }
+
+  /** A draft of a student's period summary from the lessons and homework of the period; errors — the caller. */
+  periodSummary(brief: PeriodSummaryBrief): Observable<PeriodSummaryDraft> {
+    return this.http.post<PeriodSummaryDraft>('/api/teacher/ai/period-summary', brief, {
       context: new HttpContext().set(SKIP_ERROR_TOAST, true),
     });
   }

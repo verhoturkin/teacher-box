@@ -359,3 +359,34 @@ export interface HistoryEntry {
   /** The teacher's private note about the student; absent in a group feed. */
   readonly note: string | null;
 }
+
+/** Mirrors `LessonOutcome` of `schedule::api`: what a lesson of the period was for the student (ADR-0072). */
+export type PeriodOutcome =
+  'PLANNED' | 'ATTENDED' | 'MISSED' | 'LATE_CANCELLED' | 'EXCUSED' | 'CANCELLED';
+
+/** Mirrors `JournalLesson`: a lesson of the student in the period. */
+export interface PeriodLesson {
+  readonly lessonId: string;
+  readonly startsAt: string;
+  readonly durationMinutes: number;
+  readonly title: string | null;
+  readonly topic: string | null;
+  readonly groupId: string | null;
+  readonly outcome: PeriodOutcome;
+  readonly cancelledBy: CancelledBy | null;
+  /** «Что прошли», shared by the whole lesson. */
+  readonly summary: string | null;
+  readonly nextPlan: string | null;
+  readonly planId: string | null;
+  readonly assignmentIds: readonly string[];
+}
+
+/** Mirrors `StudentReport`: the lessons of a student's period report, oldest first (roadmap 02 stage B). */
+export interface LessonsReport {
+  readonly held: number;
+  readonly missed: number;
+  readonly excused: number;
+  readonly cancelledByStudent: number;
+  readonly lateCancellations: number;
+  readonly lessons: readonly PeriodLesson[];
+}

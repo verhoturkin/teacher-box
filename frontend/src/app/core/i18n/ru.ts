@@ -29,6 +29,7 @@ export const ru = {
     newLessonPlan: 'Новый план урока',
     editLessonPlan: 'План урока',
     monthlyReport: 'Отчёт за месяц',
+    periodSummary: 'Итоги за период',
     help: 'Справка',
     account: 'Мой аккаунт',
     notFound: 'Страница не найдена',
@@ -274,6 +275,10 @@ export const ru = {
       'ai.provider.unavailable': 'Провайдер не ответил. Проверьте ключ, адрес и прокси',
       'ai.model.duplicate': 'Эта модель уже есть в подключении',
       'ai.model.not-found': 'Модель не найдена — возможно, её уже удалили',
+      'ai.period-invalid':
+        'Период должен заканчиваться не раньше начала и быть не длиннее 6 месяцев',
+      'ai.period-empty':
+        'За этот период у ученика нет ни занятий, ни заданий — ИИ не из чего составить итоги',
       // schedule
       'schedule.student-not-found': 'Ученик не найден или отключён',
       'schedule.lesson-not-found': 'Занятие не найдено',
@@ -393,6 +398,7 @@ export const ru = {
       'homework.quiz-duplicate-id': 'В тесте повторяется идентификатор вопроса или варианта',
       'homework.quiz-incomplete': 'Задание не выдано: в тесте есть незаконченные вопросы',
       'homework.quiz-attempts-invalid': 'Попыток может быть от 1 до 50 или без ограничений',
+      'homework.range-invalid': 'Конец периода раньше его начала',
       'video.link-invalid': 'Ссылка на видео должна начинаться с http:// или https://',
       'video.too-many': 'В задании — не больше 5 видео',
       'video.title-invalid': 'Название видео — до 200 символов',

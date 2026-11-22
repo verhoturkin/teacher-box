@@ -262,6 +262,12 @@ export const routes: Routes = [
         loadComponent: () => import('@features/home').then((m) => m.TeacherHome),
       },
       {
+        // «Итоги за период» of a student (roadmap 11 «AI»): `?from&to`, the last full month by default
+        path: 'students/:studentId/summary',
+        title: N.periodSummary,
+        loadComponent: () => import('@features/students').then((m) => m.StudentSummaryPage),
+      },
+      {
         matcher: studentsMatcher,
         title: NAV.students,
         loadComponent: () => import('@features/students').then((m) => m.StudentsPage),

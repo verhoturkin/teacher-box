@@ -255,6 +255,20 @@ export const en: Translation<typeof ru> = {
     statsRow: (wrong: number, students: number) => `${String(wrong)} of ${String(students)}`,
     statsNone: 'Nobody has submitted the quiz yet',
   },
+  periodTasks: {
+    title: 'Homework',
+    what: 'the homework of the period',
+    assigned: 'Set',
+    submitted: 'Handed in',
+    accepted: 'Accepted',
+    returned: 'Returned',
+    handedIn: (onTime: number, late: number) =>
+      `on time: ${String(onTime)} · late: ${String(late)}`,
+    nothing: 'No homework was set in this period',
+    given: (date: string) => `set ${date}`,
+    until: (date: string) => `due ${date}`,
+    late: 'handed in late',
+  },
   studentTasks: {
     title: 'Homework',
     what: 'homework',

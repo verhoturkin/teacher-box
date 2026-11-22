@@ -253,6 +253,20 @@ export const ru = {
     statsRow: (wrong: number, students: number) => `${String(wrong)} из ${String(students)}`,
     statsNone: 'Пока никто не сдал тест',
   },
+  periodTasks: {
+    title: 'Задания',
+    what: 'задания за период',
+    assigned: 'Выдано',
+    submitted: 'Сдано',
+    accepted: 'Принято',
+    returned: 'На доработке',
+    handedIn: (onTime: number, late: number) =>
+      `в срок: ${String(onTime)} · с опозданием: ${String(late)}`,
+    nothing: 'За этот период заданий не выдавали',
+    given: (date: string) => `выдано ${date}`,
+    until: (date: string) => `срок ${date}`,
+    late: 'сдано с опозданием',
+  },
   studentTasks: {
     title: 'Задания',
     what: 'задания',

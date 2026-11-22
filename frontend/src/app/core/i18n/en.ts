@@ -31,6 +31,7 @@ export const en: Translation<typeof ru> = {
     newLessonPlan: 'New lesson plan',
     editLessonPlan: 'Lesson plan',
     monthlyReport: 'Monthly report',
+    periodSummary: 'Period summary',
     help: 'Help',
     account: 'My account',
     notFound: 'Page not found',
@@ -280,6 +281,10 @@ export const en: Translation<typeof ru> = {
       'ai.provider.unavailable': 'The provider did not respond. Check the key, address and proxy',
       'ai.model.duplicate': 'This connection already has this model',
       'ai.model.not-found': 'The model is not found — it may have been deleted',
+      'ai.period-invalid':
+        'The period must not end before it starts and must be at most 6 months long',
+      'ai.period-empty':
+        'The student has no lessons or homework in this period, so the AI has nothing to summarise',
       // schedule
       'schedule.student-not-found': 'The student could not be found or their account is disabled',
       'schedule.lesson-not-found': 'Lesson not found',
@@ -403,6 +408,7 @@ export const en: Translation<typeof ru> = {
       'homework.quiz-duplicate-id': 'A question or option ID is duplicated in this quiz',
       'homework.quiz-incomplete': 'Not assigned yet. Some quiz questions are unfinished',
       'homework.quiz-attempts-invalid': 'Allow between 1 and 50 attempts, or choose unlimited',
+      'homework.range-invalid': 'The period ends before it starts',
       'video.link-invalid': 'Video links must start with http:// or https://',
       'video.too-many': 'An assignment can have up to 5 videos',
       'video.title-invalid': 'Video titles must be 200 characters or fewer',

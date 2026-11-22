@@ -8,6 +8,7 @@ export { AiModelChoice } from './model-choice';
 export { AiSettingsPanel } from './ai-settings-panel';
 export { HomeworkAiPanel, HomeworkAiState } from './homework-ai-panel';
 export { LessonPlanAiPanel, LessonPlanAiState } from './lesson-plan-ai-panel';
+export { PeriodSummaryPanel } from './period-summary-panel';
 export { AiContextChips, StudentContext } from './student-context';
 export type { AppliedPlan } from './lesson-plan-ai-panel';
 export type { AppliedDraft, AppliedQuestions } from './homework-ai-panel';

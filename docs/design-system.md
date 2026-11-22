@@ -630,6 +630,12 @@ Gallery: [`/gallery/frame`](../frontend/src/app/features/gallery/frame/).
 - **Forms on a page** — buttons in `tb-form-actions` bottom right, full width on a phone; a form
   keeps a readable width (`tb-form--narrow`) unless it is a review or editor form.
 - **Toolbar above a list** `tb-toolbar`: search first, filters and period after; it wraps.
+- **Print** (*ours*, **M3** publishes no print layout; the period summary, 465.2): the shell hides
+  its app bar, rail, bottom bar and sheets, `tb-panes` / `tb-pane` flow at full height without
+  their corners and surface; a page marks screen-only parts `tb-no-print` (fields, buttons,
+  editors) and paper-only ones `tb-print-only` (a heading, rendered Markdown) —
+  `styles/_print.scss`, which also takes the light system colours `Canvas` / `CanvasText` and keeps
+  a `p-card` whole.
 
 ## Part C — Components
 

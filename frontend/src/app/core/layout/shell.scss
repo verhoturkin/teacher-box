@@ -255,3 +255,29 @@
     }
   }
 }
+
+/* Print (the period summary, 465.2): only the page — no app bar, navigation rail, bottom bar or sheets, and
+   no margins of the frame (ours: M3 publishes no print layout) */
+@media print {
+  .tb-shell__header,
+  .tb-bottom-nav,
+  tb-side-nav,
+  tb-notifications-sheet,
+  tb-new-message {
+    display: none;
+  }
+
+  :host,
+  :host(.tb-shell--rail) .tb-shell__body,
+  :host(.tb-shell--rail) .tb-shell__content,
+  .tb-shell__content,
+  .tb-shell__content--nav {
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .tb-shell__content {
+    max-width: none;
+  }
+}

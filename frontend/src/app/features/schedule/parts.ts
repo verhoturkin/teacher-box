@@ -26,5 +26,6 @@ export { LessonDialog } from './teacher/lesson-dialog';
 export { AttendanceDialog } from './teacher/attendance-dialog';
 export { StudentLessonsCard } from './teacher/student-lessons-card';
 export { StudentLessonsTab } from './teacher/student-lessons-tab';
+export { PeriodLessonsCard } from './teacher/period-lessons-card';
 export { GoogleCalendarPanel } from './teacher/google-calendar-panel';
 export { CalendarFeedPanel } from './ui/calendar-feed-panel';
