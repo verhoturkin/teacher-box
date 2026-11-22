@@ -214,11 +214,24 @@ test('a course plan on a lesson, homework at it, and the bank that «Испол�
     uses: (homeworkOriginal?.uses ?? 0) + 1,
   });
 
-  // The teacher sees both originals in the banks of «Материалы».
+  // The teacher sees both originals among the templates of «Материалы» (466.1: list-detail), under
+  // the course in the list and on the tabs «Планы» and «Задания».
   await page.setViewportSize({ width: 1440, height: 900 });
   await startSession(page, 'teacher', PASSWORD);
   await page.goto('/teacher/materials?tab=plans');
   await expect(page.getByText(title, { exact: true }).first()).toBeVisible();
-  await page.goto('/teacher/materials?tab=assignments');
+  const places = page.getByRole('navigation', { name: 'Разделы материалов' });
+  await places.getByRole('link', { name: /^Английский A2[ ,]/ }).click();
+  await expect(page).toHaveURL(new RegExp(`course=${course}&tab=plans`));
+  await expect(page.getByRole('heading', { level: 2, name: 'Английский A2' })).toBeVisible();
+  await expect(page.getByText(title, { exact: true }).first()).toBeVisible();
+  await page.getByRole('tab', { name: 'Задания', exact: true }).click();
   await expect(page.getByText(homeworkTitle, { exact: true }).first()).toBeVisible();
+  // «Создать» → «План урока» starts a template of the chosen course
+  await page
+    .locator('tb-page-header')
+    .getByRole('button', { name: 'Создать', exact: true })
+    .click();
+  await page.getByRole('menuitem', { name: 'План урока' }).click();
+  await expect(page).toHaveURL(new RegExp(`/teacher/materials/plans/new\\?course=${course}$`));
 });

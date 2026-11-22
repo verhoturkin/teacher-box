@@ -40,10 +40,8 @@ test('«Доски» lists every board without a member filter', async ({ page }
   await page.goto('/teacher/boards');
 
   await expect(page.getByRole('listitem').filter({ hasText: BOARD })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Все', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  // 466.1: the kind is a «Фильтр» menu, «Все» until another is picked
+  await expect(page.getByRole('button', { name: 'Фильтр: Фильтр', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Все доски' })).toHaveCount(0);
 });
 

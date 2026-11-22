@@ -17,7 +17,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { MaterialCard } from '@shared/ui/material-card';
 import { MaterialSort } from '@shared/ui/material-sort';
-import { Course, CourseFilter } from '@features/textbooks/parts';
+import { Course, CourseFilter, countByCourse } from '@features/textbooks/parts';
 import { HomeworkApi } from '../data-access/homework-api';
 import { AssignmentSummary } from '../data-access/homework.models';
 import { T } from '../i18n/texts';
@@ -88,6 +88,8 @@ export class HomeworkBankFeed {
   protected readonly items = signal<AssignmentSummary[]>([]);
   /** How many bank items there are (before the search, the filter and the sort). */
   readonly total = computed(() => this.items().length);
+  /** How many items each course has (`null` — without a course). */
+  readonly courseCounts = computed(() => countByCourse(this.items()));
   private readonly courseNames = computed(
     () => new Map(this.courses().map((course) => [course.id, course.name])),
   );
@@ -145,9 +147,11 @@ export class HomeworkBankFeed {
     this.menu().toggle(event);
   }
 
-  /** «Создать» of the page, the FAB of a phone: a new bank item. */
-  openCreate(): void {
-    void this.router.navigate(['/teacher/homework/new'], { queryParams: { bank: true } });
+  /** «Создать» of the page: a new bank item, of the course given, if any. */
+  openCreate(course: string | null = null): void {
+    void this.router.navigate(['/teacher/homework/new'], {
+      queryParams: course === null ? { bank: true } : { bank: true, course },
+    });
   }
 
   protected async confirmRemove(item: AssignmentSummary): Promise<void> {

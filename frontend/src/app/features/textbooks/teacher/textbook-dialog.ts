@@ -206,6 +206,8 @@ export class TextbookDialog {
   readonly groups = input<readonly MemberOption[]>([]);
   /** The teacher's courses: the «Курс» select and «Ученики курса» among the members (ADR-0071). */
   readonly courses = input<readonly MemberOption[]>([]);
+  /** The course of a new textbook to start with (the course open in «Материалы»); `null` — none. */
+  readonly course = input<string | null>(null);
   readonly saved = output<Textbook>();
 
   protected readonly accept = TEXTBOOK_FILES;
@@ -278,7 +280,7 @@ export class TextbookDialog {
       this.form.reset({
         kind: textbook?.kind ?? 'TEXTBOOK',
         title: textbook?.title ?? '',
-        courseId: textbook?.courseId ?? null,
+        courseId: textbook === null ? this.course() : textbook.courseId,
         pageCount: textbook?.format === 'DOCUMENT' ? textbook.pageCount : null,
         members: (textbook?.members ?? []).map((member): MemberSelection => ({
           kind: member.type,

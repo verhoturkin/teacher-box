@@ -58,7 +58,7 @@ of `textbooks` does not import `schedule`: the route (`app.routes.ts`, `linkToLe
   (title medium), a muted hint and two buttons — «Составить» (secondary, the stronger of the two)
   opens `/teacher/materials/plans/new?lessonId=…&studentId=…|groupId=…`: a working plan, the
   course of the student or the group prefilled, the first save links it
-  (`PUT …/lessons/{id}/plan`), back and «Готово» lead to `/teacher/schedule`; «Из банка»
+  (`PUT …/lessons/{id}/plan`), back and «Готово» lead to `/teacher/schedule`; «Из шаблонов»
   (outlined) turns the row into an inline picker — a filtered `p-select` of the bank items by
   title with the course under each, «Отмена» and «Взять» (`POST …/plans/{id}/use`, then the link;
   a copy the link refuses is deleted, the error is a snackbar). *Ours*: inline instead of a dialog
@@ -90,7 +90,7 @@ and `assignmentProgress`. The homework editor does not import `schedule`: the ro
   stronger) → `/teacher/homework/new?lessonId=…`; «Привязать» (outlined) turns the row into an
   inline picker — a filtered, grouped `p-select`: «Недавние задания участников» (working
   assignments of the last 30 days with a lesson student, not linked to any lesson of ±90 days)
-  and «Из банка» (by title), «Отмена» and «Привязать». A bank item is used for the lesson's
+  and «Из шаблонов» (by title), «Отмена» and «Привязать». A bank item is used for the lesson's
   students (`POST …/assignments/{id}/use`), then linked; a draft the link refuses is deleted. The
   snackbar of a used item has «Открыть» (its editor). *Ours:* drafts are not offered among the
   recent ones — a summary carries no draft students; inline instead of a dialog, as the plan.

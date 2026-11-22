@@ -55,7 +55,7 @@ summarizes a student's period. Starts only after the v0.60.0 PR is merged. Spec 
 
 Decisions 9–15 of roadmap/11 «UI review of 0.60.0»; every interface change with `m3-expressive`.
 
-- [ ] 466.1 **F** *complex* — «Материалы» as list-detail (decisions 9–12): the course pane with
+- [x] 466.1 **F** *complex* — «Материалы» as list-detail (decisions 9–12): the course pane with
   inline create / rename / delete / reorder (drop `CoursesDialog`), the tabs «Учебники · Планы ·
   Задания» with one toolbar row (the textbook kind in a filter menu), one «Создать ▾» / FAB with
   the course prefilled, the icon `collections_bookmark`; «банк» → «шаблоны» in every UI text,

@@ -335,6 +335,8 @@ export class LessonPlanEditorPage implements OnInit, CanLeave {
   /** Query `?studentId=` / `?groupId=` of a new lesson plan: the course is prefilled with theirs. */
   readonly studentId = input<string>();
   readonly groupId = input<string>();
+  /** Query `?course=` of a new plan of «Материалы» → «Создать»: the course open there. */
+  readonly course = input<string>();
   /** Route data: puts a new lesson plan on its lesson. */
   readonly linkToLesson = input<LinkToLesson>();
   /** Route data: reads the lesson for the AI. */
@@ -460,6 +462,7 @@ export class LessonPlanEditorPage implements OnInit, CanLeave {
     this.aiOpen.set(this.ai() === '1');
     this.linked = this.planId() !== undefined || this.lessonId() === undefined;
     if (this.planId() === undefined) {
+      this.form.controls.courseId.setValue(this.course() ?? null);
       this.drafts.mark(this.snapshot());
       this.prefillCourse();
     } else {

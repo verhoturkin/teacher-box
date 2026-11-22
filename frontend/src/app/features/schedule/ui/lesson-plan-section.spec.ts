@@ -88,7 +88,7 @@ describe('LessonPlanSection', () => {
 
   it('takes a plan from the bank: its copy goes on the lesson', async () => {
     const root = await show(scheduledLesson({ id: 'l-1' }));
-    buttonByText(root, 'Из банка').click();
+    buttonByText(root, 'Из шаблонов').click();
     backend.expectOne('/api/teacher/textbooks/courses').flush([aCourse({ id: 'c-1', name: 'A2' })]);
     backend
       .expectOne('/api/teacher/textbooks/plans?bank=true')
@@ -118,13 +118,13 @@ describe('LessonPlanSection', () => {
     await settle();
     expect(changed).toEqual([expect.objectContaining({ planId: 'p-7' })]);
     expect(messages).toHaveBeenLastCalledWith(
-      expect.objectContaining({ detail: 'План из банка добавлен к уроку' }),
+      expect.objectContaining({ detail: 'План из шаблона добавлен к уроку' }),
     );
   });
 
   it('deletes the copy that could not go on the lesson, and the picker can be closed', async () => {
     const root = await show(scheduledLesson({ id: 'l-1' }));
-    buttonByText(root, 'Из банка').click();
+    buttonByText(root, 'Из шаблонов').click();
     backend
       .expectOne('/api/teacher/textbooks/courses')
       .flush({ status: 500 }, { status: 500, statusText: 'Server Error' });
@@ -150,12 +150,12 @@ describe('LessonPlanSection', () => {
 
     buttonByText(root, 'Отмена').click();
     await settle();
-    expect(buttonByText(root, 'Из банка')).toBeTruthy();
+    expect(buttonByText(root, 'Из шаблонов')).toBeTruthy();
   });
 
   it('reports a bank that cannot be read', async () => {
     const root = await show(scheduledLesson({ id: 'l-1' }));
-    buttonByText(root, 'Из банка').click();
+    buttonByText(root, 'Из шаблонов').click();
     backend.expectOne('/api/teacher/textbooks/courses').flush([]);
     backend
       .expectOne('/api/teacher/textbooks/plans?bank=true')
@@ -199,7 +199,7 @@ describe('LessonPlanSection', () => {
     await settle();
     menuItemByText('Убрать из урока').click();
     await settle();
-    expect(bodyText()).toContain('Оригинал в банке останется');
+    expect(bodyText()).toContain('Шаблон останется');
     buttonByText(document.body, 'Убрать').click();
     await settle();
     const taken = backend.expectOne({

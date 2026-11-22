@@ -51,11 +51,11 @@ Past lessons without an outcome are outlined in red. You can record outcomes fro
 
 A lesson’s details have a Lesson plan section. With no plan yet, choose **Write** to open the editor of this lesson’s plan; the course is \
 filled in from the student’s or group’s course. The plan saves itself and is attached to the lesson straight away; Done takes you back to the \
-schedule. Choose **From bank**, pick a plan and choose Use: the lesson gets its own copy and the bank original stays as it is. A cancelled \
+schedule. Choose **From templates**, pick a plan and choose Use: the lesson gets its own copy and the template stays as it is. A cancelled \
 lesson cannot take a new plan.
 
 Once a lesson has a plan, its details show the title, the textbook pages and the videos. Open takes you to the plan editor. In the “⋮” menu, \
-**Remove from lesson** removes the plan after you confirm and deletes this lesson’s copy; the bank original stays. Students in the lesson and \
+**Remove from lesson** removes the plan after you confirm and deletes this lesson’s copy; the template stays. Students in the lesson and \
 their parents see the plan in their lesson details: the text, the textbook pages and the videos, with a transcript only when you show it. \
 See Textbooks for more about plans.
 
@@ -65,7 +65,7 @@ Below the plan, a lesson’s details have a Homework section listing the assignm
 To review). **Set** opens the assignment editor for this lesson: the lesson’s students are already chosen, the course comes from the plan \
 (or from the student’s or group’s course), the plan’s textbook pages and videos are already added — remove what you don’t need — and the \
 due date is the next lesson. The assignment is linked to the lesson when it is first saved. **Link** lets you pick a recent assignment of \
-the lesson’s students that isn’t linked to any lesson yet, or an assignment from the bank: a bank assignment becomes a draft copy for the \
+the lesson’s students that isn’t linked to any lesson yet, or an assignment template: a template becomes a draft copy for the \
 lesson’s students, which you can open, edit and set. In the “⋮” menu, **Unlink** takes the assignment off the lesson; the assignment \
 itself stays. A cancelled lesson cannot take new homework.
 

@@ -165,6 +165,8 @@ describe('AssignmentEditorPage for a lesson and for the bank', () => {
   it('makes a bank item: no students or deadline, «Готово» leads to «Материалы»', async () => {
     const fixture = editor.open();
     fixture.componentRef.setInput('bank', 'true');
+    // «Материалы» → «Создать» → «Задание» on a course
+    fixture.componentRef.setInput('course', 'c-1');
     await fixture.whenStable();
     editor.backend.expectNone('/api/teacher/students');
     editor.backend.expectNone((request) => request.url === '/api/teacher/schedule/lessons');
@@ -173,8 +175,8 @@ describe('AssignmentEditorPage for a lesson and for the bank', () => {
     await fixture.whenStable();
     const page = fixture.componentInstance;
     const host = hostElement(fixture);
-    expect(host.querySelector('h1')?.textContent.trim()).toBe('Новое задание для банка');
-    expect(readableText(host)).toContain('Это оригинал из банка');
+    expect(host.querySelector('h1')?.textContent.trim()).toBe('Новый шаблон задания');
+    expect(readableText(host)).toContain('Это шаблон: ученикам');
     expect(host.querySelector('tb-editor-recipients')).toBeNull();
     expect(() => exactButton(host, 'Выдать')).toThrow();
 
@@ -185,7 +187,12 @@ describe('AssignmentEditorPage for a lesson and for the bank', () => {
       method: 'POST',
       url: '/api/teacher/homework/assignments',
     });
-    expect(created.request.body).toMatchObject({ title: 'Глаголы', dueAt: null, bank: true });
+    expect(created.request.body).toMatchObject({
+      title: 'Глаголы',
+      dueAt: null,
+      bank: true,
+      courseId: 'c-1',
+    });
     created.flush(assignmentDetails({ id: 'b-1', tasks: [], bank: true }));
     await fixture.whenStable();
     editor.backend.expectNone('/api/teacher/homework/assignments/b-1/draft-students');
@@ -200,7 +207,7 @@ describe('AssignmentEditorPage for a lesson and for the bank', () => {
     const { page, host } = await editor.edit(
       assignmentDetails({ id: 'b-1', tasks: [], bank: true, dueAt: null }),
     );
-    expect(readableText(host)).toContain('В банке');
+    expect(readableText(host)).toContain('Шаблон');
     expect(host.querySelector('button[aria-label="Ещё"]')).toBeNull();
     page.form.patchValue({ description: '' });
     await editor.fixture.whenStable();
@@ -227,12 +234,12 @@ describe('AssignmentEditorPage for a lesson and for the bank', () => {
     const { host } = await editor.edit(assignmentDetails({ id: 'a-1' }));
     buttonByText(host, 'Ещё').click();
     await editor.fixture.whenStable();
-    menuItemByText('Сохранить в банк').click();
+    menuItemByText('Сохранить как шаблон').click();
     editor.backend
       .expectOne({ method: 'POST', url: '/api/teacher/homework/assignments/a-1/bank' })
       .flush(assignmentDetails({ id: 'a-1', sourceId: 'b-1' }));
     await editor.fixture.whenStable();
-    expect(success).toHaveBeenCalledWith('Задание сохранено в банк');
+    expect(success).toHaveBeenCalledWith('Задание сохранено как шаблон');
 
     const confirm = vi
       .spyOn(TestBed.inject(ConfirmationService), 'confirm')
@@ -242,7 +249,7 @@ describe('AssignmentEditorPage for a lesson and for the bank', () => {
       });
     buttonByText(host, 'Ещё').click();
     await editor.fixture.whenStable();
-    menuItemByText('Обновить в банке').click();
+    menuItemByText('Обновить шаблон').click();
     await editor.settle();
     expect(confirm).toHaveBeenCalled();
     editor.backend
@@ -264,7 +271,7 @@ describe('AssignmentEditorPage for a lesson and for the bank', () => {
     await editor.fixture.whenStable();
     buttonByText(host, 'Ещё').click();
     await editor.fixture.whenStable();
-    menuItemByText('Сохранить в банк').click();
+    menuItemByText('Сохранить как шаблон').click();
     const updated = editor.backend.expectOne({
       method: 'PUT',
       url: '/api/teacher/homework/assignments/a-2',

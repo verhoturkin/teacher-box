@@ -198,7 +198,7 @@ describe('LessonHomeworkSection', () => {
       .flush(after);
     await fixture.whenStable();
     expect(changed).toEqual([after]);
-    expect(lastMessage()).toMatchObject({ detail: 'Черновик из банка привязан к уроку' });
+    expect(lastMessage()).toMatchObject({ detail: 'Черновик из шаблона привязан к уроку' });
     await show(after);
     backend.expectOne(ASSIGNMENTS).flush([]);
   });

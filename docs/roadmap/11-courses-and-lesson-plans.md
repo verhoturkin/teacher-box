@@ -79,7 +79,7 @@ The teacher prepares and reviews work around **lessons**, grouped by **course**:
 | Курс | Course | A named programme, e.g. «Английский A2», «ОГЭ математика». |
 | Текущий курс | Current course | The course a student or a group studies now; at most one. |
 | План урока | Lesson plan | Markdown plan with textbook pages and videos, on one lesson. |
-| Банк | Bank | Originals of plans and assignments for reuse, in «Материалы». |
+| Шаблон (code: bank) | Template | Originals of plans and assignments for reuse, in «Материалы» (466.1: «банк» → «шаблоны» in the UI). |
 | Использовать | Use | Make a copy of a bank item for a lesson or for students. |
 | Итоги периода | Period summary | AI draft about a student's period (v0.61.0). |
 
