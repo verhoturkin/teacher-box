@@ -45,6 +45,7 @@ export function scheduledLesson(overrides: Partial<ScheduledLesson> = {}): Sched
     originalStartsAt: null,
     pendingRequests: [],
     planId: null,
+    assignmentIds: [],
     ...overrides,
   };
 }

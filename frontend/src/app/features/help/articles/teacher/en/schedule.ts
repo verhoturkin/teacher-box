@@ -59,6 +59,16 @@ Once a lesson has a plan, its details show the title, the textbook pages and the
 their parents see the plan in their lesson details: the text, the textbook pages and the videos, with a transcript only when you show it. \
 See Textbooks for more about plans.
 
+## Lesson homework
+
+Below the plan, a lesson’s details have a Homework section listing the assignments linked to the lesson and their status (Not set, Set, \
+To review). **Set** opens the assignment editor for this lesson: the lesson’s students are already chosen, the course comes from the plan \
+(or from the student’s or group’s course), the plan’s textbook pages and videos are already added — remove what you don’t need — and the \
+due date is the next lesson. The assignment is linked to the lesson when it is first saved. **Link** lets you pick a recent assignment of \
+the lesson’s students that isn’t linked to any lesson yet, or an assignment from the bank: a bank assignment becomes a draft copy for the \
+lesson’s students, which you can open, edit and set. In the “⋮” menu, **Unlink** takes the assignment off the lesson; the assignment \
+itself stays. A cancelled lesson cannot take new homework.
+
 ## Share a lesson summary
 
 Once a lesson has started, add a summary in its details. Summaries are unavailable for cancelled lessons and individual lessons marked Missed.
@@ -66,7 +76,7 @@ Once a lesson has started, add a summary in its details. Summaries are unavailab
 “What we covered” is visible to the lesson’s students and initially shows the lesson topic. “Next lesson topic” fills the next lesson’s topic if that \
 field is empty. “Save” keeps your changes; “Send to student” or “Send to students” also sends a Lesson summary notification.
 
-If AI is enabled, “Generate draft” uses the lesson topic, assignments and your notes to suggest a summary. Review it before sending. Completed \
+If AI is enabled, “Generate draft” uses the lesson topic, the assignments linked to the lesson and your notes to suggest a summary. Review it before sending. Completed \
 lessons with summaries appear in the student or group’s lesson history. In the bot, choose “Add summary” after recording a completed lesson.
 
 ## Cancel, restore or delete

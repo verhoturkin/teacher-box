@@ -3,6 +3,8 @@
  * Pages are loaded lazily through index.ts; keeping them apart keeps them out of other features' bundles.
  */
 export { HomeworkApi } from './data-access/homework-api';
+export { assignmentProgress } from './homework-labels';
+export { HomeworkBankFeed } from './teacher/homework-bank-feed';
 export type {
   AssignmentSummary,
   HomeworkSettings,

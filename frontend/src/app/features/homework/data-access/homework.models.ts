@@ -36,6 +36,12 @@ export interface AssignmentSummary {
   readonly files: number;
   readonly questions: number;
   readonly videos: number;
+  /** An original of the bank (roadmap 11): content only, never given out. */
+  readonly bank: boolean;
+  /** The bank item it came from or was saved as; `null` — none. */
+  readonly sourceId: string | null;
+  /** A bank item: how many working assignments came from it. */
+  readonly uses: number;
 }
 
 export interface TaskSummary {
@@ -217,6 +223,12 @@ export interface AssignmentDetails {
   readonly quizAttempts: number | null;
   /** Whom a draft is meant for; empty once given out. */
   readonly draftStudentIds: string[];
+  /** An original of the bank (roadmap 11): content only, never given out. */
+  readonly bank: boolean;
+  /** The bank item it came from or was saved as; `null` — none. */
+  readonly sourceId: string | null;
+  /** A bank item: how many working assignments came from it. */
+  readonly uses: number;
 }
 
 export interface Submission {
@@ -304,6 +316,8 @@ export interface AssignmentInput {
   readonly quizReveal?: QuizReveal;
   /** 0 — unlimited. */
   readonly quizAttempts?: number;
+  /** A bank item («Материалы» → «Создать»): no students, deadline or board; only on create. */
+  readonly bank?: boolean;
 }
 
 /** Mirrors `HomeworkSummary`: homework at a glance for the teacher. */

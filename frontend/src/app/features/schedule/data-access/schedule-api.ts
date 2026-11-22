@@ -192,6 +192,26 @@ export class ScheduleApi {
     );
   }
 
+  /**
+   * Links a working assignment to the lesson (repeating it is a no-op); no lesson version. Errors are the
+   * caller's to show: a bank item, an assignment on another lesson, a cancelled lesson.
+   */
+  linkHomework(lessonId: string, assignmentId: string): Observable<ScheduledLesson> {
+    return this.http.post<ScheduledLesson>(
+      `/api/teacher/schedule/lessons/${lessonId}/homework`,
+      { assignmentId },
+      QUIET,
+    );
+  }
+
+  /** Takes the assignment off the lesson; the assignment stays. */
+  unlinkHomework(lessonId: string, assignmentId: string): Observable<ScheduledLesson> {
+    return this.http.delete<ScheduledLesson>(
+      `/api/teacher/schedule/lessons/${lessonId}/homework/${assignmentId}`,
+      QUIET,
+    );
+  }
+
   /** Sends the summary to the participants as «Итоги урока». */
   shareSummary(lessonId: string): Observable<void> {
     return this.http

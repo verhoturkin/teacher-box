@@ -44,3 +44,20 @@ export function nextLessonStart(
   }
   return next;
 }
+
+/** What the editor reads of the lesson its homework is for (`?lessonId=`): a part of the schedule's lesson. */
+export interface HomeworkLesson {
+  readonly id: string;
+  readonly startsAt: string;
+  readonly studentId: string | null;
+  readonly groupId: string | null;
+  readonly participants: readonly { readonly studentId: string }[];
+  /** The lesson's working plan: its textbook pages and videos go into the assignment. */
+  readonly planId: string | null;
+}
+
+/** Reads the lesson of `?lessonId=`; the route gives it, the schedule owns the lesson (ADR-0058). */
+export type LessonOf = (lessonId: string) => Observable<HomeworkLesson>;
+
+/** Links a working assignment to its lesson; the route gives it, the schedule owns the link (ADR-0058). */
+export type LinkToLesson = (lessonId: string, assignmentId: string) => Observable<unknown>;

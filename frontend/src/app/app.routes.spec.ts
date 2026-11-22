@@ -4,6 +4,7 @@ import { By, Title } from '@angular/platform-browser';
 import { Router, TitleStrategy, provideRouter, withComponentInputBinding } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from './app.routes';
+import { AssignmentEditorPage } from '@features/homework';
 import { LessonPlanEditorPage } from '@features/textbooks';
 import { AuthService } from '@core/auth/auth.service';
 import { NotificationsSheetState } from '@core/notifications/notifications-sheet-state';
@@ -385,6 +386,46 @@ describe('app routes', { timeout: 20_000 }, () => {
     });
     expect(request?.request.body).toEqual({ planId: 'p-1' });
     request?.flush({});
+    expect(linked).toBe(true);
+    backend.match(() => true);
+  });
+
+  it('gives the homework editor the lesson of `?lessonId=` and the link to it (ADR-0058)', async () => {
+    auth.acceptSession(authResponse('TEACHER'));
+    const backend = TestBed.inject(HttpTestingController);
+
+    await harness.navigateByUrl('/teacher/homework/new?lessonId=l-1');
+    const editor = harness.fixture.debugElement
+      .query(By.directive(AssignmentEditorPage))
+      .injector.get(AssignmentEditorPage);
+    expect(editor.lessonId()).toBe('l-1');
+    let request: TestRequest | undefined;
+    await vi.waitFor(() => {
+      request ??= backend.match('/api/teacher/schedule/lessons/l-1')[0];
+      expect(request).toBeDefined();
+    });
+    request?.flush({
+      id: 'l-1',
+      startsAt: '2026-11-30T10:00:00Z',
+      studentId: 's-1',
+      groupId: null,
+      participants: [{ studentId: 's-1' }],
+      planId: null,
+    });
+    let linked = false;
+    editor
+      .linkToLesson()?.('l-1', 'a-1')
+      .subscribe(() => (linked = true));
+    let link: TestRequest | undefined;
+    await vi.waitFor(() => {
+      link ??= backend.match({
+        method: 'POST',
+        url: '/api/teacher/schedule/lessons/l-1/homework',
+      })[0];
+      expect(link).toBeDefined();
+    });
+    expect(link?.request.body).toEqual({ assignmentId: 'a-1' });
+    link?.flush({});
     expect(linked).toBe(true);
     backend.match(() => true);
   });

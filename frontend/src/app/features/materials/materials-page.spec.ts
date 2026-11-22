@@ -5,9 +5,26 @@ import { aBoard, aLinkBoard } from '@testing/boards-fixtures';
 import { bodyText, buttonByText, hostElement, menuItemByText, typeInto } from '@testing/dom';
 import { aGroup, aStudent } from '@testing/identity-fixtures';
 import { ConfirmHost, screenWidth, testProviders } from '@testing/setup';
+import { assignmentSummary } from '@testing/homework-fixtures';
 import { aCourse, aPlanSummary, aTextbook, aWorkbook } from '@testing/textbooks-fixtures';
+import type { AssignmentSummary } from '@features/homework/parts';
 import { Course, LessonPlanSummary } from '@features/textbooks/parts';
 import { MaterialsPage } from './materials-page';
+
+const BANK = '/api/teacher/homework/assignments?bank=true';
+
+function bankItem(overrides: Partial<AssignmentSummary> = {}): AssignmentSummary {
+  return assignmentSummary({
+    bank: true,
+    dueAt: null,
+    students: [],
+    studentIds: [],
+    totalTasks: 0,
+    assigned: 0,
+    submitted: 0,
+    ...overrides,
+  });
+}
 
 describe('MaterialsPage', () => {
   let fixture: ComponentFixture<MaterialsPage>;
@@ -21,6 +38,10 @@ describe('MaterialsPage', () => {
     plans: LessonPlanSummary[] = [
       aPlanSummary(),
       aPlanSummary({ id: 'p-2', title: 'Past Simple', courseId: null, uses: 0 }),
+    ],
+    bank: AssignmentSummary[] = [
+      bankItem({ id: 'b-1', title: 'Дроби', courseId: 'c-1', uses: 2 }),
+      bankItem({ id: 'b-2', title: 'Глаголы', createdAt: '2026-09-02T10:00:00Z' }),
     ],
   ): Promise<void> {
     TestBed.configureTestingModule({
@@ -51,6 +72,7 @@ describe('MaterialsPage', () => {
       .expectOne('/api/teacher/textbooks')
       .flush([aTextbook({ hasCover: false }), aWorkbook({ hasCover: false })]);
     backend.expectOne('/api/teacher/textbooks/plans?bank=true').flush(plans);
+    backend.expectOne(BANK).flush(bank);
     await fixture.whenStable();
     host = hostElement(fixture);
   }
@@ -87,7 +109,7 @@ describe('MaterialsPage', () => {
     return found;
   }
 
-  function shownTitles(tab: 'boards' | 'textbooks' | 'lesson-plans'): string[] {
+  function shownTitles(tab: 'boards' | 'textbooks' | 'lesson-plans' | 'homework-bank'): string[] {
     const feed = host.querySelector(`tb-${tab}-feed`);
     return [...(feed?.querySelectorAll('.tb-material-card__title') ?? [])].map((link) =>
       link.textContent.trim(),
@@ -97,7 +119,7 @@ describe('MaterialsPage', () => {
   it('shows boards by default with the numbers of both kinds in the connected group', async () => {
     await render();
 
-    expect(segments()).toEqual(['Доски2', 'Учебники2', 'Планы2']);
+    expect(segments()).toEqual(['Доски2', 'Учебники2', 'Планы2', 'Задания2']);
     expect(chips()).toEqual(['Все', 'На портале', 'Внешние']);
     expect(host.querySelector('[hidden] tb-boards-feed')).toBeNull();
     expect(host.querySelector('[hidden] tb-textbooks-feed')).not.toBeNull();
@@ -172,6 +194,7 @@ describe('MaterialsPage', () => {
       await fixture.whenStable();
       backend.expectOne('/api/teacher/textbooks').flush([aTextbook({ hasCover: false })]);
       backend.expectOne('/api/teacher/textbooks/plans?bank=true').flush([]);
+      backend.expectOne(BANK).flush([]);
       await fixture.whenStable();
       expect(shownTitles('textbooks')).toEqual(['Spotlight 5']);
     });
@@ -242,7 +265,7 @@ describe('MaterialsPage', () => {
 
   it('on a phone has the group on top and the FAB of the open tab', async () => {
     await render({}, 500);
-    expect(host.querySelectorAll('.tb-segment')).toHaveLength(3);
+    expect(host.querySelectorAll('.tb-segment')).toHaveLength(4);
     expect(host.querySelectorAll('tb-segment-group')).toHaveLength(1);
 
     const fab = host.querySelector<HTMLElement>('.tb-page-fab button');
@@ -328,6 +351,76 @@ describe('MaterialsPage', () => {
     it('says the bank is empty', async () => {
       await render({ tab: 'plans' }, 1280, [], []);
       expect(host.textContent).toContain('Планов в банке пока нет');
+    });
+  });
+
+  describe('assignments', () => {
+    const courses = [aCourse({ id: 'c-1', name: 'Английский' })];
+
+    it('shows the bank of assignments on ?tab=assignments, filtered by course and search, sorted', async () => {
+      await render({ tab: 'assignments' }, 1280, courses);
+      expect(host.querySelector('[hidden] tb-homework-bank-feed')).toBeNull();
+      expect(chips()).toEqual([]);
+      expect(shownTitles('homework-bank')).toEqual(['Глаголы', 'Дроби']);
+      expect(host.textContent).toContain('Английский · Использовано 2 раза');
+      expect(host.textContent).toContain('Без курса · Ещё не использовалось');
+
+      fixture.componentRef.setInput('course', 'c-1');
+      await fixture.whenStable();
+      expect(shownTitles('homework-bank')).toEqual(['Дроби']);
+      fixture.componentRef.setInput('course', undefined);
+      const search = host.querySelector<HTMLInputElement>('input[type="search"]');
+      if (search === null) throw new Error('No search');
+      typeInto(search, 'англ');
+      await fixture.whenStable();
+      expect(shownTitles('homework-bank')).toEqual(['Дроби']);
+      typeInto(search, '');
+      await fixture.whenStable();
+
+      buttonByText(host, 'Сначала изменённые').click();
+      await fixture.whenStable();
+      menuItemByText('По названию').click();
+      await fixture.whenStable();
+      expect(shownTitles('homework-bank')).toEqual(['Глаголы', 'Дроби']);
+    });
+
+    it('creates a bank item with «Новое задание», edits and deletes one from «⋮»', async () => {
+      await render({ tab: 'assignments' });
+      TestBed.createComponent(ConfirmHost).detectChanges();
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      buttonByText(host, 'Новое задание').click();
+      expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new'], {
+        queryParams: { bank: true },
+      });
+
+      host.querySelector<HTMLButtonElement>('button[aria-label="Действия: Дроби"]')?.click();
+      await fixture.whenStable();
+      menuItemByText('Изменить').click();
+      expect(navigate).toHaveBeenLastCalledWith(['/teacher/homework', 'b-1', 'edit']);
+
+      host.querySelector<HTMLButtonElement>('button[aria-label="Действия: Глаголы"]')?.click();
+      await fixture.whenStable();
+      menuItemByText('Удалить…').click();
+      await fixture.whenStable();
+      expect(bodyText()).toContain('Задания учеников, сделанные из него, останутся');
+      buttonByText(document.body, 'Удалить').click();
+      await fixture.whenStable();
+      backend
+        .expectOne({ method: 'DELETE', url: '/api/teacher/homework/assignments/b-2' })
+        .flush(null);
+      backend.expectOne(BANK).flush([bankItem({ id: 'b-1', title: 'Дроби' })]);
+      await fixture.whenStable();
+      expect(shownTitles('homework-bank')).toEqual(['Дроби']);
+    });
+
+    it('says the bank is empty and opens a new item from the FAB of a phone', async () => {
+      await render({ tab: 'assignments' }, 360, [], [], []);
+      expect(host.textContent).toContain('Заданий в банке пока нет');
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      host.querySelector<HTMLElement>('.tb-page-fab button')?.click();
+      expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new'], {
+        queryParams: { bank: true },
+      });
     });
   });
 });

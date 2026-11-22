@@ -35,8 +35,10 @@ export class HomeworkApi {
 
   // --- teacher ---
 
-  assignments(): Observable<AssignmentSummary[]> {
+  /** The working assignments; `bank` — the originals of the bank instead (roadmap 11). */
+  assignments(bank = false): Observable<AssignmentSummary[]> {
     return this.http.get<AssignmentSummary[]>(`${TEACHER}/assignments`, {
+      params: bank ? { bank: true } : {},
       context: quietContext(),
     });
   }
@@ -63,6 +65,16 @@ export class HomeworkApi {
   /** A draft copy with the text, files, textbooks and videos; no students, deadline or board. */
   copyAssignment(id: string): Observable<AssignmentDetails> {
     return this.http.post<AssignmentDetails>(`${TEACHER}/assignments/${id}/copy`, {});
+  }
+
+  /** «Сохранить в банк» / «Обновить в банке»: a new original, or the original's content replaced by this one. */
+  saveToBank(id: string): Observable<AssignmentDetails> {
+    return this.http.post<AssignmentDetails>(`${TEACHER}/assignments/${id}/bank`, {});
+  }
+
+  /** «Использовать»: a working draft of a bank item for these students; the bank stays as it is. */
+  use(id: string, studentIds: readonly string[]): Observable<AssignmentDetails> {
+    return this.http.post<AssignmentDetails>(`${TEACHER}/assignments/${id}/use`, { studentIds });
   }
 
   updateAssignment(

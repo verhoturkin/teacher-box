@@ -59,6 +59,9 @@ export function assignmentSummary(overrides: Partial<AssignmentSummary> = {}): A
     files: 0,
     questions: 0,
     videos: 0,
+    bank: false,
+    sourceId: null,
+    uses: 0,
     ...overrides,
   };
 }
@@ -80,6 +83,9 @@ export function assignmentDetails(overrides: Partial<AssignmentDetails> = {}): A
     quizReveal: 'AFTER_SUBMIT',
     quizAttempts: 1,
     draftStudentIds: [],
+    bank: false,
+    sourceId: null,
+    uses: 0,
     tasks: [
       {
         taskId: 't-1',

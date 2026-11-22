@@ -26,6 +26,7 @@ import { quietContext } from '@core/http/api-error.interceptor';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Observable, map, of, switchMap, tap } from 'rxjs';
+import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Menu } from 'primeng/menu';
@@ -61,7 +62,7 @@ import { T } from '../i18n/texts';
 import { titleOf } from './assignment-draft';
 import { assignmentBoard } from './assignment-board';
 import { AssignMoreDialog } from './assign-more-dialog';
-import { UpcomingLessons } from './next-lesson';
+import { HomeworkLesson, LessonOf, LinkToLesson, UpcomingLessons } from './next-lesson';
 import { QuestionDraft, questionInputs } from './question-drafts';
 import { aiSources } from './editor/ai-sources';
 import { EditorAi } from './editor/editor-ai';
@@ -79,6 +80,8 @@ import {
   BindTextbookDialog,
   Course,
   CoursesApi,
+  LessonPlan,
+  LessonPlansApi,
   VideoDraft,
   videoDraft,
   videoInputs,
@@ -139,11 +142,20 @@ import {
               [savedAt]="savedAt()"
               [pending]="pending()"
               [autosaving]="autosaving()"
+              [bank]="bankItem()"
+              [moreItems]="moreItems()"
+              [banking]="banking()"
               (openStudentView)="openStudentView()"
               (toggleAi)="toggleAi()"
               (save)="save($event)"
+              (done)="finish()"
             />
           </ng-template>
+          @if (bankItem()) {
+            <p class="tb-hint">{{ b.bankItemHint }}</p>
+          } @else if (lessonId() !== undefined && isNew()) {
+            <p class="tb-hint">{{ b.lessonHint }}</p>
+          }
           <tb-editor-tabs
             [value]="activeTab()"
             [compact]="compact()"
@@ -168,7 +180,8 @@ import {
               [who]="who"
               [materials]="materials"
               [courses]="courses()"
-              (submitted)="save()"
+              [bank]="bankItem()"
+              (submitted)="bankItem() ? finish() : save()"
               (videosChange)="changeVideos($event)"
               (openQuiz)="choose('quiz')"
               (more)="giveMore()"
@@ -312,6 +325,7 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   protected readonly c = T.create;
   protected readonly tq = T.quiz;
   protected readonly tb = T.bind;
+  protected readonly b = T.bank;
   private readonly size = injectWindowSize();
   protected readonly compact = computed(() => this.size() === 'compact');
   protected readonly single = computed(() => this.size() === 'compact' || this.size() === 'medium');
@@ -327,6 +341,7 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   private readonly location = inject(Location);
   private readonly injector = inject(Injector);
   private readonly coursesApi = inject(CoursesApi);
+  private readonly plansApi = inject(LessonPlansApi);
 
   /** Route parameter of `/teacher/homework/:assignmentId/edit`; none — a new assignment. */
   readonly assignmentId = input<string>();
@@ -334,9 +349,42 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   readonly upcomingLessons = input<UpcomingLessons>();
   /** The open tab: `?tab=`, then the teacher's choice; «Настройки» is a tab of its own on a phone only. */
   readonly tab = input<string>();
+  /** Query `?lessonId=`: homework for this lesson (roadmap 11) — its students, course, plan and deadline. */
+  readonly lessonId = input<string>();
+  /** Query `?bank=true` of a new assignment: a bank item («Материалы» → «Задания» → «Создать»). */
+  readonly bank = input<string>();
+  /** Route data: reads the lesson of `?lessonId=`. */
+  readonly lessonOf = input<LessonOf>();
+  /** Route data: links a new assignment to the lesson of `?lessonId=`. */
+  readonly linkToLesson = input<LinkToLesson>();
 
   protected readonly isNew = computed(() => this.assignmentId() === undefined);
   protected readonly assignment = signal<AssignmentDetails | null>(null);
+  /** An original of the bank: content only, finished with «Готово», never given out. */
+  protected readonly bankItem = computed(
+    () => this.assignment()?.bank ?? (this.isNew() && this.bank() === 'true'),
+  );
+  /** A new lesson homework is linked by its first save; a failed link is tried again by the next one. */
+  private linked = true;
+  /** The assignment is going into the bank. */
+  protected readonly banking = signal(false);
+  /** «⋮» of a saved working assignment: «Сохранить в банк» / «Обновить в банке». */
+  protected readonly moreItems = computed<MenuItem[]>(() => {
+    const saved = this.assignment();
+    if (saved === null || saved.bank) {
+      return [];
+    }
+    const update = saved.sourceId !== null;
+    return [
+      {
+        label: update ? T.bank.updateBank : T.bank.toBank,
+        icon: 'tb-i tb-i-library_books',
+        command: () => {
+          void this.saveToBank(update);
+        },
+      },
+    ];
+  });
   protected readonly ready = computed(() => this.isNew() || this.assignment() !== null);
   protected readonly state = new LoadState();
 
@@ -367,16 +415,32 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   });
   /** The assignment's title as it is typed (sketch 11); before the first line — «Новое задание». */
   protected readonly heading = computed(
-    () => this.titleValue() || (this.isNew() ? T.editor.newAssignment : T.editor.editAssignment),
+    () =>
+      this.titleValue() ||
+      (this.isNew()
+        ? this.bankItem()
+          ? T.bank.newBankItem
+          : T.editor.newAssignment
+        : T.editor.editAssignment),
   );
   /** The page the editor was opened from (the list with its filters, the assignment, a student): «Назад» leads there. */
   private readonly origin = withoutCreate(
     (this.router.currentNavigation() ?? this.router.lastSuccessfulNavigation())?.previousNavigation
       ?.finalUrl ?? null,
   );
+  /** «Материалы» on «Задания»: where a bank item leads back. */
+  private readonly materialsLink = this.router.createUrlTree(['/teacher/materials'], {
+    queryParams: { tab: 'assignments' },
+  });
   protected readonly backLink = computed(() => {
     if (this.origin !== null) {
       return this.origin;
+    }
+    if (this.bankItem()) {
+      return this.materialsLink;
+    }
+    if (this.lessonId() !== undefined) {
+      return '/teacher/schedule';
     }
     const assignment = this.assignment();
     return assignment === null || this.isNew()
@@ -384,7 +448,13 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
       : ['/teacher/homework', assignment.id];
   });
   protected readonly backLabel = computed(() =>
-    this.origin !== null ? SHARED_T.common.back : (this.assignment()?.title ?? T.editor.back),
+    this.origin !== null
+      ? SHARED_T.common.back
+      : this.bankItem()
+        ? T.bank.backToMaterials
+        : this.lessonId() !== undefined
+          ? T.bank.backToSchedule
+          : (this.assignment()?.title ?? T.editor.back),
   );
 
   /** A saved assignment nobody has yet: its students are still a choice. */
@@ -555,10 +625,14 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
     this.coursesApi.list(quietContext()).subscribe((courses) => {
       this.courses.set(courses);
     });
+    this.linked = !this.isNew() || this.lessonId() === undefined;
     if (this.isNew()) {
       this.drafts.mark(this.snapshot());
-      this.who.load();
-      this.who.loadLessons(this.upcomingLessons());
+      if (!this.bankItem()) {
+        this.who.load();
+        this.who.loadLessons(this.upcomingLessons());
+        this.prefillFromLesson();
+      }
     } else {
       this.load();
     }
@@ -798,39 +872,227 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
     const textbooks = this.materials.picked();
     const text = this.form.controls.description.value;
     const dueAt = this.who.dueAt();
+    const bank = this.bankItem();
     const input: AssignmentInput = {
       title: this.titleValue(),
       description: text.trim() === '' ? null : text,
-      dueAt: dueAt === null ? null : dueAt.toISOString(),
+      dueAt: dueAt === null || bank ? null : dueAt.toISOString(),
       courseId: this.form.controls.courseId.value,
       videos: videoInputs(this.videos()),
       ...this.quiz.input(),
     };
     const saved =
       existing === null
-        ? this.api.createAssignment(input)
+        ? this.api.createAssignment(bank ? { ...input, bank: true } : input)
         : this.api.updateAssignment(existing.id, input, existing.version);
     return saved.pipe(
       tap((first) => {
         this.remember(first, existing === null);
       }),
+      switchMap((first) => this.link(first)),
       switchMap((first) =>
         this.materials.send(first.id, files, textbooks).pipe(
           switchMap((complete) => {
-            const next = !draft
-              ? of(first)
-              : give
-                ? this.api.assignStudents(first.id, students)
-                : (existing === null ? students.length > 0 : this.who.loaded())
-                  ? this.api.saveDraftStudents(first.id, students)
-                  : files.length + textbooks.length > 0
-                    ? this.api.assignment(first.id)
-                    : of(first);
+            const next = bank
+              ? files.length + textbooks.length > 0
+                ? this.api.assignment(first.id)
+                : of(first)
+              : !draft
+                ? of(first)
+                : give
+                  ? this.api.assignStudents(first.id, students)
+                  : (existing === null ? students.length > 0 : this.who.loaded())
+                    ? this.api.saveDraftStudents(first.id, students)
+                    : files.length + textbooks.length > 0
+                      ? this.api.assignment(first.id)
+                      : of(first);
             return next.pipe(map((assignment) => ({ assignment, complete })));
           }),
         ),
       ),
     );
+  }
+
+  /** A new lesson homework goes on its lesson once it exists; the link is not tried again once it is there. */
+  private link(assignment: AssignmentDetails): Observable<AssignmentDetails> {
+    const lessonId = this.lessonId();
+    const link = this.linkToLesson();
+    if (this.linked || lessonId === undefined || link === undefined) {
+      return of(assignment);
+    }
+    return link(lessonId, assignment.id).pipe(
+      map(() => {
+        this.linked = true;
+        return assignment;
+      }),
+    );
+  }
+
+  /**
+   * A new homework of a lesson: its students, the course of its plan (else of the student or the group), the
+   * plan's textbook pages and videos (the teacher removes what is not needed) and the deadline at the next lesson.
+   * What the teacher already chose stays; a failed read leaves the editor as it is.
+   */
+  private prefillFromLesson(): void {
+    const lessonId = this.lessonId();
+    const lessonOf = this.lessonOf();
+    if (lessonId === undefined || lessonOf === undefined) {
+      return;
+    }
+    lessonOf(lessonId)
+      .pipe(
+        switchMap((lesson) =>
+          lesson.planId === null
+            ? of({ lesson, plan: null })
+            : this.plansApi.get(lesson.planId, quietContext()).pipe(
+                map((plan): { lesson: HomeworkLesson; plan: LessonPlan | null } => ({
+                  lesson,
+                  plan,
+                })),
+              ),
+        ),
+      )
+      .subscribe({
+        next: ({ lesson, plan }) => {
+          this.takeLesson(lesson, plan);
+        },
+        error: () => {
+          // the teacher chooses the students and the materials as for any assignment
+        },
+      });
+  }
+
+  private takeLesson(lesson: HomeworkLesson, plan: LessonPlan | null): void {
+    this.who.after.set(new Date(lesson.startsAt));
+    const members = this.form.controls.members;
+    if (members.value.length === 0) {
+      const students =
+        lesson.groupId === null
+          ? lesson.studentId === null
+            ? []
+            : [lesson.studentId]
+          : lesson.participants.map((participant) => participant.studentId);
+      members.setValue(students.map((id) => ({ kind: 'STUDENT' as const, id })));
+    }
+    if (plan !== null) {
+      for (const textbook of plan.textbooks) {
+        this.materials.pick({
+          textbookId: textbook.id,
+          kind: textbook.kind,
+          title: textbook.title,
+          courseName: null,
+          format: textbook.format,
+          pageCount: textbook.pageCount,
+          pages: textbook.pages,
+        });
+      }
+      if (this.videos().length === 0 && plan.videos.length > 0) {
+        this.videos.set(plan.videos.map((video) => videoDraft(video)));
+      }
+    }
+    const course = this.form.controls.courseId;
+    if (course.value !== null || course.dirty) {
+      return;
+    }
+    if (plan?.courseId != null) {
+      course.setValue(plan.courseId);
+      return;
+    }
+    this.coursesApi.links(quietContext()).subscribe((links) => {
+      const courseId =
+        lesson.groupId === null
+          ? links.students.find((entry) => entry.studentId === lesson.studentId)?.courseId
+          : links.groups.find((entry) => entry.groupId === lesson.groupId)?.courseId;
+      if (courseId !== undefined && course.value === null && !course.dirty) {
+        course.setValue(courseId);
+      }
+    });
+  }
+
+  /** «Готово» of a bank item: what is left is saved, then «Материалы» on «Задания». */
+  finish(): void {
+    if (!revealErrors(this.form)) {
+      return;
+    }
+    if (
+      this.drafts.busy(() => {
+        this.finish();
+      })
+    ) {
+      return;
+    }
+    this.drafts.cancel();
+    if (this.titleValue() === '') {
+      this.error.set(this.c.needText);
+      return;
+    }
+    this.pending.set(true);
+    this.error.set(null);
+    this.write(false).subscribe({
+      next: ({ complete }) => {
+        this.pending.set(false);
+        this.saved = true;
+        if (!complete) {
+          this.snackbar.error(T.editor.materialsFailed);
+        }
+        void this.router.navigateByUrl(this.materialsLink);
+      },
+      error: (error: unknown) => {
+        this.pending.set(false);
+        this.refresh();
+        this.error.set(describeError(error, T.editor.failed));
+      },
+    });
+  }
+
+  /** «Сохранить в банк» / «Обновить в банке» (asked first: the original's content is replaced). */
+  protected async saveToBank(update: boolean): Promise<void> {
+    if (
+      update &&
+      !(await this.confirm.safe({
+        header: T.bank.updateHeader,
+        message: T.bank.updateMessage,
+        acceptLabel: T.bank.update,
+      }))
+    ) {
+      return;
+    }
+    this.sendToBank(update);
+  }
+
+  /** A draft saves its changes first; an issued assignment goes to the bank as it is saved. */
+  private sendToBank(update: boolean): void {
+    const saved = this.assignment();
+    if (saved === null || this.banking()) {
+      return;
+    }
+    if (
+      this.drafts.busy(() => {
+        this.sendToBank(update);
+      })
+    ) {
+      return;
+    }
+    const flush = this.draft() && this.unsaved();
+    if (flush) {
+      this.drafts.cancel();
+    }
+    this.banking.set(true);
+    (flush ? this.write(false).pipe(map(({ assignment }) => assignment)) : of(saved))
+      .pipe(switchMap((assignment) => this.api.saveToBank(assignment.id)))
+      .subscribe({
+        next: (details) => {
+          this.banking.set(false);
+          this.assignment.set(details);
+          this.drafts.mark(this.snapshot());
+          this.snackbar.success(update ? T.bank.updatedInBank : T.bank.savedToBank);
+        },
+        error: (error: unknown) => {
+          this.banking.set(false);
+          this.refresh();
+          this.snackbar.error(describeError(error, T.bank.bankFailed));
+        },
+      });
   }
 
   /** The saved assignment and, for one just created, its address (the page stays as it is). */

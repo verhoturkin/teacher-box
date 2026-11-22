@@ -20,6 +20,7 @@ import { injectMobile } from '@core/layout/mobile';
 import { openOnCreate } from '@core/routing/create-param';
 import { BoardsFeed, BoardsFilter } from '@features/boards/parts';
 import { HelpButton } from '@features/help/parts';
+import { HomeworkBankFeed } from '@features/homework/parts';
 import { IdentityApi } from '@features/identity/parts';
 import {
   Course,
@@ -39,7 +40,7 @@ import { Segment, SegmentGroup } from '@shared/ui/segment-group';
 import { T } from './i18n/texts';
 
 /** The kinds of materials the page switches between (`?tab=`). */
-export type MaterialsTab = 'boards' | 'textbooks' | 'plans';
+export type MaterialsTab = 'boards' | 'textbooks' | 'plans' | 'assignments';
 
 /** A student or a group the create dialogs of the feeds offer. */
 interface MemberOption {
@@ -51,7 +52,7 @@ interface MemberOption {
  * Teacher: «Материалы» (redesign spec §10.1, ADR-0049) — boards and textbooks as one feed of cards with
  * previews. The connected button group «Доски N · Учебники N» switches the kind (`?tab=boards|textbooks`),
  * the chips filter it («Все · На портале · Внешние»; for textbooks — by kind), one search field and
- * the sort menu. Textbooks and the bank of lesson plans («Планы», roadmap 11) also have the course filter
+ * the sort menu. Textbooks and the banks of lesson plans («Планы») and assignments («Задания», roadmap 11) also have the course filter
  * (`?course=`, «Все · <курсы> · Без курса», ADR-0071), its «⋮» opens «Курсы». A card opens the material, «⋮» keeps its actions. The feeds belong to their modules
  * (`@features/boards/parts`, `@features/textbooks/parts`); this page only composes them.
  */
@@ -60,6 +61,7 @@ interface MemberOption {
   imports: [
     BoardsFeed,
     CoursesDialog,
+    HomeworkBankFeed,
     LessonPlansFeed,
     TextbooksFeed,
     Button,
@@ -79,12 +81,9 @@ interface MemberOption {
       <tb-pane [label]="t.title">
         <div tbPaneHeader>
           <tb-page-header [title]="t.title">
-            <tb-help-button
-              help
-              [topic]="active() === 'boards' ? 'teacher/boards' : 'teacher/textbooks'"
-            />
-            @if (!mobile() && active() === 'plans') {
-              <p-button [label]="t.newPlan" icon="tb-i tb-i-add" (onClick)="openCreate()" />
+            <tb-help-button help [topic]="helpTopic()" />
+            @if (!mobile() && (active() === 'plans' || active() === 'assignments')) {
+              <p-button [label]="createLabel()" icon="tb-i tb-i-add" (onClick)="openCreate()" />
             }
             @if (!mobile()) {
               <tb-segment-group
@@ -119,7 +118,7 @@ interface MemberOption {
 
           <div class="tb-materials__bar">
             <tb-search-field [formControl]="search" [label]="t.search" />
-            @if (active() !== 'plans') {
+            @if (active() === 'boards' || active() === 'textbooks') {
               <tb-filter-chips
                 [label]="t.filters"
                 [chips]="chips()"
@@ -201,6 +200,15 @@ interface MemberOption {
             [courses]="courses()"
           />
         </div>
+        <div [hidden]="active() !== 'assignments'">
+          <tb-homework-bank-feed
+            #bank
+            [query]="query()"
+            [course]="courseFilter()"
+            [sort]="sort()"
+            [courses]="courses()"
+          />
+        </div>
       </tb-pane>
     </tb-panes>
     <tb-courses-dialog
@@ -266,14 +274,30 @@ export class MaterialsPage implements OnInit {
   protected readonly boards = viewChild<BoardsFeed>('boards');
   protected readonly textbooks = viewChild<TextbooksFeed>('textbooks');
   protected readonly plans = viewChild<LessonPlansFeed>('plans');
+  protected readonly bank = viewChild<HomeworkBankFeed>('bank');
 
   protected readonly active = computed<MaterialsTab>(() => {
     const tab = this.tab();
-    return tab === 'textbooks' || tab === 'plans' ? tab : 'boards';
+    return tab === 'textbooks' || tab === 'plans' || tab === 'assignments' ? tab : 'boards';
   });
   protected readonly createLabel = computed(() => {
     const tab = this.active();
-    return tab === 'boards' ? T.newBoard : tab === 'textbooks' ? T.newTextbook : T.newPlan;
+    return tab === 'boards'
+      ? T.newBoard
+      : tab === 'textbooks'
+        ? T.newTextbook
+        : tab === 'plans'
+          ? T.newPlan
+          : T.newAssignment;
+  });
+  /** The bank of assignments is a part of the homework article; plans — of the textbooks one. */
+  protected readonly helpTopic = computed(() => {
+    const tab = this.active();
+    return tab === 'boards'
+      ? 'teacher/boards'
+      : tab === 'assignments'
+        ? 'teacher/homework'
+        : 'teacher/textbooks';
   });
   protected readonly students = signal<MemberOption[]>([]);
   protected readonly groups = signal<MemberOption[]>([]);
@@ -324,6 +348,7 @@ export class MaterialsPage implements OnInit {
     { value: 'boards', label: T.boards, count: this.boards()?.total() ?? 0 },
     { value: 'textbooks', label: T.textbooks, count: this.textbooks()?.total() ?? 0 },
     { value: 'plans', label: T.plans, count: this.plans()?.total() ?? 0 },
+    { value: 'assignments', label: T.assignments, count: this.bank()?.total() ?? 0 },
   ]);
   protected readonly chips = computed<readonly FilterChip<string>[]>(() => {
     const kinds: readonly FilterChip<string>[] =
@@ -338,9 +363,12 @@ export class MaterialsPage implements OnInit {
           }));
     return [{ value: 'all', label: T.chips.all }, ...kinds];
   });
-  /** A plan of the bank has no creation time in the list: «Сначала новые» is not offered. */
+  /**
+   * A plan of the bank has no creation time in the list: «Сначала новые» is not offered; an assignment has no
+   * change time: «Сначала изменённые» orders it by creation.
+   */
   protected readonly sortItems = computed<MenuItem[]>(() =>
-    (this.active() === 'plans'
+    (this.active() === 'plans' || this.active() === 'assignments'
       ? (['changed', 'title'] as const)
       : (['changed', 'title', 'created'] as const)
     ).map((value) => ({
@@ -404,6 +432,7 @@ export class MaterialsPage implements OnInit {
     if (!visible) {
       this.textbooks()?.load();
       this.plans()?.load();
+      this.bank()?.load();
     }
   }
 
@@ -413,8 +442,10 @@ export class MaterialsPage implements OnInit {
       this.boards()?.openCreate();
     } else if (tab === 'textbooks') {
       this.textbooks()?.openCreate();
-    } else {
+    } else if (tab === 'plans') {
       this.plans()?.openCreate();
+    } else {
+      this.bank()?.openCreate();
     }
   }
 }

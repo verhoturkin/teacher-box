@@ -117,19 +117,21 @@ export type EditorForm = FormGroup<{
           </div>
 
           <div class="tb-editor__aside" role="group" [attr.aria-label]="t.params">
-            <tb-editor-recipients
-              [draft]="draft()"
-              [members]="form().controls.members"
-              [students]="who().options()"
-              [groups]="who().groups()"
-              [tasks]="tasks()"
-              [lesson]="who().nextLesson()"
-              [choice]="who().dueChoice()"
-              (choiceChange)="who().chooseDue($event)"
-              [date]="who().duePicked()"
-              (dateChange)="who().pickDue($event)"
-              (more)="more.emit()"
-            />
+            @if (!bank()) {
+              <tb-editor-recipients
+                [draft]="draft()"
+                [members]="form().controls.members"
+                [students]="who().options()"
+                [groups]="who().groups()"
+                [tasks]="tasks()"
+                [lesson]="who().nextLesson()"
+                [choice]="who().dueChoice()"
+                (choiceChange)="who().chooseDue($event)"
+                [date]="who().duePicked()"
+                (dateChange)="who().pickDue($event)"
+                (more)="more.emit()"
+              />
+            }
 
             @if (courses().length > 0) {
               <p-card id="editor-course" styleClass="tb-section-card" [header]="t.course">
@@ -157,7 +159,7 @@ export type EditorForm = FormGroup<{
                 [textbooks]="materials().textbooks()"
                 [savedFiles]="savedFiles()"
                 [videosFull]="videosFull()"
-                [boardPicked]="materials().pickedBoard() !== null"
+                [boardPicked]="bank() || materials().pickedBoard() !== null"
                 [(files)]="materials().newFiles"
                 (editTextbook)="materials().edit($event)"
                 (removeTextbook)="removeTextbook.emit($event)"
@@ -260,6 +262,8 @@ export class EditorTask {
   readonly materials = input.required<EditorMaterialsState>();
   /** The teacher's courses: «Курс» of the assignment (ADR-0071); none — no card. */
   readonly courses = input<readonly Course[]>([]);
+  /** A bank item (roadmap 11): no students, deadline or board. */
+  readonly bank = input(false);
   protected readonly courseChoices = computed(() => courseOptions(this.courses()));
 
   readonly submitted = output();
@@ -285,7 +289,7 @@ export class EditorTask {
     }),
   );
   protected readonly navActions = computed(() =>
-    editorAdditions(this.videosFull(), this.materials().pickedBoard() !== null),
+    editorAdditions(this.videosFull(), this.bank() || this.materials().pickedBoard() !== null),
   );
   /** No section menu (a tablet, the assistant open): «Видео» and «Доска» are chips of the materials; a phone has neither. */
   protected readonly extrasInMaterials = computed(() => !this.nav() && !this.compact());

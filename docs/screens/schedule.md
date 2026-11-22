@@ -42,8 +42,8 @@ edit, «⋮» or marks.
 - **Summary** (`lesson-summary-section.ts`): only for a started, not cancelled lesson (an individual
   lesson marked missed has none), edited in place. «What we covered» is prefilled with the topic and
   visible to the lesson's students; «next topic» fills the next lesson's empty topic. The AI draft
-  uses the topic, the teacher's words and the titles of that day's assignments for the lesson's
-  students (assignments are not bound to lessons — *ours*). Save is enabled only on a difference;
+  uses the topic, the teacher's words and the titles of the lesson's linked assignments
+  (`assignmentIds`, in the order linked). Save is enabled only on a difference;
   send saves first; the card stays open. Model switch: [homework](homework.md#ai-pane).
 
 ## Lesson plan
@@ -70,6 +70,28 @@ of `textbooks` does not import `schedule`: the route (`app.routes.ts`, `linkToLe
 - **Student and parent**: only with a plan — the title, the Markdown text, «Учебники» (the homework
   `TextbookList`: open the bound pages, download) and «Видео» (`VideoList` with the player,
   transcripts only when shown). Addresses follow `API_SCOPE`; the plan is read once per lesson.
+
+## Lesson homework
+
+`schedule/ui/lesson-homework-section.ts` (teacher only) follows the plan in the lesson card
+(roadmap 11 «Lesson card», 462.2); the direction `schedule` → `homework` gives it `HomeworkApi`
+and `assignmentProgress`. The homework editor does not import `schedule`: the route passes it
+`lessonOf` and `linkToLesson` ([homework](homework.md), «Assignment editor»).
+
+- **List:** «Домашнее задание» (title medium); each linked assignment (`assignmentIds`, read from
+  `GET …/homework/assignments` once the lesson has one) — `assignment` icon, the title as a link (a
+  draft → its editor, an issued one → its page), the progress tag of the homework list («Не
+  выдано», «Выдано», «На проверке: N», «Принято»), «⋮» «Отвязать» (`DELETE
+  …/lessons/{id}/homework/{assignmentId}`; the assignment stays). A dangling id reads «Задание
+  удалено» and can still be unlinked.
+- **Actions** (not on a cancelled lesson — it keeps what it has): «Задать» (secondary, the
+  stronger) → `/teacher/homework/new?lessonId=…`; «Привязать» (outlined) turns the row into an
+  inline picker — a filtered, grouped `p-select`: «Недавние задания участников» (working
+  assignments of the last 30 days with a lesson student, not linked to any lesson of ±90 days)
+  and «Из банка» (by title), «Отмена» and «Привязать». A bank item is used for the lesson's
+  students (`POST …/assignments/{id}/use`), then linked; a draft the link refuses is deleted. The
+  snackbar of a used item has «Открыть» (its editor). *Ours:* drafts are not offered among the
+  recent ones — a summary carries no draft students; inline instead of a dialog, as the plan.
 
 ## Requests
 

@@ -30,6 +30,7 @@ import {
   requestKindLabel,
 } from '../schedule-labels';
 import { T } from '../i18n/texts';
+import { LessonHomeworkSection } from './lesson-homework-section';
 import { LessonPlanSection } from './lesson-plan-section';
 import { MyLessonPlan } from './my-lesson-plan';
 
@@ -50,7 +51,7 @@ interface OutcomeOption {
  * The content of a lesson's card, the same for the teacher and the student (ADR-0050): one segmented
  * list of facts — the time, the topic, the room, the boards, the reason of a cancellation — the
  * outcome «Итог» of a past lesson with one student as a connected toggle, the participants of a group
- * and the requests waiting for the teacher, then «План урока» (roadmap 11). It saves no outcome by itself: the
+ * and the requests waiting for the teacher, then «План урока» and «Домашнее задание» (roadmap 11). It saves no outcome by itself: the
  * host (a `<tb-dialog kind="sheet">`) saves the outcome and opens the answer to a request; the plan section puts
  * a plan on the lesson or takes it off and hands the host the lesson it returned (`planChange`).
  */
@@ -64,6 +65,7 @@ interface OutcomeOption {
     Avatar,
     BoardLinks,
     JoinLessonButton,
+    LessonHomeworkSection,
     LessonPlanSection,
     MyLessonPlan,
   ],
@@ -207,6 +209,7 @@ interface OutcomeOption {
     }
     @if (teacher()) {
       <tb-lesson-plan-section [lesson]="item" (changed)="planChange.emit($event)" />
+      <tb-lesson-homework-section [lesson]="item" (changed)="planChange.emit($event)" />
     } @else {
       <tb-my-lesson-plan [lesson]="item" />
     }
@@ -292,7 +295,7 @@ export class LessonCard {
   readonly outcomeChange = output<OutcomeChange>();
   /** The teacher wants to answer a request of the student. */
   readonly answer = output<ChangeRequest>();
-  /** The teacher put a plan on the lesson or took it off. */
+  /** The teacher put a plan or homework on the lesson or took it off. */
   readonly planChange = output<ScheduledLesson>();
 
   protected readonly teacher = computed(() => this.role() === 'teacher');

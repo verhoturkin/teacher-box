@@ -34,6 +34,8 @@ export class EditorRecipientsState {
   /** Lessons ahead, for the due date of a new assignment. */
   private readonly lessons = signal<readonly UpcomingLesson[]>([]);
   readonly nextLesson: Signal<Date | null>;
+  /** The homework of a lesson is due at the lesson after it, not at the lesson itself. */
+  readonly after = signal<Date | null>(null);
   readonly dueChoice = signal<Due>('lesson');
   readonly duePicked = signal<Date | null>(null);
   /** The teacher changed the due date: leaving asks. */
@@ -49,9 +51,16 @@ export class EditorRecipientsState {
       ),
     );
     this.nextLesson = computed(() =>
-      isNew() ? nextLessonStart(this.lessons(), this.recipients(), new Date()) : null,
+      isNew() ? nextLessonStart(this.lessons(), this.recipients(), this.from()) : null,
     );
     this.dueAt = computed(() => dueAtOf(this.dueChoice(), this.nextLesson(), this.duePicked()));
+  }
+
+  /** Now, or the start of the lesson the homework is for when it is later. */
+  private from(): Date {
+    const now = new Date();
+    const after = this.after();
+    return after !== null && after.getTime() > now.getTime() ? after : now;
   }
 
   /** The active students and the groups not archived. */

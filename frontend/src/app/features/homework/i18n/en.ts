@@ -539,6 +539,45 @@ export const en: Translation<typeof ru> = {
     reviewSheet: 'Review submission',
   },
   menu: { actions: 'Actions' },
+  bank: {
+    list: 'Assignment bank',
+    what: 'the bank assignments',
+    actions: (title: string) => `Actions: ${title}`,
+    uses: (count: number) =>
+      count === 0 ? 'Not used yet' : count === 1 ? 'Used once' : `Used ${String(count)} times`,
+    noCourse: 'No course',
+    notFoundTitle: 'Nothing found',
+    notFoundHint: 'Try a different assignment title or course',
+    emptyTitle: 'No assignments in the bank yet',
+    emptyHint:
+      'Select “New assignment” to write one for the bank. An assignment is added to the bank automatically the first time you set it.',
+    edit: 'Edit',
+    deleteItem: 'Delete…',
+    deleteHeader: 'Delete assignment from the bank?',
+    deleteMessage: (title: string) =>
+      `“${title}” will be deleted from the bank. Students’ assignments made from it will stay.`,
+    delete: 'Delete',
+    more: 'More',
+    toBank: 'Save to bank',
+    updateBank: 'Update in bank',
+    updateHeader: 'Update the assignment in the bank?',
+    updateMessage:
+      'The original in the bank will be replaced with this assignment. Copies already set stay as they are.',
+    update: 'Update',
+    savedToBank: 'Assignment saved to the bank',
+    updatedInBank: 'Assignment updated in the bank',
+    bankFailed: 'Could not save the assignment to the bank',
+    bankItem: 'In bank',
+    bankItemHint:
+      'This is a bank original: students get a copy of it, and editing a copy never changes it. Students and due dates aren’t chosen here.',
+    newBankItem: 'New bank assignment',
+    backToMaterials: 'Back to Materials',
+    backToSchedule: 'Back to schedule',
+    done: 'Done',
+    lessonHint: 'Homework for a lesson: it is linked to the lesson when first saved.',
+    linkFailed:
+      'The assignment was saved but not linked to the lesson. We’ll try again on the next save',
+  },
   copy: {
     action: 'Make a copy',
     copied: (title: string) => `Copy created: “${title}”`,

@@ -98,6 +98,23 @@ Tabs task / test (`?tab=quiz`, default left out, `Location.replaceState`); a pho
   changes. Issuing checks the questions first (problems → test tab; `homework.quiz-incomplete` names
   them) and returns to the opening page. Back uses `previousNavigation.finalUrl` without `?create=`;
   opened by a link — the assignment or the list.
+- **Lesson homework** (`?lessonId=`, roadmap 11, 462.2): the route gives the editor `lessonOf`
+  (`ScheduleApi.lesson`) and `linkToLesson` (`ScheduleApi.linkHomework`, ADR-0058). A new
+  assignment takes the lesson's students (participants of a group lesson, as single students), the
+  course of the lesson's plan, else of the student or the group (`…/course-links`), the plan's
+  textbook pages (picked, removable chips) and videos, and the due date «к следующему занятию»
+  counted after the lesson's start; what the teacher chose stays. The hint «Задание к уроку…»
+  under the header; the first save links it (`POST …/lessons/{id}/homework`), a failed link is
+  tried again by the next save; back and «Выдать» lead to `/teacher/schedule`.
+- **Bank item** (`?bank=true` on `new`, or a loaded item with `bank`): the heading «Новое задание
+  для банка», the chip «В банке» in the header, a hint under it; no recipients, due date or board
+  (the «add» group and the chips drop the board); autosave as a draft, the create sends `bank:
+  true`, `dueAt: null`, never draft students; «Готово» (filled, in place of «Выдать») saves what is
+  left and leads to `/teacher/materials?tab=assignments`.
+- **«⋮» of the header** (a saved working assignment): «Сохранить в банк», or «Обновить в банке»
+  when `sourceId` is set (`confirm.safe` first) — `POST …/assignments/{id}/bank`; a draft saves its
+  changes first, an issued assignment goes in as saved. *Ours:* a text icon button before the
+  main action, as in the plan editor.
 
 ## AI pane
 

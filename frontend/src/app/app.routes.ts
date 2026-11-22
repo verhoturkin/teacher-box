@@ -123,6 +123,27 @@ const linkToLesson = () => {
     );
 };
 
+/**
+ * The homework of a lesson (`/teacher/homework/new?lessonId=`, roadmap 11): `homework` does not import `schedule`
+ * (ADR-0058), so the editor takes the lesson and the link as inputs. Both resolve at once; the schedule's parts
+ * load when the editor reads the lesson or links the assignment.
+ */
+const lessonOf = () => {
+  const injector = inject(Injector);
+  return (lessonId: string) =>
+    defer(() => import('@features/schedule/parts')).pipe(
+      switchMap((parts) => injector.get(parts.ScheduleApi).lesson(lessonId)),
+    );
+};
+
+const linkHomework = () => {
+  const injector = inject(Injector);
+  return (lessonId: string, assignmentId: string) =>
+    defer(() => import('@features/schedule/parts')).pipe(
+      switchMap((parts) => injector.get(parts.ScheduleApi).linkHomework(lessonId, assignmentId)),
+    );
+};
+
 /** Pages that several routes open: one loader each. */
 const assignmentEditorPage = () => import('@features/homework').then((m) => m.AssignmentEditorPage);
 const lessonPlanEditorPage = () =>
@@ -220,7 +241,7 @@ export const routes: Routes = [
         path: 'homework/new',
         title: N.newAssignment,
         loadComponent: assignmentEditorPage,
-        resolve: { upcomingLessons },
+        resolve: { upcomingLessons, lessonOf, linkToLesson: linkHomework },
         canDeactivate: [canLeaveGuard],
       },
       {

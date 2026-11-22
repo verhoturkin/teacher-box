@@ -106,6 +106,15 @@ downloaded in full, with page numbers provided for reference. The pencil changes
 “Open board” in the “⋮” menu opens a linked board. “Delete…” in the same menu removes the assignment, submissions and files; recovery requires a \
 portal backup.
 
+## Assignment bank
+
+The bank keeps assignment originals for reuse, on the Assignments tab of Materials (with the course filter). An assignment goes into the \
+bank automatically the first time you set it; one taken from the bank adds no new original. In the editor’s “⋮” menu, choose **Save to \
+bank**, or **Update in bank** when an original exists: after you confirm, the original is replaced with this assignment, and copies \
+already set stay as they are. New assignment in Materials creates a bank assignment straight away: it has no students or due date, and \
+Done takes you back to Materials. Each card shows how many times it was used; its “⋮” menu has Edit and Delete… (students’ assignments \
+made from it stay). To use a bank assignment for a lesson, choose Link in the lesson’s details (see Schedule and requests).
+
 ## Add a quiz
 
 Questions are on the editor’s Quiz tab. The list on the left shows each question’s number, type and points. Select a question to open it on the \

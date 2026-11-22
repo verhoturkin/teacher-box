@@ -6,6 +6,7 @@ export const ru = {
   boards: 'Доски',
   textbooks: 'Учебники',
   plans: 'Планы',
+  assignments: 'Задания',
   filters: 'Фильтр материалов',
   chips: {
     all: 'Все',
@@ -33,4 +34,5 @@ export const ru = {
   newBoard: 'Новая доска',
   newTextbook: 'Новый учебник',
   newPlan: 'Новый план',
+  newAssignment: 'Новое задание',
 };

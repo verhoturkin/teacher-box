@@ -94,6 +94,8 @@ export interface ScheduledLesson {
   readonly pendingRequests: readonly ChangeRequest[];
   /** The lesson's working plan (`textbooks`, roadmap 11); `null` — none. */
   readonly planId: string | null;
+  /** The working assignments of `homework` linked to the lesson, in the order linked; the teacher's only (462.1). */
+  readonly assignmentIds: readonly string[];
   /** «Что прошли», Markdown; filled in the details of one lesson. */
   readonly summary?: string | null;
   /** «Что дальше»; the teacher's details only. */

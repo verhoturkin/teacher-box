@@ -1,23 +1,25 @@
 # Materials
 
-`/teacher/materials?tab=boards|textbooks|plans` (`MaterialsPage`, `features/materials`): one
-flexible pane without a card — title, the connected group boards / textbooks / plans with counts, a
+`/teacher/materials?tab=boards|textbooks|plans|assignments` (`MaterialsPage`, `features/materials`):
+one flexible pane without a card — title, the connected group boards / textbooks / plans /
+assignments with counts, a
 wrapping toolbar (search, filter chips, sort menu) and the `tb-material-grid` of `tb-material-card`s
 ([design-system §10](../design-system.md)).
 
 - **Isolation (AGENTS.md §4.2.6):** `features/materials` only composes `BoardsFeed`
-  (`@features/boards/parts`), `TextbooksFeed` and `LessonPlansFeed` (`@features/textbooks/parts`).
+  (`@features/boards/parts`), `TextbooksFeed` and `LessonPlansFeed` (`@features/textbooks/parts`),
+  `HomeworkBankFeed` (`@features/homework/parts`).
   Each owns its API, cards, «⋮» and dialogs and takes search, filter, sort and member as inputs. All
   stay mounted (the inactive ones `hidden`) so every count is known.
-- **Courses** (ADR-0071, under the toolbar on the textbooks and plans tabs, not on boards): filter
-  chips «Все · <courses in their order> · Без курса» (`tb-filter-chips [oneRow]`),
-  `?course=<id>|none` (a gone id filters nothing), passed to `TextbooksFeed [course]` and
-  `LessonPlansFeed [course]`; «⋮» beside them opens a menu with «Курсы», without courses a text
-  button «Курсы» takes their place. `CoursesDialog` (`@features/textbooks/parts`, a `sheet`): the
-  courses as a segmented list — drag handle (↑ ↓ on it, `PUT …/courses/order`, a refused order rolls
-  back), the name, ✎ (rename in place: Enter saves, Esc cancels) and 🗑 (danger confirmation); a
-  field with «Добавить» under the list. Every change saves at once; on close the page reads the
-  textbooks again (their course may have changed), the plans too. *Ours:* the menu with one item
+- **Courses** (ADR-0071, under the toolbar on every tab but boards): filter chips «Все · <courses in
+  their order> · Без курса» (`tb-filter-chips [oneRow]`), `?course=<id>|none` (a gone id filters
+  nothing), passed to `TextbooksFeed [course]` and `LessonPlansFeed [course]`, `HomeworkBankFeed
+  [course]`; «⋮» beside them opens a menu with «Курсы», without courses a text button «Курсы» takes
+  their place. `CoursesDialog` (`@features/textbooks/parts`, a `sheet`): the courses as a segmented
+  list — drag handle (↑ ↓ on it, `PUT …/courses/order`, a refused order rolls back), the name, ✎
+  (rename in place: Enter saves, Esc cancels) and 🗑 (danger confirmation); a field with «Добавить»
+  under the list. Every change saves at once; on close the page reads the textbooks again (their
+  course may have changed), the plans and the bank assignments too. *Ours:* the menu with one item
   keeps «⋮» of the spec for later course actions.
 - The textbook dialog has the «Курс» select («Без курса» first) and «Ученики курса» in
   `tb-member-picker [courses]` (a third section, shown only where courses are given).
@@ -28,6 +30,13 @@ wrapping toolbar (search, filter chips, sort menu) and the `tb-material-grid` of
   opens the editor, «⋮» has «Изменить» and «Удалить…» (danger confirmation; the lessons' copies
   stay). «Новый план» — a filled button in the header (the FAB on a phone) — opens
   `/teacher/materials/plans/new`.
+- **Assignments** (462.2, `HomeworkBankFeed`, `GET …/homework/assignments?bank=true`): the bank
+  items as tonal cards with the `assignment` icon — the title, «<course> · Использовано N раз»
+  («Ещё не использовалось»). No kind chips; the search finds the title and the course; the sort
+  has «Сначала изменённые» (by creation — a summary has no change time) and «По названию». A card
+  opens the homework editor of the item, «⋮» has «Изменить» and «Удалить…» (danger confirmation;
+  the copies stay). «Новое задание» (header button, the FAB on a phone) opens
+  `/teacher/homework/new?bank=true`. The help button opens the homework article.
 - **Plan editor** (`LessonPlanEditorPage`, `features/textbooks/teacher/lesson-plan-editor-page.ts`,
   `/teacher/materials/plans/new` and `…/plans/:planId`, `canLeaveGuard`): the page header (the
   title as typed, back to «Материалы» on «Планы»; the chip «В банке» on a bank item, «сохранено ·

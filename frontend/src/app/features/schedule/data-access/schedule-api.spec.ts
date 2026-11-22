@@ -92,6 +92,20 @@ describe('ScheduleApi', () => {
     expect(pages).toBeInstanceOf(Blob);
   });
 
+  it('links homework to a lesson and takes it off', () => {
+    api.linkHomework('l-1', 'a-1').subscribe();
+    const linked = backend.expectOne({
+      method: 'POST',
+      url: '/api/teacher/schedule/lessons/l-1/homework',
+    });
+    expect(linked.request.body).toEqual({ assignmentId: 'a-1' });
+    linked.flush({});
+    api.unlinkHomework('l-1', 'a-1').subscribe();
+    backend
+      .expectOne({ method: 'DELETE', url: '/api/teacher/schedule/lessons/l-1/homework/a-1' })
+      .flush({});
+  });
+
   it('calls the request endpoints', () => {
     api.pendingRequests().subscribe();
     api

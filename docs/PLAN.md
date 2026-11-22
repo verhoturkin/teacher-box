@@ -158,13 +158,24 @@ section the substep names). New ADR: 0071 «Курсы, планы уроков 
   repeating a link or removing a missing one is a no-op; `assignmentIds` is in every teacher lesson
   view, empty for the student and the guardian; `schedule.bank-item` text is now generic (plans and
   assignments); new codes in the dictionaries.*
-- [ ] 462.2 **F** *complex* — «Домашнее задание» in the lesson card: «Задать» (`/teacher/homework/new
+- [x] 462.2 **F** *complex* — «Домашнее задание» in the lesson card: «Задать» (`/teacher/homework/new
   ?lessonId=` — participants, course, the plan's textbook pages and videos with transcripts,
   deadline from `next-lesson.ts`; the route passes the lesson input and `linkToLesson`),
   «Привязать» (recent unlinked assignments of the participants, «Из банка» → use); «Сохранить в
   банк» / «Обновить в банке» in the editor's «⋮»; `HomeworkBankFeed` — the «Задания» tab of
   «Материалы»; the lesson summary draft (`lesson-summary-section.ts`) over the linked
   assignments; help, `docs/screens/homework.md`, `schedule.md`, `materials.md`.
+  *Done: no backend change; the section is `ui/lesson-homework-section.ts` (after the plan, the
+  progress tag of the list, «⋮» «Отвязать»; a cancelled lesson keeps its homework, takes none);
+  «Привязать» is one inline grouped picker («Недавние задания участников» — 30 days, a lesson
+  student among the tasks, not linked to a lesson of ±90 days; «Из банка»), drafts are not offered
+  as recent (a summary has no draft students); a used draft the link refuses is deleted; the
+  route gives the editor `lessonOf` (`ScheduleApi.lesson`) and `linkToLesson`
+  (`ScheduleApi.linkHomework`); group participants become single students; the due date is the
+  next lesson after the lesson's start; a failed link is retried by the next save; the bank item
+  editor (`?bank=true`) has «Готово» instead of «Выдать», no recipients or board; the «Задания»
+  tab comes after «Планы» (the order «Доски · Учебники · Планы · Задания» of 461.3 kept), its help
+  is the homework article; UI not checked live (no backend in the session).*
 
 ### 463. Release 0.60.0
 

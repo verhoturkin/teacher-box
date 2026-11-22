@@ -889,6 +889,44 @@ const LESSON_PLAN: Readonly<Record<string, readonly (readonly [string, string, s
   ],
 };
 
+/** Homework at lessons and the bank of assignments (462.2): [topic, baseline, now] of the schedule and homework articles. */
+const LESSON_HOMEWORK: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'schedule',
+      '## Итоги урока\n\nИтоги начавшегося',
+      '## Домашнее задание к уроку\n\nВ карточке занятия под планом — раздел «Домашнее задание»: привязанные к уроку задания с их состоянием («Не выдано», «Выдано», «На проверке»). **«Задать»** открывает редактор задания для этого урока: ученики занятия уже выбраны, курс взят из плана (или из курса ученика или группы), страницы учебников и видео плана уже добавлены — уберите лишнее, срок — к следующему занятию. Задание привязывается к уроку при первом сохранении. **«Привязать»** — выберите недавнее задание учеников занятия, которое ещё не привязано ни к одному уроку, или задание из банка: из банка ученикам занятия создаётся черновик-копия, его можно открыть, поправить и выдать. «⋮» → **«Отвязать»** убирает задание из урока, само задание остаётся. У отменённого занятия новых заданий не бывает.\n\n## Итоги урока\n\nИтоги начавшегося',
+    ],
+    [
+      'schedule',
+      'прошли» по теме, заданиям и вашим словам',
+      'прошли» по теме, заданиям, привязанным к уроку, и вашим словам',
+    ],
+    [
+      'homework',
+      '## Удалить задание\n',
+      '## Банк заданий\n\nБанк — оригиналы заданий для повторного использования, вкладка «Задания» в «Материалах» (с фильтром по курсу). Задание попадает в банк само, когда вы впервые его выдаёте; задание, взятое из банка, новых оригиналов не добавляет. В «⋮» редактора — **«Сохранить в банк»**, а если оригинал уже есть — **«Обновить в банке»**: после подтверждения оригинал заменится этим заданием, уже выданные копии не изменятся. «Новое задание» в «Материалах» сразу создаёт задание банка: у него нет учеников и срока, «Готово» возвращает в «Материалы». На карточке — «Использовано N раз»; «⋮» → «Изменить», «Удалить…» (задания учеников, сделанные из оригинала, останутся). Взять задание из банка для урока — «Привязать» в карточке занятия (см. «Расписание и запросы»).\n\n## Удалить задание\n',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'schedule',
+      '## Share a lesson summary',
+      '## Lesson homework\n\nBelow the plan, a lesson’s details have a Homework section listing the assignments linked to the lesson and their status (Not set, Set, To review). **Set** opens the assignment editor for this lesson: the lesson’s students are already chosen, the course comes from the plan (or from the student’s or group’s course), the plan’s textbook pages and videos are already added — remove what you don’t need — and the due date is the next lesson. The assignment is linked to the lesson when it is first saved. **Link** lets you pick a recent assignment of the lesson’s students that isn’t linked to any lesson yet, or an assignment from the bank: a bank assignment becomes a draft copy for the lesson’s students, which you can open, edit and set. In the “⋮” menu, **Unlink** takes the assignment off the lesson; the assignment itself stays. A cancelled lesson cannot take new homework.\n\n## Share a lesson summary',
+    ],
+    [
+      'schedule',
+      'uses the lesson topic, assignments and your notes',
+      'uses the lesson topic, the assignments linked to the lesson and your notes',
+    ],
+    [
+      'homework',
+      '## Add a quiz\n',
+      '## Assignment bank\n\nThe bank keeps assignment originals for reuse, on the Assignments tab of Materials (with the course filter). An assignment goes into the bank automatically the first time you set it; one taken from the bank adds no new original. In the editor’s “⋮” menu, choose **Save to bank**, or **Update in bank** when an original exists: after you confirm, the original is replaced with this assignment, and copies already set stay as they are. New assignment in Materials creates a bank assignment straight away: it has no students or due date, and Done takes you back to Materials. Each card shows how many times it was used; its “⋮” menu has Edit and Delete… (students’ assignments made from it stay). To use a bank assignment for a lesson, choose Link in the lesson’s details (see Schedule and requests).\n\n## Add a quiz\n',
+    ],
+  ],
+};
+
 const EDITIONS: readonly (readonly [string, Texts])[] = [
   ['teacher.ru', TEACHER_RU],
   ['teacher.en', TEACHER_EN],
@@ -993,6 +1031,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(COURSES[name] ?? []),
       ...(PLANS[name] ?? []),
       ...(LESSON_PLAN[name] ?? []),
+      ...(LESSON_HOMEWORK[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];
