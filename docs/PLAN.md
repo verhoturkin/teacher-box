@@ -35,7 +35,7 @@ summarizes a student's period. Starts only after the v0.60.0 PR is merged. Spec 
   resources `lesson-plan.system.v1`, `lesson-plan.user.v1`), `POST /api/teacher/ai/lesson-plan`
   (JSON / multipart as `homework-draft`, `DraftSources` with videos, student context), the answer's
   textbook pages checked against the given sources; tests on `FakeProvider`; `docs/modules/ai.md`.
-- [ ] 464.2 **F** *simple* — direction `textbooks` → `ai`; the AI pane in the plan editor (as
+- [x] 464.2 **F** *simple* — direction `textbooks` → `ai`; the AI pane in the plan editor (as
   `features/ai/homework-ai-panel.ts`: sources — the plan's textbook pages and videos, context — the
   lesson students' AI tags, the lesson's topic and the previous summary); «С ИИ» in the lesson
   card's «План»; help.

@@ -156,6 +156,10 @@ export const en: Translation<typeof ru> = {
     delete: 'Delete',
   },
   planEditor: {
+    withAi: 'With AI',
+    aiTitle: 'AI assistant',
+    closeAi: 'Close the assistant',
+    aiVideo: (name: string) => `Video: ${name}`,
     newTitle: 'New lesson plan',
     back: 'Back to Materials',
     backToSchedule: 'Back to schedule',

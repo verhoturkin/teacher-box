@@ -889,6 +889,26 @@ const LESSON_PLAN: Readonly<Record<string, readonly (readonly [string, string, s
   ],
 };
 
+/** The AI assistant of the plan editor (464.2): [topic, baseline, now] of the textbooks article. */
+const PLAN_AI: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'textbooks',
+      'План урока составляют из карточки занятия',
+      '**«С ИИ»** в шапке редактора (и в «Плане» карточки занятия, пока плана нет) открывает помощника: опишите урок, отметьте, на что опереться — страницы учебников и видео с расшифровкой из плана, — и придёт черновик. ИИ знает тему занятия, итоги предыдущего урока и теги учеников урока, которые учитываются в ИИ. «Заменить план» или «Вставить в конец» переносит черновик в план (при замене страницы добавленных учебников сужаются до тех, что выбрал ИИ); пока вы не нажали, план не меняется. Кнопка есть, только когда подключена модель («Настройки» → «ИИ-помощник»).\n\n' +
+        'План урока составляют из карточки занятия',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'textbooks',
+      'Lesson plans are made from a lesson’s details',
+      '**With AI** in the editor header (and in the lesson card’s Plan section while it has no plan) opens the assistant: describe the lesson, tick what it should draw on — the textbook pages and videos with a transcript in the plan — and a draft comes back. The AI knows the lesson’s topic, the summary of the previous lesson and the AI tags of the lesson’s students. “Replace the plan” or “Insert at the end” moves the draft into the plan (a replace also narrows the attached textbooks to the pages the AI chose); nothing changes until you press it. The button appears only when a model is connected (Settings → AI assistant).\n\n' +
+        'Lesson plans are made from a lesson’s details',
+    ],
+  ],
+};
+
 /** Homework at lessons and the bank of assignments (462.2): [topic, baseline, now] of the schedule and homework articles. */
 const LESSON_HOMEWORK: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
   'teacher.ru': [
@@ -1031,6 +1051,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(COURSES[name] ?? []),
       ...(PLANS[name] ?? []),
       ...(LESSON_PLAN[name] ?? []),
+      ...(PLAN_AI[name] ?? []),
       ...(LESSON_HOMEWORK[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn

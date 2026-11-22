@@ -390,6 +390,87 @@ describe('app routes', { timeout: 20_000 }, () => {
     backend.match(() => true);
   });
 
+  it('gives the lesson plan editor the facts of its lesson for the AI (ADR-0058)', async () => {
+    auth.acceptSession(authResponse('TEACHER'));
+    const backend = TestBed.inject(HttpTestingController);
+
+    await harness.navigateByUrl('/teacher/materials/plans/new');
+    const editor = harness.fixture.debugElement
+      .query(By.directive(LessonPlanEditorPage))
+      .injector.get(LessonPlanEditorPage);
+    const read = async (
+      lesson: Record<string, unknown>,
+      history: readonly object[] | 'fail' | null,
+    ) => {
+      let facts: unknown;
+      editor
+        .lessonOf()?.('l-1')
+        .subscribe((value) => (facts = value));
+      let lessonRequest: TestRequest | undefined;
+      await vi.waitFor(() => {
+        lessonRequest ??= backend.match('/api/teacher/schedule/lessons/l-1')[0];
+        expect(lessonRequest).toBeDefined();
+      });
+      lessonRequest?.flush(lesson);
+      if (history !== null) {
+        let request: TestRequest | undefined;
+        await vi.waitFor(() => {
+          request ??= backend.match((r) => r.url.includes('/history'))[0];
+          expect(request).toBeDefined();
+        });
+        if (history === 'fail') {
+          request?.flush(null, { status: 500, statusText: 'E' });
+        } else {
+          request?.flush(history);
+        }
+      }
+      await vi.waitFor(() => {
+        expect(facts).toBeDefined();
+      });
+      return facts;
+    };
+    expect(
+      await read(
+        {
+          studentId: 's-1',
+          groupId: null,
+          participants: [],
+          topic: 'T',
+          startsAt: '2026-01-01T10:00:00Z',
+        },
+        [{ summary: 'Было', nextPlan: 'Дальше' }],
+      ),
+    ).toEqual({
+      studentIds: ['s-1'],
+      facts: { topic: 'T', previousSummary: 'Было', previousNextPlan: 'Дальше' },
+    });
+    expect(
+      await read(
+        {
+          studentId: null,
+          groupId: 'g-1',
+          participants: [{ studentId: 's-2' }, { studentId: 's-3' }],
+          topic: null,
+          startsAt: '2026-01-01T10:00:00Z',
+        },
+        'fail',
+      ),
+    ).toEqual({
+      studentIds: ['s-2', 's-3'],
+      facts: { topic: null, previousSummary: null, previousNextPlan: null },
+    });
+    expect(
+      await read(
+        { studentId: null, groupId: null, participants: [], topic: null, startsAt: 'x' },
+        null,
+      ),
+    ).toEqual({
+      studentIds: [],
+      facts: { topic: null, previousSummary: null, previousNextPlan: null },
+    });
+    backend.match(() => true);
+  });
+
   it('gives the homework editor the lesson of `?lessonId=` and the link to it (ADR-0058)', async () => {
     auth.acceptSession(authResponse('TEACHER'));
     const backend = TestBed.inject(HttpTestingController);

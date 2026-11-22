@@ -53,6 +53,15 @@ wrapping toolbar (search, filter chips, sort menu) and the `tb-material-grid` of
   course prefilled from `?studentId=` / `?groupId=` (`course-links`), the first save links it to
   the lesson through the route's `linkToLesson` (a failed link is retried by the next save, the
   address keeps `?lessonId=`), back and «Готово» lead to the schedule; «Готово» saves the rest,
+  «С ИИ» (secondary outlined, in the header, only when `AiApi.enabled$`; 464.2) opens
+  `LessonPlanAiPanel` of `features/ai` in a `p-drawer` (a bottom sheet on a phone): the request,
+  the context chips of the lesson's students, what the lesson tells (the topic, a mark that the
+  previous summary goes along; the route's `lessonOf` reads the lesson and the previous held
+  one), the sources (`planAiSources`: PDF/picture textbooks and videos with a transcript, all
+  ticked until the teacher unticks) and the model pick; `POST /api/teacher/ai/lesson-plan`. The
+  draft (title, Markdown) goes in by «Заменить план» (also narrows the bound textbooks to the
+  chosen pages) or «Вставить в конец»; the title is set only when empty. `?ai=1` opens it with
+  the editor. *Ours*: a drawer in every width and no prompt library, unlike the homework pane.
   `POST …/{id}/finish` and goes back; leaving saves what is left. A save during an autosave waits
   for it.
 - «Создать» leads to `?tab=…&create=board|textbook`; `/teacher/boards` and `/teacher/textbooks`

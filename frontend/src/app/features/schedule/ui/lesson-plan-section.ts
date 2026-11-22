@@ -9,6 +9,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
@@ -22,6 +23,7 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { Confirm } from '@shared/ui/confirm';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { AiApi } from '@features/ai/parts';
 import {
   CoursesApi,
   LessonPlan,
@@ -163,6 +165,15 @@ interface BankChoice {
               severity="secondary"
               (onClick)="compose()"
             />
+            @if (aiEnabled()) {
+              <p-button
+                [label]="t.composeWithAi"
+                icon="tb-i tb-i-auto_awesome"
+                severity="secondary"
+                variant="outlined"
+                (onClick)="compose(true)"
+              />
+            }
             <p-button
               [label]="t.fromBank"
               icon="tb-i tb-i-library_books"
@@ -231,6 +242,7 @@ export class LessonPlanSection {
   private readonly router = inject(Router);
   private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
+  protected readonly aiEnabled = toSignal(inject(AiApi).enabled$, { initialValue: false });
 
   readonly lesson = input.required<ScheduledLesson>();
   /** The plan was put on the lesson or taken off: the lesson as the server returned it. */
@@ -296,12 +308,12 @@ export class LessonPlanSection {
   }
 
   /** The editor of a new working plan for this lesson; the course comes from the student or the group. */
-  protected compose(): void {
+  protected compose(withAi = false): void {
     const lesson = this.lesson();
     const owner =
       lesson.groupId === null ? { studentId: lesson.studentId } : { groupId: lesson.groupId };
     void this.router.navigate(['/teacher/materials/plans/new'], {
-      queryParams: { lessonId: lesson.id, ...owner },
+      queryParams: { lessonId: lesson.id, ...owner, ...(withAi ? { ai: '1' } : {}) },
     });
   }
 

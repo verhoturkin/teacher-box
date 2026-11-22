@@ -42,6 +42,15 @@ describe('AiApi', () => {
     expect(await enabled).toBe(false);
   });
 
+  it('asks for a lesson plan with sources and sends picked files as a form', () => {
+    const brief = { prompt: 'План', sources: [] };
+    api.lessonPlanDraft(brief).subscribe();
+    expect(backend.expectOne('/api/teacher/ai/lesson-plan').request.body).toEqual(brief);
+    const scan = new File(['png'], 'Скан.png', { type: 'image/png' });
+    api.lessonPlanDraft(brief, [scan]).subscribe();
+    expect(backend.expectOne('/api/teacher/ai/lesson-plan').request.body).toBeInstanceOf(FormData);
+  });
+
   it('sends picked files with the brief as a form', async () => {
     const brief = { prompt: 'По скану', title: null, sources: [] };
     const scan = new File(['png'], 'Скан.png', { type: 'image/png' });

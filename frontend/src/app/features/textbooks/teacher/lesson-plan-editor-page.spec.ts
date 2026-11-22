@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { bodyText, buttonByText, hostElement, menuItemByText } from '@testing/dom';
+import { aiStatus } from '@testing/ai-fixtures';
 import { ConfirmHost, testProviders } from '@testing/setup';
 import { aCourse, aLessonPlan } from '@testing/textbooks-fixtures';
 import { LessonPlan } from '../data-access/lesson-plans.models';
@@ -28,6 +29,9 @@ describe('LessonPlanEditorPage', () => {
   });
 
   afterEach(() => {
+    backend.match('/api/teacher/ai/status').forEach((request) => {
+      request.flush(aiStatus({ enabled: false }));
+    });
     backend.verify();
     fixture.destroy();
     vi.restoreAllMocks();
@@ -335,6 +339,55 @@ describe('LessonPlanEditorPage', () => {
     expect(link).toHaveBeenCalledTimes(2);
     expect(link).toHaveBeenLastCalledWith('l-1', 'p-9');
     expect(host.querySelector('p-message')).toBeNull();
+  });
+
+  it('opens the AI assistant with the facts of the lesson and takes its draft', async () => {
+    const lessonOf = vi.fn(() =>
+      of({
+        studentIds: ['s-1'],
+        facts: { topic: 'Past Simple', previousSummary: null, previousNextPlan: null },
+      }),
+    );
+    fixture = TestBed.createComponent(LessonPlanEditorPage);
+    fixture.componentRef.setInput('planId', 'p-1');
+    fixture.componentRef.setInput('lessonId', 'l-1');
+    fixture.componentRef.setInput('lessonOf', lessonOf);
+    fixture.componentRef.setInput('ai', '1');
+    page = fixture.componentInstance;
+    page.autosaveDelay = 0;
+    fixture.detectChanges();
+    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: true }));
+    backend.expectOne('/api/teacher/textbooks/courses').flush([aCourse({ id: 'c-1' })]);
+    backend.expectOne('/api/teacher/textbooks/plans/p-1').flush(aLessonPlan());
+    await settle();
+    host = hostElement(fixture);
+    expect(lessonOf).toHaveBeenCalledWith('l-1');
+    expect(bodyText()).toContain('Что нужно');
+    backend
+      .match(() => true)
+      .forEach((request) => {
+        if (request.request.url.endsWith('/tags') || request.request.url.endsWith('/students')) {
+          request.flush([]);
+        } else if (request.request.url.endsWith('/providers')) {
+          request.flush([]);
+        } else {
+          request.flush(null);
+        }
+      });
+
+    const before = page.form.controls.body.value;
+    page.form.patchValue({ title: '' });
+    const draft = {
+      title: 'Новый',
+      body: 'Ход урока',
+      textbooks: [{ source: 0, textbookId: 'tb-1', pages: '3' }],
+    };
+    page.applyDraft({ draft, mode: 'insert' });
+    expect(page.form.controls.title.value).toBe('Новый');
+    expect(page.form.controls.body.value).toBe(`${before.trimEnd()}\n\nХод урока`);
+    page.applyDraft({ draft, mode: 'replace' });
+    expect(page.form.controls.body.value).toBe('Ход урока');
+    backend.match(() => true);
   });
 
   it('saves what is left when the teacher leaves', async () => {

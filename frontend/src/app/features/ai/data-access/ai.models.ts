@@ -286,3 +286,33 @@ export interface AiSettings {
   readonly monthlyTokenLimit: number;
   readonly version: number;
 }
+
+/** What the lesson tells the AI about a plan (`lesson` of the request; the texts come from the schedule). */
+export interface LessonFacts {
+  readonly topic: string | null;
+  readonly previousSummary: string | null;
+  readonly previousNextPlan: string | null;
+}
+
+export interface LessonPlanBrief {
+  readonly prompt: string;
+  readonly courseName?: string | null;
+  readonly lesson?: LessonFacts;
+  readonly sources: readonly DraftSource[];
+  readonly context?: readonly ContextItem[];
+  readonly modelId?: string;
+}
+
+/** The pages of a textbook the draft rests on; the backend has checked them against the sources sent. */
+export interface DraftedTextbook {
+  readonly source: number;
+  readonly textbookId: string;
+  readonly pages: string;
+}
+
+export interface LessonPlanDraft {
+  readonly title: string;
+  /** Markdown. */
+  readonly body: string;
+  readonly textbooks: readonly DraftedTextbook[];
+}

@@ -155,6 +155,10 @@ export const ru = {
     delete: 'Удалить',
   },
   planEditor: {
+    withAi: 'С ИИ',
+    aiTitle: 'ИИ-помощник',
+    closeAi: 'Закрыть помощника',
+    aiVideo: (name: string) => `Видео: ${name}`,
     newTitle: 'Новый план урока',
     back: 'К материалам',
     backToSchedule: 'К расписанию',

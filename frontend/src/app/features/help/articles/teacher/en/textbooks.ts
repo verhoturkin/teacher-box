@@ -60,6 +60,12 @@ other captions. Students see a transcript only when “Show transcript to studen
 The card’s “⋮” menu has **Edit**, which opens the editor, and **Delete…**, which removes the plan from the bank after you confirm (lesson plans \
 made from it stay). Editing a bank original does not change the copies on lessons.
 
+**With AI** in the editor header (and in the lesson card’s Plan section while it has no plan) opens the assistant: describe the lesson, tick \
+what it should draw on — the textbook pages and videos with a transcript in the plan — and a draft comes back. The AI knows the lesson’s topic, \
+the summary of the previous lesson and the AI tags of the lesson’s students. “Replace the plan” or “Insert at the end” moves the draft into the plan \
+(a replace also narrows the attached textbooks to the pages the AI chose); nothing changes until you press it. The button appears only \
+when a model is connected (Settings → AI assistant).
+
 Lesson plans are made from a lesson’s details (Write or From bank; see Schedule and requests). A plan written for a lesson goes into \
 the bank automatically the first time you choose Done. Its editor’s “⋮” menu has **Save to bank** (no \
 original yet) or **Update in bank** (the original is replaced with this plan after you confirm).

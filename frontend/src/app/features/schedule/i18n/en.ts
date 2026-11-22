@@ -270,6 +270,7 @@ export const en: Translation<typeof ru> = {
     what: 'the lesson plan',
     empty: 'No plan yet. Write one or take a ready-made plan from the bank.',
     compose: 'Write',
+    composeWithAi: 'With AI',
     fromBank: 'From bank',
     open: 'Open',
     more: 'Plan actions',

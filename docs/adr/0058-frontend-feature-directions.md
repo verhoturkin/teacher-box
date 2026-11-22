@@ -16,7 +16,7 @@
 | `help`, `meetings` | — |
 | `ai`, `boards` | `identity` |
 | `notifications` | `help`, `identity` |
-| `textbooks` | `boards`, `identity` |
+| `textbooks` | `ai`, `boards`, `identity` |
 | `billing` | `help`, `identity`, `notifications` |
 | `homework` | `ai`, `boards`, `help`, `identity`, `schedule`, `textbooks` |
 | `schedule` | `ai`, `boards`, `help`, `homework`, `identity`, `meetings` |
@@ -36,10 +36,10 @@
 - **Три слоя, одна таблица.** Таблица живёт в `frontend/eslint.config.js` и повторена в
   `frontend/AGENTS.md`.
   - Основа: `help` не импортирует ничего, `identity` — только `help`.
-  - Бизнес-фичи импортируют основу и перечисленные для них бизнес-фичи: `textbooks` → `boards`;
-    `billing` → `notifications`; `homework` → `ai`, `boards`, `textbooks`; `schedule` → `ai`,
-    `boards`, `homework`, `meetings`. У `ai`, `boards`, `meetings`, `notifications` — только
-    основа.
+  - Бизнес-фичи импортируют основу и перечисленные для них бизнес-фичи: `textbooks` → `ai`,
+    `boards` (`ai` — с этапа 464: панель ИИ в редакторе плана урока); `billing` → `notifications`;
+    `homework` → `ai`, `boards`, `textbooks`; `schedule` → `ai`, `boards`, `homework`, `meetings`.
+    У `ai`, `boards`, `meetings`, `notifications` — только основа.
   - Сборочные фичи (`account`, `admin`, `home`, `materials`, `settings`, `students`, а с этапа
     371 — `gallery`) импортируют основу и любые бизнес-фичи. Их самих не импортирует никто;
     единственное исключение — `admin` → `settings` (карточка резервных копий).

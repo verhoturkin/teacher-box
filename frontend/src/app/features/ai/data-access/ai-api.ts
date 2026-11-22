@@ -14,6 +14,8 @@ import {
   ConnectionInput,
   HomeworkBrief,
   HomeworkDraft,
+  LessonPlanBrief,
+  LessonPlanDraft,
   LessonSummaryBrief,
   LessonSummaryDraft,
   ModelInput,
@@ -71,8 +73,20 @@ export class AiApi {
     return this.draft<QuizDraft>('quiz-draft', brief, files);
   }
 
-  private draft<R>(path: string, brief: HomeworkBrief, files: readonly File[]): Observable<R> {
-    let body: HomeworkBrief | FormData = brief;
+  /** A lesson plan from the request, the lesson and the sources (roadmap 11 «AI»). */
+  lessonPlanDraft(
+    brief: LessonPlanBrief,
+    files: readonly File[] = [],
+  ): Observable<LessonPlanDraft> {
+    return this.draft<LessonPlanDraft>('lesson-plan', brief, files);
+  }
+
+  private draft<R>(
+    path: string,
+    brief: HomeworkBrief | LessonPlanBrief,
+    files: readonly File[],
+  ): Observable<R> {
+    let body: HomeworkBrief | LessonPlanBrief | FormData = brief;
     if (files.length > 0) {
       body = new FormData();
       body.append('brief', new Blob([JSON.stringify(brief)], { type: 'application/json' }));

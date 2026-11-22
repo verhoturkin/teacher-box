@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { bodyText, buttonByText, hostElement, menuItemByText } from '@testing/dom';
+import { aiStatus } from '@testing/ai-fixtures';
 import { ConfirmHost, testProviders } from '@testing/setup';
 import { groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { aCourse, aLessonPlan, aPlanSummary } from '@testing/textbooks-fixtures';
@@ -28,6 +29,9 @@ describe('LessonPlanSection', () => {
   });
 
   afterEach(() => {
+    backend.match('/api/teacher/ai/status').forEach((request) => {
+      request.flush(aiStatus({ enabled: false }));
+    });
     backend.verify();
     vi.restoreAllMocks();
   });
@@ -63,6 +67,17 @@ describe('LessonPlanSection', () => {
     buttonByText(root, 'Составить').click();
     expect(navigate).toHaveBeenLastCalledWith(['/teacher/materials/plans/new'], {
       queryParams: { lessonId: 'l-2', groupId: 'g-1' },
+    });
+  });
+
+  it('opens the editor with the assistant when AI is on', async () => {
+    const root = await show(scheduledLesson({ id: 'l-1', studentId: 's-1' }));
+    expect(root.textContent).not.toContain('С ИИ');
+    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: true }));
+    await fixture.whenStable();
+    buttonByText(root, 'С ИИ').click();
+    expect(navigate).toHaveBeenCalledWith(['/teacher/materials/plans/new'], {
+      queryParams: { lessonId: 'l-1', studentId: 's-1', ai: '1' },
     });
   });
 

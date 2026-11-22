@@ -63,6 +63,8 @@ of `textbooks` does not import `schedule`: the route (`app.routes.ts`, `linkToLe
   title with the course under each, «Отмена» and «Взять» (`POST …/plans/{id}/use`, then the link;
   a copy the link refuses is deleted, the error is a snackbar). *Ours*: inline instead of a dialog
   — a window does not open over the sheet (ADR-0026).
+  «С ИИ» (outlined, only when `AiApi.enabled$`; 464.2) opens the same editor with `ai=1`: the
+  assistant is open on arrival (below, [materials](materials.md)).
 - **Teacher, a plan**: the header keeps «Открыть» (text, → the editor with `?lessonId=`) and «⋮»
   «Убрать из урока» (`confirm.danger`; unlink, then delete the working copy, the bank original
   stays); the list — the title, each textbook with «Учебник · с. 12-14», each video by name. A

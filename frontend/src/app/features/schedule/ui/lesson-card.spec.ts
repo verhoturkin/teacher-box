@@ -2,6 +2,7 @@ import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { buttonByText, hostElement } from '@testing/dom';
+import { aiStatus } from '@testing/ai-fixtures';
 import { testProviders } from '@testing/setup';
 import { at, changeRequest, groupLesson, scheduledLesson } from '@testing/schedule-fixtures';
 import { aBoard } from '@testing/boards-fixtures';
@@ -40,6 +41,9 @@ describe('LessonCard', () => {
   });
 
   afterEach(() => {
+    backend.match('/api/teacher/ai/status').forEach((request) => {
+      request.flush(aiStatus({ enabled: false }));
+    });
     backend.verify();
   });
 
