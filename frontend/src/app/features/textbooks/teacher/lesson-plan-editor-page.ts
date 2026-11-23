@@ -10,7 +10,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { Location } from '@angular/common';
+import { Location, NgTemplateOutlet } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, UrlTree } from '@angular/router';
@@ -38,6 +38,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { MarkdownField } from '@shared/ui/markdown-field';
 import { PageHeader } from '@shared/ui/page-header';
+import { Pane, PaneHeader, Panes } from '@shared/ui/panes';
 import {
   AiApi,
   AppliedPlan,
@@ -107,6 +108,10 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
   selector: 'tb-lesson-plan-editor-page',
   imports: [
     ReactiveFormsModule,
+    NgTemplateOutlet,
+    Pane,
+    Panes,
+    PaneHeader,
     Button,
     Card,
     InputText,
@@ -129,123 +134,157 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (ready()) {
-      <tb-page-header
-        class="tb-page-header--one-line"
-        [title]="heading()"
-        [back]="back()"
-        [backLabel]="lessonId() === undefined ? t.back : t.backToSchedule"
-      >
-        @if (plan()?.bank) {
-          <p-tag meta [value]="t.bankItem" severity="secondary" />
-        }
-        @if (savedAt(); as at) {
-          <span class="tb-plan-editor__saved" role="status">{{ t.savedAt(at) }}</span>
-        }
-        @if (aiEnabled()) {
-          <p-button
-            [label]="t.withAi"
-            icon="tb-i tb-i-auto_awesome"
-            severity="secondary"
-            variant="outlined"
-            [ariaLabel]="t.aiTitle"
-            (onClick)="aiOpen.set(true)"
-          />
-        }
-        <p-button
-          [label]="t.done"
-          icon="tb-i tb-i-check"
-          [loading]="finishing()"
-          (onClick)="finish()"
-        />
-        <!-- M3: the overflow menu is the last of the header actions -->
-        @if (menuItems().length > 0) {
-          <p-button
-            icon="tb-i tb-i-more_vert"
-            [text]="true"
-            [rounded]="true"
-            severity="secondary"
-            [ariaLabel]="t.more"
-            aria-haspopup="menu"
-            [loading]="banking()"
-            (onClick)="menu.toggle($event)"
-          />
-          <p-menu #menu [model]="menuItems()" [popup]="true" appendTo="body" />
-        }
-      </tb-page-header>
-
-      <form tbFieldErrors class="tb-plan-editor tb-form" [formGroup]="form" (ngSubmit)="finish()">
-        @if (error(); as message) {
-          <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
-        }
-        @if (plan()?.bank) {
-          <p class="tb-hint">{{ t.bankItemHint }}</p>
-        } @else if (lessonId() !== undefined) {
-          <p class="tb-hint">{{ t.lessonPlanHint }}</p>
-        }
-        <p-card styleClass="tb-section-card">
-          <div class="tb-plan-editor__fields">
-            <div class="tb-field">
-              <label for="plan-title">{{ t.title }}</label>
-              <input pInputText id="plan-title" formControlName="title" autocomplete="off" />
-            </div>
-            @if (courses().length > 0) {
-              <div class="tb-field">
-                <label for="plan-course">{{ t.course }}</label>
-                <p-select
-                  inputId="plan-course"
-                  formControlName="courseId"
-                  [options]="courseChoices()"
-                  optionLabel="label"
-                  optionValue="value"
-                  appendTo="body"
-                  [fluid]="true"
+      <tb-panes>
+        <tb-pane [label]="heading()">
+          <ng-template tbPaneHeader>
+            <tb-page-header
+              class="tb-page-header--one-line"
+              [title]="heading()"
+              [back]="back()"
+              [backLabel]="lessonId() === undefined ? t.back : t.backToSchedule"
+            >
+              @if (plan()?.bank) {
+                <p-tag meta [value]="t.bankItem" severity="secondary" />
+              }
+              @if (savedAt(); as at) {
+                <span class="tb-plan-editor__saved" role="status">{{ t.savedAt(at) }}</span>
+              }
+              @if (aiEnabled()) {
+                <p-button
+                  [label]="t.withAi"
+                  icon="tb-i tb-i-auto_awesome"
+                  severity="secondary"
+                  variant="outlined"
+                  [ariaLabel]="t.aiTitle"
+                  [ariaExpanded]="single() ? modalAiOpen() : aiOpen()"
+                  (onClick)="toggleAi()"
                 />
-                <small class="tb-hint">{{ t.courseHint }}</small>
-              </div>
+              }
+              <p-button
+                [label]="t.done"
+                icon="tb-i tb-i-check"
+                [loading]="finishing()"
+                (onClick)="finish()"
+              />
+              <!-- M3: the overflow menu is the last of the header actions -->
+              @if (menuItems().length > 0) {
+                <p-button
+                  icon="tb-i tb-i-more_vert"
+                  [text]="true"
+                  [rounded]="true"
+                  severity="secondary"
+                  [ariaLabel]="t.more"
+                  aria-haspopup="menu"
+                  [loading]="banking()"
+                  (onClick)="menu.toggle($event)"
+                />
+                <p-menu #menu [model]="menuItems()" [popup]="true" appendTo="body" />
+              }
+            </tb-page-header>
+          </ng-template>
+
+          <form
+            tbFieldErrors
+            class="tb-plan-editor tb-form"
+            [formGroup]="form"
+            (ngSubmit)="finish()"
+          >
+            @if (error(); as message) {
+              <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
             }
-            <tb-markdown-field
-              fieldId="plan-body"
-              [control]="form.controls.body"
-              [label]="t.body"
-              [hint]="t.bodyHint"
-            />
-          </div>
-        </p-card>
+            @if (plan()?.bank) {
+              <p class="tb-hint">{{ t.bankItemHint }}</p>
+            } @else if (lessonId() !== undefined) {
+              <p class="tb-hint">{{ t.lessonPlanHint }}</p>
+            }
+            <p-card styleClass="tb-section-card">
+              <div class="tb-plan-editor__fields">
+                <div class="tb-field">
+                  <label for="plan-title">{{ t.title }}</label>
+                  <input pInputText id="plan-title" formControlName="title" autocomplete="off" />
+                </div>
+                @if (courses().length > 0) {
+                  <div class="tb-field">
+                    <label for="plan-course">{{ t.course }}</label>
+                    <p-select
+                      inputId="plan-course"
+                      formControlName="courseId"
+                      [options]="courseChoices()"
+                      optionLabel="label"
+                      optionValue="value"
+                      appendTo="body"
+                      [fluid]="true"
+                    />
+                    <small class="tb-hint">{{ t.courseHint }}</small>
+                  </div>
+                }
+                <tb-markdown-field
+                  fieldId="plan-body"
+                  [control]="form.controls.body"
+                  [label]="t.body"
+                  [hint]="t.bodyHint"
+                />
+              </div>
+            </p-card>
 
-        <p-card styleClass="tb-section-card">
-          <div class="tb-plan-editor__head">
-            <h2 class="tb-subtitle">{{ t.textbooks }}</h2>
-            <span class="tb-hint">{{ t.textbookCount(textbooks().length, maxTextbooks) }}</span>
-          </div>
-          <tb-plan-textbooks
-            [textbooks]="textbooks()"
-            (edit)="editTextbook($event)"
-            (remove)="removeTextbook($event)"
-          />
-          @if (textbooks().length < maxTextbooks) {
-            <p-button
-              [label]="t.addTextbook"
-              icon="tb-i tb-i-add"
-              severity="secondary"
-              [text]="true"
-              (onClick)="addTextbook()"
-            />
-          }
-        </p-card>
+            <p-card styleClass="tb-section-card">
+              <div class="tb-plan-editor__head">
+                <h2 class="tb-subtitle">{{ t.textbooks }}</h2>
+                <span class="tb-hint">{{ t.textbookCount(textbooks().length, maxTextbooks) }}</span>
+              </div>
+              <tb-plan-textbooks
+                [textbooks]="textbooks()"
+                (edit)="editTextbook($event)"
+                (remove)="removeTextbook($event)"
+              />
+              @if (textbooks().length < maxTextbooks) {
+                <p-button
+                  [label]="t.addTextbook"
+                  icon="tb-i tb-i-add"
+                  severity="secondary"
+                  [text]="true"
+                  (onClick)="addTextbook()"
+                />
+              }
+            </p-card>
 
-        <p-card styleClass="tb-section-card">
-          <div class="tb-plan-editor__head">
-            <h2 class="tb-subtitle">{{ t.videos }}</h2>
-            <span class="tb-hint">{{ t.videoCount(videos().length, maxVideos) }}</span>
-          </div>
-          <tb-video-section [videos]="videos()" (videosChange)="videos.set($event)" />
-        </p-card>
-      </form>
+            <p-card styleClass="tb-section-card">
+              <div class="tb-plan-editor__head">
+                <h2 class="tb-subtitle">{{ t.videos }}</h2>
+                <span class="tb-hint">{{ t.videoCount(videos().length, maxVideos) }}</span>
+              </div>
+              <tb-video-section [videos]="videos()" (videosChange)="videos.set($event)" />
+            </p-card>
+          </form>
+        </tb-pane>
+        @if (aiEnabled() && !single() && aiOpen()) {
+          <tb-pane
+            class="tb-plan-editor__ai"
+            kind="fixed"
+            resizeKey="lesson-plan-ai"
+            [label]="t.aiTitle"
+          >
+            <ng-template tbPaneHeader>
+              <div class="tb-plan-editor__ai-head">
+                <h2 class="tb-subtitle">{{ t.aiTitle }}</h2>
+                <p-button
+                  [ariaLabel]="t.closeAi"
+                  icon="tb-i tb-i-close"
+                  [text]="true"
+                  severity="secondary"
+                  (onClick)="aiOpen.set(false)"
+                />
+              </div>
+            </ng-template>
+            <ng-container *ngTemplateOutlet="assistant" />
+          </tb-pane>
+        }
+      </tb-panes>
 
-      @if (aiEnabled()) {
+      @if (aiEnabled() && single()) {
         <p-drawer
           tbModalDrawer
-          [(visible)]="aiOpen"
+          [(visible)]="modalAiOpen"
           [header]="t.aiTitle"
           [ariaCloseLabel]="t.closeAi"
           [position]="compact() ? 'bottom' : 'right'"
@@ -253,17 +292,20 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
           [styleClass]="compact() ? 'tb-sheet tb-editor-ai-drawer' : 'tb-editor-ai-drawer'"
           [style]="compact() ? {} : { width: 'min(100vw, 25rem)' }"
         >
-          <tb-lesson-plan-ai-panel
-            [hasText]="bodyValue().trim() !== ''"
-            [sources]="aiSources()"
-            [students]="lesson()?.studentIds ?? []"
-            [lesson]="lesson()?.facts ?? null"
-            [courseName]="courseName()"
-            [compact]="compact()"
-            (applied)="applyDraft($event)"
-          />
+          <ng-container *ngTemplateOutlet="assistant" />
         </p-drawer>
       }
+      <ng-template #assistant>
+        <tb-lesson-plan-ai-panel
+          [hasText]="bodyValue().trim() !== ''"
+          [sources]="aiSources()"
+          [students]="lesson()?.studentIds ?? []"
+          [lesson]="lesson()?.facts ?? null"
+          [courseName]="courseName()"
+          [compact]="compact()"
+          (applied)="applyDraft($event)"
+        />
+      </ng-template>
 
       <tb-bind-textbook-dialog
         [(visible)]="bindVisible"
@@ -288,6 +330,13 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
       flex-direction: column;
       gap: var(--tb-space-4);
       max-width: 52rem;
+    }
+
+    .tb-plan-editor__ai-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--tb-space-2);
     }
 
     .tb-plan-editor__fields {
@@ -326,7 +375,11 @@ export class LessonPlanEditorPage implements OnInit, CanLeave {
   private readonly size = injectWindowSize();
   protected readonly compact = computed(() => this.size() === 'compact');
   protected readonly aiEnabled = toSignal(this.aiApi.enabled$, { initialValue: false });
+  protected readonly single = computed(() => this.size() === 'compact' || this.size() === 'medium');
+  /** The assistant as a side pane beside the plan (from expanded). */
   protected readonly aiOpen = signal(false);
+  /** The assistant as a sheet over the plan (compact, medium). */
+  protected readonly modalAiOpen = signal(false);
   /** The lesson of the plan as the AI knows it; `null` — none or not read. */
   protected readonly lesson = signal<PlanLesson | null>(null);
 
@@ -461,7 +514,9 @@ export class LessonPlanEditorPage implements OnInit, CanLeave {
       this.courses.set(courses);
     });
     this.readLesson();
-    this.aiOpen.set(this.ai() === '1');
+    if (this.ai() === '1') {
+      (this.single() ? this.modalAiOpen : this.aiOpen).set(true);
+    }
     this.linked = this.planId() !== undefined || this.lessonId() === undefined;
     if (this.planId() === undefined) {
       this.form.controls.courseId.setValue(this.course() ?? null);
@@ -510,7 +565,12 @@ export class LessonPlanEditorPage implements OnInit, CanLeave {
         })),
       );
     }
-    this.aiOpen.set(false);
+    // the sheet gives the plan back; the side pane stays beside it, as in the assignment editor
+    this.modalAiOpen.set(false);
+  }
+
+  protected toggleAi(): void {
+    (this.single() ? this.modalAiOpen : this.aiOpen).update((open) => !open);
   }
 
   /** A new lesson plan takes the current course of the lesson's student or group, unless one is chosen. */

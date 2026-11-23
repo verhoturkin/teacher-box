@@ -73,12 +73,12 @@
   the copies stay). No button of its own: «Создать» → «Задание». The help button opens the
   homework article.
 - **Plan editor** (`LessonPlanEditorPage`, `features/textbooks/teacher/lesson-plan-editor-page.ts`,
-  `/teacher/materials/plans/new` and `…/plans/:planId`, `canLeaveGuard`): the page header (the
-  title as typed, back to «Материалы» on «Планы»; the chip «Шаблон» on a bank item, «сохранено ·
+  `/teacher/materials/plans/new` and `…/plans/:planId`, `canLeaveGuard`): the panes of the
+  assignment editor (`tb-panes` / `tb-pane` of `@shared/ui/panes`, 467.1) — the plan pane keeps the
+  page header in its `tbPaneHeader` as `tb-editor-header` does (the title as typed, back to «Материалы» on «Планы»; the chip «Шаблон» on a bank item, «сохранено ·
   HH:mm», «С ИИ», the filled «Готово» and last «⋮» of a lesson's plan with «Сохранить как шаблон» /
   «Обновить шаблон» — the latter asks (`safe` confirmation); **M3**: the overflow menu ends the
-  row, 466.2), then one column of section cards, at most
-  52rem wide: «Название», «Курс» (a select while there are courses; its hint says the plan takes
+  row, 466.2), and scrolls its column of section cards, at most 52rem wide: «Название», «Курс» (a select while there are courses; its hint says the plan takes
   only the course's textbooks) and the Markdown field «План» (`tb-markdown-field`); «Учебники» with
   «N из 20» — rows with ✎ (pages, `BindTextbookDialog`) and ✕, «Добавить учебник» opens
   `BindTextbookDialog [courseId]` (the course's textbooks when a course is set, else all);
@@ -89,15 +89,18 @@
   course prefilled from `?studentId=` / `?groupId=` (`course-links`), the first save links it to
   the lesson through the route's `linkToLesson` (a failed link is retried by the next save, the
   address keeps `?lessonId=`), back and «Готово» lead to the schedule; «Готово» saves the rest,
-  «С ИИ» (secondary outlined, in the header, only when `AiApi.enabled$`; 464.2) opens
-  `LessonPlanAiPanel` of `features/ai` in a `p-drawer` (a bottom sheet on a phone): the request,
+  «С ИИ» (secondary outlined, in the header, only when `AiApi.enabled$`; 464.2, `aria-expanded`)
+  toggles `LessonPlanAiPanel` of `features/ai`: from expanded a fixed side pane beside the plan
+  (`resizeKey="lesson-plan-ai"`, the M3 drag handle, «ИИ-помощник» and ✕ in its header; it stays
+  open after a draft), on compact and medium a `p-drawer` (a bottom sheet on a phone) that closes
+  after a draft, as in the assignment editor (467.1): the request,
   the context chips of the lesson's students, what the lesson tells (the topic, a mark that the
   previous summary goes along; the route's `lessonOf` reads the lesson and the previous held
   one), the sources (`planAiSources`: PDF/picture textbooks and videos with a transcript, all
   ticked until the teacher unticks) and the model pick; `POST /api/teacher/ai/lesson-plan`. The
   draft (title, Markdown) goes in by «Заменить план» (also narrows the bound textbooks to the
   chosen pages) or «Вставить в конец»; the title is set only when empty. `?ai=1` opens it with
-  the editor. *Ours*: a drawer in every width and no prompt library, unlike the homework pane.
+  the editor. *Ours*: no prompt library, unlike the homework pane.
   `POST …/{id}/finish` and goes back; leaving saves what is left. A save during an autosave waits
   for it.
 - The rail's «Создать» leads to `?tab=…&create=board|textbook` (the form opens with the course of
