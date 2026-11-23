@@ -151,9 +151,10 @@ export class LessonPlansFeed {
   }
 
   /** «Создать» of the page: a new plan of the bank, of the course given, if any. */
-  openCreate(course: string | null = null): void {
+  openCreate(course: string | null = null, replaceUrl = false): void {
     void this.router.navigate(['/teacher/materials/plans/new'], {
       queryParams: course === null ? {} : { course },
+      replaceUrl,
     });
   }
 

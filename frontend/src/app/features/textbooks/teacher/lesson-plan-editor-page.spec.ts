@@ -389,6 +389,21 @@ describe('LessonPlanEditorPage', () => {
         }
       });
 
+    // from expanded the assistant is a side pane beside the plan, and it closes and opens again (467.1)
+    const assistant = host.querySelector('tb-pane.tb-plan-editor__ai');
+    expect(assistant?.querySelector('tb-lesson-plan-ai-panel')).not.toBeNull();
+    expect(host.querySelector('tb-pane:not(.tb-plan-editor__ai) tb-page-header')).not.toBeNull();
+    const toggle = host.querySelector<HTMLButtonElement>(
+      'tb-page-header button[aria-label="ИИ-помощник"]',
+    );
+    assistant?.querySelector<HTMLButtonElement>('button[aria-label="Закрыть помощника"]')?.click();
+    await settle();
+    expect(host.querySelector('tb-pane.tb-plan-editor__ai')).toBeNull();
+    toggle?.click();
+    await settle();
+    expect(host.querySelector('tb-pane.tb-plan-editor__ai')).not.toBeNull();
+    backend.match(() => true);
+
     const before = page.form.controls.body.value;
     page.form.patchValue({ title: '' });
     const draft = {

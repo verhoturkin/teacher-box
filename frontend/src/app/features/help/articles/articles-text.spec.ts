@@ -909,6 +909,46 @@ const PLAN_AI: Readonly<Record<string, readonly (readonly [string, string, strin
   ],
 };
 
+/** Профиль in cards (467.4): [topic, baseline, now] of the students article. */
+const PROFILE_CARDS: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'students',
+      'меняется прямо на ней. «Данные ученика»: имя, почта, телефон, заметка (видна только вам), тема по умолчанию и цвет — ' +
+        'поменяйте поля и нажмите «Сохранить» под ними («Отмена» вернёт сохранённое). Ниже — **Курс**',
+      'меняется прямо на ней; на широком экране карточки стоят в две колонки. «Данные ученика»: имя, почта, телефон, заметка ' +
+        '(видна только вам); «Занятия»: тема по умолчанию и цвет. В каждой из них поменяйте поля и нажмите её «Сохранить» ' +
+        '(«Отмена» вернёт сохранённое). Дальше — **Курс**',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'students',
+      '- **Profile:** name, email, phone, private note, default topic and colour. Save these fields together. **Course**',
+      '- **Profile:** cards in two columns on a wide screen. “Student details” holds the name, email, phone and private note; ' +
+        '“Lessons” holds the default topic and colour. Each of them has its own Save button. **Course**',
+    ],
+  ],
+};
+
+/** One «Создать» in Materials (467.5): [topic, baseline, now] of the homework article. */
+const ONE_CREATE: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'homework',
+      '«Создать» → «Задание» в «Материалах» сразу создаёт шаблон',
+      'На телефоне «Материалы» → «Создать» → «Задание» сразу создаёт шаблон',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'homework',
+      '“Create” → “Assignment” in Materials creates a template',
+      'On a phone, “Materials” → “Create” → “Assignment” creates a template',
+    ],
+  ],
+};
+
 /** The release review of 0.61.0 (467.1): the AI lesson plan in the AI article, [topic, baseline, now]. */
 const RELEASE_061: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
   'teacher.ru': [
@@ -1372,6 +1412,8 @@ describe('help articles after the split into one file per topic', () => {
       ...(LESSON_CARD[name] ?? []),
       ...(BY_PLAN[name] ?? []),
       ...(RELEASE_061[name] ?? []),
+      ...(PROFILE_CARDS[name] ?? []),
+      ...(ONE_CREATE[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

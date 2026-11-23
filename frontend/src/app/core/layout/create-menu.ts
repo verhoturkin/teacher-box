@@ -53,11 +53,19 @@ export const CREATE_ACTIONS: readonly CreateAction[] = [
     section: '/teacher/materials',
     query: { tab: 'textbooks' },
   },
+  {
+    kind: 'plan',
+    label: T.plan,
+    icon: 'tb-i-list_alt',
+    section: '/teacher/materials',
+    query: { tab: 'plans' },
+  },
   { kind: 'message', label: T.message, icon: 'tb-i-send' },
 ];
 
 /**
- * The items for the page at `url`: the current section's item first, the others in their order; «Сообщение»
+ * The items for the page at `url`: the current section's items first (the open tab's one at the top), the
+ * others in their order; «Сообщение»
  * calls `message` (it opens the dialog of a new message over the page).
  */
 export function createItems(url: string, message: () => void): FabMenuItem[] {
@@ -74,10 +82,15 @@ export function createItems(url: string, message: () => void): FabMenuItem[] {
         'query' in action &&
         Object.entries(action.query ?? {}).every(([key, value]) => search.get(key) === value),
     ) ?? here[0];
+  // the section's items first (the open tab's one at the top), then the others in their order
   const ordered =
     current === undefined
       ? CREATE_ACTIONS
-      : [current, ...CREATE_ACTIONS.filter((action) => action !== current)];
+      : [
+          current,
+          ...here.filter((action) => action !== current),
+          ...CREATE_ACTIONS.filter((action) => !here.includes(action)),
+        ];
   return ordered.map((action) =>
     'section' in action
       ? {

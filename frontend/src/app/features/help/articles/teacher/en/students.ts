@@ -34,7 +34,8 @@ Rescheduled and cancelled lessons appear separately. Past lessons show the outco
 the next six months. History loads 20 lessons at a time; choose “Show more” for older entries.
 - **Homework:** assignments and their status, with outstanding work first and accepted work below. Select a title to open it.
 - **Payments:** balance, total charges, total payments and transaction history. See [Payments](/teacher/help/billing).
-- **Profile:** name, email, phone, private note, default topic and colour. Save these fields together. **Course** is the student’s current course: it saves as \
+- **Profile:** cards in two columns on a wide screen. “Student details” holds the name, email, phone and private note; “Lessons” holds the default \
+topic and colour. Each of them has its own Save button. **Course** is the student’s current course: it saves as \
 soon as you choose it and appears as a chip in the card header (see [Textbooks](/teacher/help/textbooks)). The lesson price has its own Save button; \
 video meeting changes apply immediately. “Parents” lists the student’s parents (see below). “Portal access” shows the read-only username and \
 invitation or reset link details.

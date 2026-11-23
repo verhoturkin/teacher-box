@@ -29,6 +29,9 @@ Feature proposals with detailed plans (progress report, packages, invoices, pare
 self-booking, calls, spaced repetition) — [`roadmap/`](roadmap/README.md); move one here as a
 release when the teacher picks it.
 
+Left from 0.62.0 (467.6): the AI side pane of the lesson-plan editor was not checked live; neither
+was the course saved from Профиль surviving a reload.
+
 Left from 0.57.0 (449.1): the student card actions (3 buttons, 371 px) overflow a 375 px phone;
 the schedule toolbar → calendar gap and the `.tb-ops` section margins are child margins, not the
 parent's gap; lesson rows, student-side cards with data and the teacher homework / Materials lists

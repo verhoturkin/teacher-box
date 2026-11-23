@@ -32,9 +32,9 @@
 - **Course** (ADR-0071): the page reads `…/textbooks/courses` and `…/course-links` with the roster
   (a failed read leaves no chip and an empty select). The current course is the first header tag
   of the student and the group (`school` icon, secondary). Profile of both has the card «Курс»
-  (`CurrentCourseCard`, `@features/textbooks/parts`) between the data and the price: a select
-  («Без курса» first) saved when chosen, a refused choice goes back; disabled for a deactivated
-  student and an archived group. The new-group form offers «Курс» while courses exist; a refused
+  (`CurrentCourseCard`, `@features/textbooks/parts`) after the data cards, before the price: a
+  select («Без курса» first) saved when chosen, a refused choice goes back; disabled for a
+  deactivated student and an archived group. The new-group form offers «Курс» while courses exist; a refused
   course leaves the new group without one (a toast), the group is kept.
 - The student header tag with the balance (debt / prepaid) is shown only on tabs where the balance
   is not visible otherwise: not on Обзор (the balance card) and not on Оплаты; the roster row keeps
@@ -55,9 +55,13 @@
 - **Tags** (`StudentTagsTab`, always present): a list tag saves on choosing, a free-text tag (max
   120) on blur or Enter, blank clears. The whole set goes in one `PUT …/tags`; a failure restores
   the old value. «What the AI will see» lists the AI tags the student has.
-- **Profile** (`student-profile-tab.ts`): the price card is the one place to change a student's
-  price; the video room saves at once. *Ours* (**M3** has no in-place edit pattern): fields stay
-  editable instead of a read view with a pencil.
+- **Profile** (`student-profile-tab.ts`): cards in `.tb-settings-grid` (two columns while each
+  gets 360 dp, else one — the grid of Settings): «Данные ученика» (name, email, phone, note),
+  «Занятия» (default topic, colour), «Курс», the price, the video room, «Родители», «Вход в
+  кабинет». The two form cards save only their own fields, each with its «Сохранить» / «Отмена»;
+  typed changes of one card survive saving the other. The price card is the one place to change a
+  student's price; the video room saves at once. *Ours* (**M3** has no in-place edit pattern):
+  fields stay editable instead of a read view with a pencil.
 - **Parents** (`student-guardians-card.ts`, ADR-0069), between the video room and «Вход в
   кабинет»: a segmented list of up to two parents (avatar, name, state — «Приглашение до …»,
   «Входит как …», a reset link), «Новое приглашение» / «Сбросить пароль» and «Отвязать» as icon

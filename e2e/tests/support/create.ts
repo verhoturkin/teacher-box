@@ -1,7 +1,8 @@
 import { Page } from '@playwright/test';
 
 /** What the teacher's «Создать» makes (232.1): its items in the rail. */
-type CreateItem = 'Занятие' | 'Задание' | 'Оплата' | 'Ученик' | 'Доска' | 'Сообщение';
+type CreateItem =
+  'Занятие' | 'Задание' | 'Оплата' | 'Ученик' | 'Доска' | 'План урока' | 'Сообщение';
 
 /**
  * «Создать › <item>» at the top of the teacher's rail: from 600 px the only create action of a section

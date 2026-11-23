@@ -76,6 +76,7 @@ export const ru = {
     payment: 'Оплата',
     paymentHint: 'Записать оплату',
     summary: 'Итоги за период',
+    summaryShort: 'Итоги',
     lesson: 'Занятие',
     noMessenger: 'Без мессенджера',
     prepaid: (amount: string) => `Аванс ${amount}`,
@@ -148,6 +149,7 @@ export const ru = {
   },
   profile: {
     details: 'Данные ученика',
+    lessons: 'Занятия',
     access: 'Вход в кабинет',
     invited: (date: string) => `Ссылка-приглашение действует до ${date}.`,
     resetting: (date: string) => `Ссылка для нового пароля действует до ${date}.`,

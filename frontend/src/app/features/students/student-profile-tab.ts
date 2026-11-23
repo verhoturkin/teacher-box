@@ -48,14 +48,13 @@ interface ProfileValue {
   readonly color: LabelColor | null;
 }
 
-const PROFILE_KEYS: readonly (keyof StudentProfileInput)[] = [
-  'displayName',
-  'email',
-  'phone',
-  'note',
-  'defaultTopic',
-  'color',
-];
+/** The cards of the profile with a form each: a card saves only its own fields. */
+type Section = 'details' | 'lessons';
+
+const SECTION_KEYS: Readonly<Record<Section, readonly (keyof StudentProfileInput)[]>> = {
+  details: ['displayName', 'email', 'phone', 'note'],
+  lessons: ['defaultTopic', 'color'],
+};
 
 function valueOf(student: Student): ProfileValue {
   return {
@@ -82,10 +81,11 @@ function inputOf(value: ProfileValue): StudentProfileInput {
 
 /**
  * The Профиль tab of a student's card (redesign spec §8): what the teacher knows of the student, changed in
- * place — cards one under another: «Данные ученика» (the name, the contacts, the note, the default topic, the
- * colour; the tonal «Сохранить» under the fields saves them, «Отмена» brings back the saved ones), «Курс»
- * (ADR-0071, saved when chosen), the lesson price, the video meeting, «Родители» (ADR-0069) and «Вход в кабинет» (the login the student chose, the
- * invitation link).
+ * place — cards in the grid of Settings (two columns on wide screens): «Данные ученика» (the name, the
+ * contacts, the note) and «Занятия» (the default topic, the colour), each with its tonal «Сохранить» that
+ * saves its own fields and «Отмена» that brings back the saved ones; «Курс» (ADR-0071, saved when chosen),
+ * the lesson price, the video meeting, «Родители» (ADR-0069) and «Вход в кабинет» (the login the student
+ * chose, the invitation link).
  */
 @Component({
   selector: 'tb-student-profile-tab',
@@ -107,9 +107,14 @@ function inputOf(value: ProfileValue): StudentProfileInput {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let row = student();
-    <div class="tb-student-profile">
+    <div class="tb-settings-grid">
       <p-card [header]="t.details">
-        <form tbFieldErrors class="tb-form" [formGroup]="form" (ngSubmit)="save()">
+        <form
+          tbFieldErrors
+          class="tb-form"
+          [formGroup]="form.controls.details"
+          (ngSubmit)="save('details')"
+        >
           <div class="tb-field tb-field--required">
             <label for="profile-name">{{ f.name }}</label>
             <input
@@ -152,6 +157,41 @@ function inputOf(value: ProfileValue): StudentProfileInput {
               placeholder=" "
             ></textarea>
           </div>
+          @if (error(); as failure) {
+            @if (failure.section === 'details') {
+              <p-message severity="error" styleClass="tb-form-message">{{
+                failure.message
+              }}</p-message>
+            }
+          }
+          <div class="tb-form-actions">
+            @if (changed().details) {
+              <p-button
+                [label]="c.cancel"
+                severity="secondary"
+                [text]="true"
+                (onClick)="cancel('details')"
+              />
+            }
+            <p-button
+              type="submit"
+              severity="secondary"
+              [label]="c.save"
+              icon="tb-i tb-i-check"
+              [disabled]="!changed().details"
+              [loading]="pending() === 'details'"
+            />
+          </div>
+        </form>
+      </p-card>
+
+      <p-card [header]="t.lessons">
+        <form
+          tbFieldErrors
+          class="tb-form"
+          [formGroup]="form.controls.lessons"
+          (ngSubmit)="save('lessons')"
+        >
           <div class="tb-field">
             <label for="profile-topic">{{ f.defaultTopic }}</label>
             <input
@@ -164,17 +204,24 @@ function inputOf(value: ProfileValue): StudentProfileInput {
             />
             <small id="profile-topic-hint" class="tb-hint">{{ f.defaultTopicHint }}</small>
           </div>
-          <tb-label-color-field inputId="profile-color" [control]="form.controls.color" />
-          @if (error(); as message) {
-            <p-message severity="error" styleClass="tb-form-message">{{ message }}</p-message>
+          <tb-label-color-field
+            inputId="profile-color"
+            [control]="form.controls.lessons.controls.color"
+          />
+          @if (error(); as failure) {
+            @if (failure.section === 'lessons') {
+              <p-message severity="error" styleClass="tb-form-message">{{
+                failure.message
+              }}</p-message>
+            }
           }
           <div class="tb-form-actions">
-            @if (changed()) {
+            @if (changed().lessons) {
               <p-button
                 [label]="c.cancel"
                 severity="secondary"
                 [text]="true"
-                (onClick)="cancel()"
+                (onClick)="cancel('lessons')"
               />
             }
             <p-button
@@ -182,8 +229,8 @@ function inputOf(value: ProfileValue): StudentProfileInput {
               severity="secondary"
               [label]="c.save"
               icon="tb-i tb-i-check"
-              [disabled]="!changed()"
-              [loading]="pending()"
+              [disabled]="!changed().lessons"
+              [loading]="pending() === 'lessons'"
             />
           </div>
         </form>
@@ -253,12 +300,6 @@ function inputOf(value: ProfileValue): StudentProfileInput {
     </div>
   `,
   styles: `
-    .tb-student-profile {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-4);
-    }
-
     p {
       margin: 0;
     }
@@ -286,25 +327,37 @@ export class StudentProfileTab {
   readonly deactivate = output();
   readonly reactivate = output();
 
-  protected readonly pending = signal(false);
-  protected readonly error = signal<string | null>(null);
+  /** The card being saved. */
+  protected readonly pending = signal<Section | null>(null);
+  protected readonly error = signal<{ readonly section: Section; readonly message: string } | null>(
+    null,
+  );
 
-  protected readonly form = inject(NonNullableFormBuilder).group({
-    displayName: ['', [Validators.required, Validators.maxLength(100)]],
-    email: ['', [Validators.email, Validators.maxLength(254)]],
-    phone: ['', [Validators.maxLength(32)]],
-    note: ['', [Validators.maxLength(2000)]],
-    defaultTopic: ['', [Validators.maxLength(500)]],
-    color: new FormControl<LabelColor | null>(null),
+  private readonly fb = inject(NonNullableFormBuilder);
+  protected readonly form = this.fb.group({
+    details: this.fb.group({
+      displayName: ['', [Validators.required, Validators.maxLength(100)]],
+      email: ['', [Validators.email, Validators.maxLength(254)]],
+      phone: ['', [Validators.maxLength(32)]],
+      note: ['', [Validators.maxLength(2000)]],
+    }),
+    lessons: this.fb.group({
+      defaultTopic: ['', [Validators.maxLength(500)]],
+      color: new FormControl<LabelColor | null>(null),
+    }),
   });
   private readonly value = toSignal(this.form.valueChanges);
-  /** The fields differ from the saved profile. */
-  protected readonly changed = computed(() => {
+  /** The fields of each card differ from the saved profile. */
+  protected readonly changed = computed<Readonly<Record<Section, boolean>>>(() => {
     this.value();
     const saved = inputOf(valueOf(this.student()));
-    const typed = inputOf(this.form.getRawValue());
-    return PROFILE_KEYS.some((key) => saved[key] !== typed[key]);
+    const typed = inputOf(this.typed());
+    const differs = (section: Section): boolean =>
+      SECTION_KEYS[section].some((key) => saved[key] !== typed[key]);
+    return { details: differs('details'), lessons: differs('lessons') };
   });
+  /** The saved profile the form was filled with. */
+  private filledWith: { readonly id: string; readonly profile: StudentProfileInput } | null = null;
   /** The saved profile the form shows: another student or a newer version fills it again. */
   private readonly shown = computed(() => `${this.student().id}:${String(this.student().version)}`);
 
@@ -338,34 +391,67 @@ export class StudentProfileTab {
     effect(() => {
       this.shown();
       untracked(() => {
-        this.cancel();
+        this.refill();
       });
     });
   }
 
-  protected cancel(): void {
-    this.error.set(null);
-    this.form.reset(valueOf(this.student()));
+  /**
+   * A card is filled again unless it has typed changes and its saved fields stay the same (the other
+   * card was saved, the invitation changed): those changes wait for its «Сохранить».
+   */
+  private refill(): void {
+    const before = this.filledWith;
+    const student = this.student();
+    const now = inputOf(valueOf(student));
+    this.filledWith = { id: student.id, profile: now };
+    const changed = this.changed();
+    for (const section of ['details', 'lessons'] as const) {
+      const same =
+        before?.id === student.id &&
+        SECTION_KEYS[section].every((key) => before.profile[key] === now[key]);
+      if (!same || !changed[section]) {
+        this.cancel(section);
+      }
+    }
   }
 
-  protected save(): void {
-    if (!revealErrors(this.form) || !this.changed() || this.pending()) {
+  private typed(): ProfileValue {
+    const { details, lessons } = this.form.getRawValue();
+    return { ...details, ...lessons };
+  }
+
+  protected cancel(section: Section): void {
+    if (this.error()?.section === section) {
+      this.error.set(null);
+    }
+    const saved = valueOf(this.student());
+    if (section === 'details') {
+      this.form.controls.details.reset(saved);
+    } else {
+      this.form.controls.lessons.reset(saved);
+    }
+  }
+
+  protected save(section: Section): void {
+    const fields = this.form.controls[section];
+    if (!revealErrors(fields) || !this.changed()[section] || this.pending() !== null) {
       return;
     }
     const student = this.student();
-    this.pending.set(true);
+    // the other card keeps its saved values: its typed changes wait for its own «Сохранить»
+    const profile = { ...valueOf(student), ...fields.getRawValue() };
+    this.pending.set(section);
     this.error.set(null);
-    this.api
-      .updateStudent(student.id, inputOf(this.form.getRawValue()), student.version)
-      .subscribe({
-        next: (saved) => {
-          this.pending.set(false);
-          this.saved.emit(saved);
-        },
-        error: (error: unknown) => {
-          this.pending.set(false);
-          this.error.set(describeError(error, this.f.failed));
-        },
-      });
+    this.api.updateStudent(student.id, inputOf(profile), student.version).subscribe({
+      next: (saved) => {
+        this.pending.set(null);
+        this.saved.emit(saved);
+      },
+      error: (error: unknown) => {
+        this.pending.set(null);
+        this.error.set({ section, message: describeError(error, this.f.failed) });
+      },
+    });
   }
 }

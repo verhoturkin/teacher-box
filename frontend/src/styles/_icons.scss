@@ -60,6 +60,12 @@
   --tb-icon-size: 1.25rem;
 }
 
+/* A tag's icon sits beside 12 px text: 16 px, not the 24 px default (our decision, 467.3) */
+.p-tag-icon {
+  --tb-icon-size: 1rem;
+  --tb-icon-opsz: 20;
+}
+
 .p-checkbox-box,
 .p-datatable-sort-icon {
   --tb-icon-size: 1.125rem;

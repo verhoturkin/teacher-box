@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { catchError, of } from 'rxjs';
-import { Button, ButtonDirective, ButtonIcon } from 'primeng/button';
+import { Button, ButtonDirective, ButtonLabel } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { TabIndicator } from '@shared/ui/tab-indicator';
@@ -57,7 +57,7 @@ import { Student } from '@features/identity/parts';
     BroadcastDialog,
     Button,
     ButtonDirective,
-    ButtonIcon,
+    ButtonLabel,
     Card,
     CardHead,
     LessonDialog,
@@ -111,17 +111,17 @@ import { Student } from '@features/identity/parts';
             (onClick)="writeVisible.set(true)"
           />
         }
-        <!-- «Итоги за период» (ADR-0072): a navigation, so a link; icon-only beside the labelled
-             actions, its name in the tooltip (M3 icon button; the place is our decision) -->
+        <!-- «Итоги за период» (ADR-0072): a navigation, so a link; labelled like the other actions,
+             the full name in the tooltip -->
         <a
           pButton
           class="tb-student-card__summary"
           severity="secondary"
+          icon="tb-i tb-i-summarize"
           [routerLink]="['/teacher/students', row.id, 'summary']"
-          [attr.aria-label]="t.summary"
           [pTooltip]="t.summary"
-          ><i pButtonIcon aria-hidden="true" class="tb-i tb-i-summarize"></i
-        ></a>
+          ><span pButtonLabel>{{ t.summaryShort }}</span></a
+        >
         <p-button
           [label]="t.payment"
           icon="tb-i tb-i-payments"

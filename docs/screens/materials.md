@@ -5,7 +5,7 @@
 (`injectListDetail`, design-system §7).
 
 - **List pane** (`tb-pane kind="fixed" resizeKey="materials"`): the page header «Материалы» with
-  «?» and «Создать ▾», then the navigation menu `nav.tb-nav-menu` (466.4, design-system §10: the
+  «?» (on a phone also the FAB «Создать»), then the navigation menu `nav.tb-nav-menu` (466.4, design-system §10: the
   **M3** navigation drawer's destinations on one surface, not a segmented list): «Все материалы»
   (`stacks`); the headline «КУРСЫ» and the courses in their order (`CourseList` of
   `@features/textbooks/parts`) with «+ Новый курс» last; a divider; «Без курса»
@@ -28,7 +28,7 @@
   empty closes it. Every change saves at once; a rename or a delete reads the textbooks, plans
   and assignments again (their course changed).
 - **Detail pane** (flexible): the chosen item's title (Title Large `h2` beside the list; on one
-  pane the page header with «back» to `/teacher/materials`, «?» and «Создать ▾»), the tabs
+  pane the page header with «back» to `/teacher/materials` and «?»), the tabs
   «Учебники · Планы · Задания» (`tb-tabs`, **M3** primary tabs; fixed on a phone; none for
   «Доски»), one toolbar row — the search (`tb-search-field`; «Название или курс» on plans and
   assignments), «Фильтр» (text button with `filter_list`, the chosen value as its label from
@@ -44,14 +44,14 @@
   `?tab=boards|textbooks|plans|assignments` keep working (a gone course id filters nothing and
   shows «Все материалы»). *Ours:* the detail pane stays mounted (hidden) on the list screen, so
   the counts are known.
-- **«Создать ▾»** (decision 10, the page's one create action): a filled button with
-  `arrow_drop_down` and a popup menu — «Учебник» (`menu_book`, the textbook form of
-  `TextbooksFeed`, `[course]` of `TextbookDialog`), «План урока» (`list_alt`,
+- **«Создать»** (467.5, one create action per screen): on 600 px and wider the page has no button
+  of its own — the rail's «Создать» is the only one, and its «Учебник», «План урока» and «Доска»
+  open the forms of the page (`openOnCreate`, the chosen course is prefilled; none for «Все
+  материалы», «Без курса», «Доски»). On a phone the rail has none, so the page's `tb-fab-menu`
+  holds «Учебник» (`menu_book`), «План урока» (`list_alt`,
   `/teacher/materials/plans/new?course=<id>`), «Задание» (`assignment`,
-  `/teacher/homework/new?bank=true&course=<id>`), «Доска» (`co_present`, the board form). The
-  chosen course is prefilled (none for «Все материалы», «Без курса», «Доски»). On a phone the same
-  items are the page's `tb-fab-menu`. *Ours, beside **M3**:* the rail keeps the global «Создать»
-  from 600 px, so the page has both (the teacher's decision: the page's one knows the course).
+  `/teacher/homework/new?bank=true&course=<id>`), «Доска» (`co_present`). *Ours:* on a wide screen the rail's «Задание» makes an assignment of a student, not a
+  template.
 - **Isolation (AGENTS.md §4.2.6):** `features/materials` only composes `BoardsFeed`
   (`@features/boards/parts`), `TextbooksFeed`, `LessonPlansFeed` and `CourseList`
   (`@features/textbooks/parts`), `HomeworkBankFeed` (`@features/homework/parts`). Each feed owns
@@ -73,12 +73,12 @@
   the copies stay). No button of its own: «Создать» → «Задание». The help button opens the
   homework article.
 - **Plan editor** (`LessonPlanEditorPage`, `features/textbooks/teacher/lesson-plan-editor-page.ts`,
-  `/teacher/materials/plans/new` and `…/plans/:planId`, `canLeaveGuard`): the page header (the
-  title as typed, back to «Материалы» on «Планы»; the chip «Шаблон» on a bank item, «сохранено ·
+  `/teacher/materials/plans/new` and `…/plans/:planId`, `canLeaveGuard`): the panes of the
+  assignment editor (`tb-panes` / `tb-pane` of `@shared/ui/panes`, 467.1) — the plan pane keeps the
+  page header in its `tbPaneHeader` as `tb-editor-header` does (the title as typed, back to «Материалы» on «Планы»; the chip «Шаблон» on a bank item, «сохранено ·
   HH:mm», «С ИИ», the filled «Готово» and last «⋮» of a lesson's plan with «Сохранить как шаблон» /
   «Обновить шаблон» — the latter asks (`safe` confirmation); **M3**: the overflow menu ends the
-  row, 466.2), then one column of section cards, at most
-  52rem wide: «Название», «Курс» (a select while there are courses; its hint says the plan takes
+  row, 466.2), and scrolls its column of section cards across the full pane width: «Название», «Курс» (a select while there are courses; its hint says the plan takes
   only the course's textbooks) and the Markdown field «План» (`tb-markdown-field`); «Учебники» with
   «N из 20» — rows with ✎ (pages, `BindTextbookDialog`) and ✕, «Добавить учебник» opens
   `BindTextbookDialog [courseId]` (the course's textbooks when a course is set, else all);
@@ -89,18 +89,21 @@
   course prefilled from `?studentId=` / `?groupId=` (`course-links`), the first save links it to
   the lesson through the route's `linkToLesson` (a failed link is retried by the next save, the
   address keeps `?lessonId=`), back and «Готово» lead to the schedule; «Готово» saves the rest,
-  «С ИИ» (secondary outlined, in the header, only when `AiApi.enabled$`; 464.2) opens
-  `LessonPlanAiPanel` of `features/ai` in a `p-drawer` (a bottom sheet on a phone): the request,
+  «С ИИ» (secondary outlined, in the header, only when `AiApi.enabled$`; 464.2, `aria-expanded`)
+  toggles `LessonPlanAiPanel` of `features/ai`: from expanded a fixed side pane beside the plan
+  (`resizeKey="lesson-plan-ai"`, the M3 drag handle, «ИИ-помощник» and ✕ in its header; it stays
+  open after a draft), on compact and medium a `p-drawer` (a bottom sheet on a phone) that closes
+  after a draft, as in the assignment editor (467.1): the request,
   the context chips of the lesson's students, what the lesson tells (the topic, a mark that the
   previous summary goes along; the route's `lessonOf` reads the lesson and the previous held
   one), the sources (`planAiSources`: PDF/picture textbooks and videos with a transcript, all
   ticked until the teacher unticks) and the model pick; `POST /api/teacher/ai/lesson-plan`. The
   draft (title, Markdown) goes in by «Заменить план» (also narrows the bound textbooks to the
   chosen pages) or «Вставить в конец»; the title is set only when empty. `?ai=1` opens it with
-  the editor. *Ours*: a drawer in every width and no prompt library, unlike the homework pane.
+  the editor. *Ours*: no prompt library, unlike the homework pane.
   `POST …/{id}/finish` and goes back; leaving saves what is left. A save during an autosave waits
   for it.
-- The rail's «Создать» leads to `?tab=…&create=board|textbook` (the form opens with the course of
+- The rail's «Создать» (on Materials all three items of the section come first, the open tab's one on top) leads to `?tab=…&create=board|textbook|plan` (the form opens with the course of
   `?course=`, if any); `/teacher/boards` and `/teacher/textbooks` redirect to `?tab=boards` and
   `?tab=textbooks`.
 - **Student** (`/cabinet/materials`, `MyMaterialsPage`): the same feeds without actions

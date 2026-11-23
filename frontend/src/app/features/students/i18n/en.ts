@@ -78,6 +78,7 @@ export const en: Translation<typeof ru> = {
     payment: 'Payment',
     paymentHint: 'Record a payment',
     summary: 'Period summary',
+    summaryShort: 'Summary',
     lesson: 'Lesson',
     noMessenger: 'No messaging app connected',
     prepaid: (amount: string) => `Credit: ${amount}`,
@@ -150,6 +151,7 @@ export const en: Translation<typeof ru> = {
   },
   profile: {
     details: 'Student details',
+    lessons: 'Lessons',
     access: 'Portal access',
     invited: (date: string) => `The invitation expires on ${date}.`,
     resetting: (date: string) => `The password reset link expires on ${date}.`,
