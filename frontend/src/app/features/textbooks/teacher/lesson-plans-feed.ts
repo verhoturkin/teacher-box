@@ -18,6 +18,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { MaterialCard } from '@shared/ui/material-card';
 import { MaterialSort } from '@shared/ui/material-sort';
+import { countByCourse } from '../course-options';
 import { Course } from '../data-access/courses.models';
 import { LessonPlansApi } from '../data-access/lesson-plans-api';
 import { LessonPlanSummary } from '../data-access/lesson-plans.models';
@@ -30,7 +31,7 @@ function planLink(plan: LessonPlanSummary): string[] {
 }
 
 /**
- * Teacher: the bank of lesson plans — the tab «Планы» of «Материалы» (roadmap 11 «Bank»). Cards of the bank
+ * Teacher: the bank of lesson plans — the tab «Планы» of «Материалы» (ADR-0071, the bank). Cards of the bank
  * items with their course and «Использовано N раз»; the page gives the search text, the course filter and the
  * sort (a plan has no creation time in the list: «Новые» orders by the last change). A card opens the editor,
  * «⋮» keeps «Изменить» and «Удалить…» (the lessons' copies stay).
@@ -90,6 +91,8 @@ export class LessonPlansFeed {
   protected readonly plans = signal<LessonPlanSummary[]>([]);
   /** How many bank items there are (before the search, the filter and the sort). */
   readonly total = computed(() => this.plans().length);
+  /** How many plans each course has (`null` — without a course). */
+  readonly courseCounts = computed(() => countByCourse(this.plans()));
   private readonly courseNames = computed(
     () => new Map(this.courses().map((course) => [course.id, course.name])),
   );
@@ -147,9 +150,11 @@ export class LessonPlansFeed {
     this.menu().toggle(event);
   }
 
-  /** «Создать» in the rail, the FAB of a phone: a new plan of the bank. */
-  openCreate(): void {
-    void this.router.navigate(['/teacher/materials/plans/new']);
+  /** «Создать» of the page: a new plan of the bank, of the course given, if any. */
+  openCreate(course: string | null = null): void {
+    void this.router.navigate(['/teacher/materials/plans/new'], {
+      queryParams: course === null ? {} : { course },
+    });
   }
 
   protected async confirmRemove(plan: LessonPlanSummary): Promise<void> {

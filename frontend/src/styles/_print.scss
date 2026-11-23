@@ -1,0 +1,33 @@
+/*
+ * Print (the period summary, 465.2; ours — M3 publishes no print layout). The frame is left out by the shell and
+ * the panes themselves; a page marks what stays on the screen only (`tb-no-print`: fields, buttons, editors) and
+ * what only the paper shows (`tb-print-only`: a heading, the rendered draft). The page body takes the light system
+ * colours of the paper (`Canvas`, `CanvasText`); cards lose their shadow and are not split across pages.
+ */
+.tb-print-only {
+  display: none;
+}
+
+@media print {
+  .tb-no-print {
+    display: none;
+  }
+
+  .tb-print-only {
+    display: block;
+  }
+
+  :root {
+    color-scheme: light;
+  }
+
+  body {
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .p-card {
+    break-inside: avoid;
+    box-shadow: none;
+  }
+}

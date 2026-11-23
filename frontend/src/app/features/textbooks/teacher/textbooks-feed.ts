@@ -24,6 +24,7 @@ import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { MaterialCard } from '@shared/ui/material-card';
 import { MaterialSort, sortMaterials } from '@shared/ui/material-sort';
+import { countByCourse } from '../course-options';
 import { TextbooksApi } from '../data-access/textbooks-api';
 import { Textbook, TextbookKind } from '../data-access/textbooks.models';
 import {
@@ -114,6 +115,7 @@ export type CourseFilter = 'all' | 'none' | (string & {});
       [students]="students()"
       [groups]="groups()"
       [courses]="courses()"
+      [course]="createCourse()"
       (saved)="load()"
     />
   `,
@@ -143,6 +145,8 @@ export class TextbooksFeed {
   protected readonly textbooks = signal<Textbook[]>([]);
   /** How many textbooks there are (before the search, the filter and the sort). */
   readonly total = computed(() => this.textbooks().length);
+  /** How many textbooks each course has (`null` — without a course). */
+  readonly courseCounts = computed(() => countByCourse(this.textbooks()));
   /** The textbooks of the filter and the search, in the order of the sort. */
   protected readonly shown = computed(() => {
     const filter = this.filter();
@@ -160,6 +164,8 @@ export class TextbooksFeed {
     return sortMaterials(matching, this.sort());
   });
   protected readonly editing = signal<Textbook | null>(null);
+  /** The course a new textbook starts with. */
+  protected readonly createCourse = signal<string | null>(null);
   protected readonly dialogVisible = signal(false);
   protected readonly boardTextbook = signal<Textbook | null>(null);
   protected readonly boardVisible = signal(false);
@@ -201,8 +207,9 @@ export class TextbooksFeed {
     this.menu().toggle(event);
   }
 
-  /** The form of a new textbook («Создать» in the rail, the FAB of a phone). */
-  openCreate(): void {
+  /** The form of a new textbook («Создать» of the page, the rail's): with the course given, if any. */
+  openCreate(course: string | null = null): void {
+    this.createCourse.set(course);
     this.editing.set(null);
     this.dialogVisible.set(true);
   }

@@ -58,7 +58,7 @@ public final class Assignment {
         return create(id, title, description, dueAt, false, now);
     }
 
-    /** @param bank a bank item (roadmap 11): content only, it gets no deadline */
+    /** @param bank a bank item (ADR-0071): content only, it gets no deadline */
     public static Assignment create(UUID id, String title, @Nullable String description, @Nullable Instant dueAt,
             boolean bank, Instant now) {
         return new Assignment(id, validTitle(title), validDescription(description), bank ? null : dueAt, null, null,
@@ -84,7 +84,7 @@ public final class Assignment {
                 now, now, 0);
     }
 
-    /** The bank original of this working assignment (roadmap 11 «Bank»): its content, no deadline and no board. */
+    /** The bank original of this working assignment (ADR-0071, the bank): its content, no deadline and no board. */
     public Assignment original(UUID newId, Instant now) {
         return new Assignment(newId, title, description, null, null, courseId, quizReveal, quizAttempts, true, null,
                 now, now, 0);
@@ -212,7 +212,7 @@ public final class Assignment {
         return quizAttempts;
     }
 
-    /** A bank item (roadmap 11): an original kept for reuse. */
+    /** A bank item (ADR-0071): an original kept for reuse. */
     public boolean bank() {
         return bank;
     }

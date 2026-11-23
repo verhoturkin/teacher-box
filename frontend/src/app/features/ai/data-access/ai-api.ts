@@ -14,9 +14,13 @@ import {
   ConnectionInput,
   HomeworkBrief,
   HomeworkDraft,
+  LessonPlanBrief,
+  LessonPlanDraft,
   LessonSummaryBrief,
   LessonSummaryDraft,
   ModelInput,
+  PeriodSummaryBrief,
+  PeriodSummaryDraft,
   PromptInput,
   QuizDraft,
   RequestPage,
@@ -71,8 +75,20 @@ export class AiApi {
     return this.draft<QuizDraft>('quiz-draft', brief, files);
   }
 
-  private draft<R>(path: string, brief: HomeworkBrief, files: readonly File[]): Observable<R> {
-    let body: HomeworkBrief | FormData = brief;
+  /** A lesson plan from the request, the lesson and the sources (464.1). */
+  lessonPlanDraft(
+    brief: LessonPlanBrief,
+    files: readonly File[] = [],
+  ): Observable<LessonPlanDraft> {
+    return this.draft<LessonPlanDraft>('lesson-plan', brief, files);
+  }
+
+  private draft<R>(
+    path: string,
+    brief: HomeworkBrief | LessonPlanBrief,
+    files: readonly File[],
+  ): Observable<R> {
+    let body: HomeworkBrief | LessonPlanBrief | FormData = brief;
     if (files.length > 0) {
       body = new FormData();
       body.append('brief', new Blob([JSON.stringify(brief)], { type: 'application/json' }));
@@ -124,6 +140,13 @@ export class AiApi {
   /** Errors are shown by the caller next to the field. */
   lessonSummary(brief: LessonSummaryBrief): Observable<LessonSummaryDraft> {
     return this.http.post<LessonSummaryDraft>('/api/teacher/ai/lesson-summary', brief, {
+      context: new HttpContext().set(SKIP_ERROR_TOAST, true),
+    });
+  }
+
+  /** A draft of a student's period summary from the lessons and homework of the period; errors — the caller. */
+  periodSummary(brief: PeriodSummaryBrief): Observable<PeriodSummaryDraft> {
+    return this.http.post<PeriodSummaryDraft>('/api/teacher/ai/period-summary', brief, {
       context: new HttpContext().set(SKIP_ERROR_TOAST, true),
     });
   }

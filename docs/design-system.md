@@ -630,6 +630,12 @@ Gallery: [`/gallery/frame`](../frontend/src/app/features/gallery/frame/).
 - **Forms on a page** — buttons in `tb-form-actions` bottom right, full width on a phone; a form
   keeps a readable width (`tb-form--narrow`) unless it is a review or editor form.
 - **Toolbar above a list** `tb-toolbar`: search first, filters and period after; it wraps.
+- **Print** (*ours*, **M3** publishes no print layout; the period summary, 465.2): the shell hides
+  its app bar, rail, bottom bar and sheets, `tb-panes` / `tb-pane` flow at full height without
+  their corners and surface; a page marks screen-only parts `tb-no-print` (fields, buttons,
+  editors) and paper-only ones `tb-print-only` (a heading, rendered Markdown) —
+  `styles/_print.scss`, which also takes the light system colours `Canvas` / `CanvasText` and keeps
+  a `p-card` whole.
 
 ## Part C — Components
 
@@ -943,8 +949,10 @@ keep their own **M3E** / **M3** spacing (ADR-0068), not the page rhythm of §7.
   optional action next to a field — «Файл», «Учебник», «Видео» under a text): 32 dp, 8 dp corners, 1 dp
   outline-variant, on-surface Label Large, a leading 18 dp primary icon (`icon="attach_file"`); hover
   state layer; disabled 38 %. `[dashed]="true"` — the chip that adds a missing entity («Ученик или
-  группа»; dashed border, *ours*). A 48 dp target as in filter chips. Not an outlined button (§8): it
-  needs no filled action beside it.
+  группа», «+ План» / «+ ДЗ» of the lesson card; dashed border, *ours*); `[menu]="true"` — it opens
+  the host's menu (`aria-haspopup="menu"`), `ariaLabel` names a short label («Добавить план»). A
+  48 dp target as in filter chips. Not an outlined button (§8): it needs no filled action beside
+  it.
 - **Input chips** `tb-input-chip` (`@shared/ui/input-chip`, **M3** input chip: a chosen entity the user
   can remove): 32 dp, 8 dp corners, outline-variant border, a leading 24 dp `tb-avatar` or 18 dp icon
   (`<… lead>`), the label, a trailing 18 dp «×» button named «Убрать: <name>». With a dashed assist chip
@@ -966,6 +974,22 @@ keep their own **M3E** / **M3** spacing (ADR-0068), not the page rhythm of §7.
   divider (`outline-variant`) and a section headline (title small, on-surface-variant) — the
   drawer's divider and headline (**M3**): buttons of the same shape with a primary icon
   (`[actions]`, `(pressed)`; the editor's «Добавить: Видео, Доску»).
+- **Navigation menu of a pane** `nav.tb-nav-menu` (`styles/_nav-menu.scss`, 466.4, the list pane of
+  «Материалы»; sample `gallery/frame/nav-menu.ts`): the destinations of the **M3** navigation drawer
+  inside a pane, not a segmented list — one surface with 16 px corners and 12 / 8 px inside, no tile
+  or divider per row (*ours*, the sketch). `li.tb-nav-menu__item`: a 48 px pill (*ours*, as the
+  section list; 56 px and Body Large on the list screen of a phone, `tb-nav-menu--touch`), the 24 dp
+  icon, the label in Label Large, the count at the end in Label Medium, on-surface-variant; its
+  `tb-nav-menu__link` covers the item, buttons in it lie over the link. The chosen item
+  (`--current`, `aria-current` on the link) has the pill indicator of the rail — the `nav-indicator`
+  mixin (`styles/_mixins.scss`) that `side-nav.scss` uses too: secondary-container across the item,
+  springing out from its middle, on-secondary-container, Label Large emphasized, the filled icon;
+  hover 8 %, keyboard focus 10 % and the 3 px secondary ring. Groups: a headline
+  (`tb-nav-menu__headline`, Label Small, upper case, on-surface-variant — *ours*, **M3** shows Title
+  Small) and `hr.tb-nav-menu__divider` (1 px outline-variant, 12 px from the sides; **M3** drawer
+  divider). `--action` — an item that acts («+ Новый курс»): primary. `tb-nav-menu__more` — «⋮»
+  shown on the chosen item, on hover (where a pointer hovers) and on focus within; always in
+  `tb-nav-menu--touch`.
 - **Material card** `tb-material-card` (`@shared/ui`): corner 20, surface-container-low, a preview
   on top (8:5; fetched as a blob by `tb-blob-image`, the kind icon while there is none; an external
   board shows a tonal tile with the service tag), the title (Title Medium) and «кому · дата» under

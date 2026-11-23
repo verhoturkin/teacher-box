@@ -91,9 +91,9 @@ test('a notification has no tick on a phone, keeps it on a computer', async ({ p
   await expect(row.getByRole('button', { name: 'Отметить прочитанным' })).toBeVisible();
 });
 
-test('the teacher filters the boards by the chips and one search', async ({ page }) => {
+test('the teacher filters the boards by «Фильтр» and one search', async ({ page }) => {
   await signIn(page, 'teacher', TEACHER_PASSWORD);
-  // 0.26.0: the boards are a tab of «Материалы»: cards, chips «На портале» / «Внешние», one search
+  // 466.1: the boards are the row «Доски» of «Материалы»: cards, «Фильтр» «На портале» / «Внешние», one search
   await page.goto('/teacher/boards');
   const feed = page.locator('tb-boards-feed');
   const search = page.getByRole('searchbox', { name: 'Название, ученик или группа' });
@@ -102,7 +102,8 @@ test('the teacher filters the boards by the chips and one search', async ({ page
   await expect(feed.getByRole('listitem').filter({ hasText: BOARD })).toHaveCount(1);
   await search.fill('');
 
-  await page.getByRole('button', { name: 'Внешние' }).click();
+  await page.getByRole('button', { name: 'Фильтр: Фильтр' }).click();
+  await page.getByRole('menuitem', { name: 'Внешние' }).click();
   await expect(feed).toContainText(LINK_BOARD);
   await expect(feed).not.toContainText(BOARD);
 

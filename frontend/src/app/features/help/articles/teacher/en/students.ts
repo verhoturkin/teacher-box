@@ -25,7 +25,7 @@ Select an entry to open its details on the right. On a phone, details replace th
 ## Student details
 
 The header shows the student’s name, when they joined, connected messaging apps and balance. “Message”, “Payment” and “Lesson” let you contact them, \
-record a payment or schedule a lesson.
+record a payment or schedule a lesson; the list icon opens their period summary.
 
 - **Overview:** upcoming lessons, outstanding assignments, recent transactions, messaging apps and the video meeting link. If no messaging app is \
 connected, send a connection reminder.
@@ -40,6 +40,19 @@ video meeting changes apply immediately. “Parents” lists the student’s par
 invitation or reset link details.
 
 You always see the name you entered for the student, even if they choose a different display name for their account.
+
+## Period summary
+
+Choose **Period summary** (the list icon in the student’s header) to see how a period went. Set the “From” and “To” dates: the page opens on \
+the last full month, and a period can be up to six months long. **Lessons** shows how many were completed or missed, which were excused or \
+cancelled, and each lesson with what was covered. **Homework** shows what was set, handed in on time or late, accepted and returned; select a \
+title to open the work.
+
+If the AI assistant is connected, **Write with AI** drafts a summary from the period’s lessons, lesson plans and homework: what was covered, \
+the homework, what is going well, the difficulties and the next steps. Add your wishes if you like, for example “short, for the parents”; the \
+draft is written in the language of your wishes, or in Russian without any. Edit the draft on the page, then choose **Copy** \
+to put it on the clipboard or **Print** to print the facts and the draft without menus or buttons. \
+The summary is neither saved nor sent to anyone.
 
 ## Invitations and access
 

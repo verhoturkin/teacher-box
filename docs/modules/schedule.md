@@ -3,7 +3,7 @@
 Lessons with optional weekly repetition (student or group), attendance, student reschedule/cancel requests, reminders,
 calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `shared`, `identity::api`,
 `meetings::api` (room links), `textbooks::api` (lesson plans), `homework::api` (lesson homework;
-roadmap 11). Schema `schedule`.
+ADR-0071). Schema `schedule`.
 ADRs: [0008](../adr/0008-schedule.md),
 [0011](../adr/0011-groups-and-group-lessons.md), [0012](../adr/0012-meetings-and-boards.md),
 [0053](../adr/0053-lesson-title-and-topic.md).
@@ -114,6 +114,18 @@ Events: `LessonScheduled`, `LessonRepeatScheduled`, `LessonRepeatStopped`, `Less
 Lesson events carry `groupId` and participants; `LessonScheduled`, `LessonStartingSoon` and
 `LessonCompleted` carry `title` (`null` = default), the first two also `topic`.
 Consumers: `billing` (completion); the schedule itself (`notices/`, below).
+
+**Lesson journal (465.1, [ADR-0072](../adr/0072-ai-reads-the-period-journal.md)):**
+`LessonJournal.ofStudent(studentId, from, to)` (implemented by `ScheduleQueries`) — the student's
+lessons, alone or in a group and whatever the outcome, starting on the days `[from, to]` of the
+instance time zone, oldest first, as `JournalLesson` (start, minutes, title, topic, `groupId`,
+`LessonOutcome` for this student, `cancelledBy` of a cancelled or late-cancelled one, summary —
+with `planId` only the deviations from the plan, 466.3 — next plan, `planId`, `assignmentIds`;
+no private notes). The outcome: a cancelled lesson —
+`CANCELLED`; else by the attendance — `EXPECTED` → `PLANNED`, `ATTENDED`, `EXCUSED`, `MISSED` →
+`LATE_CANCELLED` for a lesson with one student cancelled late and charged (`cancelledBy` set),
+`MISSED` otherwise. An unknown student — none; more than 400 days or `to` before `from` — 422
+`schedule.range-invalid`. Consumer: `ai` (period summary).
 Repeat events aggregate notifications; generation itself does not notify per occurrence. The
 deprecated `SeriesScheduled`/`SeriesStopped` records stay only so that the event registry can read
 publications written before 0.29.0; nothing listens to them since ADR-0061.
@@ -150,7 +162,7 @@ decision) into the topic of the next planned lesson of the same student (or the 
 a filled topic is never overwritten, the title is never touched.
 Calendar lists, ICS and Google carry none of these fields.
 
-Lesson plan (461.2, [roadmap 11](../roadmap/11-courses-and-lesson-plans.md)): `lessons.plan_id`
+Lesson plan (461.2, [ADR-0071](../adr/0071-courses-lesson-plans-and-bank.md)): `lessons.plan_id`
 (unique index `ux_lessons_plan`, null = none) — a working plan of `textbooks`, one per lesson
 and a plan on at most one lesson. Saved by its own `UPDATE` without the lesson `version`, like the
 summary. A prepared lesson counts as touched: `deleteUntouchedOfSeries` (`and plan_id is null`) and
@@ -158,7 +170,15 @@ the «this and following» edit, cancel and delete keep it, like a charged one. 
 link; deleting the lesson drops it and leaves the plan in `textbooks` (it cannot listen to
 `schedule`). A deleted plan leaves a dangling id: reads answer 404.
 
-Lesson homework (462.1, roadmap 11): `lesson_assignments (assignment_id PK, lesson_id → lessons on
+«Прошли по плану» (466.3, ADR-0071 decision 14): with `plan_id` set, `lessons.summary` holds
+only the deviations from the plan, `null` — all by the plan. No flag and no migration: the
+plan's presence decides the meaning. `shareSummary` sends an empty summary of a lesson with a
+plan (`schedule.summary-empty` only without one). Text saved before 0.61.0 on a lesson with a
+plan reads as the deviations: it is kept and shown (the field opens with it), nothing is lost,
+and plans came out in 0.60.0, so such lessons are few. The history feeds carry `planId`; the
+bot asks «что прошло не по плану» for a lesson with a plan.
+
+Lesson homework (462.1, ADR-0071): `lesson_assignments (assignment_id PK, lesson_id → lessons on
 delete cascade, position)` — working assignments of `homework`, many per lesson in the order
 linked, an assignment on at most one lesson; no lesson `version`. Loaded with the lesson
 (`Lesson.assignmentIds`); a lesson with homework is prepared like one with a plan:
@@ -223,7 +243,14 @@ History feeds of held lessons (`CONDUCTED`/`MISSED`, group lessons included, new
 `GET /api/teacher/schedule/students/{id}/history`
 (date, title, topic, status, attendance, `summary`, `nextPlan`, the student's own private `note`),
 `GET /api/teacher/schedule/groups/{id}/history` (same without private notes and attendance) and
-`GET /api/me/schedule/history` (own lessons only, `summary` only — no plan, no note).
+`GET /api/me/schedule/history` (own lessons only, `summary` only — no plan, no note); every
+entry has `planId` (466.3: with it `summary` is the deviations).
+The student's period report (465.1, roadmap 02 stage B, ADR-0072):
+`GET /api/teacher/schedule/students/{id}/report?from&to` — the lesson journal of the days `[from,
+to]` (instance time zone) with counts `held` (attended), `missed`, `excused`, `cancelledByStudent`,
+`lateCancellations` and `lessons` (`JournalLesson`, oldest first); a group lesson counts for each
+participant with their attendance; an unknown student — zeros; teacher only (the guardian has no
+report yet).
 Lessons ahead, grouped (0.41.0): `GET /api/teacher/schedule/students/{id}/upcoming` (group lessons
 included) and `GET /api/teacher/schedule/groups/{id}/upcoming` read up to 400 days of lessons that
 have not ended. `series[]` — repeat rules alike but for the weekday (owner, time, duration,

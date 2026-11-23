@@ -11,6 +11,8 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import ru.teacherbox.schedule.api.CancelledBy;
 import ru.teacherbox.schedule.api.ChangeKind;
+import ru.teacherbox.schedule.api.JournalLesson;
+import ru.teacherbox.schedule.api.LessonOutcome;
 import ru.teacherbox.schedule.domain.Attendance;
 import ru.teacherbox.schedule.domain.ChangeRequest;
 import ru.teacherbox.schedule.domain.Lesson;
@@ -53,9 +55,9 @@ public final class ScheduleViews {
      * @param summary          «what we covered», filled only in the details of one lesson
      * @param nextPlan         «what next», the teacher's details only
      * @param notes            private notes per student, the teacher's details only
-     * @param planId           the lesson plan on the lesson (roadmap 11); {@code null} — none. It may point to a
+     * @param planId           the lesson plan on the lesson (ADR-0071); {@code null} — none. It may point to a
      *                         deleted plan: the plan endpoints answer 404 then
-     * @param assignmentIds    the homework linked to the lesson (roadmap 11), in the order it was linked; the
+     * @param assignmentIds    the homework linked to the lesson (ADR-0071), in the order it was linked; the
      *                         teacher's views only. An id may point to a deleted assignment
      */
     public record LessonView(
@@ -142,6 +144,8 @@ public final class ScheduleViews {
      * One held lesson in a history feed.
      *
      * @param attendance the student's attendance; {@code null} in a group feed
+     * @param summary    «Что прошли»; with a {@code planId} only the deviations from the plan, {@code null} — all by
+     *                   the plan (466.3)
      * @param nextPlan   the teacher's feeds only
      * @param note       the teacher's private note about the student; the student feed never has it
      */
@@ -149,7 +153,38 @@ public final class ScheduleViews {
             LessonStatus status,
             @Nullable UUID groupId, @Nullable String groupName, @Nullable Attendance attendance,
             @Nullable String summary, @Nullable String nextPlan, @Nullable Instant summaryUpdatedAt,
-            @Nullable String note) {
+            @Nullable String note, @Nullable UUID planId) {
+    }
+
+    /**
+     * The schedule part of a student's period report (roadmap 02 stage B, ADR-0072): the counts by outcome and
+     * the lessons, oldest first.
+     *
+     * @param held               attended lessons
+     * @param missed             missed without notice
+     * @param excused            group lessons the student told in time they would miss
+     * @param cancelledByStudent lessons cancelled at the student's request
+     * @param lateCancellations  lessons cancelled late and charged as missed
+     */
+    public record StudentReport(int held, int missed, int excused, int cancelledByStudent, int lateCancellations,
+            List<JournalLesson> lessons) {
+
+        public StudentReport {
+            lessons = List.copyOf(lessons);
+        }
+
+        static StudentReport of(List<JournalLesson> lessons) {
+            return new StudentReport(count(lessons, LessonOutcome.ATTENDED), count(lessons, LessonOutcome.MISSED),
+                    count(lessons, LessonOutcome.EXCUSED), Math.toIntExact(lessons.stream()
+                            .filter(lesson -> lesson.outcome() == LessonOutcome.CANCELLED
+                                    && lesson.cancelledBy() == CancelledBy.STUDENT)
+                            .count()),
+                    count(lessons, LessonOutcome.LATE_CANCELLED), lessons);
+        }
+
+        private static int count(List<JournalLesson> lessons, LessonOutcome outcome) {
+            return Math.toIntExact(lessons.stream().filter(lesson -> lesson.outcome() == outcome).count());
+        }
     }
 
     /** The teacher's private note about a student's part in a lesson. */

@@ -23,7 +23,7 @@ import ru.teacherbox.textbooks.api.LessonPlanView;
 import ru.teacherbox.textbooks.api.LessonPlans;
 import ru.teacherbox.textbooks.api.VideoLink;
 
-/** Lesson plans and the bank of plans (roadmap 11, «Bank»). */
+/** Lesson plans and the bank of plans (ADR-0071, «Bank»). */
 @TextbooksIntegrationTest
 class LessonPlansIntegrationTests {
 

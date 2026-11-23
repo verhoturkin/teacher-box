@@ -14,8 +14,10 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.modulith.test.AssertablePublishedEvents;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import ru.teacherbox.schedule.api.LessonSummaryShared;
 import ru.teacherbox.testing.FakeGuardians;
 import ru.teacherbox.testing.FakeLessonPlans;
 import ru.teacherbox.testing.FakeTextbooks;
@@ -26,7 +28,7 @@ import ru.teacherbox.textbooks.api.TextbookFormat;
 import ru.teacherbox.textbooks.api.TextbookKind;
 import ru.teacherbox.textbooks.api.VideoLink;
 
-/** The lesson plan of a lesson (roadmap 11): linked by the teacher, read by the student and the guardian. */
+/** The lesson plan of a lesson (ADR-0071): linked by the teacher, read by the student and the guardian. */
 @ScheduleIntegrationTest
 class LessonPlanIntegrationTests extends ScheduleHttpTestSupport {
 
@@ -157,6 +159,37 @@ class LessonPlanIntegrationTests extends ScheduleHttpTestSupport {
         String notTheirChild = "/api/guardian/students/" + otherChild + "/schedule/lessons/" + foreign;
         assertThat(guardian(parent, notTheirChild + "/plan")).hasStatus(HttpStatus.NOT_FOUND);
         assertThat(guardian(parent, notTheirChild + "/plan/textbooks/" + pdf)).hasStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void withAPlanTheSummaryHoldsTheDeviationsAndIsSentEvenWithout(AssertablePublishedEvents events)
+            throws Exception {
+        UUID student = directory.addStudent("По плану");
+        UUID stranger = directory.addStudent("Без плана");
+        String lessonId = id(post("/api/teacher/schedule/lessons", lesson(student, Slots.past(clock), 60, true)));
+        String bare = id(post("/api/teacher/schedule/lessons", lesson(stranger, Slots.past(clock), 60, true)));
+        put("/api/teacher/schedule/lessons/" + lessonId + "/outcome", "{\"outcome\":\"CONDUCTED\"}");
+        put("/api/teacher/schedule/lessons/" + bare + "/outcome", "{\"outcome\":\"CONDUCTED\"}");
+        UUID plan = plans.add("Времена", List.of(), List.of());
+        assertThat(plan(lessonId, plan)).hasStatusOk();
+
+        assertThat(post("/api/teacher/schedule/lessons/" + lessonId + "/summary/share", ""))
+                .as("all by the plan").hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(events).contains(LessonSummaryShared.class)
+                .matching(LessonSummaryShared::lessonId, UUID.fromString(lessonId));
+        assertThat(post("/api/teacher/schedule/lessons/" + bare + "/summary/share", ""))
+                .as("no plan, nothing written").hasStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+
+        put("/api/teacher/schedule/lessons/" + lessonId + "/summary", "{\"summary\":\"Не успели упр. 5\"}");
+        assertThat(get("/api/teacher/schedule/students/" + student + "/history")).hasStatusOk().bodyJson()
+                .satisfies(json -> {
+                    assertThat(json).extractingPath("$[0].planId").isEqualTo(plan.toString());
+                    assertThat(json).extractingPath("$[0].summary").isEqualTo("Не успели упр. 5");
+                });
+        assertThat(as(student, "/api/me/schedule/history")).hasStatusOk().bodyJson()
+                .extractingPath("$[0].planId").isEqualTo(plan.toString());
+        assertThat(as(stranger, "/api/me/schedule/history")).hasStatusOk().bodyJson()
+                .extractingPath("$[0].planId").isNull();
     }
 
     @Test

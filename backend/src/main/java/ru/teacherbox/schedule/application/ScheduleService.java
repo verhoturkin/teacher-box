@@ -182,12 +182,15 @@ public class ScheduleService {
         return queries.lesson(lessonId);
     }
 
-    /** Sends the written summary to the participants; an empty summary is not sent. */
+    /**
+     * Sends the summary to the participants. Without a lesson plan an empty summary is not sent; with one the
+     * summary holds only the deviations, so an empty one means «all by the plan» and is sent (466.3).
+     */
     @Transactional
     public void shareSummary(UUID lessonId) {
         Lesson lesson = find(lessonId);
         lesson.requireSummarizable(clock.instant());
-        if (lesson.summary() == null) {
+        if (lesson.summary() == null && lesson.planId() == null) {
             throw new BusinessRuleException("schedule.summary-empty", "Write the summary before sending it");
         }
         lessonEvents.summaryShared(lesson, directory.teacherId(), clock.instant());

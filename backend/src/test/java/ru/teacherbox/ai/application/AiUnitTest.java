@@ -32,7 +32,8 @@ class AiUnitTest {
         AiUsage usage = mock(AiUsage.class);
         LlmClients clients = mock(LlmClients.class);
         when(clients.forDefault()).thenReturn(java.util.Optional.empty());
-        AiAssistant assistant = new AiAssistant(clients, prompts, mock(SystemPrompts.class), usage, mock(DraftSources.class), JsonMapper.builder().build(),
+        AiAssistant assistant = new AiAssistant(clients, prompts, mock(SystemPrompts.class), usage, mock(DraftSources.class), mock(PeriodFacts.class),
+                JsonMapper.builder().build(),
                 mock(ru.teacherbox.homework.api.QuizDrafts.class));
 
         assertThatThrownBy(() -> assistant.homeworkDraft(
@@ -40,7 +41,7 @@ class AiUnitTest {
                 .isInstanceOfSatisfying(BusinessRuleException.class,
                         e -> assertThat(e.code()).isEqualTo("ai.disabled"));
         assertThatThrownBy(() -> assistant.lessonSummary(
-                new AiViews.LessonSummaryBrief("Дроби", "слова", java.util.List.of(), null)))
+                new AiViews.LessonSummaryBrief("Дроби", "слова", null, java.util.List.of(), null)))
                 .isInstanceOfSatisfying(BusinessRuleException.class,
                         e -> assertThat(e.code()).isEqualTo("ai.disabled"));
         verifyNoInteractions(usage);
@@ -81,8 +82,8 @@ class AiUnitTest {
                 .doesNotContain("students");
         assertThat(prompts.render("review-draft.system.v1", Map.of())).contains("<answer>");
         assertThat(prompts.render("lesson-summary.system.v1", Map.of())).contains("<words>");
-        assertThat(prompts.render("lesson-summary.user.v1",
-                Map.of("topic", "Дроби", "assignments", "— Задача 1", "words", "решали примеры")))
+        assertThat(prompts.render("lesson-summary.user.v2",
+                Map.of("topic", "Дроби", "plan", "", "assignments", "— Задача 1", "words", "решали примеры")))
                 .contains("Дроби", "— Задача 1", "<words>\nрешали примеры\n</words>");
         assertThatThrownBy(() -> prompts.render("homework-draft.user.v4", Map.of("sources", "x")))
                 .hasMessageContaining("{{students}}");

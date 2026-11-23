@@ -44,6 +44,7 @@ function entry(overrides: Partial<HistoryEntry> = {}): HistoryEntry {
     nextPlan: null,
     summaryUpdatedAt: null,
     note: null,
+    planId: null,
     ...overrides,
   };
 }
@@ -251,12 +252,19 @@ describe('StudentLessonsTab', () => {
       status: 'MISSED',
       attendance: 'EXPECTED',
     });
-    await answer([], [full, group, missed]);
+    const byPlan = entry({
+      lessonId: 'by-plan',
+      startsAt: inHours(-96).startsAt,
+      planId: 'p-1',
+      summary: 'Не успели упр. 5',
+    });
+    await answer([], [full, group, missed, byPlan]);
 
     expect(rows('История')).toEqual([
       `${formatLessonStart(full.startsAt)} Дроби Что прошли Сложили дроби Что дальше Разобрать степени Заметка для себя Быстро устаёт Проведено`,
       `${formatLessonStart(group.startsAt)} Группа «ОГЭ» · Тема не задана Пропуск`,
       `${formatLessonStart(missed.startsAt)} Тема не задана Пропуск`,
+      `${formatLessonStart(byPlan.startsAt)} Тема не задана Прошли по плану Не по плану Не успели упр. 5 Проведено`,
     ]);
     expect(hostElement(fixture).querySelector('li strong')?.textContent).toBe('дроби');
   });

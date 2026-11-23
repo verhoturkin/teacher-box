@@ -13,7 +13,7 @@ import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.error.NotFoundException;
 
 /**
- * The homework of a lesson (roadmap 11): the links live in {@code schedule.lesson_assignments}, the assignments in
+ * The homework of a lesson (ADR-0071): the links live in {@code schedule.lesson_assignments}, the assignments in
  * {@code homework}. Many assignments per lesson, an assignment on at most one lesson. No lesson version: a link never
  * conflicts with time edits, as the summary and the plan.
  */

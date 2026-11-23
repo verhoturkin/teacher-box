@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { API_SCOPE } from '@core/http/api-scope';
 import { Observable, shareReplay } from 'rxjs';
@@ -18,6 +18,7 @@ import {
   QuizAnswer,
   QuizStats,
   QuizView,
+  TasksReport,
   TaskDetails,
 } from './homework.models';
 import { quietContext } from '@core/http/api-error.interceptor';
@@ -35,7 +36,7 @@ export class HomeworkApi {
 
   // --- teacher ---
 
-  /** The working assignments; `bank` — the originals of the bank instead (roadmap 11). */
+  /** The working assignments; `bank` — the originals of the bank instead (ADR-0071). */
   assignments(bank = false): Observable<AssignmentSummary[]> {
     return this.http.get<AssignmentSummary[]>(`${TEACHER}/assignments`, {
       params: bank ? { bank: true } : {},
@@ -189,6 +190,17 @@ export class HomeworkApi {
   studentTasks(studentId: string): Observable<MyTask[]> {
     return this.http.get<MyTask[]>(`${TEACHER}/students/${studentId}/tasks`, {
       context: quietContext(),
+    });
+  }
+
+  /**
+   * The homework of a student's period report: tasks given on the days `[from, to]` of the teacher's time zone
+   * (ISO dates). Errors are shown by the page.
+   */
+  studentReport(studentId: string, from: string, to: string): Observable<TasksReport> {
+    return this.http.get<TasksReport>(`${TEACHER}/students/${studentId}/report`, {
+      context: quietContext(),
+      params: new HttpParams().set('from', from).set('to', to),
     });
   }
 

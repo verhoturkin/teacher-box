@@ -70,7 +70,7 @@ const BUSINESS_FEATURES = {
   boards: [],
   meetings: [],
   notifications: [],
-  textbooks: ['boards'],
+  textbooks: ['ai', 'boards'],
   billing: ['notifications'],
   homework: ['ai', 'boards', 'textbooks'],
   schedule: ['ai', 'boards', 'homework', 'meetings', 'textbooks'],

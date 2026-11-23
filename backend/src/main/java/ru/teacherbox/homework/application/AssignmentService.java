@@ -142,7 +142,7 @@ public class AssignmentService {
     }
 
     /**
-     * @param bank a bank item («Материалы» → «Создать», roadmap 11): content only, no deadline, never given out
+     * @param bank a bank item («Материалы» → «Создать», ADR-0071): content only, no deadline, never given out
      * @throws ConflictException {@code homework.bank-item} for a bank item with students
      */
     @Transactional
@@ -213,7 +213,7 @@ public class AssignmentService {
     }
 
     /**
-     * «Сохранить в банк» / «Обновить в банке» (roadmap 11 «Bank»): a working assignment without an original (never
+     * «Сохранить в банк» / «Обновить в банке» (ADR-0071, the bank): a working assignment without an original (never
      * saved, or the original was deleted) gets a new one; else the original's content and materials are replaced by
      * this assignment's. Copies of the original keep theirs.
      *
@@ -323,7 +323,7 @@ public class AssignmentService {
         return list(false);
     }
 
-    /** @param bank the bank items («Материалы» → «Задания», roadmap 11), else the working assignments */
+    /** @param bank the bank items («Материалы» → «Задания», ADR-0071), else the working assignments */
     @Transactional(readOnly = true)
     public List<AssignmentSummary> list(boolean bank) {
         Map<UUID, Integer> uses = bank ? assignments.uses() : Map.of();
@@ -431,7 +431,7 @@ public class AssignmentService {
 
     /**
      * @param first no student has the assignment yet: the first «Выдать» of an assignment without a source saves its
-     *              original into the bank (roadmap 11 «Bank»)
+     *              original into the bank (ADR-0071, the bank)
      */
     private void assignTo(Assignment assignment, Collection<UUID> studentIds, boolean first, Instant now) {
         if (studentIds.isEmpty()) {

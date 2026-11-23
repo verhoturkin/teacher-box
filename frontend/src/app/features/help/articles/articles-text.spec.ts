@@ -889,6 +889,86 @@ const LESSON_PLAN: Readonly<Record<string, readonly (readonly [string, string, s
   ],
 };
 
+/** The AI assistant of the plan editor (464.2): [topic, baseline, now] of the textbooks article. */
+const PLAN_AI: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'textbooks',
+      'План урока составляют из карточки занятия',
+      '**«С ИИ»** в шапке редактора (и в «Плане» карточки занятия, пока плана нет) открывает помощника: опишите урок, отметьте, на что опереться — страницы учебников и видео с расшифровкой из плана, — и придёт черновик. ИИ знает тему занятия, итоги предыдущего урока и теги учеников урока, которые учитываются в ИИ. «Заменить план» или «Вставить в конец» переносит черновик в план (при замене страницы добавленных учебников сужаются до тех, что выбрал ИИ); пока вы не нажали, план не меняется. Кнопка есть, только когда подключена модель («Настройки» → «ИИ-помощник»).\n\n' +
+        'План урока составляют из карточки занятия',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'textbooks',
+      'Lesson plans are made from a lesson’s details',
+      '**With AI** in the editor header (and in the lesson card’s Plan section while it has no plan) opens the assistant: describe the lesson, tick what it should draw on — the textbook pages and videos with a transcript in the plan — and a draft comes back. The AI knows the lesson’s topic, the summary of the previous lesson and the AI tags of the lesson’s students. “Replace the plan” or “Insert at the end” moves the draft into the plan (a replace also narrows the attached textbooks to the pages the AI chose); nothing changes until you press it. The button appears only when a model is connected (Settings → AI assistant).\n\n' +
+        'Lesson plans are made from a lesson’s details',
+    ],
+  ],
+};
+
+/** The release review of 0.61.0 (467.1): the AI lesson plan in the AI article, [topic, baseline, now]. */
+const RELEASE_061: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'ai',
+      '\n- **Черновик проверки** — на странице проверки работы.',
+      '\n- **Черновик плана урока** — «С ИИ» в редакторе плана (и в «Плане» карточки занятия, пока плана нет): опишите урок, отметьте ' +
+        'страницы учебников и видео плана — ИИ напишет название, текст и страницы учебников ([Учебники](/teacher/help/textbooks)).' +
+        '\n- **Черновик проверки** — на странице проверки работы.',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'ai',
+      'Lesson summaries also offer AI drafts in the lesson details.',
+      'Lesson summaries also offer AI drafts in the lesson details.\n\nFor a **lesson plan**, choose “With AI” in the plan editor (or in ' +
+        'the lesson card’s Plan section while it has no plan): describe the lesson and tick the plan’s textbook pages and videos; the ' +
+        'draft brings a title, the plan text and textbook pages ([Textbooks](/teacher/help/textbooks)).',
+    ],
+  ],
+};
+
+/** «Итоги за период» (465.2): [topic, baseline, now] of the students and AI articles. */
+const PERIOD_SUMMARY: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'students',
+      'Рядом три кнопки: **Написать**',
+      'Рядом кнопки: **Итоги за период** (значок со списком, см. ниже), **Написать**',
+    ],
+    [
+      'students',
+      '## Ссылки и доступ',
+      '## Итоги за период\n\nКнопка **Итоги за период** в шапке карточки открывает страницу с итогами ученика. Вверху — даты «С» и «По»: сначала это прошлый полный месяц, период — не длиннее 6 месяцев (если конец раньше начала или период длиннее, страница скажет об этом). Ниже — факты: **Занятия** (сколько проведено и пропущено, кто предупредил или отменил, каждое занятие с итогом и «Что прошли») и **Задания** (выдано, сдано — в срок и с опозданием, принято, на доработке; название открывает задание).\n\nЕсли подключён ИИ-помощник, кнопка **Составить с ИИ** напишет черновик итогов по занятиям, их планам и заданиям периода — разделы «Что прошли», «Задания», «Получается», «Трудности», «Что дальше». В «Пожеланиях» можно попросить, например, коротко и для родителей (на каком языке пожелания — на том и черновик). Черновик правится прямо на странице; **Копировать** кладёт текст в буфер обмена, **Печать** печатает факты и черновик без меню и кнопок. Итоги не сохраняются и никому не отправляются — скопируйте их, например, в сообщение родителям.\n\n## Ссылки и доступ',
+    ],
+    [
+      'ai',
+      '\n\n## Системные промты',
+      '\n- **Итоги за период** — в карточке ученика: «Итоги за период» → «Составить с ИИ». ИИ сам читает занятия, планы и задания выбранных дат (до 6 месяцев) и пишет черновик, который можно поправить, скопировать и распечатать; он не сохраняется ([Ученики](/teacher/help/students)).\n\n## Системные промты',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'students',
+      'record a payment or schedule a lesson.\n',
+      'record a payment or schedule a lesson; the list icon opens their period summary.\n',
+    ],
+    [
+      'students',
+      '## Invitations and access',
+      '## Period summary\n\nChoose **Period summary** (the list icon in the student’s header) to see how a period went. Set the “From” and “To” dates: the page opens on the last full month, and a period can be up to six months long. **Lessons** shows how many were completed or missed, which were excused or cancelled, and each lesson with what was covered. **Homework** shows what was set, handed in on time or late, accepted and returned; select a title to open the work.\n\nIf the AI assistant is connected, **Write with AI** drafts a summary from the period’s lessons, lesson plans and homework: what was covered, the homework, what is going well, the difficulties and the next steps. Add your wishes if you like, for example “short, for the parents”; the draft is written in the language of your wishes, or in Russian without any. Edit the draft on the page, then choose **Copy** to put it on the clipboard or **Print** to print the facts and the draft without menus or buttons. The summary is neither saved nor sent to anyone.\n\n## Invitations and access',
+    ],
+    [
+      'ai',
+      '\n\n## Customise system prompts',
+      '\n\nFor a student’s **period summary**, open their card and choose “Period summary” → “Write with AI”. The AI reads the lessons, lesson plans and homework of the chosen dates (up to six months) itself; you can edit, copy and print the draft, which is not saved ([Students](/teacher/help/students)).\n\n## Customise system prompts',
+    ],
+  ],
+};
+
 /** Homework at lessons and the bank of assignments (462.2): [topic, baseline, now] of the schedule and homework articles. */
 const LESSON_HOMEWORK: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
   'teacher.ru': [
@@ -923,6 +1003,260 @@ const LESSON_HOMEWORK: Readonly<Record<string, readonly (readonly [string, strin
       'homework',
       '## Add a quiz\n',
       '## Assignment bank\n\nThe bank keeps assignment originals for reuse, on the Assignments tab of Materials (with the course filter). An assignment goes into the bank automatically the first time you set it; one taken from the bank adds no new original. In the editor’s “⋮” menu, choose **Save to bank**, or **Update in bank** when an original exists: after you confirm, the original is replaced with this assignment, and copies already set stay as they are. New assignment in Materials creates a bank assignment straight away: it has no students or due date, and Done takes you back to Materials. Each card shows how many times it was used; its “⋮” menu has Edit and Delete… (students’ assignments made from it stay). To use a bank assignment for a lesson, choose Link in the lesson’s details (see Schedule and requests).\n\n## Add a quiz\n',
+    ],
+  ],
+};
+
+/** «Материалы» as list-detail, «банк» → «шаблоны» (466.1): [topic, baseline, now] of the teacher articles. */
+const MATERIALS_PANES: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'boards',
+      'Доски — вкладка раздела «Материалы» (рядом вкладка «Учебники», [Учебники](/teacher/help/textbooks)): все доски в одном месте, карточками с картинкой доски. Поиск над карточками находит доску по названию или по имени ученика (названию группы). Доска бывает двух видов:',
+      'Доски — пункт «Доски» в списке раздела «Материалы» (там же учебники, [Учебники](/teacher/help/textbooks)): все доски в одном месте, карточками с картинкой доски. Поиск над карточками находит доску по названию или по имени ученика (названию группы), меню «Фильтр» отбирает «Все», «На портале» или «Внешние». Доска бывает двух видов:',
+    ],
+    [
+      'boards',
+      '1. «Создать» → «Доска» (на телефоне — «Материалы» → «Новая доска»).',
+      '1. «Создать» → «Доска» (на телефоне — «Материалы» → «Создать» → «Доска»).',
+    ],
+    ['homework', '## Банк заданий', '## Шаблоны заданий'],
+    [
+      'homework',
+      'Банк — оригиналы заданий для повторного использования, вкладка «Задания» в «Материалах» (с фильтром по курсу). Задание попадает в банк само, когда вы впервые его выдаёте; задание, взятое из банка, новых оригиналов не добавляет. В «⋮» редактора — **«Сохранить в банк»**, а если оригинал уже есть — **«Обновить в банке»**: после подтверждения оригинал заменится этим заданием, уже выданные копии не изменятся. «Новое задание» в «Материалах» сразу создаёт задание банка: у него нет учеников и срока, «Готово» возвращает в «Материалы». На карточке — «Использовано N раз»; «⋮» → «Изменить», «Удалить…» (задания учеников, сделанные из оригинала, останутся). Взять задание из банка для урока — «Привязать» в карточке занятия (см. «Расписание и запросы»).',
+      'Шаблоны — задания для повторного использования, вкладка «Задания» в «Материалах» (курс выбирается в списке слева). Задание становится шаблоном само, когда вы впервые его выдаёте; задание, взятое из шаблона, новых шаблонов не добавляет. В «⋮» редактора — **«Сохранить как шаблон»**, а если шаблон уже есть — **«Обновить шаблон»**: после подтверждения шаблон заменится этим заданием, уже выданные копии не изменятся. «Создать» → «Задание» в «Материалах» сразу создаёт шаблон (с курсом выбранного слева пункта): у него нет учеников и срока, «Готово» возвращает в «Материалы». На карточке — «Использовано N раз»; «⋮» → «Изменить», «Удалить…» (задания учеников, сделанные из шаблона, останутся). Взять шаблон для урока — «Привязать» в карточке занятия (см. «Расписание и запросы»).',
+    ],
+    [
+      'schedule',
+      'В карточке занятия — раздел «План урока». Пока плана нет, нажмите **«Составить»** — откроется редактор плана этого урока; курс подставится из курса ученика или группы. План сохраняется сам и сразу привязывается к уроку; «Готово» возвращает в расписание. **«Из банка»** — выберите план из банка и нажмите «Взять»: урок получит свою копию, оригинал в банке не изменится. У отменённого занятия нового плана не бывает.',
+      'В карточке занятия — раздел «План урока». Пока плана нет, нажмите **«Составить»** — откроется редактор плана этого урока; курс подставится из курса ученика или группы. План сохраняется сам и сразу привязывается к уроку; «Готово» возвращает в расписание. **«Из шаблонов»** — выберите шаблон плана и нажмите «Взять»: урок получит свою копию, шаблон не изменится. У отменённого занятия нового плана не бывает.',
+    ],
+    [
+      'schedule',
+      'Когда план есть, в карточке видны его название, страницы учебников и видео. «Открыть» — редактор плана урока; «⋮» → **«Убрать из урока»** после подтверждения убирает план и удаляет копию этого урока (оригинал в банке остаётся). Ученики занятия и их родители видят план в своей карточке занятия: текст, страницы учебников и видео; расшифровку — только если вы её показываете. Подробнее о планах — в статье «Учебники».',
+      'Когда план есть, в карточке видны его название, страницы учебников и видео. «Открыть» — редактор плана урока; «⋮» → **«Убрать из урока»** после подтверждения убирает план и удаляет копию этого урока (шаблон остаётся). Ученики занятия и их родители видят план в своей карточке занятия: текст, страницы учебников и видео; расшифровку — только если вы её показываете. Подробнее о планах — в статье «Учебники».',
+    ],
+    [
+      'schedule',
+      'В карточке занятия под планом — раздел «Домашнее задание»: привязанные к уроку задания с их состоянием («Не выдано», «Выдано», «На проверке»). **«Задать»** открывает редактор задания для этого урока: ученики занятия уже выбраны, курс взят из плана (или из курса ученика или группы), страницы учебников и видео плана уже добавлены — уберите лишнее, срок — к следующему занятию. Задание привязывается к уроку при первом сохранении. **«Привязать»** — выберите недавнее задание учеников занятия, которое ещё не привязано ни к одному уроку, или задание из банка: из банка ученикам занятия создаётся черновик-копия, его можно открыть, поправить и выдать. «⋮» → **«Отвязать»** убирает задание из урока, само задание остаётся. У отменённого занятия новых заданий не бывает.',
+      'В карточке занятия под планом — раздел «Домашнее задание»: привязанные к уроку задания с их состоянием («Не выдано», «Выдано», «На проверке»). **«Задать»** открывает редактор задания для этого урока: ученики занятия уже выбраны, курс взят из плана (или из курса ученика или группы), страницы учебников и видео плана уже добавлены — уберите лишнее, срок — к следующему занятию. Задание привязывается к уроку при первом сохранении. **«Привязать»** — выберите недавнее задание учеников занятия, которое ещё не привязано ни к одному уроку, или шаблон задания: из шаблона ученикам занятия создаётся черновик-копия, его можно открыть, поправить и выдать. «⋮» → **«Отвязать»** убирает задание из урока, само задание остаётся. У отменённого занятия новых заданий не бывает.',
+    ],
+    [
+      'textbooks',
+      'Учебники — вкладка раздела «Материалы» (рядом вкладка «Доски», [Доски](/teacher/help/boards)): учебники, рабочие тетради и другие материалы, по одному файлу на каждый. Файл — PDF, Word (DOC, DOCX) или картинка, до 100 МБ.',
+      'Учебники — вкладка раздела «Материалы» (рядом «Планы» и «Задания»; доски — отдельный пункт «Доски», [Доски](/teacher/help/boards)): учебники, рабочие тетради и другие материалы, по одному файлу на каждый. Файл — PDF, Word (DOC, DOCX) или картинка, до 100 МБ.\n\nСлева в «Материалах» — список: «Все материалы», ваши курсы, «Без курса» и «Доски», у каждого пункта — сколько в нём материалов. Справа — выбранный пункт: вкладки «Учебники · Планы · Задания» и одна строка с поиском, меню «Фильтр» и сортировкой. На телефоне это два экрана: нажмите пункт списка, стрелка «Назад» вернёт к списку.',
+    ],
+    [
+      'textbooks',
+      '1. «Создать» → «Учебник» (или «Материалы» → вкладка «Учебники» → «Новый учебник»).',
+      '1. «Создать» → «Учебник» (или «Материалы» → «Создать» → «Учебник»: курс выбранного слева пункта подставится сам).',
+    ],
+    [
+      'textbooks',
+      '3. Выберите вид — «Учебник», «Рабочая тетрадь» или «Другое» — и **Курс** из списка (или «Без курса»). Курсы заводятся в окне «Курсы» (см. ниже).',
+      '3. Выберите вид — «Учебник», «Рабочая тетрадь» или «Другое» — и **Курс** из списка (или «Без курса»). Курсы заводятся в списке «Материалов» (см. ниже).',
+    ],
+    [
+      'textbooks',
+      'Курс — программа вроде «Английский A2» или «ОГЭ математика». Им отмечают учебники, задания, учеников и группы. В «Материалах» под строкой поиска — чипы курсов «Все · <курсы> · Без курса»: они отбирают учебники, выбранный курс остаётся в адресе страницы. «⋮» рядом с чипами → **Курсы** (пока курсов нет — кнопка «Курсы»):',
+      'Курс — программа вроде «Английский A2» или «ОГЭ математика». Им отмечают учебники, планы, задания, учеников и группы. Курсы стоят в списке «Материалов» слева: выберите курс — справа останутся его учебники, планы и задания; выбранный курс остаётся в адресе страницы.',
+    ],
+    [
+      'textbooks',
+      '- впишите название и нажмите «Добавить» — курс встанет в конец списка;\n- ✎ — переименовать (Enter сохраняет, Esc отменяет);\n- перетащите курс за ручку (или стрелками ↑ ↓ на ней) — в этом порядке идут чипы и списки;\n- 🗑 — удалить после подтверждения: учебники, задания, ученики и группы останутся, но без курса, а учебники «Ученикам курса» для них закроются.',
+      '- **«+ Новый курс»** под курсами — впишите название и нажмите Enter: курс встанет в конец списка (Esc — передумать);\n- «⋮» курса → **«Переименовать»** (Enter сохраняет, Esc отменяет);\n- перетащите курс за ручку (или стрелками ↑ ↓ на ней) — в этом порядке курсы идут везде; на телефоне — «⋮» курса → «Выше» или «Ниже»;\n- «⋮» курса → **«Удалить…»** — после подтверждения: учебники, планы, задания, ученики и группы останутся, но без курса, а учебники «Ученикам курса» для них закроются.',
+    ],
+    [
+      'textbooks',
+      'Каждый учебник — карточка: сверху обложка (первая страница PDF или сама картинка; у файла Word обложки нет — там значок формата), под ней название, вид, курс и кому открыт. Фильтры — «Все», «Учебники», «Рабочие тетради», «Другое» и чипы курсов, поиск находит учебник по названию и курсу. Нажмите на название, чтобы открыть учебник в новой вкладке (PDF и картинки открываются в браузере, файл Word скачивается). В меню «⋮» карточки:',
+      'Каждый учебник — карточка: сверху обложка (первая страница PDF или сама картинка; у файла Word обложки нет — там значок формата), под ней название, вид, курс и кому открыт. Меню «Фильтр» отбирает вид — «Все», «Учебники», «Рабочие тетради», «Другое», поиск находит учебник по названию и курсу. Нажмите на название, чтобы открыть учебник в новой вкладке (PDF и картинки открываются в браузере, файл Word скачивается). В меню «⋮» карточки:',
+    ],
+    [
+      'textbooks',
+      'Вкладка **«Планы»** «Материалов» — банк планов уроков: оригиналы, из которых урок получает свою копию. На карточке — название, курс и «Использовано N раз» (сколько уроков взяли копию). Чипы курсов и поиск работают и здесь.',
+      'Вкладка **«Планы»** «Материалов» — шаблоны планов уроков: из шаблона урок получает свою копию. На карточке — название, курс и «Использовано N раз» (сколько уроков взяли копию). Курс из списка слева и поиск работают и здесь.',
+    ],
+    [
+      'textbooks',
+      '1. «Новый план» — откроется редактор плана: название, **Курс**, текст плана (Markdown, переключатель «Текст · Просмотр»).',
+      '1. «Создать» → «План урока» — откроется редактор плана: название, **Курс** (курс выбранного слева пункта уже подставлен), текст плана (Markdown, переключатель «Текст · Просмотр»).',
+    ],
+    [
+      'textbooks',
+      'В меню «⋮» карточки: **Изменить** — открыть редактор; **Удалить…** — убрать план из банка после подтверждения (планы уроков, сделанные из него, останутся). Правка оригинала в банке не меняет копии на уроках.',
+      'В меню «⋮» карточки: **Изменить** — открыть редактор; **Удалить…** — удалить шаблон после подтверждения (планы уроков, сделанные из него, останутся). Правка шаблона не меняет копии на уроках.',
+    ],
+    [
+      'textbooks',
+      'План урока составляют из карточки занятия («Составить» или «Из банка», см. «Расписание и запросы»). План, составленный для урока, попадает в банк сам при первом «Готово». В его редакторе в «⋮» — **«Сохранить в банк»** (оригинала ещё нет) или **«Обновить в банке»** (оригинал заменится этим планом, портал спросит подтверждение).',
+      'План урока составляют из карточки занятия («Составить» или «Из шаблонов», см. «Расписание и запросы»). План, составленный для урока, становится шаблоном сам при первом «Готово». В его редакторе в «⋮» — **«Сохранить как шаблон»** (шаблона ещё нет) или **«Обновить шаблон»** (шаблон заменится этим планом, портал спросит подтверждение).',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'boards',
+      'Open “Materials” → “Boards” to see your boards. Search by title, student or group, filter by “All”, “In the portal” or “External”, and change the sort order.',
+      'Open “Materials” → “Boards” in the list on the left to see your boards. Search by title, student or group, pick “All”, “In the portal” or “External” in the Filter menu, and change the sort order.',
+    ],
+    [
+      'boards',
+      '1. Choose “Create” → “Board”, or “Materials” → “New board” on a phone.',
+      '1. Choose “Create” → “Board”, or “Materials” → “Create” → “Board” on a phone.',
+    ],
+    ['homework', '## Assignment bank', '## Assignment templates'],
+    [
+      'homework',
+      'The bank keeps assignment originals for reuse, on the Assignments tab of Materials (with the course filter). An assignment goes into the bank automatically the first time you set it; one taken from the bank adds no new original. In the editor’s “⋮” menu, choose **Save to bank**, or **Update in bank** when an original exists: after you confirm, the original is replaced with this assignment, and copies already set stay as they are. New assignment in Materials creates a bank assignment straight away: it has no students or due date, and Done takes you back to Materials. Each card shows how many times it was used; its “⋮” menu has Edit and Delete… (students’ assignments made from it stay). To use a bank assignment for a lesson, choose Link in the lesson’s details (see Schedule and requests).',
+      'Templates are assignments kept for reuse, on the Assignments tab of Materials (choose a course in the list on the left). An assignment becomes a template automatically the first time you set it; one taken from a template adds no new template. In the editor’s “⋮” menu, choose **Save as template**, or **Update template** when one exists: after you confirm, the template is replaced with this assignment, and copies already set stay as they are. “Create” → “Assignment” in Materials creates a template straight away, with the course selected on the left: it has no students or due date, and Done takes you back to Materials. Each card shows how many times it was used; its “⋮” menu has Edit and Delete… (students’ assignments made from it stay). To use a template for a lesson, choose Link in the lesson’s details (see Schedule and requests).',
+    ],
+    [
+      'schedule',
+      'A lesson’s details have a Lesson plan section. With no plan yet, choose **Write** to open the editor of this lesson’s plan; the course is filled in from the student’s or group’s course. The plan saves itself and is attached to the lesson straight away; Done takes you back to the schedule. Choose **From bank**, pick a plan and choose Use: the lesson gets its own copy and the bank original stays as it is. A cancelled lesson cannot take a new plan.',
+      'A lesson’s details have a Lesson plan section. With no plan yet, choose **Write** to open the editor of this lesson’s plan; the course is filled in from the student’s or group’s course. The plan saves itself and is attached to the lesson straight away; Done takes you back to the schedule. Choose **From templates**, pick a plan and choose Use: the lesson gets its own copy and the template stays as it is. A cancelled lesson cannot take a new plan.',
+    ],
+    [
+      'schedule',
+      'Once a lesson has a plan, its details show the title, the textbook pages and the videos. Open takes you to the plan editor. In the “⋮” menu, **Remove from lesson** removes the plan after you confirm and deletes this lesson’s copy; the bank original stays. Students in the lesson and their parents see the plan in their lesson details: the text, the textbook pages and the videos, with a transcript only when you show it. See Textbooks for more about plans.',
+      'Once a lesson has a plan, its details show the title, the textbook pages and the videos. Open takes you to the plan editor. In the “⋮” menu, **Remove from lesson** removes the plan after you confirm and deletes this lesson’s copy; the template stays. Students in the lesson and their parents see the plan in their lesson details: the text, the textbook pages and the videos, with a transcript only when you show it. See Textbooks for more about plans.',
+    ],
+    [
+      'schedule',
+      'Below the plan, a lesson’s details have a Homework section listing the assignments linked to the lesson and their status (Not set, Set, To review). **Set** opens the assignment editor for this lesson: the lesson’s students are already chosen, the course comes from the plan (or from the student’s or group’s course), the plan’s textbook pages and videos are already added — remove what you don’t need — and the due date is the next lesson. The assignment is linked to the lesson when it is first saved. **Link** lets you pick a recent assignment of the lesson’s students that isn’t linked to any lesson yet, or an assignment from the bank: a bank assignment becomes a draft copy for the lesson’s students, which you can open, edit and set. In the “⋮” menu, **Unlink** takes the assignment off the lesson; the assignment itself stays. A cancelled lesson cannot take new homework.',
+      'Below the plan, a lesson’s details have a Homework section listing the assignments linked to the lesson and their status (Not set, Set, To review). **Set** opens the assignment editor for this lesson: the lesson’s students are already chosen, the course comes from the plan (or from the student’s or group’s course), the plan’s textbook pages and videos are already added — remove what you don’t need — and the due date is the next lesson. The assignment is linked to the lesson when it is first saved. **Link** lets you pick a recent assignment of the lesson’s students that isn’t linked to any lesson yet, or an assignment template: a template becomes a draft copy for the lesson’s students, which you can open, edit and set. In the “⋮” menu, **Unlink** takes the assignment off the lesson; the assignment itself stays. A cancelled lesson cannot take new homework.',
+    ],
+    [
+      'textbooks',
+      '“Materials” → “Textbooks” stores textbooks, workbooks and other resources, with one file per entry. Supported files are PDF, Word (DOC or DOCX) and images, up to 100 MB.',
+      '“Materials” → “Textbooks” stores textbooks, workbooks and other resources, with one file per entry. Supported files are PDF, Word (DOC or DOCX) and images, up to 100 MB.\n\nMaterials has a list on the left: All materials, your courses, No course and Boards, each with the number of items in it. The right side shows the selected item: the tabs “Textbooks · Plans · Assignments” and one row with the search, the Filter menu and the sort. On a phone these are two screens: select an item in the list, and the back arrow returns to it.',
+    ],
+    [
+      'textbooks',
+      '1. Choose “Create” → “Textbook”, or open the Textbooks tab and choose “New textbook”.',
+      '1. Choose “Create” → “Textbook”, or “Create” → “Textbook” in Materials: the course selected on the left is filled in.',
+    ],
+    [
+      'textbooks',
+      '3. Choose Textbook, Workbook or Other, and pick a **Course** from the list, or “No course”. Courses are managed in the Courses dialog (see below).',
+      '3. Choose Textbook, Workbook or Other, and pick a **Course** from the list, or “No course”. Courses are managed in the list of Materials (see below).',
+    ],
+    [
+      'textbooks',
+      'A course is a programme such as “English A2” or “GCSE Maths”. Textbooks, assignments, students and groups can be marked with one. Below the search field in Materials, the course chips “All · <courses> · No course” filter the textbooks; the chosen course stays in the page address. Choose ⋮ next to the chips → **Courses** (or the Courses button while there are none) to:',
+      'A course is a programme such as “English A2” or “GCSE Maths”. Textbooks, plans, assignments, students and groups can be marked with one. Courses are listed on the left of Materials: select one to see only its textbooks, plans and assignments; the chosen course stays in the page address.',
+    ],
+    [
+      'textbooks',
+      '- add a course: type its name and choose “Add”; it goes to the end of the list;\n- rename it with ✎ (Enter saves, Esc cancels);\n- drag it by its handle, or use ↑ and ↓ on the handle, to set the order of the chips and lists;\n- delete it after confirming: its textbooks, assignments, students and groups stay without a course, and textbooks shared with its students close to them.',
+      '- **+ New course** below the courses: type a name and press Enter; it goes to the end of the list (Esc cancels);\n- a course’s “⋮” → **Rename** (Enter saves, Esc cancels);\n- drag a course by its handle, or use ↑ and ↓ on the handle, to set the order used everywhere; on a phone, use the course’s “⋮” → Move up or Move down;\n- a course’s “⋮” → **Delete…**, after confirming: its textbooks, plans, assignments, students and groups stay without a course, and textbooks shared with its students close to them.',
+    ],
+    [
+      'textbooks',
+      'Search by title or course, filter by course and select a resource to open it. PDFs and images open in the browser; Word files download. The ⋮ menu provides:',
+      'Search by title or course, pick a type in the Filter menu and select a resource to open it. PDFs and images open in the browser; Word files download. The ⋮ menu provides:',
+    ],
+    [
+      'textbooks',
+      'The **Plans** tab of Materials is the bank of lesson plans: the originals a lesson takes its own copy from. Each card shows the title, the course and how many times it was used. The course chips and the search work here too.',
+      'The **Plans** tab of Materials holds lesson plan templates: a lesson takes its own copy of one. Each card shows the title, the course and how many times it was used. The course on the left and the search work here too.',
+    ],
+    [
+      'textbooks',
+      '1. Choose “New plan” to open the plan editor: a title, a **Course** and the plan text (Markdown, with “Text · Preview”).',
+      '1. Choose “Create” → “Lesson plan” to open the plan editor: a title, a **Course** (the course selected on the left is filled in) and the plan text (Markdown, with “Text · Preview”).',
+    ],
+    [
+      'textbooks',
+      'The card’s “⋮” menu has **Edit**, which opens the editor, and **Delete…**, which removes the plan from the bank after you confirm (lesson plans made from it stay). Editing a bank original does not change the copies on lessons.',
+      'The card’s “⋮” menu has **Edit**, which opens the editor, and **Delete…**, which deletes the template after you confirm (lesson plans made from it stay). Editing a template does not change the copies on lessons.',
+    ],
+    [
+      'textbooks',
+      'Lesson plans are made from a lesson’s details (Write or From bank; see Schedule and requests). A plan written for a lesson goes into the bank automatically the first time you choose Done. Its editor’s “⋮” menu has **Save to bank** (no original yet) or **Update in bank** (the original is replaced with this plan after you confirm).',
+      'Lesson plans are made from a lesson’s details (Write or From templates; see Schedule and requests). A plan written for a lesson becomes a template automatically the first time you choose Done. Its editor’s “⋮” menu has **Save as template** (no template yet) or **Update template** (the template is replaced with this plan after you confirm).',
+    ],
+  ],
+};
+
+/** The lesson card by time with one-line rows for the plan and the homework (466.2). */
+const LESSON_CARD: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'schedule',
+      'В карточке занятия — раздел «План урока». Пока плана нет, нажмите **«Составить»** — откроется редактор плана этого урока; курс подставится из курса ученика или группы. План сохраняется сам и сразу привязывается к уроку; «Готово» возвращает в расписание. **«Из шаблонов»** — выберите шаблон плана и нажмите «Взять»: урок получит свою копию, шаблон не изменится. У отменённого занятия нового плана не бывает.\n\nКогда план есть, в карточке видны его название, страницы учебников и видео. «Открыть» — редактор плана урока; «⋮» → **«Убрать из урока»** после подтверждения убирает план и удаляет копию этого урока (шаблон остаётся). Ученики занятия и их родители видят план в своей карточке занятия: текст, страницы учебников и видео; расшифровку — только если вы её показываете. Подробнее о планах — в статье «Учебники».',
+      'Карточка занятия меняется со временем. До начала урока сразу под временем и темой — план и домашнее задание; после начала сначала идут отметка и итоги урока, а под ними — домашнее задание и план. План и задание — по одной строке: «План: Present Simple», «ДЗ: 2 задания · 1 на проверке». Нажмите на строку, чтобы раскрыть её на месте, и ещё раз, чтобы свернуть.\n\nПока плана нет, в карточке — кнопка **«+ План»**. **«Составить»** откроет редактор плана этого урока; курс подставится из курса ученика или группы. План сохраняется сам и сразу привязывается к уроку; «Готово» возвращает в расписание. **«С ИИ»** (если включён ИИ-помощник) откроет тот же редактор с помощником. **«Из шаблонов»** — выберите шаблон плана и нажмите «Взять»: урок получит свою копию, шаблон не изменится. У отменённого занятия нового плана не бывает.\n\nРаскрытый план показывает текст, страницы учебников и видео. В меню «⋮» строки плана: **«Открыть в редакторе»** и **«Убрать из урока»** — после подтверждения план убирается и копия этого урока удаляется (шаблон остаётся). Ученики занятия и их родители видят план в своей карточке занятия той же строкой; раскрыв её, они видят текст, страницы учебников и видео; расшифровку — только если вы её показываете. Подробнее о планах — в статье «Учебники».',
+    ],
+    [
+      'schedule',
+      'В карточке занятия под планом — раздел «Домашнее задание»: привязанные к уроку задания с их состоянием («Не выдано», «Выдано», «На проверке»). **«Задать»** открывает редактор задания для этого урока: ученики занятия уже выбраны, курс взят из плана (или из курса ученика или группы), страницы учебников и видео плана уже добавлены — уберите лишнее, срок — к следующему занятию. Задание привязывается к уроку при первом сохранении. **«Привязать»** — выберите недавнее задание учеников занятия, которое ещё не привязано ни к одному уроку, или шаблон задания: из шаблона ученикам занятия создаётся черновик-копия, его можно открыть, поправить и выдать. «⋮» → **«Отвязать»** убирает задание из урока, само задание остаётся. У отменённого занятия новых заданий не бывает.',
+      'Пока задания нет, в карточке — кнопка **«+ ДЗ»** с пунктами «Задать» и «Привязать». Когда задания есть, строка «ДЗ: …» говорит, сколько их и сколько работ ждёт проверки; раскрытая, она показывает привязанные к уроку задания с их состоянием («Не выдано», «Выдано», «На проверке») и кнопки «Задать» и «Привязать». **«Задать»** открывает редактор задания для этого урока: ученики занятия уже выбраны, курс взят из плана (или из курса ученика или группы), страницы учебников и видео плана уже добавлены — уберите лишнее, срок — к следующему занятию. Задание привязывается к уроку при первом сохранении. **«Привязать»** — выберите недавнее задание учеников занятия, которое ещё не привязано ни к одному уроку, или шаблон задания: из шаблона ученикам занятия создаётся черновик-копия, его можно открыть, поправить и выдать. «⋮» → **«Отвязать»** убирает задание из урока, само задание остаётся. У отменённого занятия новых заданий не бывает.',
+    ],
+    [
+      'textbooks',
+      'План урока составляют из карточки занятия («Составить» или «Из шаблонов», см. «Расписание и запросы»). План, составленный для урока, становится шаблоном сам при первом «Готово». В его редакторе в «⋮» — **«Сохранить как шаблон»** (шаблона ещё нет) или **«Обновить шаблон»** (шаблон заменится этим планом, портал спросит подтверждение).',
+      'План урока составляют из карточки занятия («+ План» → «Составить» или «Из шаблонов», см. «Расписание и запросы»). План, составленный для урока, становится шаблоном сам при первом «Готово». В его редакторе в «⋮» — **«Сохранить как шаблон»** (шаблона ещё нет) или **«Обновить шаблон»** (шаблон заменится этим планом, портал спросит подтверждение).',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'schedule',
+      'A lesson’s details have a Lesson plan section. With no plan yet, choose **Write** to open the editor of this lesson’s plan; the course is filled in from the student’s or group’s course. The plan saves itself and is attached to the lesson straight away; Done takes you back to the schedule. Choose **From templates**, pick a plan and choose Use: the lesson gets its own copy and the template stays as it is. A cancelled lesson cannot take a new plan.\n\nOnce a lesson has a plan, its details show the title, the textbook pages and the videos. Open takes you to the plan editor. In the “⋮” menu, **Remove from lesson** removes the plan after you confirm and deletes this lesson’s copy; the template stays. Students in the lesson and their parents see the plan in their lesson details: the text, the textbook pages and the videos, with a transcript only when you show it. See Textbooks for more about plans.',
+      'Lesson details change with time. Before a lesson starts, the plan and the homework come straight after the time and the topic; once it has started, the outcome and the lesson summary come first, then the homework and the plan. The plan and the homework take one line each, such as “Plan: Present Simple” or “Homework: 2 assignments · 1 to review”. Select a line to expand it in place, and again to collapse it.\n\nWith no plan yet, the details show **+ Plan**. **Write** opens the editor of this lesson’s plan; the course is filled in from the student’s or group’s course. The plan saves itself and is attached to the lesson straight away; Done takes you back to the schedule. **With AI** (when the AI assistant is on) opens the same editor with the assistant. Choose **From templates**, pick a plan and choose Use: the lesson gets its own copy and the template stays as it is. A cancelled lesson cannot take a new plan.\n\nAn expanded plan shows its text, the textbook pages and the videos. The plan’s “⋮” menu has **Open in editor** and **Remove from lesson**, which removes the plan after you confirm and deletes this lesson’s copy; the template stays. Students in the lesson and their parents see the same line in their lesson details; when they expand it, they see the text, the textbook pages and the videos, with a transcript only when you show it. See Textbooks for more about plans.',
+    ],
+    [
+      'schedule',
+      'Below the plan, a lesson’s details have a Homework section listing the assignments linked to the lesson and their status (Not set, Set, To review). **Set** opens the assignment editor for this lesson: the lesson’s students are already chosen, the course comes from the plan (or from the student’s or group’s course), the plan’s textbook pages and videos are already added — remove what you don’t need — and the due date is the next lesson. The assignment is linked to the lesson when it is first saved. **Link** lets you pick a recent assignment of the lesson’s students that isn’t linked to any lesson yet, or an assignment template: a template becomes a draft copy for the lesson’s students, which you can open, edit and set. In the “⋮” menu, **Unlink** takes the assignment off the lesson; the assignment itself stays. A cancelled lesson cannot take new homework.',
+      'With no homework yet, the details show **+ Homework** with Set and Link. Once there is homework, the “Homework: …” line says how many assignments there are and how many pieces of work are waiting for review; expanded, it lists the assignments linked to the lesson with their status (Not set, Set, To review) and the Set and Link buttons. **Set** opens the assignment editor for this lesson: the lesson’s students are already chosen, the course comes from the plan (or from the student’s or group’s course), the plan’s textbook pages and videos are already added — remove what you don’t need — and the due date is the next lesson. The assignment is linked to the lesson when it is first saved. **Link** lets you pick a recent assignment of the lesson’s students that isn’t linked to any lesson yet, or an assignment template: a template becomes a draft copy for the lesson’s students, which you can open, edit and set. In the “⋮” menu, **Unlink** takes the assignment off the lesson; the assignment itself stays. A cancelled lesson cannot take new homework.',
+    ],
+    [
+      'textbooks',
+      'Lesson plans are made from a lesson’s details (Write or From templates; see Schedule and requests). A plan written for a lesson becomes a template automatically the first time you choose Done. Its editor’s “⋮” menu has **Save as template** (no template yet) or **Update template** (the template is replaced with this plan after you confirm).',
+      'Lesson plans are made from a lesson’s details (+ Plan, then Write or From templates; see Schedule and requests). A plan written for a lesson becomes a template automatically the first time you choose Done. Its editor’s “⋮” menu has **Save as template** (no template yet) or **Update template** (the template is replaced with this plan after you confirm).',
+    ],
+  ],
+  'student.ru': [
+    [
+      'schedule',
+      'Если учитель подготовил план занятия, он виден в карточке занятия в разделе «План урока»: текст плана, страницы учебников (их можно открыть или скачать) и видео с плеером. Расшифровку видео видно, только если учитель её показывает.',
+      'Если учитель подготовил план занятия, в карточке занятия есть строка «План: …». Нажмите на неё — план раскроется: текст, страницы учебников (их можно открыть или скачать) и видео с плеером. Расшифровку видео видно, только если учитель её показывает.',
+    ],
+  ],
+  'student.en': [
+    [
+      'schedule',
+      'If your teacher has prepared a plan for a lesson, you’ll find it in the lesson details under Lesson plan: the plan text, the textbook pages (open or download them) and the videos with a player. A video transcript appears only when your teacher shows it.',
+      'If your teacher has prepared a plan for a lesson, its details have a “Plan: …” line. Select it to expand the plan: the text, the textbook pages (open or download them) and the videos with a player. A video transcript appears only when your teacher shows it.',
+    ],
+  ],
+};
+
+/** «Прошли по плану» in the lesson summary (466.3): [topic, baseline, now] of the schedule articles. */
+const BY_PLAN: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'schedule',
+      'нажмите «Записать итоги» и отправьте текст.',
+      'нажмите «Записать итоги» и отправьте текст.\n\nЕсли к уроку привязан план, поля «Что прошли» сразу не видно: в итогах стоит **«Прошли по плану»**, и ученики увидят именно это. Если что-то пошло иначе, нажмите **«Не всё по плану»** и запишите только отличия — ученик увидит «Прошли по плану» и их. «Черновик» в таком уроке пишет только отличия по вашим словам, а бот спрашивает, что прошло не по плану. Отправить итоги можно и без отличий.',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'schedule',
+      'choose “Add summary” after recording a completed lesson.',
+      'choose “Add summary” after recording a completed lesson.\n\nIf the lesson has a plan, the summary shows **“Covered as planned”** instead of the “What we covered” field, and that is what students see. If something was different, choose **“Not everything went to plan”** and note only the changes: students see “Covered as planned” followed by them. For these lessons, “Generate draft” writes only the changes from your notes, and the bot asks what didn’t go to plan. You can send the summary without any changes.',
+    ],
+  ],
+  'student.ru': [
+    [
+      'schedule',
+      'Тему уведомлений можно отключить в «Моём аккаунте».',
+      'Тему уведомлений можно отключить в «Моём аккаунте». Если урок шёл по плану, там написано «Прошли по плану», а под «Не по плану» — что было иначе.',
+    ],
+  ],
+  'student.en': [
+    [
+      'schedule',
+      'You can turn off summary notifications in “My account”.',
+      'You can turn off summary notifications in “My account”. If the lesson followed its plan, you will see “Covered as planned”, with anything different listed under “Changes to the plan”.',
     ],
   ],
 };
@@ -1031,7 +1365,13 @@ describe('help articles after the split into one file per topic', () => {
       ...(COURSES[name] ?? []),
       ...(PLANS[name] ?? []),
       ...(LESSON_PLAN[name] ?? []),
+      ...(PLAN_AI[name] ?? []),
       ...(LESSON_HOMEWORK[name] ?? []),
+      ...(PERIOD_SUMMARY[name] ?? []),
+      ...(MATERIALS_PANES[name] ?? []),
+      ...(LESSON_CARD[name] ?? []),
+      ...(BY_PLAN[name] ?? []),
+      ...(RELEASE_061[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

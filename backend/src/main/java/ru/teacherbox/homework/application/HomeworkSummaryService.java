@@ -17,6 +17,9 @@ import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.teacherbox.homework.api.HomeworkJournal;
+import ru.teacherbox.homework.api.JournalTask;
+import ru.teacherbox.homework.application.HomeworkViews.HomeworkReport;
 import ru.teacherbox.homework.application.HomeworkViews.HomeworkSummary;
 import ru.teacherbox.homework.application.HomeworkViews.Journal;
 import ru.teacherbox.homework.application.HomeworkViews.JournalCell;
@@ -38,12 +41,13 @@ import ru.teacherbox.identity.api.GroupSummary;
 import ru.teacherbox.identity.api.StudentGroups;
 import ru.teacherbox.identity.api.StudentSummary;
 import ru.teacherbox.identity.api.UserDirectory;
+import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.time.InstanceTimeZone;
 
-/** Homework counters for the home pages. */
+/** Homework counters for the home pages, the journal and a student's period ({@link HomeworkJournal}). */
 @Service
 @Transactional(readOnly = true)
-public class HomeworkSummaryService {
+public class HomeworkSummaryService implements HomeworkJournal {
 
     /** «Due soon» window. */
     static final Duration DUE_SOON = Duration.ofDays(3);
@@ -166,6 +170,20 @@ public class HomeworkSummaryService {
 
     private static boolean inWeek(Instant moment, Instant from, Instant to) {
         return !moment.isBefore(from) && moment.isBefore(to);
+    }
+
+    @Override
+    public List<JournalTask> ofStudent(UUID studentId, LocalDate from, LocalDate to) {
+        if (to.isBefore(from)) {
+            throw new BusinessRuleException("homework.range-invalid", "The period ends before it starts");
+        }
+        return tasks.findGivenBetween(studentId, from.atStartOfDay(zone()).toInstant(),
+                to.plusDays(1).atStartOfDay(zone()).toInstant());
+    }
+
+    /** The homework part of the student's report on the days {@code [from, to]} (roadmap 02 stage B). */
+    public HomeworkReport report(UUID studentId, LocalDate from, LocalDate to) {
+        return HomeworkReport.of(ofStudent(studentId, from, to));
     }
 
     public MyHomeworkSummary studentSummary(UUID studentId) {

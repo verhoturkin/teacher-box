@@ -34,7 +34,7 @@ export const PAGES_PATTERN = /^\s*\d+(\s*[-–—]\s*\d+)?(\s*[,;\s]\s*\d+(\s*[-
  * Chooses a textbook of «Учебники» with its pages (ADR-0033) for a material — an assignment, a lesson plan — or
  * changes the pages of a chosen one. Blank pages — the whole textbook. The choice is checked against the
  * textbook's pages and handed over (`picked`): the material saves it. With `courseId` only the textbooks of that
- * course are offered (a lesson plan of a course, roadmap 11).
+ * course are offered (a lesson plan of a course, ADR-0071).
  */
 @Component({
   selector: 'tb-bind-textbook-dialog',

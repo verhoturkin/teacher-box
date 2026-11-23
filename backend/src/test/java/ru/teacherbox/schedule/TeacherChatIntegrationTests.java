@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ru.teacherbox.schedule.api.ChangeKind;
 import ru.teacherbox.schedule.api.LessonChangeRequested;
 import ru.teacherbox.schedule.application.ChangeRequestService;
+import ru.teacherbox.schedule.application.LessonPlanLinks;
 import ru.teacherbox.schedule.application.ScheduleQueries;
 import ru.teacherbox.schedule.application.ScheduleService;
 import ru.teacherbox.schedule.application.ScheduleService.PlanLesson;
@@ -40,6 +41,7 @@ import ru.teacherbox.shared.chat.ChatUser;
 import ru.teacherbox.shared.security.Role;
 import ru.teacherbox.testing.FakeStudentGroups;
 import ru.teacherbox.testing.ChatSteps;
+import ru.teacherbox.testing.FakeLessonPlans;
 import ru.teacherbox.testing.FakeUserDirectory;
 import ru.teacherbox.testing.MutableClock;
 
@@ -61,6 +63,12 @@ class TeacherChatIntegrationTests {
 
     @Autowired
     ScheduleQueries queries;
+
+    @Autowired
+    LessonPlanLinks planLinks;
+
+    @Autowired
+    FakeLessonPlans lessonPlans;
 
     @Autowired
     FakeUserDirectory directory;
@@ -203,6 +211,21 @@ class TeacherChatIntegrationTests {
         ChatState brokenShare = ChatState.of("lesson", "bad").withStep("share");
         assertThat(done(unmarked.next(teacher(), brokenShare, new ChatInput.Choice("send"))).reply().text())
                 .isEqualTo("Не получилось записать итоги: занятие изменилось.");
+    }
+
+    @Test
+    void withALessonPlanTheBotAsksOnlyForTheDeviations() {
+        UUID maria = directory.addStudent("Мария По плану");
+        UUID lesson = plan(maria, null, Slots.past(clock), null);
+        planLinks.link(lesson, lessonPlans.add("Дроби", List.of(), List.of()));
+        ChatAction unmarked = action(actions, "schedule.unmarked");
+        ChatStep.Ask offer = markConducted(unmarked, lesson);
+
+        ChatStep.Ask write = ask(unmarked.next(teacher(), offer.state(), new ChatInput.Choice("write")));
+        assertThat(write.reply().text()).startsWith("К занятию привязан план.")
+                .contains("что прошло не по плану", "не больше 4000 символов");
+        assertThat(ask(unmarked.next(teacher(), write.state(), new ChatInput.Choice("x"))).reply().text())
+                .startsWith("К занятию привязан план.");
     }
 
     private ChatStep.Ask markConducted(ChatAction unmarked, UUID lesson) {

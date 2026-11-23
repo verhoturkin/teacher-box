@@ -10,6 +10,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MenuItem } from 'primeng/api';
@@ -21,6 +22,7 @@ import { Observable, catchError, forkJoin, map, of, switchMap, throwError } from
 import { describeError } from '@core/http/error-messages';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { toIsoDate } from '@shared/dates/iso-date';
+import { AssistChip } from '@shared/ui/assist-chip';
 import { AssignmentSummary, HomeworkApi, assignmentProgress } from '@features/homework/parts';
 import { ScheduleApi } from '../data-access/schedule-api';
 import { ScheduledLesson } from '../data-access/schedule.models';
@@ -58,165 +60,143 @@ export function lessonStudents(lesson: ScheduledLesson): string[] {
 }
 
 /**
- * Teacher: «Домашнее задание» of the lesson card (roadmap 11 «Lesson card», 462.2). The linked assignments with
- * their status (a row opens the assignment, a draft — its editor; «⋮» «Отвязать» takes it off, the assignment
- * stays). «Задать» opens the homework editor for this lesson (`?lessonId=`: the participants, the course, the
+ * Teacher: the homework of the lesson card (ADR-0071, 462.2, decision 13). With homework — one
+ * row «ДЗ: 2 задания · 1 на проверке» that opens in place: the linked assignments with their status (a row opens
+ * the assignment, a draft — its editor; «⋮» «Отвязать» takes it off, the assignment stays), then «Задать» and
+ * «Привязать». Without — the chip «+ ДЗ» with the same two in a menu. «Задать» opens the homework editor for this lesson (`?lessonId=`: the participants, the course, the
  * plan's pages and videos, the deadline at the next lesson; the route links it). «Привязать» picks in place
  * either a recent assignment of the participants not linked to a lesson, or a bank item: its working draft for
  * the participants goes on the lesson. A cancelled lesson takes no new homework.
  */
 @Component({
   selector: 'tb-lesson-homework-section',
-  imports: [FormsModule, RouterLink, Button, Menu, Select, Tag],
+  imports: [FormsModule, NgTemplateOutlet, RouterLink, Button, Menu, Select, Tag, AssistChip],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class.tb-lesson-prep--row]': 'lesson().assignmentIds.length > 0 || picking()' },
   template: `
     @let ids = lesson().assignmentIds;
-    @if (ids.length > 0 || !cancelled()) {
-      <section class="tb-lesson-homework" [attr.aria-label]="t.title">
-        <h3 class="tb-lesson-homework__title">{{ t.title }}</h3>
-        @if (ids.length > 0) {
-          <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
-            @for (row of rows(); track row.id) {
-              <li>
-                <span class="tb-list__lead" aria-hidden="true"
-                  ><i class="tb-i tb-i-assignment"></i
-                ></span>
-                <div class="tb-list__text">
-                  @if (row.summary; as item) {
-                    <a
-                      class="tb-list__title tb-lesson-homework__link"
-                      [routerLink]="linkOf(item)"
-                      >{{ item.title }}</a
-                    >
-                  } @else {
-                    <span class="tb-list__title tb-muted">{{
-                      loaded() ? t.deleted : t.loading
-                    }}</span>
-                  }
-                </div>
-                <div class="tb-list__trail">
-                  @if (row.summary; as item) {
-                    <p-tag
-                      [value]="progressOf(item).label"
-                      [severity]="progressOf(item).severity ?? undefined"
-                    />
-                  }
-                  <p-button
-                    icon="tb-i tb-i-more_vert"
-                    severity="secondary"
-                    [text]="true"
-                    [rounded]="true"
-                    [ariaLabel]="t.more(row.summary?.title ?? t.deleted)"
-                    aria-haspopup="menu"
-                    [loading]="unlinking() === row.id"
-                    (onClick)="openMenu(row.id, $event)"
+    @if (ids.length > 0) {
+      <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
+        <li class="tb-lesson-prep__row" [class.tb-lesson-prep__row--open]="expanded()">
+          <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-assignment"></i></span>
+          <div class="tb-list__text">
+            <button
+              type="button"
+              class="tb-list__title tb-list__link tb-lesson-prep__toggle"
+              [attr.aria-expanded]="expanded()"
+              (click)="expanded.set(!expanded())"
+            >
+              {{ rowText() }}
+            </button>
+          </div>
+          <div class="tb-list__trail tb-list__trail--icons">
+            <i class="tb-i tb-i-expand_more tb-lesson-prep__chevron" aria-hidden="true"></i>
+          </div>
+        </li>
+        @if (expanded()) {
+          @for (row of rows(); track row.id) {
+            <li>
+              <span class="tb-list__lead" aria-hidden="true"
+                ><i class="tb-i tb-i-assignment"></i
+              ></span>
+              <div class="tb-list__text">
+                @if (row.summary; as item) {
+                  <a class="tb-list__title tb-list__link" [routerLink]="linkOf(item)">{{
+                    item.title
+                  }}</a>
+                } @else {
+                  <span class="tb-list__title tb-muted">{{
+                    loaded() ? t.deleted : t.loading
+                  }}</span>
+                }
+              </div>
+              <div class="tb-list__trail">
+                @if (row.summary; as item) {
+                  <p-tag
+                    [value]="progressOf(item).label"
+                    [severity]="progressOf(item).severity ?? undefined"
                   />
-                </div>
-              </li>
-            }
-          </ul>
-          <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
-        }
-        @if (cancelled()) {
-          <!-- a cancelled lesson keeps what it has and takes nothing new -->
-        } @else if (picking()) {
-          <div class="tb-lesson-homework__pick">
-            <p-select
-              [options]="groups()"
-              [group]="true"
-              optionGroupLabel="label"
-              optionGroupChildren="items"
-              optionLabel="title"
-              optionValue="key"
-              [(ngModel)]="chosen"
-              [placeholder]="t.choose"
-              [filter]="true"
-              filterBy="title"
-              [loading]="!choicesLoaded()"
-              [emptyMessage]="t.pickEmpty"
-              [ariaLabel]="t.pickLabel"
-              appendTo="body"
-              [fluid]="true"
-            />
-            <div class="tb-lesson-homework__actions">
-              <p-button
-                [label]="t.cancel"
-                [text]="true"
-                [disabled]="linking()"
-                (onClick)="picking.set(false)"
-              />
-              <p-button
-                [label]="t.link"
-                [loading]="linking()"
-                [disabled]="chosen() === null"
-                (onClick)="link()"
-              />
-            </div>
-          </div>
-        } @else {
-          @if (ids.length === 0) {
-            <p class="tb-muted tb-lesson-homework__empty">{{ t.empty }}</p>
+                }
+                <p-button
+                  icon="tb-i tb-i-more_vert"
+                  severity="secondary"
+                  [text]="true"
+                  [rounded]="true"
+                  [ariaLabel]="t.more(row.summary?.title ?? t.deleted)"
+                  aria-haspopup="menu"
+                  [loading]="unlinking() === row.id"
+                  (onClick)="openMenu(row.id, $event)"
+                />
+              </div>
+            </li>
           }
-          <div class="tb-lesson-homework__actions tb-lesson-homework__actions--start">
+          @if (!cancelled()) {
+            <li class="tb-lesson-prep__body">
+              <ng-container [ngTemplateOutlet]="more" />
+            </li>
+          }
+        }
+      </ul>
+      <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
+    } @else if (picking()) {
+      <ng-container [ngTemplateOutlet]="more" />
+    } @else if (!cancelled()) {
+      <tb-assist-chip
+        icon="add"
+        [dashed]="true"
+        [menu]="true"
+        [ariaLabel]="t.addLabel"
+        (click)="addMenu.toggle($event)"
+        >{{ t.add }}</tb-assist-chip
+      >
+      <p-menu #addMenu [model]="addItems" [popup]="true" appendTo="body" />
+    }
+
+    <!-- «Задать» / «Привязать» of a lesson with homework, or the picker of «Привязать» -->
+    <ng-template #more>
+      @if (picking()) {
+        <div class="tb-lesson-prep__pick" role="group" [attr.aria-label]="t.pickLabel">
+          <p-select
+            [options]="groups()"
+            [group]="true"
+            optionGroupLabel="label"
+            optionGroupChildren="items"
+            optionLabel="title"
+            optionValue="key"
+            [(ngModel)]="chosen"
+            [placeholder]="t.choose"
+            [filter]="true"
+            filterBy="title"
+            [loading]="!choicesLoaded()"
+            [emptyMessage]="t.pickEmpty"
+            [ariaLabel]="t.pickLabel"
+            appendTo="body"
+            [fluid]="true"
+          />
+          <div class="tb-lesson-prep__actions">
             <p-button
-              [label]="t.give"
-              icon="tb-i tb-i-add"
-              severity="secondary"
-              (onClick)="give()"
+              [label]="t.cancel"
+              [text]="true"
+              [disabled]="linking()"
+              (onClick)="picking.set(false)"
             />
             <p-button
-              [label]="t.attach"
-              icon="tb-i tb-i-link"
-              variant="outlined"
-              (onClick)="pick()"
+              [label]="t.link"
+              [loading]="linking()"
+              [disabled]="chosen() === null"
+              (onClick)="link()"
             />
           </div>
-        }
-      </section>
-    }
+        </div>
+      } @else {
+        <div class="tb-lesson-prep__actions tb-lesson-prep__actions--start">
+          <p-button [label]="t.give" icon="tb-i tb-i-add" [text]="true" (onClick)="give()" />
+          <p-button [label]="t.attach" icon="tb-i tb-i-link" [text]="true" (onClick)="pick()" />
+        </div>
+      }
+    </ng-template>
   `,
-  styles: `
-    .tb-lesson-homework {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-2);
-    }
-
-    .tb-lesson-homework__title {
-      margin: var(--tb-space-2) 0 0;
-      font: var(--tb-type-title-m);
-      letter-spacing: var(--tb-tracking-title-m);
-    }
-
-    .tb-lesson-homework__link {
-      color: inherit;
-    }
-
-    .tb-lesson-homework__link:hover {
-      text-decoration: underline;
-    }
-
-    .tb-lesson-homework__empty {
-      margin: 0;
-    }
-
-    .tb-lesson-homework__pick {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-2);
-    }
-
-    .tb-lesson-homework__actions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: var(--tb-space-2);
-    }
-
-    .tb-lesson-homework__actions--start {
-      justify-content: flex-start;
-    }
-  `,
+  styleUrl: './lesson-prep.scss',
 })
 export class LessonHomeworkSection {
   protected readonly t = T.lessonHomework;
@@ -239,6 +219,14 @@ export class LessonHomeworkSection {
     return this.lesson().assignmentIds.map((id) => ({ id, summary: byId.get(id) ?? null }));
   });
   protected readonly picking = signal(false);
+  /** The row is open. */
+  readonly expanded = signal(false);
+  /** «ДЗ: 2 задания · 1 на проверке»: the works to review are counted once the assignments are read. */
+  protected readonly rowText = computed(() => {
+    const rows = this.rows();
+    const toReview = rows.reduce((sum, row) => sum + (row.summary?.submitted ?? 0), 0);
+    return this.t.row(rows.length, toReview);
+  });
   readonly choices = signal<readonly HomeworkChoice[]>([]);
   protected readonly choicesLoaded = signal(false);
   protected readonly groups = computed<ChoiceGroup[]>(() => {
@@ -256,6 +244,24 @@ export class LessonHomeworkSection {
   protected readonly unlinking = signal<string | null>(null);
   private menuFor: string | null = null;
   private readonly menu = viewChild<Menu>('menu');
+
+  /** The menu of «+ ДЗ». */
+  protected readonly addItems: MenuItem[] = [
+    {
+      label: T.lessonHomework.give,
+      icon: 'tb-i tb-i-add',
+      command: () => {
+        this.give();
+      },
+    },
+    {
+      label: T.lessonHomework.attach,
+      icon: 'tb-i tb-i-link',
+      command: () => {
+        this.pick();
+      },
+    },
+  ];
 
   protected readonly menuItems: MenuItem[] = [
     {

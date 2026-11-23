@@ -16,6 +16,7 @@ import {
   HistoryEntry,
   LessonRules,
   LessonOutcome,
+  LessonsReport,
   MyScheduleSummary,
   OffTime,
   OffTimePeriod,
@@ -86,6 +87,17 @@ export class ScheduleApi {
   }
 
   /** The lessons ahead of a student or a group: a series is one item. */
+  /**
+   * The lessons of a student's period report: those starting on the days `[from, to]` of the teacher's time
+   * zone (ISO dates). Errors are shown by the page.
+   */
+  studentReport(studentId: string, from: string, to: string): Observable<LessonsReport> {
+    return this.http.get<LessonsReport>(`/api/teacher/schedule/students/${studentId}/report`, {
+      ...QUIET,
+      params: range(from, to),
+    });
+  }
+
   upcoming(of: LessonsOf): Observable<UpcomingLessons> {
     const path = 'studentId' in of ? `students/${of.studentId}` : `groups/${of.groupId}`;
     return this.http.get<UpcomingLessons>(`/api/teacher/schedule/${path}/upcoming`, QUIET);

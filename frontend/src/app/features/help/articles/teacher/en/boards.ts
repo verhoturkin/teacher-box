@@ -4,8 +4,8 @@ export const boardsArticle: HelpArticleText = {
   title: 'Boards',
   summary: 'Create shared boards, draw together and add lesson materials',
   body: `
-Open “Materials” → “Boards” to see your boards. Search by title, student or group, filter by “All”, “In the portal” or “External”, and change the \
-sort order.
+Open “Materials” → “Boards” in the list on the left to see your boards. Search by title, student or group, pick “All”, “In the portal” or \
+“External” in the Filter menu, and change the sort order.
 
 - **Excalidraw boards** run in the portal, support live collaboration and save automatically.
 - **External boards**, such as [Holst](https://app.holst.so), are links to another service and open in a new tab.
@@ -19,7 +19,7 @@ them from a board backup rather than undoing the old deletion.
 
 ## Create and share a board
 
-1. Choose “Create” → “Board”, or “Materials” → “New board” on a phone.
+1. Choose “Create” → “Board”, or “Materials” → “Create” → “Board” on a phone.
 2. Choose a type and enter a title. For an external board, paste its link and enable link sharing in that service.
 3. Select students and groups. Remove a selection chip to revoke that selection. All current group members can access a shared group board; students \
 who leave the group lose that access.

@@ -226,7 +226,7 @@ public class LessonRepository {
     /**
      * Removes the planned lessons of a series from {@code from} on, except the ones moved
      * individually (they are arranged separately and stay), the ones with a charged participant and the prepared
-     * ones (a plan or homework, roadmap 11).
+     * ones (a plan or homework, ADR-0071).
      *
      * @return ids of the removed lessons
      */

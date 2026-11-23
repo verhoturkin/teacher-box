@@ -9,6 +9,7 @@
 @use './styles/page-header';
 @use './styles/fields';
 @use './styles/lists';
+@use './styles/nav-menu';
 @use './styles/links';
 @use './styles/home';
 @use './styles/tables';
@@ -18,3 +19,4 @@
 @use './styles/sheets';
 @use './styles/overrides';
 @use './styles/catalogue';
+@use './styles/print';

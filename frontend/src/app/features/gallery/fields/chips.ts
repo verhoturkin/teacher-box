@@ -19,7 +19,8 @@ import { InputChip } from '@shared/ui/input-chip';
         <tb-assist-chip icon="attach_file">File</tb-assist-chip>
         <tb-assist-chip icon="person_add" [dashed]="true">Student or group</tb-assist-chip>
         <tb-assist-chip icon="menu_book" [disabled]="true">Textbook</tb-assist-chip>
-        <code class="tb-gallery-name">tb-assist-chip icon [dashed] [disabled]</code>
+        <tb-assist-chip icon="add" [dashed]="true" [menu]="true">Plan</tb-assist-chip>
+        <code class="tb-gallery-name">tb-assist-chip icon [dashed] [disabled] [menu]</code>
       </li>
       <li class="tb-gallery-row">
         @for (name of chosen(); track name) {

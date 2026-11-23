@@ -106,14 +106,15 @@ downloaded in full, with page numbers provided for reference. The pencil changes
 “Open board” in the “⋮” menu opens a linked board. “Delete…” in the same menu removes the assignment, submissions and files; recovery requires a \
 portal backup.
 
-## Assignment bank
+## Assignment templates
 
-The bank keeps assignment originals for reuse, on the Assignments tab of Materials (with the course filter). An assignment goes into the \
-bank automatically the first time you set it; one taken from the bank adds no new original. In the editor’s “⋮” menu, choose **Save to \
-bank**, or **Update in bank** when an original exists: after you confirm, the original is replaced with this assignment, and copies \
-already set stay as they are. New assignment in Materials creates a bank assignment straight away: it has no students or due date, and \
-Done takes you back to Materials. Each card shows how many times it was used; its “⋮” menu has Edit and Delete… (students’ assignments \
-made from it stay). To use a bank assignment for a lesson, choose Link in the lesson’s details (see Schedule and requests).
+Templates are assignments kept for reuse, on the Assignments tab of Materials (choose a course in the list on the left). An assignment \
+becomes a template automatically the first time you set it; one taken from a template adds no new template. In the editor’s “⋮” menu, \
+choose **Save as template**, or **Update template** when one exists: after you confirm, the template is replaced with this assignment, and \
+copies already set stay as they are. “Create” → “Assignment” in Materials creates a template straight away, with the course selected on the \
+left: it has no students or due date, and Done takes you back to Materials. Each card shows how many times it was used; its “⋮” menu has \
+Edit and Delete… (students’ assignments made from it stay). To use a template for a lesson, choose Link in the lesson’s details (see \
+Schedule and requests).
 
 ## Add a quiz
 

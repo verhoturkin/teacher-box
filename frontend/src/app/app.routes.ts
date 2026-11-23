@@ -17,7 +17,7 @@ import { API_SCOPE } from '@core/http/api-scope';
 import { paymentsVisibleGuard } from '@core/layout/payments-visibility';
 import { CORE_T } from '@core/i18n/texts';
 import { CALENDAR_STYLESHEET, withStyleBundle } from '@core/theme/style-bundles';
-import { defer, switchMap } from 'rxjs';
+import { catchError, defer, map, switchMap } from 'rxjs';
 import { DEV_ROUTES } from '@features/gallery';
 
 /**
@@ -124,7 +124,54 @@ const linkToLesson = () => {
 };
 
 /**
- * The homework of a lesson (`/teacher/homework/new?lessonId=`, roadmap 11): `homework` does not import `schedule`
+ * What the AI of the plan editor knows about the lesson of the plan: the students, the topic and the summary and
+ * plan of the previous held lesson of the same student or group. `textbooks` does not import `schedule`
+ * (ADR-0058), so the editor takes the reader as an input.
+ */
+const lessonOfPlan = () => {
+  const injector = inject(Injector);
+  return (lessonId: string) =>
+    defer(() => import('@features/schedule/parts')).pipe(
+      switchMap((parts) => {
+        const api = injector.get(parts.ScheduleApi);
+        return api.lesson(lessonId).pipe(
+          switchMap((lesson) => {
+            const of =
+              lesson.groupId === null
+                ? lesson.studentId === null
+                  ? null
+                  : { studentId: lesson.studentId }
+                : { groupId: lesson.groupId };
+            const studentIds =
+              lesson.groupId === null
+                ? lesson.studentId === null
+                  ? []
+                  : [lesson.studentId]
+                : lesson.participants.map((participant) => participant.studentId);
+            const facts = (
+              previous: { summary: string | null; nextPlan: string | null } | null,
+            ) => ({
+              studentIds,
+              facts: {
+                topic: lesson.topic,
+                previousSummary: previous?.summary ?? null,
+                previousNextPlan: previous?.nextPlan ?? null,
+              },
+            });
+            return of === null
+              ? [facts(null)]
+              : api.history(of, lesson.startsAt, 1).pipe(
+                  map((entries) => facts(entries[0] ?? null)),
+                  catchError(() => [facts(null)]),
+                );
+          }),
+        );
+      }),
+    );
+};
+
+/**
+ * The homework of a lesson (`/teacher/homework/new?lessonId=`, ADR-0071): `homework` does not import `schedule`
  * (ADR-0058), so the editor takes the lesson and the link as inputs. Both resolve at once; the schedule's parts
  * load when the editor reads the lesson or links the assignment.
  */
@@ -215,6 +262,12 @@ export const routes: Routes = [
         loadComponent: () => import('@features/home').then((m) => m.TeacherHome),
       },
       {
+        // «Итоги за период» of a student (ADR-0072): `?from&to`, the last full month by default
+        path: 'students/:studentId/summary',
+        title: N.periodSummary,
+        loadComponent: () => import('@features/students').then((m) => m.StudentSummaryPage),
+      },
+      {
         matcher: studentsMatcher,
         title: NAV.students,
         loadComponent: () => import('@features/students').then((m) => m.StudentsPage),
@@ -259,14 +312,14 @@ export const routes: Routes = [
         path: 'materials/plans/new',
         title: N.newLessonPlan,
         loadComponent: lessonPlanEditorPage,
-        resolve: { linkToLesson },
+        resolve: { linkToLesson, lessonOf: lessonOfPlan },
         canDeactivate: [canLeaveGuard],
       },
       {
         path: 'materials/plans/:planId',
         title: N.editLessonPlan,
         loadComponent: lessonPlanEditorPage,
-        resolve: { linkToLesson },
+        resolve: { linkToLesson, lessonOf: lessonOfPlan },
         canDeactivate: [canLeaveGuard],
       },
       // boards and textbooks are the two tabs of Materials (245.2); the filters of the address stay

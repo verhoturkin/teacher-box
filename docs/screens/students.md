@@ -23,8 +23,10 @@
 - The new-student form starts with the choice student / group and asks only name and contacts; the
   card then opens on the profile tab with the invitation link over it. A new group opens on its
   profile.
-- `card-head.ts` (both cards): student actions message, payment and new lesson (`tb-lesson-dialog
-  [studentId]`: who fixed, default title and length); a deactivated student keeps only payment.
+- `card-head.ts` (both cards): student actions «Итоги за период» (an icon link `summarize` with
+  its name in the tooltip, first, a deactivated student too), message, payment and new lesson
+  (`tb-lesson-dialog [studentId]`: who fixed, default title and length); a deactivated student
+  keeps only the summary and payment.
   Group actions message (hidden without members), new lesson, archive; an archived group has none. A
   payment or lesson made here re-reads the balance and the lessons.
 - **Course** (ADR-0071): the page reads `…/textbooks/courses` and `…/course-links` with the roster
@@ -72,3 +74,25 @@
 
 The lessons feed without private notes; assignments of every member; members (removal saved at
 once); profile without a video room for an archived group.
+
+## Period summary (`student-summary-page.ts`, 465.2)
+
+`/teacher/students/:studentId/summary?from&to` (ADR-0072), back to the card.
+
+- **Period**: «С» / «По» date fields in `tb-toolbar`; the last full month without `?from&to`; a
+  choice of both days replaces the address. An end before the start or more than 6 months (as
+  `ai.period-invalid`: `LocalDate.plusMonths` with the day clamped) shows an error message and
+  reads nothing; «Печать» is disabled then. An unknown student — an empty state.
+- **Facts**, two columns from a 56 rem pane, one below: `PeriodLessonsCard`
+  (`@features/schedule/parts`, `GET …/schedule/students/{id}/report`): figures held and missed,
+  a line with excused / cancelled by the student / late cancellations when any, every lesson with
+  its outcome tag and «Что прошли»; `PeriodTasksCard` (`@features/homework/parts`, `GET
+  …/homework/students/{id}/report`): set, handed in (on time · late), accepted, returned, every
+  task (a link) with set / due dates, lateness and grade. Each card has its own load state.
+- **Итоги с ИИ** (only when the AI is on; `PeriodSummaryPanel`, `@features/ai/parts`): optional
+  wishes (≤ 4000), the student's AI tags as chips, the model pick and «Составить с ИИ» → `POST
+  …/ai/period-summary`; errors under the wishes (`ai.period-empty`, `ai.period-invalid`, limits).
+  The draft is an editable textarea with «Копировать» (clipboard, a toast); «Составить заново»
+  replaces it. Nothing is saved or sent.
+- **Print** (design-system §7 «Print»): the header, fields and buttons are `tb-no-print`; the paper
+  gets the heading «<имя>: итоги с … по …», both fact cards and the draft rendered as Markdown.

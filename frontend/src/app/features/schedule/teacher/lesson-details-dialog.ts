@@ -47,7 +47,8 @@ function withDetails(lesson: ScheduledLesson, details: ScheduledLesson): Schedul
 /**
  * A lesson with the teacher's actions (ADR-0050): a `sheet` whose headline is who the lesson is with,
  * whose body is the shared `<tb-lesson-card>` («Итог» of a past lesson with one student is a toggle
- * there) and, once the lesson has started, its summary `<tb-lesson-summary>` in place,
+ * there) and, once the lesson has started, its summary `<tb-lesson-summary>` inside it, before the
+ * homework and the plan (ADR-0071 decision 13),
  * whose header has ✎ and the menu «⋮» (cancel, unmark a group lesson, delete) and whose
  * footer has the one action of the state: «Отметить посещаемость» of a past group lesson,
  * «Восстановить» of a cancelled one. Cancelling and deleting a series lesson are dialogs of their own
@@ -116,10 +117,11 @@ function withDetails(lesson: ScheduledLesson, details: ScheduledLesson): Schedul
             (outcomeChange)="mark($event)"
             (answer)="answerRequest($event)"
             (planChange)="onSummarySaved($event)"
-          />
-          @if (summarizable()) {
-            <tb-lesson-summary [lesson]="item" (saved)="onSummarySaved($event)" />
-          }
+          >
+            @if (summarizable()) {
+              <tb-lesson-summary [lesson]="item" (saved)="onSummarySaved($event)" />
+            }
+          </tb-lesson-card>
         }
       </tb-dialog>
 

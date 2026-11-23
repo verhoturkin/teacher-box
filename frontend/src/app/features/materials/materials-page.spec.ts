@@ -83,150 +83,137 @@ describe('MaterialsPage', () => {
   });
 
   it('starts with the search text of `?q=`', async () => {
-    await render({ q: 'Мария' });
+    await render({ tab: 'boards', q: 'Мария' });
     expect(host.querySelector<HTMLInputElement>('input[type="search"], input')?.value).toBe(
       'Мария',
     );
   });
 
-  function segments(): string[] {
-    return [...host.querySelectorAll('.tb-segment')].map((segment) =>
-      segment.textContent.replace(/\s+/g, ' ').trim(),
-    );
+  const courses = [aCourse({ id: 'c-1', name: 'Английский' }), aCourse({ id: 'c-2', name: 'ОГЭ' })];
+
+  /** The rows of the list pane: the name and the count. */
+  function rows(): string[] {
+    return [...host.querySelectorAll('nav li')].map((row) => {
+      const label = row.querySelector('.tb-nav-menu__link')?.firstChild?.textContent?.trim() ?? '';
+      const count = row.querySelector('.tb-nav-menu__count')?.textContent.trim();
+      return count === undefined ? label : `${label} ${count}`;
+    });
   }
 
-  function chips(): string[] {
-    return [...host.querySelectorAll('.tb-materials__bar .tb-filter-chip')].map((chip) =>
-      chip.textContent.trim(),
+  function link(label: string): HTMLAnchorElement {
+    const found = [...host.querySelectorAll<HTMLAnchorElement>('nav a.tb-nav-menu__link')].find(
+      (item) => item.textContent.includes(label),
     );
-  }
-
-  function chip(label: string): HTMLButtonElement {
-    const found = [...host.querySelectorAll<HTMLButtonElement>('.tb-filter-chip')].find((item) =>
-      item.textContent.includes(label),
-    );
-    if (found === undefined) throw new Error(`No chip ${label}`);
+    if (found === undefined) throw new Error(`No row ${label}`);
     return found;
+  }
+
+  function current(): string | undefined {
+    return host.querySelector('nav [aria-current="page"]')?.firstChild?.textContent?.trim();
+  }
+
+  function tabs(): string[] {
+    return [...host.querySelectorAll('p-tab')].map((tab) => tab.textContent.trim());
   }
 
   function shownTitles(tab: 'boards' | 'textbooks' | 'lesson-plans' | 'homework-bank'): string[] {
     const feed = host.querySelector(`tb-${tab}-feed`);
-    return [...(feed?.querySelectorAll('.tb-material-card__title') ?? [])].map((link) =>
-      link.textContent.trim(),
+    return [...(feed?.querySelectorAll('.tb-material-card__title') ?? [])].map((card) =>
+      card.textContent.trim(),
     );
   }
 
-  it('shows boards by default with the numbers of both kinds in the connected group', async () => {
-    await render();
+  function visible(): string | undefined {
+    return [...host.querySelectorAll('tb-pane div:not([hidden]) > *')]
+      .map((feed) => feed.tagName.toLowerCase())
+      .find((tag) => tag.endsWith('-feed'));
+  }
 
-    expect(segments()).toEqual(['Доски2', 'Учебники2', 'Планы2', 'Задания2']);
-    expect(chips()).toEqual(['Все', 'На портале', 'Внешние']);
-    expect(host.querySelector('[hidden] tb-boards-feed')).toBeNull();
-    expect(host.querySelector('[hidden] tb-textbooks-feed')).not.toBeNull();
-    expect(shownTitles('boards')).toHaveLength(2);
-  });
-
-  it('shows textbooks on ?tab=textbooks with the chips of their kinds', async () => {
-    await render({ tab: 'textbooks' });
-
-    expect(host.querySelector('[hidden] tb-boards-feed')).not.toBeNull();
-    expect(host.querySelector('[hidden] tb-textbooks-feed')).toBeNull();
-    expect(chips()).toEqual(['Все', 'Учебники', 'Рабочие тетради', 'Другое']);
-    chip('Рабочие тетради').click();
+  async function pick(menuButton: string, item: string): Promise<void> {
+    buttonByText(host, menuButton).click();
     await fixture.whenStable();
-    expect(shownTitles('textbooks')).toEqual(['Рабочая тетрадь']);
+    menuItemByText(item).click();
+    await fixture.whenStable();
+  }
+
+  it('lists «Все материалы», the courses, «Без курса» and «Доски» with their counts', async () => {
+    await render({}, 1280, courses);
+
+    expect(rows()).toEqual([
+      'Все материалы 6',
+      'Английский 3',
+      'ОГЭ 0',
+      'Новый курс',
+      'Без курса 3',
+      'Доски 2',
+    ]);
+    expect(current()).toBe('Все материалы');
+    expect(host.querySelector('h2')?.textContent.trim()).toBe('Все материалы');
+    expect(tabs()).toEqual(['Учебники', 'Планы', 'Задания']);
+    expect(visible()).toBe('tb-textbooks-feed');
+    expect(shownTitles('textbooks')).toHaveLength(2);
+    expect(host.querySelectorAll('.tb-i-collections_bookmark')).toHaveLength(2);
+    // a row keeps the tab in sight
+    expect(link('Без курса').getAttribute('href')).toBe('/?course=none&tab=textbooks');
+    expect(link('Английский').getAttribute('href')).toBe('/?course=c-1&tab=textbooks');
+    expect(link('Доски').getAttribute('href')).toBe('/?tab=boards');
+    expect(link('Все материалы').getAttribute('href')).toBe('/?tab=textbooks');
   });
 
-  describe('course filter', () => {
-    const courses = [
-      aCourse({ id: 'c-1', name: 'Английский' }),
-      aCourse({ id: 'c-2', name: 'ОГЭ' }),
-    ];
-    const courseChips = (): string[] =>
-      [
-        ...host.querySelectorAll(
-          '.tb-materials__courses .tb-filter-chip:not(.tb-filter-chip--more)',
-        ),
-      ].map((item) => item.textContent.trim());
+  it('shows the materials of the course of `?course=` and picks the textbook kind in «Фильтр»', async () => {
+    await render({ tab: 'textbooks', course: 'c-1' }, 1280, courses);
+    expect(current()).toBe('Английский');
+    expect(host.querySelector('h2')?.textContent.trim()).toBe('Английский');
+    expect(shownTitles('textbooks')).toEqual(['Spotlight 5']);
+    expect(link('Все материалы').getAttribute('href')).toBe('/?tab=textbooks');
 
-    it('filters the textbooks by `?course=` and puts the chosen course into the address', async () => {
-      await render({ tab: 'textbooks', course: 'c-1' }, 1280, courses);
-      expect(courseChips()).toEqual(['Все', 'Английский', 'ОГЭ', 'Без курса']);
-      expect(shownTitles('textbooks')).toEqual(['Spotlight 5']);
+    fixture.componentRef.setInput('course', 'none');
+    await fixture.whenStable();
+    expect(current()).toBe('Без курса');
+    expect(shownTitles('textbooks')).toEqual(['Рабочая тетрадь']);
 
-      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-      chip('Без курса').click();
-      expect(navigate).toHaveBeenLastCalledWith([], {
-        queryParams: { course: 'none' },
-        queryParamsHandling: 'merge',
-        replaceUrl: true,
-      });
-      fixture.componentRef.setInput('course', 'none');
-      await fixture.whenStable();
-      expect(shownTitles('textbooks')).toEqual(['Рабочая тетрадь']);
+    fixture.componentRef.setInput('course', undefined);
+    await fixture.whenStable();
+    await pick('Фильтр', 'Рабочие тетради');
+    expect(shownTitles('textbooks')).toEqual(['Рабочая тетрадь']);
+    expect(buttonByText(host, 'Фильтр: Рабочие тетради')).toBeTruthy();
+    // another kind starts with «Все» again
+    fixture.componentRef.setInput('tab', 'plans');
+    await fixture.whenStable();
+    expect(host.querySelector('button[aria-label^="Фильтр"]')).toBeNull();
+    fixture.componentRef.setInput('tab', 'textbooks');
+    await fixture.whenStable();
+    expect(shownTitles('textbooks')).toHaveLength(2);
+  });
 
-      [
-        ...host.querySelectorAll<HTMLButtonElement>('.tb-materials__courses .tb-filter-chip'),
-      ][0]?.click();
-      expect(navigate).toHaveBeenLastCalledWith([], {
-        queryParams: { course: null },
-        queryParamsHandling: 'merge',
-        replaceUrl: true,
-      });
-    });
-
-    it('ignores a course that is gone and has no course row on boards', async () => {
-      await render({ course: 'gone' }, 1280, courses);
-      expect(host.querySelector('.tb-materials__courses')).toBeNull();
-      fixture.componentRef.setInput('tab', 'textbooks');
-      await fixture.whenStable();
-      expect(shownTitles('textbooks')).toHaveLength(2);
-    });
-
-    it('opens «Курсы» from «⋮» and reads the textbooks again after it closes', async () => {
-      await render({ tab: 'textbooks' }, 1280, courses);
-      host.querySelector<HTMLButtonElement>('button[aria-label="Действия с курсами"]')?.click();
-      await fixture.whenStable();
-      menuItemByText('Курсы').click();
-      await fixture.whenStable();
-      expect(bodyText()).toContain('Курс — программа');
-      buttonByText(document.body, 'Закрыть').click();
-      await fixture.whenStable();
-      backend.expectOne('/api/teacher/textbooks').flush([aTextbook({ hasCover: false })]);
-      backend.expectOne('/api/teacher/textbooks/plans?bank=true').flush([]);
-      backend.expectOne(BANK).flush([]);
-      await fixture.whenStable();
-      expect(shownTitles('textbooks')).toEqual(['Spotlight 5']);
-    });
-
-    it('offers «Курсы» as a button while there are none', async () => {
-      await render({ tab: 'textbooks' });
-      expect(courseChips()).toEqual([]);
-      buttonByText(host, 'Курсы').click();
-      await fixture.whenStable();
-      expect(bodyText()).toContain('Курсов пока нет.');
-    });
+  it('ignores a course that is gone', async () => {
+    await render({ tab: 'textbooks', course: 'gone' }, 1280, courses);
+    expect(current()).toBe('Все материалы');
+    expect(shownTitles('textbooks')).toHaveLength(2);
   });
 
   it('puts the tab into the address', async () => {
-    await render();
+    await render({}, 1280, courses);
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
-    buttonByText(host, 'Учебники2').click();
+    host.querySelectorAll<HTMLElement>('p-tab')[1]?.click();
 
     expect(navigate).toHaveBeenCalledWith([], {
-      queryParams: { tab: 'textbooks' },
+      queryParams: { tab: 'plans' },
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
   });
 
-  it('filters the boards by chip and by the one search field, and sorts them', async () => {
-    await render();
-    chip('Внешние').click();
-    await fixture.whenStable();
+  it('shows the boards on `?tab=boards` without tabs, filtered, searched and sorted', async () => {
+    await render({ tab: 'boards' });
+    expect(current()).toBe('Доски');
+    expect(tabs()).toEqual([]);
+    expect(visible()).toBe('tb-boards-feed');
+
+    await pick('Фильтр', 'Внешние');
     expect(shownTitles('boards')).toEqual(['Холст']);
-    chip('Все').click();
+    await pick('Фильтр: Внешние', 'Все');
 
     const search = host.querySelector<HTMLInputElement>('input[type="search"]');
     if (search === null) throw new Error('No search');
@@ -238,64 +225,128 @@ describe('MaterialsPage', () => {
     typeInto(search, '');
     await fixture.whenStable();
 
-    buttonByText(host, 'Сначала изменённые').click();
-    await fixture.whenStable();
-    menuItemByText('По названию').click();
-    await fixture.whenStable();
+    await pick('Сначала изменённые', 'По названию');
     expect(shownTitles('boards')).toEqual(['Алгебра', 'Холст']);
     expect(host.textContent).toContain('По названию');
   });
 
-  it('opens the form of a new board or textbook from «Создать»', async () => {
-    await render();
-    const router = TestBed.inject(Router);
+  describe('«Создать»', () => {
+    it('opens the editor of a plan or an assignment with the chosen course', async () => {
+      await render({ tab: 'textbooks', course: 'c-1' }, 1280, courses);
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
-    await router.navigateByUrl('/?create=textbook');
-    await fixture.whenStable();
-    expect(bodyText()).toContain('Новый учебник');
-    expect(bodyText()).not.toContain('Новая доска');
+      await pick('Создать', 'План урока');
+      expect(navigate).toHaveBeenLastCalledWith(['/teacher/materials/plans/new'], {
+        queryParams: { course: 'c-1' },
+      });
+      await pick('Создать', 'Задание');
+      expect(navigate).toHaveBeenLastCalledWith(['/teacher/homework/new'], {
+        queryParams: { bank: true, course: 'c-1' },
+      });
+
+      fixture.componentRef.setInput('course', 'none');
+      await fixture.whenStable();
+      await pick('Создать', 'План урока');
+      expect(navigate).toHaveBeenLastCalledWith(['/teacher/materials/plans/new'], {
+        queryParams: {},
+      });
+      await pick('Создать', 'Задание');
+      expect(navigate).toHaveBeenLastCalledWith(['/teacher/homework/new'], {
+        queryParams: { bank: true },
+      });
+    });
+
+    it('opens the form of a new textbook with the chosen course, or of a new board', async () => {
+      await render({ tab: 'plans', course: 'c-2' }, 1280, courses);
+      await pick('Создать', 'Учебник');
+      expect(bodyText()).toContain('Новый учебник');
+      expect(document.querySelector('.p-dialog .p-select-label')?.textContent).toContain('ОГЭ');
+      buttonByText(document.body, 'Отмена').click();
+      await fixture.whenStable();
+
+      await pick('Создать', 'Доска');
+      expect(bodyText()).toContain('Новая доска');
+    });
+
+    it('opens the form of the rail’s «Создать» → «Учебник» or «Доска»', async () => {
+      await render();
+      const router = TestBed.inject(Router);
+      await router.navigateByUrl('/?create=textbook');
+      await fixture.whenStable();
+      expect(bodyText()).toContain('Новый учебник');
+      expect(bodyText()).not.toContain('Новая доска');
+    });
+
+    it('opens the form of a new board from the rail', async () => {
+      await render();
+      await TestBed.inject(Router).navigateByUrl('/?create=board');
+      await fixture.whenStable();
+      expect(bodyText()).toContain('Новая доска');
+    });
   });
 
-  it('opens the form of a new board from «Создать»', async () => {
-    await render();
-    await TestBed.inject(Router).navigateByUrl('/?create=board');
+  it('reads the textbooks, plans and assignments again after a course is renamed', async () => {
+    await render({ tab: 'textbooks' }, 1280, courses);
+    host.querySelector<HTMLButtonElement>('button[aria-label="Действия с курсом «ОГЭ»"]')?.click();
     await fixture.whenStable();
-    expect(bodyText()).toContain('Новая доска');
+    menuItemByText('Переименовать').click();
+    await fixture.whenStable();
+    const field = host.querySelector<HTMLInputElement>('nav input');
+    if (field === null) throw new Error('No field');
+    typeInto(field, 'ЕГЭ');
+    field.form?.dispatchEvent(new Event('submit'));
+    backend
+      .expectOne({ method: 'PUT', url: '/api/teacher/textbooks/courses/c-2' })
+      .flush(aCourse({ id: 'c-2', name: 'ЕГЭ' }));
+    backend.expectOne('/api/teacher/textbooks').flush([aTextbook({ hasCover: false })]);
+    backend.expectOne('/api/teacher/textbooks/plans?bank=true').flush([]);
+    backend.expectOne(BANK).flush([]);
+    await fixture.whenStable();
+    expect(rows()).toContain('ЕГЭ 0');
+    expect(shownTitles('textbooks')).toEqual(['Spotlight 5']);
   });
 
-  it('on a phone has the group on top and the FAB of the open tab', async () => {
-    await render({}, 500);
-    expect(host.querySelectorAll('.tb-segment')).toHaveLength(4);
-    expect(host.querySelectorAll('tb-segment-group')).toHaveLength(1);
+  describe('on a phone', () => {
+    it('shows the list without a selection, its counts and the FAB menu', async () => {
+      await render({}, 360, courses);
+      const detail = host.querySelectorAll<HTMLElement>('tb-pane')[1];
+      expect(detail?.style.display).toBe('none');
+      expect(rows()[0]).toBe('Все материалы 6');
+      expect(current()).toBeUndefined();
+      expect(host.querySelector('nav.tb-nav-menu')?.classList).toContain('tb-nav-menu--touch');
+      expect(host.querySelector('.tb-page-header [aria-haspopup="menu"]')).toBeNull();
 
-    const fab = host.querySelector<HTMLElement>('.tb-page-fab button');
-    expect(fab?.textContent).toContain('Новая доска');
-    fab?.click();
-    await fixture.whenStable();
-    expect(document.querySelectorAll('.p-dialog')).toHaveLength(1);
-    expect(bodyText()).toContain('Новая доска');
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      buttonByText(host, 'Создать').click();
+      await fixture.whenStable();
+      buttonByText(host, 'Задание').click();
+      expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new'], {
+        queryParams: { bank: true },
+      });
+    });
 
-    fixture.componentRef.setInput('tab', 'textbooks');
-    await fixture.whenStable();
-    expect(host.querySelector('.tb-page-fab button')?.textContent).toContain('Новый учебник');
-
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    fixture.componentRef.setInput('tab', 'plans');
-    await fixture.whenStable();
-    host.querySelector<HTMLElement>('.tb-page-fab button')?.click();
-    expect(navigate).toHaveBeenCalledWith(['/teacher/materials/plans/new']);
+    it('shows the detail of a row with «back» to the list', async () => {
+      await render({ tab: 'textbooks', course: 'c-1' }, 360, courses);
+      expect(host.querySelectorAll('tb-pane')).toHaveLength(1);
+      expect(host.querySelector('h1')?.textContent).toContain('Английский');
+      expect(host.querySelector('a[aria-label="Материалы"]')?.getAttribute('href')).toBe(
+        '/teacher/materials',
+      );
+      expect(shownTitles('textbooks')).toEqual(['Spotlight 5']);
+    });
   });
 
   describe('plans', () => {
-    const courses = [aCourse({ id: 'c-1', name: 'Английский' })];
-
-    it('shows the bank on ?tab=plans with the course and the uses, filtered by course and search', async () => {
+    it('shows the templates on ?tab=plans with the course and the uses, filtered by course and search', async () => {
       await render({ tab: 'plans' }, 1280, courses);
-      expect(host.querySelector('[hidden] tb-lesson-plans-feed')).toBeNull();
-      expect(chips()).toEqual([]);
+      expect(visible()).toBe('tb-lesson-plans-feed');
       expect(shownTitles('lesson-plans')).toEqual(['Present Simple', 'Past Simple']);
       expect(host.textContent).toContain('Английский · Использовано 3 раза');
       expect(host.textContent).toContain('Без курса · Ещё не использовался');
+      expect(
+        host.querySelector<HTMLInputElement>('input[type="search"]')?.getAttribute('aria-label') ??
+          host.textContent,
+      ).toContain('Название или курс');
 
       fixture.componentRef.setInput('course', 'none');
       await fixture.whenStable();
@@ -321,12 +372,11 @@ describe('MaterialsPage', () => {
       expect(shownTitles('lesson-plans')).toEqual(['Past Simple', 'Present Simple']);
     });
 
-    it('creates a plan with «Новый план», edits and deletes one from «⋮»', async () => {
+    it('edits and deletes a template from «⋮»', async () => {
       await render({ tab: 'plans' });
       TestBed.createComponent(ConfirmHost).detectChanges();
       const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-      buttonByText(host, 'Новый план').click();
-      expect(navigate).toHaveBeenCalledWith(['/teacher/materials/plans/new']);
+      expect(() => buttonByText(host, 'Новый план')).toThrow();
 
       host
         .querySelector<HTMLButtonElement>('button[aria-label="Действия: Present Simple"]')
@@ -348,19 +398,16 @@ describe('MaterialsPage', () => {
       expect(shownTitles('lesson-plans')).toEqual(['Present Simple']);
     });
 
-    it('says the bank is empty', async () => {
+    it('says there are no templates yet', async () => {
       await render({ tab: 'plans' }, 1280, [], []);
-      expect(host.textContent).toContain('Планов в банке пока нет');
+      expect(host.textContent).toContain('Шаблонов планов пока нет');
     });
   });
 
   describe('assignments', () => {
-    const courses = [aCourse({ id: 'c-1', name: 'Английский' })];
-
-    it('shows the bank of assignments on ?tab=assignments, filtered by course and search, sorted', async () => {
+    it('shows the templates on ?tab=assignments, filtered by course and search, sorted', async () => {
       await render({ tab: 'assignments' }, 1280, courses);
-      expect(host.querySelector('[hidden] tb-homework-bank-feed')).toBeNull();
-      expect(chips()).toEqual([]);
+      expect(visible()).toBe('tb-homework-bank-feed');
       expect(shownTitles('homework-bank')).toEqual(['Глаголы', 'Дроби']);
       expect(host.textContent).toContain('Английский · Использовано 2 раза');
       expect(host.textContent).toContain('Без курса · Ещё не использовалось');
@@ -377,21 +424,14 @@ describe('MaterialsPage', () => {
       typeInto(search, '');
       await fixture.whenStable();
 
-      buttonByText(host, 'Сначала изменённые').click();
-      await fixture.whenStable();
-      menuItemByText('По названию').click();
-      await fixture.whenStable();
+      await pick('Сначала изменённые', 'По названию');
       expect(shownTitles('homework-bank')).toEqual(['Глаголы', 'Дроби']);
     });
 
-    it('creates a bank item with «Новое задание», edits and deletes one from «⋮»', async () => {
+    it('edits and deletes a template from «⋮»', async () => {
       await render({ tab: 'assignments' });
       TestBed.createComponent(ConfirmHost).detectChanges();
       const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-      buttonByText(host, 'Новое задание').click();
-      expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new'], {
-        queryParams: { bank: true },
-      });
 
       host.querySelector<HTMLButtonElement>('button[aria-label="Действия: Дроби"]')?.click();
       await fixture.whenStable();
@@ -413,14 +453,9 @@ describe('MaterialsPage', () => {
       expect(shownTitles('homework-bank')).toEqual(['Дроби']);
     });
 
-    it('says the bank is empty and opens a new item from the FAB of a phone', async () => {
-      await render({ tab: 'assignments' }, 360, [], [], []);
-      expect(host.textContent).toContain('Заданий в банке пока нет');
-      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-      host.querySelector<HTMLElement>('.tb-page-fab button')?.click();
-      expect(navigate).toHaveBeenCalledWith(['/teacher/homework/new'], {
-        queryParams: { bank: true },
-      });
+    it('says there are no templates yet', async () => {
+      await render({ tab: 'assignments' }, 1280, [], [], []);
+      expect(host.textContent).toContain('Шаблонов заданий пока нет');
     });
   });
 });

@@ -9,6 +9,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
@@ -22,6 +23,9 @@ import { Snackbar } from '@core/snackbar/snackbar';
 import { Confirm } from '@shared/ui/confirm';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
+import { MarkdownView } from '@shared/ui/markdown-view';
+import { AssistChip } from '@shared/ui/assist-chip';
+import { AiApi } from '@features/ai/parts';
 import {
   CoursesApi,
   LessonPlan,
@@ -42,31 +46,40 @@ interface BankChoice {
   readonly course: string;
 }
 
+let nextId = 0;
+
 /**
- * Teacher: «План урока» of the lesson card (roadmap 11 «Lesson card»). Empty — «Составить» opens the plan editor
- * for this lesson (`?lessonId=`, the course of the student or the group prefilled; the route puts the new plan on
- * the lesson) and «Из банка» picks a bank item in place: its working copy goes on the lesson. Filled — the
- * title, the textbook pages and the videos, «Открыть» (the editor) and «⋮» «Убрать из урока», which takes the
- * plan off and deletes the working copy (the original stays in the bank). A cancelled lesson takes no new plan.
+ * Teacher: the plan of the lesson card (ADR-0071 decision 13). Filled — one row «План: <title>»
+ * that opens in place (the text, the textbook pages, the videos); its «⋮» has «Открыть в редакторе» and «Убрать
+ * из урока», which takes the plan off and deletes the working copy (the template stays). Empty — the chip
+ * «+ План» with a menu: «Составить» / «С ИИ» open the plan editor for this lesson (`?lessonId=`, the course of
+ * the student or the group prefilled; the route puts the new plan on the lesson), «Из шаблонов» picks a template
+ * in place: its working copy goes on the lesson. A cancelled lesson takes no new plan.
  */
 @Component({
   selector: 'tb-lesson-plan-section',
-  imports: [FormsModule, Button, Menu, Select, LoadStateView],
+  imports: [FormsModule, Button, Menu, Select, AssistChip, LoadStateView, MarkdownView],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class.tb-lesson-prep--row]': 'lesson().planId !== null || picking()' },
   template: `
     @let planId = lesson().planId;
-    @if (planId !== null || !cancelled()) {
-      <section class="tb-lesson-plan" [attr.aria-label]="t.title">
-        <div class="tb-lesson-plan__head">
-          <h3 class="tb-lesson-plan__title">{{ t.title }}</h3>
-          @if (planId !== null) {
-            <p-button
-              [label]="t.open"
-              icon="tb-i tb-i-arrow_forward"
-              iconPos="right"
-              [text]="true"
-              (onClick)="open(planId)"
-            />
+    @if (planId !== null) {
+      <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
+        <li class="tb-lesson-prep__row" [class.tb-lesson-prep__row--open]="expanded()">
+          <span class="tb-list__lead" aria-hidden="true"><i class="tb-i tb-i-list_alt"></i></span>
+          <div class="tb-list__text">
+            <button
+              type="button"
+              class="tb-list__title tb-list__link tb-lesson-prep__toggle"
+              [attr.aria-expanded]="expanded()"
+              [attr.aria-controls]="bodyId"
+              (click)="expanded.set(!expanded())"
+            >
+              {{ plan() === null ? t.rowLoading : t.row(plan()?.title ?? '') }}
+            </button>
+          </div>
+          <div class="tb-list__trail tb-list__trail--icons">
+            <i class="tb-i tb-i-expand_more tb-lesson-prep__chevron" aria-hidden="true"></i>
             <p-button
               icon="tb-i tb-i-more_vert"
               severity="secondary"
@@ -77,150 +90,87 @@ interface BankChoice {
               [loading]="removing()"
               (onClick)="menu.toggle($event)"
             />
-            <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
-          }
-        </div>
-        @if (planId !== null) {
-          <tb-load-state [state]="state" [what]="t.what" [compact]="true" (retry)="load()">
-            @if (plan(); as item) {
-              <ul class="tb-list tb-list--no-phone-lead" [attr.aria-label]="t.title">
-                <li>
-                  <span class="tb-list__lead" aria-hidden="true"
-                    ><i class="tb-i tb-i-list_alt"></i
-                  ></span>
-                  <div class="tb-list__text">
-                    <span class="tb-list__title">{{ item.title }}</span>
-                  </div>
-                </li>
+          </div>
+        </li>
+        @if (expanded()) {
+          <li class="tb-lesson-prep__body" [id]="bodyId">
+            <tb-load-state [state]="state" [what]="t.what" [compact]="true" (retry)="load()">
+              @if (plan(); as item) {
+                @if (item.body.trim() !== '') {
+                  <tb-markdown [text]="item.body" />
+                }
                 @for (textbook of item.textbooks; track textbook.id) {
-                  <li>
-                    <span class="tb-list__lead" aria-hidden="true"
-                      ><i [class]="icons[textbook.kind]"></i
-                    ></span>
-                    <div class="tb-list__text">
-                      <span class="tb-list__title">{{ textbook.title }}</span>
-                      <span class="tb-list__supporting">{{ pagesOf(textbook) }}</span>
-                    </div>
-                  </li>
+                  <p class="tb-lesson-prep__item">
+                    <i [class]="icons[textbook.kind]" aria-hidden="true"></i>
+                    <span>
+                      {{ textbook.title }}
+                      <span class="tb-muted">· {{ pagesOf(textbook) }}</span>
+                    </span>
+                  </p>
                 }
                 @for (video of item.videos; track $index) {
-                  <li>
-                    <span class="tb-list__lead" aria-hidden="true"
-                      ><i class="tb-i tb-i-smart_display"></i
-                    ></span>
-                    <div class="tb-list__text">
-                      <span class="tb-list__title">{{ videoTitle(video, $index) }}</span>
-                    </div>
-                  </li>
+                  <p class="tb-lesson-prep__item">
+                    <i class="tb-i tb-i-smart_display" aria-hidden="true"></i>
+                    <span>{{ videoTitle(video, $index) }}</span>
+                  </p>
                 }
-              </ul>
-            }
-          </tb-load-state>
-        } @else if (picking()) {
-          <div class="tb-lesson-plan__pick">
-            <p-select
-              [options]="choices()"
-              optionLabel="title"
-              optionValue="id"
-              [(ngModel)]="chosen"
-              [placeholder]="t.choosePlan"
-              [filter]="true"
-              filterBy="title,course"
-              [loading]="!choicesLoaded()"
-              [emptyMessage]="t.bankEmpty"
-              [ariaLabel]="t.bankPlan"
-              appendTo="body"
-              [fluid]="true"
-            >
-              <ng-template #item let-choice>
-                <div class="tb-lesson-plan__choice">
-                  <span>{{ choice.title }}</span>
-                  <small class="tb-hint">{{ choice.course }}</small>
-                </div>
-              </ng-template>
-            </p-select>
-            <div class="tb-lesson-plan__actions">
-              <p-button
-                [label]="t.cancel"
-                [text]="true"
-                [disabled]="using()"
-                (onClick)="picking.set(false)"
-              />
-              <p-button
-                [label]="t.use"
-                [loading]="using()"
-                [disabled]="chosen() === null"
-                (onClick)="use()"
-              />
-            </div>
-          </div>
-        } @else {
-          <p class="tb-muted tb-lesson-plan__empty">{{ t.empty }}</p>
-          <div class="tb-lesson-plan__actions tb-lesson-plan__actions--start">
-            <p-button
-              [label]="t.compose"
-              icon="tb-i tb-i-edit"
-              severity="secondary"
-              (onClick)="compose()"
-            />
-            <p-button
-              [label]="t.fromBank"
-              icon="tb-i tb-i-library_books"
-              variant="outlined"
-              (onClick)="pick()"
-            />
-          </div>
+              }
+            </tb-load-state>
+          </li>
         }
-      </section>
+      </ul>
+      <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
+    } @else if (picking()) {
+      <div class="tb-lesson-prep__pick" [attr.aria-label]="t.title" role="group">
+        <p-select
+          [options]="choices()"
+          optionLabel="title"
+          optionValue="id"
+          [(ngModel)]="chosen"
+          [placeholder]="t.choosePlan"
+          [filter]="true"
+          filterBy="title,course"
+          [loading]="!choicesLoaded()"
+          [emptyMessage]="t.bankEmpty"
+          [ariaLabel]="t.bankPlan"
+          appendTo="body"
+          [fluid]="true"
+        >
+          <ng-template #item let-choice>
+            <div class="tb-lesson-prep__choice">
+              <span>{{ choice.title }}</span>
+              <small class="tb-hint">{{ choice.course }}</small>
+            </div>
+          </ng-template>
+        </p-select>
+        <div class="tb-lesson-prep__actions">
+          <p-button
+            [label]="t.cancel"
+            [text]="true"
+            [disabled]="using()"
+            (onClick)="picking.set(false)"
+          />
+          <p-button
+            [label]="t.use"
+            [loading]="using()"
+            [disabled]="chosen() === null"
+            (onClick)="use()"
+          />
+        </div>
+      </div>
+    } @else if (!cancelled()) {
+      <tb-assist-chip
+        icon="add"
+        [dashed]="true"
+        [menu]="true"
+        [ariaLabel]="t.addLabel"
+        (click)="addMenu.toggle($event)"
+        >{{ t.add }}</tb-assist-chip
+      >
+      <p-menu #addMenu [model]="addItems()" [popup]="true" appendTo="body" />
     }
   `,
-  styles: `
-    .tb-lesson-plan {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-2);
-    }
-
-    .tb-lesson-plan__head {
-      display: flex;
-      align-items: center;
-      gap: var(--tb-space-1);
-      margin-top: var(--tb-space-2);
-    }
-
-    .tb-lesson-plan__title {
-      flex: 1;
-      margin: 0;
-      font: var(--tb-type-title-m);
-      letter-spacing: var(--tb-tracking-title-m);
-    }
-
-    .tb-lesson-plan__empty {
-      margin: 0;
-    }
-
-    .tb-lesson-plan__pick {
-      display: flex;
-      flex-direction: column;
-      gap: var(--tb-space-2);
-    }
-
-    .tb-lesson-plan__choice {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .tb-lesson-plan__actions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: var(--tb-space-2);
-    }
-
-    .tb-lesson-plan__actions--start {
-      justify-content: flex-start;
-    }
-  `,
+  styleUrl: './lesson-prep.scss',
 })
 export class LessonPlanSection {
   protected readonly t = T.lessonPlan;
@@ -231,6 +181,7 @@ export class LessonPlanSection {
   private readonly router = inject(Router);
   private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
+  protected readonly aiEnabled = toSignal(inject(AiApi).enabled$, { initialValue: false });
 
   readonly lesson = input.required<ScheduledLesson>();
   /** The plan was put on the lesson or taken off: the lesson as the server returned it. */
@@ -240,15 +191,54 @@ export class LessonPlanSection {
   protected readonly state = new LoadState();
   protected readonly plan = signal<LessonPlan | null>(null);
   protected readonly picking = signal(false);
-  /** The bank items of the picker «Из банка». */
+  /** The templates of the picker «Из шаблонов». */
   readonly choices = signal<BankChoice[]>([]);
   protected readonly choicesLoaded = signal(false);
   /** The bank item chosen in the picker. */
   readonly chosen = signal<string | null>(null);
   protected readonly using = signal(false);
   protected readonly removing = signal(false);
+  /** The row is open. */
+  readonly expanded = signal(false);
+  protected readonly bodyId = `tb-lesson-plan-${String(++nextId)}`;
+
+  /** The menu of «+ План». */
+  protected readonly addItems = computed<MenuItem[]>(() => [
+    {
+      label: T.lessonPlan.compose,
+      icon: 'tb-i tb-i-edit',
+      command: () => {
+        this.compose();
+      },
+    },
+    ...(this.aiEnabled()
+      ? [
+          {
+            label: T.lessonPlan.composeWithAi,
+            icon: 'tb-i tb-i-auto_awesome',
+            command: () => {
+              this.compose(true);
+            },
+          },
+        ]
+      : []),
+    {
+      label: T.lessonPlan.fromBank,
+      icon: 'tb-i tb-i-library_books',
+      command: () => {
+        this.pick();
+      },
+    },
+  ]);
 
   protected readonly menuItems: MenuItem[] = [
+    {
+      label: T.lessonPlan.open,
+      icon: 'tb-i tb-i-edit',
+      command: () => {
+        this.open();
+      },
+    },
     {
       label: T.lessonPlan.remove,
       icon: 'tb-i tb-i-link_off',
@@ -264,6 +254,7 @@ export class LessonPlanSection {
       untracked(() => {
         if (planId === null) {
           this.plan.set(null);
+          this.expanded.set(false);
         } else if (this.plan()?.id !== planId) {
           this.load();
         }
@@ -296,22 +287,26 @@ export class LessonPlanSection {
   }
 
   /** The editor of a new working plan for this lesson; the course comes from the student or the group. */
-  protected compose(): void {
+  protected compose(withAi = false): void {
     const lesson = this.lesson();
     const owner =
       lesson.groupId === null ? { studentId: lesson.studentId } : { groupId: lesson.groupId };
     void this.router.navigate(['/teacher/materials/plans/new'], {
-      queryParams: { lessonId: lesson.id, ...owner },
+      queryParams: { lessonId: lesson.id, ...owner, ...(withAi ? { ai: '1' } : {}) },
     });
   }
 
-  protected open(planId: string): void {
+  protected open(): void {
+    const planId = this.lesson().planId;
+    if (planId === null) {
+      return;
+    }
     void this.router.navigate(['/teacher/materials/plans', planId], {
       queryParams: { lessonId: this.lesson().id },
     });
   }
 
-  /** «Из банка»: the bank items by title, each with its course. */
+  /** «Из шаблонов»: the templates by title, each with its course. */
   protected pick(): void {
     this.chosen.set(null);
     this.picking.set(true);
@@ -403,7 +398,7 @@ export class LessonPlanSection {
         this.removing.set(false);
         this.snackbar.success(T.lessonPlan.removed);
         this.changed.emit(lesson);
-        // a copy that cannot be deleted stays as a row no list shows (roadmap 11)
+        // a copy that cannot be deleted stays as a row no list shows (ADR-0071)
         this.plansApi.remove(planId, quietContext()).subscribe({ error: () => undefined });
       },
       error: (error: unknown) => {

@@ -42,6 +42,15 @@ describe('AiApi', () => {
     expect(await enabled).toBe(false);
   });
 
+  it('asks for a lesson plan with sources and sends picked files as a form', () => {
+    const brief = { prompt: 'План', sources: [] };
+    api.lessonPlanDraft(brief).subscribe();
+    expect(backend.expectOne('/api/teacher/ai/lesson-plan').request.body).toEqual(brief);
+    const scan = new File(['png'], 'Скан.png', { type: 'image/png' });
+    api.lessonPlanDraft(brief, [scan]).subscribe();
+    expect(backend.expectOne('/api/teacher/ai/lesson-plan').request.body).toBeInstanceOf(FormData);
+  });
+
   it('sends picked files with the brief as a form', async () => {
     const brief = { prompt: 'По скану', title: null, sources: [] };
     const scan = new File(['png'], 'Скан.png', { type: 'image/png' });
@@ -176,5 +185,18 @@ describe('AiApi', () => {
       backend.expectOne({ method, url }).flush(url.endsWith('models') ? aiModel() : aiProvider());
     }
     await Promise.all(calls.map(([call]) => call));
+  });
+
+  it('asks for a period summary quietly: the page shows its errors', () => {
+    const brief = { studentId: 's-1', from: '2026-10-01', to: '2026-10-31', prompt: 'Коротко' };
+    let summary = '';
+    api.periodSummary(brief).subscribe((draft) => (summary = draft.summary));
+
+    const request = backend.expectOne('/api/teacher/ai/period-summary');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual(brief);
+    expect(request.request.context.get(SKIP_ERROR_TOAST)).toBe(true);
+    request.flush({ summary: '## Что прошли' });
+    expect(summary).toBe('## Что прошли');
   });
 });

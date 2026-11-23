@@ -1,7 +1,7 @@
 /**
  * Schedule: lessons and weekly series, students' requests to move or cancel a lesson, reminders
  * and calendar feeds; the lesson plan of a lesson (a working plan of {@code textbooks}) and its homework (working
- * assignments of {@code homework}), roadmap 11.
+ * assignments of {@code homework}), ADR-0071.
  */
 @ApplicationModule(displayName = "Schedule", allowedDependencies = {"shared", "identity :: api", "meetings :: api", "textbooks :: api", "homework :: api"})
 @NullMarked

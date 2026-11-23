@@ -349,10 +349,12 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   readonly upcomingLessons = input<UpcomingLessons>();
   /** The open tab: `?tab=`, then the teacher's choice; «Настройки» is a tab of its own on a phone only. */
   readonly tab = input<string>();
-  /** Query `?lessonId=`: homework for this lesson (roadmap 11) — its students, course, plan and deadline. */
+  /** Query `?lessonId=`: homework for this lesson (ADR-0071) — its students, course, plan and deadline. */
   readonly lessonId = input<string>();
   /** Query `?bank=true` of a new assignment: a bank item («Материалы» → «Задания» → «Создать»). */
   readonly bank = input<string>();
+  /** Query `?course=` of a new bank item of «Материалы» → «Создать»: the course open there. */
+  readonly course = input<string>();
   /** Route data: reads the lesson of `?lessonId=`. */
   readonly lessonOf = input<LessonOf>();
   /** Route data: links a new assignment to the lesson of `?lessonId=`. */
@@ -627,6 +629,9 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
     });
     this.linked = !this.isNew() || this.lessonId() === undefined;
     if (this.isNew()) {
+      if (this.bankItem()) {
+        this.form.controls.courseId.setValue(this.course() ?? null);
+      }
       this.drafts.mark(this.snapshot());
       if (!this.bankItem()) {
         this.who.load();

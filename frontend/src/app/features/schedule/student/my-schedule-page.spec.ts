@@ -443,6 +443,7 @@ describe('MySchedulePage lesson summaries', () => {
     nextPlan: null,
     summaryUpdatedAt: null,
     note: null,
+    planId: null,
     ...overrides,
   });
 
@@ -539,6 +540,24 @@ describe('MySchedulePage lesson summaries', () => {
     fixture.componentInstance.closeSheet();
     await fixture.whenStable();
     expect(bodyText()).not.toContain('Повторили дроби');
+  });
+
+  it('reads «Прошли по плану» and the deviations of a held lesson with a plan', async () => {
+    const lesson = scheduledLesson({ id: 'l-p', ...past(2), status: 'CONDUCTED', planId: 'p-1' });
+    await start([held({ planId: 'p-1' })], [lesson]);
+
+    expect(readableText(hostElement(fixture))).toContain('Прошли по плану');
+    fixture.componentInstance.openSheet(lesson);
+    backend
+      .expectOne('/api/me/schedule/lessons/l-p')
+      .flush({ ...lesson, summary: 'Не успели упр. 5' });
+    await fixture.whenStable();
+
+    expect(bodyText()).toContain('Не по плану');
+    expect(bodyText()).toContain('Не успели упр. 5');
+    for (const plan of backend.match('/api/me/schedule/lessons/l-p/plan')) {
+      plan.flush({}, { status: 404, statusText: 'Not Found' });
+    }
   });
 
   it('reads no summary for a lesson ahead or a cancelled one', async () => {

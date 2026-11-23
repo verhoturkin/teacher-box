@@ -18,7 +18,7 @@ import ru.teacherbox.textbooks.domain.LessonPlan;
 import ru.teacherbox.textbooks.domain.PlanTextbook;
 import ru.teacherbox.textbooks.domain.PlanVideo;
 
-/** Lesson plans with their textbooks and videos (roadmap 11); textbooks and videos go with their plan (cascade). */
+/** Lesson plans with their textbooks and videos (ADR-0071); textbooks and videos go with their plan (cascade). */
 @Repository
 public class LessonPlanRepository {
 

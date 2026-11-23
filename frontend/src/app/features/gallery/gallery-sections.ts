@@ -14,6 +14,7 @@ import { MarkdownSample } from './typography/markdown';
 import { PageHeaderSample } from './frame/page-header';
 import { PanesSample } from './frame/panes';
 import { NavigationSample } from './frame/navigation';
+import { NavMenuSample } from './frame/nav-menu';
 import { ButtonVariantsSample } from './buttons/variants';
 import { ButtonSizesSample } from './buttons/sizes';
 import { FabSample } from './buttons/fab';
@@ -135,6 +136,7 @@ export const GALLERY_SECTIONS: readonly GallerySection[] = [
         title: 'Pane and section navigation',
         component: NavigationSample,
       },
+      { path: 'frame/nav-menu.ts', title: 'Navigation menu of a pane', component: NavMenuSample },
       { path: 'frame/panes.ts', title: 'Panes', component: PanesSample },
     ],
   },

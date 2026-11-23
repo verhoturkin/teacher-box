@@ -38,7 +38,7 @@ test('the AI pane keeps the fixed M3 width and validation keeps recipients align
   await expect(panes).toHaveCount(1);
 });
 
-test('materials search matches list searches and shares a row with chips and sorting', async ({
+test('materials search matches list searches and shares a row with the filter and sorting', async ({
   page,
 }) => {
   await page.goto('/teacher/students');
@@ -46,13 +46,13 @@ test('materials search matches list searches and shares a row with chips and sor
     .locator('tb-pane tb-search-field')
     .evaluate((element) => element.getBoundingClientRect().width);
   console.log(`Students search at 1440px: ${reference}px`);
-  await page.goto('/teacher/materials');
+  await page.goto('/teacher/materials?tab=boards');
   const search = page.locator('.tb-materials__bar tb-search-field');
   await expect(search).toBeVisible();
   const box = await search.boundingBox();
   expect(box).not.toBeNull();
   expect(Math.abs(box!.width - reference)).toBeLessThanOrEqual(1);
-  for (const selector of ['tb-filter-chips', '.tb-materials__sort']) {
+  for (const selector of ['p-button:has(.tb-i-filter_list)', '.tb-materials__sort']) {
     const control = await page.locator(`.tb-materials__bar ${selector}`).boundingBox();
     expect(control).not.toBeNull();
     expect(

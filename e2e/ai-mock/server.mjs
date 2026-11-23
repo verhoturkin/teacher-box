@@ -1,8 +1,9 @@
 // Imitation of an OpenAI-compatible AI provider for the E2E run (no dependencies, Node 22).
 //
 //   GET  /v1/models              - two models, mock-fast and mock-strong; needs "Authorization: Bearer mock-key"
-//   POST /v1/chat/completions    - an answer written "by" the requested model: a lesson summary or a homework
-//                                  draft, chosen by the JSON schema in response_format
+//   POST /v1/chat/completions    - an answer written "by" the requested model: a lesson plan, a period summary,
+//                                  a lesson summary or a homework draft, chosen by the JSON schema in
+//                                  response_format
 //   GET  /requests               - the model ids of the completions so far, oldest first
 //   GET  /health                 - for docker compose --wait
 import { createServer } from 'node:http';
@@ -30,14 +31,23 @@ async function readJson(request) {
   return text === '' ? {} : JSON.parse(text);
 }
 
-function answer(model, schema) {
-  const content = schema.includes('summary')
+function content(model, schema) {
+  if (schema.includes('"body"')) {
+    return { title: `План от ${model}`, body: `Ход урока, ответ модели ${model}`, textbooks: [] };
+  }
+  if (schema.includes('Итоги периода')) {
+    return { summary: `Итоги периода написала модель ${model}` };
+  }
+  return schema.includes('summary')
     ? { summary: `Итоги написала модель ${model}` }
     : { title: `Задание от ${model}`, description: `Текст задания, ответ модели ${model}` };
+}
+
+function answer(model, schema) {
   return {
     model,
     choices: [
-      { finish_reason: 'stop', message: { role: 'assistant', content: JSON.stringify(content) } },
+      { finish_reason: 'stop', message: { role: 'assistant', content: JSON.stringify(content(model, schema)) } },
     ],
     usage: { prompt_tokens: 100, completion_tokens: 50 },
   };

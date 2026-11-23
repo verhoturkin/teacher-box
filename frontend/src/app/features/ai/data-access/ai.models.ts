@@ -1,4 +1,10 @@
-export type AiFeature = 'HOMEWORK_DRAFT' | 'REVIEW_DRAFT' | 'LESSON_SUMMARY' | 'QUIZ_DRAFT';
+export type AiFeature =
+  | 'HOMEWORK_DRAFT'
+  | 'REVIEW_DRAFT'
+  | 'LESSON_SUMMARY'
+  | 'QUIZ_DRAFT'
+  | 'LESSON_PLAN'
+  | 'PERIOD_SUMMARY';
 export type AiRequestStatus = 'SUCCEEDED' | 'FAILED' | 'REFUSED';
 
 /** Mirrors `AiStatus` of the backend. */
@@ -122,6 +128,8 @@ export interface ReviewBrief {
 export interface LessonSummaryBrief {
   readonly topic: string | null;
   readonly words: string | null;
+  /** The lesson's plan: the draft holds only the deviations from it, an empty one — all by the plan (466.3). */
+  readonly planTitle?: string | null;
   /** Titles of the assignments given at the lesson. */
   readonly assignmentTitles: readonly string[];
   /** A configured model (ADR-0057); absent — the default one. */
@@ -284,4 +292,50 @@ export interface AiSettings {
   readonly defaultModelId: string | null;
   readonly monthlyTokenLimit: number;
   readonly version: number;
+}
+
+/** What the lesson tells the AI about a plan (`lesson` of the request; the texts come from the schedule). */
+export interface LessonFacts {
+  readonly topic: string | null;
+  readonly previousSummary: string | null;
+  readonly previousNextPlan: string | null;
+}
+
+export interface LessonPlanBrief {
+  readonly prompt: string;
+  readonly courseName?: string | null;
+  readonly lesson?: LessonFacts;
+  readonly sources: readonly DraftSource[];
+  readonly context?: readonly ContextItem[];
+  readonly modelId?: string;
+}
+
+/** The pages of a textbook the draft rests on; the backend has checked them against the sources sent. */
+export interface DraftedTextbook {
+  readonly source: number;
+  readonly textbookId: string;
+  readonly pages: string;
+}
+
+export interface LessonPlanDraft {
+  readonly title: string;
+  /** Markdown. */
+  readonly body: string;
+  readonly textbooks: readonly DraftedTextbook[];
+}
+
+/** What the teacher wants of a student's period summary (ADR-0072); the facts are read on the server. */
+export interface PeriodSummaryBrief {
+  readonly studentId: string;
+  /** ISO dates: the first and the last day of the period, the teacher's time zone. */
+  readonly from: string;
+  readonly to: string;
+  readonly prompt?: string;
+  readonly context?: readonly ContextItem[];
+  readonly modelId?: string;
+}
+
+/** A draft of the period summary in Markdown; nothing is saved or sent. */
+export interface PeriodSummaryDraft {
+  readonly summary: string;
 }

@@ -39,7 +39,7 @@ src/testing/       # @testing/setup, @testing/dom, @testing/*-fixtures (tests on
   | base | `help` | — |
   | base | `identity` | `help` |
   | business | `ai`, `boards`, `meetings`, `notifications` | base |
-  | business | `textbooks` | base, `boards` |
+  | business | `textbooks` | base, `ai`, `boards` |
   | business | `billing` | base, `notifications` |
   | business | `homework` | base, `ai`, `boards`, `textbooks` |
   | business | `schedule` | base, `ai`, `boards`, `homework`, `meetings`, `textbooks` |

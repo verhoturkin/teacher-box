@@ -32,6 +32,13 @@ Open “Prompts” to find saved instructions. “Save as prompt” adds your cu
 When reviewing a submission, “AI draft” suggests feedback, a grade and whether to accept it or request revisions. Check the suggestion before \
 inserting it. Lesson summaries also offer AI drafts in the lesson details.
 
+For a **lesson plan**, choose “With AI” in the plan editor (or in the lesson card’s Plan section while it has no plan): describe the \
+lesson and tick the plan’s textbook pages and videos; the draft brings a title, the plan text and textbook pages ([Textbooks](/teacher/help/textbooks)).
+
+For a student’s **period summary**, open their card and choose “Period summary” → “Write with AI”. The AI reads the lessons, lesson plans and \
+homework of the chosen dates (up to six months) itself; you can edit, copy and print the draft, which is not saved \
+([Students](/teacher/help/students)).
+
 ## Customise system prompts
 
 Open “Settings” → “AI assistant”; the system prompts are open on the page. Edit the instructions for assignment or review drafts to set the tone, \

@@ -5,7 +5,7 @@ import { LessonPlan, LessonPlanInput, LessonPlanSummary, UsedPlan } from './less
 
 const PLANS = '/api/teacher/textbooks/plans';
 
-/** HTTP client of the teacher's lesson plans and the bank of plans (roadmap 11 «Bank»). */
+/** HTTP client of the teacher's lesson plans and the bank of plans (ADR-0071, the bank). */
 @Injectable({ providedIn: 'root' })
 export class LessonPlansApi {
   private readonly http = inject(HttpClient);

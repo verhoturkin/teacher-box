@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A lesson plan as other modules see it (roadmap 11): the teacher's content, every transcript included — the
+ * A lesson plan as other modules see it (ADR-0071): the teacher's content, every transcript included — the
  * caller hides one from a student unless {@link Video#transcriptShown()}.
  *
  * @param courseId the course of the plan; {@code null} — none

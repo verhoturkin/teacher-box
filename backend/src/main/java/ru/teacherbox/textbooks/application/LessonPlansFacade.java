@@ -9,7 +9,7 @@ import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.textbooks.api.LessonPlanView;
 import ru.teacherbox.textbooks.api.LessonPlans;
 
-/** Lesson plans for other modules: read only (roadmap 11). */
+/** Lesson plans for other modules: read only (ADR-0071). */
 @Service
 class LessonPlansFacade implements LessonPlans {
 

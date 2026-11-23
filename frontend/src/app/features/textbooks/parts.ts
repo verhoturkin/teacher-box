@@ -24,8 +24,8 @@ export type {
 } from './data-access/lesson-plans.models';
 export { CoursesApi } from './data-access/courses-api';
 export type { Course, CourseLinks } from './data-access/courses.models';
-export { courseOptions, type CourseOption } from './course-options';
-export { CoursesDialog } from './teacher/courses-dialog';
+export { countByCourse, courseOptions, type CourseOption } from './course-options';
+export { CourseList } from './teacher/course-list';
 export { CurrentCourseCard, type CourseOwner } from './teacher/current-course-card';
 export { MyTextbooksFeed } from './student/my-textbooks-feed';
 export { TextbookToBoardDialog } from './teacher/textbook-to-board-dialog';

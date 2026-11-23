@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { bodyText, buttonByText, hostElement, menuItemByText } from '@testing/dom';
+import { aiStatus } from '@testing/ai-fixtures';
 import { ConfirmHost, testProviders } from '@testing/setup';
 import { aCourse, aLessonPlan } from '@testing/textbooks-fixtures';
 import { LessonPlan } from '../data-access/lesson-plans.models';
@@ -28,6 +29,9 @@ describe('LessonPlanEditorPage', () => {
   });
 
   afterEach(() => {
+    backend.match('/api/teacher/ai/status').forEach((request) => {
+      request.flush(aiStatus({ enabled: false }));
+    });
     backend.verify();
     fixture.destroy();
     vi.restoreAllMocks();
@@ -39,9 +43,14 @@ describe('LessonPlanEditorPage', () => {
     await fixture.whenStable();
   }
 
-  async function open(planId?: string, plan: LessonPlan = aLessonPlan()): Promise<void> {
+  async function open(
+    planId?: string,
+    plan: LessonPlan = aLessonPlan(),
+    course?: string,
+  ): Promise<void> {
     fixture = TestBed.createComponent(LessonPlanEditorPage);
     if (planId !== undefined) fixture.componentRef.setInput('planId', planId);
+    if (course !== undefined) fixture.componentRef.setInput('course', course);
     page = fixture.componentInstance;
     page.autosaveDelay = 0;
     fixture.detectChanges();
@@ -54,6 +63,12 @@ describe('LessonPlanEditorPage', () => {
     await settle();
     host = hostElement(fixture);
   }
+
+  it('starts a new plan with the course of `?course=` and has nothing to save yet', async () => {
+    await open(undefined, aLessonPlan(), 'c-2');
+    expect(page.form.controls.courseId.value).toBe('c-2');
+    expect(page.canLeave()).toBe(true);
+  });
 
   it('creates a bank item by itself once it has a title, then keeps updating it', async () => {
     await open();
@@ -78,7 +93,7 @@ describe('LessonPlanEditorPage', () => {
     await settle();
     expect(TestBed.inject(Location).path()).toBe('/teacher/materials/plans/p-9');
     expect(host.textContent).toMatch(/сохранено · \d\d:\d\d/);
-    expect(host.textContent).toContain('В банке');
+    expect(host.textContent).toContain('Шаблон');
     expect(host.querySelector('button[aria-label="Ещё"]')).toBeNull();
 
     page.form.patchValue({ body: 'Разминка, чтение' });
@@ -171,25 +186,28 @@ describe('LessonPlanEditorPage', () => {
 
   it('saves a lesson plan into the bank, and updates the original after asking', async () => {
     await open('p-3', aLessonPlan({ id: 'p-3', bank: false }));
-    expect(host.textContent).not.toContain('В банке');
+    expect(host.textContent).not.toContain('Шаблон');
+    // M3: the overflow menu is the last of the header actions (466.2)
+    const actions = [...host.querySelectorAll('tb-page-header button')];
+    expect(actions.at(-1)?.getAttribute('aria-label')).toBe('Ещё');
     host.querySelector<HTMLButtonElement>('button[aria-label="Ещё"]')?.click();
     await settle();
-    menuItemByText('Сохранить в банк').click();
+    menuItemByText('Сохранить как шаблон').click();
     await settle();
     backend
       .expectOne({ method: 'POST', url: '/api/teacher/textbooks/plans/p-3/bank' })
       .flush(aLessonPlan({ id: 'p-3', bank: false, sourceId: 'p-1' }));
     await settle();
     expect(messages).toHaveBeenLastCalledWith(
-      expect.objectContaining({ detail: 'План сохранён в банк' }),
+      expect.objectContaining({ detail: 'План сохранён как шаблон' }),
     );
 
     page.form.patchValue({ body: 'Новый ход урока' });
     host.querySelector<HTMLButtonElement>('button[aria-label="Ещё"]')?.click();
     await fixture.whenStable();
-    menuItemByText('Обновить в банке').click();
+    menuItemByText('Обновить шаблон').click();
     await fixture.whenStable();
-    expect(bodyText()).toContain('Оригинал в банке заменится этим планом');
+    expect(bodyText()).toContain('Шаблон заменится этим планом');
     buttonByText(document.body, 'Обновить').click();
     await settle();
     const put = backend.expectOne({ method: 'PUT', url: '/api/teacher/textbooks/plans/p-3' });
@@ -211,7 +229,7 @@ describe('LessonPlanEditorPage', () => {
     await open('p-3', aLessonPlan({ id: 'p-3', bank: false, sourceId: 'p-1' }));
     host.querySelector<HTMLButtonElement>('button[aria-label="Ещё"]')?.click();
     await fixture.whenStable();
-    menuItemByText('Обновить в банке').click();
+    menuItemByText('Обновить шаблон').click();
     await fixture.whenStable();
     buttonByText(document.body, 'Отмена').click();
     await settle();
@@ -335,6 +353,55 @@ describe('LessonPlanEditorPage', () => {
     expect(link).toHaveBeenCalledTimes(2);
     expect(link).toHaveBeenLastCalledWith('l-1', 'p-9');
     expect(host.querySelector('p-message')).toBeNull();
+  });
+
+  it('opens the AI assistant with the facts of the lesson and takes its draft', async () => {
+    const lessonOf = vi.fn(() =>
+      of({
+        studentIds: ['s-1'],
+        facts: { topic: 'Past Simple', previousSummary: null, previousNextPlan: null },
+      }),
+    );
+    fixture = TestBed.createComponent(LessonPlanEditorPage);
+    fixture.componentRef.setInput('planId', 'p-1');
+    fixture.componentRef.setInput('lessonId', 'l-1');
+    fixture.componentRef.setInput('lessonOf', lessonOf);
+    fixture.componentRef.setInput('ai', '1');
+    page = fixture.componentInstance;
+    page.autosaveDelay = 0;
+    fixture.detectChanges();
+    backend.expectOne('/api/teacher/ai/status').flush(aiStatus({ enabled: true }));
+    backend.expectOne('/api/teacher/textbooks/courses').flush([aCourse({ id: 'c-1' })]);
+    backend.expectOne('/api/teacher/textbooks/plans/p-1').flush(aLessonPlan());
+    await settle();
+    host = hostElement(fixture);
+    expect(lessonOf).toHaveBeenCalledWith('l-1');
+    expect(bodyText()).toContain('Что нужно');
+    backend
+      .match(() => true)
+      .forEach((request) => {
+        if (request.request.url.endsWith('/tags') || request.request.url.endsWith('/students')) {
+          request.flush([]);
+        } else if (request.request.url.endsWith('/providers')) {
+          request.flush([]);
+        } else {
+          request.flush(null);
+        }
+      });
+
+    const before = page.form.controls.body.value;
+    page.form.patchValue({ title: '' });
+    const draft = {
+      title: 'Новый',
+      body: 'Ход урока',
+      textbooks: [{ source: 0, textbookId: 'tb-1', pages: '3' }],
+    };
+    page.applyDraft({ draft, mode: 'insert' });
+    expect(page.form.controls.title.value).toBe('Новый');
+    expect(page.form.controls.body.value).toBe(`${before.trimEnd()}\n\nХод урока`);
+    page.applyDraft({ draft, mode: 'replace' });
+    expect(page.form.controls.body.value).toBe('Ход урока');
+    backend.match(() => true);
   });
 
   it('saves what is left when the teacher leaves', async () => {

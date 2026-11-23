@@ -78,7 +78,7 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   201) — a new draft «<title> (копия)» (the title is cut to 200 characters) with the text, the
   course, the files (new `FileStorage` keys, so deleting the original keeps the copy's files), the
   bound textbooks with pages and the videos with transcripts; no students, no deadline, no board.
-- **The bank of assignments** (462.1, roadmap 11 «Bank», ADR-0071): `assignments.bank`,
+- **The bank of assignments** (462.1, ADR-0071): `assignments.bank`,
   `assignments.source_id` (`V7`; the migration puts nothing into the bank). A bank item is content
   only: no tasks, no deadline (`dueAt` is dropped), no board, no draft students — giving it out,
   create with `bank: true` and `studentIds`, draft students and a board answer 409
@@ -121,10 +121,17 @@ page) publishes `HomeworkReminderRequested` for a task that is `ASSIGNED` or `RE
 `task.not-remindable`, an unknown task 404, a second one within an hour 409 `task.reminded-recently`
 (kept in memory: a restart forgets it). Teacher only.
 
-`Assignments` (for `schedule`, roadmap 11): `find(ids)` → `AssignmentSummary (id, title, dueAt,
+`Assignments` (for `schedule`, ADR-0071): `find(ids)` → `AssignmentSummary (id, title, dueAt,
 courseId, bank, studentIds)` in the order of the ids, deleted ones skipped; `checkLinkable(id)` —
 404 `assignment.not-found`, a bank item 409 `homework.bank-item` (`schedule` answers
 `schedule.bank-item`).
+
+`HomeworkJournal.ofStudent(studentId, from, to)` (for `ai`, 465.1,
+[ADR-0072](../adr/0072-ai-reads-the-period-journal.md); implemented by `HomeworkSummaryService`) —
+the tasks given to the student (`assigned_at`) on the days `[from, to]` of the instance time zone,
+oldest first, as `JournalTask` (task and assignment ids, title, given, due, `Status`, handed in,
+reviewed, grade, the review comment; `handedInOnTime()` — handed in by the deadline or without
+one); an unknown student — none; `to` before `from` — 422 `homework.range-invalid`.
 
 `AssignmentFiles.file(assignmentId, attachmentId)` (for `ai`, [ADR-0039](../adr/0039-ai-reads-homework-sources.md)): a
 file of the assignment's materials — name, type, size, content; another assignment's file — 404 `file.not-found`.
@@ -132,7 +139,7 @@ file of the assignment's materials — name, type, size, content; another assign
 ## Data
 
 `assignments` (`course_id` — ADR-0071; `bank`, `source_id` → `assignments`, on delete set null —
-roadmap 11), `tasks`, `submissions`, `attachments`,
+ADR-0071), `tasks`, `submissions`, `attachments`,
 `assignment_textbooks` (assignment, textbook, pages), `assignment_videos` (position, url, provider,
 video ID, start, title, transcript, shown), `settings` (one row, ADR-0056: `due_soon_window` —
 filled once from `.env` by `HomeworkSettingsImport`, read by `DueSoonWindow`).
@@ -187,7 +194,10 @@ the assignments due in the range as columns and the current students as rows, on
 `weekOnTime` — works handed in not later than the due date, both in the current Monday–Sunday week of the instance time
 zone, for the Today page, 239.1),
 `GET students/{studentId}/tasks` — the student's tasks as the student's list shows them, for the student card
-(237.1); an unknown student has none);
+(237.1); an unknown student has none); `GET students/{studentId}/report?from&to` — the student's
+period report (465.1, roadmap 02 stage B): the homework journal of the days `[from, to]` with
+counts `assigned`, `submitted`, `onTime`, `late` (handed in after the deadline), `accepted`,
+`returned` (current status) and `tasks`; an unknown student — zeros; no guardian report yet;
 `/api/me/homework/**` (tasks, submissions, attachments, `tasks/{taskId}/textbooks/{textbookId}`, summary, `limits`).
 The guardian (`GuardianHomeworkController`, 452.2): `/api/guardian/students/{studentId}/homework`
 (the list), `summary`, `tasks/{taskId}` (texts, answers, grade and the teacher's comment),

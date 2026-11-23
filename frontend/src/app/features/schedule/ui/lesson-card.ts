@@ -9,6 +9,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { SelectButton } from 'primeng/selectbutton';
@@ -51,13 +52,18 @@ interface OutcomeOption {
  * The content of a lesson's card, the same for the teacher and the student (ADR-0050): one segmented
  * list of facts — the time, the topic, the room, the boards, the reason of a cancellation — the
  * outcome «Итог» of a past lesson with one student as a connected toggle, the participants of a group
- * and the requests waiting for the teacher, then «План урока» and «Домашнее задание» (roadmap 11). It saves no outcome by itself: the
- * host (a `<tb-dialog kind="sheet">`) saves the outcome and opens the answer to a request; the plan section puts
- * a plan on the lesson or takes it off and hands the host the lesson it returned (`planChange`).
+ * and the requests waiting for the teacher. The card follows time (ADR-0071 decision 13): before the lesson
+ * the plan and the homework come right after the facts; once it has begun the projected content (the
+ * teacher's summary) comes first, then the homework and the plan. Both are one-line rows that open in place,
+ * or the chips «+ План» / «+ ДЗ»; the student and the parent see only the plan's row. It saves no outcome by
+ * itself: the host (a `<tb-dialog kind="sheet">`) saves the outcome and opens the answer to a request; the
+ * sections put a plan or homework on the lesson or take it off and hand the host the lesson it returned
+ * (`planChange`).
  */
 @Component({
   selector: 'tb-lesson-card',
   imports: [
+    NgTemplateOutlet,
     FormsModule,
     Button,
     SelectButton,
@@ -182,6 +188,9 @@ interface OutcomeOption {
         </li>
       }
     </ul>
+    @if (!started()) {
+      <ng-container [ngTemplateOutlet]="prep" />
+    }
     @if (teacher() && item.groupId !== null) {
       <h3 class="tb-lesson-card__subtitle">{{ t.participants }}</h3>
       <ul class="tb-list">
@@ -207,12 +216,26 @@ interface OutcomeOption {
         }
       </ul>
     }
-    @if (teacher()) {
-      <tb-lesson-plan-section [lesson]="item" (changed)="planChange.emit($event)" />
-      <tb-lesson-homework-section [lesson]="item" (changed)="planChange.emit($event)" />
-    } @else {
-      <tb-my-lesson-plan [lesson]="item" />
+    <!-- the summary of a held lesson (the teacher's sheet puts it here) -->
+    <ng-content />
+    @if (started()) {
+      <ng-container [ngTemplateOutlet]="prep" />
     }
+
+    <!-- the plan and the homework: before a lesson the plan leads, after it the homework does -->
+    <ng-template #prep>
+      <div class="tb-lesson-card__prep">
+        @if (!teacher()) {
+          <tb-my-lesson-plan [lesson]="item" />
+        } @else if (started()) {
+          <tb-lesson-homework-section [lesson]="item" (changed)="planChange.emit($event)" />
+          <tb-lesson-plan-section [lesson]="item" (changed)="planChange.emit($event)" />
+        } @else {
+          <tb-lesson-plan-section [lesson]="item" (changed)="planChange.emit($event)" />
+          <tb-lesson-homework-section [lesson]="item" (changed)="planChange.emit($event)" />
+        }
+      </div>
+    </ng-template>
   `,
   styles: `
     :host {
@@ -266,6 +289,27 @@ interface OutcomeOption {
       }
     }
 
+    /*
+     * ours: the rows of the plan and the homework take the whole width, the chips «+ План» / «+ ДЗ» stand
+     * side by side; a card without either shows nothing here
+     */
+    .tb-lesson-card__prep {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--tb-space-2);
+
+      &:empty,
+      > :empty {
+        display: none;
+      }
+
+      > .tb-lesson-prep--row,
+      > tb-my-lesson-plan {
+        flex: 1 0 100%;
+        min-inline-size: 0;
+      }
+    }
+
     /* without boards the row is not shown */
     .tb-lesson-card__boards:not(:has(.tb-board-chips)) {
       display: none;
@@ -305,14 +349,13 @@ export class LessonCard {
     const lesson = this.lesson();
     return formatLessonTime(lesson.startsAt, lesson.endsAt);
   });
+  /** The lesson has begun: the card leads with its outcome and summary, not with the preparation. */
+  protected readonly started = computed(() => new Date(this.lesson().startsAt) <= this.now());
   /** The outcome of a started lesson with one student is marked on the spot, not in a footer. */
   protected readonly markable = computed(() => {
     const lesson = this.lesson();
     return (
-      this.teacher() &&
-      lesson.groupId === null &&
-      lesson.status !== 'CANCELLED' &&
-      new Date(lesson.startsAt) <= this.now()
+      this.teacher() && lesson.groupId === null && lesson.status !== 'CANCELLED' && this.started()
     );
   });
   /** What the lesson says now; the toggle shows it until the next pick. */

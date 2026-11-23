@@ -18,6 +18,7 @@ import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
+import { Drawer } from 'primeng/drawer';
 import { Menu } from 'primeng/menu';
 import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
@@ -25,16 +26,25 @@ import { Tag } from 'primeng/tag';
 import { Observable, map, of, switchMap, tap } from 'rxjs';
 import { quietContext } from '@core/http/api-error.interceptor';
 import { describeError } from '@core/http/error-messages';
+import { injectWindowSize } from '@core/layout/mobile';
 import { CanLeave } from '@core/routing/can-leave.guard';
 import { pageDetail } from '@core/routing/page-detail';
 import { Snackbar } from '@core/snackbar/snackbar';
 import { EditorAutosave, EditorWrite } from '@shared/forms/editor-autosave';
 import { Confirm } from '@shared/ui/confirm';
+import { ModalDrawer } from '@shared/ui/modal-drawer';
 import { FieldErrors, revealErrors } from '@shared/ui/field-errors';
 import { LoadState } from '@shared/ui/load-state';
 import { LoadStateView } from '@shared/ui/load-state-view';
 import { MarkdownField } from '@shared/ui/markdown-field';
 import { PageHeader } from '@shared/ui/page-header';
+import {
+  AiApi,
+  AppliedPlan,
+  LessonFacts,
+  LessonPlanAiPanel,
+  LessonPlanAiState,
+} from '@features/ai/parts';
 import { courseOptions } from '../course-options';
 import { CoursesApi } from '../data-access/courses-api';
 import { Course } from '../data-access/courses.models';
@@ -51,12 +61,22 @@ import {
 } from '../videos/video-section';
 import { BindTextbookDialog } from './bind-textbook-dialog';
 import { PlanTextbooks } from './plan-textbooks';
+import { planAiSources } from './plan-ai-sources';
 
 /**
  * Puts a working plan on a lesson. `schedule` owns the link and `textbooks` does not import it (ADR-0058): the
  * route passes the function (`app.routes.ts`).
  */
 export type LinkToLesson = (lessonId: string, planId: string) => Observable<unknown>;
+
+/** What a lesson tells the AI about its plan: the students, the topic and the previous lesson's summary. */
+export interface PlanLesson {
+  readonly studentIds: readonly string[];
+  readonly facts: LessonFacts;
+}
+
+/** Reads the lesson of a plan; `schedule` owns it, the route passes the function (ADR-0058). */
+export type LessonOfPlan = (lessonId: string) => Observable<PlanLesson>;
 
 /** The most textbooks of one plan (the backend's limit). */
 export const MAX_PLAN_TEXTBOOKS = 20;
@@ -75,7 +95,7 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
 }
 
 /**
- * Teacher: the lesson plan editor (roadmap 11, `/teacher/materials/plans/new`, `…/plans/:planId`) — the title,
+ * Teacher: the lesson plan editor (ADR-0071, `/teacher/materials/plans/new`, `…/plans/:planId`) — the title,
  * «Курс», the Markdown plan, the textbook pages (of the course when one is set) and the videos with their
  * automatic transcripts. The plan saves itself a moment after each change, as a draft of an assignment does;
  * «Готово» saves what is left and finishes it (the first «Готово» of a lesson's plan puts its original into
@@ -92,6 +112,9 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
     InputText,
     Menu,
     Message,
+    Drawer,
+    ModalDrawer,
+    LessonPlanAiPanel,
     Select,
     Tag,
     FieldErrors,
@@ -102,6 +125,7 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
     PlanTextbooks,
     VideoSection,
   ],
+  providers: [LessonPlanAiState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (ready()) {
@@ -117,17 +141,15 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
         @if (savedAt(); as at) {
           <span class="tb-plan-editor__saved" role="status">{{ t.savedAt(at) }}</span>
         }
-        @if (menuItems().length > 0) {
+        @if (aiEnabled()) {
           <p-button
-            icon="tb-i tb-i-more_vert"
-            [text]="true"
-            [rounded]="true"
+            [label]="t.withAi"
+            icon="tb-i tb-i-auto_awesome"
             severity="secondary"
-            [ariaLabel]="t.more"
-            [loading]="banking()"
-            (onClick)="menu.toggle($event)"
+            variant="outlined"
+            [ariaLabel]="t.aiTitle"
+            (onClick)="aiOpen.set(true)"
           />
-          <p-menu #menu [model]="menuItems()" [popup]="true" appendTo="body" />
         }
         <p-button
           [label]="t.done"
@@ -135,6 +157,20 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
           [loading]="finishing()"
           (onClick)="finish()"
         />
+        <!-- M3: the overflow menu is the last of the header actions -->
+        @if (menuItems().length > 0) {
+          <p-button
+            icon="tb-i tb-i-more_vert"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            [ariaLabel]="t.more"
+            aria-haspopup="menu"
+            [loading]="banking()"
+            (onClick)="menu.toggle($event)"
+          />
+          <p-menu #menu [model]="menuItems()" [popup]="true" appendTo="body" />
+        }
       </tb-page-header>
 
       <form tbFieldErrors class="tb-plan-editor tb-form" [formGroup]="form" (ngSubmit)="finish()">
@@ -206,6 +242,29 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
         </p-card>
       </form>
 
+      @if (aiEnabled()) {
+        <p-drawer
+          tbModalDrawer
+          [(visible)]="aiOpen"
+          [header]="t.aiTitle"
+          [ariaCloseLabel]="t.closeAi"
+          [position]="compact() ? 'bottom' : 'right'"
+          [blockScroll]="true"
+          [styleClass]="compact() ? 'tb-sheet tb-editor-ai-drawer' : 'tb-editor-ai-drawer'"
+          [style]="compact() ? {} : { width: 'min(100vw, 25rem)' }"
+        >
+          <tb-lesson-plan-ai-panel
+            [hasText]="bodyValue().trim() !== ''"
+            [sources]="aiSources()"
+            [students]="lesson()?.studentIds ?? []"
+            [lesson]="lesson()?.facts ?? null"
+            [courseName]="courseName()"
+            [compact]="compact()"
+            (applied)="applyDraft($event)"
+          />
+        </p-drawer>
+      }
+
       <tb-bind-textbook-dialog
         [(visible)]="bindVisible"
         [headline]="t.bindTitle"
@@ -263,6 +322,13 @@ export class LessonPlanEditorPage implements OnInit, CanLeave {
   private readonly location = inject(Location);
   private readonly confirm = inject(Confirm);
   private readonly snackbar = inject(Snackbar);
+  private readonly aiApi = inject(AiApi);
+  private readonly size = injectWindowSize();
+  protected readonly compact = computed(() => this.size() === 'compact');
+  protected readonly aiEnabled = toSignal(this.aiApi.enabled$, { initialValue: false });
+  protected readonly aiOpen = signal(false);
+  /** The lesson of the plan as the AI knows it; `null` — none or not read. */
+  protected readonly lesson = signal<PlanLesson | null>(null);
 
   /** Route parameter of `/teacher/materials/plans/:planId`; none — a new plan. */
   readonly planId = input<string>();
@@ -271,8 +337,14 @@ export class LessonPlanEditorPage implements OnInit, CanLeave {
   /** Query `?studentId=` / `?groupId=` of a new lesson plan: the course is prefilled with theirs. */
   readonly studentId = input<string>();
   readonly groupId = input<string>();
+  /** Query `?course=` of a new plan of «Материалы» → «Создать»: the course open there. */
+  readonly course = input<string>();
   /** Route data: puts a new lesson plan on its lesson. */
   readonly linkToLesson = input<LinkToLesson>();
+  /** Route data: reads the lesson for the AI. */
+  readonly lessonOf = input<LessonOfPlan>();
+  /** Query `?ai=1` («С ИИ» of the lesson card): the assistant opens with the editor. */
+  readonly ai = input<string>();
 
   /** «Материалы» on the tab «Планы»; a lesson's plan — the schedule. */
   protected readonly back = computed<UrlTree>(() =>
@@ -299,10 +371,15 @@ export class LessonPlanEditorPage implements OnInit, CanLeave {
   private readonly value = toSignal(this.form.valueChanges, { initialValue: this.form.value });
   protected readonly courseId = computed(() => this.value().courseId ?? null);
   private readonly titleValue = computed(() => (this.value().title ?? '').trim());
+  protected readonly bodyValue = computed(() => this.value().body ?? '');
+  protected readonly courseName = computed(
+    () => this.courses().find((course) => course.id === this.courseId())?.name ?? null,
+  );
   protected readonly heading = computed(() => this.titleValue() || this.t.newTitle);
 
   protected readonly textbooks = signal<readonly PickedTextbook[]>([]);
   readonly videos = signal<readonly VideoDraft[]>([]);
+  protected readonly aiSources = computed(() => planAiSources(this.textbooks(), this.videos()));
   protected readonly bindVisible = signal(false);
   /** The textbook whose pages change; `null` — a new one. */
   protected readonly binding = signal<PickedTextbook | null>(null);
@@ -383,13 +460,57 @@ export class LessonPlanEditorPage implements OnInit, CanLeave {
     this.coursesApi.list(quietContext()).subscribe((courses) => {
       this.courses.set(courses);
     });
+    this.readLesson();
+    this.aiOpen.set(this.ai() === '1');
     this.linked = this.planId() !== undefined || this.lessonId() === undefined;
     if (this.planId() === undefined) {
+      this.form.controls.courseId.setValue(this.course() ?? null);
       this.drafts.mark(this.snapshot());
       this.prefillCourse();
     } else {
       this.load();
     }
+  }
+
+  /** The lesson's facts for the AI; a failed read leaves the assistant without them. */
+  private readLesson(): void {
+    const lessonId = this.lessonId();
+    const lessonOf = this.lessonOf();
+    if (lessonId === undefined || lessonOf === undefined) {
+      return;
+    }
+    lessonOf(lessonId).subscribe({
+      next: (lesson) => {
+        this.lesson.set(lesson);
+      },
+      error: () => {
+        // the draft goes without the lesson
+      },
+    });
+  }
+
+  /**
+   * The draft goes into the plan: the title when the plan has none, the text replaces or follows the old one, and
+   * on a replace the pages the AI chose narrow the bound textbooks (it never binds a textbook of its own).
+   */
+  applyDraft({ draft, mode }: AppliedPlan): void {
+    const { title, body } = this.form.controls;
+    if (title.value.trim() === '') {
+      title.setValue(draft.title);
+    }
+    const old = body.value.trimEnd();
+    body.setValue(mode === 'insert' && old !== '' ? `${old}\n\n${draft.body}` : draft.body);
+    body.markAsDirty();
+    if (mode === 'replace') {
+      const pages = new Map(draft.textbooks.map((entry) => [entry.textbookId, entry.pages]));
+      this.textbooks.update((list) =>
+        list.map((textbook) => ({
+          ...textbook,
+          pages: pages.get(textbook.textbookId) ?? textbook.pages,
+        })),
+      );
+    }
+    this.aiOpen.set(false);
   }
 
   /** A new lesson plan takes the current course of the lesson's student or group, unless one is chosen. */

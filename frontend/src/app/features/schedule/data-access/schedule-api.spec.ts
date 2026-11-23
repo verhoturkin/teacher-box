@@ -262,4 +262,16 @@ describe('ScheduleApi', () => {
     expect(backend.expectOne('/api/teacher/schedule/summary').request.method).toBe('GET');
     expect(backend.expectOne('/api/me/schedule/summary').request.method).toBe('GET');
   });
+
+  it("reads the student's period report for the days given, quietly", () => {
+    api.studentReport('s-1', '2026-10-01', '2026-10-31').subscribe();
+
+    const request = backend.expectOne(
+      (req) => req.url === '/api/teacher/schedule/students/s-1/report',
+    );
+    expect(request.request.params.get('from')).toBe('2026-10-01');
+    expect(request.request.params.get('to')).toBe('2026-10-31');
+    expect(request.request.context.get(SKIP_ERROR_TOAST)).toBe(true);
+    request.flush({});
+  });
 });

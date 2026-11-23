@@ -13,6 +13,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import ru.teacherbox.homework.api.JournalTask;
 import ru.teacherbox.homework.domain.HomeworkTask;
 import ru.teacherbox.homework.domain.TaskStatus;
 import ru.teacherbox.shared.persistence.OptimisticLock;
@@ -156,6 +157,21 @@ public class TaskRepository {
                 """)
                 .param("from", from).param("to", to)
                 .query(RecordRowMapper.of(WeekTask.class))
+                .list();
+    }
+
+    /** The tasks given to the student in {@code [from, to)}, oldest first, with their assignments' titles. */
+    public List<JournalTask> findGivenBetween(UUID studentId, Instant from, Instant to) {
+        return jdbc.sql("""
+                select t.id as task_id, t.assignment_id, a.title, t.assigned_at, a.due_at, t.status,
+                       t.submitted_at, t.reviewed_at, t.grade, t.teacher_comment
+                from homework.tasks t
+                join homework.assignments a on a.id = t.assignment_id
+                where t.student_id = :studentId and t.assigned_at >= :from and t.assigned_at < :to
+                order by t.assigned_at, t.id
+                """)
+                .param("studentId", studentId).param("from", from).param("to", to)
+                .query(RecordRowMapper.of(JournalTask.class))
                 .list();
     }
 

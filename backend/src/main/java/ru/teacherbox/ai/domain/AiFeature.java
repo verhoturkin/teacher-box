@@ -5,5 +5,7 @@ public enum AiFeature {
     HOMEWORK_DRAFT,
     REVIEW_DRAFT,
     LESSON_SUMMARY,
-    QUIZ_DRAFT
+    QUIZ_DRAFT,
+    LESSON_PLAN,
+    PERIOD_SUMMARY
 }

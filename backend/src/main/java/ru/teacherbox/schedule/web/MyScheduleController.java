@@ -88,7 +88,7 @@ class MyScheduleController {
         return queries.studentLesson(studentId(user), lessonId);
     }
 
-    /** The lesson plan of the student's lesson (roadmap 11). */
+    /** The lesson plan of the student's lesson (ADR-0071). */
     @GetMapping("/lessons/{lessonId}/plan")
     StudentLessonPlan plan(CurrentUser user, @PathVariable UUID lessonId) {
         return plans.studentPlan(studentId(user), lessonId);

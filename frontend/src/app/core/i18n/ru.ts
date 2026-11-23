@@ -29,6 +29,7 @@ export const ru = {
     newLessonPlan: 'Новый план урока',
     editLessonPlan: 'План урока',
     monthlyReport: 'Отчёт за месяц',
+    periodSummary: 'Итоги за период',
     help: 'Справка',
     account: 'Мой аккаунт',
     notFound: 'Страница не найдена',
@@ -274,6 +275,10 @@ export const ru = {
       'ai.provider.unavailable': 'Провайдер не ответил. Проверьте ключ, адрес и прокси',
       'ai.model.duplicate': 'Эта модель уже есть в подключении',
       'ai.model.not-found': 'Модель не найдена — возможно, её уже удалили',
+      'ai.period-invalid':
+        'Период должен заканчиваться не раньше начала и быть не длиннее 6 месяцев',
+      'ai.period-empty':
+        'За этот период у ученика нет ни занятий, ни заданий — ИИ не из чего составить итоги',
       // schedule
       'schedule.student-not-found': 'Ученик не найден или отключён',
       'schedule.lesson-not-found': 'Занятие не найдено',
@@ -286,7 +291,7 @@ export const ru = {
       'schedule.lesson-not-scheduled': 'Занятие уже проведено или отменено',
       'schedule.lesson-cancelled': 'Занятие отменено',
       'schedule.plan-linked': 'Этот план уже на другом занятии',
-      'schedule.bank-item': 'Из банка на занятие ничего не ставится — возьмите копию',
+      'schedule.bank-item': 'Шаблон на занятие не ставится — возьмите его копию',
       'schedule.assignment-linked': 'Это задание уже привязано к другому занятию',
       'schedule.plan-not-found': 'У занятия нет плана',
       'schedule.textbook-not-found': 'Этого учебника нет в плане занятия',
@@ -360,8 +365,8 @@ export const ru = {
       'textbooks.plan-title-invalid': 'Название плана — от 1 до 200 символов',
       'textbooks.plan-body-too-long': 'План слишком длинный — не больше 20 000 символов',
       'textbooks.plan-textbook-twice': 'Этот учебник уже есть в плане',
-      'textbooks.plan-in-bank': 'Этот план уже в банке',
-      'textbooks.plan-not-in-bank': 'Использовать можно только план из банка',
+      'textbooks.plan-in-bank': 'Этот план уже шаблон',
+      'textbooks.plan-not-in-bank': 'Использовать можно только шаблон плана',
       'textbooks.page-count-invalid': 'Число страниц — от 1 до 10 000',
       'textbooks.file-type-not-allowed':
         'Учебник — это PDF, Word (DOC, DOCX) или картинка PNG, JPEG, WebP, GIF',
@@ -377,8 +382,8 @@ export const ru = {
       'textbooks.pages-beyond': 'В учебнике меньше страниц',
       'textbooks.students-only': 'Учебники в личном кабинете есть только у учеников',
       'homework.textbook-not-found': 'Этого учебника в задании уже нет',
-      'homework.bank-item': 'Задание из банка не выдаётся — возьмите его копию',
-      'homework.not-in-bank': 'Использовать можно только задание из банка',
+      'homework.bank-item': 'Шаблон задания не выдаётся — возьмите его копию',
+      'homework.not-in-bank': 'Использовать можно только шаблон задания',
       'homework.quiz-started': 'Ученик уже начал тест: вопросы изменить нельзя',
       'homework.quiz-too-many-questions': 'В задании — не больше 50 вопросов',
       'homework.quiz-text-invalid':
@@ -393,6 +398,7 @@ export const ru = {
       'homework.quiz-duplicate-id': 'В тесте повторяется идентификатор вопроса или варианта',
       'homework.quiz-incomplete': 'Задание не выдано: в тесте есть незаконченные вопросы',
       'homework.quiz-attempts-invalid': 'Попыток может быть от 1 до 50 или без ограничений',
+      'homework.range-invalid': 'Конец периода раньше его начала',
       'video.link-invalid': 'Ссылка на видео должна начинаться с http:// или https://',
       'video.too-many': 'В задании — не больше 5 видео',
       'video.title-invalid': 'Название видео — до 200 символов',

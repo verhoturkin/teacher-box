@@ -49,23 +49,28 @@ Past lessons without an outcome are outlined in red. You can record outcomes fro
 
 ## Lesson plan
 
-A lesson’s details have a Lesson plan section. With no plan yet, choose **Write** to open the editor of this lesson’s plan; the course is \
-filled in from the student’s or group’s course. The plan saves itself and is attached to the lesson straight away; Done takes you back to the \
-schedule. Choose **From bank**, pick a plan and choose Use: the lesson gets its own copy and the bank original stays as it is. A cancelled \
-lesson cannot take a new plan.
+Lesson details change with time. Before a lesson starts, the plan and the homework come straight after the time and the topic; once it \
+has started, the outcome and the lesson summary come first, then the homework and the plan. The plan and the homework take one line each, \
+such as “Plan: Present Simple” or “Homework: 2 assignments · 1 to review”. Select a line to expand it in place, and again to collapse it.
 
-Once a lesson has a plan, its details show the title, the textbook pages and the videos. Open takes you to the plan editor. In the “⋮” menu, \
-**Remove from lesson** removes the plan after you confirm and deletes this lesson’s copy; the bank original stays. Students in the lesson and \
-their parents see the plan in their lesson details: the text, the textbook pages and the videos, with a transcript only when you show it. \
-See Textbooks for more about plans.
+With no plan yet, the details show **+ Plan**. **Write** opens the editor of this lesson’s plan; the course is filled in from the \
+student’s or group’s course. The plan saves itself and is attached to the lesson straight away; Done takes you back to the schedule. \
+**With AI** (when the AI assistant is on) opens the same editor with the assistant. Choose **From templates**, pick a plan and choose Use: \
+the lesson gets its own copy and the template stays as it is. A cancelled lesson cannot take a new plan.
+
+An expanded plan shows its text, the textbook pages and the videos. The plan’s “⋮” menu has **Open in editor** and **Remove from \
+lesson**, which removes the plan after you confirm and deletes this lesson’s copy; the template stays. Students in the lesson and their \
+parents see the same line in their lesson details; when they expand it, they see the text, the textbook pages and the videos, with a \
+transcript only when you show it. See Textbooks for more about plans.
 
 ## Lesson homework
 
-Below the plan, a lesson’s details have a Homework section listing the assignments linked to the lesson and their status (Not set, Set, \
-To review). **Set** opens the assignment editor for this lesson: the lesson’s students are already chosen, the course comes from the plan \
+With no homework yet, the details show **+ Homework** with Set and Link. Once there is homework, the “Homework: …” line says how many \
+assignments there are and how many pieces of work are waiting for review; expanded, it lists the assignments linked to the lesson with their \
+status (Not set, Set, To review) and the Set and Link buttons. **Set** opens the assignment editor for this lesson: the lesson’s students are already chosen, the course comes from the plan \
 (or from the student’s or group’s course), the plan’s textbook pages and videos are already added — remove what you don’t need — and the \
 due date is the next lesson. The assignment is linked to the lesson when it is first saved. **Link** lets you pick a recent assignment of \
-the lesson’s students that isn’t linked to any lesson yet, or an assignment from the bank: a bank assignment becomes a draft copy for the \
+the lesson’s students that isn’t linked to any lesson yet, or an assignment template: a template becomes a draft copy for the \
 lesson’s students, which you can open, edit and set. In the “⋮” menu, **Unlink** takes the assignment off the lesson; the assignment \
 itself stays. A cancelled lesson cannot take new homework.
 
@@ -78,6 +83,11 @@ field is empty. “Save” keeps your changes; “Send to student” or “Send 
 
 If AI is enabled, “Generate draft” uses the lesson topic, the assignments linked to the lesson and your notes to suggest a summary. Review it before sending. Completed \
 lessons with summaries appear in the student or group’s lesson history. In the bot, choose “Add summary” after recording a completed lesson.
+
+If the lesson has a plan, the summary shows **“Covered as planned”** instead of the “What we covered” field, and that is what students see. If \
+something was different, choose **“Not everything went to plan”** and note only the changes: students see “Covered as planned” followed by them. \
+For these lessons, “Generate draft” writes only the changes from your notes, and the bot asks what didn’t go to plan. You can send the summary \
+without any changes.
 
 ## Cancel, restore or delete
 

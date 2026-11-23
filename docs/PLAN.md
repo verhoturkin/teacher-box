@@ -23,40 +23,6 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
-## v0.61.0
-
-Goals: the AI drafts a lesson plan from the request, the student's tags and the materials, and
-summarizes a student's period. Starts only after the v0.60.0 PR is merged. Spec — roadmap/11 «AI
-(v0.61.0)». New ADR: 0072 «ИИ читает журнал периода» (465.1).
-
-### 464. AI lesson plan
-
-- [ ] 464.1 **B** *complex* — `ai`: feature `LESSON_PLAN` (enum migration, `SystemPrompts`,
-  resources `lesson-plan.system.v1`, `lesson-plan.user.v1`), `POST /api/teacher/ai/lesson-plan`
-  (JSON / multipart as `homework-draft`, `DraftSources` with videos, student context), the answer's
-  textbook pages checked against the given sources; tests on `FakeProvider`; `docs/modules/ai.md`.
-- [ ] 464.2 **F** *simple* — direction `textbooks` → `ai`; the AI pane in the plan editor (as
-  `features/ai/homework-ai-panel.ts`: sources — the plan's textbook pages and videos, context — the
-  lesson students' AI tags, the lesson's topic and the previous summary); «С ИИ» in the lesson
-  card's «План»; help.
-
-### 465. Period summary
-
-- [ ] 465.1 **B** *complex* — ADR-0072; `schedule::api.LessonJournal`, `homework::api.HomeworkJournal`
-  and the report endpoints of roadmap 02 stage B (`GET /api/teacher/schedule/students/{id}/report`,
-  `…/homework/students/{id}/report`); `ai` → `schedule::api`; feature `PERIOD_SUMMARY`, `POST
-  /api/teacher/ai/period-summary`, budgets; tests incl. the time-zone boundary of the period and
-  group lessons; `docs/modules/*.md`.
-- [ ] 465.2 **F** *complex* — `/teacher/students/:id/summary?from&to` («Итоги за период» in the
-  student card): period picker, facts (sections as feature parts), «Составить с ИИ», editable
-  draft, «Копировать», print stylesheet; help, `docs/screens/students.md`.
-
-### 466. Release 0.61.0
-
-- [ ] 466.1 *simple* — skill `release`: help, wiki, E2E (the AI mock drafts a plan and a summary),
-  CHANGELOG 0.61.0, versions, archive; move the facts of roadmap/11 into the module docs and ADRs,
-  delete it and mark row 11 of `roadmap/README.md` released.
-
 ## Backlog
 
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,

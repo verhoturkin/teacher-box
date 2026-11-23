@@ -28,8 +28,8 @@ Your parent may have sent a request too: it is marked “Parent’s request (Nam
 
 ## Lesson plan
 
-If your teacher has prepared a plan for a lesson, you’ll find it in the lesson details under Lesson plan: the plan text, the textbook pages \
-(open or download them) and the videos with a player. A video transcript appears only when your teacher shows it.
+If your teacher has prepared a plan for a lesson, its details have a “Plan: …” line. Select it to expand the plan: the text, the textbook \
+pages (open or download them) and the videos with a player. A video transcript appears only when your teacher shows it.
 
 ## Group lessons
 
@@ -38,7 +38,8 @@ If you cannot attend a group lesson, choose “I can’t attend”. Let your tea
 ## Lesson summaries
 
 When your teacher sends a summary, you will receive a “Lesson summary” notification. Open the lesson and read “What we covered”. Completed lessons \
-are also listed in “Lesson history” on the Schedule page. You can turn off summary notifications in “My account”.
+are also listed in “Lesson history” on the Schedule page. You can turn off summary notifications in “My account”. If the lesson followed its plan, \
+you will see “Covered as planned”, with anything different listed under “Changes to the plan”.
 
 ## Add lessons to your own calendar
 

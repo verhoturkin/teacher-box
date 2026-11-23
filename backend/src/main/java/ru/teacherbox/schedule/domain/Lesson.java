@@ -477,7 +477,7 @@ public final class Lesson {
         return assignmentIds;
     }
 
-    /** Prepared: it has a plan or homework, so a series change keeps it (roadmap 11). */
+    /** Prepared: it has a plan or homework, so a series change keeps it (ADR-0071). */
     public boolean prepared() {
         return planId != null || !assignmentIds.isEmpty();
     }

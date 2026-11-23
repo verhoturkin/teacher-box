@@ -3,10 +3,11 @@ import { courseId } from '../support/courses';
 import { bearer, startSession } from '../support/session';
 
 /**
- * Courses, lesson plans and the bank (roadmap 11, ADR-0071): a course on the student, a plan on a
- * lesson that the student reads, homework given at the lesson, both originals in the bank, and
- * «Использовать» makes copies while the bank stays as it is. An automatic YouTube transcript is
- * not here: YouTube is outside the test instance.
+ * Courses, lesson plans and the bank (ADR-0071): a course on the student, a plan on a lesson that
+ * the student reads, homework given at the lesson, both originals in the bank, and «Использовать»
+ * makes copies while the bank stays as it is; a held lesson with a plan reads «Прошли по плану»
+ * to the student, with the deviations under «Не по плану» (466.3). An automatic YouTube transcript
+ * is not here: YouTube is outside the test instance.
  */
 
 const PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -214,11 +215,80 @@ test('a course plan on a lesson, homework at it, and the bank that «Испол�
     uses: (homeworkOriginal?.uses ?? 0) + 1,
   });
 
-  // The teacher sees both originals in the banks of «Материалы».
+  // The teacher sees both originals among the templates of «Материалы» (466.1: list-detail), under
+  // the course in the list and on the tabs «Планы» and «Задания».
   await page.setViewportSize({ width: 1440, height: 900 });
   await startSession(page, 'teacher', PASSWORD);
   await page.goto('/teacher/materials?tab=plans');
   await expect(page.getByText(title, { exact: true }).first()).toBeVisible();
-  await page.goto('/teacher/materials?tab=assignments');
+  const places = page.getByRole('navigation', { name: 'Разделы материалов' });
+  await places.getByRole('link', { name: /^Английский A2[ ,]/ }).click();
+  await expect(page).toHaveURL(new RegExp(`course=${course}&tab=plans`));
+  await expect(page.getByRole('heading', { level: 2, name: 'Английский A2' })).toBeVisible();
+  await expect(page.getByText(title, { exact: true }).first()).toBeVisible();
+  await page.getByRole('tab', { name: 'Задания', exact: true }).click();
   await expect(page.getByText(homeworkTitle, { exact: true }).first()).toBeVisible();
+  // «Создать» → «План урока» starts a template of the chosen course
+  await page
+    .locator('tb-page-header')
+    .getByRole('button', { name: 'Создать', exact: true })
+    .click();
+  await page.getByRole('menuitem', { name: 'План урока' }).click();
+  await expect(page).toHaveURL(new RegExp(`/teacher/materials/plans/new\\?course=${course}$`));
+});
+
+test('a held lesson with a plan reads «Прошли по плану» to the student, with the deviations', async ({
+  page,
+  request,
+}) => {
+  const stamp = String(Date.now());
+  const teacher = await bearer(request);
+  const boris = await student(request, teacher, `Борис План ${stamp}`);
+  const deviation = `Не успели упражнение 5 ${stamp}`;
+  // Two held lessons with a plan: the first went by the plan, the second had a deviation.
+  for (const [days, summary] of [
+    [-3, null],
+    [-2, deviation],
+  ] as const) {
+    const held = await lesson(
+      request,
+      teacher,
+      boris.id,
+      days,
+      `Урок по плану ${String(days)} ${stamp}`,
+    );
+    const plan = await json<Plan>(
+      await request.post('/api/teacher/textbooks/plans', {
+        headers: teacher,
+        data: { title: `План ${String(days)} ${stamp}`, body: 'Разминка' },
+      }),
+    );
+    await json<Lesson>(
+      await request.put(`/api/teacher/schedule/lessons/${held.id}/plan`, {
+        headers: teacher,
+        data: { planId: plan.id },
+      }),
+    );
+    const marked = await request.put(`/api/teacher/schedule/lessons/${held.id}/outcome`, {
+      headers: teacher,
+      data: { outcome: 'CONDUCTED' },
+    });
+    expect(marked.ok()).toBe(true);
+    if (summary !== null) {
+      await json<unknown>(
+        await request.put(`/api/teacher/schedule/lessons/${held.id}/summary`, {
+          headers: teacher,
+          data: { summary, nextPlan: '' },
+        }),
+      );
+    }
+  }
+
+  // The student's history: both lessons read «Прошли по плану», the second lists its deviation.
+  await startSession(page, boris.login, STUDENT_PASSWORD);
+  await page.goto('/cabinet/schedule');
+  const history = page.getByRole('list', { name: 'История занятий' });
+  await expect(history.getByText('Прошли по плану')).toHaveCount(2);
+  await expect(history.getByText('Не по плану')).toHaveCount(1);
+  await expect(history.getByText(deviation)).toBeVisible();
 });

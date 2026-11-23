@@ -123,6 +123,13 @@ describe('StudentCard', () => {
     expect(header()).toContain('Оплата');
   });
 
+  it('leads to the period summary of the student, a deactivated one too (465.2)', async () => {
+    await render(row({ status: 'DEACTIVATED' }));
+
+    const link = requireElement(host, '[aria-label="Итоги за период"]', HTMLAnchorElement);
+    expect(link.getAttribute('href')).toBe('/teacher/students/m/summary');
+  });
+
   it('leaves the name and «⋮» to the page header on one pane', async () => {
     await render(row(), { single: true });
 

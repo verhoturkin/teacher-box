@@ -7,7 +7,7 @@ import org.jspecify.annotations.Nullable;
 import ru.teacherbox.shared.error.BusinessRuleException;
 
 /**
- * A lesson plan (roadmap 11): a Markdown plan with textbook pages and videos.
+ * A lesson plan (ADR-0071): a Markdown plan with textbook pages and videos.
  *
  * @param courseId the course of the plan; {@code null} — none
  * @param bank     an original kept in the bank for reuse; else a working plan of one lesson

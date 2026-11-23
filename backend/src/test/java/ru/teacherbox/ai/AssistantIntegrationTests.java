@@ -293,7 +293,7 @@ class AssistantIntegrationTests {
                 .bodyJson().satisfies(json -> assertThat(json).extractingPath("$.summary")
                         .isEqualTo("Повторили дроби.\n- сложение"));
         assertThat(llm.lastRequest().prompt()).contains("Дроби", "— Задача 1", "— Задача 2",
-                "<words>\nрешали примеры\n</words>");
+                "<words>\nрешали примеры\n</words>").doesNotContain("план");
         assertThat(thisMonth()).singleElement()
                 .satisfies(logged -> assertThat(logged.feature()).isEqualTo(AiFeature.LESSON_SUMMARY));
     }
@@ -309,10 +309,163 @@ class AssistantIntegrationTests {
     }
 
     @Test
+    void withAPlanTheLessonSummaryDraftHoldsOnlyTheDeviationsOrNothing() {
+        llm.answer("{\"summary\": \" Не успели упражнение 5. \"}", 1, 1);
+        llm.answer("{\"summary\": \" \"}", 1, 1);
+        String body = """
+                {"topic": "Дроби", "words": "не успели упр. 5", "planTitle": "Сложение дробей"}
+                """;
+
+        assertThat(post("/api/teacher/ai/lesson-summary", body)).hasStatusOk().bodyJson()
+                .extractingPath("$.summary").isEqualTo("Не успели упражнение 5.");
+        assertThat(llm.lastRequest().prompt()).contains("Тема урока: Дроби\n\nК уроку привязан план «Сложение дробей»",
+                "только то, что прошло не по плану", "\n\nЗадания, выданные на уроке:").doesNotContain("{{");
+        assertThat(post("/api/teacher/ai/lesson-summary", body)).as("all by the plan").hasStatusOk().bodyJson()
+                .extractingPath("$.summary").isEqualTo("");
+        assertThat(post("/api/teacher/ai/lesson-summary", SUMMARY_BODY.replace("}", ", \"planTitle\": \""
+                + "п".repeat(201) + "\"}"))).hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
     void unusableLessonSummaryIsReported() {
         llm.answer("{\"summary\": \" \"}", 1, 1);
 
         assertThat(post("/api/teacher/ai/lesson-summary", SUMMARY_BODY)).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
+    }
+
+    @Test
+    void draftsLessonPlanKeepingOnlyTheSentPages() {
+        UUID textbook = UUID.randomUUID();
+        when(textbooks.find(textbook)).thenReturn(Optional.of(new TextbookSummary(textbook, TextbookKind.TEXTBOOK,
+                "Spotlight 5", null, null, TextbookFormat.PDF, 120)));
+        when(textbooks.content(eq(textbook), any())).thenReturn(new TextbookContent("Spotlight 5.pdf",
+                "application/pdf", 4, new ByteArrayResource("%PDF".getBytes(StandardCharsets.UTF_8))));
+        llm.answer("""
+                {"title": "  Present Simple  ", "body": " ## Цель\\n1. Разминка — 5 мин ",
+                 "textbooks": [{"source": 0, "pages": "10–11"}, {"source": 0, "pages": "12"},
+                               {"source": 0, "pages": "11-13"}, {"source": 1, "pages": "1"},
+                               {"source": 5, "pages": "1"}, {"source": -1, "pages": "1"},
+                               {"source": 0, "pages": "страница"}, {"source": null, "pages": "10"}, null]}
+                """, 300, 200);
+
+        assertThat(post("/api/teacher/ai/lesson-plan", """
+                {"prompt": "Урок по Present Simple, 45 минут", "courseName": "A2",
+                 "lesson": {"topic": "Present Simple", "previousSummary": "Повторили to be",
+                            "previousNextPlan": "Начать Present Simple"},
+                 "sources": [{"type": "TEXTBOOK", "id": "%s", "pages": "10-12"},
+                             {"type": "VIDEO", "title": "Routines", "url": "https://youtu.be/aaaaaaaaaaa",
+                              "transcript": "[0:05] I get up at seven"}],
+                 "context": [{"name": "Уровень английского", "value": "A2"}]}
+                """.formatted(textbook)))
+                .hasStatusOk()
+                .bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.title").isEqualTo("Present Simple");
+                    assertThat(json).extractingPath("$.body").isEqualTo("## Цель\n1. Разминка — 5 мин");
+                    assertThat(json).extractingPath("$.textbooks.length()").isEqualTo(1);
+                    assertThat(json).extractingPath("$.textbooks[0].source").isEqualTo(0);
+                    assertThat(json).extractingPath("$.textbooks[0].textbookId").isEqualTo(textbook.toString());
+                    assertThat(json).extractingPath("$.textbooks[0].pages").isEqualTo("10-12");
+                });
+
+        LlmRequest request = llm.lastRequest();
+        assertThat(request.system()).contains("планы уроков", "textbooks", "[м:сс]").doesNotContain("{{");
+        assertThat(request.prompt())
+                .startsWith("Об учениках")
+                .contains("<students>\nУровень английского: A2\n</students>",
+                        "<lesson>\nТема урока: Present Simple\nИтоги прошлого урока: Повторили to be\n"
+                                + "Что наметили на этот урок: Начать Present Simple\n</lesson>",
+                        "Курс: A2", "0 — «Spotlight 5», с. 10-12",
+                        "<request>\nУрок по Present Simple, 45 минут\n</request>")
+                .doesNotContain("{{");
+        assertThat(request.sources()).extracting(source -> source.name()).containsExactly("Spotlight 5, с. 10-12",
+                "Расшифровка видео «Routines» (https://youtu.be/aaaaaaaaaaa)");
+        assertThat(request.schemaName()).isEqualTo("lesson_plan");
+        assertThat(request.schema()).extractingByKey("required").isEqualTo(java.util.List.of("title", "body",
+                "textbooks"));
+        assertThat(thisMonth()).singleElement().satisfies(logged -> {
+            assertThat(logged.feature()).isEqualTo(AiFeature.LESSON_PLAN);
+            assertThat(logged.status()).isEqualTo(RequestStatus.SUCCEEDED);
+        });
+    }
+
+    @Test
+    void aWholeTextbookAllowsItsPagesAndAPlanNeedsNoLesson() {
+        UUID textbook = UUID.randomUUID();
+        when(textbooks.find(textbook)).thenReturn(Optional.of(new TextbookSummary(textbook, TextbookKind.TEXTBOOK,
+                "Рабочая тетрадь", null, null, TextbookFormat.PDF, 3)));
+        when(textbooks.content(eq(textbook), any())).thenReturn(new TextbookContent("t.pdf",
+                "application/pdf", 4, new ByteArrayResource("%PDF".getBytes(StandardCharsets.UTF_8))));
+        llm.answer("""
+                {"title": "Т", "body": "П", "textbooks": [{"source": 0, "pages": "3"}, {"source": 0, "pages": "4"}]}
+                """, 1, 1);
+        llm.answer("{\"title\": \"Т\", \"body\": \"П\", \"textbooks\": null}", 1, 1);
+
+        assertThat(post("/api/teacher/ai/lesson-plan", """
+                {"prompt": "Урок", "sources": [{"type": "TEXTBOOK", "id": "%s"}]}
+                """.formatted(textbook)))
+                .hasStatusOk().bodyJson().satisfies(json -> {
+                    assertThat(json).extractingPath("$.textbooks.length()").isEqualTo(1);
+                    assertThat(json).extractingPath("$.textbooks[0].pages").isEqualTo("3");
+                });
+        assertThat(llm.lastRequest().prompt()).contains("0 — «Рабочая тетрадь», с. 1-3");
+
+        assertThat(post("/api/teacher/ai/lesson-plan", "{\"prompt\": \"Урок\"}"))
+                .hasStatusOk().bodyJson().extractingPath("$.textbooks").asArray().isEmpty();
+        assertThat(llm.lastRequest().prompt()).doesNotContain("<lesson>", "<students>")
+                .contains("Курс: —", "опирайся на них): —", "(номер — приложенные страницы):\n—");
+    }
+
+    @Test
+    void draftsLessonPlanFromFilesSentWithTheRequest() {
+        llm.answer("{\"title\": \"Т\", \"body\": \"П\", \"textbooks\": [{\"source\": 0, \"pages\": \"1\"}]}", 1, 1);
+        MockMultipartFile brief = new MockMultipartFile("brief", "", MediaType.APPLICATION_JSON_VALUE,
+                "{\"prompt\": \"Урок по этому файлу\"}".getBytes(StandardCharsets.UTF_8));
+        MockMultipartFile scan = new MockMultipartFile("files", "Скан.png", "image/png", new byte[] {1, 2, 3});
+
+        assertThat(mvc.post().uri("/api/teacher/ai/lesson-plan").with(TestUsers.teacher(TEACHER))
+                .multipart().file(brief).file(scan))
+                .hasStatusOk()
+                .bodyJson().extractingPath("$.textbooks").asArray().as("a file is not a textbook").isEmpty();
+        assertThat(llm.lastRequest().sources()).singleElement()
+                .satisfies(source -> assertThat(source.name()).isEqualTo("Скан.png"));
+        assertThat(mvc.post().uri("/api/teacher/ai/lesson-plan").with(TestUsers.teacher(TEACHER))
+                .multipart().file(new MockMultipartFile("brief", "", MediaType.APPLICATION_JSON_VALUE,
+                        "{\"prompt\": \" \"}".getBytes(StandardCharsets.UTF_8))))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void unusableOrInvalidLessonPlans() {
+        llm.answer("{\"title\": \"Т\", \"body\": \" \", \"textbooks\": []}", 1, 1);
+        llm.answer("{\"title\": \"" + "Т".repeat(250) + "\", \"body\": \"П\", \"textbooks\": []}", 1, 1);
+
+        assertThat(post("/api/teacher/ai/lesson-plan", "{\"prompt\": \"Урок\"}"))
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+                .bodyJson().extractingPath("$.code").isEqualTo("ai.invalid-answer");
+        assertThat(post("/api/teacher/ai/lesson-plan", "{\"prompt\": \"Урок\"}"))
+                .hasStatusOk().bodyJson().extractingPath("$.title").asString().hasSize(200);
+        assertThat(post("/api/teacher/ai/lesson-plan", "{\"prompt\": \" \"}")).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(post("/api/teacher/ai/lesson-plan", "{\"prompt\": \"У\", \"lesson\": {\"topic\": \""
+                + "т".repeat(501) + "\"}}")).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(post("/api/teacher/ai/lesson-plan", "{\"prompt\": \"У\", \"courseName\": \""
+                + "к".repeat(101) + "\"}")).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(post("/api/teacher/ai/lesson-plan", """
+                {"prompt": "У", "sources": [{"type": "VIDEO", "url": "https://youtu.be/aaaaaaaaaaa"}]}
+                """)).hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void onlyTheTeacherDraftsLessonPlans() {
+        String body = "{\"prompt\": \"Урок\"}";
+        assertThat(mvc.post().uri("/api/teacher/ai/lesson-plan").with(TestUsers.student(UUID.randomUUID()))
+                .contentType(MediaType.APPLICATION_JSON).content(body)).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.post().uri("/api/teacher/ai/lesson-plan").with(TestUsers.guardian(UUID.randomUUID()))
+                .contentType(MediaType.APPLICATION_JSON).content(body)).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.post().uri("/api/teacher/ai/lesson-plan").with(TestUsers.admin(UUID.randomUUID()))
+                .contentType(MediaType.APPLICATION_JSON).content(body)).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.post().uri("/api/teacher/ai/lesson-plan")
+                .contentType(MediaType.APPLICATION_JSON).content(body)).hasStatus(HttpStatus.UNAUTHORIZED);
+        assertThat(llm.lastRequest()).isNull();
     }
 
     @Test

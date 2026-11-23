@@ -141,3 +141,44 @@
     }
   }
 }
+
+/*
+ * The pill indicator of a navigation item (M3E navigation rail and drawer: secondary-container) in
+ * `::before` and the state layer of hover and focus over it in `::after`, both under the item's content
+ * (the element is `position: relative; isolation: isolate`). The indicator springs out from its middle;
+ * the active item sets `&::before { opacity: 1; transform: none; }` (`nav-indicator-on`). The rail
+ * (`side-nav.scss`) and the menu of a list pane (`tb-nav-menu`, `_nav-menu.scss`) share it.
+ */
+@mixin nav-indicator {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    border-radius: inherit;
+    background: var(--p-md-secondary-container);
+    opacity: 0;
+    transform: scaleX(0.4);
+    transition:
+      transform var(--tb-spring-default-spatial),
+      opacity var(--tb-spring-fast-effects);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--tb-spring-fast-effects);
+  }
+}
+
+@mixin nav-indicator-on {
+  &::before {
+    opacity: 1;
+    transform: none;
+  }
+}

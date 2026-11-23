@@ -268,7 +268,11 @@ export class GroupCard {
     const tags: HeaderTag[] = [];
     const course = this.courses().find((entry) => entry.id === this.courseId());
     if (course !== undefined) {
-      tags.push({ value: course.name, severity: 'secondary', icon: 'tb-i tb-i-school' });
+      tags.push({
+        value: course.name,
+        severity: 'secondary',
+        icon: 'tb-i tb-i-collections_bookmark',
+      });
     }
     if (!this.current()) {
       tags.push({ value: T.groups.archived, severity: 'secondary' });

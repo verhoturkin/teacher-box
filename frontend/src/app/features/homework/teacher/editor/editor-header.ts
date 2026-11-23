@@ -11,7 +11,7 @@ import { T } from '@features/homework/i18n/texts';
 /**
  * The header of the assignment editor: the title as it is typed, «Как увидит ученик» of the test, the AI
  * assistant and «Выдать» of a draft (with «Выдать и разместить на доске»; a phone has «Выдать» alone) or
- * «Сохранить» of an issued assignment. A bank item (roadmap 11) has «Готово» instead and the tag «В банке»; «⋮»
+ * «Сохранить» of an issued assignment. A bank item (ADR-0071) has «Готово» instead and the tag «В банке»; «⋮»
  * keeps «Сохранить в банк» / «Обновить в банке» of a saved working assignment.
  */
 @Component({
@@ -49,19 +49,6 @@ import { T } from '@features/homework/i18n/texts';
           [ariaExpanded]="aiExpanded()"
           (onClick)="toggleAi.emit()"
         />
-      }
-      @if (moreItems().length > 0) {
-        <p-button
-          icon="tb-i tb-i-more_vert"
-          [text]="true"
-          [rounded]="true"
-          severity="secondary"
-          [ariaLabel]="b.more"
-          aria-haspopup="menu"
-          [loading]="banking()"
-          (onClick)="more.toggle($event)"
-        />
-        <p-menu #more [model]="moreItems()" [popup]="true" appendTo="body" />
       }
       @if (bank()) {
         @if (savedAt(); as at) {
@@ -107,6 +94,20 @@ import { T } from '@features/homework/i18n/texts';
           [loading]="pending()"
           (onClick)="save.emit(false)"
         />
+      }
+      <!-- M3: the overflow menu is the last of the header actions -->
+      @if (moreItems().length > 0) {
+        <p-button
+          icon="tb-i tb-i-more_vert"
+          [text]="true"
+          [rounded]="true"
+          severity="secondary"
+          [ariaLabel]="b.more"
+          aria-haspopup="menu"
+          [loading]="banking()"
+          (onClick)="more.toggle($event)"
+        />
+        <p-menu #more [model]="moreItems()" [popup]="true" appendTo="body" />
       }
     </tb-page-header>
   `,

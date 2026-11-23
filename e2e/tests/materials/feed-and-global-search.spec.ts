@@ -95,14 +95,21 @@ test.beforeAll(async ({ request }) => {
   expect(textbook.ok()).toBe(true);
 });
 
-test('Materials show boards and textbooks in one feed and a card opens', async ({ page }) => {
+test('Materials list the courses beside the feed, «Доски» shows the boards and a card opens', async ({
+  page,
+}) => {
   await page.setViewportSize(WIDE);
   await signIn(page, 'teacher', TEACHER_PASSWORD);
   await page.goto('/teacher/materials');
-  await expect(page.getByRole('link', { name: BOARD })).toBeVisible();
-  await page.getByRole('button', { name: /^Учебники/ }).click();
+  // 466.1: list-detail — «Все материалы» opens on «Учебники»
+  const places = page.getByRole('navigation', { name: 'Разделы материалов' });
+  await expect(places.getByRole('link', { name: /^Все материалы/ })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
   await expect(page.getByRole('button', { name: `Открыть ${TEXTBOOK}` })).toBeVisible();
-  await page.getByRole('button', { name: /^Доски/ }).click();
+  await places.getByRole('link', { name: /^Доски/ }).click();
+  await expect(page).toHaveURL(/\/teacher\/materials\?tab=boards$/);
   await page.getByRole('link', { name: BOARD }).click();
   await expect(page).toHaveURL(/\/teacher\/boards\/[0-9a-f-]+$/);
 });

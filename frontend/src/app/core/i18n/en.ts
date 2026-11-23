@@ -31,6 +31,7 @@ export const en: Translation<typeof ru> = {
     newLessonPlan: 'New lesson plan',
     editLessonPlan: 'Lesson plan',
     monthlyReport: 'Monthly report',
+    periodSummary: 'Period summary',
     help: 'Help',
     account: 'My account',
     notFound: 'Page not found',
@@ -280,6 +281,10 @@ export const en: Translation<typeof ru> = {
       'ai.provider.unavailable': 'The provider did not respond. Check the key, address and proxy',
       'ai.model.duplicate': 'This connection already has this model',
       'ai.model.not-found': 'The model is not found — it may have been deleted',
+      'ai.period-invalid':
+        'The period must not end before it starts and must be at most 6 months long',
+      'ai.period-empty':
+        'The student has no lessons or homework in this period, so the AI has nothing to summarise',
       // schedule
       'schedule.student-not-found': 'The student could not be found or their account is disabled',
       'schedule.lesson-not-found': 'Lesson not found',
@@ -292,7 +297,7 @@ export const en: Translation<typeof ru> = {
       'schedule.lesson-not-scheduled': 'This lesson has already been completed or cancelled',
       'schedule.lesson-cancelled': 'The lesson is cancelled',
       'schedule.plan-linked': 'This plan is already on another lesson',
-      'schedule.bank-item': 'Nothing from the bank goes on a lesson — use a copy of it',
+      'schedule.bank-item': 'A template can’t go on a lesson — use a copy of it',
       'schedule.assignment-linked': 'This assignment is already on another lesson',
       'schedule.plan-not-found': 'The lesson has no plan',
       'schedule.textbook-not-found': 'This textbook isn’t in the lesson plan',
@@ -371,8 +376,8 @@ export const en: Translation<typeof ru> = {
       'textbooks.plan-title-invalid': 'Plan titles must be between 1 and 200 characters',
       'textbooks.plan-body-too-long': 'The plan is too long — at most 20,000 characters',
       'textbooks.plan-textbook-twice': 'This textbook is already in the plan',
-      'textbooks.plan-in-bank': 'This plan is already in the bank',
-      'textbooks.plan-not-in-bank': 'Only a plan from the bank can be used',
+      'textbooks.plan-in-bank': 'This plan is already a template',
+      'textbooks.plan-not-in-bank': 'Only a plan template can be used',
       'textbooks.page-count-invalid': 'Enter a page count between 1 and 10,000',
       'textbooks.file-type-not-allowed':
         'Use a PDF, Word document (DOC or DOCX), or PNG, JPEG, WebP or GIF image',
@@ -388,8 +393,8 @@ export const en: Translation<typeof ru> = {
       'textbooks.pages-beyond': 'One or more page numbers are beyond the end of the textbook',
       'textbooks.students-only': 'Textbooks are only available to student accounts',
       'homework.textbook-not-found': 'This textbook is no longer attached to the assignment',
-      'homework.bank-item': 'An assignment from the bank can’t be assigned — use a copy of it',
-      'homework.not-in-bank': 'Only an assignment from the bank can be used',
+      'homework.bank-item': 'A template can’t be assigned — use a copy of it',
+      'homework.not-in-bank': 'Only an assignment template can be used',
       'homework.quiz-started': 'A student has started the quiz: the questions cannot be changed',
       'homework.quiz-too-many-questions': 'An assignment can have up to 50 questions',
       'homework.quiz-text-invalid':
@@ -403,6 +408,7 @@ export const en: Translation<typeof ru> = {
       'homework.quiz-duplicate-id': 'A question or option ID is duplicated in this quiz',
       'homework.quiz-incomplete': 'Not assigned yet. Some quiz questions are unfinished',
       'homework.quiz-attempts-invalid': 'Allow between 1 and 50 attempts, or choose unlimited',
+      'homework.range-invalid': 'The period ends before it starts',
       'video.link-invalid': 'Video links must start with http:// or https://',
       'video.too-many': 'An assignment can have up to 5 videos',
       'video.title-invalid': 'Video titles must be 200 characters or fewer',

@@ -1,15 +1,26 @@
 package ru.teacherbox.ai.application;
 
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import ru.teacherbox.ai.application.AiViews.HomeworkBrief;
 import ru.teacherbox.ai.application.AiViews.HomeworkDraft;
+import ru.teacherbox.ai.application.AiViews.LessonFacts;
+import ru.teacherbox.ai.application.AiViews.LessonPlanBrief;
+import ru.teacherbox.ai.application.AiViews.LessonPlanDraft;
+import ru.teacherbox.ai.application.AiViews.PeriodSummaryBrief;
+import ru.teacherbox.ai.application.AiViews.PeriodSummaryDraft;
+import ru.teacherbox.ai.application.AiViews.PlanPages;
 import ru.teacherbox.ai.application.AiViews.LessonSummaryBrief;
 import ru.teacherbox.ai.application.AiViews.LessonSummaryDraft;
 import ru.teacherbox.ai.application.AiViews.ReviewBrief;
@@ -21,11 +32,12 @@ import ru.teacherbox.ai.domain.RequestStatus;
 import ru.teacherbox.homework.api.QuizDrafts;
 import ru.teacherbox.shared.error.BusinessRuleException;
 import ru.teacherbox.shared.error.ConflictException;
+import ru.teacherbox.textbooks.api.PageRanges;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * The teacher's assistant: drafts of homework and of reviews. Answers are always drafts that the
+ * The teacher's assistant: drafts of homework, quizzes, reviews, lesson summaries, lesson plans and period summaries. Answers are always drafts that the
  * teacher edits. No transaction is held while the model is working; every call is logged.
  */
 @Service
@@ -33,10 +45,21 @@ public class AiAssistant {
 
     static final String HOMEWORK_PROMPT = "homework-draft.user.v4";
     static final String REVIEW_PROMPT = "review-draft.user.v2";
-    static final String LESSON_SUMMARY_PROMPT = "lesson-summary.user.v1";
+    static final String LESSON_SUMMARY_PROMPT = "lesson-summary.user.v2";
+    /** The rule «only the deviations» of a lesson with a plan (466.3). */
+    static final String LESSON_SUMMARY_PLAN_PROMPT = "lesson-summary-plan.v1";
     static final String QUIZ_PROMPT = "quiz-draft.user.v2";
+    static final String LESSON_PLAN_PROMPT = "lesson-plan.user.v1";
+    static final String LESSON_PROMPT = "lesson-context.v1";
+    static final String PERIOD_SUMMARY_PROMPT = "period-summary.user.v1";
     static final String STUDENTS_PROMPT = "student-context.v1";
     static final int MAX_TITLE = 200;
+    /** As a plan of the {@code textbooks} module keeps them. */
+    static final int MAX_PLAN_BODY = 20_000;
+    static final int MAX_PERIOD_SUMMARY = 20_000;
+    /** The longest period a summary covers. */
+    static final int MAX_PERIOD_MONTHS = 6;
+    private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     static final Map<String, Object> HOMEWORK_SCHEMA = object(
             "title", property("string", "Короткое название задания"),
@@ -65,7 +88,27 @@ public class AiAssistant {
                             "right", property("string", "Справа"))), "Пары соответствия"))));
 
     static final Map<String, Object> LESSON_SUMMARY_SCHEMA = object(
-            "summary", property("string", "Итоги урока в Markdown: что прошли"));
+            "summary", property("string", "Итоги урока в Markdown: что прошли (с планом — только отклонения от него)"));
+
+    static final Map<String, Object> LESSON_PLAN_SCHEMA = object(
+            "title", property("string", "Короткое название плана, обычно тема урока"),
+            "body", property("string", "План урока в Markdown"),
+            "textbooks", array(object(
+                    "source", property("integer", "Номер учебника из списка в запросе"),
+                    "pages", property("string", "Страницы этого учебника, например 12-13, 15"))));
+
+    static final Map<String, Object> PERIOD_SUMMARY_SCHEMA = object(
+            "summary", property("string", "Итоги периода в Markdown по разделам"));
+
+    private record PeriodSummaryAnswer(@Nullable String summary) {
+    }
+
+    private record PlanAnswer(@Nullable String title, @Nullable String body,
+            @Nullable List<@Nullable PagesAnswer> textbooks) {
+    }
+
+    private record PagesAnswer(@Nullable Integer source, @Nullable String pages) {
+    }
 
     private record QuizAnswer(@Nullable List<QuizDrafts.Draft> questions) {
     }
@@ -85,10 +128,12 @@ public class AiAssistant {
     private final SystemPrompts systemPrompts;
     private final AiUsage usage;
     private final DraftSources sources;
+    private final PeriodFacts periods;
     private final JsonMapper json;
 
     public AiAssistant(LlmClients llm, PromptTemplates prompts, SystemPrompts systemPrompts,
-            AiUsage usage, DraftSources sources, JsonMapper json, QuizDrafts quizDrafts) {
+            AiUsage usage, DraftSources sources, PeriodFacts periods, JsonMapper json, QuizDrafts quizDrafts) {
+        this.periods = periods;
         this.quizDrafts = quizDrafts;
         this.llm = llm;
         this.prompts = prompts;
@@ -141,6 +186,116 @@ public class AiAssistant {
         });
     }
 
+    /**
+     * A draft of a lesson plan from the teacher's request, the lesson and the materials it names; the textbook pages
+     * of the answer are kept only within the pages sent.
+     */
+    public LessonPlanDraft lessonPlan(LessonPlanBrief brief) {
+        List<DraftSources.Material> materials = sources.materials(brief.sources());
+        List<String> textbooks = new ArrayList<>();
+        for (int i = 0; i < materials.size(); i++) {
+            DraftSources.SentPages sent = materials.get(i).textbook();
+            if (sent != null) {
+                textbooks.add(i + " — «" + sent.title() + "», с. " + sent.pages().text());
+            }
+        }
+        Map<String, String> values = Map.of(
+                "students", students(brief.context()),
+                "lesson", lesson(brief.lesson()),
+                "course", orDash(brief.courseName()),
+                "sources", materials.isEmpty() ? "—"
+                        : materials.stream().map(material -> material.source().name())
+                                .collect(Collectors.joining("; ")),
+                "textbooks", textbooks.isEmpty() ? "—" : String.join("\n", textbooks),
+                "prompt", brief.prompt().strip());
+        LlmRequest request = new LlmRequest(systemPrompts.text(AiFeature.LESSON_PLAN),
+                prompts.render(LESSON_PLAN_PROMPT, values), "lesson_plan", LESSON_PLAN_SCHEMA,
+                materials.stream().map(DraftSources.Material::source).toList());
+        return call(AiFeature.LESSON_PLAN, brief.modelId(), request, PlanAnswer.class, answer -> {
+            String title = answer.title() == null ? "" : answer.title().strip();
+            String body = answer.body() == null ? "" : answer.body().strip();
+            if (title.isEmpty() || body.isEmpty()) {
+                return null;
+            }
+            return new LessonPlanDraft(cut(title, MAX_TITLE), cut(body, MAX_PLAN_BODY),
+                    pages(answer.textbooks(), materials));
+        });
+    }
+
+    /** The {@code <lesson>} block of the plan's user prompt; empty without a lesson. */
+    private String lesson(@Nullable LessonFacts lesson) {
+        return lesson == null ? "" : prompts.render(LESSON_PROMPT, Map.of(
+                "topic", orDash(lesson.topic()),
+                "previousSummary", orDash(lesson.previousSummary()),
+                "previousNextPlan", orDash(lesson.previousNextPlan())));
+    }
+
+    /**
+     * The pages the model pointed at, one entry per textbook in the order named: a source that is not a textbook
+     * sent by pages, pages that do not parse or lie outside those sent are dropped.
+     */
+    private static List<PlanPages> pages(@Nullable List<@Nullable PagesAnswer> answered, List<DraftSources.Material> materials) {
+        if (answered == null) {
+            return List.of();
+        }
+        Map<Integer, Set<Integer>> chosen = new LinkedHashMap<>();
+        for (PagesAnswer pages : answered) {
+            Integer source = pages == null ? null : pages.source();
+            if (source == null || source < 0 || source >= materials.size()) {
+                continue;
+            }
+            DraftSources.SentPages sent = materials.get(source).textbook();
+            if (sent == null) {
+                continue;
+            }
+            List<Integer> parsed;
+            try {
+                parsed = PageRanges.parse(pages.pages()).pages();
+            } catch (BusinessRuleException e) {
+                continue;
+            }
+            if (sent.pages().pages().containsAll(parsed)) {
+                chosen.computeIfAbsent(source, key -> new TreeSet<>()).addAll(parsed);
+            }
+        }
+        return chosen.entrySet().stream().map(entry -> new PlanPages(entry.getKey(),
+                Objects.requireNonNull(materials.get(entry.getKey()).textbook()).textbookId(),
+                PageRanges.parse(entry.getValue().stream().map(String::valueOf)
+                        .collect(Collectors.joining(","))).text())).toList();
+    }
+
+    /**
+     * A draft of a student's period summary from the lessons and the homework of the period, read on the server; the
+     * period is whole days of the instance time zone, at most {@value #MAX_PERIOD_MONTHS} months.
+     */
+    public PeriodSummaryDraft periodSummary(PeriodSummaryBrief brief) {
+        if (brief.to().isBefore(brief.from()) || brief.to().isAfter(brief.from().plusMonths(MAX_PERIOD_MONTHS))) {
+            throw new BusinessRuleException("ai.period-invalid",
+                    "The period must end after it starts and last at most " + MAX_PERIOD_MONTHS + " months");
+        }
+        PeriodFacts.Facts facts = periods.of(brief.studentId(), brief.from(), brief.to());
+        if (facts.isEmpty()) {
+            throw new BusinessRuleException("ai.period-empty", "The student has no lessons or homework in the period");
+        }
+        Map<String, String> values = Map.of(
+                "students", students(brief.context()),
+                "from", DAY.format(brief.from()),
+                "to", DAY.format(brief.to()),
+                "lessons", facts.lessons().isEmpty() ? "—" : facts.lessons(),
+                "homework", facts.homework().isEmpty() ? "—" : facts.homework(),
+                "prompt", orDash(brief.prompt()));
+        LlmRequest request = new LlmRequest(systemPrompts.text(AiFeature.PERIOD_SUMMARY),
+                prompts.render(PERIOD_SUMMARY_PROMPT, values), "period_summary", PERIOD_SUMMARY_SCHEMA);
+        return call(AiFeature.PERIOD_SUMMARY, brief.modelId(), request, PeriodSummaryAnswer.class, answer -> {
+            String summary = answer.summary() == null ? "" : answer.summary().strip();
+            return summary.isEmpty() ? null : new PeriodSummaryDraft(cut(summary, MAX_PERIOD_SUMMARY));
+        });
+    }
+
+    static String cut(String text, int max) {
+        return text.length() > max ? text.substring(0, max).strip() : text;
+    }
+
     public ReviewDraft reviewDraft(ReviewBrief brief) {
         Map<String, String> values = Map.of(
                 "title", brief.title().strip(),
@@ -166,10 +321,16 @@ public class AiAssistant {
                 .collect(Collectors.joining("\n"))));
     }
 
-    /** A draft of «Что прошли» from the topic, the assignments and the teacher's short words. */
+    /**
+     * A draft of «Что прошли» from the topic, the assignments and the teacher's short words. With a lesson plan only
+     * the deviations from it, and an empty draft is an answer: all went by the plan (466.3).
+     */
     public LessonSummaryDraft lessonSummary(LessonSummaryBrief brief) {
+        String planTitle = brief.planTitle() == null ? "" : brief.planTitle().strip();
+        boolean byPlan = !planTitle.isEmpty();
         Map<String, String> values = Map.of(
                 "topic", orDash(brief.topic()),
+                "plan", byPlan ? prompts.render(LESSON_SUMMARY_PLAN_PROMPT, Map.of("title", planTitle)) + "\n\n" : "",
                 "assignments", brief.assignmentTitles().isEmpty() ? "—"
                         : brief.assignmentTitles().stream().map(title -> "— " + title.strip())
                                 .collect(Collectors.joining("\n")),
@@ -178,7 +339,7 @@ public class AiAssistant {
                 prompts.render(LESSON_SUMMARY_PROMPT, values), "lesson_summary", LESSON_SUMMARY_SCHEMA);
         return call(AiFeature.LESSON_SUMMARY, brief.modelId(), request, LessonSummaryAnswer.class, answer -> {
             String summary = answer.summary() == null ? "" : answer.summary().strip();
-            return summary.isEmpty() ? null : new LessonSummaryDraft(summary);
+            return summary.isEmpty() && !byPlan ? null : new LessonSummaryDraft(summary);
         });
     }
 

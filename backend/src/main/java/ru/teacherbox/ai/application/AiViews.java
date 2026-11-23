@@ -2,6 +2,7 @@ package ru.teacherbox.ai.application;
 
 import ru.teacherbox.homework.api.QuizDrafts;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -78,12 +79,79 @@ public final class AiViews {
      * @param assignmentTitles titles of the assignments given at the lesson
      * @param modelId          the configured model to ask; {@code null} — the default one
      */
-    public record LessonSummaryBrief(@Nullable String topic, @Nullable String words, List<String> assignmentTitles,
-            @Nullable UUID modelId) {
+    public record LessonSummaryBrief(@Nullable String topic, @Nullable String words, @Nullable String planTitle,
+            List<String> assignmentTitles, @Nullable UUID modelId) {
 
         public LessonSummaryBrief {
             assignmentTitles = List.copyOf(assignmentTitles);
         }
+    }
+
+    /**
+     * What the teacher wants of a lesson plan; the frontend sends the texts (464.1).
+     *
+     * @param courseName the plan's course, if any
+     * @param lesson     the lesson the plan is for, if any
+     * @param sources    textbook pages, files and videos of the plan to base the draft on
+     * @param context    the AI tags of the lesson's students (ADR-0055)
+     * @param modelId    the configured model to ask; {@code null} — the default one
+     */
+    public record LessonPlanBrief(String prompt, @Nullable String courseName, @Nullable LessonFacts lesson,
+            List<DraftSources.Source> sources, List<StudentNote> context, @Nullable UUID modelId) {
+
+        public LessonPlanBrief {
+            sources = List.copyOf(sources);
+            context = List.copyOf(context);
+        }
+    }
+
+    /** The lesson a plan is for: its topic and what the previous lesson left. */
+    public record LessonFacts(@Nullable String topic, @Nullable String previousSummary,
+            @Nullable String previousNextPlan) {
+    }
+
+    /**
+     * A draft of a lesson plan for the plan editor; nothing is saved.
+     *
+     * @param body      the plan in Markdown
+     * @param textbooks the pages of the given textbooks the plan works with
+     */
+    public record LessonPlanDraft(String title, String body, List<PlanPages> textbooks) {
+
+        public LessonPlanDraft {
+            textbooks = List.copyOf(textbooks);
+        }
+    }
+
+    /**
+     * Pages of a given textbook, within those sent to the model.
+     *
+     * @param source     the index of the textbook among the request's sources
+     * @param textbookId the textbook
+     * @param pages      normalized, {@code 1-3, 7}
+     */
+    public record PlanPages(int source, UUID textbookId, String pages) {
+    }
+
+    /**
+     * What the teacher wants of a student's period summary (ADR-0072): the facts are read on the server.
+     *
+     * @param from    the first day of the period, instance time zone
+     * @param to      its last day
+     * @param prompt  the teacher's wishes, if any
+     * @param context the student's AI tags (ADR-0055)
+     * @param modelId the configured model to ask; {@code null} — the default one
+     */
+    public record PeriodSummaryBrief(UUID studentId, LocalDate from, LocalDate to, @Nullable String prompt,
+            List<StudentNote> context, @Nullable UUID modelId) {
+
+        public PeriodSummaryBrief {
+            context = List.copyOf(context);
+        }
+    }
+
+    /** A draft of a student's period summary in Markdown; nothing is saved or sent. */
+    public record PeriodSummaryDraft(String summary) {
     }
 
     /** A draft of the lesson summary in Markdown. */

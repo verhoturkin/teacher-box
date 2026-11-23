@@ -103,6 +103,16 @@ describe('TextbookDialog', () => {
     expect(dialog.visible()).toBe(true);
   });
 
+  it('starts a new textbook with the course given, an edited one with its own', async () => {
+    fixture.componentRef.setInput('course', 'c-2');
+    const dialog = await open();
+    expect(dialog.form.controls.courseId.value).toBe('c-2');
+    dialog.visible.set(false);
+    await fixture.whenStable();
+    await open(aTextbook({ courseId: 'c-1' }));
+    expect(dialog.form.controls.courseId.value).toBe('c-1');
+  });
+
   it('gives a new textbook a course and «Ученики курса»', async () => {
     const dialog = await open();
     expect(bodyText()).toContain('Курс');

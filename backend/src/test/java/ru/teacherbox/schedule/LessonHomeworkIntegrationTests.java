@@ -18,7 +18,7 @@ import ru.teacherbox.testing.FakeAssignments;
 import ru.teacherbox.testing.MutableClock;
 import ru.teacherbox.testing.TestUsers;
 
-/** The homework of a lesson (roadmap 11): working assignments linked by the teacher, many per lesson. */
+/** The homework of a lesson (ADR-0071): working assignments linked by the teacher, many per lesson. */
 @ScheduleIntegrationTest
 class LessonHomeworkIntegrationTests extends ScheduleHttpTestSupport {
 

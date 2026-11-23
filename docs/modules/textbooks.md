@@ -19,7 +19,7 @@ Depends on: `shared`, `identity::api`. Schema `textbooks`. ADR: [0033](../adr/00
   the `COURSE` members, then publishes `CourseDeleted`. Migration `V3`: the courses come from the
   distinct trimmed non-blank `textbooks.course` values ignoring case (the oldest textbook's
   spelling wins, positions by name), `course_id` filled, `course` dropped.
-- **Lesson plans** (461.1, roadmap 11 «Bank»): title 1–200 (`textbooks.plan-title-invalid`),
+- **Lesson plans** (461.1, ADR-0071, the bank): title 1–200 (`textbooks.plan-title-invalid`),
   Markdown body ≤ 20 000 (`textbooks.plan-body-too-long`), an existing course or none, saved with
   `version`. Textbooks — the rules of homework's bound textbooks: an existing textbook (404
   `textbooks.textbook-not-found`), pages normalized by `PageRanges` (blank — the whole textbook),
@@ -74,7 +74,7 @@ any other file whole.
 `CourseSummary (id, name)`, deleted ones skipped; `ofStudent(id)`, `ofGroup(id)` — the current
 course. Event `CourseDeleted(courseId)` — after the course and its own links are gone.
 
-`LessonPlans` facade (roadmap 11; for `schedule` in 461.2): `find(ids)` → `LessonPlanView (id,
+`LessonPlans` facade (ADR-0071; for `schedule` in 461.2): `find(ids)` → `LessonPlanView (id,
 title, body, courseId, bank, textbooks [{id, title, kind, format, pages}], videos [{url, provider,
 videoId, startSeconds, title, transcript, transcriptShown}])`, deleted plans and textbooks skipped,
 every transcript included (the caller hides one unless `transcriptShown`); `checkLinkable(id)` —

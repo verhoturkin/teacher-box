@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Predicate;
 import org.jspecify.annotations.Nullable;
+import ru.teacherbox.homework.api.JournalTask;
 import ru.teacherbox.homework.domain.AssignmentVideo;
 import ru.teacherbox.homework.domain.Attachment;
 import ru.teacherbox.homework.domain.TaskStatus;
@@ -84,7 +86,7 @@ public final class HomeworkViews {
      * @param courseId   the course of the assignment (ADR-0071); {@code null} — none
      * @param boardId the board it was put on; {@code null} — none
      * @param textbooks the bound textbooks; files, questions, videos — how many materials of each kind it has
-     * @param bank       a bank item (roadmap 11 «Bank»): an original kept for reuse, never given out
+     * @param bank       a bank item (ADR-0071, the bank): an original kept for reuse, never given out
      * @param sourceId   the bank item it came from or was saved as; {@code null} — none
      * @param uses       a bank item: how many working assignments came from it; a working one — 0
      */
@@ -139,7 +141,7 @@ public final class HomeworkViews {
     /**
      * @param courseId the course of the assignment (ADR-0071); {@code null} — none
      * @param boardId  the board the assignment was put on; {@code null} — none
-     * @param bank     a bank item (roadmap 11 «Bank»): an original kept for reuse, never given out
+     * @param bank     a bank item (ADR-0071, the bank): an original kept for reuse, never given out
      * @param sourceId the bank item it came from or was saved as; {@code null} — none
      * @param uses     a bank item: how many working assignments came from it; a working one — 0
      */
@@ -258,6 +260,36 @@ public final class HomeworkViews {
             int files,
             int questions,
             int videos) {
+    }
+
+    /**
+     * The homework part of a student's period report (roadmap 02 stage B, ADR-0072): tasks given on the days of the
+     * period, oldest first.
+     *
+     * @param submitted tasks with an answer
+     * @param onTime    answers handed in by the deadline or without one
+     * @param late      answers handed in after the deadline
+     * @param accepted  tasks accepted now
+     * @param returned  tasks returned for a revision now
+     */
+    public record HomeworkReport(int assigned, int submitted, int onTime, int late, int accepted, int returned,
+            List<JournalTask> tasks) {
+
+        public HomeworkReport {
+            tasks = List.copyOf(tasks);
+        }
+
+        static HomeworkReport of(List<JournalTask> tasks) {
+            int submitted = count(tasks, task -> task.submittedAt() != null);
+            int onTime = count(tasks, JournalTask::handedInOnTime);
+            return new HomeworkReport(tasks.size(), submitted, onTime, submitted - onTime,
+                    count(tasks, task -> task.status() == JournalTask.Status.ACCEPTED),
+                    count(tasks, task -> task.status() == JournalTask.Status.RETURNED), tasks);
+        }
+
+        private static int count(List<JournalTask> tasks, Predicate<JournalTask> which) {
+            return Math.toIntExact(tasks.stream().filter(which).count());
+        }
     }
 
     /**
