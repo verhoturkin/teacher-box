@@ -23,49 +23,14 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
-## v0.62.0
-
-Goals: the lesson-plan editor gets the homework editor's pane layout; the phone home-screen icon
-matches the web one; the student card header is consistent; the student's Профиль is grouped into
-cards laid out in two columns on wide screens, like Settings. No new ADRs.
-
-### 467. Polish after 0.61.0 (F)
-
-- [x] 467.1 *complex* — the lesson-plan editor uses the panes layout of the assignment editor:
-  `textbooks/teacher/lesson-plan-editor-page.ts` moves from `tb-page-header` + form to `tb-panes`
-  / `tb-pane` with `tb-editor-header` and the AI panel as a fixed resizable side pane, like
-  `homework/teacher/assignment-editor-page.ts` (`@shared/ui/panes`); spec, `docs/screens.md`.
-- [x] 467.2 *simple* — the phone icon: `public/apple-touch-icon.png` and `public/icons/*.png`
-  (manifest icons) are re-rendered as the web client's default logo (`tb-i-school`, the Material
-  Symbols outlined cap, primary `#4648d4` on the tonal `#bdbefe` rounded square; maskable — full
-  bleed, glyph inside the safe zone), not the filled cap of `favicon.svg`; the manifest and
-  `index.html` already point at them.
-- [x] 467.3 *simple* — student card header: the «Итоги» button
-  (`students/student-card.ts`, `.tb-student-card__summary`) gets a visible label like «Написать»,
-  «Оплата», «Занятие» (icon-only stays only where the others collapse too); the course chip icon
-  in `students/card-head.ts` is sized like the other chips' icons.
-- [x] 467.4 *complex* — student Профиль grouped into cards: `students/student-profile-tab.ts`
-  splits «Данные» into themed cards and lays all cards out in two columns on wide screens with the
-  grid of `settings/settings-page.ts` (`.tb-settings-grid`), one column on narrow; spec,
-  `docs/screens.md`, wiki.
-- [x] 467.5 *simple* — one «Создать» in Материалы: on wide screens the page's own «Создать ▾»
-  (`features/materials/materials-page.ts`, `#createButton`) goes away — the rail's «Создать»
-  (`core/layout/create-menu.ts`, `CREATE_ACTIONS`) is the only one; the phone keeps the page's FAB
-  menu. The rail menu gets «План урока» (`kind: 'plan'`, section `/teacher/materials`, `tab:
-  plans`), and the page opens it with `openOnCreate('plan', …)` like board and textbook; specs,
-  `docs/screens`, help articles and wiki.
-- [x] 467.6 *simple* — browser check of 467.1–467.5 in the built-in browser (wide and 375 px):
-  fix small defects, list the rest. Fixed: the rail «Создать» → «План урока» did not open the
-  editor (the dropped `?create=` cancelled the navigation); the student card's four actions
-  overflowed at 375 px (now a 2×2 grid). *Not checked: the AI side pane of the plan editor (needs an
-  AI-enabled backend), the course saved from Профиль surviving a reload.*
-- [ ] 467.7 *simple* — release 0.62.0 (skill `release`).
-
 ## Backlog
 
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,
 self-booking, calls, spaced repetition) — [`roadmap/`](roadmap/README.md); move one here as a
 release when the teacher picks it.
+
+Left from 0.62.0 (467.6): the AI side pane of the lesson-plan editor was not checked live; neither
+was the course saved from Профиль surviving a reload.
 
 Left from 0.57.0 (449.1): the student card actions (3 buttons, 371 px) overflow a 375 px phone;
 the schedule toolbar → calendar gap and the `.tb-ops` section margins are child margins, not the

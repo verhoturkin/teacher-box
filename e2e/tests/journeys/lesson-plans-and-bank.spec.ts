@@ -1,5 +1,6 @@
 import { type APIRequestContext, expect, test } from '@playwright/test';
 import { courseId } from '../support/courses';
+import { create } from '../support/create';
 import { bearer, startSession } from '../support/session';
 
 /**
@@ -228,12 +229,8 @@ test('a course plan on a lesson, homework at it, and the bank that «Испол�
   await expect(page.getByText(title, { exact: true }).first()).toBeVisible();
   await page.getByRole('tab', { name: 'Задания', exact: true }).click();
   await expect(page.getByText(homeworkTitle, { exact: true }).first()).toBeVisible();
-  // «Создать» → «План урока» starts a template of the chosen course
-  await page
-    .locator('tb-page-header')
-    .getByRole('button', { name: 'Создать', exact: true })
-    .click();
-  await page.getByRole('menuitem', { name: 'План урока' }).click();
+  // the rail's «Создать» → «План урока» starts a template of the chosen course
+  await create(page, 'План урока');
   await expect(page).toHaveURL(new RegExp(`/teacher/materials/plans/new\\?course=${course}$`));
 });
 
