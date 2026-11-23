@@ -78,6 +78,7 @@ export const en: Translation<typeof ru> = {
     payment: 'Payment',
     paymentHint: 'Record a payment',
     summary: 'Period summary',
+    summaryShort: 'Summary',
     lesson: 'Lesson',
     noMessenger: 'No messaging app connected',
     prepaid: (amount: string) => `Credit: ${amount}`,

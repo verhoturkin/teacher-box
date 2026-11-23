@@ -76,6 +76,7 @@ export const ru = {
     payment: 'Оплата',
     paymentHint: 'Записать оплату',
     summary: 'Итоги за период',
+    summaryShort: 'Итоги',
     lesson: 'Занятие',
     noMessenger: 'Без мессенджера',
     prepaid: (amount: string) => `Аванс ${amount}`,

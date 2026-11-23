@@ -100,7 +100,7 @@ describe('StudentCard', () => {
     expect(requireElement(host, 'h2', HTMLElement).textContent).toBe('Мария');
     const since = formatDate('2025-09-01T10:00:00Z', 'MMMM yyyy', 'en-US');
     expect(header()).toContain(`Мария с ${since} Приглашён Telegram, ВКонтакте Аванс 1 500 ₽`);
-    expect(header()).toContain('Написать Оплата Занятие');
+    expect(header()).toContain('Написать Итоги Оплата Занятие');
     expect(host.querySelector('[aria-label="Действия: Мария"]')).toBeNull();
   });
 
@@ -126,7 +126,8 @@ describe('StudentCard', () => {
   it('leads to the period summary of the student, a deactivated one too (465.2)', async () => {
     await render(row({ status: 'DEACTIVATED' }));
 
-    const link = requireElement(host, '[aria-label="Итоги за период"]', HTMLAnchorElement);
+    const link = requireElement(host, '.tb-student-card__summary', HTMLAnchorElement);
+    expect(link.textContent).toContain('Итоги');
     expect(link.getAttribute('href')).toBe('/teacher/students/m/summary');
   });
 

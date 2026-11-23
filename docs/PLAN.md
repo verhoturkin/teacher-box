@@ -40,7 +40,7 @@ cards laid out in two columns on wide screens, like Settings. No new ADRs.
   Symbols outlined cap, primary `#4648d4` on the tonal `#bdbefe` rounded square; maskable — full
   bleed, glyph inside the safe zone), not the filled cap of `favicon.svg`; the manifest and
   `index.html` already point at them.
-- [ ] 467.3 *simple* — student card header: the «Итоги» button
+- [x] 467.3 *simple* — student card header: the «Итоги» button
   (`students/student-card.ts`, `.tb-student-card__summary`) gets a visible label like «Написать»,
   «Оплата», «Занятие» (icon-only stays only where the others collapse too); the course chip icon
   in `students/card-head.ts` is sized like the other chips' icons.

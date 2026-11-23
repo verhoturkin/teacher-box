@@ -924,7 +924,7 @@ keep their own **M3E** / **M3** spacing (ADR-0068), not the page rhythm of §7.
   on a phone each row becomes a card «column: value» (`data-label`); main column `tb-col-main`,
   amounts `tb-amount`; row typing `tbRowType`.
 - **Tags** `p-tag` — one shape on every width: 24 dp, 8 dp corners, 12 / 600, no wrapping, colour
-  by §2.
+  by §2. Its icon is 16 px (*ours*, 467.3; 18 px is for chips), not the 24 px default.
 - Not data lists — wizard steps, help items, checklists, bot capabilities, files before upload —
   are plain text lists.
 - **Filter chips** `tb-filter-chips` (`@shared/ui/filter-chips`, **M3**: an alternative to segmented
