@@ -329,7 +329,6 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
       display: flex;
       flex-direction: column;
       gap: var(--tb-space-4);
-      max-width: 52rem;
     }
 
     .tb-plan-editor__ai-head {
