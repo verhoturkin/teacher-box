@@ -23,36 +23,14 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
-## Next release
-
-Goals: the plan editor's AI matches the homework editor's; «промпт» is spelt right; the lesson
-summary is one card, not sent, with no next-lesson topic.
-
-### 469. Teacher's check of 0.62.1 (F)
-
-- [x] 469.1 **F** The plan editor's header action is the homework editor's tonal «ИИ-помощник»
-  (an icon alone on a phone) instead of the outlined «С ИИ»
-  (`textbooks/teacher/lesson-plan-editor-page.ts`); the plan's prompt menu gets «Сохранить запрос
-  как промпт» (`ai/lesson-plan-ai-panel.ts`). «промт» → «промпт» in the interface, help, wiki,
-  glossary, ADRs and module docs; «серии» → «повтор» in the deactivation help (glossary).
-  *simple*
-- [x] 469.2 **F** «Что прошли» of a lesson with a plan: the status line, its hint and the text
-  button «Не всё по плану» give way to a connected button group «По плану | Не всё по плану» beside
-  the heading, as «Итог» (`schedule/teacher/lesson-summary-section.ts`); «Черновик» only under «Не
-  всё по плану». *simple*
-- [x] 469.3 **B F** The lesson summary is one `tb-list` card like «Итог» and «ДЗ»
-  (`schedule/teacher/lesson-summary-section.ts`): it saves itself (`EditorAutosave`), no
-  «Сохранить», no «Отправить ученику(ам)», no «Тема следующего занятия». `ScheduleService.
-  updateSummary` takes `{summary}`; `shareSummary`, `LessonSummaryShared`, `LESSON_SUMMARY` notices
-  and the bot's share step are gone; migrations `schedule/V11__drop_next_plan.sql`,
-  `notifications/V5__drop_lesson_summary_notices.sql`; AI prompt `lesson-context.v2`; ADR-0073.
-  *complex*
-
 ## Backlog
 
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,
 self-booking, calls, spaced repetition) — [`roadmap/`](roadmap/README.md); move one here as a
 release when the teacher picks it.
+
+Left from 0.62.2 (469): the one autosaving «Что прошли» card was not checked live in the
+browser, and the e2e suite was only type-checked.
 
 Left from 0.62.1 (468): a video with captions in one language was checked live only by the
 teacher; «Мои запросы» of the plan's AI pane was not checked live (no AI on the dev instance).
