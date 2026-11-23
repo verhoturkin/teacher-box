@@ -1,4 +1,4 @@
-/* Mirrors `LessonPlanService` views of the backend (roadmap 11 «Bank»). Instants are ISO-8601 strings in UTC. */
+/* Mirrors `LessonPlanService` views of the backend (ADR-0071, the bank). Instants are ISO-8601 strings in UTC. */
 
 import type { TextbookFormat, TextbookKind } from './textbooks.models';
 import type { Video, VideoInput } from './videos.models';

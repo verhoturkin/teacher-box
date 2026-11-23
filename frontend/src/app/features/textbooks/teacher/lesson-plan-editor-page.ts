@@ -95,7 +95,7 @@ function pickedOf(plan: LessonPlan): PickedTextbook[] {
 }
 
 /**
- * Teacher: the lesson plan editor (roadmap 11, `/teacher/materials/plans/new`, `…/plans/:planId`) — the title,
+ * Teacher: the lesson plan editor (ADR-0071, `/teacher/materials/plans/new`, `…/plans/:planId`) — the title,
  * «Курс», the Markdown plan, the textbook pages (of the course when one is set) and the videos with their
  * automatic transcripts. The plan saves itself a moment after each change, as a draft of an assignment does;
  * «Готово» saves what is left and finishes it (the first «Готово» of a lesson's plan puts its original into

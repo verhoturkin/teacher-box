@@ -77,7 +77,7 @@ once); profile without a video room for an archived group.
 
 ## Period summary (`student-summary-page.ts`, 465.2)
 
-`/teacher/students/:studentId/summary?from&to` (roadmap 11 «AI», ADR-0072), back to the card.
+`/teacher/students/:studentId/summary?from&to` (ADR-0072), back to the card.
 
 - **Period**: «С» / «По» date fields in `tb-toolbar`; the last full month without `?from&to`; a
   choice of both days replaces the address. An end before the start or more than 6 months (as

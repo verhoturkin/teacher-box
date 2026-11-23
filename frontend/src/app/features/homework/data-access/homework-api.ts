@@ -36,7 +36,7 @@ export class HomeworkApi {
 
   // --- teacher ---
 
-  /** The working assignments; `bank` — the originals of the bank instead (roadmap 11). */
+  /** The working assignments; `bank` — the originals of the bank instead (ADR-0071). */
   assignments(bank = false): Observable<AssignmentSummary[]> {
     return this.http.get<AssignmentSummary[]>(`${TEACHER}/assignments`, {
       params: bank ? { bank: true } : {},

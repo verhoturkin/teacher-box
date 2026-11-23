@@ -186,13 +186,13 @@ class TeacherScheduleController {
         repetition.delete(lessonId, scope, version, repeatVersion);
     }
 
-    /** Puts a lesson plan on the lesson or takes it off; no version, like the summary (roadmap 11). */
+    /** Puts a lesson plan on the lesson or takes it off; no version, like the summary (ADR-0071). */
     @PutMapping("/lessons/{lessonId}/plan")
     LessonView plan(@PathVariable UUID lessonId, @RequestBody PlanRequest request) {
         return plans.link(lessonId, request.planId());
     }
 
-    /** Links homework to the lesson; no version, like the plan (roadmap 11). */
+    /** Links homework to the lesson; no version, like the plan (ADR-0071). */
     @PostMapping("/lessons/{lessonId}/homework")
     LessonView linkHomework(@PathVariable UUID lessonId, @Valid @RequestBody HomeworkRequest request) {
         return homework.link(lessonId, request.assignmentId());

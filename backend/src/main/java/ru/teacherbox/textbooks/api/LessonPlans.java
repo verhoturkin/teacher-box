@@ -6,7 +6,7 @@ import java.util.UUID;
 import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.error.NotFoundException;
 
-/** Read-only access to lesson plans for other modules (roadmap 11); the link of a plan to a lesson is theirs. */
+/** Read-only access to lesson plans for other modules (ADR-0071); the link of a plan to a lesson is theirs. */
 public interface LessonPlans {
 
     /** The given plans; deleted ones are skipped. */

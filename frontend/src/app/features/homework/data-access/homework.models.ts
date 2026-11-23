@@ -36,7 +36,7 @@ export interface AssignmentSummary {
   readonly files: number;
   readonly questions: number;
   readonly videos: number;
-  /** An original of the bank (roadmap 11): content only, never given out. */
+  /** An original of the bank (ADR-0071): content only, never given out. */
   readonly bank: boolean;
   /** The bank item it came from or was saved as; `null` — none. */
   readonly sourceId: string | null;
@@ -223,7 +223,7 @@ export interface AssignmentDetails {
   readonly quizAttempts: number | null;
   /** Whom a draft is meant for; empty once given out. */
   readonly draftStudentIds: string[];
-  /** An original of the bank (roadmap 11): content only, never given out. */
+  /** An original of the bank (ADR-0071): content only, never given out. */
   readonly bank: boolean;
   /** The bank item it came from or was saved as; `null` — none. */
   readonly sourceId: string | null;

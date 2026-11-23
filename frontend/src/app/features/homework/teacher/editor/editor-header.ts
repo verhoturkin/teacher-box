@@ -11,7 +11,7 @@ import { T } from '@features/homework/i18n/texts';
 /**
  * The header of the assignment editor: the title as it is typed, «Как увидит ученик» of the test, the AI
  * assistant and «Выдать» of a draft (with «Выдать и разместить на доске»; a phone has «Выдать» alone) or
- * «Сохранить» of an issued assignment. A bank item (roadmap 11) has «Готово» instead and the tag «В банке»; «⋮»
+ * «Сохранить» of an issued assignment. A bank item (ADR-0071) has «Готово» instead and the tag «В банке»; «⋮»
  * keeps «Сохранить в банк» / «Обновить в банке» of a saved working assignment.
  */
 @Component({

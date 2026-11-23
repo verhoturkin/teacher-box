@@ -31,7 +31,7 @@ import ru.teacherbox.textbooks.application.LessonPlanService.VideoInput;
 import ru.teacherbox.textbooks.domain.LessonPlan;
 import ru.teacherbox.textbooks.domain.PlanVideo;
 
-/** The teacher's lesson plans and the bank of plans (roadmap 11, «Bank»). */
+/** The teacher's lesson plans and the bank of plans (ADR-0071, «Bank»). */
 @RestController
 @RequestMapping("/api/teacher/textbooks/plans")
 class TeacherLessonPlansController {

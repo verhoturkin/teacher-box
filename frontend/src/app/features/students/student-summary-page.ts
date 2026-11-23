@@ -63,7 +63,7 @@ export function periodProblem(period: Period): 'endBeforeStart' | 'tooLong' | nu
 }
 
 /**
- * «Итоги за период» of a student (roadmap 11 «AI», ADR-0072): the period (`?from&to`, the last full month by
+ * «Итоги за период» of a student (ADR-0072): the period (`?from&to`, the last full month by
  * default), the facts — the lessons (schedule) and the homework (homework) of its days — and «Составить с ИИ»,
  * an editable draft to copy or print. Nothing on the page is saved or sent. Print leaves out the app frame, the
  * fields and the buttons (`styles/_print.scss`).

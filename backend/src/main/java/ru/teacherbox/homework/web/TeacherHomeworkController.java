@@ -125,7 +125,7 @@ class TeacherHomeworkController {
     /**
      * @param courseId the course of the assignment (ADR-0071); {@code null} — none
      * @param videos   the videos by link, at most 5
-     * @param bank     a bank item («Материалы» → «Создать», roadmap 11): no students, no deadline; {@code null} —
+     * @param bank     a bank item («Материалы» → «Создать», ADR-0071): no students, no deadline; {@code null} —
      *                 a working assignment
      */
     record CreateAssignmentRequest(

@@ -111,7 +111,7 @@ import { Student } from '@features/identity/parts';
             (onClick)="writeVisible.set(true)"
           />
         }
-        <!-- «Итоги за период» (roadmap 11 «AI»): a navigation, so a link; icon-only beside the labelled
+        <!-- «Итоги за период» (ADR-0072): a navigation, so a link; icon-only beside the labelled
              actions, its name in the tooltip (M3 icon button; the place is our decision) -->
         <a
           pButton

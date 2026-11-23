@@ -78,7 +78,7 @@ Assignments, submissions, review, attachments, bound textbooks. Depends on: `sha
   201) — a new draft «<title> (копия)» (the title is cut to 200 characters) with the text, the
   course, the files (new `FileStorage` keys, so deleting the original keeps the copy's files), the
   bound textbooks with pages and the videos with transcripts; no students, no deadline, no board.
-- **The bank of assignments** (462.1, roadmap 11 «Bank», ADR-0071): `assignments.bank`,
+- **The bank of assignments** (462.1, ADR-0071): `assignments.bank`,
   `assignments.source_id` (`V7`; the migration puts nothing into the bank). A bank item is content
   only: no tasks, no deadline (`dueAt` is dropped), no board, no draft students — giving it out,
   create with `bank: true` and `studentIds`, draft students and a board answer 409
@@ -121,7 +121,7 @@ page) publishes `HomeworkReminderRequested` for a task that is `ASSIGNED` or `RE
 `task.not-remindable`, an unknown task 404, a second one within an hour 409 `task.reminded-recently`
 (kept in memory: a restart forgets it). Teacher only.
 
-`Assignments` (for `schedule`, roadmap 11): `find(ids)` → `AssignmentSummary (id, title, dueAt,
+`Assignments` (for `schedule`, ADR-0071): `find(ids)` → `AssignmentSummary (id, title, dueAt,
 courseId, bank, studentIds)` in the order of the ids, deleted ones skipped; `checkLinkable(id)` —
 404 `assignment.not-found`, a bank item 409 `homework.bank-item` (`schedule` answers
 `schedule.bank-item`).
@@ -139,7 +139,7 @@ file of the assignment's materials — name, type, size, content; another assign
 ## Data
 
 `assignments` (`course_id` — ADR-0071; `bank`, `source_id` → `assignments`, on delete set null —
-roadmap 11), `tasks`, `submissions`, `attachments`,
+ADR-0071), `tasks`, `submissions`, `attachments`,
 `assignment_textbooks` (assignment, textbook, pages), `assignment_videos` (position, url, provider,
 video ID, start, title, transcript, shown), `settings` (one row, ADR-0056: `due_soon_window` —
 filled once from `.env` by `HomeworkSettingsImport`, read by `DueSoonWindow`).

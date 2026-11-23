@@ -98,7 +98,7 @@ Tabs task / test (`?tab=quiz`, default left out, `Location.replaceState`); a pho
   changes. Issuing checks the questions first (problems → test tab; `homework.quiz-incomplete` names
   them) and returns to the opening page. Back uses `previousNavigation.finalUrl` without `?create=`;
   opened by a link — the assignment or the list.
-- **Lesson homework** (`?lessonId=`, roadmap 11, 462.2): the route gives the editor `lessonOf`
+- **Lesson homework** (`?lessonId=`, ADR-0071, 462.2): the route gives the editor `lessonOf`
   (`ScheduleApi.lesson`) and `linkToLesson` (`ScheduleApi.linkHomework`, ADR-0058). A new
   assignment takes the lesson's students (participants of a group lesson, as single students), the
   course of the lesson's plan, else of the student or the group (`…/course-links`), the plan's

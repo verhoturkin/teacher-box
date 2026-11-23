@@ -28,7 +28,7 @@ import ru.teacherbox.textbooks.api.TextbookFormat;
 import ru.teacherbox.textbooks.api.TextbookKind;
 import ru.teacherbox.textbooks.api.VideoLink;
 
-/** The lesson plan of a lesson (roadmap 11): linked by the teacher, read by the student and the guardian. */
+/** The lesson plan of a lesson (ADR-0071): linked by the teacher, read by the student and the guardian. */
 @ScheduleIntegrationTest
 class LessonPlanIntegrationTests extends ScheduleHttpTestSupport {
 

@@ -92,7 +92,7 @@ export interface ScheduledLesson {
   readonly originalStartsAt: string | null;
   /** Unanswered requests of the participants (a student sees only their own). */
   readonly pendingRequests: readonly ChangeRequest[];
-  /** The lesson's working plan (`textbooks`, roadmap 11); `null` — none. */
+  /** The lesson's working plan (`textbooks`, ADR-0071); `null` — none. */
   readonly planId: string | null;
   /** The working assignments of `homework` linked to the lesson, in the order linked; the teacher's only (462.1). */
   readonly assignmentIds: readonly string[];

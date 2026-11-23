@@ -79,7 +79,7 @@ const CREATE_ICONS: Record<CreateKind, string> = {
 };
 
 /**
- * Teacher: «Материалы» as a list-detail (M3 canonical layout; roadmap 11, decisions 9–12). The list pane is a
+ * Teacher: «Материалы» as a list-detail (M3 canonical layout; ADR-0071, decisions 9–12). The list pane is a
  * navigation menu (`tb-nav-menu`, 466.4): «Все материалы», the headline «Курсы» and the courses in their order (`CourseList`: drag, «⋮» rename / delete, «+ Новый курс»),
  * a divider, «Без курса» and «Доски», each with how many materials it holds. The detail pane: the chosen item's title,
  * the tabs «Учебники · Планы · Задания» (none for «Доски») and one toolbar row — search, the «Фильтр» menu

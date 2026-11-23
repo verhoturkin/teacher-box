@@ -86,7 +86,7 @@ public final class HomeworkViews {
      * @param courseId   the course of the assignment (ADR-0071); {@code null} — none
      * @param boardId the board it was put on; {@code null} — none
      * @param textbooks the bound textbooks; files, questions, videos — how many materials of each kind it has
-     * @param bank       a bank item (roadmap 11 «Bank»): an original kept for reuse, never given out
+     * @param bank       a bank item (ADR-0071, the bank): an original kept for reuse, never given out
      * @param sourceId   the bank item it came from or was saved as; {@code null} — none
      * @param uses       a bank item: how many working assignments came from it; a working one — 0
      */
@@ -141,7 +141,7 @@ public final class HomeworkViews {
     /**
      * @param courseId the course of the assignment (ADR-0071); {@code null} — none
      * @param boardId  the board the assignment was put on; {@code null} — none
-     * @param bank     a bank item (roadmap 11 «Bank»): an original kept for reuse, never given out
+     * @param bank     a bank item (ADR-0071, the bank): an original kept for reuse, never given out
      * @param sourceId the bank item it came from or was saved as; {@code null} — none
      * @param uses     a bank item: how many working assignments came from it; a working one — 0
      */

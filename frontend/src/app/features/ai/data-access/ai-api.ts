@@ -75,7 +75,7 @@ export class AiApi {
     return this.draft<QuizDraft>('quiz-draft', brief, files);
   }
 
-  /** A lesson plan from the request, the lesson and the sources (roadmap 11 «AI»). */
+  /** A lesson plan from the request, the lesson and the sources (464.1). */
   lessonPlanDraft(
     brief: LessonPlanBrief,
     files: readonly File[] = [],

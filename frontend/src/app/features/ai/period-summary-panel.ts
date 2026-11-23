@@ -14,7 +14,7 @@ import { AiModelChoice } from './model-choice';
 import { AiContextChips, StudentContext } from './student-context';
 
 /**
- * «Составить с ИИ» of the page «Итоги за период» (roadmap 11 «AI», ADR-0072): the teacher's wishes, the student's
+ * «Составить с ИИ» of the page «Итоги за период» (ADR-0072): the teacher's wishes, the student's
  * AI tags and the model; the server reads the lessons, plans and homework of the period itself. The answer is an
  * editable draft with «Копировать»; it is printed as rendered Markdown and is neither saved nor sent.
  */

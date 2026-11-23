@@ -313,7 +313,7 @@ export class LessonSummarySection {
   }
 
   /**
-   * The titles of the assignments linked to the lesson (roadmap 11), in the order linked. The list is read once
+   * The titles of the assignments linked to the lesson (ADR-0071), in the order linked. The list is read once
    * and only when the lesson has homework; a failure just leaves the titles out.
    */
   private givenAt(lesson: ScheduledLesson): Observable<string[]> {

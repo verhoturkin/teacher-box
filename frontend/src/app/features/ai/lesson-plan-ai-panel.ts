@@ -44,7 +44,7 @@ export class LessonPlanAiState {
 }
 
 /**
- * The AI assistant of the plan editor (roadmap 11 «AI»), the pane of `HomeworkAiPanel` for a lesson plan: a request
+ * The AI assistant of the plan editor (464.2), the pane of `HomeworkAiPanel` for a lesson plan: a request
  * in the teacher's words, the sources it reads (the plan's textbook pages and videos), the lesson it knows (the
  * students' AI tags, the topic, the previous summary) — and a draft. Nothing reaches the plan until the teacher
  * says so.

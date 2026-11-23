@@ -171,7 +171,7 @@ const lessonOfPlan = () => {
 };
 
 /**
- * The homework of a lesson (`/teacher/homework/new?lessonId=`, roadmap 11): `homework` does not import `schedule`
+ * The homework of a lesson (`/teacher/homework/new?lessonId=`, ADR-0071): `homework` does not import `schedule`
  * (ADR-0058), so the editor takes the lesson and the link as inputs. Both resolve at once; the schedule's parts
  * load when the editor reads the lesson or links the assignment.
  */
@@ -262,7 +262,7 @@ export const routes: Routes = [
         loadComponent: () => import('@features/home').then((m) => m.TeacherHome),
       },
       {
-        // «Итоги за период» of a student (roadmap 11 «AI»): `?from&to`, the last full month by default
+        // «Итоги за период» of a student (ADR-0072): `?from&to`, the last full month by default
         path: 'students/:studentId/summary',
         title: N.periodSummary,
         loadComponent: () => import('@features/students').then((m) => m.StudentSummaryPage),

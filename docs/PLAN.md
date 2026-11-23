@@ -23,65 +23,6 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
-## v0.61.0
-
-Goals: the AI drafts a lesson plan from the request, the student's tags and the materials, and
-summarizes a student's period. Starts only after the v0.60.0 PR is merged. Spec — roadmap/11 «AI
-(v0.61.0)». New ADR: 0072 «ИИ читает журнал периода» (465.1).
-
-### 464. AI lesson plan
-
-- [x] 464.1 **B** *complex* — `ai`: feature `LESSON_PLAN` (enum migration, `SystemPrompts`,
-  resources `lesson-plan.system.v1`, `lesson-plan.user.v1`), `POST /api/teacher/ai/lesson-plan`
-  (JSON / multipart as `homework-draft`, `DraftSources` with videos, student context), the answer's
-  textbook pages checked against the given sources; tests on `FakeProvider`; `docs/modules/ai.md`.
-- [x] 464.2 **F** *simple* — direction `textbooks` → `ai`; the AI pane in the plan editor (as
-  `features/ai/homework-ai-panel.ts`: sources — the plan's textbook pages and videos, context — the
-  lesson students' AI tags, the lesson's topic and the previous summary); «С ИИ» in the lesson
-  card's «План»; help.
-
-### 465. Period summary
-
-- [x] 465.1 **B** *complex* — ADR-0072; `schedule::api.LessonJournal`, `homework::api.HomeworkJournal`
-  and the report endpoints of roadmap 02 stage B (`GET /api/teacher/schedule/students/{id}/report`,
-  `…/homework/students/{id}/report`); `ai` → `schedule::api`; feature `PERIOD_SUMMARY`, `POST
-  /api/teacher/ai/period-summary`, budgets; tests incl. the time-zone boundary of the period and
-  group lessons; `docs/modules/*.md`.
-- [x] 465.2 **F** *complex* — `/teacher/students/:id/summary?from&to` («Итоги за период» in the
-  student card): period picker, facts (sections as feature parts), «Составить с ИИ», editable
-  draft, «Копировать», print stylesheet; help, `docs/screens/students.md`.
-
-### 466. UI review of 0.60.0
-
-Decisions 9–15 of roadmap/11 «UI review of 0.60.0»; every interface change with `m3-expressive`.
-
-- [x] 466.1 **F** *complex* — «Материалы» as list-detail (decisions 9–12): the course pane with
-  inline create / rename / delete / reorder (drop `CoursesDialog`), the tabs «Учебники · Планы ·
-  Задания» with one toolbar row (the textbook kind in a filter menu), one «Создать ▾» / FAB with
-  the course prefilled, the icon `collections_bookmark`; «банк» → «шаблоны» in every UI text,
-  help article (ru/en), wiki, `docs/glossary.md`, `docs/screens/materials.md`; the lesson card's
-  «Из банка» → «Из шаблонов».
-- [x] 466.2 **F** *complex* — the lesson card by time with one-line rows for the plan and the
-  homework (decision 13); «⋮» last in the homework editor header (decision 15); help, wiki,
-  `docs/screens/schedule.md`, `docs/screens/homework.md`.
-- [x] 466.3 **B** **F** *complex* — «Прошли по плану» (decision 14): with a plan the summary's
-  «Что прошли» holds only the deviations (hidden behind «Не всё по плану»); `LessonJournal` and
-  the period-summary facts give the plan's title and the deviations; tests, `docs/modules/*.md`,
-  help, wiki.
-- [x] 466.4 **F** *complex* — the course pane of «Материалы» as a navigation menu, as the sketch
-  (the teacher's remark after 466.1): one surface, 48 px pill items with the count at the end, the
-  rail's pill indicator on the chosen item (mixin `nav-indicator`, shared with `side-nav`), the
-  headline «КУРСЫ», «+ Новый курс» in primary, a divider before «Без курса» and «Доски»; a course
-  has the handle before its icon and «⋮» on the chosen item, on hover and on focus; on the phone's
-  list screen 56 px items, every «⋮», no handles. The shared style `tb-nav-menu` with its gallery
-  sample; help (ru/en), wiki, `docs/screens/materials.md`, `docs/design-system.md`.
-
-### 467. Release 0.61.0
-
-- [ ] 467.1 *simple* — skill `release`: help, wiki, E2E (the AI mock drafts a plan and a summary),
-  CHANGELOG 0.61.0, versions, archive; move the facts of roadmap/11 into the module docs and ADRs,
-  delete it and mark row 11 of `roadmap/README.md` released.
-
 ## Backlog
 
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,

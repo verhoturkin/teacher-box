@@ -60,7 +60,7 @@ export function lessonStudents(lesson: ScheduledLesson): string[] {
 }
 
 /**
- * Teacher: the homework of the lesson card (roadmap 11 «Lesson card», 462.2, decision 13). With homework — one
+ * Teacher: the homework of the lesson card (ADR-0071, 462.2, decision 13). With homework — one
  * row «ДЗ: 2 задания · 1 на проверке» that opens in place: the linked assignments with their status (a row opens
  * the assignment, a draft — its editor; «⋮» «Отвязать» takes it off, the assignment stays), then «Задать» and
  * «Привязать». Without — the chip «+ ДЗ» with the same two in a menu. «Задать» opens the homework editor for this lesson (`?lessonId=`: the participants, the course, the

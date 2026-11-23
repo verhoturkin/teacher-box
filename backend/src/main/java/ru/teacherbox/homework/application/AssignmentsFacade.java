@@ -17,7 +17,7 @@ import ru.teacherbox.homework.persistence.AssignmentRepository;
 import ru.teacherbox.homework.persistence.TaskRepository;
 import ru.teacherbox.shared.error.NotFoundException;
 
-/** Assignments for other modules: read only (roadmap 11). */
+/** Assignments for other modules: read only (ADR-0071). */
 @Service
 class AssignmentsFacade implements Assignments {
 

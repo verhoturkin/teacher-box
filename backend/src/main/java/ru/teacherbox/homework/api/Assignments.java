@@ -6,7 +6,7 @@ import java.util.UUID;
 import ru.teacherbox.shared.error.ConflictException;
 import ru.teacherbox.shared.error.NotFoundException;
 
-/** Read-only access to assignments for other modules (roadmap 11); the link of an assignment to a lesson is theirs. */
+/** Read-only access to assignments for other modules (ADR-0071); the link of an assignment to a lesson is theirs. */
 public interface Assignments {
 
     /** The given assignments in the order of the ids; deleted ones are skipped. */

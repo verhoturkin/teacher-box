@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
- * An assignment as other modules see it (roadmap 11).
+ * An assignment as other modules see it (ADR-0071).
  *
  * @param dueAt      {@code null} — no deadline
  * @param courseId   the course of the assignment; {@code null} — none

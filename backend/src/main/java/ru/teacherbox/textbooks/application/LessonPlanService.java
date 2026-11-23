@@ -33,7 +33,7 @@ import ru.teacherbox.textbooks.domain.PlanVideo;
 import ru.teacherbox.textbooks.persistence.LessonPlanRepository;
 
 /**
- * Lesson plans and the bank of plans (roadmap 11, «Bank»). A bank item is an original kept for reuse; a working plan
+ * Lesson plans and the bank of plans (ADR-0071, «Bank»). A bank item is an original kept for reuse; a working plan
  * is a plan of one lesson. The first «Готово» of a working plan without a source saves its original into the bank;
  * «Использовать» makes a working copy and never adds to the bank; deleting an original keeps its copies.
  */

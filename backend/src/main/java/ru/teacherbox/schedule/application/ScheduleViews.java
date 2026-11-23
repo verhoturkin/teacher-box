@@ -55,9 +55,9 @@ public final class ScheduleViews {
      * @param summary          «what we covered», filled only in the details of one lesson
      * @param nextPlan         «what next», the teacher's details only
      * @param notes            private notes per student, the teacher's details only
-     * @param planId           the lesson plan on the lesson (roadmap 11); {@code null} — none. It may point to a
+     * @param planId           the lesson plan on the lesson (ADR-0071); {@code null} — none. It may point to a
      *                         deleted plan: the plan endpoints answer 404 then
-     * @param assignmentIds    the homework linked to the lesson (roadmap 11), in the order it was linked; the
+     * @param assignmentIds    the homework linked to the lesson (ADR-0071), in the order it was linked; the
      *                         teacher's views only. An id may point to a deleted assignment
      */
     public record LessonView(

@@ -28,7 +28,7 @@ function itemLink(item: AssignmentSummary): string[] {
 }
 
 /**
- * Teacher: the bank of assignments — the tab «Задания» of «Материалы» (roadmap 11 «Bank», 462.2). Cards of the
+ * Teacher: the bank of assignments — the tab «Задания» of «Материалы» (ADR-0071, the bank, 462.2). Cards of the
  * bank items with their course and «Использовано N раз»; the page gives the search text, the course filter and
  * the sort. A card opens the editor, «⋮» keeps «Изменить» and «Удалить…» (the working copies stay); «Создать»
  * opens the editor of a new bank item (`?bank=true`).

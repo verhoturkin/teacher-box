@@ -49,7 +49,7 @@ interface BankChoice {
 let nextId = 0;
 
 /**
- * Teacher: the plan of the lesson card (roadmap 11 «Lesson card», decision 13). Filled — one row «План: <title>»
+ * Teacher: the plan of the lesson card (ADR-0071 decision 13). Filled — one row «План: <title>»
  * that opens in place (the text, the textbook pages, the videos); its «⋮» has «Открыть в редакторе» and «Убрать
  * из урока», which takes the plan off and deletes the working copy (the template stays). Empty — the chip
  * «+ План» with a menu: «Составить» / «С ИИ» open the plan editor for this lesson (`?lessonId=`, the course of
@@ -398,7 +398,7 @@ export class LessonPlanSection {
         this.removing.set(false);
         this.snackbar.success(T.lessonPlan.removed);
         this.changed.emit(lesson);
-        // a copy that cannot be deleted stays as a row no list shows (roadmap 11)
+        // a copy that cannot be deleted stays as a row no list shows (ADR-0071)
         this.plansApi.remove(planId, quietContext()).subscribe({ error: () => undefined });
       },
       error: (error: unknown) => {

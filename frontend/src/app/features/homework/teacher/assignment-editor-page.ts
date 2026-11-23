@@ -349,7 +349,7 @@ export class AssignmentEditorPage implements OnInit, OnChanges, CanLeave {
   readonly upcomingLessons = input<UpcomingLessons>();
   /** The open tab: `?tab=`, then the teacher's choice; «Настройки» is a tab of its own on a phone only. */
   readonly tab = input<string>();
-  /** Query `?lessonId=`: homework for this lesson (roadmap 11) — its students, course, plan and deadline. */
+  /** Query `?lessonId=`: homework for this lesson (ADR-0071) — its students, course, plan and deadline. */
   readonly lessonId = input<string>();
   /** Query `?bank=true` of a new assignment: a bank item («Материалы» → «Задания» → «Создать»). */
   readonly bank = input<string>();

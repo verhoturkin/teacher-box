@@ -52,7 +52,7 @@ interface OutcomeOption {
  * The content of a lesson's card, the same for the teacher and the student (ADR-0050): one segmented
  * list of facts — the time, the topic, the room, the boards, the reason of a cancellation — the
  * outcome «Итог» of a past lesson with one student as a connected toggle, the participants of a group
- * and the requests waiting for the teacher. The card follows time (roadmap 11 decision 13): before the lesson
+ * and the requests waiting for the teacher. The card follows time (ADR-0071 decision 13): before the lesson
  * the plan and the homework come right after the facts; once it has begun the projected content (the
  * teacher's summary) comes first, then the homework and the plan. Both are one-line rows that open in place,
  * or the chips «+ План» / «+ ДЗ»; the student and the parent see only the plan's row. It saves no outcome by

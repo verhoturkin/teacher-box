@@ -17,7 +17,7 @@ import ru.teacherbox.textbooks.api.TextbookContent;
 import ru.teacherbox.textbooks.api.Textbooks;
 
 /**
- * The lesson plan of a lesson (roadmap 11): the link lives in {@code schedule.lessons.plan_id}, the plan itself in
+ * The lesson plan of a lesson (ADR-0071): the link lives in {@code schedule.lessons.plan_id}, the plan itself in
  * {@code textbooks}. The teacher links it; the students of the lesson and their guardians read it.
  */
 @Service

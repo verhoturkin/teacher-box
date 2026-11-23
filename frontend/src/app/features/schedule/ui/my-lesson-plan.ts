@@ -22,7 +22,7 @@ import { T } from '../i18n/texts';
 let nextId = 0;
 
 /**
- * Student and parent: the plan of the lesson card, read-only (roadmap 11 «Lesson card», decision 13): one row
+ * Student and parent: the plan of the lesson card, read-only (ADR-0071 decision 13): one row
  * «План: <title>» that opens in place — the text, the textbook pages to open or save and the videos with the
  * player (a transcript only when the teacher shows it).
  * The addresses follow the cabinet (`API_SCOPE`): the student's own or a child's in the family cabinet.

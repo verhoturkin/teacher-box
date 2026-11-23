@@ -3,7 +3,7 @@
 Lessons with optional weekly repetition (student or group), attendance, student reschedule/cancel requests, reminders,
 calendar feeds (ICS), Google Calendar sync, teacher off-time. Depends on: `shared`, `identity::api`,
 `meetings::api` (room links), `textbooks::api` (lesson plans), `homework::api` (lesson homework;
-roadmap 11). Schema `schedule`.
+ADR-0071). Schema `schedule`.
 ADRs: [0008](../adr/0008-schedule.md),
 [0011](../adr/0011-groups-and-group-lessons.md), [0012](../adr/0012-meetings-and-boards.md),
 [0053](../adr/0053-lesson-title-and-topic.md).
@@ -162,7 +162,7 @@ decision) into the topic of the next planned lesson of the same student (or the 
 a filled topic is never overwritten, the title is never touched.
 Calendar lists, ICS and Google carry none of these fields.
 
-Lesson plan (461.2, [roadmap 11](../roadmap/11-courses-and-lesson-plans.md)): `lessons.plan_id`
+Lesson plan (461.2, [ADR-0071](../adr/0071-courses-lesson-plans-and-bank.md)): `lessons.plan_id`
 (unique index `ux_lessons_plan`, null = none) — a working plan of `textbooks`, one per lesson
 and a plan on at most one lesson. Saved by its own `UPDATE` without the lesson `version`, like the
 summary. A prepared lesson counts as touched: `deleteUntouchedOfSeries` (`and plan_id is null`) and
@@ -170,7 +170,7 @@ the «this and following» edit, cancel and delete keep it, like a charged one. 
 link; deleting the lesson drops it and leaves the plan in `textbooks` (it cannot listen to
 `schedule`). A deleted plan leaves a dangling id: reads answer 404.
 
-«Прошли по плану» (466.3, roadmap 11 decision 14): with `plan_id` set, `lessons.summary` holds
+«Прошли по плану» (466.3, ADR-0071 decision 14): with `plan_id` set, `lessons.summary` holds
 only the deviations from the plan, `null` — all by the plan. No flag and no migration: the
 plan's presence decides the meaning. `shareSummary` sends an empty summary of a lesson with a
 plan (`schedule.summary-empty` only without one). Text saved before 0.61.0 on a lesson with a
@@ -178,7 +178,7 @@ plan reads as the deviations: it is kept and shown (the field opens with it), no
 and plans came out in 0.60.0, so such lessons are few. The history feeds carry `planId`; the
 bot asks «что прошло не по плану» for a lesson with a plan.
 
-Lesson homework (462.1, roadmap 11): `lesson_assignments (assignment_id PK, lesson_id → lessons on
+Lesson homework (462.1, ADR-0071): `lesson_assignments (assignment_id PK, lesson_id → lessons on
 delete cascade, position)` — working assignments of `homework`, many per lesson in the order
 linked, an assignment on at most one lesson; no lesson `version`. Loaded with the lesson
 (`Lesson.assignmentIds`); a lesson with homework is prepared like one with a plan:

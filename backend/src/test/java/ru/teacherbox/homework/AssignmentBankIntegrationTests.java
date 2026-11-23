@@ -25,7 +25,7 @@ import ru.teacherbox.testing.TestUsers;
 import ru.teacherbox.textbooks.api.TextbookFormat;
 
 /**
- * The bank of assignments (roadmap 11 «Bank»): the first «Выдать» saves the original, «Сохранить в банк» saves or
+ * The bank of assignments (ADR-0071, the bank): the first «Выдать» saves the original, «Сохранить в банк» saves or
  * updates it, «Использовать» makes a working draft and never adds to the bank, a bank item is never given out.
  */
 @HomeworkIntegrationTest

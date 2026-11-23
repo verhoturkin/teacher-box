@@ -39,7 +39,7 @@ edit, «⋮» or marks.
 - **«⋮»:** cancel (`lesson-cancel-dialog.ts`) and delete (`lesson-delete-dialog.ts`:
   `confirm.danger` for one lesson, an `alert` with the scope for a series); the card closes first.
   Clearing a mark is here only for group lessons.
-- **Order by time** (roadmap 11 decision 13, 466.2): before the lesson starts the plan and the
+- **Order by time** (ADR-0071 decision 13, 466.2): before the lesson starts the plan and the
   homework follow the facts (plan first); once it has started the card reads outcome → summary →
   homework → plan. The summary is projected into the card (`<ng-content>`), so the sheet keeps one
   body. Both are one-line rows of a segmented list (`ui/lesson-prep.scss`, shared by the three
@@ -65,7 +65,7 @@ edit, «⋮» or marks.
 ## Lesson plan
 
 `schedule/ui/lesson-plan-section.ts` (teacher) and `ui/my-lesson-plan.ts` (student, parent) in the
-lesson card (roadmap 11 «Lesson card», 461.4; one-line rows 466.2). The direction `schedule` →
+lesson card (ADR-0071, 461.4; one-line rows 466.2). The direction `schedule` →
 `textbooks` (ADR-0058) gives the card `LessonPlansApi`, `CoursesApi` and `VideoList`; the editor
 of `textbooks` does not import `schedule`: the route (`app.routes.ts`, `linkToLesson`) passes it
 `ScheduleApi.linkPlan`.
@@ -94,8 +94,8 @@ of `textbooks` does not import `schedule`: the route (`app.routes.ts`, `linkToLe
 
 ## Lesson homework
 
-`schedule/ui/lesson-homework-section.ts` (teacher only) in the lesson card (roadmap 11 «Lesson
-card», 462.2; one-line row 466.2); the direction `schedule` → `homework` gives it `HomeworkApi`
+`schedule/ui/lesson-homework-section.ts` (teacher only) in the lesson card (ADR-0071,
+462.2; one-line row 466.2); the direction `schedule` → `homework` gives it `HomeworkApi`
 and `assignmentProgress`. The homework editor does not import `schedule`: the route passes it
 `lessonOf` and `linkToLesson` ([homework](homework.md), «Assignment editor»).
 

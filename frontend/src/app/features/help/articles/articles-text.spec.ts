@@ -909,6 +909,28 @@ const PLAN_AI: Readonly<Record<string, readonly (readonly [string, string, strin
   ],
 };
 
+/** The release review of 0.61.0 (467.1): the AI lesson plan in the AI article, [topic, baseline, now]. */
+const RELEASE_061: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'ai',
+      '\n- **Черновик проверки** — на странице проверки работы.',
+      '\n- **Черновик плана урока** — «С ИИ» в редакторе плана (и в «Плане» карточки занятия, пока плана нет): опишите урок, отметьте ' +
+        'страницы учебников и видео плана — ИИ напишет название, текст и страницы учебников ([Учебники](/teacher/help/textbooks)).' +
+        '\n- **Черновик проверки** — на странице проверки работы.',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'ai',
+      'Lesson summaries also offer AI drafts in the lesson details.',
+      'Lesson summaries also offer AI drafts in the lesson details.\n\nFor a **lesson plan**, choose “With AI” in the plan editor (or in ' +
+        'the lesson card’s Plan section while it has no plan): describe the lesson and tick the plan’s textbook pages and videos; the ' +
+        'draft brings a title, the plan text and textbook pages ([Textbooks](/teacher/help/textbooks)).',
+    ],
+  ],
+};
+
 /** «Итоги за период» (465.2): [topic, baseline, now] of the students and AI articles. */
 const PERIOD_SUMMARY: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
   'teacher.ru': [
@@ -1349,6 +1371,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(MATERIALS_PANES[name] ?? []),
       ...(LESSON_CARD[name] ?? []),
       ...(BY_PLAN[name] ?? []),
+      ...(RELEASE_061[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

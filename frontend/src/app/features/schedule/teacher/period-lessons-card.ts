@@ -31,7 +31,7 @@ const OUTCOME_SEVERITIES: Readonly<Record<PeriodOutcome, TagSeverity>> = {
 };
 
 /**
- * The lessons of a student's period (the page «Итоги за период», roadmap 11 «AI»): the figures held and missed,
+ * The lessons of a student's period (the page «Итоги за период», ADR-0072): the figures held and missed,
  * the excused and cancelled ones under them, and every lesson of the days `[from, to]` with its outcome and
  * «Что прошли». Read again when the student or the period changes.
  */

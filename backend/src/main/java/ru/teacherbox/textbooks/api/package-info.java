@@ -1,6 +1,6 @@
 /**
  * Public contract of textbooks: summaries and page contents for {@code homework}, page ranges, videos, courses
- * and their event (ADR-0071), lesson plans (roadmap 11).
+ * and their event (ADR-0071), lesson plans (ADR-0071).
  */
 @NamedInterface("api")
 @NullMarked

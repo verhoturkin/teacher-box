@@ -6,7 +6,8 @@
 - Дополняет: [ADR-0039](0039-ai-reads-homework-sources.md) (источники черновиков),
   [ADR-0043](0043-editable-system-prompts.md) (системные промты),
   [ADR-0071](0071-courses-lesson-plans-and-bank.md) (урок — центр связей)
-- Предложение: [roadmap 11](../roadmap/11-courses-and-lesson-plans.md) «AI (v0.61.0)»,
+- Предложение: дорожная карта 11, раздел «AI (v0.61.0)» (факты перенесены сюда и в
+  `docs/modules/ai.md`),
   [roadmap 02](../roadmap/02-progress-report.md) этап B
 
 ## Контекст

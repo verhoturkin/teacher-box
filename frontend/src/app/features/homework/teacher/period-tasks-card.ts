@@ -30,7 +30,7 @@ function handedInLate(task: PeriodTask): boolean {
 }
 
 /**
- * The homework of a student's period (the page «Итоги за период», roadmap 11 «AI»): set, handed in (on time and
+ * The homework of a student's period (the page «Итоги за период», ADR-0072): set, handed in (on time and
  * late), accepted and returned, and every task given on the days `[from, to]` with its status and grade, each a
  * link to the task. Read again when the student or the period changes.
  */

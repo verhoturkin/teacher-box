@@ -1,7 +1,7 @@
 # Materials
 
 `/teacher/materials?course=<id>|none&tab=textbooks|plans|assignments|boards` (`MaterialsPage`,
-`features/materials`, 466.1, roadmap 11 decisions 9–12): the **M3 list-detail** canonical layout
+`features/materials`, 466.1, ADR-0071 decisions 9–12): the **M3 list-detail** canonical layout
 (`injectListDetail`, design-system §7).
 
 - **List pane** (`tb-pane kind="fixed" resizeKey="materials"`): the page header «Материалы» with
@@ -59,7 +59,7 @@
   `total` and `courseCounts` (`countByCourse`). All stay mounted (the inactive ones `hidden`).
 - The textbook dialog has the «Курс» select («Без курса» first) and «Ученики курса» in
   `tb-member-picker [courses]` (a third section, shown only where courses are given).
-- **Plans** (roadmap 11 «Bank»; the UI calls the bank «шаблоны», decision 12; `LessonPlansFeed`,
+- **Plans** (ADR-0071, the bank; the UI calls the bank «шаблоны», decision 12; `LessonPlansFeed`,
   `GET …/textbooks/plans?bank=true`): the templates as tonal cards with the `list_alt` icon — the
   title, «<course> · Использовано N раз» («Без курса», «Ещё не использовался»). No filter; the
   search finds the title and the course; the sort has «Сначала изменённые» and «По названию» only

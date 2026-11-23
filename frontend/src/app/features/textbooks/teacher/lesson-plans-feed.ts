@@ -31,7 +31,7 @@ function planLink(plan: LessonPlanSummary): string[] {
 }
 
 /**
- * Teacher: the bank of lesson plans — the tab «Планы» of «Материалы» (roadmap 11 «Bank»). Cards of the bank
+ * Teacher: the bank of lesson plans — the tab «Планы» of «Материалы» (ADR-0071, the bank). Cards of the bank
  * items with their course and «Использовано N раз»; the page gives the search text, the course filter and the
  * sort (a plan has no creation time in the list: «Новые» orders by the last change). A card opens the editor,
  * «⋮» keeps «Изменить» and «Удалить…» (the lessons' copies stay).

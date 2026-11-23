@@ -35,7 +35,7 @@ let lists = 0;
 const MAX_NAME = 100;
 
 /**
- * The teacher's courses as items of the navigation menu of «Материалы» (`tb-nav-menu`, ADR-0071, roadmap 11
+ * The teacher's courses as items of the navigation menu of «Материалы» (`tb-nav-menu`, ADR-0071
  * decision 9, 466.4): the headline «Курсы», then each course — the drag handle, the icon, the name linked to
  * the course (`queryParams`), how many materials it has and «⋮» with «Переименовать» (in place: Enter
  * saves, Esc cancels), «Выше» / «Ниже» (the single-pointer alternative to the drag, M3) and «Удалить…»

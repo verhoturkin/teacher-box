@@ -1,10 +1,11 @@
-import { bearer } from '../support/session';
+import { bearer, startSession } from '../support/session';
 import { type APIRequestContext, expect, test } from '@playwright/test';
 
 /**
  * Stage 364 (ADR-0057): the teacher connects a provider (the OpenAI-compatible imitation `ai-mock`), adds two
  * models, writes a lesson summary with the default one and then with the other, sees the usage split by model,
- * and removes the connection. The instance has no AI otherwise, so the suite leaves nothing behind.
+ * drafts a lesson plan and a student's period summary (0.61.0), and removes the connection. The instance has
+ * no AI otherwise, so the suite leaves nothing behind.
  */
 
 const TEACHER_PASSWORD = process.env['E2E_TEACHER_PASSWORD'] ?? 'e2e-teacher-pass';
@@ -172,6 +173,66 @@ test('the usage is split by model and the settings page lists the connection', a
   await page.goto('/teacher/settings/ai');
   await expect(page.getByRole('list', { name: 'Imitation' })).toBeVisible();
   await expect(page.getByText('mock-strong').first()).toBeVisible();
+});
+
+test('the mock drafts a lesson plan and a student’s period summary', async ({ page, request }) => {
+  const headers = await bearer(request, 'teacher', TEACHER_PASSWORD);
+  const plan = await request.post('/api/teacher/ai/lesson-plan', {
+    headers,
+    data: { prompt: 'Урок по Present Simple: разминка, правило, упражнения' },
+  });
+  expect(plan.status()).toBe(200);
+  expect(await plan.json()).toEqual({
+    title: 'План от mock-fast',
+    body: 'Ход урока, ответ модели mock-fast',
+    textbooks: [],
+  });
+
+  // A student with one held lesson three days ago: the server reads the period itself.
+  const stamp = String(Date.now());
+  const created = await request.post('/api/teacher/students', {
+    headers,
+    data: { displayName: `Итоги ИИ ${stamp}` },
+  });
+  expect(created.ok()).toBe(true);
+  const studentId = ((await created.json()) as { student: { id: string } }).student.id;
+  const lesson = await request.post('/api/teacher/schedule/lessons', {
+    headers,
+    data: {
+      studentId,
+      startsAt: new Date(Date.now() - 3 * 86_400_000).toISOString(),
+      durationMinutes: 60,
+      repeatWeeks: 0,
+      allowOverlap: true,
+      title: `Урок для итогов ${stamp}`,
+    },
+  });
+  expect(lesson.ok()).toBe(true);
+  const lessonId = ((await lesson.json()) as { id: string }).id;
+  const held = await request.put(`/api/teacher/schedule/lessons/${lessonId}/outcome`, {
+    headers,
+    data: { outcome: 'CONDUCTED' },
+  });
+  expect(held.ok()).toBe(true);
+
+  const day = (offset: number): string =>
+    new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+  const from = day(-10);
+  const to = day(0);
+  const summary = await request.post('/api/teacher/ai/period-summary', {
+    headers,
+    data: { studentId, from, to },
+  });
+  expect(summary.status()).toBe(200);
+  expect(await summary.json()).toEqual({ summary: 'Итоги периода написала модель mock-fast' });
+
+  // «Итоги за период» → «Составить с ИИ» puts the draft into the editable field.
+  await startSession(page, 'teacher', TEACHER_PASSWORD);
+  await page.goto(`/teacher/students/${studentId}/summary?from=${from}&to=${to}`);
+  await page.getByRole('button', { name: 'Составить с ИИ' }).click();
+  await expect(page.getByRole('textbox', { name: 'Черновик итогов' })).toHaveValue(
+    'Итоги периода написала модель mock-fast',
+  );
 });
 
 test('the connection is removed together with its models', async ({ request }) => {

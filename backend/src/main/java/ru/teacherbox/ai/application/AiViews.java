@@ -88,7 +88,7 @@ public final class AiViews {
     }
 
     /**
-     * What the teacher wants of a lesson plan; the frontend sends the texts (roadmap 11).
+     * What the teacher wants of a lesson plan; the frontend sends the texts (464.1).
      *
      * @param courseName the plan's course, if any
      * @param lesson     the lesson the plan is for, if any

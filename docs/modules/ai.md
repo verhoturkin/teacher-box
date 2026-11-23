@@ -144,7 +144,7 @@ code.**
   With `planTitle` (466.3, the lesson has a plan) `lesson-summary-plan.v1` goes into the user
   prompt: only what went differently from the plan, and an empty `summary` is an answer — all by
   the plan (no 422); the frontend then keeps «Прошли по плану» and needs the teacher's words.
-- Lesson plan draft (464.1, roadmap 11 «AI»; `POST lesson-plan` `{prompt ≤ 4000, courseName ≤ 100?,
+- Lesson plan draft (464.1; `POST lesson-plan` `{prompt ≤ 4000, courseName ≤ 100?,
   lesson? {topic ≤ 500?, previousSummary ≤ 4000?, previousNextPlan ≤ 1000?}, sources?, context?,
   modelId?}`, JSON or `multipart/form-data` as the homework draft — the same `sources`, uploads
   after them; prompts `lesson-plan.system.v1`, `lesson-plan.user.v1`, the lesson through

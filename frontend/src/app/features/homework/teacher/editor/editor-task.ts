@@ -262,7 +262,7 @@ export class EditorTask {
   readonly materials = input.required<EditorMaterialsState>();
   /** The teacher's courses: «Курс» of the assignment (ADR-0071); none — no card. */
   readonly courses = input<readonly Course[]>([]);
-  /** A bank item (roadmap 11): no students, deadline or board. */
+  /** A bank item (ADR-0071): no students, deadline or board. */
   readonly bank = input(false);
   protected readonly courseChoices = computed(() => courseOptions(this.courses()));
 
