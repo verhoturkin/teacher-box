@@ -44,13 +44,19 @@ cards laid out in two columns on wide screens, like Settings. No new ADRs.
   (`students/student-card.ts`, `.tb-student-card__summary`) gets a visible label like «Написать»,
   «Оплата», «Занятие» (icon-only stays only where the others collapse too); the course chip icon
   in `students/card-head.ts` is sized like the other chips' icons.
-- [ ] 467.4 *complex* — student Профиль grouped into cards: `students/student-profile-tab.ts`
+- [x] 467.4 *complex* — student Профиль grouped into cards: `students/student-profile-tab.ts`
   splits «Данные» into themed cards and lays all cards out in two columns on wide screens with the
   grid of `settings/settings-page.ts` (`.tb-settings-grid`), one column on narrow; spec,
   `docs/screens.md`, wiki.
-- [ ] 467.5 *simple* — browser check of 467.1–467.4 in the built-in browser (wide and 375 px):
+- [ ] 467.5 *simple* — one «Создать» in Материалы: on wide screens the page's own «Создать ▾»
+  (`features/materials/materials-page.ts`, `#createButton`) goes away — the rail's «Создать»
+  (`core/layout/create-menu.ts`, `CREATE_ACTIONS`) is the only one; the phone keeps the page's FAB
+  menu. The rail menu gets «План урока» (`kind: 'plan'`, section `/teacher/materials`, `tab:
+  plans`), and the page opens it with `openOnCreate('plan', …)` like board and textbook; specs,
+  `docs/screens`, help articles and wiki.
+- [ ] 467.6 *simple* — browser check of 467.1–467.5 in the built-in browser (wide and 375 px):
   fix small defects, list the rest.
-- [ ] 467.6 *simple* — release 0.62.0 (skill `release`).
+- [ ] 467.7 *simple* — release 0.62.0 (skill `release`).
 
 ## Backlog
 

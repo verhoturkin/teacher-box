@@ -32,16 +32,16 @@ describe('StudentProfileTab', () => {
   }
 
   /** The price card, the room panel and «Родители» read their own data: their specs check them. */
-  async function flushParts(): Promise<void> {
-    backend.match('/api/teacher/students/s-1/guardians').forEach((request) => {
+  async function flushParts(id = 's-1'): Promise<void> {
+    backend.match(`/api/teacher/students/${id}/guardians`).forEach((request) => {
       request.flush([]);
     });
     await fixture.whenStable();
-    backend.match('/api/teacher/billing/students/s-1/visibility').forEach((request) => {
-      request.flush({ studentId: 's-1', guardiansOnly: false, hasGuardians: false });
+    backend.match(`/api/teacher/billing/students/${id}/visibility`).forEach((request) => {
+      request.flush({ studentId: id, guardiansOnly: false, hasGuardians: false });
     });
-    backend.match('/api/teacher/billing/students/s-1').forEach((request) => {
-      request.flush(ledger({ studentId: 's-1' }));
+    backend.match(`/api/teacher/billing/students/${id}`).forEach((request) => {
+      request.flush(ledger({ studentId: id }));
     });
     for (const request of backend.match((request) => request.url.includes('/meetings/'))) {
       request.flush(request.request.url.endsWith('/calls') ? { status: 'OFF', rooms: [] } : []);
@@ -58,11 +58,16 @@ describe('StudentProfileTab', () => {
     return requireElement(host, `#${id}`, HTMLInputElement);
   }
 
-  function save(): HTMLButtonElement {
-    return buttonByText(requireElement(host, 'form', HTMLFormElement), 'Сохранить');
+  /** «Сохранить» of «Данные ученика» (0) or «Занятия» (1). */
+  function save(card = 0): HTMLButtonElement {
+    const form = host.querySelectorAll('form')[card];
+    if (form === undefined) {
+      throw new Error(`no form ${String(card)}`);
+    }
+    return buttonByText(form, 'Сохранить');
   }
 
-  it('lays the profile out as cards: data, price, video meeting, parents, sign-in', async () => {
+  it('lays the profile out as cards in the grid of Settings: data, lessons, course, price, video meeting, parents, sign-in', async () => {
     await render();
     const titles = Array.from(host.querySelectorAll('.p-card-title')).map((title) =>
       title.textContent.trim(),
@@ -70,6 +75,7 @@ describe('StudentProfileTab', () => {
 
     expect(titles).toEqual([
       'Данные ученика',
+      'Занятия',
       'Курс',
       'Цена занятия',
       'Видеовстреча',
@@ -83,6 +89,7 @@ describe('StudentProfileTab', () => {
       requireElement(host, 'tb-label-color-field .p-select', HTMLElement).textContent,
     ).toContain('Зелёный');
     expect(field('profile-name').closest('.tb-field')?.classList).toContain('tb-field--required');
+    expect(host.querySelectorAll('.tb-settings-grid > *')).toHaveLength(7);
   });
 
   it('keeps «Сохранить» off and hides «Отмена» until a field changes', async () => {
@@ -100,7 +107,7 @@ describe('StudentProfileTab', () => {
     expect(save().disabled).toBe(true);
   });
 
-  it('saves the changed fields in place with the version of the student', async () => {
+  it('saves only the fields of its card, with the version of the student', async () => {
     await render();
     const saved: Student[] = [];
     fixture.componentInstance.saved.subscribe((student) => saved.push(student));
@@ -112,23 +119,32 @@ describe('StudentProfileTab', () => {
     await fixture.whenStable();
     requireElement(document.body, 'li[aria-label="Синий"]', HTMLElement).click();
     await fixture.whenStable();
-    save().click();
+    save(1).click();
 
     const request = backend.expectOne({ method: 'PUT', url: '/api/teacher/students/s-1' });
     expect(request.request.body).toEqual({
       displayName: 'Мария',
-      email: null,
+      email: 'maria@example.com',
       phone: null,
       note: '5 класс',
       defaultTopic: 'Физика',
       color: 'BLUE',
       version: 2,
     });
-    const response = { ...MARIA, email: null, defaultTopic: 'Физика', color: 'BLUE', version: 3 };
+    const response = { ...MARIA, defaultTopic: 'Физика', color: 'BLUE', version: 3 };
     request.flush(response);
+    fixture.componentRef.setInput('student', response);
     await fixture.whenStable();
 
     expect(saved).toEqual([response]);
+    // the other card keeps what was typed and saves it on its own
+    expect(field('profile-email').value).toBe('');
+    expect(save(1).disabled).toBe(true);
+    expect(save(0).disabled).toBe(false);
+    save(0).click();
+    expect(
+      backend.expectOne({ method: 'PUT', url: '/api/teacher/students/s-1' }).request.body,
+    ).toEqual(expect.objectContaining({ email: null, defaultTopic: 'Физика', version: 3 }));
   });
 
   it('fills the form again with the saved student, and with another one', async () => {
@@ -144,6 +160,16 @@ describe('StudentProfileTab', () => {
     expect(field('profile-name').value).toBe('Пётр');
     // the room panel reads again only for the new name
     await flushParts();
+  });
+
+  it('does not carry what was typed over to another student with the same fields', async () => {
+    await render();
+    typeInto(field('profile-topic'), 'Физика');
+    fixture.componentRef.setInput('student', { ...MARIA, id: 's-2' });
+    await fixture.whenStable();
+
+    expect(field('profile-topic').value).toBe('');
+    await flushParts('s-2');
   });
 
   it('keeps what was typed when only the invitation of the student changed', async () => {
