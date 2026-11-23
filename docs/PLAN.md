@@ -23,29 +23,16 @@ don't read them unless the task needs history.
   `archive/plans/vX.Y.Z.md`, add a row to `archive/plans/README.md`, move unfinished items to
   Backlog. This file keeps only unreleased work and the Backlog.
 
-## Next release
-
-Goals: fixes from the teacher's check of 0.62.0.
-
-### 468. Teacher's check of 0.62.0
-
-- [x] 468.1 **B F** «Сменить язык» of a video's captions opens its track menu in the tile and in
-  the video dialog: `VideoPlayer` keeps its frame while the embed address is the same (a new
-  `PlayableVideo` on every render reloaded the iframe, which blinked and closed the menu). A video
-  with one track says at once «… Других языков у этого видео нет» instead of offering the link
-  (`VideoTranscripts.Transcript.otherTracks`). *simple*
-- [x] 468.2 **F** The plan's AI pane (`ai/lesson-plan-ai-panel.ts`) has the homework pane's
-  tertiary «Сгенерировать» with the turning indicator and «Мои запросы» — the prompt library to
-  pick from. *simple*
-- [x] 468.3 **B** A deactivated student has no future lessons: `schedule` listens to
-  `StudentDeactivated` (`ScheduleService.stopStudent`) — own series stop, planned lessons are
-  cancelled, planned group lessons go on without them. *simple*
-
 ## Backlog
 
 Feature proposals with detailed plans (progress report, packages, invoices, parents, quizzes,
 self-booking, calls, spaced repetition) — [`roadmap/`](roadmap/README.md); move one here as a
 release when the teacher picks it.
+
+Left from 0.62.1 (468): a video with captions in one language was checked live only by the
+teacher; «Мои запросы» of the plan's AI pane was not checked live (no AI on the dev instance).
+A deactivated student who stays a member of a group may come back into lessons a group series
+generates later (`ScheduleDirectory.membersOf` does not filter by access) — check and decide.
 
 Left from 0.62.0 (467.6): the AI side pane of the lesson-plan editor was not checked live; neither
 was the course saved from Профиль surviving a reload.

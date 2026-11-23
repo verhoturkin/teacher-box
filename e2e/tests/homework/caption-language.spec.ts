@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 /**
  * A YouTube link takes its captions at once (the suggested track, 459.2); «Сменить язык» under the tile offers a
- * menu of tracks. No network to YouTube here: the browser gets the tracks and the transcripts from routed answers
+ * menu of tracks, in the video dialog too; a video with one language says so (468.1). No network to YouTube here: the browser gets the tracks and the transcripts from routed answers
  * of the portal's API.
  */
 
@@ -39,6 +39,7 @@ test('the teacher picks the language of YouTube captions', async ({ page }) => {
               automatic: false,
               transcript: '[0:05] Мы играем',
               truncated: false,
+              otherTracks: true,
             }
           : {
               title: 'Present Simple',
@@ -46,6 +47,7 @@ test('the teacher picks the language of YouTube captions', async ({ page }) => {
               automatic: true,
               transcript: '[0:05] We play',
               truncated: false,
+              otherTracks: true,
             },
     });
   });
@@ -76,8 +78,42 @@ test('the teacher picks the language of YouTube captions', async ({ page }) => {
   const sheet = page.getByRole('dialog', { name: 'Видео 1 из 1' });
   await expect(sheet.getByRole('list', { name: 'Расшифровка' })).toContainText('Мы играем');
 
+  // 468.1: in the dialog too the menu opens and stays, and the player is not reloaded
+  const player = sheet.locator('iframe');
+  const src = await player.getAttribute('src');
+  await sheet.getByRole('button', { name: 'Сменить язык' }).click();
+  await expect(menu).toBeVisible();
+  await tracks.filter({ hasText: 'Английский' }).click();
+  await expect(sheet).toContainText('Субтитры: английский, автоматические · Сменить язык');
+  expect(await player.getAttribute('src')).toBe(src);
+
   // 354.3: the settings are a dialog over the editor; the change is kept, «Готово» only closes it
   await sheet.getByRole('button', { name: 'Готово' }).click();
   await expect(sheet).toBeHidden();
   await expect(page.locator('tb-video-section')).toContainText('Расшифровка');
+});
+
+test('a video with captions in one language says so at once', async ({ page }) => {
+  await page.route('**/api/teacher/textbooks/videos/transcript', (route) =>
+    route.fulfill({
+      json: {
+        title: 'Phonics',
+        language: 'en',
+        automatic: true,
+        transcript: '[0:01] Hello',
+        truncated: false,
+        otherTracks: false,
+      },
+    }),
+  );
+
+  await signIn(page, 'teacher', TEACHER_PASSWORD);
+  await page.goto('/teacher/homework/new');
+  await page.getByRole('button', { name: 'Видео', exact: true }).click();
+  await page.getByLabel('Ссылка на видео').fill('https://youtu.be/aaaaaaaaaaa');
+  const section = page.locator('tb-video-section');
+  await expect(section).toContainText(
+    'Субтитры: английский, автоматические. Других языков у этого видео нет',
+  );
+  await expect(section.getByRole('button', { name: 'Сменить язык' })).toHaveCount(0);
 });
