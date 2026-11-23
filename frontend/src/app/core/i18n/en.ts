@@ -78,6 +78,7 @@ export const en: Translation<typeof ru> = {
     student: 'Student',
     board: 'Board',
     textbook: 'Textbook',
+    plan: 'Lesson plan',
     message: 'Message',
   },
   close: 'Close',

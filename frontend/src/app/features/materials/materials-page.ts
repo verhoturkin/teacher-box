@@ -116,24 +116,12 @@ const CREATE_ICONS: Record<CreateKind, string> = {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-template #createButton>
-      <p-button
-        [label]="t.create"
-        icon="tb-i tb-i-arrow_drop_down"
-        iconPos="right"
-        [tbAttributes]="{ 'aria-haspopup': 'menu' }"
-        (onClick)="createPopup.toggle($event)"
-      />
-    </ng-template>
     <tb-panes>
       @if (layout.list()) {
         <tb-pane kind="fixed" resizeKey="materials" [label]="t.title">
           <div tbPaneHeader>
             <tb-page-header [title]="t.title">
               <tb-help-button help [topic]="helpTopic()" />
-              @if (!mobile()) {
-                <ng-container [ngTemplateOutlet]="createButton" />
-              }
             </tb-page-header>
           </div>
           <nav
@@ -173,9 +161,6 @@ const CREATE_ICONS: Record<CreateKind, string> = {
           @if (layout.single()) {
             <tb-page-header [title]="placeTitle()" back="/teacher/materials" [backLabel]="t.title">
               <tb-help-button help [topic]="helpTopic()" />
-              @if (!mobile()) {
-                <ng-container [ngTemplateOutlet]="createButton" />
-              }
             </tb-page-header>
           } @else {
             <h2 class="tb-materials__title">{{ placeTitle() }}</h2>
@@ -277,7 +262,6 @@ const CREATE_ICONS: Record<CreateKind, string> = {
         <span class="tb-nav-menu__count" aria-hidden="true">{{ row.count }}</span>
       </li>
     </ng-template>
-    <p-menu #createPopup [model]="createMenu" [popup]="true" appendTo="body" />
     <p-menu #filterPopup [model]="filterItems()" [popup]="true" appendTo="body" />
     <p-menu #sortPopup [model]="sortItems()" [popup]="true" appendTo="body" />
     <!-- on a phone the rail's «Создать» is not there: the page's own FAB menu (spec §1 principle 5) -->
@@ -499,13 +483,6 @@ export class MaterialsPage implements OnInit {
   );
 
   private readonly createKinds: readonly CreateKind[] = ['textbook', 'plan', 'assignment', 'board'];
-  protected readonly createMenu: MenuItem[] = this.createKinds.map((kind) => ({
-    label: T.createMenu[kind],
-    icon: `tb-i ${CREATE_ICONS[kind]}`,
-    command: () => {
-      this.create(kind);
-    },
-  }));
   protected readonly createFab: readonly FabMenuItem[] = this.createKinds.map((kind) => ({
     label: T.createMenu[kind],
     icon: CREATE_ICONS[kind],
@@ -515,12 +492,15 @@ export class MaterialsPage implements OnInit {
   }));
 
   constructor() {
-    // «Новая доска» / «Новый учебник» of the rail's «Создать»: the form of the feed (`?tab=` came with it)
+    // «Доска» / «Учебник» / «План урока» of the rail's «Создать»: the form of the feed (`?tab=` came with it)
     openOnCreate('board', () => {
       this.boards()?.openCreate();
     });
     openOnCreate('textbook', () => {
       this.textbooks()?.openCreate(this.currentCourse());
+    });
+    openOnCreate('plan', () => {
+      this.plans()?.openCreate(this.currentCourse());
     });
   }
 

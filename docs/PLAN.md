@@ -48,7 +48,7 @@ cards laid out in two columns on wide screens, like Settings. No new ADRs.
   splits «Данные» into themed cards and lays all cards out in two columns on wide screens with the
   grid of `settings/settings-page.ts` (`.tb-settings-grid`), one column on narrow; spec,
   `docs/screens.md`, wiki.
-- [ ] 467.5 *simple* — one «Создать» in Материалы: on wide screens the page's own «Создать ▾»
+- [x] 467.5 *simple* — one «Создать» in Материалы: on wide screens the page's own «Создать ▾»
   (`features/materials/materials-page.ts`, `#createButton`) goes away — the rail's «Создать»
   (`core/layout/create-menu.ts`, `CREATE_ACTIONS`) is the only one; the phone keeps the page's FAB
   menu. The rail menu gets «План урока» (`kind: 'plan'`, section `/teacher/materials`, `tab:

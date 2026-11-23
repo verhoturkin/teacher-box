@@ -11,7 +11,16 @@ describe('createItems', () => {
 
   it('puts the current section’s item first, the others in their order', () => {
     const labels = (url: string): string[] => createItems(url, write).map((item) => item.label);
-    const usual = ['Занятие', 'Задание', 'Оплата', 'Ученик', 'Доска', 'Учебник', 'Сообщение'];
+    const usual = [
+      'Занятие',
+      'Задание',
+      'Оплата',
+      'Ученик',
+      'Доска',
+      'Учебник',
+      'План урока',
+      'Сообщение',
+    ];
 
     expect(labels('/teacher')).toEqual(usual);
     expect(labels('/teacher/settings')).toEqual(usual);
@@ -22,12 +31,30 @@ describe('createItems', () => {
       'Ученик',
       'Доска',
       'Учебник',
+      'План урока',
       'Сообщение',
     ]);
-    // Materials has two tabs: the item of the open one first
-    expect(labels('/teacher/materials?tab=textbooks')[0]).toBe('Учебник');
-    expect(labels('/teacher/materials?tab=boards')[0]).toBe('Доска');
-    expect(labels('/teacher/materials')[0]).toBe('Доска');
+    // Materials has several tabs: all its items first, the open tab's one at the top
+    const rest = ['Занятие', 'Задание', 'Оплата', 'Ученик', 'Сообщение'];
+    expect(labels('/teacher/materials?tab=plans')).toEqual([
+      'План урока',
+      'Доска',
+      'Учебник',
+      ...rest,
+    ]);
+    expect(labels('/teacher/materials?tab=textbooks')).toEqual([
+      'Учебник',
+      'Доска',
+      'План урока',
+      ...rest,
+    ]);
+    expect(labels('/teacher/materials?tab=boards')).toEqual([
+      'Доска',
+      'Учебник',
+      'План урока',
+      ...rest,
+    ]);
+    expect(labels('/teacher/materials')).toEqual(['Доска', 'Учебник', 'План урока', ...rest]);
     expect(labels('/teacher/homework/a-1/edit')[0]).toBe('Задание');
     // a section whose link only starts the same way is another one
     expect(labels('/teacher/materialsmith')).toEqual(usual);
@@ -57,9 +84,10 @@ describe('createItems', () => {
       ['/teacher/students', { create: 'student' }],
       ['/teacher/materials', { tab: 'boards', create: 'board' }],
       ['/teacher/materials', { tab: 'textbooks', create: 'textbook' }],
+      ['/teacher/materials', { tab: 'plans', create: 'plan' }],
       'run',
     ]);
-    const message = items[6];
+    const message = items[7];
     if (message !== undefined && 'run' in message) message.run();
     expect(write).toHaveBeenCalledOnce();
   });

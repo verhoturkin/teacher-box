@@ -231,49 +231,28 @@ describe('MaterialsPage', () => {
   });
 
   describe('«Создать»', () => {
-    it('opens the editor of a plan or an assignment with the chosen course', async () => {
-      await render({ tab: 'textbooks', course: 'c-1' }, 1280, courses);
-      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    it('has no button of its own on a wide screen: the rail’s «Создать» is the only one', async () => {
+      await render({ tab: 'textbooks' }, 1280, courses);
+      expect(host.querySelector('[aria-haspopup="menu"][aria-label="Создать"]')).toBeNull();
+      expect(host.textContent).not.toContain('Создать');
+    });
 
-      await pick('Создать', 'План урока');
-      expect(navigate).toHaveBeenLastCalledWith(['/teacher/materials/plans/new'], {
+    it('opens the editor of a plan from the rail with the chosen course', async () => {
+      await render({ tab: 'plans', course: 'c-1' }, 1280, courses);
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      await TestBed.inject(Router).navigateByUrl('/?create=plan');
+      await fixture.whenStable();
+      expect(navigate).toHaveBeenCalledWith(['/teacher/materials/plans/new'], {
         queryParams: { course: 'c-1' },
       });
-      await pick('Создать', 'Задание');
-      expect(navigate).toHaveBeenLastCalledWith(['/teacher/homework/new'], {
-        queryParams: { bank: true, course: 'c-1' },
-      });
-
-      fixture.componentRef.setInput('course', 'none');
-      await fixture.whenStable();
-      await pick('Создать', 'План урока');
-      expect(navigate).toHaveBeenLastCalledWith(['/teacher/materials/plans/new'], {
-        queryParams: {},
-      });
-      await pick('Создать', 'Задание');
-      expect(navigate).toHaveBeenLastCalledWith(['/teacher/homework/new'], {
-        queryParams: { bank: true },
-      });
     });
 
-    it('opens the form of a new textbook with the chosen course, or of a new board', async () => {
+    it('opens the form of a new textbook from the rail with the chosen course', async () => {
       await render({ tab: 'plans', course: 'c-2' }, 1280, courses);
-      await pick('Создать', 'Учебник');
+      await TestBed.inject(Router).navigateByUrl('/?create=textbook');
+      await fixture.whenStable();
       expect(bodyText()).toContain('Новый учебник');
       expect(document.querySelector('.p-dialog .p-select-label')?.textContent).toContain('ОГЭ');
-      buttonByText(document.body, 'Отмена').click();
-      await fixture.whenStable();
-
-      await pick('Создать', 'Доска');
-      expect(bodyText()).toContain('Новая доска');
-    });
-
-    it('opens the form of the rail’s «Создать» → «Учебник» or «Доска»', async () => {
-      await render();
-      const router = TestBed.inject(Router);
-      await router.navigateByUrl('/?create=textbook');
-      await fixture.whenStable();
-      expect(bodyText()).toContain('Новый учебник');
       expect(bodyText()).not.toContain('Новая доска');
     });
 

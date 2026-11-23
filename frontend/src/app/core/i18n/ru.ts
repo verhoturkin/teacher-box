@@ -75,6 +75,7 @@ export const ru = {
     student: 'Ученик',
     board: 'Доска',
     textbook: 'Учебник',
+    plan: 'План урока',
     message: 'Сообщение',
   },
   close: 'Закрыть',

@@ -931,6 +931,24 @@ const PROFILE_CARDS: Readonly<Record<string, readonly (readonly [string, string,
   ],
 };
 
+/** One «Создать» in Materials (467.5): [topic, baseline, now] of the homework article. */
+const ONE_CREATE: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
+  'teacher.ru': [
+    [
+      'homework',
+      '«Создать» → «Задание» в «Материалах» сразу создаёт шаблон',
+      'На телефоне «Материалы» → «Создать» → «Задание» сразу создаёт шаблон',
+    ],
+  ],
+  'teacher.en': [
+    [
+      'homework',
+      '“Create” → “Assignment” in Materials creates a template',
+      'On a phone, “Materials” → “Create” → “Assignment” creates a template',
+    ],
+  ],
+};
+
 /** The release review of 0.61.0 (467.1): the AI lesson plan in the AI article, [topic, baseline, now]. */
 const RELEASE_061: Readonly<Record<string, readonly (readonly [string, string, string])[]>> = {
   'teacher.ru': [
@@ -1395,6 +1413,7 @@ describe('help articles after the split into one file per topic', () => {
       ...(BY_PLAN[name] ?? []),
       ...(RELEASE_061[name] ?? []),
       ...(PROFILE_CARDS[name] ?? []),
+      ...(ONE_CREATE[name] ?? []),
     ]) {
       // several reviews of one topic apply in turn
       const reviewed = expected[topic];

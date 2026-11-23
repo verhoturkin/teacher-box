@@ -5,7 +5,7 @@
 (`injectListDetail`, design-system §7).
 
 - **List pane** (`tb-pane kind="fixed" resizeKey="materials"`): the page header «Материалы» with
-  «?» and «Создать ▾», then the navigation menu `nav.tb-nav-menu` (466.4, design-system §10: the
+  «?» (on a phone also the FAB «Создать»), then the navigation menu `nav.tb-nav-menu` (466.4, design-system §10: the
   **M3** navigation drawer's destinations on one surface, not a segmented list): «Все материалы»
   (`stacks`); the headline «КУРСЫ» and the courses in their order (`CourseList` of
   `@features/textbooks/parts`) with «+ Новый курс» last; a divider; «Без курса»
@@ -28,7 +28,7 @@
   empty closes it. Every change saves at once; a rename or a delete reads the textbooks, plans
   and assignments again (their course changed).
 - **Detail pane** (flexible): the chosen item's title (Title Large `h2` beside the list; on one
-  pane the page header with «back» to `/teacher/materials`, «?» and «Создать ▾»), the tabs
+  pane the page header with «back» to `/teacher/materials` and «?»), the tabs
   «Учебники · Планы · Задания» (`tb-tabs`, **M3** primary tabs; fixed on a phone; none for
   «Доски»), one toolbar row — the search (`tb-search-field`; «Название или курс» on plans and
   assignments), «Фильтр» (text button with `filter_list`, the chosen value as its label from
@@ -44,14 +44,14 @@
   `?tab=boards|textbooks|plans|assignments` keep working (a gone course id filters nothing and
   shows «Все материалы»). *Ours:* the detail pane stays mounted (hidden) on the list screen, so
   the counts are known.
-- **«Создать ▾»** (decision 10, the page's one create action): a filled button with
-  `arrow_drop_down` and a popup menu — «Учебник» (`menu_book`, the textbook form of
-  `TextbooksFeed`, `[course]` of `TextbookDialog`), «План урока» (`list_alt`,
+- **«Создать»** (467.5, one create action per screen): on 600 px and wider the page has no button
+  of its own — the rail's «Создать» is the only one, and its «Учебник», «План урока» and «Доска»
+  open the forms of the page (`openOnCreate`, the chosen course is prefilled; none for «Все
+  материалы», «Без курса», «Доски»). On a phone the rail has none, so the page's `tb-fab-menu`
+  holds «Учебник» (`menu_book`), «План урока» (`list_alt`,
   `/teacher/materials/plans/new?course=<id>`), «Задание» (`assignment`,
-  `/teacher/homework/new?bank=true&course=<id>`), «Доска» (`co_present`, the board form). The
-  chosen course is prefilled (none for «Все материалы», «Без курса», «Доски»). On a phone the same
-  items are the page's `tb-fab-menu`. *Ours, beside **M3**:* the rail keeps the global «Создать»
-  from 600 px, so the page has both (the teacher's decision: the page's one knows the course).
+  `/teacher/homework/new?bank=true&course=<id>`), «Доска» (`co_present`). *Ours:* on a wide screen the rail's «Задание» makes an assignment of a student, not a
+  template.
 - **Isolation (AGENTS.md §4.2.6):** `features/materials` only composes `BoardsFeed`
   (`@features/boards/parts`), `TextbooksFeed`, `LessonPlansFeed` and `CourseList`
   (`@features/textbooks/parts`), `HomeworkBankFeed` (`@features/homework/parts`). Each feed owns
@@ -103,7 +103,7 @@
   the editor. *Ours*: no prompt library, unlike the homework pane.
   `POST …/{id}/finish` and goes back; leaving saves what is left. A save during an autosave waits
   for it.
-- The rail's «Создать» leads to `?tab=…&create=board|textbook` (the form opens with the course of
+- The rail's «Создать» (on Materials all three items of the section come first, the open tab's one on top) leads to `?tab=…&create=board|textbook|plan` (the form opens with the course of
   `?course=`, if any); `/teacher/boards` and `/teacher/textbooks` redirect to `?tab=boards` and
   `?tab=textbooks`.
 - **Student** (`/cabinet/materials`, `MyMaterialsPage`): the same feeds without actions
