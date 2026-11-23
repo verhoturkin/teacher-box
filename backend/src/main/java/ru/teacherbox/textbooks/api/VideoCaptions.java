@@ -11,8 +11,10 @@ public interface VideoCaptions {
      * @param language  the code of the track ({@code en}, {@code ru}…)
      * @param automatic recognized by YouTube, not written by the author
      * @param cues      in the order of the video
+     * @param otherTracks the video has captions of another track too
      */
-    record Captions(@Nullable String title, String language, boolean automatic, List<Cue> cues) {
+    record Captions(@Nullable String title, String language, boolean automatic, List<Cue> cues,
+            boolean otherTracks) {
 
         public Captions {
             cues = List.copyOf(cues);

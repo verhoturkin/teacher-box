@@ -190,6 +190,15 @@ public class LessonRepository {
                 .list());
     }
 
+    /** Planned lessons of the student (alone or with a group) that start after {@code after}. */
+    public List<Lesson> findScheduledOfStudent(UUID studentId, Instant after) {
+        return load(jdbc.sql(SELECT + " where status = 'SCHEDULED' and starts_at > :after and" + OF_STUDENT + ORDER)
+                .param("studentId", studentId)
+                .param("after", after)
+                .query(RecordRowMapper.of(Row.class))
+                .list());
+    }
+
     /** Lessons that are not cancelled and occupy part of {@code [from, to)}. */
     public List<Lesson> findOverlapping(Instant from, Instant to) {
         return load(jdbc.sql(SELECT + " where status <> 'CANCELLED' and starts_at < :to and ends_at > :from" + ORDER)

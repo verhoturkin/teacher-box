@@ -246,6 +246,7 @@ export const ru = {
     changeLanguage: 'Сменить язык',
     fetching: 'Получаю субтитры…',
     none: 'У видео нет субтитров',
+    onlyTrack: (fetched: string) => `${fetched}. Других языков у этого видео нет`,
     failed: 'Не удалось получить субтитры',
   },
 };

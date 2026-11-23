@@ -109,9 +109,12 @@ export class VideoPlayer {
 
   readonly video = input.required<PlayableVideo>();
 
+  /** The address as a string: an equal one from a new `video` object keeps the frame (no reload, no blink). */
+  private readonly src = computed(() => embedUrl(this.video()));
+
   /** Built only from a checked video ID on an allowed host (`embedUrl`), so trusting it is safe. */
   protected readonly frame = computed<SafeResourceUrl | null>(() => {
-    const src = embedUrl(this.video());
+    const src = this.src();
     return src === null ? null : this.sanitizer.bypassSecurityTrustResourceUrl(src);
   });
 }

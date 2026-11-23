@@ -4,6 +4,7 @@ import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 import ru.teacherbox.identity.api.GroupArchived;
 import ru.teacherbox.identity.api.GroupChanged;
+import ru.teacherbox.identity.api.StudentDeactivated;
 
 /** Planned lessons of a group follow its members; an archived group has no future lessons (ADR-0011). */
 @Component("scheduleGroupListener")
@@ -25,5 +26,11 @@ class GroupListener {
     @ApplicationModuleListener
     void on(GroupArchived event) {
         schedule.stopGroup(event.groupId());
+    }
+
+    /** A deactivated student has no future lessons, alone or with a group. */
+    @ApplicationModuleListener
+    void on(StudentDeactivated event) {
+        schedule.stopStudent(event.studentId());
     }
 }

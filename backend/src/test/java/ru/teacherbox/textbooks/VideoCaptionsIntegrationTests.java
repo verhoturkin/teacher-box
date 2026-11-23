@@ -31,8 +31,8 @@ class VideoCaptionsIntegrationTests {
     void takesTheCaptionsOfAYoutubeVideo() {
         captions.put("aaaaaaaaaaa", new VideoCaptions.Captions("Урок", "en", true, List.of(
                 new VideoCaptions.Cue(1_000, "Hello"), new VideoCaptions.Cue(5_000, "class"),
-                new VideoCaptions.Cue(40_000, "Bye"))), new VideoCaptions.Captions("Урок", "ru", false, List.of(
-                new VideoCaptions.Cue(2_000, "Привет"))));
+                new VideoCaptions.Cue(40_000, "Bye")), false), new VideoCaptions.Captions("Урок", "ru", false, List.of(
+                new VideoCaptions.Cue(2_000, "Привет")), false));
 
         assertThat(post("/api/teacher/textbooks/videos/captions", "{\"url\":\"https://youtu.be/aaaaaaaaaaa\"}"))
                 .hasStatusOk().bodyJson().satisfies(json -> {
@@ -56,6 +56,7 @@ class VideoCaptionsIntegrationTests {
                     assertThat(json).extractingPath("$.automatic").isEqualTo(true);
                     assertThat(json).extractingPath("$.transcript").isEqualTo("[0:01] Hello class\n[0:40] Bye");
                     assertThat(json).extractingPath("$.truncated").isEqualTo(false);
+                    assertThat(json).extractingPath("$.otherTracks").isEqualTo(true);
                 });
         assertThat(post("/api/teacher/textbooks/videos/transcript", "{\"url\":\"https://youtu.be/bbbbbbbbbbb\"}"))
                 .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)

@@ -248,6 +248,7 @@ export const en: Translation<typeof ru> = {
     changeLanguage: 'Change language',
     fetching: 'Getting captions…',
     none: 'This video has no captions',
+    onlyTrack: (fetched: string) => `${fetched}. This video has no captions in other languages`,
     failed: "Couldn't get the captions",
   },
 };

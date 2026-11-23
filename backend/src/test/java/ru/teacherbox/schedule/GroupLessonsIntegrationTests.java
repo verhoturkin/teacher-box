@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import ru.teacherbox.identity.api.GroupArchived;
 import ru.teacherbox.identity.api.GroupChanged;
+import ru.teacherbox.identity.api.StudentDeactivated;
 import ru.teacherbox.schedule.api.LessonChangeRequested;
 import ru.teacherbox.schedule.api.LessonChangeResolved;
 import ru.teacherbox.schedule.api.LessonCompleted;
@@ -325,6 +326,33 @@ class GroupLessonsIntegrationTests extends ScheduleHttpTestSupport {
         assertThat(lessons.findById(single)).get().extracting(Lesson::status).isEqualTo(LessonStatus.CANCELLED);
         assertThat(lessonsOfGroup(group)).allSatisfy(lesson ->
                 assertThat(lesson.status()).isEqualTo(LessonStatus.CANCELLED));
+    }
+
+    @Test
+    void aDeactivatedStudentHasNoFutureLessons(Scenario scenario) throws UnsupportedEncodingException {
+        UUID anna = directory.addStudent("Анна");
+        UUID boris = directory.addStudent("Борис");
+        UUID group = groups.addGroup("Отключение", anna, boris);
+        LocalDate first = LocalDate.ofInstant(clock.instant(), MOSCOW).plusDays(16);
+        assertThat(post("/api/teacher/schedule/lessons", """
+                {"studentId":"%s","startsAt":"%s","repeatWeeks":1,"allowOverlap":true}
+                """.formatted(anna, first.atTime(5, 0).atZone(MOSCOW).toInstant()))).hasStatus(HttpStatus.CREATED);
+        UUID single = UUID.fromString(id(post("/api/teacher/schedule/lessons",
+                LessonsIntegrationTests.lesson(anna, Slots.next(clock), 60, true))));
+        UUID together = UUID.fromString(id(post("/api/teacher/schedule/lessons", groupLesson(group, Slots.next(clock)))));
+        UUID past = UUID.fromString(id(post("/api/teacher/schedule/lessons",
+                LessonsIntegrationTests.lesson(anna, Slots.past(clock), 60, true))));
+
+        scenario.publish(new StudentDeactivated(anna, Instant.now()))
+                .andWaitForEventOfType(LessonRepeatStopped.class)
+                .matching(event -> event.studentIds().contains(anna))
+                .toArriveAndVerify(event -> assertThat(event.groupId()).isNull());
+
+        assertThat(lessons.findById(single)).get().extracting(Lesson::status).isEqualTo(LessonStatus.CANCELLED);
+        assertThat(lessons.findStartingBetween(anna, first.atStartOfDay(MOSCOW).toInstant(), Instant.MAX))
+                .as("the series has no lessons left").isEmpty();
+        assertThat(studentsOf(together)).as("the group lesson goes on without her").containsExactly(boris);
+        assertThat(lessons.findById(past)).get().extracting(Lesson::status).isEqualTo(LessonStatus.SCHEDULED);
     }
 
     @Test

@@ -922,7 +922,10 @@ export class VideoSection {
     });
   }
 
-  /** The captions become the transcript (and the title, when there is none); the note offers «Сменить язык». */
+  /**
+   * The captions become the transcript (and the title, when there is none); the note offers «Сменить язык», or says
+   * at once that the video has no other language.
+   */
   private took(key: number, found: VideoTranscript): void {
     const title = this.draft(key)?.title ?? '';
     this.change(key, {
@@ -931,11 +934,12 @@ export class VideoSection {
     });
     this.taken.set(key, found.transcript);
     this.editing.set(false);
-    const fetched = this.t.fetched(languageName(found.language), found.automatic);
+    const named = this.t.fetched(languageName(found.language), found.automatic);
+    const fetched = found.otherTracks ? named : this.t.onlyTrack(named);
     this.note(key, {
       severity: found.truncated ? 'warn' : 'info',
       text: found.truncated ? `${fetched}. ${this.t.truncated}` : fetched,
-      action: 'language',
+      ...(found.otherTracks ? { action: 'language' as const } : {}),
     });
   }
 

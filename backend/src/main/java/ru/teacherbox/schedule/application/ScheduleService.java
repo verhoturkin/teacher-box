@@ -40,6 +40,9 @@ public class ScheduleService {
     /** Reason of the lessons cancelled because their group was archived. */
     static final String GROUP_ARCHIVED = "Группа в архиве";
 
+    /** Reason of the lessons cancelled because the teacher deactivated their student. */
+    static final String STUDENT_DEACTIVATED = "Ученик отключён";
+
     /**
      * A lesson with a student or with a group (exactly one of the two).
      *
@@ -303,6 +306,34 @@ public class ScheduleService {
         }
         for (Lesson lesson : lessons.findScheduledOfGroup(groupId, now)) {
             List<Participant> revoked = lesson.cancel(CancelledBy.TEACHER, GROUP_ARCHIVED, now);
+            lessons.update(lesson);
+            outdatePendingRequests(lesson.id(), now);
+            lessonEvents.revoked(lesson, revoked, now);
+            lessonEvents.cancelled(lesson, CancelledBy.TEACHER, false, false, now);
+        }
+    }
+
+    /**
+     * A deactivated student has no future lessons: their own series stop and planned lessons are cancelled; they
+     * leave the planned lessons of their groups.
+     */
+    @Transactional
+    public void stopStudent(UUID studentId) {
+        Instant now = clock.instant();
+        LocalDate tomorrow = LocalDate.ofInstant(now, zone()).plusDays(1);
+        for (RepeatRule active : series.findActive(tomorrow)) {
+            if (studentId.equals(active.studentId())) {
+                stop(active, tomorrow, false);
+            }
+        }
+        for (Lesson lesson : lessons.findScheduledOfStudent(studentId, now)) {
+            if (lesson.isGroup()) {
+                if (lesson.removeParticipant(studentId, now)) {
+                    lessons.update(lesson);
+                }
+                continue;
+            }
+            List<Participant> revoked = lesson.cancel(CancelledBy.TEACHER, STUDENT_DEACTIVATED, now);
             lessons.update(lesson);
             outdatePendingRequests(lesson.id(), now);
             lessonEvents.revoked(lesson, revoked, now);

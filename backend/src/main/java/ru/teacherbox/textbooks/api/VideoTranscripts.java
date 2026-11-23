@@ -23,9 +23,10 @@ public class VideoTranscripts {
     /**
      * @param transcript paragraphs {@code [m:ss] text}
      * @param truncated  the captions were longer than a transcript may be: the end is cut off
+     * @param otherTracks the video has captions of another track: «Сменить язык» has something to offer
      */
     public record Transcript(@Nullable String title, String language, boolean automatic, String transcript,
-            boolean truncated) {
+            boolean truncated, boolean otherTracks) {
     }
 
     private final VideoCaptions captions;
@@ -64,7 +65,8 @@ public class VideoTranscripts {
         if (text.isEmpty()) {
             throw new BusinessRuleException("video.captions-none", "The video has no captions");
         }
-        return new Transcript(found.title(), found.language(), found.automatic(), text.toString(), truncated);
+        return new Transcript(found.title(), found.language(), found.automatic(), text.toString(), truncated,
+                found.otherTracks());
     }
 
     private static String youtubeId(String url) {

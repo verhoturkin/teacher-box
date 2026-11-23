@@ -25,11 +25,13 @@ public class FakeVideoCaptions implements VideoCaptions {
 
     @Override
     public Captions fetch(String videoId, @Nullable Track track) {
-        return found(videoId).stream()
+        List<Captions> all = found(videoId);
+        Captions chosen = all.stream()
                 .filter(found -> track == null
                         || found.language().equals(track.language()) && found.automatic() == track.automatic())
                 .findFirst()
                 .orElseThrow(FakeVideoCaptions::none);
+        return new Captions(chosen.title(), chosen.language(), chosen.automatic(), chosen.cues(), all.size() > 1);
     }
 
     private List<Captions> found(String videoId) {

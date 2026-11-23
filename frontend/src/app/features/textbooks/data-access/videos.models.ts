@@ -52,4 +52,6 @@ export interface VideoTranscript {
   readonly transcript: string;
   /** The end did not fit and is cut off. */
   readonly truncated: boolean;
+  /** The video has captions of another track: «Сменить язык» has something to offer. */
+  readonly otherTracks: boolean;
 }
